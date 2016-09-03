@@ -1,0 +1,743 @@
+mpi started: iproc_world,nproc_world    0   1
+mpi started: iproc,nproc    0   1
+iproc,seed    0  2147483562  2147483398
+Number of configurations read from posinp.acf is    1
+         Na Cl
+ ann_arr%n=            2
+           1 Na   
+           2 Cl   
+           0     3    3    #number of nodes at each hidden layer
+           0     3    #number of nodes at each hidden layer
+ann%(0)=  51
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0   8   0   0  43   0
+           0     3    3    #number of nodes at each hidden layer
+           0     3    #number of nodes at each hidden layer
+ann%(0)=  51
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0   8   0   0  43   0
+                             ngpx,ngpy,ngpz,ngptot          54          54          54      157464
+                                 nbgpx,nbgpy,nbgpz          17          17          17
+                                 nagpx,nagpy,nagpz          17          17          17
+                                       hgx,hgy,hgz     0.3919432     0.3919432     0.3919432
+                                           ngpztot         216
+ REZA-1
+ REZA-2
+hx,hy,hz    0.39194   0.39194   0.39194
+ REZA-3
+  #------------------------------------------------------------------- Kernel Initialization
+ Poisson Kernel Initialization:
+   MPI tasks                           :  1
+   OpenMP threads per MPI task         :  1
+ REZA-4
+ Poisson Kernel Creation:
+   Boundary Conditions                 : Periodic
+   Memory Requirements per MPI task:
+     Density (MB)                      :  1.20
+     Kernel (MB)                       :  0.17
+     Full Grid Arrays (MB)             :  1.20
+ REZA-5
+ real part in rcut  -1.68268949213709     
+ nat,scl,mlimnb          64   7.50000000000000                2
+ cell     21.1649326319249        21.1649326319249        21.1649326319249     
+ mx,my,mz,total number of cells           2           2           2           8
+natim1,natim2,natim3,natim4,natim5      0     0     0     0     0
+natim=    832
+         897
+         897 main
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     0   5.507784569697068E+00   0.00000E+00   1.08727E-01   0.00000E+00
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     1   5.481678086253323E+00  -1.58337E-01   1.17997E-01  -4.00000E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     2   5.448130716086087E+00  -3.33084E-01   1.30427E-01  -2.30359E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     3   5.606521643443611E+00  -3.68443E-01   7.55168E-02   6.20258E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     4   5.645262090895029E+00  -2.40323E-01   6.52013E-02   2.82138E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     5   5.713738454256116E+00  -2.29579E-01   4.92228E-02   4.65470E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     6   5.765737776556413E+00  -1.84543E-01   3.79935E-02   4.43622E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     7   5.810938694157317E+00  -1.44865E-01   2.77919E-02   4.78820E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     8   5.844287583140245E+00  -1.02223E-01   1.94183E-02   4.94426E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm     9   5.865882439623689E+00  -6.71832E-02   1.34306E-02   4.88287E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    10   5.879496799974167E+00  -4.41404E-02   9.49017E-03   4.72732E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    11   5.888593549364846E+00  -3.04186E-02   6.88877E-03   4.61330E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    12   5.895076126214354E+00  -2.19418E-02   5.09047E-03   4.56794E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    13   5.899878306862277E+00  -1.61345E-02   3.77795E-03   4.59234E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    14   5.903413687040752E+00  -1.17954E-02   2.80740E-03   4.61595E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    15   5.905940573152400E+00  -8.55105E-03   2.11256E-03   4.56494E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    16   5.907725310322091E+00  -6.25543E-03   1.63044E-03   4.44180E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    17   5.909016000169990E+00  -4.67123E-03   1.28867E-03   4.33157E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    18   5.909980970154677E+00  -3.50398E-03   1.02665E-03   4.32007E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    19   5.910704755811210E+00  -2.53795E-03   8.06432E-04   4.43941E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    20   5.911212312293698E+00  -1.69179E-03   6.15476E-04   4.61684E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    21   5.911516974169571E+00  -9.96496E-04   4.61656E-04   4.68425E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    22   5.911665120495481E+00  -5.04343E-04   3.52549E-04   4.54238E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    23   5.911719444269928E+00  -1.98604E-04   2.80174E-04   4.29764E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    24   5.911722505647709E+00  -1.19440E-05   2.30279E-04   4.10134E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    25   5.911695084510495E+00   1.07441E-04   1.91120E-04   4.06498E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    26   5.911646555979180E+00   1.79569E-04   1.55030E-04   4.25439E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    27   5.911584846764278E+00   2.06797E-04   1.19125E-04   4.59608E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    28   5.911523066523987E+00   1.94053E-04   8.64725E-05   4.82946E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    29   5.911473023790499E+00   1.61028E-04   6.21166E-05   4.74163E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    30   5.911435193890365E+00   1.30380E-04   4.60850E-05   4.49784E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    31   5.911405341809488E+00   1.09241E-04   3.56103E-05   4.29233E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    32   5.911380385510030E+00   9.45321E-05   2.83094E-05   4.17715E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    33   5.911358590053584E+00   8.17603E-05   2.26027E-05   4.20939E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    34   5.911339666069614E+00   6.78075E-05   1.77216E-05   4.36379E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    35   5.911324398697567E+00   5.24178E-05   1.35640E-05   4.51127E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    36   5.911313400465572E+00   3.79045E-05   1.03502E-05   4.49799E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    37   5.911306028649829E+00   2.66681E-05   8.09143E-06   4.33127E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    38   5.911301075353979E+00   1.89455E-05   6.52896E-06   4.14521E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    39   5.911297649550082E+00   1.35682E-05   5.38386E-06   4.03176E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    40   5.911295258161627E+00   9.44759E-06   4.45771E-06   4.03985E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    41   5.911293679186873E+00   6.01589E-06   3.64579E-06   4.15800E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    42   5.911292814628773E+00   3.16176E-06   2.92817E-06   4.29452E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    43   5.911292543201832E+00   9.79453E-07   2.33089E-06   4.33975E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    44   5.911292681858419E+00  -5.07617E-07   1.86195E-06   4.29099E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    45   5.911293065438660E+00  -1.42133E-06   1.49263E-06   4.25042E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    46   5.911293586328331E+00  -1.90183E-06   1.18574E-06   4.30005E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    47   5.911294167081354E+00  -2.03430E-06   9.17821E-07   4.44162E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    48   5.911294730181869E+00  -1.89266E-06   6.86749E-07   4.58597E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    49   5.911295208346173E+00  -1.59429E-06   5.03371E-07   4.61448E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    50   5.911295580785136E+00  -1.27613E-06   3.70673E-07   4.51834E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    51   5.911295867462512E+00  -1.01604E-06   2.77928E-07   4.40122E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    52   5.911296094074291E+00  -8.17491E-07   2.11407E-07   4.34080E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    53   5.911296277695688E+00  -6.55717E-07   1.60630E-07   4.37538E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    54   5.911296425303447E+00  -5.10391E-07   1.19827E-07   4.48657E-01
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+   2.55139011964286        2.55139011964286        2.55139011964286     
+ Poisson Solver:
+   BC                                  : Periodic
+   Box                                 :  [  54,  54,  54 ]
+   MPI tasks                           :  1
+iter,gnrm    55   5.911296537666525E+00  -3.77711E-07   8.72979E-08   4.58556E-01
+           1 -0.820479315763755     
+           2  0.823662032722453     
+           3 -0.822041242067412     
+           4  0.829866568442831     
+           5  0.823639571507306     
+           6 -0.825001709935730     
+           7  0.837252096306323     
+           8 -0.836211915683145     
+           9 -0.812413003388162     
+          10  0.831381563338061     
+          11 -0.832602965925466     
+          12  0.828427075976999     
+          13  0.842953815737056     
+          14 -0.814449791251028     
+          15  0.829537101404218     
+          16 -0.832445980044815     
+          17  0.822942031715481     
+          18 -0.819243622491149     
+          19  0.845141623753090     
+          20 -0.845398218595059     
+          21 -0.845817313772577     
+          22  0.833680248831323     
+          23 -0.816170109797296     
+          24  0.818815042893975     
+          25  0.832721035924299     
+          26 -0.828728153574182     
+          27  0.822611143889591     
+          28 -0.838093693326563     
+          29 -0.820230612976855     
+          30  0.824820737392477     
+          31 -0.836068782488780     
+          32  0.822338277049106     
+          33 -0.845385687499748     
+          34  0.834037884396779     
+          35 -0.820724582843768     
+          36  0.831177158060807     
+          37  0.818017992511766     
+          38 -0.812870711491993     
+          39  0.835549670600008     
+          40 -0.840367772873880     
+          41 -0.842140860884006     
+          42  0.829488035353088     
+          43 -0.835202184082660     
+          44  0.823125286952159     
+          45  0.821367305559893     
+          46 -0.847348633414837     
+          47  0.823377601048896     
+          48 -0.827381706370814     
+          49  0.821830088663466     
+          50 -0.835543165164585     
+          51  0.821364605658880     
+          52 -0.813994499513103     
+          53 -0.825480475407481     
+          54  0.829702187475037     
+          55 -0.830801511598096     
+          56  0.828330205456512     
+          57  0.839147438117839     
+          58 -0.816430324197653     
+          59  0.824077893758467     
+          60 -0.833981672026231     
+          61 -0.818833713396428     
+          62  0.842628837656422     
+          63 -0.834554146548688     
+          64  0.833425920241337     
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  894
+   Tot. No. of Deallocations           :  894
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  3.821
+     for the array                     : zmpi2
+     in the routine                    : G_PoissonSolver
+     Memory Peak of process            : 65.508 MB
+ Walltime since initialization         : 00:00:02.815660756
+ Max No. of dictionaries used          :  197 #( 152 still in use)
+ Number of dictionary folders allocated:  1
+EPOT      1  -0.548815768044201E+03   0.00000   0.00000
+CPU time: iproc,time(hrs)    0      0.785E-03
+CPU time: iproc,time(min)    0      0.471E-01
+CPU time: iproc,time(sec)    0      0.283E+01
+mpi finalized: iproc_world,nproc_world    0   1

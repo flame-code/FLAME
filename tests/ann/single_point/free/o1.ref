@@ -1,0 +1,32 @@
+mpi started: iproc_world,nproc_world    0   1
+mpi started: iproc,nproc    0   1
+iproc,seed    0  2147483562  2147483398
+Number of configurations read from posinp.acf is    1
+         Na Cl
+ ann_arr%n=            2
+           1 Na   
+           2 Cl   
+           0     3    3    #number of nodes at each hidden layer
+           0     3    #number of nodes at each hidden layer
+ann%(0)=  51
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0   8   0   0  43   0
+           0     3    3    #number of nodes at each hidden layer
+           0     3    #number of nodes at each hidden layer
+ann%(0)=  51
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0   8   0   0  43   0
+ nat,scl,mlimnb          64   7.50000000000000                2
+ cell     37.7945225570088        56.6917838355133        56.6917838355133     
+ mx,my,mz,total number of cells           5           7           7         245
+          65
+          65 main
+EPOT      1  -0.548089370476165E+03   0.00000   0.00000
+CPU time: iproc,time(hrs)    0      0.415E-04
+CPU time: iproc,time(min)    0      0.249E-02
+CPU time: iproc,time(sec)    0      0.149E+00
+mpi finalized: iproc_world,nproc_world    0   1

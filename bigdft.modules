@@ -1,0 +1,196 @@
+<?xml version="1.0"?><!--*- mode: nxml; indent-tabs-mode: nil -*-->
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<!-- vim:set ts=2 expandtab: -->
+<moduleset>
+
+  <!-- Official repositories, not used by default, using provided tars instead. -->
+  <repository type="tarball" name="libyaml" href="http://pyyaml.org/download/libyaml/"/>
+  <repository type="svn" name="libxc" href="http://www.tddft.org/svn/"/>
+  <repository type="bzr" name="bigdft" href="lp:/"/>
+  <repository type="tarball" name="wannier"
+              href="http://www.wannier.org/code/"/>
+  <repository type="tarball" name="unidata"
+              href="ftp://ftp.unidata.ucar.edu/pub/"/>
+  <repository type="tarball" name="etsf" href="http://www.etsf.eu/system/files/"/>
+  <repository type="tarball" name="metis"
+              href="http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/"/>
+<!--  <repository type="tarball" name="cmake-rep"
+              href="https://cmake.org/files/v3.3/"/> -->
+
+  <repository type="tarball" name="local" href="./"/>
+
+  <include href="gnome.modules"/>
+
+  <autotools id="libxc" check-target="false" autogen-sh="autoreconf" skip-autogen="true">
+    <!--<branch repo="libxc" checkoutdir="libxc-2.0.x"/>-->
+    <branch repo="local" module="libxc-2.2.2.tar.gz" version="2.2.2" checkoutdir="libxc">
+            <!-- <patch file="libxc-2.0.x.patch" />-->
+    </branch>
+  </autotools>
+
+  <autotools id="libyaml" autogen-sh="autoreconf" skip-autogen="true">
+    <!--<branch repo="libyaml" module="yaml-0.1.4.tar.gz" version="0.1.4"/>-->
+    <branch repo="local" module="yaml-0.1.6.tar.gz" version="0.1.6" checkoutdir="yaml"/>
+  </autotools>
+
+  <distutils id="PyYAML">
+    <!--<branch repo="libyaml" module="PyYAML-3.10.tar.gz" version="3.10"/>-->
+    <branch repo="local" module="PyYAML-3.11.tar.gz" version="3.11" checkoutdir="PyYAML"/>
+    <dependencies>
+      <dep package="libyaml"/>
+    </dependencies>
+  </distutils>
+
+  <autotools id="libABINIT" check-target="false" autogen-sh="autoreconf">
+    <branch repo="local" module="libABINIT-6.8+12.tar.gz" version="6.8+12" checkoutdir="libABINIT">
+      <patch file="libABINIT.patch" />
+    </branch>
+    <dependencies>
+      <dep package="futile"/>
+      <dep package="libxc"/>
+      <dep package="psolver"/> <!-- this is for the libxc macro -->
+    </dependencies>
+  </autotools>
+
+  <autotools id="GaIn" skip-autogen="true">
+    <branch repo="local" module="GaIn-1.0.tar.gz"
+            version="1.0"/>
+  </autotools>
+
+  <autotools id="futile" autogen-sh="autoreconf">
+    <branch repo="local" module="futile-1.8.tar.gz" version="1.8.0" checkoutdir="futile"/>
+    <dependencies>
+      <dep package="libyaml"/>
+      <if condition-set="testing">
+        <dep package="PyYAML"/>
+      </if>
+      <if condition-set="python">
+        <dep package="pygobject"/>
+        <dep package="gobject-introspection"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <autotools id="psolver" autogen-sh="autoreconf">
+    <branch repo="local" module="psolver-1.8.tar.gz" version="1.8.0" checkoutdir="psolver"/>
+    <dependencies>
+      <dep package="futile"/>
+      <if condition-set="testing">
+        <dep package="PyYAML"/>
+      </if>
+      <if condition-set="python">
+        <dep package="pygobject"/>
+        <dep package="gobject-introspection"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <autotools id="chess" autogen-sh="autoreconf">
+    <branch repo="local" module="CheSS-1.0.tar.gz" version="1.0" checkoutdir="chess"/>
+    <dependencies>
+      <dep package="futile"/>
+      <if condition-set="testing">
+        <dep package="PyYAML"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <autotools id="bigdft" autogen-sh="autoreconf">
+    <!--<branch repo="bigdft" module="bigdft" version="1.7.5"/>-->
+    <branch repo="local" module="bigdft-1.8.tar.gz" version="1.8.0" checkoutdir="bigdft"/>
+    <dependencies>
+      <dep package="futile"/>
+      <dep package="chess"/>
+      <dep package="libxc"/>
+      <dep package="psolver"/>
+      <dep package="libABINIT"/>
+      <dep package="GaIn"/>
+      <if condition-set="testing">
+        <dep package="PyYAML"/>
+      </if>
+      <if condition-set="python">
+        <dep package="pygobject"/>
+        <dep package="gobject-introspection"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <autotools id="spred" autogen-sh="autoreconf">
+    <branch repo="local" module="spred-1.8.tar.gz" version="1.8.0" checkoutdir="spred"/>
+    <dependencies>
+      <dep package="futile"/>
+      <dep package="psolver"/>
+      <dep package="bigdft"/>
+      <if condition-set="testing">
+        <dep package="PyYAML"/>
+      </if>
+      <if condition-set="python">
+        <dep package="pygobject"/>
+        <dep package="gobject-introspection"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <autotools id="pseudo" autogen-sh="autoreconf" skip-autogen="true">
+    <!--<branch repo="bigdft" module="pseudo" version="1.7.5"/>-->
+    <branch repo="local" module="pseudo-1.7.5.tar.gz" version="1.7.5" checkoutdir="pseudo"/>
+    <dependencies>
+      <dep package="libxc"/>
+      <if condition-set="testing">
+        <dep package="PyYAML"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <makesys id="wannier90" skip-autogen="true">
+    <branch repo="wannier" module="wannier90-2.0.0.tar.gz" version="2.0.0">
+      <patch file="wannier90-2.0.0.patch" />
+    </branch>
+  </makesys>
+
+  <autotools id="netcdf" autogenargs="--disable-netcdf-4" skip-autogen="true">
+    <branch repo="unidata" module="netcdf/netcdf-4.3.3.tar.gz"
+            version="4.3.3"/>
+  </autotools>
+
+  <autotools id="netcdff" skip-autogen="true">
+    <branch repo="unidata" module="netcdf/netcdf-fortran-4.4.1.tar.gz"
+            version="4.4.1"/>
+    <dependencies>
+      <dep package="netcdf"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="etsf_io" skip-autogen="true">
+    <branch repo="etsf" module="etsf_io-1.0.4.tar.gz"
+            version="1.0.4"/>
+    <dependencies>
+      <dep package="netcdff"/>
+    </dependencies>
+  </autotools>
+
+<!--  <autotools id="cmake-dev">
+    <branch repo="cmake-rep" module="cmake-3.3.2.tar.gz"
+            version="3.3.2"/>
+    <dependencies>
+      <dep package="cmake-dev"/>
+    </dependencies>
+  </autotools> -->
+
+  <makesys id="parmetis" skip-autogen="true">
+    <branch repo="metis" module="parmetis-4.0.2.tar.gz"
+            version="4.0.2"/>
+<!--    <dependencies>
+      <dep package="cmake-dev"/>
+    </dependencies> -->
+  </makesys>
+
+  <metamodule id="bigdft-suite">
+    <dependencies>
+      <dep package="spred"/>
+      <dep package="PyYAML"/>
+    </dependencies>
+  </metamodule>
+
+</moduleset>

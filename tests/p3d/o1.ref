@@ -1,0 +1,38 @@
+mpi started: iproc_world,nproc_world    0   1
+mpi started: iproc,nproc    0   1
+iproc,seed    0  2147483562  2147483398
+Number of configurations read from posinp.acf is    1
+                             ngpx,ngpy,ngpz,ngptot          34          34          91      105196
+                                 nbgpx,nbgpy,nbgpz          23          23          36
+                                       hgx,hgy,hgz     0.9337470     0.9337470     0.5879148
+                                           ngpztot         637
+ real part in rcut  2.948054832082137E-013
+ delta= -0.648148061843553725100295456681142      
+ hsp=  1.568472686115867E-003
+ beta =    20.8724228589202     
+ -----------------------------------------------------------
+                                         epotfixed           0.126666697736321E+02
+                                          epotlong           0.207369794722508E+01
+                                         epotplane           0.000000000000000E+00
+                                         epottotal          -0.105929718264070E+02
+                            Time for putgaussgrid                0.316275000000000
+                              Time for long range                0.035922000000000
+                        Time for long range forces               0.493992000000000
+                              Time for short range               0.000000000000000
+                                   Time for plane                0.000000000000000
+                      Time for Total without plane               0.846189000000000
+                                    Time for Total               0.846189000000000
+ inside shortenergy  hsp=  1.568472686115867E-003
+ nat,scl,mlimnb          72   7.84236343057933                2
+ cell     31.7473989478874        31.7473989478874        10.5824663159625     
+ mx,my,mz,total number of cells           4           4           1          16
+natim1,natim2,natim3,natim4,natim5     18     0    18    18    18
+natim=    108
+         181
+         181 main
+                                         epotshort          -0.730835310340422E+00
+EPOT      1  -0.113238071367474E+02   0.00000   0.00000
+CPU time: iproc,time(hrs)    0      0.252E-03
+CPU time: iproc,time(min)    0      0.151E-01
+CPU time: iproc,time(sec)    0      0.909E+00
+mpi finalized: iproc_world,nproc_world    0   1

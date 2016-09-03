@@ -1,0 +1,11 @@
+mpi started: iproc_world,nproc_world    0   1
+mpi started: iproc,nproc    0   1
+iproc,seed    0  2147483562  2147483398
+Number of configurations read from posinp.acf is    3
+EPOT      1  -0.768138187413785E+00   0.00000   0.00000
+EPOT      2  -0.762102099359612E+00   0.00604   0.00604
+EPOT      3  -0.755923496383129E+00   0.01221   0.00618
+CPU time: iproc,time(hrs)    0      0.673E-06
+CPU time: iproc,time(min)    0      0.404E-04
+CPU time: iproc,time(sec)    0      0.242E-02
+mpi finalized: iproc_world,nproc_world    0   1

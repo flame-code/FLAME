@@ -1,0 +1,1051 @@
+diff -rupN Src_ORIG/Makefile Src/Makefile
+--- Src_ORIG/Makefile	2015-08-05 21:51:30.870565108 -0500
++++ Src/Makefile	2015-08-05 22:00:58.846554936 -0500
+@@ -24,7 +24,7 @@ F90O2  = $(RUNF90) $(OPT2) $(FFLAGS) $(K
+ F90O0  = $(RUNF90) $(FFLAGS) $(KFLAGS) $(BAGGER) -c
+ CC     = $(RUNCC)  $(CFLAGS) $(KFLAGS) $(BAGGER) $(PLUMEDDEFS) -c
+ 
+-COBJECTS= csignal.o
++COBJECTS= csignal.o sockets.o
+ HOBJECT=  metadyn.h
+ LOBJECTS= $(LAPACK) $(BLAS)
+ POBJECTS= hills.o biasexchange.o restraint_alpharmsd.o restraint_energy.o restraint_rmsdtor.o \
+@@ -33,7 +33,7 @@ POBJECTS= hills.o biasexchange.o restrai
+           ptmetad.o restraint_dihcor.o restraint_parabetarmsd.o	restraint_zpath.o read_restraint.o \
+           restraint_dipole.o restraint_position.o testderivatives.o restraint.o	restraint_dist.o restraint_puckering.o \
+           restraint_alfabeta.o restraint_elstpot.o restraint_rgyr.o images.o
+-FOBJECTS= datatypes.o modules.o modules_kim.o iomod.o itcom.o reallocate.o reallocate_kim.o pr_random.o m_pr.o m_simplex.o m_conjgr.o \
++FOBJECTS= datatypes.o modules.o fsockets.o modules_kim.o iomod.o itcom.o reallocate.o reallocate_kim.o pr_random.o m_pr.o m_simplex.o m_conjgr.o \
+           m_pdfvariables.o m_pdfneutron.o m_pdf.o gulpcml.o gulpcml_md.o gulpcml_phonon.o gulpcml_props.o \
+           addframe2arc.o addshell.o getangles.o aocn2.o banner.o bcgsolve.o binary.o bond.o bonded.o \
+           baskes.o bonded2donor.o bonded3.o bondpot.o boword.o bondorder.o cellcheck.o \
+@@ -140,7 +140,7 @@ FOBJECTS= datatypes.o modules.o modules_
+           setthree.o settings.o setup.o setzmolslice.o sort.o sort1.o sort1sym.o sort2a.o setstrainptr.o \
+           setfeshtmat.o setquasiharm.o scaleevec.o setdestroyptr.o setmoveptr.o setrotateptr.o setkeywrd.o \
+           setswapptr.o sitepot.o special.o speclibw.o specword.o spline.o stolc.o stouc.o surfword.o \
+-          sixbody.o sixlist.o sixmc.o sixmd.o sixmds.o sixnos.o sixp.o sixsd.o sixsd2.o sixstrterms.o \
++          sixbody.o sixlist.o sixmc.o sixmd.o sixmds.o sixnos.o sixp.o sixsd.o sixsd2.o sixstrterms.o socket_gulp.o \
+           strain.o strfin.o strsym.o strword.o sumderv2.o sumderv2s.o surfaceenergy.o syncforce.o \
+           super.o symbind.o symderv2.o symmet.o symoff.o symout.o sympot.o sympotd.o symprod.o tfunc.o thermalconductivity.o \
+           taper.o threestrterms.o threenos.o three12.o threelist.o threep.o threemc.o threemd.o threemds.o threesd.o \
+@@ -1200,10 +1200,13 @@ gulpcml.o                 : ../gulpcml.F
+ gulpcml_md.o              : gulpcml.o ../gulpcml_md.F90 $(FOX_OBJ)     ; $(F90) $(FoX_fcflags) ../gulpcml_md.F90
+ gulpcml_phonon.o          : gulpcml.o ../gulpcml_phonon.F90 $(FOX_OBJ) ; $(F90) $(FoX_fcflags) ../gulpcml_phonon.F90
+ gulpcml_props.o           : gulpcml.o ../gulpcml_props.F90 $(FOX_OBJ)  ; $(F90) $(FoX_fcflags) ../gulpcml_props.F90
++fsockets.o                :../fsockets.f90                 ; $(F90) ../fsockets.f90
++socket_gulp.o             :../socket_gulp.f90              ; $(F90) ../socket_gulp.f90
+ #
+ #  C routines
+ #
+ csignal.o                 : ../csignal.c       	           ; $(CC) ../csignal.c
++sockets.o                 : ../sockets.c       	           ; $(CC) ../sockets.c
+ #
+ #  Plumed code
+ #
+@@ -1240,6 +1243,8 @@ images.o                  : ../Plumed/im
+ #
+ #  Automatically generated dependences from mkmf
+ #
++fsockets.o: ../fsockets.f90 fsockets.o
++socket_gulp.o:../socket_gulp.f90 socket_gulp.o
+ CS_dummy.o: ../CS_dummy.F90 datatypes.o
+ addframe2arc.o: ../addframe2arc.f90 modules.o
+ addshell.o: ../addshell.f90 modules.o iomod.o
+@@ -1418,6 +1423,8 @@ create.o: ../create.f90 modules.o
+ createsphere.o: ../createsphere.f90 datatypes.o modules.o
+ cscheck.o: ../cscheck.f90 modules.o iomod.o
+ csignal.o: ../csignal.c
++fsockets.o: ../fsockets.f90
++sockets.o: ../sockets.c
+ ctfunct.o: ../ctfunct.f90 iomod.o modules.o
+ cutscheck.o: ../cutscheck.f90 modules.o iomod.o
+ d1charge.o: ../d1charge.f90 modules.o
+diff -rupN Src_ORIG/fsockets.f90 Src/fsockets.f90
+--- Src_ORIG/fsockets.f90	1969-12-31 18:00:00.000000000 -0600
++++ Src/fsockets.f90	2015-08-03 18:52:11.429852308 -0500
+@@ -0,0 +1,199 @@
++!F90 ISO_C_BINGING wrapper for socket communication.
++
++!Copyright (C) 2013, Michele Ceriotti
++
++!Permission is hereby granted, free of charge, to any person obtaining
++!a copy of this software and associated documentation files (the
++!"Software"), to deal in the Software without restriction, including
++!without limitation the rights to use, copy, modify, merge, publish,
++!distribute, sublicense, and/or sell copies of the Software, and to
++!permit persons to whom the Software is furnished to do so, subject to
++!the following conditions:
++
++!The above copyright notice and this permission notice shall be included
++!in all copies or substantial portions of the Software.
++
++!THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++!EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++!MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
++!IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
++!CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
++!TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
++!SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
++
++!Contains both the functions that transmit data to the socket and read the data
++!back out again once finished, and the function which opens the socket initially.
++
++!Functions:
++!   open_socket: Opens a socket with the required host server, socket type and
++!      port number.
++!   create_socket: Creates a (server) socket with the required host server, 
++!      socket type and port number.
++!   write_buffer: Writes a string to the socket.
++!   read_buffer: Reads data from the socket.
++
++MODULE F90SOCKETS
++  USE ISO_C_BINDING
++   
++  IMPLICIT NONE
++
++  INTERFACE writebuffer
++      MODULE PROCEDURE writebuffer_s, &
++                       writebuffer_d, writebuffer_dv, &
++                       writebuffer_i
++  END INTERFACE 
++
++  INTERFACE readbuffer
++      MODULE PROCEDURE readbuffer_s, &
++                       readbuffer_dv, readbuffer_d, &
++                       readbuffer_i
++  END INTERFACE 
++
++  INTERFACE
++    SUBROUTINE open_csocket(psockfd, inet, port, host) BIND(C, name="open_socket")
++      USE ISO_C_BINDING
++      INTEGER(KIND=C_INT)                  :: psockfd, inet, port
++      CHARACTER(KIND=C_CHAR), DIMENSION(*) :: host
++    END SUBROUTINE open_csocket
++
++    SUBROUTINE create_csocket(psockfd, inet, port, host) BIND(C, name="create_socket")
++      USE ISO_C_BINDING
++      INTEGER(KIND=C_INT)                  :: psockfd, inet, port
++      CHARACTER(KIND=C_CHAR), DIMENSION(*) :: host
++    END SUBROUTINE create_csocket
++    
++    SUBROUTINE writebuffer_csocket(psockfd, pdata, plen) BIND(C, name="writebuffer")
++      USE ISO_C_BINDING
++      INTEGER(KIND=C_INT)                  :: psockfd
++      TYPE(C_PTR), VALUE                   :: pdata
++      INTEGER(KIND=C_INT)                  :: plen
++    END SUBROUTINE writebuffer_csocket       
++
++    SUBROUTINE readbuffer_csocket(psockfd, pdata, plen) BIND(C, name="readbuffer")
++      USE ISO_C_BINDING
++      INTEGER(KIND=C_INT)                  :: psockfd
++      TYPE(C_PTR), VALUE                   :: pdata
++      INTEGER(KIND=C_INT)                  :: plen
++    END SUBROUTINE readbuffer_csocket   
++  END INTERFACE
++
++CONTAINS
++   
++  SUBROUTINE open_socket(psockfd, inet, port, host)      
++    IMPLICIT NONE
++    INTEGER, INTENT(IN) :: inet, port
++    INTEGER, INTENT(OUT) :: psockfd
++    CHARACTER(LEN=1024), INTENT(IN) :: host
++    CHARACTER(LEN=1,KIND=C_CHAR) :: chost(1024)
++    CALL fstr2cstr(host, chost)
++    CALL open_csocket(psockfd, inet, port, host)
++  END SUBROUTINE
++
++  SUBROUTINE create_socket(psockfd, inet, port, host)      
++    IMPLICIT NONE
++    INTEGER, INTENT(IN) :: inet, port
++    INTEGER, INTENT(OUT) :: psockfd
++    CHARACTER(LEN=1024), INTENT(IN) :: host
++    CHARACTER(LEN=1,KIND=C_CHAR) :: chost(1024)
++    CALL fstr2cstr(host, chost)
++    CALL create_csocket(psockfd, inet, port, host)
++  END SUBROUTINE
++   
++  SUBROUTINE fstr2cstr(fstr, cstr, plen)
++    IMPLICIT NONE
++    CHARACTER(LEN=*), INTENT(IN) :: fstr
++    CHARACTER(LEN=1,KIND=C_CHAR), INTENT(OUT) :: cstr(:)
++    INTEGER, INTENT(IN), OPTIONAL :: plen
++    INTEGER i,n
++    IF (PRESENT(plen)) THEN
++       n = plen
++       DO i=1,n
++          cstr(i) = fstr(i:i)
++       ENDDO
++    ELSE
++       n = LEN_TRIM(fstr)
++       DO i=1,n
++          cstr(i) = fstr(i:i)
++       ENDDO
++       cstr(n+1) = C_NULL_CHAR
++    END IF
++  END SUBROUTINE
++
++  SUBROUTINE writebuffer_d (psockfd, fdata)
++    USE ISO_C_BINDING
++    INTEGER, INTENT(IN)                      :: psockfd
++    REAL(KIND=8), INTENT(IN)                :: fdata
++    REAL(KIND=C_DOUBLE), TARGET              :: cdata
++    cdata = fdata
++    CALL writebuffer_csocket(psockfd, c_loc(cdata), 8)
++  END SUBROUTINE
++
++  SUBROUTINE writebuffer_i (psockfd, fdata)
++    USE ISO_C_BINDING
++    INTEGER, INTENT(IN)                      :: psockfd, fdata
++    INTEGER(KIND=C_INT), TARGET              :: cdata
++    cdata = fdata
++    CALL writebuffer_csocket(psockfd, c_loc(cdata), 4)
++  END SUBROUTINE
++
++  SUBROUTINE writebuffer_s (psockfd, fstring, plen)
++    USE ISO_C_BINDING
++    INTEGER, INTENT(IN)                      :: psockfd
++    CHARACTER(LEN=*), INTENT(IN)             :: fstring
++    INTEGER, INTENT(IN)                      :: plen
++    INTEGER                                  :: i
++    CHARACTER(LEN=1, KIND=C_CHAR), TARGET    :: cstring(plen)
++    DO i = 1,plen
++      cstring(i) = fstring(i:i)
++    ENDDO
++    CALL writebuffer_csocket(psockfd, c_loc(cstring(1)), plen)
++  END SUBROUTINE
++
++  SUBROUTINE writebuffer_dv(psockfd, fdata, plen)
++    USE ISO_C_BINDING  
++    INTEGER, INTENT(IN)                      :: psockfd, plen
++    REAL(KIND=8), INTENT(IN), TARGET        :: fdata(plen)
++    CALL writebuffer_csocket(psockfd, c_loc(fdata(1)), 8*plen)
++  END SUBROUTINE
++
++  SUBROUTINE readbuffer_d (psockfd, fdata)
++    USE ISO_C_BINDING
++    INTEGER, INTENT(IN)                      :: psockfd
++    REAL(KIND=8), INTENT(OUT)               :: fdata
++    REAL(KIND=C_DOUBLE), TARGET              :: cdata
++    CALL readbuffer_csocket(psockfd, c_loc(cdata), 8)
++    fdata=cdata
++  END SUBROUTINE
++
++  SUBROUTINE readbuffer_i (psockfd, fdata)
++    USE ISO_C_BINDING
++    INTEGER, INTENT(IN)                      :: psockfd
++    INTEGER, INTENT(OUT)                     :: fdata
++    INTEGER(KIND=C_INT), TARGET              :: cdata
++    CALL readbuffer_csocket(psockfd, c_loc(cdata), 4)
++    fdata = cdata
++  END SUBROUTINE
++
++  SUBROUTINE readbuffer_s (psockfd, fstring, plen)
++    USE ISO_C_BINDING
++    INTEGER, INTENT(IN)                      :: psockfd
++    CHARACTER(LEN=*), INTENT(OUT)            :: fstring
++    INTEGER, INTENT(IN)                      :: plen
++    INTEGER                                  :: i
++    CHARACTER(LEN=1, KIND=C_CHAR), TARGET    :: cstring(plen)
++    CALL readbuffer_csocket(psockfd, c_loc(cstring(1)), plen)
++    fstring=""   
++    DO i = 1,plen
++      fstring(i:i) = cstring(i)
++    ENDDO
++  END SUBROUTINE
++
++  SUBROUTINE readbuffer_dv(psockfd, fdata, plen)
++    USE ISO_C_BINDING  
++    INTEGER, INTENT(IN)                      :: psockfd, plen
++    REAL(KIND=8), INTENT(OUT), TARGET       :: fdata(plen)
++    CALL readbuffer_csocket(psockfd, c_loc(fdata(1)), 8*plen)
++  END SUBROUTINE
++
++END MODULE
+diff -rupN Src_ORIG/genword.f90 Src/genword.f90
+--- Src_ORIG/genword.f90	2015-08-05 21:51:30.886565107 -0500
++++ Src/genword.f90	2015-08-04 00:08:21.785512585 -0500
+@@ -151,6 +151,7 @@
+   use two
+   use uffdata,                only : UFFbondorder
+   use wolfcosmo
++  use netsocket
+   implicit none
+ !
+ !  Passed variables
+@@ -306,6 +307,7 @@
+   if (index(word,'uff_b').eq.1) goto 820
+   if (index(word,'inde').eq.1) goto 830
+   if (index(word,'qite').eq.1) goto 840
++  if (index(word,'socket').eq.1) goto 850
+   return
+ !*************************************
+ !  Accuracy factor for lattice sums  *
+@@ -3848,6 +3850,45 @@
+   endif
+   lwordok = .true.
+   return
++!********************************
++!  socket parameters            *
++!********************************
++850 continue
++  if (nword.gt.1) then
++    if (index(words(2),'inet').eq.1) then
++!
++!  Set socket inet
++!
++      if (nfloat.gt.0) then
++        sockinet = int(floats(1))
++      else
++        read(nru,*,err=99,end=99) sockinet
++        iline = iline + 1
++      endif
++    elseif (index(words(2),'port').eq.1) then
++!
++!  Set only socket port
++!
++      if (nfloat.gt.0) then
++        sockport = int(floats(1))
++      else
++        read(nru,*,err=99,end=99) sockport
++        iline = iline + 1
++      endif
++    elseif (index(words(2),'host').eq.1) then
++!
++!  Set only socket host
++!
++      if (nword.gt.2.or.nfloat.gt.0) then
++        stop "The socket hostname MUST be provided in a separate line!"
++      else
++        read(nru,*,err=99,end=99) sockhost
++        iline = iline + 1
++      endif
++    endif
++  endif
++  lwordok = .true.
++  return
+ !*****************************
+ !  End of input for options  *
+ !*****************************
+diff -rupN Src_ORIG/gulpsetup.F90 Src/gulpsetup.F90
+--- Src_ORIG/gulpsetup.F90	2015-08-05 21:51:30.886565107 -0500
++++ Src/gulpsetup.F90	2015-08-03 23:45:00.117537686 -0500
+@@ -177,6 +177,10 @@
+ !  Output general info  *
+ !************************
+   if (ioproc) call outgen
++!************************
++!  Output socket info   *
++!************************
++  if (ioproc.and.lsocket) call open_socket_gulp()
+ !*******************************
+ !  Output polarisability info  *
+ !*******************************
+diff -rupN Src_ORIG/initial.F90 Src/initial.F90
+--- Src_ORIG/initial.F90	2015-08-05 21:51:30.870565108 -0500
++++ Src/initial.F90	2015-08-03 23:39:20.217543773 -0500
+@@ -238,6 +238,7 @@
+   use velocities
+   use wolfcosmo
+   use xcgc
++  use netsocket
+   implicit none
+ !
+ !  Local variables
+@@ -392,6 +393,7 @@
+   loldinten = .false.
+   lopt = .false.
+   loptcellpar = .false.
++  lsocket = .false.
+   losc = .false.
+   loutshell = .false.
+   lpacha = .false.
+@@ -986,6 +988,12 @@
+   ttmat = 0.0_dp
+   tvelcor = 0.0_dp
+ !
++!  socket variables
++!
++  sockinet = 1 
++  sockport = 2121
++  sockhost = "127.0.0.1"
++!
+ !  Initialise neutron variables
+ !
+   call init_pdf
+diff -rupN Src_ORIG/minimise.F90 Src/minimise.F90
+--- Src_ORIG/minimise.F90	2015-08-05 21:51:30.882565108 -0500
++++ Src/minimise.F90	2015-08-05 21:45:20.146571747 -0500
+@@ -382,7 +382,12 @@
+         call fefunct(iflag,nvari,xc,fc,gc,hessian)
+       endif
+     else
+-      call funct(iflag,nvari,xc,fc,gc)
++      if(lsocket) then
++          call socket_gulp(iflag,nvari,xc,fc,gc)
++          return
++        else
++          call funct(iflag,nvari,xc,fc,gc)
++      endif
+     endif
+   else
+     call deffun(iflag,nvari,xc,fc,gc)
+diff -rupN Src_ORIG/modules.f90 Src/modules.f90
+--- Src_ORIG/modules.f90	2015-08-05 21:51:30.894565107 -0500
++++ Src/modules.f90	2015-08-03 23:37:26.273545814 -0500
+@@ -972,6 +972,7 @@
+     logical,                          save :: loldinten            ! Use old formula to compute vibrational intensities 
+     logical,                          save :: lopprt
+     logical,                          save :: lopt
++    logical,                          save :: lsocket
+     logical,                          save :: lphon                ! Compute phonons if true
+     logical,                          save :: lposidef
+     logical,                          save :: lpot
+@@ -3765,3 +3766,14 @@
+     integer,                              save :: ichemsh_qm
+     real(dp),    dimension(:,:), pointer, save :: shell_force => null()! 3,maxat
+   end module gulpchemsh
++!
++! Network socket data
++!
++module netsocket
++    !socket
++    INTEGER,save:: socksocket, sockinet, sockport        ! socket ID & address of the socket
++    CHARACTER(LEN=1024),save :: sockhost
++    INTEGER, PARAMETER       :: MSGLEN=12   ! length of the headers of the driver/wrapper communication protocol
++    CHARACTER(LEN=60),save   :: sockextra_string="                                                            "
++    real(8),save             :: sockecutwf(2)
++end module netsocket
+diff -rupN Src_ORIG/outkey.f90 Src/outkey.f90
+--- Src_ORIG/outkey.f90	2015-08-05 21:51:30.862565108 -0500
++++ Src/outkey.f90	2015-08-03 20:39:25.989737077 -0500
+@@ -142,6 +142,8 @@
+     if (.not.lnebdoublynudged) then
+       write(ioout,'(''*  nodneb       - no double nudge of elastic band                              *'')')
+     endif
++  elseif (lsocket) then
++    write(ioout,'(''*  socket       - perform network socket run                                   *'')')  !it's gonna be like a single point run
+   elseif (lopt.or.lrfo) then
+     write(ioout,'(''*  optimise     - perform optimisation run                                     *'')')
+   elseif (lgrad) then
+diff -rupN Src_ORIG/setkeywrd.f90 Src/setkeywrd.f90
+--- Src_ORIG/setkeywrd.f90	2015-08-05 21:51:30.886565107 -0500
++++ Src/setkeywrd.f90	2015-08-03 20:37:02.825739641 -0500
+@@ -177,6 +177,7 @@
+   if (.not.lnumdiag) lnumdiag = (index(keyword,' numd').ne.0.or.index(keyword,'numd').eq.1)
+   if (.not.loldinten) loldinten = (index(keyword,' oldi').ne.0.or.index(keyword,'oldi').eq.1)
+   if (.not.lopt) lopt = (index(keyword,' opti').ne.0.or.index(keyword,'opti').eq.1)
++  if (.not.lsocket) lsocket = (index(keyword,' socket').ne.0.or.index(keyword,'socket').eq.1)
+   if (.not.loptcellpar) loptcellpar = (index(keyword,' ocel').ne.0.or.index(keyword,'ocel').eq.1)
+   if (.not.lpacha) lpacha = (index(keyword,' pac').ne.0.or.index(keyword,'pac').eq.1)
+   if (.not.lphon) lphon = (index(keyword,' phon').ne.0.or.index(keyword,'phon').eq.1)
+diff -rupN Src_ORIG/socket_gulp.f90 Src/socket_gulp.f90
+--- Src_ORIG/socket_gulp.f90	1969-12-31 18:00:00.000000000 -0600
++++ Src/socket_gulp.f90	2015-08-05 16:44:18.818895191 -0500
+@@ -0,0 +1,366 @@
++!************************************************************************************
++subroutine open_socket_gulp()
++use parallel
++use iochannels
++use netsocket
++use f90sockets, only: open_socket
++#ifdef MPI
++  use parallel,       only : ioproc, nprocs, MPI_comm_GULP
++#endif
++implicit none
++    write(ioout,'(''  Network socket being used with following parameters:     '')')
++    write(ioout,'(''  inet                                                     '',i5)') sockinet
++    write(ioout,'(''  port                                                     '',i5)') sockport
++    write(ioout,'(''  host                                                     '',a/)') trim(sockhost)
++    sockhost = TRIM(adjustl(sockhost))//achar(0)
++    write(*,*) sockhost
++    if (procid.eq.0) then
++       call open_socket( socksocket, sockinet, sockport, sockhost )
++  !    call MPI_bcast(shell_force_mpi,3*nsh_mpi,MPI_double_precision,0,MPI_comm_GULP,ier)
++    else
++       stop "MPI not yet implemented in socket communications"
++    endif
++    !!if(nprocs.gt.1) call MPI_bcast(sockport,1,MPI_integer,0,MPI_comm_GULP,ier)
++end subroutine
++!Socket communication
++subroutine socket_gulp(iflag,nvari,xc,fc,gc)
++  use current
++  use configurations
++  use derivatives
++  use parallel
++  use iochannels
++  use netsocket
++  use f90sockets, only: open_socket, writebuffer, readbuffer
++  implicit none
++  real(8), parameter :: Ha_eV=27.21138386d0 ! 1 Hartree, in eV
++  real(8), parameter :: Bohr_Ang=0.52917720859d0    ! 1 Bohr, in Angstrom
++  real(8), parameter :: e_Cb=1.602176487d-19 ! minus the electron charge, in Coulomb
++!This value is 1Ha/bohr^3 in 1d9 J/m^3
++!real(8), parameter :: HaBohr3_GPa=29421.033d0 ! 1 Ha/Bohr^3, in GPa
++  real(8), parameter :: HaBohr3_GPa=Ha_eV/Bohr_Ang**3*e_Cb*1.0d+21 ! 1 Ha/Bohr^3, in GPa
++
++!!  character(len=1032)  :: host='127.0.0.1'
++!!  integer              :: inet = 1   ! this has to be one to use a TCP/IP socket, zero to have a UNIX socket
++!!  integer              :: port=21211 ! this is the port number (only used for TCP/IP sockets) 
++!!  integer              :: socket
++  character(len=MSGLEN):: header
++  character,dimension(MSGLEN):: header_arr
++  integer              :: repid
++  integer                                     :: nvari
++  real(dp),             intent(inout)         :: fc
++  real(dp),             intent(inout)         :: gc(nvari)
++  real(dp),             intent(inout)         :: xc(nvari)
++!!  !Controlling variables
++  INTEGER :: iflag
++  CHARACTER*1024 :: msg
++  INTEGER :: nmsg
++  INTEGER :: nat_get,i
++  LOGICAL :: isinit=.false., hasdata=.false., firststep=.true.
++!!  !Lattice vectors and others  
++  REAL*8 :: latvec(3,3), latvec_inv(3,3), latvec_ang(3,3), strmat(3,3),etot,strten(6),vol
++  REAL*8 :: fcart(3,numat),fint(3,numat),pos(3,numat),rxyz(3,numat),posarr(3*numat)
++  REAL*8,allocatable :: send_array(:), get_array(:)
++  integer:: infocode,str_index
++!!We will artificially set nvari to zero such that xc is in fact not used at all
++!!Injection of the lattice vector and atomic coordinates will be done directly into the
++!!corresponting pointers in the core of gulp
++
++!!Do some basic checks. Currently, only fully periodic cells are supported!
++  if(nstrains.ne.6.or.ndim.ne.3) stop "Socket interface currently only implemented for fully periodic boundary condition" 
++!!Set the variable array sent through xc to zero
++  nvari = 0
++  do    ! receive-send iteration
++    if (procid.eq.0) call readbuffer(socksocket, header, MSGLEN);if (procid.eq.0) call str2arr(header,header_arr,MSGLEN)
++!!!    if (bigdft_mpi%nproc > 1) call mpibcast(header_arr,comm=bigdft_mpi%mpi_comm); call arr2str(header,header_arr,MSGLEN)
++    if (procid.eq.0) write(*,'(i5,a,a)') procid, ' # SOCKET SLAVE: header received ',trim(header)
++      if (trim(header) == "STATUS") then
++         if(procid.eq.0) call send_status(header, MSGLEN, isinit)
++      else if (trim(header) == "INIT") then
++         if(procid.eq.0) call get_init   (header, MSGLEN, repid, isinit)
++         isinit=.true.
++!!!         if (bigdft_mpi%nproc > 1)  call mpibcast(repid,1,comm=bigdft_mpi%mpi_comm)
++!Although the number of atoms and the arrays assiciated with that side should be
++         if(procid.eq.0.and.numat.ne.repid) stop "The number of atoms on the master and slave side should be the same"
++!Check if cell should be reset, in this case forget previous WF
++!!!         if(procid.eq.0) then
++!!!            str_index = index(msg(1:msglen),"CRESET",.true.)
++!!!            if(str_index.gt.0) then
++!!!               write(*,*) " MESSAGE: CRESET"
++!!!               !PsiId=0
++!!!            else
++!!!               !PsiId=1
++!!!            endif
++!!!          endif
++!!!          if (bigdft_mpi%nproc > 1)  call mpibcast(PsiId,1,comm=bigdft_mpi%mpi_comm)
++      else if (trim(header) == "POSDATA") then
++         if(procid.eq.0 ) call get_data(pos,latvec,numat,nat_get);
++!!!         if (bigdft_mpi%nproc > 1) call mpibcast(pos,comm=bigdft_mpi%mpi_comm)
++!!!         if (bigdft_mpi%nproc > 1) call mpibcast(latvec,comm=bigdft_mpi%mpi_comm)
++!Convert the units of positions and lattice vectors in a format the gulp can understand
++!!Convert the lattice parameters to angstroem
++            latvec_ang=latvec*Bohr_Ang
++!Copy the lattice vector to the data of gulp
++         if (ndim.gt.0) then
++            do i = 1,3
++              rvcfg(1,i,ncf) = latvec_ang(1,i)
++              rvcfg(2,i,ncf) = latvec_ang(2,i)
++              rvcfg(3,i,ncf) = latvec_ang(3,i)
++            enddo
++         endif
++!Copy the reduced coordinates
++         posarr=reshape(pos,(/3*numat/))
++         if (ndim.eq.3) then
++             if (nasym .ne. nat_get) stop "nasym not equal to nat"
++             do i = 1,3*nasym
++               x0(i+nstrains) = posarr(i)
++             enddo
++         endif
++         call funct(iflag,nvari,xc,fc,gc)
++         
++!!!Compute the forces and stress here!!!
++!Get Stress
++         strten=-stresses/HaBohr3_GPa
++         strmat=0.d0
++         strmat(1,1)=strten(1)
++         strmat(2,2)=strten(2)
++         strmat(3,3)=strten(3)
++         strmat(2,1)=strten(6);strmat(1,2)=strmat(2,1)
++         strmat(3,1)=strten(5);strmat(1,3)=strmat(3,1)
++         strmat(3,2)=strten(4);strmat(2,3)=strmat(3,2)
++         call getvol(latvec,vol)
++         strmat=strmat*vol
++!Get Force
++         do i=1,numat
++            fint(1,i) = -xdrv(i)
++            fint(2,i) = -ydrv(i)
++            fint(3,i) = -zdrv(i)
++         enddo
++         call fxyz_int2cart(numat,fcart,fint,latvec_ang)
++         fcart = fcart/Ha_eV*Bohr_Ang
++!Get Energy
++         etot = fc/Ha_eV
++!Now I have the data
++         hasdata=.true.
++      else if (trim(header)=="GETFORCE") then
++         nmsg = 0
++         if(procid.eq.0) call send_data(etot,fcart,strmat,numat,nmsg,msg)
++         isinit = .false. ! resets init so that we will get replica index again at next step!
++         hasdata= .false.
++    elseif (trim(header)=="STOP") then
++      exit
++    elseif (trim(header)=="WAIT") then
++      cycle
++    endif
++  enddo
++
++contains
++  subroutine send_status(header, MSGLEN, isinit)
++  !Report the status to the master
++  implicit none
++  integer:: MSGLEN
++  character(MSGLEN):: header
++  logical:: isinit
++            if (hasdata) then
++               header="HAVEDATA    "
++            else if (isinit) then
++               header="READY       "
++            else 
++               header="NEEDINIT    "
++            endif
++            call writebuffer(socksocket,header,MSGLEN)               
++            write(*,'(a,a)')   " # SOCKET SLAVE: header sent ", trim(header)
++  end subroutine
++  subroutine get_init(header, MSGLEN, repid, isinit)
++  !Get initiallization string plus a repid
++  implicit none
++  integer:: MSGLEN,repid
++  character(MSGLEN):: header
++  logical:: isinit
++         write(*,'(a)')   " # SOCKET SLAVE: initiallizing... "
++         call readbuffer(socksocket, repid)        ! actually this reads the replica id         
++         call readbuffer(socksocket, nmsg)         ! length of parameter string -- ignored at present!
++         call readbuffer(socksocket, msg, nmsg)    ! the actual message
++         write(*,'(a,a)') " # SOCKET SLAVE: initiallization string ", msg(1:nmsg)
++         isinit=.true.
++  end subroutine
++  subroutine get_data(pos,latvec,nat,nat_get)
++  ! Receives the positions & the cell data
++  implicit none
++  integer:: nat,nat_get,i
++  real(8):: pos(3,nat),pos_cart(3,nat),latvec(3,3)
++  real(8),allocatable:: get_array(:)
++! first reads cell and the number of atoms
++         write(*,'(a)')   " # SOCKET SLAVE: waiting for positions "
++         allocate(get_array(9))
++         call readbuffer(socksocket, get_array , 9)
++         latvec = transpose(RESHAPE(get_array, (/3,3/)))       !cell vector      
++         call readbuffer(socksocket, get_array, 9)
++         latvec_inv = transpose(RESHAPE(get_array, (/3,3/)))   !inverse cell vector
++         deallocate(get_array)
++         call readbuffer(socksocket, nat_get)                      !number of atoms
++         if (nat.ne.nat_get) stop "Received NAT not the same as the &
++         local NAT"
++         allocate(get_array(3*nat_get))
++         call readbuffer(socksocket, get_array, nat_get*3)
++         pos_cart = RESHAPE(get_array, (/ 3 , nat /) ) 
++         call rxyz_cart2int(latvec,pos,pos_cart,nat)
++         deallocate(get_array)
++         write(21,*) 'lat'
++         write(21,*)  latvec(:,1)  
++         write(21,*)  latvec(:,2)  
++         write(21,*)  latvec(:,3)  
++         write(21,*) 'pos'
++         do i=1,nat
++            write(21,*) pos(:,i)
++         enddo
++
++         write(*,'(a)')   " # SOCKET SLAVE: received positions "
++  end subroutine
++  subroutine send_data(etot,fcart,strmat,nat,nmsg,msg)
++  ! Sends the energy, forces and stresses
++  implicit none
++  integer::nat,nmsg
++  real(8):: fcart(3,nat),strmat(3,3),etot
++  real(8),allocatable:: get_array(:)
++  CHARACTER*1024 :: msg
++ ! communicates energy info back to master
++         write(*,'(a)')   " # SOCKET SLAVE: sending energy, forces and stress "
++         call writebuffer(socksocket,"FORCEREADY  ",MSGLEN)         
++         call writebuffer(socksocket,etot)
++         allocate(send_array(3*nat))
++         send_array=reshape(fcart,(/3*nat/))
++         call writebuffer(socksocket,nat)            
++         call writebuffer(socksocket,send_array,3*nat)
++         deallocate(send_array)
++         allocate(send_array(9))
++         send_array=reshape(strmat,(/9/))
++         call writebuffer(socksocket,send_array,9)
++         deallocate(send_array)
++         ! i-pi can also receive an arbitrary string, that will be printed out to the "extra" 
++         ! trajectory file. this is useful if you want to return additional information, e.g.
++         ! atomic charges, wannier centres, etc. one must return the number of characters, then
++         ! the string. here we just send back zero characters.
++         call writebuffer(socksocket,nmsg)
++         if(nmsg.gt.0) then
++                 call writebuffer(socksocket,msg,nmsg)
++         endif
++  end subroutine
++  subroutine str2arr(string,strarr,n)
++  implicit none
++  integer:: n,i
++  character(n)::string
++  character(1)::strarr(n)
++  do i=1,n
++    strarr(i)=string(i:i)
++  enddo
++  end subroutine
++  subroutine arr2str(string,strarr,n)
++  implicit none
++  integer:: n,i
++  character(n)::string
++  character(1)::strarr(n)
++  do i=1,n
++    string(i:i)=strarr(i)
++  enddo
++  end subroutine
++end subroutine 
++
++!************************************************************************************
++
++ subroutine rxyz_cart2int(latvec,rxyzint,rxyzcart,nat)
++ !This subrouine will convert the internal coordinates into cartesian coordinates
++ implicit none
++ real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3),latvecinv(3,3)
++ integer:: nat,iat
++ call invertmat(latvec,latvecinv,3)
++ do iat=1,nat
++  rxyzint(:,iat)=matmul(latvecinv,rxyzcart(:,iat))
++ enddo
++ end subroutine rxyz_cart2int
++
++!************************************************************************************
++
++ subroutine rxyz_int2cart(latvec,rxyzint,rxyzcart,nat)
++ !This subrouine will convert the internal coordinates into cartesian coordinates
++ implicit none
++ real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3)
++ integer:: nat,iat
++ do iat=1,nat
++  rxyzcart(:,iat)=matmul(latvec,rxyzint(:,iat))
++ enddo
++ end subroutine rxyz_int2cart
++
++!************************************************************************************
++
++
++ subroutine invertmat(mat,matinv,n)
++ implicit none
++ real(8),intent(in) :: mat(n,n)
++ integer               :: n
++ real(8),allocatable   :: WORK(:)
++ real(8)               :: matinv(n,n),det(3),a(n,n),div
++ integer               :: IPIV(n), INFO
++ integer               :: LDWORK
++ !Here only for a 3*3 matrix
++ if (n==3) then
++ a=mat
++ div=(a(1,1)*a(2,2)*a(3,3)-a(1,1)*a(2,3)*a(3,2)-a(1,2)*a(2,1)*a(3,3)+a(1,2)*a(2,3)*a(3,1)+&
++ &a(1,3)*a(2,1)*a(3,2)-a(1,3)*a(2,2)*a(3,1)) 
++ div=1.d0/div
++      matinv(1,1) = (a(2,2)*a(3,3)-a(2,3)*a(3,2))*div
++      matinv(1,2) =-(a(1,2)*a(3,3)-a(1,3)*a(3,2))*div
++      matinv(1,3) = (a(1,2)*a(2,3)-a(1,3)*a(2,2))*div
++      matinv(2,1) =-(a(2,1)*a(3,3)-a(2,3)*a(3,1))*div
++      matinv(2,2) = (a(1,1)*a(3,3)-a(1,3)*a(3,1))*div
++      matinv(2,3) =-(a(1,1)*a(2,3)-a(1,3)*a(2,1))*div
++      matinv(3,1) = (a(2,1)*a(3,2)-a(2,2)*a(3,1))*div
++      matinv(3,2) =-(a(1,1)*a(3,2)-a(1,2)*a(3,1))*div
++      matinv(3,3) = (a(1,1)*a(2,2)-a(1,2)*a(2,1))*div
++ else
++ !General n*n matrix 
++ matinv=mat
++ allocate(WORK(n))
++ call  DGETRF( n, n, matinv, n, IPIV, INFO )
++ if (info.ne.0) stop "Error in DGETRF"
++ LDWORK=-1
++ call  DGETRI( n, matinv, n, IPIV, WORK,LDWORK , INFO )
++ LDWORK=WORK(1)
++ deallocate(WORK)
++ allocate(WORK(LDWORK))
++ call  DGETRI( n, matinv, n, IPIV, WORK,LDWORK , INFO )
++ if (info.ne.0) stop "Error in DGETRI"
++ endif
++ end subroutine
++
++!************************************************************************************
++
++ subroutine fxyz_int2cart(nat,fxyz_cart,fxyz_int,latvec)
++ !This subrtouine will transform theforces initially in the cartesian system into the internal coordinates with respect to the
++ !cell vectors provided in the latvec
++ implicit none
++ real(8):: fxyz_cart(3,nat),fxyz_int(3,nat),latvec(3,3),transmat(3,3),transmat_i(3,3)
++ integer:: nat,iat
++ transmat(1,:)=latvec(:,1)
++ transmat(2,:)=latvec(:,2)
++ transmat(3,:)=latvec(:,3)
++ call invertmat(transmat,transmat_i,3)
++ do iat=1,nat
++ !fxyz_cart(:,iat)=matmul(transmat,fxyz_int(:,iat))
++ fxyz_cart(:,iat)=matmul(transmat_i,fxyz_int(:,iat))
++ enddo
++ end subroutine fxyz_int2cart 
++
++!************************************************************************************
++
++subroutine getvol(latvec,vol)
++implicit none
++real(8):: latvec(3,3),v(3,3),vol
++ v=latvec
++ vol= v(1,1)*v(2,2)*v(3,3)-v(1,1)*v(2,3)*v(3,2)-v(1,2)*v(2,1)*v(3,3)+&
++      v(1,2)*v(2,3)*v(3,1)+v(1,3)*v(2,1)*v(3,2)-v(1,3)*v(2,2)*v(3,1)
++end subroutine
++
++!************************************************************************************
++
++
++
+diff -rupN Src_ORIG/sockets.c Src/sockets.c
+--- Src_ORIG/sockets.c	1969-12-31 18:00:00.000000000 -0600
++++ Src/sockets.c	2015-08-03 18:48:11.965856596 -0500
+@@ -0,0 +1,235 @@
++/* A minimal wrapper for socket communication.
++
++Copyright (C) 2013, Joshua More and Michele Ceriotti
++
++Permission is hereby granted, free of charge, to any person obtaining
++a copy of this software and associated documentation files (the
++"Software"), to deal in the Software without restriction, including
++without limitation the rights to use, copy, modify, merge, publish,
++distribute, sublicense, and/or sell copies of the Software, and to
++permit persons to whom the Software is furnished to do so, subject to
++the following conditions:
++
++The above copyright notice and this permission notice shall be included
++in all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
++IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
++CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
++TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
++SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
++
++Contains both the functions that transmit data to the socket and read the data
++back out again once finished, and the function which opens the socket initially.
++Can be linked to a FORTRAN code that does not support sockets natively.
++
++Functions:
++   error: Prints an error message and then exits.
++   open_socket_: Opens a socket with the required host server, socket type and
++      port number.
++   write_buffer_: Writes a string to the socket.
++   read_buffer_: Reads data from the socket.
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <sys/un.h>
++#include <netdb.h>
++
++void open_socket(int *psockfd, int* inet, int* port, const char* host)
++/* Opens a socket.
++
++Note that fortran passes an extra argument for the string length, but this is
++ignored here for C compatibility.
++
++Args:
++   psockfd: The id of the socket that will be created.
++   inet: An integer that determines whether the socket will be an inet or unix
++      domain socket. Gives unix if 0, inet otherwise.
++   port: The port number for the socket to be created. Low numbers are often
++      reserved for important channels, so use of numbers of 4 or more digits is
++      recommended.
++   host: The name of the host server.
++*/
++
++{
++   int sockfd, ai_err;
++
++   if (*inet>0)
++   {  // creates an internet socket
++      
++      // fetches information on the host      
++      struct addrinfo hints, *res;  
++      char service[256];
++   
++      memset(&hints, 0, sizeof(hints));
++      hints.ai_socktype = SOCK_STREAM;
++      hints.ai_family = AF_UNSPEC;
++      hints.ai_flags = AI_PASSIVE;
++
++      sprintf(service,"%d",*port); // convert the port number to a string
++      ai_err = getaddrinfo(host, service, &hints, &res); 
++      if (ai_err!=0) { perror("Error fetching host data. Wrong host name?"); exit(-1); }
++
++      // creates socket
++      sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
++      if (sockfd < 0) { perror("Error opening socket"); exit(-1); }
++    
++      // makes connection
++      if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0) 
++      { perror("Error opening INET socket: wrong port or server unreachable"); exit(-1); }
++      freeaddrinfo(res);
++   }
++   else
++   {  
++      struct sockaddr_un serv_addr;
++
++      // fills up details of the socket addres
++      memset(&serv_addr, 0, sizeof(serv_addr));
++      serv_addr.sun_family = AF_UNIX;
++      strcpy(serv_addr.sun_path, "/tmp/ipi_");
++      strcpy(serv_addr.sun_path+9, host);
++      // creates a unix socket
++  
++      // creates the socket
++      sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
++
++      // connects
++      if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
++      { perror("Error opening UNIX socket: path unavailable, or already existing"); exit(-1); }
++   }
++
++
++   *psockfd=sockfd;
++}
++
++void create_socket(int *psockfd, int* inet, int* port, const char* host)
++/* Creates a server socket.
++
++Note that fortran passes an extra argument for the string length, but this is
++ignored here for C compatibility.
++
++Args:
++   psockfd: The id of the socket that will be created.
++   inet: An integer that determines whether the socket will be an inet or unix
++      domain socket. Gives unix if 0, inet otherwise.
++   port: The port number for the socket to be created. Low numbers are often
++      reserved for important channels, so use of numbers of 4 or more digits is
++      recommended.
++   host: The name of the host server.
++*/
++
++{
++   int sockfd, ai_err;
++
++   if (*inet>0)
++   {  // creates an internet socket
++      
++      // fetches information on the host      
++      struct addrinfo hints, *res;  
++      char service[256];
++   
++      memset(&hints, 0, sizeof(hints));
++      hints.ai_socktype = SOCK_STREAM;
++      hints.ai_family = AF_UNSPEC;
++      hints.ai_flags = AI_PASSIVE;
++
++      sprintf(service,"%d",*port); // convert the port number to a string
++      ai_err = getaddrinfo(host, service, &hints, &res); 
++      if (ai_err!=0) { perror("Error fetching host data. Wrong host name?"); exit(-1); }
++
++      // creates socket
++      sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
++      if (sockfd < 0) { perror("Error creating socket"); exit(-1); }
++    
++    
++      if (bind(sockfd, res->ai_addr, res->ai_addrlen) < 0) 
++      { perror("Error binding to INET server socket."); }
++      
++      freeaddrinfo(res);
++      
++      listen(sockfd,5);
++      struct sockaddr_storage their_addr; // connector's address information
++      socklen_t sin_size;
++      sin_size = sizeof their_addr;
++        
++      // makes connection
++      sockfd = accept(sockfd,  (struct sockaddr *)&their_addr, &sin_size);
++      if (sockfd < 0) 
++      { perror("Error creating INET communication socket: wrong port or server unreachable"); exit(-1); }
++      
++   }
++   else
++   {  
++      /** struct sockaddr_un serv_addr;
++
++      // fills up details of the socket addres
++      memset(&serv_addr, 0, sizeof(serv_addr));
++      serv_addr.sun_family = AF_UNIX;
++      strcpy(serv_addr.sun_path, "/tmp/ipi_");
++      strcpy(serv_addr.sun_path+9, host);
++      // creates a unix socket
++  
++      // creates the socket
++      sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
++
++      // connects
++      sockfd = accept(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
++      if (sockfd < 0) 
++      { perror("Error creating UNIX socket: path unavailable, or already existing"); exit(-1); }*/
++      perror("Error creating UNIX socket: not implemented :-("); exit(-1);
++   }
++
++   *psockfd=sockfd;
++}
++
++void writebuffer(int *psockfd, const char *data, int* plen)
++/* Writes to a socket.
++
++Args:
++   psockfd: The id of the socket that will be written to.
++   data: The data to be written to the socket.
++   plen: The length of the data in bytes.
++*/
++
++{
++   int n;
++   int sockfd=*psockfd;
++   int len=*plen;
++
++   n = write(sockfd,data,len);
++   if (n < 0) { perror("Error writing to socket: server has quit or connection broke"); exit(-1); }
++}
++
++
++void readbuffer(int *psockfd, char *data, int* plen)
++/* Reads from a socket.
++
++Args:
++   psockfd: The id of the socket that will be read from.
++   data: The storage array for data read from the socket.
++   plen: The length of the data in bytes.
++*/
++
++{
++   int n, nr;
++   int sockfd=*psockfd;
++   int len=*plen;
++
++   n = nr = read(sockfd,data,len);
++
++   while (nr>0 && n<len )
++   {  nr=read(sockfd,&data[n],len-n); n+=nr; }
++
++   if (n == 0) { perror("Error reading from socket: server has quit or connection broke"); exit(-1); }
++}
++
++

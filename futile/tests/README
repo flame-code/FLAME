@@ -1,0 +1,7 @@
+/*! @file
+@brief README of the futile library tests.
+
+@dir
+@brief Performs some tests on FFT library in serial (fft) and on the flib library.
+
+*/

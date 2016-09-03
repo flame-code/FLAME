@@ -1,0 +1,111 @@
+include ../def_pot.mk
+LIB_MOD= ../modules/libmodules.a
+include ../def_opt.mk
+
+all: libsrc.a ofiles/basic_c_wrappers.o
+
+SRC_F= dpmpar.f enorm.f lmder.f lmpar.f qrfac.f qrsolv.f
+SRC_= alborz_init_final.F90 processors.F90 \
+		mpi_utilities.F90 \
+		lmder_modified.F90 \
+		ann_basic.F90 ann_process.F90 ann_weights_init.F90 ann_io.F90 ann_best_symfunc.F90 \
+		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
+		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
+		ann_symfunc_pair_behler.F90 \
+		ann_ekf_rivals.F90 ann_ekf_behler.F90 ann_lm.F90 \
+		ann_pot_main.F90 ann_pot_atom.F90 ann_pot_eem1.F90 ann_pot_eem2.F90 \
+		ann_pot_tb.F90 \
+		shortrange.F90 tosifumi.F90 forcefield.F90 \
+		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
+		parser_core.F90 parser_all.F90 \
+		md.F90 md_NVT.F90\
+		phonon.F90 \
+		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartee_p3d.F90 \
+		es_coulomb_p3d_bias.F90 \
+		es_hartee_fourier.F90 es_hartee_main.F90 es_hartee_bps.F90 \
+		cell_linkedlists.F90 \
+		optimizer_sd.F90 optimizer_cg.F90 optimizer_diis.F90 optimizer_fire.F90 \
+		optimizer_gmdfire.F90 optimizer_bfgs.F90 optimizer_dfp.F90 optimizer_nlbfgs.F90 \
+		optimizer_sqnm.F90 \
+		optimizer_drivers.F90 optimizer_drivers_vc.F90 task_geopt.F90 task_single_point.F90 \
+		task_netsock.F90 \
+		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
+		basic_atoms.F90 basic_utilities.F90 \
+		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
+		task_confcomp.F90 \
+		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
+		task_testforces.F90 \
+		task_miscellaneous.F90 solve_poisson_cube.F90 \
+		tightbinding.F90 lenosky_tightbinding.F90 \
+		task_linkedlist.F90 \
+		task_potential.F90 \
+		potential_main.F90 potential_sec_main.F90 potential_main_vc.F90 potential_ANN.F90 potential_LJ.F90 \
+		potential_MPMD.F90 potential_BLJ_vc.F90 potential_BigDFT.F90 potential_VASP.F90 \
+		potential_QSC.F90 potential_LTB.F90 potential_FF.F90 potential_NetSock.F90 \
+		potential_DFTB.F90
+
+#ifeq ($(findstring BPS,$(OPTIONS)),BPS)
+#   The following file is renamed to es_hartee_bps.F90
+#	SRC_ += es_coulomb_bps.F90
+#endif
+
+_SOURCES_C = sockets.c
+
+_SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp
+
+ifeq ($(findstring SIESTA,$(POTENTIALS)),SIESTA)
+	_SOURCES += potential_SIESTA.F90
+	INCLUDES += -I../../../packages/siesta/siesta-3.1/Obj-serial
+endif
+
+ifeq ($(findstring PLATO,$(POTENTIALS)),PLATO)
+	_SOURCES += potential_PLATO.F90
+	_SOURCES_C += potential_PLATO_wrapper.c
+	INCLUDES_C += -I/home/ghasemi/Alborz/packages/plato/plato_Horsfield/src/TB2
+endif
+
+
+SRCDIR = .
+SRC = $(patsubst %,$(SRCDIR)/%,$(SRC_))
+
+_OBJECTS_C = $(_SOURCES_C:.c=.o)
+_OBJECTS_CPP = $(_SOURCES_CPP:.cpp=.o)
+
+OBJDIR = ofiles
+OBJ_F_ = $(SRC_F:.f=.o)
+OBJ_ = $(SRC_:.F90=.o)
+OBJ_F = $(patsubst %,$(OBJDIR)/%,$(OBJ_F_))
+OBJ = $(patsubst %,$(OBJDIR)/%,$(OBJ_))
+OBJ_ALL = $(OBJ_F) $(OBJ) $(patsubst %,$(OBJDIR)/%,$(_OBJECTS_C)) \
+		  $(patsubst %,$(OBJDIR)/%,$(_OBJECTS_CPP))
+
+print_vars:
+	@echo $(LIB_POT) $(LIB_MOD)
+
+$(OBJDIR)/%.o: minpack/%.f
+	$(F90) $(FFLAGS) -c $< -o $@ 
+
+$(OBJDIR)/basic_c_wrappers.o: basic_c_wrappers.c
+	$(CC) -c basic_c_wrappers.c -o $(OBJDIR)/basic_c_wrappers.o
+
+$(OBJDIR)/alborz.o: $(SRCDIR)/alborz.F90
+	$(F90) $(FFLAGS) $(PRE_PROC) $(INCLUDES) -c $< -o $@
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.F90 $(OBJDIR)/alborz.o $(LIB_MOD)
+	$(F90) $(FFLAGS) $(PRE_PROC) $(INCLUDES) -I../build/install/include -c $< -o $@
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(FFLAGS) -c $(INCLUDES_C) $< -o $@
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp potential_QSC_parameters.h potential_QSC_class.h
+	$(CC) $(FFLAGS) -DQSC_STANDALONE -c $< -o $@
+
+#print-%  : ; @echo $* = $($*)
+
+libsrc.a: $(OBJ_ALL)
+	ar -scruv libsrc.a $(OBJ_ALL)
+
+clean:
+	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o
+
+#*****************************************************************************************

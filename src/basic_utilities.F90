@@ -1,0 +1,561 @@
+!*****************************************************************************************
+subroutine elim_moment_alborz(nat,atomic_vector)
+    use mod_interface
+  implicit none
+  integer, intent(in):: nat
+  real(8), intent(inout):: atomic_vector(3,nat)
+  !local variables
+  integer:: iat
+  real(8):: sx, sy, sz
+  sx=0.d0 ; sy=0.d0 ; sz=0.d0
+  do iat=1,nat
+     sx=sx+atomic_vector(1,iat)
+     sy=sy+atomic_vector(2,iat)
+     sz=sz+atomic_vector(3,iat)
+  enddo
+  sx=sx/real(nat,8) ; sy=sy/real(nat,8) ; sz=sz/real(nat,8)
+  do iat=1,nat
+     atomic_vector(1,iat)=atomic_vector(1,iat)-sx
+     atomic_vector(2,iat)=atomic_vector(2,iat)-sy
+     atomic_vector(3,iat)=atomic_vector(3,iat)-sz
+  enddo
+end subroutine elim_moment_alborz
+!*****************************************************************************************
+subroutine elim_moment_mass(nat,atomic_vector,atomic_mass)
+    use mod_interface
+  implicit none
+  integer, intent(in):: nat
+  real(8), intent(inout):: atomic_vector(3,nat)
+  real(8), intent(in):: atomic_mass(nat)
+  !local variables
+  integer:: iat
+  real(8):: sx, sy, sz, mass_tot, t1 
+  sx=0.d0 ; sy=0.d0 ; sz=0.d0 
+  mass_tot=0.d0
+  do iat=1,nat
+     t1=atomic_mass(iat)
+     mass_tot=mass_tot+t1
+     sx=sx+t1*atomic_vector(1,iat)
+     sy=sy+t1*atomic_vector(2,iat)
+     sz=sz+t1*atomic_vector(3,iat)
+  enddo
+  sx=sx/mass_tot ; sy=sy/mass_tot ; sz=sz/mass_tot
+  do iat=1,nat
+     atomic_vector(1,iat)=atomic_vector(1,iat)-sx
+     atomic_vector(2,iat)=atomic_vector(2,iat)-sy
+     atomic_vector(3,iat)=atomic_vector(3,iat)-sz
+  enddo
+end subroutine elim_moment_mass
+!*****************************************************************************************
+!> Eliminate the translational forces before calling this subroutine!!!
+!! Main subroutine: Input is nat (number of atoms), rat0 (atomic positions) and fat (forces on atoms)
+!! The atomic positions will be returned untouched
+!! In fat, the rotational forces will be eliminated with respect to the center of mass. 
+!! All atoms are treated equally (same atomic mass) 
+subroutine elim_torque_reza_alborz(nat,rat0,fat)
+    use mod_interface
+  implicit none
+  integer, intent(in) :: nat
+  real(8), dimension(3*nat), intent(in) :: rat0
+  real(8), dimension(3*nat), intent(inout) :: fat
+  !local variables
+  character(len=*), parameter :: subname='elim_torque_reza_alborz'
+  integer :: i,iat,i_all,i_stat
+  real(8) :: vrotnrm,cmx,cmy,cmz,alpha,totmass, DNRM2
+  !this is an automatic array but it should be allocatable
+  real(8), dimension(3) :: evaleria
+  real(8), dimension(3,3) :: teneria
+  real(8), dimension(3*nat) :: rat
+  real(8), dimension(3*nat,3) :: vrot
+  real(8), dimension(:), allocatable :: amass
+  
+  allocate(amass(nat),stat=i_stat)
+
+  rat=rat0
+  amass(1:nat)=1.d0
+  !project out rotations
+  totmass=0.d0
+  cmx=0.d0 
+  cmy=0.d0
+  cmz=0.d0
+  do i=1,3*nat-2,3
+     iat=(i+2)/3
+     cmx=cmx+amass(iat)*rat(i+0)
+     cmy=cmy+amass(iat)*rat(i+1)
+     cmz=cmz+amass(iat)*rat(i+2)
+     totmass=totmass+amass(iat)
+  enddo
+  cmx=cmx/totmass 
+  cmy=cmy/totmass 
+  cmz=cmz/totmass
+  do i=1,3*nat-2,3
+     rat(i+0)=rat(i+0)-cmx
+     rat(i+1)=rat(i+1)-cmy
+     rat(i+2)=rat(i+2)-cmz
+  enddo
+
+  call moment_of_inertia_alborz(nat,rat,teneria,evaleria)
+  do iat=1,nat
+     i=iat*3-2
+     call mycross(teneria(1,1),rat(i),vrot(i,1))
+     call mycross(teneria(1,2),rat(i),vrot(i,2))
+     call mycross(teneria(1,3),rat(i),vrot(i,3))
+  enddo
+  call normalizevector_alborz(3*nat,vrot(1,1))
+  call normalizevector_alborz(3*nat,vrot(1,2))
+  call normalizevector_alborz(3*nat,vrot(1,3))
+  
+  do i=1,3*nat-2,3
+     rat(i+0)=rat(i+0)+cmx
+     rat(i+1)=rat(i+1)+cmy
+     rat(i+2)=rat(i+2)+cmz
+  enddo
+
+  vrotnrm=DNRM2(3*nat,vrot(1,1),1)
+  if (vrotnrm /= 0.d0) vrot(1:3*nat,1)=vrot(1:3*nat,1)/vrotnrm
+  vrotnrm=DNRM2(3*nat,vrot(1,2),1)
+  if (vrotnrm /= 0.d0) vrot(1:3*nat,2)=vrot(1:3*nat,2)/vrotnrm
+  vrotnrm=DNRM2(3*nat,vrot(1,3),1)
+  if (vrotnrm /= 0.d0) vrot(1:3*nat,3)=vrot(1:3*nat,3)/vrotnrm
+  do i=1,3
+     alpha=0.d0  
+     if(abs(evaleria(i))>1.d-10) then
+        alpha=dot_product(vrot(:,i),fat(:))
+        fat(:)=fat(:)-alpha*vrot(:,i) 
+     endif
+  enddo
+  !i_all=-product(shape(amass))*kind(amass)
+  deallocate(amass,stat=i_stat)
+end subroutine elim_torque_reza_alborz
+!*****************************************************************************************
+subroutine mycross(a,b,c)
+    use mod_interface
+  implicit none
+  real(8), dimension(3), intent(in):: a,b
+  real(8), dimension(3), intent(out):: c
+  c(1)=a(2)*b(3)-b(2)*a(3)
+  c(2)=a(3)*b(1)-b(3)*a(1)
+  c(3)=a(1)*b(2)-b(1)*a(2)
+end subroutine mycross
+!*****************************************************************************************
+subroutine moment_of_inertia_alborz(nat,rat,teneria,evaleria)
+    use mod_interface
+  implicit none
+  integer, intent(in) :: nat
+  real(8), dimension(3,nat), intent(in) :: rat
+  real(8), dimension(3), intent(out) :: evaleria
+  real(8), dimension(3,3), intent(out) :: teneria
+  !local variables
+  character(len=*), parameter :: subname='moment_of_inertia_alborz'
+  integer, parameter::lwork=100
+  integer :: iat,info,i_all,i_stat
+  real(8) :: tt
+  real(8), dimension(lwork) :: work
+  real(8), dimension(:), allocatable :: amass
+  allocate(amass(nat),stat=i_stat)
+  !positions relative to center of geometry
+  amass(1:nat)=1.d0
+  !calculate inertia tensor
+  teneria(1:3,1:3)=0.d0
+  do iat=1,nat
+     tt=amass(iat)
+     teneria(1,1)=teneria(1,1)+tt*(rat(2,iat)*rat(2,iat)+rat(3,iat)*rat(3,iat))
+     teneria(2,2)=teneria(2,2)+tt*(rat(1,iat)*rat(1,iat)+rat(3,iat)*rat(3,iat))
+     teneria(3,3)=teneria(3,3)+tt*(rat(1,iat)*rat(1,iat)+rat(2,iat)*rat(2,iat))
+     teneria(1,2)=teneria(1,2)-tt*(rat(1,iat)*rat(2,iat))
+     teneria(1,3)=teneria(1,3)-tt*(rat(1,iat)*rat(3,iat))
+     teneria(2,3)=teneria(2,3)-tt*(rat(2,iat)*rat(3,iat))
+     teneria(2,1)=teneria(1,2)
+     teneria(3,1)=teneria(1,3)
+     teneria(3,2)=teneria(2,3)
+  enddo
+  !diagonalize inertia tensor
+  call DSYEV('V','L',3,teneria,3,evaleria,work,lwork,info)
+  i_all=-product(shape(amass))*kind(amass)
+  deallocate(amass,stat=i_stat)
+end subroutine moment_of_inertia_alborz
+!*****************************************************************************************
+subroutine normalizevector_alborz(n,v)
+    use mod_interface
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(inout):: v(n)
+    !local variables
+    integer:: i
+    real(8):: vnrm
+    !integer, save:: icall=0
+    !icall=icall+1
+    vnrm=0.d0
+    do i=1,n
+       vnrm=vnrm+v(i)**2
+    enddo
+    vnrm=sqrt(vnrm)
+    !write(21,'(i5,es24.15)') icall,vnrm
+    if(vnrm/=0.d0) v(1:n)=v(1:n)/vnrm
+end subroutine normalizevector_alborz
+!*****************************************************************************************
+subroutine calnorm(n,v,vnrm)
+    use mod_interface
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: v(n)
+    real(8), intent(out):: vnrm
+    !local variables
+    integer:: i
+    vnrm=0.d0
+    do i=1,n
+        vnrm=vnrm+v(i)**2
+    enddo
+    vnrm=sqrt(vnrm)
+end subroutine calnorm
+!*****************************************************************************************
+subroutine calmaxforcecomponent(n,v,vmax)
+    use mod_interface
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: v(n)
+    real(8), intent(out):: vmax
+    !local variables
+    integer:: i
+    vmax=0.d0
+    do i=1,n
+        vmax=max(vmax,abs(v(i)))
+    enddo
+end subroutine calmaxforcecomponent
+!*****************************************************************************************
+subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
+    use mod_interface
+    !This subrouine will convert the internal coordinates into cartesian coordinates
+    implicit none
+    integer:: nat,iat
+    real(8):: rxyzint(3,nat), rxyzcart(3,nat), latvec(3,3), latvecinv(3,3)
+    call invertmat_alborz(latvec,latvecinv)
+    do iat=1,nat
+        rxyzint(1,iat)=latvecinv(1,1)*rxyzcart(1,iat)+latvecinv(1,2)*rxyzcart(2,iat)+latvecinv(1,3)*rxyzcart(3,iat)
+        rxyzint(2,iat)=latvecinv(2,1)*rxyzcart(1,iat)+latvecinv(2,2)*rxyzcart(2,iat)+latvecinv(2,3)*rxyzcart(3,iat)
+        rxyzint(3,iat)=latvecinv(3,1)*rxyzcart(1,iat)+latvecinv(3,2)*rxyzcart(2,iat)+latvecinv(3,3)*rxyzcart(3,iat)
+    enddo
+end subroutine rxyz_cart2int_alborz
+!*****************************************************************************************
+subroutine rxyz_int2cart_alborz(nat,cellvec,rat_int,rat_cart)
+    use mod_interface
+    implicit none
+    integer, intent(in):: nat
+    real(8), intent(in):: cellvec(3,3), rat_int(3,nat)
+    real(8), intent(inout):: rat_cart(3,nat)
+    !local variables
+    integer:: iat
+    do iat=1,nat
+        rat_cart(1:3,iat)=matmul(cellvec,rat_int(1:3,iat))
+    enddo
+end subroutine rxyz_int2cart_alborz
+!*****************************************************************************************
+subroutine invertmat_alborz(a,ainv)
+    use mod_interface
+    implicit none
+    real(8),intent(in):: a(3,3)
+    real(8),intent(out):: ainv(3,3)
+    !local variables
+    real(8):: div
+    !integer:: ipiv(3), info, ldwork
+    !real(8), allocatable:: WORK(:)
+    div=(a(1,1)*a(2,2)*a(3,3)-a(1,1)*a(2,3)*a(3,2)-a(1,2)*a(2,1)*a(3,3)+ &
+         a(1,2)*a(2,3)*a(3,1)+a(1,3)*a(2,1)*a(3,2)-a(1,3)*a(2,2)*a(3,1))
+    div=1.d0/div
+    ainv(1,1) = (a(2,2)*a(3,3)-a(2,3)*a(3,2))*div
+    ainv(1,2) =-(a(1,2)*a(3,3)-a(1,3)*a(3,2))*div
+    ainv(1,3) = (a(1,2)*a(2,3)-a(1,3)*a(2,2))*div
+    ainv(2,1) =-(a(2,1)*a(3,3)-a(2,3)*a(3,1))*div
+    ainv(2,2) = (a(1,1)*a(3,3)-a(1,3)*a(3,1))*div
+    ainv(2,3) =-(a(1,1)*a(2,3)-a(1,3)*a(2,1))*div
+    ainv(3,1) = (a(2,1)*a(3,2)-a(2,2)*a(3,1))*div
+    ainv(3,2) =-(a(1,1)*a(3,2)-a(1,2)*a(3,1))*div
+    ainv(3,3) = (a(1,1)*a(2,2)-a(1,2)*a(2,1))*div
+    !General n*n matrix 
+    !ainv=mat
+    !allocate(WORK(n))
+    !call  DGETRF( n, n, ainv, n, IPIV, INFO )
+    !if (info.ne.0) stop "Error in DGETRF"
+    !LDWORK=-1
+    !call  DGETRI( n, ainv, n, IPIV, WORK,LDWORK , INFO )
+    !LDWORK=WORK(1)
+    !deallocate(WORK)
+    !allocate(WORK(LDWORK))
+    !call  DGETRI( n, ainv, n, IPIV, WORK,LDWORK , INFO )
+    !if (info.ne.0) stop "Error in DGETRI"
+end subroutine invertmat_alborz
+!*****************************************************************************************
+subroutine convertupper(str)
+    use mod_interface
+    character(*), intent(inout):: str
+    integer:: i
+    do i=1,len(str)
+        select case(str(i:i))
+            case("a":"z")
+            str(i:i)=achar(iachar(str(i:i))-32)
+        end select
+    end do
+end subroutine convertupper
+!*****************************************************************************************
+subroutine convertlower(str)
+    use mod_interface
+    character(*), intent(inout) :: str
+    integer:: i
+    do i=1,len(str)
+        select case(str(i:i))
+            case("A":"Z")
+            str(i:i)=achar(iachar(str(i:i))+32)
+        end select
+    end do
+end subroutine convertlower
+!*****************************************************************************************
+subroutine check_whether_time_exceeded
+    use mod_interface
+    use mod_task, only: time_start, time_exceeded
+    use mod_processors, only: iproc
+    implicit none
+    !local variables
+    real(8):: cpulimit, time_now
+    integer:: k
+    open(unit=55,file='CPUlimit',status='unknown')
+    read(55,*,iostat=k) cpulimit
+    if(k==0) then !k=0 means there was no error, nor was EOF encountered.
+        call cpu_time(time_now)
+        if(time_now-time_start>cpulimit) then
+            write(*,'(a,i4)') 'CPU time exceeded: iproc',iproc
+            time_exceeded=.true.
+        endif
+    endif
+    close(55)
+end subroutine check_whether_time_exceeded
+!*****************************************************************************************
+subroutine expdist(n,x)
+    use mod_interface
+    !generates n random numbers distributed according to  exp(-x)
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(out):: x(n)
+    !local variables
+    integer:: i
+    real(8):: tt, ss
+    !on Intel the random_number can take on the values 0. and 1.. To prevent overflow introduce eps.
+    real(8), parameter::eps=1.d-8
+    do i=1,n
+        call random_number(ss)
+        tt=eps+(1.d0-2.d0*eps)*real(ss,8)
+        x(i)=log(tt)
+    enddo
+end subroutine expdist
+!*****************************************************************************************
+subroutine gausdist_alborz(n,x)
+    use mod_interface
+    !generates n random numbers distributed according to  exp(-.5*x**2)
+    implicit none
+    integer, intent(in) ::n
+    real(8), intent(out) :: x(n)
+    !local variables
+    integer:: i
+    real(4):: s1, s2, t1, t2, tt, twopi
+    !On Intel the random_number can take on the values 0. and 1.. To prevent overflow introduce eps.
+    real(8), parameter:: eps=1.d-8
+    twopi=8.d0*atan(1.d0)
+    do i=1,n-1,2
+        call random_number(s1)
+        t1=eps+(1.d0-2.d0*eps)*real(s1,8)
+        call random_number(s2)
+        t2=real(s2,8)
+        tt=sqrt(-2.d0*log(t1))
+        x(i)=tt*cos(twopi*t2)
+        x(i+1)=tt*sin(twopi*t2)
+    enddo
+    call random_number(s1)
+    t1=eps+(1.d0-2.d0*eps)*real(s1,8)
+    call random_number(s2)
+    t2=real(s2,8)
+    tt=sqrt(-2.d0*log(t1))
+    x(n)=tt*cos(twopi*t2)
+end subroutine gausdist_alborz
+!*****************************************************************************************
+subroutine randdist(a,n,x)
+    use mod_interface
+    !create a uniform random numbers in interval [-a,a]
+    implicit none
+    real(8), intent(in) :: a
+    integer, intent(in):: n
+    real(8), intent(out) :: x(n)
+    !local variables
+    integer:: i
+    real(8):: tt1, tt2
+    tt1=a*2.d0
+    do i=1,n
+        call random_number(tt2)
+        x(i)=(tt2-0.5d0)*tt1
+    enddo
+end subroutine randdist
+!*****************************************************************************************
+subroutine hunt2(n,x,p,ip)
+    use mod_interface
+    !p is in interval [x(ip),x(ip+1)[ ; x(0)=-Infinity ; x(n+1) = Infinity
+    use mod_minhopp, only: etoler
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: x(n), p
+    integer, intent(out):: ip
+    !local variables
+    integer:: i
+    do i=1,n
+        if(p<x(i)) exit
+    enddo
+    i=i-1
+    if(i/=n) then
+        if(abs(p-x(i+1))<etoler) i=i+1
+    endif
+    ip=i
+end subroutine hunt2
+!*****************************************************************************************
+subroutine hpsort(n,ra)
+    use mod_interface
+    implicit real*8 (a-h,o-z)
+    real*8 ::ra(n)
+    if (n.lt.2) return
+    l=n/2+1
+    ir=n
+    do
+        if(l.gt.1) then
+            l=l-1
+            rra=ra(l)
+        else
+            rra=ra(ir)
+            ra(ir)=ra(1)
+            ir=ir-1
+            if(ir.eq.1) then
+                ra(1)=rra
+                return
+            endif
+        endif
+        i=l
+        j=l+l
+        do
+            if(j.le.ir) then
+                if(j.lt.ir) then
+                    if(ra(j).lt.ra(j+1))  j=j+1
+                endif
+                if(rra.lt.ra(j)) then
+                    ra(i)=ra(j)
+                    i=j
+                    j=j+j
+                else
+                    j=ir+1
+                endif
+            else
+                exit
+            endif
+        enddo
+      ra(i)=rra
+    enddo
+end subroutine hpsort
+!*****************************************************************************************
+!subroutine projtransout(n,v)
+!    implicit none
+!    integer::n,istat,i
+!    real(8)::v(n),t1,t2,t3,DDOT
+!    real(8), allocatable::dirx(:),diry(:),dirz(:)
+!    allocate(dirx(n),stat=istat);if(istat/=0) stop 'ERROR: failure deallocating dirx'
+!    allocate(diry(n),stat=istat);if(istat/=0) stop 'ERROR: failure deallocating diry'
+!    allocate(dirz(n),stat=istat);if(istat/=0) stop 'ERROR: failure deallocating dirz'
+!    dirx=0.d0
+!    do i=1,n,3
+!        dirx(i)=1.d0
+!    enddo
+!    call normalizevector(n,dirx)
+!    !call atom_normalizevector(n/3,dirx)
+!    diry=0.d0
+!    do i=1,n,3
+!        diry(i+1)=1.d0
+!    enddo
+!    call normalizevector(n,diry)
+!    !call atom_normalizevector(n/3,diry)
+!    dirz=0.d0
+!    do i=1,n,3
+!        dirz(i+2)=1.d0
+!    enddo
+!    call normalizevector(n,dirz)
+!    !call atom_normalizevector(n/3,dirz)
+!    !-------------------------------------------------------
+!    t1=dot_product(v,dirx)
+!    t2=dot_product(v,diry)
+!    t3=dot_product(v,dirz)
+!    !write(61,*) t1,t2,t3
+!    !-------------------------------------------------------
+!    t1=dot_product(v,dirx)
+!    !write(*,*) 't1',t1
+!    v(1:n)=v(1:n)-t1*dirx(1:n)
+!    t1=dot_product(v,diry)
+!    !write(*,*) 't1',t1
+!    v(1:n)=v(1:n)-t1*diry(1:n)
+!    t1=dot_product(v,dirz)
+!    !write(*,*) 't1',t1
+!    v(1:n)=v(1:n)-t1*dirz(1:n)
+!    deallocate(dirx,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating dirx'
+!    deallocate(diry,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating diry'
+!    deallocate(dirz,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating dirz'
+!end subroutine projtransout
+!*****************************************************************************************
+!subroutine projrotout(n,nr,x,v)
+!    implicit none
+!    integer::n,nr,istat,i
+!    real(8)::x(n),v(nr),t1,cmx,cmy,cmz,t2,t3,DDOT
+!    real(8), allocatable::pxy(:),pyz(:),pxz(:)
+!    !write(*,*) 'n,nr',n,nr
+!    allocate(pxy(nr),stat=istat);if(istat/=0) stop 'ERROR: failure allocating pxy'
+!    allocate(pyz(nr),stat=istat);if(istat/=0) stop 'ERROR: failure allocating pyz'
+!    allocate(pxz(nr),stat=istat);if(istat/=0) stop 'ERROR: failure allocating pxz'
+!    cmx=0.d0;cmy=0.d0;cmz=0.d0
+!    do i=1,n,3
+!        cmx=cmx+x(i+0)
+!        cmy=cmy+x(i+1)
+!        cmz=cmz+x(i+2)
+!    enddo
+!    cmx=3.d0*cmx/n ; cmy=3.d0*cmy/n ; cmz=3.d0*cmz/n
+!    pxy=0.d0
+!    do i=1,nr,3
+!        pxy(i+0)=-(x(i+1)-cmy)
+!        pxy(i+1)= (x(i+0)-cmx)
+!    enddo
+!    call normalizevector(nr,pxy)
+!    !call atom_normalizevector(nr/3,pxy)
+!    pxz=0.d0
+!    do i=1,nr,3
+!        pxz(i+0)=-(x(i+2)-cmz)
+!        pxz(i+2)= (x(i+0)-cmx)
+!    enddo
+!    call normalizevector(nr,pxz)
+!    !call atom_normalizevector(nr/3,pxz)
+!    pyz=0.d0
+!    do i=1,nr,3
+!        pyz(i+1)=-(x(i+2)-cmz)
+!        pyz(i+2)= (x(i+1)-cmy)
+!    enddo
+!    call normalizevector(nr,pyz)
+!    !call atom_normalizevector(nr/3,pyz)
+!    !-------------------------------------------------------
+!    t1=DDOT(nr,v,1,pxy,1)
+!    t2=DDOT(nr,v,1,pyz,1)
+!    t3=DDOT(nr,v,1,pxz,1)
+!    !write(51,*) t1,t2,t3
+!    !-------------------------------------------------------
+!    !t1=dot_product(v,pxy)
+!    t1=DDOT(nr,v,1,pxy,1)
+!    v(1:nr)=v(1:nr)-t1*pxy(1:nr)
+!    !t1=dot_product(v,pyz)
+!    t1=DDOT(nr,v,1,pyz,1)
+!    v(1:nr)=v(1:nr)-t1*pyz(1:nr)
+!    !t1=dot_product(v,pxz)
+!    t1=DDOT(nr,v,1,pxz,1)
+!    v(1:nr)=v(1:nr)-t1*pxz(1:nr)
+!    !-------------------------------------------------------
+!    deallocate(pxy,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating pxy'
+!    deallocate(pyz,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating pyz'
+!    deallocate(pxz,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating pxz'
+!end subroutine projrotout
+!*****************************************************************************************

@@ -1,0 +1,18 @@
+float *vector();
+float **matrix();
+float **submatrix();
+float **convert_matrix();
+double *dvector();
+double **dmatrix();
+double complex **Complex_dmatrix();
+int *ivector();
+int **imatrix();
+void free_vector();
+void free_dvector();
+void free_ivector();
+void free_matrix();
+void free_submatrix();
+void free_convert_matrix();
+void free_dmatrix();
+void free_imatrix();
+void nrerror();

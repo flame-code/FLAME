@@ -1,0 +1,40 @@
+
+find src -type f -iname '*.F90' -exec grep -i -A 1 '^subroutine' {} \; |awk '{if($1=="subroutine" && n!=1) {n=1;line1=$2};if(n==2) {n=0;str=$1 $2;if(str!="usemod_interface," || $1=="subroutine") print line1,"\n",$0};if(n==1) n++}'
+
+
+1) Minhopp does not save new initial configurations in a restart run 
+when posinp.xyz is manually modified. However I think this 
+problem is only for iproc=0
+
+2) There is a point in the BFGS implementation that is commented in its routine.
+This point must be resolved and tested at some point.
+
+When I want to compile Alborz:
+1) ./utils/python/build_mod_interface.py
+2)  make
+------------------------------------------------------------
+explanation of importing futile into Alborz:
+
+tar -zxvf BigDFT_address/yaml-0.1.6.tar.gz
+mv yaml-0.1.6 yaml
+
+Then delete win32 and doc in directory yaml.
+
+copy directories:
+futile
+jhbuild
+
+and copy files:
+
+Installer.py
+jhbuild.py
+bigdft.modules
+gnome.modules
+
+Then modify the following files to exclude building of win32 in yaml:
+
+yaml/Makefile.am
+yaml/Makefile.in
+yaml/configure
+
+------------------------------------------------------------

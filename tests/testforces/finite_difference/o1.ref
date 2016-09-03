@@ -1,0 +1,75 @@
+mpi started: iproc_world,nproc_world    0   1
+mpi started: iproc,nproc    0   1
+iproc,seed    0  2147483562  2147483398
+Number of configurations read from posinp.acf is    1
+ epot=  -2.60028501435394     
+ fnrm=  4.813083886286260E-002
+F_x error of atom            1 is   3.53E-11     1.5375526017E-02
+F_y error of atom            1 is  -1.49E-10    -5.4903524905E-03
+F_z error of atom            1 is   1.64E-11     6.9545955053E-03
+F_x error of atom            2 is   1.43E-10     7.1073185022E-03
+F_y error of atom            2 is  -7.22E-11     1.9715855005E-03
+F_z error of atom            2 is  -1.46E-10    -2.8143062421E-03
+F_x error of atom            3 is   1.17E-12     3.1335812156E-03
+F_y error of atom            3 is   2.75E-10     2.5420977018E-03
+F_z error of atom            3 is   1.24E-10    -6.4882524815E-03
+F_x error of atom            4 is   1.52E-11    -1.0307977909E-02
+F_y error of atom            4 is  -1.45E-10    -1.8622872240E-03
+F_z error of atom            4 is  -4.58E-11     3.4410538211E-03
+F_x error of atom            5 is   9.17E-11    -1.6675103790E-02
+F_y error of atom            5 is   4.06E-11     1.1785308767E-03
+F_z error of atom            5 is  -1.98E-10     1.5700764227E-03
+F_x error of atom            6 is  -1.19E-10    -6.4753938797E-03
+F_y error of atom            6 is   6.31E-11    -2.3552777158E-04
+F_z error of atom            6 is   1.07E-10     1.6637575355E-03
+F_x error of atom            7 is  -5.56E-11     1.1831000735E-03
+F_y error of atom            7 is  -1.64E-10     1.2290108798E-03
+F_z error of atom            7 is  -5.61E-11     3.0092344067E-03
+F_x error of atom            8 is  -1.59E-10    -7.5713936948E-04
+F_y error of atom            8 is  -3.52E-10    -1.8675808709E-03
+F_z error of atom            8 is   1.30E-10    -9.2494204264E-03
+F_x error of atom            9 is   8.18E-11    -1.4445639725E-03
+F_y error of atom            9 is  -5.72E-11     1.4934080545E-03
+F_z error of atom            9 is   1.21E-10    -4.9323228752E-04
+F_x error of atom           10 is  -1.47E-10     3.0711270775E-03
+F_y error of atom           10 is  -2.03E-10    -4.0799636656E-04
+F_z error of atom           10 is  -5.82E-10    -1.1775751662E-03
+F_x error of atom           11 is  -6.75E-11     2.1194870756E-03
+F_y error of atom           11 is  -3.25E-11    -1.9254596037E-03
+F_z error of atom           11 is  -3.45E-10    -3.1426721767E-03
+F_x error of atom           12 is  -8.39E-11    -5.4259980336E-03
+F_y error of atom           12 is  -1.71E-10    -5.2885410022E-04
+F_z error of atom           12 is   1.39E-10     1.7676794641E-03
+F_x error of atom           13 is   2.18E-10    -3.6323835678E-03
+F_y error of atom           13 is   4.05E-10    -2.9168394927E-04
+F_z error of atom           13 is  -9.23E-11    -1.2990254837E-03
+F_x error of atom           14 is   3.62E-10    -8.0136827465E-03
+F_y error of atom           14 is  -2.33E-11     9.6055041804E-04
+F_z error of atom           14 is   5.94E-11     1.4634281192E-03
+F_x error of atom           15 is  -9.84E-12    -6.6303015868E-03
+F_y error of atom           15 is   8.11E-11     1.4286447033E-02
+F_z error of atom           15 is   7.58E-11     1.5955167761E-03
+F_x error of atom           16 is  -1.21E-11     1.3471668124E-03
+F_y error of atom           16 is   1.12E-10    -1.8374345836E-03
+F_z error of atom           16 is  -1.58E-10     1.5396386410E-03
+F_x error of atom           17 is  -1.17E-10     2.8342853759E-02
+F_y error of atom           17 is  -2.07E-10    -1.5313258585E-03
+F_z error of atom           17 is   1.49E-10    -2.9987876783E-03
+F_x error of atom           18 is   3.35E-10    -5.1355326451E-03
+F_y error of atom           18 is   1.57E-10    -7.0577157247E-03
+F_z error of atom           18 is   3.02E-10     4.9975695672E-03
+F_x error of atom           19 is  -3.55E-10     2.8179169666E-03
+F_y error of atom           19 is  -1.57E-10    -6.2541192074E-04
+F_z error of atom           19 is   4.42E-11    -3.3927831636E-04
+fsum=  -6.46184E-17  -9.54098E-17  -1.80682E-16
+CPU time: iproc,time(hrs)    0      0.136E-03
+CPU time: iproc,time(min)    0      0.816E-02
+CPU time: iproc,time(sec)    0      0.490E+00
+mpi finalized: iproc_world,nproc_world    0   1
+GAMMA POINT only tight binding code
+Reading spline potential coeff.cls
+gusetb_tbnorth == 1
+gtbcut_tbnorth == 5.240000
+gusenorth == 0
+gusextal == 0
+gstride == 4
