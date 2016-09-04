@@ -1,6 +1,7 @@
 from atoms import *
 from math import *
 import math as mt
+import copy
 import numpy as np
 import sys
 #!*****************************************************************************************
@@ -76,10 +77,11 @@ def latvec2dproj(cellvec,rxyz,nat):
     #The total rotational matrix:-------------------------------------------------------------
     rotmat=matmul(rotmat2,rotmat1)
     #Apply rotation on all atoms
+    rxyzo =copy.deepcopy(rxyz)
     for iat in range(nat):
-        rxyz[iat][0]=rotmat[0][0]*rxyz[iat][0]+rotmat[1][0]*rxyz[iat][1]+rotmat[2][0]*rxyz[iat][2]
-        rxyz[iat][1]=rotmat[0][1]*rxyz[iat][0]+rotmat[1][1]*rxyz[iat][1]+rotmat[2][1]*rxyz[iat][2]
-        rxyz[iat][2]=rotmat[0][2]*rxyz[iat][0]+rotmat[1][2]*rxyz[iat][1]+rotmat[2][2]*rxyz[iat][2]
+        rxyz[iat][0]=rotmat[0][0]*rxyzo[iat][0]+rotmat[1][0]*rxyzo[iat][1]+rotmat[2][0]*rxyzo[iat][2]
+        rxyz[iat][1]=rotmat[0][1]*rxyzo[iat][0]+rotmat[1][1]*rxyzo[iat][1]+rotmat[2][1]*rxyzo[iat][2]
+        rxyz[iat][2]=rotmat[0][2]*rxyzo[iat][0]+rotmat[1][2]*rxyzo[iat][1]+rotmat[2][2]*rxyzo[iat][2]
     #Calculate all other elements of dproj
     dproj[1]=cellvec[1][0]
     dproj[2]=cellvec[1][1]
