@@ -22,9 +22,9 @@ module interface_code
 #if defined(TINKER)
   use interface_tinker
 #endif
-#if defined(ALBORZ)
+!!! #if defined(ALBORZ)
   use interface_alborz
-#endif
+!!! #endif
   use interface_tersoff
   use interface_edip
   use interface_ipi
@@ -157,13 +157,13 @@ if(verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh se
     elseif(trim(code)=="lenosky_tb") then
     elseif(trim(code)=="lenosky_meam") then
     elseif(trim(code)=="lenosky_tb_lj") then
-#if defined(ALBORZ)
+!!! #if defined(ALBORZ)
     elseif(trim(code)=="alborz") then
         icount_alborz=icount_alborz+1
         if(icount_alborz==1) then
             call call_to_alborz_init(nat)
         endif
-#endif
+!!! #endif
     elseif(trim(code)=="blj") then
     elseif(trim(code)=="mlj") then
     elseif(trim(code)=="tersoff") then
@@ -190,10 +190,10 @@ if(verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh se
       call lenosky_tb_lj(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
     elseif(trim(code)=="lenosky_meam") then
       call lenosky_meam(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
-#if defined(ALBORZ)
+!!! #if defined(ALBORZ)
     elseif(trim(code)=="alborz") then
         call call_to_alborz_get('bulk',nat,latvec,xred,fcart,energy,strten)
-#endif
+!!! #endif
     elseif(trim(code)=="blj") then
       call blj(latvec,xred,fcart,strten,energy)
     elseif(trim(code)=="mlj") then
