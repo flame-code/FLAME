@@ -73,14 +73,14 @@ ifdef TINKER
 	override PRE_PROC+= -DTINKER
 endif
 
-ifdef ALBORZ
-	OBJ+= alborz.o
-	LIBS+= $(LIB_ALBORZ) $(FUTIL)
-	PRE_PROC+= -DALBORZ
-endif
+### ifdef ALBORZ
+### 	OBJ+= alborz.o
+### 	LIBS+= $(LIB_ALBORZ) $(FUTIL)
+### 	PRE_PROC+= -DALBORZ
+### endif
 
 #OBJ+= lammps_int.o LAMMPS.o LAMMPS-wrapper.o
-OBJ+=fsockets.o sockets.o  corerepulsion.o confinement.o ipi.o msock.o abinit.o  lj_voids.o blj.o mlj.o lenosky_tb.o lenosky_tb_lj.o lenosky_meam.o espresso.o vasp.o siesta.o cp2k.o tersoff.o edip.o dftb.o mopac.o parser.o io_poscar.o io_ascii.o interface_code.o spher_harm_mathematica.o\
+OBJ+= alborz.o fsockets.o sockets.o  corerepulsion.o confinement.o ipi.o msock.o abinit.o  lj_voids.o blj.o mlj.o lenosky_tb.o lenosky_tb_lj.o lenosky_meam.o espresso.o vasp.o siesta.o cp2k.o tersoff.o edip.o dftb.o mopac.o parser.o io_poscar.o io_ascii.o interface_code.o spher_harm_mathematica.o\
 	md_fixlat.o find_symmetry.o sqnm.o qe_bfgs.o sd.o bfgs.o lib_lbfgs.o euler.o envelope.o niggli.o fingerprint_gom.o fingerprint_molgom.o fingerprint_oganov.o fingerprint_oganov_cont.o fingerprint_bcm.o fingerprint_atorb.o fingerprint_gaussmol.o fingerprint_xyz2sm.o MHMoF.o
 
 
