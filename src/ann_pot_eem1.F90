@@ -21,11 +21,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: ttx, tty, ttz, tt1, tt2, tt3, vol
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
-    real(8), allocatable:: a(:,:)
-    real(8), allocatable:: fatpq(:,:)
-    real(8), allocatable:: stresspq(:,:,:)
-    real(8), allocatable:: fat_chi(:,:)
-    real(8), allocatable:: g_per_atom(:,:)
     type(typ_pia_arr):: pia_arr_tmp
     real(8):: hinv(3,3), fx_es, fy_es, fz_es
     call f_routine(id='cal_ann_eem1')
@@ -40,22 +35,30 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     !    write(55,'(3es24.15)') (atoms%rat(1,iat)-5.d0)*bohr2ang,(atoms%rat(2,iat)-5.d0)*bohr2ang,(atoms%rat(3,iat)-5.d0)*bohr2ang
     !enddo
     !    write(55,*)
-    fat_chi=f_malloc0([1.to.3,1.to.nat],id='fat_chi')
-    ann_arr%chi_i=f_malloc0([1.to.nat],id='ann_arr%chi_i')
-    ann_arr%chi_o=f_malloc0([1.to.nat],id='ann_arr%chi_o')
-    ann_arr%chi_d=f_malloc0([1.to.nat],id='ann_arr%chi_d')
-    a=f_malloc0([1.to.nat+1,1.to.nat+1],id='a: aq=-chi')
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        ann_arr%fat_chi=f_malloc0([1.to.3,1.to.nat],id='fat_chi')
+        ann_arr%chi_i=f_malloc0([1.to.nat],id='ann_arr%chi_i')
+        ann_arr%chi_o=f_malloc0([1.to.nat],id='ann_arr%chi_o')
+        ann_arr%chi_d=f_malloc0([1.to.nat],id='ann_arr%chi_d')
+        ann_arr%a=f_malloc0([1.to.(nat+1)*(nat+1)],id='a: aq=-chi')
+    else
+        ann_arr%fat_chi=0.d0
+        ann_arr%chi_i=0.d0
+        ann_arr%chi_o=0.d0
+        ann_arr%chi_d=0.d0
+        ann_arr%a=0.d0
+    endif
     if(trim(ann_arr%event)=='train') then
         !The following is allocated with ekf%num(1), this means number of
         !nodes in the input layer is the same for all atom types.
         !Therefore, it must be fixed later.
-        g_per_atom=f_malloc([1.to.ekf%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
+        !g_per_atom=f_malloc([1.to.ekf%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
         do i=1,ann_arr%n
             call convert_x_ann(ekf%num(i),ekf%x(ekf%loc(i)),ann_arr%ann(i))
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call cal_electrostatic_eem1(parini,'init',atoms,ann_arr,epot_c,a,ewald_p3d)
+    call cal_electrostatic_eem1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -66,10 +69,10 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call call_linkedlist(parini,atoms,symfunc%linked_lists,pia_arr_tmp)
         !endif
     endif
-    !if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
-        fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
-        stresspq=f_malloc([1.to.3,1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='stresspq')
-    !endif
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
+        ann_arr%stresspq=f_malloc([1.to.3,1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='stresspq')
+    endif
     if(parini%iverbose>=2) call cpu_time(time3)
     over_iat: do iat=1,atoms%nat
         i=atoms%itypat(iat)
@@ -101,9 +104,9 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
                     tty=tty+ann_arr%ann(i)%d(j)*symfunc%y0d(j,2,ib)
                     ttz=ttz+ann_arr%ann(i)%d(j)*symfunc%y0d(j,3,ib)
                 enddo
-                fatpq(1,ib)=ttx*tt2
-                fatpq(2,ib)=tty*tt2
-                fatpq(3,ib)=ttz*tt2
+                ann_arr%fatpq(1,ib)=ttx*tt2
+                ann_arr%fatpq(2,ib)=tty*tt2
+                ann_arr%fatpq(3,ib)=ttz*tt2
             enddo
             endif
             if(trim(ann_arr%event)=='potential') then
@@ -122,15 +125,15 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
                     szy=szy+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,8,ib)
                     szz=szz+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,9,ib)
                 enddo
-                stresspq(1,1,ib)=-sxx*tt2
-                stresspq(2,1,ib)=-syx*tt2
-                stresspq(3,1,ib)=-szx*tt2
-                stresspq(1,2,ib)=-sxy*tt2
-                stresspq(2,2,ib)=-syy*tt2
-                stresspq(3,2,ib)=-szy*tt2
-                stresspq(1,3,ib)=-sxz*tt2
-                stresspq(2,3,ib)=-syz*tt2
-                stresspq(3,3,ib)=-szz*tt2
+                ann_arr%stresspq(1,1,ib)=-sxx*tt2
+                ann_arr%stresspq(2,1,ib)=-syx*tt2
+                ann_arr%stresspq(3,1,ib)=-szx*tt2
+                ann_arr%stresspq(1,2,ib)=-sxy*tt2
+                ann_arr%stresspq(2,2,ib)=-syy*tt2
+                ann_arr%stresspq(3,2,ib)=-szy*tt2
+                ann_arr%stresspq(1,3,ib)=-sxz*tt2
+                ann_arr%stresspq(2,3,ib)=-syz*tt2
+                ann_arr%stresspq(3,3,ib)=-szz*tt2
             enddo
             endif
         endif
@@ -139,8 +142,8 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
             ann_arr%chi_i(iat)=out_ann
             tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
             ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-            call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),g_per_atom(1,iat))
-            g_per_atom(1:ekf%num(1),iat)=g_per_atom(1:ekf%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
+            call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ann_arr%g_per_atom(1,iat))
+            ann_arr%g_per_atom(1:ekf%num(1),iat)=ann_arr%g_per_atom(1:ekf%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif
@@ -153,7 +156,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     !This msut be here otherwise it will zero forces which were calculated by kwald.
     atoms%fat(1:3,1:nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
+    call get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,ann_arr%a)
     !call cell_vol(atoms%nat,atoms%cellvec,vol)
     call getvol_alborz(atoms%cellvec,vol)
     atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)*vol !*atoms%nat !not certain if this is needed!!!
@@ -165,29 +168,29 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
         q=atoms%qat(iat)
-        ttx=fatpq(1,ib)*q
-        tty=fatpq(2,ib)*q
-        ttz=fatpq(3,ib)*q
-        fat_chi(1,iat)=fat_chi(1,iat)+ttx
-        fat_chi(2,iat)=fat_chi(2,iat)+tty
-        fat_chi(3,iat)=fat_chi(3,iat)+ttz
-        fat_chi(1,jat)=fat_chi(1,jat)-ttx
-        fat_chi(2,jat)=fat_chi(2,jat)-tty
-        fat_chi(3,jat)=fat_chi(3,jat)-ttz
-        atoms%stress(1,1)=atoms%stress(1,1)+stresspq(1,1,ib)*q
-        atoms%stress(2,1)=atoms%stress(2,1)+stresspq(2,1,ib)*q
-        atoms%stress(3,1)=atoms%stress(3,1)+stresspq(3,1,ib)*q
-        atoms%stress(1,2)=atoms%stress(1,2)+stresspq(1,2,ib)*q
-        atoms%stress(2,2)=atoms%stress(2,2)+stresspq(2,2,ib)*q
-        atoms%stress(3,2)=atoms%stress(3,2)+stresspq(3,2,ib)*q
-        atoms%stress(1,3)=atoms%stress(1,3)+stresspq(1,3,ib)*q
-        atoms%stress(2,3)=atoms%stress(2,3)+stresspq(2,3,ib)*q
-        atoms%stress(3,3)=atoms%stress(3,3)+stresspq(3,3,ib)*q
+        ttx=ann_arr%fatpq(1,ib)*q
+        tty=ann_arr%fatpq(2,ib)*q
+        ttz=ann_arr%fatpq(3,ib)*q
+        ann_arr%fat_chi(1,iat)=ann_arr%fat_chi(1,iat)+ttx
+        ann_arr%fat_chi(2,iat)=ann_arr%fat_chi(2,iat)+tty
+        ann_arr%fat_chi(3,iat)=ann_arr%fat_chi(3,iat)+ttz
+        ann_arr%fat_chi(1,jat)=ann_arr%fat_chi(1,jat)-ttx
+        ann_arr%fat_chi(2,jat)=ann_arr%fat_chi(2,jat)-tty
+        ann_arr%fat_chi(3,jat)=ann_arr%fat_chi(3,jat)-ttz
+        atoms%stress(1,1)=atoms%stress(1,1)+ann_arr%stresspq(1,1,ib)*q
+        atoms%stress(2,1)=atoms%stress(2,1)+ann_arr%stresspq(2,1,ib)*q
+        atoms%stress(3,1)=atoms%stress(3,1)+ann_arr%stresspq(3,1,ib)*q
+        atoms%stress(1,2)=atoms%stress(1,2)+ann_arr%stresspq(1,2,ib)*q
+        atoms%stress(2,2)=atoms%stress(2,2)+ann_arr%stresspq(2,2,ib)*q
+        atoms%stress(3,2)=atoms%stress(3,2)+ann_arr%stresspq(3,2,ib)*q
+        atoms%stress(1,3)=atoms%stress(1,3)+ann_arr%stresspq(1,3,ib)*q
+        atoms%stress(2,3)=atoms%stress(2,3)+ann_arr%stresspq(2,3,ib)*q
+        atoms%stress(3,3)=atoms%stress(3,3)+ann_arr%stresspq(3,3,ib)*q
     enddo
     do iat=1,nat
-        atoms%fat(1,iat)=atoms%fat(1,iat)+fat_chi(1,iat)
-        atoms%fat(2,iat)=atoms%fat(2,iat)+fat_chi(2,iat)
-        atoms%fat(3,iat)=atoms%fat(3,iat)+fat_chi(3,iat)
+        atoms%fat(1,iat)=atoms%fat(1,iat)+ann_arr%fat_chi(1,iat)
+        atoms%fat(2,iat)=atoms%fat(2,iat)+ann_arr%fat_chi(2,iat)
+        atoms%fat(3,iat)=atoms%fat(3,iat)+ann_arr%fat_chi(3,iat)
     enddo
     endif
     call invertmat_alborz(atoms%cellvec,hinv)
@@ -199,7 +202,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     !write(*,'(a,es14.5)') 'BTRESS ',atoms%stress(1,1)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_eem1(parini,'calculate',atoms,ann_arr,epot_c,a,ewald_p3d)
+    call cal_electrostatic_eem1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     !write(*,'(a,es14.5)') 'CTRESS ',atoms%stress(1,1)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
@@ -212,10 +215,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:eem1: total time                 ',time7-time1
     endif
     atoms%epot=epot_c
-    call f_free(ann_arr%chi_i)
-    call f_free(ann_arr%chi_o)
-    call f_free(ann_arr%chi_d)
-    call f_free(a)
     tt1=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt1+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
     if(trim(ann_arr%event)=='evalu' .and. atoms%nat<=parini%nat_force) then
@@ -223,12 +222,12 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         tt2=0.d0
         tt3=0.d0
         do iat=1,nat
-            fx_es=atoms%fat(1,iat)-fat_chi(1,iat)
-            fy_es=atoms%fat(2,iat)-fat_chi(2,iat)
-            fz_es=atoms%fat(3,iat)-fat_chi(3,iat)
+            fx_es=atoms%fat(1,iat)-ann_arr%fat_chi(1,iat)
+            fy_es=atoms%fat(2,iat)-ann_arr%fat_chi(2,iat)
+            fz_es=atoms%fat(3,iat)-ann_arr%fat_chi(3,iat)
             tt1=tt1+fx_es**2+fy_es**2+fz_es**2
-            tt2=tt2+fat_chi(1,iat)**2+fat_chi(2,iat)**2+fat_chi(3,iat)**2
-            tt3=tt3+fx_es*fat_chi(1,iat)+fy_es*fat_chi(2,iat)+fz_es*fat_chi(3,iat)
+            tt2=tt2+ann_arr%fat_chi(1,iat)**2+ann_arr%fat_chi(2,iat)**2+ann_arr%fat_chi(3,iat)**2
+            tt3=tt3+fx_es*ann_arr%fat_chi(1,iat)+fy_es*ann_arr%fat_chi(2,iat)+fz_es*ann_arr%fat_chi(3,iat)
         enddo
         tt1=sqrt(tt1)
         tt2=sqrt(tt2)
@@ -249,8 +248,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call f_free(symfunc%linked_lists%prime_bound)
         call f_free(symfunc%linked_lists%bound_rad)
         call f_free(symfunc%linked_lists%bound_ang)
-        call f_free(fatpq)
-        call f_free(stresspq)
         !call ann_deallocate(ann_arr)
     !endif
     if(trim(ann_arr%event)=='potential') then
@@ -258,17 +255,24 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)
     endif
-    call f_free(fat_chi)
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        call f_free(ann_arr%chi_i)
+        call f_free(ann_arr%chi_o)
+        call f_free(ann_arr%chi_d)
+        call f_free(ann_arr%a)
+        call f_free(ann_arr%fat_chi)
+        call f_free(ann_arr%fatpq)
+        call f_free(ann_arr%stresspq)
+    endif
     end associate
     if(trim(ann_arr%event)=='train') then
         ekf%g(1:ekf%n)=0.d0
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
             do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*g_per_atom(j,iat)
+                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        call f_free(g_per_atom)
     endif
     call f_release_routine()
 end subroutine cal_ann_eem1

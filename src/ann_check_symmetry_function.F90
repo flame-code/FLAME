@@ -37,7 +37,6 @@ subroutine ann_check_symmetry_function(parini)
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
     call read_input_ann(parini,iproc,ann_arr)
-    call ann_allocate(1000,ann_arr)
     call read_data(parini,'list_posinp_check',atoms_check)
     !---------------------------------------------------------- 
     open(unit=1,file='list_posinp_check',status='old',iostat=ios)

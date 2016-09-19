@@ -65,6 +65,7 @@ subroutine ann_train(parini)
         ekf%n=ekf%n+ekf%num(i)
         write(*,'(a,3i5)') 'EKF: ',ekf%loc(i),ekf%num(i),ekf%n
     enddo
+    call ann_allocate(ekf,ann_arr)
     call read_data(parini,'list_posinp_train',atoms_train)
     call read_data(parini,'list_posinp_valid',atoms_valid)
     if(iproc==0) then
@@ -242,6 +243,17 @@ subroutine ann_train(parini)
         close(11)
         close(12)
     endif
+
+    call ann_deallocate(ann_arr)
+
+    !do iconf=1,atoms_train%nconf
+    !    call atom_deallocate(atoms_train%atoms(iconf))
+    !enddo
+    !do iconf=1,atoms_valid%nconf
+    !    call atom_deallocate(atoms_valid%atoms(iconf))
+    !enddo
+
+
     !istat=chdir(path2)
     !if(istat/=0) stop 'ERROR: could not change directory to path2'
     !deallocate(atoms_train%inclusion)
@@ -406,7 +418,7 @@ subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
     endif
     if(trim(ann_arr%event)=='potential') then
         !deallocate(symfunc%y)
-        call ann_deallocate(ann_arr)
+        !call ann_deallocate(ann_arr)
     endif
 end subroutine eval_cal_ann_main
 !*****************************************************************************************
@@ -523,7 +535,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             !end associate
             !end associate
             endif bondbased_ann
-            call ann_deallocate(ann_arr)
+            !call ann_deallocate(ann_arr)
             if(parini%symfunc_type_ann=='behler') then
             call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
             if(.not. parini%bondbased_ann) then
