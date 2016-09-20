@@ -62,12 +62,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
-    else
-        !if(trim(ann_arr%event)=='evalu') then
-        symfunc%linked_lists%rcut=ann_arr%rcut
-        symfunc%linked_lists%triplex=.true.
-        call call_linkedlist(parini,atoms,symfunc%linked_lists,pia_arr_tmp)
-        !endif
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
@@ -244,12 +238,12 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         call destruct_ewald_p3d(parini,atoms,ewald_p3d)
     endif
-    !if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         call f_free(symfunc%linked_lists%prime_bound)
         call f_free(symfunc%linked_lists%bound_rad)
         call f_free(symfunc%linked_lists%bound_ang)
         !call ann_deallocate(ann_arr)
-    !endif
+    endif
     if(trim(ann_arr%event)=='potential') then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)

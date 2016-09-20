@@ -246,6 +246,17 @@ subroutine ann_train(parini)
 
     call ann_deallocate(ann_arr)
 
+    do iconf=1,atoms_train%nconf
+        call f_free(symfunc_train%symfunc(iconf)%linked_lists%prime_bound)
+        call f_free(symfunc_train%symfunc(iconf)%linked_lists%bound_rad)
+        call f_free(symfunc_train%symfunc(iconf)%linked_lists%bound_ang)
+    enddo
+    do iconf=1,atoms_valid%nconf
+        call f_free(symfunc_valid%symfunc(iconf)%linked_lists%prime_bound)
+        call f_free(symfunc_valid%symfunc(iconf)%linked_lists%bound_rad)
+        call f_free(symfunc_valid%symfunc(iconf)%linked_lists%bound_ang)
+    enddo
+
     !do iconf=1,atoms_train%nconf
     !    call atom_deallocate(atoms_train%atoms(iconf))
     !enddo
@@ -655,9 +666,6 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
             symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
             call call_linkedlist(parini,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
             deallocate(pia_arr_tmp%pia)
             allocate(symfunc_arr%symfunc(iconf)%y(ng,nat))
             if(nat<=parini%nat_force) then
