@@ -24,6 +24,8 @@ subroutine ann_allocate(ekf,ann_arr)
     !symfunc%linked_lists%maxbound_rad is assumed 10000
     ann_arr%fatpq=f_malloc([1.to.3,1.to.10000],id='fatpq')
     ann_arr%stresspq=f_malloc([1.to.3,1.to.3,1.to.10000],id='stresspq')
+    ann_arr%ipiv=f_malloc([1.to.ann_arr%natmax+1],id='ann_arr%ipiv')
+    ann_arr%qq=f_malloc([1.to.ann_arr%natmax+1],id='ann_arr%qq')
 end subroutine ann_allocate
 !*****************************************************************************************
 subroutine ann_deallocate(ann_arr)
@@ -48,5 +50,7 @@ subroutine ann_deallocate(ann_arr)
     call f_free(ann_arr%g_per_atom)
     call f_free(ann_arr%fatpq)
     call f_free(ann_arr%stresspq)
+    call f_free(ann_arr%ipiv)
+    call f_free(ann_arr%qq)
 end subroutine ann_deallocate
 !*****************************************************************************************

@@ -331,13 +331,13 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     !local variables
     integer:: info !, iat
-    integer, allocatable:: ipiv(:)
-    real(8), allocatable:: qq(:)
     call f_routine(id='get_qat_from_chi_dir')
     associate(nat=>atoms%nat)
-    ipiv=f_malloc([1.to.nat+1],id='ipiv')
-    qq=f_malloc([1.to.nat+1],id='qq')
-    call DGETRF(nat+1,nat+1,a,nat+1,ipiv,info)
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        ann_arr%ipiv=f_malloc([1.to.nat+1],id='ann_arr%ipiv')
+        ann_arr%qq=f_malloc([1.to.nat+1],id='ann_arr%qq')
+    endif
+    call DGETRF(nat+1,nat+1,a,nat+1,ann_arr%ipiv,info)
     if(info/=0) then
         write(*,'(a,i)') 'ERROR: DGETRF info=',info
         stop
@@ -349,20 +349,22 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     !    chi(iat)=chi(iat)/3.16d0
     !endif
     !enddo
-    qq(1:nat)=-ann_arr%chi_o(1:nat)
-    qq(nat+1)=atoms%qtot
-    call DGETRS('N',nat+1,1,a,nat+1,ipiv,qq,nat+1,info)
+    ann_arr%qq(1:nat)=-ann_arr%chi_o(1:nat)
+    ann_arr%qq(nat+1)=atoms%qtot
+    call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,ann_arr%qq,nat+1,info)
     if(info/=0) then
         write(*,'(a,i)') 'ERROR: DGETRS info=',info
         stop
     endif
-    atoms%qat(1:nat)=qq(1:nat)
+    atoms%qat(1:nat)=ann_arr%qq(1:nat)
     call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>1) then
-        write(*,*) 'Lagrange ',qq(nat+1)
+        write(*,*) 'Lagrange ',ann_arr%qq(nat+1)
     endif
-    call f_free(ipiv)
-    call f_free(qq)
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        call f_free(ann_arr%ipiv)
+        call f_free(ann_arr%qq)
+    endif
     end associate
     call f_release_routine()
 end subroutine get_qat_from_chi_dir

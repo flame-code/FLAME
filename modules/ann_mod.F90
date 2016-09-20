@@ -94,6 +94,8 @@ module mod_ann
         real(8), allocatable:: g_per_atom(:,:)
         real(8), allocatable:: fatpq(:,:)
         real(8), allocatable:: stresspq(:,:,:)
+        integer, allocatable:: ipiv(:)
+        real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
     end type typ_ann_arr
     type typ_symfunc
