@@ -65,6 +65,7 @@ module mod_ann
     end type typ_ann
     type typ_ann_arr
         integer:: n=-1
+        integer:: natmax=1000
         logical:: compute_symfunc=.true.
         character(30):: event='unknown'
         character(50):: approach='unknown'
@@ -85,9 +86,16 @@ module mod_ann
         real(8):: yall_bond(100,100,100)
         real(8):: y0d_bond(100,3,100,100)
         !real(8), allocatable:: y0dr(:,:,:)
+        real(8), allocatable:: a(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
+        real(8), allocatable:: fat_chi(:,:)
+        real(8), allocatable:: g_per_atom(:,:)
+        real(8), allocatable:: fatpq(:,:)
+        real(8), allocatable:: stresspq(:,:,:)
+        integer, allocatable:: ipiv(:)
+        real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
     end type typ_ann_arr
     type typ_symfunc

@@ -386,6 +386,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_all, typ_atoms_arr
+    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename_list
@@ -400,6 +401,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
     type(typ_atoms_arr):: atoms_arr_t
     real(8):: ttx, tty, ttz, fx, fy, fz
     integer:: nconfmax, ind, len_filename
+    call f_routine(id='read_data')
     nconfmax=1*10**5
     allocate(atoms_arr_t%atoms(nconfmax))
     allocate(atoms_arr_t%fn(nconfmax))
@@ -465,7 +467,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
             enddo
             atoms_arr_t%fn(atoms_arr_t%nconf)=trim(filename)
             atoms_arr_t%lconf(atoms_arr_t%nconf)=iconf
-            call atom_deallocate_old(atoms_arr_of%atoms(iconf))
+            call atom_deallocate(atoms_arr_of%atoms(iconf))
         enddo over_iconf
         deallocate(atoms_arr_of%atoms)
         !call atom_all_deallocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.,qtotall=.true.)
@@ -488,13 +490,13 @@ subroutine read_data(parini,filename_list,atoms_arr)
        !     !stop 'WARNING: Is cellvec variable copied?'
        !     call atom_build_periodic_images(atoms_arr%atoms(iconf),10.d0)
        ! else
-            atoms_arr%atoms(iconf)%natim=atoms_arr%atoms(iconf)%nat
-            call atom_allocate_old(atoms_arr%atoms(iconf),atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%natim,0)
-            do iat=1,atoms_arr%atoms(iconf)%nat
-                atoms_arr%atoms(iconf)%ratim(1,iat)=atoms_arr%atoms(iconf)%rat(1,iat)
-                atoms_arr%atoms(iconf)%ratim(2,iat)=atoms_arr%atoms(iconf)%rat(2,iat)
-                atoms_arr%atoms(iconf)%ratim(3,iat)=atoms_arr%atoms(iconf)%rat(3,iat)
-            enddo
+            !atoms_arr%atoms(iconf)%natim=atoms_arr%atoms(iconf)%nat
+            !call atom_allocate_old(atoms_arr%atoms(iconf),atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%natim,0)
+            !do iat=1,atoms_arr%atoms(iconf)%nat
+            !    atoms_arr%atoms(iconf)%ratim(1,iat)=atoms_arr%atoms(iconf)%rat(1,iat)
+            !    atoms_arr%atoms(iconf)%ratim(2,iat)=atoms_arr%atoms(iconf)%rat(2,iat)
+            !    atoms_arr%atoms(iconf)%ratim(3,iat)=atoms_arr%atoms(iconf)%rat(3,iat)
+            !enddo
         !endif
     enddo
 
@@ -504,5 +506,6 @@ subroutine read_data(parini,filename_list,atoms_arr)
     deallocate(atoms_arr_t%atoms)
     deallocate(atoms_arr_t%fn)
     deallocate(atoms_arr_t%lconf)
+    call f_release_routine()
 end subroutine read_data
 !*****************************************************************************************
