@@ -148,14 +148,8 @@ for iline,line in enumerate(lines):
         #print str_line
         atoms=get_input_geometry(iline,lines,nat,has_unit_cell)
         #rotation to lattice and all atom
-        dproj,atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+        atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
 
-        atoms.cellvec[0][0]=dproj[0]
-        atoms.cellvec[1][0]=dproj[1]
-        atoms.cellvec[1][1]=dproj[2]
-        atoms.cellvec[2][0]=dproj[3]
-        atoms.cellvec[2][1]=dproj[4]
-        atoms.cellvec[2][2]=dproj[5]
         #print lines[iline+2].split()[1],lines[iline+2].split()[2],lines[iline+2].split()[3]
         #for iat in range(atoms.nat):
         #    print atoms.rat[iat][0],atoms.rat[iat][1],atoms.rat[iat][2]
@@ -167,14 +161,8 @@ for iline,line in enumerate(lines):
         #print str_line
         atoms=get_updated_geometry(iline,lines,nat,has_unit_cell)
         #rotation to lattice and all atom
-        dproj,atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+        atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
 
-        atoms.cellvec[0][0]=dproj[0]
-        atoms.cellvec[1][0]=dproj[1]
-        atoms.cellvec[1][1]=dproj[2]
-        atoms.cellvec[2][0]=dproj[3]
-        atoms.cellvec[2][1]=dproj[4]
-        atoms.cellvec[2][2]=dproj[5]
         #print lines[iline+2].split()[1],lines[iline+2].split()[2],lines[iline+2].split()[3]
         #for iat in range(atoms.nat):
         #    print atoms.rat[iat][0],atoms.rat[iat][1],atoms.rat[iat][2]
