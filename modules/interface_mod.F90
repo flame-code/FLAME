@@ -53,10 +53,10 @@ subroutine set_atomc_types_info(parini)
     type(typ_parini), intent(inout):: parini
 end subroutine set_atomc_types_info
 ! ./src/ann_basic.F90 :
-subroutine ann_allocate(natmax,ann_arr)
-    use mod_ann, only: typ_ann_arr
+subroutine ann_allocate(ekf,ann_arr)
+    use mod_ann, only: typ_ann_arr, typ_ekf
     implicit none
-    integer, intent(in):: natmax
+    type(typ_ekf), intent(in):: ekf
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine ann_allocate
 subroutine ann_deallocate(ann_arr)

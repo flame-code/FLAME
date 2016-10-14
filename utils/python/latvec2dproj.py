@@ -71,7 +71,7 @@ def latvec2dproj(cellvec,rxyz,nat):
         print "Error in 2. rotation"
         sys.exit("error") 
     if cellvec[2][2]<0.0:
-        print "ERROR: in orientation of the cell"
+        print "ERROR: in orientation of the cell: cellvec[2][2]= %14.5E" % cellvec[2][2]
         sys.exit("error") 
     
     #The total rotational matrix:-------------------------------------------------------------
@@ -88,7 +88,14 @@ def latvec2dproj(cellvec,rxyz,nat):
     dproj[3]=cellvec[2][0]
     dproj[4]=cellvec[2][1]
     dproj[5]=cellvec[2][2]
-    return (dproj,cellvec,rxyz)
+    cellvec[0][0]=dproj[0]
+    cellvec[1][0]=dproj[1]
+    cellvec[1][1]=dproj[2]
+    cellvec[2][0]=dproj[3]
+    cellvec[2][1]=dproj[4]
+    cellvec[2][2]=dproj[5]
+
+    return (cellvec,rxyz)
 #!*****************************************************************************************
 def rotation(angle,axe):
 #This subroutine will calculate the rotational matrix rotmat for a

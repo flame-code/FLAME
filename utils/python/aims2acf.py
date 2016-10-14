@@ -8,6 +8,7 @@ import copy
 from atoms import *
 from ascii import *
 from acf import *
+from latvec2dproj import *
 #*****************************************************************************************
 def get_input_geometry(iline,lines,nat,has_unit_cell):
     atoms=Atoms()
@@ -146,6 +147,9 @@ for iline,line in enumerate(lines):
         #if not has_unit_cell: print 'RRRRRRRRRRRRR'
         #print str_line
         atoms=get_input_geometry(iline,lines,nat,has_unit_cell)
+        #rotation to lattice and all atom
+        atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+
         #print lines[iline+2].split()[1],lines[iline+2].split()[2],lines[iline+2].split()[3]
         #for iat in range(atoms.nat):
         #    print atoms.rat[iat][0],atoms.rat[iat][1],atoms.rat[iat][2]
@@ -156,6 +160,9 @@ for iline,line in enumerate(lines):
     if 'Updated atomic structure' in str_line:
         #print str_line
         atoms=get_updated_geometry(iline,lines,nat,has_unit_cell)
+        #rotation to lattice and all atom
+        atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+
         #print lines[iline+2].split()[1],lines[iline+2].split()[2],lines[iline+2].split()[3]
         #for iat in range(atoms.nat):
         #    print atoms.rat[iat][0],atoms.rat[iat][1],atoms.rat[iat][2]

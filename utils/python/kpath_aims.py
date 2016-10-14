@@ -53,7 +53,7 @@ for i_path in range(0, len(pp)):
     if i_path>0:
 	    i = pp_l[0]
 	    if j != i: 
-                print >> f, "phonon band", "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", "100",j , i
+                print >> f, "output band", "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", "20",j , i
                 #print >> f, "  ".join(map(str, kk[i])) , "                !", i
                 #print >> f, " "
     for i in pp_l[:size-1]:
@@ -62,7 +62,7 @@ for i_path in range(0, len(pp)):
 #         print >> h, " ".join(map(str, kk[i]))
           iold=i
       for j in pp_l[count2+1:count2+2]:
-          print >> f, "phonon band","  ".join(map(str,kk[i])), "  ","  ".join(map(str, kk[j])) , "  ", "100",i,j
+          print >> f, "output band","  ".join(map(str,kk[i])), "  ","  ".join(map(str, kk[j])) , "  ", "20",i,j
          #print >> f, "  ".join(map(str, kk[j])) , "                !", j
       count2=count2+1
 #    print >> g, j
