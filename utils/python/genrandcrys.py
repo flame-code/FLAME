@@ -30,12 +30,12 @@ vc=1+0.2*(nat/30+1)
 while True:
     vmin=vc*4*(nat/3)*(2.0)**3
     vmax=vc*4*(nat/3)*(2.3)**3
-    a=(random.uniform(vmin,vmax))**(1.0/3)#generating a vector for cell
-    b=(random.uniform(vmin,vmax))**(1.0/3)#generating b vector for cell
+    a=(random.uniform(vmin,vmax))**(1.0/3)#generating a cellvector 
+    b=(random.uniform(vmin,vmax))**(1.0/3)#generating b cellvector 
     gama=pi/(random.uniform(1.5,7))#generating gama angel
     #c=random.uniform(vmin/(a*b*math.sin(gama)),vmax/(a*b*math.sin(gama)))
     #c=vmax/(a*b*math.sin(gama))
-    c=vmin/(a*b*math.sin(gama))#generating c vector for cell
+    c=vmin/(a*b*math.sin(gama))#generating c cellvector 
     cell_vec=[[0,0,0],[0,0,0],[0,0,0]]
     xan=[0 for i in range(nan)];yan=[0 for i in range(nan)];zan=[0 for i in range(nan)]#empty list for anions
     xcat=[0 for i in range(ncat)];ycat=[0 for i in range(ncat)];zcat=[0 for i in range(ncat)]#empty list for cations
