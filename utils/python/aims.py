@@ -48,12 +48,14 @@ def aims_read(filename):
         if iline==1:
             atoms=Atoms()
             atoms.nat=0
-        if 'lattice_vector' in line.strip():
+        str_lattice_vector=line.strip()[0:14]
+        str_atom=line.strip()[0:4]
+        if str_lattice_vector=='lattice_vector':
             i_lattice_vector+=1
             atoms.cellvec[i_lattice_vector][0]=float(line.split()[1])
             atoms.cellvec[i_lattice_vector][1]=float(line.split()[2])
             atoms.cellvec[i_lattice_vector][2]=float(line.split()[3])
-        elif 'atom' in str(line.split()[0]):
+        elif str_atom=='atom':
             atoms.rat.append([])
             icol=0
             #loop over the elemets, split by whitespace
