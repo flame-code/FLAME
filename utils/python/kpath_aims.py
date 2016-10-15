@@ -8,7 +8,7 @@ structure = mg.Structure.from_file("POSCAR")   #str(open("rlx_str040.cif").read(
 #from pymatgen.symmetry.finder import SymmetryFinder
 #symmetries = SymmetryFinder(structure, 0.001, 5)
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-finder = SpacegroupAnalyzer(structure,symprec=0.5,angle_tolerance=5)
+finder = SpacegroupAnalyzer(structure,symprec=0.05,angle_tolerance=5)
 spg_s = finder.get_spacegroup_symbol()
 spg_n = finder.get_spacegroup_number()
 pg = finder.get_point_group()
@@ -18,7 +18,7 @@ pm =finder.find_primitive()
 print "Int number : ", spg_n
 #print "pointgroup : ", pg
 from pymatgen.symmetry.bandstructure import HighSymmKpath
-pather = HighSymmKpath(structure,symprec=0.5, angle_tolerance=5)
+pather = HighSymmKpath(structure,symprec=0.05, angle_tolerance=5)
 kpoints_path=pather.kpath
 from pprint import pprint
 kk=kpoints_path["kpoints"]

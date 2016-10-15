@@ -7,7 +7,7 @@ import os
 
 random.seed()
 #----------------------------------------------------------------------------------------------------------
-#This program generate random sheet crystall with arbitrary a, b, gama and c=20 and alpha=beta=90
+#This program generate random sheet crystall with random a, b, gama and c=20 and alpha=beta=90
 #Its output is poscur.ascii
 #This program requaiers an "input" file like following:
 #Ti O            #stypat: symbol of all atom types

@@ -7,7 +7,8 @@ import os
 
 random.seed()
 #----------------------------------------------------------------------------------------------------------
-#This programe generate random crystall structure with arbitrary a, b, c and gama and alpha=beta=90
+#This programe generate random crystall structure like that described in 10.1103/PhysRevLett.116.075503
+#a, b, c and gama are random and alpha=beta=90
 #This program requaiers an "input" file like following:
 #Ti O            #stypat: symbol of all atom types
 #15 15             #nat_kinds: number of atoms of each type per cell: nkinds numbers in this line
