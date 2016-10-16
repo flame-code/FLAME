@@ -77,11 +77,11 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             partb%event=ann_arr%event
             ekf%g=0.d0
             do i=1,4
-                do ib=1,nb
+                !do ib=1,nb
                     do j=1,ekf%num(1)
-                        ekf%g(ekf%loc(1)+j-1)=ekf%g(ekf%loc(1)+j-1)+partb%dedh(i)*ekf%gc(j,i)
+                        ekf%g(ekf%loc(i)+j-1)=partb%dedh(i)*ekf%gc(j,i)
                     enddo
-                enddo
+                !enddo
             enddo
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0

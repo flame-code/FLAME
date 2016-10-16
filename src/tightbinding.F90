@@ -64,7 +64,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     call set_indorb(partb,atoms)
     rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
     ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
-    partb%dedh=f_malloc([1.to.4],id='partb%dedh')
+    !partb%dedh=f_malloc([1.to.4],id='partb%dedh')
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
     call gammamat(partb,atoms,natsi,0,pplocal) 
     call forcediagonalizeg(partb)
@@ -133,7 +133,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     enddo
     call f_free(rho)
     call f_free(ggocc)
-    call f_free(partb%dedh)
+    !call f_free(partb%dedh)
     call f_release_routine()
 end subroutine gammaenergy
 !*****************************************************************************************

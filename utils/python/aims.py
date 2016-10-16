@@ -40,39 +40,69 @@ def aims_read(filename):
     f=open(filename,'r')
     atoms=[]
     iline=0
+    i_lattice_vector=-1
     for line in f.readlines():
         if '#' in line.strip(): continue
         if not line.strip(): continue
         iline+=1
         if iline==1:
             atoms=Atoms()
-            atoms.boundcond="bulk"
             atoms.nat=0
-            atoms.cellvec[0][0]=float(line.split()[1])
-            atoms.cellvec[0][1]=float(line.split()[2])
-            atoms.cellvec[0][2]=float(line.split()[3])
-        elif iline==2:
-            atoms.cellvec[1][0]=float(line.split()[1])
-            atoms.cellvec[1][1]=float(line.split()[2])
-            atoms.cellvec[1][2]=float(line.split()[3])
-        elif iline==3:
-            atoms.cellvec[2][0]=float(line.split()[1])
-            atoms.cellvec[2][1]=float(line.split()[2])
-            atoms.cellvec[2][2]=float(line.split()[3])
-        elif (iline>3):
-            if 'atom' in str(line.split()[0]):
-                atoms.rat.append([])
-                icol=0
-                #loop over the elemets, split by whitespace
-                for i in line.split():
-                    icol+=1
-                    if icol>1 and icol<5:
-                        atoms.rat[-1].append(float(i))
-                    elif icol==5:
-                        atoms.sat.append(str(i))
-                atoms.nat+=1
-            else:
-                break
+        str_lattice_vector=line.strip()[0:14]
+        str_atom=line.strip()[0:4]
+        if str_lattice_vector=='lattice_vector':
+            i_lattice_vector+=1
+            atoms.cellvec[i_lattice_vector][0]=float(line.split()[1])
+            atoms.cellvec[i_lattice_vector][1]=float(line.split()[2])
+            atoms.cellvec[i_lattice_vector][2]=float(line.split()[3])
+        elif str_atom=='atom':
+            atoms.rat.append([])
+            icol=0
+            #loop over the elemets, split by whitespace
+            for i in line.split():
+                icol+=1
+                if icol>1 and icol<5:
+                    atoms.rat[-1].append(float(i))
+                elif icol==5:
+                    atoms.sat.append(str(i))
+            atoms.nat+=1
+            #print "%16.8f%16.8f%16.8f" % (atoms.rat[-1][0],atoms.rat[-1][1],atoms.rat[-1][2])
+    if i_lattice_vector==-1:
+        atoms.boundcond="free"
+	atoms.cellvec,atoms.rat=set_cell(atoms)
+    else:
+        atoms.boundcond="bulk"
     f.closed
     return atoms
+#*****************************************************************************************
+def set_cell(atoms):
+    amargin=3.0
+    xmin=sys.float_info.max ; xmax=-sys.float_info.max
+    ymin=sys.float_info.max ; ymax=-sys.float_info.max
+    zmin=sys.float_info.max ; zmax=-sys.float_info.max
+    for iat in range(atoms.nat):
+        if atoms.rat[iat][0]>xmax:
+            xmax=atoms.rat[iat][0]
+        elif atoms.rat[iat][0]<xmin:
+            xmin=atoms.rat[iat][0]
+        if atoms.rat[iat][1]>ymax:
+            ymax=atoms.rat[iat][1]
+        elif atoms.rat[iat][1]<ymin:
+            ymin=atoms.rat[iat][1]
+        if atoms.rat[iat][2]>zmax:
+            zmax=atoms.rat[iat][2]
+        elif atoms.rat[iat][2]<zmin:
+            zmin=atoms.rat[iat][2]
+    #---------------------------------------------------------------------------
+    cvxx=xmax-xmin+2*amargin
+    cvyy=ymax-ymin+2*amargin
+    cvzz=zmax-zmin+2*amargin
+    cellvec=[[cvxx,0.0,0.0],[0.0,cvyy,0.0],[0.0,0.0,cvzz]]
+    rat=[]
+    for iat in range(atoms.nat):
+        rat.append([])
+        rat[-1].append(atoms.rat[iat][0]-xmin+amargin)
+        rat[-1].append(atoms.rat[iat][1]-ymin+amargin)
+        rat[-1].append(atoms.rat[iat][2]-zmin+amargin)
+    return cellvec,rat
 #*****************************************************************************************
