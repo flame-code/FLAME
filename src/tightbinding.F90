@@ -67,6 +67,8 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     !partb%dedh=f_malloc([1.to.4],id='partb%dedh')
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
     call gammamat(partb,atoms,natsi,0,pplocal) 
+    !write(*,*) partb%tbmat(1:8,1:8)
+    !stop
     call forcediagonalizeg(partb)
     do iorb=1,partb%norb
             write(8,*) partb%tbmat(iorb,iorb)
@@ -221,6 +223,8 @@ subroutine forcediagonalizeg(partb)
     integer, allocatable:: isuppz(:)
     real(8):: abstol=0.d0 !The absolute error tolerance for the eigenvalues.
     integer, save:: errcount=0
+    integer, save:: icall=0
+    icall=icall+1
     call f_routine(id='forcediagonalizeg')
     n=partb%norb
     nc=partb%norbcut
@@ -237,6 +241,18 @@ subroutine forcediagonalizeg(partb)
     enddo
     !ierr does not need to be set on entry work is the workspace array,
     !already set eval is also an output
+    write(*,*) 'EEEEEEEEEEEEEE ',icall,errcount
+    if(icall==8) then
+        write(*,'(8es14.5)') (partb%tbmat(1,j),j=1,8)
+        write(*,'(8es14.5)') (partb%tbmat(2,j),j=1,8)
+        write(*,'(8es14.5)') (partb%tbmat(3,j),j=1,8)
+        write(*,'(8es14.5)') (partb%tbmat(4,j),j=1,8)
+        write(*,'(8es14.5)') (partb%tbmat(5,j),j=1,8)
+        write(*,'(8es14.5)') (partb%tbmat(6,j),j=1,8)
+        write(*,'(8es14.5)') (partb%tbmat(7,j),j=1,8)
+        write(*,'(8es14.5)') (partb%tbmat(8,j),j=1,8)
+        !stop
+    endif
     call dsyevr('V','I','U',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
         isuppz,work,lwork,iwork,liwork,ierr)
     if(ierr/= 0  .and. errcount < 250) then
@@ -288,11 +304,15 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
     !The distance between two arbitrary atoms
     dist=sqrt(diff(1)**2+diff(2)**2+diff(3)**2)
     !Intractions are considered over a fixed domain (r_low=0.0001,r_up=paircut).
+    !write(*,*) 'HERE if ',iat,jat,dist,partb%paircut
     if(dist>=1.d-4 .and. .not. dist>partb%paircut) then
         !Compute unit vector between atoms as input variable in slatercoupling()
+        !write(*,'(a,3es19.10)') 'diff ',diff(1),diff(2),diff(3)
         diff(1)=diff(1)/dist
         diff(2)=diff(2)/dist
         diff(3)=diff(3)/dist
+        !write(*,'(a,3es19.10)') 'diff ',diff(1),diff(2),diff(3)
+        !stop
         if(flag2==0) then
             !Returns h(r)s and their derivatives using cubic splines in hgen and dhgen.
             if(lenosky)then
@@ -311,6 +331,7 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
         hgen(2)=partb%hgenall1(jat,iat)
         hgen(3)=partb%hgenall2(jat,iat)
         hgen(4)=partb%hgenall3(jat,iat)
+        !write(*,'(a,4es14.5)') 'hgen-B ',hgen(1),hgen(2),hgen(3),hgen(4)
         dhgen(1)=partb%dhgenall0(jat,iat)
         dhgen(2)=partb%dhgenall1(jat,iat)
         dhgen(3)=partb%dhgenall2(jat,iat)
