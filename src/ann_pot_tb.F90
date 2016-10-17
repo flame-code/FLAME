@@ -21,6 +21,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)   !derivative of 
     real(8):: epotn, tt, epotdh, c
     call f_routine(id='cal_ann_tb')
+    partb%paircut=ann_arr%rcut
     partb%hgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
     partb%hgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
     partb%hgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
@@ -67,12 +68,22 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%hgenall1(iat,jat)=hgen(2,ib)
         partb%hgenall2(iat,jat)=hgen(3,ib)
         partb%hgenall3(iat,jat)=hgen(4,ib)
+        partb%hgenall0(jat,iat)=partb%hgenall0(iat,jat)
+        partb%hgenall1(jat,iat)=partb%hgenall1(iat,jat)
+        partb%hgenall2(jat,iat)=partb%hgenall2(iat,jat)
+        partb%hgenall3(jat,iat)=partb%hgenall3(iat,jat)
         partb%dhgenall0(iat,jat)=dhgen(1,ib)
         partb%dhgenall1(iat,jat)=dhgen(2,ib)
         partb%dhgenall2(iat,jat)=dhgen(3,ib)
         partb%dhgenall3(iat,jat)=dhgen(4,ib)
+        partb%dhgenall0(jat,iat)=partb%dhgenall0(iat,jat)
+        partb%dhgenall1(jat,iat)=partb%dhgenall1(iat,jat)
+        partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
+        partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
+        !write(*,'(a,4es19.10)') 'hgen-A ',hgen(1,1),hgen(2,1),hgen(3,1),hgen(4,1)
     enddo
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
+        write(*,*) 'energy ',atoms.epot
         if(trim(ann_arr%event)=='train') then
             partb%event=ann_arr%event
             ekf%g=0.d0
