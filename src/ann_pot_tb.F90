@@ -95,11 +95,10 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
                 !do ib=1,nb
                     do j=1,ekf%num(1)
                         ekf%g(ekf%loc(i)+j-1)=-partb%dedh(i)*ekf%gc(j,i)
-                        write(*,'(a,2i5,3es14.5)') 'GGG ',i,j,ekf%g(ekf%loc(i)+j-1),partb%dedh(i),ekf%gc(j,i)
+                        !write(*,'(a,2i5,3es14.5)') 'GGG ',i,j,ekf%g(ekf%loc(i)+j-1),partb%dedh(i),ekf%gc(j,i)
                     enddo
                 !enddo
             enddo
-            stop
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
