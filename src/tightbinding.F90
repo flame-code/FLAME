@@ -82,6 +82,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
     enddo
     call yfdocclocal(partb)
+    !write(*,'(a,10es14.5)') 'eval ',partb%eband,partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5)
     !Need to include extra terms.  We have focc[iorb-1]...focc[NC(stride*nat)-1]
     !also fermitemp=temp in Kelvin so "beta"=1 / kT=11604 / fermitemp
     !ggocc maximum is 2.0
@@ -224,6 +225,8 @@ subroutine forcediagonalizeg(partb)
     real(8):: abstol=0.d0 !The absolute error tolerance for the eigenvalues.
     integer, save:: errcount=0
     integer, save:: icall=0
+    !real(8):: w1(1000)
+    !real(8):: w2(1000)
     icall=icall+1
     call f_routine(id='forcediagonalizeg')
     n=partb%norb
@@ -234,26 +237,31 @@ subroutine forcediagonalizeg(partb)
     a=f_malloc([1.to.n,1.to.n],id='a')
     work=f_malloc([1.to.lwork],id='work')
     iwork=f_malloc([1.to.liwork],id='iwork')
+    !partb%tbmat=1.d-10
+    !do i=1,n
+    !    partb%tbmat(i,i)=1.d0
+    !enddo
     do i=1,n
         do j=1,n
-            a(j,i)=partb%tbmat(i,j)
+            a(i,j)=partb%tbmat(i,j)
         enddo
     enddo
     !ierr does not need to be set on entry work is the workspace array,
     !already set eval is also an output
-    write(*,*) 'EEEEEEEEEEEEEE ',icall,errcount
-    if(icall==8) then
-        write(*,'(8es14.5)') (partb%tbmat(1,j),j=1,8)
-        write(*,'(8es14.5)') (partb%tbmat(2,j),j=1,8)
-        write(*,'(8es14.5)') (partb%tbmat(3,j),j=1,8)
-        write(*,'(8es14.5)') (partb%tbmat(4,j),j=1,8)
-        write(*,'(8es14.5)') (partb%tbmat(5,j),j=1,8)
-        write(*,'(8es14.5)') (partb%tbmat(6,j),j=1,8)
-        write(*,'(8es14.5)') (partb%tbmat(7,j),j=1,8)
-        write(*,'(8es14.5)') (partb%tbmat(8,j),j=1,8)
-        !stop
-    endif
-    call dsyevr('V','I','U',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
+    !write(*,'(a,7i6)') 'EEEEEEEEEEEEEE ',icall,errcount,size(partb%eval),size(partb%tbmat),size(a),lwork,liwork
+    !if(icall==7 .or. icall==8) then
+    !    write(*,'(8es14.5)') (partb%tbmat(1,j),j=1,8)
+    !    write(*,'(8es14.5)') (partb%tbmat(2,j),j=1,8)
+    !    write(*,'(8es14.5)') (partb%tbmat(3,j),j=1,8)
+    !    write(*,'(8es14.5)') (partb%tbmat(4,j),j=1,8)
+    !    write(*,'(8es14.5)') (partb%tbmat(5,j),j=1,8)
+    !    write(*,'(8es14.5)') (partb%tbmat(6,j),j=1,8)
+    !    write(*,'(8es14.5)') (partb%tbmat(7,j),j=1,8)
+    !    write(*,'(8es14.5)') (partb%tbmat(8,j),j=1,8)
+    !    !stop
+    !endif
+    !write(*,*) size(partb%eval)
+    call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
         isuppz,work,lwork,iwork,liwork,ierr)
     if(ierr/= 0  .and. errcount < 250) then
         write(*,'(a,2i,a)') 'TBNORTH WARNING: ierr , errcount == ',ierr,errcount,' from dsygv diagonalize'
@@ -338,7 +346,7 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
         dhgen(4)=partb%dhgenall3(jat,iat)
         !Returns rem (matrix of coupling) 
         call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
-        if(partb%event=='train') then
+        if(flag2>0 .and. partb%event=='train') then
             call Hamiltonian_der(diff,flag2,rem)
         endif
     endif
@@ -498,7 +506,7 @@ subroutine Hamiltonian_der(u,flag2,mat)
     !local variables
     real(8):: ess, esx, esy, esz, exx, eyy, ezz, exy, eyz, exz
     !Here flag2 represent the number of "hgen"s.
-    if(flag2==0) then
+    if(flag2==1) then
         ess=1
         esx=0
         esy=0
@@ -509,7 +517,7 @@ subroutine Hamiltonian_der(u,flag2,mat)
         exy=0
         eyz=0
         exz=0
-    else if(flag2==1) then
+    else if(flag2==2) then
         ess=0
         esx=u(1)
         esy=u(2)
@@ -520,7 +528,7 @@ subroutine Hamiltonian_der(u,flag2,mat)
         exy=0
         eyz=0
         exz=0
-    else if(flag2==2) then
+    else if(flag2==3) then
         ess=0
         esx=0
         esy=0
@@ -531,7 +539,7 @@ subroutine Hamiltonian_der(u,flag2,mat)
         exy=u(1)*u(2)
         eyz=u(2)*u(3)
         exz=u(1)*u(3)
-    else if(flag2==3) then
+    else if(flag2==4) then
         ess=0
         esx=0
         esy=0
