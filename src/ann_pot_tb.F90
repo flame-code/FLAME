@@ -94,7 +94,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             do i=1,4
                 !do ib=1,nb
                     do j=1,ekf%num(1)
-                        ekf%g(ekf%loc(i)+j-1)=-partb%dedh(i)*ekf%gc(j,i)
+                        ekf%g(ekf%loc(i)+j-1)=partb%dedh(i)*ekf%gc(j,i)
                         !write(*,'(a,2i5,3es14.5)') 'GGG ',i,j,ekf%g(ekf%loc(i)+j-1),partb%dedh(i),ekf%gc(j,i)
                     enddo
                 !enddo
