@@ -82,18 +82,24 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
         !write(*,'(a,4es19.10)') 'hgen-A ',hgen(1,1),hgen(2,1),hgen(3,1),hgen(4,1)
     enddo
-        call lenoskytb_ann(partb,atoms,atoms%nat,c)
-        write(*,*) 'energy ',atoms.epot
         if(trim(ann_arr%event)=='train') then
             partb%event=ann_arr%event
+        endif
+        call lenoskytb_ann(partb,atoms,atoms%nat,c)
+        atoms%epot=atoms%epot-0.23d0
+        !atoms%epot=atoms%epot-0.2208033067776594d0
+        write(*,*) 'energy ',atoms.epot
+        if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
             do i=1,4
                 !do ib=1,nb
                     do j=1,ekf%num(1)
-                        ekf%g(ekf%loc(i)+j-1)=partb%dedh(i)*ekf%gc(j,i)
+                        ekf%g(ekf%loc(i)+j-1)=-partb%dedh(i)*ekf%gc(j,i)
+                        write(*,'(a,2i5,3es14.5)') 'GGG ',i,j,ekf%g(ekf%loc(i)+j-1),partb%dedh(i),ekf%gc(j,i)
                     enddo
                 !enddo
             enddo
+            stop
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
@@ -137,6 +143,7 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     if(natsi>atoms%nat) write(*,'(a)') 'WARNING natsi = ',natsi,' is greater than number of atoms = ',atoms%nat
     if(atoms%nat == 0) write(*,'(a)') 'WARNING lenoskytb called with zero atoms'
     if(atoms%nat < 0) write(*,'(a)') 'WARNING lenoskytb called with negative number of atoms'
+    !write(*,*) 'natsi ',natsi
     call totalenergy(partb,atoms,natsi,pplocal) 
     call lenoskytb_final(partb)
 end subroutine lenoskytb_ann
