@@ -495,6 +495,7 @@ subroutine yfdocclocal(partb)
     do i=1,partb%norbcut
         partb%eband=partb%eband+partb%focc(i)*partb%eval(i)
     enddo
+    !write(*,*) 'eband', partb%eband
 end subroutine yfdocclocal
 !*****************************************************************************************
 subroutine Hamiltonian_der(u,flag2,mat)
@@ -544,9 +545,9 @@ subroutine Hamiltonian_der(u,flag2,mat)
         esx=0
         esy=0
         esz=0
-        exx=(1-u(1))*u(1)
-        eyy=(1-u(2))*u(2)
-        ezz=(1-u(3))*u(3)
+        exx=(1-u(1)*u(1))
+        eyy=(1-u(2)*u(2))
+        ezz=(1-u(3)*u(3))
         exy=-u(1)*u(2)
         eyz=-u(2)*u(3)
         exz=-u(1)*u(3)
