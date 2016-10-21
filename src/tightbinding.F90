@@ -186,6 +186,7 @@ subroutine gammamat(partb,atoms,natsi,flag2,pplocal)
             do iorb=1,norbi
                 do jorb=1,norbj
                     !off-diagonal terms of H_TB is constructed
+                    !write(*,'(a,2es14.5,4i5)') 'AAAAAAAAAAA-1 ',partb%tbmat(7,3),rex(jorb,iorb),jorb,iorb,norbj,norbi
                     partb%tbmat(indexj+jorb,indexi+iorb)=partb%tbmat(indexj+jorb,indexi+iorb)+rex(jorb,iorb)
                 enddo
             enddo
@@ -231,7 +232,7 @@ subroutine forcediagonalizeg(partb)
     call f_routine(id='forcediagonalizeg')
     n=partb%norb
     nc=partb%norbcut
-    lwork=n*n+50*n
+    lwork=n*n+100*n
     liwork=n*n+50*n
     isuppz=f_malloc([1.to.2*n],id='isuppz')
     a=f_malloc([1.to.n,1.to.n],id='a')
@@ -261,8 +262,18 @@ subroutine forcediagonalizeg(partb)
     !    !stop
     !endif
     !write(*,*) size(partb%eval)
-    call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
-        isuppz,work,lwork,iwork,liwork,ierr)
+    !write(*,'(a,6i5)') 'FFFFF ',icall,n,size(a),nc,size(partb%eval),size(partb%evec)
+    if(nc==n) then
+        call DSYEV('V','L',n,a,n,partb%eval,work,lwork,ierr)
+        do i=1,n
+            do j=1,n
+                partb%evec(i,j)=a(i,j)
+            enddo
+        enddo
+    else
+        call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
+             isuppz,work,lwork,iwork,liwork,ierr)
+    endif
     if(ierr/= 0  .and. errcount < 250) then
         write(*,'(a,2i,a)') 'TBNORTH WARNING: ierr , errcount == ',ierr,errcount,' from dsygv diagonalize'
         write(*,'(a)') 'Will not print this message when errcount exceeds 250'
@@ -345,7 +356,8 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
         dhgen(3)=partb%dhgenall2(jat,iat)
         dhgen(4)=partb%dhgenall3(jat,iat)
         !Returns rem (matrix of coupling) 
-        call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
+        !call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
+        if(flag2==0) call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
         if(flag2>0 .and. partb%event=='train') then
             call Hamiltonian_der(diff,flag2,rem)
         endif
