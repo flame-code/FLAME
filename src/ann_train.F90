@@ -548,10 +548,10 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             endif bondbased_ann
             !call ann_deallocate(ann_arr)
             if(parini%symfunc_type_ann=='behler') then
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
+            !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
             if(.not. parini%bondbased_ann) then
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
+            !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
+            !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
             endif
             endif
         elseif(trim(parini%symfunc)/='read') then

@@ -61,6 +61,10 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             endif
         enddo over_ib
     enddo over_i
+    !dhgen(1,1)=0.d0
+    !dhgen(2,1)=0.d0
+    !dhgen(3,1)=0.d0
+    !dhgen(4,1)=0.d0
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
@@ -86,9 +90,9 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             partb%event=ann_arr%event
         endif
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
-        atoms%epot=atoms%epot-0.23d0
+        atoms%epot=atoms%epot-0.19d0
         !atoms%epot=atoms%epot-0.2208033067776594d0
-        write(*,*) 'energy ',atoms.epot
+        !write(*,*) 'energy ',atoms.epot
         if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
             do i=1,4

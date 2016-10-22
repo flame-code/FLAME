@@ -39,9 +39,9 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         alpha=80.d-2
         rf=1.d-8
     elseif(trim(parini%approach_ann)=='tb') then
-        r0=10.d0
-        alpha=1.d-2 !120.d-2
-        rf=1.d-6
+        r0=20.d-1
+        alpha=50.d-2 !120.d-2
+        rf=5.d-3
     else
         r0=1.d0
         alpha=5.d-1
