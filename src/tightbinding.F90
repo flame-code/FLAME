@@ -82,6 +82,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
     enddo
     call yfdocclocal(partb)
+    !write(*,'(a,8f10.3)') 'GGGGG ',partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5),partb%focc(6),partb%focc(7),partb%focc(8)
     !write(*,'(a,10es14.5)') 'eval ',partb%eband,partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5)
     !Need to include extra terms.  We have focc[iorb-1]...focc[NC(stride*nat)-1]
     !also fermitemp=temp in Kelvin so "beta"=1 / kT=11604 / fermitemp
@@ -274,6 +275,7 @@ subroutine forcediagonalizeg(partb)
         call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
              isuppz,work,lwork,iwork,liwork,ierr)
     endif
+    !write(*,'(a,7f10.3)') 'FFFFF ',partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%eval(5),partb%eval(6),partb%eval(5)-partb%eval(4)
     if(ierr/= 0  .and. errcount < 250) then
         write(*,'(a,2i,a)') 'TBNORTH WARNING: ierr , errcount == ',ierr,errcount,' from dsygv diagonalize'
         write(*,'(a)') 'Will not print this message when errcount exceeds 250'
