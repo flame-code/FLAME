@@ -90,7 +90,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             partb%event=ann_arr%event
         endif
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
-        atoms%epot=atoms%epot-0.19d0
+        atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
         !atoms%epot=atoms%epot-0.2208033067776594d0
         !write(*,*) 'energy ',atoms.epot
         if(trim(ann_arr%event)=='train') then

@@ -83,15 +83,15 @@ def set_cell(atoms):
     for iat in range(atoms.nat):
         if atoms.rat[iat][0]>xmax:
             xmax=atoms.rat[iat][0]
-        elif atoms.rat[iat][0]<xmin:
+        if atoms.rat[iat][0]<xmin:
             xmin=atoms.rat[iat][0]
         if atoms.rat[iat][1]>ymax:
             ymax=atoms.rat[iat][1]
-        elif atoms.rat[iat][1]<ymin:
+        if atoms.rat[iat][1]<ymin:
             ymin=atoms.rat[iat][1]
         if atoms.rat[iat][2]>zmax:
             zmax=atoms.rat[iat][2]
-        elif atoms.rat[iat][2]<zmin:
+        if atoms.rat[iat][2]<zmin:
             zmin=atoms.rat[iat][2]
     #---------------------------------------------------------------------------
     cvxx=xmax-xmin+2*amargin
