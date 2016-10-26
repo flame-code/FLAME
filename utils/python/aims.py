@@ -65,6 +65,7 @@ def aims_read(filename):
                     atoms.rat[-1].append(float(i))
                 elif icol==5:
                     atoms.sat.append(str(i))
+            atoms.bemoved.append("TTT")
             atoms.nat+=1
             #print "%16.8f%16.8f%16.8f" % (atoms.rat[-1][0],atoms.rat[-1][1],atoms.rat[-1][2])
     if i_lattice_vector==-1:

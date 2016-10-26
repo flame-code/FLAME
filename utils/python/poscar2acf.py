@@ -12,9 +12,10 @@ else:
     filename = sys.argv[1]
 
 atoms=poscar_read(filename)
-atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+if not atoms.boundcond=="free":
+    atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
 
-#atoms_all=[]
-#atoms_all.append(Atoms())
-#atoms_all[-1]=copy.copy(atoms)
-acf_write_b(atoms,"screen")
+atoms_all=[]
+atoms_all.append(Atoms())
+atoms_all[-1]=copy.copy(atoms)
+acf_write(atoms_all,"screen")
