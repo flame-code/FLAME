@@ -355,10 +355,10 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
             partb%dhgenall1(jat,iat)=dhgen(2)
             partb%dhgenall2(jat,iat)=dhgen(3)
             partb%dhgenall3(jat,iat)=dhgen(4)
-            write (*,*) 'h_1(r)', dist, hgen(1)
-            write (*,*) 'h_2(r)', dist, hgen(2)
-            write (*,*) 'h_3(r)', dist, hgen(3)
-            write (*,*) 'h_4(r)', dist, hgen(4)
+            write (66,*) 'h_1(r)', dist, hgen(1)
+            write (77,*) 'h_2(r)', dist, hgen(2)
+            write (88,*) 'h_3(r)', dist, hgen(3)
+            write (99,*) 'h_4(r)', dist, hgen(4)
             endif
         endif
         hgen(1)=partb%hgenall0(jat,iat)
