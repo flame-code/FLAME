@@ -105,10 +105,10 @@ subroutine ann_check_symmetry_function(parini)
                     endif
                 enddo
             enddo
-            call ann_deallocate(ann_arr)
-            deallocate(symfunc%y)
-            deallocate(symfunc%y0d)
-            deallocate(symfunc%y0dr)
+            !write(*,*) allocated(symfunc%y),allocated(symfunc%y0d),allocated(symfunc%y0dr)
+            call f_free(symfunc%y)
+            call f_free(symfunc%y0d)
+            call f_free(symfunc%y0dr)
         enddo configurations
         do i=1,ann_arr%n
             do i0=1,ann_arr%ann(i)%nn(0)
@@ -137,7 +137,6 @@ subroutine ann_check_symmetry_function(parini)
                     symfunc_check%symfunc(iconf)%y(ig,iat)=symfunc%y(ig,iat)
                 enddo
             enddo
-            call ann_deallocate(ann_arr)
         enddo
     endif
     !----------------------------------------------------------   
