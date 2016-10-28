@@ -494,58 +494,13 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         symfunc_arr%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) !HERE
         symfunc_arr%symfunc(iconf)%nat=atoms_arr%atoms(iconf)%nat
     enddo
-    !if(.not. parini%bondbased_ann) then
-    !do iconf=1,atoms_arr%nconf
-    !    associate(ng=>symfunc_arr%symfunc(iconf)%ng)
-    !    associate(nat=>symfunc_arr%symfunc(iconf)%nat)
-    !    allocate(symfunc_arr%symfunc(iconf)%y(ng,nat))
-    !    end associate
-    !    end associate
-    !enddo
-    !endif
     configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
         if(trim(parini%symfunc)=='write' .or. trim(parini%symfunc)=='only_calculate') then
             call symmetry_functions(parini,ann_arr,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf),.false.)
             deallocate(symfunc_arr%symfunc(iconf)%y0dr)
-            bondbased_ann: if(parini%bondbased_ann) then
-                if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-                !allocate(symfunc_arr%symfunc(iconf)%y(symfunc_arr%symfunc(iconf)%ng,1))
-            !----------------------------- bond symmetry functions -------------------------------
-                !if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-                !do ib=1,1
-                !    do ig=1,symfunc_arr%symfunc(iconf)%ng
-                !        symfunc_arr%symfunc(iconf)%y(ig,ib)=ann_arr%yall_bond(ig,1,2)
-                !    enddo
-                !enddo
-            !------------------------------------------------------------------------------------- 
-            else
-            !associate(ng=>symfunc_arr%symfunc(iconf)%ng)
-            !associate(nat=>symfunc_arr%symfunc(iconf)%nat)
-            !associate(nb=>symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad)
-            !!allocate(symfunc_arr%symfunc(iconf)%y(ng,nat))
-            !!allocate(symfunc_arr%symfunc(iconf)%y0d(ng,3,nb))
-            !!allocate(symfunc_arr%symfunc(iconf)%y0d(ng,9,nb))
-            !do iat=1,atoms_arr%atoms(iconf)%nat
-            !    do ig=1,symfunc_arr%symfunc(iconf)%ng
-            !        symfunc_arr%symfunc(iconf)%y(ig,iat)=ann_arr%yall(ig,iat)
-            !    enddo
-            !enddo
-            !do ib=1,nb
-            !    do i=1,3
-            !        do ig=1,symfunc_arr%symfunc(iconf)%ng
-            !            symfunc_arr%symfunc(iconf)%y0d(ig,i,ib)=ann_arr%y0d(ig,i,ib)
-            !        enddo
-            !    enddo
-            !    do i=1,9
-            !        do ig=1,symfunc_arr%symfunc(iconf)%ng
-            !            symfunc_arr%symfunc(iconf)%y0dr(ig,i,ib)=ann_arr%y0dr(ig,i,ib)
-            !        enddo
-            !    enddo
-            !enddo
-            !end associate
-            !end associate
-            !end associate
-            endif bondbased_ann
+            if(parini%bondbased_ann .and. symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) then
+                stop 'ERROR: correct next line'
+            endif
             !call ann_deallocate(ann_arr)
             if(parini%symfunc_type_ann=='behler') then
             !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
@@ -596,14 +551,6 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             write(*,*) 'ERROR: writing/reading symmetry function values from files not'
             write(*,*) 'working yet, for several reasons for example allocation of wa'
             stop
-            !do iat=1,atoms_arr%atoms(iconf)%nat
-            !do jat=1,atoms_arr%atoms(iconf)%nat
-            !    do ig=1,symfunc_arr%symfunc(iconf)%ng
-            !        n=n+1
-            !        wa(n)=symfunc_arr%symfunc(iconf)%y_bond(ig,iat,jat)
-            !    enddo
-            !enddo
-            !enddo
             !----------------------------------------------------------------------------
             else
             do iat=1,atoms_arr%atoms(iconf)%nat
