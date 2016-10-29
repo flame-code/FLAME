@@ -118,7 +118,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     !Take trace rho * H for Hellmann-Feynman theorem
     !Note that other triangle of rho, and we do sum with
     !factors of two to compensate.
-    if(lenosky)then 
+    if(lenosky .or. partb%event/='train' )then 
         do ixyz=1,3
             call gammamat(partb,atoms,natsi,ixyz,pplocal)
             do iorb=1,partb%norb

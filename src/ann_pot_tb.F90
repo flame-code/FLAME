@@ -18,8 +18,8 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(potl_typ):: pplocal
     real(8), allocatable:: hgen(:,:), dhgen(:,:)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb
-    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)   !derivative of 
-    real(8):: epotn, tt, epotdh, c
+    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat), ttx(4), tty(4), ttz(4)   !derivative of 
+    real(8):: epotn, tt, epotdh, c, r
     call f_routine(id='cal_ann_tb')
     partb%paircut=ann_arr%rcut
     partb%hgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
@@ -43,17 +43,24 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     over_i: do i=1,4
         over_ib: do ib=1,nb
             ng=ann_arr%ann(i)%nn(0)
-            !if(ann_arr%compute_symfunc) then
-            !    ann_arr%ann(i)%y(1:ng,0)=ann_arr%yall(1:ng,ib)
-            !else
                 ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,ib)
-            !endif
             if(trim(ann_arr%event)=='train') then
                 call cal_architecture_der(ann_arr%ann(i),hgen(i,ib))
                 call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ekf%gc(1,i))
             elseif(trim(ann_arr%event)=='evalu') then
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))
-                !call cal_architecture_force(ann_arr%ann(i),atoms%nat,hgen(i,iat,jat),atoms%fat(1,iat))
+                partb%event=ann_arr%event
+                ttx(i)=0.d0 ; tty(i)=0.d0 ; ttz(i)=0.d0
+                iat=symfunc%linked_lists%bound_rad(1,ib)
+                jat=symfunc%linked_lists%bound_rad(2,ib) 
+                do j=1,ann_arr%ann(i)%nn(0)
+                    ttx(i)=ttx(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,1,ib)
+                    tty(i)=tty(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,2,ib)
+                    ttz(i)=ttz(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,3,ib)
+                    write(*,*) "DDDDD", ann_arr%ann(i)%d(j), symfunc%y0d(j,3,ib)
+                enddo
+                r=sqrt((atoms%rat(1,jat)-atoms%rat(1,iat))**2+(atoms%rat(2,jat)-atoms%rat(2,iat))**2+(atoms%rat(3,jat)-atoms%rat(3,iat))**2) 
+                dhgen(i,ib)=(ttx(i)/atoms%rat(1,iat) + tty(i)/atoms%rat(2,iat) + ttz(i)/atoms%rat(3,iat))*r 
             else
                 stop 'ERROR: undefined content for ann_arr%event'
             endif

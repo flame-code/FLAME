@@ -159,9 +159,9 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
     type(typ_pia), intent(in):: pia
     integer, intent(in):: ib
     type(typ_symfunc), intent(inout):: symfunc
-    !real(8), intent(in):: fcij, fcdij
-    !real(8), intent(in):: rij
-    !real(8), intent(in):: drij(3)
+    real(8):: fcdij
+    real(8):: rij
+    real(8):: drij(3)
     !local variables
     integer:: kat, ig, i0
     real(8):: rs, rc, vij, eta
@@ -174,9 +174,9 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
         eta=ann_arr%ann(1)%g1eta(ig) 
         vij=exp(-eta*(pia%r-rs)**2)
         tt=pia%fc*vij
-            !ttx=tt*drij(1)
-            !tty=tt*drij(2)
-            !ttz=tt*drij(3)
+            ttx=tt*drij(1)
+            tty=tt*drij(2)
+            ttz=tt*drij(3)
             !ann_arr%y0d_bond(i0,1,iat,jat)=ann_arr%y0d_bond(i0,1,iat,jat)+ttx
             !ann_arr%y0d_bond(i0,2,iat,jat)=ann_arr%y0d_bond(i0,2,iat,jat)+tty
             !ann_arr%y0d_bond(i0,3,iat,jat)=ann_arr%y0d_bond(i0,3,iat,jat)+ttz
@@ -184,6 +184,9 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
             !ann_arr%y0d_bond(i0,2,jat,iat)=ann_arr%y0d_bond(i0,2,jat,iat)-tty
             !ann_arr%y0d_bond(i0,3,jat,iat)=ann_arr%y0d_bond(i0,3,jat,iat)-ttz
             symfunc%y(i0,ib)=tt
+            symfunc%y0d(i0,1,ib)=ttx
+            symfunc%y0d(i0,2,ib)=tty
+            symfunc%y0d(i0,3,ib)=ttz
     enddo
     !ann_arr%yall_bond(i0,iat,jat)=ann_arr%yall_bond(i0,iat,jat)*fcij*exp(-eta*rij**2)
 end subroutine symmetry_functions_g01_bond
