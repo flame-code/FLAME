@@ -54,17 +54,11 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             elseif(trim(ann_arr%event)=='evalu') then
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))
                 !call cal_architecture_force(ann_arr%ann(i),atoms%nat,hgen(i,iat,jat),atoms%fat(1,iat))
-                !r=sqrt((atoms%rat(1,iat))**2+(atoms%rat(2,iat))**2+(atoms%rat(3,iat))**2)
-                !dhgen(i,iat,jat)=(atoms%rat(1,iat)/r)*atoms%fat(1,iat)
             else
                 stop 'ERROR: undefined content for ann_arr%event'
             endif
         enddo over_ib
     enddo over_i
-    !dhgen(1,1)=0.d0
-    !dhgen(2,1)=0.d0
-    !dhgen(3,1)=0.d0
-    !dhgen(4,1)=0.d0
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
@@ -84,7 +78,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall1(jat,iat)=partb%dhgenall1(iat,jat)
         partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
-        !write(*,'(a,4es19.10)') 'hgen-A ',hgen(1,1),hgen(2,1),hgen(3,1),hgen(4,1)
     enddo
         if(trim(ann_arr%event)=='train') then
             partb%event=ann_arr%event
@@ -96,12 +89,10 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
             do i=1,4
-                !do ib=1,nb
-                    do j=1,ekf%num(1)
-                        ekf%g(ekf%loc(i)+j-1)=partb%dedh(i)*ekf%gc(j,i)
-                        !write(*,'(a,2i5,3es14.5)') 'GGG ',i,j,ekf%g(ekf%loc(i)+j-1),partb%dedh(i),ekf%gc(j,i)
-                    enddo
-                !enddo
+                do j=1,ekf%num(1)
+                    ekf%g(ekf%loc(i)+j-1)=partb%dedh(i)*ekf%gc(j,i)
+                    !write(*,'(a,2i5,3es14.5)') 'GGG ',i,j,ekf%g(ekf%loc(i)+j-1),partb%dedh(i),ekf%gc(j,i)
+                enddo
             enddo
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
