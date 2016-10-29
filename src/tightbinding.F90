@@ -371,8 +371,9 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
         dhgen(3)=partb%dhgenall2(jat,iat)
         dhgen(4)=partb%dhgenall3(jat,iat)
         !Returns rem (matrix of coupling) 
-        !call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
-        if(flag2==0) call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
+        if(partb%event/='train' .or. lenosky .or. flag2==0) then
+            call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
+        endif
         if(flag2>0 .and. partb%event=='train') then
             call Hamiltonian_der(diff,flag2,rem)
         endif
