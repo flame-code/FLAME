@@ -734,6 +734,17 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     character(*), intent(in):: strmess
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
 end subroutine read_symfunc
+subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine save_gbounds
 subroutine convert_x_ann(n,x,ann)
     use mod_ann, only: typ_ann
     implicit none

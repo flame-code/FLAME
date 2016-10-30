@@ -448,14 +448,10 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     character(*), intent(in):: strmess
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
     !local variables 
-    real(8), allocatable:: gminarr(:,:), gmaxarr(:,:) !, poll_period
-    integer:: i, ig, iconf, iat, i0, ib
-    integer, allocatable:: iatmin(:,:), iatmax(:,:), iconfmin(:,:), iconfmax(:,:)
-    integer:: ibmin(100), ibmax(100)
+    integer:: iconf
     integer:: jproc, ierr, ireq, ireq_tmp, nreq, mreq, ii !, itry
     integer, allocatable:: ireqarr(:)
     logical:: flag
-    integer:: ngmax
 #if defined(MPI)
     include 'mpif.h'
     integer:: status_mpi(MPI_STATUS_SIZE)
@@ -468,16 +464,6 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     nreq=atoms_arr%nconf-nreq
     ireqarr=f_malloc([1.to.nreq],id='ireqarr')
 #endif
-    ngmax=200
-    gminarr=f_malloc([1.to.ngmax,1.to.parini%ntypat],id='gminarr')
-    gminarr=huge(1.d20)
-    gmaxarr=f_malloc([1.to.ngmax,1.to.parini%ntypat],id='gmaxarr')
-    gmaxarr=-huge(1.d20)
-    iatmin=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iatmin')
-    iatmax=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iatmax')
-    iconfmin=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iconfmin')
-    iconfmax=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iconfmax')
-    ibmin(1:100)=0 ; ibmax(1:100)=0
     if(.not. allocated(symfunc_arr%symfunc)) then
         symfunc_arr%nconf=atoms_arr%nconf
         allocate(symfunc_arr%symfunc(symfunc_arr%nconf))
@@ -553,118 +539,11 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     call MPI_BARRIER(mpi_comm_abz,ierr)
     endif
 #endif
-    do iconf=1,atoms_arr%nconf
-        !if(mod(iconf-1,nproc)==iproc) cycle
-        !write(41,'(i6,i3)',advance='no') mod(iconf-1,nproc),iproc
-        !associate(n=>symfunc_arr%symfunc(iconf)%ng*symfunc_arr%symfunc(iconf)%nat)
-        !call MPI_RECV(symfunc_arr%symfunc(iconf)%y(1,1),n,MPI_DP,mod(iconf-1,nproc),iconf,mpi_comm_abz,status_mpi,ierr)
-        !end associate
-        !write(41,'(i6,i3)') status_mpi(MPI_TAG),status_mpi(MPI_SOURCE)
-        if(parini%bondbased_ann)then
-        !-------------------------------- bond symmetry function --------------------------------
-        if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-        do ib=1,1 !symfunc%linked_lists%maxbound_rad
-            do ig=1,symfunc_arr%symfunc(iconf)%ng
-                if(symfunc_arr%symfunc(iconf)%y(ig,ib)<gminarr(ig,1)) then
-                    gminarr(ig,1)=symfunc_arr%symfunc(iconf)%y(ig,ib)
-                    ibmin(ig)=ib
-                    iconfmin(ig,1)=iconf
-                endif
-                if(symfunc_arr%symfunc(iconf)%y(ig,ib)>gmaxarr(ig,1)) then
-                    gmaxarr(ig,1)=symfunc_arr%symfunc(iconf)%y(ig,ib)
-                    ibmax(ig)=ib
-                    iconfmax(ig,1)=iconf
-                endif
-            enddo
-        enddo
-        !-----------------------------------------------------------------------------------------
-        else
-        do iat=1,atoms_arr%atoms(iconf)%nat
-            i=atoms_arr%atoms(iconf)%itypat(iat)
-            do ig=1,symfunc_arr%symfunc(iconf)%ng
-                if(symfunc_arr%symfunc(iconf)%y(ig,iat)<gminarr(ig,i)) then
-                    gminarr(ig,i)=symfunc_arr%symfunc(iconf)%y(ig,iat)
-                    iatmin(ig,i)=iat
-                    iconfmin(ig,i)=iconf
-                endif
-                if(symfunc_arr%symfunc(iconf)%y(ig,iat)>gmaxarr(ig,i)) then
-                    gmaxarr(ig,i)=symfunc_arr%symfunc(iconf)%y(ig,iat)
-                    iatmax(ig,i)=iat
-                    iconfmax(ig,i)=iconf
-                endif
-            enddo
-        enddo
-        endif
-    enddo
-    do i=1,ann_arr%n
-    do ig=1,ann_arr%ann(1)%nn(0) !HERE
-        if(iproc==0) then
-        if(parini%bondbased_ann)then
-            write(*,'(2(i7,2i4,es20.10),1x,a)') &
-                iconfmin(ig,1),atoms_arr%atoms(iconfmin(ig,1))%nat,ibmin(ig),gminarr(ig,1), &
-                iconfmax(ig,1),atoms_arr%atoms(iconfmax(ig,1))%nat,ibmax(ig),gmaxarr(ig,1),trim(strmess)
-            write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,1))),atoms_arr%lconf(iconfmin(ig,1)), &
-                trim(atoms_arr%fn(iconfmax(ig,1))),atoms_arr%lconf(iconfmax(ig,1))
-        else
-            write(*,'(2(i7,2i4,es20.10),1x,a)') &
-                iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
-                iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)
-            write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,i))),atoms_arr%lconf(iconfmin(ig,i)), &
-                trim(atoms_arr%fn(iconfmax(ig,i))),atoms_arr%lconf(iconfmax(ig,i))
-        endif
-        endif
-    enddo
-    enddo
-
-    if(parini%bondbased_ann)then
-    !------------------------------ bond symmetry function ----------------------------------------
-    !IMPORTANT: the upper bound of the loop over i needs to be corrected for multicomponent systems.
-    if(atoms_arr%atoms(1)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
-    do i=1,1
-    do i0=1,ann_arr%ann(i)%nn(0)
-        if(gminarr(i0,1)==0.d0) then
-            ann_arr%ann(i)%gbounds(1,i0)=-epsilon(1.d0)
-        else
-            ann_arr%ann(i)%gbounds(1,i0)=gminarr(i0,1)
-        endif
-        if(gmaxarr(i0,1)==0.d0) then
-            ann_arr%ann(i)%gbounds(2,i0)=epsilon(1.d0)
-        else
-            ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0,1)
-        endif
-        !write(*,*) ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
-        ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
-    enddo
-    enddo
-    ! ----------------------------------------------------------------------------------------------
-    else
-    do i=1,ann_arr%n
-    do i0=1,ann_arr%ann(i)%nn(0)
-        !if(abs(gminarr(i0))<epsilon(1.d0)
-        if(gminarr(i0,i)==0.d0) then
-            ann_arr%ann(i)%gbounds(1,i0)=-epsilon(1.d0)
-        else
-            ann_arr%ann(i)%gbounds(1,i0)=gminarr(i0,i)
-        endif
-        if(gmaxarr(i0,i)==0.d0) then
-            ann_arr%ann(i)%gbounds(2,i0)=epsilon(1.d0)
-        else
-            ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0,i)
-        endif
-        ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
-    enddo
-    enddo
-    endif
+    call save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
 #if defined(MPI)
     call f_free(ireqarr)
     end associate
 #endif
-    call f_free(gminarr)
-    call f_free(gmaxarr)
-    call f_free(iatmin)
-    call f_free(iatmax)
-    call f_free(iconfmin)
-    call f_free(iconfmax)
     call f_release_routine()
 end subroutine set_gbounds
 !*****************************************************************************************
@@ -719,7 +598,7 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
         wa(3+iat*3-0)=atoms_arr%atoms(iconf)%rat(3,iat)
     enddo
     n=3+3*atoms_arr%atoms(iconf)%nat
-    bondbased: if(parini%bondbased_ann)then
+    bondbased: if(parini%bondbased_ann) then
     !-------------------------- bond symmetry functions ---------------------------
     write(*,*) 'ERROR: writing/reading symmetry function values from files not'
     write(*,*) 'working yet, for several reasons for example allocation of wa'
@@ -842,7 +721,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
         endif
     enddo
     n=3+3*atoms_arr%atoms(iconf)%nat
-    bondbased: if(parini%bondbased_ann)then
+    bondbased: if(parini%bondbased_ann) then
     !--------------------- bond symmetry functions -------------------------------
     write(*,*) 'ERROR: writing/reading symmetry function values from files not'
     write(*,*) 'working yet, for several reasons for example allocation of wa'
@@ -885,6 +764,145 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     close(311)
     call f_free(wa)
 end subroutine read_symfunc
+!*****************************************************************************************
+subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    use mod_linked_lists, only: typ_pia_arr
+    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+    !local variables
+    integer:: iconf, ib, ig, i, iat, i0
+    real(8), allocatable:: gminarr(:,:), gmaxarr(:,:) !, poll_period
+    integer, allocatable:: iatmin(:,:), iatmax(:,:), iconfmin(:,:), iconfmax(:,:)
+    integer:: ibmin(100), ibmax(100)
+    integer:: ngmax
+    ngmax=200
+    gminarr=f_malloc([1.to.ngmax,1.to.parini%ntypat],id='gminarr')
+    gminarr=huge(1.d20)
+    gmaxarr=f_malloc([1.to.ngmax,1.to.parini%ntypat],id='gmaxarr')
+    gmaxarr=-huge(1.d20)
+    iatmin=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iatmin')
+    iatmax=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iatmax')
+    iconfmin=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iconfmin')
+    iconfmax=f_malloc0([1.to.ngmax,1.to.parini%ntypat],id='iconfmax')
+    ibmin(1:100)=0 ; ibmax(1:100)=0
+    do iconf=1,atoms_arr%nconf
+        !if(mod(iconf-1,nproc)==iproc) cycle
+        !write(41,'(i6,i3)',advance='no') mod(iconf-1,nproc),iproc
+        !associate(n=>symfunc_arr%symfunc(iconf)%ng*symfunc_arr%symfunc(iconf)%nat)
+        !call MPI_RECV(symfunc_arr%symfunc(iconf)%y(1,1),n,MPI_DP,mod(iconf-1,nproc),iconf,mpi_comm_abz,status_mpi,ierr)
+        !end associate
+        !write(41,'(i6,i3)') status_mpi(MPI_TAG),status_mpi(MPI_SOURCE)
+        if(parini%bondbased_ann) then
+        !-------------------------------- bond symmetry function --------------------------------
+        if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+        do ib=1,1 !symfunc%linked_lists%maxbound_rad
+            do ig=1,symfunc_arr%symfunc(iconf)%ng
+                if(symfunc_arr%symfunc(iconf)%y(ig,ib)<gminarr(ig,1)) then
+                    gminarr(ig,1)=symfunc_arr%symfunc(iconf)%y(ig,ib)
+                    ibmin(ig)=ib
+                    iconfmin(ig,1)=iconf
+                endif
+                if(symfunc_arr%symfunc(iconf)%y(ig,ib)>gmaxarr(ig,1)) then
+                    gmaxarr(ig,1)=symfunc_arr%symfunc(iconf)%y(ig,ib)
+                    ibmax(ig)=ib
+                    iconfmax(ig,1)=iconf
+                endif
+            enddo
+        enddo
+        !-----------------------------------------------------------------------------------------
+        else
+        do iat=1,atoms_arr%atoms(iconf)%nat
+            i=atoms_arr%atoms(iconf)%itypat(iat)
+            do ig=1,symfunc_arr%symfunc(iconf)%ng
+                if(symfunc_arr%symfunc(iconf)%y(ig,iat)<gminarr(ig,i)) then
+                    gminarr(ig,i)=symfunc_arr%symfunc(iconf)%y(ig,iat)
+                    iatmin(ig,i)=iat
+                    iconfmin(ig,i)=iconf
+                endif
+                if(symfunc_arr%symfunc(iconf)%y(ig,iat)>gmaxarr(ig,i)) then
+                    gmaxarr(ig,i)=symfunc_arr%symfunc(iconf)%y(ig,iat)
+                    iatmax(ig,i)=iat
+                    iconfmax(ig,i)=iconf
+                endif
+            enddo
+        enddo
+        endif
+    enddo
+    do i=1,ann_arr%n
+    do ig=1,ann_arr%ann(1)%nn(0) !HERE
+        if(iproc==0) then
+        if(parini%bondbased_ann) then
+            write(*,'(2(i7,2i4,es20.10),1x,a)') &
+                iconfmin(ig,1),atoms_arr%atoms(iconfmin(ig,1))%nat,ibmin(ig),gminarr(ig,1), &
+                iconfmax(ig,1),atoms_arr%atoms(iconfmax(ig,1))%nat,ibmax(ig),gmaxarr(ig,1),trim(strmess)
+            write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,1))),atoms_arr%lconf(iconfmin(ig,1)), &
+                trim(atoms_arr%fn(iconfmax(ig,1))),atoms_arr%lconf(iconfmax(ig,1))
+        else
+            write(*,'(2(i7,2i4,es20.10),1x,a)') &
+                iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
+                iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)
+            write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,i))),atoms_arr%lconf(iconfmin(ig,i)), &
+                trim(atoms_arr%fn(iconfmax(ig,i))),atoms_arr%lconf(iconfmax(ig,i))
+        endif
+        endif
+    enddo
+    enddo
+
+    if(parini%bondbased_ann) then
+    !------------------------------ bond symmetry function ----------------------------------------
+    !IMPORTANT: the upper bound of the loop over i needs to be corrected for multicomponent systems.
+    if(atoms_arr%atoms(1)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
+    do i=1,1
+    do i0=1,ann_arr%ann(i)%nn(0)
+        if(gminarr(i0,1)==0.d0) then
+            ann_arr%ann(i)%gbounds(1,i0)=-epsilon(1.d0)
+        else
+            ann_arr%ann(i)%gbounds(1,i0)=gminarr(i0,1)
+        endif
+        if(gmaxarr(i0,1)==0.d0) then
+            ann_arr%ann(i)%gbounds(2,i0)=epsilon(1.d0)
+        else
+            ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0,1)
+        endif
+        !write(*,*) ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
+        ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
+    enddo
+    enddo
+    ! ----------------------------------------------------------------------------------------------
+    else
+    do i=1,ann_arr%n
+    do i0=1,ann_arr%ann(i)%nn(0)
+        !if(abs(gminarr(i0))<epsilon(1.d0)
+        if(gminarr(i0,i)==0.d0) then
+            ann_arr%ann(i)%gbounds(1,i0)=-epsilon(1.d0)
+        else
+            ann_arr%ann(i)%gbounds(1,i0)=gminarr(i0,i)
+        endif
+        if(gmaxarr(i0,i)==0.d0) then
+            ann_arr%ann(i)%gbounds(2,i0)=epsilon(1.d0)
+        else
+            ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0,i)
+        endif
+        ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
+    enddo
+    enddo
+    endif
+    call f_free(gminarr)
+    call f_free(gmaxarr)
+    call f_free(iatmin)
+    call f_free(iatmax)
+    call f_free(iconfmin)
+    call f_free(iconfmax)
+end subroutine save_gbounds
 !*****************************************************************************************
 subroutine convert_x_ann(n,x,ann)
     use mod_interface
