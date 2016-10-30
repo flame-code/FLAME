@@ -448,20 +448,13 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     character(*), intent(in):: strmess
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
     !local variables 
-    character(5):: sat
     real(8), allocatable:: gminarr(:,:), gmaxarr(:,:) !, poll_period
-    real(8):: eps=epsilon(1.d0)
-    real(8):: ttx, tty, ttz
-    real(8), allocatable:: wa(:)
-    integer:: i, ig, iconf, iat, jat, i0, ios, nat_t, ng_t, nb_t, n, ib
+    integer:: i, ig, iconf, iat, i0, ib
     integer, allocatable:: iatmin(:,:), iatmax(:,:), iconfmin(:,:), iconfmax(:,:)
     integer:: ibmin(100), ibmax(100)
-    integer:: jproc, ierr, ireq, ireq_tmp, nreq, mreq, ii, nwa !, itry
-    type(typ_pia_arr):: pia_arr_tmp
+    integer:: jproc, ierr, ireq, ireq_tmp, nreq, mreq, ii !, itry
     integer, allocatable:: ireqarr(:)
     logical:: flag
-    character(30):: filename
-    character(100):: smsg
     integer:: ngmax
 #if defined(MPI)
     include 'mpif.h'
@@ -513,181 +506,10 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             stop 'ERROR: arini%symfunc contains none of the three acceptable possibilies'
         endif
         if(trim(parini%symfunc)=='write') then
-            !Symmetry functions are written into files to be used for
-            !subsequent training runs.
-            if(trim(strmess)=='bounds_train') then
-                write(filename,'(a25,i5.5)') '../symfunc/train.symfunc.',iconf
-            elseif(trim(strmess)=='bounds_valid') then
-                write(filename,'(a25,i5.5)') '../symfunc/valid.symfunc.',iconf
-            else
-                stop 'ERROR: invalid content in strmess in gset_bounds '
-            endif
-            open(unit=311,file=trim(filename),status='replace',form='unformatted', &
-                access='stream',iostat=ios)
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure openning file ',trim(filename)
-                stop
-            endif
-            associate(nb=>symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad)
-            associate(ng=>symfunc_arr%symfunc(iconf)%ng)
-            associate(nat=>atoms_arr%atoms(iconf)%nat)
-            if(nat<=parini%nat_force) then
-                nwa=3+nat*(3+ng)+ng*3*nb
-            else
-                nwa=3+nat*(3+ng)
-            endif
-            wa=f_malloc([1.to.nwa],id='wa')
-            wa(1)=real(nat,8)
-            wa(2)=real(ng,8)
-            wa(3)=real(nb,8)
-            do iat=1,atoms_arr%atoms(iconf)%nat
-                wa(3+iat*3-2)=atoms_arr%atoms(iconf)%rat(1,iat)
-                wa(3+iat*3-1)=atoms_arr%atoms(iconf)%rat(2,iat)
-                wa(3+iat*3-0)=atoms_arr%atoms(iconf)%rat(3,iat)
-            enddo
-            n=3+3*atoms_arr%atoms(iconf)%nat
-            bondbased: if(parini%bondbased_ann)then
-            !-------------------------- bond symmetry functions ---------------------------
-            write(*,*) 'ERROR: writing/reading symmetry function values from files not'
-            write(*,*) 'working yet, for several reasons for example allocation of wa'
-            stop
-            !----------------------------------------------------------------------------
-            else
-            do iat=1,atoms_arr%atoms(iconf)%nat
-                do ig=1,symfunc_arr%symfunc(iconf)%ng
-                    n=n+1
-                    wa(n)=symfunc_arr%symfunc(iconf)%y(ig,iat)
-                enddo
-            enddo
-            if(nat<=parini%nat_force) then
-            do ib=1,nb
-                do i=1,3
-                    do ig=1,symfunc_arr%symfunc(iconf)%ng
-                        n=n+1
-                        wa(n)=symfunc_arr%symfunc(iconf)%y0d(ig,i,ib)
-                    enddo
-                enddo
-            enddo
-            else
-                deallocate(symfunc_arr%symfunc(iconf)%y0d)
-            endif
-            endif bondbased
-            end associate
-            end associate
-            end associate
-            
-            write(311,iostat=ios) wa
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure writing to file ',trim(filename)
-                stop
-            endif
-            !write(311,'(2i6)') atoms_arr%atoms(iconf)%nat,symfunc_arr%symfunc(iconf)%ng
-            !do iat=1,atoms_arr%atoms(iconf)%nat
-            !    do ig=1,symfunc_arr%symfunc(iconf)%ng
-            !        write(311,'(es25.16)') symfunc_arr%symfunc(iconf)%y(ig,iat)
-            !    enddo
-            !enddo
-            close(311)
-            call f_free(wa)
+            call write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
         elseif(trim(parini%symfunc)=='read') then
-            !Symmetry functions which are previously calculated and written by
-            !some other run is going to be read from files
-            if(trim(strmess)=='bounds_train') then
-                write(filename,'(a25,i5.5)') '../symfunc/train.symfunc.',iconf
-            elseif(trim(strmess)=='bounds_valid') then
-                write(filename,'(a25,i5.5)') '../symfunc/valid.symfunc.',iconf
-            else
-                stop 'ERROR: invalid content in strmess in gset_bounds '
-            endif
-            !open(unit=311,file=trim(filename),status='old',iostat=ios)
-            open(unit=311,file=trim(filename),status='old',form='unformatted', &
-                access='stream',iostat=ios)
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure openning file ',trim(filename)
-                stop
-            endif
-            !read(311,*) nat_t,ng_t
-            associate(nb=>symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad)
-            associate(ng=>symfunc_arr%symfunc(iconf)%ng)
-            associate(nat=>atoms_arr%atoms(iconf)%nat)
-            symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
-            symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
-            call call_linkedlist(parini,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
-            deallocate(pia_arr_tmp%pia)
-            allocate(symfunc_arr%symfunc(iconf)%y(ng,nat))
-            if(nat<=parini%nat_force) then
-                allocate(symfunc_arr%symfunc(iconf)%y0d(ng,3,nb))
-                nwa=3+nat*(3+ng)+ng*3*nb
-            else
-                nwa=3+nat*(3+ng)
-            endif
-            wa=f_malloc([1.to.nwa],id='wa')
-            read(311,iostat=ios) wa
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure reading from file ',trim(filename)
-                stop
-            endif
-            nat_t=nint(wa(1))
-            ng_t=nint(wa(2))
-            nb_t=nint(wa(3))
-            if(nat_t/=nat .or. ng_t/=ng .or. nb_t/=nb) then
-                write(*,'(a,7i6)') 'ERROR: inconsistent nat or ng ',iconf,nat_t,nat,ng_t,ng,nb_t,nb
-                stop
-            endif
-            do iat=1,nat
-                ttx=abs(wa(3+iat*3-2)-atoms_arr%atoms(iconf)%rat(1,iat))
-                tty=abs(wa(3+iat*3-1)-atoms_arr%atoms(iconf)%rat(2,iat))
-                ttz=abs(wa(3+iat*3-0)-atoms_arr%atoms(iconf)%rat(3,iat))
-                if(ttx>eps .or. tty>eps .or. ttz>eps) then
-                    smsg='ERROR: inconsistency of configuration in symmetry functions file. '
-                    write(*,'(a,3es14.5,i7,a,i5)') trim(smsg),ttx,tty,ttz,iconf,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf)
-                    stop
-                endif
-            enddo
-            n=3+3*atoms_arr%atoms(iconf)%nat
-            bondbased: if(parini%bondbased_ann)then
-            !--------------------- bond symmetry functions -------------------------------
-            write(*,*) 'ERROR: writing/reading symmetry function values from files not'
-            write(*,*) 'working yet, for several reasons for example allocation of wa'
-            stop
-            !do iat=1,atoms_arr%atoms(iconf)%nat
-            !do jat=1,atoms_arr%atoms(iconf)%nat
-            !    do ig=1,symfunc_arr%symfunc(iconf)%ng
-            !        n=n+1
-            !        symfunc_arr%symfunc(iconf)%y_bond(ig,iat,jat)=wa(n)
-            !    enddo
-            !enddo
-            !enddo
-            !-----------------------------------------------------------------------------
-            else
-            do iat=1,nat
-                do ig=1,ng
-                    n=n+1
-                    symfunc_arr%symfunc(iconf)%y(ig,iat)=wa(n)
-                enddo
-            enddo
-            if(nat<=parini%nat_force) then
-            do ib=1,nb
-                do i=1,3
-                    do ig=1,ng
-                        n=n+1
-                        symfunc_arr%symfunc(iconf)%y0d(ig,i,ib)=wa(n)
-                    enddo
-                enddo
-            enddo
-            endif
-            endif bondbased            
-            end associate
-            end associate
-            end associate
-            !do iat=1,atoms_arr%atoms(iconf)%nat
-            !    do ig=1,symfunc_arr%symfunc(iconf)%ng
-            !        read(311,*) symfunc_arr%symfunc(iconf)%y(ig,iat)
-            !    enddo
-            !enddo
-            close(311)
-            call f_free(wa)
-            endif
+            call read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
+        endif
 #if defined(MPI)
         do jproc=0,nproc-1
             if(jproc==iproc) cycle
@@ -845,6 +667,224 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     call f_free(iconfmax)
     call f_release_routine()
 end subroutine set_gbounds
+!*****************************************************************************************
+subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    use mod_linked_lists, only: typ_pia_arr
+    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iconf
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+    !local variables
+    real(8), allocatable:: wa(:)
+    integer:: nwa
+    character(30):: filename
+    integer:: i, ig, iat, ios, n, ib
+    !Symmetry functions are written into files to be used for
+    !subsequent training runs.
+    if(trim(strmess)=='bounds_train') then
+        write(filename,'(a25,i5.5)') '../symfunc/train.symfunc.',iconf
+    elseif(trim(strmess)=='bounds_valid') then
+        write(filename,'(a25,i5.5)') '../symfunc/valid.symfunc.',iconf
+    else
+        stop 'ERROR: invalid content in strmess in gset_bounds '
+    endif
+    open(unit=311,file=trim(filename),status='replace',form='unformatted', &
+        access='stream',iostat=ios)
+    if(ios/=0) then
+        write(*,'(2a)') 'ERROR: failure openning file ',trim(filename)
+        stop
+    endif
+    associate(nb=>symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad)
+    associate(ng=>symfunc_arr%symfunc(iconf)%ng)
+    associate(nat=>atoms_arr%atoms(iconf)%nat)
+    if(nat<=parini%nat_force) then
+        nwa=3+nat*(3+ng)+ng*3*nb
+    else
+        nwa=3+nat*(3+ng)
+    endif
+    wa=f_malloc([1.to.nwa],id='wa')
+    wa(1)=real(nat,8)
+    wa(2)=real(ng,8)
+    wa(3)=real(nb,8)
+    do iat=1,atoms_arr%atoms(iconf)%nat
+        wa(3+iat*3-2)=atoms_arr%atoms(iconf)%rat(1,iat)
+        wa(3+iat*3-1)=atoms_arr%atoms(iconf)%rat(2,iat)
+        wa(3+iat*3-0)=atoms_arr%atoms(iconf)%rat(3,iat)
+    enddo
+    n=3+3*atoms_arr%atoms(iconf)%nat
+    bondbased: if(parini%bondbased_ann)then
+    !-------------------------- bond symmetry functions ---------------------------
+    write(*,*) 'ERROR: writing/reading symmetry function values from files not'
+    write(*,*) 'working yet, for several reasons for example allocation of wa'
+    stop
+    !----------------------------------------------------------------------------
+    else
+    do iat=1,atoms_arr%atoms(iconf)%nat
+        do ig=1,symfunc_arr%symfunc(iconf)%ng
+            n=n+1
+            wa(n)=symfunc_arr%symfunc(iconf)%y(ig,iat)
+        enddo
+    enddo
+    if(nat<=parini%nat_force) then
+    do ib=1,nb
+        do i=1,3
+            do ig=1,symfunc_arr%symfunc(iconf)%ng
+                n=n+1
+                wa(n)=symfunc_arr%symfunc(iconf)%y0d(ig,i,ib)
+            enddo
+        enddo
+    enddo
+    else
+        deallocate(symfunc_arr%symfunc(iconf)%y0d)
+    endif
+    endif bondbased
+    end associate
+    end associate
+    end associate
+    
+    write(311,iostat=ios) wa
+    if(ios/=0) then
+        write(*,'(2a)') 'ERROR: failure writing to file ',trim(filename)
+        stop
+    endif
+    !write(311,'(2i6)') atoms_arr%atoms(iconf)%nat,symfunc_arr%symfunc(iconf)%ng
+    !do iat=1,atoms_arr%atoms(iconf)%nat
+    !    do ig=1,symfunc_arr%symfunc(iconf)%ng
+    !        write(311,'(es25.16)') symfunc_arr%symfunc(iconf)%y(ig,iat)
+    !    enddo
+    !enddo
+    close(311)
+    call f_free(wa)
+end subroutine write_symfunc
+!*****************************************************************************************
+subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    use mod_linked_lists, only: typ_pia_arr
+    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iconf
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+    !local variables
+    real(8), allocatable:: wa(:)
+    integer:: nwa
+    character(30):: filename
+    integer:: i, ig, iat, ios, nat_t, ng_t, nb_t, n, ib
+    type(typ_pia_arr):: pia_arr_tmp
+    real(8):: ttx, tty, ttz
+    real(8):: eps=epsilon(1.d0)
+    character(100):: smsg
+    !Symmetry functions which are previously calculated and written by
+    !some other run is going to be read from files
+    if(trim(strmess)=='bounds_train') then
+        write(filename,'(a25,i5.5)') '../symfunc/train.symfunc.',iconf
+    elseif(trim(strmess)=='bounds_valid') then
+        write(filename,'(a25,i5.5)') '../symfunc/valid.symfunc.',iconf
+    else
+        stop 'ERROR: invalid content in strmess in gset_bounds '
+    endif
+    !open(unit=311,file=trim(filename),status='old',iostat=ios)
+    open(unit=311,file=trim(filename),status='old',form='unformatted', &
+        access='stream',iostat=ios)
+    if(ios/=0) then
+        write(*,'(2a)') 'ERROR: failure openning file ',trim(filename)
+        stop
+    endif
+    !read(311,*) nat_t,ng_t
+    associate(nb=>symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad)
+    associate(ng=>symfunc_arr%symfunc(iconf)%ng)
+    associate(nat=>atoms_arr%atoms(iconf)%nat)
+    symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
+    symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
+    call call_linkedlist(parini,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
+    deallocate(pia_arr_tmp%pia)
+    allocate(symfunc_arr%symfunc(iconf)%y(ng,nat))
+    if(nat<=parini%nat_force) then
+        allocate(symfunc_arr%symfunc(iconf)%y0d(ng,3,nb))
+        nwa=3+nat*(3+ng)+ng*3*nb
+    else
+        nwa=3+nat*(3+ng)
+    endif
+    wa=f_malloc([1.to.nwa],id='wa')
+    read(311,iostat=ios) wa
+    if(ios/=0) then
+        write(*,'(2a)') 'ERROR: failure reading from file ',trim(filename)
+        stop
+    endif
+    nat_t=nint(wa(1))
+    ng_t=nint(wa(2))
+    nb_t=nint(wa(3))
+    if(nat_t/=nat .or. ng_t/=ng .or. nb_t/=nb) then
+        write(*,'(a,7i6)') 'ERROR: inconsistent nat or ng ',iconf,nat_t,nat,ng_t,ng,nb_t,nb
+        stop
+    endif
+    do iat=1,nat
+        ttx=abs(wa(3+iat*3-2)-atoms_arr%atoms(iconf)%rat(1,iat))
+        tty=abs(wa(3+iat*3-1)-atoms_arr%atoms(iconf)%rat(2,iat))
+        ttz=abs(wa(3+iat*3-0)-atoms_arr%atoms(iconf)%rat(3,iat))
+        if(ttx>eps .or. tty>eps .or. ttz>eps) then
+            smsg='ERROR: inconsistency of configuration in symmetry functions file. '
+            write(*,'(a,3es14.5,i7,a,i5)') trim(smsg),ttx,tty,ttz,iconf,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf)
+            stop
+        endif
+    enddo
+    n=3+3*atoms_arr%atoms(iconf)%nat
+    bondbased: if(parini%bondbased_ann)then
+    !--------------------- bond symmetry functions -------------------------------
+    write(*,*) 'ERROR: writing/reading symmetry function values from files not'
+    write(*,*) 'working yet, for several reasons for example allocation of wa'
+    stop
+    !do iat=1,atoms_arr%atoms(iconf)%nat
+    !do jat=1,atoms_arr%atoms(iconf)%nat
+    !    do ig=1,symfunc_arr%symfunc(iconf)%ng
+    !        n=n+1
+    !        symfunc_arr%symfunc(iconf)%y_bond(ig,iat,jat)=wa(n)
+    !    enddo
+    !enddo
+    !enddo
+    !-----------------------------------------------------------------------------
+    else
+    do iat=1,nat
+        do ig=1,ng
+            n=n+1
+            symfunc_arr%symfunc(iconf)%y(ig,iat)=wa(n)
+        enddo
+    enddo
+    if(nat<=parini%nat_force) then
+    do ib=1,nb
+        do i=1,3
+            do ig=1,ng
+                n=n+1
+                symfunc_arr%symfunc(iconf)%y0d(ig,i,ib)=wa(n)
+            enddo
+        enddo
+    enddo
+    endif
+    endif bondbased            
+    end associate
+    end associate
+    end associate
+    !do iat=1,atoms_arr%atoms(iconf)%nat
+    !    do ig=1,symfunc_arr%symfunc(iconf)%ng
+    !        read(311,*) symfunc_arr%symfunc(iconf)%y(ig,iat)
+    !    enddo
+    !enddo
+    close(311)
+    call f_free(wa)
+end subroutine read_symfunc
 !*****************************************************************************************
 subroutine convert_x_ann(n,x,ann)
     use mod_interface

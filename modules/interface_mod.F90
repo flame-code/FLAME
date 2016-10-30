@@ -703,7 +703,6 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
-    use mod_linked_lists, only: typ_pia_arr
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -711,6 +710,30 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     character(*), intent(in):: strmess
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
 end subroutine set_gbounds
+subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iconf
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine write_symfunc
+subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    use mod_linked_lists, only: typ_pia_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iconf
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine read_symfunc
 subroutine convert_x_ann(n,x,ann)
     use mod_ann, only: typ_ann
     implicit none
@@ -3232,7 +3255,7 @@ end subroutine set_indorb
 subroutine gammaenergy(partb,atoms,natsi,pplocal)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
-    use mod_tightbinding, only: typ_partb
+    use mod_tightbinding, only: typ_partb, lenosky
     implicit none
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
