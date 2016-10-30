@@ -57,10 +57,10 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
                     ttx(i)=ttx(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,1,ib)
                     tty(i)=tty(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,2,ib)
                     ttz(i)=ttz(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,3,ib)
-                    write(*,*) "DDDDD", ann_arr%ann(i)%d(j), symfunc%y0d(j,3,ib)
+                    !write(*,*) "DDDDD", ann_arr%ann(i)%d(j), symfunc%y0d(j,1,ib)
                 enddo
                 r=sqrt((atoms%rat(1,jat)-atoms%rat(1,iat))**2+(atoms%rat(2,jat)-atoms%rat(2,iat))**2+(atoms%rat(3,jat)-atoms%rat(3,iat))**2) 
-                dhgen(i,ib)=(ttx(i)/atoms%rat(1,iat) + tty(i)/atoms%rat(2,iat) + ttz(i)/atoms%rat(3,iat))*r 
+                dhgen(i,ib)=(ttx(i)/atoms%rat(1,iat) + tty(i)/atoms%rat(2,iat) + ttz(i)/atoms%rat(3,iat))*r
             else
                 stop 'ERROR: undefined content for ann_arr%event'
             endif
@@ -92,7 +92,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
         atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
         !atoms%epot=atoms%epot-0.2208033067776594d0
-        !write(*,*) 'energy ',atoms.epot
         if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
             do i=1,4

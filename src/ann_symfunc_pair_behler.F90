@@ -165,28 +165,24 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
     !local variables
     integer:: kat, ig, i0
     real(8):: rs, rc, vij, eta
-    real(8):: tte, tt
-    real(8):: ttx, tty, ttz, kat_maincell
+    real(8):: ttei, tt1i
+    real(8):: ttjx, ttjy, ttjz, kat_maincell
     i0=0
     do ig=1,ann_arr%ann(1)%ng1
         i0=i0+1
         rs=ann_arr%ann(1)%g1rs(ig)
         eta=ann_arr%ann(1)%g1eta(ig) 
         vij=exp(-eta*(pia%r-rs)**2)
-        tt=pia%fc*vij
-            ttx=tt*drij(1)
-            tty=tt*drij(2)
-            ttz=tt*drij(3)
-            !ann_arr%y0d_bond(i0,1,iat,jat)=ann_arr%y0d_bond(i0,1,iat,jat)+ttx
-            !ann_arr%y0d_bond(i0,2,iat,jat)=ann_arr%y0d_bond(i0,2,iat,jat)+tty
-            !ann_arr%y0d_bond(i0,3,iat,jat)=ann_arr%y0d_bond(i0,3,iat,jat)+ttz
-            !ann_arr%y0d_bond(i0,1,jat,iat)=ann_arr%y0d_bond(i0,1,jat,iat)-ttx
-            !ann_arr%y0d_bond(i0,2,jat,iat)=ann_arr%y0d_bond(i0,2,jat,iat)-tty
-            !ann_arr%y0d_bond(i0,3,jat,iat)=ann_arr%y0d_bond(i0,3,jat,iat)-ttz
-            symfunc%y(i0,ib)=tt
-            symfunc%y0d(i0,1,ib)=ttx
-            symfunc%y0d(i0,2,ib)=tty
-            symfunc%y0d(i0,3,ib)=ttz
+        ttei=vij*pia%fc
+        tt1i=(-2.d0*eta*(pia%r-rs)*pia%fc+pia%fcd)*vij/pia%r
+        ttjx=tt1i*pia%dr(1)
+        ttjy=tt1i*pia%dr(2)
+        ttjz=tt1i*pia%dr(3)
+        write(*,*) 'PIA', pia%r, pia%dr(3)
+        symfunc%y0d(i0,1,ib)=symfunc%y0d(i0,1,ib)+ttjx
+        symfunc%y0d(i0,2,ib)=symfunc%y0d(i0,2,ib)+ttjy
+        symfunc%y0d(i0,3,ib)=symfunc%y0d(i0,3,ib)+ttjz
+        symfunc%y(i0,ib)=symfunc%y(i0,ib)+ttei
     enddo
     !ann_arr%yall_bond(i0,iat,jat)=ann_arr%yall_bond(i0,iat,jat)*fcij*exp(-eta*rij**2)
 end subroutine symmetry_functions_g01_bond

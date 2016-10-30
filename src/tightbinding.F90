@@ -130,6 +130,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
                     atoms%fat(ixyz,jat)=atoms%fat(ixyz,jat)+tt
                 enddo
             enddo
+            write(*,*) "FAt", atoms%fat(1,iat)  
         enddo
     else if(partb%event=='train')then
         do ixyz=1,4
