@@ -1,7 +1,7 @@
 !**************************************************************************************
 module mod_tightbinding
     implicit none
-    logical:: lenosky=.False.
+    logical:: lenosky=.false.
     type typ_partb
         integer:: norb !number of orbitals (= number of electrons)
         integer:: norbcut
