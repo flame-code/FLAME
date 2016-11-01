@@ -459,10 +459,12 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     call f_routine(id='set_gbounds')
 #if defined(MPI)
     associate(MPI_DP=>MPI_DOUBLE_PRECISION)
-    nreq=atoms_arr%nconf/nproc
-    if(mod(atoms_arr%nconf,nproc)>iproc) nreq=nreq+1
-    nreq=atoms_arr%nconf-nreq
-    ireqarr=f_malloc([1.to.nreq],id='ireqarr')
+    if(nproc>1) then
+        nreq=atoms_arr%nconf/nproc
+        if(mod(atoms_arr%nconf,nproc)>iproc) nreq=nreq+1
+        nreq=atoms_arr%nconf-nreq
+        ireqarr=f_malloc([1.to.nreq],id='ireqarr')
+    endif
 #endif
     if(.not. allocated(symfunc_arr%symfunc)) then
         symfunc_arr%nconf=atoms_arr%nconf
@@ -497,12 +499,14 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             call read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
         endif
 #if defined(MPI)
+        if(nproc>1) then
         do jproc=0,nproc-1
             if(jproc==iproc) cycle
             associate(ntot=>symfunc_arr%symfunc(iconf)%ng*symfunc_arr%symfunc(iconf)%nat)
             call MPI_ISEND(symfunc_arr%symfunc(iconf)%y(1,1),ntot,MPI_DP,jproc,iconf,mpi_comm_abz,ireq_tmp,ierr)
             end associate
         enddo
+        endif
 #endif
     enddo configuration
 #if defined(MPI)
@@ -537,11 +541,13 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         if(ireq>=mreq) ireq=0
     enddo
     call MPI_BARRIER(mpi_comm_abz,ierr)
-    endif
+    endif !end of if for nproc>1
 #endif
     call save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
 #if defined(MPI)
-    call f_free(ireqarr)
+    if(nproc>1) then
+        call f_free(ireqarr)
+    endif
     end associate
 #endif
     call f_release_routine()
