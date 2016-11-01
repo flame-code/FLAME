@@ -21,6 +21,23 @@ AX_PACKAGE([FUTILE],[1.8],[-lfutile-1],[-lyaml -lrt],[],
    end program],
  	[call f_lib_initialize()
 ])
+if test $ax_have_FUTILE != "yes" ; then
+AX_PACKAGE([FUTILE],[1.8],[-lfutile-1],[-lyaml],[],
+ 	     [program main
+     use yaml_parse
+     use yaml_output
+     use f_utils
+     use dynamic_memory
+     use dictionaries
+   
+     call yaml_map("toto","titi")
+   end program],
+ 	[call f_lib_initialize()
+])
+if test $ax_have_FUTILE != "yes" ; then
+  AC_MSG_ERROR([Futile library not found, cannot proceed.])
+fi
+fi
 ])
 dnl AC_DEFUN([AX_FLIB],
 dnl [dnl Test for FLib

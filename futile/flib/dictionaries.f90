@@ -130,7 +130,7 @@ module dictionaries
    public :: dict_copy, dict_update,dict_remove,dict_remove_last
    !> Handle exceptions
    public :: dict_len,dict_size,dict_key,dict_item,dict_value,dict_next,dict_next_build,find_key
-   public :: dict_new,list_new,dict_iter,has_key,dict_keys
+   public :: dict_new,list_new,dict_iter,has_key,dict_keys,dict_islist,dict_isdict,dict_isscalar
    !> Public elements of dictionary_base
    public :: operator(.is.),operator(.item.)
    public :: operator(.pop.),operator(.notin.)
@@ -227,6 +227,44 @@ contains
           err_action='Check the nature of the conversion')
 
    end subroutine dictionaries_errors
+
+   !>verify if the dictionary has an instance of a list
+   function dict_islist(dict) result(ok)
+     implicit none
+     type(dictionary), pointer :: dict
+     logical :: ok
+     
+     ok=associated(dict)
+     if (.not. ok) return
+     ok= trim(dict_value(dict))==TYPE_LIST
+
+   end function dict_islist
+
+   !>verify if the dictionary has an instance of a dictionary
+   function dict_isdict(dict) result(ok)
+     implicit none
+     type(dictionary), pointer :: dict
+     logical :: ok
+
+     ok=associated(dict)
+     if (.not. ok) return
+     ok= trim(dict_value(dict))==TYPE_DICT
+
+   end function dict_isdict
+
+   !>verify if the dictionary has an instance of a scalar
+   function dict_isscalar(dict) result(ok)
+     implicit none
+     type(dictionary), pointer :: dict
+     logical :: ok
+
+     ok=associated(dict)
+     if (.not. ok) return
+     ok= trim(dict_value(dict)) /= TYPE_DICT .and. trim(dict_value(dict)) /= TYPE_LIST
+
+   end function dict_isscalar
+
+
 
    !> Pop a subdictionary from a mother one. Returns the subdictionary.
    !! raise an error if the subdictionary does not exist.

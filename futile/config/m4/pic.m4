@@ -9,75 +9,18 @@
 
 AC_DEFUN([AX_FLAG_PIC],
 [
-  f90_test_pic()
-  {
-    FCFLAGS_SVG=$FCFLAGS
-    FCFLAGS="$FCFLAGS $[1]"
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
-  subroutine api_func(a)
-    integer, intent(out) :: a
-  
-    a = 1
-  end subroutine api_func])],
-      [ax_fc_pic=$[1]], [ax_fc_pic="no"])
-    FCFLAGS=$FCFLAGS_SVG
-  }
-  f90_search_pic()
-  {
-    AC_LANG_PUSH(Fortran)
-    for opt in $[@] ; do
-      f90_test_pic $opt
-      if test x"$ax_fc_pic" != x"no" ; then
-        return
-      fi
-    done
-    AC_LANG_POP(Fortran)
-  }
-
-  AC_MSG_CHECKING([for position-independant code option flag for $FC])
-  dnl -qpic should be before -fPIC because -fPIC means something for xlf...
-  f90_search_pic "-qpic" "-PIC" "-fPIC"
-  AC_MSG_RESULT([$ax_fc_pic])
-
-  cc_test_pic()
-  {
-    CFLAGS_SVG=$CFLAGS
-    CFLAGS="$CFLAGS $[1]"
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
-int api_func()
-{
- return 1;
-}])],
-      [ax_cc_pic=$[1]], [ax_cc_pic="no"])
-    CFLAGS=$CFLAGS_SVG
-  }
-  cc_search_pic()
-  {
-    AC_LANG_PUSH(C)
-    for opt in $[@] ; do
-      cc_test_pic $opt
-      if test x"$ax_cc_pic" != x"no" ; then
-        return
-      fi
-    done
-    AC_LANG_POP(C)
-  }
-
-  AC_MSG_CHECKING([for position-independant code option flag for $CC])
-  cc_search_pic "-qpic" "-PIC" "-fPIC"
-  AC_MSG_RESULT([$ax_cc_pic])
-])
-
   test_compiler_id()
   {
     compiler_basename=$($[1] --version | $SED 1q 2> /dev/null)
     if test -z "$compiler_basename" ; then
       compiler_basename=$($[1] -V | $SED 5q 2> /dev/null)
     fi
-    echo $compiler_basename
+    if test -z "$compiler_basename" ; then
+      compiler_basename='failsafe'
+    fi
   }
 
-  test_compiler_options()
+    test_compiler_options()
   {
      case $[1] in
       # GCC compiler.
@@ -156,5 +99,88 @@ int api_func()
         ax_compiler_pic='-fpic'
         ax_compiler_static='-Bstatic'
         ;;
+     failsafe)
+        ax_compiler_wl='-Wl,'
+        ax_compiler_pic='-qpic -PIC -fPIC'
+        ax_compiler_static='-static'
+        ;;
     esac
   }
+
+  f90_test_pic()
+  {
+    FCFLAGS_SVG=$FCFLAGS
+    FCFLAGS="$FCFLAGS $[1]"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+  subroutine api_func(a)
+    integer, intent(out) :: a
+  
+    a = 1
+  end subroutine api_func])],
+      [ax_fc_pic=$[1]], [ax_fc_pic="no"])
+    FCFLAGS=$FCFLAGS_SVG
+  }
+
+  f90_search_pic()
+  {
+    AC_LANG_PUSH(Fortran)
+    for opt in $[@] ; do
+      f90_test_pic $opt
+      if test x"$ax_fc_pic" != x"no" ; then
+        return
+      fi
+    done
+    AC_LANG_POP(Fortran)
+  }
+  dnl first test the name of the compiler
+  AC_MSG_CHECKING([for compiler basename of $FC])
+  test_compiler_id $FC
+  AC_MSG_RESULT([$compiler_basename])
+  dnl then retrieve from the database the presumed option for pic compilation
+  test_compiler_options $compiler_basename
+  if test -z "$ax_compiler_pic" ; then
+    test_compiler_options "failsafe"
+  fi 
+  AC_MSG_CHECKING([for position-independent code option flag for $FC])
+  dnl -qpic should be before -fPIC because -fPIC means something for xlf...
+  f90_search_pic $ax_compiler_pic
+  AC_SUBST([FC_PIC_FLAG], [$ax_fc_pic])
+  AC_MSG_RESULT([$ax_fc_pic])
+
+  cc_test_pic()
+  {
+    CFLAGS_SVG=$CFLAGS
+    CFLAGS="$CFLAGS $[1]"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+int api_func()
+{
+ return 1;
+}])],
+      [ax_cc_pic=$[1]], [ax_cc_pic="no"])
+    CFLAGS=$CFLAGS_SVG
+  }
+  cc_search_pic()
+  {
+    AC_LANG_PUSH(C)
+    for opt in $[@] ; do
+      cc_test_pic $opt
+      if test x"$ax_cc_pic" != x"no" ; then
+        return
+      fi
+    done
+    AC_LANG_POP(C)
+  }
+  dnl first test the name of the compiler
+  AC_MSG_CHECKING([for compiler basename of $CC])
+  test_compiler_id $CC
+  AC_MSG_RESULT([$compiler_basename])
+  dnl then retrieve from the database the presumed option for pic compilation
+  test_compiler_options $compiler_basename
+  if test -z "$ax_compiler_pic" ; then
+    test_compiler_options "failsafe"
+  fi
+  AC_MSG_CHECKING([for position-independent code option flag for $CC])
+  cc_search_pic $ax_compiler_pic
+  AC_SUBST([CC_PIC_FLAG], [$ax_cc_pic])
+  AC_MSG_RESULT([$ax_cc_pic])
+])

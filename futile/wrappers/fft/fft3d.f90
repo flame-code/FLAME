@@ -71,7 +71,7 @@ integer :: i_d,j_d
 !!   But if you care about performance find the optimal value of ncache yourself!
 !!       On all vector machines: ncache=0
 
-integer :: ncache = 8*1024  !< To have all available dimensions, ncache should be a multiple of 4*nfft_max (T.D.)
+integer :: ncache =  8*1024  !< To have all available dimensions, ncache should be a multiple of 4*nfft_max (T.D.)
 !integer, parameter :: ncache = (4*nfft_max)
 !Vectorial computer
 !integer, parameter :: ncache = 0
@@ -276,6 +276,23 @@ data ((ij_data(i_d,j_d),i_d=1,1+n_factors),j_d=1,ndata) /  &
 524288,  8,   8,   8,   8,   8,   8,   2,    1048576, 8,   8,   8,   8,   8,   8,   4,  &
 2097152, 8,   8,   8,   8,   8,   8,   8    /  
 
+contains
+  !>impulse coordinate, from 0,...,n/2+1,-n/2+1,...-1
+  pure function p_index(i,n) result(p)
+    implicit none
+    integer, intent(in) :: i,n
+    integer :: p
+    p=i-(i/(n/2+2))*n-1
+  end function p_index
+
+  !>real space coordinate, from 0,...,n-1
+  pure function i_index(p,n) result(j)
+    implicit none
+    integer, intent(in) :: p,n
+    integer :: j
+    j=p-((p+n)/n-1)*n
+  end function i_index
+
 end module module_fft_sg
 
 
@@ -369,6 +386,590 @@ subroutine fft_1d_ctoc(isign,nfft,n,zinout,inzee)
 
    deallocate(trig)
 END SUBROUTINE fft_1d_ctoc
+
+!> routine constituting the Building-block of other routines
+subroutine FFT_1d(n,nfft,zinout,isign,inzee,transpose,real_input)
+  use module_fft_sg
+  implicit none
+  logical, intent(in) :: transpose,real_input
+  integer, intent(in) :: n,nfft,isign
+  integer, intent(out) :: inzee
+  real(kind=8), dimension(2,nfft*n,2), intent(inout) :: zinout
+  !local variables
+  integer :: ic,ntrig,npr,iam
+  !automatic arrays for the FFT
+  integer, dimension(n_factors) :: after,now,before
+  real(kind=8), dimension(:,:), allocatable :: trig
+  real(kind=8), allocatable, dimension(:,:,:) :: zw  
+
+  ntrig=n
+  allocate(trig(2,ntrig))
+  !arrays for the FFT (to be halved)
+  call ctrig_sg(n,ntrig,trig,after,before,now,isign,ic)
+  !perform the FFT 
+
+!!!!$omp critical
+   allocate(zw(2,ncache/4,2))
+!!!!$omp end critical
+
+  inzee=1
+  npr=1
+!!!!$       npr=omp_get_num_threads()
+  iam=0
+  if (real_input) then
+     call fft_1d_base(nfft,n,nfft,n,nfft,nfft*n,n,&
+          ncache,ntrig,trig,after,now,before,ic,&
+          isign,inzee,transpose,iam,npr,zinout,zw)
+  else
+     call fft_1d_base(nfft,n,nfft,n,nfft,nfft*n,n,&
+          ncache,ntrig,trig,after,now,before,ic,&
+          isign,inzee,transpose,iam,npr,zinout,zw)
+  end if
+
+  deallocate(zw)
+!!!!!!!!!!$omp end parallel  
+  deallocate(trig)
+end subroutine FFT_1d
+
+subroutine FFT_3d(n1,n2,n3,nd1,nd2,nd3,z,i_sign,inzee)
+
+   use module_fft_sg
+   implicit none !real(kind=8) (a-h,o-z)
+   !Arguments
+   integer, intent(in) :: n1,n2,n3,nd1,nd2,nd3,i_sign
+   integer, intent(inout) :: inzee
+   real(kind=8), intent(inout) :: z(2,nd1*nd2*nd3,2)
+   !Local variables
+   integer, dimension(n_factors) :: after,now,before
+   real(kind=8), dimension(:), save, allocatable :: zw  
+   real(kind=8), dimension(:,:), save, allocatable :: trig
+   !local variables
+   integer :: iam,ic,mm,npr,ntrig,nfft
+   !$omp threadprivate(zw,trig)
+   !$ integer :: omp_get_num_threads,omp_get_thread_num
+
+   if (max(n1,n2,n3).gt.nfft_max) then
+      write(*,*) 'One of the dimensions:',n1,n2,n3,' is bigger than ',nfft_max
+      stop
+   end if
+
+   ! check whether input values are reasonable
+   if (inzee.le.0 .or. inzee.ge.3) stop 'wrong inzee'
+   if (i_sign.ne.1 .and. i_sign.ne.-1) stop 'wrong i_sign'
+   if (n1.gt.nd1) stop 'n1>nd1'
+   if (n2.gt.nd2) stop 'n2>nd2'
+   if (n3.gt.nd3) stop 'n3>nd3'
+
+   ntrig=max(n1,n2,n3)
+
+   npr=1
+   iam=0
+
+   !$omp parallel default(none) &
+   !$omp shared(n1,n2,n3,nd1,nd2,nd3,z,i_sign,inzee,ncache,ntrig,npr,nfft,mm) &
+   !$omp private(ic,before,after,now,iam)
+   !$ npr=omp_get_num_threads()
+   !$ iam=omp_get_thread_num()
+   !$omp critical (allocate_critical_fft3d)
+   allocate(zw(ncache))
+   allocate(trig(2,ntrig))
+   !$omp end critical (allocate_critical_fft3d)
+   !$omp barrier !make sure that here everybody is ready
+
+   call ctrig_sg(n3,ntrig,trig,after,before,now,i_sign,ic)
+   nfft=nd1*n2
+   mm=nd1*nd2
+
+   call fft_1d_base(mm,nd3,mm,nd3,nfft,nd1*nd2*nd3,n3,&
+        ncache,ntrig,trig,after,now,before,ic,&
+        i_sign,inzee,.true.,iam,npr,z,zw)
+
+   !$omp barrier
+   if (n2 /= n3) then
+      call ctrig_sg(n2,ntrig,trig,after,before,now,i_sign,ic)
+   end if
+   nfft=nd3*n1
+   mm=nd3*nd1
+   call fft_1d_base(mm,nd2,mm,nd2,nfft,nd1*nd2*nd3,n2,&
+        ncache,ntrig,trig,after,now,before,ic,&
+        i_sign,inzee,.true.,iam,npr,z,zw)
+   !$omp barrier
+   if (n1 /= n2) then
+      call ctrig_sg(n1,ntrig,trig,after,before,now,i_sign,ic)
+   end if
+   nfft=nd2*n3
+   mm=nd2*nd3
+   call fft_1d_base(mm,nd1,mm,nd1,nfft,nd1*nd2*nd3,n1,&
+        ncache,ntrig,trig,after,now,before,ic,&
+        i_sign,inzee,.true.,iam,npr,z,zw)
+
+   !$omp critical (deallocate_critical_fft3d)
+   deallocate(zw)
+   deallocate(trig)
+   !$omp end critical (deallocate_critical_fft3d)
+   !$omp end parallel  
+
+ END SUBROUTINE FFT_3D
+
+!!$ subroutine FFT_3d_rtoc(n1,n2,n3,nd1,nd2,nd3,z,i_sign,inzee)
+!!$
+!!$   use module_fft_sg
+!!$   implicit none !real(kind=8) (a-h,o-z)
+!!$   !Arguments
+!!$   integer, intent(in) :: n1,n2,n3,nd1,nd2,nd3,i_sign
+!!$   integer, intent(inout) :: inzee
+!!$   real(kind=8), intent(inout) :: z(2,nd1*nd2*nd3,2)
+!!$   !Local variables
+!!$   integer, dimension(n_factors) :: after,now,before
+!!$   real(kind=8), allocatable, dimension(:,:,:) :: zw  
+!!$   real(kind=8), dimension(:,:), allocatable :: trig
+!!$   !local variables
+!!$   integer :: iam,ic,mm,npr,ntrig,nfft
+!!$
+!!$   if (max(n1,n2,n3).gt.nfft_max) then
+!!$      write(*,*) 'One of the dimensions:',n1,n2,n3,' is bigger than ',nfft_max
+!!$      stop
+!!$   end if
+!!$
+!!$   ! check whether input values are reasonable
+!!$   if (inzee.le.0 .or. inzee.ge.3) stop 'wrong inzee'
+!!$   if (i_sign.ne.1 .and. i_sign.ne.-1) stop 'wrong i_sign'
+!!$   if (n1.gt.nd1) stop 'n1>nd1'
+!!$   if (n2.gt.nd2) stop 'n2>nd2'
+!!$   if (n3.gt.nd3) stop 'n3>nd3'
+!!$
+!!$   ntrig=max(n1,n2,n3)
+!!$   allocate(trig(2,ntrig))
+!!$
+!!$   ! Intel IFC does not understand default(private)
+!!$!!!!!$omp parallel  default(private) &
+!!$!!!!$omp parallel & 
+!!$!!!!$omp private(zw,trig,before,after,now,i,j,iam,npr,jj,ma,mb,mm,ic,n,m,jompa,jompb,lot,lotomp,inzeep,inzet,nn,nfft) &
+!!$!!!!$omp shared(n1,n2,n3,nd1,nd2,nd3,z,i_sign,inzee,ncache) 
+!!$
+!!$   npr=1
+!!$!!!!$       npr=omp_get_num_threads()
+!!$   iam=0
+!!$!!!!$       iam=omp_get_thread_num()
+!!$
+!!$!!!!$omp critical
+!!$   allocate(zw(2,ncache/4,2))
+!!$!!!!$omp end critical
+!!$
+!!$   call ctrig_sg(n3,ntrig,trig,after,before,now,i_sign,ic)
+!!$   nfft=nd1f*n2
+!!$   mm=nd1f*nd2
+!!$   !   call x0_to_z1_simple(x0,z1,inzee)
+!!$   call x0_to_z1(x0,z1,inzee)
+!!$   call fft_1d_base(mm,nd3,mm,nd3,nfft,nd1*nd2*nd3,n3,&
+!!$        ncache,ntrig,trig,after,now,before,ic,&
+!!$        i_sign,inzee,.true.,iam,npr,z1,zw)
+!!$   call z1_to_z3(z1,z3,inzee)
+!!$
+!!$!!!!!!!!!$omp barrier
+!!$   if (n2.ne.n3) then
+!!$      call ctrig_sg(n2,ntrig,trig,after,before,now,i_sign,ic)
+!!$   end if
+!!$   nfft=nd3f*n1
+!!$   mm=nd3f*nd1
+!!$   call fft_1d_base(mm,nd2,mm,nd2,nfft,nd1*nd2*nd3,n2,&
+!!$        ncache,ntrig,trig,after,now,before,ic,&
+!!$        i_sign,inzee,.true.,iam,npr,z3,zw)
+!!$!!!!!!!!!$omp barrier
+!!$   if (n1.ne.n2) then
+!!$      call ctrig_sg(n1,ntrig,trig,after,before,now,i_sign,ic)
+!!$   end if
+!!$   nfft=nd2*n3f
+!!$   mm=nd2*nd3f
+!!$   call fft_1d_base(mm,nd1,mm,nd1,nfft,nd1*nd2*nd3,n1,&
+!!$        ncache,ntrig,trig,after,now,before,ic,&
+!!$        i_sign,inzee,.true.,iam,npr,z3,zw)
+!!$   deallocate(zw)
+!!$!!!!!!!!!!$omp end parallel  
+!!$   deallocate(trig)
+!!$ END SUBROUTINE FFT_3D_RTOC
+
+!!$subroutine fft_1d_base_rtoc(ndat_in,ld_in,ndat_out,ld_out,nfft,nin,n,&
+!!$     nout,
+!!$     ncache,ntrig,trig,after,now,before,ic,&
+!!$     i_sign,inzee,transpose,iam,nthread,x,z,zw)
+!!$  use f_precisions
+!!$  use module_fft_sg, only: n_factors
+!!$  implicit none
+!!$  logical, intent(in) :: transpose
+!!$  integer, intent(in) :: ndat_in,ld_in,ndat_out,ld_out,nfft,nin,nout,n
+!!$  integer, intent(in) :: ncache,ntrig,ic
+!!$  integer, intent(in) :: i_sign,iam,nthread
+!!$  integer, intent(inout) :: inzee
+!!$  integer, dimension(n_factors) :: after,now,before
+!!$  real(f_double), dimension(2,ntrig), intent(in) :: trig
+!!$  real(f_double), dimension(nin,2), intent(in) :: x
+!!$  real(f_double), dimension(2,nout,2), intent(out) :: z
+!!$  real(f_double), dimension(2,ncache/4,2), intent(inout) :: zw
+!!$
+!!$  !   call x0_to_z1_simple(x0,z1,inzee)
+!!$  call x0_to_z1(x0,z1,inzee)
+!!$  call fft_1d_base(mm,nd3,mm,nd3,nfft,nd1*nd2*nd3,n3,&
+!!$       ncache,ntrig,trig,after,now,before,ic,&
+!!$       i_sign,inzee,.true.,iam,npr,z1,zw)
+!!$  call z1_to_z3(z1,z3,inzee)
+!!$
+!!$nout=max(nd1*nd3f,nd1f*nd3)*nd2
+!!$
+!!$!omp parallelization to be added
+!!$lotomp=n2/nthread+1
+!!$i2s=iam*lotomp
+!!$i2e=min((iam+1)*lotomp,n2)
+!!$n2omp=i2e-i2s
+!!$ins=i2s*nd3*nd1f+1
+!!$outs=i2s*nd1*nd3f+1
+!!$call f_zero(2*nd1*nd3f*n2omp,z(1,outs,3-inzee))
+!!$  call zhalf_to_z(n3f,n3,nd3,nd3f,&
+!!$       n1f,nd1f,nd1,n2,n1,&
+!!$       z(1,ins,inzee),z(1,outs,3-inzee))
+!!$  inzee=3-inzee
+!!$
+!!$  contains
+!!$
+!!$    subroutine x0_to_z1(x0,z1,inzee)
+!!$      ! Transform the real array x0 into a complex z1
+!!$      ! real      part of z1: elements of x0 with odd  i1
+!!$      ! imaginary part of z1: elements of x0 with even i1
+!!$      implicit none
+!!$      !Arguments
+!!$      integer,intent(in)::inzee
+!!$      real(kind=8),intent(in):: x0(n1,n2,n3)
+!!$      real(kind=8),intent(out)::z1(2,nd1f,nd2,nd3,2)
+!!$      !Local variables
+!!$      integer :: i2,i3
+!!$      z1=0.d0
+!!$      do i3=1,n3
+!!$         do i2=1,n2
+!!$            ! 2*n1f=n1 for even n1
+!!$            ! 2*n1f=n1+1 for odd n1. Then, we copy one more element than
+!!$            ! necessary, but that's no problem.
+!!$            call my_copy(z1(1,1,i2,i3,inzee),x0(1,i2,i3))
+!!$         end do
+!!$      end do
+!!$    END SUBROUTINE x0_to_z1
+!!$
+!!$    subroutine my_copy(x,y)
+!!$      ! copies complex array y into complex array x
+!!$      implicit none
+!!$      !Arguments
+!!$      real(kind=8) :: x(2,n1f),y(2,n1f)
+!!$      x=y
+!!$    END SUBROUTINE my_copy
+!!$
+!!$    subroutine x0_to_z1_simple(x0,z1,inzee)
+!!$      ! Transform the real array x0 into a complex z1
+!!$      ! real      part of z1: elements of x0 with odd  i1
+!!$      ! imaginary part of z1: elements of x0 with even i1
+!!$      implicit none
+!!$      !Arguments
+!!$      integer, intent(in) :: inzee
+!!$      real(kind=8), intent(in)  :: x0(n1,n2,n3)
+!!$      real(kind=8), intent(out) :: z1(2,nd1f,nd2,nd3,2)
+!!$      !Local variables
+!!$      integer :: i1,i2,i3
+!!$      if (n1f*2.eq.n1) then
+!!$         do i3=1,n3
+!!$            do i2=1,n2
+!!$               do i1=1,n1f
+!!$                  z1(1,i1,i2,i3,inzee)=x0(2*i1-1,i2,i3)
+!!$                  z1(2,i1,i2,i3,inzee)=x0(2*i1  ,i2,i3)
+!!$               end do
+!!$            end do
+!!$         end do
+!!$      else ! n1=2*n1f-1
+!!$         do i3=1,n3
+!!$            do i2=1,n2
+!!$               do i1=1,n1f-1
+!!$                  z1(1,i1,i2,i3,inzee)=x0(2*i1-1,i2,i3)
+!!$                  z1(2,i1,i2,i3,inzee)=x0(2*i1  ,i2,i3)
+!!$               end do
+!!$               z1(1,n1f,i2,i3,inzee)=x0(n1,i2,i3)
+!!$            end do
+!!$         end do
+!!$      end if
+!!$    END SUBROUTINE x0_to_z1_simple
+
+!!$end subroutine fft_1d_base_rtoc
+
+!!$n_left_in=n3f
+!!$n_left_out=n3
+!!$ldl_in=nd3
+!!$ldl_out=nd3f
+!!$n_half=n1f
+!!$ld_in=nd1f
+!!$ld_out=nd1
+!!$n_right=n2
+!!$n=n1
+subroutine zhalf_to_z(n_left_in,n_left_out,ldl_in,ldl_out,&
+     n_half,ld_in,ld_out,n_right,n,&
+     z1,z3)
+  ! transforms the array z1 that stores elements of z corresponding to even 
+  ! and odd values of i1, as symmetric and antisymmetric combinations w.r.t.
+  ! flip of i3,
+  ! into the array z3 that stores only elements of z with i3=<ldl_out
+  implicit none
+  !Arguments
+  integer, intent(in) :: n_left_in,n_left_out,ldl_in,ldl_out,n_half
+  integer, intent(in) :: ld_in,ld_out,n_right,n
+  real(kind=8), intent(in) :: z1(2,ldl_in,ld_in,*)
+  !> this array has to be put to zero before
+  real(kind=8), intent(inout) :: z3( 2,ldl_out,ld_out ,*)
+  !Local variables
+  integer :: i1,i2,i3
+
+  if (n_half*2.eq.n) then
+     ! i3=1
+     do i2=1,n_right
+        do i1=1,n_half
+           z3(1,1,2*i1-1,i2)= 2.d0*z1(1,1,i1,i2)
+           z3(2,1,2*i1-1,i2)= 0.d0
+           z3(1,1,2*i1  ,i2)= 2.d0*z1(2,1,i1,i2)
+           z3(2,1,2*i1  ,i2)= 0.d0
+        end do
+     end do
+
+     do i2=1,n_right
+        do i1=1,n_half
+           do i3=2,n_left_in
+              z3(1,i3,2*i1-1,i2)= z1(1,i3,i1,i2)+z1(1,n_left_out+2-i3,i1,i2)
+              z3(1,i3,2*i1  ,i2)= z1(2,i3,i1,i2)+z1(2,n_left_out+2-i3,i1,i2)
+              !!If statement added to cope with ifort 2011 optimization bug
+              if (i3 /= n_left_out+2-i3) then
+                 z3(2,i3,2*i1-1,i2)= z1(2,i3,i1,i2)-z1(2,n_left_out+2-i3,i1,i2)
+                 z3(2,i3,2*i1  ,i2)=-z1(1,i3,i1,i2)+z1(1,n_left_out+2-i3,i1,i2)
+              else
+                 z3(2,i3,2*i1-1,i2)=0.0d0! z1(2,i3,i1,i2)-z1(2,n_left_out+2-i3,i1,i2)
+                 z3(2,i3,2*i1  ,i2)=0.0d0!-z1(1,i3,i1,i2)+z1(1,n_left_out+2-i3,i1,i2)
+              end if
+           end do
+        end do
+     end do
+  else ! n=2*n_half-1
+     ! i3=1
+     do i2=1,n_right
+        do i1=1,n_half-1
+           z3(1,1,2*i1-1,i2)= 2.d0*z1(1,1,i1,i2)
+           z3(2,1,2*i1-1,i2)= 0.d0
+           z3(1,1,2*i1  ,i2)= 2.d0*z1(2,1,i1,i2)
+           z3(2,1,2*i1  ,i2)= 0.d0
+        end do
+     end do
+
+     do i2=1,n_right
+        do i1=1,n_half-1
+           do i3=2,n_left_in
+              z3(1,i3,2*i1-1,i2)= z1(1,i3,i1,i2)+z1(1,n_left_out+2-i3,i1,i2)
+              z3(2,i3,2*i1-1,i2)= z1(2,i3,i1,i2)-z1(2,n_left_out+2-i3,i1,i2)
+              z3(1,i3,2*i1  ,i2)= z1(2,i3,i1,i2)+z1(2,n_left_out+2-i3,i1,i2)
+              z3(2,i3,2*i1  ,i2)=-z1(1,i3,i1,i2)+z1(1,n_left_out+2-i3,i1,i2)
+           end do
+        end do
+     end do
+
+     ! i1=n_half is treated separately: 2*n_half-1=n, but terms with 2*n_half are
+     ! omitted
+
+     do i2=1,n_right
+        z3(1,1,n,i2)= 2.d0*z1(1,1,n_half,i2)
+        z3(2,1,n,i2)= 0.d0
+     end do
+
+     do i2=1,n_right
+        do i3=2,n_left_in
+           z3(1,i3,n,i2)= z1(1,i3,n_half,i2)+z1(1,n_left_out+2-i3,n_half,i2)
+           z3(2,i3,n,i2)= z1(2,i3,n_half,i2)-z1(2,n_left_out+2-i3,n_half,i2)
+        end do
+     end do
+  end if
+END SUBROUTINE zhalf_to_z
+
+
+subroutine fft_1d_base(ndat_in,ld_in,ndat_out,ld_out,nfft,ninout,n,&
+     ncache,ntrig,trig,after,now,before,ic,&
+     i_sign,inzee,transpose,iam,nthread,z,zw)
+  use f_precisions
+  use module_fft_sg, only: n_factors
+  implicit none
+  logical, intent(in) :: transpose
+  integer, intent(in) :: ndat_in,ld_in,ndat_out,ld_out,nfft,ninout,n
+  integer, intent(in) :: ncache,ntrig,ic
+  integer, intent(in) :: i_sign,iam,nthread
+  integer, intent(inout) :: inzee
+  integer, dimension(n_factors) :: after,now,before
+  real(f_double), dimension(2,ntrig), intent(in) :: trig
+  real(f_double), dimension(2,ninout,2), intent(inout) :: z
+  real(f_double), dimension(2,ncache/4,2), intent(inout) :: zw
+  !local variables
+  logical :: real_input = .false.
+  integer :: i,lotomp,ma,mb,nfft_th,j,jj,jompa,jompb,inzeep,inzet,lot,nn
+
+  lot=max(1,ncache/(4*n))
+  nn=lot
+
+  inzet=inzee
+  if (ic.eq.1 .or. ncache==0) then
+     i=ic
+     lotomp=nfft/nthread+1
+     ma=iam*lotomp+1
+     mb=min((iam+1)*lotomp,nfft)
+     nfft_th=mb-ma+1
+     j=ma
+     if (transpose) then
+        jj=j*ld_out-ld_out+1
+        !input z(2,ndat_in,ld_in,inzet)
+        !output z(2,ld_out,ndat_out,3-inzet)          
+        call fftrot_sg(ndat_in,nfft_th,ld_in,ndat_out,ld_out,&
+             z(1,j,inzet),z(1,jj,3-inzet), &
+             ntrig,trig,after(i),now(i),before(i),i_sign)
+        if (real_input) then !only works when ld_out==n
+           inzet=3-inzet
+           call unpack_rfft(ndat_out,n,&
+                z(1,jj,inzet),z(1,jj,3-inzet))
+        end if
+     else
+        !input z(2,ndat_in,ld_in,inzet)
+        !output z(2,ndat_out,ld_out,3-inzet)
+        call fftstp_sg(ndat_in,nfft_th,ld_in,ndat_out,ld_out,&
+             z(1,j,inzet),z(1,j,3-inzet), &
+             ntrig,trig,after(i),now(i),before(i),i_sign)
+        if (real_input) then !only works when ld_out==n
+           inzet=3-inzet
+           !here maybe the ndat_out has to be rethought
+           call unpack_rfft_t((ndat_out-1)/2+1,ndat_out,n,&
+                z(1,j,inzet),z(1,j,3-inzet))
+        end if
+     end if
+  else
+     lotomp=(nfft)/nthread+1
+     jompa=iam*lotomp+1
+     jompb=min((iam+1)*lotomp,nfft)
+     do j=jompa,jompb,lot
+        ma=j
+        mb=min(j+(lot-1),jompb)
+        nfft_th=mb-ma+1
+        i=1
+        inzeep=2
+        call fftstp_sg(ndat_in,nfft_th,ld_in,nn,n,&
+             z(1,j,inzet),zw(1,1,3-inzeep), &
+             ntrig,trig,after(i),now(i),before(i),i_sign)
+        inzeep=1
+        do i=2,ic-1
+           call fftstp_sg(nn,nfft_th,n,nn,n,&
+                zw(1,1,inzeep),zw(1,1,3-inzeep), &
+                ntrig,trig,after(i),now(i),before(i),i_sign)
+           inzeep=3-inzeep
+        end do
+        i=ic
+        if (transpose) then
+           jj=j*ld_out-ld_out+1
+           call fftrot_sg(nn,nfft_th,n,ndat_out,ld_out,&
+                zw(1,1,inzeep),z(1,jj,3-inzet), &
+                ntrig,trig,after(i),now(i),before(i),i_sign)
+           if (real_input) then !only works when ld_out==n
+              inzet=3-inzet
+              call unpack_rfft(ndat_out,n,&
+                   z(1,jj,inzet),z(1,jj,3-inzet))
+           end if
+        else
+           call fftstp_sg(nn,nfft_th,n,ndat_out,ld_out,&
+                zw(1,1,inzeep),z(1,j,3-inzet), &
+                ntrig,trig,after(i),now(i),before(i),i_sign)
+           if (real_input) then !only works when ld_out==n
+              inzet=3-inzet
+              call unpack_rfft_t((ndat_out-1)/2+1,ndat_out,n,&
+                   z(1,j,inzet),z(1,j,3-inzet))
+           end if
+        end if
+     end do
+  end if
+  inzet=3-inzet
+  if (iam==0) inzee=inzet !as it is a shared variable
+
+end subroutine fft_1d_base
+
+!> routine to create the actual result of a complex fft from
+!! a set of fft which have been packed from a real input
+!! @warning: this only works if n is even
+subroutine unpack_rfft(ndat,n,zin,zout)
+  use f_precisions, only: f_double
+  implicit none
+  integer, intent(in) :: ndat,n
+  real(f_double), intent(in) :: zin(2,n,*) !according ndat is odd or even(ndat-1)/2+1)
+  real(f_double), intent(out) :: zout(2,n/2,2*ndat)
+  !local variables
+  integer :: idat,i,jp
+  do idat=1,ndat
+     zout(1,1,2*idat-1)=2.0_f_double*zin(1,1,idat)
+     zout(2,1,2*idat-1)=0.0_f_double
+     do i=2,n/2
+        jp=n+2-i !j(-pj,n)+1
+        zout(1,i,2*idat-1)=zin(1,i,idat)+zin(1,jp,idat)
+        zout(2,i,2*idat-1)=zin(2,i,idat)-zin(2,jp,idat)
+     end do
+     zout(1,1,2*idat  )=2.0_f_double*zin(2,1,idat)
+     zout(2,1,2*idat  )=0.0_f_double
+     do i=2,n/2
+        jp=n+2-i !j(-pj,n)+1
+        zout(1,i,2*idat  )=zin(2,i,idat)+zin(2,jp,idat)
+        zout(2,i,2*idat  )=-zin(1,i,idat)+zin(1,jp,idat)
+     end do
+  end do
+  return
+  if (2*(ndat/2)==ndat) return
+  !last case, idat=(ndat-1)/2+1
+  idat=(ndat-1)/2+1 
+  zout(1,1,2*idat-1)=2.0_f_double*zin(1,1,idat)
+  zout(2,1,2*idat-1)=0.0_f_double
+  do i=2,n/2
+     jp=n+2-i !j(-pj,n)+1
+     zout(1,i,2*idat-1)=zin(1,i,idat)+zin(1,jp,idat)
+     zout(2,i,2*idat-1)=zin(2,i,idat)-zin(2,jp,idat)
+  end do
+
+end subroutine unpack_rfft
+
+!> routine to create the actual result of a complex fft from
+!! a set of fft which have been packed from a real input
+!! @warning: this only works if n is even
+subroutine unpack_rfft_t(ndath,ndat,n,zin,zout)
+  use f_precisions, only: f_double
+  implicit none
+  integer, intent(in) :: ndat,n,ndath
+  real(f_double), intent(in) :: zin(2,ndath,n) !according ndat is odd or even(ndat-1)/2+1)
+  real(f_double), intent(out) :: zout(2,ndat,n/2)
+  !local variables
+  integer :: idat,i,jp
+
+  do idat=1,ndat/2
+     zout(1,2*idat-1,1)=2.0_f_double*zin(1,idat,1)
+     zout(2,2*idat-1,1)=0.0_f_double
+     zout(1,2*idat  ,1)=2.0_f_double*zin(2,idat,1)
+     zout(2,2*idat  ,1)=0.0_f_double
+     do i=2,n/2
+        jp=n+2-i !j(-pj,n)+1
+        zout(1,2*idat-1,i)=zin(1,idat,i)+zin(1,idat,jp)
+        zout(2,2*idat-1,i)=zin(2,idat,i)-zin(2,idat,jp)
+        zout(1,2*idat  ,i)=zin(2,idat,i)+zin(2,idat,jp)
+        zout(2,2*idat  ,i)=-zin(1,idat,i)+zin(1,idat,jp)
+     end do
+  end do
+  if (2*(ndat/2)==ndat) return
+  !last case, idat=(ndat-1)/2+1
+  idat=(ndat-1)/2+1 
+  zout(1,2*idat-1,1)=2.0_f_double*zin(1,idat,1)
+  zout(2,2*idat-1,1)=0.0_f_double
+  do i=2,n/2
+     jp=n+2-i !j(-pj,n)+1
+     zout(1,2*idat-1,i)=zin(1,idat,i)+zin(1,idat,jp)
+     zout(2,2*idat-1,i)=zin(2,idat,i)-zin(2,idat,jp)
+  end do
+
+end subroutine unpack_rfft_t
 
 
 !> @brief Calculates the discrete Fourier transform
@@ -1707,13 +2308,13 @@ subroutine fftstp_sg(mm,nfft,m,nn,n,zin,zout,ntrig,trig,after,now,before,i_sign)
          nout1=nout1+atn
          nout2=nout1+after
          do j=1,nfft
-            r1=zin(1,j,nin1)
+            r1=zin(1,j,nin1)  !c1=(r1,s1)
             s1=zin(2,j,nin1)
-            r2=zin(1,j,nin2)
+            r2=zin(1,j,nin2) !c2=(r2,s2)
             s2=zin(2,j,nin2)
-            zout(1,j,nout1)= r2 + r1
+            zout(1,j,nout1)= r2 + r1  !c1+c2
             zout(2,j,nout1)= s2 + s1
-            zout(1,j,nout2)= r1 - r2
+            zout(1,j,nout2)= r1 - r2 !c1-c2
             zout(2,j,nout2)= s1 - s2
          end do
       end do

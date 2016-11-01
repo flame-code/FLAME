@@ -46,6 +46,8 @@ program test
   call f_object_signal_connect("class", "ping", kernel, ierr)
 
 !!! [load]
+  call plugin_add_str("test_plugin")
+  call plugin_add_arg(256)
   call plugin_load("pong", ierr)
 !!! [load]
   call yaml_map("status", ierr)

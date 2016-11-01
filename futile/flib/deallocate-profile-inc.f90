@@ -20,10 +20,13 @@
   ! character(len=namelen) :: routine_id
   ! character(len=info_length) :: array_info
   ! type(dictionary), pointer :: dict_add
+  type(dictionary), pointer :: info
+  character(len=info_length) :: val
 
   if (f_err_raise(ictrl == 0,&
        'ERROR (f_free): the routine f_malloc_initialize has not been called',&
        ERR_MALLOC_INTERNAL)) return
+  nullify(info)
 
   !$ not_omp=.not. (omp_in_parallel() .or. omp_get_nested())
 
