@@ -137,10 +137,12 @@ subroutine ann_train(parini)
     !-------------------------------- bond symmetry function --------------------------------
         do iconf=1,atoms_valid%nconf
             if(atoms_valid%atoms(iconf)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
-            if(symfunc_valid%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-            do ib=1,1
-                !iat=symfunc%linked_lists%bound_rad(1,ib)
-                !jat=symfunc%linked_lists%bound_rad(2,ib)
+            !if(symfunc_valid%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+            do ib=1,symfunc_valid%symfunc(iconf)%linked_lists%maxbound_rad
+                iat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(1,ib)
+                jat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(2,ib)
+                !write(*,*) 'QQQQQQQQ ',ib,iat,jat
+                if(iat>jat) cycle
                 ng=symfunc_valid%symfunc(iconf)%ng
                 do ig=1,ng
                     tt=symfunc_valid%symfunc(iconf)%y(ig,ib)
@@ -150,10 +152,11 @@ subroutine ann_train(parini)
             enddo
         enddo
         do iconf=1,atoms_train%nconf
-            if(symfunc_train%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-            do ib=1,1 !symfunc_train%symfunc(iconf)%linked_lists%maxbound_rad
-                !iat=symfunc%linked_lists%bound_rad(1,ib)
-                !jat=symfunc%linked_lists%bound_rad(2,ib)
+            !if(symfunc_train%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+            do ib=1,symfunc_train%symfunc(iconf)%linked_lists%maxbound_rad
+                iat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(1,ib)
+                jat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(2,ib)
+                if(iat>jat) cycle
                 ng=symfunc_train%symfunc(iconf)%ng
                 do ig=1,ng
                     tt=symfunc_train%symfunc(iconf)%y(ig,ib)
@@ -479,9 +482,9 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         if(trim(parini%symfunc)=='write' .or. trim(parini%symfunc)=='only_calculate') then
             call symmetry_functions(parini,ann_arr,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf),.false.)
             deallocate(symfunc_arr%symfunc(iconf)%y0dr)
-            if(parini%bondbased_ann .and. symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) then
-                stop 'ERROR: correct next line'
-            endif
+            !if(parini%bondbased_ann .and. symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) then
+            !    stop 'ERROR: correct next line'
+            !endif
             !call ann_deallocate(ann_arr)
             if(parini%symfunc_type_ann=='behler') then
             !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
@@ -785,7 +788,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     character(*), intent(in):: strmess
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
     !local variables
-    integer:: iconf, ib, ig, i, iat, i0
+    integer:: iconf, ib, ig, i, iat, jat, i0
     real(8), allocatable:: gminarr(:,:), gmaxarr(:,:) !, poll_period
     integer, allocatable:: iatmin(:,:), iatmax(:,:), iconfmin(:,:), iconfmax(:,:)
     integer:: ibmin(100), ibmax(100)
@@ -809,8 +812,11 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         !write(41,'(i6,i3)') status_mpi(MPI_TAG),status_mpi(MPI_SOURCE)
         if(parini%bondbased_ann) then
             !-------------------------------- bond symmetry function --------------------------------
-            if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-            do ib=1,1 !symfunc%linked_lists%maxbound_rad
+            !if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+            do ib=1,symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad
+                iat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(1,ib)
+                jat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(2,ib)
+                if(iat>jat) cycle
                 do ig=1,symfunc_arr%symfunc(iconf)%ng
                     if(symfunc_arr%symfunc(iconf)%y(ig,ib)<gminarr(ig,1)) then
                         gminarr(ig,1)=symfunc_arr%symfunc(iconf)%y(ig,ib)
