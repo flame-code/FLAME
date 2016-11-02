@@ -36,7 +36,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     endif
-    if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+    !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
     nb=symfunc%linked_lists%maxbound_rad/2
     hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
     dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
@@ -68,6 +68,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
+        !if(iat>jat) cycle
         partb%hgenall0(iat,jat)=hgen(1,ib)
         partb%hgenall1(iat,jat)=hgen(2,ib)
         partb%hgenall2(iat,jat)=hgen(3,ib)
