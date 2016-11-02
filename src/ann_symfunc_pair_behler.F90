@@ -23,8 +23,8 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     call call_linkedlist(parini,atoms,symfunc%linked_lists,pia_arr)
     !write(*,*) 'HERE ',symfunc%linked_lists%maxbound_rad
     !stop
-    if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-    allocate(symfunc%y(ann_arr%ann(1)%nn(0),1),stat=istat,source=0.d0)
+    !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+    allocate(symfunc%y(ann_arr%ann(1)%nn(0),symfunc%linked_lists%maxbound_rad/2),stat=istat,source=0.d0)
     if(istat/=0) stop 'ERROR: unable to allocate array symfunc%y'
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))
@@ -38,7 +38,9 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     do ib=1,symfunc%linked_lists%maxbound_rad
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
+        !write(*,*) 'BEFORE ',ib,iat,jat
         if(iat>jat) cycle
+        !write(*,*) 'AFTER ',ib,iat,jat
         isat=atoms%itypat(iat)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ib))
         pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)

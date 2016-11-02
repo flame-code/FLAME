@@ -8,7 +8,7 @@
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
   logical, intent(in), optional :: profile
-  character(len=*), intent(in), optional :: id,routine_id
+  character(len=*), intent(in), optional :: id,routine_id,info
   !local variables
   !integer(f_integer) :: lgt
 !!$  logical :: within_openmp
@@ -41,3 +41,6 @@
   end if
 
   if(present(profile)) m%profile=profile
+
+  if(present(info)) m%info=info
+

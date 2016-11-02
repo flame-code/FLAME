@@ -36,7 +36,7 @@ module module_f_objects
   integer, private, save :: ERROR_OBJECT
   type(dictionary), pointer :: class_library => null()
 
-  integer, parameter :: MAX_ARGS_IMPLEMENTED = 3
+  integer, parameter :: MAX_ARGS_IMPLEMENTED = 5
 
   type signal_ctx
      character(len = max_field_length) :: obj_id, id
@@ -271,37 +271,80 @@ contains
        
        select case(n_args)
        case (0)
-          call call_external_c_fromadd(callback)
+          call callable_void(callback)
        case (1)
           select case(n_strs)
           case (0)
-             call call_external_c_fromadd_data(callback, args(1))
+             call callable_arg(callback, args(1))
           case (1)
-             call call_external_c_fromadd_data_str(callback, args(1), lens(1))
+             call callable_str(callback, args(1), lens(1))
           end select
        case (2)
           select case(n_strs)
           case (0)
-             call call_external_c_fromadd_data_data(callback, args(1), args(2))
+             call callable_arg_arg(callback, args(1), args(2))
           case (1)
-             call call_external_c_fromadd_data_data_str(callback, args(1), args(2), lens(1))
+             call callable_arg_str(callback, args(1), args(2), lens(1))
           case (2)
-             call call_external_c_fromadd_data_data_str_str(callback, args(1), args(2), lens(1), lens(2))
+             call callable_str_str(callback, args(1), args(2), lens(1), lens(2))
           end select
        case (3)
           select case(n_strs)
           case (0)
-             call call_external_c_fromadd_data_data_data(callback, &
+             call callable_arg_arg_arg(callback, &
                   & args(1), args(2), args(3))
           case (1)
-             call call_external_c_fromadd_data_data_data_str(callback, &
+             call callable_arg_arg_str(callback, &
                   & args(1), args(2), args(3), lens(1))
           case (2)
-             call call_external_c_fromadd_data_data_data_str_str(callback, &
+             call callable_arg_str_str(callback, &
                   & args(1), args(2), args(3), lens(1), lens(2))
           case (3)
-             call call_external_c_fromadd_data_data_data_str_str_str(callback, &
+             call callable_str_str_str(callback, &
                   & args(1), args(2), args(3), lens(1), lens(2), lens(3))
+          end select
+       case (4)
+          select case(n_strs)
+          case (0)
+             call callable_arg_arg_arg_arg(callback, &
+                  & args(1), args(2), args(3), args(4))
+          case (1)
+             call callable_arg_arg_arg_str(callback, &
+                  & args(1), args(2), args(3), args(4), lens(1))
+          case (2)
+             call callable_arg_arg_str_str(callback, &
+                  & args(1), args(2), args(3), args(4), lens(1), lens(2))
+          case (3)
+             call callable_arg_str_str_str(callback, &
+                  & args(1), args(2), args(3), args(4), lens(1), lens(2), lens(3))
+          case (4)
+             call callable_str_str_str_str(callback, &
+                  & args(1), args(2), args(3), args(4), &
+                  & lens(1), lens(2), lens(3), lens(4))
+          end select
+       case (5)
+          select case(n_strs)
+          case (0)
+             call callable_arg_arg_arg_arg_arg(callback, &
+                  & args(1), args(2), args(3), args(4), args(5))
+          case (1)
+             call callable_arg_arg_arg_arg_str(callback, &
+                  & args(1), args(2), args(3), args(4), args(5), lens(1))
+          case (2)
+             call callable_arg_arg_arg_str_str(callback, &
+                  & args(1), args(2), args(3), args(4), args(5), lens(1), lens(2))
+          case (3)
+             call callable_arg_arg_str_str_str(callback, &
+                  & args(1), args(2), args(3), args(4), args(5), &
+                  & lens(1), lens(2), lens(3))
+          case (4)
+             call callable_arg_str_str_str_str(callback, &
+                  & args(1), args(2), args(3), args(4), args(5), &
+                  & lens(1), lens(2), lens(3), lens(4))
+          case (5)
+             call callable_str_str_str_str_str(callback, &
+                  & args(1), args(2), args(3), args(4), args(5), &
+                  & lens(1), lens(2), lens(3), lens(4), lens(5))
           end select
        end select
        iter => dict_next(iter)
@@ -312,12 +355,12 @@ contains
     implicit none
     character(len = *), intent(in) :: obj_id, id
     type(kernel_ctx), intent(in) :: kernel
-    integer, intent(out) :: sid
+    integer, intent(out), optional :: sid
 
     type(dictionary), pointer :: sig, hook
-    integer :: n_args_signal, i
+    integer :: n_args_signal, i, sid_
 
-    sid = -1
+    if (present(sid)) sid = -1
 
     sig => ensure_signal(obj_id, id)
     if (.not. associated(sig)) return
@@ -331,14 +374,14 @@ contains
     hook => class_library // obj_id // "signals" // id // "hooks"
     if (dict_len(hook) > 0) then
        hook => hook // (dict_len(hook) - 1)
-       sid = hook // "id"
-       sid = sid + 1
+       sid_ = hook // "id"
+       sid_ = sid_ + 1
     else
-       sid = 0
+       sid_ = 0
     end if
 
     call dict_init(hook)
-    call set(hook // "id", sid)
+    call set(hook // "id", sid_)
     call set(hook // "address", kernel%callback)
     do i = 1, kernel%n_args
        call add(hook // "arguments", kernel%args(i))
@@ -348,6 +391,8 @@ contains
     end do
 
     call add(class_library // obj_id // "signals" // id // "hooks", hook)
+
+    if (present(sid)) sid = sid_
   end subroutine f_object_signal_connect
 
   function f_object_has_signal(obj_id, id)
@@ -367,6 +412,9 @@ contains
     integer(f_address), intent(in) :: callback_add
     integer, intent(in) :: n_args
     type(kernel_ctx) :: ctx
+
+    if (f_err_raise(n_args > MAX_ARGS_IMPLEMENTED, "Too many arguments for kernel", &
+         & err_id = ERROR_OBJECT)) return
 
     ctx%callback = callback_add
     ctx%callback_n_args = n_args

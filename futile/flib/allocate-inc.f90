@@ -7,6 +7,7 @@
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
+  if (f_nan_pad_size > 0) call togglepadding(int(0,f_long))
   if (ierror/=0) then
      !$ if(not_omp) then
      call f_timer_resume()!TCAT_ARRAY_ALLOCATIONS
@@ -17,16 +18,16 @@
      return
   end if
   if (size(shape(array))==m%rank) then
-     call pad_array(array,m%put_to_zero,m%shape,ndebug)
+     call pad_array(array,m%put_to_zero,m%shape,padding)
      !also fill the array with the values of the source if the address is identified in the source
      if (m%srcdata_add > int(0,kind=8)) call c_memcopy(array,m%srcdata_add,product(shape(array))*kind(array))
      !profile the array allocation
-     iadd=int(0,kind=8)
+     iadd=int(0,f_address)
      !write the address of the first element in the address string
      if (m%profile .and. track_origins) iadd=loc_arr(array)!call getlongaddress(array,iadd)
 
      call f_update_database(product(int(m%shape(1:m%rank),kind=8)),kind(array),m%rank,&
-          iadd,m%array_id,m%routine_id)
+          iadd,m%array_id,m%routine_id,m%info)
 
   else
      !$ if(not_omp) then

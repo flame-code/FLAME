@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
+
 void FC_FUNC_(call_external_c, CALL_EXTERNAL_C)(void *callback(),void *address())
 {
   //  *address=0;
@@ -39,87 +41,173 @@ void FC_FUNC_(c_memcopy, C_MEMCOPY)(void *to, long long int * fromadd, int *ln)
   memcpy(to, from, sizeof(char) * *ln);
 }
 
-void FC_FUNC_(call_external_c_fromadd, CALL_EXTERNAL_C_FROMADD)(long long int * add)
+void FC_FUNC_(callable_void, CALLABLE_VOID)(FFunc_void *func)
 {
-  void * ext;
-  //  long long int *ext_data;
-
-  ext=(void*) *add;
-  //*ext_data=0;
-
-  //  *address=0;
-  //callback1= (void*) *add;
-  //printf("\n test NEW address = %p; \n", (void*) *add);
-  //callback1();
-  //*addredss();
-  FC_FUNC_(call_external_f,CALL_EXTERNAL_F)(ext);//,ext_data);
-
-  // printf("\n test NEW address = %lld; \n", *add);
-  //  printf("\n test NEW address3 = %p , %lld; \n", (void*)callback,*address);
-  return;
+  if (func)
+    (*func)();
 }
 
-typedef void (*f_subroutine_data)(void *dataadd);
-void FC_FUNC_(call_external_c_fromadd_data, CALL_EXTERNAL_C_FROMADD_DATA)(f_subroutine_data *add, void **dataadd)
+void FC_FUNC_(callable_arg, CALLABLE_ARG)(FFunc_arg *func, void **a)
 {
-  if (add && dataadd)
-    (*add)(*dataadd);
+  if (func && a)
+    (*func)(*a);
 }
 
-typedef void (*f_subroutine_data_str)(void *dataadd, int ln);
-void FC_FUNC_(call_external_c_fromadd_data_str, CALL_EXTERNAL_C_FROMADD_DATA_STR)(f_subroutine_data_str *add, void **dataadd, int *ln)
+void FC_FUNC_(callable_str, CALLABLE_STR)(FFunc_str *func, void **a, int *ln)
 {
-  if (add && dataadd)
-    (*add)(*dataadd, *ln);
+  if (func && a)
+    (*func)(*a, *ln);
 }
 
-typedef void (*f_subroutine_data_data)(void *dataadd, void *dataadd2);
-void FC_FUNC_(call_external_c_fromadd_data_data, CALL_EXTERNAL_C_FROMADD_DATA_DATA)(f_subroutine_data_data *add, void **dataadd, void **dataadd2)
+void FC_FUNC_(callable_arg_arg, CALLABLE_ARG_ARG)(FFunc_arg_arg *func, void **a, void **a2)
 {
-  if (add && dataadd && dataadd2)
-    (*add)(*dataadd, *dataadd2);
+  if (func && a && a2)
+    (*func)(*a, *a2);
 }
 
-typedef void (*f_subroutine_data_data_str)(void *dataadd, void *dataadd2, int ln);
-void FC_FUNC_(call_external_c_fromadd_data_data_str, CALL_EXTERNAL_C_FROMADD_DATA_DATA_STR)(f_subroutine_data_data_str *add, void **dataadd, void **dataadd2, int *ln)
+void FC_FUNC_(callable_arg_str, CALLABLE_ARG_STR)(FFunc_arg_str *func, void **a, void **a2, int *ln)
 {
-  if (add && dataadd && dataadd2)
-    (*add)(*dataadd, *dataadd2, *ln);
+  if (func && a && a2)
+    (*func)(*a, *a2, *ln);
 }
 
-typedef void (*f_subroutine_data_data_str_str)(void *dataadd, void *dataadd2, int ln, int ln2);
-void FC_FUNC_(call_external_c_fromadd_data_data_str_str, CALL_EXTERNAL_C_FROMADD_DATA_DATA_STR_STR)(f_subroutine_data_data_str_str *add, void **dataadd, void **dataadd2, int *ln, int *ln2)
+void FC_FUNC_(callable_str_str, CALLABLE_STR_STR)(FFunc_str_str *func, void **a, void **a2, int *ln, int *ln2)
 {
-  if (add && dataadd && dataadd2)
-    (*add)(*dataadd, *dataadd2, *ln, *ln2);
+  if (func && a && a2)
+    (*func)(*a, *a2, *ln, *ln2);
 }
 
-typedef void (*f_subroutine_data_data_data)(void *dataadd, void *dataadd2, void *dataadd3);
-void FC_FUNC_(call_external_c_fromadd_data_data_data, CALL_EXTERNAL_C_FROMADD_DATA_DATA_DATA)(f_subroutine_data_data_data *add, void **dataadd, void **dataadd2, void **dataadd3)
+void FC_FUNC_(callable_arg_arg_arg, CALLABLE_ARG_ARG_ARG)(FFunc_arg_arg_arg *func, void **a, void **a2, void **a3)
 {
-  if (add && dataadd && dataadd2 && dataadd3)
-    (*add)(*dataadd, *dataadd2, *dataadd3);
+  if (func && a && a2 && a3)
+    (*func)(*a, *a2, *a3);
 }
 
-typedef void (*f_subroutine_data_data_data_str)(void *dataadd, void *dataadd2, void **dataadd3, int ln);
-void FC_FUNC_(call_external_c_fromadd_data_data_data_str, CALL_EXTERNAL_C_FROMADD_DATA_DATA_DATA_STR)(f_subroutine_data_data_data_str *add, void **dataadd, void **dataadd2, void **dataadd3, int *ln)
+void FC_FUNC_(callable_arg_arg_str, CALLABLE_ARG_ARG_STR)(FFunc_arg_arg_str *func, void **a, void **a2, void **a3, int *ln)
 {
-  if (add && dataadd && dataadd2 && dataadd3)
-    (*add)(*dataadd, *dataadd2, *dataadd3, *ln);
+  if (func && a && a2 && a3)
+    (*func)(*a, *a2, *a3, *ln);
 }
 
-typedef void (*f_subroutine_data_data_data_str_str)(void *dataadd, void *dataadd2, void **dataadd3, int ln, int ln2);
-void FC_FUNC_(call_external_c_fromadd_data_data_data_str_str, CALL_EXTERNAL_C_FROMADD_DATA_DATA_DATA_STR_STR)(f_subroutine_data_data_data_str_str *add, void **dataadd, void **dataadd2, void **dataadd3, int *ln, int *ln2)
+void FC_FUNC_(callable_arg_str_str, CALLABLE_ARG_STR_STR)(FFunc_arg_str_str *func, void **a, void **a2, void **a3, int *ln, int *ln2)
 {
-  if (add && dataadd && dataadd2 && dataadd3)
-    (*add)(*dataadd, *dataadd2, *dataadd3, *ln, *ln2);
+  if (func && a && a2 && a3)
+    (*func)(*a, *a2, *a3, *ln, *ln2);
 }
 
-typedef void (*f_subroutine_data_data_data_str_str_str)(void *dataadd, void *dataadd2, void **dataadd3, int ln, int ln2, int ln3);
-void FC_FUNC_(call_external_c_fromadd_data_data_data_str_str_str, CALL_EXTERNAL_C_FROMADD_DATA_DATA_DATA_STR_STR_STR)(f_subroutine_data_data_data_str_str_str *add, void **dataadd, void **dataadd2, void **dataadd3, int *ln, int *ln2, int *ln3)
+void FC_FUNC_(callable_str_str_str, CALLABLE_STR_STR_STR)(FFunc_str_str_str *func, void **a, void **a2, void **a3, int *ln, int *ln2, int *ln3)
 {
-  if (add && dataadd && dataadd2 && dataadd3)
-    (*add)(*dataadd, *dataadd2, *dataadd3, *ln, *ln2, *ln3);
+  if (func && a && a2 && a3)
+    (*func)(*a, *a2, *a3, *ln, *ln2, *ln3);
+}
+
+void FC_FUNC_(callable_arg_arg_arg_arg, CALLABLE_ARG_ARG_ARG_ARG)(FFunc_arg_arg_arg_arg *func, void **a, void **a2, void **a3, void **a4)
+{
+  if (func && a && a2 && a3 && a4)
+    (*func)(*a, *a2, *a3, *a4);
+}
+
+void FC_FUNC_(callable_arg_arg_arg_str, CALLABLE_ARG_ARG_ARG_STR)(FFunc_arg_arg_arg_str *func, void **a, void **a2, void **a3, void **a4, int *ln)
+{
+  if (func && a && a2 && a3 && a4)
+    (*func)(*a, *a2, *a3, *a4, *ln);
+}
+
+void FC_FUNC_(callable_arg_arg_str_str, CALLABLE_ARG_ARG_STR_STR)(FFunc_arg_arg_str_str *func, void **a, void **a2, void **a3, void **a4, int *ln, int *ln2)
+{
+  if (func && a && a2 && a3 && a4)
+    (*func)(*a, *a2, *a3, *a4, *ln, *ln2);
+}
+
+void FC_FUNC_(callable_arg_str_str_str, CALLABLE_ARG_STR_STR_STR)(FFunc_arg_str_str_str *func, void **a, void **a2, void **a3, void **a4, int *ln, int *ln2, int *ln3)
+{
+  if (func && a && a2 && a3 && a4)
+    (*func)(*a, *a2, *a3, *a4, *ln, *ln2, *ln3);
+}
+
+void FC_FUNC_(callable_str_str_str_str, CALLABLE_STR_STR_STR_STR)(FFunc_str_str_str_str *func, void **a, void **a2, void **a3, void **a4, int *ln, int *ln2, int *ln3, int *ln4)
+{
+  if (func && a && a2 && a3 && a4)
+    (*func)(*a, *a2, *a3, *a4, *ln, *ln2, *ln3, *ln4);
+}
+
+
+void FC_FUNC_(callable_arg_arg_arg_arg_arg, CALLABLE_ARG_ARG_ARG_ARG_ARG)(FFunc_arg_arg_arg_arg_arg *func, void **a, void **a2, void **a3, void **a4, void **a5)
+{
+  if (func && a && a2 && a3 && a4 && a5)
+    (*func)(*a, *a2, *a3, *a4, *a5);
+}
+
+void FC_FUNC_(callable_arg_arg_arg_arg_str, CALLABLE_ARG_ARG_ARG_ARG_STR)(FFunc_arg_arg_arg_arg_str *func, void **a, void **a2, void **a3, void **a4, void **a5, int *ln)
+{
+  if (func && a && a2 && a3 && a4 && a5)
+    (*func)(*a, *a2, *a3, *a4, *a5, *ln);
+}
+
+void FC_FUNC_(callable_arg_arg_arg_str_str, CALLABLE_ARG_ARG_ARG_STR_STR)(FFunc_arg_arg_arg_str_str *func, void **a, void **a2, void **a3, void **a4, void **a5, int *ln, int *ln2)
+{
+  if (func && a && a2 && a3 && a4 && a5)
+    (*func)(*a, *a2, *a3, *a4, *a5, *ln, *ln2);
+}
+
+void FC_FUNC_(callable_arg_arg_str_str_str, CALLABLE_ARG_ARG_STR_STR_STR)(FFunc_arg_arg_str_str_str *func, void **a, void **a2, void **a3, void **a4, void **a5, int *ln, int *ln2, int *ln3)
+{
+  if (func && a && a2 && a3 && a4 && a5)
+    (*func)(*a, *a2, *a3, *a4, *a5, *ln, *ln2, *ln3);
+}
+
+void FC_FUNC_(callable_arg_str_str_str_str, CALLABLE_ARG_STR_STR_STR_STR)(FFunc_arg_str_str_str_str *func, void **a, void **a2, void **a3, void **a4, void **a5, int *ln, int *ln2, int *ln3, int *ln4)
+{
+  if (func && a && a2 && a3 && a4 && a5)
+    (*func)(*a, *a2, *a3, *a4, *a5, *ln, *ln2, *ln3, *ln4);
+}
+
+void FC_FUNC_(callable_str_str_str_str_str, CALLABLE_STR_STR_STR_STR_STR)(FFunc_str_str_str_str_str *func, void **a, void **a2, void **a3, void **a4, void **a5, int *ln, int *ln2, int *ln3, int *ln4, int *ln5)
+{
+  if (func && a && a2 && a3 && a4 && a5)
+    (*func)(*a, *a2, *a3, *a4, *a5, *ln, *ln2, *ln3, *ln4, *ln5);
+}
+
+void f_func_call(void *func, unsigned int n_args, void* args[FFUNC_MAX_ARGS],
+                 const unsigned int strs[FFUNC_MAX_ARGS])
+{
+  FFunc_void func_0;
+  FFunc_str func_1;
+  FFunc_str_str func_2;
+  FFunc_str_str_str func_3;
+  FFunc_str_str_str_str func_4;
+  FFunc_str_str_str_str_str func_5;
+
+  switch (n_args)
+    {
+    case 0:
+      *(&func_0) = func;
+      func_0();
+      return;
+    case 1:
+      *(&func_1) = func;
+      func_1(args[0], strs[0]);
+      return;
+    case 2:
+      *(&func_2) = func;
+      func_2(args[0], args[1], strs[0], strs[1]);
+      return;
+    case 3:
+      *(&func_3) = func;
+      func_3(args[0], args[1], args[2], strs[0], strs[1], strs[2]);
+      return;
+    case 4:
+      *(&func_4) = func;
+      func_4(args[0], args[1], args[2], args[3], strs[0], strs[1], strs[2], strs[3]);
+      return;
+    case 5:
+      *(&func_5) = func;
+      func_5(args[0], args[1], args[2], args[3], args[4],
+             strs[0], strs[1], strs[2], strs[3], strs[4]);
+      return;
+    default:
+      return;
+    }
 }
 
 //Symbol duplications for fortran interfaces

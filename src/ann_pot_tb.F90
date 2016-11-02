@@ -39,7 +39,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     endif
-    if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+    !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
     nb=symfunc%linked_lists%maxbound_rad/2
     hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
     dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
@@ -49,11 +49,9 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             ng=ann_arr%ann(i)%nn(0)
                 ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,ib)
             if(trim(ann_arr%event)=='train') then
-                partb%event=ann_arr%event
                 call cal_architecture_der(ann_arr%ann(i),hgen(i,ib))
                 call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ekf%gc(1,i))
             elseif(trim(ann_arr%event)=='evalu') then
-                partb%event=ann_arr%event
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))            
                 iat=symfunc%linked_lists%bound_rad(1,ib)
                 jat=symfunc%linked_lists%bound_rad(2,ib) 
@@ -67,8 +65,8 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
                 yij=atoms%rat(2,jat)-atoms%rat(2,iat)
                 zij=atoms%rat(3,jat)-atoms%rat(3,iat)
                 r=sqrt(xij**2+yij**2+zij**2)
-                dhgen(i,ib)=(ttx(i)/atoms%rat(1,iat) + tty(i)/atoms%rat(2,iat) + ttz(i)/atoms%rat(3,iat))*r
-                write(*,*) 'DH', dhgen(i,ib) 
+                !dhgen(i,ib)=(ttx(i)/atoms%rat(1,iat) + tty(i)/atoms%rat(2,iat) + ttz(i)/atoms%rat(3,iat))*r
+                !write(*,*) 'DH', dhgen(i,ib) 
             else
                 stop 'ERROR: undefined content for ann_arr%event'
             endif
@@ -77,6 +75,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
+        !if(iat>jat) cycle
         partb%hgenall0(iat,jat)=hgen(1,ib)
         partb%hgenall1(iat,jat)=hgen(2,ib)
         partb%hgenall2(iat,jat)=hgen(3,ib)
@@ -94,9 +93,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
     enddo
-        if(trim(ann_arr%event)=='train') then
-            partb%event=ann_arr%event
-        endif
+        partb%event=ann_arr%event
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
         atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
         !if(trim(ann_arr%event)=='evalu') then

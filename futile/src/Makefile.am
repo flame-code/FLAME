@@ -6,6 +6,13 @@ dynlib_DATA      = $(futile_dynlib)
 noinst_DATA      = $(futile_linklib)
 module_DATA      = $(modules)
 pyexec_DATA      = $(pymodule)
+dist_bin_SCRIPTS = $(memcheck_script)
+
+if CC_AUTOBUILD_DYNAMIC_LIBS
+memcheck_script = f_memcheck
+else
+memcheck_script =
+endif 
 
 if HAVE_PYTHON
 if BUILD_DYNAMIC_LIBS
@@ -13,6 +20,8 @@ pymodule = futile.so
 pylib = libpyimp.a
 endif
 endif
+
+EXTRA_DIST= f_memcheck.in
 
 # Static or dynamic library
 futile_dynamic_library = libfutile-1.so.@FUTILE_MINOR_VERSION@.0.@FUTILE_MICRO_VERSION@

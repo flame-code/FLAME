@@ -22,3 +22,4 @@
      m%array_id(i:i)=' '
      m%routine_id(i:i)=' '
   end do
+  m%info=' '

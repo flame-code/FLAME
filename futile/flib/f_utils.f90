@@ -59,6 +59,7 @@ module f_utils
   interface f_diff
      module procedure f_diff_i,f_diff_r,f_diff_d,f_diff_li,f_diff_l
      module procedure f_diff_d2d3,f_diff_d2d1,f_diff_d1d2,f_diff_d2,f_diff_d1
+     module procedure f_diff_d3
      module procedure f_diff_i2i1,f_diff_i1,f_diff_i2,f_diff_i1i2
      module procedure f_diff_li2li1,f_diff_li1,f_diff_li2,f_diff_li1li2
      module procedure f_diff_d0d1,f_diff_i0i1, f_diff_li0li1
@@ -78,6 +79,7 @@ module f_utils
      module procedure put_to_zero_integer3
      module procedure put_to_zero_long,put_to_zero_long1,put_to_zero_long2
      module procedure put_to_zero_long3
+     module procedure put_to_zero_r1
   end interface f_zero
 
   interface f_increment
@@ -87,6 +89,10 @@ module f_utils
   interface f_humantime
      module procedure f_humantime,f_ht_long
   end interface f_humantime
+
+  interface f_assert
+     module procedure f_assert, f_assert_double
+  end interface f_assert
 
   !to be verified if clock_gettime is without side-effect, otherwise the routine cannot be pure
   interface
@@ -109,7 +115,7 @@ module f_utils
   public :: f_iostream_from_file,f_iostream_from_lstring,f_increment
   public :: f_iostream_get_line,f_iostream_release,f_time,f_pause
   public :: f_progress_bar_new,update_progress_bar,f_tty,f_humantime,f_system
-  public :: assignment(=),f_none
+  public :: assignment(=),f_none,f_assert
 
 contains
  
@@ -135,6 +141,41 @@ contains
     call nanosec(itime)
     f_time=itime
   end function f_time
+
+  subroutine f_assert(condition,id,err_id,err_name)
+    use module_f_malloc, only: f_malloc_routine_name
+    use yaml_strings
+    use dictionaries
+    implicit none
+    logical, intent(in) :: condition
+    character(len=*), intent(in) :: id
+    integer, intent(in), optional :: err_id
+    character(len=*), intent(in), optional :: err_name
+    if (condition) return
+    call f_err_throw('Assertion id="'+id+'" in routine="'+&
+         f_malloc_routine_name+'" not satisfied. Raising error...',&
+         err_id=err_id,err_name=err_name)
+  end subroutine f_assert
+
+  subroutine f_assert_double(condition,id,err_id,err_name,tol)
+    use module_f_malloc, only: f_malloc_namelen
+    use yaml_strings
+    use dictionaries
+    implicit none
+    real(f_double), intent(in) :: condition
+    character(len=*), intent(in) :: id
+    integer, intent(in), optional :: err_id
+    character(len=*), intent(in), optional :: err_name
+    real(f_double), intent(in), optional :: tol
+    !local variables
+    real(f_double) :: tol_
+
+    tol_=1.e-12_f_double
+    if (present(tol)) tol_=tol
+
+    call f_assert(abs(condition)< tol_,id=id,err_id=err_id,err_name=err_name)
+
+  end subroutine f_assert_double
 
   pure function f_progress_bar_new(nstep) result(bar)
     implicit none
@@ -242,17 +283,20 @@ contains
     integer(f_long), parameter :: billion=int(1000000000,f_long)
     integer(f_long), parameter :: sixty=int(60,f_long)
     integer(f_long), parameter :: tsf=int(365,f_long),tf=int(24,f_long),zr=int(0,f_long)
-    integer(f_long) :: s,nsn,m,h,d,y
+    integer(f_long) :: nsn,m,h,d,y,si
+    real(f_double) :: s
 
     sht=.false.
     if (present(short)) sht=short
 
     !get the seconds
-    s=int(ns/billion,kind=f_long)
+    !s=int(ns/billion,kind=f_long)
+    s=ns/real(billion,f_double)
     !then get nanosecs
-    nsn=int(ns,kind=f_long)-s*billion
+    nsn=int(ns,kind=f_long)-int(s,f_long)*billion
+    si=int(s,f_long)
     !then take minutes from seconds
-    m=s/sixty; s=s-m*sixty
+    m=si/sixty; si=si-m*sixty
     !and hours from minutes
     h=m/sixty; m=m-h*sixty
     !days
@@ -269,7 +313,7 @@ contains
        else if (h > zr) then
           call f_strcpy(dest=time,src=(yaml_toa(h,fmt)+'h')+(yaml_toa(m,fmt)+'m'))
        else if (m > zr) then
-          call f_strcpy(dest=time,src=(yaml_toa(m,fmt)+'m')+(yaml_toa(s,fmt)+'s'))
+          call f_strcpy(dest=time,src=(yaml_toa(m,fmt)+'m')+(yaml_toa(si,fmt)+'s'))
        else
           call f_strcpy(dest=time,src=yaml_toa(real(s,f_double),'(f5.1)')+'s')
        end if
@@ -277,7 +321,7 @@ contains
        !test with new API to deal with strings
        !that would be the best solution
        call f_strcpy(dest=time,src=&
-            h**fmt+':'+m**fmt+':'+s**fmt+'.'+nsn**'(i9.9)')
+            h**fmt+':'+m**fmt+':'+si**fmt+'.'+nsn**'(i9.9)')
 !!$
        !split the treatment in the case of multiple days
        if (d >0.0_f_double .or. y > 0.0_f_double ) call f_strcpy(&
@@ -905,6 +949,18 @@ contains
     external :: diff_d
     call diff_d(n,a(1,1),b(1,1),diff)
   end subroutine f_diff_d2
+
+  subroutine f_diff_d3(n,a,b,diff)
+    implicit none
+    integer, intent(in) :: n
+    real(f_double), dimension(:,:,:),   intent(in) :: a
+    real(f_double), dimension(:,:,:), intent(in) :: b
+    real(f_double), intent(out) :: diff
+    external :: diff_d
+    call diff_d(n,a(1,1,1),b(1,1,1),diff)
+  end subroutine f_diff_d3
+
+
   subroutine f_diff_d1d2(n,a,b,diff)
     implicit none
     integer, intent(in) :: n
@@ -1050,6 +1106,16 @@ contains
     call setzero(int(n,f_long)*kind(da),da)
     call f_timer_resume()
   end subroutine put_to_zero_simple
+
+  subroutine put_to_zero_r1(da)
+    implicit none
+    real(f_simple), dimension(:), intent(out) :: da
+    call f_timer_interrupt(TCAT_INIT_TO_ZERO)
+    !call razero(size(da),da(lbound(da,1)))
+    call setzero(int(size(da),f_long)*kind(da),da)
+    call f_timer_resume()
+  end subroutine put_to_zero_r1
+
 
   subroutine put_to_zero_double(n,da)
     implicit none
@@ -1198,5 +1264,5 @@ contains
     call setzero(int(size(da),f_long)*kind(da),da)
     call f_timer_resume()
   end subroutine put_to_zero_long3
-  
+
 end module f_utils

@@ -183,3 +183,463 @@ subroutine FFT2d(n1,n2,nd1,nd2,z,isign,inzee,zw,ncache)
    endif
 
 END SUBROUTINE fft2d
+
+
+!!$!>two dimensional full convolution with a kernel given in the reciprocal space
+!!$subroutine 2D_fullconv
+!!$!$omp do schedule(static)
+!!$do j3 = 1, maxIter
+!!$   !this condition ensures that we manage only the interesting part for the FFT
+!!$   !if (iproc*(nd3/nproc)+j3 <= n3/2+1) then
+!!$   Jp2stb=1
+!!$   J2stb=1
+!!$   Jp2stf=1
+!!$   J2stf=1
+!!$   ! transform along x axis
+!!$   lot=ncache/(4*n1)
+!!$   if (lot < 1)  stop 'n1'
+!!$
+!!$   do j=1,n2dimp/n3pr1,lot
+!!$      nfft=min(j+(lot-1), n2dimp/n3pr1) -j +1
+!!$
+!!$      !reverse index ordering, leaving the planes to be transformed at the end
+!!$      !input: I1,J2,j3,Jp2,(jp3)
+!!$      if (nproc > 1) then
+!!$         call G_mpiswitch_upcorn2(j3,nfft,Jp2stb,J2stb,lot,&
+!!$              n1,n1dim,md2,nd3,n3pr1,n3pr2,zmpi1,zw(1,1,1,ithread))
+!!$         call put_planes_incache(n3pr2,n1,n1dim,md2/(n3pr1*n3pr2),nd3,nfft,lot,&
+!!$              Jp2stb,J2stb,zmpi1,zw(1,1,1,ithread))
+!!$
+!!$      else
+!!$         call G_mpiswitch_upcorn(j3,nfft,Jp2stb,J2stb,lot,&
+!!$              n1,n1dim,md2,nd3,nproc,zmpi2,zw(1,1,1,ithread))
+!!$         call put_planes_incache(n3pr2,n1,n1dim,n1dim,md2/(n3pr1*n3pr2),nd3,nfft,lot,&
+!!$              Jp2stb,J2stb,zmpi2,zw(1,1,1,ithread))
+!!$
+!!$      endif
+!!$      !output: J2,Jp2,I1,j3,(jp3)
+!!$      !performing FFT
+!!$      !input: I2,I1,j3,(jp3)
+!!$      inzee=1
+!!$      do i=1,ic1-1
+!!$         call fftstp_sg(lot,nfft,n1,lot,n1,zw(1,1,inzee,ithread),zw(1,1,3-inzee,ithread),&
+!!$              ntrig,btrig1,after1(i),now1(i),before1(i),1)
+!!$         inzee=3-inzee
+!!$      enddo
+!!$
+!!$      !storing the last step into zt array
+!!$      i=ic1
+!!$      call fftstp_sg(lot,nfft,n1,lzt/n3pr1,n1,zw(1,1,inzee,ithread),zt(1,j,1,ithread),&
+!!$           ntrig,btrig1,after1(i),now1(i),before1(i),1)
+!!$      !output: I2,i1,j3,(jp3)
+!!$   end do
+!!$
+!!$   !transform along y axis
+!!$   lot=ncache/(4*n2)
+!!$   if (lot < 1) stop 'n2'
+!!$
+!!$   do j=1,n1p/n3pr1,lot
+!!$      nfft=min(j+(lot-1),n1p/n3pr1)-j+1
+!!$      !reverse ordering
+!!$      !input: I2,i1,j3,(jp3)
+!!$      call G_switch_upcorn(nfft,n2,n2dim,lot,n1,lzt,zt(1,1,j,ithread),zw(1,1,1,ithread))
+!!$      one1=1
+!!$      one2=1
+!!$      call put_planes_incache(1,n2,n2dim,lzt,nfft,1,nfft,lot,&
+!!$              one1,one2,zt(1,1,j,ithread),zw(1,1,1,ithread))
+!!$
+!!$      !output: i1,I2,j3,(jp3)
+!!$      !performing FFT
+!!$      !input: i1,I2,j3,(jp3)
+!!$      inzee=1
+!!$
+!!$      do i=1,ic2
+!!$         call fftstp_sg(lot,nfft,n2,lot,n2,zw(1,1,inzee,ithread),zw(1,1,3-inzee,ithread),&
+!!$              ntrig,btrig2,after2(i),now2(i),before2(i),1)
+!!$         inzee=3-inzee
+!!$      enddo
+!!$      !output: i1,i2,j3,(jp3)
+!!$      !Multiply with kernel in fourier space
+!!$      i3=mod(iproc,n3pr2)*(nd3/n3pr2)+j3
+!!$
+!!$      j1start=0
+!!$      if (n3pr1>1) j1start=(n1p/n3pr1)*iproc_inplane
+!!$
+!!$      if (geocode == 'P') then
+!!$         call P_multkernel(nd1,nd2,n1,n2,n3,lot,nfft,j+j1start,pot(1,1,j3),zw(1,1,inzee,ithread),&
+!!$              i3,hx,hy,hz,offset,scal,strten_omp)
+!!$      else
+!!$         !write(*,*) 'pot(1,1,j3) = ', pot(1,1,j3)
+!!$         call multkernel(nd1,nd2,n1,n2,lot,nfft,j+j1start,pot(1,1,j3),zw(1,1,inzee,ithread))
+!!$      end if
+!!$
+!!$      !TRANSFORM BACK IN REAL SPACE
+!!$      !transform along y axis
+!!$      !input: i1,i2,j3,(jp3)
+!!$      do i=1,ic2
+!!$         call fftstp_sg(lot,nfft,n2,lot,n2,zw(1,1,inzee,ithread),zw(1,1,3-inzee,ithread),&
+!!$              ntrig,ftrig2,after2(i),now2(i),before2(i),-1)
+!!$         !zw(:,:,3-inzee)=zw(:,:,inzee)
+!!$         inzee=3-inzee
+!!$      end do
+!!$
+!!$      !reverse ordering
+!!$      !input: i1,I2,j3,(jp3)
+!!$      if (n3pr1 == 1) then
+!!$         call G_unswitch_downcorn(nfft,n2,n2dim,lot,n1,lzt, &
+!!$              zw(1,1,inzee,ithread),zt(1,1,j,ithread))
+!!$      else
+!!$         call G_unswitch_downcorn2(nfft,n2,n2dim,lot,n1p,lzt, &
+!!$              zw(1,1,inzee,ithread),zt_t(1,1,1),n3pr1,j)
+!!$      endif
+!!$      !output: I2,i1,j3,(jp3)
+!!$   end do
+!!$   !transform along x axis
+!!$   !input: I2,i1,j3,(jp3)
+!!$
+!!$   !LG: this MPI_ALLTOALL is inside a loop. I think that it will rapidly become unoptimal
+!!$   if (n3pr1 > 1 .and. inplane_comm/=MPI_COMM_NULL) then
+!!$      call f_timing(TCAT_PSOLV_COMPUT,'OF')
+!!$      call f_timing(TCAT_PSOLV_COMMUN,'ON')
+!!$
+!!$      call MPI_ALLTOALL(zt_t,2*(n1p/n3pr1)*(lzt/n3pr1),MPI_double_precision,&
+!!$           zt(1,1,1,ithread),2*(n1p/n3pr1)*(lzt/n3pr1), &
+!!$           MPI_double_precision,inplane_comm,ierr)
+!!$
+!!$      call f_timing(TCAT_PSOLV_COMMUN,'OF')
+!!$      call f_timing(TCAT_PSOLV_COMPUT,'ON')
+!!$   endif
+!!$
+!!$   lot=ncache/(4*n1)
+!!$   do j=1,n2dimp/n3pr1,lot
+!!$      nfft=min(j+(lot-1),n2dimp/n3pr1)-j+1
+!!$
+!!$      !performing FFT
+!!$      i=1
+!!$      if (n3pr1 > 1) then
+!!$         call fftstp_sg(lzt/n3pr1,nfft,n1,lot,n1,zt(1,j,1,ithread),zw(1,1,1,ithread),&
+!!$              ntrig,ftrig1,after1(i),now1(i),before1(i),-1)
+!!$      else
+!!$         call fftstp_sg(lzt,nfft,n1,lot,n1,zt(1,j,1,ithread),zw(1,1,1,ithread),&
+!!$              ntrig,ftrig1,after1(i),now1(i),before1(i),-1)
+!!$      endif
+!!$      inzee=1
+!!$      do i=2,ic1
+!!$         call fftstp_sg(lot,nfft,n1,lot,n1,zw(1,1,inzee,ithread),zw(1,1,3-inzee,ithread),&
+!!$              ntrig,ftrig1,after1(i),now1(i),before1(i),-1)
+!!$         inzee=3-inzee
+!!$      enddo
+!!$
+!!$      !output: I2,I1,j3,(jp3)
+!!$      !reverse ordering
+!!$      !input: J2,Jp2,I1,j3,(jp3)
+!!$      if (nproc == 1) then
+!!$         call G_unmpiswitch_downcorn(j3,nfft,Jp2stf,J2stf,lot,n1,&
+!!$              n1dim,md2,nd3,nproc,zw(1,1,inzee,ithread),zmpi2)
+!!$      else
+!!$         call G_unmpiswitch_downcorn2(j3,nfft,Jp2stf,J2stf,lot,n1,&
+!!$              n1dim,md2,nd3,n3pr1,n3pr2,zw(1,1,inzee,ithread),zmpi1)  
+!!$      endif
+!!$      ! output: I1,J2,j3,Jp2,(jp3)
+!!$   end do
+!!$   !endif
+!!$
+!!$   !END OF TRANSFORM FOR X AND Z
+!!$
+!!$end do
+!!$!$omp end do
+!!$
+!!$subroutine fill_second_part(mfft,ldz,ndim,npad,zw,zin)
+!!$  implicit none
+!!$  integer, intent(in) :: ldz,ldin,n,ndim,mfft,npad
+!!$  real(dp),intent(inout) ::  zw(2,ldz,*)
+!!$  real(dp), intent(in) :: zin(2,*)
+!!$  !local variables
+!!$  integer :: I
+!!$
+!!$  do I=1,ndim
+!!$     zw(1,mfft,I+npad)=zin(1,I)
+!!$     zw(2,mfft,I+npad)=zin(2,I)
+!!$  end do
+!!$
+!!$end subroutine fill_second_part
+!!$
+!!$subroutine transpose_and_pad_input(n1,ld1,n2,ld2,n3,ld3,n2p,n1dim,lot,nfft,j3,&
+!!$     i2s,i2ps,zin,zw)
+!!$  implicit none
+!!$  integer, intent(in) :: n1,ld1,n2,ld2,n3,ld3,n2p,n1dim,lot,nfft,j3
+!!$  real(dp), dimension(2,ld1,ld2,ld3,*), intent(in) ::  zin
+!!$  integer, intent(inout) :: i2s,i2ps
+!!$  real(dp), dimension(2,lot,n1), intent(inout) ::  zw
+!!$  !local variables
+!!$  integer :: j2,mfft,jp2,ish,i1,imfft
+!!$
+!!$  ish=n1-n1dim
+!!$  mfft=0
+!!$  loop_Jp2: do Jp2=i2ps,n2p
+!!$     do J2=i2s,n2
+!!$        mfft=mfft+1
+!!$        if (mfft > nfft) then
+!!$           i2ps=Jp2
+!!$           i2s=J2
+!!$           exit loop_Jp2
+!!$        end if
+!!$        call fill_second_part(mfft,lot,n1dim,ish,&
+!!$             zw,zin(1,1,J2,j3,Jp2))
+!!$     end do
+!!$     i2s=1
+!!$  end do loop_Jp2
+!!$
+!!$  !then zero the resto f the cache array if the padding is required
+!!$  do i1=1,ish
+!!$     do imfft=1,mfft-1
+!!$        zw(1,imfft,i1)=0.0_dp
+!!$        zw(2,imfft,i1)=0.0_dp
+!!$     end do
+!!$  end do
+!!$
+!!$end subroutine transpose_and_pad_input
+!!$
+!!$subroutine fft_1d_cache(ndat_in,ld_in,ndat_out,ld_out,nfft,ninout,n,&
+!!$     ncache,ntrig,trig,after,now,before,ic,&
+!!$     i_sign,inzee,transpose,iam,nthread,z,zw)
+!!$  use f_precisions
+!!$  use module_fft_sg, only: n_factors
+!!$  implicit none
+!!$  logical, intent(in) :: transpose
+!!$  integer, intent(in) :: ndat_in,ld_in,ndat_out,ld_out,nfft,ninout,n
+!!$  integer, intent(in) :: ncache,ntrig,ic
+!!$  integer, intent(in) :: i_sign,iam,nthread
+!!$  integer, intent(inout) :: inzee
+!!$  integer, dimension(n_factors) :: after,now,before
+!!$  real(f_double), dimension(2,ntrig), intent(in) :: trig
+!!$  real(f_double), dimension(2,ninout,2), intent(inout) :: z
+!!$  real(f_double), dimension(2,ncache/4,2), intent(inout) :: zw
+!!$  !local variables
+!!$  logical :: real_input = .false.
+!!$  integer :: i,lotomp,ma,mb,nfft_th,j,jj,jompa,jompb,inzeep,inzet,lot,nn
+!!$
+!!$  !set of fft to be treated by the present thread
+!!$  lotomp=nfft/nthread+1
+!!$  jompa=iam*lotomp+1
+!!$  jompb=min((iam+1)*lotomp,nfft)
+!!$
+!!$  !here we might put the treatment for the input and the output
+!!$  !in case they are necessary
+!!$
+!!$  inzet=inzee
+!!$  if (ic == 1 .or. ncache == 0) then
+!!$     i=ic
+!!$     ma=jompa
+!!$     mb=jompb
+!!$     nfft_th=mb-ma+1
+!!$     j=ma
+!!$     if (transpose) then
+!!$        jj=j*ld_out-ld_out+1
+!!$        !input z(2,ndat_in,ld_in,inzet)
+!!$        !output z(2,ld_out,ndat_out,3-inzet)          
+!!$        call fftrot_sg(ndat_in,nfft_th,ld_in,ndat_out,ld_out,&
+!!$             z(1,j,inzet),z(1,jj,3-inzet), &
+!!$             ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$        if (real_input) then !only works when ld_out==n
+!!$           inzet=3-inzet
+!!$           call unpack_rfft(ndat_out,n,&
+!!$                z(1,jj,inzet),z(1,jj,3-inzet))
+!!$        end if
+!!$     else
+!!$        !input z(2,ndat_in,ld_in,inzet)
+!!$        !output z(2,ndat_out,ld_out,3-inzet)
+!!$        call fftstp_sg(ndat_in,nfft_th,ld_in,ndat_out,ld_out,&
+!!$             z(1,j,inzet),z(1,j,3-inzet), &
+!!$             ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$        if (real_input) then !only works when ld_out==n
+!!$           inzet=3-inzet
+!!$           !here maybe the ndat_out has to be rethought
+!!$           call unpack_rfft_t((ndat_out-1)/2+1,ndat_out,n,&
+!!$                z(1,j,inzet),z(1,j,3-inzet))
+!!$        end if
+!!$     end if
+!!$  else
+!!$     lot=max(1,ncache/(4*n))
+!!$     nn=lot
+!!$     do j=jompa,jompb,lot
+!!$        ma=j
+!!$        mb=min(j+(lot-1),jompb)
+!!$        nfft_th=mb-ma+1
+!!$        i=1
+!!$        inzeep=2
+!!$        call fftstp_sg(ndat_in,nfft_th,ld_in,nn,n,&
+!!$             z(1,j,inzet),zw(1,1,3-inzeep), &
+!!$             ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$        inzeep=1
+!!$        do i=2,ic-1
+!!$           call fftstp_sg(nn,nfft_th,n,nn,n,&
+!!$                zw(1,1,inzeep),zw(1,1,3-inzeep), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           inzeep=3-inzeep
+!!$        end do
+!!$        i=ic
+!!$        if (transpose) then
+!!$           jj=j*ld_out-ld_out+1
+!!$           call fftrot_sg(nn,nfft_th,n,ndat_out,ld_out,&
+!!$                zw(1,1,inzeep),z(1,jj,3-inzet), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           if (real_input) then !only works when ld_out==n
+!!$              inzet=3-inzet
+!!$              call unpack_rfft(ndat_out,n,&
+!!$                   z(1,jj,inzet),z(1,jj,3-inzet))
+!!$           end if
+!!$        else
+!!$           call fftstp_sg(nn,nfft_th,n,ndat_out,ld_out,&
+!!$                zw(1,1,inzeep),z(1,j,3-inzet), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           if (real_input) then !only works when ld_out==n
+!!$              inzet=3-inzet
+!!$              call unpack_rfft_t((ndat_out-1)/2+1,ndat_out,n,&
+!!$                   z(1,j,inzet),z(1,j,3-inzet))
+!!$           end if
+!!$        end if
+!!$     end do
+!!$  end if
+!!$  inzet=3-inzet
+!!$  if (iam==0) inzee=inzet !as it is a shared variable
+!!$
+!!$end subroutine fft_1d_base
+!!$
+!!$!> base wrapper for FFT, not to be called in public routines
+!!$!! @warning: for transa='t' nwork must be > 0
+!!$subroutine fft_1d_base(transa,transb,ndat_in,ld_in,ndat_out,ld_out,ninout,nfft,n,&
+!!$     ntrig,trig,after,now,before,ic,i_sign,&
+!!$     input_provided,za,&
+!!$     output_provided,zb,&
+!!$     inout_provided,zab,inzee,&
+!!$     nwork,zw,iam,nthread)
+!!$  use f_precisions
+!!$  use module_fft_sg, only: n_factors
+!!$  implicit none
+!!$  integer, intent(in) :: ndat_in,ld_in,ndat_out,ld_out,nfft,ninout,n
+!!$  integer, intent(in) :: nwork,ntrig,ic
+!!$  integer, intent(in) :: i_sign,iam,nthread
+!!$  character(len=1), intent(in) :: transa,transb
+!!$  integer, intent(inout) :: inzee
+!!$  integer, dimension(n_factors) :: after,now,before
+!!$  real(f_double), dimension(2,ntrig), intent(in) :: trig
+!!$  real(f_double), dimension(2,ndat_in*ld_in), intent(in) :: za
+!!$  real(f_double), dimension(2,ndata_out*ld_out), intent(inout) :: zb
+!!$  real(f_double), dimension(2,ninout,2), intent(inout) :: zab
+!!$  real(f_double), dimension(2,nwork/4,2), intent(inout) :: zw
+!!$  !local variables
+!!$  logical :: real_input = .false.,transpose_output,transpose_input,nowork
+!!$  integer :: i,lotomp,ma,mb,nfft_th,j,jj,jompa,jompb,inzeep,inzet,lot,nn
+!!$
+!!$  !set of fft to be treated by the present thread
+!!$  transpose_input=transa=='T' .or. transa=='t'
+!!$  transpose_output=transb=='T' .or. transb=='t'
+!!$
+!!$  !check on arguments
+!!$  call f_assert(input_provided .and. (output_provided .or. nwork>0),id='Error on input work')
+!!$  call f_assert(transpose_input .and. input_provided .and. nwork >0,id='Transposition needs workarray')
+!!$
+!!$
+!!$  lotomp=nfft/nthread+1
+!!$  jompa=iam*lotomp+1
+!!$  jompb=min((iam+1)*lotomp,nfft)
+!!$  nowork= ic == 1 .or. nwork == 0 !work array cannot be used for only one step
+!!$  if (nowork) then
+!!$     lot=jompb-jompa 
+!!$  else
+!!$     lot=max(1,nwork/(4*n))
+!!$  end if
+!!$
+!!$  !here we might put the treatment for the input and the output
+!!$  !in case they are necessary
+!!$
+!!$  inzet=inzee
+!!$  loop_on_lines: do j=jompa,jompb,lot !this loop is internal to the threads, it might be further parallelised
+!!$     ma=j
+!!$     mb=min(j+(lot-1),jompb)
+!!$     nfft_th=mb-ma+1
+!!$
+!!$     !then it follows the treatments for the different cases
+!!$     if (nowork) then
+!!$        if (
+!!$        !we need that z is large enough to contain max(ndat_in*ld_in,ndat_out*ld_out)
+!!$        do i=1,ic-1
+!!$           call fftstp_sg(ndat_in,nfft_th,ld_in,ndat_out,ld_out,&
+!!$                zab(1,j,inzet),zab(1,j,3-inzet), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           inzet=3-inzet
+!!$        end do
+!!$        i=ic    
+!!$        if (transpose_output) then
+!!$           jj=j*ld_out-ld_out+1
+!!$           !input z(2,ndat_in,ld_in,inzet)
+!!$           !output z(2,ld_out,ndat_out,3-inzet)          
+!!$           call fftrot_sg(ndat_in,nfft_th,ld_in,ndat_out,ld_out,&
+!!$                zab(1,j,inzet),zab(1,jj,3-inzet), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           if (real_input) then !only works when ld_out==n
+!!$              inzet=3-inzet
+!!$              call unpack_rfft(ndat_out,n,&
+!!$                   z(1,jj,inzet),z(1,jj,3-inzet))
+!!$           end if
+!!$        else
+!!$           !input z(2,ndat_in,ld_in,inzet)
+!!$           !output z(2,ndat_out,ld_out,3-inzet)
+!!$           call fftstp_sg(ndat_in,nfft_th,ld_in,ndat_out,ld_out,&
+!!$                zab(1,j,inzet),zab(1,j,3-inzet), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           if (real_input) then !only works when ld_out==n
+!!$              inzet=3-inzet
+!!$              !here maybe the ndat_out has to be rethought
+!!$              call unpack_rfft_t((ndat_out-1)/2+1,ndat_out,n,&
+!!$                   z(1,j,inzet),z(1,j,3-inzet))
+!!$           end if
+!!$        end if
+!!$     else
+!!$        nn=lot
+!!$        i=1
+!!$        inzeep=2
+!!$        if (input_provided) then
+!!$           call fftstp_sg(ndat_in,nfft_th,ld_in,nn,n,&
+!!$                za,zw(1,1,3-inzeep), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$        else if (inout_provided) then
+!!$           call fftstp_sg(ndat_in,nfft_th,ld_in,nn,n,&
+!!$                zab(1,j,inzet),zw(1,1,3-inzeep), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$        end if
+!!$        inzeep=1
+!!$        do i=2,ic-1
+!!$           call fftstp_sg(nn,nfft_th,n,nn,n,&
+!!$                zw(1,1,inzeep),zw(1,1,3-inzeep), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           inzeep=3-inzeep
+!!$        end do
+!!$        i=ic
+!!$        if (transpose_output) then
+!!$           jj=j*ld_out-ld_out+1
+!!$           call fftrot_sg(nn,nfft_th,n,ndat_out,ld_out,&
+!!$                zw(1,1,inzeep),zab(1,jj,3-inzet), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           if (real_input) then !only works when ld_out==n
+!!$              inzet=3-inzet
+!!$              call unpack_rfft(ndat_out,n,&
+!!$                   z(1,jj,inzet),z(1,jj,3-inzet))
+!!$           end if
+!!$        else
+!!$           call fftstp_sg(nn,nfft_th,n,ndat_out,ld_out,&
+!!$                zw(1,1,inzeep),zab(1,j,3-inzet), &
+!!$                ntrig,trig,after(i),now(i),before(i),i_sign)
+!!$           if (real_input) then !only works when ld_out==n
+!!$              inzet=3-inzet
+!!$              call unpack_rfft_t((ndat_out-1)/2+1,ndat_out,n,&
+!!$                   z(1,j,inzet),z(1,j,3-inzet))
+!!$           end if
+!!$        end if
+!!$     end if
+!!$  end do loop_on_lines
+!!$  inzet=3-inzet
+!!$  if (iam==0) inzee=inzet !as it is a shared variable
+!!$
+!!$end subroutine fft_1d_base

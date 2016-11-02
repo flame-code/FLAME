@@ -1,0 +1,100 @@
+---
+ Options:
+   norb                                : 75
+   nvctr                               : 10000
+   ncplx                               : 1
+   symm                                : No
+ Number of omp threads                 :  1
+ The maximum difference is             :  0.0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  4
+   Tot. No. of Deallocations           :  4
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  11.530
+     for the array                     : mat
+     in the routine                    : Main_program
+     Memory Peak of process            : 21.532 MB
+ Walltime since initialization         : 00:00:00.514325744
+ Max No. of dictionaries used          :  214 #( 169 still in use)
+ Number of dictionary folders allocated:  1
+---
+ Options:
+   norb                                : 75
+   nvctr                               : 10000
+   ncplx                               : 1
+   symm                                : No
+ Number of omp threads                 :  2
+ The maximum difference is             :  0.0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  4
+   Tot. No. of Deallocations           :  4
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  11.530
+     for the array                     : mat
+     in the routine                    : Main_program
+     Memory Peak of process            : 23.380 MB
+ Walltime since initialization         : 00:00:00.543653207
+ Max No. of dictionaries used          :  214 #( 169 still in use)
+ Number of dictionary folders allocated:  1
+---
+ Options:
+   norb                                : 75
+   nvctr                               : 10000
+   ncplx                               : 1
+   symm                                : Yes
+ Number of omp threads                 :  2
+ The maximum difference is             :  0.0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  4
+   Tot. No. of Deallocations           :  4
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  11.530
+     for the array                     : mat
+     in the routine                    : Main_program
+     Memory Peak of process            : 21.532 MB
+ Walltime since initialization         : 00:00:00.550734681
+ Max No. of dictionaries used          :  214 #( 169 still in use)
+ Number of dictionary folders allocated:  1
+---
+ Options:
+   norb                                : 75
+   nvctr                               : 10000
+   ncplx                               : 2
+   symm                                : No
+ Number of omp threads                 :  2
+ The maximum difference is             :  0.0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  4
+   Tot. No. of Deallocations           :  4
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  23.060
+     for the array                     : mat
+     in the routine                    : Main_program
+     Memory Peak of process            : 33.332 MB
+ Walltime since initialization         : 00:00:02.121937551
+ Max No. of dictionaries used          :  214 #( 169 still in use)
+ Number of dictionary folders allocated:  1
+---
+ Options:
+   norb                                : 75
+   nvctr                               : 10000
+   ncplx                               : 2
+   symm                                : Yes
+ Number of omp threads                 :  2
+ The maximum difference is             :  0.0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  4
+   Tot. No. of Deallocations           :  4
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  23.060
+     for the array                     : mat
+     in the routine                    : Main_program
+     Memory Peak of process            : 33.080 MB
+ Walltime since initialization         : 00:00:02.117504845
+ Max No. of dictionaries used          :  214 #( 169 still in use)
+ Number of dictionary folders allocated:  1

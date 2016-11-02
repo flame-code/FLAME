@@ -1127,7 +1127,7 @@ recursive subroutine call_external_f1(routine,args)
   use f_precisions, only: f_address
   implicit none
   external :: routine   !< Routine to be called
-  integer(f_address) :: args,args2
+  integer(f_address) :: args
   call routine(args)
 end subroutine call_external_f1
 
