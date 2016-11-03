@@ -19,37 +19,14 @@ subroutine ann_train(parini)
     integer:: iat, jat, ialpha, i, ig, iconf, ng, ios, nat, ib
     real(8):: time1, time2, time3
     real(8):: tt, epot
-    !character(6):: path1
-    !character(2):: path2
     character(15):: fnout
     real(8), allocatable:: ratred(:,:)
     call f_routine(id='ann_train')
-    !write(path1,'(a3,i3.3)') 'set',iproc
-    !path2='..'
-    !istat=chdir(path1)
-    !if(istat/=0) stop 'ERROR: could not change directory to path1'
-    !write(*,*) trim(parini%stypat_ann)
-    !call count_words(parini%stypat_ann,ann_arr%n)
-    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%n)
     ann_arr%n=parini%ntypat
     if(parini%bondbased_ann) then
         ann_arr%n=4
     endif
     if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in ann_train'
-    !if(parini%bondbased_ann) then
-    !    do i=1,ann_arr%n
-    !        ann_arr%ltypat(i)=1
-    !    enddo
-    !    do i=1,ann_arr%n
-    !        ann_arr%stypat(i)=ann_arr%stypat(1)
-    !        write(*,*) i,ann_arr%stypat(i)
-    !    enddo
-    !else
-    !    do i=1,ann_arr%n
-    !        ann_arr%ltypat(i)=i
-    !        write(*,*) i,ann_arr%stypat(i)
-    !    enddo
-    !endif
     write(*,*) 'Here', ann_arr%n
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
@@ -134,13 +111,13 @@ subroutine ann_train(parini)
     !enddo
     !The following must be done after set_gbounds is called for training set.
     if(parini%bondbased_ann) then
-    !-------------------------------- bond symmetry function --------------------------------
+        !-------------------------------- bond symmetry function --------------------------------
         do iconf=1,atoms_valid%nconf
             if(atoms_valid%atoms(iconf)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
             !if(symfunc_valid%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
             do ib=1,symfunc_valid%symfunc(iconf)%linked_lists%maxbound_rad
-                iat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(1,ib)
-                jat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(2,ib)
+                iat=symfunc_valid%symfunc(iconf)%linked_lists%bound_rad(1,ib)
+                jat=symfunc_valid%symfunc(iconf)%linked_lists%bound_rad(2,ib)
                 !write(*,*) 'QQQQQQQQ ',ib,iat,jat
                 if(iat>jat) cycle
                 ng=symfunc_valid%symfunc(iconf)%ng
@@ -165,7 +142,7 @@ subroutine ann_train(parini)
                 enddo
             enddo
         enddo
-    !---------------------------------------------------------------------------------------
+        !---------------------------------------------------------------------------------------
     else
         do iconf=1,atoms_valid%nconf
             do iat=1,atoms_valid%atoms(iconf)%nat
@@ -268,8 +245,6 @@ subroutine ann_train(parini)
     !enddo
 
 
-    !istat=chdir(path2)
-    !if(istat/=0) stop 'ERROR: could not change directory to path2'
     !deallocate(atoms_train%inclusion)
     call f_release_routine()
 end subroutine ann_train
