@@ -519,8 +519,8 @@ program f_buffer_allocations
   !call f_free_ptr(z7_ptr)
 
 
-  !allocate the pointer in the normal case
-  d1_ptr=f_malloc_ptr(-1.to.34,id='d1_ptr')
+  !allocate the pointer in the normal case but with zero size
+  d1_ptr=f_malloc_ptr(-1.to.-2,id='d1_ptr')
 
 
   !now insert some extra information in the buffer

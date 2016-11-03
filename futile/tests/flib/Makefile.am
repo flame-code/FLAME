@@ -85,7 +85,9 @@ report:
 	@if test $(MAKELEVEL) = 0 ; then python $(pythondir)/report.py ; fi
 
 regtest: yaml_argparse
-	python $(pythondir)/f_regtest.py --fldiff=$(pythondir)/fldiff_yaml.py --tols=$(srcdir)/tols.yaml --srcdir=$(srcdir)
+	python $(pythondir)/f_regtest.py --fldiff=$(pythondir)/fldiff_yaml.py \
+	       --tols=$(srcdir)/tols.yaml --srcdir=$(srcdir) \
+	       --exclusive=$(CHECK_ONLY)
 
 define F_REGTEST_INSTRUCTIONS
 - yaml_argparse:
