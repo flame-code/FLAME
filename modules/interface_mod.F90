@@ -674,6 +674,22 @@ subroutine ann_train(parini)
     implicit none
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine apply_gbounds_atom(ann_arr,atoms_arr,symfunc_arr)
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine apply_gbounds_atom
+subroutine apply_gbounds_bond(ann_arr,atoms_arr,symfunc_arr)
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine apply_gbounds_bond
 subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
