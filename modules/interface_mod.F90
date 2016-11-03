@@ -437,7 +437,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_partb), intent(inout):: partb
-    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)   !derivative of 
+    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat), ttx(4), tty(4), ttz(4)   !derivative of 
 end subroutine cal_ann_tb
 subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     use mod_atoms, only: typ_atoms
@@ -674,6 +674,14 @@ subroutine ann_train(parini)
     implicit none
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+end subroutine set_ebounds
 subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
