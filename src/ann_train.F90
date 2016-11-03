@@ -20,7 +20,6 @@ subroutine ann_train(parini)
     real(8):: time1, time2, time3
     real(8):: tt, epot
     character(15):: fnout
-    real(8), allocatable:: ratred(:,:)
     call f_routine(id='ann_train')
     ann_arr%n=parini%ntypat
     if(parini%bondbased_ann) then
@@ -50,40 +49,8 @@ subroutine ann_train(parini)
         write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
         write(*,'(a,i)') 'number of validating data points: ',atoms_valid%nconf
     endif
-    do iconf=1,atoms_train%nconf
-        if(trim(atoms_train%atoms(iconf)%boundcond)=='bulk') then
-        ratred=f_malloc([1.to.3,1.to.atoms_train%atoms(iconf)%nat],id='ratred')
-        call rxyz_cart2int_alborz(atoms_train%atoms(iconf)%nat,atoms_train%atoms(iconf)%cellvec,atoms_train%atoms(iconf)%rat,ratred)
-        call backtocell_alborz(atoms_train%atoms(iconf)%nat,atoms_train%atoms(iconf)%cellvec,ratred)
-        call rxyz_int2cart_alborz(atoms_train%atoms(iconf)%nat,atoms_train%atoms(iconf)%cellvec,ratred,atoms_train%atoms(iconf)%rat)
-        call f_free(ratred)
-        endif
-        do iat=1,atoms_train%atoms(iconf)%nat
-            do i=1,ann_arr%n
-                if(trim(atoms_train%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
-                    atoms_train%atoms(iconf)%itypat(iat)=parini%ltypat(i)
-                    exit
-                endif
-            enddo
-        enddo
-    enddo
-    do iconf=1,atoms_valid%nconf
-        if(trim(atoms_valid%atoms(iconf)%boundcond)=='bulk') then
-        ratred=f_malloc([1.to.3,1.to.atoms_valid%atoms(iconf)%nat],id='ratred')
-        call rxyz_cart2int_alborz(atoms_valid%atoms(iconf)%nat,atoms_valid%atoms(iconf)%cellvec,atoms_valid%atoms(iconf)%rat,ratred)
-        call backtocell_alborz(atoms_valid%atoms(iconf)%nat,atoms_valid%atoms(iconf)%cellvec,ratred)
-        call rxyz_int2cart_alborz(atoms_valid%atoms(iconf)%nat,atoms_valid%atoms(iconf)%cellvec,ratred,atoms_valid%atoms(iconf)%rat)
-        call f_free(ratred)
-        endif
-        do iat=1,atoms_valid%atoms(iconf)%nat
-            do i=1,ann_arr%n
-                if(trim(atoms_valid%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
-                    atoms_valid%atoms(iconf)%itypat(iat)=parini%ltypat(i)
-                    exit
-                endif
-            enddo
-        enddo
-    enddo
+    call prepare_atoms_arr(parini,ann_arr,atoms_train)
+    call prepare_atoms_arr(parini,ann_arr,atoms_valid)
     !allocate(atoms_train%inclusion(atoms_train%nconf),source=0)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
@@ -221,6 +188,38 @@ subroutine ann_train(parini)
     !deallocate(atoms_train%inclusion)
     call f_release_routine()
 end subroutine ann_train
+!*****************************************************************************************
+subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms_arr
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    !local variables
+    integer:: iconf, iat, i
+    real(8), allocatable:: ratred(:,:)
+    do iconf=1,atoms_arr%nconf
+        if(trim(atoms_arr%atoms(iconf)%boundcond)=='bulk') then
+        ratred=f_malloc([1.to.3,1.to.atoms_arr%atoms(iconf)%nat],id='ratred')
+        call rxyz_cart2int_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,atoms_arr%atoms(iconf)%rat,ratred)
+        call backtocell_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,ratred)
+        call rxyz_int2cart_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,ratred,atoms_arr%atoms(iconf)%rat)
+        call f_free(ratred)
+        endif
+        do iat=1,atoms_arr%atoms(iconf)%nat
+            do i=1,ann_arr%n
+                if(trim(atoms_arr%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
+                    atoms_arr%atoms(iconf)%itypat(iat)=parini%ltypat(i)
+                    exit
+                endif
+            enddo
+        enddo
+    enddo
+end subroutine prepare_atoms_arr
 !*****************************************************************************************
 subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface

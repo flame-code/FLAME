@@ -674,6 +674,15 @@ subroutine ann_train(parini)
     implicit none
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine prepare_atoms_arr
 subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
