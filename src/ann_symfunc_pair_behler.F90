@@ -24,7 +24,7 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     !write(*,*) 'HERE ',symfunc%linked_lists%maxbound_rad
     !stop
     !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-    allocate(symfunc%y(ann_arr%ann(1)%nn(0),symfunc%linked_lists%maxbound_rad/2),stat=istat,source=0.d0)
+    allocate(symfunc%y(ann_arr%ann(1)%nn(0),symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
     if(istat/=0) stop 'ERROR: unable to allocate array symfunc%y'
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))

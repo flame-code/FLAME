@@ -40,7 +40,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     endif
     !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-    nb=symfunc%linked_lists%maxbound_rad/2
+    nb=symfunc%linked_lists%maxbound_rad !/2
     hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
     dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
     over_i: do i=1,4
@@ -96,6 +96,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%event=ann_arr%event
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
         atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
+        !atoms%epot=atoms%epot-37.88829524388414d0*atoms%nat
         !if(trim(ann_arr%event)=='evalu') then
         !write(100+int(icall/19),'(f6.3,es24.15,f10.5)') atoms%rat(1,2) -atoms%rat(1,1), atoms%epot,atoms%fat(1,1)
         !atoms%epot=atoms%epot-0.2208033067776594d0
