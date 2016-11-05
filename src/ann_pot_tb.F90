@@ -17,8 +17,8 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     !local variables
     type(potl_typ):: pplocal
     real(8), allocatable:: hgen(:,:), dhgen(:,:)
-    integer:: iat, jat, ng, i, j, k, isat, ib, nb
-    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat), ttx(4), tty(4), ttz(4)   !derivative of 
+    integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
+    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
     real(8):: epotn, tt, epotdh, c, xij, yij, zij, r
     !integer, save:: icall=-1
     !if(trim(ann_arr%event)=='evalu') icall=icall+1
@@ -44,7 +44,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
     dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
     over_i: do i=1,4
-    ttx(i)=0.d0 ; tty(i)=0.d0 ; ttz(i)=0.d0
         over_ib: do ib=1,nb
             ng=ann_arr%ann(i)%nn(0)
                 ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,ib)
@@ -54,19 +53,14 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             elseif(trim(ann_arr%event)=='evalu') then
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))            
                 iat=symfunc%linked_lists%bound_rad(1,ib)
-                jat=symfunc%linked_lists%bound_rad(2,ib) 
+                jat=symfunc%linked_lists%bound_rad(2,ib)
+                dhgen(i,ib)=0.d0
                 do j=1,ann_arr%ann(i)%nn(0)
-                    ttx(i)=ttx(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,1,ib)
-                    tty(i)=tty(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,2,ib)
-                    ttz(i)=ttz(i)+ann_arr%ann(i)%d(j)*symfunc%y0d(j,3,ib)
-                    write(*,*) "DDDDD", ann_arr%ann(i)%d(j), symfunc%y0d(j,1,ib)
+                    ttxyz=0.d0
+                    ttxyz = symfunc%y0d(j,1,ib)**2+symfunc%y0d(j,2,ib)**2+symfunc%y0d(j,3,ib)**2
+                    dhgen(i,ib)=dhgen(i,ib) + ann_arr%ann(i)%d(j)*sqrt(ttxyz)
+                    write (*,*) "TTXYZ", sqrt(ttxyz), ann_arr%ann(i)%d(j)
                 enddo
-                xij=atoms%rat(1,jat)-atoms%rat(1,iat)
-                yij=atoms%rat(2,jat)-atoms%rat(2,iat)
-                zij=atoms%rat(3,jat)-atoms%rat(3,iat)
-                r=sqrt(xij**2+yij**2+zij**2)
-                !dhgen(i,ib)=(ttx(i)/atoms%rat(1,iat) + tty(i)/atoms%rat(2,iat) + ttz(i)/atoms%rat(3,iat))*r
-                !write(*,*) 'DH', dhgen(i,ib) 
             else
                 stop 'ERROR: undefined content for ann_arr%event'
             endif
@@ -93,6 +87,12 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
     enddo
+        !xij=atoms%rat(1,2)-atoms%rat(1,1)
+        !yij=atoms%rat(2,2)-atoms%rat(2,1)
+        !zij=atoms%rat(3,2)-atoms%rat(3,1)
+        !r=sqrt(xij**2+yij**2+zij**2)
+        !write(*,*) 'HGEN', r, hgen(1,1)
+        !write(*,*) 'DH', dhgen(1,1) 
         partb%event=ann_arr%event
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
         atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
