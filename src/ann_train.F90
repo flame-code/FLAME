@@ -16,40 +16,15 @@ subroutine ann_train(parini)
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
-    integer:: iat, jat, ialpha, i, ig, iconf, ng, ios, nat, ib
+    integer:: ialpha, i, iconf, ios
     real(8):: time1, time2, time3
-    real(8):: tt, epot
-    !character(6):: path1
-    !character(2):: path2
     character(15):: fnout
-    real(8), allocatable:: ratred(:,:)
     call f_routine(id='ann_train')
-    !write(path1,'(a3,i3.3)') 'set',iproc
-    !path2='..'
-    !istat=chdir(path1)
-    !if(istat/=0) stop 'ERROR: could not change directory to path1'
-    !write(*,*) trim(parini%stypat_ann)
-    !call count_words(parini%stypat_ann,ann_arr%n)
-    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%n)
     ann_arr%n=parini%ntypat
     if(parini%bondbased_ann) then
         ann_arr%n=4
     endif
     if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in ann_train'
-    !if(parini%bondbased_ann) then
-    !    do i=1,ann_arr%n
-    !        ann_arr%ltypat(i)=1
-    !    enddo
-    !    do i=1,ann_arr%n
-    !        ann_arr%stypat(i)=ann_arr%stypat(1)
-    !        write(*,*) i,ann_arr%stypat(i)
-    !    enddo
-    !else
-    !    do i=1,ann_arr%n
-    !        ann_arr%ltypat(i)=i
-    !        write(*,*) i,ann_arr%stypat(i)
-    !    enddo
-    !endif
     write(*,*) 'Here', ann_arr%n
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
@@ -73,40 +48,8 @@ subroutine ann_train(parini)
         write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
         write(*,'(a,i)') 'number of validating data points: ',atoms_valid%nconf
     endif
-    do iconf=1,atoms_train%nconf
-        if(trim(atoms_train%atoms(iconf)%boundcond)=='bulk') then
-        ratred=f_malloc([1.to.3,1.to.atoms_train%atoms(iconf)%nat],id='ratred')
-        call rxyz_cart2int_alborz(atoms_train%atoms(iconf)%nat,atoms_train%atoms(iconf)%cellvec,atoms_train%atoms(iconf)%rat,ratred)
-        call backtocell_alborz(atoms_train%atoms(iconf)%nat,atoms_train%atoms(iconf)%cellvec,ratred)
-        call rxyz_int2cart_alborz(atoms_train%atoms(iconf)%nat,atoms_train%atoms(iconf)%cellvec,ratred,atoms_train%atoms(iconf)%rat)
-        call f_free(ratred)
-        endif
-        do iat=1,atoms_train%atoms(iconf)%nat
-            do i=1,ann_arr%n
-                if(trim(atoms_train%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
-                    atoms_train%atoms(iconf)%itypat(iat)=parini%ltypat(i)
-                    exit
-                endif
-            enddo
-        enddo
-    enddo
-    do iconf=1,atoms_valid%nconf
-        if(trim(atoms_valid%atoms(iconf)%boundcond)=='bulk') then
-        ratred=f_malloc([1.to.3,1.to.atoms_valid%atoms(iconf)%nat],id='ratred')
-        call rxyz_cart2int_alborz(atoms_valid%atoms(iconf)%nat,atoms_valid%atoms(iconf)%cellvec,atoms_valid%atoms(iconf)%rat,ratred)
-        call backtocell_alborz(atoms_valid%atoms(iconf)%nat,atoms_valid%atoms(iconf)%cellvec,ratred)
-        call rxyz_int2cart_alborz(atoms_valid%atoms(iconf)%nat,atoms_valid%atoms(iconf)%cellvec,ratred,atoms_valid%atoms(iconf)%rat)
-        call f_free(ratred)
-        endif
-        do iat=1,atoms_valid%atoms(iconf)%nat
-            do i=1,ann_arr%n
-                if(trim(atoms_valid%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
-                    atoms_valid%atoms(iconf)%itypat(iat)=parini%ltypat(i)
-                    exit
-                endif
-            enddo
-        enddo
-    enddo
+    call prepare_atoms_arr(parini,ann_arr,atoms_train)
+    call prepare_atoms_arr(parini,ann_arr,atoms_valid)
     !allocate(atoms_train%inclusion(atoms_train%nconf),source=0)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
@@ -132,92 +75,17 @@ subroutine ann_train(parini)
     !        ann_arr%ann(i)%two_over_gdiff(ig)=ann_arr%ann(1)%two_over_gdiff(ig)
     !    enddo
     !enddo
-    !The following must be done after set_gbounds is called for training set.
+    !-------------------------------------------------------------------------------------
+    !IMPORTANT: The following must be done after set_gbounds is called for training set.
     if(parini%bondbased_ann) then
-    !-------------------------------- bond symmetry function --------------------------------
-        do iconf=1,atoms_valid%nconf
-            if(atoms_valid%atoms(iconf)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
-            !if(symfunc_valid%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-            do ib=1,symfunc_valid%symfunc(iconf)%linked_lists%maxbound_rad
-                iat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(1,ib)
-                jat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(2,ib)
-                !write(*,*) 'QQQQQQQQ ',ib,iat,jat
-                if(iat>jat) cycle
-                ng=symfunc_valid%symfunc(iconf)%ng
-                do ig=1,ng
-                    tt=symfunc_valid%symfunc(iconf)%y(ig,ib)
-                    tt=(tt-ann_arr%ann(1)%gbounds(1,ig))*ann_arr%ann(1)%two_over_gdiff(ig)-1.d0
-                    symfunc_valid%symfunc(iconf)%y(ig,ib)=tt
-                enddo
-            enddo
-        enddo
-        do iconf=1,atoms_train%nconf
-            !if(symfunc_train%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-            do ib=1,symfunc_train%symfunc(iconf)%linked_lists%maxbound_rad
-                iat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(1,ib)
-                jat=symfunc_train%symfunc(iconf)%linked_lists%bound_rad(2,ib)
-                if(iat>jat) cycle
-                ng=symfunc_train%symfunc(iconf)%ng
-                do ig=1,ng
-                    tt=symfunc_train%symfunc(iconf)%y(ig,ib)
-                    tt=(tt-ann_arr%ann(1)%gbounds(1,ig))*ann_arr%ann(1)%two_over_gdiff(ig)-1.d0
-                    symfunc_train%symfunc(iconf)%y(ig,ib)=tt
-                enddo
-            enddo
-        enddo
-    !---------------------------------------------------------------------------------------
+        call apply_gbounds_bond(ann_arr,atoms_valid,symfunc_valid)
+        call apply_gbounds_bond(ann_arr,atoms_train,symfunc_train)
     else
-        do iconf=1,atoms_valid%nconf
-            do iat=1,atoms_valid%atoms(iconf)%nat
-                ng=symfunc_valid%symfunc(iconf)%ng
-                i=atoms_valid%atoms(iconf)%itypat(iat)
-                do ig=1,ng
-                    tt=symfunc_valid%symfunc(iconf)%y(ig,iat)
-                    tt=(tt-ann_arr%ann(i)%gbounds(1,ig))*ann_arr%ann(i)%two_over_gdiff(ig)-1.d0
-                    symfunc_valid%symfunc(iconf)%y(ig,iat)=tt
-                enddo
-            enddo
-        enddo
-        do iconf=1,atoms_train%nconf
-            do iat=1,atoms_train%atoms(iconf)%nat
-                ng=symfunc_train%symfunc(iconf)%ng
-                i=atoms_train%atoms(iconf)%itypat(iat)
-                do ig=1,ng
-                    tt=symfunc_train%symfunc(iconf)%y(ig,iat)
-                    tt=(tt-ann_arr%ann(i)%gbounds(1,ig))*ann_arr%ann(i)%two_over_gdiff(ig)-1.d0
-                    symfunc_train%symfunc(iconf)%y(ig,iat)=tt
-                enddo
-            enddo
-        enddo
+        call apply_gbounds_atom(ann_arr,atoms_valid,symfunc_valid)
+        call apply_gbounds_atom(ann_arr,atoms_train,symfunc_train)
     endif
-    ann_arr%ann(1)%ebounds(1)= 1.d20
-    ann_arr%ann(1)%ebounds(2)=-1.d20
-    do iconf=1,atoms_train%nconf
-        tt=atoms_train%atoms(iconf)%epot/atoms_train%atoms(iconf)%nat
-        ann_arr%ann(1)%ebounds(1)=min(ann_arr%ann(1)%ebounds(1),tt)
-        ann_arr%ann(1)%ebounds(2)=max(ann_arr%ann(1)%ebounds(2),tt)
-    enddo
-    if(atoms_train%nconf==1) then
-        tt=atoms_train%atoms(1)%epot !/atoms_train%atoms(1)%nat
-        ann_arr%ann(1)%ebounds(1)=(tt-1.d0)/atoms_train%atoms(1)%nat
-        ann_arr%ann(1)%ebounds(2)=(tt+1.d0)/atoms_train%atoms(1)%nat
-    endif
-    ann_arr%ann(1)%ebounds(1)=-1.d0
-    ann_arr%ann(1)%ebounds(2)= 1.d0
-    write(*,'(a,2es14.5)') 'ebounds: ',ann_arr%ann(1)%ebounds(1),ann_arr%ann(1)%ebounds(2)
-    tt=2.d0/(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))
-    do iconf=1,atoms_train%nconf
-        nat=1 !atoms_train%atoms(iconf)%nat
-        epot=atoms_train%atoms(iconf)%epot
-        symfunc_train%symfunc(iconf)%epot=(epot/nat-ann_arr%ann(1)%ebounds(1))*tt-1.d0
-        !write(*,'(a,i6,f8.3)') 'train: ',iconf,symfunc_train%symfunc(iconf)%epot
-    enddo
-    do iconf=1,atoms_valid%nconf
-        nat=1 !atoms_valid%atoms(iconf)%nat
-        epot=atoms_valid%atoms(iconf)%epot
-        symfunc_valid%symfunc(iconf)%epot=(epot/nat-ann_arr%ann(1)%ebounds(1))*tt-1.d0
-        !write(*,'(a,i6,f8.3)') 'valid: ',iconf,symfunc_valid%symfunc(iconf)%epot
-    enddo
+    !-------------------------------------------------------------------------------------
+    call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !-------------------------------------------------------
     ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
     call set_annweights(parini,ekf)
@@ -268,11 +136,133 @@ subroutine ann_train(parini)
     !enddo
 
 
-    !istat=chdir(path2)
-    !if(istat/=0) stop 'ERROR: could not change directory to path2'
     !deallocate(atoms_train%inclusion)
     call f_release_routine()
 end subroutine ann_train
+!*****************************************************************************************
+subroutine apply_gbounds_atom(ann_arr,atoms_arr,symfunc_arr)
+    use mod_interface
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+    !local variables
+    integer:: iconf, iat, ig, ib, i
+    real(8):: tt
+    do iconf=1,atoms_arr%nconf
+        do iat=1,atoms_arr%atoms(iconf)%nat
+            i=atoms_arr%atoms(iconf)%itypat(iat)
+            do ig=1,symfunc_arr%symfunc(iconf)%ng
+                tt=symfunc_arr%symfunc(iconf)%y(ig,iat)
+                tt=(tt-ann_arr%ann(i)%gbounds(1,ig))*ann_arr%ann(i)%two_over_gdiff(ig)-1.d0
+                symfunc_arr%symfunc(iconf)%y(ig,iat)=tt
+            enddo
+        enddo
+    enddo
+end subroutine apply_gbounds_atom
+!*****************************************************************************************
+subroutine apply_gbounds_bond(ann_arr,atoms_arr,symfunc_arr)
+    use mod_interface
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+    !local variables
+    integer:: iconf, iat, jat, ig, ib
+    real(8):: tt
+    do iconf=1,atoms_arr%nconf
+        if(atoms_arr%atoms(iconf)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
+        !if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+        do ib=1,symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad
+            iat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(1,ib)
+            jat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(2,ib)
+            !write(*,*) 'QQQQQQQQ ',ib,iat,jat
+            if(iat>jat) cycle
+            do ig=1,symfunc_arr%symfunc(iconf)%ng
+                tt=symfunc_arr%symfunc(iconf)%y(ig,ib)
+                tt=(tt-ann_arr%ann(1)%gbounds(1,ig))*ann_arr%ann(1)%two_over_gdiff(ig)-1.d0
+                symfunc_arr%symfunc(iconf)%y(ig,ib)=tt
+            enddo
+        enddo
+    enddo
+end subroutine apply_gbounds_bond
+!*****************************************************************************************
+subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms_arr
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    !local variables
+    integer:: iconf, iat, i
+    real(8), allocatable:: ratred(:,:)
+    do iconf=1,atoms_arr%nconf
+        if(trim(atoms_arr%atoms(iconf)%boundcond)=='bulk') then
+        ratred=f_malloc([1.to.3,1.to.atoms_arr%atoms(iconf)%nat],id='ratred')
+        call rxyz_cart2int_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,atoms_arr%atoms(iconf)%rat,ratred)
+        call backtocell_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,ratred)
+        call rxyz_int2cart_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,ratred,atoms_arr%atoms(iconf)%rat)
+        call f_free(ratred)
+        endif
+        do iat=1,atoms_arr%atoms(iconf)%nat
+            do i=1,ann_arr%n
+                if(trim(atoms_arr%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
+                    atoms_arr%atoms(iconf)%itypat(iat)=parini%ltypat(i)
+                    exit
+                endif
+            enddo
+        enddo
+    enddo
+end subroutine prepare_atoms_arr
+!*****************************************************************************************
+subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    use mod_interface
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+    !local variables
+    integer:: iconf, nat
+    real(8):: epot, tt
+    ann_arr%ann(1)%ebounds(1)= 1.d20
+    ann_arr%ann(1)%ebounds(2)=-1.d20
+    do iconf=1,atoms_train%nconf
+        tt=atoms_train%atoms(iconf)%epot/atoms_train%atoms(iconf)%nat
+        ann_arr%ann(1)%ebounds(1)=min(ann_arr%ann(1)%ebounds(1),tt)
+        ann_arr%ann(1)%ebounds(2)=max(ann_arr%ann(1)%ebounds(2),tt)
+    enddo
+    if(atoms_train%nconf==1) then
+        tt=atoms_train%atoms(1)%epot !/atoms_train%atoms(1)%nat
+        ann_arr%ann(1)%ebounds(1)=(tt-1.d0)/atoms_train%atoms(1)%nat
+        ann_arr%ann(1)%ebounds(2)=(tt+1.d0)/atoms_train%atoms(1)%nat
+    endif
+    ann_arr%ann(1)%ebounds(1)=-1.d0
+    ann_arr%ann(1)%ebounds(2)= 1.d0
+    write(*,'(a,2es14.5)') 'ebounds: ',ann_arr%ann(1)%ebounds(1),ann_arr%ann(1)%ebounds(2)
+    tt=2.d0/(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))
+    do iconf=1,atoms_train%nconf
+        nat=1 !atoms_train%atoms(iconf)%nat
+        epot=atoms_train%atoms(iconf)%epot
+        symfunc_train%symfunc(iconf)%epot=(epot/nat-ann_arr%ann(1)%ebounds(1))*tt-1.d0
+        !write(*,'(a,i6,f8.3)') 'train: ',iconf,symfunc_train%symfunc(iconf)%epot
+    enddo
+    do iconf=1,atoms_valid%nconf
+        nat=1 !atoms_valid%atoms(iconf)%nat
+        epot=atoms_valid%atoms(iconf)%epot
+        symfunc_valid%symfunc(iconf)%epot=(epot/nat-ann_arr%ann(1)%ebounds(1))*tt-1.d0
+        !write(*,'(a,i6,f8.3)') 'valid: ',iconf,symfunc_valid%symfunc(iconf)%epot
+    enddo
+end subroutine set_ebounds
 !*****************************************************************************************
 subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     use mod_interface

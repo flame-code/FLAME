@@ -32,7 +32,9 @@
   call f_timer_interrupt(TCAT_ARRAY_ALLOCATIONS)
   !$ end if
   if (f_nan_pad_size > 0) then
-     padding=f_nan_pad_size
-     call togglepadding(product(int(m%shape(1:m%rank-1),f_long))*&
-          kind(array)*(m%shape(m%rank)+padding))
+     if (product(int(m%shape(1:m%rank),f_long)) > int(0,f_long)) then
+        padding=f_nan_pad_size
+        call togglepadding(product(int(m%shape(1:m%rank-1),f_long))*&
+             kind(array)*(m%shape(m%rank)+padding))
+     end if
   end if

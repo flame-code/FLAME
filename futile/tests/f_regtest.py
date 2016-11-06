@@ -24,6 +24,10 @@ parser.option('-t', '--tols', dest='tols', default="/dev/null",
 parser.option('-s', '--srcdir', dest='srcdir', default="/",
               help="yaml file containing the tolerances for each run",
               metavar='FILE')
+parser.option('-x', '--exclusive', remainder= True,
+              help="list of the tests that have to be performed exlusively",
+              metavar='FILE')
+
 #
 args = parser.args()
 #print 'Arguments'
@@ -48,13 +52,14 @@ def get_time(file):
     else:
         return 0.0
 
-
 fldiff=args.fldiff
 tols=args.tols
 base='python '+fldiff+' -t '+tols
+only=args.exclusive
 
 for test in d_instr:
     label=test.keys()[0]
+    if only is not None and len(only[0]) > 0 and label not in only: continue
     specs=test.values()[0]
     binary=specs.get('binary',label)
     output=specs.get('output',label+'.out.yaml')
