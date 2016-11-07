@@ -54,13 +54,6 @@ def invertmat(mat):
     #!This function will transform back all atoms into the periodic cell
     #!defined by the 3 lattice vectors in latvec=[v1.v2.v3]
 def backtocell(nat,cellvec,rat):
-    matinv = np.matrix('1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0')
-    matinv = np.linalg.inv(mat)
-    return matinv
-#********************************************************************#
-    #!This function will transform back all atoms into the periodic cell
-    #!defined by the 3 lattice vectors in latvec=[v1.v2.v3]
-def backtocell(nat,cellvec,rat):
     #!To really be on the safe side, the translation vector can be shortened by  a factor eps in order
     #!to get the atom into the cell.
     dist = [0]*6
