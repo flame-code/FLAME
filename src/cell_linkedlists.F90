@@ -590,7 +590,7 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
         linked_lists%prime_bound(iat)=ibr+1
         do njat=1,neighbor(iat)
             !The following if added to avoid double counting for bond based linked list
-            if(parini%bondbased_ann .and. iat>njat) then
+            if(parini%bondbased_ann .and. iat>bound_rad(njat,iat)) then
                 cycle
             endif
         !do 

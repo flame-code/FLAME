@@ -78,8 +78,8 @@ subroutine ann_train(parini)
     !-------------------------------------------------------------------------------------
     !IMPORTANT: The following must be done after set_gbounds is called for training set.
     if(parini%bondbased_ann) then
-        call apply_gbounds_bond(ann_arr,atoms_valid,symfunc_valid)
-        call apply_gbounds_bond(ann_arr,atoms_train,symfunc_train)
+        call apply_gbounds_bond(parini,ann_arr,atoms_valid,symfunc_valid)
+        call apply_gbounds_bond(parini,ann_arr,atoms_train,symfunc_train)
     else
         call apply_gbounds_atom(parini,ann_arr,atoms_valid,symfunc_valid)
         call apply_gbounds_atom(parini,ann_arr,atoms_train,symfunc_train)
@@ -180,16 +180,18 @@ subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
     enddo
 end subroutine apply_gbounds_atom
 !*****************************************************************************************
-subroutine apply_gbounds_bond(ann_arr,atoms_arr,symfunc_arr)
+subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms_arr), intent(inout):: atoms_arr
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
     !local variables
-    integer:: iconf, iat, jat, ig, ib
+    integer:: iconf, iat, jat, ig, ib, i0, isat
     real(8):: tt
     do iconf=1,atoms_arr%nconf
         if(atoms_arr%atoms(iconf)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
@@ -205,6 +207,23 @@ subroutine apply_gbounds_bond(ann_arr,atoms_arr,symfunc_arr)
                 symfunc_arr%symfunc(iconf)%y(ig,ib)=tt
             enddo
         enddo
+        if(atoms_arr%atoms(iconf)%nat<=parini%nat_force) then
+            do ib=1,symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad
+                iat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(1,ib)
+                jat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(2,ib)
+                if(iat>jat) cycle
+                isat=atoms_arr%atoms(iconf)%itypat(iat)
+                do i0=1,ann_arr%ann(isat)%nn(0)
+                    !normalization of y0d
+                    tt=ann_arr%ann(isat)%two_over_gdiff(i0)
+                    symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)*tt
+                    symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)*tt
+                    symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)*tt
+                    !normalization of y0dr
+                    !symfunc%y0dr(i0,1:9,ib)=symfunc%y0dr(i0,1:9,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                enddo
+            enddo
+        endif
     enddo
 end subroutine apply_gbounds_bond
 !*****************************************************************************************
