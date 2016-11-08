@@ -95,8 +95,9 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         !write(*,*) 'DH', dhgen(1,1) 
         partb%event=ann_arr%event
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
-        atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
+        !atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
         !atoms%epot=atoms%epot-37.88829524388414d0*atoms%nat
+        atoms%epot=atoms%epot+atoms%nat*ann_arr%ann(atoms%itypat(1))%ener_ref
         !if(trim(ann_arr%event)=='evalu') then
         !write(100+int(icall/19),'(f6.3,es24.15,f10.5)') atoms%rat(1,2) -atoms%rat(1,1), atoms%epot,atoms%fat(1,1)
         !atoms%epot=atoms%epot-0.2208033067776594d0

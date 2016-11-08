@@ -437,7 +437,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_partb), intent(inout):: partb
-    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat), ttx(4), tty(4), ttz(4)   !derivative of 
+    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
 end subroutine cal_ann_tb
 subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     use mod_atoms, only: typ_atoms
@@ -674,18 +674,22 @@ subroutine ann_train(parini)
     implicit none
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
-subroutine apply_gbounds_atom(ann_arr,atoms_arr,symfunc_arr)
+subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
+    use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms_arr), intent(inout):: atoms_arr
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
 end subroutine apply_gbounds_atom
-subroutine apply_gbounds_bond(ann_arr,atoms_arr,symfunc_arr)
+subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
+    use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms_arr), intent(inout):: atoms_arr
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
