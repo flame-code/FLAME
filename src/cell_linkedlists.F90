@@ -589,6 +589,10 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     do iat=1,linked_lists%nat
         linked_lists%prime_bound(iat)=ibr+1
         do njat=1,neighbor(iat)
+            !The following if added to avoid double counting for bond based linked list
+            if(parini%bondbased_ann .and. iat>bound_rad(njat,iat)) then
+                cycle
+            endif
         !do 
         !    njat=njat+1
         !    if (bound_rad(njat,iat)<1 .or. njat>nmax) then
@@ -604,6 +608,16 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
             pia_arr%pia(ibr)%dr(3)=bound_dist(4,njat,iat)
         enddo
     enddo
+    !The following if added to avoid double counting for bond based linked list
+    !and it must be corrected since it will not work if repulsive atom based
+    !linked list is needed. The problem is due to parini%bondbased_ann
+    if(parini%bondbased_ann .and. iat>njat) then
+        if(mod(linked_lists%maxbound_rad,2)/=0) then
+            stop 'ERROR: linked_lists%maxbound_rad must be even.'
+        endif
+        write(*,*) 'maxbound ',linked_lists%maxbound_rad
+        linked_lists%maxbound_rad=linked_lists%maxbound_rad/2
+    endif
     if (ibr/=linked_lists%maxbound_rad) then
         write(*,'(a,2i8)') 'ERROR: in number of bonds ',ibr,linked_lists%maxbound_rad
         stop

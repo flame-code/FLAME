@@ -437,7 +437,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_partb), intent(inout):: partb
-    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)   !derivative of 
+    real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
 end subroutine cal_ann_tb
 subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     use mod_atoms, only: typ_atoms
@@ -674,6 +674,43 @@ subroutine ann_train(parini)
     implicit none
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine apply_gbounds_atom
+subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine apply_gbounds_bond
+subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine prepare_atoms_arr
+subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+end subroutine set_ebounds
 subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
@@ -703,7 +740,6 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
-    use mod_linked_lists, only: typ_pia_arr
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -711,6 +747,41 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     character(*), intent(in):: strmess
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
 end subroutine set_gbounds
+subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iconf
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine write_symfunc
+subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    use mod_linked_lists, only: typ_pia_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iconf
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine read_symfunc
+subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    character(*), intent(in):: strmess
+    type(typ_symfunc_arr), intent(inout):: symfunc_arr
+end subroutine save_gbounds
 subroutine convert_x_ann(n,x,ann)
     use mod_ann, only: typ_ann
     implicit none
@@ -3232,7 +3303,7 @@ end subroutine set_indorb
 subroutine gammaenergy(partb,atoms,natsi,pplocal)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
-    use mod_tightbinding, only: typ_partb
+    use mod_tightbinding, only: typ_partb, lenosky
     implicit none
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms

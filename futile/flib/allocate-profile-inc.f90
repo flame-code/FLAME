@@ -6,11 +6,13 @@
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
-
-
   integer :: ierror
   ! integer :: sizeof
   integer(kind=8) :: iadd
+  character(len=info_length) :: val
+  type(dictionary), pointer :: info
+  logical :: c_allocation
+  integer :: padding
   ! integer(kind=8) :: ilsize
   !$ logical :: not_omp
   !$ logical, external :: omp_in_parallel,omp_get_nested
@@ -19,6 +21,8 @@
        'ERROR (f_malloc): the routine f_malloc_initialize has not been called',&
        ERR_MALLOC_INTERNAL)) return
 
+  !no padding by default
+  padding=ndebug !which is always zero so far
   !$ not_omp=.not. (omp_in_parallel() .or. omp_get_nested())
 
   !here we should add a control of the OMP behaviour of allocation
@@ -27,3 +31,10 @@
   !$ if(not_omp) then
   call f_timer_interrupt(TCAT_ARRAY_ALLOCATIONS)
   !$ end if
+  if (f_nan_pad_size > 0) then
+     if (product(int(m%shape(1:m%rank),f_long)) > int(0,f_long)) then
+        padding=f_nan_pad_size
+        call togglepadding(product(int(m%shape(1:m%rank-1),f_long))*&
+             kind(array)*(m%shape(m%rank)+padding))
+     end if
+  end if

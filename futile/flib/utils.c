@@ -24,12 +24,13 @@
 #include <time.h>
 #endif
 
+#include "utils.h"
+
 #ifndef HAVE_STRNDUP
 char* strndup(const char *src, size_t len);
 #endif
 
 static jmp_buf jb_main,jb_child;
-
 
 #ifndef HAVE_CLOCK_GETTIME
 #define CLOCK_REALTIME 0
@@ -151,6 +152,14 @@ void FC_FUNC(getdir, GETDIR)(const char *dir, int *lgDir,
   return;
 }
 
+void FC_FUNC(bindfree, BINDFREE)(long long int * fromadd)
+{
+  void *from = (void*)*fromadd;
+  /*printf("\n test long address = %p %lli\n", (void*)from,*fromadd);*/
+  free(from);
+}
+
+
 void FC_FUNC(callsystem, CALLSYSTEM)(const char *cmd, int *lgcmd, int *status)
 {
   char *command;
@@ -209,7 +218,7 @@ void FC_FUNC(getfilecontent, GETFILECONTENT)(void **pt, long *pt_len, const char
 
   buf = malloc(sizeof(char) * (s + 1));
   r = fread(buf, s, 1, f);
-  buf[s] = '\0';
+  buf[r * s] = '\0';
 
   fclose(f);
 
@@ -254,8 +263,7 @@ void FC_FUNC(getjmpbufsize, GETJMPBUFSIZE)(int *bufsize)
   *bufsize = (int) sizeof(jb_main);
 }
 
-
-void FC_FUNC(setandcpyjmpbuf, SETANDCPYJMPBUF)(int *signal,long long int* routine,long long int* arg, int* last_signal)
+void FC_FUNC(setandcpyjmpbuf, SETANDCPYJMPBUF)(int *signal, FFunc_void* routine,long long int* arg, int* last_signal)
 {
   *signal = setjmp(jb_main);
     //fill the jmpbuf with the correct values
@@ -267,9 +275,8 @@ void FC_FUNC(setandcpyjmpbuf, SETANDCPYJMPBUF)(int *signal,long long int* routin
     //}
     //else 
     //  printf("restarting, signal %d, %d \n",*signal,*last_signal);   
-    if (*signal != *last_signal)
-      FC_FUNC_(call_external_c_fromadd, CALL_EXTERNAL_C_FROMADD)(routine);
-
+    if (*signal != *last_signal && routine)
+      (*routine)();
 }
 
 void FC_FUNC(longjmpwrap, LONGJMPWRAP)(jmp_buf* jb,int* signal)

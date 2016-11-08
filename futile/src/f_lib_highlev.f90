@@ -140,11 +140,13 @@ end subroutine initialize_flib_timing_categories
 !> Routine which initializes f_lib global pointers, to be called before any action 
 !! is taken
 subroutine f_lib_initialize()
+  use f_environment
   use dictionaries, only: f_err_initialize
   use dynamic_memory, only: f_malloc_initialize
   use time_profiling, only: f_timing_initialize
   implicit none
-  
+
+  call f_environment_acquire()
   !general initialization, for lowest level f_lib calling
   call f_err_initialize()
   call initialize_flib_errors()
@@ -225,6 +227,8 @@ end module f_lib_package
 
 !> complete module of futile, to be used for high-level programs
 module futile
+  use f_environment
+  use f_precisions
   use yaml_strings
   use dictionaries
   use yaml_output
@@ -236,4 +240,5 @@ module futile
   use f_input_file
   use f_enums
   use f_ternary
+  use f_random
 end module futile

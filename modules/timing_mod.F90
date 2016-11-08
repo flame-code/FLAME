@@ -2,6 +2,7 @@
 module mod_timing
     use yaml_output
     use time_profiling
+    use dictionaries
     implicit none
     type(dictionary), pointer :: dict_timing_info
     !---------------------------------------------

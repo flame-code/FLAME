@@ -24,6 +24,11 @@ module yaml_strings
   character(len=*), parameter :: yaml_dble_fmt = '(1pg26.16e3)'!'(1pe25.17)' !< Default format for double
   character(len=*), parameter :: yaml_char_fmt = '(a)'                       !< Default format for strings
 
+  !>escape sequences for pretty printing
+  character(len=*), parameter :: escape_normal=char(27)//"[m"
+  character(len=*), parameter :: escape_bold=char(27)//"[0;1m"
+  character(len=*), parameter :: escape_blink=char(27)//"[0;5m"
+
   !> structure containing the string and its length
   !! for the moment implement it basically, we might then
   !! identifty a strategy to allocate the string according to the needs
@@ -64,19 +69,18 @@ module yaml_strings
   end interface
 
   interface assignment(=)
-     module procedure msg_to_string
+     module procedure msg_to_string,string_to_msg
   end interface assignment(=)
 
   interface operator(**)
      module procedure yaml_itoa_fmt,yaml_litoa_fmt,yaml_dtoa_fmt,yaml_ctoa_fmt
   end interface operator(**)
-  !format test to convert rapidly
-  !' test string' + tt**'(1pe25.16)'
 
   !Public routines
   public :: yaml_toa, buffer_string, align_message, shiftstr,yaml_date_toa
   public :: yaml_date_and_time_toa,yaml_time_toa,is_atoi,is_atof,is_atol,is_atoli
   public :: read_fraction_string,f_strcpy
+  public:: yaml_bold,yaml_blink
   public :: operator(.eqv.),operator(.neqv.),operator(+),operator(//),operator(**),assignment(=)
 
 contains
@@ -143,6 +147,39 @@ contains
 
   end subroutine f_strcpy_str
 
+  pure function yaml_escape(str,escape_sequence) result(bstr)
+    implicit none
+    character(len=*), intent(in) :: str,escape_sequence
+    character(len=max_value_length) :: bstr
+    !local variables
+    integer :: ipos
+    !open the bold field
+    ipos=0
+    call buffer_string(bstr,len(bstr),escape_sequence,ipos)
+    !copy the input string
+    call buffer_string(bstr,len(bstr),trim(str),ipos)
+    !then copy the normal escape sequence
+    call buffer_string(bstr,len(bstr),escape_normal,ipos,&
+         back=ipos+len(escape_normal) > len(bstr))
+    bstr(ipos+1:len(bstr))=' '
+  end function yaml_escape
+
+  !> boldify a string (to be used only) if the terminal is of tty type
+  pure function yaml_bold(str) result(bstr)
+    implicit none
+    character(len=*), intent(in) :: str
+    character(len=max_value_length) :: bstr
+    bstr=yaml_escape(str,escape_bold)
+  end function yaml_bold
+
+  !> boldify a string (to be used only) if the terminal is of tty type
+  pure function yaml_blink(str) result(bstr)
+    implicit none
+    character(len=*), intent(in) :: str
+    character(len=max_value_length) :: bstr
+    bstr=yaml_escape(str,escape_blink)
+  end function yaml_blink
+
 
   !> Add a buffer to a string and increase its length
   pure subroutine buffer_string(string,string_lgt,buffer,string_pos,back,istat)
@@ -152,7 +189,7 @@ contains
     integer, intent(inout) :: string_pos                !< Position to add buffer into string and for the next.
     character(len=*), intent(in) :: buffer              !< Buffer to add
     logical, optional, intent(in) :: back               !< Add string from the end
-    integer, optional, intent(out) :: istat             !< Error status (if present otherwise stops if error)
+    integer, optional, intent(out) :: istat             !< Error status (if present otherwise truncate output if error)
     !local variables
     integer :: lgt_add
 
@@ -805,6 +842,13 @@ contains
     call f_strcpy(string,msg%msg)
   end subroutine msg_to_string
 
+  pure subroutine string_to_msg(msg,string)
+    implicit none
+    character(len=*), intent(in) :: string
+    type(f_string), intent(out) :: msg
+    call f_strcpy(msg%msg,string//char(0))
+  end subroutine string_to_msg
+
   !function which attach two strings each other
   pure function attach_ci(s,num) result(c)
     implicit none
@@ -842,32 +886,40 @@ contains
     implicit none
     integer(f_integer), intent(in) :: num
     character(len=*), intent(in) :: fmt
-    type(f_string) :: c
-    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+!!$    type(f_string) :: c
+!!$    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+    character(len=max_value_length) :: c
+    c=yaml_toa(num,fmt)
   end function yaml_itoa_fmt
 
   pure function yaml_litoa_fmt(num,fmt) result(c)
     implicit none
     integer(f_long), intent(in) :: num
     character(len=*), intent(in) :: fmt
-    type(f_string) :: c
-    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+!!$    type(f_string) :: c
+!!$    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+    character(len=max_value_length) :: c
+    c=yaml_toa(num,fmt)
   end function yaml_litoa_fmt
 
   pure function yaml_dtoa_fmt(num,fmt) result(c)
     implicit none
     real(f_double), intent(in) :: num
     character(len=*), intent(in) :: fmt
-    type(f_string) :: c
-    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+!!$    type(f_string) :: c
+!!$    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+    character(len=max_value_length) :: c
+    c=yaml_toa(num,fmt)
   end function yaml_dtoa_fmt
 
   pure function yaml_ctoa_fmt(num,fmt) result(c)
     implicit none
     character(len=*), intent(in) :: num
     character(len=*), intent(in) :: fmt
-    type(f_string) :: c
-    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+!!$    type(f_string) :: c
+!!$    call f_strcpy(c%msg,trim(adjustl(yaml_toa(num,fmt))))
+    character(len=max_value_length) :: c
+    c=yaml_toa(num,fmt)
   end function yaml_ctoa_fmt
 
 
