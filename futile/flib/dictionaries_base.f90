@@ -952,9 +952,15 @@ contains
              if (present(nres)) then
                 nres=nres+1
              else
-                write(*,'(a,a,a,a,a)') &
-                     & '#Unfreed key: "',trim(lib%files(i)%data%key),&
-                     & '" value: "',trim(lib%files(i)%data%value),'"'
+                if (associated(lib%files(i)%child)) then
+                   write(*,'(a,a,a,a,a)') &
+                        & '#Unfreed key: "',trim(lib%files(i)%data%key),&
+                        & '" value: "',trim(TYPE_DICT),'"'
+                else
+                   write(*,'(a,a,a,a,a)') &
+                        & '#Unfreed key: "',trim(lib%files(i)%data%key),&
+                        & '" value: "',trim(lib%files(i)%data%value),'"'
+                end if
              end if
           end if
        end do

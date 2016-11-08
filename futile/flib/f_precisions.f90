@@ -31,6 +31,9 @@ module f_precisions
   !> portable carriage return, contains both CR for unix and DOS
   character(len=*), parameter :: f_cr=char(13)//char(10)
 
+  !> portable backslash as some compilers do not appreciate it even in strings
+  character(len=*), parameter :: f_backslash=char(92)
+
   !>characters for the equality and the association of the parameters
   integer, parameter, private :: num_size=4
   character(len=num_size), parameter, private :: c_0='zero'

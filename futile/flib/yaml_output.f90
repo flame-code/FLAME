@@ -976,53 +976,6 @@ contains
     integer, optional, intent(in) :: unit             !< @copydoc doc::unit
     integer, optional, intent(in) :: tabbing          !< @copydoc doc::tabbing
     include 'yaml_open-inc.f90'
-!!$    integer, optional, intent(in) :: unit !< @copydoc doc::unit
-!!$    integer, optional, intent(in) :: tabbing !< @copydoc doc::tabbing
-!!$    character(len=*), optional, intent(in) :: mapname !< @copydoc doc::mapname
-!!$    logical, optional, intent(in) :: flow !< @copydoc doc::flow
-!!$    character(len=*), optional, intent(in) :: label !< @copydoc doc::label
-!!$    character(len=*), optional, intent(in) :: tag !< @copydoc doc::tag
-!!$    !local variables
-!!$    logical :: doflow
-!!$    integer :: msg_lgt
-!!$    integer :: unt,strm
-!!$    character(len=3) :: adv
-!!$    character(len=tot_max_record_length) :: towrite
-!!$
-!!$    unt=DEFAULT_STREAM_ID
-!!$    if (present(unit)) unt=unit
-!!$    call get_stream(unt,strm)
-!!$
-!!$    doflow=streams(strm)%flowrite
-!!$    !override if already active
-!!$    if (present(flow)) doflow=flow .or. doflow
-!!$
-!!$    msg_lgt=0
-!!$    !put the message
-!!$    if (present(mapname)) then
-!!$       call buffer_string(towrite,len(towrite),trim(mapname),msg_lgt)
-!!$       !put the semicolon
-!!$       call buffer_string(towrite,len(towrite),':',msg_lgt)
-!!$    end if
-!!$    !put the optional tag description
-!!$    if (present(tag) .and. len_trim(tag) > 0) then
-!!$       call buffer_string(towrite,len(towrite),' !',msg_lgt)
-!!$       call buffer_string(towrite,len(towrite),trim(tag),msg_lgt)
-!!$    end if
-!!$    !put the optional name
-!!$    if (present(label) .and. len_trim(label) > 0) then
-!!$       call buffer_string(towrite,len(towrite),' &',msg_lgt)
-!!$       call buffer_string(towrite,len(towrite),trim(label),msg_lgt)
-!!$    end if
-!!$
-!!$    call open_level(streams(strm),doflow)
-!!$
-!!$    if (doflow .or. msg_lgt==0) then
-!!$       adv='no '
-!!$    else
-!!$       adv='yes'
-!!$    end if
-
     call dump(streams(strm),towrite(1:msg_lgt),advance=trim(adv),event=MAPPING_START)
 
   end subroutine yaml_mapping_open
@@ -1214,7 +1167,8 @@ contains
     implicit none
     character(len=*), intent(in) :: mapname             !< @copydoc doc::mapname
     character(len=*), intent(in) :: mapvalue            !< scalar value of the mapping may be of any scalar type
-                                                        !! it is internally converted to character with the usage of @link yaml_output::yaml_toa @endlink function
+                                                        !! it is internally converted to character with the usage 
+                                                        !! of @link yaml_output::yaml_toa @endlink function
     character(len=*), optional, intent(in) :: label     !< @copydoc doc::label
     character(len=*), optional, intent(in) :: tag       !< @copydoc doc::tag
     character(len=*), optional, intent(in) :: advance   !< @copydoc doc::advance
