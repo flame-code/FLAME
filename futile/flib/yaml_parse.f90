@@ -46,14 +46,14 @@ module yaml_parse
   end type yaml_cl_parse
 
   interface yaml_cl_parse_option
-     module procedure yaml_cl_parse_option_from_string,yaml_cl_parse_option
+     module procedure yaml_cl_parse_option_from_string,yaml_cl_parse_option,yaml_cl_parse_option_from_dict
   end interface
   
   public :: yaml_parse_from_file
   public :: yaml_parse_from_char_array
   public :: yaml_parse_from_string
   public :: yaml_cl_parse_null,yaml_cl_parse_free
-  public :: yaml_cl_parse_option
+  public :: yaml_cl_parse_option,yaml_argparse
 
   !for internal f_lib usage
   public :: yaml_parse_errors
@@ -206,7 +206,6 @@ contains
   !> accept the definition of the input variable from a yaml_string
   subroutine yaml_cl_parse_option_from_string(parser,string)
     use dictionaries
-    use f_utils, only: f_zero
     implicit none
     !> the parser which has to be updated
     type(yaml_cl_parse), intent(inout) :: parser
@@ -214,13 +213,35 @@ contains
     !in a dictionary
     character(len=*), intent(in) :: string
     !local variables
-    logical :: first_option
-    character(len=1) :: shortname
-    character(len=max_field_length) :: name,default,help_string,conflicts
-    type(dictionary), pointer :: dict,help_dict
+    type(dictionary), pointer :: dict,iter
     
     !load the input variable definition
     dict=>yaml_load(string)
+
+    if (dict_islist(dict)) then
+       nullify(iter)
+       do while(iterating(iter,on=dict))
+          call yaml_cl_parse_option_from_dict(parser,iter)
+       end do
+    else
+       call yaml_cl_parse_option_from_dict(parser,dict)
+    end if
+    call dict_free(dict)
+
+  end subroutine yaml_cl_parse_option_from_string
+
+  subroutine yaml_cl_parse_option_from_dict(parser,dict)
+    use dictionaries
+    use f_utils, only: f_zero
+    implicit none
+    !> the parser which has to be updated
+    type(yaml_cl_parse), intent(inout) :: parser
+    type(dictionary), pointer :: dict
+    !local variables
+    logical :: first_option
+    character(len=1) :: shortname
+    character(len=max_field_length) :: name,default,help_string,conflicts
+    type(dictionary), pointer :: help_dict
 
     !then check the options
     call f_zero(name)
@@ -230,7 +251,7 @@ contains
     call f_zero(shortname)
     call f_zero(first_option)
     nullify(help_dict)
-    
+
     !compulsory
     name=dict .get. 'name'
     default=dict .get. 'default'
@@ -242,11 +263,31 @@ contains
     if ('help_dict' .in. dict) call dict_copy(src=dict // 'help_dict',dest=help_dict)
 
     call yaml_cl_parse_option(parser,name,default,help_string,&
-       shortname,help_dict,first_option,conflicts)
+         shortname,help_dict,first_option,conflicts)
+   
+  end subroutine yaml_cl_parse_option_from_dict
 
-    call dict_free(dict)
+  subroutine yaml_argparse(options,string)
+    use dictionaries
+    use f_utils, only: f_zero
+    implicit none
+    !> the dictionary of the options, should be nullified as input
+    type(dictionary), pointer :: options 
+    !>definition of the input variables, given with a single string
+    character(len=*), intent(in) :: string
+    !local variables
+    type(yaml_cl_parse) :: parser !< command line parser
 
-  end subroutine yaml_cl_parse_option_from_string
+    !define command-line options
+    parser=yaml_cl_parse_null()
+    call yaml_cl_parse_option(parser,string)
+    !parse command line, and retrieve arguments
+    call yaml_cl_parse_cmd_line(parser,args=options)
+    !free command line parser information
+    call yaml_cl_parse_free(parser)
+
+  end subroutine yaml_argparse
+  
 
   !> Fill the parsed dictionary with default values
   subroutine yaml_cl_parse_init(parser)
@@ -270,6 +311,7 @@ contains
        opt_iter=> dict_next(opt_iter)
     end do
   end subroutine yaml_cl_parse_init
+
 
   !> dump on stdout the long help for each of the options
   subroutine parser_help(parser,short)
@@ -404,7 +446,7 @@ contains
         type(dictionary), pointer :: opt_iter
 
         nullify(dict)
-
+        found=.false.
         call get_cmd(icommands,command)
         icommands=icommands+1
         !search for the long key value
@@ -847,6 +889,7 @@ contains
     
     !extract the first document
     dict => loaded_string .pop. 0
+
     call dict_free(loaded_string)
 
     if (present(key)) then !to be defined better

@@ -57,7 +57,7 @@ end subroutine test])
     AC_MSG_RESULT([$ax_fc_build_shared])
   fi
   rm -f conftest.o libtest.so.0.0.0
-
+  AM_CONDITIONAL([FC_AUTOBUILD_DYNAMIC_LIBS], [test "x$ax_fc_build_shared" != "xno"])
   AC_LANG_POP(Fortran)
 ])
 
@@ -67,12 +67,13 @@ AC_DEFUN([AX_CC_BUILD_SHARED],
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AX_FLAG_PIC])
 
-  AC_LANG_CONFTEST([
-void test(int *a)
+  AC_LANG_CONFTEST([AC_LANG_SOURCE([
+extern int testint=5;
+
+void mtrace_init(int val)
 {
-  if (a)
-    *a += 1;
-}])
+testint=val;
+}])])
 
   AC_MSG_CHECKING([for option to create shared libraries with $CC])
   ac_try='$CC $CFLAGS $ax_cc_pic -c conftest.c -o conftest.o 1>&AC_FD_CC'
@@ -110,7 +111,7 @@ void test(int *a)
     AC_MSG_RESULT([$ax_cc_build_shared])
   fi
   rm -f conftest.o libtest.so.0.0.0
-
+  AM_CONDITIONAL([CC_AUTOBUILD_DYNAMIC_LIBS], [test "x$ax_cc_build_shared" != "xno"])
   AC_LANG_POP(C)
 ])
 
@@ -153,12 +154,12 @@ AC_DEFUN([AX_CC_RPATH],
   {
     LDFLAGS_SVG=$LDFLAGS
     LDFLAGS="$LDFLAGS_SVG $[1]$[PWD]"
-    AC_LINK_IFELSE(AC_LANG_SOURCE([
+    AC_LINK_IFELSE([AC_LANG_SOURCE([
 int main(int argc, char **argv)
 {
   return 0;
 }
-]), [ax_cc_rpath="$[1]"], [ax_cc_rpath="no"])
+])], [ax_cc_rpath="$[1]"], [ax_cc_rpath="no"])
     LDFLAGS=$LDFLAGS_SVG
   }
 
@@ -208,11 +209,11 @@ AC_DEFUN([AX_DYNAMIC_LIBRARIES],
         LIBS="$ax_dyndeps_libs $LIBS"
         FCFLAGS_SVG="$FCFLAGS"
         FCFLAGS="$ax_fc_pic $FCFLAGS"
-        AC_LINK_IFELSE([[
+        AC_LINK_IFELSE([AC_LANG_SOURCE([
 subroutine testlib()
-  call $2
+call $2
 end subroutine testlib
-        ]], ax_dynamic_deps=yes, ax_dynamic_deps=no)
+        ])], ax_dynamic_deps=yes, ax_dynamic_deps=no)
         AC_LANG_POP([Fortran])
         FCFLAGS=$FCFLAGS_SVG
         LIBS=$LIBS_SVG

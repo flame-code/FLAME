@@ -174,6 +174,9 @@ atoms.cellvec[2][2]=dproj[5]
 if "ascii" in args.fn_output:
     ascii_write(atoms,args.fn_output)
 elif "acf" in args.fn_output:
-    acf_write_b(atoms,args.fn_output)
+    atoms_all=[]
+    atoms_all.append(Atoms())
+    atoms_all[-1]=copy.copy(atoms)
+    acf_write(atoms_all,args.fn_output)
 else:
     print 'ERROR : please define the type of output file (ascii or acf)'

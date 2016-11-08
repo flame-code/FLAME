@@ -3,6 +3,7 @@ subroutine init_lenosky_tb(atoms_t)
     use mod_potential, only: cell, natsi
     use mod_atoms, only: typ_atoms
     use mod_const, only: bohr2ang
+    use mod_tightbinding, only: lenosky
     implicit none
     type(typ_atoms), intent(in):: atoms_t
     !real(8):: cv_t(3,3)
@@ -10,6 +11,7 @@ subroutine init_lenosky_tb(atoms_t)
     !character(5):: sat(nat)
     !local variables
     integer:: iat
+    lenosky=.true.
     if(atoms_t%nat==0) stop 'ERROR: nat=0 in init_lenosky_tb' 
     natsi=0
     do iat=1,atoms_t%nat

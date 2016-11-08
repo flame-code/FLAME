@@ -50,14 +50,12 @@ module numerics
   !!also see: http://archive.ambermd.org/201009/0039.html
   !!convert forces from kcal_th/mol/angstrom to hartree/bohr
   real(db), parameter, public :: kcalMolAng_HaBohr =0.0008432975639921999_db 
-
-
   
   interface safe_exp
      module procedure safe_dexp
   end interface safe_exp
 
-  public :: safe_exp
+  public :: safe_exp,safe_erf
 
   contains
 
@@ -76,9 +74,9 @@ module numerics
       integer, intent(in), optional :: extra_crop_order
       double precision :: ex
       !local variables
-      !> if the exponent is bigger than this value, the result is tiny(1.0)
+      !> if the exponent is lowerr than this value, the result is tiny(1.0)
       double precision, parameter :: mn_expo=-708.396418532264d0 ! = log(tiny(1.d0))
-      !> if the exponent is lower than this value, the result is huge(1.0)
+      !> if the exponent is higher than this value, the result is huge(1.0)
       double precision, parameter :: mx_expo=709.78271289338397d0 ! = log(huge(1.d0))
       !> the value of the cropping
       double precision, parameter :: crop_expo=72.0873067782343d0 ! = -2*log(epsilon(1.d0))
@@ -132,5 +130,127 @@ module numerics
          gau=0.d0
       end if
     end function safe_gaussian
+
+    !> Error function in double precision
+    pure function safe_erf(yy) result(derf_yy)
+      implicit none
+      real(db),intent(in) :: yy
+      real(db) :: derf_yy
+      integer          ::  done,ii,isw
+      real(db), parameter :: &
+                                ! coefficients for 0.0 <= yy < .477
+           &  pp(5)=(/ 113.8641541510502e0_db, 377.4852376853020e0_db,  &
+           &           3209.377589138469e0_db, .1857777061846032e0_db,  &
+           &           3.161123743870566e0_db /)
+      real(db), parameter :: &
+           &  qq(4)=(/ 244.0246379344442e0_db, 1282.616526077372e0_db,  &
+           &           2844.236833439171e0_db, 23.60129095234412e0_db/)
+      ! coefficients for .477 <= yy <= 4.0
+      real(db), parameter :: &
+           &  p1(9)=(/ 8.883149794388376e0_db, 66.11919063714163e0_db,  &
+           &           298.6351381974001e0_db, 881.9522212417691e0_db,  &
+           &           1712.047612634071e0_db, 2051.078377826071e0_db,  &
+           &           1230.339354797997e0_db, 2.153115354744038e-8_db, &
+           &           .5641884969886701e0_db /)
+      real(db), parameter :: &
+           &  q1(8)=(/ 117.6939508913125e0_db, 537.1811018620099e0_db,  &
+           &           1621.389574566690e0_db, 3290.799235733460e0_db,  &
+           &           4362.619090143247e0_db, 3439.367674143722e0_db,  &
+           &           1230.339354803749e0_db, 15.74492611070983e0_db/)
+      ! coefficients for 4.0 < y,
+      real(db), parameter :: &
+           &  p2(6)=(/ -3.603448999498044e-01_db, -1.257817261112292e-01_db,   &
+           &           -1.608378514874228e-02_db, -6.587491615298378e-04_db,   &
+           &           -1.631538713730210e-02_db, -3.053266349612323e-01_db/)
+      real(db), parameter :: &
+           &  q2(5)=(/ 1.872952849923460e0_db   , 5.279051029514284e-01_db,    &
+           &           6.051834131244132e-02_db , 2.335204976268692e-03_db,    &
+           &           2.568520192289822e0_db /)
+      real(db), parameter :: &
+           &  sqrpi=.5641895835477563e0_db, xbig=13.3e0_db, xlarge=6.375e0_db, xmin=1.0e-10_db
+      real(db) ::  res,xden,xi,xnum,xsq,xx
+
+      xx = yy
+      isw = 1
+      !Here change the sign of xx, and keep track of it thanks to isw
+      if (xx<0.0e0_db) then
+         isw = -1
+         xx = -xx
+      end if
+
+      done=0
+
+      !Residual value, if yy < -6.375e0_db
+      res=-1.0e0_db
+
+      !abs(yy) < .477, evaluate approximation for erfc
+      if (xx<0.477e0_db) then
+         ! xmin is a very small number
+         if (xx<xmin) then
+            res = xx*pp(3)/qq(3)
+         else
+            xsq = xx*xx
+            xnum = pp(4)*xsq+pp(5)
+            xden = xsq+qq(4)
+            do ii = 1,3
+               xnum = xnum*xsq+pp(ii)
+               xden = xden*xsq+qq(ii)
+            end do
+            res = xx*xnum/xden
+         end if
+         if (isw==-1) res = -res
+         done=1
+      end if
+
+      !.477 < abs(yy) < 4.0 , evaluate approximation for erfc
+      if (xx<=4.0e0_db .and. done==0 ) then
+         xsq = xx*xx
+         xnum = p1(8)*xx+p1(9)
+         xden = xx+q1(8)
+         do ii=1,7
+            xnum = xnum*xx+p1(ii)
+            xden = xden*xx+q1(ii)
+         end do
+         res = xnum/xden
+         res = res* exp(-xsq)
+         if (isw.eq.-1) then
+            res = res-1.0e0_db
+         else
+            res=1.0e0_db-res
+         end if
+         done=1
+      end if
+
+      !y > 13.3e0_db
+      if (isw > 0 .and. xx > xbig .and. done==0 ) then
+         res = 1.0e0_db
+         done=1
+      end if
+
+      !4.0 < yy < 13.3e0_db  .or. -6.375e0_db < yy < -4.0
+      !evaluate minimax approximation for erfc
+      if ( ( isw > 0 .or. xx < xlarge ) .and. done==0 ) then
+         xsq = xx*xx
+         xi = 1.0e0_db/xsq
+         xnum= p2(5)*xi+p2(6)
+         xden = xi+q2(5)
+         do ii = 1,4
+            xnum = xnum*xi+p2(ii)
+            xden = xden*xi+q2(ii)
+         end do
+         res = (sqrpi+xi*xnum/xden)/xx
+         res = res* exp(-xsq)
+         if (isw.eq.-1) then
+            res = res-1.0e0_db
+         else
+            res=1.0e0_db-res
+         end if
+      end if
+
+      !All cases have been investigated
+      derf_yy = res
+
+    end function safe_erf
+
 
 end module numerics

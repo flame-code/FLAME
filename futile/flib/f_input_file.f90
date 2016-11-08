@@ -1,7 +1,7 @@
 !> @file
 !! Define operations to handle and define input files
 !! @author
-!!    Copyright (C) 2014-2015 BigDFT group
+!!    Copyright (C) 2014-2016 BigDFT group
 !!    This file is distributed under the terms of the
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
@@ -26,13 +26,14 @@ module f_input_file
   character(len = *), parameter :: PROF_KEY = "PROFILE_FROM"
   character(len = *), parameter :: USER_KEY = "USER_DEFINED"
 
-  character(len = *), parameter :: COMMENT = "COMMENT"
-  character(len = *), parameter :: DESCRIPTION = "DESCRIPTION"
-  character(len = *), parameter :: RANGE = "RANGE"
-  character(len = *), parameter :: EXCLUSIVE = "EXCLUSIVE"
-  character(len = *), parameter :: DEFAULT = "default"
-  character(len = *), parameter :: COND = "CONDITION"
-  character(len = *), parameter :: WHEN = "WHEN"
+  !> Reserved keywords
+  character(len = *), parameter :: COMMENT = "COMMENT"         !< Short description of the key (documentation)
+  character(len = *), parameter :: DESCRIPTION = "DESCRIPTION" !< Description of the key (doc)
+  character(len = *), parameter :: RANGE = "RANGE"         !< Specify the range of permitted values
+  character(len = *), parameter :: EXCLUSIVE = "EXCLUSIVE" !< Exclude some values
+  character(len = *), parameter :: DEFAULT = "default"     !< Default value
+  character(len = *), parameter :: COND = "CONDITION" !< Indicate a condition for the use (WHEN, ...)
+  character(len = *), parameter :: WHEN = "WHEN"             !< Used in a condition
   character(len = *), parameter :: WHEN_NOT = "WHEN_NOT"
   character(len = *), parameter :: MASTER_KEY = "MASTER_KEY"
   character(len = *), parameter :: IMPORT_KEY = "import"

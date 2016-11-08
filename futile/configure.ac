@@ -110,6 +110,7 @@ dnl This will be added in libs, on top, therefore care should be taken for a lin
 AC_LANG_PUSH(C)
 AC_CHECK_HEADERS([time.h])
 AC_CHECK_LIB([rt], [clock_gettime])
+AC_CHECK_LIB([dl], [dlopen])
 AC_CHECK_FUNCS([clock_gettime])
 AC_CHECK_FUNCS([strndup])
 AC_LANG_POP(C)
@@ -140,6 +141,9 @@ dnl Test accelerators
 AX_ACC_CUDA()
 AX_ACC_OCL()
 AX_ACC_MIC()
+
+dnl do we use simgrid shared allocators or fake version?
+AX_SIMGRID_SHARED()
 
 dnl Linalg libraries.
 AX_LINALG()
@@ -175,6 +179,7 @@ wrappers/Makefile
 c-bindings/Makefile
 c-bindings/futile_cst.h
 src/configure.inc
+src/f_memcheck
 src/Makefile
 tests/Makefile
 tests/fft/Makefile
