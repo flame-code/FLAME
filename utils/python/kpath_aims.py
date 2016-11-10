@@ -1,29 +1,43 @@
 #!/usr/bin/env python
 import sys
-file = sys.argv[1]
 import pymatgen as mg
-#from pymatgen.io.smartio import read_structure, write_structure, read_mol, write_mol
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+from pymatgen.symmetry.bandstructure import HighSymmKpath
+from pprint import pprint
+#************************************************************
+if len(sys.argv) < 5:
+    print "usage: kpath_aims.py POSCAR tolerance in_number npoints"
+    print "  for phonon band:     in_number = 0"
+    print "  for electronic band: in_number = 1"
+    print "suggested values for npoints : "
+    print "  phonon band :       npoints = 100"
+    print "  electronic band :   npoints = 20"
+    exit()
+else:
+    file = sys.argv[1]
+    tol = float(sys.argv[2])
+    bb = int(sys.argv[3])
+    np = int(sys.argv[4])
+
+keyword = ['phonon band','output band']
 #structure = read_structure(file)
 structure = mg.Structure.from_file("POSCAR")   #str(open("rlx_str040.cif").read(),fmt="cif")  #str(open("POSCAR").read(),fmt="poscar")
 #from pymatgen.symmetry.finder import SymmetryFinder
 #symmetries = SymmetryFinder(structure, 0.001, 5)
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-finder = SpacegroupAnalyzer(structure,symprec=0.01,angle_tolerance=5)
+finder = SpacegroupAnalyzer(structure,symprec = tol,angle_tolerance=5)
 spg_s = finder.get_spacegroup_symbol()
 spg_n = finder.get_spacegroup_number()
 pg = finder.get_point_group()
-pm =finder.find_primitive()
-#spg=symmetries.get_spacegroup_number()
+pm = finder.find_primitive()
+
 #print "Spacegroup : ", spg_s
-print "Int number : ", spg_n
+print "space_group : ", spg_n
 #print "pointgroup : ", pg
-from pymatgen.symmetry.bandstructure import HighSymmKpath
-pather = HighSymmKpath(structure,symprec=0.01, angle_tolerance=5)
-kpoints_path=pather.kpath
-from pprint import pprint
-kk=kpoints_path["kpoints"]
-pp=kpoints_path["path"]
-count=1
+pather = HighSymmKpath(structure,symprec = tol,angle_tolerance=5)
+kpoints_path = pather.kpath
+kk = kpoints_path["kpoints"]
+pp = kpoints_path["path"]
+count = 1
 
 #pp[1]=['K','X']
 #print pp
@@ -35,12 +49,7 @@ count=1
 f = open('KPOINTS_PATH', 'w')
 #g = open('KPATH_NAME', 'w')
 #h = open('KPATH_COORD', 'w')
-p = open('primitive','w')
-print >> p,  pm
-#print >> f,  "k-points along high symmetry lines"
-#print >> f, "20  ! 20 intersections" 
-#print >> f,  "Line-mode"
-#print >> f, "rec"
+#p = open('primitive','w')
 iold="LLL"
 
 #print len(pp)  
@@ -53,20 +62,13 @@ for i_path in range(0, len(pp)):
     if i_path>0:
 	    i = pp_l[0]
 	    if j != i: 
-                print >> f, "output band", "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", "20",j , i
-                #print >> f, "  ".join(map(str, kk[i])) , "                !", i
-                #print >> f, " "
+                print >> f, str(keyword[bb]), "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", str(np),j , i
     for i in pp_l[:size-1]:
       if iold != i :
-#         print >> g, i
-#         print >> h, " ".join(map(str, kk[i]))
           iold=i
       for j in pp_l[count2+1:count2+2]:
-          print >> f, "output band","  ".join(map(str,kk[i])), "  ","  ".join(map(str, kk[j])) , "  ", "20",i,j
-         #print >> f, "  ".join(map(str, kk[j])) , "                !", j
+          print >> f, str(keyword[bb]),"  ".join(map(str,kk[i])), "  ","  ".join(map(str, kk[j])) , "  ", str(np),i,j
       count2=count2+1
-#    print >> g, j
-#    print >> h, " ".join(map(str, kk[j]))
     iold=j
 f.close()
 
