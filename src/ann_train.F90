@@ -77,6 +77,7 @@ subroutine ann_train(parini)
     !enddo
     !-------------------------------------------------------------------------------------
     !IMPORTANT: The following must be done after set_gbounds is called for training set.
+    if(trim(parini%symfunc)/='do_not_save') then
     if(parini%bondbased_ann) then
         call apply_gbounds_bond(parini,ann_arr,atoms_valid,symfunc_valid)
         call apply_gbounds_bond(parini,ann_arr,atoms_train,symfunc_train)
@@ -84,12 +85,17 @@ subroutine ann_train(parini)
         call apply_gbounds_atom(parini,ann_arr,atoms_valid,symfunc_valid)
         call apply_gbounds_atom(parini,ann_arr,atoms_train,symfunc_train)
     endif
+    endif
     !-------------------------------------------------------------------------------------
     call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !-------------------------------------------------------
     ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
     call set_annweights(parini,ekf)
-    ann_arr%compute_symfunc=.false.
+    if(trim(parini%symfunc)/='do_not_save') then
+        ann_arr%compute_symfunc=.false.
+    else
+        ann_arr%compute_symfunc=.true.
+    endif
     if(trim(parini%optimizer_ann)=='behler') then
         call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     else if(trim(parini%optimizer_ann)=='rivals') then
@@ -117,6 +123,7 @@ subroutine ann_train(parini)
 
     call ann_deallocate(ann_arr)
 
+    if(trim(parini%symfunc)/='do_not_save') then
     do iconf=1,atoms_train%nconf
         call f_free(symfunc_train%symfunc(iconf)%linked_lists%prime_bound)
         call f_free(symfunc_train%symfunc(iconf)%linked_lists%bound_rad)
@@ -127,6 +134,7 @@ subroutine ann_train(parini)
         call f_free(symfunc_valid%symfunc(iconf)%linked_lists%bound_rad)
         call f_free(symfunc_valid%symfunc(iconf)%linked_lists%bound_ang)
     enddo
+    endif
 
     !do iconf=1,atoms_train%nconf
     !    call atom_deallocate(atoms_train%atoms(iconf))
@@ -505,9 +513,9 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         symfunc_arr%symfunc(iconf)%nat=atoms_arr%atoms(iconf)%nat
     enddo
     configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
-        if(trim(parini%symfunc)=='write' .or. trim(parini%symfunc)=='only_calculate') then
+        if(trim(parini%symfunc)/='read') then
             call symmetry_functions(parini,ann_arr,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf),.false.)
-            deallocate(symfunc_arr%symfunc(iconf)%y0dr)
+            call f_free(symfunc_arr%symfunc(iconf)%y0dr)
             !if(parini%bondbased_ann .and. symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) then
             !    stop 'ERROR: correct next line'
             !endif
@@ -519,13 +527,15 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
             endif
             endif
-        elseif(trim(parini%symfunc)/='read') then
-            stop 'ERROR: arini%symfunc contains none of the three acceptable possibilies'
+        !elseif(trim(parini%symfunc)/='read') then
+        !    stop 'ERROR: arini%symfunc contains none of the three acceptable possibilies'
         endif
         if(trim(parini%symfunc)=='write') then
             call write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
         elseif(trim(parini%symfunc)=='read') then
             call read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
+        elseif(trim(parini%symfunc)=='do_not_save') then
+            call f_free(symfunc_arr%symfunc(iconf)%y0d)
         endif
 #if defined(MPI)
         if(nproc>1) then
@@ -656,7 +666,7 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
                 enddo
             enddo
         else
-            deallocate(symfunc_arr%symfunc(iconf)%y0d)
+            call f_free(symfunc_arr%symfunc(iconf)%y0d)
         endif
     endif bondbased
     end associate
@@ -725,9 +735,9 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
     call call_linkedlist(parini,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
     deallocate(pia_arr_tmp%pia)
-    allocate(symfunc_arr%symfunc(iconf)%y(ng,nat))
+    symfunc_arr%symfunc(iconf)%y=f_malloc0((/1.to.ng,1.to.nat/),id='symfunc%y')
     if(nat<=parini%nat_force) then
-        allocate(symfunc_arr%symfunc(iconf)%y0d(ng,3,nb))
+        symfunc_arr%symfunc(iconf)%y0d=f_malloc0((/1.to.ng,1.to.3,1.to.nb/),id='symfunc%y0d')
         nwa=3+nat*(3+ng)+ng*3*nb
     else
         nwa=3+nat*(3+ng)
@@ -932,6 +942,14 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             endif
             ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
         enddo
+        enddo
+    endif
+    if(trim(parini%symfunc)=='do_not_save') then
+        do iconf=1,atoms_arr%nconf
+            call f_free(symfunc_arr%symfunc(iconf)%y)
+            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
+            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
+            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
         enddo
     endif
     call f_free(gminarr)
