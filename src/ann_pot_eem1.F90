@@ -532,8 +532,8 @@ subroutine charge_analysis(parini,atoms,ann_arr)
     !enddo
     !write(91,'(a,3es14.5)') 'dipole moment ',dipole(1),dipole(2),dipole(3)
     !----------------------------------------------------
-    chi_min_per_conf(1:10)=0.d0
-    chi_max_per_conf(1:10)=0.d0
+    chi_min_per_conf(1:10)= 1.d20
+    chi_max_per_conf(1:10)=-1.d20
     do iat=1,atoms%nat
         q=atoms%qat(iat)
         c=ann_arr%chi_o(iat)
@@ -549,8 +549,8 @@ subroutine charge_analysis(parini,atoms,ann_arr)
         chi_max_per_conf(i)=max(c,chi_max_per_conf(i))
         ann_arr%chi_sum(i)=ann_arr%chi_sum(i)+c
     enddo
-    do i=1,atoms%ntypat
-        ann_arr%chi_delta(i)=chi_max_per_conf(i)-chi_min_per_conf(i)
+    do i=1,ann_arr%n
+        ann_arr%chi_delta(i)=max(ann_arr%chi_delta(i),chi_max_per_conf(i)-chi_min_per_conf(i))
     enddo
     !if(parini%iverbose>=1) then
     !write(61,'(a,2(a,4f8.3),es11.2,i5)') trim(str),' Na=',tt1/ii1,tt1min,tt1max,tt1max-tt1min,' Cl=',tt2/ii2,tt2min,tt2max,tt2max-tt2min,tt1+tt2,atoms%nat
