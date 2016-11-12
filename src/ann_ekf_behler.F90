@@ -19,8 +19,6 @@ subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     type(typ_atoms):: atoms
     integer:: i, j, iter, iconf, ios, ia
     real(8):: DDOT, tt, den, alambda, alambdainv, alambda0
-    character(16):: fn
-    character(50):: filename
     real(8):: time_s, time_e, time1, time2, time3 !, time4
     real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
     real(8):: tt1, tt2, tt3, tt4, tt5, tt6
@@ -40,12 +38,7 @@ subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
         enddo
         if(iproc==0) then
-            write(fn,'(a11,i5.5)') '.ann.param.',iter
-            do i=1,ann_arr%n
-                filename=trim(parini%stypat(i))//trim(fn)
-                write(*,'(a)') trim(filename)
-                call write_ann(parini,filename,ann_arr%ann(i))
-            enddo
+            call write_ann_all(parini,ann_arr,iter)
         endif
         if(mod(iter,1)==0) then
             call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,11)
