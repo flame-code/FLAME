@@ -379,10 +379,23 @@ subroutine read_ann(parini,ann_arr)
     integer:: i, j, k, l, ios, i0, ifile, ialpha, iann
     !character(100):: ttstr
     real(8):: bound_l, bound_u, rcut
+    character(16):: fn
+    character(1):: fn_tt
     character(50):: filename
     do iann=1,ann_arr%n
-        write(filename,'(a10)') '.ann.param'
-        filename=trim(parini%stypat(iann))//trim(filename)
+        write(fn,'(a10)') '.ann.param'
+        if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
+            if(parini%ntypat>1) then
+                stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
+            endif
+            write(fn_tt,'(i1)') iann
+            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
+            write(*,'(a)') trim(filename)
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='eem2') then
+            filename=trim(parini%stypat(iann))//trim(fn)
+        else
+            stop 'ERROR: reading ANN parameters is only for eem1,eem2,tb'
+        endif
         open(unit=1,file=trim(filename),status='old',iostat=ios)
         if(ios/=0) then
             write(*,'(2a)') 'ERROR: failure openning ',trim(filename)

@@ -29,11 +29,10 @@ subroutine init_potential_ann(parini,atoms)
             endif
         enddo
     enddo
+    ann_arr%approach=trim(parini%approach_ann)
     call read_ann(parini,ann_arr)
     ann_boundcheck=trim(parini%potential_ann_boundcheck)
     ann_arr%event='potential'
-    !ann_arr%approach='eem1'
-    ann_arr%approach=trim(parini%approach_ann)
 end subroutine init_potential_ann
 !*****************************************************************************************
 subroutine cal_potential_ann(parini,atoms)
