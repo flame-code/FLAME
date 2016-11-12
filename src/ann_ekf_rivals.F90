@@ -326,6 +326,7 @@ subroutine analyze_epoch_init(parini,atoms_train,ann_arr)
     ann_arr%chi_min(1:10)=huge(1.d0)
     ann_arr%chi_max(1:10)=-huge(1.d0)
     ann_arr%chi_sum(1:10)=0.d0
+    ann_arr%chi_delta(1:10)=0.d0
 end subroutine analyze_epoch_init
 !*****************************************************************************************
 subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
@@ -377,7 +378,7 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
         ssavg=ann_arr%chi_sum(i)/real(ann_arr%natsum(i),8)
         ssmin=ann_arr%chi_min(i)
         ssmax=ann_arr%chi_max(i)
-        write(71,'(i6,4f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
+        write(71,'(i6,5f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin,ann_arr%chi_delta(i)
         !write(71,'(i6,4es14.5)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
         close(61)
         close(71)
