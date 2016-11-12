@@ -145,7 +145,7 @@ def poscar_read(filename):
             #nconf+=1
             comment1=line
         elif iline==2:
-            comment2=line
+            scale_factor=float(line.split()[0])
         elif iline==3:
             atoms.cellvec[0][0]=float(line.split()[0])
             atoms.cellvec[0][1]=float(line.split()[1])
@@ -158,6 +158,16 @@ def poscar_read(filename):
             atoms.cellvec[2][0]=float(line.split()[0])
             atoms.cellvec[2][1]=float(line.split()[1])
             atoms.cellvec[2][2]=float(line.split()[2])
+            #scaling cell vectors with scale_factor
+            atoms.cellvec[0][0]*=scale_factor
+            atoms.cellvec[0][1]*=scale_factor
+            atoms.cellvec[0][2]*=scale_factor
+            atoms.cellvec[1][0]*=scale_factor
+            atoms.cellvec[1][1]*=scale_factor
+            atoms.cellvec[1][2]*=scale_factor
+            atoms.cellvec[2][0]*=scale_factor
+            atoms.cellvec[2][1]*=scale_factor
+            atoms.cellvec[2][2]*=scale_factor
         elif iline==6:
             ntypes=0
             atom_types=[]
@@ -182,21 +192,24 @@ def poscar_read(filename):
                 atoms.coordinates="Direct"
             else:
                 atoms.coordinates="Cartesian"
-        elif iline>8:
+        elif iline>8 and iline<=atoms.nat+8:
             atoms.rat.append([])
             xred=float(line.split()[0])
             yred=float(line.split()[1])
             zred=float(line.split()[2])
             if(atoms.coordinates=="Direct"):
-                atoms.rat[-1].append(xred*atoms.cellvec[0][0]+yred*atoms.cellvec[1][0]+zred*atoms.cellvec[2][0])
-                atoms.rat[-1].append(xred*atoms.cellvec[0][1]+yred*atoms.cellvec[1][1]+zred*atoms.cellvec[2][1])
-                atoms.rat[-1].append(xred*atoms.cellvec[0][2]+yred*atoms.cellvec[1][2]+zred*atoms.cellvec[2][2])
+                x=xred*atoms.cellvec[0][0]+yred*atoms.cellvec[1][0]+zred*atoms.cellvec[2][0]
+                y=xred*atoms.cellvec[0][1]+yred*atoms.cellvec[1][1]+zred*atoms.cellvec[2][1]
+                z=xred*atoms.cellvec[0][2]+yred*atoms.cellvec[1][2]+zred*atoms.cellvec[2][2]
             elif(atoms.coordinates=="Cartesian"):
-                atoms.rat[-1].append(xred)
-                atoms.rat[-1].append(yred)
-                atoms.rat[-1].append(zred)
+                x=xred*scale_factor
+                y=yred*scale_factor
+                z=zred*scale_factor
             else:
                 print "ERROR: unknown coordinates"
+            atoms.rat[-1].append(x)
+            atoms.rat[-1].append(y)
+            atoms.rat[-1].append(z)
             if not line.strip(): break
     f.closed
     return atoms

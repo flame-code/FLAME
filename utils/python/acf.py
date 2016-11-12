@@ -92,6 +92,7 @@ def acf_write(atoms_all,filename,labelpatt='none'):
                 x=atoms.rat[i][0]
                 y=atoms.rat[i][1]
                 z=atoms.rat[i][2]
+                atoms.bemoved.append("TTT")
                 print "%5s  %23.14E%23.14E%23.14E%5s" % (atoms.sat[i],x,y,z,atoms.bemoved[i])
     else:
         f= open(filename,"w")
