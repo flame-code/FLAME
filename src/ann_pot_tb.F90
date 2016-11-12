@@ -62,7 +62,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
                     write (*,*) "TTXYZ", sqrt(ttxyz), ann_arr%ann(i)%d(j)
                 enddo
             else
-                stop 'ERROR: undefined content for ann_arr%event'
+                stop 'ERROR: in cal_ann_tb undefined content for ann_arr%event'
             endif
         enddo over_ib
     enddo over_i

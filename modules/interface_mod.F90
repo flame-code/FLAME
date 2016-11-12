@@ -210,6 +210,14 @@ subroutine set_angular_atomtype(parini,sat1,sat2,ityp)
     character(*), intent(in):: sat1, sat2
     integer, intent(out):: ityp(2)
 end subroutine set_angular_atomtype
+subroutine write_ann_all(parini,ann_arr,iter)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    integer, intent(in):: iter
+end subroutine write_ann_all
 subroutine write_ann(parini,filename,ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann

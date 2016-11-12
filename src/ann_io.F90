@@ -247,6 +247,45 @@ subroutine set_angular_atomtype(parini,sat1,sat2,ityp)
     enddo firstloop
 end subroutine set_angular_atomtype
 !*****************************************************************************************
+subroutine write_ann_all(parini,ann_arr,iter)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    integer, intent(in):: iter
+    !local variables
+    character(16):: fn
+    character(1):: fn_tt
+    character(50):: filename
+    integer:: i
+    if(iter==-1) then
+        write(fn,'(a10)') '.ann.param'
+    else
+        write(fn,'(a11,i5.5)') '.ann.param.',iter
+    endif
+    if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
+        if(parini%ntypat>1) then
+            stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
+        endif
+        do i=1,ann_arr%n
+            write(fn_tt,'(i1)') i
+            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
+            write(*,'(a)') trim(filename)
+            call write_ann(parini,filename,ann_arr%ann(i))
+        enddo
+    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='eem2') then
+        do i=1,ann_arr%n
+            filename=trim(parini%stypat(i))//trim(fn)
+            write(*,'(a)') trim(filename)
+            call write_ann(parini,filename,ann_arr%ann(i))
+        enddo
+    else
+        stop 'ERROR: writing ANN parameters is only for eem1,eem2,tb'
+    endif
+end subroutine write_ann_all
+!*****************************************************************************************
 subroutine write_ann(parini,filename,ann)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -340,10 +379,23 @@ subroutine read_ann(parini,ann_arr)
     integer:: i, j, k, l, ios, i0, ifile, ialpha, iann
     !character(100):: ttstr
     real(8):: bound_l, bound_u, rcut
+    character(16):: fn
+    character(1):: fn_tt
     character(50):: filename
     do iann=1,ann_arr%n
-        write(filename,'(a10)') '.ann.param'
-        filename=trim(parini%stypat(iann))//trim(filename)
+        write(fn,'(a10)') '.ann.param'
+        if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
+            if(parini%ntypat>1) then
+                stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
+            endif
+            write(fn_tt,'(i1)') iann
+            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
+            write(*,'(a)') trim(filename)
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='eem2') then
+            filename=trim(parini%stypat(iann))//trim(fn)
+        else
+            stop 'ERROR: reading ANN parameters is only for eem1,eem2,tb'
+        endif
         open(unit=1,file=trim(filename),status='old',iostat=ios)
         if(ios/=0) then
             write(*,'(2a)') 'ERROR: failure openning ',trim(filename)
