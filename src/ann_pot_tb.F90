@@ -50,16 +50,15 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             if(trim(ann_arr%event)=='train') then
                 call cal_architecture_der(ann_arr%ann(i),hgen(i,ib))
                 call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ekf%gc(1,i))
-            elseif(trim(ann_arr%event)=='evalu') then
+            elseif(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))            
                 iat=symfunc%linked_lists%bound_rad(1,ib)
                 jat=symfunc%linked_lists%bound_rad(2,ib)
                 dhgen(i,ib)=0.d0
                 do j=1,ann_arr%ann(i)%nn(0)
-                    ttxyz=0.d0
                     ttxyz = symfunc%y0d(j,1,ib)**2+symfunc%y0d(j,2,ib)**2+symfunc%y0d(j,3,ib)**2
                     dhgen(i,ib)=dhgen(i,ib) + ann_arr%ann(i)%d(j)*sqrt(ttxyz)
-                    write (*,*) "TTXYZ", sqrt(ttxyz), ann_arr%ann(i)%d(j)
+                    !write (*,*) "TTXYZ", sqrt(ttxyz), ann_arr%ann(i)%d(j)
                 enddo
             else
                 stop 'ERROR: in cal_ann_tb undefined content for ann_arr%event'
