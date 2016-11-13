@@ -127,7 +127,7 @@ libminhocao.a: $(OBJ)
 	ar -scru libminhocao.a $(OBJ)
 
 clean:
-	rm -rf $(OBJ) $(LTB) MHMoF.o vasp_recompute_kpt.o *.mod *~
+	rm -rf $(OBJ) $(LTB) libminhocao.a MHMoF.o vasp_recompute_kpt.o *.mod *~
 	rm -rf MHMoF.x vasp_recompute_kpt.x expand_poslows.x
 	rm -rf  *.o *.mod liblammps_fortran.a liblammps_fortran.so  liblammps_serial_intel.a  libmpi_stubs.a 
 #	touch $(SPGLIB_EX)/spglib_f08.f90

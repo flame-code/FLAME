@@ -83,6 +83,7 @@ module mod_ann
         real(8):: chi_max(10)
         real(8):: chi_min(10)
         real(8):: chi_sum(10)
+        real(8):: chi_delta(10)
         real(8):: yall_bond(100,100,100)
         real(8):: y0d_bond(100,3,100,100)
         !real(8), allocatable:: y0dr(:,:,:)

@@ -20,8 +20,6 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     integer:: i, j, iter, iconf, ios, ia
     real(8):: DDOT, tt, den
     real(8):: r, rinv, r0, rf, alpha
-    character(16):: fn
-    character(50):: filename
     real(8):: time_s, time_e, time1, time2, time3 !, time4
     real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
     real(8):: tt1, tt2, tt3, tt4, tt5, tt6
@@ -54,12 +52,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
         enddo
         if(iproc==0) then
-            write(fn,'(a11,i5.5)') '.ann.param.',iter
-            do i=1,ann_arr%n
-                filename=trim(parini%stypat(i))//trim(fn)
-                write(*,'(a)') trim(filename)
-                call write_ann(parini,filename,ann_arr%ann(i))
-            enddo
+            call write_ann_all(parini,ann_arr,iter)
         endif
         if(mod(iter,1)==0) then
             call analyze_epoch_init(parini,atoms_train,ann_arr)
@@ -77,7 +70,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         dtime6=0.d0 !time of the rest of Kalman filter algorithm
         r=(r0-rf)*exp(-alpha*(iter))+rf
         rinv=1.d0/r
-        !write(31,'(i6,es14.5)') iter,r
+        write(31,'(i6,es14.5)') iter,r
         do iconf=1,atoms_train%nconf
             ann_arr%event='train'
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
@@ -333,6 +326,7 @@ subroutine analyze_epoch_init(parini,atoms_train,ann_arr)
     ann_arr%chi_min(1:10)=huge(1.d0)
     ann_arr%chi_max(1:10)=-huge(1.d0)
     ann_arr%chi_sum(1:10)=0.d0
+    ann_arr%chi_delta(1:10)=0.d0
 end subroutine analyze_epoch_init
 !*****************************************************************************************
 subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
@@ -384,7 +378,7 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
         ssavg=ann_arr%chi_sum(i)/real(ann_arr%natsum(i),8)
         ssmin=ann_arr%chi_min(i)
         ssmax=ann_arr%chi_max(i)
-        write(71,'(i6,4f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
+        write(71,'(i6,5f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin,ann_arr%chi_delta(i)
         !write(71,'(i6,4es14.5)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
         close(61)
         close(71)
