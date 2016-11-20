@@ -222,9 +222,10 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
                 do i0=1,ann_arr%ann(isat)%nn(0)
                     !normalization of y0d
                     tt=ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)*tt
-                    symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)*tt
-                    symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)*tt
+                    symfunc_arr%symfunc(iconf)%y0d_bond(i0,ib)=symfunc_arr%symfunc(iconf)%y0d_bond(i0,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)*tt
                     !normalization of y0dr
                     !symfunc%y0dr(i0,1:9,ib)=symfunc%y0dr(i0,1:9,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
                 enddo

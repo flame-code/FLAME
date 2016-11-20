@@ -104,7 +104,7 @@ module mod_ann
         integer:: nat=-1
         real(8):: epot
         real(8), allocatable:: y(:,:)
-        !real(8), allocatable:: y_bond(:,:,:)
+        real(8), allocatable:: y0d_bond(:,:)
         real(8), allocatable:: y0d(:,:,:)
         real(8), allocatable:: y0dr(:,:,:)
         type(typ_linked_lists):: linked_lists
