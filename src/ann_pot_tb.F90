@@ -19,7 +19,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     real(8), allocatable:: hgen(:,:), dhgen(:,:)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
-    real(8):: epotn, tt, epotdh, c, xij, yij, zij, r
+    real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc
     !integer, save:: icall=-1
     !if(trim(ann_arr%event)=='evalu') icall=icall+1
     call f_routine(id='cal_ann_tb')
@@ -83,6 +83,19 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
         !if(iat>jat) cycle
+        dx=atoms%rat(1,iat)-atoms%rat(1,jat)
+        dy=atoms%rat(2,iat)-atoms%rat(2,jat)
+        dz=atoms%rat(3,iat)-atoms%rat(3,jat)
+        rsq=dx**2+dy**2+dz**2
+        r=sqrt(rsq)
+        fc=(1.d0-rsq/partb%paircut**2)**3
+        dfc=-6.d0*r*(1.d0-rsq/partb%paircut**2)**2/partb%paircut**2
+        do i=1,4
+            hbar=hgen(i,ib)
+            hgen(i,ib)=hbar*fc
+            dhgen(i,ib)=dhgen(i,ib)*fc+hbar*dfc
+        enddo
+        
         partb%hgenall0(iat,jat)=hgen(1,ib)
         partb%hgenall1(iat,jat)=hgen(2,ib)
         partb%hgenall2(iat,jat)=hgen(3,ib)
