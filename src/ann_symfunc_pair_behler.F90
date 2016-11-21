@@ -182,7 +182,7 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
         ttjx=tt1i*pia%dr(1)
         ttjy=tt1i*pia%dr(2)
         ttjz=tt1i*pia%dr(3)
-        write(*,*) 'PIA', pia%r, pia%dr(3)
+        !write(*,*) 'PIA', pia%r, pia%dr(3)
         symfunc%y0d(i0,1,ib)=symfunc%y0d(i0,1,ib)+ttjx
         symfunc%y0d(i0,2,ib)=symfunc%y0d(i0,2,ib)+ttjy
         symfunc%y0d(i0,3,ib)=symfunc%y0d(i0,3,ib)+ttjz

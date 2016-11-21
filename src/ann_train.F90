@@ -524,6 +524,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             call read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
         elseif(trim(parini%symfunc)=='do_not_save') then
             call f_free(symfunc_arr%symfunc(iconf)%y0d)
+            call f_free(symfunc_arr%symfunc(iconf)%y0dr)
         endif
 #if defined(MPI)
         if(nproc>1) then
