@@ -48,6 +48,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    use mod_const, only: ha2ev
     use dynamic_memory
     implicit none
     type(typ_partb), intent(inout):: partb
@@ -82,6 +83,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
     enddo
     call yfdocclocal(partb)
+    !write(61,'(6es14.5,i5)') partb%eval(60),partb%eval(61),partb%eval(61)-partb%eval(60),partb%focc(60),partb%focc(61),partb%focc(partb%norbcut),partb%norbcut
     !write(*,'(a,8f10.3)') 'GGGGG ',partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5),partb%focc(6),partb%focc(7),partb%focc(8)
     !write(*,'(a,10es14.5)') 'eval ',partb%eband,partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5)
     !Need to include extra terms.  We have focc[iorb-1]...focc[NC(stride*nat)-1]
@@ -89,7 +91,11 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     !ggocc maximum is 2.0
     term1=0.d0
     term2=0.d0
-    beta=11604.d0/partb%temp_fermi
+    if(lenosky) then
+        beta=11604.d0/partb%temp_fermi
+    else
+        beta=11604.d0*ha2ev/partb%temp_fermi
+    endif
     do iorb=1,partb%norbcut
         term1=term1-partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
         term2=term2-partb%eval(iorb)*partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
@@ -130,7 +136,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
                     atoms%fat(ixyz,jat)=atoms%fat(ixyz,jat)+tt
                 enddo
             enddo
-            write(*,*) "FAt", atoms%fat(1,iat)  
+            !write(*,*) "FAt", atoms%fat(1,iat)  
         enddo
     else if(trim(partb%event)=='train')then
         do ixyz=1,4
@@ -472,7 +478,8 @@ end subroutine slatercoupling
 !Number of electrons nel must be even.  <-- Is this true?
 subroutine yfdocclocal(partb)
     use mod_interface
-    use mod_tightbinding, only: typ_partb
+    use mod_tightbinding, only: typ_partb, lenosky
+    use mod_const, only: ha2ev
     implicit none
     type(typ_partb), intent(inout):: partb
     !local variables
@@ -490,7 +497,11 @@ subroutine yfdocclocal(partb)
     if(nocc*2/=partb%norb) partb%focc(nocc+1)=1.d0
     efermi=partb%eval(nocc)
     if(nocc*2/=partb%norb) efermi=partb%eval(nocc+1)
-    beta=11604.d0/partb%temp_fermi !Conversion of temp into eV
+    if(lenosky) then
+        beta=11604.d0/partb%temp_fermi !Conversion of temp into eV
+    else
+        beta=11604.d0*ha2ev/partb%temp_fermi !Conversion of temp into Ha
+    endif
     it=0
     !Each iteration corresponds to steepest descent iteration. fermi-dirac function is minimized
     !which depend on efermi(chemical potential).

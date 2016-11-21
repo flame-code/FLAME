@@ -25,14 +25,14 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     call f_routine(id='cal_ann_tb')
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
-    partb%hgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
-    partb%hgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
-    partb%hgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
-    partb%hgenall3=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall3')
-    partb%dhgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall0')
-    partb%dhgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall1')
-    partb%dhgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall2')
-    partb%dhgenall3=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall3')
+    partb%hgenall0=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
+    partb%hgenall1=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
+    partb%hgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
+    partb%hgenall3=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall3')
+    partb%dhgenall0=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall0')
+    partb%dhgenall1=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall1')
+    partb%dhgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall2')
+    partb%dhgenall3=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall3')
     if(trim(ann_arr%event)=='train') then
         ekf%gc=f_malloc([1.to.ekf%num(1),1.to.4],id='ekf%gc') !HERE
     endif
@@ -44,6 +44,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
     dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
     over_i: do i=1,4
+        !ann_arr%ann(i)%b(:,1:3)=0.d0
         over_ib: do ib=1,nb
             ng=ann_arr%ann(i)%nn(0)
                 ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,ib)
@@ -51,7 +52,19 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
                 call cal_architecture_der(ann_arr%ann(i),hgen(i,ib))
                 call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ekf%gc(1,i))
             elseif(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
+                !if(ib==107) then
+                !    write(*,*) ann_arr%ann(i)%y(1:ng,0)
+                !    write(*,*) '--------------------------------------------'
+                !    write(*,*) ann_arr%ann(i)%a(:,:,1:3)
+                !    write(*,*) '--------------------------------------------'
+                !    write(*,*) ann_arr%ann(i)%b(:,1:3)
+                !    !stop
+                !endif
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))          
+                !if(ib==107) then
+                !    write(*,*) 'aaaaaaaaaa ',hgen(i,ib)
+                !    stop
+                !endif
                 iat=symfunc%linked_lists%bound_rad(1,ib)
                 jat=symfunc%linked_lists%bound_rad(2,ib)
                 dhgen(i,ib)=0.d0
@@ -86,13 +99,19 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall1(jat,iat)=partb%dhgenall1(iat,jat)
         partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
+        
+        !xij=atoms%rat(1,iat)-atoms%rat(1,jat)
+        !yij=atoms%rat(2,iat)-atoms%rat(2,jat)
+        !zij=atoms%rat(3,iat)-atoms%rat(3,jat)
+        !r=sqrt(xij**2+yij**2+zij**2)
+        !write(*,'(a,i6,4es14.5,f8.2)') 'HGEN',ib,hgen(1,ib),hgen(2,ib),hgen(3,ib),hgen(4,ib),r
     enddo
-        xij=atoms%rat(1,2)-atoms%rat(1,1)
-        yij=atoms%rat(2,2)-atoms%rat(2,1)
-        zij=atoms%rat(3,2)-atoms%rat(3,1)
-        r=sqrt(xij**2+yij**2+zij**2)
-        write(*,*) 'HGEN', r, hgen(1,1)
-        write(*,*) 'DH', dhgen(1,1) 
+        !xij=atoms%rat(1,2)-atoms%rat(1,1)
+        !yij=atoms%rat(2,2)-atoms%rat(2,1)
+        !zij=atoms%rat(3,2)-atoms%rat(3,1)
+        !r=sqrt(xij**2+yij**2+zij**2)
+        !write(*,*) 'HGEN', r, hgen(1,1)
+        !write(*,*) 'DH', dhgen(1,1) 
         partb%event=ann_arr%event
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
         !atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
