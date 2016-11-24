@@ -3,7 +3,7 @@ all: run
 
 run:
 	cp -f input.minhopp.bak input.minhopp
-	../../../alborz >o1
+	../../../flame >o1
 
 clean:
 	rm -f posout.acf earr.dat poslow.acf posbest.acf CPUlimit fort.?? fort.??? o1 master.dat \
