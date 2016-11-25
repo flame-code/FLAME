@@ -196,7 +196,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:eem1: force (SR term)            ',time6-time5
         write(*,'(a,f8.3)') 'Timing:eem1: energy (SR+LR), force (LR) ',time7-time6
         write(*,'(a,f8.3)') 'Timing:eem1: total time                 ',time7-time1
-    endif
+    endif !end of if for printing out timing.
     atoms%epot=epot_c
     tt1=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt1+ann_arr%ann(1)%ebounds(1)) !*atoms%nat

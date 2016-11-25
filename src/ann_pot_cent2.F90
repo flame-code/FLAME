@@ -182,8 +182,19 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:eem2: force calculation part2 ',time7-time6
         write(*,'(a,f8.3)') 'Timing:eem2: energy calculation      ',time8-time7
         write(*,'(a,f8.3)') 'Timing:eem2: total time              ',time8-time1
-    endif
+    endif !end of if for printing out timing.
     atoms%epot=epot_c+epot_s
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
+        call f_free(symfunc%linked_lists%prime_bound)
+        call f_free(symfunc%linked_lists%bound_rad)
+        call f_free(symfunc%linked_lists%bound_ang)
+        !call ann_deallocate(ann_arr)
+    endif
+    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+        call f_free(symfunc%y)
+        call f_free(symfunc%y0d)
+        call f_free(symfunc%y0dr)
+    endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         call f_free(ann_arr%chi_i)
         call f_free(ann_arr%chi_o)
@@ -262,7 +273,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
         stop
     endif
     atoms%qat(1:nat)=qq(1:nat)
-    !call charge_analysis(parini,ann_arr%event,atoms,ann_arr%chi_o)
+    call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>=1) then
         write(*,*) 'Lagrange ',qq(nat+1)
     endif
