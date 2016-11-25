@@ -6,7 +6,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_linked_lists, only: typ_pia_arr
-    use mod_const, only: bohr2ang
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -24,17 +23,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_pia_arr):: pia_arr_tmp
     real(8):: hinv(3,3), fx_es, fy_es, fz_es
     call f_routine(id='cal_ann_eem1')
-    !write(*,*) allocated(symfunc%linked_lists%prime_bound)
-    !stop
     associate(nat=>atoms%nat)
-    !    write(55,'(3es24.15)') atoms%cellvec(1,1)*bohr2ang,atoms%cellvec(1,2)*bohr2ang,atoms%cellvec(1,3)*bohr2ang
-    !    write(55,'(3es24.15)') atoms%cellvec(2,1)*bohr2ang,atoms%cellvec(2,2)*bohr2ang,atoms%cellvec(2,3)*bohr2ang
-    !    write(55,'(3es24.15)') atoms%cellvec(3,1)*bohr2ang,atoms%cellvec(3,2)*bohr2ang,atoms%cellvec(3,3)*bohr2ang
-    !    write(55,*)
-    !do iat=1,nat
-    !    write(55,'(3es24.15)') (atoms%rat(1,iat)-5.d0)*bohr2ang,(atoms%rat(2,iat)-5.d0)*bohr2ang,(atoms%rat(3,iat)-5.d0)*bohr2ang
-    !enddo
-    !    write(55,*)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fat_chi=f_malloc0([1.to.3,1.to.nat],id='fat_chi')
         ann_arr%chi_i=f_malloc0([1.to.nat],id='ann_arr%chi_i')

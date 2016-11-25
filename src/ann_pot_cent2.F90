@@ -4,37 +4,50 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_linked_lists, only: typ_pia_arr
+    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
+    type(typ_ewald_p3d):: ewald_p3d
     !local variables
     integer:: iat, i, j, ng, jat, ib
     real(8):: epoti, epot_c, epot_s
     real(8):: tanht , dtanht, rinv, r2inv, r3inv, sqrtpiinv
     real(8):: tt, gama, ttx, tty, ttz, dx, dy, dz, r, pi, beta_iat, beta_jat
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
-    real(8):: tt1, tt2, tt3, ampl_chi
+    real(8):: tt1, tt2, tt3
     real(8):: gamau, alpha_iat, alpha_jat, gamau_ijat, gamau_jiat
-    real(8), allocatable:: a(:,:)
     real(8), allocatable:: fati(:,:,:)
+
+    call f_routine(id='cal_ann_eem2')
     associate(nat=>atoms%nat)
-    allocate(ann_arr%chi_i(nat),source=0.d0)
-    allocate(ann_arr%chi_o(nat),source=0.d0)
-    allocate(ann_arr%chi_d(nat),source=0.d0)
-    allocate(a(nat+1,nat+1))
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        ann_arr%chi_i=f_malloc0([1.to.nat],id='ann_arr%chi_i')
+        ann_arr%chi_o=f_malloc0([1.to.nat],id='ann_arr%chi_o')
+        ann_arr%chi_d=f_malloc0([1.to.nat],id='ann_arr%chi_d')
+        ann_arr%a=f_malloc0([1.to.(nat+1)*(nat+1)],id='a: aq=-chi')
+    else
+        ann_arr%chi_i=0.d0
+        ann_arr%chi_o=0.d0
+        ann_arr%chi_d=0.d0
+        ann_arr%a=0.d0
+    endif
     !gama=100.d-2
     if(parini%iverbose>=2) call cpu_time(time1)
     atoms%ztot=0.d0
     do iat=1,nat
         atoms%zat(iat)=ann_arr%ann(atoms%itypat(iat))%zion
         atoms%ztot=atoms%ztot+atoms%zat(iat)
+        !write(*,*) atoms%zat(iat),atoms%ztot
     enddo
-    call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,a)
+    call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     epot_s=0.d0
-    if(trim(ann_arr%event)=='potential') allocate(fati(3,nat,nat))
+    if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') allocate(fati(3,nat,nat))
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -86,9 +99,9 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo over_iat
     if(parini%iverbose>=2) call cpu_time(time4)
     !ann_arr%ampl_chi=5.78d0
-    stop 'ERROR: correct next two lines consistent with new variables definitions.'
-    !ann_arr%ampl_chi=2.d-1
-    ampl_chi=0.d0
+    !stop 'ERROR: correct next two lines consistent with new variables definitions.'
+    !ann_arr%ann(i)%ampl_chi=2.d0
+    !ampl_chi=0.d0
     do iat=1,nat
         i=atoms%itypat(iat)
         tt=ann_arr%chi_i(iat)
@@ -96,18 +109,18 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         !ann_arr%chi_o(iat)=tt
         !-----------------------------------------------------------------------
         tanht=tanh(tt)
-        ann_arr%chi_o(iat)=ampl_chi*tanht+ann_arr%ann(i)%chi0
+        ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tanht+ann_arr%ann(i)%chi0
         dtanht=1-tanht**2
         if(trim(ann_arr%event)=='potential') then
-            fati(1,1:nat,iat)=fati(1,1:nat,iat)*ampl_chi*dtanht
-            fati(2,1:nat,iat)=fati(2,1:nat,iat)*ampl_chi*dtanht
-            fati(3,1:nat,iat)=fati(3,1:nat,iat)*ampl_chi*dtanht
+            fati(1,1:nat,iat)=fati(1,1:nat,iat)*ann_arr%ann(i)%ampl_chi*dtanht
+            fati(2,1:nat,iat)=fati(2,1:nat,iat)*ann_arr%ann(i)%ampl_chi*dtanht
+            fati(3,1:nat,iat)=fati(3,1:nat,iat)*ann_arr%ann(i)%ampl_chi*dtanht
         elseif(trim(ann_arr%event)=='train') then
-            ekf%gc(1:ekf%num(1),iat)=ekf%gc(1:ekf%num(1),iat)*ampl_chi*dtanht
+            ekf%gc(1:ekf%num(1),iat)=ekf%gc(1:ekf%num(1),iat)*ann_arr%ann(i)%ampl_chi*dtanht
         endif
     enddo
     if(parini%iverbose>=2) call cpu_time(time5)
-    call get_qat_from_chi2(parini,ann_arr,atoms,a)
+    call get_qat_from_chi2(parini,ann_arr,atoms,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time6)
     if(trim(ann_arr%event)=='potential') then
     pi=4.d0*atan(1.d0)
@@ -158,7 +171,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time7)
-    call cal_electrostatic_eem2(parini,'calculate',atoms,ann_arr,epot_c,a)
+    call cal_electrostatic_eem2(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) then
         call cpu_time(time8)
         write(*,'(a,f8.3)') 'Timing:eem2: initialize matrix       ',time2-time1
@@ -171,15 +184,20 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:eem2: total time              ',time8-time1
     endif
     atoms%epot=epot_c+epot_s
-    deallocate(a,ann_arr%chi_i,ann_arr%chi_o,ann_arr%chi_d)
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        call f_free(ann_arr%chi_i)
+        call f_free(ann_arr%chi_o)
+        call f_free(ann_arr%chi_d)
+        call f_free(ann_arr%a)
+    endif
     if(parini%iverbose>=1) then
     write(*,'(a,3es14.5,2f7.1)') 'parts: ',epot_c,epot_s,atoms%epot,1.d2*epot_c/atoms%epot,1.d2*epot_s/atoms%epot
     endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
     if(trim(ann_arr%event)=='potential') deallocate(fati)
-    call ann_deallocate(ann_arr)
     end associate
+    call f_release_routine()
 end subroutine cal_ann_eem2
 !*****************************************************************************************
 subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
