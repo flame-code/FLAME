@@ -37,7 +37,7 @@ ifdef TINKER
 	LIBS+= $(LIB_TINKER) $(LIB_FFTW3)
 endif
 
-MINHOCAO = minhocao/libminhocao.a minhocao/parsestring.o minhocao/lenosky_tb/*.o
+MINHOCAO = minhocao/libminhocao.a minhocao/lenosky_tb/*.o
 
 DIRS += modules
 DIRS += src
