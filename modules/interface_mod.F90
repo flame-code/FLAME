@@ -293,28 +293,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_eem1
-subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_atoms, only: typ_atoms
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_symfunc), intent(in):: symfunc
-    integer, intent(in):: iat
-    type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: out_ann
-    type(typ_ann_arr), intent(inout):: ann_arr
-end subroutine cal_force_chi_part1
-subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_atoms, only: typ_atoms
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_symfunc), intent(in):: symfunc
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_ann_arr), intent(inout):: ann_arr
-end subroutine cal_force_chi_part2
 subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -435,11 +413,34 @@ subroutine cal_electrostatic_eem2(parini,str_job,atoms,ann_arr,epot_es,a)
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: str_job
-    type(typ_atoms), intent(in):: atoms
+    type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(out):: epot_es
     real(8), intent(out):: a(atoms%nat+1,atoms%nat+1)
 end subroutine cal_electrostatic_eem2
+! ./src/ann_pot_cent_common.F90 :
+subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_symfunc), intent(in):: symfunc
+    integer, intent(in):: iat
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: out_ann
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine cal_force_chi_part1
+subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_symfunc), intent(in):: symfunc
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine cal_force_chi_part2
 ! ./src/ann_pot_main.F90 :
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     use mod_tightbinding, only: typ_partb
