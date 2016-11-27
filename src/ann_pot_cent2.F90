@@ -169,22 +169,14 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
         write(*,'(a,i)') 'ERROR: DGETRF info=',info
         stop
     endif
-    !do iat=1,nat
-    !if(trim(atoms%sat(iat))=='Na') then
-    !    chi(iat)=chi(iat)/0.93d0
-    !elseif(trim(atoms%sat(iat))=='Cl') then
-    !    chi(iat)=chi(iat)/3.16d0
-    !endif
-    !enddo
     sqrtpiinv=1.d0/sqrt(pi)
     qq(1:nat)=0.d0
     do iat=1,nat
         beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
         alpha_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
         gamau=1.d0/sqrt(beta_iat**2+alpha_iat**2)
-        qq(iat)=qq(iat)-ann_arr%chi_o(iat)-sqrtpiinv*gamau*atoms%zat(iat)
+        qq(iat)=qq(iat)-ann_arr%chi_o(iat)-sqrtpiinv*gamau*atoms%zat(iat)*2.d0
         qq(iat)=qq(iat)-ann_arr%ann(atoms%itypat(iat))%hardness*atoms%zat(iat)
-        !qq(iat)=qq(iat)-ann_arr%chi_o(iat)-sqrtpiinv*beta_iatinv*atoms%zat(iat)
         do jat=iat+1,atoms%nat
             dx=atoms%rat(1,jat)-atoms%rat(1,iat)
             dy=atoms%rat(2,jat)-atoms%rat(2,iat)
@@ -195,7 +187,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
             gamau_ijat=1.d0/sqrt(beta_iat**2+alpha_jat**2)
             gamau_jiat=1.d0/sqrt(beta_jat**2+alpha_iat**2)
             qq(iat)=qq(iat)-atoms%zat(jat)*erf(gamau_ijat*r)/r
-            qq(jat)=qq(jat)-atoms%zat(iat)*erf(gamau_jiat*r)/r
+            qq(iat)=qq(iat)-atoms%zat(iat)*erf(gamau_jiat*r)/r
         enddo
     enddo
     qq(nat+1)=atoms%qtot-atoms%ztot
@@ -271,16 +263,14 @@ subroutine cal_electrostatic_eem2(parini,str_job,atoms,ann_arr,epot_es,a)
         tt6=0.d0
         tt7=0.d0
         do iat=1,atoms%nat
-            !tt1=tt1+ann_arr%chi_o(iat)*atoms%qat(iat)
             tt1=tt1+ann_arr%chi_o(iat)*(atoms%qat(iat)+atoms%zat(iat))
             tt1=tt1+0.5d0*ann_arr%ann(atoms%itypat(iat))%hardness*(atoms%qat(iat)+atoms%zat(iat))**2
             beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
             alpha_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
             gama=1.d0/beta_iat*sqrt2inv
             gamau=1.d0/sqrt(beta_iat**2+alpha_iat**2)
-            !tt2=tt2+atoms%qat(iat)**2*(gama*sqrtpiinv+0.5d0*ann_arr%ann(atoms%itypat(iat))%hardness)
             tt2=tt2+atoms%qat(iat)**2*gama*sqrtpiinv
-            tt3=tt3+gamau*sqrtpiinv*atoms%qat(iat)*atoms%zat(iat)
+            tt3=tt3+gamau*sqrtpiinv*atoms%qat(iat)*atoms%zat(iat)*2.d0
             do jat=iat+1,atoms%nat
                 dx=atoms%rat(1,jat)-atoms%rat(1,iat)
                 dy=atoms%rat(2,jat)-atoms%rat(2,iat)
