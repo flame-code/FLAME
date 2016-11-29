@@ -110,7 +110,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         tt1=sqrt(tt1)
         tt2=sqrt(tt2)
         ann_arr%fchi_angle=tt3/(tt1*tt2)
-        ann_arr%fchi_norm=tt2/tt1
+        ann_arr%fchi_norm=tt2/max(tt1,1.d-3)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
         call f_free(symfunc%linked_lists%prime_bound)
@@ -187,7 +187,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
             gamau_ijat=1.d0/sqrt(beta_iat**2+alpha_jat**2)
             gamau_jiat=1.d0/sqrt(beta_jat**2+alpha_iat**2)
             qq(iat)=qq(iat)-atoms%zat(jat)*erf(gamau_ijat*r)/r
-            qq(iat)=qq(iat)-atoms%zat(iat)*erf(gamau_jiat*r)/r
+            qq(jat)=qq(jat)-atoms%zat(iat)*erf(gamau_jiat*r)/r
         enddo
     enddo
     qq(nat+1)=atoms%qtot-atoms%ztot

@@ -410,7 +410,7 @@ subroutine charge_analysis(parini,atoms,ann_arr)
     chi_min_per_conf(1:10)= 1.d20
     chi_max_per_conf(1:10)=-1.d20
     do iat=1,atoms%nat
-        q=atoms%qat(iat)
+        q=atoms%zat(iat)+atoms%qat(iat)
         c=ann_arr%chi_o(iat)
         i=atoms%itypat(iat)
         !write(81,*) i,atoms%stypat(i),parini%stypat(i)

@@ -352,6 +352,9 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     configuration: do iconf=1,atoms_arr%nconf
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
         call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
+        !if(ifile==11) then
+        !    write(71,'(2es24.15)') (atoms%rat(1,2)-atoms%rat(1,1))*0.529177210d0,atoms%epot*27.211385d0
+        !endif
         if(iter==parini%nstep_ekf) then
             write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
                 atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat,atoms%epot/atoms_arr%atoms(iconf)%nat, &
