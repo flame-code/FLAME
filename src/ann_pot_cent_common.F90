@@ -173,7 +173,7 @@ subroutine repulsive_potential_cent(parini,atoms)
                 rtinv4=rtinv2**2
                 rtinv12=rtinv4**3
                 epot_rep=epot_rep+a*rtinv12+(((b*rt2+c)*rt2+d)*rt2+g)*rt2+h
-                ttt=-13.d0*a*rcsqinv*rtinv12*rtinv2+((8.d0*b*rcsqinv*rt2+6.d0*rcsqinv*c)*rt2+4.d0*rcsqinv*d)*rt2+2.d0*g*rcsqinv
+                ttt=12.d0*a*rcsqinv*rtinv12*rtinv2-((8.d0*b*rcsqinv*rt2+6.d0*rcsqinv*c)*rt2+4.d0*rcsqinv*d)*rt2-2.d0*g*rcsqinv
                 !---------------------------------
                 fx=ttt*dx;fy=ttt*dy;fz=ttt*dz
                 !write(*,'(a,i6,9f10.5)') 'HERE ',icall,r,rc,a,b,c,c+r*(b+r*a),fx,fy,fz

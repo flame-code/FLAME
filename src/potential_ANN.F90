@@ -97,9 +97,9 @@ subroutine cal_potential_ann(parini,atoms)
 !        !write(*,*) iat,epoti
 !        atoms%epot=atoms%epot+epoti
 !    enddo
-    if(parini%add_repulsive) then
-        call add_repulsive_potential(parini,atoms)
-    endif
+    !if(parini%add_repulsive) then
+    !    call add_repulsive_potential(parini,atoms)
+    !endif
     if(allocated(atoms%ratim)) then
         call atom_deallocate_old(atoms,ratim=.true.)
     endif
