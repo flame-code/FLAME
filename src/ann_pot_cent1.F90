@@ -115,6 +115,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         call destruct_ewald_p3d(parini,atoms,ewald_p3d)
     endif
+    call repulsive_potential_cent(parini,atoms)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
         call f_free(symfunc%linked_lists%prime_bound)
         call f_free(symfunc%linked_lists%bound_rad)

@@ -115,3 +115,89 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     enddo
 end subroutine cal_force_chi_part2
 !*****************************************************************************************
+subroutine repulsive_potential_cent(parini,atoms)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_linked_lists
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    !local variables
+    integer:: iat, jat, maincell_iat, maincell
+    integer:: ip, jp, jpt, il, jl, iz, iy, ix, jx, jy, jz, iatp
+    real(8):: cell(3), epot_rep, fx, fy, fz, ttt, a , b, c, d, g, h
+    real(8):: rc, rcsq, dx, dy, dz, xiat, yiat, ziat, r, rsq
+    real(8):: rt2, rtinv2, rtinv4, rtinv12, rcsqinv
+    type(typ_linked_lists):: linked_lists
+    !integer, save:: icall=0
+    !icall=icall+1
+    associate(rcmax=>linked_lists%rcut)
+    !-------------------------------------------------------
+    !{{B -> -126 A, C -> 560 A, D -> -945 A, G -> 720 A, H -> -210 A}}
+    a=1/2.d2;
+    b=-126.d0*a
+    c=560.d0*a
+    d=-945.d0*a
+    g=720.d0*a
+    h=-210.d0*a
+    rc=5.d0
+    !-------------------------------------------------------
+    linked_lists%rcut=rc
+    call linkedlists_init(parini,atoms,cell,linked_lists)
+    epot_rep=0.d0
+    rcsq=rc**2
+    rcsqinv=1.d0/rcsq
+    linked_lists%fat=0.d0
+    include '../src/act1_cell_linkedlist.inc'
+    do  iat=ip,il
+        !qiat=linked_lists%qat(iat)
+        xiat=linked_lists%rat(1,iat)
+        yiat=linked_lists%rat(2,iat)
+        ziat=linked_lists%rat(3,iat)
+        jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
+        jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
+        jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
+        maincell_iat=linked_lists%maincell(iat)
+        iatp=linked_lists%perm(iat)
+        do  jat=jp,jl
+            dx=xiat-linked_lists%rat(1,jat)
+            dy=yiat-linked_lists%rat(2,jat)
+            dz=ziat-linked_lists%rat(3,jat)
+            rsq=dx*dx+dy*dy+dz*dz
+            maincell=maincell_iat+linked_lists%maincell(jat)
+            if(rsq<rcsq .and. maincell >-1) then
+                !---------------------------------
+                rt2=rsq/rcsq
+                rtinv2=1.d0/rt2
+                rtinv4=rtinv2**2
+                rtinv12=rtinv4**3
+                epot_rep=epot_rep+a*rtinv12+(((b*rt2+c)*rt2+d)*rt2+g)*rt2+h
+                ttt=-13.d0*a*rcsqinv*rtinv12*rtinv2+((8.d0*b*rcsqinv*rt2+6.d0*rcsqinv*c)*rt2+4.d0*rcsqinv*d)*rt2+2.d0*g*rcsqinv
+                !---------------------------------
+                fx=ttt*dx;fy=ttt*dy;fz=ttt*dz
+                !write(*,'(a,i6,9f10.5)') 'HERE ',icall,r,rc,a,b,c,c+r*(b+r*a),fx,fy,fz
+                !-----------------------------------
+                linked_lists%fat(1,iat)=linked_lists%fat(1,iat)+fx
+                linked_lists%fat(2,iat)=linked_lists%fat(2,iat)+fy
+                linked_lists%fat(3,iat)=linked_lists%fat(3,iat)+fz
+                linked_lists%fat(1,jat)=linked_lists%fat(1,jat)-fx
+                linked_lists%fat(2,jat)=linked_lists%fat(2,jat)-fy
+                linked_lists%fat(3,jat)=linked_lists%fat(3,jat)-fz
+            endif
+        enddo
+    enddo
+    include '../src/act2_cell_linkedlist.inc'
+    !-------------------------------------------------------
+    atoms%epot=atoms%epot+epot_rep
+    do iat=1,linked_lists%natim
+        iatp=linked_lists%perm(iat)
+        atoms%fat(1,iatp)=atoms%fat(1,iatp)+linked_lists%fat(1,iat)
+        atoms%fat(2,iatp)=atoms%fat(2,iatp)+linked_lists%fat(2,iat)
+        atoms%fat(3,iatp)=atoms%fat(3,iatp)+linked_lists%fat(3,iat)
+    enddo
+    !-------------------------------------------------------
+    call linkedlists_final(linked_lists)
+    end associate
+end subroutine repulsive_potential_cent
+!*****************************************************************************************

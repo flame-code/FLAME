@@ -441,6 +441,14 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine cal_force_chi_part2
+subroutine repulsive_potential_cent(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_linked_lists
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+end subroutine repulsive_potential_cent
 ! ./src/ann_pot_main.F90 :
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     use mod_tightbinding, only: typ_partb
