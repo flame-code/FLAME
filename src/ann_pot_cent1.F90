@@ -18,7 +18,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
-    real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es
+    real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
     call f_routine(id='cal_ann_eem1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
@@ -116,6 +116,14 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call destruct_ewald_p3d(parini,atoms,ewald_p3d)
     endif
     call repulsive_potential_cent(parini,atoms)
+    call getvol_alborz(atoms%cellvec,vol)
+    call invertmat_alborz(atoms%cellvec,hinv)
+    do i=1,3
+    do j=1,3
+        atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
+    enddo
+    enddo
+
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
         call f_free(symfunc%linked_lists%prime_bound)
         call f_free(symfunc%linked_lists%bound_rad)

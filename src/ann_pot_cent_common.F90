@@ -107,12 +107,6 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
             atoms%fat(3,iat)=atoms%fat(3,iat)+ann_arr%fat_chi(3,iat)
         enddo
     endif
-    call invertmat_alborz(atoms%cellvec,hinv)
-    do i=1,3
-    do j=1,3
-        atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
-    enddo
-    enddo
 end subroutine cal_force_chi_part2
 !*****************************************************************************************
 subroutine repulsive_potential_cent(parini,atoms)
@@ -129,6 +123,7 @@ subroutine repulsive_potential_cent(parini,atoms)
     real(8):: cell(3), epot_rep, fx, fy, fz, ttt, a , b, c, d, g, h
     real(8):: rc, rcsq, dx, dy, dz, xiat, yiat, ziat, r, rsq
     real(8):: rt2, rtinv2, rtinv4, rtinv12, rcsqinv
+    real(8):: stress(3,3)
     type(typ_linked_lists):: linked_lists
     !integer, save:: icall=0
     !icall=icall+1
@@ -145,6 +140,7 @@ subroutine repulsive_potential_cent(parini,atoms)
     !-------------------------------------------------------
     linked_lists%rcut=rc
     call linkedlists_init(parini,atoms,cell,linked_lists)
+    stress(1:3,1:3)=0.d0
     epot_rep=0.d0
     rcsq=rc**2
     rcsqinv=1.d0/rcsq
@@ -184,11 +180,23 @@ subroutine repulsive_potential_cent(parini,atoms)
                 linked_lists%fat(1,jat)=linked_lists%fat(1,jat)-fx
                 linked_lists%fat(2,jat)=linked_lists%fat(2,jat)-fy
                 linked_lists%fat(3,jat)=linked_lists%fat(3,jat)-fz
+                stress(1,1)=stress(1,1)+fx*dx ; stress(1,2)=stress(1,2)+fx*dy ; stress(1,3)=stress(1,3)+fx*dz
+                stress(2,1)=stress(2,1)+fy*dx ; stress(2,2)=stress(2,2)+fy*dy ; stress(2,3)=stress(2,3)+fy*dz
+                stress(3,1)=stress(3,1)+fz*dx ; stress(3,2)=stress(3,2)+fz*dy ; stress(3,3)=stress(3,3)+fz*dz
             endif
         enddo
     enddo
     include '../src/act2_cell_linkedlist.inc'
     !-------------------------------------------------------
+    atoms%stress(1,1)=atoms%stress(1,1)+stress(1,1)
+    atoms%stress(2,1)=atoms%stress(2,1)+stress(2,1)
+    atoms%stress(3,1)=atoms%stress(3,1)+stress(3,1)
+    atoms%stress(1,2)=atoms%stress(1,2)+stress(1,2)
+    atoms%stress(2,2)=atoms%stress(2,2)+stress(2,2)
+    atoms%stress(3,2)=atoms%stress(3,2)+stress(3,2)
+    atoms%stress(1,3)=atoms%stress(1,3)+stress(1,3)
+    atoms%stress(2,3)=atoms%stress(2,3)+stress(2,3)
+    atoms%stress(3,3)=atoms%stress(3,3)+stress(3,3)
     atoms%epot=atoms%epot+epot_rep
     do iat=1,linked_lists%natim
         iatp=linked_lists%perm(iat)
