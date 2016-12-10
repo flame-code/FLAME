@@ -115,7 +115,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         call destruct_ewald_p3d(parini,atoms,ewald_p3d)
     endif
-    call repulsive_potential_cent(parini,atoms)
+    call repulsive_potential_cent(parini,atoms,ann_arr)
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)
     do i=1,3

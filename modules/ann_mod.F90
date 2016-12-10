@@ -26,6 +26,7 @@ module mod_ann
         real(8):: chi0
         real(8):: hardness
         real(8):: zion
+        real(8):: rionic
         real(8):: ener_ref
         real(8):: ampl_chi=-1.d0
         real(8):: prefactor_chi=-1.d0
@@ -77,6 +78,8 @@ module mod_ann
         !real(8), allocatable:: yall(:,:)
         !real(8), allocatable:: y0d(:,:,:)
         integer:: natsum(10)
+        !real(8):: repfac(10,10)
+        real(8):: reprcut(10,10)
         real(8):: qmax(10)
         real(8):: qmin(10)
         real(8):: qsum(10)

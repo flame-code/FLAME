@@ -109,16 +109,18 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif
 end subroutine cal_force_chi_part2
 !*****************************************************************************************
-subroutine repulsive_potential_cent(parini,atoms)
+subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr
     use mod_linked_lists, only: typ_linked_lists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    integer:: iat, jat, maincell_iat, maincell
+    integer:: iat, jat, maincell_iat, maincell, i, j
     integer:: ip, jp, jpt, il, jl, iz, iy, ix, jx, jy, jz, iatp
     real(8):: cell(3), epot_rep, fx, fy, fz, ttt, a , b, c, d, g, h
     real(8):: rc, rcsq, dx, dy, dz, xiat, yiat, ziat, r, rsq
@@ -130,20 +132,27 @@ subroutine repulsive_potential_cent(parini,atoms)
     associate(rcmax=>linked_lists%rcut)
     !-------------------------------------------------------
     !{{B -> -126 A, C -> 560 A, D -> -945 A, G -> 720 A, H -> -210 A}}
-    a=1/2.d2;
-    b=-126.d0*a
-    c=560.d0*a
-    d=-945.d0*a
-    g=720.d0*a
-    h=-210.d0*a
-    rc=5.d0
+    !a=1/2.d2;
+    !b=-126.d0
+    !c=560.d0
+    !d=-945.d0
+    !g=720.d0
+    !h=-210.d0
+    g=6.d0
+    h=-7.d0
     !-------------------------------------------------------
-    linked_lists%rcut=rc
+    linked_lists%rcut=0.d0
+    do i=1,ann_arr%n
+        do j=i,ann_arr%n
+            !write(*,*) parini%stypat(i),parini%stypat(j),ann_arr%reprcut(i,j)
+            if(ann_arr%reprcut(i,j)>linked_lists%rcut) then
+                linked_lists%rcut=ann_arr%reprcut(i,j)
+            endif
+        enddo
+    enddo
     call linkedlists_init(parini,atoms,cell,linked_lists)
     stress(1:3,1:3)=0.d0
     epot_rep=0.d0
-    rcsq=rc**2
-    rcsqinv=1.d0/rcsq
     linked_lists%fat=0.d0
     include '../src/act1_cell_linkedlist.inc'
     do  iat=ip,il
@@ -162,14 +171,20 @@ subroutine repulsive_potential_cent(parini,atoms)
             dz=ziat-linked_lists%rat(3,jat)
             rsq=dx*dx+dy*dy+dz*dz
             maincell=maincell_iat+linked_lists%maincell(jat)
+            rc=ann_arr%reprcut(atoms%itypat(maincell_iat),atoms%itypat(linked_lists%maincell(jat)))
+            rcsq=rc**2
+            rcsqinv=1.d0/rcsq
+            a=2.d-2*rcsq/168.d0
             if(rsq<rcsq .and. maincell >-1) then
                 !---------------------------------
                 rt2=rsq/rcsq
                 rtinv2=1.d0/rt2
                 rtinv4=rtinv2**2
                 rtinv12=rtinv4**3
-                epot_rep=epot_rep+a*rtinv12+(((b*rt2+c)*rt2+d)*rt2+g)*rt2+h
-                ttt=12.d0*a*rcsqinv*rtinv12*rtinv2-((8.d0*b*rcsqinv*rt2+6.d0*rcsqinv*c)*rt2+4.d0*rcsqinv*d)*rt2-2.d0*g*rcsqinv
+                epot_rep=epot_rep+a*(rtinv12+g*rt2+h)
+                ttt=a*(12.d0*rcsqinv*rtinv12*rtinv2-(2.d0*g*rcsqinv))
+                !epot_rep=epot_rep+a*(rtinv12+(((b*rt2+c)*rt2+d)*rt2+g)*rt2+h)
+                !ttt=a*(12.d0*rcsqinv*rtinv12*rtinv2-((8.d0*b*rcsqinv*rt2+6.d0*rcsqinv*c)*rt2+4.d0*rcsqinv*d)*rt2-2.d0*g*rcsqinv)
                 !---------------------------------
                 fx=ttt*dx;fy=ttt*dy;fz=ttt*dz
                 !write(*,'(a,i6,9f10.5)') 'HERE ',icall,r,rc,a,b,c,c+r*(b+r*a),fx,fy,fz
