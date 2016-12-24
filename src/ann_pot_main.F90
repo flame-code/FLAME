@@ -21,6 +21,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
     !local variables
+    !real(8):: g, g_tb, dis, E0, E1 
     integer:: i, j, iat
     type(typ_partb):: partb
     !if(trim(ann_arr%event)=='potential') then
@@ -63,6 +64,19 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
         deallocate(ekf%gs) !HERE
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
+       ! do i=1,ekf%n
+       ! dis=1.d-4
+       ! g_tb=ekf%g(i)
+       ! !!Finite difference 
+       !     E0=atoms%epot
+       !     ekf%x(i)=ekf%x(i)+dis
+       !     call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
+       !     E1=atoms%epot
+       !     g=(E1-E0)/dis
+       !     write(*,'(a,2es19.10,es14.5,2es19.10)') 'FD-TEST',g_tb,g,g-g_tb,E0,E1
+       ! !endif
+       ! enddo
+       ! stop 'TTTTTT'
     else
         write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
         stop

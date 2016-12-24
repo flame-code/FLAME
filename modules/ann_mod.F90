@@ -93,6 +93,7 @@ module mod_ann
         real(8), allocatable:: chi_d(:)
         real(8), allocatable:: fat_chi(:,:)
         real(8), allocatable:: g_per_atom(:,:)
+        real(8), allocatable:: g_per_bond(:,:,:)
         real(8), allocatable:: fatpq(:,:)
         real(8), allocatable:: stresspq(:,:,:)
         integer, allocatable:: ipiv(:)

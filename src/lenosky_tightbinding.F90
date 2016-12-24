@@ -118,17 +118,38 @@ subroutine totalenergy(partb,atoms,natsi,pplocal)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
     type(potl_typ), intent(inout):: pplocal
     !local variables
+    integer:: iat
     !'es' and 'eself(0:3)' are on-site energy of hydrogen and Si respectively
     !eself(0)= on-site energy of orbital s.
     !eself(1:3)= on-site energies of orbital p.
     real(8):: es !, eself(0:3)
     partb%pairen=0.d0
+    !if(.not. lenosky) then
+    !do iat=1,atoms%nat
+    !    atoms%rat(1,iat)=atoms%rat(1,iat)*bohr2ang
+    !    atoms%rat(2,iat)=atoms%rat(2,iat)*bohr2ang
+    !    atoms%rat(3,iat)=atoms%rat(3,iat)*bohr2ang
+    !enddo
+    !atoms%cellvec(1:3,1:3)=atoms%cellvec(1:3,1:3)*bohr2ang
+    !call pairenergy(partb,atoms,pplocal,natsi)
+    !do iat=1,atoms%nat
+    !    atoms%rat(1,iat)=atoms%rat(1,iat)/bohr2ang
+    !    atoms%rat(2,iat)=atoms%rat(2,iat)/bohr2ang
+    !    atoms%rat(3,iat)=atoms%rat(3,iat)/bohr2ang
+    !enddo
+    !do iat=1,atoms%nat
+    !    atoms%fat(1,iat)=atoms%fat(1,iat)/(ha2ev/bohr2ang)
+    !    atoms%fat(2,iat)=atoms%fat(2,iat)/(ha2ev/bohr2ang)
+    !    atoms%fat(3,iat)=atoms%fat(3,iat)/(ha2ev/bohr2ang)
+    !enddo
+    !endif
     if(lenosky) then
     call pairenergy(partb,atoms,pplocal,natsi)
     endif
@@ -136,7 +157,10 @@ subroutine totalenergy(partb,atoms,natsi,pplocal)
     !partb%pairen=partb%pairen-natsi*(2*eself(0)+2*eself(1)) !the value in parantesses is 0 
     es=pplocal%eps(1) !eselfgeneral2 is replaced by this line
     partb%pairen=partb%pairen-(atoms%nat-natsi)*es
-    atoms%epot=partb%eband+partb%pairen
+    !if(lenosky) then 
+        atoms%epot=partb%eband+partb%pairen
+    !endif
+    !atoms%epot=partb%eband+(partb%pairen/ha2ev)
     !write(*,*) atoms%epot
 end subroutine totalenergy
 !*****************************************************************************************
@@ -144,10 +168,11 @@ end subroutine totalenergy
 !return energy from pair potential, with forces in array force()
 subroutine pairenergy(partb,atoms,pplocal,natsi)
     use mod_interface
-    use mod_tightbinding, only: typ_partb
+    use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_frame, only: clsframepp_type
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
@@ -245,7 +270,7 @@ subroutine pairenergy(partb,atoms,pplocal,natsi)
             endif
         enddo !End of loop over pairs
     enddo
-end subroutine pairenergy
+    end subroutine pairenergy
 !*****************************************************************************************
 subroutine lenoskytb_final(partb)
     use mod_interface
