@@ -472,9 +472,14 @@ end subroutine clssplint
 !This subroutine initialize array's elements. 
 subroutine eselfgeneral(eself)
     use mod_interface
+    use mod_tightbinding, only: lenosky
     implicit none
     real(8), intent(inout):: eself(0:3)
-    eself(0)=-5.670225d0
+    if(lenosky) then 
+        eself(0)=-5.670225d0
+    else
+        eself(0)=-5.670225d0/27.211385d0
+    endif
     eself(1)=-eself(0)
     eself(2)=-eself(0)
     eself(3)=-eself(0)

@@ -109,6 +109,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall1(jat,iat)=partb%dhgenall1(iat,jat)
         partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
+        write(*,'(a,5es14.5)') 'HGEN', hgen(1,ib), hgen(1,ib), hgen(3,ib), hgen(4,ib), r
     enddo
         partb%event=ann_arr%event
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
