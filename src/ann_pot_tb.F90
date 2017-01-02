@@ -146,6 +146,7 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     use mod_frame, only: CLSMAXATOM, CLSMAXNEIGHB
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
@@ -154,14 +155,18 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     !local variables
     integer, save:: icall=0, firstcall=1
     type(potl_typ), save:: pplocal
-    !type(typ_partb), save:: partb_pair
-    !if(firstcall==1) then
-    !    write(*,'(a)') 'Reading spline potential coeff.cls'
-    !    call prmst38c(partb_pair,pplocal) !Reads potential 
-    !    firstcall=0
-    !endif
-    !partb%usepairpot=partb_pair%usepairpot
-    !partb%paircut=partb_pair%paircut 
+    type(typ_partb), save:: partb_pair
+    real(8):: cellvec(1:3,1:3)
+    real(8), allocatable:: rat(:,:), fat(:,:)
+    integer:: iat
+    if(firstcall==1) then
+        write(*,'(a)') 'Reading spline potential coeff.cls'
+        call prmst38c(partb_pair,pplocal) !Reads potential 
+        firstcall=0
+    endif
+    partb%usepairpot=partb_pair%usepairpot
+    partb%paircut=partb_pair%paircut 
+
     icall=icall+1
     !write(*,'(a,f)') 'paircut= ',partb%paircut
     call lenoskytb_init(partb,atoms,natsi)
@@ -182,6 +187,37 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     if(atoms%nat < 0) write(*,'(a)') 'WARNING lenoskytb called with negative number of atoms'
     !write(*,*) 'natsi ',natsi
     call totalenergy(partb,atoms,natsi,pplocal) 
+
+    allocate(rat(3,atoms%nat),fat(3,atoms%nat))
+    do iat=1,atoms%nat
+        rat(1,iat)=atoms%rat(1,iat)
+        rat(2,iat)=atoms%rat(2,iat)
+        rat(3,iat)=atoms%rat(3,iat)
+        atoms%rat(1,iat)=atoms%rat(1,iat)*bohr2ang
+        atoms%rat(2,iat)=atoms%rat(2,iat)*bohr2ang
+        atoms%rat(3,iat)=atoms%rat(3,iat)*bohr2ang
+        fat(1,iat)=atoms%fat(1,iat)
+        fat(2,iat)=atoms%fat(2,iat)
+        fat(3,iat)=atoms%fat(3,iat)
+        atoms%fat(1,iat)=0.d0
+        atoms%fat(2,iat)=0.d0
+        atoms%fat(3,iat)=0.d0
+    enddo
+    cellvec(1:3,1:3)=atoms%cellvec(1:3,1:3)
+    atoms%cellvec(1:3,1:3)=atoms%cellvec(1:3,1:3)*bohr2ang
+    call pairenergy(partb,atoms,pplocal,natsi)
+    do iat=1,atoms%nat
+        atoms%fat(1,iat)=fat(1,iat)+atoms%fat(1,iat)/(ha2ev/bohr2ang)
+        atoms%fat(2,iat)=fat(2,iat)+atoms%fat(2,iat)/(ha2ev/bohr2ang)
+        atoms%fat(3,iat)=fat(3,iat)+atoms%fat(3,iat)/(ha2ev/bohr2ang)
+        atoms%rat(1,iat)=rat(1,iat)
+        atoms%rat(2,iat)=rat(2,iat)
+        atoms%rat(3,iat)=rat(3,iat)
+    enddo
+    atoms%cellvec(1:3,1:3)=cellvec(1:3,1:3)
+    atoms%epot=atoms%epot+(partb%pairen/ha2ev)
+    deallocate(rat,fat)
+
     call lenoskytb_final(partb)
 end subroutine lenoskytb_ann
 !*****************************************************************************************
