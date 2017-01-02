@@ -205,7 +205,7 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
         do ib=1,symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad
             iat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(1,ib)
             jat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(2,ib)
-            !write(*,*) 'QQQQQQQQ ',ib,iat,jat
+            write(*,*) 'QQQQQQQQ ',ib,iat,jat
             if(iat>jat) cycle
             do ig=1,symfunc_arr%symfunc(iconf)%ng
                 tt=symfunc_arr%symfunc(iconf)%y(ig,ib)
@@ -913,7 +913,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             else
                 ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0,1)
             endif
-            !write(*,*) ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
+            write(*,*) 'gbounds', ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
             ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
         enddo
         enddo

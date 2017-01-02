@@ -19,12 +19,11 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     real(8), allocatable:: hgen(:,:), dhgen(:,:)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
-    real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc
-    !integer, save:: icall=-1
-    !if(trim(ann_arr%event)=='evalu') icall=icall+1
+    real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc, tt1
     call f_routine(id='cal_ann_tb')
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
+    partb%dedh=f_malloc0([1.to.4,1.to.atoms%nat,1.to.atoms%nat],id='partb%dedh')
     partb%hgenall0=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
     partb%hgenall1=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
     partb%hgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
@@ -34,45 +33,41 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     partb%dhgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall2')
     partb%dhgenall3=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall3')
     if(trim(ann_arr%event)=='train') then
-        ekf%gc=f_malloc([1.to.ekf%num(1),1.to.4],id='ekf%gc') !HERE
+        !The following is allocated with ekf%num(1), this means number of
+        !nodes in the input layer is the same for all atom types.
+        !Therefore, it must be fixed later.
+        !g_per_atom=f_malloc([1.to.ekf%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
+        do i=1,ann_arr%n
+            call convert_x_ann(ekf%num(i),ekf%x(ekf%loc(i)),ann_arr%ann(i))
+        enddo
     endif
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     endif
     !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-    nb=symfunc%linked_lists%maxbound_rad !/2
+    nb=symfunc%linked_lists%maxbound_rad!/2
     hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
     dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
+    if(trim(ann_arr%event)=='train') then
+        ann_arr%g_per_bond=f_malloc([1.to.ekf%num(1),1.to.4,1.to.nb],id='ann_arr%g_per_bond') !HERE
+    endif
     over_i: do i=1,4
-        !ann_arr%ann(i)%b(:,1:3)=0.d0
         over_ib: do ib=1,nb
             ng=ann_arr%ann(i)%nn(0)
-                ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,ib)
+            ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,ib)
             if(trim(ann_arr%event)=='train') then
+            !write(*,*) "symfunc", ng, nb, symfunc%y(1,ib)
                 call cal_architecture_der(ann_arr%ann(i),hgen(i,ib))
-                call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ekf%gc(1,i))
+                !write(*,*) "hopping", hgen(i,ib)
+                call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ann_arr%g_per_bond(1,i,ib))
+                !write(*,*) "dhda", ann_arr%g_per_bond(1,i,ib)
             elseif(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
-                !if(ib==107) then
-                !    write(*,*) ann_arr%ann(i)%y(1:ng,0)
-                !    write(*,*) '--------------------------------------------'
-                !    write(*,*) ann_arr%ann(i)%a(:,:,1:3)
-                !    write(*,*) '--------------------------------------------'
-                !    write(*,*) ann_arr%ann(i)%b(:,1:3)
-                !    !stop
-                !endif
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))          
-                !if(ib==107) then
-                !    write(*,*) 'aaaaaaaaaa ',hgen(i,ib)
-                !    stop
-                !endif
                 iat=symfunc%linked_lists%bound_rad(1,ib)
                 jat=symfunc%linked_lists%bound_rad(2,ib)
                 dhgen(i,ib)=0.d0
                 do j=1,ann_arr%ann(i)%nn(0)
-                    !ttxyz = symfunc%y0d(j,1,ib)**2+symfunc%y0d(j,2,ib)**2+symfunc%y0d(j,3,ib)**2
-                    !dhgen(i,ib)=dhgen(i,ib) + ann_arr%ann(i)%d(j)*sqrt(ttxyz)
                     dhgen(i,ib)=dhgen(i,ib) + ann_arr%ann(i)%d(j)*symfunc%y0d_bond(j,ib)
-                    !write (*,*) "TTXYZ", symfunc%y0d_bond(j,ib), ann_arr%ann(i)%d(j)
                 enddo
             else
                 stop 'ERROR: in cal_ann_tb undefined content for ann_arr%event'
@@ -82,7 +77,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
-        !if(iat>jat) cycle
         dx=atoms%rat(1,iat)-atoms%rat(1,jat)
         dy=atoms%rat(2,iat)-atoms%rat(2,jat)
         dz=atoms%rat(3,iat)-atoms%rat(3,jat)
@@ -94,6 +88,9 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             hbar=hgen(i,ib)
             hgen(i,ib)=hbar*fc
             dhgen(i,ib)=dhgen(i,ib)*fc+hbar*dfc
+            do j=1, ekf%num(1)
+                ann_arr%g_per_bond(j,i,ib)=fc*ann_arr%g_per_bond(j,i,ib)
+            enddo
         enddo
         
         partb%hgenall0(iat,jat)=hgen(1,ib)
@@ -112,33 +109,23 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall1(jat,iat)=partb%dhgenall1(iat,jat)
         partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
-        
-        !xij=atoms%rat(1,iat)-atoms%rat(1,jat)
-        !yij=atoms%rat(2,iat)-atoms%rat(2,jat)
-        !zij=atoms%rat(3,iat)-atoms%rat(3,jat)
-        !r=sqrt(xij**2+yij**2+zij**2)
-        !write(*,'(a,i6,4es14.5,f8.2)') 'HGEN',ib,hgen(1,ib),hgen(2,ib),hgen(3,ib),hgen(4,ib),r
+        write(*,'(a,5es14.5)') 'HGEN', hgen(1,ib), hgen(1,ib), hgen(3,ib), hgen(4,ib), r
     enddo
-        !xij=atoms%rat(1,2)-atoms%rat(1,1)
-        !yij=atoms%rat(2,2)-atoms%rat(2,1)
-        !zij=atoms%rat(3,2)-atoms%rat(3,1)
-        !r=sqrt(xij**2+yij**2+zij**2)
-        !write(*,*) 'HGEN', r, hgen(1,1)
-        !write(*,*) 'DH', dhgen(1,1) 
         partb%event=ann_arr%event
         call lenoskytb_ann(partb,atoms,atoms%nat,c)
-        !atoms%epot=atoms%epot+(-2063.346547d0/27.211385d0)+0.05d0 !2.d0*(-37.74811127768763)+0.4       !(-1027.178389d0/27.211385d0)
-        !atoms%epot=atoms%epot-37.88829524388414d0*atoms%nat
         atoms%epot=atoms%epot+atoms%nat*ann_arr%ann(atoms%itypat(1))%ener_ref
-        !if(trim(ann_arr%event)=='evalu') then
-        !write(100+int(icall/19),'(f6.3,es24.15,f10.5)') atoms%rat(1,2) -atoms%rat(1,1), atoms%epot,atoms%fat(1,1)
-        !atoms%epot=atoms%epot-0.2208033067776594d0
         if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
             do i=1,4
                 do j=1,ekf%num(1)
-                    ekf%g(ekf%loc(i)+j-1)=partb%dedh(i)*ekf%gc(j,i)
-                    !write(*,'(a,2i5,3es14.5)') 'GGG ',i,j,ekf%g(ekf%loc(i)+j-1),partb%dedh(i),ekf%gc(j,i)
+                    tt1=0.d0
+                    do ib=1,nb
+                    iat=symfunc%linked_lists%bound_rad(1,ib)
+                    jat=symfunc%linked_lists%bound_rad(2,ib)
+                    !write(*,*) 'DEDH', iat, jat, partb%dedh(i,iat,jat)
+                    tt1=tt1+partb%dedh(i,iat,jat)*ann_arr%g_per_bond(j,i,ib)
+                    enddo
+                    ekf%g(ekf%loc(i)+j-1)=tt1
                 enddo
             enddo
         endif
@@ -147,7 +134,8 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     call f_free(hgen)
     call f_free(dhgen)
     if(trim(ann_arr%event)=='train') then
-        call f_free(ekf%gc)
+        call f_free(ann_arr%g_per_bond)
+        call f_free(partb%dedh)
     endif
     call f_release_routine()
 end subroutine cal_ann_tb
@@ -164,8 +152,16 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     integer, intent(in):: natsi
     real(8), intent(inout):: count_md
     !local variables
-    integer, save:: icall=0
+    integer, save:: icall=0, firstcall=1
     type(potl_typ), save:: pplocal
+    !type(typ_partb), save:: partb_pair
+    !if(firstcall==1) then
+    !    write(*,'(a)') 'Reading spline potential coeff.cls'
+    !    call prmst38c(partb_pair,pplocal) !Reads potential 
+    !    firstcall=0
+    !endif
+    !partb%usepairpot=partb_pair%usepairpot
+    !partb%paircut=partb_pair%paircut 
     icall=icall+1
     !write(*,'(a,f)') 'paircut= ',partb%paircut
     call lenoskytb_init(partb,atoms,natsi)
