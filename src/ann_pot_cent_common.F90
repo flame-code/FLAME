@@ -120,7 +120,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    integer:: iat, jat, maincell_iat, maincell, i, j
+    integer:: iat, jat, maincell_iat, maincell, i, j, iat_maincell, jat_maincell
     integer:: ip, jp, jpt, il, jl, iz, iy, ix, jx, jy, jz, iatp
     real(8):: cell(3), epot_rep, fx, fy, fz, ttt, a , b, c, d, g, h
     real(8):: rc, rcsq, dx, dy, dz, xiat, yiat, ziat, r, rsq
@@ -164,6 +164,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
         jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
         jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
         maincell_iat=linked_lists%maincell(iat)
+        iat_maincell=mod(iat-1,atoms%nat)+1
         iatp=linked_lists%perm(iat)
         do  jat=jp,jl
             dx=xiat-linked_lists%rat(1,jat)
@@ -171,7 +172,8 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
             dz=ziat-linked_lists%rat(3,jat)
             rsq=dx*dx+dy*dy+dz*dz
             maincell=maincell_iat+linked_lists%maincell(jat)
-            rc=ann_arr%reprcut(atoms%itypat(maincell_iat),atoms%itypat(linked_lists%maincell(jat)))
+            jat_maincell=mod(iat-1,atoms%nat)+1
+            rc=ann_arr%reprcut(atoms%itypat(iat_maincell),atoms%itypat(jat_maincell))
             rcsq=rc**2
             rcsqinv=1.d0/rcsq
             a=2.d-2*rcsq/168.d0
