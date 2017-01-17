@@ -54,18 +54,25 @@ def cube_read(filename):
                 igpy=0
                 igpz=0
         else:
-            poisson.rho[igpz][igpy][igpx]=float(line.split()[0])
-            igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
-            poisson.rho[igpz][igpy][igpx]=float(line.split()[1])
-            igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
-            poisson.rho[igpz][igpy][igpx]=float(line.split()[2])
-            igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
-            poisson.rho[igpz][igpy][igpx]=float(line.split()[3])
-            igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
-            poisson.rho[igpz][igpy][igpx]=float(line.split()[4])
-            igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
-            poisson.rho[igpz][igpy][igpx]=float(line.split()[5])
-            igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
+            num=len(line.split())
+            if num>0:
+                poisson.rho[igpz][igpy][igpx]=float(line.split()[0])
+                igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
+            if num>1:
+                poisson.rho[igpz][igpy][igpx]=float(line.split()[1])
+                igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
+            if num>2:
+                poisson.rho[igpz][igpy][igpx]=float(line.split()[2])
+                igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
+            if num>3:
+                poisson.rho[igpz][igpy][igpx]=float(line.split()[3])
+                igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
+            if num>4:
+                poisson.rho[igpz][igpy][igpx]=float(line.split()[4])
+                igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
+            if num>5:
+                poisson.rho[igpz][igpy][igpx]=float(line.split()[5])
+                igpx,igpy,igpz=cube_advance_index(poisson,igpx,igpy,igpz)
     return atoms,poisson
 #*****************************************************************************************
 def cube_write(filename,atoms,ngpx,ngpy,ngpz,arr,hx,hy,hz,frmt1,frmt2):
