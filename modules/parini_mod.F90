@@ -48,6 +48,12 @@ module mod_parini
         logical:: avail_saddle_1s_opt=.false.
         type(typ_paropt):: paropt_saddle_1s_opt
         !-----------------------------------------------------------------------
+        !parameters of [bader]
+        logical:: avail_bader=.false.
+        character(50):: filename_bader='total_density.cube'
+        character(50):: approach_bader='unknown'
+        character(50):: vacuum_bader='yes'
+        !-----------------------------------------------------------------------
         !parameters of [potential]
         logical:: avail_potential=.false.
         character(50):: potential_potential='unknown'
