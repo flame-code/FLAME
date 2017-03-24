@@ -30,6 +30,7 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     associate(ng=>ann_arr%ann(1)%nn(0))
     !write(*,*) ng,atoms%nat,atoms%maxbound_rad,allocated(ann_arr%y0d)
     allocate(symfunc%y0d(ng,3,symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
+    allocate(symfunc%y0d_bond(ng,symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
     !write(*,*) ng,atoms%nat,atoms%maxbound_rad,allocated(symfunc%y0d)
     if(istat/=0) stop 'ERROR: unable to allocate array symfunc%y0d.'
     allocate(symfunc%y0dr(ng,9,symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
@@ -177,10 +178,11 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
         vij=exp(-eta*(pia%r-rs)**2)
         ttei=vij*pia%fc
         tt1i=(-2.d0*eta*(pia%r-rs)*pia%fc+pia%fcd)*vij/pia%r
+        symfunc%y0d_bond(i0,ib)=tt1i*pia%r
         ttjx=tt1i*pia%dr(1)
         ttjy=tt1i*pia%dr(2)
         ttjz=tt1i*pia%dr(3)
-        write(*,*) 'PIA', pia%r, pia%dr(3)
+        !write(*,*) 'PIA', pia%r, pia%dr(3)
         symfunc%y0d(i0,1,ib)=symfunc%y0d(i0,1,ib)+ttjx
         symfunc%y0d(i0,2,ib)=symfunc%y0d(i0,2,ib)+ttjy
         symfunc%y0d(i0,3,ib)=symfunc%y0d(i0,3,ib)+ttjz

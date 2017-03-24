@@ -641,7 +641,7 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
     !local variables
     type(typ_atoms):: atoms_t
     integer:: ios, iconf, i, nconf, iat, k, nat
-    character(256):: str
+    character(256):: str, fn_tmp
     character(256):: fn_fullpath
     character(3):: str_motion
     character(5):: s
@@ -651,7 +651,12 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
         write(*,'(a)') 'ERROR: why do you call acf_read_new with nconfmax<1 ?'
         stop
     endif
-    fn_fullpath=trim(parini%cwd)//'/'//trim(filename)
+    fn_tmp=adjustl(trim(filename))
+    if(fn_tmp(1:1)=='/') then
+        fn_fullpath=trim(filename)
+    else
+        fn_fullpath=trim(parini%cwd)//'/'//trim(filename)
+    endif
     open(unit=1358, file=trim(fn_fullpath),status='old',iostat=ios)
     if(ios/=0) then;write(*,'(2a)') 'ERROR: failure openning ',trim(fn_fullpath);stop;endif
     allocate(atoms_arr%atoms(nconfmax))

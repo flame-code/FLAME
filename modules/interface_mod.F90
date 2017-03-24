@@ -5,6 +5,7 @@ interface
 ! ./modules/alborz_as_potential_mod.F90 :
 ! ./modules/ann_mod.F90 :
 ! ./modules/atoms_mod.F90 :
+! ./modules/bader_mod.F90 :
 ! ./modules/constants_mod.F90 :
 ! ./modules/dynamics_mod.F90 :
 ! ./modules/electrostatics_mod.F90 :
@@ -210,6 +211,14 @@ subroutine set_angular_atomtype(parini,sat1,sat2,ityp)
     character(*), intent(in):: sat1, sat2
     integer, intent(out):: ityp(2)
 end subroutine set_angular_atomtype
+subroutine write_ann_all(parini,ann_arr,iter)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    integer, intent(in):: iter
+end subroutine write_ann_all
 subroutine write_ann(parini,filename,ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
@@ -272,13 +281,12 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_atombased
-! ./src/ann_pot_eem1.F90 :
+! ./src/ann_pot_cent1.F90 :
 subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
     use mod_electrostatics, only: typ_ewald_p3d
-    use mod_linked_lists, only: typ_pia_arr
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -376,11 +384,12 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ewald_p3d),intent(inout):: ewald_p3d
 end subroutine get_qat_from_chi_operator
-! ./src/ann_pot_eem2.F90 :
+! ./src/ann_pot_cent2.F90 :
 subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -405,11 +414,44 @@ subroutine cal_electrostatic_eem2(parini,str_job,atoms,ann_arr,epot_es,a)
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: str_job
-    type(typ_atoms), intent(in):: atoms
+    type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(out):: epot_es
     real(8), intent(out):: a(atoms%nat+1,atoms%nat+1)
 end subroutine cal_electrostatic_eem2
+! ./src/ann_pot_cent_common.F90 :
+subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_symfunc), intent(in):: symfunc
+    integer, intent(in):: iat
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: out_ann
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine cal_force_chi_part1
+subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_symfunc), intent(in):: symfunc
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine cal_force_chi_part2
+subroutine repulsive_potential_cent(parini,atoms,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr
+    use mod_linked_lists, only: typ_linked_lists
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine repulsive_potential_cent
 ! ./src/ann_pot_main.F90 :
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     use mod_tightbinding, only: typ_partb
@@ -809,6 +851,207 @@ subroutine set_annweights(parini,ekf)
     type(typ_parini), intent(in):: parini
     type(typ_ekf), intent(inout):: ekf
 end subroutine set_annweights
+! ./src/bader_neargrid.F90 :
+subroutine bader_neargrid(parini)
+    use mod_parini, only: typ_parini
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    type(typ_parini), intent(in):: parini
+end subroutine bader_neargrid
+  subroutine ongrid_neargrid(poisson,d,i_dist)
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson
+    integer, intent(inout):: d(3)
+    real(8),intent(in)::i_dist(-1:1,-1:1,-1:1)
+end subroutine ongrid_neargrid
+  function max_point(rho_cube)
+    real(8),intent(in) :: rho_cube(3,3,3)
+end function max_point
+  subroutine bounds(p1,p2,p3,p_max1,p_max2,p_max3)
+  implicit none
+    integer,intent(in)::p_max1,p_max2,p_max3
+    integer,intent(inout)::p1,p2,p3
+end subroutine bounds
+  subroutine mat_vec(m,v,vp)
+    real(8),intent(in),dimension(3,3) :: m
+    real(8),intent(in),dimension(3) :: v
+    real(8),intent(out),dimension(3) :: vp
+end subroutine mat_vec
+  subroutine vec_mat(v,m,vp)
+    real(8),intent(in),dimension(3,3) :: m
+    real(8),intent(in),dimension(3) :: v
+    real(8),intent(out),dimension(3) :: vp
+end subroutine vec_mat
+  subroutine transposee(lattice,lat_car)
+    real(8),intent(in),dimension(3,3) :: lattice
+    real(8),intent(inout),dimension(3,3) :: lat_car
+end subroutine transposee
+  subroutine inverse(a,b)
+    real(8),intent(in),dimension(3,3) :: a
+    real(8),intent(out),dimension(3,3) :: b
+end subroutine inverse
+  function mat_vol(h)
+    real(8),intent(in),dimension(3,3) :: h
+end function mat_vol
+subroutine edag_refinement (last_iter,iter,poisson,i_dist,car_lat)
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    logical, intent(out):: last_iter
+    integer, intent(in):: iter
+    real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
+    type(typ_poisson), intent(inout):: poisson
+end subroutine edag_refinement
+  function is_edge_neargrid (poisson,d) result(is_edge)
+    use mod_poisson_neargrid, only: typ_poisson
+    type(typ_poisson):: poisson
+    logical :: is_edge
+    integer,intent(in) :: d(3)
+end function is_edge_neargrid
+  function m_point (poisson,d)
+    use mod_poisson_neargrid, only: typ_poisson
+    type(typ_poisson):: poisson
+    integer,intent(in) :: d(3)
+end function m_point
+subroutine cube_read_neargrid(filename,nat,rat,qat,poisson,vol)
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    character(*), intent(in):: filename
+    real(8), intent(out):: rat(3,nat), qat(nat)
+    real(8), intent(in):: vol
+    type(typ_poisson), intent(out):: poisson
+    integer:: nat, iat, igpx, igpy, igpz, ind, ios, iline, iatom
+end subroutine cube_read_neargrid
+subroutine m_neargrad (poisson,d,i_dist,car_lat)
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson 
+    integer, intent(inout):: d(3)
+    real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
+end subroutine m_neargrad
+subroutine path_reallocate(poisson, allocat2)
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson 
+    integer :: allocat2
+end subroutine path_reallocate
+subroutine vol_reallocate(poisson, allocat2)
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson 
+    integer :: allocat2
+end subroutine vol_reallocate
+subroutine near_grad (poisson,d,i_dist,car_lat)
+    use mod_poisson_neargrid, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson
+    integer, intent(inout):: d(3)
+    real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
+end subroutine near_grad
+! ./src/bader_ongrid.F90 :
+subroutine bader_ongrid(parini)
+    use mod_parini, only: typ_parini
+    use mod_poisson_ongrid, only: typ_poisson
+    implicit none
+    type(typ_parini), intent(in):: parini
+end subroutine bader_ongrid
+  subroutine ongrid_ongrid(i_dist,rho_cube,nx_now_grid,nx_cube_up,nx_cube_down,ny_now_grid,ny_cube_up,ny_cube_down,nz_now_grid,nz_cube_up,nz_cube_down,nx_now,ny_now,nz_now)
+    real(8),intent(in)::i_dist(-1:1,-1:1,-1:1)
+    integer,intent(in)::nx_cube_up,nx_cube_down,ny_cube_up,ny_cube_down,nz_cube_up,nz_cube_down
+    real(8),intent(in)::rho_cube(3,3,3)
+    INTEGER,INTENT(in) ::nx_now,ny_now,nz_now
+    integer,intent(out)::nx_now_grid,ny_now_grid,nz_now_grid
+end subroutine ongrid_ongrid
+subroutine cube_read_ongrid(filename,nat,rat,qat,poisson)
+    use mod_poisson_ongrid, only: typ_poisson
+    implicit none
+    character(*), intent(in):: filename
+    real(8), intent(out):: rat(3,nat), qat(nat)
+    type(typ_poisson), intent(out):: poisson
+    integer:: nat, iat, igpx, igpy, igpz, ind, ios, iline, iatom
+end subroutine cube_read_ongrid
+! ./src/bader_weight.F90 :
+subroutine bader_weight(parini)
+    use mod_parini, only: typ_parini
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    type(typ_parini), intent(in):: parini
+end subroutine bader_weight
+  subroutine calc_weight(poisson, p,nat)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson
+    integer,intent(in) :: nat
+    integer :: p(3), pn(3)
+end subroutine calc_weight
+ function is_neighbor(poisson, p, vol)
+    use mod_poisson_weight, only: typ_poisson
+    type(typ_poisson):: poisson
+    integer,dimension(3),intent(in) :: p
+    integer,intent(in) :: vol
+end function is_neighbor
+  subroutine ongrid_weight(poisson,d,i_dist)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson
+    integer, intent(inout):: d(3)
+    real(8),intent(in)::i_dist(-1:1,-1:1,-1:1)
+end subroutine ongrid_weight
+subroutine edag_refinement_weight (last_iter,iter,poisson,i_dist,car_lat)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    logical, intent(out):: last_iter
+    integer, intent(in):: iter
+    real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
+    type(typ_poisson), intent(inout):: poisson
+end subroutine edag_refinement_weight
+  function is_edge_weight (poisson,d) result(is_edge)
+    use mod_poisson_weight, only: typ_poisson
+    type(typ_poisson):: poisson
+    logical :: is_edge
+    integer,intent(in) :: d(3)
+end function is_edge_weight
+  function m_point_weight (poisson,d) result(m_point)
+    use mod_poisson_weight, only: typ_poisson
+    type(typ_poisson):: poisson
+    logical :: m_point
+    integer,intent(in) :: d(3)
+end function m_point_weight
+subroutine cube_read_weight(filename,nat,rat,qat,poisson,vol)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    character(*), intent(in):: filename
+    real(8), intent(out):: rat(3,nat), qat(nat)
+    real(8), intent(in):: vol
+    type(typ_poisson), intent(out):: poisson
+    integer:: nat, iat, igpx, igpy, igpz, ind, ios, iline, iatom
+end subroutine cube_read_weight
+subroutine m_neargrad_weight (poisson,d,i_dist,car_lat)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson 
+    integer, intent(inout):: d(3)
+    real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
+end subroutine m_neargrad_weight
+subroutine path_reallocate_weight(poisson, allocat2)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson 
+    integer :: allocat2
+end subroutine path_reallocate_weight
+subroutine vol_reallocate_weight(poisson, allocat2)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson 
+    integer :: allocat2
+end subroutine vol_reallocate_weight
+subroutine near_grad_weight (poisson,d,i_dist,car_lat)
+    use mod_poisson_weight, only: typ_poisson
+    implicit none
+    type(typ_poisson), intent(inout):: poisson
+    integer, intent(inout):: d(3)
+    real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
+end subroutine near_grad_weight
 ! ./src/basic_atoms.F90 :
 subroutine atom_allocate(atoms,nat,natim,nfp)
     use mod_atoms, only: typ_atoms
@@ -2537,6 +2780,13 @@ subroutine get_dynamics_parameters(file_ini,parini)
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
 end subroutine get_dynamics_parameters
+subroutine get_bader_parameters(file_ini,parini)
+    use mod_parini, only: typ_parini
+    use mod_task, only: typ_file_ini
+    implicit none
+    type(typ_file_ini), intent(inout):: file_ini
+    type(typ_parini), intent(inout):: parini
+end subroutine get_bader_parameters
 subroutine get_genconf_parameters(file_ini,parini)
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini
@@ -3149,6 +3399,12 @@ subroutine task_ann(parini)
     implicit none
     type(typ_parini), intent(in):: parini
 end subroutine task_ann
+! ./src/task_bader.F90 :
+subroutine task_bader(parini)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+end subroutine task_bader
 ! ./src/task_confcomp.F90 :
 subroutine conf_comp(parini)
     use mod_parini, only: typ_parini
@@ -3344,7 +3600,7 @@ subroutine slatercoupling(u,r,hgen,dhgen,flag2,mat)
     real(8), intent(out):: mat(4,4)
 end subroutine slatercoupling
 subroutine yfdocclocal(partb)
-    use mod_tightbinding, only: typ_partb
+    use mod_tightbinding, only: typ_partb, lenosky
     implicit none
     type(typ_partb), intent(inout):: partb
 end subroutine yfdocclocal

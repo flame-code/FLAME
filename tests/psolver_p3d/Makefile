@@ -3,7 +3,7 @@ all: run
 
 run:
 	./density_potential.py 1.0 1.0 16.0 16 16 90
-	../../alborz >o1
+	../../flame >o1
 	./prep_pot_for_comp.py
 
 clean:
