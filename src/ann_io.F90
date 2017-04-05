@@ -35,14 +35,14 @@ subroutine read_input_ann(parini,iproc,ann_arr)
         endif
         close(1)
     enddo
-    if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-        do i=1,ann_arr%n
-            do j=i,ann_arr%n
-                ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-                ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-            enddo
-        enddo
-    endif
+    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
+    !    do i=1,ann_arr%n
+    !        do j=i,ann_arr%n
+    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !        enddo
+    !    enddo
+    !endif
 end subroutine read_input_ann
 !*****************************************************************************************
 subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
@@ -101,7 +101,7 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
     elseif(trim(parini%approach_ann)=='tb') then
         read(ann%hlines(4),*) str3,ann%ener_ref
     endif
-    read(ann%hlines(6),*) str1,ann%rionic
+    !read(ann%hlines(6),*) str1,ann%rionic
     !---------------------------------------------
     i0=0
 
@@ -444,14 +444,14 @@ subroutine read_ann(parini,ann_arr)
         !-------------------------------------------------------
         close(1)
     enddo
-    if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-        do i=1,ann_arr%n
-            do j=i,ann_arr%n
-                ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-                ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-            enddo
-        enddo
-    endif
+    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
+    !    do i=1,ann_arr%n
+    !        do j=i,ann_arr%n
+    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !        enddo
+    !    enddo
+    !endif
 end subroutine read_ann
 !*****************************************************************************************
 subroutine read_data(parini,filename_list,atoms_arr)
