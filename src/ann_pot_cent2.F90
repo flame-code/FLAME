@@ -43,25 +43,28 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
+    !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
-    if(ann_arr%compute_symfunc) then
-        call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
-    endif
+    !if(ann_arr%compute_symfunc) then !CORRECT_IT
+    !    call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+    !endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
         ann_arr%stresspq=f_malloc([1.to.3,1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='stresspq')
     endif
     if(parini%iverbose>=2) call cpu_time(time3)
+    goto 1000 !CORRECT_IT
     over_iat: do iat=1,atoms%nat
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
-        ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat)
+        !ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat) !CORRECT_IT
         if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
             call cal_architecture(ann_arr%ann(i),out_ann)
             call cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
         elseif(trim(ann_arr%event)=='train') then
-            call cal_architecture_der(ann_arr%ann(i),out_ann)
+            !call cal_architecture_der(ann_arr%ann(i),out_ann) !CORRECT_IT
+            if(trim(atoms%sat(iat))=='Na') out_ann=-0.25 !CORRECT_IT
+            if(trim(atoms%sat(iat))=='Cl') out_ann= 0.25 !CORRECT_IT
             ann_arr%chi_i(iat)=out_ann
             tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
             ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
@@ -71,6 +74,14 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
     enddo over_iat
+1000  continue !CORRECT_IT
+    do iat=1,atoms%nat
+        !write(*,*) iat,trim(atoms%sat(iat))
+        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_i(iat)=-0.25d0
+        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_i(iat)= 0.25d0
+    enddo
+    write(*,*) ann_arr%chi_i(1:atoms%nat)
+    !stop 'AFTER LOOP OVER NN'
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     atoms%stress(1:3,1:3)=0.d0
@@ -79,11 +90,11 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time4)
     call get_qat_from_chi2(parini,ann_arr,atoms,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time5)
-    if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
-        call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
-    endif !end of if for potential
+    !if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then !CORRECT_IT
+    !    call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
+    !endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_eem2(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a)
+    !call cal_electrostatic_eem2(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         write(*,'(a,f8.3)') 'Timing:cent2: initialize matrix          ',time2-time1
@@ -154,159 +165,5 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     !local variables
-    integer:: info, iat, jat, ztot
-    integer, allocatable:: ipiv(:)
-    real(8), allocatable:: qq(:)
-    real(8):: pi, sqrtpiinv, beta_iat, beta_jat
-    real(8):: dx, dy, dz, r
-    real(8):: gamau, alpha_iat, alpha_jat, gamau_ijat, gamau_jiat
-    associate(nat=>atoms%nat)
-    pi=4.d0*atan(1.d0)
-    allocate(ipiv(nat+1))
-    allocate(qq(nat+1))
-    call DGETRF(nat+1,nat+1,a,nat+1,ipiv,info)
-    if(info/=0) then
-        write(*,'(a,i)') 'ERROR: DGETRF info=',info
-        stop
-    endif
-    sqrtpiinv=1.d0/sqrt(pi)
-    qq(1:nat)=0.d0
-    do iat=1,nat
-        beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
-        alpha_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-        gamau=1.d0/sqrt(beta_iat**2+alpha_iat**2)
-        qq(iat)=qq(iat)-ann_arr%chi_o(iat)-sqrtpiinv*gamau*atoms%zat(iat)*2.d0
-        qq(iat)=qq(iat)-ann_arr%ann(atoms%itypat(iat))%hardness*atoms%zat(iat)
-        do jat=iat+1,atoms%nat
-            dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-            dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-            dz=atoms%rat(3,jat)-atoms%rat(3,iat)
-            r=sqrt(dx*dx+dy*dy+dz*dz)
-            beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
-            alpha_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth_ion
-            gamau_ijat=1.d0/sqrt(beta_iat**2+alpha_jat**2)
-            gamau_jiat=1.d0/sqrt(beta_jat**2+alpha_iat**2)
-            qq(iat)=qq(iat)-atoms%zat(jat)*erf(gamau_ijat*r)/r
-            qq(jat)=qq(jat)-atoms%zat(iat)*erf(gamau_jiat*r)/r
-        enddo
-    enddo
-    qq(nat+1)=atoms%qtot-atoms%ztot
-    call DGETRS('N',nat+1,1,a,nat+1,ipiv,qq,nat+1,info)
-    if(info/=0) then
-        write(*,'(a,i)') 'ERROR: DGETRS info=',info
-        stop
-    endif
-    atoms%qat(1:nat)=qq(1:nat)
-    call charge_analysis(parini,atoms,ann_arr)
-    if(parini%iverbose>=1) then
-        write(*,*) 'Lagrange ',qq(nat+1)
-    endif
-    deallocate(ipiv,qq)
-    end associate
 end subroutine get_qat_from_chi2
-!*****************************************************************************************
-subroutine cal_electrostatic_eem2(parini,str_job,atoms,ann_arr,epot_es,a)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr
-    implicit none
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: str_job
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_ann_arr), intent(inout):: ann_arr
-    real(8), intent(out):: epot_es
-    real(8), intent(out):: a(atoms%nat+1,atoms%nat+1)
-    !local variables
-    integer:: iat, jat
-    real(8):: dx, dy, dz, r, tt1, tt2, tt3, tt4, tt5, tt6 ,tt7, ttf
-    real(8):: pi, beta_iat, beta_jat, gama
-    real(8):: gamau, alpha_iat, alpha_jat, gamau_ijat, gamau_jiat
-    real(8):: sqrt2, sqrt2inv, beta_iatinv, sqrtpiinv
-    real(8):: rinv, r2inv, r3inv
-    pi=4.d0*atan(1.d0)
-    sqrt2=sqrt(2.d0)
-    sqrt2inv=1.d0/sqrt2
-    sqrtpiinv=1.d0/sqrt(pi)
-    atoms%ztot=0.d0
-    do iat=1,atoms%nat
-        atoms%zat(iat)=ann_arr%ann(atoms%itypat(iat))%zion
-        atoms%ztot=atoms%ztot+atoms%zat(iat)
-    enddo
-    if(trim(str_job)=='init') then
-        ann_arr%ener_ref=0.d0
-        do iat=1,atoms%nat
-            a(iat,atoms%nat+1)=1.d0
-            a(atoms%nat+1,iat)=1.d0
-            beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
-            ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
-            gama=1.d0/beta_iat *sqrt2inv
-            a(iat,iat)=gama*2.d0*sqrtpiinv+ann_arr%ann(atoms%itypat(iat))%hardness
-            do jat=iat+1,atoms%nat
-                dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-                dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-                dz=atoms%rat(3,jat)-atoms%rat(3,iat)
-                r=sqrt(dx*dx+dy*dy+dz*dz)
-                beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
-                gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
-                a(iat,jat)=erf(gama*r)/r
-                a(jat,iat)=a(iat,jat)
-            enddo
-        enddo
-        a(atoms%nat+1,atoms%nat+1)=0.d0
-    elseif(trim(str_job)=='calculate') then
-        tt1=0.d0
-        tt2=0.d0
-        tt3=0.d0
-        tt4=0.d0
-        tt5=0.d0
-        tt6=0.d0
-        tt7=0.d0
-        do iat=1,atoms%nat
-            tt1=tt1+ann_arr%chi_o(iat)*(atoms%qat(iat)+atoms%zat(iat))
-            tt1=tt1+0.5d0*ann_arr%ann(atoms%itypat(iat))%hardness*(atoms%qat(iat)+atoms%zat(iat))**2
-            beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
-            alpha_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-            gama=1.d0/beta_iat*sqrt2inv
-            gamau=1.d0/sqrt(beta_iat**2+alpha_iat**2)
-            tt2=tt2+atoms%qat(iat)**2*gama*sqrtpiinv
-            tt3=tt3+gamau*sqrtpiinv*atoms%qat(iat)*atoms%zat(iat)*2.d0
-            do jat=iat+1,atoms%nat
-                dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-                dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-                dz=atoms%rat(3,jat)-atoms%rat(3,iat)
-                r=sqrt(dx*dx+dy*dy+dz*dz)
-                beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
-                alpha_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth_ion
-                gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
-                gamau=1.d0/sqrt(alpha_iat**2+alpha_jat**2)
-                gamau_ijat=1.d0/sqrt(beta_iat**2+alpha_jat**2)
-                gamau_jiat=1.d0/sqrt(beta_jat**2+alpha_iat**2)
-                tt4=tt4+atoms%qat(iat)*atoms%qat(jat)*erf(gama*r)/r
-                tt5=tt5+atoms%qat(iat)*atoms%zat(jat)*erf(gamau_ijat*r)/r
-                tt6=tt6+atoms%qat(jat)*atoms%zat(iat)*erf(gamau_jiat*r)/r
-                tt7=tt7+atoms%zat(jat)*atoms%zat(iat)*erf(gamau*r)/r
-                rinv=1.d0/r
-                r2inv=rinv*rinv
-                r3inv=r2inv*rinv
-                ttf=(2.d0*sqrtpiinv*gama*exp(-(gama*r)**2)*r2inv-erf(gama*r)*r3inv)*atoms%qat(iat)*atoms%qat(jat)
-                ttf=ttf+(2.d0*sqrtpiinv*gamau_ijat*exp(-(gamau_ijat*r)**2)*r2inv-erf(gamau_ijat*r)*r3inv)*atoms%qat(iat)*atoms%zat(jat)
-                ttf=ttf+(2.d0*sqrtpiinv*gamau_jiat*exp(-(gamau_jiat*r)**2)*r2inv-erf(gamau_jiat*r)*r3inv)*atoms%qat(jat)*atoms%zat(iat)
-                ttf=ttf+(2.d0*sqrtpiinv*gamau*exp(-(gamau*r)**2)*r2inv-erf(gamau*r)*r3inv)*atoms%zat(iat)*atoms%zat(jat)
-                atoms%fat(1,iat)=atoms%fat(1,iat)+ttf*dx
-                atoms%fat(2,iat)=atoms%fat(2,iat)+ttf*dy
-                atoms%fat(3,iat)=atoms%fat(3,iat)+ttf*dz
-                atoms%fat(1,jat)=atoms%fat(1,jat)-ttf*dx
-                atoms%fat(2,jat)=atoms%fat(2,jat)-ttf*dy
-                atoms%fat(3,jat)=atoms%fat(3,jat)-ttf*dz
-            enddo
-        enddo
-        epot_es=tt1+tt2+tt3+tt4+tt5+tt6+tt7+ann_arr%ener_ref
-        if(parini%iverbose>=1) then
-        !write(81,'(i6,4es14.5,3f7.1)') atoms%nat,epot_es,tt1,tt2,tt3,1.d2*tt1/epot_es,1.d2*tt2/epot_es,1.d2*tt3/epot_es
-        endif
-    else
-        stop 'ERROR: unknown job in cal_electrostatic_eem2'
-    endif
-end subroutine cal_electrostatic_eem2
 !*****************************************************************************************
