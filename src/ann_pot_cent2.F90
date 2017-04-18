@@ -25,13 +25,11 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%chi_i=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_i')
         ann_arr%chi_o=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_o')
         ann_arr%chi_d=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_d')
-        ann_arr%a=f_malloc0([1.to.(atoms%nat+1)*(atoms%nat+1)],id='a: aq=-chi')
     else
         ann_arr%fat_chi=0.d0
         ann_arr%chi_i=0.d0
         ann_arr%chi_o=0.d0
         ann_arr%chi_d=0.d0
-        ann_arr%a=0.d0
     endif
     if(trim(ann_arr%event)=='train') then
         !The following is allocated with ekf%num(1), this means number of
@@ -88,7 +86,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     !This msut be here otherwise it will zero forces which were calculated by kwald.
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi2(parini,ann_arr,atoms,ann_arr%a)
+    call get_qat_from_chi2(parini,ann_arr,atoms)
     if(parini%iverbose>=2) call cpu_time(time5)
     !if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then !CORRECT_IT
     !    call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
@@ -154,7 +152,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     call f_release_routine()
 end subroutine cal_ann_eem2
 !*****************************************************************************************
-subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
+subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -163,7 +161,55 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     !local variables
+    integer:: iter, iat, niter, jat, igw
+    real(8):: gnrm, epot_old, de, qtot, gnrm2, gtot, q1
+    real(8), allocatable:: grad1(:)
+    real(8), allocatable:: grad2(:)
+    real(8), allocatable:: rel(:,:)
+    real(8):: tt1, tt2, tt3
+    allocate(grad1(3*atoms%nat))
+    allocate(grad2(atoms%nat))
+    allocate(rel(3,atoms%nat))
+
+    rel(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat) !+2.d-1
+
+    do iat=1,atoms%nat
+        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.6d0-atoms%zat(1)
+        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.6d0-atoms%zat(atoms%nat)
+        if(trim(atoms%sat(iat))=='W' ) atoms%qat(iat)= 0.6d0-atoms%zat(1)
+        if(trim(atoms%sat(iat))=='S' ) atoms%qat(iat)=-0.6d0-atoms%zat(atoms%nat)
+    enddo
+
+    niter=200
+    do iter=0,niter
+        !call cal_potential_cent2(atoms%nat,atoms%rat,rel,atoms%qat,atoms%cellvec,atoms%epot,atoms%fat,grad1,grad2,epot_atom)
+        if(iter==0) epot_old=atoms%epot
+        de=atoms%epot-epot_old
+        gnrm=sqrt(sum(grad1**2))
+        gtot=sum(grad2(1:atoms%nat))
+        grad2(1:atoms%nat)=grad2(1:atoms%nat)-gtot/atoms%nat
+        gnrm2=sqrt(sum(grad2(1:atoms%nat)**2))
+        qtot=sum(atoms%zat(1:atoms%nat))+sum(atoms%qat(1:atoms%nat))
+        q1=atoms%zat(1)+atoms%qat(1)
+        write(*,'(a,i5,es24.15,3es11.2,2f8.3)') 'iter,epot,gnrm ',iter,atoms%epot,de,gnrm,gnrm2,q1,qtot
+        !write(41,'(a,i5,6f17.10,es14.5)') 'iter,dis ',iter,rel(1:3,1)-atoms%rat(1:3,1),rel(1:3,2)-atoms%rat(1:3,2),gnrm
+        write(51,'(i5,2f8.3)') iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
+        if(gnrm<5.d-4 .and. gnrm2<1.d-3) exit
+        if(iter==niter) exit
+        do iat=1,atoms%nat
+            rel(1,iat)=rel(1,iat)-2.d-1*grad1(3*iat-2)
+            rel(2,iat)=rel(2,iat)-2.d-1*grad1(3*iat-1)
+            rel(3,iat)=rel(3,iat)-2.d-1*grad1(3*iat-0)
+        enddo
+        do iat=1,atoms%nat
+            atoms%qat(iat)=atoms%qat(iat)-0.5d0*grad2(iat)
+        enddo
+        epot_old=atoms%epot
+    enddo
+    write(*,'(a,i5,2f8.3)') 'DISP ',iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
+
+    deallocate(grad1)
+    deallocate(grad2)
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
