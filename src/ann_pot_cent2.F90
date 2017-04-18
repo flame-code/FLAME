@@ -183,7 +183,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
 
     niter=200
     do iter=0,niter
-        !call cal_potential_cent2(atoms%nat,atoms%rat,rel,atoms%qat,atoms%cellvec,atoms%epot,atoms%fat,grad1,grad2,epot_atom)
+        call cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
         gnrm=sqrt(sum(grad1**2))
@@ -212,4 +212,57 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     deallocate(grad1)
     deallocate(grad2)
 end subroutine get_qat_from_chi2
+!*****************************************************************************************
+subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
+    use mod_interface
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(out):: grad1(3,atoms%nat), grad2(atoms%nat)
+    !local variables
+    integer:: iat
+    real(8):: epot_es, dx, dy, dz, epot_es_bps, tt1, tt2
+    real(8):: hardness, spring_const
+    real(8), allocatable:: grad1_t(:,:)
+    real(8), allocatable:: grad2_t(:)
+    allocate(grad1_t(3,atoms%nat),source=0.d0)
+    allocate(grad2_t(atoms%nat),source=0.d0)
+    grad1=0.d0
+    grad2=0.d0
+    atoms%fat=0.d0
+    atoms%epot=0.d0
+    do iat=1,atoms%nat !summation over ions/electrons
+        atoms%epot=atoms%epot+ann_arr%chi_o(iat)*(atoms%zat(iat)+atoms%qat(iat))
+        hardness=ann_arr%ann(atoms%itypat(iat))%hardness
+        atoms%epot=atoms%epot+0.5d0*hardness*(atoms%zat(iat)+atoms%qat(iat))**2
+        grad2(iat)=grad2(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
+        dx=rel(1,iat)-atoms%rat(1,iat)
+        dy=rel(2,iat)-atoms%rat(2,iat)
+        dz=rel(3,iat)-atoms%rat(3,iat)
+        spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
+        atoms%epot=atoms%epot+0.5d0*spring_const*(dx**2+dy**2+dz**2)
+        grad1(1,iat)=grad1(1,iat)+spring_const*dx
+        grad1(2,iat)=grad1(2,iat)+spring_const*dy
+        grad1(3,iat)=grad1(3,iat)+spring_const*dz
+    enddo
+    grad1_t(1:3,1:atoms%nat)=grad1(1:3,1:atoms%nat)
+    !call cal_electrostatic_cent2(nat,atoms%rat,rel,atoms%qat,epot_es,atoms%fat,grad1,grad2,epot_atom)
+    !call cal_pot_with_bps(atoms%nat,atoms%rat,rel,atoms%qat,atoms%cellvec,epot_es_bps,grad1_t,grad2_t)
+    !tt1=sum((grad2-grad2_t)**2)**0.5
+    !tt2=sum((grad1-grad1_t)**2)**0.5
+    !write(*,'(a,2es24.15,3es14.5)') 'DIFF ',epot_es,epot_es_bps,epot_es-epot_es_bps,tt1,tt2
+    !write(*,'(a,2es24.15,3es14.5)') 'DIFF ',epot_es,epot_es_bps,epot_es-epot_es_bps,grad2(1),grad2_t(1)
+    !write(*,'(a,2es24.15,3es14.5)') 'DIFF ',epot_es,epot_es_bps,epot_es-epot_es_bps,grad1(1,1),grad1_t(1,1)
+    !stop
+    epot_es=epot_es_bps
+    grad1(1:3,1:atoms%nat)=grad1_t(1:3,1:atoms%nat)
+    grad2(1:atoms%nat)=grad2_t(1:atoms%nat)
+    atoms%epot=atoms%epot+epot_es
+    !epot=epot+ener_ref
+    deallocate(grad1_t)
+    deallocate(grad2_t)
+end subroutine cal_potential_cent2
 !*****************************************************************************************

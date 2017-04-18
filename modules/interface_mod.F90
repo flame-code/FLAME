@@ -406,6 +406,15 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
 end subroutine get_qat_from_chi2
+subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(out):: grad1(3,atoms%nat), grad2(atoms%nat)
+end subroutine cal_potential_cent2
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_parini, only: typ_parini
