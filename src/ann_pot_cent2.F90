@@ -250,7 +250,7 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     enddo
     grad1_t(1:3,1:atoms%nat)=grad1(1:3,1:atoms%nat)
     !call cal_electrostatic_cent2(nat,atoms%rat,rel,atoms%qat,epot_es,atoms%fat,grad1,grad2,epot_atom)
-    !call cal_pot_with_bps(atoms%nat,atoms%rat,rel,atoms%qat,atoms%cellvec,epot_es_bps,grad1_t,grad2_t)
+    call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,grad1_t,grad2_t)
     !tt1=sum((grad2-grad2_t)**2)**0.5
     !tt2=sum((grad1-grad1_t)**2)**0.5
     !write(*,'(a,2es24.15,3es14.5)') 'DIFF ',epot_es,epot_es_bps,epot_es-epot_es_bps,tt1,tt2
@@ -265,4 +265,121 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     deallocate(grad1_t)
     deallocate(grad2_t)
 end subroutine cal_potential_cent2
+!*****************************************************************************************
+subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
+    use mod_interface
+    use mod_ann, only: typ_ann_arr
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
+    !local variables
+    real(8):: cell(3)
+    type(typ_parini):: parini
+    !type(typ_ewald_p3d):: ewald_p3d_rough
+    type(typ_ewald_p3d):: ewald_p3d
+    real(8):: ehartree, error, pi
+    real(8):: time1, time2, time3, time4, time5, time6, time7
+    real(8), allocatable:: potref(:,:,:)
+    real(8), allocatable:: rel_t(:,:)
+    real(8), allocatable:: ratred(:,:), fat(:,:), fat_m(:,:)
+    real(8), allocatable:: gw_ion(:), eqd(:), qat_tot(:)
+    real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
+    real(8):: x, y, z, v1, v2
+    integer:: ix, iy, iz, iat
+    pi=4.d0*atan(1.d0)
+    associate(nx=>ewald_p3d%poisson_p3d%ngpx)
+    associate(ny=>ewald_p3d%poisson_p3d%ngpy)
+    associate(nz=>ewald_p3d%poisson_p3d%ngpz)
+    rel_t=f_malloc([1.to.3,1.to.atoms%nat],id='rel_t')
+    ewald_p3d%poisson_p3d%ngpx=50
+    ewald_p3d%poisson_p3d%ngpy=50
+    ewald_p3d%poisson_p3d%ngpz=50
+    ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
+    ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
+    potref=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='potref')
+    rel_t(1:3,1:atoms%nat)=rel(1:3,1:atoms%nat)
+    !call put_in_cell(atoms,rel_t,cell)
+    cell(1)=atoms%cellvec(1,1)
+    cell(2)=atoms%cellvec(2,2)
+    cell(3)=atoms%cellvec(3,3)
+    ewald_p3d%hgx=cell(1)/nx
+    ewald_p3d%hgy=cell(2)/ny
+    ewald_p3d%hgz=cell(3)/nz
+    ewald_p3d%rgcut=6.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha
+    ewald_p3d%nbgpx=int(ewald_p3d%rgcut/ewald_p3d%hgx)+2
+    ewald_p3d%nbgpy=int(ewald_p3d%rgcut/ewald_p3d%hgy)+2
+    ewald_p3d%nbgpz=int(ewald_p3d%rgcut/ewald_p3d%hgz)+2
+    ewald_p3d%nagpx=ewald_p3d%nbgpx+1
+    ewald_p3d%nagpy=ewald_p3d%nbgpy+1
+    ewald_p3d%nagpz=ewald_p3d%nbgpz+1
+
+    !-------------------------------------------------------
+    atoms%stress=0.d0
+    stress=0.d0
+    stress_m=0.d0
+    call cpu_time(time1)
+    !call put_gauss_to_grid(parini,atoms,qat,rel_t,ewald_p3d,potref) !CORRECT_IT
+
+    call cpu_time(time2)
+    call construct_ewald_bps(parini,atoms,ewald_p3d)
+    call cpu_time(time3)
+    call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
+
+    allocate(ratred(3,atoms%nat),gw_ion(atoms%nat))
+    allocate(fat(3,atoms%nat),eqd(atoms%nat),qat_tot(atoms%nat))
+    allocate(fat_m(3,atoms%nat))
+    do iat=1,atoms%nat
+        gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
+    enddo
+    qat_tot(1:atoms%nat)=atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat)
+
+    !call longerange_forces(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,qat_tot,gw_ion,ewald_p3d,fat_m,stress_m) !CORRECT_IT
+    !call longerange_forces(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,zat,gw_ion,ewald_p3d,fat_m,stress_m)
+    !call longerange_forces(parini,atoms%boundcond,.false.,atoms%nat,rel      ,qat,gw    ,ewald_p3d,fat_m,stress_m)
+    !write(*,*) 'cell(1)*cell(2)*cell(3) ',cell(1)*cell(2)*cell(3)
+    write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
+    stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
+
+    write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(1,1),atoms%stress(1,2),atoms%stress(1,3)
+    write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(2,1),atoms%stress(2,2),atoms%stress(2,3)
+    write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(3,1),atoms%stress(3,2),atoms%stress(3,3)
+    write(*,*)
+    write(*,'(a,es14.5)') 'stress (BPS) ',atoms%stress(1,1)*(cell(1)*cell(2)*cell(3))
+
+    write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
+    write(*,'(a,2f20.10,es14.5)') 'forces ',fat(1,1),fat_m(1,1),fat(1,1)-fat_m(1,1)
+    write(*,'(a,2f20.10,es14.5)') 'stress ',atoms%stress(1,1),stress(1,1),atoms%stress(1,1)-stress(1,1)
+    stop 'STOPPED TO COMPARE STRESS'
+    !!!! call cpu_time(time4)
+    !!!! call cal_grad_long(atoms,qat,rel_t,ewald_p3d,grad1,grad2)
+    !!!! call cpu_time(time5)
+    !!!! call destruct_ewald_bps(ewald_p3d)
+    !!!! call cpu_time(time6)
+    !!!! epot_es=0.d0
+    !!!! call cal_shortrange_ewald(atoms,qat,rel_t,epot_es,grad1,grad2)
+    !!!! call cpu_time(time7)
+    !!!! write(*,'(a,7f6.2)') 'TIME ',time2-time1,time3-time2,time4-time3,time5-time4, &
+    !!!!                              time6-time5,time7-time6,time7-time1
+
+    !do iat=1,atoms%nat
+    !    epot_es=epot_es-zat(iat)**2/(gw_ion(iat)*sqrt(2.d0*pi))
+    !enddo
+    write(*,*) 'ehartree ',ehartree
+    epot_es=epot_es+ehartree
+    !write(*,*) 'RMSE ',ewald_p3d%hgx,error
+    call f_free(potref)
+    call f_free(ewald_p3d%poisson_p3d%pot)
+    call f_free(ewald_p3d%poisson_p3d%rho)
+    call f_free(atoms%rat)
+    call f_free(rel_t)
+    end associate
+    end associate
+    end associate
+end subroutine cal_pot_with_bps
 !*****************************************************************************************
