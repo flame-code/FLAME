@@ -1561,15 +1561,18 @@ subroutine determine_glimitsphere(ewald_p3d)
     implicit none
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine determine_glimitsphere
-subroutine putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
-    use mod_atoms, only: typ_atoms
+subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_parini, only: typ_parini
     implicit none
-    type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: gausswidth(atoms%nat)
     type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gausswidth(nat)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine putgaussgrid
 subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
     use mod_atoms, only: typ_atoms
