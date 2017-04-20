@@ -426,6 +426,19 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
 end subroutine cal_pot_with_bps
+subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    real(8), intent(inout):: potref(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,ewald_p3d%poisson_p3d%ngpz)
+end subroutine put_gauss_to_grid
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_parini, only: typ_parini

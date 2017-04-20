@@ -288,7 +288,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8), allocatable:: potref(:,:,:)
     real(8), allocatable:: rel_t(:,:)
     real(8), allocatable:: ratred(:,:), fat(:,:), fat_m(:,:)
-    real(8), allocatable:: gw_ion(:), eqd(:), qat_tot(:)
+    real(8), allocatable:: gw_ion(:), gw(:), eqd(:), qat_tot(:)
     real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
     real(8):: x, y, z, v1, v2
     integer:: ix, iy, iz, iat
@@ -323,21 +323,23 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     atoms%stress=0.d0
     stress=0.d0
     stress_m=0.d0
+    allocate(ratred(3,atoms%nat),gw_ion(atoms%nat))
+    allocate(fat(3,atoms%nat),eqd(atoms%nat),qat_tot(atoms%nat))
+    allocate(fat_m(3,atoms%nat))
+    do iat=1,atoms%nat
+        gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
+        gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
+    enddo
+    qat_tot(1:atoms%nat)=atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat)
+    !-------------------------------------------------------
     call cpu_time(time1)
-    !call put_gauss_to_grid(parini,atoms,qat,rel_t,ewald_p3d,potref) !CORRECT_IT
+    call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
 
     call cpu_time(time2)
     call construct_ewald_bps(parini,atoms,ewald_p3d)
     call cpu_time(time3)
     call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
 
-    allocate(ratred(3,atoms%nat),gw_ion(atoms%nat))
-    allocate(fat(3,atoms%nat),eqd(atoms%nat),qat_tot(atoms%nat))
-    allocate(fat_m(3,atoms%nat))
-    do iat=1,atoms%nat
-        gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-    enddo
-    qat_tot(1:atoms%nat)=atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat)
 
     !call longerange_forces(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,qat_tot,gw_ion,ewald_p3d,fat_m,stress_m) !CORRECT_IT
     !call longerange_forces(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,zat,gw_ion,ewald_p3d,fat_m,stress_m)
@@ -382,4 +384,39 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     end associate
     end associate
 end subroutine cal_pot_with_bps
+!*****************************************************************************************
+subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    real(8), intent(inout):: potref(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,ewald_p3d%poisson_p3d%ngpz)
+    !local variables
+    integer:: ix, iy, iz, iat
+    real(8):: x, y, z, r, rsq, pi, ttg, factor, tt1, qtot, alpha
+    associate(nx=>ewald_p3d%poisson_p3d%ngpx)
+    associate(ny=>ewald_p3d%poisson_p3d%ngpy)
+    associate(nz=>ewald_p3d%poisson_p3d%ngpz)
+    !character(4):: bc
+    pi=4.d0*atan(1.d0)
+    alpha=2.d0
+    ewald_p3d%poisson_p3d%rho=0.d0
+    !bc='bulk'
+    !call putgaussgrid(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,atoms%zat,gw_ion,ewald_p3d) !CORRECT_IT
+    !call putgaussgrid(parini,atoms%boundcond,.false.,atoms%nat,rel      ,atoms%qat,gw    ,ewald_p3d) !CORRECT_IT
+    !call gauss_grid(parini,'bulk',.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
+    !    ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
+    !call gauss_grid(parini,'bulk',.false.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,gw    , &
+    !    ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
+    end associate
+    end associate
+    end associate
+end subroutine put_gauss_to_grid
 !*****************************************************************************************
