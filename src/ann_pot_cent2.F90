@@ -409,8 +409,8 @@ subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
     alpha=2.d0
     ewald_p3d%poisson_p3d%rho=0.d0
     !bc='bulk'
-    !call putgaussgrid(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,atoms%zat,gw_ion,ewald_p3d) !CORRECT_IT
-    !call putgaussgrid(parini,atoms%boundcond,.false.,atoms%nat,rel      ,atoms%qat,gw    ,ewald_p3d) !CORRECT_IT
+    call putgaussgrid(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,atoms%zat,gw_ion,ewald_p3d) !CORRECT_IT
+    call putgaussgrid(parini,atoms%boundcond,.false.,atoms%nat,rel      ,atoms%qat,gw    ,ewald_p3d) !CORRECT_IT
     !call gauss_grid(parini,'bulk',.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
     !    ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
     !call gauss_grid(parini,'bulk',.false.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,gw    , &
