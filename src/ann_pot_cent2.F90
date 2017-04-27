@@ -355,7 +355,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     write(*,*)
     write(*,'(a,es14.5)') 'stress (BPS) ',atoms%stress(1,1)*(cell(1)*cell(2)*cell(3))
 
-    write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
+    write(*,'(a,f20.10)') 'ehartree ',ehartree
     write(*,'(a,2f20.10,es14.5)') 'forces ',fat(1,1),fat_m(1,1),fat(1,1)-fat_m(1,1)
     write(*,'(a,2f20.10,es14.5)') 'stress ',atoms%stress(1,1),stress(1,1),atoms%stress(1,1)-stress(1,1)
     stop 'STOPPED TO COMPARE STRESS'

@@ -439,6 +439,21 @@ subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(inout):: potref(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,ewald_p3d%poisson_p3d%ngpz)
 end subroutine put_gauss_to_grid
+subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
+end subroutine gauss_grid
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_parini, only: typ_parini
