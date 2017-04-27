@@ -227,37 +227,45 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     real(8):: epot_es, dx, dy, dz, epot_es_bps, tt1, tt2
     real(8):: hardness, spring_const
     real(8), allocatable:: grad1_p1(:,:)
+    real(8), allocatable:: grad1_p2(:,:)
     real(8), allocatable:: grad2_p1(:)
+    real(8), allocatable:: grad2_p2(:)
     allocate(grad1_p1(3,atoms%nat),source=0.d0)
+    allocate(grad1_p2(3,atoms%nat),source=0.d0)
     allocate(grad2_p1(atoms%nat),source=0.d0)
-    grad1=0.d0
-    grad2=0.d0
+    allocate(grad2_p2(atoms%nat),source=0.d0)
     atoms%fat=0.d0
     atoms%epot=0.d0
     do iat=1,atoms%nat !summation over ions/electrons
         atoms%epot=atoms%epot+ann_arr%chi_o(iat)*(atoms%zat(iat)+atoms%qat(iat))
         hardness=ann_arr%ann(atoms%itypat(iat))%hardness
         atoms%epot=atoms%epot+0.5d0*hardness*(atoms%zat(iat)+atoms%qat(iat))**2
-        grad2(iat)=grad2(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
+        grad2_p1(iat)=grad2_p1(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
         dx=rel(1,iat)-atoms%rat(1,iat)
         dy=rel(2,iat)-atoms%rat(2,iat)
         dz=rel(3,iat)-atoms%rat(3,iat)
         spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
         atoms%epot=atoms%epot+0.5d0*spring_const*(dx**2+dy**2+dz**2)
-        grad1(1,iat)=grad1(1,iat)+spring_const*dx
-        grad1(2,iat)=grad1(2,iat)+spring_const*dy
-        grad1(3,iat)=grad1(3,iat)+spring_const*dz
+        grad1_p1(1,iat)=grad1_p1(1,iat)+spring_const*dx
+        grad1_p1(2,iat)=grad1_p1(2,iat)+spring_const*dy
+        grad1_p1(3,iat)=grad1_p1(3,iat)+spring_const*dz
     enddo
-    grad1_p1(1:3,1:atoms%nat)=grad1(1:3,1:atoms%nat)
-    !call cal_electrostatic_cent2(nat,atoms%rat,rel,atoms%qat,epot_es,atoms%fat,grad1,grad2,epot_atom)
-    call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,grad1_p1,grad2_p1)
+    !call cal_electrostatic_cent2(nat,atoms%rat,rel,atoms%qat,epot_es, &
+    !    atoms%fat,grad1_p1,grad2_p1,epot_atom)
+    call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,grad1_p2,grad2_p2)
     epot_es=epot_es_bps
-    grad1(1:3,1:atoms%nat)=grad1_p1(1:3,1:atoms%nat)
-    grad2(1:atoms%nat)=grad2_p1(1:atoms%nat)
+    do iat=1,atoms%nat
+        grad1(1,iat)=grad1_p1(1,iat)+grad1_p2(1,iat)
+        grad1(2,iat)=grad1_p1(2,iat)+grad1_p2(2,iat)
+        grad1(3,iat)=grad1_p1(3,iat)+grad1_p2(3,iat)
+        grad2(iat)=grad2_p1(iat)+grad2_p2(iat)
+    enddo
     atoms%epot=atoms%epot+epot_es
     !epot=epot+ener_ref
     deallocate(grad1_p1)
+    deallocate(grad1_p2)
     deallocate(grad2_p1)
+    deallocate(grad2_p2)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
 subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
