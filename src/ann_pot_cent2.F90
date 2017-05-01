@@ -293,6 +293,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8), allocatable:: gw_ion(:), gw(:), eqd(:), qat_tot(:)
     real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
     real(8):: x, y, z, v1, v2
+    !real(8):: ratred(3,100), ehartree_kwald, eqd(1:1000), stress,celldv)
     integer:: ix, iy, iz, iat
     pi=4.d0*atan(1.d0)
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
@@ -351,15 +352,27 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
     stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
 
+    call kwald(1,atoms%nat,atoms%rat,ratred,qat_tot,atoms%cellvec,gw**2,300.d0,ehartree_kwald,atoms%fat,eqd,stress,celldv)
+
     write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(1,1),atoms%stress(1,2),atoms%stress(1,3)
     write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(2,1),atoms%stress(2,2),atoms%stress(2,3)
     write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(3,1),atoms%stress(3,2),atoms%stress(3,3)
     write(*,*)
     write(*,'(a,es14.5)') 'stress (BPS) ',atoms%stress(1,1)*(cell(1)*cell(2)*cell(3))
 
-    write(*,'(a,f20.10)') 'ehartree ',ehartree
+    !write(*,'(a,f20.10)') 'ehartree ',ehartree
+    write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
     write(*,'(a,2f20.10,es14.5)') 'forces ',fat(1,1),fat_m(1,1),fat(1,1)-fat_m(1,1)
     write(*,'(a,2f20.10,es14.5)') 'stress ',atoms%stress(1,1),stress(1,1),atoms%stress(1,1)-stress(1,1)
+    
+    call gauss_gradient(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,qat_tot,gw_ion, &
+        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,grad1,grad2)
+        
+    !call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
+    !call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
+
+
+
     stop 'STOPPED TO COMPARE STRESS'
     !!!! call cpu_time(time4)
     !!!! call cal_grad_long(atoms,qat,rel_t,ewald_p3d,grad1,grad2)
@@ -658,7 +671,7 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     call f_free(wm)
 end subroutine gauss_grid
 !*****************************************************************************************
-subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,grad1,grad2)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -666,7 +679,6 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
-    logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
     real(8), intent(in):: cv(3,3)
@@ -674,7 +686,8 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz)
+    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: grad1(3,nat), grad2(nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
     real(8):: pi
@@ -685,7 +698,7 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm
+    real(8):: cvinv_norm, vol_voxel, ttq
     real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
     real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
@@ -758,32 +771,6 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     !endif
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
-    !-------------------------------------------------------
-    do iat=1,nat
-        gwsq_inv=1.d0/gw(iat)**2
-        fac=1.d0/(gw(iat)*sqrt(pi))**3
-        imgx=nint(ratred(1,iat)*hrxinv)+1
-        imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
-        facqiat=fac*qat(iat)
-        do igz=-nbgz,nbgz
-            jgz=imgz+igz
-            do igy=-nbgy,nbgy
-                jgy=imgy+igy
-                do igx=-nbgx,nbgx
-                    jgx=imgx+igx
-                    ximg=(jgx-1)*hxx+(jgy-1)*hyx+(jgz-1)*hzx
-                    yimg=(jgx-1)*hxy+(jgy-1)*hyy+(jgz-1)*hzy
-                    zimg=(jgx-1)*hxz+(jgy-1)*hyz+(jgz-1)*hzz
-                    dmx=ximg-rxyz(1,iat)
-                    dmy=yimg-rxyz(2,iat)
-                    dmz=zimg-rxyz(3,iat)
-                    dmsq=dmx**2+dmy**2+dmz**2
-                    wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
-                enddo
-            enddo
-        enddo
-    enddo
     !---------------------------------------------------------------------------
     ncellx=nagx/ngx
     ncelly=nagy/ngy
@@ -801,46 +788,46 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     do igz=1-nagz,ngz+nagz
         do igy=1-nagy,ilgy-1
             do igx=1-nagx,ilgx-1
-                wa(igx+nex,igy+ney,igz)=wa(igx+nex,igy+ney,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx+nex,igy+ney,igz)
             enddo
             do igx=ilgx,irgx
-                wa(igx,igy+ney,igz)=wa(igx,igy+ney,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx,igy+ney,igz)
             enddo
             do igx=irgx+1,ngx+nagx
-                wa(igx-nex,igy+ney,igz)=wa(igx-nex,igy+ney,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx-nex,igy+ney,igz)
             enddo
         enddo
         do igy=ilgy,irgy
             do igx=1-nagx,ilgx-1
-                wa(igx+nex,igy,igz)=wa(igx+nex,igy,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx+nex,igy,igz)
             enddo
             do igx=irgx+1,ngx+nagx
-                wa(igx-nex,igy,igz)=wa(igx-nex,igy,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx-nex,igy,igz)
             enddo
         enddo
         do igy=irgy+1,ngy+nagy
             do igx=1-nagx,ilgx-1
-                wa(igx+nex,igy-ney,igz)=wa(igx+nex,igy-ney,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx+nex,igy-ney,igz)
             enddo
             do igx=ilgx,irgx
-                wa(igx,igy-ney,igz)=wa(igx,igy-ney,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx,igy-ney,igz)
             enddo
             do igx=irgx+1,ngx+nagx
-                wa(igx-nex,igy-ney,igz)=wa(igx-nex,igy-ney,igz)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx-nex,igy-ney,igz)
             enddo
         enddo
     enddo
     do igz=1-nagz,ilgz-1
         do igy=ilgy,irgy
             do igx=ilgx,irgx
-                wa(igx,igy,igz+nez)=wa(igx,igy,igz+nez)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx,igy,igz+nez)
             enddo
         enddo
     enddo
     do igz=irgz+1,ngz+nagz
         do igy=ilgy,irgy
             do igx=ilgx,irgx
-                wa(igx,igy,igz-nez)=wa(igx,igy,igz-nez)+wa(igx,igy,igz)
+                wa(igx,igy,igz)=pot(igx,igy,igz-nez)
             enddo
         enddo
     enddo
@@ -849,7 +836,7 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
         do igz=1,ngz
             do igy=1,ngy
                 do igx=1,ngx
-                    wm(igx,igy,igz)=wa(igx,igy,igz)
+                    wa(igx,igy,igz)=pot(igx,igy,igz)
                 enddo
             enddo
         enddo
@@ -861,32 +848,43 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
                 jgy=modulo(igy-1,ngy)+1
                 do igx=ilgx,irgx
                     jgx=modulo(igx-1,ngx)+1
-                    wm(jgx,jgy,jgz)=wm(jgx,jgy,jgz)+wa(igx,igy,igz)
+                    wa(igx,igy,igz)=pot(jgx,jgy,jgz)
                 enddo
             enddo
         enddo
     endif
-    !---------------------------------------------------------------------------
-    if(reset) then
-        !if the input array of charge density does not contain any previous value
-        !wanted to be preserved.
-        do igz=1,ngz
-            do igy=1,ngy
-                do igx=1,ngx
-                    rho(igx,igy,igz)=wm(igx,igy,igz)
+    !-------------------------------------------------------
+    vol_voxel=vol/(ngx*ngy*ngz)
+    grad1(1:3,1:nat)=0.d0
+    grad2(1:nat)=0.d0
+    do iat=1,nat
+        gwsq_inv=1.d0/gw(iat)**2
+        fac=1.d0/(gw(iat)*sqrt(pi))**3
+        imgx=nint(ratred(1,iat)*hrxinv)+1
+        imgy=nint(ratred(2,iat)*hryinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1
+        facqiat=fac !*qat(iat)
+        ttq=0.d0
+        do igz=-nbgz,nbgz
+            jgz=imgz+igz
+            do igy=-nbgy,nbgy
+                jgy=imgy+igy
+                do igx=-nbgx,nbgx
+                    jgx=imgx+igx
+                    ximg=(jgx-1)*hxx+(jgy-1)*hyx+(jgz-1)*hzx
+                    yimg=(jgx-1)*hxy+(jgy-1)*hyy+(jgz-1)*hzy
+                    zimg=(jgx-1)*hxz+(jgy-1)*hyz+(jgz-1)*hzz
+                    dmx=ximg-rxyz(1,iat)
+                    dmy=yimg-rxyz(2,iat)
+                    dmz=zimg-rxyz(3,iat)
+                    dmsq=dmx**2+dmy**2+dmz**2
+                    wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
+                    ttq=ttq+facqiat*exp(-dmsq*gwsq_inv)*wa(jgx,jgy,jgz)
                 enddo
             enddo
         enddo
-    else
-        !if the input array of charge density already some value that must be preserved.
-        do igz=1,ngz
-            do igy=1,ngy
-                do igx=1,ngx
-                    rho(igx,igy,igz)=rho(igx,igy,igz)+wm(igx,igy,igz)
-                enddo
-            enddo
-        enddo
-    endif
+        grad2(iat)=ttq*vol_voxel
+    enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
     call f_free(wa)

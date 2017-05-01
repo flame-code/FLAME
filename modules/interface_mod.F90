@@ -454,12 +454,11 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     integer, intent(in):: ngx, ngy, ngz
     real(8), intent(inout):: rho(ngx,ngy,ngz)
 end subroutine gauss_grid
-subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,grad1,grad2)
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
-    logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
     real(8), intent(in):: cv(3,3)
@@ -467,7 +466,8 @@ subroutine gauss_gradient(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz)
+    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: grad1(3,nat), grad2(nat)
 end subroutine gauss_gradient
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
