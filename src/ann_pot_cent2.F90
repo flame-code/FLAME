@@ -704,7 +704,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
     integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt
     integer:: iii
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
     integer:: ilgx, ilgy, ilgz, irgx, irgy, irgz
@@ -785,52 +785,58 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     nez=max(ngz,irgz-ilgz+1)
     !wrap around grid points that are outside the extended box in into the extended box,
     !these grid points do not form a complete cell.
-    do igz=1-nagz,ngz+nagz
-        do igy=1-nagy,ilgy-1
-            do igx=1-nagx,ilgx-1
-                wa(igx,igy,igz)=pot(igx+nex,igy+ney,igz)
-            enddo
-            do igx=ilgx,irgx
-                wa(igx,igy,igz)=pot(igx,igy+ney,igz)
-            enddo
-            do igx=irgx+1,ngx+nagx
-                wa(igx,igy,igz)=pot(igx-nex,igy+ney,igz)
-            enddo
-        enddo
-        do igy=ilgy,irgy
-            do igx=1-nagx,ilgx-1
-                wa(igx,igy,igz)=pot(igx+nex,igy,igz)
-            enddo
-            do igx=irgx+1,ngx+nagx
-                wa(igx,igy,igz)=pot(igx-nex,igy,igz)
-            enddo
-        enddo
-        do igy=irgy+1,ngy+nagy
-            do igx=1-nagx,ilgx-1
-                wa(igx,igy,igz)=pot(igx+nex,igy-ney,igz)
-            enddo
-            do igx=ilgx,irgx
-                wa(igx,igy,igz)=pot(igx,igy-ney,igz)
-            enddo
-            do igx=irgx+1,ngx+nagx
-                wa(igx,igy,igz)=pot(igx-nex,igy-ney,igz)
-            enddo
-        enddo
-    enddo
-    do igz=1-nagz,ilgz-1
-        do igy=ilgy,irgy
-            do igx=ilgx,irgx
-                wa(igx,igy,igz)=pot(igx,igy,igz+nez)
-            enddo
-        enddo
-    enddo
-    do igz=irgz+1,ngz+nagz
-        do igy=ilgy,irgy
-            do igx=ilgx,irgx
-                wa(igx,igy,igz)=pot(igx,igy,igz-nez)
-            enddo
-        enddo
-    enddo
+    write(*,*) ncellx,ncelly,ncellz
+    write(*,*) nagx,nagy,nagz
+    write(*,*) ngx,ngy,ngz,nex,ney,nez
+    !stop
+    !do igz=1-nagz,ngz+nagz
+    !    do igy=1-nagy,ilgy-1
+    !        do igx=1-nagx,ilgx-1
+    !            write(*,*) igx,igy,igz,igx+nex,igy+ney,igz
+    !            wa(igx,igy,igz)=pot(igx+nex,igy+ney,igz)
+    !            !wa(igx+nex,igy+ney,igz)=wa(igx+nex,igy+ney,igz)+wa(igx,igy,igz)
+    !        enddo
+    !        do igx=ilgx,irgx
+    !            wa(igx,igy,igz)=pot(igx,igy+ney,igz)
+    !        enddo
+    !        do igx=irgx+1,ngx+nagx
+    !            wa(igx,igy,igz)=pot(igx-nex,igy+ney,igz)
+    !        enddo
+    !    enddo
+    !    do igy=ilgy,irgy
+    !        do igx=1-nagx,ilgx-1
+    !            wa(igx,igy,igz)=pot(igx+nex,igy,igz)
+    !        enddo
+    !        do igx=irgx+1,ngx+nagx
+    !            wa(igx,igy,igz)=pot(igx-nex,igy,igz)
+    !        enddo
+    !    enddo
+    !    do igy=irgy+1,ngy+nagy
+    !        do igx=1-nagx,ilgx-1
+    !            wa(igx,igy,igz)=pot(igx+nex,igy-ney,igz)
+    !        enddo
+    !        do igx=ilgx,irgx
+    !            wa(igx,igy,igz)=pot(igx,igy-ney,igz)
+    !        enddo
+    !        do igx=irgx+1,ngx+nagx
+    !            wa(igx,igy,igz)=pot(igx-nex,igy-ney,igz)
+    !        enddo
+    !    enddo
+    !enddo
+    !do igz=1-nagz,ilgz-1
+    !    do igy=ilgy,irgy
+    !        do igx=ilgx,irgx
+    !            wa(igx,igy,igz)=pot(igx,igy,igz+nez)
+    !        enddo
+    !    enddo
+    !enddo
+    !do igz=irgz+1,ngz+nagz
+    !    do igy=ilgy,irgy
+    !        do igx=ilgx,irgx
+    !            wa(igx,igy,igz)=pot(igx,igy,igz-nez)
+    !        enddo
+    !    enddo
+    !enddo
     !---------------------------------------------------------------------------
     if(ncellx==0 .and. ncelly==0 .and. ncellz==0) then
         do igz=1,ngz
@@ -853,6 +859,22 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
             enddo
         enddo
     endif
+    !-------------------------------------------------------
+    do igz=1-nagz,ngz+nagz
+        igzt=igz+(sign(nez,-igz)+sign(nez,nez-igz))/2
+        do igy=1-nagy,ngy+nagy
+            igyt=igy+(sign(ney,-igy)+sign(ney,ney-igy))/2
+            do igx=1-nagx,0
+                wa(igx,igy,igz)=wa(igx+nex,igyt,igzt)
+            enddo
+            do igx=1,ngx
+                wa(igx,igy,igz)=wa(igx,igyt,igzt)
+            enddo
+            do igx=ngx+1,ngx+nagx
+                wa(igx,igy,igz)=wa(igx-nex,igyt,igzt)
+            enddo
+        enddo
+    enddo
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     grad1(1:3,1:nat)=0.d0
