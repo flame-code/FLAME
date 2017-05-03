@@ -285,7 +285,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     type(typ_parini):: parini
     !type(typ_ewald_p3d):: ewald_p3d_rough
     type(typ_ewald_p3d):: ewald_p3d
-    real(8):: ehartree, error, pi
+    real(8):: ehartree, error, pi, ehartree_2
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: potref(:,:,:)
     real(8), allocatable:: rel_t(:,:)
@@ -368,8 +368,12 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     call gauss_gradient(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,qat_tot,gw_ion, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,grad1,grad2)
         
-    !call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
-    !call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
+    atoms%qat(64)=atoms%qat(64)+1.d-3
+    call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
+    call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
+    write(*,'(a,2f20.10)') 'EHARTREE ',ehartree,ehartree_2
+    write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64)
+
 
 
 
@@ -900,7 +904,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
                     dmy=yimg-rxyz(2,iat)
                     dmz=zimg-rxyz(3,iat)
                     dmsq=dmx**2+dmy**2+dmz**2
-                    wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
+                    !wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
                     ttq=ttq+facqiat*exp(-dmsq*gwsq_inv)*wa(jgx,jgy,jgz)
                 enddo
             enddo
