@@ -1812,11 +1812,13 @@ subroutine set_qat(atoms)
         elseif(trim(atoms%stypat(itypat))=='Ti') then
             atoms%qtypat(itypat)=2.0d0
         elseif(trim(atoms%stypat(itypat))=='Zr') then
-            atoms%qtypat(itypat)=2.0d0
+            atoms%qtypat(itypat)=4.0d0
+        elseif(trim(atoms%stypat(itypat))=='Y') then
+            atoms%qtypat(itypat)=3.0d0
         elseif(trim(atoms%stypat(itypat))=='Sn') then
             atoms%qtypat(itypat)=2.0d0
         elseif(trim(atoms%stypat(itypat))=='O') then
-            atoms%qtypat(itypat)=-0.9d0
+            atoms%qtypat(itypat)=-2.0d0
         elseif(trim(atoms%stypat(itypat))=='Si') then
             atoms%qtypat(itypat)=1.1d0
         elseif(trim(atoms%stypat(itypat))=='Pb') then
@@ -1851,13 +1853,15 @@ subroutine set_qat(atoms)
         else if(trim(atoms%sat(iat))=='Ti') then
             atoms%qat(iat)=2.0d0
         else if(trim(atoms%sat(iat))=='Zr') then
-            atoms%qat(iat)=2.0d0
+            atoms%qat(iat)=4.0d0
+        else if(trim(atoms%sat(iat))=='Y') then
+            atoms%qat(iat)=3.0d0
         else if(trim(atoms%sat(iat))=='Sn') then
             atoms%qat(iat)=2.0d0
         else if(trim(atoms%sat(iat))=='Si') then
             atoms%qat(iat)=1.1d0
         else if(trim(atoms%sat(iat))=='O') then
-            atoms%qat(iat)=-0.9d0
+            atoms%qat(iat)=-2.0d0
         else if(trim(atoms%sat(iat))=='Pb') then
             atoms%qat(iat)=0.9d0
         else if(trim(atoms%sat(iat))=='Te') then

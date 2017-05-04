@@ -49,6 +49,12 @@ subroutine forcefield_init(parini,atoms)
         ewald_p3d%spline%do_tosifumi=.true.
     endif
     !-------------------------------------------------------
+    ind=index(parini%component_ff,'buck')
+    if(ind>0) then
+        call set_buckingham(atoms,shortrange%tosifumi)
+        ewald_p3d%spline%do_tosifumi=.true.
+    endif
+    !-------------------------------------------------------
     if(ewald_p3d%spline%do_coulomb) then
     call shortrange_init(atoms,shortrange,ewald_p3d%linked_lists,ewald_p3d%spline)
     endif
