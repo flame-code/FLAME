@@ -75,8 +75,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
 1000  continue !CORRECT_IT
     do iat=1,atoms%nat
         !write(*,*) iat,trim(atoms%sat(iat))
-        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_i(iat)=-0.25d0
-        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_i(iat)= 0.25d0
+        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.15d0
+        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.15d0
     enddo
     write(*,*) ann_arr%chi_i(1:atoms%nat)
     !stop 'AFTER LOOP OVER NN'
@@ -164,22 +164,39 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     !local variables
     integer:: iter, iat, niter, jat, igw
     real(8):: gnrm, epot_old, de, qtot, gnrm2, gtot, q1
+    real(8):: ttrand(3)
     real(8), allocatable:: grad1(:)
     real(8), allocatable:: grad2(:)
     real(8), allocatable:: rel(:,:)
-    real(8):: tt1, tt2, tt3
+    real(8):: tt1, tt2, tt3, zion
     allocate(grad1(3*atoms%nat))
     allocate(grad2(atoms%nat))
     allocate(rel(3,atoms%nat))
 
-    rel(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat) !+2.d-1
+    !rel(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)+2.d-1
+    !rel(1,1:atoms%nat)=atoms%rat(1,1:atoms%nat)+1.d-1
+    !rel(2,1:atoms%nat)=atoms%rat(2,1:atoms%nat)+2.d-1
+    !rel(3,1:atoms%nat)=atoms%rat(3,1:atoms%nat)+3.d-1
+    !rel(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)
+    !rel(1:3,64)=atoms%rat(1:3,64)+1.d-2
+    do iat=1,atoms%nat
+        call random_number(ttrand)
+        rel(1:3,iat)=atoms%rat(1:3,iat)+(ttrand(1:3)-0.5d0)*2.d0*10.d-2
+    enddo
 
     do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.6d0-atoms%zat(1)
-        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.6d0-atoms%zat(atoms%nat)
-        if(trim(atoms%sat(iat))=='W' ) atoms%qat(iat)= 0.6d0-atoms%zat(1)
-        if(trim(atoms%sat(iat))=='S' ) atoms%qat(iat)=-0.6d0-atoms%zat(atoms%nat)
+        zion=ann_arr%ann(atoms%itypat(iat))%zion
+        atoms%zat(iat)=zion
+        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.6d0-zion
+        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.6d0-zion
+        if(trim(atoms%sat(iat))=='W' ) atoms%qat(iat)= 0.6d0-zion
+        if(trim(atoms%sat(iat))=='S' ) atoms%qat(iat)=-0.6d0-zion
+        !write(*,'(i,3f8.2)') iat,atoms%zat(iat),atoms%qat(iat),atoms%zat(iat)+atoms%qat(iat)
     enddo
+    !write(*,*) sum(atoms%zat(1:atoms%nat))
+    !write(*,*) sum(atoms%qat(1:atoms%nat))
+    !write(*,*) sum(atoms%zat(1:atoms%nat))+sum(atoms%qat(1:atoms%nat))
+    !stop
 
     niter=200
     do iter=0,niter
@@ -198,12 +215,12 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
         if(gnrm<5.d-4 .and. gnrm2<1.d-3) exit
         if(iter==niter) exit
         do iat=1,atoms%nat
-            rel(1,iat)=rel(1,iat)-2.d-1*grad1(3*iat-2)
-            rel(2,iat)=rel(2,iat)-2.d-1*grad1(3*iat-1)
-            rel(3,iat)=rel(3,iat)-2.d-1*grad1(3*iat-0)
+            rel(1,iat)=rel(1,iat)-5.d-1*grad1(3*iat-2)
+            rel(2,iat)=rel(2,iat)-5.d-1*grad1(3*iat-1)
+            rel(3,iat)=rel(3,iat)-5.d-1*grad1(3*iat-0)
         enddo
         do iat=1,atoms%nat
-            atoms%qat(iat)=atoms%qat(iat)-0.5d0*grad2(iat)
+            atoms%qat(iat)=atoms%qat(iat)-1.0d0*grad2(iat)
         enddo
         epot_old=atoms%epot
     enddo
@@ -234,6 +251,7 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     allocate(grad1_p2(3,atoms%nat),source=0.d0)
     allocate(grad2_p1(atoms%nat),source=0.d0)
     allocate(grad2_p2(atoms%nat),source=0.d0)
+    ann_arr%ann(atoms%itypat(1:atoms%nat))%spring_const=1.d0
     atoms%fat=0.d0
     atoms%epot=0.d0
     do iat=1,atoms%nat !summation over ions/electrons
@@ -250,6 +268,10 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
         grad1_p1(2,iat)=grad1_p1(2,iat)+spring_const*dy
         grad1_p1(3,iat)=grad1_p1(3,iat)+spring_const*dz
     enddo
+    !write(*,*) atoms%epot
+    !write(*,*) ann_arr%chi_o(1),ann_arr%chi_o(64)
+    !write(*,*) ann_arr%ann(atoms%itypat(1))%spring_const,ann_arr%ann(atoms%itypat(64))%spring_const
+    !stop
     !call cal_electrostatic_cent2(nat,atoms%rat,rel,atoms%qat,epot_es, &
     !    atoms%fat,grad1_p1,grad2_p1,epot_atom)
     call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,grad1_p2,grad2_p2)
@@ -294,15 +316,15 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
     real(8):: x, y, z, v1, v2
     !real(8):: ratred(3,100), ehartree_kwald, eqd(1:1000), stress,celldv)
-    integer:: ix, iy, iz, iat
+    integer:: ix, iy, iz, iat, igx, igy, igz, i
     pi=4.d0*atan(1.d0)
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>ewald_p3d%poisson_p3d%ngpz)
     rel_t=f_malloc([1.to.3,1.to.atoms%nat],id='rel_t')
-    ewald_p3d%poisson_p3d%ngpx=50
-    ewald_p3d%poisson_p3d%ngpy=50
-    ewald_p3d%poisson_p3d%ngpz=50
+    ewald_p3d%poisson_p3d%ngpx=100
+    ewald_p3d%poisson_p3d%ngpy=100
+    ewald_p3d%poisson_p3d%ngpz=100
     ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
     ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
     potref=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='potref')
@@ -337,12 +359,28 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     qat_tot(1:atoms%nat)=atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat)
     !-------------------------------------------------------
     call cpu_time(time1)
+    !write(*,*) atoms%rat(1,64)-rel_t(1,64)
+    !stop
+    !do i=-10,10
+    !rel_t(1,64)=atoms%rat(1,64)+i*1.d-2
     call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
+    !do igz=1,ewald_p3d%poisson_p3d%ngpz
+    !    do igy=1,ewald_p3d%poisson_p3d%ngpy
+    !        do igx=1,ewald_p3d%poisson_p3d%ngpx
+    !            write(91,'(3i3,es20.10)') igx,igy,igz,ewald_p3d%poisson_p3d%rho(igx,igy,igz)
+    !        enddo
+    !    enddo
+    !enddo
+    !stop
+            
 
     call cpu_time(time2)
     call construct_ewald_bps(parini,atoms,ewald_p3d)
     call cpu_time(time3)
     call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
+    !write(81,*) i*1.d-2,ehartree
+    !enddo
+    !stop
 
 
     !call longerange_forces(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,qat_tot,gw_ion,ewald_p3d,fat_m,stress_m) !CORRECT_IT
@@ -352,32 +390,35 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
     stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
 
-    call kwald(1,atoms%nat,atoms%rat,ratred,qat_tot,atoms%cellvec,gw**2,300.d0,ehartree_kwald,atoms%fat,eqd,stress,celldv)
+    !call kwald(1,atoms%nat,atoms%rat,ratred,qat_tot,atoms%cellvec,gw**2,300.d0,ehartree_kwald,atoms%fat,eqd,stress,celldv)
 
-    write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(1,1),atoms%stress(1,2),atoms%stress(1,3)
-    write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(2,1),atoms%stress(2,2),atoms%stress(2,3)
-    write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(3,1),atoms%stress(3,2),atoms%stress(3,3)
-    write(*,*)
-    write(*,'(a,es14.5)') 'stress (BPS) ',atoms%stress(1,1)*(cell(1)*cell(2)*cell(3))
+    !write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(1,1),atoms%stress(1,2),atoms%stress(1,3)
+    !write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(2,1),atoms%stress(2,2),atoms%stress(2,3)
+    !write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(3,1),atoms%stress(3,2),atoms%stress(3,3)
+    !write(*,*)
+    !write(*,'(a,es14.5)') 'stress (BPS) ',atoms%stress(1,1)*(cell(1)*cell(2)*cell(3))
 
     !write(*,'(a,f20.10)') 'ehartree ',ehartree
-    write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
-    write(*,'(a,2f20.10,es14.5)') 'forces ',fat(1,1),fat_m(1,1),fat(1,1)-fat_m(1,1)
-    write(*,'(a,2f20.10,es14.5)') 'stress ',atoms%stress(1,1),stress(1,1),atoms%stress(1,1)-stress(1,1)
+    !write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
+    !write(*,'(a,2f20.10,es14.5)') 'forces ',fat(1,1),fat_m(1,1),fat(1,1)-fat_m(1,1)
+    !write(*,'(a,2f20.10,es14.5)') 'stress ',atoms%stress(1,1),stress(1,1),atoms%stress(1,1)-stress(1,1)
     
-    call gauss_gradient(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,qat_tot,gw_ion, &
+    call gauss_gradient(parini,'bulk',atoms%nat,rel_t,atoms%cellvec,atoms%qat,gw, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,grad1,grad2)
         
-    atoms%qat(64)=atoms%qat(64)+1.d-3
-    call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
-    call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
-    write(*,'(a,2f20.10)') 'EHARTREE ',ehartree,ehartree_2
-    write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64)
+    !!  !atoms%qat(64)=atoms%qat(64)+1.d-3
+    !!  rel_t(1,64)=rel_t(1,64)+1.d-5
+    !!  call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
+    !!  call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
+    !!  write(*,'(a,2f20.10)') 'EHARTREE ',ehartree,ehartree_2
+    !!  !write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64),eqd(64)
+    !!  !write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64)
+    !!  write(*,*) (ehartree_2-ehartree)/1.d-5,grad1(1,64)
 
 
 
 
-    stop 'STOPPED TO COMPARE STRESS'
+    !stop 'STOPPED TO COMPARE STRESS'
     !!!! call cpu_time(time4)
     !!!! call cal_grad_long(atoms,qat,rel_t,ewald_p3d,grad1,grad2)
     !!!! call cpu_time(time5)
@@ -393,12 +434,14 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     !    epot_es=epot_es-zat(iat)**2/(gw_ion(iat)*sqrt(2.d0*pi))
     !enddo
     write(*,*) 'ehartree ',ehartree
-    epot_es=epot_es+ehartree
+    !epot_es=epot_es+ehartree
+    epot_es=ehartree
     !write(*,*) 'RMSE ',ewald_p3d%hgx,error
     call f_free(potref)
     call f_free(ewald_p3d%poisson_p3d%pot)
     call f_free(ewald_p3d%poisson_p3d%rho)
-    call f_free(atoms%rat)
+    !stop 'WWWWWWWWWWWWWW'
+    !call f_free(atoms%rat)
     call f_free(rel_t)
     end associate
     end associate
@@ -431,9 +474,14 @@ subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
     !bc='bulk'
     !call putgaussgrid(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,atoms%zat,gw_ion,ewald_p3d)
     !call putgaussgrid(parini,atoms%boundcond,.false.,atoms%nat,rel      ,atoms%qat,gw    ,ewald_p3d)
+    !write(*,*) 'gw_ion',gw_ion(1),gw_ion(64)
+    !write(*,*) 'gw    ',gw(1),gw(64)
+    !write(*,*) 'zat   ',atoms%zat(1),atoms%zat(64)
+    !write(*,*) 'qat   ',atoms%qat(1),atoms%qat(64)
+    !stop
     call gauss_grid(parini,'bulk',.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
-    call gauss_grid(parini,'bulk',.false.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,gw    , &
+    call gauss_grid(parini,'bulk',.false.,atoms%nat,rel,atoms%cellvec,atoms%qat,gw    , &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
     end associate
     end associate
@@ -702,7 +750,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm, vol_voxel, ttq
+    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, expval
     real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
     real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
@@ -889,8 +937,11 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
         imgz=nint(ratred(3,iat)*hrzinv)+1
-        facqiat=fac !*qat(iat)
+        facqiat=fac*qat(iat)
         ttq=0.d0
+        ttx=0.d0
+        tty=0.d0
+        ttz=0.d0
         do igz=-nbgz,nbgz
             jgz=imgz+igz
             do igy=-nbgy,nbgy
@@ -905,11 +956,18 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
                     dmz=zimg-rxyz(3,iat)
                     dmsq=dmx**2+dmy**2+dmz**2
                     !wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
-                    ttq=ttq+facqiat*exp(-dmsq*gwsq_inv)*wa(jgx,jgy,jgz)
+                    expval=exp(-dmsq*gwsq_inv)
+                    ttq=ttq+fac*expval*wa(jgx,jgy,jgz)
+                    ttx=ttx+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmx*gwsq_inv)
+                    tty=tty+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmy*gwsq_inv)
+                    ttz=ttz+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmz*gwsq_inv)
                 enddo
             enddo
         enddo
         grad2(iat)=ttq*vol_voxel
+        grad1(1,iat)=ttx*vol_voxel
+        grad1(2,iat)=tty*vol_voxel
+        grad1(3,iat)=ttz*vol_voxel
     enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
