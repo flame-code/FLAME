@@ -18,7 +18,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
-    real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es
+    real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
     call f_routine(id='cal_ann_eem2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
@@ -43,26 +43,23 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time1)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
-    !if(ann_arr%compute_symfunc) then !CORRECT_IT
-    !    call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
-    !endif
+    if(ann_arr%compute_symfunc) then
+        call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+    endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
         ann_arr%stresspq=f_malloc([1.to.3,1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='stresspq')
     endif
     if(parini%iverbose>=2) call cpu_time(time3)
-    goto 1000 !CORRECT_IT
     over_iat: do iat=1,atoms%nat
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
-        !ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat) !CORRECT_IT
+        ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat)
         if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
             call cal_architecture(ann_arr%ann(i),out_ann)
             call cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
         elseif(trim(ann_arr%event)=='train') then
-            !call cal_architecture_der(ann_arr%ann(i),out_ann) !CORRECT_IT
-            if(trim(atoms%sat(iat))=='Na') out_ann=-0.25 !CORRECT_IT
-            if(trim(atoms%sat(iat))=='Cl') out_ann= 0.25 !CORRECT_IT
+            call cal_architecture_der(ann_arr%ann(i),out_ann)
             ann_arr%chi_i(iat)=out_ann
             tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
             ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
@@ -72,14 +69,11 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
     enddo over_iat
-1000  continue !CORRECT_IT
     do iat=1,atoms%nat
         !write(*,*) iat,trim(atoms%sat(iat))
         if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.15d0
         if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.15d0
     enddo
-    write(*,*) ann_arr%chi_i(1:atoms%nat)
-    !stop 'AFTER LOOP OVER NN'
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     atoms%stress(1:3,1:3)=0.d0
@@ -88,9 +82,9 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time4)
     call get_qat_from_chi2(parini,ann_arr,atoms)
     if(parini%iverbose>=2) call cpu_time(time5)
-    !if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then !CORRECT_IT
-    !    call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
-    !endif !end of if for potential
+    if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
+        call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
+    endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
     !call cal_electrostatic_eem2(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) then
@@ -121,6 +115,18 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_angle=tt3/(tt1*tt2)
         ann_arr%fchi_norm=tt2/max(tt1,1.d-3)
     endif
+    !if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
+    !    call destruct_ewald_p3d(parini,atoms,ewald_p3d)
+    !endif
+
+    call getvol_alborz(atoms%cellvec,vol)
+    call invertmat_alborz(atoms%cellvec,hinv)
+    do i=1,3
+    do j=1,3
+        atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
+    enddo
+    enddo
+
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
         call f_free(symfunc%linked_lists%prime_bound)
         call f_free(symfunc%linked_lists%bound_rad)
