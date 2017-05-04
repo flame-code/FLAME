@@ -469,6 +469,24 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     real(8), intent(inout):: pot(ngx,ngy,ngz)
     real(8), intent(out):: grad1(3,nat), grad2(nat)
 end subroutine gauss_gradient
+subroutine cal_shortrange_ewald(ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad1,grad2)
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: zat(atoms%nat)
+    real(8), intent(in):: qat(atoms%nat)
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
+end subroutine cal_shortrange_ewald
+subroutine erf_over_r_taylor(r,funcval,funcval_der)
+    implicit none
+    real(8), intent(in):: r
+    real(8), intent(out):: funcval, funcval_der
+end subroutine erf_over_r_taylor
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_parini, only: typ_parini
