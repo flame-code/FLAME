@@ -13,7 +13,7 @@ subroutine set_buckingham(atoms,tosifumi)
     integer:: leni, lenj
     character(6):: strint(10),tmp !string of interaction
     real(8):: parameters(5,10)
-    real(8), allocatable:: parameters2(:,:)
+    real(8), allocatable:: parameters2(:,:),qq(:)
     character(20):: strtmpi, strtmpj
     character(4):: namatnamat1, namatnamat2
     character(2), allocatable:: type1(:), type2(:) 
@@ -23,11 +23,12 @@ subroutine set_buckingham(atoms,tosifumi)
 
     max_ntypinter=(atoms%ntypat**2+atoms%ntypat)
     allocate (parameters2(0:max_ntypinter,4),type1(max_ntypinter),type2(max_ntypinter))
-    allocate (tosifumi%interaction(atoms%ntypat,atoms%ntypat))
+    allocate (tosifumi%interaction(atoms%ntypat,atoms%ntypat),qq(0:max_ntypinter))
     parameters2(0:max_ntypinter,1)=0.0
     parameters2(0:max_ntypinter,2)=1.0
     parameters2(0:max_ntypinter,3)=0.0
     parameters2(0:max_ntypinter,4)=0.0
+    qq = 0.d0
     type1(:)='no'
     type2(:)='no'
     open (unit= 121 , file ="param_short.in")
@@ -61,19 +62,38 @@ subroutine set_buckingham(atoms,tosifumi)
     enddo
     write(*,*) "Buckingham parameters : "
     write(*,*) "---------------------------------------------------------- "
-    write(*,'(2a5,a7,4a12)') "","","inter","A","pho","C","D"
+    write(*,'(2a5,a7,4a12)') "","","inter","A","B","C","D"
 
     do itypat=1,atoms%ntypat
     do jtypat=1,atoms%ntypat
-        write(*,'(2a5,i7,4f12.4)') atoms%stypat(itypat),atoms%stypat(jtypat) &
-        & ,tosifumi%interaction(itypat,jtypat),parameters2(tosifumi%interaction(itypat,jtypat),:)
-
         if (tosifumi%interaction(itypat,jtypat)/=tosifumi%interaction(jtypat,itypat)) then
-            write(*,*) 'ERROR: 2 different type for interaction ' ,atoms%stypat(itypat) ,'and ' ,atoms%stypat(jtypat) ,' are defined'
+            write(*,*) 'ERROR: 2 different parameters for interaction ' ,atoms%stypat(itypat) ,'and ' ,atoms%stypat(jtypat) ,' are defined'
             stop
         endif
     enddo
     enddo
+
+    do itypat=1,atoms%ntypat
+    do jtypat=itypat,atoms%ntypat
+        if (tosifumi%interaction(itypat,jtypat)==0) then
+            ntypinter=ntypinter+1
+            tosifumi%interaction(itypat,jtypat)=ntypinter
+            tosifumi%interaction(jtypat,itypat)=ntypinter
+        endif
+    enddo
+    enddo
+    write(*,*) "---------------------------------------------------------- "
+    do itypat=1,atoms%ntypat
+    do jtypat=1,atoms%ntypat
+        write(*,'(2a5,i7,6f12.4)') atoms%stypat(itypat),atoms%stypat(jtypat) &
+        & ,tosifumi%interaction(itypat,jtypat),parameters2(tosifumi%interaction(itypat,jtypat),:)&
+        &, atoms%qtypat(itypat),atoms%qtypat(jtypat) 
+
+        qq(tosifumi%interaction(itypat,jtypat))=atoms%qtypat(itypat)*atoms%qtypat(jtypat)    
+
+    enddo
+    enddo
+
     write(*,*) "---------------------------------------------------------- "
     tosifumi%aaa= 0.d0
     tosifumi%bbb= 0.d0
@@ -86,7 +106,7 @@ subroutine set_buckingham(atoms,tosifumi)
         tosifumi%bbb(it) =parameters2(it,2)
         tosifumi%ccc(it) =parameters2(it,3)
         tosifumi%ddd(it) =parameters2(it,4)
-        tosifumi%eee(it) =0.d0
+        tosifumi%eee(it) = qq(it)
     enddo
     where (tosifumi%interaction==0)
         tosifumi%interaction=max_ntypinter/2

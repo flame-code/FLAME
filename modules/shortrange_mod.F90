@@ -16,9 +16,9 @@ module mod_shortrange
     type typ_shortrange
         integer:: ntypinter
         integer:: ntypat
-        integer:: interaction(10,10)
+        integer,allocatable:: interaction(:,:)
         real(8):: alpha
-        real(8):: qq(10)
+        real(8),allocatable:: qq(:)
         type(typ_tosifumi):: tosifumi
     end type typ_shortrange
 end module mod_shortrange
