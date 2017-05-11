@@ -71,8 +71,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo over_iat
     do iat=1,atoms%nat
         !write(*,*) iat,trim(atoms%sat(iat))
-        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.15d0
-        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.15d0
+        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.12d0
+        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.12d0
     enddo
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
@@ -193,8 +193,8 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     do iat=1,atoms%nat
         zion=ann_arr%ann(atoms%itypat(iat))%zion
         atoms%zat(iat)=zion
-        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.6d0-zion
-        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.6d0-zion
+        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.8d0-zion
+        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.8d0-zion
         if(trim(atoms%sat(iat))=='W' ) atoms%qat(iat)= 0.6d0-zion
         if(trim(atoms%sat(iat))=='S' ) atoms%qat(iat)=-0.6d0-zion
         !write(*,'(i,3f8.2)') iat,atoms%zat(iat),atoms%qat(iat),atoms%zat(iat)+atoms%qat(iat)
@@ -317,20 +317,22 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: potref(:,:,:)
     real(8), allocatable:: rel_t(:,:)
+    real(8), allocatable:: gw_ion_t(:)
     real(8), allocatable:: ratred(:,:), fat(:,:), fat_m(:,:)
     real(8), allocatable:: gw_ion(:), gw(:), eqd(:), qat_tot(:)
     real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
     real(8):: x, y, z, v1, v2
-    !real(8):: ratred(3,100), ehartree_kwald, eqd(1:1000), stress,celldv)
+    real(8):: sqrt_one_over_twopi
     integer:: ix, iy, iz, iat, igx, igy, igz, i
     pi=4.d0*atan(1.d0)
+    sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>ewald_p3d%poisson_p3d%ngpz)
     rel_t=f_malloc([1.to.3,1.to.atoms%nat],id='rel_t')
-    ewald_p3d%poisson_p3d%ngpx=100
-    ewald_p3d%poisson_p3d%ngpy=100
-    ewald_p3d%poisson_p3d%ngpz=100
+    ewald_p3d%poisson_p3d%ngpx=30
+    ewald_p3d%poisson_p3d%ngpy=30
+    ewald_p3d%poisson_p3d%ngpz=30
     ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
     ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
     potref=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='potref')
@@ -342,7 +344,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     ewald_p3d%hgx=cell(1)/nx
     ewald_p3d%hgy=cell(2)/ny
     ewald_p3d%hgz=cell(3)/nz
-    ewald_p3d%rgcut=6.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha
+    ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha
     ewald_p3d%nbgpx=int(ewald_p3d%rgcut/ewald_p3d%hgx)+2
     ewald_p3d%nbgpy=int(ewald_p3d%rgcut/ewald_p3d%hgy)+2
     ewald_p3d%nbgpz=int(ewald_p3d%rgcut/ewald_p3d%hgz)+2
@@ -355,21 +357,24 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     stress=0.d0
     stress_m=0.d0
     allocate(gw(atoms%nat),gw_ion(atoms%nat))
+    allocate(gw_ion_t(atoms%nat))
     allocate(ratred(3,atoms%nat))
     allocate(fat(3,atoms%nat),eqd(atoms%nat),qat_tot(atoms%nat))
     allocate(fat_m(3,atoms%nat))
     do iat=1,atoms%nat
         gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
+        gw_ion_t(iat)=2.d0
         gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
     enddo
     qat_tot(1:atoms%nat)=atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat)
     !-------------------------------------------------------
+    !gw_ion_t=gw_ion
     call cpu_time(time1)
     !write(*,*) atoms%rat(1,64)-rel_t(1,64)
     !stop
     !do i=-10,10
     !rel_t(1,64)=atoms%rat(1,64)+i*1.d-2
-    call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
+    call put_gauss_to_grid(parini,atoms,rel_t,gw_ion_t,gw,ewald_p3d,potref)
     !do igz=1,ewald_p3d%poisson_p3d%ngpz
     !    do igy=1,ewald_p3d%poisson_p3d%ngpy
     !        do igx=1,ewald_p3d%poisson_p3d%ngpx
@@ -409,26 +414,29 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     !write(*,'(a,2f20.10,es14.5)') 'forces ',fat(1,1),fat_m(1,1),fat(1,1)-fat_m(1,1)
     !write(*,'(a,2f20.10,es14.5)') 'stress ',atoms%stress(1,1),stress(1,1),atoms%stress(1,1)-stress(1,1)
     
+    epot_es=0.d0
+    do iat=1,atoms%nat
+        epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/gw_ion_t(iat)
+    enddo
+    epot_es=epot_es+ehartree
     call gauss_gradient(parini,'bulk',atoms%nat,rel_t,atoms%cellvec,atoms%qat,gw, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,grad1,grad2)
 
 
     !call cal_shortrange_ewald(atoms,qat,rel_t,epot_es,grad1,grad2)
+    call cal_shortrange_ewald(parini,ann_arr,atoms,atoms%zat,atoms%qat, &
+        gw_ion,gw,rel_t,epot_es,grad1,grad2)
     
 
-    do iat=1,atoms%nat
-        write(61,'(i4,4f10.5)') iat,grad1(1,iat),grad1(2,iat),grad1(3,iat),grad2(iat)
-    enddo
-    stop 'TESTING EWALD'
         
-    !!  !atoms%qat(64)=atoms%qat(64)+1.d-3
-    !!  rel_t(1,64)=rel_t(1,64)+1.d-5
+    !!  atoms%qat(2)=atoms%qat(2)+1.d-4
+    !!  !rel_t(1,64)=rel_t(1,64)+1.d-5
     !!  call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
     !!  call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
     !!  write(*,'(a,2f20.10)') 'EHARTREE ',ehartree,ehartree_2
     !!  !write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64),eqd(64)
-    !!  !write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64)
-    !!  write(*,*) (ehartree_2-ehartree)/1.d-5,grad1(1,64)
+    !!  write(*,*) (ehartree_2-ehartree)/1.d-4,grad2(2)
+    !!  !write(*,*) (ehartree_2-ehartree)/1.d-5,grad1(1,64)
 
 
 
@@ -448,9 +456,8 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     !do iat=1,atoms%nat
     !    epot_es=epot_es-zat(iat)**2/(gw_ion(iat)*sqrt(2.d0*pi))
     !enddo
-    write(*,*) 'ehartree ',ehartree
+    !write(*,*) 'ehartree ',ehartree
     !epot_es=epot_es+ehartree
-    epot_es=ehartree
     !write(*,*) 'RMSE ',ewald_p3d%hgx,error
     call f_free(potref)
     call f_free(ewald_p3d%poisson_p3d%pot)
@@ -478,13 +485,11 @@ subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
     real(8), intent(inout):: potref(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,ewald_p3d%poisson_p3d%ngpz)
     !local variables
     integer:: ix, iy, iz, iat
-    real(8):: x, y, z, r, rsq, pi, ttg, factor, tt1, qtot, alpha
+    real(8):: x, y, z, r, rsq, pi, ttg, factor, tt1, qtot
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>ewald_p3d%poisson_p3d%ngpz)
     !character(4):: bc
-    pi=4.d0*atan(1.d0)
-    alpha=2.d0
     ewald_p3d%poisson_p3d%rho=0.d0
     !bc='bulk'
     !call putgaussgrid(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,atoms%zat,gw_ion,ewald_p3d)
@@ -990,11 +995,14 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     call f_free(wm)
 end subroutine gauss_gradient
 !*****************************************************************************************
-subroutine cal_shortrange_ewald(ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad1,grad2)
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad1,grad2)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
     real(8), intent(in):: zat(atoms%nat)
@@ -1004,69 +1012,140 @@ subroutine cal_shortrange_ewald(ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
     !local variables
-    integer:: iat, jat
-    real(8):: alpha, epot_short, gama, dx, dy, dz, r, pi
+    integer:: iat, jat, ib
+    real(8):: alpha, epot_short, gama, dx, dy, dz, r, pi, vol
     real(8):: sqrt_one_over_twopi, ee1, tt1, tt21, tt22, ttg, tt31, tt32
-    real(8):: hardness, chi
+    real(8):: hardness, chi, zat_tot
+    !type(typ_atoms):: atoms_e
+    type(typ_pia_arr):: pia_arr
+    type(typ_linked_lists):: linked_lists
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
     alpha=2.d0
     epot_short=0.d0
-    do iat=1,atoms%nat !summation over ions/electrons
-        !alpha=gw_ion(iat) !2.d0
-        !epot_short=epot_short+qat(iat)**2*sqrt_one_over_twopi/gw(iat)
-        epot_short=epot_short-zat(iat)**2*sqrt_one_over_twopi/alpha
-
-        do jat=iat+1,atoms%nat !summation over ions
-            dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-            dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-            dz=atoms%rat(3,jat)-atoms%rat(3,iat)
-            r=sqrt(dx*dx+dy*dy+dz*dz)
-            gama=1.d0/sqrt(gw_ion(iat)**2+gw_ion(jat)**2)
-            epot_short=epot_short-zat(iat)*zat(jat)*erfc(gama*r)/r
-            gama=1.d0/(sqrt(2.d0)*alpha)
-            epot_short=epot_short+zat(iat)*zat(jat)*erfc(gama*r)/r
-        enddo
-        do jat=1,atoms%nat !summation over electrons
-            dx=rel(1,jat)-atoms%rat(1,iat)
-            dy=rel(2,jat)-atoms%rat(2,iat)
-            dz=rel(3,jat)-atoms%rat(3,iat)
-            r=sqrt(dx*dx+dy*dy+dz*dz)
-            if(r<0.1d0) then
-                gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
-                call erf_over_r_taylor(gama*r,tt1,ttg)
-                epot_short=epot_short+zat(iat)*qat(jat)*(tt1*gama)
-                tt21=zat(iat)*qat(jat)*gama**3*ttg
-                tt31=zat(iat)*(tt1*gama)
-                !-------------------------------------------
-                gama=1.d0/sqrt(alpha**2+gw(jat)**2)
-                call erf_over_r_taylor(gama*r,tt1,ttg)
-                epot_short=epot_short-zat(iat)*qat(jat)*(tt1*gama)
-                tt22=-zat(iat)*qat(jat)*gama**3*ttg
-                tt32=-zat(iat)*(tt1*gama)
-            else
-                gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
-                epot_short=epot_short+zat(iat)*qat(jat)*erf(gama*r)/r
-                ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-                tt21=zat(iat)*qat(jat)*ee1
-                tt31=zat(iat)*erf(gama*r)/r
-                !-------------------------------------------
-                gama=1.d0/sqrt(alpha**2+gw(jat)**2)
-                epot_short=epot_short-zat(iat)*qat(jat)*erf(gama*r)/r
-                ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-                tt22=-zat(iat)*qat(jat)*ee1
-                tt32=-zat(iat)*erf(gama*r)/r
-            endif
-            grad1(1,jat)=grad1(1,jat)+(tt21+tt22)*dx
-            grad1(2,jat)=grad1(2,jat)+(tt21+tt22)*dy
-            grad1(3,jat)=grad1(3,jat)+(tt21+tt22)*dz
-            grad2(jat)=grad2(jat)+tt31+tt32
-        enddo
+    linked_lists%rcut=15.d0
+    write(*,*) 'short range at cut-off: ',erfc(linked_lists%rcut/(sqrt(2.d0)*alpha)) !CORRECT_IT
+    call call_linkedlist(parini,atoms,linked_lists,pia_arr)
+    do ib=1,linked_lists%maxbound_rad
+        iat=linked_lists%bound_rad(1,ib)
+        jat=linked_lists%bound_rad(2,ib)
+        !if(iat>jat) cycle
+        !write(*,'(2i4,3es14.5)') iat,jat,pia_arr%pia(ib)%dr(1),pia_arr%pia(ib)%dr(2),pia_arr%pia(ib)%dr(3)
+        !---------------------------------------------------
+        !isat=atoms%itypat(iat)
+        !jsat=atoms%itypat(linked_lists%bound_rad(2,ib))
+        !pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
+        !pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
+        !call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc)
+        !---------------------------------------------------
+        dx=pia_arr%pia(ib)%dr(1) !atoms%rat(1,jat)-atoms%rat(1,iat)
+        dy=pia_arr%pia(ib)%dr(2) !atoms%rat(2,jat)-atoms%rat(2,iat)
+        dz=pia_arr%pia(ib)%dr(3) !atoms%rat(3,jat)-atoms%rat(3,iat)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        gama=1.d0/sqrt(gw_ion(iat)**2+gw_ion(jat)**2)
+        epot_short=epot_short-zat(iat)*zat(jat)*erfc(gama*r)/r
+        gama=1.d0/(sqrt(2.d0)*alpha)
+        epot_short=epot_short+zat(iat)*zat(jat)*erfc(gama*r)/r
+        !---------------------------------------------------
+        dx=pia_arr%pia(ib)%dr(1)+rel(1,jat)-atoms%rat(1,jat)
+        dy=pia_arr%pia(ib)%dr(2)+rel(2,jat)-atoms%rat(2,jat)
+        dz=pia_arr%pia(ib)%dr(3)+rel(3,jat)-atoms%rat(3,jat)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+        epot_short=epot_short+zat(iat)*qat(jat)*erf(gama*r)/r
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt21=zat(iat)*qat(jat)*ee1
+        tt31=zat(iat)*erf(gama*r)/r
+        !-------------------------------------------
+        gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+        epot_short=epot_short-zat(iat)*qat(jat)*erf(gama*r)/r
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt22=-zat(iat)*qat(jat)*ee1
+        tt32=-zat(iat)*erf(gama*r)/r
+        !-------------------------------------------
+        grad1(1,jat)=grad1(1,jat)+(tt21+tt22)*dx
+        grad1(2,jat)=grad1(2,jat)+(tt21+tt22)*dy
+        grad1(3,jat)=grad1(3,jat)+(tt21+tt22)*dz
+        grad2(jat)=grad2(jat)+tt31+tt32
+        !---------------------------------------------------
+        dx=-pia_arr%pia(ib)%dr(1)+rel(1,iat)-atoms%rat(1,iat)
+        dy=-pia_arr%pia(ib)%dr(2)+rel(2,iat)-atoms%rat(2,iat)
+        dz=-pia_arr%pia(ib)%dr(3)+rel(3,iat)-atoms%rat(3,iat)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        gama=1.d0/sqrt(gw_ion(jat)**2+gw(iat)**2)
+        epot_short=epot_short+zat(jat)*qat(iat)*erf(gama*r)/r
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt21=zat(jat)*qat(iat)*ee1
+        tt31=zat(jat)*erf(gama*r)/r
+        !-------------------------------------------
+        gama=1.d0/sqrt(alpha**2+gw(iat)**2)
+        epot_short=epot_short-zat(jat)*qat(iat)*erf(gama*r)/r
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt22=-zat(jat)*qat(iat)*ee1
+        tt32=-zat(jat)*erf(gama*r)/r
+        !-------------------------------------------
+        grad1(1,iat)=grad1(1,iat)+(tt21+tt22)*dx
+        grad1(2,iat)=grad1(2,iat)+(tt21+tt22)*dy
+        grad1(3,iat)=grad1(3,iat)+(tt21+tt22)*dz
+        grad2(iat)=grad2(iat)+tt31+tt32
+        !---------------------------------------------------
     enddo
+    zat_tot=sum(zat(1:atoms%nat))
     do iat=1,atoms%nat
-        hardness=ann_arr%ann(atoms%itypat(iat))%hardness !CORRECT_IT
-        chi=ann_arr%chi_o(iat) !CORRECT_IT
-        grad2(iat)=grad2(iat)+chi+(zat(iat)+qat(iat))*hardness
+        jat=iat
+        !epot_short=epot_short-zat(iat)**2*sqrt_one_over_twopi/alpha
+        !epot_short=epot_short+zat(iat)**2*sqrt_one_over_twopi/gw_ion(iat) !CORRECT_IT
+        dx=rel(1,jat)-atoms%rat(1,iat)
+        dy=rel(2,jat)-atoms%rat(2,iat)
+        dz=rel(3,jat)-atoms%rat(3,iat)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        if(r>0.9d0) then
+            write(*,'(a,es14.5)') 'ERROR: Center of electron far from atom: r= ',r
+            stop
+        endif
+        if(r<0.1d0) then
+            gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+            call erf_over_r_taylor(gama*r,tt1,ttg)
+            epot_short=epot_short+zat(iat)*qat(jat)*(tt1*gama)
+            tt21=zat(iat)*qat(jat)*gama**3*ttg
+            tt31=zat(iat)*(tt1*gama)
+            !-------------------------------------------
+            gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+            call erf_over_r_taylor(gama*r,tt1,ttg)
+            epot_short=epot_short-zat(iat)*qat(jat)*(tt1*gama)
+            tt22=-zat(iat)*qat(jat)*gama**3*ttg
+            tt32=-zat(iat)*(tt1*gama)
+        else
+            gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+            epot_short=epot_short+zat(iat)*qat(jat)*erf(gama*r)/r
+            ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+            tt21=zat(iat)*qat(jat)*ee1
+            tt31=zat(iat)*erf(gama*r)/r
+            !-------------------------------------------
+            gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+            epot_short=epot_short-zat(iat)*qat(jat)*erf(gama*r)/r
+            ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+            tt22=-zat(iat)*qat(jat)*ee1
+            tt32=-zat(iat)*erf(gama*r)/r
+        endif
+!        gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+!        call erf_over_r_taylor(gama*r,tt1,ttg)
+!        epot_short=epot_short+zat(iat)*qat(jat)*(tt1*gama)
+!        tt21=zat(iat)*qat(jat)*gama**3*ttg
+!        tt31=zat(iat)*(tt1*gama)
+!        !-------------------------------------------
+!        gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+!        call erf_over_r_taylor(gama*r,tt1,ttg)
+!        epot_short=epot_short-zat(iat)*qat(jat)*(tt1*gama)
+!        tt22=-zat(iat)*qat(jat)*gama**3*ttg
+!        tt32=-zat(iat)*(tt1*gama)
+!        !-------------------------------------------
+        grad1(1,jat)=grad1(1,jat)+(tt21+tt22)*dx
+        grad1(2,jat)=grad1(2,jat)+(tt21+tt22)*dy
+        grad1(3,jat)=grad1(3,jat)+(tt21+tt22)*dz
+        grad2(jat)=grad2(jat)+tt31+tt32
+        vol=atoms%cellvec(1,1)*atoms%cellvec(2,2)*atoms%cellvec(3,3) !CORRECT_IT
+        grad2(jat)=grad2(jat)-(zat_tot*pi*(alpha**2-gw_ion(jat)**2)/vol)
     enddo
 
     epot_es=epot_es+epot_short

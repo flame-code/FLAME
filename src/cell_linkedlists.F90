@@ -514,15 +514,15 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     call f_routine(id='call_linkedlist')
     call linkedlists_init(parini,atoms,cell,linked_lists)
     nmax=150
-    if (.not. linked_lists%triplex) then
+    !if (.not. linked_lists%triplex) then
         !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
         !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)
-    else
+    !else
         bound_rad=f_malloc([1.to.nmax,1.to.linked_lists%nat],id='bound_rad')
         bound_dist=f_malloc([1.to.4,1.to.nmax,1.to.linked_lists%nat],id='bound_dist')
         linked_lists%prime_bound=f_malloc([1.to.linked_lists%nat+1],id='linked_lists%prime_bound')
         neighbor=f_malloc([1.to.linked_lists%nat],id='neighbor')
-    endif
+    !endif
 
     rcutsq=linked_lists%rcut**2
     maxnbr=0
@@ -565,12 +565,12 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
                     bound_dist(3,neighbor(iat_maincell),iat_maincell)=drij(2)
                     bound_dist(4,neighbor(iat_maincell),iat_maincell)=drij(3)
                    ! if (iat_maincell==jat_maincell) cycle
-                    neighbor(jat_maincell)=neighbor(jat_maincell)+1
-                    bound_rad(neighbor(jat_maincell),jat_maincell)=iat_maincell
-                    bound_dist(1,neighbor(jat_maincell),jat_maincell)=rij
-                    bound_dist(2,neighbor(jat_maincell),jat_maincell)=-drij(1)
-                    bound_dist(3,neighbor(jat_maincell),jat_maincell)=-drij(2)
-                    bound_dist(4,neighbor(jat_maincell),jat_maincell)=-drij(3)
+!                    neighbor(jat_maincell)=neighbor(jat_maincell)+1
+!                    bound_rad(neighbor(jat_maincell),jat_maincell)=iat_maincell
+!                    bound_dist(1,neighbor(jat_maincell),jat_maincell)=rij
+!                    bound_dist(2,neighbor(jat_maincell),jat_maincell)=-drij(1)
+!                    bound_dist(3,neighbor(jat_maincell),jat_maincell)=-drij(2)
+!                    bound_dist(4,neighbor(jat_maincell),jat_maincell)=-drij(3)
             endif
         enddo !end of loop over jat
         enddo !end of loop over jy
@@ -580,7 +580,7 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     enddo !end of loop over ix
     enddo !end of loop over iy
     enddo !end of loop over iz
-    linked_lists%maxbound_rad=(maxnbr)*2
+    linked_lists%maxbound_rad=(maxnbr) !*2
     linked_lists%bound_rad=f_malloc([1.to.2,1.to.linked_lists%maxbound_rad],id='linked_lists%bound_rad')
     allocate(pia_arr%pia(linked_lists%maxbound_rad))
     njat=0

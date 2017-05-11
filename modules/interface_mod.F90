@@ -469,10 +469,13 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     real(8), intent(inout):: pot(ngx,ngy,ngz)
     real(8), intent(out):: grad1(3,nat), grad2(nat)
 end subroutine gauss_gradient
-subroutine cal_shortrange_ewald(ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad1,grad2)
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad1,grad2)
+    use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
     real(8), intent(in):: zat(atoms%nat)
