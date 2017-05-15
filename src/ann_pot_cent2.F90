@@ -19,6 +19,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
+    !integer, save:: icall=0
+    !icall=icall+1
     call f_routine(id='cal_ann_eem2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
@@ -426,8 +428,14 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     !call cal_shortrange_ewald(atoms,qat,rel_t,epot_es,grad1,grad2)
     call cal_shortrange_ewald(parini,ann_arr,atoms,atoms%zat,atoms%qat, &
         gw_ion,gw,rel_t,epot_es,grad1,grad2)
+    !gw_ion_t
     
 
+    !write(61,'(f20.9)') epot_es
+    !do iat=1,atoms%nat
+    !    write(61,'(i4,4f10.5)') iat,grad1(1,iat),grad1(2,iat),grad1(3,iat),grad2(iat)
+    !enddo
+    !stop 'TESTING EWALD'
         
     !!  atoms%qat(2)=atoms%qat(2)+1.d-4
     !!  !rel_t(1,64)=rel_t(1,64)+1.d-5
@@ -857,9 +865,9 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     nez=max(ngz,irgz-ilgz+1)
     !wrap around grid points that are outside the extended box in into the extended box,
     !these grid points do not form a complete cell.
-    write(*,*) ncellx,ncelly,ncellz
-    write(*,*) nagx,nagy,nagz
-    write(*,*) ngx,ngy,ngz,nex,ney,nez
+    !write(*,'(a,3i5)') 'ncellx,ncelly,ncellz ',ncellx,ncelly,ncellz
+    !write(*,'(a,3i5)') 'nagx,nagy,nagz ',nagx,nagy,nagz
+    !write(*,'(a,6i5)') 'ngx,ngy,ngz,nex,ney,nez ',ngx,ngy,ngz,nex,ney,nez
     !stop
     !do igz=1-nagz,ngz+nagz
     !    do igy=1-nagy,ilgy-1
@@ -933,17 +941,17 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     endif
     !-------------------------------------------------------
     do igz=1-nagz,ngz+nagz
-        igzt=igz+(sign(nez,-igz)+sign(nez,nez-igz))/2
+        igzt=igz+(sign(irgz,-igz)+sign(irgz,nez-igz))/2
         do igy=1-nagy,ngy+nagy
-            igyt=igy+(sign(ney,-igy)+sign(ney,ney-igy))/2
+            igyt=igy+(sign(irgy,-igy)+sign(irgy,ney-igy))/2
             do igx=1-nagx,0
-                wa(igx,igy,igz)=wa(igx+nex,igyt,igzt)
+                wa(igx,igy,igz)=wa(igx+irgx,igyt,igzt)
             enddo
             do igx=1,ngx
                 wa(igx,igy,igz)=wa(igx,igyt,igzt)
             enddo
             do igx=ngx+1,ngx+nagx
-                wa(igx,igy,igz)=wa(igx-nex,igyt,igzt)
+                wa(igx,igy,igz)=wa(igx-irgx,igyt,igzt)
             enddo
         enddo
     enddo
