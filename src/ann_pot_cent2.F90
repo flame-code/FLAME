@@ -73,8 +73,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo over_iat
     do iat=1,atoms%nat
         !write(*,*) iat,trim(atoms%sat(iat))
-        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.12d0
-        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.12d0
+        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.32d0 !+(icall-10)**2*1.d-4
+        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.32d0 !-(icall-10)**2*1.d-4
     enddo
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
@@ -326,6 +326,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8):: x, y, z, v1, v2
     real(8):: sqrt_one_over_twopi
     integer:: ix, iy, iz, iat, igx, igy, igz, i
+    !logical:: ewald
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
@@ -370,7 +371,12 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     enddo
     qat_tot(1:atoms%nat)=atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat)
     !-------------------------------------------------------
-    !gw_ion_t=gw_ion
+    !open(unit=111,file="tinput",status='old')
+    !read(111,*) ewald
+    !close(111)
+    !if(.not. ewald) then
+    !    gw_ion_t=gw_ion
+    !endif
     call cpu_time(time1)
     !write(*,*) atoms%rat(1,64)-rel_t(1,64)
     !stop
@@ -426,8 +432,10 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
 
 
     !call cal_shortrange_ewald(atoms,qat,rel_t,epot_es,grad1,grad2)
+    !if(ewald) then
     call cal_shortrange_ewald(parini,ann_arr,atoms,atoms%zat,atoms%qat, &
         gw_ion,gw,rel_t,epot_es,grad1,grad2)
+    !endif
     !gw_ion_t
     
 
@@ -1021,7 +1029,7 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
     real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
     !local variables
     integer:: iat, jat, ib
-    real(8):: alpha, epot_short, gama, dx, dy, dz, r, pi, vol
+    real(8):: alpha, epot_short, gama, dx, dy, dz, r, pi, vol, shift
     real(8):: sqrt_one_over_twopi, ee1, tt1, tt21, tt22, ttg, tt31, tt32
     real(8):: hardness, chi, zat_tot
     !type(typ_atoms):: atoms_e
@@ -1099,6 +1107,12 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         !---------------------------------------------------
     enddo
     zat_tot=sum(zat(1:atoms%nat))
+    vol=atoms%cellvec(1,1)*atoms%cellvec(2,2)*atoms%cellvec(3,3) !CORRECT_IT
+    shift=0.d0
+    do iat=1,atoms%nat
+        shift=shift-(alpha**2-gw_ion(iat)**2)*zat(iat)
+    enddo
+    shift=shift*pi/vol
     do iat=1,atoms%nat
         jat=iat
         !epot_short=epot_short-zat(iat)**2*sqrt_one_over_twopi/alpha
@@ -1152,8 +1166,7 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         grad1(2,jat)=grad1(2,jat)+(tt21+tt22)*dy
         grad1(3,jat)=grad1(3,jat)+(tt21+tt22)*dz
         grad2(jat)=grad2(jat)+tt31+tt32
-        vol=atoms%cellvec(1,1)*atoms%cellvec(2,2)*atoms%cellvec(3,3) !CORRECT_IT
-        grad2(jat)=grad2(jat)-(zat_tot*pi*(alpha**2-gw_ion(jat)**2)/vol)
+        grad2(jat)=grad2(jat)+shift
     enddo
 
     epot_es=epot_es+epot_short
