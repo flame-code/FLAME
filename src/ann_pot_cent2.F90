@@ -171,7 +171,8 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     type(typ_atoms), intent(inout):: atoms
     !local variables
     integer:: iter, iat, niter, jat, igw
-    real(8):: gnrm, epot_old, de, qtot, gnrm2, gtot, q1
+    real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
+    real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
     real(8), allocatable:: grad1(:)
     real(8), allocatable:: grad2(:)
@@ -181,15 +182,9 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     allocate(grad2(atoms%nat))
     allocate(rel(3,atoms%nat))
 
-    !rel(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)+2.d-1
-    !rel(1,1:atoms%nat)=atoms%rat(1,1:atoms%nat)+1.d-1
-    !rel(2,1:atoms%nat)=atoms%rat(2,1:atoms%nat)+2.d-1
-    !rel(3,1:atoms%nat)=atoms%rat(3,1:atoms%nat)+3.d-1
-    !rel(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)
-    !rel(1:3,64)=atoms%rat(1:3,64)+1.d-2
     do iat=1,atoms%nat
         call random_number(ttrand)
-        rel(1:3,iat)=atoms%rat(1:3,iat)+(ttrand(1:3)-0.5d0)*2.d0*10.d-2
+        rel(1:3,iat)=atoms%rat(1:3,iat)+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
     do iat=1,atoms%nat
@@ -203,9 +198,11 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     enddo
     !write(*,*) sum(atoms%zat(1:atoms%nat))
     !write(*,*) sum(atoms%qat(1:atoms%nat))
-    !write(*,*) sum(atoms%zat(1:atoms%nat))+sum(atoms%qat(1:atoms%nat))
-    !stop
-
+    qtot_ion=sum(atoms%zat(1:atoms%nat))
+    qtot_ele=sum(atoms%qat(1:atoms%nat))
+    qtot=qtot_ion+qtot_ele
+    write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
+        qtot_ion,qtot_ele,qtot
     niter=200
     do iter=0,niter
         call cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
@@ -276,12 +273,6 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
         grad1_p1(2,iat)=grad1_p1(2,iat)+spring_const*dy
         grad1_p1(3,iat)=grad1_p1(3,iat)+spring_const*dz
     enddo
-    !write(*,*) atoms%epot
-    !write(*,*) ann_arr%chi_o(1),ann_arr%chi_o(64)
-    !write(*,*) ann_arr%ann(atoms%itypat(1))%spring_const,ann_arr%ann(atoms%itypat(64))%spring_const
-    !stop
-    !call cal_electrostatic_cent2(nat,atoms%rat,rel,atoms%qat,epot_es, &
-    !    atoms%fat,grad1_p1,grad2_p1,epot_atom)
     call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,grad1_p2,grad2_p2)
     epot_es=epot_es_bps
     do iat=1,atoms%nat
@@ -291,7 +282,7 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
         grad2(iat)=grad2_p1(iat)+grad2_p2(iat)
     enddo
     atoms%epot=atoms%epot+epot_es
-    !epot=epot+ener_ref
+    !epot=epot+ener_ref !CORRECT_IT
     deallocate(grad1_p1)
     deallocate(grad1_p2)
     deallocate(grad2_p1)
@@ -323,7 +314,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8), allocatable:: ratred(:,:), fat(:,:), fat_m(:,:)
     real(8), allocatable:: gw_ion(:), gw(:), eqd(:), qat_tot(:)
     real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
-    real(8):: x, y, z, v1, v2
     real(8):: sqrt_one_over_twopi
     integer:: ix, iy, iz, iat, igx, igy, igz, i
     !logical:: ewald
@@ -340,14 +330,13 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
     potref=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='potref')
     rel_t(1:3,1:atoms%nat)=rel(1:3,1:atoms%nat)
-    !call put_in_cell(atoms,rel_t,cell)
-    cell(1)=atoms%cellvec(1,1)
-    cell(2)=atoms%cellvec(2,2)
-    cell(3)=atoms%cellvec(3,3)
+    cell(1)=atoms%cellvec(1,1) !CORRECT_IT
+    cell(2)=atoms%cellvec(2,2) !CORRECT_IT
+    cell(3)=atoms%cellvec(3,3) !CORRECT_IT
     ewald_p3d%hgx=cell(1)/nx
     ewald_p3d%hgy=cell(2)/ny
     ewald_p3d%hgz=cell(3)/nz
-    ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha
+    ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
     ewald_p3d%nbgpx=int(ewald_p3d%rgcut/ewald_p3d%hgx)+2
     ewald_p3d%nbgpy=int(ewald_p3d%rgcut/ewald_p3d%hgy)+2
     ewald_p3d%nbgpz=int(ewald_p3d%rgcut/ewald_p3d%hgz)+2
@@ -378,50 +367,13 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     !    gw_ion_t=gw_ion
     !endif
     call cpu_time(time1)
-    !write(*,*) atoms%rat(1,64)-rel_t(1,64)
-    !stop
-    !do i=-10,10
-    !rel_t(1,64)=atoms%rat(1,64)+i*1.d-2
     call put_gauss_to_grid(parini,atoms,rel_t,gw_ion_t,gw,ewald_p3d,potref)
-    !do igz=1,ewald_p3d%poisson_p3d%ngpz
-    !    do igy=1,ewald_p3d%poisson_p3d%ngpy
-    !        do igx=1,ewald_p3d%poisson_p3d%ngpx
-    !            write(91,'(3i3,es20.10)') igx,igy,igz,ewald_p3d%poisson_p3d%rho(igx,igy,igz)
-    !        enddo
-    !    enddo
-    !enddo
-    !stop
-            
-
     call cpu_time(time2)
     call construct_ewald_bps(parini,atoms,ewald_p3d)
     call cpu_time(time3)
     call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
-    !write(81,*) i*1.d-2,ehartree
-    !enddo
-    !stop
-
-
-    !call longerange_forces(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,qat_tot,gw_ion,ewald_p3d,fat_m,stress_m) !CORRECT_IT
-    !call longerange_forces(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,zat,gw_ion,ewald_p3d,fat_m,stress_m)
-    !call longerange_forces(parini,atoms%boundcond,.false.,atoms%nat,rel      ,qat,gw    ,ewald_p3d,fat_m,stress_m)
-    !write(*,*) 'cell(1)*cell(2)*cell(3) ',cell(1)*cell(2)*cell(3)
     write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
     stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
-
-    !call kwald(1,atoms%nat,atoms%rat,ratred,qat_tot,atoms%cellvec,gw**2,300.d0,ehartree_kwald,atoms%fat,eqd,stress,celldv)
-
-    !write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(1,1),atoms%stress(1,2),atoms%stress(1,3)
-    !write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(2,1),atoms%stress(2,2),atoms%stress(2,3)
-    !write(*,'(a,3es14.5)') 'stress (BPS) ',atoms%stress(3,1),atoms%stress(3,2),atoms%stress(3,3)
-    !write(*,*)
-    !write(*,'(a,es14.5)') 'stress (BPS) ',atoms%stress(1,1)*(cell(1)*cell(2)*cell(3))
-
-    !write(*,'(a,f20.10)') 'ehartree ',ehartree
-    !write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
-    !write(*,'(a,2f20.10,es14.5)') 'forces ',fat(1,1),fat_m(1,1),fat(1,1)-fat_m(1,1)
-    !write(*,'(a,2f20.10,es14.5)') 'stress ',atoms%stress(1,1),stress(1,1),atoms%stress(1,1)-stress(1,1)
-    
     epot_es=0.d0
     do iat=1,atoms%nat
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/gw_ion_t(iat)
@@ -430,8 +382,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     call gauss_gradient(parini,'bulk',atoms%nat,rel_t,atoms%cellvec,atoms%qat,gw, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,grad1,grad2)
 
-
-    !call cal_shortrange_ewald(atoms,qat,rel_t,epot_es,grad1,grad2)
     !if(ewald) then
     call cal_shortrange_ewald(parini,ann_arr,atoms,atoms%zat,atoms%qat, &
         gw_ion,gw,rel_t,epot_es,grad1,grad2)
@@ -457,29 +407,9 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
 
 
 
-    !stop 'STOPPED TO COMPARE STRESS'
-    !!!! call cpu_time(time4)
-    !!!! call cal_grad_long(atoms,qat,rel_t,ewald_p3d,grad1,grad2)
-    !!!! call cpu_time(time5)
-    !!!! call destruct_ewald_bps(ewald_p3d)
-    !!!! call cpu_time(time6)
-    !!!! epot_es=0.d0
-    !!!! call cal_shortrange_ewald(atoms,qat,rel_t,epot_es,grad1,grad2)
-    !!!! call cpu_time(time7)
-    !!!! write(*,'(a,7f6.2)') 'TIME ',time2-time1,time3-time2,time4-time3,time5-time4, &
-    !!!!                              time6-time5,time7-time6,time7-time1
-
-    !do iat=1,atoms%nat
-    !    epot_es=epot_es-zat(iat)**2/(gw_ion(iat)*sqrt(2.d0*pi))
-    !enddo
-    !write(*,*) 'ehartree ',ehartree
-    !epot_es=epot_es+ehartree
-    !write(*,*) 'RMSE ',ewald_p3d%hgx,error
     call f_free(potref)
     call f_free(ewald_p3d%poisson_p3d%pot)
     call f_free(ewald_p3d%poisson_p3d%rho)
-    !stop 'WWWWWWWWWWWWWW'
-    !call f_free(atoms%rat)
     call f_free(rel_t)
     end associate
     end associate
@@ -505,16 +435,7 @@ subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>ewald_p3d%poisson_p3d%ngpz)
-    !character(4):: bc
     ewald_p3d%poisson_p3d%rho=0.d0
-    !bc='bulk'
-    !call putgaussgrid(parini,atoms%boundcond,.true. ,atoms%nat,atoms%rat,atoms%zat,gw_ion,ewald_p3d)
-    !call putgaussgrid(parini,atoms%boundcond,.false.,atoms%nat,rel      ,atoms%qat,gw    ,ewald_p3d)
-    !write(*,*) 'gw_ion',gw_ion(1),gw_ion(64)
-    !write(*,*) 'gw    ',gw(1),gw(64)
-    !write(*,*) 'zat   ',atoms%zat(1),atoms%zat(64)
-    !write(*,*) 'qat   ',atoms%qat(1),atoms%qat(64)
-    !stop
     call gauss_grid(parini,'bulk',.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
     call gauss_grid(parini,'bulk',.false.,atoms%nat,rel,atoms%cellvec,atoms%qat,gw    , &
@@ -871,60 +792,9 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     nex=max(ngx,irgx-ilgx+1)
     ney=max(ngy,irgy-ilgy+1)
     nez=max(ngz,irgz-ilgz+1)
-    !wrap around grid points that are outside the extended box in into the extended box,
-    !these grid points do not form a complete cell.
     !write(*,'(a,3i5)') 'ncellx,ncelly,ncellz ',ncellx,ncelly,ncellz
     !write(*,'(a,3i5)') 'nagx,nagy,nagz ',nagx,nagy,nagz
     !write(*,'(a,6i5)') 'ngx,ngy,ngz,nex,ney,nez ',ngx,ngy,ngz,nex,ney,nez
-    !stop
-    !do igz=1-nagz,ngz+nagz
-    !    do igy=1-nagy,ilgy-1
-    !        do igx=1-nagx,ilgx-1
-    !            write(*,*) igx,igy,igz,igx+nex,igy+ney,igz
-    !            wa(igx,igy,igz)=pot(igx+nex,igy+ney,igz)
-    !            !wa(igx+nex,igy+ney,igz)=wa(igx+nex,igy+ney,igz)+wa(igx,igy,igz)
-    !        enddo
-    !        do igx=ilgx,irgx
-    !            wa(igx,igy,igz)=pot(igx,igy+ney,igz)
-    !        enddo
-    !        do igx=irgx+1,ngx+nagx
-    !            wa(igx,igy,igz)=pot(igx-nex,igy+ney,igz)
-    !        enddo
-    !    enddo
-    !    do igy=ilgy,irgy
-    !        do igx=1-nagx,ilgx-1
-    !            wa(igx,igy,igz)=pot(igx+nex,igy,igz)
-    !        enddo
-    !        do igx=irgx+1,ngx+nagx
-    !            wa(igx,igy,igz)=pot(igx-nex,igy,igz)
-    !        enddo
-    !    enddo
-    !    do igy=irgy+1,ngy+nagy
-    !        do igx=1-nagx,ilgx-1
-    !            wa(igx,igy,igz)=pot(igx+nex,igy-ney,igz)
-    !        enddo
-    !        do igx=ilgx,irgx
-    !            wa(igx,igy,igz)=pot(igx,igy-ney,igz)
-    !        enddo
-    !        do igx=irgx+1,ngx+nagx
-    !            wa(igx,igy,igz)=pot(igx-nex,igy-ney,igz)
-    !        enddo
-    !    enddo
-    !enddo
-    !do igz=1-nagz,ilgz-1
-    !    do igy=ilgy,irgy
-    !        do igx=ilgx,irgx
-    !            wa(igx,igy,igz)=pot(igx,igy,igz+nez)
-    !        enddo
-    !    enddo
-    !enddo
-    !do igz=irgz+1,ngz+nagz
-    !    do igy=ilgy,irgy
-    !        do igx=ilgx,irgx
-    !            wa(igx,igy,igz)=pot(igx,igy,igz-nez)
-    !        enddo
-    !    enddo
-    !enddo
     !---------------------------------------------------------------------------
     if(ncellx==0 .and. ncelly==0 .and. ncellz==0) then
         do igz=1,ngz
@@ -1045,18 +915,10 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
     do ib=1,linked_lists%maxbound_rad
         iat=linked_lists%bound_rad(1,ib)
         jat=linked_lists%bound_rad(2,ib)
-        !if(iat>jat) cycle
-        !write(*,'(2i4,3es14.5)') iat,jat,pia_arr%pia(ib)%dr(1),pia_arr%pia(ib)%dr(2),pia_arr%pia(ib)%dr(3)
         !---------------------------------------------------
-        !isat=atoms%itypat(iat)
-        !jsat=atoms%itypat(linked_lists%bound_rad(2,ib))
-        !pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
-        !pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
-        !call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc)
-        !---------------------------------------------------
-        dx=pia_arr%pia(ib)%dr(1) !atoms%rat(1,jat)-atoms%rat(1,iat)
-        dy=pia_arr%pia(ib)%dr(2) !atoms%rat(2,jat)-atoms%rat(2,iat)
-        dz=pia_arr%pia(ib)%dr(3) !atoms%rat(3,jat)-atoms%rat(3,iat)
+        dx=pia_arr%pia(ib)%dr(1)
+        dy=pia_arr%pia(ib)%dr(2)
+        dz=pia_arr%pia(ib)%dr(3)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(gw_ion(iat)**2+gw_ion(jat)**2)
         epot_short=epot_short-zat(iat)*zat(jat)*erfc(gama*r)/r
@@ -1150,25 +1012,13 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
             tt22=-zat(iat)*qat(jat)*ee1
             tt32=-zat(iat)*erf(gama*r)/r
         endif
-!        gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
-!        call erf_over_r_taylor(gama*r,tt1,ttg)
-!        epot_short=epot_short+zat(iat)*qat(jat)*(tt1*gama)
-!        tt21=zat(iat)*qat(jat)*gama**3*ttg
-!        tt31=zat(iat)*(tt1*gama)
-!        !-------------------------------------------
-!        gama=1.d0/sqrt(alpha**2+gw(jat)**2)
-!        call erf_over_r_taylor(gama*r,tt1,ttg)
-!        epot_short=epot_short-zat(iat)*qat(jat)*(tt1*gama)
-!        tt22=-zat(iat)*qat(jat)*gama**3*ttg
-!        tt32=-zat(iat)*(tt1*gama)
-!        !-------------------------------------------
+        !-------------------------------------------
         grad1(1,jat)=grad1(1,jat)+(tt21+tt22)*dx
         grad1(2,jat)=grad1(2,jat)+(tt21+tt22)*dy
         grad1(3,jat)=grad1(3,jat)+(tt21+tt22)*dz
         grad2(jat)=grad2(jat)+tt31+tt32
         grad2(jat)=grad2(jat)+shift
     enddo
-
     epot_es=epot_es+epot_short
 end subroutine cal_shortrange_ewald
 !*****************************************************************************************
