@@ -309,7 +309,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8):: ehartree, error, pi, ehartree_2
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: gw_ion_t(:)
-    real(8), allocatable:: ratred(:,:), fat(:,:), fat_m(:,:)
+    real(8), allocatable:: fat(:,:), fat_m(:,:)
     real(8), allocatable:: gw_ion(:), gw(:), eqd(:), qat_tot(:)
     real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
     real(8):: sqrt_one_over_twopi
@@ -348,7 +348,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     stress_m=0.d0
     allocate(gw(atoms%nat),gw_ion(atoms%nat))
     allocate(gw_ion_t(atoms%nat))
-    allocate(ratred(3,atoms%nat))
     allocate(fat(3,atoms%nat),eqd(atoms%nat),qat_tot(atoms%nat))
     allocate(fat_m(3,atoms%nat))
     do iat=1,atoms%nat
@@ -374,9 +373,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     !write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
     !stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
 
-    !call kwald(1,atoms%nat,atoms%rat,ratred,qat_tot,atoms%cellvec,gw**2,600.d0,ehartree_kwald,atoms%fat,eqd,stress,celldv)
-    !write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
-    !stop 'STOPPED COMPARING KWALD'
     epot_es=0.d0
     do iat=1,atoms%nat
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/gw_ion_t(iat)
