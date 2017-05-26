@@ -170,14 +170,14 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     !local variables
-    integer:: iter, iat, niter, jat, igw
+    integer:: iter, iat, niter
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
     real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
     real(8), allocatable:: grad1(:)
     real(8), allocatable:: grad2(:)
     real(8), allocatable:: rel(:,:)
-    real(8):: tt1, tt2, tt3, zion
+    real(8):: zion
     allocate(grad1(3*atoms%nat))
     allocate(grad2(atoms%nat))
     allocate(rel(3,atoms%nat))
@@ -246,7 +246,7 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     real(8), intent(out):: grad1(3,atoms%nat), grad2(atoms%nat)
     !local variables
     integer:: iat
-    real(8):: epot_es, dx, dy, dz, epot_es_bps, tt1, tt2
+    real(8):: epot_es, dx, dy, dz, epot_es_bps
     real(8):: hardness, spring_const
     real(8), allocatable:: grad1_p1(:,:)
     real(8), allocatable:: grad1_p2(:,:)
@@ -310,13 +310,12 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     type(typ_parini):: parini
     !type(typ_ewald_p3d):: ewald_p3d_rough
     type(typ_ewald_p3d):: ewald_p3d
-    real(8):: ehartree, error, pi, ehartree_2
+    real(8):: ehartree, pi
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: gw_ion_t(:)
     real(8), allocatable:: gw_ion(:), gw(:)
-    real(8):: ehartree_kwald, celldv(3,3)
     real(8):: sqrt_one_over_twopi
-    integer:: ix, iy, iz, iat, igx, igy, igz, i
+    integer:: iat
     !logical:: ewald
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
@@ -864,7 +863,7 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
     integer:: iat, jat, ib
     real(8):: alpha, epot_short, gama, dx, dy, dz, r, pi, vol, shift
     real(8):: sqrt_one_over_twopi, ee1, tt1, tt21, tt22, ttg, tt31, tt32
-    real(8):: hardness, chi, zat_tot
+    real(8):: zat_tot
     !type(typ_atoms):: atoms_e
     type(typ_pia_arr):: pia_arr
     type(typ_linked_lists):: linked_lists
