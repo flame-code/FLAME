@@ -309,9 +309,8 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8):: ehartree, error, pi, ehartree_2
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: gw_ion_t(:)
-    real(8), allocatable:: fat(:,:), fat_m(:,:)
-    real(8), allocatable:: gw_ion(:), gw(:), eqd(:), qat_tot(:)
-    real(8):: ehartree_kwald, stress(3,3), celldv(3,3), stress_m(3,3)
+    real(8), allocatable:: gw_ion(:), gw(:), qat_tot(:)
+    real(8):: ehartree_kwald, celldv(3,3)
     real(8):: sqrt_one_over_twopi
     integer:: ix, iy, iz, iat, igx, igy, igz, i
     !logical:: ewald
@@ -344,12 +343,9 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
 
     !-------------------------------------------------------
     atoms%stress=0.d0
-    stress=0.d0
-    stress_m=0.d0
     allocate(gw(atoms%nat),gw_ion(atoms%nat))
     allocate(gw_ion_t(atoms%nat))
-    allocate(fat(3,atoms%nat),eqd(atoms%nat),qat_tot(atoms%nat))
-    allocate(fat_m(3,atoms%nat))
+    allocate(qat_tot(atoms%nat))
     do iat=1,atoms%nat
         gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
         gw_ion_t(iat)=2.d0
@@ -370,9 +366,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     call cpu_time(time3)
     ehartree=0.d0
     call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
-    !write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
-    !stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
-
     epot_es=0.d0
     do iat=1,atoms%nat
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/gw_ion_t(iat)
@@ -386,25 +379,12 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
         gw_ion,gw,rel,epot_es,grad1,grad2)
     !endif
     !gw_ion_t
-    
 
     !write(61,'(f20.9)') epot_es
     !do iat=1,atoms%nat
     !    write(61,'(i4,4f10.5)') iat,grad1(1,iat),grad1(2,iat),grad1(3,iat),grad2(iat)
     !enddo
     !stop 'TESTING EWALD'
-        
-    !!  atoms%qat(2)=atoms%qat(2)+1.d-4
-    !!  !rel(1,64)=rel(1,64)+1.d-5
-    !!  call put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
-    !!  call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
-    !!  write(*,'(a,2f20.10)') 'EHARTREE ',ehartree,ehartree_2
-    !!  !write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64),eqd(64)
-    !!  write(*,*) (ehartree_2-ehartree)/1.d-4,grad2(2)
-    !!  !write(*,*) (ehartree_2-ehartree)/1.d-5,grad1(1,64)
-
-
-
 
     call f_free(ewald_p3d%poisson_p3d%pot)
     call f_free(ewald_p3d%poisson_p3d%rho)
