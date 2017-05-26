@@ -256,7 +256,7 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     allocate(grad1_p2(3,atoms%nat),source=0.d0)
     allocate(grad2_p1(atoms%nat),source=0.d0)
     allocate(grad2_p2(atoms%nat),source=0.d0)
-    ann_arr%ann(atoms%itypat(1:atoms%nat))%spring_const=1.d0
+    ann_arr%ann(atoms%itypat(1:atoms%nat))%spring_const=1.d0 !CORRECT_IT
     atoms%fat=0.d0
     atoms%epot=0.d0
     do iat=1,atoms%nat !summation over ions/electrons
@@ -308,7 +308,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     type(typ_ewald_p3d):: ewald_p3d
     real(8):: ehartree, error, pi, ehartree_2
     real(8):: time1, time2, time3, time4, time5, time6, time7
-    real(8), allocatable:: potref(:,:,:)
     real(8), allocatable:: rel_t(:,:)
     real(8), allocatable:: gw_ion_t(:)
     real(8), allocatable:: ratred(:,:), fat(:,:), fat_m(:,:)
@@ -328,7 +327,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     ewald_p3d%poisson_p3d%ngpz=30
     ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
     ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
-    potref=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='potref')
     rel_t(1:3,1:atoms%nat)=rel(1:3,1:atoms%nat)
     !cell(1)=atoms%cellvec(1,1) !CORRECT_IT
     !cell(2)=atoms%cellvec(2,2) !CORRECT_IT
@@ -370,7 +368,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     !    gw_ion_t=gw_ion
     !endif
     call cpu_time(time1)
-    call put_gauss_to_grid(parini,atoms,rel_t,gw_ion_t,gw,ewald_p3d,potref)
+    call put_gauss_to_grid(parini,atoms,rel_t,gw_ion_t,gw,ewald_p3d)
     call cpu_time(time2)
     call construct_ewald_bps(parini,atoms,ewald_p3d)
     call cpu_time(time3)
@@ -405,7 +403,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
         
     !!  atoms%qat(2)=atoms%qat(2)+1.d-4
     !!  !rel_t(1,64)=rel_t(1,64)+1.d-5
-    !!  call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d,potref)
+    !!  call put_gauss_to_grid(parini,atoms,rel_t,gw_ion,gw,ewald_p3d)
     !!  call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree_2)
     !!  write(*,'(a,2f20.10)') 'EHARTREE ',ehartree,ehartree_2
     !!  !write(*,*) (ehartree_2-ehartree)/1.d-3,grad2(64),eqd(64)
@@ -415,7 +413,6 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
 
 
 
-    call f_free(potref)
     call f_free(ewald_p3d%poisson_p3d%pot)
     call f_free(ewald_p3d%poisson_p3d%rho)
     call f_free(rel_t)
@@ -424,7 +421,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     end associate
 end subroutine cal_pot_with_bps
 !*****************************************************************************************
-subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
+subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -436,7 +433,6 @@ subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d,potref)
     real(8), intent(in):: gw_ion(atoms%nat)
     real(8), intent(in):: gw(atoms%nat)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(inout):: potref(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,ewald_p3d%poisson_p3d%ngpz)
     !local variables
     integer:: ix, iy, iz, iat
     real(8):: x, y, z, r, rsq, pi, ttg, factor, tt1, qtot
