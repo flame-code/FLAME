@@ -19,8 +19,6 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
-    !integer, save:: icall=0
-    !icall=icall+1
     call f_routine(id='cal_ann_eem2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
@@ -73,8 +71,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo over_iat
     do iat=1,atoms%nat
         !write(*,*) iat,trim(atoms%sat(iat))
-        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.32d0 !+(icall-10)**2*1.d-4
-        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.32d0 !-(icall-10)**2*1.d-4
+        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.32d0
+        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.32d0
     enddo
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
