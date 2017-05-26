@@ -1389,6 +1389,14 @@ end subroutine hunt2
 subroutine hpsort(n,ra)
     real*8 ::ra(n)
 end subroutine hpsort
+! ./src/buckingham.F90 :
+subroutine set_buckingham(atoms,tosifumi)
+    use mod_atoms, only: typ_atoms
+    use mod_shortrange, only: typ_tosifumi
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_tosifumi), intent(inout):: tosifumi
+end subroutine set_buckingham
 ! ./src/cell_linkedlists.F90 :
 subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     use mod_parini, only: typ_parini
@@ -1484,12 +1492,14 @@ implicit none
     integer:: ix, jx, ix1,ixo ,n ,n2 ,nbgp
     real(8):: w(n), q(n), qinv(n), LGx(n), DLGx(n), h ,x ,diffx,x1,protot
 end subroutine lgw4
-subroutine surface_charge(ewald_p3d,pot_short,vl,vu)
+subroutine surface_charge(parini,ewald_p3d,pot_short,vl,vu)
     use mod_electrostatics, only: typ_ewald_p3d
+    use mod_parini, only: typ_parini
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8):: t, tt ,density(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2),vl,vu
-    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,4)
+    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,5)
 end subroutine surface_charge
 subroutine determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
     use mod_electrostatics, only: typ_ewald_p3d

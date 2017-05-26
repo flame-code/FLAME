@@ -61,7 +61,7 @@ subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
     mz = linked_lists%mz
     hzinv=real(mz,8)/cell(3)
 
-    dnlayer=(nlayer-1)*ewald_p3d%hgx
+    dnlayer=(nlayer-1)*ewald_p3d%hgz
     mlimnlayer=floor(dnlayer*hzinv)+1
     hgxinv=1.d0/ewald_p3d%hgx
     hgyinv=1.d0/ewald_p3d%hgy
@@ -120,7 +120,7 @@ subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
         zat=linked_lists%rat(3,iat)-(iatoz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz
         do iz=-nbgpz,nbgpz
             jz=iatoz+iz
-            if (.not. (jz>=npl .and. jz<npl+nlayer)) cycle
+            if (.not. (jz>=npl .and. jz<npl+nlayer .and. jz<=npu-nlayer)) cycle
             dzsq= (iz*ewald_p3d%hgz-zat)**2
             do iy=mboundgy(1,iz),mboundgy(2,iz)
                 jy=modulo(iatoy+iy-1,ngpy)+1
@@ -770,36 +770,44 @@ implicit none
     endif
 end subroutine LGW4
 !*******************************************************************************************
-subroutine surface_charge(ewald_p3d,pot_short,vl,vu)
+subroutine surface_charge(parini,ewald_p3d,pot_short,vl,vu)
     use mod_electrostatics, only: typ_ewald_p3d
+    use mod_parini, only: typ_parini
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     integer::ix, iy, iz, npl,npu
     real(8):: t, tt ,density(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2),vl,vu
-    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,4)
+    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,5)
     real(8)::pot_layerl2,pot_layeru2
     real(8)::pot_layerl3,pot_layeru3
     real(8)::pot_layerl4,pot_layeru4
+    real(8)::pot_layerl0,pot_layeru0
+    real(8):: E,d
     pi=4*atan(1.d0)
     npl=ewald_p3d%poisson_p3d%npl
     npu=ewald_p3d%poisson_p3d%npu
     hgzinv=1.d0/(ewald_p3d%hgz*4.d0*pi)
     t=0.d0
     tt=0.d0
+    d = ewald_p3d%cell(3)
+            E =- (vu-vl)/d
 
     do iy=1,ewald_p3d%poisson_p3d%ngpy
     do ix=1,ewald_p3d%poisson_p3d%ngpx
-            pot_layerl4=ewald_p3d%poisson_p3d%pots(ix,iy,npl+4)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+4)+pot_short(ix,iy,1,4)
-            pot_layerl3=ewald_p3d%poisson_p3d%pots(ix,iy,npl+3)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+3)+pot_short(ix,iy,1,3)
-            pot_layerl2=ewald_p3d%poisson_p3d%pots(ix,iy,npl+2)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+2)+pot_short(ix,iy,1,2)
-            pot_layerl=ewald_p3d%poisson_p3d%pots(ix,iy,npl+1)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+1)+pot_short(ix,iy,1,1)
+            pot_layerl4=ewald_p3d%poisson_p3d%pots(ix,iy,npl+4)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+4)+pot_short(ix,iy,1,5)
+            pot_layerl3=ewald_p3d%poisson_p3d%pots(ix,iy,npl+3)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+3)+pot_short(ix,iy,1,4)
+            pot_layerl2=ewald_p3d%poisson_p3d%pots(ix,iy,npl+2)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+2)+pot_short(ix,iy,1,3)
+            pot_layerl =ewald_p3d%poisson_p3d%pots(ix,iy,npl+1)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+1)+pot_short(ix,iy,1,2)
+              vl       =ewald_p3d%poisson_p3d%pots(ix,iy,npl  )+ewald_p3d%poisson_p3d%rho(ix,iy,npl  )+pot_short(ix,iy,1,1)
             !density(ix,iy,1)=-0.5d0*(-3.d0*vl+4*pot_layerl-pot_layerl2)* hgzinv
             density(ix,iy,1)=-(-25.d0/12.d0*vl+4.d0*pot_layerl-3.d0*pot_layerl2+4.d0/3.d0*pot_layerl3-0.25d0*pot_layerl4)* hgzinv
             t=t+ density(ix,iy,1)
-            pot_layeru4=ewald_p3d%poisson_p3d%pots(ix,iy,npu-4)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-4)+pot_short(ix,iy,2,4)
-            pot_layeru3=ewald_p3d%poisson_p3d%pots(ix,iy,npu-3)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-3)+pot_short(ix,iy,2,3)
-            pot_layeru2=ewald_p3d%poisson_p3d%pots(ix,iy,npu-2)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-2)+pot_short(ix,iy,2,2)
-            pot_layeru=ewald_p3d%poisson_p3d%pots(ix,iy,npu-1)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-1)+pot_short(ix,iy,2,1)
+            pot_layeru4=ewald_p3d%poisson_p3d%pots(ix,iy,npu-4)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-4)+pot_short(ix,iy,2,5)
+            pot_layeru3=ewald_p3d%poisson_p3d%pots(ix,iy,npu-3)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-3)+pot_short(ix,iy,2,4)
+            pot_layeru2=ewald_p3d%poisson_p3d%pots(ix,iy,npu-2)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-2)+pot_short(ix,iy,2,3)
+            pot_layeru =ewald_p3d%poisson_p3d%pots(ix,iy,npu-1)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-1)+pot_short(ix,iy,2,2)
+                    vu =ewald_p3d%poisson_p3d%pots(ix,iy,npu  )+ewald_p3d%poisson_p3d%rho(ix,iy,npu  )+pot_short(ix,iy,2,1)
             !density(ix,iy,2)=0.5d0*(3.d0*vu-4.d0*pot_layeru+pot_layeru2)* hgzinv
             density(ix,iy,2)=-(-25.d0/12.d0*vu+4.d0*pot_layeru-3.d0*pot_layeru2+4.d0/3.d0*pot_layeru3-0.25d0*pot_layeru4)* hgzinv
             tt=tt+ density(ix,iy,2)
@@ -815,9 +823,15 @@ subroutine surface_charge(ewald_p3d,pot_short,vl,vu)
   !  enddo
     t=t*ewald_p3d%hgx*ewald_p3d%hgy
     tt=tt*ewald_p3d%hgx*ewald_p3d%hgy
+    if (trim(parini%bias_field)=='yes') then
+        t =t -E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
+        tt=tt+E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
+    endif
     write(*,'(a,es25.13)')'charge on lower plane' ,t
     write(*,'(a,es25.13)')'charge on upper plane',tt
     write(77,'(3es25.13)')vu-vl,t,tt
+    vu=ewald_p3d%vu
+    vl=ewald_p3d%vl
 end subroutine surface_charge
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.

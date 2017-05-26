@@ -27,8 +27,11 @@ subroutine md_nvt_langevin(parini,atoms)
     character(56):: comment
     real(8):: langev(atoms%nat), forces_langevin(3,atoms%nat)
     real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
+    real(8):: rat_init(3,atoms%nat)
+    real(8):: r, dx(3) , rsq, msd1, msd2, msd3
 
     call random_seed() 
+    rat_init=atoms%rat
     !  ___________parameters_______________________________________
     gama=1.d-3
     aboltzmann= 3.1668113916289087d-6
@@ -37,6 +40,7 @@ subroutine md_nvt_langevin(parini,atoms)
     tolerance = 1.d-2
 
     open(unit=1000,file="velocity",status='replace')
+    open(unit=1111,file="displace.txt",status='replace')
     call init_potential_forces(parini,atoms)
     call get_atomic_mass(atoms,totmass)
     langev(:)=sqrt(2*gama*atoms%amass(:)*kt/dt)
@@ -88,7 +92,8 @@ subroutine md_nvt_langevin(parini,atoms)
         atoms%vat(1:3,iat)=(rat_next(1:3,iat)-atoms%rat(1:3,iat))/dt
         atoms%rat(1:3,iat)=rat_next(1:3,iat)
     enddo
-    call back_to_cell(atoms)
+    !call back_to_cell(atoms)
+
     !_____________________________________________________________________
     do imd=2,nmd
         parini%time_dynamics = (imd-1)*dt
@@ -131,16 +136,30 @@ subroutine md_nvt_langevin(parini,atoms)
 
         atoms%vat = (rat_next - atoms%rat )/dt
         atoms%rat = rat_next
-        call back_to_cell(atoms)
+        !call back_to_cell(atoms)
         if(mod(imd,100)==0) then
             file_info%file_position='append'
             call acf_write(file_info,atoms=atoms,strkey='posout')
-          !  write(1000,*) '#'
-          !  write(1000,*) '#    imd = ', imd
-          !  write(1000,*) '#'
-          !  do iat=1,atoms%nat
-          !      write(1000,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
-          !  enddo
+            write(1111,*) '#'
+            write(1111,*) '#    imd = ',imd, parini%time_dynamics
+            write(1111,*) '#'
+            msd1= 0.d0
+            msd2= 0.d0
+            msd3= 0.d0
+            do iat=1,atoms%nat
+
+                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+                rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
+                r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
+                msd1 = msd1 + rsq                !all directions
+                msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
+                msd3 = msd3 + dx(3)**2           !z   direction
+                write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
+            enddo
+            write(1111,*) '  MSD    = ', msd1/atoms%nat 
+            write(1111,*) '  MSD_xy = ', msd2/atoms%nat 
+            write(1111,*) '  MSD_z  = ', msd3/atoms%nat 
+            write(1111,*) '# -----------------------------------------------'
         
         endif
         etotold=etot
@@ -176,10 +195,15 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     real(8):: forces_nosehoover(3,atoms%nat)
     real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
     real(8), allocatable ::zeta_next(:,:,:) ,zeta(:,:,:) ,zeta_prev(:,:,:) ,dzeta(:,:,:),mass_q(:),dzeta_old(:,:,:)
+    real(8):: rat_init(3,atoms%nat)
+    real(8):: r, dx(3) , rsq, msd1, msd2, msd3
+
     call random_seed() 
+    rat_init=atoms%rat
 
     call init_potential_forces(parini,atoms)
     open(unit=1000,file="velocity",status='replace')
+    open(unit=1111,file="displace.txt",status='replace')
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     file_info%print_force=parini%print_force_dynamics
@@ -251,6 +275,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     zeta=zeta_next
     !_____________________________________________________________________
     do imd=2,nmd
+        parini%time_dynamics = (imd-1)*dt
         vat_old =atoms%vat
         dzeta_old=dzeta
         epotold=atoms%epot
@@ -294,6 +319,26 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
         if(mod(imd,100)==0) then
             file_info%file_position='append'
             call acf_write(file_info,atoms=atoms,strkey='posout')
+            write(1111,*) '#'
+            write(1111,*) '#    imd = ',imd, parini%time_dynamics
+            write(1111,*) '#'
+            msd1= 0.d0
+            msd2= 0.d0
+            msd3= 0.d0
+            do iat=1,atoms%nat
+
+                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+                rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
+                r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
+                msd1 = msd1 + rsq                !all directions
+                msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
+                msd3 = msd3 + dx(3)**2           !z   direction
+                write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
+            enddo
+            write(1111,*) '  MSD    = ', msd1/atoms%nat 
+            write(1111,*) '  MSD_xy = ', msd2/atoms%nat 
+            write(1111,*) '  MSD_z  = ', msd3/atoms%nat 
+            write(1111,*) '# -----------------------------------------------'
          !   write(1000,*) '#'
          !   write(1000,*) '#    imd = ', imd
          !   write(1000,*) '#'
@@ -337,11 +382,16 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
     real(8):: omega
     real(8), allocatable ::zeta_next(:) ,zeta(:) ,zeta_prev(:) ,dzeta(:),mass_q(:),dzeta_old(:)
+    real(8):: rat_init(3,atoms%nat)
+    real(8):: r, dx(3) , rsq, msd1, msd2, msd3
+
     call random_seed() 
+    rat_init=atoms%rat
 
     call init_potential_forces(parini,atoms)
 
     open(unit=1000,file="velocity",status='replace')
+    open(unit=1111,file="displace.txt",status='replace')
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     file_info%print_force=parini%print_force_dynamics
@@ -413,6 +463,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     zeta=zeta_next
     !_____________________________________________________________________
     do imd=2,nmd
+        parini%time_dynamics = (imd-1)*dt
     write(110,*) imd,dzeta
         vat_old =atoms%vat
         dzeta_old=dzeta
@@ -462,6 +513,26 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         if(mod(imd,1)==0) then
             file_info%file_position='append'
             call acf_write(file_info,atoms=atoms,strkey='posout')
+            write(1111,*) '#'
+            write(1111,*) '#    imd = ',imd, parini%time_dynamics
+            write(1111,*) '#'
+            msd1= 0.d0
+            msd2= 0.d0
+            msd3= 0.d0
+            do iat=1,atoms%nat
+
+                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+                rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
+                r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
+                msd1 = msd1 + rsq                !all directions
+                msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
+                msd3 = msd3 + dx(3)**2           !z   direction
+                write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
+            enddo
+            write(1111,*) '  MSD    = ', msd1/atoms%nat 
+            write(1111,*) '  MSD_xy = ', msd2/atoms%nat 
+            write(1111,*) '  MSD_z  = ', msd3/atoms%nat 
+            write(1111,*) '# -----------------------------------------------'
          !   write(1000,*) '#'
          !   write(1000,*) '#    imd = ', imd
          !   write(1000,*) '#'
@@ -735,13 +806,18 @@ subroutine md_nvt_nose_hoover(parini,atoms)
     real(8)::  forces_nose(3,atoms%nat)
     real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
     real(8):: zeta, dzeta, mass_q, force_q, zeta_next, dzeta_old 
+    real(8):: rat_init(3,atoms%nat)
+    real(8):: r, dx(3) , rsq, msd1, msd2, msd3
 
     call random_seed() 
+    rat_init=atoms%rat
+
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     file_info%print_force=parini%print_force_dynamics
     call acf_write(file_info,atoms=atoms,strkey='posout')
     open(unit=1000,file="velocity",status='replace')
+    open(unit=1111,file="displace.txt",status='replace')
     call init_potential_forces(parini,atoms)
 
     !  ___________parameters_______________________________________
@@ -857,6 +933,26 @@ subroutine md_nvt_nose_hoover(parini,atoms)
         if(mod(imd,100)==0) then
             file_info%file_position='append'
             call acf_write(file_info,atoms=atoms,strkey='posout')
+            write(1111,*) '#'
+            write(1111,*) '#    imd = ',imd, parini%time_dynamics
+            write(1111,*) '#'
+            msd1= 0.d0
+            msd2= 0.d0
+            msd3= 0.d0
+            do iat=1,atoms%nat
+
+                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+                rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
+                r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
+                msd1 = msd1 + rsq                !all directions
+                msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
+                msd3 = msd3 + dx(3)**2           !z   direction
+                write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
+            enddo
+            write(1111,*) '  MSD    = ', msd1/atoms%nat 
+            write(1111,*) '  MSD_xy = ', msd2/atoms%nat 
+            write(1111,*) '  MSD_z  = ', msd3/atoms%nat 
+            write(1111,*) '# -----------------------------------------------'
         !    write(1000,*) '#'
         !    write(1000,*) '#    imd = ', imd
         !    write(1000,*) '#'
@@ -886,6 +982,8 @@ subroutine get_atomic_mass(atoms,totmass)
             atoms%amass(iat)= 28.085*1822.888485540949556d0
         else if(trim(atoms%sat(iat))=='Zr') then
             atoms%amass(iat)= 91.224*1822.888485540949556d0
+        else if(trim(atoms%sat(iat))=='Y') then
+            atoms%amass(iat)= 88.90585*1822.888485540949556d0
         else if(trim(atoms%sat(iat))=='O') then
             atoms%amass(iat)= 15.9994*1822.888485540949556d0
         else if(trim(atoms%sat(iat))=='K') then 

@@ -23,7 +23,7 @@ subroutine forcefield_init(parini,atoms)
         ewald_p3d%spline%do_tosifumi=.true.
 
         deallocate (shortrange%interaction,shortrange%qq)
-        allocate (shortrange%interaction(shortrange%ntypinter,shortrange%ntypinter),shortrange%qq(shortrange%ntypinter))
+        allocate (shortrange%interaction(atoms%ntypat,atoms%ntypat),shortrange%qq(shortrange%ntypinter))
         shortrange%interaction=shortrange%tosifumi%interaction(1:shortrange%ntypinter,1:shortrange%ntypinter)
         shortrange%qq=shortrange%tosifumi%eee(1:shortrange%ntypinter)
     endif

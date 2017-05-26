@@ -109,7 +109,8 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     !The following dummy varables definition to be deleted later.
     !real(8):: totrho
     real(8):: beta, pi, charge,c,charge0,E,tmp
-    integer:: igpx, igpy, igpz, iat, iz
+    integer:: igpx, igpy, igpz, iat
+    integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
@@ -189,13 +190,13 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         nlayer=1
         if (parini%cal_charge) then 
             nlayer=5
-            pots_layer=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx,1.to.ewald_p3d%poisson_p3d%ngpy,1.to.2,1.to.nlayer-1],id='pots_layer')
+            pots_layer=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx,1.to.ewald_p3d%poisson_p3d%ngpy,1.to.2,1.to.nlayer],id='pots_layer')
         endif
         ewald_p3d%poisson_p3d%pots=0.d0
         call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
         if (parini%cal_charge) then
-            pots_layer(1:ngpx,1:ngpy,1,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npl+1:npl+nlayer-1)
-            pots_layer(1:ngpx,1:ngpy,2,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npu-1:npu-(nlayer-1):-1)
+            pots_layer(1:ngpx,1:ngpy,1,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
+            pots_layer(1:ngpx,1:ngpy,2,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
             ewald_p3d%poisson_p3d%pots(:,:,npl+1:npl+nlayer-1)  =0.d0
             ewald_p3d%poisson_p3d%pots(:,:,npu-(nlayer-1):npu-1)=0.d0
         endif
@@ -212,12 +213,21 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         call calculate_force_ener_plane(atoms,ewald_p3d,epotplane)
 
         if (parini%cal_charge) then 
-            call surface_charge(ewald_p3d,pots_layer,vl,vu)
+            call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
             call f_free(pots_layer)
         endif
+        !   do iy=1,ewald_p3d%poisson_p3d%ngpy
+        !   do ix=1,ewald_p3d%poisson_p3d%ngpx
+        !   do iz=ewald_p3d%poisson_p3d%npl,ewald_p3d%poisson_p3d%npu
+        !       write(55,*)  (iz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz, ewald_p3d%poisson_p3d%pots(ix,iy,iz)
+        !   enddo 
+        !       write(55,*)   
+        !   enddo 
+        !   enddo 
         epotplane = epotplane+dipole_correction
         call f_free(ewald_p3d%poisson_p3d%pots)
     end if
+
     if (trim(parini%bias_field)=='yes') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald
@@ -246,6 +256,34 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
             epotplane = epotplane - E * atoms%qat(iat)*atoms%rat(3,iat)
             atoms%fat(3,iat)=atoms%fat(3,iat)+ E * atoms%qat(iat)
         enddo
+
+!*****************************************************************************
+        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
+        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
+        npl=ewald_p3d%poisson_p3d%npl
+        npu=ewald_p3d%poisson_p3d%npu
+
+        ewald_p3d%poisson_p3d%pots=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx+2,1.to.ewald_p3d%poisson_p3d%ngpy,npl.to.npu],id='ewald_p3d%poisson_p3d%pots')
+        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
+        nlayer=1
+        if (parini%cal_charge) then 
+            nlayer=5
+            pots_layer=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx,1.to.ewald_p3d%poisson_p3d%ngpy,1.to.2,1.to.nlayer],id='pots_layer')
+        endif
+        ewald_p3d%poisson_p3d%pots=0.d0
+        call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
+        if (parini%cal_charge) then
+            pots_layer(1:ngpx,1:ngpy,1,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
+            pots_layer(1:ngpx,1:ngpy,2,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
+        endif
+        ewald_p3d%poisson_p3d%pots=0.d0
+
+        if (parini%cal_charge) then 
+            call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
+            call f_free(pots_layer)
+        endif
+        call f_free(ewald_p3d%poisson_p3d%pots)
+!*****************************************************************************
     endif
     call cpu_time(time(6))
     !atoms%epot=epotlong+epotshort-ewald_p3d%epotfixed+epotplane
