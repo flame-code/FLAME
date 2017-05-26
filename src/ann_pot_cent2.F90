@@ -174,12 +174,12 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
     real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
-    real(8), allocatable:: grad1(:)
-    real(8), allocatable:: grad2(:)
+    real(8), allocatable:: rgrad(:)
+    real(8), allocatable:: qgrad(:)
     real(8), allocatable:: rel(:,:)
     real(8):: zion
-    allocate(grad1(3*atoms%nat))
-    allocate(grad2(atoms%nat))
+    allocate(rgrad(3*atoms%nat))
+    allocate(qgrad(atoms%nat))
     allocate(rel(3,atoms%nat))
 
     do iat=1,atoms%nat
@@ -205,13 +205,13 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
         qtot_ion,qtot_ele,qtot
     niter=200
     do iter=0,niter
-        call cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
+        call cal_potential_cent2(ann_arr,atoms,rel,rgrad,qgrad)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
-        gnrm=sqrt(sum(grad1**2))
-        gtot=sum(grad2(1:atoms%nat))
-        grad2(1:atoms%nat)=grad2(1:atoms%nat)-gtot/atoms%nat
-        gnrm2=sqrt(sum(grad2(1:atoms%nat)**2))
+        gnrm=sqrt(sum(rgrad**2))
+        gtot=sum(qgrad(1:atoms%nat))
+        qgrad(1:atoms%nat)=qgrad(1:atoms%nat)-gtot/atoms%nat
+        gnrm2=sqrt(sum(qgrad(1:atoms%nat)**2))
         qtot=sum(atoms%zat(1:atoms%nat))+sum(atoms%qat(1:atoms%nat))
         q1=atoms%zat(1)+atoms%qat(1)
         write(*,'(a,i5,es24.15,3es11.2,2f8.3)') 'iter,epot,gnrm ',iter,atoms%epot,de,gnrm,gnrm2,q1,qtot
@@ -220,22 +220,22 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
         if(gnrm<5.d-4 .and. gnrm2<1.d-3) exit
         if(iter==niter) exit
         do iat=1,atoms%nat
-            rel(1,iat)=rel(1,iat)-5.d-1*grad1(3*iat-2)
-            rel(2,iat)=rel(2,iat)-5.d-1*grad1(3*iat-1)
-            rel(3,iat)=rel(3,iat)-5.d-1*grad1(3*iat-0)
+            rel(1,iat)=rel(1,iat)-5.d-1*rgrad(3*iat-2)
+            rel(2,iat)=rel(2,iat)-5.d-1*rgrad(3*iat-1)
+            rel(3,iat)=rel(3,iat)-5.d-1*rgrad(3*iat-0)
         enddo
         do iat=1,atoms%nat
-            atoms%qat(iat)=atoms%qat(iat)-1.0d0*grad2(iat)
+            atoms%qat(iat)=atoms%qat(iat)-1.0d0*qgrad(iat)
         enddo
         epot_old=atoms%epot
     enddo
     write(*,'(a,i5,2f8.3)') 'DISP ',iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
 
-    deallocate(grad1)
-    deallocate(grad2)
+    deallocate(rgrad)
+    deallocate(qgrad)
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
-subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
+subroutine cal_potential_cent2(ann_arr,atoms,rel,rgrad,qgrad)
     use mod_interface
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -243,23 +243,23 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(out):: grad1(3,atoms%nat), grad2(atoms%nat)
+    real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     integer:: iat
     real(8):: epot_es, dx, dy, dz, epot_es_bps
     real(8):: hardness, spring_const
-    real(8), allocatable:: grad1_p1(:,:)
-    real(8), allocatable:: grad1_p2(:,:)
-    real(8), allocatable:: grad2_p1(:)
-    real(8), allocatable:: grad2_p2(:)
+    real(8), allocatable:: rgrad_ot(:,:)
+    real(8), allocatable:: rgrad_es(:,:)
+    real(8), allocatable:: qgrad_ot(:)
+    real(8), allocatable:: qgrad_es(:)
     if(trim(atoms%boundcond)/='bulk') then
         write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
         stop
     endif
-    allocate(grad1_p1(3,atoms%nat),source=0.d0)
-    allocate(grad1_p2(3,atoms%nat),source=0.d0)
-    allocate(grad2_p1(atoms%nat),source=0.d0)
-    allocate(grad2_p2(atoms%nat),source=0.d0)
+    allocate(rgrad_ot(3,atoms%nat),source=0.d0)
+    allocate(rgrad_es(3,atoms%nat),source=0.d0)
+    allocate(qgrad_ot(atoms%nat),source=0.d0)
+    allocate(qgrad_es(atoms%nat),source=0.d0)
     ann_arr%ann(atoms%itypat(1:atoms%nat))%spring_const=1.d0 !CORRECT_IT
     atoms%fat=0.d0
     atoms%epot=0.d0
@@ -267,33 +267,33 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
         atoms%epot=atoms%epot+ann_arr%chi_o(iat)*(atoms%zat(iat)+atoms%qat(iat))
         hardness=ann_arr%ann(atoms%itypat(iat))%hardness
         atoms%epot=atoms%epot+0.5d0*hardness*(atoms%zat(iat)+atoms%qat(iat))**2
-        grad2_p1(iat)=grad2_p1(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
+        qgrad_ot(iat)=qgrad_ot(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
         dx=rel(1,iat)-atoms%rat(1,iat)
         dy=rel(2,iat)-atoms%rat(2,iat)
         dz=rel(3,iat)-atoms%rat(3,iat)
         spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
         atoms%epot=atoms%epot+0.5d0*spring_const*(dx**2+dy**2+dz**2)
-        grad1_p1(1,iat)=grad1_p1(1,iat)+spring_const*dx
-        grad1_p1(2,iat)=grad1_p1(2,iat)+spring_const*dy
-        grad1_p1(3,iat)=grad1_p1(3,iat)+spring_const*dz
+        rgrad_ot(1,iat)=rgrad_ot(1,iat)+spring_const*dx
+        rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
+        rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,grad1_p2,grad2_p2)
+    call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,rgrad_es,qgrad_es)
     epot_es=epot_es_bps
     do iat=1,atoms%nat
-        grad1(1,iat)=grad1_p1(1,iat)+grad1_p2(1,iat)
-        grad1(2,iat)=grad1_p1(2,iat)+grad1_p2(2,iat)
-        grad1(3,iat)=grad1_p1(3,iat)+grad1_p2(3,iat)
-        grad2(iat)=grad2_p1(iat)+grad2_p2(iat)
+        rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
+        rgrad(2,iat)=rgrad_ot(2,iat)+rgrad_es(2,iat)
+        rgrad(3,iat)=rgrad_ot(3,iat)+rgrad_es(3,iat)
+        qgrad(iat)=qgrad_ot(iat)+qgrad_es(iat)
     enddo
     atoms%epot=atoms%epot+epot_es
     !epot=epot+ener_ref !CORRECT_IT
-    deallocate(grad1_p1)
-    deallocate(grad1_p2)
-    deallocate(grad2_p1)
-    deallocate(grad2_p2)
+    deallocate(rgrad_ot)
+    deallocate(rgrad_es)
+    deallocate(qgrad_ot)
+    deallocate(qgrad_es)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
-subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
+subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
@@ -304,7 +304,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
+    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     !real(8):: cell(3)
     type(typ_parini):: parini
@@ -360,17 +360,17 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     enddo
     epot_es=epot_es+ehartree
     call gauss_gradient(parini,'bulk',atoms%nat,rel,atoms%cellvec,atoms%qat,gw, &
-        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,grad1,grad2)
+        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,rgrad,qgrad)
 
     !if(ewald) then
     call cal_shortrange_ewald(parini,ann_arr,atoms,atoms%zat,atoms%qat, &
-        gw_ion,gw,rel,epot_es,grad1,grad2)
+        gw_ion,gw,rel,epot_es,rgrad,qgrad)
     !endif
     !gw_ion_t
 
     !write(61,'(f20.9)') epot_es
     !do iat=1,atoms%nat
-    !    write(61,'(i4,4f10.5)') iat,grad1(1,iat),grad1(2,iat),grad1(3,iat),grad2(iat)
+    !    write(61,'(i4,4f10.5)') iat,rgrad(1,iat),rgrad(2,iat),rgrad(3,iat),qgrad(iat)
     !enddo
     !stop 'TESTING EWALD'
 
@@ -642,7 +642,7 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     call f_free(wm)
 end subroutine gauss_grid
 !*****************************************************************************************
-subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,grad1,grad2)
+subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -658,7 +658,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
     real(8), intent(inout):: pot(ngx,ngy,ngz)
-    real(8), intent(out):: grad1(3,nat), grad2(nat)
+    real(8), intent(out):: rgrad(3,nat), qgrad(nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
     real(8):: pi
@@ -797,8 +797,8 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     enddo
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
-    grad1(1:3,1:nat)=0.d0
-    grad2(1:nat)=0.d0
+    rgrad(1:3,1:nat)=0.d0
+    qgrad(1:nat)=0.d0
     do iat=1,nat
         gwsq_inv=1.d0/gw(iat)**2
         fac=1.d0/(gw(iat)*sqrt(pi))**3
@@ -832,10 +832,10 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
                 enddo
             enddo
         enddo
-        grad2(iat)=ttq*vol_voxel
-        grad1(1,iat)=ttx*vol_voxel
-        grad1(2,iat)=tty*vol_voxel
-        grad1(3,iat)=ttz*vol_voxel
+        qgrad(iat)=ttq*vol_voxel
+        rgrad(1,iat)=ttx*vol_voxel
+        rgrad(2,iat)=tty*vol_voxel
+        rgrad(3,iat)=ttz*vol_voxel
     enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
@@ -843,7 +843,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     call f_free(wm)
 end subroutine gauss_gradient
 !*****************************************************************************************
-subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad1,grad2)
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -858,7 +858,7 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
     real(8), intent(in):: gw_ion(atoms%nat)
     real(8), intent(in):: gw(atoms%nat)
     real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
+    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     integer:: iat, jat, ib
     real(8):: alpha, epot_short, gama, dx, dy, dz, r, pi, vol, shift
@@ -903,10 +903,10 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         tt22=-zat(iat)*qat(jat)*ee1
         tt32=-zat(iat)*erf(gama*r)/r
         !-------------------------------------------
-        grad1(1,jat)=grad1(1,jat)+(tt21+tt22)*dx
-        grad1(2,jat)=grad1(2,jat)+(tt21+tt22)*dy
-        grad1(3,jat)=grad1(3,jat)+(tt21+tt22)*dz
-        grad2(jat)=grad2(jat)+tt31+tt32
+        rgrad(1,jat)=rgrad(1,jat)+(tt21+tt22)*dx
+        rgrad(2,jat)=rgrad(2,jat)+(tt21+tt22)*dy
+        rgrad(3,jat)=rgrad(3,jat)+(tt21+tt22)*dz
+        qgrad(jat)=qgrad(jat)+tt31+tt32
         !---------------------------------------------------
         dx=-pia_arr%pia(ib)%dr(1)+rel(1,iat)-atoms%rat(1,iat)
         dy=-pia_arr%pia(ib)%dr(2)+rel(2,iat)-atoms%rat(2,iat)
@@ -924,10 +924,10 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         tt22=-zat(jat)*qat(iat)*ee1
         tt32=-zat(jat)*erf(gama*r)/r
         !-------------------------------------------
-        grad1(1,iat)=grad1(1,iat)+(tt21+tt22)*dx
-        grad1(2,iat)=grad1(2,iat)+(tt21+tt22)*dy
-        grad1(3,iat)=grad1(3,iat)+(tt21+tt22)*dz
-        grad2(iat)=grad2(iat)+tt31+tt32
+        rgrad(1,iat)=rgrad(1,iat)+(tt21+tt22)*dx
+        rgrad(2,iat)=rgrad(2,iat)+(tt21+tt22)*dy
+        rgrad(3,iat)=rgrad(3,iat)+(tt21+tt22)*dz
+        qgrad(iat)=qgrad(iat)+tt31+tt32
         !---------------------------------------------------
     enddo
     zat_tot=sum(zat(1:atoms%nat))
@@ -976,11 +976,11 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
             tt32=-zat(iat)*erf(gama*r)/r
         endif
         !-------------------------------------------
-        grad1(1,jat)=grad1(1,jat)+(tt21+tt22)*dx
-        grad1(2,jat)=grad1(2,jat)+(tt21+tt22)*dy
-        grad1(3,jat)=grad1(3,jat)+(tt21+tt22)*dz
-        grad2(jat)=grad2(jat)+tt31+tt32
-        grad2(jat)=grad2(jat)+shift
+        rgrad(1,jat)=rgrad(1,jat)+(tt21+tt22)*dx
+        rgrad(2,jat)=rgrad(2,jat)+(tt21+tt22)*dy
+        rgrad(3,jat)=rgrad(3,jat)+(tt21+tt22)*dz
+        qgrad(jat)=qgrad(jat)+tt31+tt32
+        qgrad(jat)=qgrad(jat)+shift
     enddo
     epot_es=epot_es+epot_short
 end subroutine cal_shortrange_ewald
