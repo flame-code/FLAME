@@ -406,25 +406,28 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
 end subroutine get_qat_from_chi2
-subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
+    use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(out):: grad1(3,atoms%nat), grad2(atoms%nat)
+    real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
 end subroutine cal_potential_cent2
-subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
+    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
 end subroutine cal_pot_with_bps
 subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
     use mod_parini, only: typ_parini
@@ -453,7 +456,7 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     integer, intent(in):: ngx, ngy, ngz
     real(8), intent(inout):: rho(ngx,ngy,ngz)
 end subroutine gauss_grid
-subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,grad1,grad2)
+subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -466,9 +469,9 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,gra
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
     real(8), intent(inout):: pot(ngx,ngy,ngz)
-    real(8), intent(out):: grad1(3,nat), grad2(nat)
+    real(8), intent(out):: rgrad(3,nat), qgrad(nat)
 end subroutine gauss_gradient
-subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,grad1,grad2)
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad,qgrad)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -477,12 +480,10 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: zat(atoms%nat)
-    real(8), intent(in):: qat(atoms%nat)
     real(8), intent(in):: gw_ion(atoms%nat)
     real(8), intent(in):: gw(atoms%nat)
     real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
+    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
 end subroutine cal_shortrange_ewald
 subroutine erf_over_r_taylor(r,funcval,funcval_der)
     implicit none

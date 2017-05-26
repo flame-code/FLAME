@@ -205,7 +205,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
         qtot_ion,qtot_ele,qtot
     niter=200
     do iter=0,niter
-        call cal_potential_cent2(ann_arr,atoms,rel,rgrad,qgrad)
+        call cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
         gnrm=sqrt(sum(rgrad**2))
@@ -235,11 +235,13 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     deallocate(qgrad)
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
-subroutine cal_potential_cent2(ann_arr,atoms,rel,rgrad,qgrad)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: rel(3,atoms%nat)
@@ -277,7 +279,7 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,rgrad,qgrad)
         rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
         rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(ann_arr,atoms,rel,epot_es_bps,rgrad_es,qgrad_es)
+    call cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es_bps,rgrad_es,qgrad_es)
     epot_es=epot_es_bps
     do iat=1,atoms%nat
         rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
@@ -293,7 +295,7 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,rgrad,qgrad)
     deallocate(qgrad_es)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
-subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
@@ -301,13 +303,13 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     use mod_electrostatics, only: typ_ewald_p3d
     use dynamic_memory
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     !real(8):: cell(3)
-    type(typ_parini):: parini
     !type(typ_ewald_p3d):: ewald_p3d_rough
     type(typ_ewald_p3d):: ewald_p3d
     real(8):: ehartree, pi
@@ -337,7 +339,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     allocate(gw_ion_t(atoms%nat))
     do iat=1,atoms%nat
         gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-        gw_ion_t(iat)=2.d0 !CORRECT_IT
+        gw_ion_t(iat)=parini%alpha_ewald
         gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
     enddo
     !-------------------------------------------------------
@@ -363,8 +365,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,rgrad,qgrad)
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,rgrad,qgrad)
 
     !if(ewald) then
-    call cal_shortrange_ewald(parini,ann_arr,atoms,atoms%zat,atoms%qat, &
-        gw_ion,gw,rel,epot_es,rgrad,qgrad)
+    call cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad,qgrad)
     !endif
     !gw_ion_t
 
@@ -843,7 +844,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     call f_free(wm)
 end subroutine gauss_gradient
 !*****************************************************************************************
-subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_es,rgrad,qgrad)
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -853,8 +854,6 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: zat(atoms%nat)
-    real(8), intent(in):: qat(atoms%nat)
     real(8), intent(in):: gw_ion(atoms%nat)
     real(8), intent(in):: gw(atoms%nat)
     real(8), intent(in):: rel(3,atoms%nat)
@@ -869,7 +868,7 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
     type(typ_linked_lists):: linked_lists
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
-    alpha=2.d0
+    alpha=parini%alpha_ewald
     epot_short=0.d0
     linked_lists%rcut=15.d0
     write(*,*) 'short range at cut-off: ',erfc(linked_lists%rcut/(sqrt(2.d0)*alpha)) !CORRECT_IT
@@ -883,25 +882,25 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         dz=pia_arr%pia(ib)%dr(3)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(gw_ion(iat)**2+gw_ion(jat)**2)
-        epot_short=epot_short-zat(iat)*zat(jat)*erfc(gama*r)/r
+        epot_short=epot_short-atoms%zat(iat)*atoms%zat(jat)*erfc(gama*r)/r
         gama=1.d0/(sqrt(2.d0)*alpha)
-        epot_short=epot_short+zat(iat)*zat(jat)*erfc(gama*r)/r
+        epot_short=epot_short+atoms%zat(iat)*atoms%zat(jat)*erfc(gama*r)/r
         !---------------------------------------------------
         dx=pia_arr%pia(ib)%dr(1)+rel(1,jat)-atoms%rat(1,jat)
         dy=pia_arr%pia(ib)%dr(2)+rel(2,jat)-atoms%rat(2,jat)
         dz=pia_arr%pia(ib)%dr(3)+rel(3,jat)-atoms%rat(3,jat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
-        epot_short=epot_short+zat(iat)*qat(jat)*erf(gama*r)/r
+        epot_short=epot_short+atoms%zat(iat)*atoms%qat(jat)*erf(gama*r)/r
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-        tt21=zat(iat)*qat(jat)*ee1
-        tt31=zat(iat)*erf(gama*r)/r
+        tt21=atoms%zat(iat)*atoms%qat(jat)*ee1
+        tt31=atoms%zat(iat)*erf(gama*r)/r
         !-------------------------------------------
         gama=1.d0/sqrt(alpha**2+gw(jat)**2)
-        epot_short=epot_short-zat(iat)*qat(jat)*erf(gama*r)/r
+        epot_short=epot_short-atoms%zat(iat)*atoms%qat(jat)*erf(gama*r)/r
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-        tt22=-zat(iat)*qat(jat)*ee1
-        tt32=-zat(iat)*erf(gama*r)/r
+        tt22=-atoms%zat(iat)*atoms%qat(jat)*ee1
+        tt32=-atoms%zat(iat)*erf(gama*r)/r
         !-------------------------------------------
         rgrad(1,jat)=rgrad(1,jat)+(tt21+tt22)*dx
         rgrad(2,jat)=rgrad(2,jat)+(tt21+tt22)*dy
@@ -913,16 +912,16 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         dz=-pia_arr%pia(ib)%dr(3)+rel(3,iat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(gw_ion(jat)**2+gw(iat)**2)
-        epot_short=epot_short+zat(jat)*qat(iat)*erf(gama*r)/r
+        epot_short=epot_short+atoms%zat(jat)*atoms%qat(iat)*erf(gama*r)/r
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-        tt21=zat(jat)*qat(iat)*ee1
-        tt31=zat(jat)*erf(gama*r)/r
+        tt21=atoms%zat(jat)*atoms%qat(iat)*ee1
+        tt31=atoms%zat(jat)*erf(gama*r)/r
         !-------------------------------------------
         gama=1.d0/sqrt(alpha**2+gw(iat)**2)
-        epot_short=epot_short-zat(jat)*qat(iat)*erf(gama*r)/r
+        epot_short=epot_short-atoms%zat(jat)*atoms%qat(iat)*erf(gama*r)/r
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-        tt22=-zat(jat)*qat(iat)*ee1
-        tt32=-zat(jat)*erf(gama*r)/r
+        tt22=-atoms%zat(jat)*atoms%qat(iat)*ee1
+        tt32=-atoms%zat(jat)*erf(gama*r)/r
         !-------------------------------------------
         rgrad(1,iat)=rgrad(1,iat)+(tt21+tt22)*dx
         rgrad(2,iat)=rgrad(2,iat)+(tt21+tt22)*dy
@@ -930,18 +929,15 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         qgrad(iat)=qgrad(iat)+tt31+tt32
         !---------------------------------------------------
     enddo
-    zat_tot=sum(zat(1:atoms%nat))
-    !vol=atoms%cellvec(1,1)*atoms%cellvec(2,2)*atoms%cellvec(3,3) !CORRECT_IT
+    zat_tot=sum(atoms%zat(1:atoms%nat))
     call getvol_alborz(atoms%cellvec,vol)
     shift=0.d0
     do iat=1,atoms%nat
-        shift=shift-(alpha**2-gw_ion(iat)**2)*zat(iat)
+        shift=shift-(alpha**2-gw_ion(iat)**2)*atoms%zat(iat)
     enddo
     shift=shift*pi/vol
     do iat=1,atoms%nat
         jat=iat
-        !epot_short=epot_short-zat(iat)**2*sqrt_one_over_twopi/alpha
-        !epot_short=epot_short+zat(iat)**2*sqrt_one_over_twopi/gw_ion(iat) !CORRECT_IT
         dx=rel(1,jat)-atoms%rat(1,iat)
         dy=rel(2,jat)-atoms%rat(2,iat)
         dz=rel(3,jat)-atoms%rat(3,iat)
@@ -953,27 +949,27 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         if(r<0.1d0) then
             gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
             call erf_over_r_taylor(gama*r,tt1,ttg)
-            epot_short=epot_short+zat(iat)*qat(jat)*(tt1*gama)
-            tt21=zat(iat)*qat(jat)*gama**3*ttg
-            tt31=zat(iat)*(tt1*gama)
+            epot_short=epot_short+atoms%zat(iat)*atoms%qat(jat)*(tt1*gama)
+            tt21=atoms%zat(iat)*atoms%qat(jat)*gama**3*ttg
+            tt31=atoms%zat(iat)*(tt1*gama)
             !-------------------------------------------
             gama=1.d0/sqrt(alpha**2+gw(jat)**2)
             call erf_over_r_taylor(gama*r,tt1,ttg)
-            epot_short=epot_short-zat(iat)*qat(jat)*(tt1*gama)
-            tt22=-zat(iat)*qat(jat)*gama**3*ttg
-            tt32=-zat(iat)*(tt1*gama)
+            epot_short=epot_short-atoms%zat(iat)*atoms%qat(jat)*(tt1*gama)
+            tt22=-atoms%zat(iat)*atoms%qat(jat)*gama**3*ttg
+            tt32=-atoms%zat(iat)*(tt1*gama)
         else
             gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
-            epot_short=epot_short+zat(iat)*qat(jat)*erf(gama*r)/r
+            epot_short=epot_short+atoms%zat(iat)*atoms%qat(jat)*erf(gama*r)/r
             ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-            tt21=zat(iat)*qat(jat)*ee1
-            tt31=zat(iat)*erf(gama*r)/r
+            tt21=atoms%zat(iat)*atoms%qat(jat)*ee1
+            tt31=atoms%zat(iat)*erf(gama*r)/r
             !-------------------------------------------
             gama=1.d0/sqrt(alpha**2+gw(jat)**2)
-            epot_short=epot_short-zat(iat)*qat(jat)*erf(gama*r)/r
+            epot_short=epot_short-atoms%zat(iat)*atoms%qat(jat)*erf(gama*r)/r
             ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
-            tt22=-zat(iat)*qat(jat)*ee1
-            tt32=-zat(iat)*erf(gama*r)/r
+            tt22=-atoms%zat(iat)*atoms%qat(jat)*ee1
+            tt32=-atoms%zat(iat)*erf(gama*r)/r
         endif
         !-------------------------------------------
         rgrad(1,jat)=rgrad(1,jat)+(tt21+tt22)*dx
