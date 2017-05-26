@@ -252,6 +252,10 @@ subroutine cal_potential_cent2(ann_arr,atoms,rel,grad1,grad2)
     real(8), allocatable:: grad1_p2(:,:)
     real(8), allocatable:: grad2_p1(:)
     real(8), allocatable:: grad2_p2(:)
+    if(trim(atoms%boundcond)/='bulk') then
+        write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
+        stop
+    endif
     allocate(grad1_p1(3,atoms%nat),source=0.d0)
     allocate(grad1_p2(3,atoms%nat),source=0.d0)
     allocate(grad2_p1(atoms%nat),source=0.d0)
