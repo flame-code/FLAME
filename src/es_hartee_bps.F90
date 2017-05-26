@@ -69,6 +69,7 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     integer:: n01, n02, n03, itype_scf, iproc=0, nproc=1
     integer:: nxyz(3), ndims(3)
     real(kind=8):: hgrids(3)
+    real(kind=8):: cv1(3), cv2(3), cv3(3), ang_bc, ang_ac, ang_ab
     type(dictionary), pointer :: dict_input
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
@@ -102,13 +103,19 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     !calculate the kernel in parallel for each processor
     ndims=(/n01,n02,n03/)
     hgrids=(/ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz/)
+    cv1(1:3)=atoms%cellvec(1:3,1)
+    cv2(1:3)=atoms%cellvec(1:3,2)
+    cv3(1:3)=atoms%cellvec(1:3,3)
+    ang_bc=acos(dot_product(cv2,cv3)/sqrt(dot_product(cv2,cv2)*dot_product(cv3,cv3)))
+    ang_ac=acos(dot_product(cv1,cv3)/sqrt(dot_product(cv1,cv1)*dot_product(cv3,cv3)))
+    ang_ab=acos(dot_product(cv1,cv2)/sqrt(dot_product(cv1,cv1)*dot_product(cv2,cv2)))
+    !write(*,'(a,3f15.5)') 'alpha,beta,gamma ',ang_bc,ang_ac,ang_ab
     write(*,*) 'REZA-3'
-    !                                          (iproc,nproc,dict,geocode,ndims,hgrids,angrad,mpi_env)
-    !                                          (iproc,nproc,dict_input,geocode,ndims,hgrids)
     write(*,*) iproc, nproc
     write(*,*) geocode
     dict_input=>dict_new('kernel' .is. dict_new('isf_order' .is. itype_scf))
-    ewald_p3d%poisson_p3d%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims,hgrids)
+    ewald_p3d%poisson_p3d%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims, &
+        hgrids,alpha_bc=ang_bc,beta_ac=ang_ac,gamma_ab=ang_ab)
     call dict_free(dict_input)
     write(*,*) 'REZA-4'
     call pkernel_set(ewald_p3d%poisson_p3d%pkernel,verbose=.true.)

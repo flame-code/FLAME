@@ -302,7 +302,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(inout):: epot_es, grad1(3,atoms%nat), grad2(atoms%nat)
     !local variables
-    real(8):: cell(3)
+    !real(8):: cell(3)
     type(typ_parini):: parini
     !type(typ_ewald_p3d):: ewald_p3d_rough
     type(typ_ewald_p3d):: ewald_p3d
@@ -330,12 +330,15 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
     potref=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='potref')
     rel_t(1:3,1:atoms%nat)=rel(1:3,1:atoms%nat)
-    cell(1)=atoms%cellvec(1,1) !CORRECT_IT
-    cell(2)=atoms%cellvec(2,2) !CORRECT_IT
-    cell(3)=atoms%cellvec(3,3) !CORRECT_IT
-    ewald_p3d%hgx=cell(1)/nx
-    ewald_p3d%hgy=cell(2)/ny
-    ewald_p3d%hgz=cell(3)/nz
+    !cell(1)=atoms%cellvec(1,1) !CORRECT_IT
+    !cell(2)=atoms%cellvec(2,2) !CORRECT_IT
+    !cell(3)=atoms%cellvec(3,3) !CORRECT_IT
+    !ewald_p3d%hgx=cell(1)/nx
+    !ewald_p3d%hgy=cell(2)/ny
+    !ewald_p3d%hgz=cell(3)/nz
+    ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/nx
+    ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/ny
+    ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/nz
     ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
     ewald_p3d%nbgpx=int(ewald_p3d%rgcut/ewald_p3d%hgx)+2
     ewald_p3d%nbgpy=int(ewald_p3d%rgcut/ewald_p3d%hgy)+2
@@ -371,9 +374,14 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     call cpu_time(time2)
     call construct_ewald_bps(parini,atoms,ewald_p3d)
     call cpu_time(time3)
+    ehartree=0.d0
     call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
-    write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
-    stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
+    !write(*,*) 'VOLUME ',(cell(1)*cell(2)*cell(3))
+    !stress_m(1:3,1:3)=stress_m(1:3,1:3)/(cell(1)*cell(2)*cell(3))
+
+    !call kwald(1,atoms%nat,atoms%rat,ratred,qat_tot,atoms%cellvec,gw**2,600.d0,ehartree_kwald,atoms%fat,eqd,stress,celldv)
+    !write(*,'(a,2f20.10,es14.5)') 'ehartree ',ehartree,ehartree_kwald,ehartree-ehartree_kwald
+    !stop 'STOPPED COMPARING KWALD'
     epot_es=0.d0
     do iat=1,atoms%nat
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/gw_ion_t(iat)
@@ -969,7 +977,8 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,zat,qat,gw_ion,gw,rel,epot_
         !---------------------------------------------------
     enddo
     zat_tot=sum(zat(1:atoms%nat))
-    vol=atoms%cellvec(1,1)*atoms%cellvec(2,2)*atoms%cellvec(3,3) !CORRECT_IT
+    !vol=atoms%cellvec(1,1)*atoms%cellvec(2,2)*atoms%cellvec(3,3) !CORRECT_IT
+    call getvol_alborz(atoms%cellvec,vol)
     shift=0.d0
     do iat=1,atoms%nat
         shift=shift-(alpha**2-gw_ion(iat)**2)*zat(iat)
