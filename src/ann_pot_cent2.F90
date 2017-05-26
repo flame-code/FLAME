@@ -309,7 +309,7 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     real(8):: ehartree, error, pi, ehartree_2
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: gw_ion_t(:)
-    real(8), allocatable:: gw_ion(:), gw(:), qat_tot(:)
+    real(8), allocatable:: gw_ion(:), gw(:)
     real(8):: ehartree_kwald, celldv(3,3)
     real(8):: sqrt_one_over_twopi
     integer:: ix, iy, iz, iat, igx, igy, igz, i
@@ -324,34 +324,19 @@ subroutine cal_pot_with_bps(ann_arr,atoms,rel,epot_es,grad1,grad2)
     ewald_p3d%poisson_p3d%ngpz=30
     ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
     ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
-    !cell(1)=atoms%cellvec(1,1) !CORRECT_IT
-    !cell(2)=atoms%cellvec(2,2) !CORRECT_IT
-    !cell(3)=atoms%cellvec(3,3) !CORRECT_IT
-    !ewald_p3d%hgx=cell(1)/nx
-    !ewald_p3d%hgy=cell(2)/ny
-    !ewald_p3d%hgz=cell(3)/nz
     ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/nx
     ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/ny
     ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/nz
     ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
-    ewald_p3d%nbgpx=int(ewald_p3d%rgcut/ewald_p3d%hgx)+2
-    ewald_p3d%nbgpy=int(ewald_p3d%rgcut/ewald_p3d%hgy)+2
-    ewald_p3d%nbgpz=int(ewald_p3d%rgcut/ewald_p3d%hgz)+2
-    ewald_p3d%nagpx=ewald_p3d%nbgpx+1
-    ewald_p3d%nagpy=ewald_p3d%nbgpy+1
-    ewald_p3d%nagpz=ewald_p3d%nbgpz+1
-
     !-------------------------------------------------------
     atoms%stress=0.d0
     allocate(gw(atoms%nat),gw_ion(atoms%nat))
     allocate(gw_ion_t(atoms%nat))
-    allocate(qat_tot(atoms%nat))
     do iat=1,atoms%nat
         gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-        gw_ion_t(iat)=2.d0
+        gw_ion_t(iat)=2.d0 !CORRECT_IT
         gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
     enddo
-    qat_tot(1:atoms%nat)=atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat)
     !-------------------------------------------------------
     !open(unit=111,file="tinput",status='old')
     !read(111,*) ewald
@@ -406,19 +391,17 @@ subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
     real(8), intent(in):: gw(atoms%nat)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     !local variables
-    integer:: ix, iy, iz, iat
-    real(8):: x, y, z, r, rsq, pi, ttg, factor, tt1, qtot
-    associate(nx=>ewald_p3d%poisson_p3d%ngpx)
-    associate(ny=>ewald_p3d%poisson_p3d%ngpy)
-    associate(nz=>ewald_p3d%poisson_p3d%ngpz)
+    character(10):: bc
+    integer:: nx, ny, nz
+    nx=ewald_p3d%poisson_p3d%ngpx
+    ny=ewald_p3d%poisson_p3d%ngpy
+    nz=ewald_p3d%poisson_p3d%ngpz
     ewald_p3d%poisson_p3d%rho=0.d0
-    call gauss_grid(parini,'bulk',.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
+    bc=trim(atoms%boundcond)
+    call gauss_grid(parini,bc,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
-    call gauss_grid(parini,'bulk',.false.,atoms%nat,rel,atoms%cellvec,atoms%qat,gw    , &
+    call gauss_grid(parini,bc,.false.,atoms%nat,rel,atoms%cellvec,atoms%qat,gw    , &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
-    end associate
-    end associate
-    end associate
 end subroutine put_gauss_to_grid
 !*****************************************************************************************
 subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
