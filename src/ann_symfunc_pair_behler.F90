@@ -20,7 +20,7 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms,symfunc%linked_lists,pia_arr)
+    call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr)
     !write(*,*) 'HERE ',symfunc%linked_lists%maxbound_rad
     !stop
     !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'

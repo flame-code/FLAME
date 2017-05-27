@@ -459,7 +459,7 @@ subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='eem1') then
         call cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='eem2') then
+    elseif(trim(ann_arr%approach)=='cent2') then
         call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
@@ -725,7 +725,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     associate(nat=>atoms_arr%atoms(iconf)%nat)
     symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
     symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
+    call call_linkedlist(parini,atoms_arr%atoms(iconf),.true.,symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
     deallocate(pia_arr_tmp%pia)
     symfunc_arr%symfunc(iconf)%y=f_malloc0((/1.to.ng,1.to.nat/),id='symfunc%y')
     if(nat<=parini%nat_force) then

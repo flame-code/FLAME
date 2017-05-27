@@ -32,7 +32,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         r0=100000.d0
         alpha=120.d-2
         rf=1.d-6
-    elseif(trim(parini%approach_ann)=='eem2') then
+    elseif(trim(parini%approach_ann)=='cent2') then
         r0=100000.d0
         alpha=120.d-2
         rf=1.d-6
@@ -163,7 +163,7 @@ subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train
         r0=300.d0
         alpha=20.d-2
         rf=1.d-8
-    elseif(trim(parini%approach_ann)=='eem2') then
+    elseif(trim(parini%approach_ann)=='cent2') then
         r0=100.d0
         alpha=80.d-2
         rf=1.d-8
@@ -318,7 +318,7 @@ subroutine analyze_epoch_init(parini,atoms_train,ann_arr)
     type(typ_atoms_arr), intent(in):: atoms_train
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='eem2')) return
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2')) return
     ann_arr%natsum(1:10)=0
     ann_arr%qmin(1:10)=huge(1.d0)
     ann_arr%qmax(1:10)=-huge(1.d0)
@@ -343,7 +343,7 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
     integer:: i, ios
     real(8):: ttavg, ttmin, ttmax, ssavg, ssmin, ssmax
     character(50):: fn_charge, fn_chi
-    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='eem2')) return
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2')) return
     do i=1,parini%ntypat
         fn_charge='charge.'//trim(parini%stypat(i))
         fn_chi='chi.'//trim(parini%stypat(i))

@@ -53,7 +53,7 @@ subroutine solve_poisson(parini)
     ewald_p3d%alpha=0.4d0 !atoms%rcov(iat)
     gausswidth=0.4d0 !atoms%rcov(iat)
     atoms%boundcond='slab'
-    call putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
+    call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,ewald_p3d)
     t1=0.d0
     t2=0.d0
     t3=0.d0

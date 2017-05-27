@@ -397,7 +397,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_eem2
-subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
+subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -405,20 +405,91 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,a)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi2
-subroutine cal_electrostatic_eem2(parini,str_job,atoms,ann_arr,epot_es,a)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
     implicit none
     type(typ_parini), intent(in):: parini
-    character(*), intent(in):: str_job
-    type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
-    real(8), intent(out):: epot_es
-    real(8), intent(out):: a(atoms%nat+1,atoms%nat+1)
-end subroutine cal_electrostatic_eem2
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
+end subroutine cal_potential_cent2
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
+    use mod_ann, only: typ_ann_arr
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
+end subroutine cal_pot_with_bps
+subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+end subroutine put_gauss_to_grid
+subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
+end subroutine gauss_grid
+subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: rgrad(3,nat), qgrad(nat)
+end subroutine gauss_gradient
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad,qgrad)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
+    real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
+end subroutine cal_shortrange_ewald
+subroutine erf_over_r_taylor(r,funcval,funcval_der)
+    implicit none
+    real(8), intent(in):: r
+    real(8), intent(out):: funcval, funcval_der
+end subroutine erf_over_r_taylor
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_parini, only: typ_parini
@@ -1428,13 +1499,14 @@ subroutine determine_sclimitsphere(linked_lists)
     implicit none
     type(typ_linked_lists), intent(inout):: linked_lists
 end subroutine determine_sclimitsphere
-subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
+subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, type_pairs
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
     implicit none
     type(typ_parini), intent(in):: parini 
     type(typ_atoms), intent(in):: atoms 
+    logical, intent(in):: dbl_count
     type(typ_linked_lists), intent(inout):: linked_lists
     type(typ_pia_arr), intent(inout):: pia_arr
 end subroutine call_linkedlist
@@ -1541,15 +1613,18 @@ subroutine determine_glimitsphere(ewald_p3d)
     implicit none
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine determine_glimitsphere
-subroutine putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
-    use mod_atoms, only: typ_atoms
+subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_parini, only: typ_parini
     implicit none
-    type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: gausswidth(atoms%nat)
     type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gausswidth(nat)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine putgaussgrid
 subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
     use mod_atoms, only: typ_atoms

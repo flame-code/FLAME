@@ -25,6 +25,7 @@ module mod_ann
         real(8):: gausswidth_ion
         real(8):: chi0
         real(8):: hardness
+        real(8):: spring_const
         real(8):: zion
         real(8):: rionic
         real(8):: ener_ref

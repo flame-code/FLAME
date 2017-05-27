@@ -27,7 +27,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms,symfunc%linked_lists,pia_arr)
+    call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))
     !write(*,*) ng,atoms%nat,atoms%maxbound_rad,allocated(ann_arr%y0d)
