@@ -69,11 +69,11 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
     enddo over_iat
-    do iat=1,atoms%nat
-        !write(*,*) iat,trim(atoms%sat(iat))
-        if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.32d0
-        if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.32d0
-    enddo
+    !do iat=1,atoms%nat
+    !    !write(*,*) iat,trim(atoms%sat(iat))
+    !    if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.32d0
+    !    if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.32d0
+    !enddo
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     atoms%stress(1:3,1:3)=0.d0
@@ -97,7 +97,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:cent2: energy (SR+LR), force (LR) ',time7-time6
         write(*,'(a,f8.3)') 'Timing:cent2: total time                 ',time7-time1
     endif !end of if for printing out timing.
-    atoms%epot=epot_c
+    !atoms%epot=epot_c
     if(trim(ann_arr%event)=='evalu' .and. atoms%nat<=parini%nat_force) then
         tt1=0.d0
         tt2=0.d0
@@ -182,7 +182,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
 
     do iat=1,atoms%nat
         call random_number(ttrand)
-        rel(1:3,iat)=atoms%rat(1:3,iat)+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
+        rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
     do iat=1,atoms%nat
@@ -256,6 +256,10 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
         write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
         stop
     endif
+    ann_arr%ener_ref=0.d0
+    do iat=1,atoms%nat
+        ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
+    enddo
     allocate(rgrad_ot(3,atoms%nat),source=0.d0)
     allocate(rgrad_es(3,atoms%nat),source=0.d0)
     allocate(qgrad_ot(atoms%nat),source=0.d0)
@@ -286,7 +290,8 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
         qgrad(iat)=qgrad_ot(iat)+qgrad_es(iat)
     enddo
     atoms%epot=atoms%epot+epot_es
-    !epot=epot+ener_ref !CORRECT_IT
+    atoms%epot=atoms%epot+ann_arr%ener_ref !CORRECT_IT
+    write(*,*) 'EPOT================= ',atoms%epot,ann_arr%ener_ref
     deallocate(rgrad_ot)
     deallocate(rgrad_es)
     deallocate(qgrad_ot)
