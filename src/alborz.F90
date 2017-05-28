@@ -32,6 +32,8 @@ program alborz
         call single_point_task(parini)
     elseif(trim(parini%task)=='netsock') then
         call netsock_task(parini)
+    elseif(trim(parini%task)=='bader') then
+        call task_bader(parini)
     elseif(trim(parini%task)=='phonon') then
         call cal_hessian_4p(parini)
     elseif(trim(parini%task)=='misc') then

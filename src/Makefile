@@ -13,7 +13,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
 		ann_ekf_rivals.F90 ann_ekf_behler.F90 ann_lm.F90 \
-		ann_pot_main.F90 ann_pot_atom.F90 ann_pot_eem1.F90 ann_pot_eem2.F90 \
+		ann_pot_main.F90 ann_pot_atom.F90 ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_cent_common.F90 \
 		ann_pot_tb.F90 \
 		shortrange.F90 tosifumi.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
@@ -32,7 +32,9 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
 		basic_atoms.F90 basic_utilities.F90 \
 		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
+		bader_neargrid.F90 bader_ongrid.F90 bader_weight.F90 \
 		task_confcomp.F90 \
+		task_bader.F90 \
 		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
 		task_testforces.F90 \
 		task_miscellaneous.F90 solve_poisson_cube.F90 \

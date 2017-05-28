@@ -54,6 +54,8 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
+    use dynamic_memory
+    use dictionaries, dict_set => set
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: pkernel_init, pkernel_set
@@ -67,14 +69,24 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     integer:: n01, n02, n03, itype_scf, iproc=0, nproc=1
     integer:: nxyz(3), ndims(3)
     real(kind=8):: hgrids(3)
+    real(kind=8):: cv1(3), cv2(3), cv3(3), ang_bc, ang_ac, ang_ab
+    type(dictionary), pointer :: dict_input
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
     write(*,*) 'REZA-1'
-    call f_lib_initialize() 
+    !call f_lib_initialize() 
     write(*,*) 'REZA-2'
     !bigdft_mpi%mpi_comm=MPI_COMM_WORLD !workaround to be removed
     nxyz=(/64,64,64/)
-    geocode='P'
+    if(trim(atoms%boundcond)=='bulk') then
+        geocode='P'
+    elseif(trim(atoms%boundcond)=='slab') then
+        geocode='S'
+    elseif(trim(atoms%boundcond)=='free') then
+        geocode='F'
+    else
+        write(*,*) 'ERROR: unknown atoms%boundcond in construct_ewald_bps',trim(atoms%boundcond)
+    endif
     !nxyz=options//'ndim'
     !geocode=options//'geocode'
     !call dict_free(options)
@@ -91,9 +103,20 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     !calculate the kernel in parallel for each processor
     ndims=(/n01,n02,n03/)
     hgrids=(/ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz/)
+    cv1(1:3)=atoms%cellvec(1:3,1)
+    cv2(1:3)=atoms%cellvec(1:3,2)
+    cv3(1:3)=atoms%cellvec(1:3,3)
+    ang_bc=acos(dot_product(cv2,cv3)/sqrt(dot_product(cv2,cv2)*dot_product(cv3,cv3)))
+    ang_ac=acos(dot_product(cv1,cv3)/sqrt(dot_product(cv1,cv1)*dot_product(cv3,cv3)))
+    ang_ab=acos(dot_product(cv1,cv2)/sqrt(dot_product(cv1,cv1)*dot_product(cv2,cv2)))
+    !write(*,'(a,3f15.5)') 'alpha,beta,gamma ',ang_bc,ang_ac,ang_ab
     write(*,*) 'REZA-3'
-    ewald_p3d%poisson_p3d%pkernel=pkernel_init(.true.,iproc,nproc,0,&
-        geocode,ndims,hgrids,itype_scf,taskgroup_size=nproc/2)
+    write(*,*) iproc, nproc
+    write(*,*) geocode
+    dict_input=>dict_new('kernel' .is. dict_new('isf_order' .is. itype_scf))
+    ewald_p3d%poisson_p3d%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims, &
+        hgrids,alpha_bc=ang_bc,beta_ac=ang_ac,gamma_ab=ang_ab)
+    call dict_free(dict_input)
     write(*,*) 'REZA-4'
     call pkernel_set(ewald_p3d%poisson_p3d%pkernel,verbose=.true.)
     write(*,*) 'REZA-5'
@@ -114,7 +137,7 @@ subroutine destruct_ewald_bps(ewald_p3d)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 #if defined(HAVE_BPS)
     call pkernel_free(ewald_p3d%poisson_p3d%pkernel)
-    call f_lib_finalize()
+    !call f_lib_finalize()
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif

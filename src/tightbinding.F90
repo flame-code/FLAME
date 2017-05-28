@@ -48,6 +48,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    use mod_const, only: ha2ev
     use dynamic_memory
     implicit none
     type(typ_partb), intent(inout):: partb
@@ -64,14 +65,13 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     call set_indorb(partb,atoms)
     rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
     ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
-    !partb%dedh=f_malloc([1.to.4],id='partb%dedh')
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
     call gammamat(partb,atoms,natsi,0,pplocal) 
     !write(*,*) partb%tbmat(1:8,1:8)
     !stop
     call forcediagonalizeg(partb)
     do iorb=1,partb%norb
-            write(8,*) partb%tbmat(iorb,iorb)
+            write(8,*) iorb, partb%tbmat(iorb,iorb)
     enddo
     !Fermi dirac distribution: returns total energy :: E_TB = sum_n f_n*e_n
     !Create density matrix rho to obtain forces using Hellmann-Feynman theorem:
@@ -82,14 +82,19 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
     enddo
     call yfdocclocal(partb)
-    !write(*,'(a,8f10.3)') 'GGGGG ',partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5),partb%focc(6),partb%focc(7),partb%focc(8)
-    !write(*,'(a,10es14.5)') 'eval ',partb%eband,partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5)
+    !write(61,'(6es14.5,i5)') partb%eval(60),partb%eval(61),partb%eval(61)-partb%eval(60),partb%focc(60),partb%focc(61),partb%focc(partb%norbcut),partb%norbcut
+    !write(*,'(a,8f10.3)') 'fermi',partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5),partb%focc(6),partb%focc(7),partb%focc(8)
+    !write(*,'(a,10es14.5)') 'eval ',parb%eband,partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5)
     !Need to include extra terms.  We have focc[iorb-1]...focc[NC(stride*nat)-1]
     !also fermitemp=temp in Kelvin so "beta"=1 / kT=11604 / fermitemp
     !ggocc maximum is 2.0
     term1=0.d0
     term2=0.d0
-    beta=11604.d0/partb%temp_fermi
+    if(lenosky) then
+        beta=11604.d0/partb%temp_fermi
+    else
+        beta=11604.d0*ha2ev/partb%temp_fermi
+    endif
     do iorb=1,partb%norbcut
         term1=term1-partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
         term2=term2-partb%eval(iorb)*partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
@@ -130,7 +135,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
                     atoms%fat(ixyz,jat)=atoms%fat(ixyz,jat)+tt
                 enddo
             enddo
-            write(*,*) "FAt", atoms%fat(1,iat)  
+            !write(*,*) "FAt", atoms%fat(1,iat)  
         enddo
     else if(trim(partb%event)=='train')then
         do ixyz=1,4
@@ -140,14 +145,13 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
                 do jorb=iorb+1,partb%norb
                     jat=partb%indorb(jorb)
                     tt=rho(jorb,iorb)*partb%tbmat(jorb,iorb)*2.d0
-                    partb%dedh(ixyz)=partb%dedh(ixyz)+tt
+                    partb%dedh(ixyz,iat,jat)=partb%dedh(ixyz,iat,jat)+tt
                 enddo
             enddo
         enddo
     endif
     call f_free(rho)
     call f_free(ggocc)
-    !call f_free(partb%dedh)
     call f_release_routine()
 end subroutine gammaenergy
 !*****************************************************************************************
@@ -305,6 +309,7 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
+    use mod_const, only: bohr2ang, ha2ev
     use dynamic_memory
     implicit none
     type(typ_partb), intent(inout):: partb
@@ -356,17 +361,14 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
             partb%dhgenall1(jat,iat)=dhgen(2)
             partb%dhgenall2(jat,iat)=dhgen(3)
             partb%dhgenall3(jat,iat)=dhgen(4)
-            write (66,*) 'h_1(r)', dist, hgen(1)
-            write (77,*) 'h_2(r)', dist, hgen(2)
-            write (88,*) 'h_3(r)', dist, hgen(3)
-            write (99,*) 'h_4(r)', dist, hgen(4)
+            write(44,'(a,5es14.5)') 'hgen-L',hgen(1)/ha2ev,hgen(2)/ha2ev,hgen(3)/ha2ev,hgen(4)/ha2ev,dist/bohr2ang
             endif
         endif
         hgen(1)=partb%hgenall0(jat,iat)
         hgen(2)=partb%hgenall1(jat,iat)
         hgen(3)=partb%hgenall2(jat,iat)
         hgen(4)=partb%hgenall3(jat,iat)
-        !write(*,'(a,4es14.5)') 'hgen-B ',hgen(1),hgen(2),hgen(3),hgen(4)
+        !write(55,'(a,5es14.5)') 'hgen_nn ',hgen(1),hgen(2),hgen(3),hgen(4),dist
         dhgen(1)=partb%dhgenall0(jat,iat)
         dhgen(2)=partb%dhgenall1(jat,iat)
         dhgen(3)=partb%dhgenall2(jat,iat)
@@ -472,7 +474,8 @@ end subroutine slatercoupling
 !Number of electrons nel must be even.  <-- Is this true?
 subroutine yfdocclocal(partb)
     use mod_interface
-    use mod_tightbinding, only: typ_partb
+    use mod_tightbinding, only: typ_partb, lenosky
+    use mod_const, only: ha2ev
     implicit none
     type(typ_partb), intent(inout):: partb
     !local variables
@@ -490,7 +493,11 @@ subroutine yfdocclocal(partb)
     if(nocc*2/=partb%norb) partb%focc(nocc+1)=1.d0
     efermi=partb%eval(nocc)
     if(nocc*2/=partb%norb) efermi=partb%eval(nocc+1)
-    beta=11604.d0/partb%temp_fermi !Conversion of temp into eV
+    if(lenosky) then
+        beta=11604.d0/partb%temp_fermi !Conversion of temp into eV
+    else
+        beta=11604.d0*ha2ev/partb%temp_fermi !Conversion of temp into Ha
+    endif
     it=0
     !Each iteration corresponds to steepest descent iteration. fermi-dirac function is minimized
     !which depend on efermi(chemical potential).
@@ -524,7 +531,6 @@ subroutine yfdocclocal(partb)
     do i=1,partb%norbcut
         partb%eband=partb%eband+partb%focc(i)*partb%eval(i)
     enddo
-    !write(*,*) 'eband', partb%eband
 end subroutine yfdocclocal
 !*****************************************************************************************
 subroutine Hamiltonian_der(u,flag2,mat)

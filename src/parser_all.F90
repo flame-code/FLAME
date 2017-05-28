@@ -322,6 +322,35 @@ subroutine get_dynamics_parameters(file_ini,parini)
     enddo
 end subroutine get_dynamics_parameters
 !*****************************************************************************************
+subroutine get_bader_parameters(file_ini,parini)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_task, only: typ_file_ini
+    implicit none
+    type(typ_file_ini), intent(inout):: file_ini
+    type(typ_parini), intent(inout):: parini
+    !local variables
+    integer:: iline
+    call get_header_location(file_ini,'[bader]')
+    if(file_ini%iline_header==0) then
+        parini%avail_bader=.false.
+        if(trim(parini%task)=='bader') then
+            write(*,'(a)') 'WARNING: [bader] block not available in input.ini, default values will be used.'
+        endif
+        return
+    else
+        parini%avail_bader=.true.
+    endif
+    do iline=file_ini%iline_header+1,file_ini%iline_next_header-1
+        file_ini%iline=iline
+        if(file_ini%stat_line_is_read(file_ini%iline)) cycle
+        call split_line(file_ini)
+        call get_one_param(file_ini,'method',char_var=parini%approach_bader)
+        call get_one_param(file_ini,'filename',char_var=parini%filename_bader)
+        call get_one_param(file_ini,'vacuum',char_var=parini%vacuum_bader)
+    enddo
+end subroutine get_bader_parameters
+!*****************************************************************************************
 subroutine get_genconf_parameters(file_ini,parini)
     use mod_interface
     use mod_parini, only: typ_parini

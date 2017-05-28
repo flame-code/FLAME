@@ -14,6 +14,8 @@ def get_atomic_symbol(iatom):
         sat='Na'
     elif iatom==17:
         sat='Cl'
+    elif iatom==22:
+        sat='Ti'
     elif iatom==29:
         sat='Cu'
     else:

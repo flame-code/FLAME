@@ -110,9 +110,7 @@ subroutine ann_train(parini)
 
     !call convert_x_ann(ekf%n,ekf%x,ann_arr) !HERE
     if(iproc==0) then
-        do i=1,ann_arr%n
-            call write_ann(parini,trim(parini%stypat(i))//'.ann.param',ann_arr%ann(i))
-        enddo
+        call write_ann_all(parini,ann_arr,-1)
     endif
     call f_free(ekf%x)
 
@@ -207,7 +205,7 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
         do ib=1,symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad
             iat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(1,ib)
             jat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(2,ib)
-            !write(*,*) 'QQQQQQQQ ',ib,iat,jat
+            write(*,*) 'QQQQQQQQ ',ib,iat,jat
             if(iat>jat) cycle
             do ig=1,symfunc_arr%symfunc(iconf)%ng
                 tt=symfunc_arr%symfunc(iconf)%y(ig,ib)
@@ -224,9 +222,10 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
                 do i0=1,ann_arr%ann(isat)%nn(0)
                     !normalization of y0d
                     tt=ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)*tt
-                    symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)*tt
-                    symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)*tt
+                    symfunc_arr%symfunc(iconf)%y0d_bond(i0,ib)=symfunc_arr%symfunc(iconf)%y0d_bond(i0,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)*tt
                     !normalization of y0dr
                     !symfunc%y0dr(i0,1:9,ib)=symfunc%y0dr(i0,1:9,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
                 enddo
@@ -353,6 +352,9 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     configuration: do iconf=1,atoms_arr%nconf
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
         call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
+        !if(ifile==11) then
+        !    write(71,'(2es24.15)') (atoms%rat(1,2)-atoms%rat(1,1))*0.529177210d0,atoms%epot*27.211385d0
+        !endif
         if(iter==parini%nstep_ekf) then
             write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
                 atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat,atoms%epot/atoms_arr%atoms(iconf)%nat, &
@@ -383,6 +385,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
             ppx=atoms%fat(1,iat)
             ppy=atoms%fat(2,iat)
             ppz=atoms%fat(3,iat)
+            !write(41,'(2i6,6f7.3)') iconf,iat,ttx,tty,ttz,ppx,ppy,ppz
             tt1=sqrt(ttx**2+tty**2+ttz**2)
             tt2=sqrt(ppx**2+ppy**2+ppz**2)
             tt3=(ppx-ttx)**2+(ppy-tty)**2+(ppz-ttz)**2
@@ -456,7 +459,7 @@ subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='eem1') then
         call cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='eem2') then
+    elseif(trim(ann_arr%approach)=='cent2') then
         call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
@@ -515,18 +518,6 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
         if(trim(parini%symfunc)/='read') then
             call symmetry_functions(parini,ann_arr,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf),.false.)
-            call f_free(symfunc_arr%symfunc(iconf)%y0dr)
-            !if(parini%bondbased_ann .and. symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) then
-            !    stop 'ERROR: correct next line'
-            !endif
-            !call ann_deallocate(ann_arr)
-            if(parini%symfunc_type_ann=='behler') then
-            !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
-            if(.not. parini%bondbased_ann) then
-            !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
-            !call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
-            endif
-            endif
         !elseif(trim(parini%symfunc)/='read') then
         !    stop 'ERROR: arini%symfunc contains none of the three acceptable possibilies'
         endif
@@ -536,6 +527,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             call read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
         elseif(trim(parini%symfunc)=='do_not_save') then
             call f_free(symfunc_arr%symfunc(iconf)%y0d)
+            call f_free(symfunc_arr%symfunc(iconf)%y0dr)
         endif
 #if defined(MPI)
         if(nproc>1) then
@@ -733,7 +725,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     associate(nat=>atoms_arr%atoms(iconf)%nat)
     symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
     symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
+    call call_linkedlist(parini,atoms_arr%atoms(iconf),.true.,symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
     deallocate(pia_arr_tmp%pia)
     symfunc_arr%symfunc(iconf)%y=f_malloc0((/1.to.ng,1.to.nat/),id='symfunc%y')
     if(nat<=parini%nat_force) then
@@ -909,7 +901,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         !------------------------------ bond symmetry function ----------------------------------------
         !IMPORTANT: the upper bound of the loop over i needs to be corrected for multicomponent systems.
         if(atoms_arr%atoms(1)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
-        do i=1,1
+        do i=1,ann_arr%n
         do i0=1,ann_arr%ann(i)%nn(0)
             if(gminarr(i0,1)==0.d0) then
                 ann_arr%ann(i)%gbounds(1,i0)=-epsilon(1.d0)
@@ -921,7 +913,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             else
                 ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0,1)
             endif
-            !write(*,*) ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
+            write(*,*) 'gbounds', ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
             ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
         enddo
         enddo

@@ -12,7 +12,13 @@ subroutine init_potential_ann(parini,atoms)
     character(10):: fn
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%n)
-    ann_arr%n=parini%ntypat !this should be changed for bond based ANN
+    ann_arr%approach=trim(parini%approach_ann)
+    write (*,*) 'parini         ', ann_arr%approach
+    if (trim(ann_arr%approach)=='tb') then
+        ann_arr%n=4
+    else
+        ann_arr%n=parini%ntypat !this should be changed for bond based ANN
+    endif
     write(*,*) 'ann_arr%n= ',ann_arr%n
     !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%n)
     !do i=1,ann_arr%n
@@ -32,8 +38,6 @@ subroutine init_potential_ann(parini,atoms)
     call read_ann(parini,ann_arr)
     ann_boundcheck=trim(parini%potential_ann_boundcheck)
     ann_arr%event='potential'
-    !ann_arr%approach='eem1'
-    ann_arr%approach=trim(parini%approach_ann)
 end subroutine init_potential_ann
 !*****************************************************************************************
 subroutine cal_potential_ann(parini,atoms)

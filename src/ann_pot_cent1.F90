@@ -6,7 +6,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_linked_lists, only: typ_pia_arr
-    use mod_const, only: bohr2ang
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -16,31 +15,17 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
     type(typ_ewald_p3d):: ewald_p3d
     !local variables
-    integer:: iat, i, j, ng, jat, ib, ig
-    real(8):: epoti, epot_c, out_ann, q
+    integer:: iat, i, j, ng
+    real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
-    real(8):: ttx, tty, ttz, tt1, tt2, tt3, vol
-    real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
-    type(typ_pia_arr):: pia_arr_tmp
-    real(8):: hinv(3,3), fx_es, fy_es, fz_es
+    real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
     call f_routine(id='cal_ann_eem1')
-    !write(*,*) allocated(symfunc%linked_lists%prime_bound)
-    !stop
-    associate(nat=>atoms%nat)
-    !    write(55,'(3es24.15)') atoms%cellvec(1,1)*bohr2ang,atoms%cellvec(1,2)*bohr2ang,atoms%cellvec(1,3)*bohr2ang
-    !    write(55,'(3es24.15)') atoms%cellvec(2,1)*bohr2ang,atoms%cellvec(2,2)*bohr2ang,atoms%cellvec(2,3)*bohr2ang
-    !    write(55,'(3es24.15)') atoms%cellvec(3,1)*bohr2ang,atoms%cellvec(3,2)*bohr2ang,atoms%cellvec(3,3)*bohr2ang
-    !    write(55,*)
-    !do iat=1,nat
-    !    write(55,'(3es24.15)') (atoms%rat(1,iat)-5.d0)*bohr2ang,(atoms%rat(2,iat)-5.d0)*bohr2ang,(atoms%rat(3,iat)-5.d0)*bohr2ang
-    !enddo
-    !    write(55,*)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        ann_arr%fat_chi=f_malloc0([1.to.3,1.to.nat],id='fat_chi')
-        ann_arr%chi_i=f_malloc0([1.to.nat],id='ann_arr%chi_i')
-        ann_arr%chi_o=f_malloc0([1.to.nat],id='ann_arr%chi_o')
-        ann_arr%chi_d=f_malloc0([1.to.nat],id='ann_arr%chi_d')
-        ann_arr%a=f_malloc0([1.to.(nat+1)*(nat+1)],id='a: aq=-chi')
+        ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
+        ann_arr%chi_i=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_i')
+        ann_arr%chi_o=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_o')
+        ann_arr%chi_d=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_d')
+        ann_arr%a=f_malloc0([1.to.(atoms%nat+1)*(atoms%nat+1)],id='a: aq=-chi')
     else
         ann_arr%fat_chi=0.d0
         ann_arr%chi_i=0.d0
@@ -71,66 +56,10 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     over_iat: do iat=1,atoms%nat
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
-        !if(ann_arr%compute_symfunc) then
-        !    ann_arr%ann(i)%y(1:ng,0)=ann_arr%yall(1:ng,iat)
-        !else
-            ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat)
-        !endif
+        ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat)
         if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
-            !ann_arr%ann(i)%b(1,3)=0.d0
-            !if(iat==44) then
-            !    do ig=1,ann_arr%ann(i)%nn(0)
-            !        write(81,*) iat,ig,ann_arr%ann(i)%y(ig,0)
-            !    enddo
-            !endif
             call cal_architecture(ann_arr%ann(i),out_ann)
-            !ann_arr%ann(i)%bd(1,3)=0.d0
-            ann_arr%chi_i(iat)=out_ann
-            tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
-            ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-        if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
-            if(.not. (trim(ann_arr%event)=='evalu' .and. atoms%nat>parini%nat_force)) then
-            tt2=ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
-            do ib=symfunc%linked_lists%prime_bound(iat),symfunc%linked_lists%prime_bound(iat+1)-1
-                ttx=0.d0 ; tty=0.d0 ; ttz=0.d0
-                do j=1,ann_arr%ann(i)%nn(0)
-                    ttx=ttx+ann_arr%ann(i)%d(j)*symfunc%y0d(j,1,ib)
-                    tty=tty+ann_arr%ann(i)%d(j)*symfunc%y0d(j,2,ib)
-                    ttz=ttz+ann_arr%ann(i)%d(j)*symfunc%y0d(j,3,ib)
-                enddo
-                ann_arr%fatpq(1,ib)=ttx*tt2
-                ann_arr%fatpq(2,ib)=tty*tt2
-                ann_arr%fatpq(3,ib)=ttz*tt2
-            enddo
-            endif
-            if(trim(ann_arr%event)=='potential') then
-            do ib=symfunc%linked_lists%prime_bound(iat),symfunc%linked_lists%prime_bound(iat+1)-1
-                sxx=0.d0 ; sxy=0.d0 ; sxz=0.d0
-                syx=0.d0 ; syy=0.d0 ; syz=0.d0
-                szx=0.d0 ; szy=0.d0 ; szz=0.d0
-                do j=1,ann_arr%ann(i)%nn(0)
-                    sxx=sxx+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,1,ib)
-                    sxy=sxy+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,2,ib)
-                    sxz=sxz+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,3,ib)
-                    syx=syx+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,4,ib)
-                    syy=syy+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,5,ib)
-                    syz=syz+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,6,ib)
-                    szx=szx+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,7,ib)
-                    szy=szy+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,8,ib)
-                    szz=szz+ann_arr%ann(i)%d(j)*symfunc%y0dr(j,9,ib)
-                enddo
-                ann_arr%stresspq(1,1,ib)=-sxx*tt2
-                ann_arr%stresspq(2,1,ib)=-syx*tt2
-                ann_arr%stresspq(3,1,ib)=-szx*tt2
-                ann_arr%stresspq(1,2,ib)=-sxy*tt2
-                ann_arr%stresspq(2,2,ib)=-syy*tt2
-                ann_arr%stresspq(3,2,ib)=-szy*tt2
-                ann_arr%stresspq(1,3,ib)=-sxz*tt2
-                ann_arr%stresspq(2,3,ib)=-syz*tt2
-                ann_arr%stresspq(3,3,ib)=-szz*tt2
-            enddo
-            endif
-        endif
+            call cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
         elseif(trim(ann_arr%event)=='train') then
             call cal_architecture_der(ann_arr%ann(i),out_ann)
             ann_arr%chi_i(iat)=out_ann
@@ -142,80 +71,35 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
     enddo over_iat
-
-
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     atoms%stress(1:3,1:3)=0.d0
     !This msut be here otherwise it will zero forces which were calculated by kwald.
-    atoms%fat(1:3,1:nat)=0.d0
+    atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
     call get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,ann_arr%a)
-    !call cell_vol(atoms%nat,atoms%cellvec,vol)
-    call getvol_alborz(atoms%cellvec,vol)
-    atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)*vol !*atoms%nat !not certain if this is needed!!!
-    !write(*,'(a,es14.5)') 'ATRESS ',atoms%stress(1,1)
     if(parini%iverbose>=2) call cpu_time(time5)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
-    if(.not. (trim(ann_arr%event)=='evalu' .and. atoms%nat>parini%nat_force)) then
-    do ib=1,symfunc%linked_lists%maxbound_rad
-        iat=symfunc%linked_lists%bound_rad(1,ib)
-        jat=symfunc%linked_lists%bound_rad(2,ib)
-        q=atoms%qat(iat)
-        ttx=ann_arr%fatpq(1,ib)*q
-        tty=ann_arr%fatpq(2,ib)*q
-        ttz=ann_arr%fatpq(3,ib)*q
-        ann_arr%fat_chi(1,iat)=ann_arr%fat_chi(1,iat)+ttx
-        ann_arr%fat_chi(2,iat)=ann_arr%fat_chi(2,iat)+tty
-        ann_arr%fat_chi(3,iat)=ann_arr%fat_chi(3,iat)+ttz
-        ann_arr%fat_chi(1,jat)=ann_arr%fat_chi(1,jat)-ttx
-        ann_arr%fat_chi(2,jat)=ann_arr%fat_chi(2,jat)-tty
-        ann_arr%fat_chi(3,jat)=ann_arr%fat_chi(3,jat)-ttz
-        atoms%stress(1,1)=atoms%stress(1,1)+ann_arr%stresspq(1,1,ib)*q
-        atoms%stress(2,1)=atoms%stress(2,1)+ann_arr%stresspq(2,1,ib)*q
-        atoms%stress(3,1)=atoms%stress(3,1)+ann_arr%stresspq(3,1,ib)*q
-        atoms%stress(1,2)=atoms%stress(1,2)+ann_arr%stresspq(1,2,ib)*q
-        atoms%stress(2,2)=atoms%stress(2,2)+ann_arr%stresspq(2,2,ib)*q
-        atoms%stress(3,2)=atoms%stress(3,2)+ann_arr%stresspq(3,2,ib)*q
-        atoms%stress(1,3)=atoms%stress(1,3)+ann_arr%stresspq(1,3,ib)*q
-        atoms%stress(2,3)=atoms%stress(2,3)+ann_arr%stresspq(2,3,ib)*q
-        atoms%stress(3,3)=atoms%stress(3,3)+ann_arr%stresspq(3,3,ib)*q
-    enddo
-    do iat=1,nat
-        atoms%fat(1,iat)=atoms%fat(1,iat)+ann_arr%fat_chi(1,iat)
-        atoms%fat(2,iat)=atoms%fat(2,iat)+ann_arr%fat_chi(2,iat)
-        atoms%fat(3,iat)=atoms%fat(3,iat)+ann_arr%fat_chi(3,iat)
-    enddo
-    endif
-    call invertmat_alborz(atoms%cellvec,hinv)
-    do i=1,3
-    do j=1,3
-        atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
-    enddo
-    enddo
-    !write(*,'(a,es14.5)') 'BTRESS ',atoms%stress(1,1)
+        call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
     call cal_electrostatic_eem1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
-    !write(*,'(a,es14.5)') 'CTRESS ',atoms%stress(1,1)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
-        write(*,'(a,f8.3)') 'Timing:eem1: initialize matrix          ',time2-time1
-        write(*,'(a,f8.3)') 'Timing:eem1: calculation of symfunc     ',time3-time2
-        write(*,'(a,f8.3)') 'Timing:eem1: neural network process     ',time4-time3
-        write(*,'(a,f8.3)') 'Timing:eem1: linear equations solver    ',time5-time4
-        write(*,'(a,f8.3)') 'Timing:eem1: force (SR term)            ',time6-time5
-        write(*,'(a,f8.3)') 'Timing:eem1: energy (SR+LR), force (LR) ',time7-time6
-        write(*,'(a,f8.3)') 'Timing:eem1: total time                 ',time7-time1
-    endif
+        write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
+        write(*,'(a,f8.3)') 'Timing:cent1: calculation of symfunc     ',time3-time2
+        write(*,'(a,f8.3)') 'Timing:cent1: neural network process     ',time4-time3
+        write(*,'(a,f8.3)') 'Timing:cent1: linear equations solver    ',time5-time4
+        write(*,'(a,f8.3)') 'Timing:cent1: force (SR term)            ',time6-time5
+        write(*,'(a,f8.3)') 'Timing:cent1: energy (SR+LR), force (LR) ',time7-time6
+        write(*,'(a,f8.3)') 'Timing:cent1: total time                 ',time7-time1
+    endif !end of if for printing out timing.
     atoms%epot=epot_c
-    tt1=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
-    atoms%epot=((atoms%epot+1.d0)*tt1+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
     if(trim(ann_arr%event)=='evalu' .and. atoms%nat<=parini%nat_force) then
         tt1=0.d0
         tt2=0.d0
         tt3=0.d0
-        do iat=1,nat
+        do iat=1,atoms%nat
             fx_es=atoms%fat(1,iat)-ann_arr%fat_chi(1,iat)
             fy_es=atoms%fat(2,iat)-ann_arr%fat_chi(2,iat)
             fz_es=atoms%fat(3,iat)-ann_arr%fat_chi(3,iat)
@@ -225,24 +109,25 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
         tt1=sqrt(tt1)
         tt2=sqrt(tt2)
-        !if(tt2<1.d-10) then
-        !    do iat=1,nat
-        !        write(55,'(i5,3es14.5)') iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
-        !    enddo
-        !    stop
-        !endif
-        !write(55,'(3es14.5)') tt1,tt2,tt3
         ann_arr%fchi_angle=tt3/(tt1*tt2)
         ann_arr%fchi_norm=tt2/tt1
     endif
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         call destruct_ewald_p3d(parini,atoms,ewald_p3d)
     endif
+    !call repulsive_potential_cent(parini,atoms,ann_arr)
+    call getvol_alborz(atoms%cellvec,vol)
+    call invertmat_alborz(atoms%cellvec,hinv)
+    do i=1,3
+    do j=1,3
+        atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
+    enddo
+    enddo
+
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
         call f_free(symfunc%linked_lists%prime_bound)
         call f_free(symfunc%linked_lists%bound_rad)
         call f_free(symfunc%linked_lists%bound_ang)
-        !call ann_deallocate(ann_arr)
     endif
     if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
         call f_free(symfunc%y)
@@ -258,7 +143,6 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call f_free(ann_arr%fatpq)
         call f_free(ann_arr%stresspq)
     endif
-    end associate
     if(trim(ann_arr%event)=='train') then
         ekf%g(1:ekf%n)=0.d0
         do iat=1,atoms%nat
@@ -522,6 +406,7 @@ subroutine charge_analysis(parini,atoms,ann_arr)
     !local variables
     integer:: iat, i !, ii1, ii2
     real(8):: q, c !, tt1, tt2, ss1, ss2, tt1min, tt1max, tt2min, tt2max, ss1min, ss1max, ss2min, ss2max
+    real(8):: chi_min_per_conf(10), chi_max_per_conf(10)
     !real(8):: dipole(3)
     !dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0
     !do iat=1,atoms%nat
@@ -531,8 +416,10 @@ subroutine charge_analysis(parini,atoms,ann_arr)
     !enddo
     !write(91,'(a,3es14.5)') 'dipole moment ',dipole(1),dipole(2),dipole(3)
     !----------------------------------------------------
+    chi_min_per_conf(1:10)= 1.d20
+    chi_max_per_conf(1:10)=-1.d20
     do iat=1,atoms%nat
-        q=atoms%qat(iat)
+        q=atoms%zat(iat)+atoms%qat(iat)
         c=ann_arr%chi_o(iat)
         i=atoms%itypat(iat)
         !write(81,*) i,atoms%stypat(i),parini%stypat(i)
@@ -542,7 +429,12 @@ subroutine charge_analysis(parini,atoms,ann_arr)
         ann_arr%qsum(i)=ann_arr%qsum(i)+q
         ann_arr%chi_min(i)=min(c,ann_arr%chi_min(i))
         ann_arr%chi_max(i)=max(c,ann_arr%chi_max(i))
+        chi_min_per_conf(i)=min(c,chi_min_per_conf(i))
+        chi_max_per_conf(i)=max(c,chi_max_per_conf(i))
         ann_arr%chi_sum(i)=ann_arr%chi_sum(i)+c
+    enddo
+    do i=1,ann_arr%n
+        ann_arr%chi_delta(i)=max(ann_arr%chi_delta(i),chi_max_per_conf(i)-chi_min_per_conf(i))
     enddo
     !if(parini%iverbose>=1) then
     !write(61,'(a,2(a,4f8.3),es11.2,i5)') trim(str),' Na=',tt1/ii1,tt1min,tt1max,tt1max-tt1min,' Cl=',tt2/ii2,tt2min,tt2max,tt2max-tt2min,tt1+tt2,atoms%nat
