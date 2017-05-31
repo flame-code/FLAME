@@ -69,11 +69,12 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
     enddo over_iat
-    !do iat=1,atoms%nat
+    do iat=1,atoms%nat
+        write(82,*) iat,trim(atoms%sat(iat)),ann_arr%chi_o(iat)
     !    !write(*,*) iat,trim(atoms%sat(iat))
     !    if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.32d0
     !    if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.32d0
-    !enddo
+    enddo
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     atoms%stress(1:3,1:3)=0.d0
@@ -228,7 +229,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
         epot_old=atoms%epot
     enddo
     write(*,'(a,i5,2f8.3)') 'DISP ',iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
-
+    call charge_analysis(parini,atoms,ann_arr)
     deallocate(rgrad)
     deallocate(qgrad)
 end subroutine get_qat_from_chi2
