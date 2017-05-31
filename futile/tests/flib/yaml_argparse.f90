@@ -1,5 +1,7 @@
 !> @file
-!! Test the argument parsing of the library.
+!! Test the argument parsing of the library.e
+!! @example yaml_test.f90
+!! Extensive tests command line parsing from yaml
 !! @author
 !!    Copyright (C) 2015-2016 BigDFT group
 !!    This file is distributed under the terms of the

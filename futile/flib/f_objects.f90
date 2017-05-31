@@ -177,7 +177,7 @@ contains
          & "object '" // obj_id // "' not defined.", err_id = ERROR_OBJECT)) return
     tmp =>  class_library // obj_id // "signals" 
     if (f_err_raise(.not. (id .in. tmp), &
-         & "signal '" // id // "' not defined.", err_id = ERROR_OBJECT)) return
+         & "signal '" // obj_id // "::" // id // "' not defined.", err_id = ERROR_OBJECT)) return
     sig => tmp // id
   end function ensure_signal
 
@@ -367,8 +367,8 @@ contains
 
     n_args_signal = class_library // obj_id // "signals" // id // "n_args"
     if (f_err_raise(n_args_signal + kernel%n_args /= kernel%callback_n_args, &
-         & "kernel don't have the right number of arguments for signal " // &
-         & obj_id // "::" // id // ".", err_id = ERROR_OBJECT)) return
+         & "kernel don't have the right number of arguments for signal '" // &
+         & obj_id // "::" // id // "'.", err_id = ERROR_OBJECT)) return
 
     ! Get the last hook, to retrieve its id.
     hook => class_library // obj_id // "signals" // id // "hooks"
@@ -534,3 +534,12 @@ subroutine f_object_kernel_add_arg(ctx, arg)
 
   call wrapper_add(ctx, f_loc(arg))
 end subroutine f_object_kernel_add_arg
+
+subroutine f_object_signal_connect_bind(obj, sig, ctx, id)
+  use module_f_objects, only: f_object_signal_connect, kernel_ctx
+  character(len = *), intent(in) :: obj, sig
+  type(kernel_ctx), intent(out) :: ctx
+  integer, intent(out) :: id
+
+  call f_object_signal_connect(obj, sig, ctx, id)
+end subroutine f_object_signal_connect_bind

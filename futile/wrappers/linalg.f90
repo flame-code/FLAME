@@ -741,9 +741,9 @@ contains
     character(len=1), intent(in) :: transa,transb
     integer, intent(in) :: k,lda,ldb,ldc,m,n
     real(kind=4), intent(in) :: alpha,beta
-    real(kind=4), intent(in) :: a
-    real(kind=4), intent(in) :: b
-    real(kind=4), intent(inout) :: c
+    real(kind=4) :: a
+    real(kind=4) :: b
+    real(kind=4) :: c
     call f_timer_interrupt(TCAT_BLAS_GEMM) 
     if (GPUblas) then
        !call to CUBLAS routine
@@ -760,9 +760,9 @@ contains
     character(len=1), intent(in) :: transa,transb
     integer, intent(in) :: k,lda,ldb,ldc,m,n
     real(kind=8), intent(in) :: alpha,beta
-    real(kind=8), intent(in) :: a
-    real(kind=8), intent(in) :: b
-    real(kind=8), intent(inout) :: c
+    real(kind=8) :: a
+    real(kind=8) :: b
+    real(kind=8) :: c
     call f_timer_interrupt(TCAT_BLAS_GEMM)
     !call to BLAS routine
     if (GPUblas) then
@@ -778,9 +778,9 @@ contains
     character(len=1), intent(in) :: transa,transb
     integer, intent(in) :: k,lda,ldb,ldc,m,n
     real(kind=8), intent(in) :: alpha,beta
-    real(kind=8), intent(in) :: a
-    real(kind=8), intent(in) :: b
-    real(kind=8), intent(inout) :: c
+    real(kind=8) :: a
+    real(kind=8) :: b
+    real(kind=8) :: c
     !call to BLAS routine
     call gemmsy_double(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
   end subroutine gemmsy_double_wrap
@@ -790,9 +790,9 @@ contains
     character(len=1), intent(in) :: transa,transb
     integer, intent(in) :: k,lda,ldb,ldc,m,n
     complex(kind=4), intent(in) :: alpha,beta
-    real(kind=4), intent(in) :: a
-    real(kind=4), intent(in) :: b
-    real(kind=4), intent(inout) :: c
+    real(kind=4) :: a
+    real(kind=4) :: b
+    real(kind=4) :: c
     call f_timer_interrupt(TCAT_BLAS_GEMM)
     if (GPUblas) then
        !call to CUBLAS routine
@@ -809,9 +809,9 @@ contains
     character(len=1), intent(in) :: transa,transb
     integer, intent(in) :: k,lda,ldb,ldc,m,n
     complex(kind=8), intent(in) :: alpha,beta
-    real(kind=8), intent(in) :: a
-    real(kind=8), intent(in) :: b
-    real(kind=8), intent(inout) :: c
+    real(kind=8) :: a
+    real(kind=8) :: b
+    real(kind=8) :: c
     !call to BLAS routine
     call f_timer_interrupt(TCAT_BLAS_GEMM)
     call ZGEMM(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)

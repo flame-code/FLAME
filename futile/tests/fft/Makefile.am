@@ -61,6 +61,6 @@ regtest: fft_results
 define F_REGTEST_INSTRUCTIONS
 - fft_results:
    runs:
-    - ./fft_results > fft_results.out.yaml
+    - ./fft_results
 endef
 export F_REGTEST_INSTRUCTIONS

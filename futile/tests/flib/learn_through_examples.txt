@@ -1,0 +1,8 @@
+/*! \page learn_through_examples Learn Futile through examples
+This page teaches through examples starting with simple.
+
+- \b yaml_map: prints data in the form key: value where key is a string and
+value can be various data types such as character, integer and real.
+@example example01_yaml.f90
+
+*/

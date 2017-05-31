@@ -93,7 +93,7 @@ module dynamic_memory_base
   interface assignment(=)
      module procedure i1_all,i2_all,i3_all,i4_all
      module procedure l1_all,l2_all,l3_all
-     module procedure ll1_all
+     module procedure ll1_all,ll2_all
      module procedure d1_all,d2_all,d3_all,d4_all,d5_all,d6_all,d7_all
      module procedure r1_all,r2_all,r3_all,r4_all
      module procedure z2_all,z3_all
@@ -113,7 +113,7 @@ module dynamic_memory_base
      !     module procedure il1_all_free, il2_all_free
      module procedure i1_all_free_multi
      module procedure l1_all_free,l2_all_free,l3_all_free
-     module procedure ll1_all_free
+     module procedure ll1_all_free,ll2_all_free
      module procedure d1_all_free,d2_all_free,d1_all_free_multi,d3_all_free,d4_all_free,d5_all_free,d6_all_free,d7_all_free
      module procedure r1_all_free,r2_all_free,r3_all_free,r4_all_free
      module procedure z2_all_free,z3_all_free
@@ -164,7 +164,7 @@ module dynamic_memory_base
   public :: f_free,f_free_ptr,f_free_str,f_free_str_ptr,f_malloc_dump_status
   public :: f_routine,f_release_routine,f_malloc_set_status,f_malloc_initialize,f_malloc_finalize
   public :: f_memcpy,f_maxdiff,f_update_database,f_purge_database,f_subptr
-  public :: assignment(=),operator(.to.)
+  public :: assignment(=),operator(.to.),operator(.plus.)
 
   !for internal f_lib usage
   public :: dynamic_memory_errors
@@ -288,7 +288,7 @@ contains
     implicit none
     integer, intent(in) :: depth
     mems(ictrl)%depth=mems(ictrl)%depth+depth
-    track_origins = &
+    track_origins = bigdebug .or. &
          mems(ictrl)%depth <= mems(ictrl)%profiling_depth .or. &
          mems(ictrl)%profiling_depth ==-1
   end subroutine set_depth

@@ -44,7 +44,7 @@ module f_trees
 
 
   public :: assignment(=),operator(//)
-  public :: f_tree_new,f_tree_cpy,f_tree_push,f_tree_free,f_tree_dump
+  public :: f_tree_new,f_tree_cpy,f_tree_push,f_tree_free,f_tree_dump,f_tree_load
 
   contains
 
@@ -88,6 +88,16 @@ module f_trees
       character(len=*), intent(in) :: val
       call set(ft%d,val)
     end subroutine f_tree_push_c0
+
+    function f_tree_load(stream) result(ft)
+      use yaml_parse
+      implicit none
+      character(len=*), intent(in) :: stream
+      type(f_tree) :: ft
+      
+      !ft%rc=f_ref_new('loaded')
+      ft%d => yaml_load(stream)
+    end function f_tree_load
 
     subroutine f_tree_free(ft)
       implicit none

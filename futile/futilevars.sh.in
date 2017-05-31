@@ -1,0 +1,16 @@
+echo "While sourcing this script the following environment variable will be set:"
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sourcefiles="@bindir@/futile_environment.sh"
+for file in $sourcefiles
+do
+sh $file
+eval `sh $file`
+done
+$(return >/dev/null 2>&1)
+if [ "$?" -eq "0" ]
+then
+    echo "...done."
+else
+    echo "ERROR: This script is NOT sourced! Execute 'source" $0 "' instead"
+fi

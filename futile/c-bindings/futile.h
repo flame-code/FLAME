@@ -28,6 +28,12 @@ typedef union
 typedef void (*FutileDestroyFunc)(void *data);
 typedef void (*FutileMethodFortranFunc)();
 
+typedef void (*FObjectCallable)(void);
+typedef struct _FObjectKernel
+{
+  char kernel[256];
+} FObjectKernel;
+
 typedef struct _FutileArg FutileArg;
 struct _FutileArg
 {
@@ -52,6 +58,10 @@ struct _FutileMethod
   FutileArg args[FUTILE_METHOD_ARG_MAX];
   int strlens[FUTILE_METHOD_ARG_MAX];
 };
+
+void futileC_object_kernel_new(FObjectKernel *kernel, FObjectCallable callback, unsigned int nargs);
+void futileC_object_kernel_add_arg(FObjectKernel *kernel, void *arg);
+int futileC_object_signal_connect(const char *obj, const char *sig, FObjectKernel *kernel);
 
 gboolean futile_object_get_method(FutileMethod *meth,
                                   const char *obj_id, const char *meth_id);

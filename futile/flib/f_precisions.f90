@@ -66,6 +66,26 @@ module f_precisions
   
   contains
 
+    !> safe conversion from double to simple, avoid overflow and underflows
+    elemental pure function f_simplify(d) result(r)
+      implicit none
+      real(f_double), intent(in) :: d
+      real(f_simple) :: r
+      !local variables
+      real(f_double), parameter :: hg=real(huge(1.0_f_simple),f_double)
+      real(f_double), parameter :: tn=real(tiny(1.0_f_simple),f_double)
+
+      if (d > hg) then
+         r=huge(1.0_f_simple)
+      else if (d < tn) then
+         r=tiny(1.0_f_simple)
+      else
+         r=real(d,f_simple)
+      end if
+
+    end function f_simplify
+
+
     function sizeof_r(av) result(k)
       implicit none
       real(f_simple), intent(in) :: av

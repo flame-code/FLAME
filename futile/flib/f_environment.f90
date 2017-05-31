@@ -34,7 +34,7 @@ module f_environment
       !local variables
       integer :: istat,idum
       character(len=8) :: val
-          
+
       !check if we are in the bigdebug mode or not
       call get_environment_variable('FUTILE_DEBUG_MODE',&
            val,status=istat)
