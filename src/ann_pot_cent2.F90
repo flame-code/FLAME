@@ -166,6 +166,8 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -179,6 +181,8 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     real(8), allocatable:: rgrad(:)
     real(8), allocatable:: qgrad(:)
     real(8), allocatable:: rel(:,:)
+    type(typ_linked_lists):: linked_lists
+    type(typ_pia_arr):: pia_arr
     real(8):: zion
     allocate(rgrad(3*atoms%nat))
     allocate(qgrad(atoms%nat))
@@ -188,6 +192,12 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
         call random_number(ttrand)
         rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
+
+    linked_lists%rcut=15.d0
+    write(*,*) 'short range at cut-off: ', &
+        erfc(linked_lists%rcut/(sqrt(2.d0)*parini%alpha_ewald)) !CORRECT_IT
+    !This linked list is used for the short range part of the Ewald.
+    call call_linkedlist(parini,atoms,.false.,linked_lists,pia_arr)
 
     do iat=1,atoms%nat
         zion=ann_arr%ann(atoms%itypat(iat))%zion
@@ -207,7 +217,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
         qtot_ion,qtot_ele,qtot
     niter=200
     do iter=0,niter
-        call cal_potential_cent2(parini,ann_arr,atoms,ewald_p3d,rel,rgrad,qgrad)
+        call cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,rgrad,qgrad)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
         gnrm=sqrt(sum(rgrad**2))
@@ -233,20 +243,26 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     enddo
     write(*,'(a,i5,2f8.3)') 'DISP ',iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
     call charge_analysis(parini,atoms,ann_arr)
+    call f_free(linked_lists%prime_bound)
+    call f_free(linked_lists%bound_rad)
+    call f_free(linked_lists%bound_ang)
     deallocate(rgrad)
     deallocate(qgrad)
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
-subroutine cal_potential_cent2(parini,ann_arr,atoms,ewald_p3d,rel,rgrad,qgrad)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,rgrad,qgrad)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
@@ -287,7 +303,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,ewald_p3d,rel,rgrad,qgrad)
         rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
         rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(parini,ann_arr,atoms,ewald_p3d,rel,epot_es_bps,rgrad_es,qgrad_es)
+    call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,epot_es_bps,rgrad_es,qgrad_es)
     epot_es=epot_es_bps
     do iat=1,atoms%nat
         rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
@@ -304,17 +320,19 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,ewald_p3d,rel,rgrad,qgrad)
     deallocate(qgrad_es)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,ewald_p3d,rel,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_electrostatics, only: typ_ewald_p3d
-    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
@@ -364,8 +382,6 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,ewald_p3d,rel,epot_es,rgrad,qgr
     call cpu_time(time1)
     call put_gauss_to_grid(parini,atoms,rel,gw_ion_t,gw,ewald_p3d)
     call cpu_time(time2)
-    call construct_ewald_bps(parini,atoms,ewald_p3d)
-    call cpu_time(time3)
     ehartree=0.d0
     call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
     epot_es=0.d0
@@ -377,7 +393,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,ewald_p3d,rel,epot_es,rgrad,qgr
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,rgrad,qgrad)
 
     !if(ewald) then
-    call cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad,qgrad)
+    call cal_shortrange_ewald(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion,gw,rel,epot_es,rgrad,qgrad)
     !endif
     !gw_ion_t
 
@@ -856,7 +872,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     call f_free(wm)
 end subroutine gauss_gradient
 !*****************************************************************************************
-subroutine cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad,qgrad)
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion,gw,rel,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -866,6 +882,8 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     real(8), intent(in):: gw_ion(atoms%nat)
     real(8), intent(in):: gw(atoms%nat)
     real(8), intent(in):: rel(3,atoms%nat)
@@ -876,15 +894,10 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,gw_ion,gw,rel,epot_es,rgrad
     real(8):: sqrt_one_over_twopi, ee1, tt1, tt21, tt22, ttg, tt31, tt32
     real(8):: zat_tot
     !type(typ_atoms):: atoms_e
-    type(typ_pia_arr):: pia_arr
-    type(typ_linked_lists):: linked_lists
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
     alpha=parini%alpha_ewald
     epot_short=0.d0
-    linked_lists%rcut=15.d0
-    write(*,*) 'short range at cut-off: ',erfc(linked_lists%rcut/(sqrt(2.d0)*alpha)) !CORRECT_IT
-    call call_linkedlist(parini,atoms,.false.,linked_lists,pia_arr)
     do ib=1,linked_lists%maxbound_rad
         iat=linked_lists%bound_rad(1,ib)
         jat=linked_lists%bound_rad(2,ib)
