@@ -41,6 +41,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
+    call construct_ewald_p3d(parini,atoms,ewald_p3d)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
@@ -81,7 +82,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     !This msut be here otherwise it will zero forces which were calculated by kwald.
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi2(parini,ann_arr,atoms)
+    call get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     if(parini%iverbose>=2) call cpu_time(time5)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
@@ -116,9 +117,9 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_angle=tt3/(tt1*tt2)
         ann_arr%fchi_norm=tt2/max(tt1,1.d-3)
     endif
-    !if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-    !    call destruct_ewald_p3d(parini,atoms,ewald_p3d)
-    !endif
+    if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
+        call destruct_ewald_p3d(parini,atoms,ewald_p3d)
+    endif
 
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)
@@ -159,15 +160,17 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     call f_release_routine()
 end subroutine cal_ann_eem2
 !*****************************************************************************************
-subroutine get_qat_from_chi2(parini,ann_arr,atoms)
+subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
     !local variables
     integer:: iter, iat, niter
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
@@ -204,7 +207,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
         qtot_ion,qtot_ele,qtot
     niter=200
     do iter=0,niter
-        call cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
+        call cal_potential_cent2(parini,ann_arr,atoms,ewald_p3d,rel,rgrad,qgrad)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
         gnrm=sqrt(sum(rgrad**2))
@@ -234,15 +237,17 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms)
     deallocate(qgrad)
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
-subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,ewald_p3d,rel,rgrad,qgrad)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
@@ -282,7 +287,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
         rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
         rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es_bps,rgrad_es,qgrad_es)
+    call cal_pot_with_bps(parini,ann_arr,atoms,ewald_p3d,rel,epot_es_bps,rgrad_es,qgrad_es)
     epot_es=epot_es_bps
     do iat=1,atoms%nat
         rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
@@ -299,7 +304,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
     deallocate(qgrad_es)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,ewald_p3d,rel,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
@@ -310,12 +315,13 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     !real(8):: cell(3)
     !type(typ_ewald_p3d):: ewald_p3d_rough
-    type(typ_ewald_p3d):: ewald_p3d
+    !type(typ_ewald_p3d):: ewald_p3d
     real(8):: ehartree, pi
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: gw_ion_t(:)
@@ -328,14 +334,16 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>ewald_p3d%poisson_p3d%ngpz)
-    ewald_p3d%poisson_p3d%ngpx=30
-    ewald_p3d%poisson_p3d%ngpy=30
-    ewald_p3d%poisson_p3d%ngpz=30
-    ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
-    ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
-    ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/nx
-    ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/ny
-    ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/nz
+    !write(*,*) nx,ny,nz
+    !stop
+    !ewald_p3d%poisson_p3d%ngpx=30
+    !ewald_p3d%poisson_p3d%ngpy=30
+    !ewald_p3d%poisson_p3d%ngpz=30
+    !ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
+    !ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
+    !ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/nx
+    !ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/ny
+    !ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/nz
     ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
     !-------------------------------------------------------
     atoms%stress=0.d0
@@ -379,8 +387,8 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     !enddo
     !stop 'TESTING EWALD'
 
-    call f_free(ewald_p3d%poisson_p3d%pot)
-    call f_free(ewald_p3d%poisson_p3d%rho)
+    !call f_free(ewald_p3d%poisson_p3d%pot)
+    !call f_free(ewald_p3d%poisson_p3d%rho)
     end associate
     end associate
     end associate

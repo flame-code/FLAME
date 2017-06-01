@@ -143,24 +143,43 @@ subroutine destruct_ewald_bps(ewald_p3d)
 #endif
 end subroutine destruct_ewald_bps
 !*****************************************************************************************
-subroutine set_ngp_bps(ewald_p3d_rough,ewald_p3d)
+subroutine set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
     use mod_interface
+    use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
 #if defined(HAVE_BPS)
     use module_fft_sg, only: i_data, ndata
 #endif
     implicit none
+    type(typ_atoms), intent(in):: atoms
     type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     !local variables
     real(8):: dh1, dh2, harr(3)
+    real(8):: cell(3), vol, cvinv(3), cvinv_norm
     integer:: i, ndim(3), id
+    call cell_vol(atoms%nat,atoms%cellvec,vol)
+    vol=abs(vol)*atoms%nat
+    call cross_product_alborz(atoms%cellvec(1,1),atoms%cellvec(1,2),cvinv)
+    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(3)=vol/cvinv_norm
+    call cross_product_alborz(atoms%cellvec(1,2),atoms%cellvec(1,3),cvinv)
+    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(1)=vol/cvinv_norm
+    call cross_product_alborz(atoms%cellvec(1,1),atoms%cellvec(1,3),cvinv)
+    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(2)=vol/cvinv_norm
+    !write(*,*) cell(1:3)
+    ewald_p3d%poisson_p3d%ngpx=int(cell(1)/ewald_p3d_rough%hgx)+1
+    ewald_p3d%poisson_p3d%ngpy=int(cell(2)/ewald_p3d_rough%hgy)+1
+    ewald_p3d%poisson_p3d%ngpz=int(cell(3)/ewald_p3d_rough%hgz)+1
+
 #if defined(HAVE_BPS)
     ndim(1)=ewald_p3d%poisson_p3d%ngpx
     ndim(2)=ewald_p3d%poisson_p3d%ngpy
     ndim(3)=ewald_p3d%poisson_p3d%ngpz
     harr(1)=ewald_p3d_rough%hgx
-    harr(2)=ewald_p3d_rough%hgx
+    harr(2)=ewald_p3d_rough%hgy
     harr(3)=ewald_p3d_rough%hgz
     do id=1,3
         do i=1,ndata
@@ -171,8 +190,8 @@ subroutine set_ngp_bps(ewald_p3d_rough,ewald_p3d)
             stop
         endif
         if(ndim(id)/=i_data(i-1)) then
-            dh1=ewald_p3d%cell(id)/real(i_data(i-1),8)
-            dh2=ewald_p3d%cell(id)/real(i_data(i),8)
+            dh1=cell(id)/real(i_data(i-1),8)
+            dh2=cell(id)/real(i_data(i),8)
             if(abs(dh1-harr(id))<abs(dh2-harr(id))) then
                 ndim(id)=i_data(i-1)
             else
@@ -180,14 +199,14 @@ subroutine set_ngp_bps(ewald_p3d_rough,ewald_p3d)
             endif
         endif
     enddo
-    ewald_p3d%poisson_p3d%ngpx=ndim(1)
-    ewald_p3d%poisson_p3d%ngpy=ndim(2)
-    ewald_p3d%poisson_p3d%ngpz=ndim(3)
+    ewald_p3d%poisson_p3d%ngpx=max(20,ndim(1))
+    ewald_p3d%poisson_p3d%ngpy=max(20,ndim(2))
+    ewald_p3d%poisson_p3d%ngpz=max(20,ndim(3))
     !write(*,*) ndim(:)
     !stop
-    ewald_p3d%hgx=ewald_p3d%cell(1)/real(ewald_p3d%poisson_p3d%ngpx,8)
-    ewald_p3d%hgy=ewald_p3d%cell(2)/real(ewald_p3d%poisson_p3d%ngpy,8)
-    ewald_p3d%hgz=ewald_p3d%cell(3)/real(ewald_p3d%poisson_p3d%ngpz,8)
+    ewald_p3d%hgx=cell(1)/real(ewald_p3d%poisson_p3d%ngpx,8)
+    ewald_p3d%hgy=cell(2)/real(ewald_p3d%poisson_p3d%ngpy,8)
+    ewald_p3d%hgz=cell(3)/real(ewald_p3d%poisson_p3d%ngpz,8)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif

@@ -397,27 +397,31 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_eem2
-subroutine get_qat_from_chi2(parini,ann_arr,atoms)
+subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine get_qat_from_chi2
-subroutine cal_potential_cent2(parini,ann_arr,atoms,rel,rgrad,qgrad)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,ewald_p3d,rel,rgrad,qgrad)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
 end subroutine cal_potential_cent2
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,ewald_p3d,rel,epot_es,rgrad,qgrad)
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -426,6 +430,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,rel,epot_es,rgrad,qgrad)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
     real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
 end subroutine cal_pot_with_bps
@@ -1723,9 +1728,11 @@ subroutine destruct_ewald_bps(ewald_p3d)
     implicit none
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine destruct_ewald_bps
-subroutine set_ngp_bps(ewald_p3d_rough,ewald_p3d)
+subroutine set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
+    use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
+    type(typ_atoms), intent(in):: atoms
     type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine set_ngp_bps
