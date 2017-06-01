@@ -181,9 +181,13 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     real(8), allocatable:: rgrad(:)
     real(8), allocatable:: qgrad(:)
     real(8), allocatable:: rel(:,:)
+    real(8), allocatable:: gw_ion(:), gw(:)
     type(typ_linked_lists):: linked_lists
     type(typ_pia_arr):: pia_arr
     real(8):: zion
+    associate(nx=>ewald_p3d%poisson_p3d%ngpx)
+    associate(ny=>ewald_p3d%poisson_p3d%ngpy)
+    associate(nz=>ewald_p3d%poisson_p3d%ngpz)
     allocate(rgrad(3*atoms%nat))
     allocate(qgrad(atoms%nat))
     allocate(rel(3,atoms%nat))
@@ -215,9 +219,15 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     qtot=qtot_ion+qtot_ele
     write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
         qtot_ion,qtot_ele,qtot
+    allocate(gw(atoms%nat),gw_ion(atoms%nat))
+    do iat=1,atoms%nat
+        gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
+        gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
+    enddo
     niter=200
     do iter=0,niter
-        call cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,rgrad,qgrad)
+        call cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr, &
+            ewald_p3d,rel,gw_ion,gw,rgrad,qgrad)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
         gnrm=sqrt(sum(rgrad**2))
@@ -242,15 +252,23 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
         epot_old=atoms%epot
     enddo
     write(*,'(a,i5,2f8.3)') 'DISP ',iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
+    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
+        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,atoms%fat)
+
+    call cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr, &
+        gw_ion,gw,rel)
     call charge_analysis(parini,atoms,ann_arr)
     call f_free(linked_lists%prime_bound)
     call f_free(linked_lists%bound_rad)
     call f_free(linked_lists%bound_ang)
     deallocate(rgrad)
     deallocate(qgrad)
+    end associate
+    end associate
+    end associate
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
-subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,rgrad,qgrad)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,gw_ion,gw,rgrad,qgrad)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -265,6 +283,8 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p
     type(typ_pia_arr), intent(in):: pia_arr
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
     real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     integer:: iat
@@ -303,7 +323,8 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p
         rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
         rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,epot_es_bps,rgrad_es,qgrad_es)
+    call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d, &
+        rel,gw_ion,gw,epot_es_bps,rgrad_es,qgrad_es)
     epot_es=epot_es_bps
     do iat=1,atoms%nat
         rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
@@ -320,7 +341,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p
     deallocate(qgrad_es)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,gw_ion,gw,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
@@ -335,6 +356,8 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,
     type(typ_pia_arr), intent(in):: pia_arr
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: rel(3,atoms%nat)
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
     real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     !real(8):: cell(3)
@@ -343,7 +366,6 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,
     real(8):: ehartree, pi
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8), allocatable:: gw_ion_t(:)
-    real(8), allocatable:: gw_ion(:), gw(:)
     real(8):: sqrt_one_over_twopi
     integer:: iat
     !logical:: ewald
@@ -365,12 +387,9 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,
     ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
     !-------------------------------------------------------
     atoms%stress=0.d0
-    allocate(gw(atoms%nat),gw_ion(atoms%nat))
     allocate(gw_ion_t(atoms%nat))
     do iat=1,atoms%nat
-        gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
         gw_ion_t(iat)=parini%alpha_ewald
-        gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
     enddo
     !-------------------------------------------------------
     !open(unit=111,file="tinput",status='old')
@@ -1005,6 +1024,317 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion
     enddo
     epot_es=epot_es+epot_short
 end subroutine cal_shortrange_ewald
+!*****************************************************************************************
+subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: fat(3,nat)
+    !local variables
+    !work arrays to save the values of one dimensional gaussian function.
+    real(8):: pi
+    real(8):: facqiat, fac
+    real(8):: cell(3) !dimensions of a smaller orthogonal cell for replication
+    real(8):: vol
+    real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
+    real(8):: htx, hty, htz
+    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
+    real(8):: hrxinv, hryinv, hrzinv
+    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, expval
+    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
+    real(8):: xred, yred, zred
+    real(8):: ximg, yimg, zimg
+    integer:: imgx, imgy, imgz
+    integer:: ncellx, ncelly, ncellz
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt
+    integer:: iii
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
+    integer:: ilgx, ilgy, ilgz, irgx, irgy, irgz
+    real(8), allocatable:: wa(:,:,:)
+    real(8), allocatable:: wm(:,:,:)
+    real(8), allocatable:: ratred(:,:)
+
+    allocate(ratred(3,nat))
+    call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
+    do iat=1,nat
+        xred=ratred(1,iat)
+        yred=ratred(2,iat)
+        zred=ratred(3,iat)
+        if(xred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
+        if(yred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
+        if(zred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
+        if(.not. (xred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
+        if(.not. (yred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
+        if(.not. (zred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
+    enddo
+
+    !reciprocal lattice to be used to determine the distance of corners of
+    !the parallelepiped to its facets. Then those distances are used to
+    !determine the number of grid points in each direction that are within
+    !the cutoff of Gaussian function.
+    call cell_vol(nat,cv,vol)
+    vol=abs(vol)*nat
+    call cross_product_alborz(cv(1,1),cv(1,2),cvinv)
+    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(3)=vol/cvinv_norm
+    call cross_product_alborz(cv(1,2),cv(1,3),cvinv)
+    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(1)=vol/cvinv_norm
+    call cross_product_alborz(cv(1,1),cv(1,3),cvinv)
+    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(2)=vol/cvinv_norm
+    if(parini%iverbose>1) then
+        write(*,*) 'cell  ', cell(1),cell(2),cell(3)
+    endif
+    htx=cell(1)/real(ngx,8)
+    hty=cell(2)/real(ngy,8)
+    htz=cell(3)/real(ngz,8)
+    nbgx=int(rgcut/htx)+2
+    nbgy=int(rgcut/hty)+2
+    nbgz=int(rgcut/htz)+2
+    nagx=nbgx+1
+    nagy=nbgy+1
+    nagz=nbgz+1
+    !detemining the largest dimension for the pseudogrid.
+    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
+    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
+    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
+
+    wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
+    wm=f_malloc0([1.to.ngx,1.to.ngy,1.to.ngz],id='wm')
+
+    hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
+    hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
+    hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
+    !if(trim(bc)=='bulk') then
+    !    iii=0
+    !elseif(trim(bc)=='slab') then
+    !    iii=1
+    !endif
+    !-------------------------------------------------------
+    pi=4.d0*atan(1.d0)
+    !---------------------------------------------------------------------------
+    ncellx=nagx/ngx
+    ncelly=nagy/ngy
+    ncellz=nagz/ngz
+    ilgx=-ncellx*ngx+1 ; irgx=(ncellx+1)*ngx
+    ilgy=-ncelly*ngy+1 ; irgy=(ncelly+1)*ngy
+    ilgz=-ncellz*ngz+1 ; irgz=(ncellz+1)*ngz
+    !---------------------------------------------------------------------------
+    !extended box constructed by integer number of cells
+    nex=max(ngx,irgx-ilgx+1)
+    ney=max(ngy,irgy-ilgy+1)
+    nez=max(ngz,irgz-ilgz+1)
+    !write(*,'(a,3i5)') 'ncellx,ncelly,ncellz ',ncellx,ncelly,ncellz
+    !write(*,'(a,3i5)') 'nagx,nagy,nagz ',nagx,nagy,nagz
+    !write(*,'(a,6i5)') 'ngx,ngy,ngz,nex,ney,nez ',ngx,ngy,ngz,nex,ney,nez
+    !---------------------------------------------------------------------------
+    if(ncellx==0 .and. ncelly==0 .and. ncellz==0) then
+        do igz=1,ngz
+            do igy=1,ngy
+                do igx=1,ngx
+                    wa(igx,igy,igz)=pot(igx,igy,igz)
+                enddo
+            enddo
+        enddo
+    else
+        !wrap around grid points which form a complete cell and are outside the main cell.
+        do igz=ilgz,irgz
+            jgz=modulo(igz-1,ngz)+1
+            do igy=ilgy,irgy
+                jgy=modulo(igy-1,ngy)+1
+                do igx=ilgx,irgx
+                    jgx=modulo(igx-1,ngx)+1
+                    wa(igx,igy,igz)=pot(jgx,jgy,jgz)
+                enddo
+            enddo
+        enddo
+    endif
+    !-------------------------------------------------------
+    do igz=1-nagz,ngz+nagz
+        igzt=igz+(sign(irgz,-igz)+sign(irgz,nez-igz))/2
+        do igy=1-nagy,ngy+nagy
+            igyt=igy+(sign(irgy,-igy)+sign(irgy,ney-igy))/2
+            do igx=1-nagx,0
+                wa(igx,igy,igz)=wa(igx+irgx,igyt,igzt)
+            enddo
+            do igx=1,ngx
+                wa(igx,igy,igz)=wa(igx,igyt,igzt)
+            enddo
+            do igx=ngx+1,ngx+nagx
+                wa(igx,igy,igz)=wa(igx-irgx,igyt,igzt)
+            enddo
+        enddo
+    enddo
+    !-------------------------------------------------------
+    vol_voxel=vol/(ngx*ngy*ngz)
+    fat(1:3,1:nat)=0.d0
+    do iat=1,nat
+        gwsq_inv=1.d0/gw(iat)**2
+        fac=1.d0/(gw(iat)*sqrt(pi))**3
+        imgx=nint(ratred(1,iat)*hrxinv)+1
+        imgy=nint(ratred(2,iat)*hryinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1
+        facqiat=fac*qat(iat)
+        ttx=0.d0
+        tty=0.d0
+        ttz=0.d0
+        do igz=-nbgz,nbgz
+            jgz=imgz+igz
+            do igy=-nbgy,nbgy
+                jgy=imgy+igy
+                do igx=-nbgx,nbgx
+                    jgx=imgx+igx
+                    ximg=(jgx-1)*hxx+(jgy-1)*hyx+(jgz-1)*hzx
+                    yimg=(jgx-1)*hxy+(jgy-1)*hyy+(jgz-1)*hzy
+                    zimg=(jgx-1)*hxz+(jgy-1)*hyz+(jgz-1)*hzz
+                    dmx=ximg-rxyz(1,iat)
+                    dmy=yimg-rxyz(2,iat)
+                    dmz=zimg-rxyz(3,iat)
+                    dmsq=dmx**2+dmy**2+dmz**2
+                    !wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
+                    expval=exp(-dmsq*gwsq_inv)
+                    ttx=ttx+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmx*gwsq_inv)
+                    tty=tty+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmy*gwsq_inv)
+                    ttz=ttz+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmz*gwsq_inv)
+                enddo
+            enddo
+        enddo
+        fat(1,iat)=ttx*vol_voxel
+        fat(2,iat)=tty*vol_voxel
+        fat(3,iat)=ttz*vol_voxel
+    enddo
+    !---------------------------------------------------------------------------
+    deallocate(ratred)
+    call f_free(wa)
+    call f_free(wm)
+end subroutine gauss_force
+!*****************************************************************************************
+subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion,gw,rel)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
+    real(8), intent(in):: gw_ion(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
+    real(8), intent(in):: rel(3,atoms%nat)
+    !local variables
+    integer:: iat, jat, ib
+    real(8):: alpha, gama, dx, dy, dz, r, pi, vol, shift
+    real(8):: sqrt_one_over_twopi, ee1, tt1, tt21, tt22, ttg, tt31, tt32
+    real(8):: zat_tot
+    !type(typ_atoms):: atoms_e
+    pi=4.d0*atan(1.d0)
+    sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
+    alpha=parini%alpha_ewald
+    do ib=1,linked_lists%maxbound_rad
+        iat=linked_lists%bound_rad(1,ib)
+        jat=linked_lists%bound_rad(2,ib)
+        !---------------------------------------------------
+        dx=pia_arr%pia(ib)%dr(1)
+        dy=pia_arr%pia(ib)%dr(2)
+        dz=pia_arr%pia(ib)%dr(3)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        gama=1.d0/sqrt(gw_ion(iat)**2+gw_ion(jat)**2)
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt21=atoms%zat(iat)*atoms%zat(jat)*ee1
+        !---------------------------------------------------
+        gama=1.d0/(sqrt(2.d0)*alpha)
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt22=-atoms%zat(iat)*atoms%zat(jat)*ee1
+        !---------------------------------------------------
+        atoms%fat(1,jat)=atoms%fat(1,jat)+(tt21+tt22)*dx
+        atoms%fat(2,jat)=atoms%fat(2,jat)+(tt21+tt22)*dy
+        atoms%fat(3,jat)=atoms%fat(3,jat)+(tt21+tt22)*dz
+        atoms%fat(1,iat)=atoms%fat(1,iat)-(tt21+tt22)*dx
+        atoms%fat(2,iat)=atoms%fat(2,iat)-(tt21+tt22)*dy
+        atoms%fat(3,iat)=atoms%fat(3,iat)-(tt21+tt22)*dz
+        !---------------------------------------------------
+        dx=pia_arr%pia(ib)%dr(1)+rel(1,jat)-atoms%rat(1,jat)
+        dy=pia_arr%pia(ib)%dr(2)+rel(2,jat)-atoms%rat(2,jat)
+        dz=pia_arr%pia(ib)%dr(3)+rel(3,jat)-atoms%rat(3,jat)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt21=atoms%zat(iat)*atoms%qat(jat)*ee1
+        !-------------------------------------------
+        gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt22=-atoms%zat(iat)*atoms%qat(jat)*ee1
+        !-------------------------------------------
+        atoms%fat(1,jat)=atoms%fat(1,jat)+(tt21+tt22)*dx
+        atoms%fat(2,jat)=atoms%fat(2,jat)+(tt21+tt22)*dy
+        atoms%fat(3,jat)=atoms%fat(3,jat)+(tt21+tt22)*dz
+        !---------------------------------------------------
+        dx=-pia_arr%pia(ib)%dr(1)+rel(1,iat)-atoms%rat(1,iat)
+        dy=-pia_arr%pia(ib)%dr(2)+rel(2,iat)-atoms%rat(2,iat)
+        dz=-pia_arr%pia(ib)%dr(3)+rel(3,iat)-atoms%rat(3,iat)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        gama=1.d0/sqrt(gw_ion(jat)**2+gw(iat)**2)
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt21=atoms%zat(jat)*atoms%qat(iat)*ee1
+        !-------------------------------------------
+        gama=1.d0/sqrt(alpha**2+gw(iat)**2)
+        ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+        tt22=-atoms%zat(jat)*atoms%qat(iat)*ee1
+        !-------------------------------------------
+        atoms%fat(1,iat)=atoms%fat(1,iat)+(tt21+tt22)*dx
+        atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
+        atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
+        !---------------------------------------------------
+    enddo
+    do iat=1,atoms%nat
+        jat=iat
+        dx=rel(1,jat)-atoms%rat(1,iat)
+        dy=rel(2,jat)-atoms%rat(2,iat)
+        dz=rel(3,jat)-atoms%rat(3,iat)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        if(r>0.9d0) then
+            write(*,'(a,es14.5)') 'ERROR: Center of electron far from atom: r= ',r
+            stop
+        endif
+        if(r<0.1d0) then
+            gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+            call erf_over_r_taylor(gama*r,tt1,ttg)
+            tt21=atoms%zat(iat)*atoms%qat(jat)*gama**3*ttg
+            !-------------------------------------------
+            gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+            call erf_over_r_taylor(gama*r,tt1,ttg)
+            tt22=-atoms%zat(iat)*atoms%qat(jat)*gama**3*ttg
+        else
+            gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+            ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+            tt21=atoms%zat(iat)*atoms%qat(jat)*ee1
+            !-------------------------------------------
+            gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+            ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+            tt22=-atoms%zat(iat)*atoms%qat(jat)*ee1
+        endif
+        !-------------------------------------------
+        atoms%fat(1,jat)=atoms%fat(1,jat)+(tt21+tt22)*dx
+        atoms%fat(2,jat)=atoms%fat(2,jat)+(tt21+tt22)*dy
+        atoms%fat(3,jat)=atoms%fat(3,jat)+(tt21+tt22)*dz
+    enddo
+end subroutine cal_shortrange_ewald_force
 !*****************************************************************************************
 subroutine erf_over_r_taylor(r,funcval,funcval_der)
     implicit none
