@@ -143,7 +143,6 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         call f_free(ann_arr%chi_i)
         call f_free(ann_arr%chi_o)
         call f_free(ann_arr%chi_d)
-        call f_free(ann_arr%a)
         call f_free(ann_arr%fat_chi)
         call f_free(ann_arr%fatpq)
         call f_free(ann_arr%stresspq)
@@ -182,9 +181,10 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     real(8), allocatable:: qgrad(:)
     real(8), allocatable:: rel(:,:)
     real(8), allocatable:: gw_ion(:), gw(:)
+    real(8), allocatable:: gw_ion_t(:)
     type(typ_linked_lists):: linked_lists
     type(typ_pia_arr):: pia_arr
-    real(8):: zion
+    real(8):: zion, spring_const, dx, dy, dz
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>ewald_p3d%poisson_p3d%ngpz)
@@ -220,6 +220,10 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
         qtot_ion,qtot_ele,qtot
     allocate(gw(atoms%nat),gw_ion(atoms%nat))
+    allocate(gw_ion_t(atoms%nat))
+    do iat=1,atoms%nat
+        gw_ion_t(iat)=parini%alpha_ewald
+    enddo
     do iat=1,atoms%nat
         gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
         gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
@@ -252,11 +256,20 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
         epot_old=atoms%epot
     enddo
     write(*,'(a,i5,2f8.3)') 'DISP ',iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
+    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion_t, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,atoms%fat)
 
     call cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr, &
         gw_ion,gw,rel)
+    do iat=1,atoms%nat !summation over ions/electrons
+        dx=rel(1,iat)-atoms%rat(1,iat)
+        dy=rel(2,iat)-atoms%rat(2,iat)
+        dz=rel(3,iat)-atoms%rat(3,iat)
+        spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
+        atoms%fat(1,iat)=atoms%fat(1,iat)+spring_const*dx
+        atoms%fat(2,iat)=atoms%fat(2,iat)+spring_const*dy
+        atoms%fat(3,iat)=atoms%fat(3,iat)+spring_const*dz
+    enddo
     call charge_analysis(parini,atoms,ann_arr)
     call f_free(linked_lists%prime_bound)
     call f_free(linked_lists%bound_rad)
@@ -307,7 +320,6 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p
     allocate(qgrad_ot(atoms%nat),source=0.d0)
     allocate(qgrad_es(atoms%nat),source=0.d0)
     ann_arr%ann(atoms%itypat(1:atoms%nat))%spring_const=1.d0 !CORRECT_IT
-    atoms%fat=0.d0
     atoms%epot=0.d0
     do iat=1,atoms%nat !summation over ions/electrons
         atoms%epot=atoms%epot+ann_arr%chi_o(iat)*(atoms%zat(iat)+atoms%qat(iat))
@@ -1180,7 +1192,6 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     enddo
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
-    fat(1:3,1:nat)=0.d0
     do iat=1,nat
         gwsq_inv=1.d0/gw(iat)**2
         fac=1.d0/(gw(iat)*sqrt(pi))**3
@@ -1212,9 +1223,9 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
                 enddo
             enddo
         enddo
-        fat(1,iat)=ttx*vol_voxel
-        fat(2,iat)=tty*vol_voxel
-        fat(3,iat)=ttz*vol_voxel
+        fat(1,iat)=fat(1,iat)-ttx*vol_voxel
+        fat(2,iat)=fat(2,iat)-tty*vol_voxel
+        fat(3,iat)=fat(3,iat)-ttz*vol_voxel
     enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
@@ -1262,12 +1273,12 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt22=-atoms%zat(iat)*atoms%zat(jat)*ee1
         !---------------------------------------------------
-        atoms%fat(1,jat)=atoms%fat(1,jat)+(tt21+tt22)*dx
-        atoms%fat(2,jat)=atoms%fat(2,jat)+(tt21+tt22)*dy
-        atoms%fat(3,jat)=atoms%fat(3,jat)+(tt21+tt22)*dz
-        atoms%fat(1,iat)=atoms%fat(1,iat)-(tt21+tt22)*dx
-        atoms%fat(2,iat)=atoms%fat(2,iat)-(tt21+tt22)*dy
-        atoms%fat(3,iat)=atoms%fat(3,iat)-(tt21+tt22)*dz
+        atoms%fat(1,jat)=atoms%fat(1,jat)-(tt21+tt22)*dx
+        atoms%fat(2,jat)=atoms%fat(2,jat)-(tt21+tt22)*dy
+        atoms%fat(3,jat)=atoms%fat(3,jat)-(tt21+tt22)*dz
+        atoms%fat(1,iat)=atoms%fat(1,iat)+(tt21+tt22)*dx
+        atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
+        atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
         dx=pia_arr%pia(ib)%dr(1)+rel(1,jat)-atoms%rat(1,jat)
         dy=pia_arr%pia(ib)%dr(2)+rel(2,jat)-atoms%rat(2,jat)
@@ -1281,9 +1292,9 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt22=-atoms%zat(iat)*atoms%qat(jat)*ee1
         !-------------------------------------------
-        atoms%fat(1,jat)=atoms%fat(1,jat)+(tt21+tt22)*dx
-        atoms%fat(2,jat)=atoms%fat(2,jat)+(tt21+tt22)*dy
-        atoms%fat(3,jat)=atoms%fat(3,jat)+(tt21+tt22)*dz
+        atoms%fat(1,iat)=atoms%fat(1,iat)+(tt21+tt22)*dx
+        atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
+        atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
         dx=-pia_arr%pia(ib)%dr(1)+rel(1,iat)-atoms%rat(1,iat)
         dy=-pia_arr%pia(ib)%dr(2)+rel(2,iat)-atoms%rat(2,iat)
@@ -1297,9 +1308,9 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt22=-atoms%zat(jat)*atoms%qat(iat)*ee1
         !-------------------------------------------
-        atoms%fat(1,iat)=atoms%fat(1,iat)+(tt21+tt22)*dx
-        atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
-        atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
+        atoms%fat(1,jat)=atoms%fat(1,jat)+(tt21+tt22)*dx
+        atoms%fat(2,jat)=atoms%fat(2,jat)+(tt21+tt22)*dy
+        atoms%fat(3,jat)=atoms%fat(3,jat)+(tt21+tt22)*dz
         !---------------------------------------------------
     enddo
     do iat=1,atoms%nat
