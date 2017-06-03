@@ -128,6 +128,14 @@ module mod_ann
         real(8), allocatable:: gc(:,:)
         real(8), allocatable:: gs(:,:)
     end type typ_ekf
+    type typ_cent
+        real(8), allocatable:: gwi(:)
+        real(8), allocatable:: gwe(:)
+        real(8), allocatable:: gwit(:)
+        real(8), allocatable:: rel(:,:)
+        real(8), allocatable:: qgrad(:)
+        real(8), allocatable:: rgrad(:,:)
+    end type typ_cent
 end module mod_ann
 !*****************************************************************************************
 !module data_point

@@ -162,7 +162,7 @@ end subroutine cal_ann_eem2
 subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
@@ -177,24 +177,20 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
     real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
-    real(8), allocatable:: rgrad(:)
-    real(8), allocatable:: qgrad(:)
-    real(8), allocatable:: rel(:,:)
-    real(8), allocatable:: gw_ion(:), gw(:)
-    real(8), allocatable:: gw_ion_t(:)
+    type(typ_cent):: cent
     type(typ_linked_lists):: linked_lists
     type(typ_pia_arr):: pia_arr
     real(8):: zion, spring_const, dx, dy, dz
     associate(nx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>ewald_p3d%poisson_p3d%ngpz)
-    allocate(rgrad(3*atoms%nat))
-    allocate(qgrad(atoms%nat))
-    allocate(rel(3,atoms%nat))
+    allocate(cent%rgrad(3,atoms%nat))
+    allocate(cent%qgrad(atoms%nat))
+    allocate(cent%rel(3,atoms%nat))
 
     do iat=1,atoms%nat
         call random_number(ttrand)
-        rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
+        cent%rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
     linked_lists%rcut=15.d0
@@ -221,52 +217,50 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     qtot=qtot_ion+qtot_ele
     write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
         qtot_ion,qtot_ele,qtot
-    allocate(gw(atoms%nat),gw_ion(atoms%nat))
-    allocate(gw_ion_t(atoms%nat))
+    allocate(cent%gwe(atoms%nat),cent%gwi(atoms%nat))
+    allocate(cent%gwit(atoms%nat))
     do iat=1,atoms%nat
-        gw_ion_t(iat)=parini%alpha_ewald
+        cent%gwit(iat)=parini%alpha_ewald
     enddo
     do iat=1,atoms%nat
-        gw_ion(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-        gw(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
+        cent%gwi(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
+        cent%gwe(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
     enddo
     niter=200
     do iter=0,niter
         call cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr, &
-            ewald_p3d,rel,gw_ion,gw,rgrad,qgrad)
+            ewald_p3d,cent%rel,cent%gwi,cent%gwe,cent%rgrad,cent%qgrad)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
-        gnrm=sqrt(sum(rgrad**2))
-        gtot=sum(qgrad(1:atoms%nat))
-        qgrad(1:atoms%nat)=qgrad(1:atoms%nat)-gtot/atoms%nat
-        gnrm2=sqrt(sum(qgrad(1:atoms%nat)**2))
+        gnrm=sqrt(sum(cent%rgrad**2))
+        gtot=sum(cent%qgrad(1:atoms%nat))
+        cent%qgrad(1:atoms%nat)=cent%qgrad(1:atoms%nat)-gtot/atoms%nat
+        gnrm2=sqrt(sum(cent%qgrad(1:atoms%nat)**2))
         qtot=sum(atoms%zat(1:atoms%nat))+sum(atoms%qat(1:atoms%nat))
         q1=atoms%zat(1)+atoms%qat(1)
         write(*,'(a,i5,es24.15,3es11.2,2f8.3)') 'iter,epot,gnrm ',iter,atoms%epot,de,gnrm,gnrm2,q1,qtot
         !write(41,'(a,i5,6f17.10,es14.5)') 'iter,dis ',iter,rel(1:3,1)-atoms%rat(1:3,1),rel(1:3,2)-atoms%rat(1:3,2),gnrm
-        write(51,'(i5,2f8.3)') iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
+        write(51,'(i5,2f8.3)') iter,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
         if(gnrm<5.d-4 .and. gnrm2<1.d-3) exit
         if(iter==niter) exit
         do iat=1,atoms%nat
-            rel(1,iat)=rel(1,iat)-5.d-1*rgrad(3*iat-2)
-            rel(2,iat)=rel(2,iat)-5.d-1*rgrad(3*iat-1)
-            rel(3,iat)=rel(3,iat)-5.d-1*rgrad(3*iat-0)
-        enddo
-        do iat=1,atoms%nat
-            atoms%qat(iat)=atoms%qat(iat)-1.0d0*qgrad(iat)
+            cent%rel(1,iat)=cent%rel(1,iat)-5.d-1*cent%rgrad(1,iat)
+            cent%rel(2,iat)=cent%rel(2,iat)-5.d-1*cent%rgrad(2,iat)
+            cent%rel(3,iat)=cent%rel(3,iat)-5.d-1*cent%rgrad(3,iat)
+            atoms%qat(iat)=atoms%qat(iat)-1.0d0*cent%qgrad(iat)
         enddo
         epot_old=atoms%epot
     enddo
-    write(*,'(a,i5,2f8.3)') 'DISP ',iter,rel(1,1)-atoms%rat(1,1),rel(1,2)-atoms%rat(1,2)
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion_t, &
+    write(*,'(a,i5,2f8.3)') 'DISP ',iter,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
         ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,atoms%fat)
 
     call cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr, &
-        gw_ion,gw,rel)
+        cent%gwi,cent%gwe,cent%rel)
     do iat=1,atoms%nat !summation over ions/electrons
-        dx=rel(1,iat)-atoms%rat(1,iat)
-        dy=rel(2,iat)-atoms%rat(2,iat)
-        dz=rel(3,iat)-atoms%rat(3,iat)
+        dx=cent%rel(1,iat)-atoms%rat(1,iat)
+        dy=cent%rel(2,iat)-atoms%rat(2,iat)
+        dz=cent%rel(3,iat)-atoms%rat(3,iat)
         spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
         atoms%fat(1,iat)=atoms%fat(1,iat)+spring_const*dx
         atoms%fat(2,iat)=atoms%fat(2,iat)+spring_const*dy
@@ -276,8 +270,12 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     call f_free(linked_lists%prime_bound)
     call f_free(linked_lists%bound_rad)
     call f_free(linked_lists%bound_ang)
-    deallocate(rgrad)
-    deallocate(qgrad)
+    deallocate(cent%rgrad)
+    deallocate(cent%qgrad)
+    deallocate(cent%rel)
+    deallocate(cent%gwi)
+    deallocate(cent%gwe)
+    deallocate(cent%gwit)
     end associate
     end associate
     end associate
