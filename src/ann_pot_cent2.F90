@@ -3,8 +3,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf, typ_cent
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -13,8 +12,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
-    type(typ_ewald_p3d):: ewald_p3d
     !local variables
+    type(typ_cent):: cent
     integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
@@ -41,7 +40,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call construct_ewald_p3d(parini,atoms,ewald_p3d)
+    call construct_ewald_p3d(parini,atoms,cent%ewald_p3d)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
@@ -82,7 +81,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     !This msut be here otherwise it will zero forces which were calculated by kwald.
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
+    call get_qat_from_chi2(parini,ann_arr,atoms,cent)
     if(parini%iverbose>=2) call cpu_time(time5)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
@@ -118,7 +117,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_norm=tt2/max(tt1,1.d-3)
     endif
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        call destruct_ewald_p3d(parini,atoms,ewald_p3d)
+        call destruct_ewald_p3d(parini,atoms,cent%ewald_p3d)
     endif
 
     call getvol_alborz(atoms%cellvec,vol)
@@ -159,31 +158,30 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     call f_release_routine()
 end subroutine cal_ann_eem2
 !*****************************************************************************************
-subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
+subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    !use mod_electrostatics, only: typ_ewald_p3d
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_cent), intent(inout):: cent
     !local variables
     integer:: iter, iat, niter
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
     real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
-    type(typ_cent):: cent
     type(typ_linked_lists):: linked_lists
     type(typ_pia_arr):: pia_arr
     real(8):: zion, spring_const, dx, dy, dz
-    associate(nx=>ewald_p3d%poisson_p3d%ngpx)
-    associate(ny=>ewald_p3d%poisson_p3d%ngpy)
-    associate(nz=>ewald_p3d%poisson_p3d%ngpz)
+    associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
+    associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
+    associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
     allocate(cent%rgrad(3,atoms%nat))
     allocate(cent%qgrad(atoms%nat))
     allocate(cent%rel(3,atoms%nat))
@@ -228,8 +226,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     enddo
     niter=200
     do iter=0,niter
-        call cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr, &
-            ewald_p3d,cent%rel,cent%gwi,cent%gwe,cent%rgrad,cent%qgrad)
+        call cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
         if(iter==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
         gnrm=sqrt(sum(cent%rgrad**2))
@@ -253,7 +250,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     enddo
     write(*,'(a,i5,2f8.3)') 'DISP ',iter,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
     call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
-        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,atoms%fat)
+        cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
 
     call cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr, &
         cent%gwi,cent%gwe,cent%rel)
@@ -281,24 +278,19 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
     end associate
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
-subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,gw_ion,gw,rgrad,qgrad)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
-    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
-    real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
+    type(typ_cent), intent(inout):: cent
     !local variables
     integer:: iat
     real(8):: epot_es, dx, dy, dz, epot_es_bps
@@ -326,23 +318,23 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p
         hardness=ann_arr%ann(atoms%itypat(iat))%hardness
         atoms%epot=atoms%epot+0.5d0*hardness*(atoms%zat(iat)+atoms%qat(iat))**2
         qgrad_ot(iat)=qgrad_ot(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
-        dx=rel(1,iat)-atoms%rat(1,iat)
-        dy=rel(2,iat)-atoms%rat(2,iat)
-        dz=rel(3,iat)-atoms%rat(3,iat)
+        dx=cent%rel(1,iat)-atoms%rat(1,iat)
+        dy=cent%rel(2,iat)-atoms%rat(2,iat)
+        dz=cent%rel(3,iat)-atoms%rat(3,iat)
         spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
         atoms%epot=atoms%epot+0.5d0*spring_const*(dx**2+dy**2+dz**2)
         rgrad_ot(1,iat)=rgrad_ot(1,iat)+spring_const*dx
         rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
         rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d, &
-        rel,gw_ion,gw,epot_es_bps,rgrad_es,qgrad_es)
+    call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent%ewald_p3d, &
+        cent%rel,cent%gwi,cent%gwe,epot_es_bps,rgrad_es,qgrad_es)
     epot_es=epot_es_bps
     do iat=1,atoms%nat
-        rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
-        rgrad(2,iat)=rgrad_ot(2,iat)+rgrad_es(2,iat)
-        rgrad(3,iat)=rgrad_ot(3,iat)+rgrad_es(3,iat)
-        qgrad(iat)=qgrad_ot(iat)+qgrad_es(iat)
+        cent%rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
+        cent%rgrad(2,iat)=rgrad_ot(2,iat)+rgrad_es(2,iat)
+        cent%rgrad(3,iat)=rgrad_ot(3,iat)+rgrad_es(3,iat)
+        cent%qgrad(iat)=qgrad_ot(iat)+qgrad_es(iat)
     enddo
     atoms%epot=atoms%epot+epot_es
     atoms%epot=atoms%epot+ann_arr%ener_ref !CORRECT_IT

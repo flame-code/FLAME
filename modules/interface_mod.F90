@@ -388,8 +388,7 @@ end subroutine get_qat_from_chi_operator
 subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf, typ_cent
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -397,35 +396,29 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_eem2
-subroutine get_qat_from_chi2(parini,ann_arr,atoms,ewald_p3d)
+subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_cent), intent(inout):: cent
 end subroutine get_qat_from_chi2
-subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,gw_ion,gw,rgrad,qgrad)
+subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
-    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
-    real(8), intent(out):: rgrad(3,atoms%nat), qgrad(atoms%nat)
+    type(typ_cent), intent(inout):: cent
 end subroutine cal_potential_cent2
 subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,gw_ion,gw,epot_es,rgrad,qgrad)
     use mod_ann, only: typ_ann_arr
