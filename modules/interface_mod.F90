@@ -420,7 +420,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     type(typ_pia_arr), intent(in):: pia_arr
     type(typ_cent), intent(inout):: cent
 end subroutine cal_potential_cent2
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_es)
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -433,7 +433,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
     type(typ_cent), intent(inout):: cent
-    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
+    real(8), intent(inout):: epot_es
 end subroutine cal_pot_with_bps
 subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
     use mod_parini, only: typ_parini
@@ -477,21 +477,20 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     real(8), intent(inout):: pot(ngx,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat)
 end subroutine gauss_gradient
-subroutine cal_shortrange_ewald(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion,gw,rel,epot_es,rgrad,qgrad)
+subroutine cal_shortrange_ewald(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    use mod_ann, only: typ_ann_arr, typ_cent
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
-    real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
+    type(typ_cent), intent(inout):: cent
+    real(8), intent(inout):: epot_es
 end subroutine cal_shortrange_ewald
 subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     use mod_parini, only: typ_parini
