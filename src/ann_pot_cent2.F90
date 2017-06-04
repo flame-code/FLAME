@@ -293,7 +293,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     type(typ_cent), intent(inout):: cent
     !local variables
     integer:: iat
-    real(8):: epot_es, dx, dy, dz, epot_es_bps
+    real(8):: epot_es, dx, dy, dz
     real(8):: hardness, spring_const
     real(8), allocatable:: rgrad_ot(:,:)
     real(8), allocatable:: rgrad_es(:,:)
@@ -327,9 +327,8 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
         rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
         rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent%ewald_p3d, &
-        cent%rel,cent%gwi,cent%gwe,epot_es_bps,rgrad_es,qgrad_es)
-    epot_es=epot_es_bps
+    call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent, &
+        epot_es,rgrad_es,qgrad_es)
     do iat=1,atoms%nat
         cent%rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
         cent%rgrad(2,iat)=rgrad_ot(2,iat)+rgrad_es(2,iat)
@@ -345,23 +344,20 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     deallocate(qgrad_es)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,gw_ion,gw,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_es,rgrad,qgrad)
     use mod_interface
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_ann, only: typ_ann_arr, typ_cent
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
+    type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
     !local variables
     !real(8):: cell(3)
@@ -369,15 +365,14 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,
     !type(typ_ewald_p3d):: ewald_p3d
     real(8):: ehartree, pi
     real(8):: time1, time2, time3, time4, time5, time6, time7
-    real(8), allocatable:: gw_ion_t(:)
     real(8):: sqrt_one_over_twopi
     integer:: iat
     !logical:: ewald
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
-    associate(nx=>ewald_p3d%poisson_p3d%ngpx)
-    associate(ny=>ewald_p3d%poisson_p3d%ngpy)
-    associate(nz=>ewald_p3d%poisson_p3d%ngpz)
+    associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
+    associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
+    associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
     !write(*,*) nx,ny,nz
     !stop
     !ewald_p3d%poisson_p3d%ngpx=30
@@ -388,13 +383,9 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,
     !ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/nx
     !ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/ny
     !ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/nz
-    ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
+    cent%ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
     !-------------------------------------------------------
     atoms%stress=0.d0
-    allocate(gw_ion_t(atoms%nat))
-    do iat=1,atoms%nat
-        gw_ion_t(iat)=parini%alpha_ewald
-    enddo
     !-------------------------------------------------------
     !open(unit=111,file="tinput",status='old')
     !read(111,*) ewald
@@ -403,20 +394,20 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,
     !    gw_ion_t=gw_ion
     !endif
     call cpu_time(time1)
-    call put_gauss_to_grid(parini,atoms,rel,gw_ion_t,gw,ewald_p3d)
+    call put_gauss_to_grid(parini,atoms,cent%rel,cent%gwit,cent%gwe,cent%ewald_p3d)
     call cpu_time(time2)
     ehartree=0.d0
-    call cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
+    call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
     epot_es=0.d0
     do iat=1,atoms%nat
-        epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/gw_ion_t(iat)
+        epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/cent%gwit(iat)
     enddo
     epot_es=epot_es+ehartree
-    call gauss_gradient(parini,'bulk',atoms%nat,rel,atoms%cellvec,atoms%qat,gw, &
-        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%pot,rgrad,qgrad)
+    call gauss_gradient(parini,'bulk',atoms%nat,cent%rel,atoms%cellvec,atoms%qat,cent%gwe, &
+        cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,rgrad,qgrad)
 
     !if(ewald) then
-    call cal_shortrange_ewald(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion,gw,rel,epot_es,rgrad,qgrad)
+    call cal_shortrange_ewald(parini,ann_arr,atoms,linked_lists,pia_arr,cent%gwi,cent%gwe,cent%rel,epot_es,rgrad,qgrad)
     !endif
     !gw_ion_t
 

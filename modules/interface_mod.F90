@@ -420,22 +420,19 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     type(typ_pia_arr), intent(in):: pia_arr
     type(typ_cent), intent(inout):: cent
 end subroutine cal_potential_cent2
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,ewald_p3d,rel,gw_ion,gw,epot_es,rgrad,qgrad)
+subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_es,rgrad,qgrad)
     use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_ann, only: typ_ann_arr, typ_cent
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
+    type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es, rgrad(3,atoms%nat), qgrad(atoms%nat)
 end subroutine cal_pot_with_bps
 subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
