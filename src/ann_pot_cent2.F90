@@ -182,9 +182,9 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
-    allocate(cent%rgrad(3,atoms%nat))
-    allocate(cent%qgrad(atoms%nat))
-    allocate(cent%rel(3,atoms%nat))
+    cent%rgrad=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rgrad')
+    cent%qgrad=f_malloc0([1.to.atoms%nat],id='cent%qgrad')
+    cent%rel=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rel')
 
     do iat=1,atoms%nat
         call random_number(ttrand)
@@ -267,9 +267,9 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     call f_free(linked_lists%prime_bound)
     call f_free(linked_lists%bound_rad)
     call f_free(linked_lists%bound_ang)
-    deallocate(cent%rgrad)
-    deallocate(cent%qgrad)
-    deallocate(cent%rel)
+    call f_free(cent%rgrad)
+    call f_free(cent%qgrad)
+    call f_free(cent%rel)
     deallocate(cent%gwi)
     deallocate(cent%gwe)
     deallocate(cent%gwit)
@@ -295,10 +295,6 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     integer:: iat
     real(8):: epot_es, dx, dy, dz
     real(8):: hardness, spring_const
-    real(8), allocatable:: rgrad_ot(:,:)
-    real(8), allocatable:: rgrad_es(:,:)
-    real(8), allocatable:: qgrad_ot(:)
-    real(8), allocatable:: qgrad_es(:)
     if(trim(atoms%boundcond)/='bulk') then
         write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
         stop
@@ -307,41 +303,29 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     do iat=1,atoms%nat
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
     enddo
-    allocate(rgrad_ot(3,atoms%nat),source=0.d0)
-    allocate(rgrad_es(3,atoms%nat),source=0.d0)
-    allocate(qgrad_ot(atoms%nat),source=0.d0)
-    allocate(qgrad_es(atoms%nat),source=0.d0)
     ann_arr%ann(atoms%itypat(1:atoms%nat))%spring_const=1.d0 !CORRECT_IT
     atoms%epot=0.d0
+    cent%qgrad=0.d0
+    cent%rgrad=0.d0
     do iat=1,atoms%nat !summation over ions/electrons
         atoms%epot=atoms%epot+ann_arr%chi_o(iat)*(atoms%zat(iat)+atoms%qat(iat))
         hardness=ann_arr%ann(atoms%itypat(iat))%hardness
         atoms%epot=atoms%epot+0.5d0*hardness*(atoms%zat(iat)+atoms%qat(iat))**2
-        qgrad_ot(iat)=qgrad_ot(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
+        cent%qgrad(iat)=cent%qgrad(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
         dx=cent%rel(1,iat)-atoms%rat(1,iat)
         dy=cent%rel(2,iat)-atoms%rat(2,iat)
         dz=cent%rel(3,iat)-atoms%rat(3,iat)
         spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
         atoms%epot=atoms%epot+0.5d0*spring_const*(dx**2+dy**2+dz**2)
-        rgrad_ot(1,iat)=rgrad_ot(1,iat)+spring_const*dx
-        rgrad_ot(2,iat)=rgrad_ot(2,iat)+spring_const*dy
-        rgrad_ot(3,iat)=rgrad_ot(3,iat)+spring_const*dz
+        cent%rgrad(1,iat)=cent%rgrad(1,iat)+spring_const*dx
+        cent%rgrad(2,iat)=cent%rgrad(2,iat)+spring_const*dy
+        cent%rgrad(3,iat)=cent%rgrad(3,iat)+spring_const*dz
     enddo
     call cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent, &
-        epot_es,rgrad_es,qgrad_es)
-    do iat=1,atoms%nat
-        cent%rgrad(1,iat)=rgrad_ot(1,iat)+rgrad_es(1,iat)
-        cent%rgrad(2,iat)=rgrad_ot(2,iat)+rgrad_es(2,iat)
-        cent%rgrad(3,iat)=rgrad_ot(3,iat)+rgrad_es(3,iat)
-        cent%qgrad(iat)=qgrad_ot(iat)+qgrad_es(iat)
-    enddo
+        epot_es,cent%rgrad,cent%qgrad)
     atoms%epot=atoms%epot+epot_es
     atoms%epot=atoms%epot+ann_arr%ener_ref !CORRECT_IT
     write(*,*) 'EPOT================= ',atoms%epot,ann_arr%ener_ref
-    deallocate(rgrad_ot)
-    deallocate(rgrad_es)
-    deallocate(qgrad_ot)
-    deallocate(qgrad_es)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
 subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_es,rgrad,qgrad)
@@ -373,16 +357,6 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_
     associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
-    !write(*,*) nx,ny,nz
-    !stop
-    !ewald_p3d%poisson_p3d%ngpx=30
-    !ewald_p3d%poisson_p3d%ngpy=30
-    !ewald_p3d%poisson_p3d%ngpz=30
-    !ewald_p3d%poisson_p3d%rho=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='rho')
-    !ewald_p3d%poisson_p3d%pot=f_malloc([1.to.nx,1.to.ny,1.to.nz],id='pot')
-    !ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/nx
-    !ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/ny
-    !ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/nz
     cent%ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
     !-------------------------------------------------------
     atoms%stress=0.d0
@@ -840,8 +814,6 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     enddo
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
-    rgrad(1:3,1:nat)=0.d0
-    qgrad(1:nat)=0.d0
     do iat=1,nat
         gwsq_inv=1.d0/gw(iat)**2
         fac=1.d0/(gw(iat)*sqrt(pi))**3
@@ -875,10 +847,10 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
                 enddo
             enddo
         enddo
-        qgrad(iat)=ttq*vol_voxel
-        rgrad(1,iat)=ttx*vol_voxel
-        rgrad(2,iat)=tty*vol_voxel
-        rgrad(3,iat)=ttz*vol_voxel
+        qgrad(iat)=qgrad(iat)+ttq*vol_voxel
+        rgrad(1,iat)=rgrad(1,iat)+ttx*vol_voxel
+        rgrad(2,iat)=rgrad(2,iat)+tty*vol_voxel
+        rgrad(3,iat)=rgrad(3,iat)+ttz*vol_voxel
     enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
