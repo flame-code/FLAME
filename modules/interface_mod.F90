@@ -406,6 +406,31 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
 end subroutine get_qat_from_chi2
+subroutine init_cent2(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine init_cent2
+subroutine final_cent2(cent)
+    use mod_ann, only: typ_cent
+    implicit none
+    type(typ_cent), intent(inout):: cent
+end subroutine final_cent2
+subroutine cent2_force(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine cent2_force
 subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent

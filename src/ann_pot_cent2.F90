@@ -171,56 +171,8 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     !local variables
     integer:: iter, iat, niter
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
-    real(8):: qtot, qtot_ion, qtot_ele
-    real(8):: ttrand(3)
-    real(8):: zion, spring_const, dx, dy, dz
-    associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
-    associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
-    associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
-    !call init_cent2(parini,linked_lists)
-    cent%rgrad=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rgrad')
-    cent%qgrad=f_malloc0([1.to.atoms%nat],id='cent%qgrad')
-    cent%rel=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rel')
-    cent%gwe=f_malloc0([1.to.atoms%nat],id='cent%gwe')
-    cent%gwi=f_malloc0([1.to.atoms%nat],id='cent%gwi')
-    cent%gwit=f_malloc0([1.to.atoms%nat],id='cent%gwit')
-
-    do iat=1,atoms%nat
-        call random_number(ttrand)
-        cent%rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
-    enddo
-
-    cent%ewald_p3d%linked_lists%rcut=15.d0
-    write(*,*) 'short range at cut-off: ', &
-        erfc(cent%ewald_p3d%linked_lists%rcut/(sqrt(2.d0)*parini%alpha_ewald)) !CORRECT_IT
-    !This linked list is used for the short range part of the Ewald.
-    call call_linkedlist(parini,atoms,.false.,cent%ewald_p3d%linked_lists,cent%ewald_p3d%pia_arr)
-
-    do iat=1,atoms%nat
-        zion=ann_arr%ann(atoms%itypat(iat))%zion
-        atoms%zat(iat)=zion
-        if(trim(atoms%sat(iat))=='Zr') atoms%qat(iat)= 1.6d0-zion
-        if(trim(atoms%sat(iat))=='O' ) atoms%qat(iat)=-0.8d0-zion
-        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.8d0-zion
-        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.8d0-zion
-        if(trim(atoms%sat(iat))=='W' ) atoms%qat(iat)= 0.6d0-zion
-        if(trim(atoms%sat(iat))=='S' ) atoms%qat(iat)=-0.6d0-zion
-        !write(*,'(i,3f8.2)') iat,atoms%zat(iat),atoms%qat(iat),atoms%zat(iat)+atoms%qat(iat)
-    enddo
-    !write(*,*) sum(atoms%zat(1:atoms%nat))
-    !write(*,*) sum(atoms%qat(1:atoms%nat))
-    qtot_ion=sum(atoms%zat(1:atoms%nat))
-    qtot_ele=sum(atoms%qat(1:atoms%nat))
-    qtot=qtot_ion+qtot_ele
-    write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
-        qtot_ion,qtot_ele,qtot
-    do iat=1,atoms%nat
-        cent%gwit(iat)=parini%alpha_ewald
-    enddo
-    do iat=1,atoms%nat
-        cent%gwi(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-        cent%gwe(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
-    enddo
+    real(8):: ttrand(3), qtot
+    call init_cent2(parini,ann_arr,atoms,cent)
     niter=200
     do iter=0,niter
         call cal_potential_cent2(parini,ann_arr,atoms,cent)
@@ -251,6 +203,105 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     enddo
     write(*,'(a,i5,2f8.3)') 'DISP ',iter,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
 
+    call cent2_force(parini,ann_arr,atoms,cent)
+
+    call charge_analysis(parini,atoms,ann_arr)
+    call final_cent2(cent)
+end subroutine get_qat_from_chi2
+!*****************************************************************************************
+subroutine init_cent2(parini,ann_arr,atoms,cent)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    !local variables
+    integer:: iat
+    real(8):: qtot, qtot_ion, qtot_ele
+    real(8):: ttrand(3)
+    real(8):: zion
+    cent%rgrad=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rgrad')
+    cent%qgrad=f_malloc0([1.to.atoms%nat],id='cent%qgrad')
+    cent%rel=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rel')
+    cent%gwe=f_malloc0([1.to.atoms%nat],id='cent%gwe')
+    cent%gwi=f_malloc0([1.to.atoms%nat],id='cent%gwi')
+    cent%gwit=f_malloc0([1.to.atoms%nat],id='cent%gwit')
+
+    do iat=1,atoms%nat
+        call random_number(ttrand)
+        cent%rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
+    enddo
+
+    cent%ewald_p3d%linked_lists%rcut=15.d0
+    write(*,*) 'short range at cut-off: ', &
+        erfc(cent%ewald_p3d%linked_lists%rcut/(sqrt(2.d0)*parini%alpha_ewald)) !CORRECT_IT
+    !This linked list is used for the short range part of the Ewald.
+    call call_linkedlist(parini,atoms,.false.,cent%ewald_p3d%linked_lists,cent%ewald_p3d%pia_arr)
+
+    do iat=1,atoms%nat
+        zion=ann_arr%ann(atoms%itypat(iat))%zion
+        atoms%zat(iat)=zion
+        if(trim(atoms%sat(iat))=='Zr') atoms%qat(iat)= 1.6d0-zion
+        if(trim(atoms%sat(iat))=='O' ) atoms%qat(iat)=-0.8d0-zion
+        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.8d0-zion
+        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.8d0-zion
+        if(trim(atoms%sat(iat))=='W' ) atoms%qat(iat)= 0.6d0-zion
+        if(trim(atoms%sat(iat))=='S' ) atoms%qat(iat)=-0.6d0-zion
+        !write(*,'(i,3f8.2)') iat,atoms%zat(iat),atoms%qat(iat),atoms%zat(iat)+atoms%qat(iat)
+    enddo
+    qtot_ion=sum(atoms%zat(1:atoms%nat))
+    qtot_ele=sum(atoms%qat(1:atoms%nat))
+    qtot=qtot_ion+qtot_ele
+    write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
+        qtot_ion,qtot_ele,qtot
+    do iat=1,atoms%nat
+        cent%gwi(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
+        cent%gwe(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
+        cent%gwit(iat)=parini%alpha_ewald
+    enddo
+end subroutine init_cent2
+!*****************************************************************************************
+subroutine final_cent2(cent)
+    use mod_interface
+    use mod_ann, only: typ_cent
+    use dynamic_memory
+    implicit none
+    type(typ_cent), intent(inout):: cent
+    !local variables
+    call f_free(cent%ewald_p3d%linked_lists%prime_bound)
+    call f_free(cent%ewald_p3d%linked_lists%bound_rad)
+    call f_free(cent%ewald_p3d%linked_lists%bound_ang)
+    deallocate(cent%ewald_p3d%pia_arr%pia)
+    call f_free(cent%rgrad)
+    call f_free(cent%qgrad)
+    call f_free(cent%rel)
+    call f_free(cent%gwi)
+    call f_free(cent%gwe)
+    call f_free(cent%gwit)
+end subroutine final_cent2
+!*****************************************************************************************
+subroutine cent2_force(parini,ann_arr,atoms,cent)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    !local variables
+    integer:: iat
+    real(8):: spring_const, dx, dy, dz
+    associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
+    associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
+    associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
     call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
         cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
     call cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
@@ -263,22 +314,10 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         atoms%fat(2,iat)=atoms%fat(2,iat)+spring_const*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+spring_const*dz
     enddo
-
-    call charge_analysis(parini,atoms,ann_arr)
-    call f_free(cent%ewald_p3d%linked_lists%prime_bound)
-    call f_free(cent%ewald_p3d%linked_lists%bound_rad)
-    call f_free(cent%ewald_p3d%linked_lists%bound_ang)
-    deallocate(cent%ewald_p3d%pia_arr%pia)
-    call f_free(cent%rgrad)
-    call f_free(cent%qgrad)
-    call f_free(cent%rel)
-    call f_free(cent%gwi)
-    call f_free(cent%gwe)
-    call f_free(cent%gwit)
     end associate
     end associate
     end associate
-end subroutine get_qat_from_chi2
+end subroutine cent2_force
 !*****************************************************************************************
 subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     use mod_interface
