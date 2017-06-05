@@ -252,8 +252,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
         cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
 
-    call cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr, &
-        cent%gwi,cent%gwe,cent%rel)
+    call cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     do iat=1,atoms%nat !summation over ions/electrons
         dx=cent%rel(1,iat)-atoms%rat(1,iat)
         dy=cent%rel(2,iat)-atoms%rat(2,iat)
@@ -364,7 +363,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_
     !    gw_ion_t=gw_ion
     !endif
     call cpu_time(time1)
-    call put_gauss_to_grid(parini,atoms,cent%rel,cent%gwit,cent%gwe,cent%ewald_p3d)
+    call put_gauss_to_grid(parini,atoms,cent)
     call cpu_time(time2)
     ehartree=0.d0
     call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
@@ -392,30 +391,26 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_
     end associate
 end subroutine cal_pot_with_bps
 !*****************************************************************************************
-subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
+subroutine put_gauss_to_grid(parini,atoms,cent)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_ann, only: typ_cent
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_cent), intent(inout):: cent
     !local variables
     character(10):: bc
     integer:: nx, ny, nz
-    nx=ewald_p3d%poisson_p3d%ngpx
-    ny=ewald_p3d%poisson_p3d%ngpy
-    nz=ewald_p3d%poisson_p3d%ngpz
-    ewald_p3d%poisson_p3d%rho=0.d0
+    nx=cent%ewald_p3d%poisson_p3d%ngpx
+    ny=cent%ewald_p3d%poisson_p3d%ngpy
+    nz=cent%ewald_p3d%poisson_p3d%ngpz
     bc=trim(atoms%boundcond)
-    call gauss_grid(parini,bc,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gw_ion, &
-        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
-    call gauss_grid(parini,bc,.false.,atoms%nat,rel,atoms%cellvec,atoms%qat,gw    , &
-        ewald_p3d%rgcut,nx,ny,nz,ewald_p3d%poisson_p3d%rho)
+    call gauss_grid(parini,bc,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat, &
+        cent%gwit,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+    call gauss_grid(parini,bc,.false.,atoms%nat,cent%rel,atoms%cellvec,atoms%qat, &
+        cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
 end subroutine put_gauss_to_grid
 !*****************************************************************************************
 subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
@@ -1181,10 +1176,10 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     call f_free(wm)
 end subroutine gauss_force
 !*****************************************************************************************
-subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion,gw,rel)
+subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
@@ -1193,9 +1188,7 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
-    real(8), intent(in):: rel(3,atoms%nat)
+    type(typ_cent), intent(inout):: cent
     !local variables
     integer:: iat, jat, ib
     real(8):: alpha, gama, dx, dy, dz, r, pi, vol, shift
@@ -1213,7 +1206,7 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
         dy=pia_arr%pia(ib)%dr(2)
         dz=pia_arr%pia(ib)%dr(3)
         r=sqrt(dx*dx+dy*dy+dz*dz)
-        gama=1.d0/sqrt(gw_ion(iat)**2+gw_ion(jat)**2)
+        gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt21=atoms%zat(iat)*atoms%zat(jat)*ee1
         !---------------------------------------------------
@@ -1228,15 +1221,15 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
         atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
-        dx=pia_arr%pia(ib)%dr(1)+rel(1,jat)-atoms%rat(1,jat)
-        dy=pia_arr%pia(ib)%dr(2)+rel(2,jat)-atoms%rat(2,jat)
-        dz=pia_arr%pia(ib)%dr(3)+rel(3,jat)-atoms%rat(3,jat)
+        dx=pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%rat(1,jat)
+        dy=pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%rat(2,jat)
+        dz=pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%rat(3,jat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
-        gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+        gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt21=atoms%zat(iat)*atoms%qat(jat)*ee1
         !-------------------------------------------
-        gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+        gama=1.d0/sqrt(alpha**2+cent%gwe(jat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt22=-atoms%zat(iat)*atoms%qat(jat)*ee1
         !-------------------------------------------
@@ -1244,15 +1237,15 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
         atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
-        dx=-pia_arr%pia(ib)%dr(1)+rel(1,iat)-atoms%rat(1,iat)
-        dy=-pia_arr%pia(ib)%dr(2)+rel(2,iat)-atoms%rat(2,iat)
-        dz=-pia_arr%pia(ib)%dr(3)+rel(3,iat)-atoms%rat(3,iat)
+        dx=-pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%rat(1,iat)
+        dy=-pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%rat(2,iat)
+        dz=-pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
-        gama=1.d0/sqrt(gw_ion(jat)**2+gw(iat)**2)
+        gama=1.d0/sqrt(cent%gwi(jat)**2+cent%gwe(iat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt21=atoms%zat(jat)*atoms%qat(iat)*ee1
         !-------------------------------------------
-        gama=1.d0/sqrt(alpha**2+gw(iat)**2)
+        gama=1.d0/sqrt(alpha**2+cent%gwe(iat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
         tt22=-atoms%zat(jat)*atoms%qat(iat)*ee1
         !-------------------------------------------
@@ -1263,28 +1256,28 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
     enddo
     do iat=1,atoms%nat
         jat=iat
-        dx=rel(1,jat)-atoms%rat(1,iat)
-        dy=rel(2,jat)-atoms%rat(2,iat)
-        dz=rel(3,jat)-atoms%rat(3,iat)
+        dx=cent%rel(1,jat)-atoms%rat(1,iat)
+        dy=cent%rel(2,jat)-atoms%rat(2,iat)
+        dz=cent%rel(3,jat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         if(r>0.9d0) then
             write(*,'(a,es14.5)') 'ERROR: Center of electron far from atom: r= ',r
             stop
         endif
         if(r<0.1d0) then
-            gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+            gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jat)**2)
             call erf_over_r_taylor(gama*r,tt1,ttg)
             tt21=atoms%zat(iat)*atoms%qat(jat)*gama**3*ttg
             !-------------------------------------------
-            gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+            gama=1.d0/sqrt(alpha**2+cent%gwe(jat)**2)
             call erf_over_r_taylor(gama*r,tt1,ttg)
             tt22=-atoms%zat(iat)*atoms%qat(jat)*gama**3*ttg
         else
-            gama=1.d0/sqrt(gw_ion(iat)**2+gw(jat)**2)
+            gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jat)**2)
             ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
             tt21=atoms%zat(iat)*atoms%qat(jat)*ee1
             !-------------------------------------------
-            gama=1.d0/sqrt(alpha**2+gw(jat)**2)
+            gama=1.d0/sqrt(alpha**2+cent%gwe(jat)**2)
             ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
             tt22=-atoms%zat(iat)*atoms%qat(jat)*ee1
         endif

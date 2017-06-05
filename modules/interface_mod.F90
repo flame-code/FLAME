@@ -435,17 +435,14 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,linked_lists,pia_arr,cent,epot_
     type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es
 end subroutine cal_pot_with_bps
-subroutine put_gauss_to_grid(parini,atoms,rel,gw_ion,gw,ewald_p3d)
+subroutine put_gauss_to_grid(parini,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_ann, only: typ_cent
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: rel(3,atoms%nat)
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_cent), intent(inout):: cent
 end subroutine put_gauss_to_grid
 subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     use mod_parini, only: typ_parini
@@ -507,9 +504,9 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     real(8), intent(inout):: pot(ngx,ngy,ngz)
     real(8), intent(out):: fat(3,nat)
 end subroutine gauss_force
-subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,gw_ion,gw,rel)
+subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,cent)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
@@ -518,9 +515,7 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,linked_lists,pia_arr,
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    real(8), intent(in):: gw_ion(atoms%nat)
-    real(8), intent(in):: gw(atoms%nat)
-    real(8), intent(in):: rel(3,atoms%nat)
+    type(typ_cent), intent(inout):: cent
 end subroutine cal_shortrange_ewald_force
 subroutine erf_over_r_taylor(r,funcval,funcval_der)
     implicit none
