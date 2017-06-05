@@ -77,6 +77,7 @@ module mod_parini
         character(50):: symfunc_type_ann='behler'
         character(50):: symfunc='only_calculate'
         integer:: nstep_ekf=100
+        integer:: nstep_cep=200
         integer:: nat_force=0
         real(8):: ampl_rand=1.d0
         real(8):: etol_ann !the tolerance difference of energies of two configuration

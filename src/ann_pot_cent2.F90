@@ -169,14 +169,13 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
     !local variables
-    integer:: iter, iat, niter
+    integer:: istep, iat
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
     real(8):: ttrand(3), qtot
     call init_cent2(parini,ann_arr,atoms,cent)
-    niter=200
-    do iter=0,niter
+    do istep=0,parini%nstep_cep
         call cal_potential_cent2(parini,ann_arr,atoms,cent)
-        if(iter==0) epot_old=atoms%epot
+        if(istep==0) epot_old=atoms%epot
         de=atoms%epot-epot_old
         gnrm=sqrt(sum(cent%rgrad**2))
         gtot=sum(cent%qgrad(1:atoms%nat))
@@ -184,15 +183,18 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         gnrm2=sqrt(sum(cent%qgrad(1:atoms%nat)**2))
         qtot=sum(atoms%zat(1:atoms%nat))+sum(atoms%qat(1:atoms%nat))
         q1=atoms%zat(1)+atoms%qat(1)
-        write(*,'(a,i5,es24.15,3es11.2,2f8.3)') 'iter,epot,gnrm ',iter,atoms%epot,de,gnrm,gnrm2,q1,qtot
-        !write(41,'(a,i5,6f17.10,es14.5)') 'iter,dis ',iter,rel(1:3,1)-atoms%rat(1:3,1),rel(1:3,2)-atoms%rat(1:3,2),gnrm
-        write(51,'(i5,2f8.3)') iter,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+        write(*,'(a,i5,es24.15,3es11.2,2f8.3)') 'istep,epot,gnrm ',istep,atoms%epot,de,gnrm,gnrm2,q1,qtot
+        !write(41,'(a,i5,6f17.10,es14.5)') 'istep,dis ',istep,rel(1:3,1)-atoms%rat(1:3,1),rel(1:3,2)-atoms%rat(1:3,2),gnrm
+        write(51,'(i5,2f8.3)') istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
         if(gnrm<5.d-4 .and. gnrm2<1.d-3) then
             write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
-                iter,atoms%epot,gnrm,gnrm2,q1,qtot
+                istep,atoms%epot,gnrm,gnrm2,q1,qtot
             exit
         endif
-        if(iter==niter) exit
+        if(istep==parini%nstep_cep) then
+            write(*,'(a)') 'CEP did not converge, FLAME will stop.'
+            stop
+        endif
         do iat=1,atoms%nat
             cent%rel(1,iat)=cent%rel(1,iat)-5.d-1*cent%rgrad(1,iat)
             cent%rel(2,iat)=cent%rel(2,iat)-5.d-1*cent%rgrad(2,iat)
@@ -201,7 +203,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         enddo
         epot_old=atoms%epot
     enddo
-    write(*,'(a,i5,2f8.3)') 'DISP ',iter,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+    write(*,'(a,i5,2f8.3)') 'DISP ',istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
 
     call cent2_force(parini,ann_arr,atoms,cent)
 
