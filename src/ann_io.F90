@@ -98,6 +98,7 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
         read(ann%hlines(3),*) str1,ann%ampl_chi,str2,ann%prefactor_chi
         read(ann%hlines(4),*) str1,ann%zion,str2,ann%gausswidth_ion,str3,ann%ener_ref
         read(ann%hlines(5),*) str1,ann%gausswidth,str2,ann%hardness,str3,ann%chi0
+        read(ann%hlines(6),*) str1,ann%spring_const
     elseif(trim(parini%approach_ann)=='tb') then
         read(ann%hlines(4),*) str3,ann%ener_ref
     endif

@@ -380,7 +380,6 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     do iat=1,atoms%nat
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
     enddo
-    ann_arr%ann(atoms%itypat(1:atoms%nat))%spring_const=1.d0 !CORRECT_IT
     atoms%epot=0.d0
     cent%qgrad=0.d0
     cent%rgrad=0.d0
