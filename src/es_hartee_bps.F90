@@ -204,9 +204,12 @@ subroutine set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
     ewald_p3d%poisson_p3d%ngpz=max(20,ndim(3))
     !write(*,*) ndim(:)
     !stop
-    ewald_p3d%hgx=cell(1)/real(ewald_p3d%poisson_p3d%ngpx,8)
-    ewald_p3d%hgy=cell(2)/real(ewald_p3d%poisson_p3d%ngpy,8)
-    ewald_p3d%hgz=cell(3)/real(ewald_p3d%poisson_p3d%ngpz,8)
+    ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/real(ewald_p3d%poisson_p3d%ngpx,8)
+    ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/real(ewald_p3d%poisson_p3d%ngpy,8)
+    ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/real(ewald_p3d%poisson_p3d%ngpz,8)
+    !ewald_p3d%hgx=cell(1)/real(ewald_p3d%poisson_p3d%ngpx,8)
+    !ewald_p3d%hgy=cell(2)/real(ewald_p3d%poisson_p3d%ngpy,8)
+    !ewald_p3d%hgz=cell(3)/real(ewald_p3d%poisson_p3d%ngpz,8)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
