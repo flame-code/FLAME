@@ -172,20 +172,37 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     integer:: istep, iat
     real(8):: gnrm, epot_old, de, gnrm2, gtot, q1
     real(8):: ttrand(3), qtot
+    real(8):: alpha_q, alpha_r, cos_angle_r, cos_angle_q, DDOT, tt1, tt2, tt3
+    real(8), allocatable:: qgrad_old(:)
+    real(8), allocatable:: rgrad_old(:,:)
+    real(8), allocatable:: qat_old(:)
+    real(8), allocatable:: rel_old(:,:)
     call init_cent2(parini,ann_arr,atoms,cent)
+    allocate(qgrad_old(atoms%nat),rgrad_old(3,atoms%nat))
+    allocate(qat_old(atoms%nat),rel_old(3,atoms%nat))
+    alpha_q=2.d-1
+    alpha_r=2.d-1
     do istep=0,parini%nstep_cep
         call cal_potential_cent2(parini,ann_arr,atoms,cent)
-        if(istep==0) epot_old=atoms%epot
-        de=atoms%epot-epot_old
         gnrm=sqrt(sum(cent%rgrad**2))
         gtot=sum(cent%qgrad(1:atoms%nat))
         cent%qgrad(1:atoms%nat)=cent%qgrad(1:atoms%nat)-gtot/atoms%nat
         gnrm2=sqrt(sum(cent%qgrad(1:atoms%nat)**2))
         qtot=sum(atoms%zat(1:atoms%nat))+sum(atoms%qat(1:atoms%nat))
         q1=atoms%zat(1)+atoms%qat(1)
-        write(*,'(a,i5,es24.15,3es11.2,2f8.3)') 'istep,epot,gnrm ',istep,atoms%epot,de,gnrm,gnrm2,q1,qtot
-        !write(41,'(a,i5,6f17.10,es14.5)') 'istep,dis ',istep,rel(1:3,1)-atoms%rat(1:3,1),rel(1:3,2)-atoms%rat(1:3,2),gnrm
-        write(51,'(i5,2f8.3)') istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+        if(istep==0) then
+            epot_old=atoms%epot
+            rgrad_old=cent%rgrad
+            qgrad_old=cent%qgrad
+            rel_old=cent%rel
+            qat_old=atoms%qat
+        endif
+        de=atoms%epot-epot_old
+        if(parini%iverbose>=2) then
+            write(*,'(a,i5,es24.15,3es11.2,4f8.3)') 'cep: ', &
+                istep,atoms%epot,de,gnrm,gnrm2,q1,qtot,alpha_r,alpha_q
+            write(51,'(i5,2f8.3)') istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+        endif
         if(gnrm<5.d-4 .and. gnrm2<1.d-3) then
             write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
                 istep,atoms%epot,gnrm,gnrm2,q1,qtot
@@ -195,15 +212,35 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
             write(*,'(a)') 'CEP did not converge, FLAME will stop.'
             stop
         endif
+        tt1=DDOT(3*atoms%nat,cent%rgrad,1,rgrad_old,1)
+        tt2=DDOT(3*atoms%nat,cent%rgrad,1,cent%rgrad,1)
+        tt3=DDOT(3*atoms%nat,rgrad_old,1,rgrad_old,1)
+        cos_angle_r=tt1/sqrt(tt2*tt3)
+        tt1=DDOT(atoms%nat,cent%qgrad,1,qgrad_old,1)
+        tt2=DDOT(atoms%nat,cent%qgrad,1,cent%qgrad,1)
+        tt3=DDOT(atoms%nat,qgrad_old,1,qgrad_old,1)
+        cos_angle_q=tt1/sqrt(tt2*tt3)
+        !write(*,*) 'ANG ',cos_angle_r,cos_angle_q
+        if(cos_angle_r>0.5d0 .and. cos_angle_q>0.5d0) then
+            alpha_q=alpha_q*1.05d0
+            alpha_r=alpha_r*1.05d0
+        else
+            alpha_q=alpha_q*0.5d0
+            alpha_r=alpha_r*0.5d0
+        endif
         do iat=1,atoms%nat
-            cent%rel(1,iat)=cent%rel(1,iat)-5.d-1*cent%rgrad(1,iat)
-            cent%rel(2,iat)=cent%rel(2,iat)-5.d-1*cent%rgrad(2,iat)
-            cent%rel(3,iat)=cent%rel(3,iat)-5.d-1*cent%rgrad(3,iat)
-            atoms%qat(iat)=atoms%qat(iat)-1.0d0*cent%qgrad(iat)
+            cent%rel(1,iat)=cent%rel(1,iat)-alpha_r*cent%rgrad(1,iat)
+            cent%rel(2,iat)=cent%rel(2,iat)-alpha_r*cent%rgrad(2,iat)
+            cent%rel(3,iat)=cent%rel(3,iat)-alpha_r*cent%rgrad(3,iat)
+            atoms%qat(iat)=atoms%qat(iat)-alpha_q*cent%qgrad(iat)
         enddo
         epot_old=atoms%epot
+        rgrad_old=cent%rgrad
+        qgrad_old=cent%qgrad
+        rel_old=cent%rel
+        qat_old=atoms%qat
     enddo
-    write(*,'(a,i5,2f8.3)') 'DISP ',istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+    !write(*,'(a,i5,2f8.3)') 'DISP ',istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
 
     call cent2_force(parini,ann_arr,atoms,cent)
 
@@ -239,7 +276,7 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
         cent%rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
-    cent%ewald_p3d%linked_lists%rcut=15.d0
+    cent%ewald_p3d%linked_lists%rcut=12.d0
     write(*,*) 'short range at cut-off: ', &
         erfc(cent%ewald_p3d%linked_lists%rcut/(sqrt(2.d0)*parini%alpha_ewald)) !CORRECT_IT
     !This linked list is used for the short range part of the Ewald.
