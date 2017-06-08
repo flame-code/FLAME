@@ -83,6 +83,7 @@ module mod_parini
         real(8):: etol_ann !the tolerance difference of energies of two configuration
         real(8):: dtol_ann !distance between two FP
         logical:: normalization_ann=.false.
+        logical:: prefit_ann=.false.
 
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]

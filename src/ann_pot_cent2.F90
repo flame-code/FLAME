@@ -13,7 +13,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
     !local variables
     type(typ_cent):: cent
-    integer:: iat, i, j, ng
+    integer:: iat, i, j, ng, ia
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
@@ -153,6 +153,10 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
+        do ia=1,ann_arr%n
+            ekf%g(ekf%loc(ia)+ekf%num(1)-1)=0.d0
+            !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        enddo
     endif
     call f_release_routine()
 end subroutine cal_ann_eem2
@@ -276,7 +280,7 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
         cent%rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
-    cent%ewald_p3d%linked_lists%rcut=12.d0
+    cent%ewald_p3d%linked_lists%rcut=parini%rcut_ewald
     write(*,*) 'short range at cut-off: ', &
         erfc(cent%ewald_p3d%linked_lists%rcut/(sqrt(2.d0)*parini%alpha_ewald)) !CORRECT_IT
     !This linked list is used for the short range part of the Ewald.

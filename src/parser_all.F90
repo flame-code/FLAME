@@ -286,6 +286,7 @@ subroutine get_ann_parameters(file_ini,parini)
         call get_one_param(file_ini,'dtol',real_var=parini%dtol_ann)
         call get_one_param(file_ini,'normalization',log_var=parini%normalization_ann)
         call get_one_param(file_ini,'bondbased',log_var=parini%bondbased_ann)
+        call get_one_param(file_ini,'prefit',log_var=parini%prefit_ann)
     enddo
 end subroutine get_ann_parameters
 !*****************************************************************************************
