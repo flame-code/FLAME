@@ -61,3 +61,49 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     endif
 end subroutine cal_ann_main
 !*****************************************************************************************
+subroutine pre_train(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+    type(typ_atoms_arr), intent(inout):: atoms_train
+    type(typ_atoms_arr), intent(inout):: atoms_valid
+    type(typ_ekf), intent(inout):: ekf
+    !local variables
+    type(typ_atoms):: atoms
+    integer:: iconf, istep, iat, ia
+    real(8):: anat(100), g(100), rmse
+    !return
+    ann_arr%event='evalu'
+    do ia=1,ann_arr%n
+        call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+    enddo
+    do istep=1,50
+        rmse=0.d0
+        g=0.d0
+        do iconf=1,atoms_train%nconf
+            call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
+            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+            rmse=rmse+((symfunc_train%symfunc(iconf)%epot-atoms%epot)/atoms%nat)**2
+            anat=0.d0
+            do iat=1,atoms%nat
+                anat(atoms%itypat(iat))=anat(atoms%itypat(iat))+1.d0
+            enddo
+            do ia=1,ann_arr%n
+                g(ia)=g(ia)+2.d0*anat(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
+            enddo
+        enddo
+        rmse=sqrt(rmse/atoms_train%nconf)
+        write(*,'(a,i4,3es19.10)') 'pretrain: ',istep,rmse*1.d3, &
+            ann_arr%ann(1)%ener_ref,ann_arr%ann(2)%ener_ref
+        do ia=1,ann_arr%n
+            ann_arr%ann(ia)%ener_ref=ann_arr%ann(ia)%ener_ref-2.d-2*g(ia)
+        enddo
+    enddo
+    !stop
+end subroutine pre_train
+!*****************************************************************************************

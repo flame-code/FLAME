@@ -580,6 +580,18 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_main
+subroutine pre_train(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+    type(typ_atoms_arr), intent(inout):: atoms_train
+    type(typ_atoms_arr), intent(inout):: atoms_valid
+    type(typ_ekf), intent(inout):: ekf
+end subroutine pre_train
 ! ./src/ann_pot_tb.F90 :
 subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     use mod_parini, only: typ_parini

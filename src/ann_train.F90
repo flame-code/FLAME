@@ -96,6 +96,9 @@ subroutine ann_train(parini)
     else
         ann_arr%compute_symfunc=.true.
     endif
+    if(trim(parini%approach_ann)=='cent2') then
+        call pre_train(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    endif
     if(trim(parini%optimizer_ann)=='behler') then
         call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     else if(trim(parini%optimizer_ann)=='rivals') then
