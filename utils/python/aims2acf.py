@@ -178,6 +178,18 @@ if lastconf:
     atoms_lastconf[-1]=copy.copy(atoms_all[-1])
     #writing last configuration into file
     acf_write(atoms_lastconf,args.fn_output)
+    #writing atomic forces
+    nconf = 1
+    filename_force="force_"+args.fn_output
+    f=open(filename_force,"w")
+    tt=27.211385/0.52917721
+    f.write("configuration %5.5d\n" % (nconf))
+    for iat in range(atoms.nat):
+        fx=atoms.fat[iat][0]/tt
+        fy=atoms.fat[iat][1]/tt
+        fz=atoms.fat[iat][2]/tt
+        #f.write("%17.8f%17.8f%17.8f\n" % (fx,fy,fz))
+        f.write("%19.10E%19.10E%19.10E\n" % (fx,fy,fz))
 else:
     #writing all configurations into file
     acf_write(atoms_all,args.fn_output)
