@@ -3,37 +3,39 @@ import argparse
 import atoms
 from acf import *
 #****************************************************
-def replicate(na,nb,nc,nat,cellvec,rat):
-    atoms_t=[]
-    atoms_tt=[]
-    atoms_sat=[]
-    atoms_bemoved=[]
+def replicate(na,nb,nc,atoms):
+    atoms_out=Atoms()
     if atoms.boundcond=="bulk":
         for i in range(int(atoms.nat)):
             for n in range(0,int(na)):
                 for m in range(0,int(nb)):
                     for l in range(0,int(nc)):
-                        atoms_tt.append(atoms.rat[i][0]+n*atoms.cellvec[0][0]+m*atoms.cellvec[1][0]+l*atoms.cellvec[2][0])
-                        atoms_tt.append(atoms.rat[i][1]+m*atoms.cellvec[1][1]+l*atoms.cellvec[2][1])
-                        atoms_tt.append(atoms.rat[i][2]+l*atoms.cellvec[2][2])
-                        atoms_t.append(atoms_tt)
-                        atoms_sat.append(atoms.sat[i]) 
-                        atoms_bemoved.append(atoms.bemoved[i])
-                        atoms_tt=[]
+                        x = atoms.rat[i][0]+n*atoms.cellvec[0][0]+m*atoms.cellvec[1][0]+l*atoms.cellvec[2][0]
+                        y = atoms.rat[i][1]+n*atoms.cellvec[0][1]+m*atoms.cellvec[1][1]+l*atoms.cellvec[2][1]
+                        z = atoms.rat[i][2]+n*atoms.cellvec[0][2]+m*atoms.cellvec[1][2]+l*atoms.cellvec[2][2]
+                        atoms_out.rat.append([])
+                        #atoms_out.sat.append([])
+                        #atoms_out.bemoved.append([])
+                        atoms_out.rat[-1].append(x)
+                        atoms_out.rat[-1].append(y)
+                        atoms_out.rat[-1].append(z)
+                        atoms_out.sat.append(atoms.sat[i]) 
+                        atoms_out.bemoved.append(atoms.bemoved[i])
     else:
         print "ERROR: Input structure is not BULK."
-    atoms.cellvec[0][0]=atoms.cellvec[0][0]*na 
-    atoms.cellvec[1][0]=atoms.cellvec[1][0]*nb
-    atoms.cellvec[1][1]=atoms.cellvec[1][1]*nb
-    atoms.cellvec[2][0]=atoms.cellvec[2][0]*nc
-    atoms.cellvec[2][1]=atoms.cellvec[2][1]*nc
-    atoms.cellvec[2][2]=atoms.cellvec[2][2]*nc
-    nn=na*nb*nc*atoms.nat
-    atoms.nat = nn    
-    atoms.rat=atoms_t
-    atoms.sat=atoms_sat
-    atoms.bemoved=atoms_bemoved
-    return atoms
+    atoms_out.cellvec[0][0]=atoms.cellvec[0][0]*na 
+    atoms_out.cellvec[0][1]=atoms.cellvec[0][1]*na 
+    atoms_out.cellvec[0][2]=atoms.cellvec[0][2]*na 
+    atoms_out.cellvec[1][0]=atoms.cellvec[1][0]*nb
+    atoms_out.cellvec[1][1]=atoms.cellvec[1][1]*nb
+    atoms_out.cellvec[1][2]=atoms.cellvec[1][2]*nb
+    atoms_out.cellvec[2][0]=atoms.cellvec[2][0]*nc
+    atoms_out.cellvec[2][1]=atoms.cellvec[2][1]*nc
+    atoms_out.cellvec[2][2]=atoms.cellvec[2][2]*nc
+    atoms_out.nat = na*nb*nc*atoms.nat    
+    atoms_out.boundcond="bulk"
+    atoms_out.epot=atoms.epot
+    return atoms_out
 #****************************************************
 str1 = "This script replicate an acf file in the cell vector directions."
 str1+="\n The n_i are integers and b_i are reciprocal vectors. The output file is also in acf format."
@@ -49,7 +51,7 @@ atoms=atoms_all[-1]
 n1 = args.n1
 n2 = args.n2
 n3 = args.n3
-atoms = replicate(n1,n2,n3,atoms.nat,atoms.cellvec,atoms.rat)
+atoms = replicate(n1,n2,n3,atoms)
 atoms_all=[]
 atoms_all.append(Atoms())
 atoms_all[-1]=copy.copy(atoms)
