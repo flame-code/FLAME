@@ -289,12 +289,7 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     do iat=1,atoms%nat
         zion=ann_arr%ann(atoms%itypat(iat))%zion
         atoms%zat(iat)=zion
-        if(trim(atoms%sat(iat))=='Zr') atoms%qat(iat)= 1.6d0-zion
-        if(trim(atoms%sat(iat))=='O' ) atoms%qat(iat)=-0.8d0-zion
-        if(trim(atoms%sat(iat))=='Na') atoms%qat(iat)= 0.8d0-zion
-        if(trim(atoms%sat(iat))=='Cl') atoms%qat(iat)=-0.8d0-zion
-        if(trim(atoms%sat(iat))=='W' ) atoms%qat(iat)= 0.6d0-zion
-        if(trim(atoms%sat(iat))=='S' ) atoms%qat(iat)=-0.6d0-zion
+        atoms%qat(iat)=ann_arr%ann(atoms%itypat(iat))%qinit-zion
         !write(*,'(i,3f8.2)') iat,atoms%zat(iat),atoms%qat(iat),atoms%zat(iat)+atoms%qat(iat)
     enddo
     qtot_ion=sum(atoms%zat(1:atoms%nat))
