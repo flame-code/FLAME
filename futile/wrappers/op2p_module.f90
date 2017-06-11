@@ -379,7 +379,8 @@ module overlap_point_to_point
 
      end subroutine cuda_estimate_memory_needs_gpudirect
 
-     subroutine initialize_OP2P_data(OP2P,mpi_comm,iproc,nproc,ngroup,ndim,nobj_par,igpu,symmetric,nearest_neighbor,tag_offset)
+     subroutine initialize_OP2P_data(OP2P,mpi_comm,iproc,nproc,ngroup,ndim,nobj_par,igpu,&
+          symmetric,nearest_neighbor,tag_offset)
        use dynamic_memory
        use wrapper_MPI
        use yaml_strings

@@ -51,7 +51,7 @@ module yaml_parse
   
   public :: yaml_parse_from_file
   public :: yaml_parse_from_char_array
-  public :: yaml_parse_from_string
+  public :: yaml_parse_from_string,yaml_parse_database
   public :: yaml_cl_parse_null,yaml_cl_parse_free
   public :: yaml_cl_parse_option,yaml_argparse
 
@@ -621,6 +621,31 @@ contains
     call yaml_parser_c_init(parser, fname, len(fname))
     dict => yaml_parse_(parser)
   end subroutine yaml_parse_from_file
+
+
+  !> parse a database from the corresponding external routine
+  !! such a routine is created from the Makefile macro
+  !! yaml_db.mk which has to be included in the Makefile
+  subroutine yaml_parse_database(dict,symbol)
+    use f_precisions
+    implicit none
+    type(dictionary), pointer :: dict
+    external :: symbol
+    !local variables
+    integer(f_integer) :: db_size
+    integer(f_address) :: parser
+    character, dimension(:), allocatable :: f_string !<not profiled in f_malloc
+
+    !get reference to the database and size of the data
+    !first get the size
+    db_size=int(0,f_integer)
+    call symbol(parser,db_size) !<parser here is ignored
+    !allocate array
+    allocate(f_string(db_size))
+    call symbol(f_string,db_size) !<we fill the array
+    call yaml_parse_from_char_array(dict,f_string)
+    deallocate(f_string)
+  end subroutine yaml_parse_database
 
 
   subroutine yaml_parse_from_char_array(dict, carr)

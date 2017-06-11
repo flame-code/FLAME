@@ -1,3 +1,11 @@
+!> @file
+!!  Test of (some) linear algebra operations
+!! @author
+!!    Copyright (C) 2016-2017 BigDFT group
+!!    This file is distributed under the terms of the
+!!    GNU General Public License, see ~/COPYING file
+!!    or http://www.gnu.org/copyleft/gpl.txt .
+!!    For the list of contributors, see ~/AUTHORS
 program linalg_check
   use futile
   use wrapper_linalg

@@ -276,6 +276,7 @@ subroutine get_ann_parameters(file_ini,parini)
         call get_one_param(file_ini,'approach',char_var=parini%approach_ann)
         call get_one_param(file_ini,'symfunc',char_var=parini%symfunc)
         call get_one_param(file_ini,'nstep_ekf',int_var=parini%nstep_ekf)
+        call get_one_param(file_ini,'nstep_cep',int_var=parini%nstep_cep)
         call get_one_param(file_ini,'nat_force',int_var=parini%nat_force)
         call get_one_param(file_ini,'ampl_rand',real_var=parini%ampl_rand)
         call get_one_param(file_ini,'symfunc_type',char_var=parini%symfunc_type_ann)
@@ -285,6 +286,7 @@ subroutine get_ann_parameters(file_ini,parini)
         call get_one_param(file_ini,'dtol',real_var=parini%dtol_ann)
         call get_one_param(file_ini,'normalization',log_var=parini%normalization_ann)
         call get_one_param(file_ini,'bondbased',log_var=parini%bondbased_ann)
+        call get_one_param(file_ini,'prefit',log_var=parini%prefit_ann)
     enddo
 end subroutine get_ann_parameters
 !*****************************************************************************************

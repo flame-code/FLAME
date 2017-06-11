@@ -34,6 +34,8 @@ ANN/fit
 ./futile/tests/flib/Makefile.in
 ./futile/tests/wrappers/Makefile.in
 ./futile/wrappers/Makefile.in
+./futile/src/python/Makefile.in
+./futile/src/python/futile/Makefile.in
 ./build/install/
 ./build/libyaml/
 ./build/futile/

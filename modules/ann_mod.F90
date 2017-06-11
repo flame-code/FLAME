@@ -1,6 +1,7 @@
 !*****************************************************************************************
 module mod_ann
     use mod_linked_lists, only: typ_linked_lists
+    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type typ_ann
         integer:: nl !number of hidden layer plus one
@@ -27,6 +28,7 @@ module mod_ann
         real(8):: hardness
         real(8):: spring_const
         real(8):: zion
+        real(8):: qinit
         real(8):: rionic
         real(8):: ener_ref
         real(8):: ampl_chi=-1.d0
@@ -128,6 +130,15 @@ module mod_ann
         real(8), allocatable:: gc(:,:)
         real(8), allocatable:: gs(:,:)
     end type typ_ekf
+    type typ_cent
+        real(8), allocatable:: gwi(:)
+        real(8), allocatable:: gwe(:)
+        real(8), allocatable:: gwit(:)
+        real(8), allocatable:: rel(:,:)
+        real(8), allocatable:: qgrad(:)
+        real(8), allocatable:: rgrad(:,:)
+        type(typ_ewald_p3d):: ewald_p3d
+    end type typ_cent
 end module mod_ann
 !*****************************************************************************************
 !module data_point

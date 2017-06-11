@@ -242,11 +242,12 @@ subroutine verify_single_harmonic(pref,n,zinout,inzee,assert,dump)
 
   if (f_debug) print *,'testin',zinout(1,:,1,1,inzee)
 
-
   !test the 3d FFT
   !out-of-place case of traditional output
   call FFT_3d(n(1),n(2),n(3),n(1),n(2),n(3),zinout,1,inzee)
   
+  if (f_debug) print *,'testout',maxloc(zinout)
+
   if (dump) call yaml_map('Reference impulse (p_ref)',pref,advance=.if. assert .then. 'no' .else. 'yes')
   refres=sum(abs(zinout(:,:,:,:,inzee)))-product(n)
   if (assert) then

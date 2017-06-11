@@ -95,7 +95,7 @@ module wrapper_MPI
      module procedure mpigather_d0d2,mpigather_d1d1,mpigather_d1d2,mpigather_d2,mpigather_d2d1
      module procedure mpigather_i0i2,mpigather_i1,mpigather_i1i2,mpigather_i2
      module procedure mpigather_li0li2,mpigather_li1,mpigather_li1li2,mpigather_li2
-     module procedure mpigather_c1i2
+     module procedure mpigather_c1i2,mpigather_c0c1
      module procedure mpigather_c1li2
   end interface mpigather
 
@@ -172,13 +172,13 @@ module wrapper_MPI
      !> Reference counter of the communicator.
      !! used to understand whether the communicator has to be destroyed
      type(f_reference_counter) :: refcnt
-     integer :: mpi_comm !< MPI communicator
-     integer :: iproc    !< Process Id
+     integer :: mpi_comm=-1 !< MPI communicator
+     integer :: iproc=0    !< Process Id
                          !! @ingroup RESERVED
-     integer :: nproc    !< Number of MPI processes (in the given communicator)
+     integer :: nproc=1    !< Number of MPI processes (in the given communicator)
                          !! @ingroup RESERVED
-     integer :: igroup   !< MPI Group Id
-     integer :: ngroup   !< Number of MPI groups
+     integer :: igroup=0   !< MPI Group Id
+     integer :: ngroup=1   !< Number of MPI groups
   end type mpi_environment
 
   public :: mpi_environment_null
@@ -196,7 +196,7 @@ module wrapper_MPI
      integer :: comm
   end type doc
 
-  private :: operator(//),f_err_throw ! To avoid an export from yaml_strings module
+  private :: operator(//),f_err_throw,operator(+) ! To avoid an export from yaml_strings module
 
 
 contains
@@ -753,19 +753,10 @@ contains
        call f_err_throw('An error in calling to MPI_GET_PROCESSOR_NAME occured',&
             err_id=ERR_MPI_WRAPPERS)
     end if
-
     !clean the hostname such as to include only the last word
     !this solves a problem in ibm machines
-    ipos=index(mpihostname,' ',back=.true.)
-    if (ipos > 0) then
-       do i=1,len(mpihostname)
-          if (i+ipos+1 <= len(mpihostname)) then
-             mpihostname(i:i)=mpihostname(i+ipos+1:i+ipos+1)
-          else
-             mpihostname(i:i)=' '
-          end if
-       end do
-    end if
+    ipos=index(mpihostname(1:namelen),' ',back=.true.)
+    if (ipos > 0) mpihostname=mpihostname(1:ipos)
 
   end function mpihostname
 
@@ -1331,8 +1322,61 @@ contains
     sendbuf=f_malloc(ntot,id='sendbuf')
     call f_memcpy(src=sendbuf_c,dest=sendbuf)
     include 'gather-inner-inc.f90'
+    call f_free(sendbuf)
     !-end gather-inc
   end subroutine mpigather_c1i2
+
+  subroutine mpigather_c0c1(length,sendbuf,recvbuf,root,comm)
+    use dynamic_memory
+    use dictionaries, only: f_err_throw,f_err_define
+
+    implicit none
+    integer, intent(in) :: length
+    character(len=length), intent(in) :: sendbuf
+    character(len=length), dimension(:), intent(inout) :: recvbuf
+    !---like gather-inc
+    integer, intent(in), optional :: root !< 0 if absent
+    integer, intent(in), optional :: comm !< MPI_COMM_WORLD if absent
+    !local variables
+    integer :: iroot,mpi_comm,ntot,ntotrecv,ntasks,ierr
+    ntot=length
+    ntotrecv=size(recvbuf)
+    !include 'gather-inner-inc.f90'
+
+    if (present(root)) then
+       iroot=root
+    else
+       iroot=0
+    end if
+    if (present(comm)) then
+       mpi_comm=comm
+    else
+       mpi_comm=MPI_COMM_WORLD !or bigdft_mpi%mpi_comm?
+    end if
+
+    !verify the size of the receive buffer
+    ntasks=mpisize(mpi_comm)
+    if (ntotrecv < ntasks) then
+       call f_err_throw('Error in mpigather; the size of the receive buffer ('//&
+            (ntotrecv)//&
+            ') is not large enough to contain '//ntasks//&
+            ' elements',err_id=ERR_MPI_WRAPPERS)
+       return
+    end if
+    !then one can proceed with the MPI operation
+    ntotrecv=int(int(ntot,f_long)*kind(sendbuf)/int(kind(recvbuf),f_long))
+    call f_timer_interrupt(TCAT_GATHER)
+    call MPI_GATHER(sendbuf,ntot,MPI_CHARACTER,&
+         recvbuf,ntotrecv,MPI_CHARACTER,iroot,mpi_comm,ierr)
+    call f_timer_resume()
+    if (ierr /=0) then
+       call f_err_throw('An error in calling to MPI_GATHER occured',&
+            err_id=ERR_MPI_WRAPPERS)
+       return
+    end if
+
+  end subroutine mpigather_c0c1
+
 
   !> Gather the results of a given array into the root proc, version
   !! working with adresses
@@ -1354,7 +1398,7 @@ contains
     sendbuf=f_malloc(ntot,id='sendbuf')
     call f_memcpy(src=sendbuf_c,dest=sendbuf)
     include 'gather-inner-inc.f90'
-    !-end gather-inc
+    call f_free(sendbuf)
   end subroutine mpigather_c1li2
 
   !> Gather the results of a given array into the root proc, version
@@ -2670,6 +2714,8 @@ contains
           tmpint = tmpint + offset*tmpsize
           tmpaddr= TRANSFER(tmpint, tmpaddr)
           call c_f_pointer(tmpaddr, a)
+       else
+          call c_f_pointer(buf, a)
        end if
     else
       call c_f_pointer(buf, a)

@@ -113,7 +113,7 @@ module f_utils
   public :: f_utils_errors,f_utils_recl,f_file_exists,f_close,f_zero
   public :: f_get_free_unit,f_delete_file,f_getpid,f_rewind,f_open_file
   public :: f_iostream_from_file,f_iostream_from_lstring,f_increment
-  public :: f_iostream_get_line,f_iostream_release,f_time,f_pause
+  public :: f_iostream_get_line,f_iostream_release,f_time,f_pause,f_move_file
   public :: f_progress_bar_new,update_progress_bar,f_tty,f_humantime,f_system
   public :: assignment(=),f_none,f_assert
 
@@ -514,6 +514,19 @@ contains
     
   end subroutine f_delete_file
 
+  subroutine f_move_file(src,dest)
+    implicit none
+    character(len=*), intent(in) :: src,dest
+    !local variables
+    integer(f_integer) :: ierr
+    
+    call movefile(trim(src),int(len_trim(src),f_integer),&
+         trim(dest),int(len_trim(dest),f_integer),ierr)
+    if (ierr /= 0) call f_err_throw('Error in moving file='//&
+         trim(src)//' into='//trim(dest)//', iostat='//trim(yaml_toa(ierr)),&
+         err_id=INPUT_OUTPUT_ERROR)
+  end subroutine f_move_file
+
   !> get process id
   function f_getpid()
     implicit none
@@ -793,20 +806,24 @@ contains
   subroutine f_diff_i(n,a_add,b_add,diff)
     implicit none
     integer, intent(in) :: n
-    integer(kind=4), intent(inout) :: a_add
-    integer(kind=4), intent(inout) :: b_add
-    integer(kind=4), intent(out) :: diff
+    integer(f_integer) :: a_add
+    integer(f_integer) :: b_add
+    integer(f_integer), intent(out) :: diff
+    !local variables
+    integer :: idiff
     external :: diff_i
-    call diff_i(n,a_add,b_add,diff)
+    call diff_i(n,a_add,b_add,diff,idiff)
   end subroutine f_diff_i
   subroutine f_diff_i2i1(n,a,b,diff)
     implicit none
     integer, intent(in) :: n
-    integer(kind=4), dimension(:,:),   intent(in) :: a
-    integer(kind=4), dimension(:), intent(in) :: b
-    integer(kind=4), intent(out) :: diff
+    integer(f_integer), dimension(:,:),   intent(in) :: a
+    integer(f_integer), dimension(:), intent(in) :: b
+    integer(f_integer), intent(out) :: diff
+    !local variables
+    integer :: idiff
     external :: diff_i
-    call diff_i(n,a(1,1),b(1),diff)
+    call diff_i(n,a(1,1),b(1),diff,idiff)
   end subroutine f_diff_i2i1
   subroutine f_diff_i2(n,a,b,diff)
     implicit none
@@ -814,8 +831,10 @@ contains
     integer(kind=4), dimension(:,:),   intent(in) :: a
     integer(kind=4), dimension(:,:), intent(in) :: b
     integer(kind=4), intent(out) :: diff
-    external :: diff_i
-    call diff_i(n,a(1,1),b(1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_i
+    call diff_i(n,a(1,1),b(1,1),diff,idiff)
   end subroutine f_diff_i2
   subroutine f_diff_i1(n,a,b,diff)
     implicit none
@@ -823,8 +842,10 @@ contains
     integer(kind=4), dimension(:),   intent(in) :: a
     integer(kind=4), dimension(:), intent(in) :: b
     integer(kind=4), intent(out) :: diff
-    external :: diff_i
-    call diff_i(n,a(1),b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_i
+    call diff_i(n,a(1),b(1),diff,idiff)
   end subroutine f_diff_i1
   subroutine f_diff_i1i2(n,a,b,diff)
     implicit none
@@ -832,8 +853,10 @@ contains
     integer(kind=4), dimension(:),   intent(in) :: a
     integer(kind=4), dimension(:,:), intent(in) :: b
     integer(kind=4), intent(out) :: diff
-    external :: diff_i
-    call diff_i(n,a(1),b(1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_i
+    call diff_i(n,a(1),b(1,1),diff,idiff)
   end subroutine f_diff_i1i2
 
 
@@ -843,8 +866,10 @@ contains
     integer(kind=8), intent(inout) :: a_add
     integer(kind=8), intent(inout) :: b_add
     integer(kind=8), intent(out) :: diff
-    external :: diff_li
-    call diff_li(n,a_add,b_add,diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_li
+    call diff_li(n,a_add,b_add,diff,idiff)
   end subroutine f_diff_li
   subroutine f_diff_li2li1(n,a,b,diff)
     implicit none
@@ -852,8 +877,10 @@ contains
     integer(kind=8), dimension(:,:),   intent(in) :: a
     integer(kind=8), dimension(:), intent(in) :: b
     integer(kind=8), intent(out) :: diff
-    external :: diff_li
-    call diff_li(n,a(1,1),b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_li
+    call diff_li(n,a(1,1),b(1),diff,idiff)
   end subroutine f_diff_li2li1
   subroutine f_diff_li2(n,a,b,diff)
     implicit none
@@ -861,8 +888,10 @@ contains
     integer(kind=8), dimension(:,:),   intent(in) :: a
     integer(kind=8), dimension(:,:), intent(in) :: b
     integer(kind=8), intent(out) :: diff
-    external :: diff_li
-    call diff_li(n,a(1,1),b(1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_li
+    call diff_li(n,a(1,1),b(1,1),diff,idiff)
   end subroutine f_diff_li2
   subroutine f_diff_li1(n,a,b,diff)
     implicit none
@@ -870,8 +899,10 @@ contains
     integer(kind=8), dimension(:),   intent(in) :: a
     integer(kind=8), dimension(:), intent(in) :: b
     integer(kind=8), intent(out) :: diff
-    external :: diff_li
-    call diff_li(n,a(1),b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_li
+    call diff_li(n,a(1),b(1),diff,idiff)
   end subroutine f_diff_li1
   subroutine f_diff_li1li2(n,a,b,diff)
     implicit none
@@ -879,8 +910,10 @@ contains
     integer(kind=8), dimension(:),   intent(in) :: a
     integer(kind=8), dimension(:,:), intent(in) :: b
     integer(kind=8), intent(out) :: diff
-    external :: diff_li
-    call diff_li(n,a(1),b(1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_li
+    call diff_li(n,a(1),b(1,1),diff,idiff)
   end subroutine f_diff_li1li2
 
 
@@ -890,8 +923,10 @@ contains
     real, intent(inout) :: a_add
     real, intent(inout) :: b_add
     real, intent(out) :: diff
-    external :: diff_r
-    call diff_r(n,a_add,b_add,diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_r
+    call diff_r(n,a_add,b_add,diff,idiff)
   end subroutine f_diff_r
 
   subroutine f_diff_d(n,a_add,b_add,diff)
@@ -900,17 +935,23 @@ contains
     double precision, intent(inout) :: a_add
     double precision, intent(inout) :: b_add
     double precision, intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a_add,b_add,diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a_add,b_add,diff,idiff)
   end subroutine f_diff_d
-  subroutine f_diff_d1(n,a,b,diff)
+  subroutine f_diff_d1(n,a,b,diff,ind)
     implicit none
     integer, intent(in) :: n
     double precision, dimension(:),   intent(in) :: a
     double precision, dimension(:), intent(in) :: b
     double precision, intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a(1),b(1),diff)
+    integer, intent(out), optional :: ind
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a(1),b(1),diff,idiff)
+    if (present(ind)) ind=idiff
   end subroutine f_diff_d1
   subroutine f_diff_d2d3(n,a,b,diff)
     implicit none
@@ -918,8 +959,10 @@ contains
     double precision, dimension(:,:),   intent(in) :: a
     double precision, dimension(:,:,:), intent(in) :: b
     double precision, intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a(1,1),b(1,1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a(1,1),b(1,1,1),diff,idiff)
   end subroutine f_diff_d2d3
   subroutine f_diff_d2d1(n,a,b,diff)
     implicit none
@@ -927,8 +970,10 @@ contains
     double precision, dimension(:,:),   intent(in) :: a
     double precision, dimension(:), intent(in) :: b
     double precision, intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a(1,1),b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a(1,1),b(1),diff,idiff)
   end subroutine f_diff_d2d1
   subroutine f_diff_d0d1(n,a,b,diff)
     implicit none
@@ -936,8 +981,10 @@ contains
     double precision, intent(inout) :: a
     double precision, dimension(:), intent(in) :: b
     double precision, intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a,b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a,b(1),diff,idiff)
   end subroutine f_diff_d0d1
 
   subroutine f_diff_d2(n,a,b,diff)
@@ -946,8 +993,10 @@ contains
     double precision, dimension(:,:),   intent(in) :: a
     double precision, dimension(:,:), intent(in) :: b
     double precision, intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a(1,1),b(1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a(1,1),b(1,1),diff,idiff)
   end subroutine f_diff_d2
 
   subroutine f_diff_d3(n,a,b,diff)
@@ -956,8 +1005,10 @@ contains
     real(f_double), dimension(:,:,:),   intent(in) :: a
     real(f_double), dimension(:,:,:), intent(in) :: b
     real(f_double), intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a(1,1,1),b(1,1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a(1,1,1),b(1,1,1),diff,idiff)
   end subroutine f_diff_d3
 
 
@@ -967,8 +1018,10 @@ contains
     double precision, dimension(:),   intent(in) :: a
     double precision, dimension(:,:), intent(in) :: b
     double precision, intent(out) :: diff
-    external :: diff_d
-    call diff_d(n,a(1),b(1,1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_d
+    call diff_d(n,a(1),b(1,1),diff,idiff)
   end subroutine f_diff_d1d2
 
 
@@ -989,8 +1042,10 @@ contains
     character, dimension(:),   intent(in) :: a
     integer(f_integer), dimension(:), intent(in) :: b
     integer(f_integer), intent(out) :: diff
-    external :: diff_ci
-    call diff_ci(n,a(1),b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_ci
+    call diff_ci(n,a(1),b(1),diff,idiff)
   end subroutine f_diff_c1i1
 
   subroutine f_diff_c1li1(n,a,b,diff)
@@ -999,8 +1054,10 @@ contains
     character, dimension(:),   intent(in) :: a
     integer(f_long), dimension(:), intent(in) :: b
     integer(f_long), intent(out) :: diff
-    external :: diff_ci
-    call diff_ci(n,a(1),b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_ci
+    call diff_ci(n,a(1),b(1),diff,idiff)
   end subroutine f_diff_c1li1
 
   subroutine f_diff_c0i1(n,a,b,diff)
@@ -1009,8 +1066,10 @@ contains
     character(len=*),   intent(in) :: a
     integer(f_integer), dimension(:), intent(in) :: b
     integer(f_integer), intent(out) :: diff
-    external :: diff_ci
-    call diff_ci(n,a,b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_ci
+    call diff_ci(n,a,b(1),diff,idiff)
   end subroutine f_diff_c0i1
 
   subroutine f_diff_c0li1(n,a,b,diff)
@@ -1019,8 +1078,10 @@ contains
     character(len=*),   intent(in) :: a
     integer(f_long), dimension(:), intent(in) :: b
     integer(f_long), intent(out) :: diff
-    external :: diff_ci
-    call diff_ci(n,a,b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_ci
+    call diff_ci(n,a,b(1),diff,idiff)
   end subroutine f_diff_c0li1
 
   subroutine f_diff_li0li1(n,a,b,diff)
@@ -1029,8 +1090,10 @@ contains
     integer(f_long), intent(inout) :: a
     integer(f_long), dimension(:), intent(in) :: b
     integer(f_long), intent(out) :: diff
-    external :: diff_li
-    call diff_li(n,a,b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_li
+    call diff_li(n,a,b(1),diff,idiff)
   end subroutine f_diff_li0li1
 
   subroutine f_diff_i0i1(n,a,b,diff)
@@ -1039,8 +1102,10 @@ contains
     integer(f_integer), intent(inout) :: a
     integer(f_integer), dimension(:), intent(in) :: b
     integer(f_integer), intent(out) :: diff
-    external :: diff_i
-    call diff_i(n,a,b(1),diff)
+    !local variables
+    integer :: idiff
+    external ::  diff_i
+    call diff_i(n,a,b(1),diff,idiff)
   end subroutine f_diff_i0i1
 
   pure subroutine zero_string(str)

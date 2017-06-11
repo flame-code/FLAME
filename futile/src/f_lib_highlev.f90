@@ -144,6 +144,7 @@ subroutine f_lib_initialize()
   use dictionaries, only: f_err_initialize
   use dynamic_memory, only: f_malloc_initialize
   use time_profiling, only: f_timing_initialize
+  use f_bibliography, only: f_bib_initialize
   implicit none
 
   call f_environment_acquire()
@@ -156,6 +157,8 @@ subroutine f_lib_initialize()
   call f_timing_initialize()
   !initialization of internal timing categories of f_lib
   call initialize_flib_timing_categories()
+  ! initialization of bibliography database
+  call f_bib_initialize()
 
 end subroutine f_lib_initialize
 
@@ -172,8 +175,8 @@ end subroutine f_lib_err_severe_external
 
 !> Routine which finalize f_lib and dump the finalization information
 subroutine f_lib_finalize()
-  use dictionaries_base, only: dictionary_check_leak
-  use dictionaries, only: f_err_finalize,dict_get_num
+!  use dictionaries_base, only: dictionary_check_leak
+  use dictionaries, only: f_err_finalize,dict_get_num,dictionary_check_leak
   use dynamic_memory, only: f_malloc_finalize
   use yaml_output, only: yaml_close_all_streams,yaml_map,yaml_comment!,yaml_walltime_toa
   use yaml_parse, only: yaml_parse_errors_finalize
@@ -181,6 +184,7 @@ subroutine f_lib_finalize()
   use yaml_strings, only: operator(//)
   use f_utils, only: f_humantime
   use module_f_objects, only: f_object_finalize
+  use f_bibliography, only: f_bib_finalize
   implicit none
   !local variables
   integer :: ndict,ndict_max,iproc,nlibs,nlibs_max
@@ -196,6 +200,7 @@ subroutine f_lib_finalize()
      call yaml_map('Number of dictionary folders allocated',nlibs_max)
   end if
   call yaml_close_all_streams()
+  call f_bib_finalize()
   call yaml_parse_errors_finalize()
   call f_err_finalize()
   call f_timing_finalize()
@@ -212,9 +217,11 @@ subroutine f_lib_finalize_noreport()
   use yaml_output, only: yaml_close_all_streams
   use yaml_parse, only: yaml_parse_errors_finalize
   use time_profiling, only: f_timing_finalize
+  use f_bibliography, only: f_bib_finalize
   implicit none
   call f_malloc_finalize(dump=.false.)
   call yaml_close_all_streams()
+  call f_bib_finalize()
   call yaml_parse_errors_finalize()
   call f_err_finalize()
   call f_timing_finalize()
@@ -239,6 +246,7 @@ module futile
   use time_profiling
   use f_input_file
   use f_enums
+  use f_bibliography
   use f_ternary
   use f_random
 end module futile

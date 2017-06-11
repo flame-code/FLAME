@@ -18,6 +18,7 @@ subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
     call f_routine(id='construct_ewald_p3d')
     pi=4.d0*atan(1.d0)
     ewald_p3d_rough%hgx=parini%hx_ewald
+    ewald_p3d_rough%hgy=parini%hy_ewald
     ewald_p3d_rough%hgz=parini%hz_ewald
     if (parini%ewald .and. parini%alpha_ewald>0.d0) then
         ewald_p3d%alpha=parini%alpha_ewald
@@ -39,8 +40,19 @@ subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
     associate(ngpz=>ewald_p3d%poisson_p3d%ngpz)
     associate(nbgpy=>ewald_p3d%nbgpy)
     associate(nbgpz=>ewald_p3d%nbgpz)
-    ewald_p3d%poisson_p3d%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz],id='ewald_p3d%poisson_p3d%rho')
-    ewald_p3d%poisson_p3d%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ewald_p3d%ngpztot],id='ewald_p3d%poisson_p3d%pot')
+    if(trim(atoms%boundcond)=='bulk') then
+        ewald_p3d%poisson_p3d%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+            id='ewald_p3d%poisson_p3d%rho')
+        ewald_p3d%poisson_p3d%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+            id='ewald_p3d%poisson_p3d%pot')
+    elseif(trim(atoms%boundcond)=='slab') then
+        ewald_p3d%poisson_p3d%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+            id='ewald_p3d%poisson_p3d%rho')
+        ewald_p3d%poisson_p3d%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ewald_p3d%ngpztot], &
+            id='ewald_p3d%poisson_p3d%pot')
+    else
+        write(*,*) 'ERROR: other BCs are not yet considered.'
+    endif
     ewald_p3d%mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='ewald_p3d%mboundg')
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
@@ -282,16 +294,19 @@ subroutine calparam(parini,atoms,ewald_p3d_rough,ewald_p3d)
     associate(ngpx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ngpy=>ewald_p3d%poisson_p3d%ngpy)
     associate(ngpz=>ewald_p3d%poisson_p3d%ngpz)
-    ngpx=int(ewald_p3d%cell(1)/ewald_p3d_rough%hgx)+1
-    ngpy=int(ewald_p3d%cell(2)/ewald_p3d_rough%hgx)+1
-    ngpz=int(ewald_p3d%cell(3)/ewald_p3d_rough%hgz)+1
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
-            call set_ngp_bps(ewald_p3d_rough,ewald_p3d)
+            call set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
+            !write(*,*) ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy, &
+            !    ewald_p3d%poisson_p3d%ngpz
+            !stop 'AFTER CALL TO set_ngp_bps'
         elseif(trim(parini%psolver_ann)=='kwald') then
             return
         endif
     elseif(trim(atoms%boundcond)=='slab') then
+        ngpx=int(ewald_p3d%cell(1)/ewald_p3d_rough%hgx)+1
+        ngpy=int(ewald_p3d%cell(2)/ewald_p3d_rough%hgx)+1
+        ngpz=int(ewald_p3d%cell(3)/ewald_p3d_rough%hgz)+1
         if(mod(ngpx,2)/=0) ngpx=ngpx+1
         if(mod(ngpy,2)/=0) ngpy=ngpy+1
         ewald_p3d%hgx=ewald_p3d%cell(1)/real(ngpx,8)

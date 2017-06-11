@@ -6,8 +6,6 @@
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
-
-
 module f_input_file
   use dictionaries
   use yaml_strings, only: operator(.eqv.),f_strcpy

@@ -73,13 +73,13 @@ class UniParser():
         sys.stderr.write('error: %s\n' % message)
         self.print_help()
         self.exit()
-    def args(self):
+    def args(self,commandline=None):
         meth='argparse' if self.argparse else 'optparse'
         print 'Parsing arguments with method '+meth+'...'
         if self.argparse:
-            return self.parser.parse_args()
+            return self.parser.parse_args() if not commandline else self.parser.parse_args(commandline)
         else:
-            (argstmp, argtmp) = self.parser.parse_args()
+            (argstmp, argtmp) = self.parser.parse_args() if not commandline else self.parser.parse_args(commandline)
             for i,pos in enumerate(self.positional):
                 remainder=pos.get('remainder',False)
                 if i < len(argtmp):

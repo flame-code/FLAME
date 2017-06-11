@@ -55,7 +55,7 @@ module numerics
      module procedure safe_dexp
   end interface safe_exp
 
-  public :: safe_exp,safe_erf
+  public :: safe_exp,safe_erf,safe_identity
 
   contains
 
@@ -101,8 +101,33 @@ module numerics
 
     end function safe_dexp
 
+    !>restrict range of the value to avoid fpe in case of squares
+    pure function safe_identity(x) result(ex)
+      use f_precisions
+      implicit none
+      real(f_double), intent(in) :: x
+      real(f_double) :: ex
+      !local variable
+      !> if the exponent is lowerr than this value, the result is tiny(1.0)
+      real(f_double), parameter :: mn=1.49166814624004134865819306309258677E-154_f_double ! = sqrt(tiny(1.d0))
+      !> if the exponent is higher than this value, the result is huge(1.0)
+      real(f_double), parameter :: mx=1.34078079299425963552911713195043695E+154_f_double ! = sqrt(huge(1.d0))
+      real(f_double) :: y
+
+      y=abs(x)
+      if (y > mn .and. y< mx) then
+         ex=x
+      else if (y <= mn) then
+         ex=0.0_f_double
+      else
+         ex=nint(x/y)*mx
+      end if
+            
+    end function safe_identity
+
     !> give a function which takes into account overflows and underflows even in the gaussian arguments
     pure function safe_gaussian(x0,x,alpha) result(gau)
+      use f_precisions
       implicit none
       double precision, intent(in) :: x0 !< gaussian center
       double precision, intent(in) :: x !< argument
@@ -111,9 +136,9 @@ module numerics
       double precision :: gau
       !local variables
       !> if the sqrt is bigger than this value, the result is tiny(1.0)
-      double precision, parameter :: mn_sqrt= sqrt(tiny(1.d0))
+      real(f_double), parameter :: mn_sqrt= 1.49166814624004134865819306309258677E-154_f_double ! = sqrt(tiny(1.d0))sqrt(tiny(1.d0))
       !> if the sqrt is lower than this value, the result is huge(1.0)
-      double precision, parameter :: mx_sqrt= sqrt(huge(1.d0))
+      real(f_double), parameter :: mx_sqrt= 1.34078079299425963552911713195043695E+154_f_double ! = sqrt(huge(1.d0))sqrt(huge(1.d0))
 
       double precision :: gau_arg,xd
 

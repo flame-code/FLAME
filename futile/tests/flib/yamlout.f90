@@ -4,7 +4,7 @@
 !! Other series of tests on yaml output generation
 !! @author
 !!    Copyright (C) 2013-2015 BigDFT group
-!!    This file is distributed oneder the terms of the
+!!    This file is distributed under the terms of the
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
@@ -72,6 +72,35 @@ subroutine test_yaml_output1()
   call yaml_map('Is 1 with spaces a real string',is_atof(' 1 '))
   call yaml_map('Is 1 a integer string',is_atoi('1'))
   call yaml_map('Is 1 with spaces a integer string',is_atoi(' 1 '))
+
+  ! Reproduce a bug in the output
+  call yaml_mapping_open('The following reproduces a bug in the output',flow=.true.)
+   call yaml_map('reset DIIS history',.true.)
+   call yaml_map('Hamiltonian Applied',.true.)
+   call yaml_newline()
+   call yaml_mapping_open('Components',flow=.true.)
+    call yaml_map('Ekin',1.29101956365E+01)
+    call yaml_map('Epot',-1.38815049018E+01)
+    call yaml_map('Enl',8.26848321439E-01)
+   call yaml_mapping_close()
+   call yaml_map('Orthoconstraint',.true.)
+   call yaml_mapping_open('summary',flow=.true.)
+    call yaml_map('npl',70)
+    call yaml_map('bounds',(/0.686,1.094/))
+    call yaml_map('exp accur',(/1.27E-14/),fmt='(es9.2)')
+   call yaml_mapping_close()
+   call yaml_mapping_open('summary',flow=.true.)
+    call yaml_map('npl',70)
+    call yaml_map('bounds',(/0.762,  1.181/))
+    call yaml_map('exp accur',(/1.32E-14,1.51E-14,1.73E-14/),fmt='(es9.2)')
+   call yaml_mapping_close()
+   !call yaml_newline() !this is enough for the bug to hide
+   call yaml_map('correction orthoconstraint',.true.)
+   call yaml_map('Preconditioning',.true.)
+   call yaml_map('rel D',-1.2345678)
+   call yaml_map('iter',1)
+   call yaml_map('fnrm',2.30E-01)
+  call yaml_mapping_close()
 
 !!$  !f_strcpy might be generalized that way
 !!$  totarr='truncate'

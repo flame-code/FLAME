@@ -15,7 +15,7 @@ module f_random
 
 !  public :: builtin_rand 
   interface f_random_number
-     module procedure f_random_number_i0,f_random_number_d0,f_random_number_r0
+     module procedure f_random_number_i0,f_random_number_d0,f_random_number_r0,f_random_number_d3
      module procedure f_random_number_i1,f_random_number_d1,f_random_number_i1_i1
      !module procedure f_random_number_d4
   end interface f_random_number
@@ -60,6 +60,26 @@ module f_random
          harvest(i) = real(builtin_rand(idum,reset=reset),f_double)
       end do
     end subroutine f_random_number_d1
+
+    subroutine f_random_number_d3(harvest,seed,reset)
+      implicit none
+      real(f_double), dimension(:,:,:), intent(out) :: harvest
+      integer, intent(in), optional :: seed
+      logical, intent(in), optional :: reset
+      !local variables
+      integer :: i1,i2,i3
+
+      if (present(seed)) idum=seed
+      
+      do i3=lbound(harvest,3),ubound(harvest,3)
+         do i2=lbound(harvest,2),ubound(harvest,2)
+            do i1=lbound(harvest,1),ubound(harvest,1)
+               harvest(i1,i2,i3) = real(builtin_rand(idum,reset=reset),f_double)
+            end do
+         end do
+      end do
+    end subroutine f_random_number_d3
+
 
     subroutine f_random_number_i0(harvest,range,seed,reset)
       implicit none

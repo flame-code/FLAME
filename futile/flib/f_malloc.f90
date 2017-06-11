@@ -134,6 +134,10 @@ module module_f_malloc
      module procedure f_array_bounds_intlong, f_array_bounds_longint
   end interface
 
+  interface operator(.plus.)
+     module procedure f_array_concatenate_ii,f_array_concatenate_ii0
+  end interface
+
   interface nullify_malloc_information
      module procedure nullify_malloc_information_all
      module procedure nullify_malloc_information_ptr
@@ -231,7 +235,7 @@ module module_f_malloc
   end interface
 
   !> Public routines
-  public :: f_malloc,f_malloc0,f_malloc_ptr,f_malloc0_ptr,operator(.to.)
+  public :: f_malloc,f_malloc0,f_malloc_ptr,f_malloc0_ptr,operator(.to.),operator(.plus.)
   public :: f_malloc_str,f_malloc0_str,f_malloc_str_ptr,f_malloc0_str_ptr
   public :: f_map_ptr,f_malloc_buf,f_malloc0_buf
 
@@ -257,7 +261,6 @@ contains
     nullify(w%ptr_li)
     nullify(w%ptr_l)
   end subroutine nullify_workspace
-
 
   elemental pure function f_array_bounds_intint(nlow,nhigh) result(f_array_bounds)
     implicit none
@@ -298,6 +301,25 @@ contains
     f_array_bounds%nlow=int(nlow,f_kind)
     f_array_bounds%nhigh=int(nhigh,f_kind)
   end function f_array_bounds_longint
+
+  pure function f_array_concatenate_ii(a,b) result(c)
+    implicit none
+    integer(f_integer), dimension(:), intent(in) :: a,b
+    integer(f_integer), dimension(size(a)+size(b)) :: c
+    c(1:size(a))=a
+    c(size(a)+1:size(a)+size(b))=b
+  end function f_array_concatenate_ii
+
+  pure function f_array_concatenate_ii0(a,b) result(c)
+    implicit none
+    integer(f_integer), intent(in) :: b
+    integer(f_integer), dimension(:), intent(in) :: a
+    integer(f_integer), dimension(size(a)+1) :: c
+    c(1:size(a))=a
+    c(size(a)+1)=b
+  end function f_array_concatenate_ii0
+
+
 
   pure subroutine nullify_malloc_information_all(m)
     implicit none
@@ -880,7 +902,6 @@ contains
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_i2_sp
 
 !!$  function f_malloc_ptr_i3(src,id,routine_id,sizes,lbounds,ubounds,profile,info) result(m)
@@ -900,7 +921,6 @@ contains
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_i3_sp
 
   !this template is here waiting for a new unambiguous module procedure
@@ -911,28 +931,25 @@ contains
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_i4_sp
 
   !this template is here waiting for a new unambiguous module procedure
   function f_malloc_ptr_d1_sp(src_ptr,id,routine_id,profile,info) result(m)
     implicit none
-    double precision, dimension(:), pointer, intent(in) :: src_ptr
+    real(f_double), dimension(:), pointer, intent(in) :: src_ptr
     type(malloc_information_ptr) :: m
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_d1_sp
 
   !this template is here waiting for a new unambiguous module procedure
   function f_malloc_ptr_d2_sp(src_ptr,id,routine_id,profile,info) result(m)
     implicit none
-    double precision, dimension(:,:), pointer, intent(in) :: src_ptr
+    real(f_double), dimension(:,:), pointer, intent(in) :: src_ptr
     type(malloc_information_ptr) :: m
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_d2_sp
 
@@ -944,7 +961,6 @@ contains
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_d3_sp
 
   !this template is here waiting for a new unambiguous module procedure
@@ -955,7 +971,6 @@ contains
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_d4_sp
 
   function f_malloc_ptr_d5_sp(src_ptr,id,routine_id,profile,info) result(m)
@@ -964,7 +979,6 @@ contains
     type(malloc_information_ptr) :: m
     include 'f_malloc-base-inc.f90'
     include 'f_malloc-null-ptr-inc.f90'
-    include 'f_malloc-ptr-inc.f90'
     include 'f_malloc-ptr-inc.f90'
   end function f_malloc_ptr_d5_sp
 

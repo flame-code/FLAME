@@ -16,7 +16,7 @@ subroutine ann_train(parini)
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
-    integer:: ialpha, i, iconf, ios
+    integer:: ialpha, i, iconf, ios, ia
     real(8):: time1, time2, time3
     character(15):: fnout
     call f_routine(id='ann_train')
@@ -91,10 +91,20 @@ subroutine ann_train(parini)
     !-------------------------------------------------------
     ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
     call set_annweights(parini,ekf)
+    if(trim(parini%approach_ann)=='cent2') then
+        do ia=1,ann_arr%n
+            ekf%x(ekf%loc(ia)+ekf%num(1)-1)=0.d0
+            !write(*,*) 'XXX ',ia,ekf%loc(ia)+ekf%num(1)-1
+        enddo
+    endif
+
     if(trim(parini%symfunc)/='do_not_save') then
         ann_arr%compute_symfunc=.false.
     else
         ann_arr%compute_symfunc=.true.
+    endif
+    if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
+        call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     endif
     if(trim(parini%optimizer_ann)=='behler') then
         call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)

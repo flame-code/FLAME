@@ -3,10 +3,10 @@ all: libmodules.a
 
 SRC_ =  task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 atoms_mod.F90 \
 		linked_lists_mod.F90 \
-		ann_mod.F90 \
 		constants_mod.F90 \
 		spline_mod.F90 \
 		electrostatics_mod.F90 \
+		ann_mod.F90 \
 		shortrange_mod.F90 \
 		potential_mod.F90 opt_mod.F90 genconf_mod.F90 parini_mod.F90 \
 		tightbinding_mod.F90 \

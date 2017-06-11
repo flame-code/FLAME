@@ -29,15 +29,25 @@ doxygen-doc: Doxygen/html
 
 Doxygen/html: Doxygen.stamp web.stamp
 
-Doxygen.stamp: $(builddir)/Doxyfile
+Doxygen.stamp: $(top_builddir)/config/Doxyfile
 	\rm -rf Doxygen;\
-	doxygen $(builddir)/Doxyfile; \
+	doxygen $(top_builddir)/config/Doxyfile; \
 	touch Doxygen.stamp
 
 web.stamp: Doxygen.stamp
 	touch web.stamp
 
+ford-doc: FORD
+
+FORD: FORD.stamp
+
+FORD.stamp: $(top_builddir)/config/ford.md
+	\rm -rf FORD
+	ford --src_dir $(top_srcdir)/flib \
+		--include $(top_srcdir)/flib --include $(top_builddir)/flib \
+		--output_dir FORD $(top_srcdir)/config/ford.md
+
 clean-local:
-	rm -rf Doxygen lcov* *.aux *.log  *.toc Doxygen *.stamp doxygen.warnings
+	rm -rf FORD Doxygen lcov* *.aux *.log  *.toc Doxygen *.stamp doxygen.warnings
 
 PHONY = install-devdoc
