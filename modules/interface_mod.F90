@@ -1779,10 +1779,12 @@ subroutine destruct_ewald_bps(ewald_p3d)
     implicit none
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine destruct_ewald_bps
-subroutine set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
+subroutine set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
     type(typ_ewald_p3d), intent(inout):: ewald_p3d

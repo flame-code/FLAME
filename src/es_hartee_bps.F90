@@ -143,38 +143,45 @@ subroutine destruct_ewald_bps(ewald_p3d)
 #endif
 end subroutine destruct_ewald_bps
 !*****************************************************************************************
-subroutine set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
+subroutine set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
 #if defined(HAVE_BPS)
     use module_fft_sg, only: i_data, ndata
 #endif
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     !local variables
-    real(8):: dh1, dh2, harr(3)
-    real(8):: cell(3), vol, cvinv(3), cvinv_norm
+    real(8):: dh1, dh2, harr(3), pi
+    real(8):: cell(3), vol, cvinv(3), cvinv_norm(3)
     integer:: i, ndim(3), id
     call cell_vol(atoms%nat,atoms%cellvec,vol)
     vol=abs(vol)*atoms%nat
     call cross_product_alborz(atoms%cellvec(1,1),atoms%cellvec(1,2),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(3)=vol/cvinv_norm
+    cvinv_norm(3)=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(3)=vol/cvinv_norm(3)
     call cross_product_alborz(atoms%cellvec(1,2),atoms%cellvec(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(1)=vol/cvinv_norm
+    cvinv_norm(1)=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(1)=vol/cvinv_norm(1)
     call cross_product_alborz(atoms%cellvec(1,1),atoms%cellvec(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(2)=vol/cvinv_norm
+    cvinv_norm(2)=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
+    cell(2)=vol/cvinv_norm(2)
     !write(*,*) cell(1:3)
     ewald_p3d%poisson_p3d%ngpx=int(cell(1)/ewald_p3d_rough%hgx)+1
     ewald_p3d%poisson_p3d%ngpy=int(cell(2)/ewald_p3d_rough%hgy)+1
     ewald_p3d%poisson_p3d%ngpz=int(cell(3)/ewald_p3d_rough%hgz)+1
 
 #if defined(HAVE_BPS)
+    pi=4.d0*atan(1.d0)
+    ewald_p3d%poisson_p3d%ngpx=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(1)*2.d0*pi/vol))
+    ewald_p3d%poisson_p3d%ngpy=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(2)*2.d0*pi/vol))
+    ewald_p3d%poisson_p3d%ngpz=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(3)*2.d0*pi/vol))
+
     ndim(1)=ewald_p3d%poisson_p3d%ngpx
     ndim(2)=ewald_p3d%poisson_p3d%ngpy
     ndim(3)=ewald_p3d%poisson_p3d%ngpz
@@ -199,9 +206,9 @@ subroutine set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
             endif
         endif
     enddo
-    ewald_p3d%poisson_p3d%ngpx=max(20,ndim(1))
-    ewald_p3d%poisson_p3d%ngpy=max(20,ndim(2))
-    ewald_p3d%poisson_p3d%ngpz=max(20,ndim(3))
+    ewald_p3d%poisson_p3d%ngpx=max(16,ndim(1))
+    ewald_p3d%poisson_p3d%ngpy=max(16,ndim(2))
+    ewald_p3d%poisson_p3d%ngpz=max(16,ndim(3))
     !write(*,*) ndim(:)
     !stop
     ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/real(ewald_p3d%poisson_p3d%ngpx,8)
@@ -211,7 +218,7 @@ subroutine set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
     !ewald_p3d%hgy=cell(2)/real(ewald_p3d%poisson_p3d%ngpy,8)
     !ewald_p3d%hgz=cell(3)/real(ewald_p3d%poisson_p3d%ngpz,8)
 #else
-    stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
+    stop 'ERROR: FLAME is not linked with Poisson solvers in BigDFT.'
 #endif
 end subroutine set_ngp_bps
 !*****************************************************************************************

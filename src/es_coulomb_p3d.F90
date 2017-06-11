@@ -296,7 +296,7 @@ subroutine calparam(parini,atoms,ewald_p3d_rough,ewald_p3d)
     associate(ngpz=>ewald_p3d%poisson_p3d%ngpz)
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
-            call set_ngp_bps(atoms,ewald_p3d_rough,ewald_p3d)
+            call set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
             !write(*,*) ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy, &
             !    ewald_p3d%poisson_p3d%ngpz
             !stop 'AFTER CALL TO set_ngp_bps'

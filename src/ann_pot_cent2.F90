@@ -1010,7 +1010,7 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
         dy=cent%rel(2,jat)-atoms%rat(2,iat)
         dz=cent%rel(3,jat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
-        if(r>0.9d0) then
+        if(r>0.3d0) then
             write(*,'(a,es14.5)') 'ERROR: Center of electron far from atom: r= ',r
             stop
         endif
@@ -1326,7 +1326,7 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
         dy=cent%rel(2,jat)-atoms%rat(2,iat)
         dz=cent%rel(3,jat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
-        if(r>0.9d0) then
+        if(r>0.3d0) then
             write(*,'(a,es14.5)') 'ERROR: Center of electron far from atom: r= ',r
             stop
         endif
