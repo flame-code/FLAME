@@ -36,7 +36,8 @@ subroutine dynamics(parini)
     else if(trim(md_method)=='nvt_nosecp') then
         call md_nvt_nose_hoover_cp(parini,atoms)
     else if(trim(md_method)=='nvt_nose') then
-        call md_nvt_nose_hoover(parini,atoms)
+        call md_nvt_nose_hoover_chain(parini,atoms)
+        !call md_nvt_nose_hoover(parini,atoms)
     else if(trim(md_method)=='nph') then
         call md_nph(parini,atoms)
     else 
