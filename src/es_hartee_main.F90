@@ -88,9 +88,9 @@ subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
         return
     endif
     if(parini%ewald) then
-        call putgaussgrid(parini,atoms,ewald_p3d,ewaldwidth)
+        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,ewaldwidth,ewald_p3d)
     else
-       call putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
+        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,ewald_p3d)
     end if
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then

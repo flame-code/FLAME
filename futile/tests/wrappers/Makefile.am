@@ -1,12 +1,14 @@
 EXTRA_DIST = \
 	op2p_check.ref.yaml \
+	linalg_check.ref.yaml \
+	numerics_check.ref.yaml \
 	example.f90 \
 	mpi_check.f90 \
 	mpi_layer.f90 \
 	op2p_check.f90 \
 	linalg_check.f90
 
-check_PROGRAMS = op2p_check linalg_check
+check_PROGRAMS = op2p_check linalg_check numerics_check
 
 check: regtest report #op2p_check.report.yaml $(check_PROGRAMS)
 
@@ -30,6 +32,10 @@ endif
 op2p_check_SOURCES = op2p_check.f90
 op2p_check_LDADD = @LIB_FUTILE_LIBS@
 
+numerics_check_SOURCES = numerics_check.f90
+numerics_check_LDADD = @LIB_FUTILE_LIBS@
+
+
 linalg_check_SOURCES = linalg_check.f90
 linalg_check_LDADD = @LIB_FUTILE_LIBS@
 
@@ -37,7 +43,7 @@ linalg_check_LDADD = @LIB_FUTILE_LIBS@
 mpi_check_SOURCES = mpi_check.f90
 mpi_check_LDADD =  @LIB_FUTILE_LIBS@
 
-op2p_check.o linalg_check.o: $(top_builddir)/wrappers/libwrappers.a
+numerics_check.o op2p_check.o linalg_check.o: $(top_builddir)/wrappers/libwrappers.a
 
 op2p_check.out.yaml: op2p_check
 	$(run_parallel) ./op2p_check -o [10,10,10,10] -n 100 > $@
@@ -52,17 +58,20 @@ regtest: op2p_check linalg_check
 	python $(pythondir)/f_regtest.py --fldiff=$(pythondir)/fldiff_yaml.py --tols=$(srcdir)/tols.yaml --srcdir=$(srcdir)
 
 define F_REGTEST_INSTRUCTIONS
+- numerics_check:
+   runs:
+    - ./numerics_check
 - op2p_check:
    runs:
-    - $(run_parallel) ./op2p_check -o [10,10,10,10] -n 100 > op2p_check.out.yaml
-    - $(run_parallel) ./op2p_check -o [100,100] -n 1000 >> op2p_check.out.yaml
-    - $(run_parallel) ./op2p_check -o [201,201] -n 2000 >> op2p_check.out.yaml
+    - $(run_parallel) ./op2p_check -o [10,10,10,10] -n 100
+    - $(run_parallel) ./op2p_check -o [100,100] -n 1000
+    - $(run_parallel) ./op2p_check -o [201,201] -n 2000
 - linalg_check:
    runs:
-    - OMP_NUM_THREADS=1 ./linalg_check -o 75 -v 10000 > linalg_check.out.yaml
-    - ./linalg_check -o 75 -v 10000 >> linalg_check.out.yaml
-    - ./linalg_check -o 75 -v 10000 -s Yes >> linalg_check.out.yaml
-    - ./linalg_check -o 75 -v 10000 -c 2 >> linalg_check.out.yaml
-    - ./linalg_check -o 75 -v 10000 -c 2 -s Yes >> linalg_check.out.yaml
+    - OMP_NUM_THREADS=1 ./linalg_check -o 75 -v 10000
+    - ./linalg_check -o 75 -v 10000
+    - ./linalg_check -o 75 -v 10000 -s Yes
+    - ./linalg_check -o 75 -v 10000 -c 2
+    - ./linalg_check -o 75 -v 10000 -c 2 -s Yes
 endef
 export F_REGTEST_INSTRUCTIONS

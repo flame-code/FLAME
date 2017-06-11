@@ -35,7 +35,7 @@ LTB = lenosky_tb/clsfunc.o  lenosky_tb/minimize.o  lenosky_tb/nrutil.o  lenosky_
 PARSER = parsestring.o
 MODULES = modules.o module_sqn.o defs_basis.o atmdata.o
 
-OBJ = $(MODULES)
+OBJ = $(MODULES) $(PARSER)
 
 ifdef SPGLIB
 	# Path to spglib
@@ -84,7 +84,6 @@ OBJ+= alborz.o fsockets.o sockets.o  corerepulsion.o confinement.o ipi.o msock.o
 	md_fixlat.o find_symmetry.o sqnm.o qe_bfgs.o sd.o bfgs.o lib_lbfgs.o euler.o envelope.o niggli.o fingerprint_gom.o fingerprint_molgom.o fingerprint_oganov.o fingerprint_oganov_cont.o fingerprint_bcm.o fingerprint_atorb.o fingerprint_gaussmol.o fingerprint_xyz2sm.o MHMoF.o
 
 
-#EXEC1 = MHMoF.o
 EXEC2 = vasp_recompute_kpt.o 
 EXEC3 = expand_poslows.o
 EXEC4 = hull.o envelope.o
@@ -99,20 +98,41 @@ EXEC12 = ternaries.o
 
 
 
-all:  $(MODULES) $(OBJ) libminhocao.a $(EXEC1) $(EXEC2) $(EXEC3) $(EXEC4) $(EXEC5) $(EXEC6) $(EXEC7) $(EXEC8) $(EXEC9) $(EXEC10) $(EXEC11) $(EXEC12) $(LTB) $(PARSER)
-#	$(LD) $(FFLAGS)  -o MHMoF.x $(EXEC1) $(LTB) $(OBJ) $(SPGLIBINT_OBJ) $(PARSER) $(LDFLAGS) $(LIB_MPI_STUBS) $(LIBS) $(CLINK) 
+all: vasp_recompute_kpt.x vasp_recompute_kpt_odd.x vasp_recompute_cell.x expand_poslows.x \
+	hull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x espresso_restruct.x ternaries.x
+	
+vasp_recompute_kpt.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC2)
 	$(LD) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(MODULES) $(PARSER) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(MODULES) $(PARSER) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o hull.x $(EXEC4) $(MODULES) $(PARSER) $(LDFLAGS) 
-	$(LD) $(FFLAGS)  -o binaries.x $(EXEC7) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(MODULES) $(PARSER) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(MODULES) $(PARSER) $(LDFLAGS)
-	$(LD) $(FFLAGS)  -o ternaries.x $(EXEC12) $(LDFLAGS)
 
+expand_poslows.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC3)
+	$(LD) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(LDFLAGS)
+
+hull.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC4)
+	$(LD) $(FFLAGS)  -o hull.x $(EXEC4) $(MODULES) $(PARSER) $(LDFLAGS) 
+
+vasp_recompute_kpt_odd.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC5)
+	$(LD) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(MODULES) $(PARSER) $(LDFLAGS)
+
+vasp_recompute_cell.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC6)
+	$(LD) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(LDFLAGS)
+
+binaries.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC7)
+	$(LD) $(FFLAGS)  -o binaries.x $(EXEC7) $(LDFLAGS)
+
+ascii2POSCAR.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC8)
+	$(LD) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(LDFLAGS)
+
+POSCAR2ascii.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC9)
+	$(LD) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(LDFLAGS)
+
+recompute_kpt.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC10)
+	$(LD) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(MODULES) $(PARSER) $(LDFLAGS)
+
+espresso_restruct.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC11)
+	$(LD) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(MODULES) $(PARSER) $(LDFLAGS)
+
+ternaries.x: $(MODULES) $(OBJ) libminhocao.a $(EXEC12)
+	$(LD) $(FFLAGS)  -o ternaries.x $(EXEC12) $(LDFLAGS)
 
 lenosky_tn%.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -123,12 +143,13 @@ sockets.o: sockets.c
 
 #MHMoF.o: $(MODULES) MHMoF.F90
 
-libminhocao.a: $(OBJ)
+libminhocao.a: $(OBJ) $(LTB)
 	ar -scru libminhocao.a $(OBJ)
 
 clean:
 	rm -rf $(OBJ) $(LTB) libminhocao.a MHMoF.o vasp_recompute_kpt.o *.mod *~
-	rm -rf MHMoF.x vasp_recompute_kpt.x expand_poslows.x
+	rm -rf vasp_recompute_kpt.x vasp_recompute_kpt_odd.x vasp_recompute_cell.x expand_poslows.x \
+		hull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x espresso_restruct.x ternaries.x
 	rm -rf  *.o *.mod liblammps_fortran.a liblammps_fortran.so  liblammps_serial_intel.a  libmpi_stubs.a 
 #	touch $(SPGLIB_EX)/spglib_f08.f90
 

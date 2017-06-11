@@ -1,6 +1,6 @@
 !*****************************************************************************************
 module mod_electrostatics
-    use mod_linked_lists, only: typ_linked_lists
+    use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
     use mod_spline, only: typ_spline
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: coulomb_operator
@@ -53,6 +53,7 @@ module mod_electrostatics
         real(8):: cell(3) !cell size in x,y,z direction.
         type(typ_poisson_p3d):: poisson_p3d
         type(typ_linked_lists):: linked_lists
+        type(typ_pia_arr):: pia_arr
         type(typ_spline):: spline
     end type typ_ewald_p3d
 end module mod_electrostatics

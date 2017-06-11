@@ -17,6 +17,11 @@
           & '), error code '//trim(yaml_toa(ierror)),ERR_ALLOCATE)
      return
   end if
+  if (bigdebug .and. any(m%shape < 0)) then
+    call f_err_throw('array has suspect shape (size < 0 in at least one dimension) ' // trim(m%array_id) // &
+    & '(' // trim(yaml_toa(product(m%shape))) // &
+    & ')',ERR_ALLOCATE)
+  end if
   if (size(shape(array))==m%rank) then
      call pad_array(array,m%put_to_zero,m%shape,padding)
      !also fill the array with the values of the source if the address is identified in the source

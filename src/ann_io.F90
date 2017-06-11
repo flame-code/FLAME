@@ -8,7 +8,7 @@ subroutine read_input_ann(parini,iproc,ann_arr)
     integer, intent(in):: iproc
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    integer:: ios, iann
+    integer:: ios, iann, i, j
     character(256):: fn_fullpath
     character(5):: stypat
     real(8):: rcut
@@ -35,6 +35,14 @@ subroutine read_input_ann(parini,iproc,ann_arr)
         endif
         close(1)
     enddo
+    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
+    !    do i=1,ann_arr%n
+    !        do j=i,ann_arr%n
+    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !        enddo
+    !    enddo
+    !endif
 end subroutine read_input_ann
 !*****************************************************************************************
 subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
@@ -90,9 +98,12 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
         read(ann%hlines(3),*) str1,ann%ampl_chi,str2,ann%prefactor_chi
         read(ann%hlines(4),*) str1,ann%zion,str2,ann%gausswidth_ion,str3,ann%ener_ref
         read(ann%hlines(5),*) str1,ann%gausswidth,str2,ann%hardness,str3,ann%chi0
+        read(ann%hlines(6),*) str1,ann%spring_const,str2,ann%qinit
     elseif(trim(parini%approach_ann)=='tb') then
         read(ann%hlines(4),*) str3,ann%ener_ref
     endif
+    !read(ann%hlines(6),*) str1,ann%rionic
+    !---------------------------------------------
     i0=0
 
     read(ifile,'(a)') strline
@@ -275,14 +286,14 @@ subroutine write_ann_all(parini,ann_arr,iter)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='eem2') then
+    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
         do i=1,ann_arr%n
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
     else
-        stop 'ERROR: writing ANN parameters is only for eem1,eem2,tb'
+        stop 'ERROR: writing ANN parameters is only for eem1,cent2,tb'
     endif
 end subroutine write_ann_all
 !*****************************************************************************************
@@ -391,10 +402,10 @@ subroutine read_ann(parini,ann_arr)
             write(fn_tt,'(i1)') iann
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
-        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='eem2') then
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
-            stop 'ERROR: reading ANN parameters is only for eem1,eem2,tb'
+            stop 'ERROR: reading ANN parameters is only for eem1,cent2,tb'
         endif
         open(unit=1,file=trim(filename),status='old',iostat=ios)
         if(ios/=0) then
@@ -434,6 +445,14 @@ subroutine read_ann(parini,ann_arr)
         !-------------------------------------------------------
         close(1)
     enddo
+    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
+    !    do i=1,ann_arr%n
+    !        do j=i,ann_arr%n
+    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !        enddo
+    !    enddo
+    !endif
 end subroutine read_ann
 !*****************************************************************************************
 subroutine read_data(parini,filename_list,atoms_arr)

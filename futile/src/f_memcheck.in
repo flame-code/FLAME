@@ -4,7 +4,9 @@ LD_PRELOAD=@prefix@/lib/libfmalloc-1.so
 #\
 FUTILE_MALLOC_NAN_PADDING=2
 #\
-export LD_PRELOAD FUTILE_MALLOC_NAN_PADDING
+MALLOC_PERTURB_=256
+#\
+export LD_PRELOAD FUTILE_MALLOC_NAN_PADDING MALLOC_PERTURB_
 #\
 echo "#Executing f_memcheck utility"
 #\
@@ -22,4 +24,4 @@ echo "#Executable command: " "$@"
 #\
 echo "#End of f_memcheck utility"
 #\
-exec tclsh "$0" "$@"  "> $LOGFILE 2>$ERRFILE && tail -f $LOGFILE"
+exec tclsh "$0" "$@"

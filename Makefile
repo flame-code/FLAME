@@ -10,12 +10,9 @@ INCLUDES = -I../modules
 LIB_SRC = src/libsrc.a
 
 ifdef BPS
-	LIBS += $(BDIR)/PSolver/src/libPSolver-1.a \
-		$(BDIR)/wrappers/libwrappers.a \
-		$(BDIR)/flib/src/libflib-1.a \
-		$(BDIR)/yaml-0.1.4/src/.libs/libyaml.a
+	LIBS += -L$(BDIR)/install/lib/ -lPSolver-1
 	PRE_PROC += -DHAVE_BPS
-	INCLUDES += -I$(BDIR)/includes -I$(BDIR)/PSolver/src
+	INCLUDES += -I$(BDIR)/install/include
 endif
 
 ifdef SPGLIB
@@ -37,7 +34,7 @@ ifdef TINKER
 	LIBS+= $(LIB_TINKER) $(LIB_FFTW3)
 endif
 
-MINHOCAO = minhocao/libminhocao.a minhocao/parsestring.o minhocao/lenosky_tb/*.o
+MINHOCAO = minhocao/libminhocao.a minhocao/lenosky_tb/*.o
 
 DIRS += modules
 DIRS += src

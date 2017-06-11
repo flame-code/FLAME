@@ -449,67 +449,82 @@ subroutine icopy(n,dx,incx,dy,incy)
 
 end subroutine icopy
 
-
-subroutine diff_i(n,a,b,diff)
+subroutine diff_i(n,a,b,diff,idiff)
   implicit none
   integer, intent(in) :: n
   integer, dimension(n), intent(in) :: a
   integer, dimension(n), intent(in) :: b
   integer, intent(out) :: diff
+  integer, intent(out) :: idiff
   !local variables
   integer :: i
 
   diff=0
   do i=1,n
-     diff=max(diff,abs(a(i)-b(i)))
+     if (diff < abs(a(i)-b(i))) then
+        diff=max(diff,abs(a(i)-b(i)))
+        idiff=i
+     end if
   end do
 end subroutine diff_i
 
 
-subroutine diff_li(n,a,b,diff)
+subroutine diff_li(n,a,b,diff,idiff)
   implicit none
   integer, intent(in) :: n
   integer(kind=8), dimension(n), intent(in) :: a
   integer(kind=8), dimension(n), intent(in) :: b
   integer(kind=8), intent(out) :: diff
+  integer, intent(out) :: idiff
   !local variables
   integer :: i
 
   diff=int(0,kind=8)
   do i=1,n
-     diff=max(diff,abs(a(i)-b(i)))
+     if (diff < abs(a(i)-b(i))) then
+        diff=max(diff,abs(a(i)-b(i)))
+        idiff=i
+     end if
   end do
 end subroutine diff_li
 
 
-subroutine diff_r(n,a,b,diff)
+subroutine diff_r(n,a,b,diff,idiff)
   implicit none
   integer, intent(in) :: n
   real, dimension(n), intent(in) :: a
   real, dimension(n), intent(in) :: b
   real, intent(out) :: diff
+  integer, intent(out) :: idiff
   !local variables
   integer :: i
 
   diff=0.0e0
   do i=1,n
-     diff=max(diff,abs(a(i)-b(i)))
+     if (diff < abs(a(i)-b(i))) then
+        diff=max(diff,abs(a(i)-b(i)))
+        idiff=i
+     end if
   end do
 end subroutine diff_r
 
 
-subroutine diff_d(n,a,b,diff)
+subroutine diff_d(n,a,b,diff,idiff)
   implicit none
   integer, intent(in) :: n
   double precision, dimension(n), intent(in) :: a
   double precision, dimension(n), intent(in) :: b
   double precision, intent(out) :: diff
+  integer, intent(out) :: idiff
   !local variables
   integer :: i
 
   diff=0.0d0
   do i=1,n
-     diff=max(diff,abs(a(i)-b(i)))
+     if (diff < abs(a(i)-b(i))) then
+        diff=max(diff,abs(a(i)-b(i)))
+        idiff=i
+     end if
   end do
 end subroutine diff_d
 
@@ -531,18 +546,22 @@ subroutine diff_l(n,a,b,diff)
 end subroutine diff_l
 
 
-subroutine diff_ci(n,a,b,diff)
+subroutine diff_ci(n,a,b,diff,idiff)
   implicit none
   integer, intent(in) :: n
   character, dimension(n), intent(in) :: a
   integer, dimension(n), intent(in) :: b
   integer, intent(out) :: diff
+  integer, intent(out) :: idiff
   !local variables
   integer :: i
 
   diff=0
   do i=1,n
-     diff=max(diff,abs(ichar(a(i))-b(i)))
+     if (diff < abs(ichar(a(i))-b(i))) then
+        diff=max(diff,abs(ichar(a(i))-b(i)))
+        idiff=i
+     end if
   end do
 end subroutine diff_ci
 

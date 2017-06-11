@@ -1,0 +1,8 @@
+/**
+@mainpage Document Title
+
+@section Main Main page for Futile manual
+
+- \subpage learn_through_examples
+
+*/

@@ -23,7 +23,8 @@
     integer, dimension(:,:), allocatable :: ncouples_local
     real(f_double), dimension(:,:), allocatable :: data,res,rho_i_data,v_i_data,k_ij,v_i_data_res
     real(f_double), dimension(:,:), allocatable :: v_i_dist
-    real(f_double), dimension(:,:), allocatable :: treated_couples
+    integer, dimension(:,:), allocatable :: treated_couples
+    !real(f_double), dimension(:,:), allocatable :: treated_couples
 
     call f_lib_initialize()
 
@@ -113,18 +114,17 @@
 
     !this array counts the number of couples created locally for each processor in each step
     ncouples_local=f_malloc0([0.to.nproc-1,0.to.nproc-1],id='ncouples_local')
-   
-
-    call warmup(nproc,ngroup,nobj_par,norb,norbp,norbp*maxval(nobj_par),symmetric,nearest_neighbor,&
-         ncouples_local,treated_couples,nsteps)
-
-    if (iproc==0) then
-       call yaml_mapping_open('Test of the warmup procedure')
-       call yaml_map('Number of steps',nsteps)
-       call yaml_map('Total number of local couples',ncouples_local(:,0:nsteps))
-       call yaml_map('Id of treated couples locally',treated_couples(:,0:nsteps))
-       call yaml_mapping_close()
-    end if
+!!$
+!!$    call warmup(nproc,ngroup,nobj_par,norb,norbp,norbp*maxval(nobj_par),symmetric,nearest_neighbor,&
+!!$         ncouples_local,treated_couples,nsteps)
+!!$
+!!$    if (iproc==0) then
+!!$       call yaml_mapping_open('Test of the warmup procedure')
+!!$       call yaml_map('Number of steps',nsteps)
+!!$       call yaml_map('Total number of local couples',ncouples_local(:,0:nsteps))
+!!$       call yaml_map('Id of treated couples locally',treated_couples(:,0:nsteps))
+!!$       call yaml_mapping_close()
+!!$    end if
 
 
 !!$
@@ -525,31 +525,405 @@
     integer, dimension(0:nproc-1,ngroup), intent(in) :: nobj_par
     integer, intent(out) :: nsteps
     integer, dimension(0:nproc-1,0:nproc-1), intent(inout) :: ncouples_local
-    real(f_double), dimension(ncouples_local_max,0:nproc-1), intent(inout) :: treated_couples
+    integer, dimension(ncouples_local_max,0:nproc-1), intent(inout) :: treated_couples
+    !real(f_double), dimension(ncouples_local_max,0:nproc-1), intent(inout) :: treated_couples
     !local variables
-    integer :: iorb,jorb,ncouples_step,ndim_metadata,iproc,iorb_glb,jorb_glb
-    type(OP2P_data) :: OP2P_outer
-    type(OP2P_iterator) :: iter_outer
-    real(f_double), dimension(:,:), allocatable :: fake_res_psi,pseudopsi
-  
-    ndim_metadata=2
+    logical :: symm_inner,keepup
+    integer :: iorb,jorb,ncouples_step,ndim_metadata,iproc,iorb_glb,jorb_glb,nentries_step,ncouples_redundant
+    integer :: icouple_den,icouple_glb,ipot,jcouple_pot,jcouple_glb,jstep_outer,nentries_local_max,icouple
+    integer :: ishift,jshift,entry_id,istep_inner,istep_outer,ientry,nentries_components,nstep_outer,nstep_inner
+    type(OP2P_data) :: OP2P_outer,OP2P_inner
+    type(OP2P_iterator) :: iter_outer,iter_inner
+    integer, dimension(:,:), allocatable :: KIJ,KIJc
+    integer, dimension(:), allocatable :: npotentials_step!,redundant_couples
+    integer, dimension(:,:), allocatable :: stored_potential_indices,redundant_couple
+    integer, dimension(:,:,:), allocatable :: treated_indices_orbitals,treated_indices_components
+    real(f_double), dimension(:,:), allocatable :: fake_res_psi,pseudopsi,fake_res_rho
 
+
+    call count_codensities(mpirank(),nproc,nobj_par,nearest_neighbor,&
+         ncouples_local_max,treated_couples,ncouples_local,nstep_outer)
+
+    print *,'nstep_outer',nstep_outer
+    
+    !now that each processor knows which are the codensities that will be treated in each step
+    !we can replay the outer loop
+    !this information can now be used to extract the direct and transposed
+    !components of the coupling matrix
+    KIJ=f_malloc0([((norb+1)*norb)/2,((norb+1)*norb)/2],id='KIJ')
+    istep_outer=-1
+    keepup=.false.
+    outer_loop: do while(istep_outer < nstep_outer .or. keepup)
+       call f_increment(istep_outer)
+       if (istep_outer <= nstep_outer) then
+          keepup= any(ncouples_local(:,istep_outer) /= 0)
+          !fill a line of the coupling matrix
+          do icouple=1,ncouples_local_max
+             jcouple_pot=treated_couples(icouple,istep_outer)
+             if (jcouple_pot == 0) exit
+             !we fill all the lines of the coupling matrix as 
+             !the potential will be spread over all the processor
+             ientry=reduced_couple_id(jcouple_pot,norb)
+             KIJ(:,ientry)=1
+             KIJ(ientry,:)=1
+          end do
+       else
+          keepup =.false.
+       end if
+    end do outer_loop
+    if (nproc > 1) call mpiallred(KIJ,op=MPI_SUM)
+
+    if (mpirank()==0) then
+       call yaml_map('KIJ',KIJ,fmt='(i5)')
+       call yaml_map('Number of total entries',size(KIJ))
+       call yaml_map('Number of nonzero entries',count(KIJ /= 0))
+    end if
+
+
+!!$
+!!$    ndim_metadata=1
+!!$
+!!$    pseudopsi=f_malloc0([ndim_metadata,norbp],id='pseudopsi')
+!!$    fake_res_psi=f_malloc0([ndim_metadata,norbp],id='fake_res_psi')
+!!$    fake_res_rho=f_malloc0([ndim_metadata,norbp],id='fake_res_rho')
+!!$    redundant_couples=f_malloc0([1.to.norb**2,0.to.nproc-1],id='redundant_couples')
+!!$
+!!$    iproc=mpirank()
+!!$    symm_inner=.false.
+!!$    !initialize data and res object
+!!$    !to calculate the couples globally let us perform a run exchanging the metadata
+!!$    !first initialize the OP2P data for the couples
+!!$    call initialize_OP2P_data(OP2P_outer,mpiworld(),iproc,nproc,ngroup,ndim_metadata,&
+!!$      nobj_par,0,symmetric,nearest_neighbor)
+!!$    !let us initialize two different OP2P objects, for the communication
+!!$    call set_OP2P_iterator(iproc,OP2P_outer,iter_outer,norbp,pseudopsi,fake_res_psi)
+!!$    nstep_outer=0
+!!$    ncouples_redundant=0
+!!$    OP2P_outer_loop_init: do
+!!$       call OP2P_communication_step(iproc,OP2P_outer,iter_outer)
+!!$       if (iter_outer%event == OP2P_EXIT) exit
+!!$       nstep_outer=iter_outer%istep
+!!$       !for each step now calculate the id of the couples that will be echanged
+!!$       !and the id of the ones which will be neglected
+!!$       ncouples_step=0
+!!$       do iorb=iter_outer%isloc_i,iter_outer%nloc_i+iter_outer%isloc_i-1
+!!$          do jorb=iter_outer%isloc_j,iter_outer%nloc_j+iter_outer%isloc_j-1
+!!$             jorb_glb=iter_outer%phi_j%id_glb(jorb)
+!!$             iorb_glb=iter_outer%phi_i%id_glb(iorb)
+!!$             icouple_den=couple_global_id(iorb_glb,jorb_glb,norb)
+!!$             if (jorb_glb > iorb_glb) then !to ensure that only one step is performed
+!!$                if (iter_outer%istep==0 .and. jorb_glb > iorb_glb) cycle !to ensure that only one step is performed
+!!$                call f_increment(ncouples_redundant)
+!!$                !these couples only have to be considered for the transposed data repartition
+!!$                redundant_couples(ncouples_redundant,iproc)=icouple_den
+!!$                cycle
+!!$             end if
+!!$             call f_increment(ncouples_step)
+!!$             treated_couples(ncouples_step,iter_outer%istep)=&
+!!$                  real(icouple_den,f_double)
+!!$          end do
+!!$       end do
+!!$       print *,'entering_begin',iter_outer%istep,iproc,ncouples_step
+!!$       ncouples_local(iproc,iter_outer%istep)=ncouples_step
+!!$    end do OP2P_outer_loop_init
+!!$    call free_OP2P_data(OP2P_outer)
+!!$    !then reduce the results of the communication for each of the steps
+!!$    call mpiallred(ncouples_local,op=MPI_SUM)
+!!$    call mpiallred(redundant_couples,op=MPI_SUM)
+!!$!call f_zero(redundant_couples)
+!!$    call f_free(fake_res_psi)
+!!$    call f_free(pseudopsi)
+!!$
+!!$    nentries_local_max=maxval(ncouples_local(iproc,:))*maxval(ncouples_local)
+!!$
+!!$    npotentials_step=f_malloc(0.to.nstep_outer,id='npotentials_step')
+!!$    stored_potential_indices=f_malloc0([1.to.(nentries_local_max+1)*nproc,0.to.nstep_outer],id='stored_potential_indices')
+!!$    treated_indices_orbitals=f_malloc0([1.to.nentries_local_max+1,0.to.nproc-1,0.to.nstep_outer],id='treated_indices_orbitals')
+!!$    treated_indices_components=&
+!!$         f_malloc0([1.to.(nentries_local_max+1)*(nproc+1),0.to.nproc-1,0.to.nstep_outer],id='treated_indices_components')
+!!$
+!!$
+!!$    !construct the data associated to the number of couples
+!!$
+!!$    !this information can now be used to extract the direct and transposed
+!!$    !components of the coupling matrix
+!!$    do istep_outer=0,nstep_outer
+!!$
+!!$       call initialize_OP2P_data(OP2P_inner,mpiworld(),iproc,nproc,&
+!!$            ngroup,1,&!ncouples_local_max,&
+!!$            ncouples_local(0,istep_outer),0,symmetric=symm_inner,nearest_neighbor=nearest_neighbor)
+!!$       !iterate now the OP2P mechanisms only on the couples
+!!$       !which are given to each of the process
+!!$
+!!$       !here the poisson solver to the density rho_j have to be
+!!$       !applied and these arrays have to be sent to all the processes.
+!!$       call set_OP2P_iterator(iproc,OP2P_inner,iter_inner,&
+!!$            ncouples_local(iproc,istep_outer),treated_couples(1,istep_outer),fake_res_rho)
+!!$       !we should put a tag offest in the real loop and also the treated couples as a result array
+!!$
+!!$       npotentials_step(istep_outer)=0
+!!$       print *,'entering',istep_outer,iter_inner%istep,iproc,ncouples_local(iproc,istep_outer)
+!!$       OP2P_inner_loop_init: do
+!!$          call OP2P_communication_step(iproc,OP2P_inner,iter_inner)
+!!$          print *,'stepping',istep_outer,iter_inner%istep,iproc
+!!$          if (iter_inner%event == OP2P_EXIT) then
+!!$             print *,'exiting',istep_outer,iter_inner%istep,iproc
+!!$             exit
+!!$          end if
+!!$          !as the potential is communicated we also calculate the indices of the coupling matrix
+!!$          !which need to go in the transposed distribution
+!!$          nentries_components=0
+!!$          do jstep_outer=0,istep_outer-1
+!!$             do ipot=1,npotentials_step(jstep_outer)
+!!$                jcouple_pot=stored_potential_indices(ipot,jstep_outer)
+!!$                do jorb=iter_inner%isloc_j,iter_inner%nloc_j+iter_inner%isloc_j-1
+!!$                   jshift=iter_inner%phi_j%displ(jorb)
+!!$                   icouple_den=nint(iter_inner%phi_j%data(1+jshift)) !index of local density (or potential)
+!!$                   icouple_den=reduced_couple_id(icouple_den,norb)
+!!$                   if (icouple_den==0) exit !as the array communicated is larger in principle
+!!$                   call f_increment(nentries_components)
+!!$                   !treated_indices_components(nentries_components,jstep_outer,istep_outer)=&
+!!$                   !     couple_global_id(icouple_den,jcouple_pot,((norb+1)*norb)/2)
+!!$                   treated_indices_components(nentries_components,iter_inner%istep,istep_outer)=&
+!!$                        couple_global_id(icouple_den,jcouple_pot,((norb+1)*norb)/2)
+!!$                   print *,'calculation of transposed indices',iproc,istep_outer,icouple_den,jcouple_pot,&
+!!$                        couple_global_id(icouple_den,jcouple_pot,((norb+1)*norb)/2)
+!!$                end do
+!!$             end do
+!!$          end do
+!!$
+!!$
+!!$          !store the potential label given from jcouple_glb index
+!!$          do jorb=iter_inner%isloc_j,iter_inner%nloc_j+iter_inner%isloc_j-1
+!!$             jshift=iter_inner%phi_j%displ(jorb)
+!!$             jcouple_pot=nint(iter_inner%phi_j%data(1+jshift))
+!!$             jcouple_pot=reduced_couple_id(jcouple_pot,norb)
+!!$             if (jcouple_pot==0) exit !as the array communicated is larger in principle
+!!$             call f_increment(npotentials_step(istep_outer))
+!!$             stored_potential_indices(npotentials_step(istep_outer),istep_outer)=jcouple_pot
+!!$             print *,'stored potentials',iproc,istep_outer,iter_inner%istep,jcouple_pot
+!!$          end do
+!!$
+!!$          !number of matrix elements treated in the orbital distribution
+!!$          !at this step
+!!$          nentries_step=0
+!!$          do iorb=iter_inner%isloc_i,iter_inner%nloc_i+iter_inner%isloc_i-1
+!!$             ishift=iter_inner%phi_i%displ(iorb)
+!!$             icouple_den=nint(iter_inner%phi_i%data(1+ishift)) !index of local density (of potential)
+!!$             icouple_den=reduced_couple_id(icouple_den,norb)
+!!$             !here we should take care in considering only the lower triangular part for the
+!!$             !inner istep=0 case
+!!$             if (icouple_den==0) exit !as the array communicated is larger in principle
+!!$             pot_loop: do jorb=iter_inner%isloc_j,iter_inner%nloc_j+iter_inner%isloc_j-1
+!!$                jshift=iter_inner%phi_j%displ(jorb)
+!!$                jcouple_pot=nint(iter_inner%phi_j%data(1+jshift))
+!!$                !identify the indices of the matrix which are filled
+!!$                jcouple_pot=reduced_couple_id(jcouple_pot,norb)
+!!$                if (jcouple_pot==0) exit !as the array communicated is larger in principle
+!!$                if (jcouple_pot > icouple_den .or. any(jcouple_pot == redundant_couples)) cycle pot_loop !to ensure that only one step is performed
+!!$                !in the last step purge the indices which pass nearby twice
+!!$                entry_id=couple_global_id(icouple_den,jcouple_pot,((norb+1)*norb)/2)
+!!$                if (istep_outer == nstep_outer) then
+!!$                   do ientry=1,nentries_step
+!!$                      if (entry_id == treated_indices_orbitals(ientry,iter_inner%istep,istep_outer)) then
+!!$                         print *,'inthere'
+!!$                         cycle pot_loop
+!!$                      end if
+!!$                   end do
+!!$                end if
+!!$                !end if
+!!$                call f_increment(nentries_step)
+!!$                treated_indices_orbitals(nentries_step,iter_inner%istep,istep_outer)=&
+!!$                     couple_global_id(icouple_den,jcouple_pot,((norb+1)*norb)/2)
+!!$             end do pot_loop
+!!$          end do
+!!$          !print *,'total',nentries_step,istep_outer,iter_inner%istep,nstep_outer,iter_inner%nloc_i,iter_inner%nloc_j
+!!$       end do OP2P_inner_loop_init
+!!$       call free_OP2P_data(OP2P_inner)
+!!$    end do
+!!$
+!!$
+!!$!given now the
+!!$
+!!$
+!!$    !dump data associated to the treated indices
+!!$    !full matrix
+!!$    KIJ=f_malloc0([((norb+1)*norb)/2,((norb+1)*norb)/2],id='KIJ')
+!!$    !fill the matrix with the couple_global_id associated
+!!$
+!!$    !entries which have to be filled in the orbital distribution scheme
+!!$    do istep_outer=0,nstep_outer
+!!$       do istep_inner=0,nproc-1 !take the max of the steps
+!!$          do ientry=1,nentries_local_max
+!!$             entry_id=treated_indices_orbitals(ientry,istep_inner,istep_outer)
+!!$             if (entry_id==0) exit
+!!$             call get_couple_from_id(entry_id,((norb+1)*norb)/2,icouple_den,jcouple_pot)
+!!$             !print *,'entries',entry_id,icouple_den,jcouple_pot,ientry,istep_inner,istep_outer
+!!$             if (KIJ(icouple_den,jcouple_pot) /= 0 .or. KIJ(jcouple_pot,icouple_den) /= 0) then
+!!$                print *,'entries already considered',entry_id,icouple_den,jcouple_pot,ientry,&
+!!$                     istep_inner,istep_outer,iproc
+!!$                if (istep_outer /= nstep_outer) stop
+!!$                cycle
+!!$             end if
+!!$             KIJ(icouple_den,jcouple_pot)=nproc
+!!$             KIJ(jcouple_pot,icouple_den)=nproc
+!!$          end do
+!!$       end do
+!!$    end do
+!!$
+!!$    if (nproc > 1) call mpiallred(KIJ,op=MPI_SUM)
+!!$
+!!$    if (iproc==0) then
+!!$       call yaml_map('KIJ',KIJ,fmt='(i5)')
+!!$       call yaml_map('Number of total entries',size(KIJ))
+!!$       call yaml_map('Number of nonzero entries',count(KIJ /= 0))
+!!$    end if
+!!$
+!!$    !full matrix
+!!$    KIJc=f_malloc0([((norb+1)*norb)/2,((norb+1)*norb)/2],id='KIJc')
+!!$call mpibarrier()
+!!$    !entries which have to be filled in the components distribution scheme
+!!$    do istep_outer=0,nstep_outer
+!!$       !do jstep_outer=0,istep_outer-1
+!!$       do istep_inner=0,nproc-1 !take the maximum
+!!$          !print *,'indices',iproc,'val',treated_indices_components(:,istep_inner,istep_outer)
+!!$          do ientry=1,size(treated_indices_components,dim=1)
+!!$             entry_id=treated_indices_components(ientry,istep_inner,istep_outer)
+!!$             if (entry_id==0) then
+!!$                exit
+!!$             end if
+!!$             call get_couple_from_id(entry_id,((norb+1)*norb)/2,icouple_den,jcouple_pot)
+!!$             !print *,'entries',entry_id,icouple_den,jcouple_pot,ientry,istep_inner,istep_outer
+!!$             if (KIJc(icouple_den,jcouple_pot) /= 0 .or. KIJc(jcouple_pot,icouple_den) /= 0) then
+!!$                print *,'transposed entries already considered',&
+!!$                     entry_id,icouple_den,jcouple_pot,ientry,istep_inner,istep_outer
+!!$                if (istep_outer /= nstep_outer) stop
+!!$                cycle
+!!$             end if
+!!$             !print *,'now filling',iproc,istep_outer,icouple_den,jcouple_pot,entry_id,istep_inner
+!!$             KIJc(icouple_den,jcouple_pot)=1
+!!$             KIJc(jcouple_pot,icouple_den)=1
+!!$          end do
+!!$       end do
+!!$    end do
+!!$    
+!!$    if (nproc > 1) call mpiallred(KIJc,op=MPI_SUM)
+!!$
+!!$    if (iproc==0) then
+!!$       call yaml_map('KIJc',KIJc,fmt='(i5)')
+!!$       call yaml_map('Number of nonzero entries',count(KIJc /= 0))
+!!$       call yaml_map('Number of filled entries',count(KIJc+KIJ >= nproc))
+!!$    end if
+!!$
+!!$    !here we should do the sum of the two matrices
+
+
+!    call f_free(stored_potential_indices)
+!    call f_free(treated_indices_orbitals)
+!    call f_free(treated_indices_components)
+!    call f_free(fake_res_rho)
+!    call f_free(npotentials_step)
+    call f_free(KIJ)
+!    call f_free(KIJc)
+
+    contains
+
+      !> constructs the unique id of the couple starting from the orbital number
+      !pure 
+      function couple_global_id(iorb,jorb,norb) result(id)
+        implicit none
+        integer, intent(in) :: iorb,jorb,norb
+        integer :: id
+        !local variables
+        integer :: ii,jj
+        ii=max(iorb,jorb)
+        jj=min(iorb,jorb)
+
+        if (ii > norb .or. jj > norb) then
+           print *,'error',ii,jj,norb
+           stop
+        end if
+        
+        id=ii+(jj-1)*norb
+      end function couple_global_id
+
+      pure subroutine get_couple_from_id(id,norb,iorb,jorb)
+        implicit none
+        integer, intent(in) :: id,norb
+        integer, intent(out) :: iorb,jorb
+
+        iorb=modulo(id-1,norb)+1
+        jorb=(id-iorb)/norb+1
+      end subroutine get_couple_from_id
+
+      !pure 
+      function reduced_couple_id(couple_id,norb)
+        implicit none
+        integer, intent(in) :: couple_id,norb
+        integer :: reduced_couple_id
+        !local variables
+        integer :: iorb,jorb,ii,jj
+        call get_couple_from_id(couple_id,norb,iorb,jorb)
+        reduced_couple_id=0
+        if (jorb > iorb) then
+           print *,'iorb',iorb,jorb,couple_id,norb
+           stop
+        end if
+        do ii=1,jorb-1
+           call f_increment(reduced_couple_id,inc=norb-ii)
+        end do
+        call f_increment(reduced_couple_id,inc=iorb)
+        if (reduced_couple_id > norb*(norb+1)/2) then
+           print *,'error couple',couple_id,iorb,jorb,reduced_couple_id
+           stop
+        end if
+      end function reduced_couple_id
+
+
+  end subroutine warmup
+
+
+  subroutine count_codensities(iproc,nproc,nobj_par,nearest_neighbor,ncouples_local_max,treated_couples,ncouples_local,nstep_outer)
+    use futile    
+    use wrapper_MPI, only: MPI_SUM,mpiallred,mpiworld
+    use overlap_point_to_point
+    implicit none
+    logical, intent(in) :: nearest_neighbor
+    integer, intent(in) :: iproc,nproc,ncouples_local_max
+    integer, dimension(0:nproc-1), intent(in) ::  nobj_par !<number of psi in each proc
+    integer, intent(out) :: nstep_outer
+    integer, dimension(ncouples_local_max,0:nproc-1), intent(out) :: treated_couples
+    integer, dimension(0:nproc-1,0:nproc-1), intent(out) :: ncouples_local
+    !local variables
+    logical :: dosymm
+    integer :: ncouples_step,icouple_den,iorb,jorb,iorb_glb,jorb_glb,ndim_metadata,norbp,norb
+    type(OP2P_data) :: OP2P_outer,OP2P_inner
+    type(OP2P_iterator) :: iter_outer,iter_inner
+    real(f_double), dimension(:,:), allocatable :: fake_res_psi,pseudopsi,fake_res_rho
+    
+
+    ndim_metadata=1
+    norbp=nobj_par(iproc)
+    norb=sum(nobj_par)
     pseudopsi=f_malloc0([ndim_metadata,norbp],id='pseudopsi')
     fake_res_psi=f_malloc0([ndim_metadata,norbp],id='fake_res_psi')
+    fake_res_rho=f_malloc0([ndim_metadata,norbp],id='fake_res_rho')
+    call f_zero(treated_couples)
+    call f_zero(ncouples_local)
 
-    iproc=mpirank()
+    dosymm=.true.
     !initialize data and res object
     !to calculate the couples globally let us perform a run exchanging the metadata
     !first initialize the OP2P data for the couples
-    call initialize_OP2P_data(OP2P_outer,mpiworld(),iproc,nproc,ngroup,ndim_metadata,&
-      nobj_par,0,symmetric,nearest_neighbor)
+    call initialize_OP2P_data(OP2P_outer,mpiworld(),iproc,nproc,1,ndim_metadata,&
+         nobj_par,0,symmetric=dosymm,nearest_neighbor=nearest_neighbor)
     !let us initialize two different OP2P objects, for the communication
     call set_OP2P_iterator(iproc,OP2P_outer,iter_outer,norbp,pseudopsi,fake_res_psi)
-    nsteps=0
+    nstep_outer=-1
     OP2P_outer_loop_init: do
        call OP2P_communication_step(iproc,OP2P_outer,iter_outer)
        if (iter_outer%event == OP2P_EXIT) exit
-       nsteps=iter_outer%istep
+       nstep_outer=iter_outer%istep
        !for each step now calculate the id of the couples that will be echanged
        !and the id of the ones which will be neglected
        ncouples_step=0
@@ -557,19 +931,22 @@
           do jorb=iter_outer%isloc_j,iter_outer%nloc_j+iter_outer%isloc_j-1
              jorb_glb=iter_outer%phi_j%id_glb(jorb)
              iorb_glb=iter_outer%phi_i%id_glb(iorb)
-            call f_increment(ncouples_step)
-            treated_couples(ncouples_step,iter_outer%istep)=&
-                 real(couple_global_id(iorb_glb,jorb_glb,norb),f_double)
-         end do
-      end do
-      ncouples_local(iproc,iter_outer%istep)=ncouples_step
+             icouple_den=couple_global_id(iorb_glb,jorb_glb,norb)
+             if (jorb_glb > iorb_glb) cycle !avoid double creation of the densities
+             call f_increment(ncouples_step)
+             treated_couples(ncouples_step,iter_outer%istep)=icouple_den
+          end do
+       end do
+       ncouples_local(iproc,iter_outer%istep)=ncouples_step
     end do OP2P_outer_loop_init
-    
     call free_OP2P_data(OP2P_outer)
     !then reduce the results of the communication for each of the steps
     call mpiallred(ncouples_local,op=MPI_SUM)
 
+    !here we should put the summary
+
     call f_free(fake_res_psi)
+    call f_free(fake_res_rho)
     call f_free(pseudopsi)
 
     contains
@@ -586,4 +963,5 @@
         id=ii+(jj-1)*norb
       end function couple_global_id
 
-  end subroutine warmup
+  end subroutine count_codensities
+

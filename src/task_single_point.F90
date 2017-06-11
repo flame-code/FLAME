@@ -13,7 +13,7 @@ subroutine single_point_task(parini)
     type(typ_file_info):: file_info
     real(8):: tt1, tt2, fxyz(3)
     integer:: iconf, iat
-    call acf_read_new(parini,'posinp.acf',1000,atoms_arr)
+    call acf_read_new(parini,'posinp.acf',10000,atoms_arr)
     do iconf=1,atoms_arr%nconf
         call set_ndof(atoms_arr%atoms(iconf))
     enddo

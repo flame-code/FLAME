@@ -61,11 +61,11 @@ subroutine calculate_potener_pot(poisson_p3d,cell,hx,hy,hz,epot,beta)
     enddo
     if(present(beta)) then
         call solsyslinequ(poisson_p3d,hz,cell,beta)
+        !write(55,'(i4,es14.5)') icall,beta
+        write(*,*)"beta = ", beta
     else
         call solsyslinequ(poisson_p3d,hz,cell)
     endif
-    !write(55,'(i4,es14.5)') icall,beta
-    write(*,*)"beta = ", beta
     do igpz=1,poisson_p3d%ngpz
         call dfftw_execute(poisson_p3d%plan_b(igpz))
     enddo

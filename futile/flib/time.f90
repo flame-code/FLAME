@@ -18,7 +18,7 @@ module time_profiling
   private 
 
   !>maximum number of allowed categories
-  integer, parameter :: ncat_max=200
+  integer, parameter :: ncat_max=300
   !>maximum number of partial counters active
   integer, parameter :: nctr_max=20
   !>integer indicating the file unit

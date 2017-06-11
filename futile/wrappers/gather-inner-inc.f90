@@ -27,7 +27,7 @@
      return
   end if
   !then one can proceed with the MPI operation
-  ntotrecv=int(int(ntot,kind=8)*kind(sendbuf)/int(kind(recvbuf),kind=8))
+  ntotrecv=int(int(ntot,f_long)*kind(sendbuf)/int(kind(recvbuf),f_long))
   call f_timer_interrupt(TCAT_GATHER)
   call MPI_GATHER(sendbuf,ntot,mpitype(sendbuf),&
        recvbuf,ntotrecv,mpitype(recvbuf),iroot,mpi_comm,ierr)

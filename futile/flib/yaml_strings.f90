@@ -80,7 +80,7 @@ module yaml_strings
   public :: yaml_toa, buffer_string, align_message, shiftstr,yaml_date_toa
   public :: yaml_date_and_time_toa,yaml_time_toa,is_atoi,is_atof,is_atol,is_atoli
   public :: read_fraction_string,f_strcpy
-  public:: yaml_bold,yaml_blink
+  public:: yaml_bold,yaml_blink,rstrip
   public :: operator(.eqv.),operator(.neqv.),operator(+),operator(//),operator(**),assignment(=)
 
 contains
@@ -721,6 +721,19 @@ contains
     end do
 
   end function case_insensitive_equiv
+
+  !> modifies string to remove substring from the right
+  pure subroutine rstrip(string,substring)
+    implicit none
+    character(len=*), intent(in) :: substring
+    character(len=*), intent(inout) :: string
+    !local variables
+    integer :: ipos
+    
+    ipos=index(string,substring,back=.true.)
+    if (ipos > 0) string=string(1:ipos-1)
+
+  end subroutine rstrip
 
   !define the strings which combine them, without the need of using trim or adjustl specifications
   pure function combine_strings(a,b) result(c)

@@ -16,7 +16,7 @@ subroutine ann_train(parini)
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
-    integer:: ialpha, i, iconf, ios
+    integer:: ialpha, i, iconf, ios, ia
     real(8):: time1, time2, time3
     character(15):: fnout
     call f_routine(id='ann_train')
@@ -91,10 +91,20 @@ subroutine ann_train(parini)
     !-------------------------------------------------------
     ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
     call set_annweights(parini,ekf)
+    if(trim(parini%approach_ann)=='cent2') then
+        do ia=1,ann_arr%n
+            ekf%x(ekf%loc(ia)+ekf%num(1)-1)=0.d0
+            !write(*,*) 'XXX ',ia,ekf%loc(ia)+ekf%num(1)-1
+        enddo
+    endif
+
     if(trim(parini%symfunc)/='do_not_save') then
         ann_arr%compute_symfunc=.false.
     else
         ann_arr%compute_symfunc=.true.
+    endif
+    if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
+        call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     endif
     if(trim(parini%optimizer_ann)=='behler') then
         call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
@@ -205,7 +215,7 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
         do ib=1,symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad
             iat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(1,ib)
             jat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(2,ib)
-            !write(*,*) 'QQQQQQQQ ',ib,iat,jat
+            write(*,*) 'QQQQQQQQ ',ib,iat,jat
             if(iat>jat) cycle
             do ig=1,symfunc_arr%symfunc(iconf)%ng
                 tt=symfunc_arr%symfunc(iconf)%y(ig,ib)
@@ -222,9 +232,10 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
                 do i0=1,ann_arr%ann(isat)%nn(0)
                     !normalization of y0d
                     tt=ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)*tt
-                    symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)*tt
-                    symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)*tt
+                    symfunc_arr%symfunc(iconf)%y0d_bond(i0,ib)=symfunc_arr%symfunc(iconf)%y0d_bond(i0,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,1,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,2,ib)*tt
+                    !symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)=symfunc_arr%symfunc(iconf)%y0d(i0,3,ib)*tt
                     !normalization of y0dr
                     !symfunc%y0dr(i0,1:9,ib)=symfunc%y0dr(i0,1:9,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
                 enddo
@@ -351,6 +362,9 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     configuration: do iconf=1,atoms_arr%nconf
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
         call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
+        !if(ifile==11) then
+        !    write(71,'(2es24.15)') (atoms%rat(1,2)-atoms%rat(1,1))*0.529177210d0,atoms%epot*27.211385d0
+        !endif
         if(iter==parini%nstep_ekf) then
             write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
                 atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat,atoms%epot/atoms_arr%atoms(iconf)%nat, &
@@ -455,7 +469,7 @@ subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='eem1') then
         call cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='eem2') then
+    elseif(trim(ann_arr%approach)=='cent2') then
         call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
@@ -721,7 +735,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     associate(nat=>atoms_arr%atoms(iconf)%nat)
     symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
     symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
+    call call_linkedlist(parini,atoms_arr%atoms(iconf),.true.,symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
     deallocate(pia_arr_tmp%pia)
     symfunc_arr%symfunc(iconf)%y=f_malloc0((/1.to.ng,1.to.nat/),id='symfunc%y')
     if(nat<=parini%nat_force) then
@@ -909,7 +923,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             else
                 ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0,1)
             endif
-            !write(*,*) ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
+            write(*,*) 'gbounds', ann_arr%ann(i)%gbounds(2,i0),ann_arr%ann(i)%gbounds(1,i0)
             ann_arr%ann(i)%two_over_gdiff(i0)=2.d0/(ann_arr%ann(i)%gbounds(2,i0)-ann_arr%ann(i)%gbounds(1,i0))
         enddo
         enddo

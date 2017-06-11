@@ -157,7 +157,7 @@ call system_clock(t2)
 call system_clock(t1)
     linked_lists%triplex=.true.
     linked_lists%rcut=rcut
-    call call_linkedlist(parini,atoms,linked_lists,pia_arr)
+    call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
     do ibr= 1,linked_lists%maxbound_rad
         write(2200+conf,*)linked_lists%bound_rad(1,ibr),linked_lists%bound_rad(2,ibr)
     enddo

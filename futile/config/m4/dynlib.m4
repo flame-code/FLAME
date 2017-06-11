@@ -33,7 +33,7 @@ end subroutine test])
 
   f90_test_shared()
   {
-    ac_try='$FC $FCFLAGS $[1] -Wl,-soname=libtest.so.0 -o libtest.so.0.0.0 conftest.o 1>&AC_FD_CC'
+    ac_try='$FC $FCFLAGS $[1] ${ax_fc_linker_wl}-soname=libtest.so.0 -o libtest.so.0.0.0 conftest.o 1>&AC_FD_CC'
     if AC_TRY_EVAL(ac_try); then
       ac_try=""
       ax_fc_build_shared=$[1]
@@ -87,7 +87,7 @@ testint=val;
 
   cc_test_shared()
   {
-    ac_try='$CC $CFLAGS $[1] -Wl,-soname=libtest.so.0 -o libtest.so.0.0.0 conftest.o 1>&AC_FD_CC'
+    ac_try='$CC $CFLAGS $[1] ${ax_cc_linker_wl}-soname=libtest.so.0 -o libtest.so.0.0.0 conftest.o 1>&AC_FD_CC'
     if AC_TRY_EVAL(ac_try); then
       ac_try=""
       ax_cc_build_shared=$[1]
@@ -115,8 +115,68 @@ testint=val;
   AC_LANG_POP(C)
 ])
 
+#link a given program in the chosen LD for testing if a given option is supported
+#usage: $1 option name
+#usage: $2 actual option to be tested
+#usage: $3 linker for be used (FC, CC)
+#usage: $4 program to test
+#usage: $5 additional options to be passed (but not stored in the variable)
+
+AC_DEFUN([AX_LD_OPT],
+[dnl try to find the option flag to specify the rpath to the fortran compiler when linking.
+  AC_REQUIRE([AX_FLAG_PIC])
+
+  AC_MSG_CHECKING([for linker option to specify $2 to $[$3]])
+
+  LDFLAGS_SVG=$LDFLAGS
+  LDFLAGS="$LDFLAGS_SVG ${ax_fc_linker_wl}$2$5"
+  AC_LINK_IFELSE([AC_LANG_SOURCE($4)], [ax_$3_$1="${ax_fc_linker_wl}$2"], [ax_$3_$1="no"])
+  LDFLAGS=$LDFLAGS_SVG
+
+  if test x"$ax_$3_$1" = x"no" ; then
+    AC_MSG_WARN($[$3] linker does not accept option $2)
+  else
+    AC_MSG_RESULT([$ax_$3_$1])
+    AC_SUBST([$3_$1], [$ax_$3_$1])
+  fi
+])
+
+AC_DEFUN([AX_LINKER_OPTS],
+[dnl try to find the option flag to specify various options when linking.
+   AC_REQUIRE([AX_FLAG_PIC])
+   #Fortran first
+   AC_LANG_PUSH(Fortran)	
+   #test for rpath
+   AX_LD_OPT([RPATH],[$ax_fc_linker_rpath],[FC],
+   [program test
+write(*,*) "test"
+end program test],[$[PWD]])
+   #test for export symbols
+   AX_LD_OPT([EXPORTS],[$ax_fc_linker_export_symbols],[FC],
+   [program test
+write(*,*) "test"
+end program test],[])
+   AC_LANG_POP(Fortran)
+   AC_LANG_PUSH(C)
+   AX_LD_OPT([RPATH],[$ax_cc_linker_rpath],[CC],
+   [int main(int argc, char **argv)
+{
+  return 0;
+}],[$[PWD]])
+   #test for export symbols
+   AX_LD_OPT([EXPORTS],[$ax_cc_linker_export_symbols],[CC],
+   [int main(int argc, char **argv)
+{
+  return 0;
+}],[])
+   
+   AC_LANG_POP(C)
+])
+
+
 AC_DEFUN([AX_FC_RPATH],
 [dnl try to find the option flag to specify the rpath to the fortran compiler when linking.
+  AC_REQUIRE([AX_FLAG_PIC])
   AC_LANG_PUSH(Fortran)
 
   f90_test_rpath()
@@ -132,10 +192,7 @@ end program test
   }
 
   AC_MSG_CHECKING([for option to specify rpath to $FC])
-  f90_test_rpath "-Wl,-rpath="
-  if test x"$ax_fc_rpath" = x"no" ; then
-    f90_test_rpath "-Wl,-rpath,"
-  fi
+  f90_test_rpath "${ax_fc_linker_wl}${ax_fc_linker_rpath}"
   if test x"$ax_fc_rpath" = x"no" ; then
     AC_MSG_WARN(Fortran compiler expand rpath.)
   else
@@ -164,10 +221,7 @@ int main(int argc, char **argv)
   }
 
   AC_MSG_CHECKING([for option to specify rpath to $CC])
-  c_test_rpath "-Wl,-rpath="
-  if test x"$ax_cc_rpath" = x"no" ; then
-    c_test_rpath "-Wl,-rpath,"
-  fi
+  c_test_rpath "${ax_cc_linker_wl}${ax_fc_linker_rpath}"
   if test x"$ax_cc_rpath" = x"no" ; then
     AC_MSG_WARN(C compiler expand rpath.)
   else
@@ -190,9 +244,10 @@ AC_DEFUN([AX_DYNAMIC_LIBRARIES],
     AC_REQUIRE([AX_FLAG_PIC])
     AC_REQUIRE([AX_FC_BUILD_SHARED])
     AC_REQUIRE([AX_CC_BUILD_SHARED])
-    AC_REQUIRE([AX_FC_RPATH])
-    AC_REQUIRE([AX_CC_RPATH])
-    if test "$ax_fc_pic" = "no" -o "$ax_cc_pic" = "no" -o "$ax_fc_build_shared" = "no" -o "$ax_fc_rpath" = "no" ; then
+    dnl AC_REQUIRE([AX_FC_RPATH])
+    dnl AC_REQUIRE([AX_CC_RPATH])
+    AC_REQUIRE([AX_LINKER_OPTS])
+    if test "$ax_fc_pic" = "no" -o "$ax_cc_pic" = "no" -o "$ax_fc_build_shared" = "no" -o "$ax_FC_RPATH" = "no"  -o "$ax_FC_EXPORTS" = "no" ; then
       AC_MSG_WARN(["Dynamic libraries disabled (see reason before)."])
       ax_build_dynamic=no
     else

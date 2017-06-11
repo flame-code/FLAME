@@ -52,7 +52,8 @@ subroutine solve_poisson(parini)
     call determine_glimitsphere(ewald_p3d)
     ewald_p3d%alpha=0.4d0 !atoms%rcov(iat)
     gausswidth=0.4d0 !atoms%rcov(iat)
-    call putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
+    atoms%boundcond='slab'
+    call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,ewald_p3d)
     t1=0.d0
     t2=0.d0
     t3=0.d0
