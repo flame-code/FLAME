@@ -267,7 +267,7 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     integer:: iat
     real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
-    real(8):: zion
+    real(8):: zion, alpha_elec, alpha_largest, error_erfc_over_r, rcut
     cent%rgrad=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rgrad')
     cent%qgrad=f_malloc0([1.to.atoms%nat],id='cent%qgrad')
     cent%rel=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rel')
@@ -281,8 +281,6 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     enddo
 
     cent%ewald_p3d%linked_lists%rcut=parini%rcut_ewald
-    write(*,*) 'short range at cut-off: ', &
-        erfc(cent%ewald_p3d%linked_lists%rcut/(sqrt(2.d0)*parini%alpha_ewald)) !CORRECT_IT
     !This linked list is used for the short range part of the Ewald.
     call call_linkedlist(parini,atoms,.false.,cent%ewald_p3d%linked_lists,cent%ewald_p3d%pia_arr)
 
@@ -302,6 +300,12 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
         cent%gwe(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
         cent%gwit(iat)=parini%alpha_ewald
     enddo
+    alpha_elec=maxval(cent%gwe(1:atoms%nat))
+    alpha_largest=sqrt(alpha_elec**2+parini%alpha_ewald**2)
+    alpha_largest=max(alpha_largest,parini%alpha_ewald*sqrt(2.d0))
+    rcut=cent%ewald_p3d%linked_lists%rcut
+    error_erfc_over_r=erfc(rcut/alpha_largest)/rcut
+    write(*,*) 'short range at cut-off: ',error_erfc_over_r !CORRECT_IT
 end subroutine init_cent2
 !*****************************************************************************************
 subroutine final_cent2(cent)
