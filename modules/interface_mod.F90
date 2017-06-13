@@ -2144,8 +2144,6 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     implicit none
     type(typ_parini), intent(inout):: parini
     type(typ_atoms):: atoms
-    real(8):: forces_nosehoover(3,atoms%nat)
-    real(8):: rat_next(3,atoms%nat), rat_prev(3,atoms%nat)
     real(8):: rat_init(3,atoms%nat)
 end subroutine md_nvt_nose_hoover_chain
 subroutine set_langevin_randforce(eta,nat)
@@ -2173,27 +2171,6 @@ subroutine thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,n
     real(8) :: dzeta(3,atoms%nat,ntherm), mass_q(ntherm)
     real(8) :: force_therm(3,atoms%nat,ntherm)
 end subroutine thermostat_evolution
-subroutine thermostat_evolution_2(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-    use mod_atoms, only: typ_atoms, typ_file_info
-    implicit none
-    type(typ_atoms):: atoms
-    integer :: ntherm, imd 
-    real(8) :: kt, t1, tt
-    real(8) :: zeta_next(ntherm), zeta(ntherm),zeta_prev(ntherm)
-    real(8) :: dzeta(ntherm), mass_q(ntherm)
-    real(8) :: force_therm(ntherm)
-end subroutine thermostat_evolution_2
-subroutine md_nvt_nose_hoover(parini,atoms)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
-    implicit none
-    type(typ_parini), intent(inout):: parini
-    type(typ_atoms):: atoms
-    real(8):: eta(3,atoms%nat)
-    real(8)::  forces_nose(3,atoms%nat)
-    real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
-    real(8):: rat_init(3,atoms%nat)
-end subroutine md_nvt_nose_hoover
 subroutine get_atomic_mass(atoms,totmass)
     use mod_atoms, only: typ_atoms
     implicit none

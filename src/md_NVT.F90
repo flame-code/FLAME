@@ -359,6 +359,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     call final_potential_forces(parini,atoms)
 end subroutine md_nvt_nose_hoover_cp
 !*****************************************************************************************
+!   ...../codes/EON/client/Dynamics.cpp
 subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -373,7 +374,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     type(typ_atoms):: atoms
     type(typ_file_info):: file_info
     integer:: iat, ierr, nat_t, i
-    integer:: imd, ff,ntherm
+    integer:: imd, ff,ntherm, ith
     real(8):: etot, epotold, etotold
     real(8):: DNRM2, fnrm, t1, aboltzmann, totmass, temp, etotavg
     real(8):: t2,t3,t4 
@@ -383,49 +384,58 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8) :: sum1, sum2, sum3
     real(8) :: kt, temp_prev, tol, tolerance 
     character(56):: comment
-    real(8):: forces_nosehoover(3,atoms%nat)
-    real(8):: rat_next(3,atoms%nat), rat_prev(3,atoms%nat)
-    real(8):: omega
-    real(8), allocatable ::zeta_next(:) ,zeta(:) ,zeta_prev(:) ,dzeta(:),mass_q(:),dzeta_old(:)
+    real(8):: omega, tt
+    real(8), allocatable :: zeta(:), dzeta(:), mass_q(:), azeta(:)
     real(8):: rat_init(3,atoms%nat)
     real(8):: r, dx(3) , rsq, msd1, msd2, msd3
     real(8):: nof, enhc 
+    real(8):: dt2, dt4, dt8 
 
-    call random_seed() 
+!    call random_seed() 
     rat_init=atoms%rat
+!   dt=parini%dt_dynamics
 
     call init_potential_forces(parini,atoms)
 
     open(unit=1000,file="velocity",status='replace')
     open(unit=1111,file="displace.txt",status='replace')
+    open(unit=1112,file="MSD.txt",status='replace')
+    write(1112,'(a15,3a25)') "imd " , " MSD       "  , " MSD_xy       " , " MSD_z       " 
+
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     file_info%print_force=parini%print_force_dynamics
     call acf_write(file_info,atoms=atoms,strkey='posout')
 
     !  ___________parameters_______________________________________
-    ntherm=5
+    ntherm=2
     aboltzmann= 3.1668139952584056d-06
     temp_trget = parini%temp_dynamics
+
+    dt2 = 0.5d0*dt
+    dt4 = 0.5d0*dt2
+    dt8 = 0.5d0*dt4
+
     kt = aboltzmann*temp_trget
-    tolerance = 1.d-9
     nof = (3.d0*atoms%nat)
     !nof = (3.d0*atoms%nat+ntherm)
     ekin_target=0.5d0*nof*aboltzmann*parini%init_temp_dynamics
 
-    allocate(zeta_next(ntherm), zeta(ntherm),&
-             zeta_prev(ntherm), dzeta(ntherm),&
-             mass_q(ntherm))
-    zeta      = 0.d0
-    zeta_next = 0.d0
-    zeta_prev = 0.d0
-    dzeta     = 0.d0
-    omega = 1.d0/60.d0
+    allocate(zeta(ntherm), dzeta(ntherm),&
+             mass_q(ntherm), azeta(ntherm))
+    zeta  = 0.d0
+    dzeta = 0.d0
+    azeta = 0.d0
+    omega = 1.d0/40.d0
+
+    !mass_q   = kt*40**2/omega**2
     mass_q   = kt*dt**2/omega**2
-    mass_q(1)= atoms%nat*kt*dt**2/omega**2
+    !mass_q(1)= 3.d0*atoms%nat*kt*40**2/omega**2
+    mass_q(1)= 3.d0*atoms%nat*kt*dt**2/omega**2
 
     call get_atomic_mass(atoms,totmass)
     !_______________________initial velocity __________________________
+
     if (parini%restart_dynamics )then
         open(unit=1001,file="velocity_r",status='old')
         read(1001,*)
@@ -442,85 +452,92 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         endif
     endif
     !____________________________________________________________________
-    epotold=atoms%epot
-    call cal_potential_forces(parini,atoms)
-    !if (trim(bias)=='yes')   call plane_repulsion(atoms)
-
-    call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
-    etot=atoms%epot+atoms%ekin
-    etotold=etot
-    enhc=atoms%epot+atoms%ekin+0.5*sum(dzeta**2*mass_q)+nof*kt*zeta(1)+sum(zeta*kt)
-
-    write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
-    write(21,'(i9,5es25.15)') 0,etot,atoms%epot,atoms%ekin,temp,enhc
-    write(22,'(i9,6es20.10)') 0,rcm(1:3),vcm(1:3)
-   !_________________________ The first md step _________________________
-    imd=1
-    t1=0.5*dt*dt
-    do iat=1,atoms%nat
-        forces_nosehoover(1:3,iat)=atoms%fat(1:3,iat)-atoms%amass(iat)*atoms%vat(1:3,iat)*dzeta(1)
-    enddo
-    call thermostat_evolution_2(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-    do iat=1,atoms%nat
-        rat_next(1:3,iat)=atoms%rat(1:3,iat) + dt*atoms%vat(1:3,iat) + t1*forces_nosehoover(1:3,iat)/atoms%amass(iat) 
-        atoms%vat(1:3,iat)=(rat_next(1:3,iat)-atoms%rat(1:3,iat))/dt
-    enddo
-    !call back_to_cell(atoms)
-    dzeta=(zeta_next-zeta)/dt
-    zeta_prev=zeta
-    zeta=zeta_next
-    rat_prev  = atoms%rat
-    atoms%rat       = rat_next
-    !_____________________________________________________________________
-    do imd=2,nmd
-        parini%time_dynamics = (imd-1)*dt
-
+    do imd=1,nmd
         epotold=atoms%epot
         call cal_potential_forces(parini,atoms)
-        !if (trim(bias)=='yes') call plane_repulsion(atoms)
+
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
         etot=atoms%epot+atoms%ekin
         etotold=etot
         enhc=atoms%epot+atoms%ekin+0.5*sum(dzeta**2*mass_q)+nof*kt*zeta(1)+sum(zeta*kt)
 
-        write(21,'(i9,5es25.15)') imd-1,etot,atoms%epot,atoms%ekin,temp,enhc
-        write(22,'(i9,6es20.10)') imd-1,rcm(1:3),vcm(1:3)
+        write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
+        write(21,'(i9,5es25.15)') imd,etot,atoms%epot,atoms%ekin,temp,enhc
+        write(22,'(i9,6es20.10)') imd,rcm(1:3),vcm(1:3)
 
+    !___________________  some steps temperature rescaling for pre_equilibrium  __________________
+
+        if (imd<200) then
+            tt=ekin_target/atoms%ekin
+            atoms%vat =  atoms%vat*tt
+        endif
+! ___________________  chain _____________________________________________
+
+        azeta(1) = (2.0*atoms%ekin-nof*kt)/mass_q(1);
+        do ith = 2, ntherm
+            azeta(ith) = (mass_q(ith-1)*dzeta(ith-1)*dzeta(ith-1)-kt);
+        enddo
+        dzeta(ntherm) = dzeta(ntherm) +azeta(ntherm) *dt4;
+        do ith = 1, ntherm-1
+            tt=exp(-dzeta(ntherm+1-ith)*dt8)
+            dzeta(ntherm-ith) = (dzeta(ntherm-ith) *tt+azeta(ntherm-ith) *dt4) *tt
+        enddo
+        do ith = 1, ntherm
+            zeta(ith)  = zeta(ith)  +dzeta(ith)*dt2;
+        enddo
+        tt = exp(-dzeta(1)*dt2);
+        atoms%vat  =atoms%vat  * tt;
+        atoms%ekin =atoms%ekin * tt*tt;
+        azeta(1) = (2.0*atoms%ekin-nof*kt)/mass_q(1);
+        do ith = 2, ntherm
+            azeta(ith) = (mass_q(ith-1)*dzeta(ith-1)*dzeta(ith-1)-kt)/mass_q(ith);
+        enddo
+        do ith = 1, ntherm-1
+            tt = exp(-dzeta(ith+1)*dt8)
+            dzeta(ith) =(dzeta(ith) * tt + azeta(ith) *dt4)*  tt
+            azeta(ith+1) = (mass_q(ith)*dzeta(ith)*dzeta(ith)-kt)/mass_q(2);
+        enddo
+        dzeta(ntherm) =dzeta(ntherm) + azeta(ntherm) *dt4;
+! ___________________ end of  chain _________________________________________    
+
+        atoms%rat = atoms%rat + atoms%vat*dt2
+
+        call cal_potential_forces(parini,atoms)
         do iat=1,atoms%nat
-            forces_nosehoover(1:3,iat)=atoms%fat(1:3,iat)-atoms%amass(iat)*atoms%vat(1:3,iat)*dzeta(1)
-            rat_next(1:3,iat)= 2.d0*atoms%rat(1:3,iat)-rat_prev(1:3,iat) &
-            &       + dt*dt*forces_nosehoover(1:3,iat)/atoms%amass(iat)
+            atoms%vat(1:3,iat) = atoms%vat(1:3,iat) + atoms%fat(1:3,iat) / atoms%amass(iat)*dt
+            atoms%rat(1:3,iat) = atoms%rat(1:3,iat) + atoms%vat(1:3,iat)*dt2
         enddo
-        call thermostat_evolution_2(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-        call ekin_temprature(atoms,temp_prev,vcm,rcm,totmass) 
-        tol=1.d0
-        do while (tol>tolerance)
-            atoms%vat = 0.5*((rat_next  - rat_prev)/dt)
-            dzeta     = 0.5*((zeta_next - zeta_prev)/dt)
-            call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
-            do iat=1,atoms%nat
-                forces_nosehoover(1:3,iat)=atoms%fat(1:3,iat)-atoms%amass(iat)*atoms%vat(1:3,iat)*dzeta(1)
-                rat_next(1:3,iat)= 2.d0*atoms%rat(1:3,iat)-rat_prev(1:3,iat) &
-                &       + dt*dt*forces_nosehoover(1:3,iat)/atoms%amass(iat)
-            enddo
-            call thermostat_evolution_2(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-            tol=dabs(temp-temp_prev)/dabs(temp_prev)
-            temp_prev=temp
-            exit
-        enddo
+        call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
 
-        atoms%vat = 0.5*(3.d0*rat_next-4.d0*atoms%rat+rat_prev)/dt
-       ! dzeta = 0.5d0*(3.d0*zeta_next-4.d0*zeta+zeta_prev)/dt 
-        rat_prev  =atoms%rat
-        atoms%rat = rat_next
-        dzeta=0.5d0*(3.d0*zeta_next-4.d0*zeta+zeta_prev)/dt
-        !dzeta=(zeta_next-zeta)/dt
-        zeta_prev=zeta
-        zeta=zeta_next
-        etotold=etot
-        
-        !call back_to_cell(atoms)
-        if(mod(imd,100)==0) then
+! ____________________  chain ______________________________________________
+        azeta(1) = (2.0*atoms%ekin-nof*kt)/mass_q(1);
+        do ith = 2, ntherm
+            azeta(ith) = (mass_q(ith-1)*dzeta(ith-1)*dzeta(ith-1)-kt);
+        enddo
+        dzeta(ntherm) = dzeta(ntherm) +azeta(ntherm) *dt4;
+        do ith = 1, ntherm-1
+            tt=exp(-dzeta(ntherm+1-ith)*dt8)
+            dzeta(ntherm-ith) = (dzeta(ntherm-ith) *tt+azeta(ntherm-ith) *dt4) *tt
+        enddo
+        do ith = 1, ntherm
+            zeta(ith)  = zeta(ith)  +dzeta(ith)*dt2;
+        enddo
+        tt = exp(-dzeta(1)*dt2);
+        atoms%vat  =atoms%vat  * tt;
+        atoms%ekin =atoms%ekin * tt*tt;
+        azeta(1) = (2.0*atoms%ekin-nof*kt)/mass_q(1);
+        do ith = 2, ntherm
+            azeta(ith) = (mass_q(ith-1)*dzeta(ith-1)*dzeta(ith-1)-kt)/mass_q(ith);
+        enddo
+        do ith = 1, ntherm-1
+            tt = exp(-dzeta(ith+1)*dt8)
+            dzeta(ith) =(dzeta(ith) * tt + azeta(ith) *dt4)*  tt
+            azeta(ith+1) = (mass_q(ith)*dzeta(ith)*dzeta(ith)-kt)/mass_q(2);
+        enddo
+        dzeta(ntherm) =dzeta(ntherm) + azeta(ntherm) *dt4;
+! __________________ end of  chain ______________________________________________
+
+        if(mod(imd-1,100)==0) then
             file_info%file_position='append'
             call acf_write(file_info,atoms=atoms,strkey='posout')
             write(1111,*) '#'
@@ -537,21 +554,20 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
                 msd1 = msd1 + rsq                !all directions
                 msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
                 msd3 = msd3 + dx(3)**2           !z   direction
-                write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
+                if(mod(imd-1,300)==0) then
+                    write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
+                endif
             enddo
-            write(1111,*) '  MSD    = ', msd1/atoms%nat 
-            write(1111,*) '  MSD_xy = ', msd2/atoms%nat 
-            write(1111,*) '  MSD_z  = ', msd3/atoms%nat 
-            write(1111,*) '# -----------------------------------------------'
-         !   write(1000,*) '#'
-         !   write(1000,*) '#    imd = ', imd
-         !   write(1000,*) '#'
-         !   do iat=1,atoms%nat
-         !       write(1000,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
-         !   enddo
+            write(1112,'(i15,3es25.14)') imd-1 , msd1/atoms%nat , msd2/atoms%nat, msd3/atoms%nat 
+            !   write(1000,*) '#'
+            !   write(1000,*) '#    imd = ', imd
+            !   write(1000,*) '#'
+            !   do iat=1,atoms%nat
+            !       write(1000,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
+            !   enddo
         endif
-        write(221,'(i9,4es25.15)') imd,etot,atoms%epot,atoms%ekin,temp
         etotold=etot
+        !write(221,'(i9,4es25.15)') imd,etot,atoms%epot,atoms%ekin,temp
     enddo !end of loop over imd
     close(1000)
     call final_potential_forces(parini,atoms)
@@ -739,245 +755,6 @@ subroutine thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,n
 
 end subroutine thermostat_evolution
 !*************************************************************************************************************
-subroutine thermostat_evolution_2(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-    use mod_interface
-    use mod_atoms, only: typ_atoms, typ_file_info
-    use mod_dynamics, only: dt, nmd
-    implicit none
-    type(typ_atoms):: atoms
-    integer :: ntherm, imd 
-    integer :: i, iat, ith 
-    real(8) :: kt, t1, tt
-    real(8) :: zeta_next(ntherm), zeta(ntherm),zeta_prev(ntherm)
-    real(8) :: dzeta(ntherm), mass_q(ntherm)
-    real(8) :: force_therm(ntherm), nof
-    
-    nof = (3.d0*atoms%nat)
-    !nof = (3.d0*atoms%nat+ntherm)
-    tt=0.d0
-    do iat=1,atoms%nat
-        t1=atoms%amass(iat)
-        tt=tt+t1*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
-    enddo
-
-    if (ntherm==1) then
-        force_therm(1)=tt-nof*kt
-    else
-        do ith=1,ntherm
-            if (ith==1) then
-                force_therm(1)=tt-nof*kt- mass_q(1)*dzeta(1)*dzeta(2)
-            elseif (ith==ntherm) then
-                force_therm(ntherm)=mass_q(ntherm-1)*(dzeta(ntherm-1)**2) - kt
-            else
-                force_therm(ith)=mass_q(ith-1)*(dzeta(ith-1)**2) - kt- mass_q(ith)*dzeta(ith)*dzeta(ith+1)
-            endif
-        enddo        
-    endif
-
-    t1=dt**2
-    if (imd==1) then
-        do ith=1,ntherm
-            zeta_next(ith)=zeta(ith)+dzeta(ith)*dt+&
-                        (force_therm(ith))*t1/(2.d0*mass_q(ith))
-        enddo
-    else
-        do ith=1,ntherm
-            zeta_next(ith)=2.d0*zeta(ith)-zeta_prev(ith)+&
-                        (force_therm(ith))*t1/(mass_q(ith))
-        enddo
-    endif
-
-end subroutine thermostat_evolution_2
-!************************************************************************
-subroutine md_nvt_nose_hoover(parini,atoms)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_potential, only: potential, perfstatus
-    use mod_atoms, only: typ_atoms, typ_file_info
-    use mod_dynamics, only: dt, nmd
-    use mod_processors, only: iproc
-    use mod_potential, only: bias 
-    implicit none
-    type(typ_parini), intent(inout):: parini
-    !local variables
-    type(typ_atoms):: atoms
-    type(typ_file_info):: file_info
-    integer:: iat, ierr, nat_t, i
-    integer:: imd, ff
-    real(8):: etot, epotold, etotold
-    real(8):: DNRM2, fnrm, t1, aboltzmann, totmass, temp, etotavg
-    real(8):: t2,t3,t4 
-    real(8):: rl, ru 
-    real(8):: rcm(3), vcm(3)
-    real(8):: scale_vat, temp_trget, ekin_target
-    real(8):: eta(3,atoms%nat)
-    real(8):: gama, factor, factor_iat
-    real(8) :: sum1, sum2, sum3
-    real(8) :: kt, temp_prev, tol, tolerance 
-    character(56):: comment
-    real(8)::  forces_nose(3,atoms%nat)
-    real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
-    real(8):: zeta, dzeta, mass_q, force_q, zeta_next, dzeta_old 
-    real(8):: rat_init(3,atoms%nat)
-    real(8):: r, dx(3) , rsq, msd1, msd2, msd3
-
-    call random_seed() 
-    rat_init=atoms%rat
-
-    file_info%filename_positions='posout.acf'
-    file_info%file_position='new'
-    file_info%print_force=parini%print_force_dynamics
-    call acf_write(file_info,atoms=atoms,strkey='posout')
-    open(unit=1000,file="velocity",status='replace')
-    open(unit=1111,file="displace.txt",status='replace')
-    call init_potential_forces(parini,atoms)
-
-    !  ___________parameters_______________________________________
-    aboltzmann= 3.1668139952584056d-06
-    temp_trget = parini%temp_dynamics
-    kt = aboltzmann*temp_trget
-    tolerance = 1.d-4
-    mass_q= (3*atoms%nat)*kt*(80*dt)**2
-    ekin_target=1.5d0*atoms%nat*aboltzmann*parini%init_temp_dynamics
-    dzeta = 0.d0   ;    zeta  = 0.d0
-
-    call get_atomic_mass(atoms,totmass)
-    !_______________________initial velocity __________________________
-    if (parini%restart_dynamics )then
-        open(unit=1001,file="velocity_r",status='old')
-        read(1001,*)
-        read(1001,*) 
-        read(1001,*)
-        do iat=1,atoms%nat
-            read(1001,*) atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
-        enddo
-    else
-        if ( parini%init_temp_dynamics==0.d0) then
-            atoms%vat(:,:)=0.d0
-        else
-            call set_velocities(atoms, ekin_target)
-        endif
-    endif
-    !____________________________________________________________________
-
-    epotold=atoms%epot
-    call cal_potential_forces(parini,atoms)
-    if (trim(bias)=='yes')  call plane_repulsion(atoms)
-
-    call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
-    etot=atoms%epot+atoms%ekin
-    etotold=etot
-    write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
-    write(21,'(i9,4es25.15)') 0,etot,atoms%epot,atoms%ekin,temp
-    write(22,'(i9,6es20.10)') 0,rcm(1:3),vcm(1:3)
-   !_________________________ The first md step _________________________
-    if (parini%restart_dynamics )then
-        t1=dt*dt
-    else
-        t1=0.5*dt*dt
-    endif
-    force_q = 0.d0
-    do iat=1,atoms%nat
-        forces_nose(1:3,iat)=atoms%fat(1:3,iat)-dzeta*atoms%vat(1:3,iat)*atoms%amass(iat)
-        force_q = force_q + atoms%amass(iat)*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
-    enddo
-        force_q = (force_q -(3*atoms%nat)*kt)!/mass_q
-        zeta_next = zeta + t1* force_q/mass_q +dt*dzeta
-    do iat=1,atoms%nat
-        rat_next(1:3,iat)=atoms%rat(1:3,iat) + t1*forces_nose(1:3,iat)/atoms%amass(iat) + dt*atoms%vat(1:3,iat)
-        atoms%vat(1:3,iat)=(rat_next(1:3,iat)-atoms%rat(1:3,iat))/dt
-        atoms%rat(1:3,iat)=rat_next(1:3,iat)
-    enddo
-    dzeta = (zeta_next-zeta)/dt 
-    !call back_to_cell(atoms)
-    !_____________________________________________________________________
-    zeta=zeta_next
-
-    do imd=2,nmd
-        parini%time_dynamics = (imd-1)*dt
-
-        vat_old =atoms%vat
-        dzeta_old = dzeta
-        parini%cal_charge = .false.
-        epotold=atoms%epot
-        call cal_potential_forces(parini,atoms)
-        if (trim(bias)=='yes')  call plane_repulsion(atoms)
-        call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
-        etot=atoms%epot+atoms%ekin
-        etotold=etot
-        write(21,'(i9,4es25.15)') imd-1,etot,atoms%epot,atoms%ekin,temp
-        write(22,'(i9,6es20.10)') imd-1,rcm(1:3),vcm(1:3)
-
-        force_q = 0.d0
-        do iat=1,atoms%nat
-            forces_nose(1:3,iat)=atoms%fat(1:3,iat)-dzeta*atoms%vat(1:3,iat)*atoms%amass(iat)
-            rat_next(1:3,iat)= atoms%rat(1:3,iat)+atoms%vat(1:3,iat)*dt &
-            &       + dt*dt*forces_nose(1:3,iat)/atoms%amass(iat)
-            force_q = force_q + atoms%amass(iat)*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
-        enddo
-        force_q = (force_q -(3*atoms%nat)*kt)
-        zeta_next = zeta + dt*dt* force_q/mass_q +dt*dzeta
-        tol=1.d0
-        call ekin_temprature(atoms,temp_prev,vcm,rcm,totmass) 
-        do while (tol>tolerance)
-            atoms%vat = 0.5*((rat_next-atoms%rat)/dt+vat_old)
-            dzeta     = 0.5*((zeta_next-zeta)/dt+dzeta_old)
-            call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
-            force_q = 0.d0
-            do iat=1,atoms%nat
-                forces_nose(1:3,iat)=atoms%fat(1:3,iat)-dzeta*atoms%vat(1:3,iat)*atoms%amass(iat)
-                rat_next(1:3,iat)= atoms%rat(1:3,iat)+ atoms%vat(1:3,iat)*dt &
-                &       + dt*dt*forces_nose(1:3,iat)/atoms%amass(iat)
-                force_q = force_q + atoms%amass(iat)*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
-            enddo
-            force_q = (force_q -(3*atoms%nat)*kt)!/mass_q
-            zeta_next = zeta + dt*dt* force_q/mass_q +dt*dzeta
-            tol=dabs(temp-temp_prev)/dabs(temp_prev)
-            temp_prev=temp
-        enddo
-
-        atoms%vat = (rat_next - atoms%rat )/dt
-        atoms%rat =  rat_next
-        dzeta = (zeta_next - zeta )/dt
-        zeta = zeta_next
-        etotold=etot
-        !call back_to_cell(atoms)
-        if(mod(imd,100)==0) then
-            file_info%file_position='append'
-            call acf_write(file_info,atoms=atoms,strkey='posout')
-            write(1111,*) '#'
-            write(1111,*) '#    imd = ',imd, parini%time_dynamics
-            write(1111,*) '#'
-            msd1= 0.d0
-            msd2= 0.d0
-            msd3= 0.d0
-            do iat=1,atoms%nat
-
-                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
-                rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
-                r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
-                msd1 = msd1 + rsq                !all directions
-                msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
-                msd3 = msd3 + dx(3)**2           !z   direction
-                write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
-            enddo
-            write(1111,*) '  MSD    = ', msd1/atoms%nat 
-            write(1111,*) '  MSD_xy = ', msd2/atoms%nat 
-            write(1111,*) '  MSD_z  = ', msd3/atoms%nat 
-            write(1111,*) '# -----------------------------------------------'
-        !    write(1000,*) '#'
-        !    write(1000,*) '#    imd = ', imd
-        !    write(1000,*) '#'
-        !    do iat=1,atoms%nat
-        !        write(1000,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
-        !    enddo
-        
-        endif
-    enddo !end of loop over imd
-    close(1000)
-    call final_potential_forces(parini,atoms)
-end subroutine md_nvt_nose_hoover
-!*****************************************************************************************
 subroutine get_atomic_mass(atoms,totmass)
     use mod_atoms, only: typ_atoms
     implicit none
