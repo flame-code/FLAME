@@ -77,7 +77,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		ascii2POSCAR.F90\
 		POSCAR2ascii.F90 \
 		recompute_kpt.F90 \
-		espresso_restruct.F90\
+		PWSCF_restruct.F90 \
 		ternaries.F90
 
 
@@ -154,7 +154,7 @@ EXEC7 = $(OBJDIR)/binaries.o
 EXEC8 = $(OBJDIR)/ascii2POSCAR.o
 EXEC9 = $(OBJDIR)/POSCAR2ascii.o 
 EXEC10 = $(OBJDIR)/recompute_kpt.o 
-EXEC11 = $(OBJDIR)/espresso_restruct.o
+EXEC11 = $(OBJDIR)/PWSCF_restruct.o
 EXEC12 = $(OBJDIR)/ternaries.o
 
 SRCDIR = .
