@@ -67,10 +67,12 @@ SRC_= alborz_init_final.F90 processors.F90 \
 	fingerprint_GOM.F90 fingerprint_MOLGOM.F90 fingerprint_oganov.F90\
 	fingerprint_oganov_cont.F90 fingerprint_BCM.F90\
 	fingerprint_atorb.F90 fingerprint_gaussmol.F90\
-	fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90\
-	potential_LAMMPS_interface.F90 potential_LAMMPS.F90
+	fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90
 
 
+ifdef LAMMPS
+    SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90
+endif
 #LAMMPS-wrapper.o : LAMMPS-wrapper.cpp LAMMPS-wrapper.h
 #	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c $< -I$(LAMMPS_SRC)    $(MPI_STUBS)
 
@@ -115,8 +117,10 @@ sockets.o: sockets.c
 %.o: %.F90
 	$(FC) $(FFLAGS) $(PRE_PROC) -c $<
 
-_SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp \
-	potential_LAMMPS_wrapper.cpp
+_SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp 
+ifdef LAMMPS
+    _SOURCES_CPP += potential_LAMMPS_wrapper.cpp
+endif
 
 ifeq ($(findstring SIESTA,$(POTENTIALS)),SIESTA)
 	_SOURCES += potential_SIESTA.F90
