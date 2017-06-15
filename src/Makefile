@@ -67,7 +67,18 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		fingerprint_GOM.F90 fingerprint_MOLGOM.F90 fingerprint_oganov.F90\
 		fingerprint_oganov_cont.F90 fingerprint_BCM.F90\
 		fingerprint_atorb.F90 fingerprint_gaussmol.F90\
-		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90
+		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90 \
+		vasp_recompute_kpt.F90 \
+		expand_poslows.F90\
+		convex_hull.F90 envelope.F90\
+		vasp_recompute_kpt_odd.F90 \
+		vasp_recompute_cell.F90 \
+		binaries.F90 \
+		ascii2POSCAR.F90\
+		POSCAR2ascii.F90 \
+		recompute_kpt.F90 \
+		espresso_restruct.F90\
+		ternaries.F90
 
 
 ifdef LAMMPS
@@ -134,17 +145,17 @@ ifeq ($(findstring PLATO,$(POTENTIALS)),PLATO)
 	INCLUDES_C += -I/home/ghasemi/Alborz/packages/plato/plato_Horsfield/src/TB2
 endif
 
-EXEC2 = vasp_recompute_kpt.o 
-EXEC3 = expand_poslows.o
-EXEC4 = convex_hull.o envelope.o
-EXEC5 = vasp_recompute_kpt_odd.o 
-EXEC6 = vasp_recompute_cell.o 
-EXEC7 = binaries.o 
-EXEC8 = ascii2POSCAR.o
-EXEC9 = POSCAR2ascii.o 
-EXEC10 = recompute_kpt.o 
-EXEC11 = espresso_restruct.o
-EXEC12 = ternaries.o
+EXEC2 = $(OBJDIR)/vasp_recompute_kpt.o 
+EXEC3 = $(OBJDIR)/expand_poslows.o
+EXEC4 = $(OBJDIR)/convex_hull.o envelope.o
+EXEC5 = $(OBJDIR)/vasp_recompute_kpt_odd.o 
+EXEC6 = $(OBJDIR)/vasp_recompute_cell.o 
+EXEC7 = $(OBJDIR)/binaries.o 
+EXEC8 = $(OBJDIR)/ascii2POSCAR.o
+EXEC9 = $(OBJDIR)/POSCAR2ascii.o 
+EXEC10 = $(OBJDIR)/recompute_kpt.o 
+EXEC11 = $(OBJDIR)/espresso_restruct.o
+EXEC12 = $(OBJDIR)/ternaries.o
 
 SRCDIR = .
 SRC = $(patsubst %,$(SRCDIR)/%,$(SRC_))
@@ -199,37 +210,37 @@ libminhocao.a: $(OBJ_MINHOCAO) $(_OBJECTS_C)
 	ar -scru libminhocao.a $(OBJ_MINHOCAO)
 
 vasp_recompute_kpt.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC2)
-	$(LD) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(MODULES) $(PARSER) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(MODULES) $(PARSER) $(LDFLAGS)
 
 expand_poslows.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC3)
-	$(LD) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(LDFLAGS)
 
 hull.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC4)
-	$(LD) $(FFLAGS)  -o hull.x $(EXEC4) $(MODULES) $(PARSER) $(LDFLAGS) 
+	$(F90) $(FFLAGS)  -o hull.x $(EXEC4) $(MODULES) $(PARSER) $(LDFLAGS) 
 
 vasp_recompute_kpt_odd.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC5)
-	$(LD) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(MODULES) $(PARSER) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(MODULES) $(PARSER) $(LDFLAGS)
 
 vasp_recompute_cell.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC6)
-	$(LD) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(LDFLAGS)
 
 binaries.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC7)
-	$(LD) $(FFLAGS)  -o binaries.x $(EXEC7) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o binaries.x $(EXEC7) $(LDFLAGS)
 
 ascii2POSCAR.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC8)
-	$(LD) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(LDFLAGS)
 
 POSCAR2ascii.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC9)
-	$(LD) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(LDFLAGS)
 
 recompute_kpt.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC10)
-	$(LD) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(MODULES) $(PARSER) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(MODULES) $(PARSER) $(LDFLAGS)
 
 espresso_restruct.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC11)
-	$(LD) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(MODULES) $(PARSER) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(MODULES) $(PARSER) $(LDFLAGS)
 
 ternaries.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC12)
-	$(LD) $(FFLAGS)  -o ternaries.x $(EXEC12) $(LDFLAGS)
+	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) $(LDFLAGS)
 
 clean:
 	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o 
