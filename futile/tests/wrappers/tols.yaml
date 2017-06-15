@@ -8,4 +8,4 @@ Keys to ignore:
  - Orbital repartition*
  - Walltime since initialization
  - Max No. of dictionaries used
-
+ - Number of omp threads

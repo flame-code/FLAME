@@ -17,8 +17,25 @@
   !iadd=int(0,kind=8)
   !if (ilsize /= int(0,kind=8)) 
   iadd=loc_arr(array)!call getlongaddress(array,iadd)
-  !fortran deallocation
-  deallocate(array,stat=ierror)
+
+  call f_purge_database(ilsize,kind(array),iadd,info=info)
+
+  if (associated(info)) then
+     val=' '
+     val=info .get. 'Type'
+     select case(trim(val))
+     case('SHARED')
+        call bindfree(iadd)
+        ierror=0
+     case default
+        !fallback to traditional deallocation
+        deallocate(array,stat=ierror) !temporary
+     end select
+     call dict_free(info)
+  else
+     !fortran deallocation (here we should modify the calls if the array has been allocated by c)
+     deallocate(array,stat=ierror)
+  end if
 
   if (ierror/=0) then
      !$ if (not_omp) then
@@ -29,7 +46,7 @@
      return
   end if
 
-  call f_purge_database(ilsize,kind(array),iadd)
+
 
   !$ if (not_omp) then
   call f_timer_resume()!TCAT_ARRAY_ALLOCATIONS

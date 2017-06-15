@@ -34,7 +34,6 @@ subroutine ann_gen_symmetry_function(parini)
     
     call read_input_ann(parini,iproc,ann_arr)
     
-    call ann_allocate(1000,ann_arr)
     call read_data(parini,'list_posinp_gen',atoms_gen)
     !---------------------------------------------------------- 
     open(unit=1,file='list_posinp_gen',status='old',iostat=ios)

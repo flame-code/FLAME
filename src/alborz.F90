@@ -3,6 +3,7 @@ program alborz
     use mod_interface
     use mod_task, only: typ_file_ini
     use mod_parini, only: typ_parini
+    use mod_alborz_as_potential, only: parini_of_potential=>parini
     implicit none
     type(typ_file_ini):: file_ini
     type(typ_parini):: parini
@@ -11,6 +12,7 @@ program alborz
     if(trim(parini%task)=='minhopp') then
         call minimahopping(parini)
     elseif(trim(parini%task)=='minhocao') then
+        parini_of_potential=parini
         call task_minhocao()
     elseif(trim(parini%task)=='geopt') then
         call geopt(parini)
@@ -30,6 +32,8 @@ program alborz
         call single_point_task(parini)
     elseif(trim(parini%task)=='netsock') then
         call netsock_task(parini)
+    elseif(trim(parini%task)=='bader') then
+        call task_bader(parini)
     elseif(trim(parini%task)=='phonon') then
         call cal_hessian_4p(parini)
     elseif(trim(parini%task)=='misc') then

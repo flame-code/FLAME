@@ -1,6 +1,7 @@
 
 find src -type f -iname '*.F90' -exec grep -i -A 1 '^subroutine' {} \; |awk '{if($1=="subroutine" && n!=1) {n=1;line1=$2};if(n==2) {n=0;str=$1 $2;if(str!="usemod_interface," || $1=="subroutine") print line1,"\n",$0};if(n==1) n++}'
 
+0) Does MD escape writes correct energies in traj*mde.acf ?
 
 1) Minhopp does not save new initial configurations in a restart run 
 when posinp.xyz is manually modified. However I think this 

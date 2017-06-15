@@ -7,8 +7,9 @@
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
-  if (m%srcdata_add == int(-1,kind=8)) then
+  if (m%srcdata_add == int(-1,f_address)) then
      nullify(array)
+     if (f_nan_pad_size > 0) call togglepadding(0)
      !$ if (not_omp) then
      call f_timer_resume()!TCAT_ARRAY_ALLOCATIONS
      !$ end if

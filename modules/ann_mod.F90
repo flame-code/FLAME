@@ -1,6 +1,7 @@
 !*****************************************************************************************
 module mod_ann
     use mod_linked_lists, only: typ_linked_lists
+    use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type typ_ann
         integer:: nl !number of hidden layer plus one
@@ -25,7 +26,10 @@ module mod_ann
         real(8):: gausswidth_ion
         real(8):: chi0
         real(8):: hardness
+        real(8):: spring_const
         real(8):: zion
+        real(8):: qinit
+        real(8):: rionic
         real(8):: ener_ref
         real(8):: ampl_chi=-1.d0
         real(8):: prefactor_chi=-1.d0
@@ -65,6 +69,7 @@ module mod_ann
     end type typ_ann
     type typ_ann_arr
         integer:: n=-1
+        integer:: natmax=1000
         logical:: compute_symfunc=.true.
         character(30):: event='unknown'
         character(50):: approach='unknown'
@@ -76,18 +81,29 @@ module mod_ann
         !real(8), allocatable:: yall(:,:)
         !real(8), allocatable:: y0d(:,:,:)
         integer:: natsum(10)
+        !real(8):: repfac(10,10)
+        real(8):: reprcut(10,10)
         real(8):: qmax(10)
         real(8):: qmin(10)
         real(8):: qsum(10)
         real(8):: chi_max(10)
         real(8):: chi_min(10)
         real(8):: chi_sum(10)
+        real(8):: chi_delta(10)
         real(8):: yall_bond(100,100,100)
         real(8):: y0d_bond(100,3,100,100)
         !real(8), allocatable:: y0dr(:,:,:)
+        real(8), allocatable:: a(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
+        real(8), allocatable:: fat_chi(:,:)
+        real(8), allocatable:: g_per_atom(:,:)
+        real(8), allocatable:: g_per_bond(:,:,:)
+        real(8), allocatable:: fatpq(:,:)
+        real(8), allocatable:: stresspq(:,:,:)
+        integer, allocatable:: ipiv(:)
+        real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
     end type typ_ann_arr
     type typ_symfunc
@@ -95,7 +111,7 @@ module mod_ann
         integer:: nat=-1
         real(8):: epot
         real(8), allocatable:: y(:,:)
-        !real(8), allocatable:: y_bond(:,:,:)
+        real(8), allocatable:: y0d_bond(:,:)
         real(8), allocatable:: y0d(:,:,:)
         real(8), allocatable:: y0dr(:,:,:)
         type(typ_linked_lists):: linked_lists
@@ -114,6 +130,15 @@ module mod_ann
         real(8), allocatable:: gc(:,:)
         real(8), allocatable:: gs(:,:)
     end type typ_ekf
+    type typ_cent
+        real(8), allocatable:: gwi(:)
+        real(8), allocatable:: gwe(:)
+        real(8), allocatable:: gwit(:)
+        real(8), allocatable:: rel(:,:)
+        real(8), allocatable:: qgrad(:)
+        real(8), allocatable:: rgrad(:,:)
+        type(typ_ewald_p3d):: ewald_p3d
+    end type typ_cent
 end module mod_ann
 !*****************************************************************************************
 !module data_point

@@ -8,7 +8,7 @@ subroutine read_input_ann(parini,iproc,ann_arr)
     integer, intent(in):: iproc
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    integer:: ios, iann
+    integer:: ios, iann, i, j
     character(256):: fn_fullpath
     character(5):: stypat
     real(8):: rcut
@@ -35,6 +35,14 @@ subroutine read_input_ann(parini,iproc,ann_arr)
         endif
         close(1)
     enddo
+    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
+    !    do i=1,ann_arr%n
+    !        do j=i,ann_arr%n
+    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !        enddo
+    !    enddo
+    !endif
 end subroutine read_input_ann
 !*****************************************************************************************
 subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
@@ -90,7 +98,12 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
         read(ann%hlines(3),*) str1,ann%ampl_chi,str2,ann%prefactor_chi
         read(ann%hlines(4),*) str1,ann%zion,str2,ann%gausswidth_ion,str3,ann%ener_ref
         read(ann%hlines(5),*) str1,ann%gausswidth,str2,ann%hardness,str3,ann%chi0
+        read(ann%hlines(6),*) str1,ann%spring_const,str2,ann%qinit
+    elseif(trim(parini%approach_ann)=='tb') then
+        read(ann%hlines(4),*) str3,ann%ener_ref
     endif
+    !read(ann%hlines(6),*) str1,ann%rionic
+    !---------------------------------------------
     i0=0
 
     read(ifile,'(a)') strline
@@ -245,6 +258,45 @@ subroutine set_angular_atomtype(parini,sat1,sat2,ityp)
     enddo firstloop
 end subroutine set_angular_atomtype
 !*****************************************************************************************
+subroutine write_ann_all(parini,ann_arr,iter)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    integer, intent(in):: iter
+    !local variables
+    character(16):: fn
+    character(1):: fn_tt
+    character(50):: filename
+    integer:: i
+    if(iter==-1) then
+        write(fn,'(a10)') '.ann.param'
+    else
+        write(fn,'(a11,i5.5)') '.ann.param.',iter
+    endif
+    if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
+        if(parini%ntypat>1) then
+            stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
+        endif
+        do i=1,ann_arr%n
+            write(fn_tt,'(i1)') i
+            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
+            write(*,'(a)') trim(filename)
+            call write_ann(parini,filename,ann_arr%ann(i))
+        enddo
+    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
+        do i=1,ann_arr%n
+            filename=trim(parini%stypat(i))//trim(fn)
+            write(*,'(a)') trim(filename)
+            call write_ann(parini,filename,ann_arr%ann(i))
+        enddo
+    else
+        stop 'ERROR: writing ANN parameters is only for eem1,cent2,tb'
+    endif
+end subroutine write_ann_all
+!*****************************************************************************************
 subroutine write_ann(parini,filename,ann)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -338,10 +390,23 @@ subroutine read_ann(parini,ann_arr)
     integer:: i, j, k, l, ios, i0, ifile, ialpha, iann
     !character(100):: ttstr
     real(8):: bound_l, bound_u, rcut
+    character(16):: fn
+    character(1):: fn_tt
     character(50):: filename
     do iann=1,ann_arr%n
-        write(filename,'(a10)') '.ann.param'
-        filename=trim(parini%stypat(iann))//trim(filename)
+        write(fn,'(a10)') '.ann.param'
+        if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
+            if(parini%ntypat>1) then
+                stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
+            endif
+            write(fn_tt,'(i1)') iann
+            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
+            write(*,'(a)') trim(filename)
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
+            filename=trim(parini%stypat(iann))//trim(fn)
+        else
+            stop 'ERROR: reading ANN parameters is only for eem1,cent2,tb'
+        endif
         open(unit=1,file=trim(filename),status='old',iostat=ios)
         if(ios/=0) then
             write(*,'(2a)') 'ERROR: failure openning ',trim(filename)
@@ -380,12 +445,21 @@ subroutine read_ann(parini,ann_arr)
         !-------------------------------------------------------
         close(1)
     enddo
+    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
+    !    do i=1,ann_arr%n
+    !        do j=i,ann_arr%n
+    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
+    !        enddo
+    !    enddo
+    !endif
 end subroutine read_ann
 !*****************************************************************************************
 subroutine read_data(parini,filename_list,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_all, typ_atoms_arr
+    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename_list
@@ -400,6 +474,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
     type(typ_atoms_arr):: atoms_arr_t
     real(8):: ttx, tty, ttz, fx, fy, fz
     integer:: nconfmax, ind, len_filename
+    call f_routine(id='read_data')
     nconfmax=1*10**5
     allocate(atoms_arr_t%atoms(nconfmax))
     allocate(atoms_arr_t%fn(nconfmax))
@@ -465,7 +540,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
             enddo
             atoms_arr_t%fn(atoms_arr_t%nconf)=trim(filename)
             atoms_arr_t%lconf(atoms_arr_t%nconf)=iconf
-            call atom_deallocate_old(atoms_arr_of%atoms(iconf))
+            call atom_deallocate(atoms_arr_of%atoms(iconf))
         enddo over_iconf
         deallocate(atoms_arr_of%atoms)
         !call atom_all_deallocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.,qtotall=.true.)
@@ -488,13 +563,13 @@ subroutine read_data(parini,filename_list,atoms_arr)
        !     !stop 'WARNING: Is cellvec variable copied?'
        !     call atom_build_periodic_images(atoms_arr%atoms(iconf),10.d0)
        ! else
-            atoms_arr%atoms(iconf)%natim=atoms_arr%atoms(iconf)%nat
-            call atom_allocate_old(atoms_arr%atoms(iconf),atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%natim,0)
-            do iat=1,atoms_arr%atoms(iconf)%nat
-                atoms_arr%atoms(iconf)%ratim(1,iat)=atoms_arr%atoms(iconf)%rat(1,iat)
-                atoms_arr%atoms(iconf)%ratim(2,iat)=atoms_arr%atoms(iconf)%rat(2,iat)
-                atoms_arr%atoms(iconf)%ratim(3,iat)=atoms_arr%atoms(iconf)%rat(3,iat)
-            enddo
+            !atoms_arr%atoms(iconf)%natim=atoms_arr%atoms(iconf)%nat
+            !call atom_allocate_old(atoms_arr%atoms(iconf),atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%natim,0)
+            !do iat=1,atoms_arr%atoms(iconf)%nat
+            !    atoms_arr%atoms(iconf)%ratim(1,iat)=atoms_arr%atoms(iconf)%rat(1,iat)
+            !    atoms_arr%atoms(iconf)%ratim(2,iat)=atoms_arr%atoms(iconf)%rat(2,iat)
+            !    atoms_arr%atoms(iconf)%ratim(3,iat)=atoms_arr%atoms(iconf)%rat(3,iat)
+            !enddo
         !endif
     enddo
 
@@ -504,5 +579,6 @@ subroutine read_data(parini,filename_list,atoms_arr)
     deallocate(atoms_arr_t%atoms)
     deallocate(atoms_arr_t%fn)
     deallocate(atoms_arr_t%lconf)
+    call f_release_routine()
 end subroutine read_data
 !*****************************************************************************************

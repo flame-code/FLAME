@@ -108,6 +108,10 @@ module dictionaries
       module procedure list_container_if_key_exists
    end interface
 
+   interface dict_get
+      module procedure dict_get_l
+   end interface dict_get
+
    interface dict_iter
       module procedure dict_iter, dict_iter_lc
    end interface
@@ -130,7 +134,8 @@ module dictionaries
    public :: dict_copy, dict_update,dict_remove,dict_remove_last
    !> Handle exceptions
    public :: dict_len,dict_size,dict_key,dict_item,dict_value,dict_next,dict_next_build,find_key
-   public :: dict_new,list_new,dict_iter,has_key,dict_keys
+   public :: dict_new,list_new,dict_iter,has_key,dict_keys,dict_islist,dict_isdict,dict_isscalar
+   public :: dict_get
    !> Public elements of dictionary_base
    public :: operator(.is.),operator(.item.)
    public :: operator(.pop.),operator(.notin.)
@@ -161,7 +166,7 @@ module dictionaries
    type(dictionary), pointer :: dict_present_error=>null() !< local pointer of present error, nullified if success
   
    
-   !> Stack of dict_present_error for nested try (opne and close)
+   !> Stack of dict_present_error for nested try (open and close)
    type, private :: error_stack
      type(dictionary), pointer :: current => null()   !< dict_present_error point to here.
      type(error_stack), pointer :: previous => null() !< previous error
@@ -193,7 +198,7 @@ module dictionaries
    public :: f_get_past_error,f_get_no_of_errors
 
    !for internal f_lib usage
-   public :: dictionaries_errors,TYPE_DICT,TYPE_LIST
+   public :: dictionaries_errors,TYPE_DICT,TYPE_LIST,dictionary_check_leak
 
 
 contains
@@ -227,6 +232,44 @@ contains
           err_action='Check the nature of the conversion')
 
    end subroutine dictionaries_errors
+
+   !>verify if the dictionary has an instance of a list
+   function dict_islist(dict) result(ok)
+     implicit none
+     type(dictionary), pointer :: dict
+     logical :: ok
+     
+     ok=associated(dict)
+     if (.not. ok) return
+     ok= trim(dict_value(dict))==TYPE_LIST
+
+   end function dict_islist
+
+   !>verify if the dictionary has an instance of a dictionary
+   function dict_isdict(dict) result(ok)
+     implicit none
+     type(dictionary), pointer :: dict
+     logical :: ok
+
+     ok=associated(dict)
+     if (.not. ok) return
+     ok= trim(dict_value(dict))==TYPE_DICT
+
+   end function dict_isdict
+
+   !>verify if the dictionary has an instance of a scalar
+   function dict_isscalar(dict) result(ok)
+     implicit none
+     type(dictionary), pointer :: dict
+     logical :: ok
+
+     ok=associated(dict)
+     if (.not. ok) return
+     ok= trim(dict_value(dict)) /= TYPE_DICT .and. trim(dict_value(dict)) /= TYPE_LIST
+
+   end function dict_isscalar
+
+
 
    !> Pop a subdictionary from a mother one. Returns the subdictionary.
    !! raise an error if the subdictionary does not exist.
@@ -1091,23 +1134,16 @@ contains
      type(dictionary), pointer :: subd
 
      !if the dictionary starts with a master tree, eliminate it and put the child
+     if (.not. associated(subd)) then
+        nullify(dict%child)
+        return
+     end if
      if (.not. associated(subd%parent) .and. associated(subd%child)) then
         call put_child(dict,subd%child)
         nullify(subd%child)
         call dict_free(subd)
         return
      end if
-     !here the treatment of the scalar dictionary can be 
-     !inserted (left commented for the moment)
-!!$     if (associated(subd)) then
-!!$        !if the dictionary is a scalar free it
-!!$        if (dict_len(subd) == 0 .and. dict_size(subd) == 0 .and. &
-!!$             len_trim(dict_key(subd))==0) then 
-!!$           call set(dict,dict_value(subd))
-!!$           call dict_free(subd)
-!!$           return
-!!$        end if
-!!$     end if
 
      if (f_err_raise(no_key(dict),err_id=DICT_KEY_ABSENT)) return
      
@@ -1315,6 +1351,17 @@ contains
      elem%dict=>val
    end function item_dict
    
+   !> dictionary getter, inspired from get method of python dict class
+   function dict_get_l(dict,key,default) result(val)
+     implicit none
+     type(dictionary), pointer :: dict
+     character(len=*), intent(in) :: key
+     logical, intent(in) :: default
+     logical :: val
+     val=default
+     val=dict .get. key
+   end function dict_get_l
+
    !> Internal procedure for .get. operator interface
    function list_container_if_key_exists(dict,key) result(list)
      implicit none
@@ -1338,13 +1385,16 @@ contains
      type(dictionary), pointer :: dict_tmp
 
      !initialize dictionary
-     call dict_init(dict_tmp)
+     nullify(dict_tmp)
+
 
      n_st=size(dicts)
      do i_st=1,n_st
         if (associated(dicts(i_st)%dict)) then
+           if (.not. associated(dict_tmp)) call dict_init(dict_tmp)
            call add(dict_tmp,dicts(i_st)%dict)
         else if (len_trim(dicts(i_st)%val) > 0) then
+           if (.not. associated(dict_tmp)) call dict_init(dict_tmp)
            call add(dict_tmp,dicts(i_st)%val)
         end if
      end do

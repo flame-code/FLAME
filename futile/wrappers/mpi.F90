@@ -2,7 +2,7 @@
 !! Wrapper for the MPI call (this file is preprocessed.)
 !! Use error handling
 !! @author
-!!    Copyright (C) 2012-2015 BigDFT group
+!!    Copyright (C) 2012-2016 BigDFT group
 !!    This file is distributed under the terms of the
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
@@ -14,31 +14,40 @@
 #endif
 
 
+module mpif_module
+  !do not put implicit none to avoid implicit declaration of
+  !datatypes in some MPI implementations
+  include 'mpif.h'      !< MPI definitions and datatypes
+end module mpif_module
+
+
 !> Module defining the routines which wrap the MPI calls
 module wrapper_MPI
   use time_profiling, only: TIMING_UNINITIALIZED
-  use yaml_strings, only: operator(//)
+  use yaml_strings !, only: operator(//)
   use f_precisions
   use f_refcnts
   use dictionaries, only: f_err_throw
+  use mpif_module
   implicit none
 
   ! MPI handling
 #ifdef HAVE_MPI2
   logical, parameter :: have_mpi2 = .true.  !< Flag to use in the code to switch between MPI1 and MPI2
 #else
-  integer :: MPI_IN_PLACE = 0               !< Fake MPI_IN_PLACE variable to allow compilation in sumrho.
+  integer :: MPI_IN_PLACE               !< Fake MPI_IN_PLACE variable to allow compilation in sumrho.
   logical, parameter :: have_mpi2 = .false. !< Flag to use in the code to switch between MPI1 and MPI2
 #endif
 
-  include 'mpif.h'      !< MPI definitions and datatypes
+!  include 'mpif.h'      !< MPI definitions and datatypes, now within mpif_module
 
   logical :: mpi_thread_funneled_is_supported=.false. !< Control the OMP_NESTED based overlap, checked by bigdft_mpi_init below
 
-  !timing categories for MPI wrapper
+  !> Timing categories for MPI wrapper
   integer, parameter :: smallsize=5 !< limit for a communication with small size
   character(len=*), parameter, public :: tgrp_mpi_name='Communications'
-  !timing categories
+
+  !> Timing categories
   integer, public, save :: TCAT_ALLRED_SMALL = TIMING_UNINITIALIZED
   integer, public, save :: TCAT_ALLRED_LARGE = TIMING_UNINITIALIZED
   integer, public, save :: TCAT_ALLGATHERV   = TIMING_UNINITIALIZED
@@ -86,7 +95,7 @@ module wrapper_MPI
      module procedure mpigather_d0d2,mpigather_d1d1,mpigather_d1d2,mpigather_d2,mpigather_d2d1
      module procedure mpigather_i0i2,mpigather_i1,mpigather_i1i2,mpigather_i2
      module procedure mpigather_li0li2,mpigather_li1,mpigather_li1li2,mpigather_li2
-     module procedure mpigather_c1i2
+     module procedure mpigather_c1i2,mpigather_c0c1
      module procedure mpigather_c1li2
   end interface mpigather
 
@@ -160,16 +169,16 @@ module wrapper_MPI
 
   !> Global MPI communicator which contains all information related to the MPI process
   type, public :: mpi_environment
-     !>reference counter of the communicator.
-     !!used to understand whether the communicator has to be destroyed
+     !> Reference counter of the communicator.
+     !! used to understand whether the communicator has to be destroyed
      type(f_reference_counter) :: refcnt
-     integer :: mpi_comm !< MPI communicator
-     integer :: iproc    !< Process Id
+     integer :: mpi_comm=-1 !< MPI communicator
+     integer :: iproc=0    !< Process Id
                          !! @ingroup RESERVED
-     integer :: nproc    !< Number of MPI processes (in the given communicator)
+     integer :: nproc=1    !< Number of MPI processes (in the given communicator)
                          !! @ingroup RESERVED
-     integer :: igroup   !< MPI Group Id
-     integer :: ngroup   !< Number of MPI groups
+     integer :: igroup=0   !< MPI Group Id
+     integer :: ngroup=1   !< Number of MPI groups
   end type mpi_environment
 
   public :: mpi_environment_null
@@ -177,9 +186,9 @@ module wrapper_MPI
   public :: mpi_environment_set
   public :: mpi_environment_set1 !to be removed
 
-  !>fake type to enhance documentation
+  !> Fake type to enhance documentation
   type, private :: doc
-     !>number of entries in buffer (integer). Useful for buffer passed by reference
+     !> number of entries in buffer (integer). Useful for buffer passed by reference
      integer :: count
      !> rank of mpitask executing the operation (default value is root=0)
      integer :: root
@@ -187,9 +196,11 @@ module wrapper_MPI
      integer :: comm
   end type doc
 
-  private :: operator(//),f_err_throw
+  private :: operator(//),f_err_throw,operator(+) ! To avoid an export from yaml_strings module
+
 
 contains
+
 
   pure subroutine nullify_mpi_environment(mpi)
     implicit none
@@ -209,7 +220,7 @@ contains
   end function mpi_environment_null
 
   subroutine release_mpi_environment(mpi_env)
-    use yaml_strings!, only: yaml_toa,operator(//),f_string
+!    use yaml_strings!, only: yaml_toa,operator(//),f_string
 !    use dictionaries, only: f_err_throw
     implicit none
     type(mpi_environment), intent(inout) :: mpi_env
@@ -238,6 +249,8 @@ contains
     mpi_env=mpi_environment_null()
   end subroutine release_mpi_environment
 
+
+  !> Deep copy of the mpi_environment.
   subroutine deepcopy_mpi_environment(dest,src)
     implicit none
     ! Calling arguments
@@ -266,10 +279,10 @@ contains
        !source has been
        dest%refcnt=f_ref_new('mpi_copied')
     end if
-
   end subroutine deepcopy_mpi_environment
 
-  !>shallow copy of the mpi_environment.
+
+  !> Shallow copy of the mpi_environment.
   !! it has no effect if the src has a null communicator
   subroutine copy_mpi_environment(dest,src)
     implicit none
@@ -289,8 +302,8 @@ contains
        dest%ngroup = src%ngroup
        dest%mpi_comm=src%mpi_comm
     end if
-
   end subroutine copy_mpi_environment
+
 
   !> Set the MPI environment (i.e. taskgroup or MPI communicator)
   subroutine mpi_environment_set(mpi_env,iproc,nproc,mpi_comm,groupsize)
@@ -336,6 +349,30 @@ contains
     end if
     call f_release_routine()
   end subroutine mpi_environment_set
+
+
+  function mpimaxtag(comm)
+    implicit none
+    integer, intent(in), optional :: comm
+    integer(kind=MPI_ADDRESS_KIND) :: mpimaxtag
+    !local variables
+    logical :: flag
+    integer :: comm_,ierr
+
+    if (present(comm)) then
+       comm_=comm
+    else
+       comm_=mpiworld()
+    end if
+
+    call MPI_COMM_GET_ATTR(comm_,MPI_TAG_UB,mpimaxtag,flag,ierr)
+   
+    !error check
+    if (ierr /= MPI_SUCCESS .or. .not. flag) then
+       call f_err_throw('An error in calling to mpimaxtag occured',&
+            err_id=ERR_MPI_WRAPPERS)
+    end if
+  end function mpimaxtag
 
 
 !!! PSolver n1-n2 plane mpi partitioning !!!
@@ -422,7 +459,8 @@ contains
     call f_release_routine()
   end subroutine mpi_environment_set1
 
-  !> create a mpi_environment from a group list in a base group
+
+  !> Create a mpi_environment from a group list in a base group
   subroutine mpi_env_create_group(igrp,ngrp,base_comm,base_grp,group_size,group_list,&
        mpi_env)
     implicit none
@@ -571,7 +609,7 @@ contains
   contains
 
     subroutine check_ierr(ierr,message)
-      use yaml_strings, only: yaml_toa
+!      use yaml_strings, only: yaml_toa
       use dictionaries, only: f_err_throw
       implicit none
       integer, intent(in) :: ierr
@@ -715,23 +753,14 @@ contains
        call f_err_throw('An error in calling to MPI_GET_PROCESSOR_NAME occured',&
             err_id=ERR_MPI_WRAPPERS)
     end if
-
     !clean the hostname such as to include only the last word
     !this solves a problem in ibm machines
-    ipos=index(mpihostname,' ',back=.true.)
-    if (ipos > 0) then
-       do i=1,len(mpihostname)
-          if (i+ipos+1 <= len(mpihostname)) then
-             mpihostname(i:i)=mpihostname(i+ipos+1:i+ipos+1)
-          else
-             mpihostname(i:i)=' '
-          end if
-       end do
-    end if
+    ipos=index(mpihostname(1:namelen),' ',back=.true.)
+    if (ipos > 0) mpihostname=mpihostname(1:ipos)
 
   end function mpihostname
 
-  !>initialization of the mpi library
+  !> Initialization of the mpi library
   subroutine mpiinit(inithread)
     use dictionaries, only: f_err_throw
     implicit none
@@ -757,11 +786,14 @@ contains
 
   end subroutine mpiinit
 
+
+  !> Function to give MPI_COMM_WORLD
   pure function mpiworld()
     implicit none
     integer :: mpiworld
     mpiworld=MPI_COMM_WORLD
   end function mpiworld
+
 
   !> Finalization of the mpi
   subroutine mpifinalize()
@@ -782,7 +814,7 @@ contains
   subroutine mpi_initialize_timing_categories()
     use time_profiling, only: f_timing_category_group,f_timing_category
     use dictionaries, only: f_err_throw,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
 
     call f_timing_category_group(tgrp_mpi_name,&
@@ -970,6 +1002,7 @@ contains
     integer :: mt
     mt=MPI_CHARACTER
   end function mpitype_c1
+
 
   !> Function giving the mpi rank id for a given communicator
   function mpirank(comm)
@@ -1289,8 +1322,61 @@ contains
     sendbuf=f_malloc(ntot,id='sendbuf')
     call f_memcpy(src=sendbuf_c,dest=sendbuf)
     include 'gather-inner-inc.f90'
+    call f_free(sendbuf)
     !-end gather-inc
   end subroutine mpigather_c1i2
+
+  subroutine mpigather_c0c1(length,sendbuf,recvbuf,root,comm)
+    use dynamic_memory
+    use dictionaries, only: f_err_throw,f_err_define
+
+    implicit none
+    integer, intent(in) :: length
+    character(len=length), intent(in) :: sendbuf
+    character(len=length), dimension(:), intent(inout) :: recvbuf
+    !---like gather-inc
+    integer, intent(in), optional :: root !< 0 if absent
+    integer, intent(in), optional :: comm !< MPI_COMM_WORLD if absent
+    !local variables
+    integer :: iroot,mpi_comm,ntot,ntotrecv,ntasks,ierr
+    ntot=length
+    ntotrecv=size(recvbuf)
+    !include 'gather-inner-inc.f90'
+
+    if (present(root)) then
+       iroot=root
+    else
+       iroot=0
+    end if
+    if (present(comm)) then
+       mpi_comm=comm
+    else
+       mpi_comm=MPI_COMM_WORLD !or bigdft_mpi%mpi_comm?
+    end if
+
+    !verify the size of the receive buffer
+    ntasks=mpisize(mpi_comm)
+    if (ntotrecv < ntasks) then
+       call f_err_throw('Error in mpigather; the size of the receive buffer ('//&
+            (ntotrecv)//&
+            ') is not large enough to contain '//ntasks//&
+            ' elements',err_id=ERR_MPI_WRAPPERS)
+       return
+    end if
+    !then one can proceed with the MPI operation
+    ntotrecv=int(int(ntot,f_long)*kind(sendbuf)/int(kind(recvbuf),f_long))
+    call f_timer_interrupt(TCAT_GATHER)
+    call MPI_GATHER(sendbuf,ntot,MPI_CHARACTER,&
+         recvbuf,ntotrecv,MPI_CHARACTER,iroot,mpi_comm,ierr)
+    call f_timer_resume()
+    if (ierr /=0) then
+       call f_err_throw('An error in calling to MPI_GATHER occured',&
+            err_id=ERR_MPI_WRAPPERS)
+       return
+    end if
+
+  end subroutine mpigather_c0c1
+
 
   !> Gather the results of a given array into the root proc, version
   !! working with adresses
@@ -1312,7 +1398,7 @@ contains
     sendbuf=f_malloc(ntot,id='sendbuf')
     call f_memcpy(src=sendbuf_c,dest=sendbuf)
     include 'gather-inner-inc.f90'
-    !-end gather-inc
+    call f_free(sendbuf)
   end subroutine mpigather_c1li2
 
   !> Gather the results of a given array into the root proc, version
@@ -1366,7 +1452,7 @@ contains
   !! as a function of the arguments
   subroutine mpiallgatherv_d0(sendbuf,sendcount,recvbuf,recvcount,&
        recvcounts,displs,comm)
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     use dictionaries, only: f_err_throw
     use dynamic_memory
     implicit none
@@ -1377,7 +1463,7 @@ contains
   end subroutine mpiallgatherv_d0
   subroutine mpiallgatherv_d1(sendbuf,sendcount,recvbuf,recvcount,&
        recvcounts,displs,comm)
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     use dictionaries, only: f_err_throw
     use dynamic_memory
     implicit none
@@ -1388,7 +1474,7 @@ contains
   end subroutine mpiallgatherv_d1
   subroutine mpiallgatherv_d2d3(sendbuf,sendcount,recvbuf,recvcount,&
        recvcounts,displs,comm)
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     use dictionaries, only: f_err_throw
     use dynamic_memory
     implicit none
@@ -1400,7 +1486,7 @@ contains
 
   subroutine mpiallgatherv_i2(sendbuf,sendcount,recvbuf,recvcount,&
        recvcounts,displs,comm)
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     use dictionaries, only: f_err_throw
     use dynamic_memory
     implicit none
@@ -1496,7 +1582,7 @@ contains
   subroutine mpiallred_i1(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     integer, dimension(:), intent(inout) :: sendbuf
     integer, dimension(:), intent(inout), optional :: recvbuf
@@ -1507,7 +1593,7 @@ contains
   subroutine mpiallred_i2(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     integer, dimension(:,:), intent(inout) :: sendbuf
     integer, dimension(:,:), intent(inout), optional :: recvbuf
@@ -1518,7 +1604,7 @@ contains
   subroutine mpiallred_i3(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     integer, dimension(:,:,:), intent(inout) :: sendbuf
     integer, dimension(:,:,:), intent(inout), optional :: recvbuf
@@ -1529,7 +1615,7 @@ contains
   subroutine mpiallred_l3(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     logical, dimension(:,:,:), intent(inout) :: sendbuf
     logical, dimension(:,:,:), intent(inout), optional :: recvbuf
@@ -1541,7 +1627,7 @@ contains
   subroutine mpiallred_r1(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_refine
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     real, dimension(:), intent(inout) :: sendbuf
     real, dimension(:), intent(inout), optional :: recvbuf
@@ -1552,7 +1638,7 @@ contains
   subroutine mpiallred_r2(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     real, dimension(:,:), intent(inout) :: sendbuf
     real, dimension(:,:), intent(inout), optional :: recvbuf
@@ -1563,7 +1649,7 @@ contains
   subroutine mpiallred_r3(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     real, dimension(:,:,:), intent(inout) :: sendbuf
     real, dimension(:,:,:), intent(inout), optional :: recvbuf
@@ -1574,7 +1660,7 @@ contains
   subroutine mpiallred_r4(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     real, dimension(:,:,:,:), intent(inout) :: sendbuf
     real, dimension(:,:,:,:), intent(inout), optional :: recvbuf
@@ -1585,7 +1671,7 @@ contains
   subroutine mpiallred_d1(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     double precision, dimension(:), intent(inout) :: sendbuf
     double precision, dimension(:), intent(inout), optional :: recvbuf
@@ -1596,7 +1682,7 @@ contains
   subroutine mpiallred_d2(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     double precision, dimension(:,:), intent(inout) :: sendbuf
     double precision, dimension(:,:), intent(inout), optional :: recvbuf
@@ -1607,7 +1693,7 @@ contains
   subroutine mpiallred_d3(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     double precision, dimension(:,:,:), intent(inout) :: sendbuf
     double precision, dimension(:,:,:), intent(inout), optional :: recvbuf
@@ -1618,7 +1704,7 @@ contains
   subroutine mpiallred_d4(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     double precision, dimension(:,:,:,:), intent(inout) :: sendbuf
     double precision, dimension(:,:,:,:), intent(inout), optional :: recvbuf
@@ -1629,7 +1715,7 @@ contains
   subroutine mpiallred_d5(sendbuf,op,comm,recvbuf)
     use dynamic_memory
     use dictionaries, only: f_err_throw!,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     double precision, dimension(:,:,:,:,:), intent(inout) :: sendbuf
     double precision, dimension(:,:,:,:,:), intent(inout), optional :: recvbuf
@@ -2143,7 +2229,7 @@ contains
 
   !> create a peer_to_peer group, to use RMA calls instead of send-receive
   function p2p_group(base_grp,p1,p2,p3) result(grp)
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     integer, intent(in) :: base_grp
     integer, intent(in) :: p1,p2
@@ -2370,7 +2456,7 @@ contains
 
   subroutine mpi_get_to_allgatherv_double(sendbuf,sendcount,recvbuf,recvcounts,displs,comm,check_,window_)
     use dictionaries, only: f_err_throw,f_err_define
-    use yaml_strings, only: yaml_toa
+!    use yaml_strings, only: yaml_toa
     implicit none
     double precision,intent(in) :: sendbuf
     double precision,intent(inout) :: recvbuf
@@ -2530,7 +2616,7 @@ contains
     else
        tag_=mpirank(mpi_comm)
     end if
-
+   
     verb=.false.
     if (present(verbose)) verb=verbose .and. dest /=mpirank_null()
 
@@ -2628,6 +2714,8 @@ contains
           tmpint = tmpint + offset*tmpsize
           tmpaddr= TRANSFER(tmpint, tmpaddr)
           call c_f_pointer(tmpaddr, a)
+       else
+          call c_f_pointer(buf, a)
        end if
     else
       call c_f_pointer(buf, a)

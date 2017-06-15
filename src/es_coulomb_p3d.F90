@@ -18,6 +18,7 @@ subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
     call f_routine(id='construct_ewald_p3d')
     pi=4.d0*atan(1.d0)
     ewald_p3d_rough%hgx=parini%hx_ewald
+    ewald_p3d_rough%hgy=parini%hy_ewald
     ewald_p3d_rough%hgz=parini%hz_ewald
     if (parini%ewald .and. parini%alpha_ewald>0.d0) then
         ewald_p3d%alpha=parini%alpha_ewald
@@ -39,8 +40,19 @@ subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
     associate(ngpz=>ewald_p3d%poisson_p3d%ngpz)
     associate(nbgpy=>ewald_p3d%nbgpy)
     associate(nbgpz=>ewald_p3d%nbgpz)
-    ewald_p3d%poisson_p3d%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz],id='ewald_p3d%poisson_p3d%rho')
-    ewald_p3d%poisson_p3d%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ewald_p3d%ngpztot],id='ewald_p3d%poisson_p3d%pot')
+    if(trim(atoms%boundcond)=='bulk') then
+        ewald_p3d%poisson_p3d%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+            id='ewald_p3d%poisson_p3d%rho')
+        ewald_p3d%poisson_p3d%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+            id='ewald_p3d%poisson_p3d%pot')
+    elseif(trim(atoms%boundcond)=='slab') then
+        ewald_p3d%poisson_p3d%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+            id='ewald_p3d%poisson_p3d%rho')
+        ewald_p3d%poisson_p3d%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ewald_p3d%ngpztot], &
+            id='ewald_p3d%poisson_p3d%pot')
+    else
+        write(*,*) 'ERROR: other BCs are not yet considered.'
+    endif
     ewald_p3d%mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='ewald_p3d%mboundg')
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
@@ -131,7 +143,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     !write(*,*) 'total momentum z component',beta
     !write(*,*) 'total momentum z component',0.13074051987178871d5/beta
     call cpu_time(time(1))
-    call putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
+    call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,ewald_p3d)
     call cpu_time(time(2))
     !-----------------------------------------------------------------------
     !totrho=0.d0
@@ -282,16 +294,19 @@ subroutine calparam(parini,atoms,ewald_p3d_rough,ewald_p3d)
     associate(ngpx=>ewald_p3d%poisson_p3d%ngpx)
     associate(ngpy=>ewald_p3d%poisson_p3d%ngpy)
     associate(ngpz=>ewald_p3d%poisson_p3d%ngpz)
-    ngpx=int(ewald_p3d%cell(1)/ewald_p3d_rough%hgx)+1
-    ngpy=int(ewald_p3d%cell(2)/ewald_p3d_rough%hgx)+1
-    ngpz=int(ewald_p3d%cell(3)/ewald_p3d_rough%hgz)+1
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
-            call set_ngp_bps(ewald_p3d_rough,ewald_p3d)
+            call set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
+            !write(*,*) ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy, &
+            !    ewald_p3d%poisson_p3d%ngpz
+            !stop 'AFTER CALL TO set_ngp_bps'
         elseif(trim(parini%psolver_ann)=='kwald') then
             return
         endif
     elseif(trim(atoms%boundcond)=='slab') then
+        ngpx=int(ewald_p3d%cell(1)/ewald_p3d_rough%hgx)+1
+        ngpy=int(ewald_p3d%cell(2)/ewald_p3d_rough%hgx)+1
+        ngpz=int(ewald_p3d%cell(3)/ewald_p3d_rough%hgz)+1
         if(mod(ngpx,2)/=0) ngpx=ngpx+1
         if(mod(ngpy,2)/=0) ngpy=ngpy+1
         ewald_p3d%hgx=ewald_p3d%cell(1)/real(ngpx,8)
@@ -374,17 +389,21 @@ subroutine determine_glimitsphere(ewald_p3d)
     enddo
 end subroutine determine_glimitsphere
 !*****************************************************************************************
-subroutine putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
+subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
-    type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: gausswidth(atoms%nat)
     type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gausswidth(nat)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
     !work array that is bigger than rho array, big enough to include of 
     !grid points that are outside of box.
     !local variables
@@ -416,9 +435,9 @@ subroutine putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
     !assaigning the gaussian charge density on grid points, saving in the 
     !work array which is bigger than rho array.
     !write(*,*) '********************************** ',associated(wa)
-    if(trim(atoms%boundcond)=='bulk') then
+    if(trim(bc)=='bulk') then
         iii=0
-    elseif(trim(atoms%boundcond)=='slab') then
+    elseif(trim(bc)=='slab') then
         iii=1
     endif
     wa=0.d0
@@ -430,14 +449,14 @@ subroutine putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
         width_inv_hgy=width_inv*ewald_p3d%hgy
         width_inv_hgz=width_inv*ewald_p3d%hgz
     endif
-    do iat=1,atoms%nat
+    do iat=1,nat
         !shift the gaussian centers
-        iatox=nint(atoms%rat(1,iat)*hgxinv)+1
-        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1
-        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+ewald_p3d%nbgpz*iii
-        xat=atoms%rat(1,iat)-(iatox-1)*ewald_p3d%hgx
-        yat=atoms%rat(2,iat)-(iatoy-1)*ewald_p3d%hgy
-        zat=atoms%rat(3,iat)-(iatoz-1-ewald_p3d%nbgpz*iii)*ewald_p3d%hgz
+        iatox=nint(rxyz(1,iat)*hgxinv)+1
+        iatoy=nint(rxyz(2,iat)*hgyinv)+1
+        iatoz=nint(rxyz(3,iat)*hgzinv)+1+ewald_p3d%nbgpz*iii
+        xat=rxyz(1,iat)-(iatox-1)*ewald_p3d%hgx
+        yat=rxyz(2,iat)-(iatoy-1)*ewald_p3d%hgy
+        zat=rxyz(3,iat)-(iatoz-1-ewald_p3d%nbgpz*iii)*ewald_p3d%hgz
         !construct the one-dimensional gaussians
 
         if (.not.parini%ewald) then
@@ -461,7 +480,7 @@ subroutine putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
         do iw=-ewald_p3d%nbgpz,ewald_p3d%nbgpz
             wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
         enddo
-        facqiat=fac*atoms%qat(iat)
+        facqiat=fac*qat(iat)
         do iz=-ewald_p3d%nbgpz,ewald_p3d%nbgpz
             rhoz=facqiat*wz(iz)
             jz=iatoz+iz
@@ -523,13 +542,23 @@ subroutine putgaussgrid(parini,atoms,ewald_p3d,gausswidth)
             enddo
         enddo
     enddo
-    do iz=1,ngpz
-        do iy=1,ngpy
-            do ix=1,ngpx
-                ewald_p3d%poisson_p3d%rho(ix,iy,iz)=wa(ix,iy,iz)
+    if(reset) then
+        do iz=1,ngpz
+            do iy=1,ngpy
+                do ix=1,ngpx
+                    ewald_p3d%poisson_p3d%rho(ix,iy,iz)=wa(ix,iy,iz)
+                enddo
             enddo
         enddo
-    enddo
+    else
+        do iz=1,ngpz
+            do iy=1,ngpy
+                do ix=1,ngpx
+                    ewald_p3d%poisson_p3d%rho(ix,iy,iz)=ewald_p3d%poisson_p3d%rho(ix,iy,iz)+wa(ix,iy,iz)
+                enddo
+            enddo
+        enddo
+    endif
     !do iz=1,ngpz
     !    do iy=1,ngpy
     !        do ix=1,ngpx

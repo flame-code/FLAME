@@ -9,6 +9,6 @@
   
   !if the src_ptr is nullified the f_malloc should provide nullification
   if (.not. associated(src_ptr)) then
-     m%srcdata_add=int(-1,kind=8)
+     m%srcdata_add=int(-1,f_address)
      return
   end if

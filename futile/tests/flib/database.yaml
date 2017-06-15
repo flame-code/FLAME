@@ -1,0 +1,19 @@
+### In this file we define some database information which is then 
+## inserted in the executable via the makefile
+---
+C60:
+  JOURNAL_REF: Nature 318, 6042, 162-163 (1985)
+  DESCRIPTION: Seminal Paper about C60 cage
+  BIBTEX_REF: |
+   @article{kroto1985,
+   title={C60: buckminsterfullerene},
+    author={Kroto, Harold W and Heath, James R and O'Brien, Sean C and Curl, Robert F and Smalley, Richard E and others},
+   journal={Nature},
+   volume={318},
+   number={6042},
+   pages={162--163},
+   year={1985},
+   publisher={London}
+   }
+PS_FBC:
+  DESCRIPTION: Paper of the Free BC Poisson Solver

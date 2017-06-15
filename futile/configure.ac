@@ -110,6 +110,7 @@ dnl This will be added in libs, on top, therefore care should be taken for a lin
 AC_LANG_PUSH(C)
 AC_CHECK_HEADERS([time.h])
 AC_CHECK_LIB([rt], [clock_gettime])
+AC_CHECK_LIB([dl], [dlopen])
 AC_CHECK_FUNCS([clock_gettime])
 AC_CHECK_FUNCS([strndup])
 AC_LANG_POP(C)
@@ -141,6 +142,9 @@ AX_ACC_CUDA()
 AX_ACC_OCL()
 AX_ACC_MIC()
 
+dnl do we use simgrid shared allocators or fake version?
+AX_SIMGRID_SHARED()
+
 dnl Linalg libraries.
 AX_LINALG()
 if test $ax_have_linalg != "yes" ; then
@@ -159,7 +163,29 @@ fi
 AC_SUBST(LIB_FUTILE_LIBS)
 
 dnl Test for the developers' documentation.
-AX_DOC()
+AC_CHECK_PROG(ac_have_doxygen, [doxygen], [yes], [no])
+AC_ARG_ENABLE(devel-doc,
+              AS_HELP_STRING([--enable-devel-doc],
+                             [compile documentation for developers using Doxygen.]),
+              ac_devel_doc=$enableval, ac_devel_doc="no")
+AM_CONDITIONAL(BUILD_DEVDOC, test x"$ac_have_doxygen" = x"yes" -a x"$ac_devel_doc" = x"yes")
+dnl Test for the documentation.
+AC_CHECK_PROG(ac_have_pdflatex, [pdflatex], [yes], [no])
+AM_CONDITIONAL(BUILD_PDFDOC, test x"$ac_have_pdflatex" = x"yes" -a x"$ac_devel_doc" = x"yes")
+
+dnl LIB_PSOLVER_DEPS="$LIBETSFIO_LIBS $LIBCUDA_LIBS $LINALG_LIBS $MPI_LDFLAGS $MPI_LIBS"
+dnl LIB_PSOLVER_PKG=""
+dnl if test $ax_build_dynamic != "yes" ; then
+dnl   LIB_PSOLVER_PKG="$LIB_PSOLVER_DEPS"
+dnl fi
+dnl AC_SUBST(LIB_PSOLVER_PKG)
+dnl LIB_PSOLVER_DEPS="$LIB_PSOLVER_DEPS $LIB_FUTILE_LIBS"
+dnl AC_SUBST(LIB_PSOLVER_DEPS)
+
+
+dnl default installation directories
+docdir="${docdir}"
+AC_SUBST(docdir)
 
 AC_SUBST(CONFIG_ARGS, [$ac_configure_args])
 
@@ -167,6 +193,9 @@ dnl Give the name of file.in to transform to file
 AC_CONFIG_FILES([
 Makefile
 futile.pc
+futile_environment.sh
+futilevars.sh
+config/Doxyfile
 doc/Makefile
 doc/Doxyfile
 flib/Makefile
@@ -175,7 +204,10 @@ wrappers/Makefile
 c-bindings/Makefile
 c-bindings/futile_cst.h
 src/configure.inc
+src/f_memcheck
 src/Makefile
+src/python/Makefile
+src/python/futile/Makefile
 tests/Makefile
 tests/fft/Makefile
 tests/flib/Makefile

@@ -27,11 +27,11 @@ mpif.h:
 	echo "integer, parameter :: MPI_MIN=1, MPI_MAX=1, MPI_LOR=1, MPI_CHARACTER=1, MPI_REAL8=1" >> mpif.h &&\
 	echo "integer, parameter :: MPI_MAX_PROCESSOR_NAME=10, MPI_STATUS_SIZE=1, MPI_LAND=1" >> mpif.h &&\
 	echo "integer, parameter :: MPI_REQUEST_NULL=1, MPI_STATUS_IGNORE=1" >> mpif.h &&\
-	echo "integer, parameter :: MPI_TAG_UB=1, MPI_ADDRESS_KIND=8, MPI_INFO_NULL=0" >> mpif.h &&\
+	echo "integer, parameter :: MPI_TAG_UB=1, MPI_OFFSET_KIND=8, MPI_ADDRESS_KIND=8, MPI_INFO_NULL=0" >> mpif.h &&\
 	echo "integer, parameter :: MPI_MODE_NOPRECEDE=0, MPI_MODE_NOSUCCEED=0" >> mpif.h &&\
 	echo "integer, parameter :: MPI_LOCK_EXCLUSIVE=0, MPI_LOCK_SHARED=0" >> mpif.h &&\
-	echo "integer, parameter :: MPI_ANY_SOURCE=0, MPI_ANY_TAG=0" >> mpif.h &&\
-	echo "integer, parameter :: MPI_MODE_NOPUT=0, MPI_MODE_NOSTORE=0, MPI_MODE_NOCHECK=0" >> mpif.h &&\
+	echo "integer, parameter :: MPI_ANY_SOURCE=0, MPI_MODE_CREATE=0, MPI_MODE_WRONLY=0, MPI_ANY_TAG=0" >> mpif.h &&\
+	echo "integer, parameter :: MPI_MODE_NOPUT=0, MPI_MODE_RDONLY=0, MPI_MODE_NOSTORE=0, MPI_MODE_NOCHECK=0" >> mpif.h &&\
 	echo "integer, parameter :: MPI_GROUP_NULL=0, MPI_PROC_NULL=0, MPI_WIN_NULL=0" >> mpif.h &&\
 	echo "real(kind=8), external :: mpi_wtime" >> mpif.h
 
@@ -71,7 +71,10 @@ libwrappers_a_SOURCES = $(DGEMMSY_SOURCES) $(CUBLAS_SOURCES) $(OCL_SOURCES) \
 	mpi.F90 $(mpi_source) \
 	f_blas.f90 \
 	op2p_module.f90 \
-	numerics.f90
+	numerics.f90 \
+	f_functions.f90 \
+	box.f90 \
+	harmonics.f90
 
 # Dependencies
 $(modules): $(libwrappers_a_OBJECTS)
@@ -80,7 +83,11 @@ interface_dgemmsy_fake.o: linalg.o
 f_blas.o: linalg.o
 interface_dgemmsy_fake.o: linalg.o
 mpi.o: $(mpi_include)
+f_functions.o: numerics.o box.o
 op2p_module.o: mpi.o linalg.o
+harmonics.o: numerics.o
+box.o: linalg.o
+#fft2d.o: fft3d.o
 
 AM_FCFLAGS = -I. -I$(top_builddir)/flib/ @MPI_INCLUDE@
 AM_CPPFLAGS = @DGEMMSY_CPPFLAGS@
@@ -94,15 +101,23 @@ modules = MODULE_FFT_SG.@MODULE_EXT@ \
 	WRAPPER_LINALG.@MODULE_EXT@ \
 	WRAPPER_MPI.@MODULE_EXT@ \
 	F_BLAS.@MODULE_EXT@ \
+	MPIF_MODULE.@MODULE_EXT@ \
 	OVERLAP_POINT_TO_POINT.@MODULE_EXT@ \
-	NUMERICS.@MODULE_EXT@
+	F_FUNCTIONS.@MODULE_EXT@ \
+	F_HARMONICS.@MODULE_EXT@ \
+	NUMERICS.@MODULE_EXT@ \
+	BOX.@MODULE_EXT@
 else
 modules = module_fft_sg.@MODULE_EXT@ \
 	wrapper_linalg.@MODULE_EXT@ \
 	wrapper_mpi.@MODULE_EXT@ \
 	f_blas.@MODULE_EXT@ \
+	mpif_module.@MODULE_EXT@ \
 	overlap_point_to_point.@MODULE_EXT@ \
-	numerics.@MODULE_EXT@
+	f_functions.@MODULE_EXT@ \
+	f_harmonics.@MODULE_EXT@ \
+	numerics.@MODULE_EXT@ \
+	box.@MODULE_EXT@
 endif
 CLEANFILES = $(modules) mpif.h
 

@@ -32,7 +32,7 @@
 !!$  type(dictionary), pointer :: dict_errors=>null() !< the global dictionaries of possible errors, nullified if not initialized
 !!$  type(dictionary), pointer :: dict_present_error=>null() !< local pointer of present error, nullified if success
 !!$
-!!$  !> Stack of dict_present_error for nested try (opne and close)
+!!$  !> Stack of dict_present_error for nested try (open and close)
 !!$  type, private :: error_stack
 !!$    type(dictionary), pointer :: current => null()   !< dict_present_error point to here.
 !!$    type(error_stack), pointer :: previous => null() !< previous error

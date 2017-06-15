@@ -484,7 +484,8 @@ subroutine determine_sclimitsphere(linked_lists)
     !enddo
 end subroutine determine_sclimitsphere
 !*****************************************************************************************
-subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
+!dbl_count if .true., bonds are double counted.
+subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, type_pairs
@@ -494,6 +495,7 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     implicit none
     type(typ_parini), intent(in):: parini 
     type(typ_atoms), intent(in):: atoms 
+    logical, intent(in):: dbl_count
     type(typ_linked_lists), intent(inout):: linked_lists
     type(typ_pia_arr), intent(inout):: pia_arr
     !local variables
@@ -514,15 +516,15 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     call f_routine(id='call_linkedlist')
     call linkedlists_init(parini,atoms,cell,linked_lists)
     nmax=150
-    if (.not. linked_lists%triplex) then
+    !if (.not. linked_lists%triplex) then
         !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
         !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)
-    else
+    !else
         bound_rad=f_malloc([1.to.nmax,1.to.linked_lists%nat],id='bound_rad')
         bound_dist=f_malloc([1.to.4,1.to.nmax,1.to.linked_lists%nat],id='bound_dist')
         linked_lists%prime_bound=f_malloc([1.to.linked_lists%nat+1],id='linked_lists%prime_bound')
         neighbor=f_malloc([1.to.linked_lists%nat],id='neighbor')
-    endif
+    !endif
 
     rcutsq=linked_lists%rcut**2
     maxnbr=0
@@ -564,13 +566,15 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
                     bound_dist(2,neighbor(iat_maincell),iat_maincell)=drij(1)
                     bound_dist(3,neighbor(iat_maincell),iat_maincell)=drij(2)
                     bound_dist(4,neighbor(iat_maincell),iat_maincell)=drij(3)
-                   ! if (iat_maincell==jat_maincell) cycle
-                    neighbor(jat_maincell)=neighbor(jat_maincell)+1
-                    bound_rad(neighbor(jat_maincell),jat_maincell)=iat_maincell
-                    bound_dist(1,neighbor(jat_maincell),jat_maincell)=rij
-                    bound_dist(2,neighbor(jat_maincell),jat_maincell)=-drij(1)
-                    bound_dist(3,neighbor(jat_maincell),jat_maincell)=-drij(2)
-                    bound_dist(4,neighbor(jat_maincell),jat_maincell)=-drij(3)
+                    ! if (iat_maincell==jat_maincell) cycle
+                    if(dbl_count) then
+                        neighbor(jat_maincell)=neighbor(jat_maincell)+1
+                        bound_rad(neighbor(jat_maincell),jat_maincell)=iat_maincell
+                        bound_dist(1,neighbor(jat_maincell),jat_maincell)=rij
+                        bound_dist(2,neighbor(jat_maincell),jat_maincell)=-drij(1)
+                        bound_dist(3,neighbor(jat_maincell),jat_maincell)=-drij(2)
+                        bound_dist(4,neighbor(jat_maincell),jat_maincell)=-drij(3)
+                    endif
             endif
         enddo !end of loop over jat
         enddo !end of loop over jy
@@ -580,7 +584,11 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     enddo !end of loop over ix
     enddo !end of loop over iy
     enddo !end of loop over iz
-    linked_lists%maxbound_rad=(maxnbr)*2
+    if(dbl_count) then
+        linked_lists%maxbound_rad=maxnbr*2
+    else
+        linked_lists%maxbound_rad=maxnbr
+    endif
     linked_lists%bound_rad=f_malloc([1.to.2,1.to.linked_lists%maxbound_rad],id='linked_lists%bound_rad')
     allocate(pia_arr%pia(linked_lists%maxbound_rad))
     njat=0
@@ -589,6 +597,10 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     do iat=1,linked_lists%nat
         linked_lists%prime_bound(iat)=ibr+1
         do njat=1,neighbor(iat)
+            !The following if added to avoid double counting for bond based linked list
+            if(parini%bondbased_ann .and. iat>bound_rad(njat,iat)) then
+                cycle
+            endif
         !do 
         !    njat=njat+1
         !    if (bound_rad(njat,iat)<1 .or. njat>nmax) then
@@ -604,6 +616,16 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
             pia_arr%pia(ibr)%dr(3)=bound_dist(4,njat,iat)
         enddo
     enddo
+    !The following if added to avoid double counting for bond based linked list
+    !and it must be corrected since it will not work if repulsive atom based
+    !linked list is needed. The problem is due to parini%bondbased_ann
+    if(parini%bondbased_ann .and. iat>njat) then
+        if(mod(linked_lists%maxbound_rad,2)/=0) then
+            stop 'ERROR: linked_lists%maxbound_rad must be even.'
+        endif
+        write(*,*) 'maxbound ',linked_lists%maxbound_rad
+        linked_lists%maxbound_rad=linked_lists%maxbound_rad/2
+    endif
     if (ibr/=linked_lists%maxbound_rad) then
         write(*,'(a,2i8)') 'ERROR: in number of bonds ',ibr,linked_lists%maxbound_rad
         stop

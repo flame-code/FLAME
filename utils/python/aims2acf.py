@@ -8,6 +8,8 @@ import copy
 from atoms import *
 from ascii import *
 from acf import *
+from aims import *
+from latvec2dproj import *
 #*****************************************************************************************
 def get_input_geometry(iline,lines,nat,has_unit_cell):
     atoms=Atoms()
@@ -73,40 +75,6 @@ def get_updated_geometry(iline,lines,nat,has_unit_cell):
         atoms.bemoved.append("TTT")
     return atoms
 #*****************************************************************************************
-def set_cell(atoms_all):
-    amargin=3.0
-    xmin=sys.float_info.max ; xmax=-sys.float_info.max
-    ymin=sys.float_info.max ; ymax=-sys.float_info.max
-    zmin=sys.float_info.max ; zmax=-sys.float_info.max
-    for atoms in atoms_all:
-        for iat in range(atoms.nat):
-            if atoms.rat[iat][0]>xmax:
-                xmax=atoms.rat[iat][0]
-            elif atoms.rat[iat][0]<xmin:
-                xmin=atoms.rat[iat][0]
-            if atoms.rat[iat][1]>ymax:
-                ymax=atoms.rat[iat][1]
-            elif atoms.rat[iat][1]<ymin:
-                ymin=atoms.rat[iat][1]
-            if atoms.rat[iat][2]>zmax:
-                zmax=atoms.rat[iat][2]
-            elif atoms.rat[iat][2]<zmin:
-                zmin=atoms.rat[iat][2]
-    #---------------------------------------------------------------------------
-    atoms_all_out=[]
-    for atoms in atoms_all:
-        atoms_out=Atoms()
-        atoms_out=copy.copy(atoms)
-        atoms_out.cellvec[0][0]=xmax-xmin+2*amargin
-        atoms_out.cellvec[1][1]=ymax-ymin+2*amargin
-        atoms_out.cellvec[2][2]=zmax-zmin+2*amargin
-        for iat in range(atoms.nat):
-            atoms.rat[iat][0]+=-xmin+amargin
-            atoms.rat[iat][1]+=-ymin+amargin
-            atoms.rat[iat][2]+=-zmin+amargin
-        atoms_all_out.append(Atoms())
-        atoms_all_out[-1]=copy.copy(atoms_out)
-    return atoms_all_out
 #*****************************************************************************************
 str1="Extract configurations during MD or geometry optimization from FHI-aims output."
 parser=argparse.ArgumentParser(description=str1)
@@ -146,6 +114,10 @@ for iline,line in enumerate(lines):
         #if not has_unit_cell: print 'RRRRRRRRRRRRR'
         #print str_line
         atoms=get_input_geometry(iline,lines,nat,has_unit_cell)
+        #rotation to lattice and all atom
+        if not atoms.boundcond=="free":
+            atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+
         #print lines[iline+2].split()[1],lines[iline+2].split()[2],lines[iline+2].split()[3]
         #for iat in range(atoms.nat):
         #    print atoms.rat[iat][0],atoms.rat[iat][1],atoms.rat[iat][2]
@@ -156,6 +128,10 @@ for iline,line in enumerate(lines):
     if 'Updated atomic structure' in str_line:
         #print str_line
         atoms=get_updated_geometry(iline,lines,nat,has_unit_cell)
+        #rotation to lattice and all atom
+        if not atoms.boundcond=="free":
+            atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+
         #print lines[iline+2].split()[1],lines[iline+2].split()[2],lines[iline+2].split()[3]
         #for iat in range(atoms.nat):
         #    print atoms.rat[iat][0],atoms.rat[iat][1],atoms.rat[iat][2]
@@ -192,7 +168,10 @@ for iline,line in enumerate(lines):
     #-------------------------------------------------------
 #End of reading from input file.
 #-----------------------------------------------------------------------------------------
-if atoms_all[-1].boundcond=='free': atoms_all=set_cell(atoms_all)
+for atoms in atoms_all:
+    if atoms.boundcond=='free':
+        atoms.cellvec,atoms.rat=set_cell(atoms)
+
 if lastconf:
     atoms_lastconf=[]
     atoms_lastconf.append(Atoms())

@@ -1,6 +1,47 @@
 # To be installed:
-noinst_LIBRARIES = libflib.a
+noinst_LIBRARIES = libflib.a libfmalloc.a
 module_DATA      = $(modules)
+
+#malloc override tools
+dynlibdir        = $(libdir)
+dynlib_DATA      = $(fmalloc_dynlib)
+noinst_DATA      = $(fmalloc_linklib)
+
+libfmalloc_a_SOURCES = override_malloc.c
+
+if CC_AUTOBUILD_DYNAMIC_LIBS
+fmalloc_dynlib = $(fmalloc_dynamic_library)
+fmalloc_linklib = $(fmalloc_library_soname)
+else
+fmalloc_dynlib = 
+fmalloc_linklib = 
+endif
+
+fmalloc_dynamic_library = libfmalloc-1.so.@FUTILE_MINOR_VERSION@.0.@FUTILE_MICRO_VERSION@
+fmalloc_library_soname = libfmalloc-1.so.@FUTILE_MINOR_VERSION@
+
+libfmalloc.a: $(libfmalloc_a_OBJECTS)
+	$(AR) $(ARFLAGS) $@ $(libfmalloc_a_OBJECTS)
+	$(RANLIB) $@
+
+override_malloc.o: override_malloc.c
+	$(CC) -I. -I$(top_builddir) $(CFLAGS) @CC_PIC_FLAG@ -c $< -o $@
+
+$(fmalloc_dynamic_library): $(libfmalloc_a_OBJECTS)
+	$(CC) $(CFLAGS) @CC_BUILD_SHARED@ $(LDFLAGS) @CC_RPATH@$(DESTDIR)$(dynlibdir) -Wl,-soname=$(fmalloc_library_soname) -o $@ $(libfmalloc_a_OBJECTS)
+	@chmod a+x $@
+
+$(fmalloc_library_soname): $(fmalloc_dynamic_library)
+	ln -fs $^ $@
+	ln -fs $@ libfmalloc-1.so
+
+install-data-hook: 
+	if test -n "$(fmalloc_dynlib)" ; then \
+	cd $(DESTDIR)$(dynlibdir); \
+	chmod a+x $(fmalloc_dynamic_library); \
+	ln -fs $(fmalloc_dynamic_library) $(fmalloc_library_soname); \
+	ln -fs $(fmalloc_library_soname) libfmalloc-1.so ;\
+	fi
 
 if USE_CUDA_GPU
 CUDA_PROF = nvtx_fake.f90 #nvtx.f90
@@ -11,6 +52,14 @@ else
 CUDA_PROF = nvtx_fake.f90
 NVTX_DEP = nvtx_fake.o
 CUDA_SOURCES = cudall_fake.f90
+endif
+
+if USE_SIMGRID_SHARED_ALLOCS
+SIMGRID_SHARED_SOURCE = simgrid_shared.f90 #nvtx.f90
+SIMGRID_SHARED_DEP = simgrid_shared.o
+else
+SIMGRID_SHARED_SOURCE = simgrid_shared_fake.f90
+SIMGRID_SHARED_DEP = simgrid_shared_fake.o
 endif
 
 # Module files.
@@ -39,17 +88,17 @@ getarg_files =
 else
 getarg_files = get_command_argument_fake.f90
 endif
-libflib_a_SOURCES = utils.c utilsadd.c f_plugin.c \
+libflib_a_SOURCES = utils.c utils.h utilsadd.c f_plugin.c malloc_repad.c \
 	yaml_strings.f90 dictionaries_base.f90 dictionaries.f90 \
 	callbacks.f90 f_malloc.f90 \
 	f_enums.f90 f_precisions.f90 \
 	f_utils.f90 f_refcnts.f90 f_trees.f90 \
 	yaml_output.f90 mem_profiling.f90 dynamic_memory.f90 \
-	razero.f90 getadd.f90 time.f90 \
+	razero.f90 getadd.f90 time.f90 f_bibliography.f90 \
 	yaml_parser.c yaml_parse.f90 f_jmp.f90 \
 	f_input_file.f90 randomData.f90 \
-	f_ternary.f90 f_bind.f90 f_objects.f90 fpython.f90 \
-	$(flush_files) $(getarg_files) $(CUDA_PROF) $(CUDA_SOURCES)
+	f_ternary.f90 f_objects.f90 fpython.f90 f_environment.f90 f_arrays.f90\
+	$(flush_files) $(getarg_files) $(CUDA_PROF) $(SIMGRID_SHARED_SOURCE) $(CUDA_SOURCES)
 
 DYN_INCLUDES =  deallocate-inc.f90 allocate-inc.f90 \
 	deallocate-c-inc.f90 allocate-c-inc.f90 \
@@ -57,7 +106,8 @@ DYN_INCLUDES =  deallocate-inc.f90 allocate-inc.f90 \
 	malloc_templates-inc.f90 \
 	deallocate-multiple-inc.f90 deallocate-multiple-inc-ptr.f90 \
 	f_memcpy-inc.f90 f_memcpy-base-inc.f90 f_maxdiff-base-inc.f90 \
-	allocate-ptr-inc.f90 f_map-inc.f90
+	allocate-ptr-inc.f90 f_map-inc.f90 \
+	deallocate-simgrid-inc.f90 allocate-simgrid-inc.f90
 
 F_MALLOC_INCLUDES = f_malloc-inc.f90 f_malloc-extra-inc.f90 \
 	f_malloc-base-inc.f90 f_malloc-null-inc.f90 \
@@ -87,25 +137,27 @@ modules = YAML_STRINGS.@MODULE_EXT@ \
 	YAML_OUTPUT.@MODULE_EXT@ \
 	F_ENUMS.@MODULE_EXT@ \
 	F_PRECISIONS.@MODULE_EXT@ \
+	F_ENVIRONMENT.@MODULE_EXT@ \
 	YAML_PARSE.@MODULE_EXT@ \
 	METADATA_INTERFACES.@MODULE_EXT@ \
 	MODULE_F_MALLOC.@MODULE_EXT@ \
 	DYNAMIC_MEMORY.@MODULE_EXT@ \
 	DYNAMIC_MEMORY_BASE.@MODULE_EXT@ \
-	RANDOMDATA.@MODULE_EXT@ \
-	RANDOM.@MODULE_EXT@ \
+	F_RANDOM.@MODULE_EXT@ \
 	MEMORY_PROFILING.@MODULE_EXT@ \
 	F_UTILS.@MODULE_EXT@ \
+	F_BIBLIOGRAPHY.@MODULE_EXT@ \
 	F_REFCNTS.@MODULE_EXT@ \
 	F_TREES.@MODULE_EXT@ \
 	F_INPUT_FILE.@MODULE_EXT@ \
 	EXCEPTION_CALLBACKS.@MODULE_EXT@ \
-	F_JMP.@MODULE_EXT \
+	F_JMP.@MODULE_EXT@ \
 	TIME_PROFILING.@MODULE_EXT@ \
 	F_TERNARY.@MODULE_EXT@ \
-	MODULE_F_BIND.@MODULE_EXT@ \
 	MODULE_F_OBJECTS.@MODULE_EXT@ \
 	F_PYTHON.@MODULE_EXT@ \
+	SMPI_SHARED.@MODULE_EXT@ \
+	F_ARRAYS.@MODULE_EXT@ \
 	MODULE_RAZERO.@MODULE_EXT@ $(CUDA_MODS)
 else
 modules = yaml_strings.@MODULE_EXT@ \
@@ -113,30 +165,32 @@ modules = yaml_strings.@MODULE_EXT@ \
 	dictionaries_base.@MODULE_EXT@ \
 	f_enums.@MODULE_EXT@ \
 	f_precisions.@MODULE_EXT@ \
+	f_environment.@MODULE_EXT@ \
 	yaml_output.@MODULE_EXT@ \
 	yaml_parse.@MODULE_EXT@ \
 	metadata_interfaces.@MODULE_EXT@ \
 	module_f_malloc.@MODULE_EXT@ \
 	dynamic_memory.@MODULE_EXT@ \
 	dynamic_memory_base.@MODULE_EXT@ \
-	randomdata.@MODULE_EXT@ \
-	random.@MODULE_EXT@ \
+	f_random.@MODULE_EXT@ \
+	f_bibliography.@MODULE_EXT@ \
 	memory_profiling.@MODULE_EXT@ \
 	f_utils.@MODULE_EXT@ \
 	f_input_file.@MODULE_EXT@ \
 	f_refcnts.@MODULE_EXT@ \
 	f_trees.@MODULE_EXT@ \
 	f_ternary.@MODULE_EXT@ \
-	module_f_bind.@MODULE_EXT@ \
 	module_f_objects.@MODULE_EXT@ \
 	f_python.@MODULE_EXT@ \
 	exception_callbacks.@MODULE_EXT@ \
 	time_profiling.@MODULE_EXT@ \
 	f_jmp.@MODULE_EXT@ \
+	smpi_shared.@MODULE_EXT@ \
+	f_arrays.@MODULE_EXT@ \
 	module_razero.@MODULE_EXT@ $(CUDA_MODS)
 endif
 
-CLEANFILES = *.@MODULE_EXT@ memstatus.yaml
+CLEANFILES = libfmalloc-1.so* *.@MODULE_EXT@ memstatus.yaml
 
 SUFFIXES = .cu
 
@@ -153,29 +207,33 @@ NVCC_FLAGS = @NVCC_FLAGS@
 # Dependencies
 $(modules): $(libflib_a_OBJECTS)
 yaml_strings.o: $(STRINGS_INCLUDES) f_precisions.o
-f_enums.o: yaml_strings.o
-f_bind.o: f_precisions.o
-f_objects.o: f_precisions.o dictionaries.o yaml_output.o
-f_ternary.o: f_precisions.o yaml_strings.o
 dictionaries_base.o: yaml_strings.o
 dictionaries.o: yaml_strings.o dictionaries_base.o $(DICT_INCLUDES) callbacks.o
-dictionaries_base.o: yaml_strings.o
+yaml_output.o : dictionaries.o f_utils.o f_enums.o f_bibliography.o $(YAML_INCLUDES)
+yaml_parse.o : dictionaries.o yaml_output.o
+f_utils.o: dictionaries.o yaml_strings.o f_precisions.o razero.o f_malloc.o
+
+f_enums.o: yaml_strings.o
+f_bibliography.o: dictionaries.o yaml_strings.o
+f_objects.o: f_precisions.o dictionaries.o yaml_output.o
+f_ternary.o: f_precisions.o yaml_strings.o
 callbacks.o: $(NOOMP_INCLUDES)
 $(NVTX_DEP): $(NOOMP_INCLUDES)
+$(SIMGRID_DEP): $(NOOMP_INCLUDES)
 #mem_profiling.o : error_handling.o
-yaml_output.o : dictionaries.o f_utils.o f_enums.o $(YAML_INCLUDES)
-yaml_parse.o : dictionaries.o yaml_output.o
 #error_handling.o: dictionaries.o callbacks.o yaml_output.o $(ERR_INCLUDES)
-f_malloc.o: dictionaries.o $(F_MALLOC_INCLUDES)
+f_malloc.o: dictionaries.o $(SIMGRID_DEP) $(F_MALLOC_INCLUDES)
 f_input_file.o: dictionaries.o yaml_output.o dynamic_memory.o f_utils.o
-dynamic_memory.o: getadd.o yaml_strings.o yaml_output.o yaml_parse.o mem_profiling.o f_malloc.o f_utils.o $(DYN_INCLUDES)
+dynamic_memory.o: getadd.o yaml_strings.o yaml_output.o yaml_parse.o mem_profiling.o f_malloc.o f_utils.o $(DYN_INCLUDES) f_environment.o \
+	$(SIMGRID_SHARED_DEP)
 mem_profiling.o: yaml_output.o yaml_parse.o yaml_strings.o
-f_lib_highlev.o: dictionaries.o yaml_output.o dynamic_memory.o yaml_parse.o $(NVTX_DEP) time.o f_utils.o f_input_file.o
-f_utils.o: dictionaries.o yaml_strings.o f_precisions.o razero.o
+f_lib_highlev.o: dictionaries.o yaml_output.o dynamic_memory.o yaml_parse.o $(NVTX_DEP) $(SIMGRID_DEP) time.o f_utils.o f_input_file.o
 f_refcnts.o: dictionaries.o yaml_output.o f_precisions.o
-f_trees.o: f_refcnts.o dictionaries.o yaml_output.o
+f_trees.o: f_refcnts.o dictionaries.o yaml_output.o yaml_parse.o
 getadd.o: yaml_strings.o $(GETADD_INCLUDES) f_malloc.o
 razero.o: randomData.o f_precisions.o
+randomData.o: f_precisions.o
+f_arrays.o: f_precisions.o dynamic_memory.o f_refcnts.o
 $(flush_object): yaml_output.o dictionaries.o
 fpython.o: dictionaries.o yaml_output.o f_objects.o
 

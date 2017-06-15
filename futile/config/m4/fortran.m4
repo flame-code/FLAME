@@ -622,13 +622,13 @@ AC_DEFUN([AX_FC_F2003],
   dnl We start with get_command_argument().
   AC_MSG_CHECKING([for get_command_argument() in Fortran.])
 
-  AC_COMPILE_IFELSE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 program test
   character(len = 128) :: arg
 
   call get_command_argument(1, arg)
 
-end program test],
+end program test])],
   [ax_fc_get_command_argument="yes"], [ax_fc_get_command_argument="no"])
   if test x"$ax_fc_get_command_argument" == x"yes" ; then
     AC_DEFINE([HAVE_FC_GET_COMMAND_ARGUMENT], [1], [get_command_argument() can be used safely in Fortran])
@@ -656,11 +656,11 @@ AC_DEFUN([AX_FC_MOD],
   AC_REQUIRE([AC_PROG_FC])
 
   ax_fc_mod_compile=no
-  AC_COMPILE_IFELSE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 module modtest
   integer, public :: value
 end module modtest
-], [ax_fc_mod_compile=yes],
+])], [ax_fc_mod_compile=yes],
    [AC_MSG_FAILURE(Fortran compiler cannot compile modules.)])
   if test $ax_fc_mod_compile = "yes" ; then
     ax_fc_mod_name="unknown"
@@ -838,15 +838,15 @@ AC_DEFUN([AX_FC_OPENMP],
   FCFLAGS_SVG=$FCFLAGS
   FCFLAGS=$FCFLAGS" $[1]"
   dnl First check if flag is valid for compiler.
-  AC_COMPILE_IFELSE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 program test
   write(*,*) "hello"
 end program test
-  ],
+  ])],
   [ax_fc_openmp="yes"], [ax_fc_openmp="no"])
   if test x"$ax_fc_openmp" == x"yes" ; then
     dnl Now, test if the flag see the OpenMP error in the following code.
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 program test
     integer :: it, nt
 !\$  integer :: ithread,omp_get_thread_num
@@ -861,7 +861,7 @@ program test
     end do
 !\$omp enddo
 
-end program test],
+end program test])],
     [ax_fc_openmp="no"], [ax_fc_openmp="$[1]"])
   fi
   FCFLAGS=$FCFLAGS_SVG

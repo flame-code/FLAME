@@ -3,7 +3,7 @@ pyscript = pyscript
 pyscriptreport = pyscript.report.yaml
 endif
 
-check_PROGRAMS = dict $(pyscript)
+check_PROGRAMS = dict cobjs $(pyscript)
 
 AM_LDFLAGS = -L$(top_builddir)/src
 if BUILD_DYNAMIC_LIBS
@@ -12,6 +12,9 @@ AM_LDFLAGS += @FC_RPATH@$(abs_top_builddir)/src
 else
 flib_libraries = $(top_builddir)/src/libfutile-1.a @LIBS_EXT_DEPS@
 endif
+
+cobjs_SOURCES = cobjs.c cobjs_main.f90
+cobjs_LDADD = $(flib_libraries) @GLIB_LIBS@ $(FCLIBS)
 
 dict_SOURCES = dict.c
 dict_LDADD = $(flib_libraries) @GLIB_LIBS@ $(FCLIBS)

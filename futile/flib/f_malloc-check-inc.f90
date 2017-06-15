@@ -16,11 +16,7 @@
           call f_err_throw(&
           'The presence of lbounds, ubounds or sizes arrays is forbidden when src_ptr is present',&
           ERR_INVALID_MALLOC)
-     !if the src_ptr is nullified the f_malloc should provide nullification
-     if (.not. associated(src_ptr)) then
-        m%srcdata_add=int(-1,kind=8)
-        return
-     end if
+     include 'f_malloc-null-ptr-inc.f90'
      include 'f_malloc-ptr-inc.f90'
      !when src_ptr is given there is no need anymore to continue the routine
      return

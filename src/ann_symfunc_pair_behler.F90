@@ -20,16 +20,17 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms,symfunc%linked_lists,pia_arr)
+    call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr)
     !write(*,*) 'HERE ',symfunc%linked_lists%maxbound_rad
     !stop
-    if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
-    allocate(symfunc%y(ann_arr%ann(1)%nn(0),1),stat=istat,source=0.d0)
+    !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
+    allocate(symfunc%y(ann_arr%ann(1)%nn(0),symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
     if(istat/=0) stop 'ERROR: unable to allocate array symfunc%y'
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))
     !write(*,*) ng,atoms%nat,atoms%maxbound_rad,allocated(ann_arr%y0d)
     allocate(symfunc%y0d(ng,3,symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
+    allocate(symfunc%y0d_bond(ng,symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
     !write(*,*) ng,atoms%nat,atoms%maxbound_rad,allocated(symfunc%y0d)
     if(istat/=0) stop 'ERROR: unable to allocate array symfunc%y0d.'
     allocate(symfunc%y0dr(ng,9,symfunc%linked_lists%maxbound_rad),stat=istat,source=0.d0)
@@ -38,7 +39,9 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     do ib=1,symfunc%linked_lists%maxbound_rad
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
+        !write(*,*) 'BEFORE ',ib,iat,jat
         if(iat>jat) cycle
+        !write(*,*) 'AFTER ',ib,iat,jat
         isat=atoms%itypat(iat)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ib))
         pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
@@ -159,31 +162,31 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
     type(typ_pia), intent(in):: pia
     integer, intent(in):: ib
     type(typ_symfunc), intent(inout):: symfunc
-    !real(8), intent(in):: fcij, fcdij
-    !real(8), intent(in):: rij
-    !real(8), intent(in):: drij(3)
+    real(8):: fcdij
+    real(8):: rij
+    real(8):: drij(3)
     !local variables
     integer:: kat, ig, i0
     real(8):: rs, rc, vij, eta
-    real(8):: tte, tt
-    real(8):: ttx, tty, ttz, kat_maincell
+    real(8):: ttei, tt1i
+    real(8):: ttjx, ttjy, ttjz, kat_maincell
     i0=0
     do ig=1,ann_arr%ann(1)%ng1
         i0=i0+1
         rs=ann_arr%ann(1)%g1rs(ig)
         eta=ann_arr%ann(1)%g1eta(ig) 
         vij=exp(-eta*(pia%r-rs)**2)
-        tt=pia%fc*vij
-            !ttx=tt*drij(1)
-            !tty=tt*drij(2)
-            !ttz=tt*drij(3)
-            !ann_arr%y0d_bond(i0,1,iat,jat)=ann_arr%y0d_bond(i0,1,iat,jat)+ttx
-            !ann_arr%y0d_bond(i0,2,iat,jat)=ann_arr%y0d_bond(i0,2,iat,jat)+tty
-            !ann_arr%y0d_bond(i0,3,iat,jat)=ann_arr%y0d_bond(i0,3,iat,jat)+ttz
-            !ann_arr%y0d_bond(i0,1,jat,iat)=ann_arr%y0d_bond(i0,1,jat,iat)-ttx
-            !ann_arr%y0d_bond(i0,2,jat,iat)=ann_arr%y0d_bond(i0,2,jat,iat)-tty
-            !ann_arr%y0d_bond(i0,3,jat,iat)=ann_arr%y0d_bond(i0,3,jat,iat)-ttz
-            symfunc%y(i0,ib)=tt
+        ttei=vij*pia%fc
+        tt1i=(-2.d0*eta*(pia%r-rs)*pia%fc+pia%fcd)*vij/pia%r
+        symfunc%y0d_bond(i0,ib)=tt1i*pia%r
+        ttjx=tt1i*pia%dr(1)
+        ttjy=tt1i*pia%dr(2)
+        ttjz=tt1i*pia%dr(3)
+        !write(*,*) 'PIA', pia%r, pia%dr(3)
+        symfunc%y0d(i0,1,ib)=symfunc%y0d(i0,1,ib)+ttjx
+        symfunc%y0d(i0,2,ib)=symfunc%y0d(i0,2,ib)+ttjy
+        symfunc%y0d(i0,3,ib)=symfunc%y0d(i0,3,ib)+ttjz
+        symfunc%y(i0,ib)=symfunc%y(i0,ib)+ttei
     enddo
     !ann_arr%yall_bond(i0,iat,jat)=ann_arr%yall_bond(i0,iat,jat)*fcij*exp(-eta*rij**2)
 end subroutine symmetry_functions_g01_bond

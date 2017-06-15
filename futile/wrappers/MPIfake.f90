@@ -1,7 +1,7 @@
 !> @file
 !!    Fake functions for MPI in the case of serial version
 !! @author
-!!    Copyright (C) 2007-2015 BigDFT group 
+!!    Copyright (C) 2007-2016 BigDFT group 
 !!    This file is distributed under the terms of the
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
@@ -22,6 +22,34 @@ subroutine MPI_INITIALIZED(init,ierr)
   ierr=0
 END SUBROUTINE  MPI_INITIALIZED
 
+subroutine  MPI_COMM_CREATE(MPI_COMM_WORLD,MPI_GROUP,MPI_COMM,ierr)
+  implicit none
+  integer, intent(in) :: MPI_COMM_WORLD
+  integer, intent(out) :: MPI_GROUP,MPI_COMM,ierr
+  MPI_GROUP=1
+  MPI_COMM=1
+  ierr=MPI_COMM_WORLD*0
+END SUBROUTINE MPI_COMM_CREATE
+
+subroutine  MPI_COMM_GET_ATTR(COMM,COMM_KEYVAL,ATTRIBUTE_VAL,FLAG,ierr)
+  implicit none
+  integer, intent(in) :: COMM, COMM_KEYVAL
+  logical, intent(out) :: FLAG
+  !integer(kind=MPI_ADDRESS_KIND), intent(out) :: ATTRIBUTE_VAL
+  integer(kind=8), intent(out) :: ATTRIBUTE_VAL
+  integer, intent(out) :: ierr
+  ATTRIBUTE_VAL=1
+  ierr=COMM*COMM_KEYVAL*0
+END SUBROUTINE MPI_COMM_GET_ATTR
+
+subroutine  MPI_COMM_GROUP(MPI_COMM_WORLD,MPI_GROUP,ierr)
+  implicit none
+  integer, intent(in) :: MPI_COMM_WORLD
+  integer, intent(out) :: MPI_GROUP,ierr
+  MPI_GROUP=1
+  ierr=MPI_COMM_WORLD*0
+END SUBROUTINE MPI_COMM_GROUP
+
 subroutine  MPI_COMM_RANK(MPI_COMM_WORLD,iproc,ierr)
   implicit none
   integer, intent(in) :: MPI_COMM_WORLD
@@ -37,23 +65,6 @@ subroutine  MPI_COMM_SIZE(MPI_COMM_WORLD,nproc,ierr)
   nproc=1
   ierr=MPI_COMM_WORLD*0
 END SUBROUTINE MPI_COMM_SIZE
-
-subroutine  MPI_COMM_GROUP(MPI_COMM_WORLD,MPI_GROUP,ierr)
-  implicit none
-  integer, intent(in) :: MPI_COMM_WORLD
-  integer, intent(out) :: MPI_GROUP,ierr
-  MPI_GROUP=1
-  ierr=MPI_COMM_WORLD*0
-END SUBROUTINE MPI_COMM_GROUP
-
-subroutine  MPI_COMM_CREATE(MPI_COMM_WORLD,MPI_GROUP,MPI_COMM,ierr)
-  implicit none
-  integer, intent(in) :: MPI_COMM_WORLD
-  integer, intent(out) :: MPI_GROUP,MPI_COMM,ierr
-  MPI_GROUP=1
-  MPI_COMM=1
-  ierr=MPI_COMM_WORLD*0
-END SUBROUTINE MPI_COMM_CREATE
 
 subroutine  MPI_GROUP_INCL(GROUP,N,NRANKS,NEWGROUP,ierr)
   implicit none
@@ -86,6 +97,26 @@ subroutine mpi_wait(request,MPI_Status)
   integer, intent(out) :: MPI_Status
   MPI_Status = 1 + 0*request
 end subroutine mpi_wait
+
+subroutine mpi_file_close()
+stop 'mpi_file_close'
+end
+
+subroutine mpi_file_open()
+stop 'mpi_file_open'
+end
+subroutine mpi_file_read()
+stop 'mpi_file_read'
+end
+subroutine mpi_file_write()
+stop 'mpi_file_write'
+end
+
+
+
+subroutine mpi_file_set_view()
+stop 'mpi_file_set_view'
+end
 
 
 !here we have routines which do not transform the argument for nproc==1

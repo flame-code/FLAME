@@ -4,7 +4,7 @@
 !! Examples using the @ref f_utils objects (units and timers)
 !! @author
 !!    Copyright (C) 2013-2015 BigDFT group
-!!    This file is distributed oneder the terms of the
+!!    This file is distributed under the terms of the
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
@@ -45,6 +45,9 @@ recursive subroutine f_utils_test()
   logical, dimension(3) :: l
 
   r4=real(10.0,f_quadruple)
+
+
+  call yaml_cite('PS_FBC') !to check what happens
 
   call yaml_map('Long Integer kind',f_long)
   call yaml_map('Normal Integer kind',f_integer)
@@ -159,8 +162,8 @@ recursive subroutine f_utils_test()
 
   !test the performance of f_increment function, to realize that it should not be used in intensive loops
 
-  t0=f_time()
   entry jump_here()
+  t0=f_time()
   icount=0
   do istep=1,n_inc
      icount=icount+1
@@ -172,8 +175,8 @@ recursive subroutine f_utils_test()
   t1=f_time()
   call yaml_map('Count (ns)',[int(icount,f_long),t1-t0])
   call yaml_map('Humantime',f_humantime(t1-t0))
-  t0=f_time()
   entry jump_there()
+  t0=f_time()
   icount=0
   do istep=1,n_inc
      call f_increment(icount)
@@ -368,6 +371,7 @@ subroutine f_inputfile_test()
        '   dft:             '//f_cr//&
        '     hgrids: 0.45    '//f_cr//&
        '     ixc: LDA     '//f_cr//&
+       '   external_field: not present in definitions'//f_cr//&
        ' geopt:'//f_cr//&
        '    geopt: {method: DIIS} '//f_cr
   character(len=*), parameter :: example2='import: [geopt, simple]'

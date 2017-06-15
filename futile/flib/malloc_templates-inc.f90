@@ -15,6 +15,10 @@
 !  !--- allocate_profile-inc.f90
 !  integer :: ierror
 !  integer(kind=8) :: iadd
+!  character(len=info_length) :: val
+!  type(dictionary), pointer :: info
+!  logical :: c_allocation
+!  integer :: padding
 !  !$ logical :: not_omp
 !  !$ logical, external :: omp_in_parallel,omp_get_nested
 !
@@ -24,16 +28,24 @@
 !
 !  !$ not_omp=.not. (omp_in_parallel() .or. omp_get_nested())
 !
+!  padding=ndebug !which is always zero so far
+!
 !  !here we should add a control of the OMP behaviour of allocation
 !  !in particular for what concerns the OMP nesting procedure
 !  !the following action is the allocation
 !  !$ if(not_omp) then
 !  call f_timer_interrupt(TCAT_ARRAY_ALLOCATIONS)
 !  !$ end if
+!  if (f_nan_pad_size > 0) then
+!     padding=f_nan_pad_size
+!     call togglepadding(product(int(shape(1:m%rank-1),f_long))*&
+!          kind(array)*padding)
+!  end if
 !  !END--- allocate_profile-inc.f90
 !  !allocate the array
 !  allocate(array(m%lbounds(1):m%ubounds(1)+ndebug),stat=ierror)
 !  !--- allocate-inc.f90
+!  if (f_nan_pad_size > 0) call togglepadding(0)
 !  if (ierror/=0) then
 !     !$ if(not_omp) then
 !     call f_timer_resume()!TCAT_ARRAY_ALLOCATIONS
@@ -245,6 +257,11 @@ subroutine c1_all(array,m)
   type(malloc_information_str_all), intent(in) :: m
   character(len=m%len), dimension(:), allocatable, intent(inout) :: array
   include 'allocate-profile-inc.f90' 
+  if (f_nan_pad_size > 0) then
+     padding=f_nan_pad_size
+     call togglepadding(product(int(m%shape(1:m%rank-1),f_long))*&
+          m%len*kind(array)*(m%shape(m%rank)+padding))
+  end if
   !allocate the array
   allocate(array(m%lbounds(1):m%ubounds(1)+ndebug),stat=ierror)
   !include 'allocate-c-inc.f90'
@@ -281,6 +298,25 @@ subroutine ll1_all_free(array)
   include 'deallocate-profile-inc.f90' 
   include 'deallocate-inc.f90' 
 end subroutine ll1_all_free
+
+subroutine ll2_all(array,m)
+  use metadata_interfaces, metadata_address => getl1
+  implicit none
+  type(malloc_information_all), intent(in) :: m
+  logical(f_byte), dimension(:,:), allocatable, intent(inout) :: array
+  include 'allocate-profile-inc.f90' 
+  !allocate the array
+  allocate(array(m%lbounds(1):m%ubounds(1),m%lbounds(2):m%ubounds(2)+ndebug),stat=ierror)
+  include 'allocate-inc.f90'
+end subroutine ll2_all
+
+subroutine ll2_all_free(array)
+  use metadata_interfaces, metadata_address => getl1
+  implicit none
+  logical(f_byte), dimension(:,:), allocatable, intent(inout) :: array
+  include 'deallocate-profile-inc.f90' 
+  include 'deallocate-inc.f90' 
+end subroutine ll2_all_free
 
 
 subroutine l1_all(array,m)
@@ -718,9 +754,12 @@ subroutine d1_ptr(array,m)
   implicit none
   type(malloc_information_ptr), intent(in) :: m
   double precision, dimension(:), pointer, intent(inout) :: array
+  double precision :: d
+  type(c_ptr) :: p
   !local variables
   include 'allocate-profile-inc.f90' 
   include 'allocate-ptr-inc.f90' 
+  include 'allocate-simgrid-inc.f90' 
   !allocate the array
   allocate(array(m%lbounds(1):m%ubounds(1)+ndebug),stat=ierror)
   include 'allocate-inc.f90'
@@ -779,9 +818,12 @@ subroutine d2_ptr(array,m)
   use metadata_interfaces, metadata_address => getdp2ptr
   implicit none
   type(malloc_information_ptr), intent(in) :: m
+  double precision :: d
+  type(c_ptr) :: p
   double precision, dimension(:,:), pointer, intent(inout) :: array
   include 'allocate-profile-inc.f90'
   include 'allocate-ptr-inc.f90' 
+  include 'allocate-simgrid-inc.f90' 
   !allocate the array
   allocate(array(m%lbounds(1):m%ubounds(1),m%lbounds(2):m%ubounds(2)+ndebug),stat=ierror)
   include 'allocate-inc.f90'
@@ -825,8 +867,11 @@ subroutine d3_ptr(array,m)
   implicit none
   type(malloc_information_ptr), intent(in) :: m
   double precision, dimension(:,:,:), pointer, intent(inout) :: array
+  double precision :: d
+  type(c_ptr) :: p
   include 'allocate-profile-inc.f90'
   include 'allocate-ptr-inc.f90' 
+  include 'allocate-simgrid-inc.f90' 
   !allocate the array
   allocate(array(m%lbounds(1):m%ubounds(1),m%lbounds(2):m%ubounds(2),&
        m%lbounds(3):m%ubounds(3)+ndebug),stat=ierror)
@@ -916,8 +961,11 @@ subroutine d4_ptr(array,m)
   implicit none
   type(malloc_information_ptr), intent(in) :: m
   double precision, dimension(:,:,:,:), pointer, intent(inout) :: array
+  double precision :: d
+  type(c_ptr) :: p
   include 'allocate-profile-inc.f90'
   include 'allocate-ptr-inc.f90' 
+  include 'allocate-simgrid-inc.f90' 
   !allocate the array
   allocate(array(m%lbounds(1):m%ubounds(1),m%lbounds(2):m%ubounds(2),&
        m%lbounds(3):m%ubounds(3),m%lbounds(4):m%ubounds(4)+ndebug),stat=ierror)
@@ -939,8 +987,11 @@ subroutine d5_ptr(array,m)
   implicit none
   type(malloc_information_ptr), intent(in) :: m
   double precision, dimension(:,:,:,:,:), pointer, intent(inout) :: array
+  double precision :: d
+  type(c_ptr) :: p
   include 'allocate-profile-inc.f90'
   include 'allocate-ptr-inc.f90' 
+  include 'allocate-simgrid-inc.f90' 
   !allocate the array
   allocate(array(m%lbounds(1):m%ubounds(1),m%lbounds(2):m%ubounds(2),&
        m%lbounds(3):m%ubounds(3),m%lbounds(4):m%ubounds(4),&
@@ -963,8 +1014,11 @@ subroutine d6_ptr(array,m)
   implicit none
   type(malloc_information_ptr), intent(in) :: m
   double precision, dimension(:,:,:,:,:,:), pointer, intent(inout) :: array
+  double precision :: d
+  type(c_ptr) :: p
   include 'allocate-profile-inc.f90'
   include 'allocate-ptr-inc.f90' 
+  include 'allocate-simgrid-inc.f90' 
   !allocate the array
   allocate(array(m%lbounds(1):m%ubounds(1),m%lbounds(2):m%ubounds(2),&
        m%lbounds(3):m%ubounds(3),m%lbounds(4):m%ubounds(4),&
@@ -1054,6 +1108,11 @@ subroutine c1_ptr(array,m)
   character(len=m%len), dimension(:), pointer, intent(inout) :: array
   include 'allocate-profile-inc.f90'
   !include 'allocate-ptr-inc.f90'
+  if (f_nan_pad_size > 0) then
+     padding=f_nan_pad_size
+     call togglepadding(product(int(m%shape(1:m%rank-1),f_long))*&
+          m%len*kind(array)*(m%shape(m%rank)+padding))
+  end if
   if (m%srcdata_add == int(-1,kind=8)) then
      call f_free_str_ptr(m%len,array) !to avoid memory leaks
      !$ if (not_omp) then

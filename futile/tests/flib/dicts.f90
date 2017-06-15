@@ -4,7 +4,7 @@
 !! Some examples about dictionaries
 !! @author
 !!    Copyright (C) 2013-2015 BigDFT group <br>
-!!    This file is distributed oneder the terms of the
+!!    This file is distributed under the terms of the
 !!    GNU General Public License, see ~/COPYING file
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
@@ -217,6 +217,7 @@ subroutine test_dictionaries1()
   use yaml_output
   use yaml_strings
   use dictionaries
+  use yaml_parse
   implicit none
   !local variables
    integer :: ival,i
@@ -500,6 +501,17 @@ subroutine test_dictionaries1()
 !!! [newiter]
    call dict_free(dictA)
 
+   !again the iterator on the elements of a list
+   call yaml_mapping_open('Test of the iterator over a provided sequence')
+   dictA=>yaml_load('[xyz,ascii,int,yaml]')
+   call yaml_map('Provided list',dictA)
+   nullify(dict_tmp)
+   do while(iterating(dict_tmp,on=dictA))
+      call yaml_map('Extension probed',trim(dict_value(dict_tmp)))
+   end do
+   call dict_free(dictA)
+   call yaml_mapping_close()
+   
    !fill a list and iterate over it
    dictA=>dict_new()
    do i=1,10
@@ -802,6 +814,10 @@ subroutine test_dictionary_for_atoms()
   fmts(1:len(fmts))='(es27.20)'
   call yaml_map('Real with format '//trim(fmts),-epsilon(1.d0),fmt=fmts)
 
+  !Cite a missing citation
+  call yaml_cite('C61')
+  !call a valid paper
+  call yaml_cite('C60')
 
   contains
 
