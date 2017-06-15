@@ -76,7 +76,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
-    real(8):: anat(100), g(100), rmse, rmse_old, de0
+    real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha
     !return
     ann_arr%event='evalu'
     do ia=1,ann_arr%n
@@ -84,6 +84,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     enddo
     nsatur=3
     isatur=0
+    alpha=1.d0/real(atoms_train%nconf,8)
     do istep=0,50
         rmse=0.d0
         g=0.d0
@@ -111,8 +112,8 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         if(rmse*1.d3<1.d0) exit
         if(isatur>nsatur) exit
         do ia=1,ann_arr%n
-            de0=10.d-2*g(ia)
-            de0=sign(min(abs(de0),5.d-3),de0)
+            de0=alpha*g(ia)
+            de0=sign(min(abs(de0),5.d-2),de0)
             ann_arr%ann(ia)%ener_ref=ann_arr%ann(ia)%ener_ref-de0
         enddo
         rmse_old=rmse

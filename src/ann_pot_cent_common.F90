@@ -81,7 +81,14 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
         do ib=1,symfunc%linked_lists%maxbound_rad
             iat=symfunc%linked_lists%bound_rad(1,ib)
             jat=symfunc%linked_lists%bound_rad(2,ib)
-            qnet=atoms%qat(iat)
+            if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
+                qnet=atoms%qat(iat)
+            elseif(trim(ann_arr%approach)=='cent2') then
+                qnet=atoms%zat(iat)+atoms%qat(iat)
+            else
+                write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
+                stop
+            endif
             ttx=ann_arr%fatpq(1,ib)*qnet
             tty=ann_arr%fatpq(2,ib)*qnet
             ttz=ann_arr%fatpq(3,ib)*qnet
