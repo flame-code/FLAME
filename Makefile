@@ -76,7 +76,7 @@ cleanall: clean
 	find . -not -path "./build/*" -type f -iname '*.a'
 	find . -not -path "./build/*" -type f -iname '*.mod'
 
-cleanall2: clean
+veryclean: clean
 	for pot in $(DIRS); do printf "\n" ; $(MAKE) -C $$pot clean ; done
 	rm -rf build/buildrc build/install build/libyaml build/futile
 	find . -type f -iname '*.o'
