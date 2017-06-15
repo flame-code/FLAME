@@ -34,11 +34,11 @@ ifdef TINKER
 	LIBS+= $(LIB_TINKER) $(LIB_FFTW3)
 endif
 
-MINHOCAO = minhocao/libminhocao.a minhocao/lenosky_tb/*.o
+#DIR  +=MINHOCAO = minhocao/libminhocao.a minhocao/lenosky_tb/*.o
 
 DIRS += modules
 DIRS += src
-DIRS += minhocao
+#DIRS += minhocao
 
 all: build/install/lib/libfutile-1.a $(DIRS) liball.a flame
 	@echo "POTENTIALS: $(POTENTIALS)"

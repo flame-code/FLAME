@@ -2,7 +2,10 @@ include ../def_pot.mk
 LIB_MOD= ../modules/libmodules.a
 include ../def_opt.mk
 
-all: libsrc.a ofiles/basic_c_wrappers.o
+all: libsrc.a ofiles/basic_c_wrappers.o vasp_recompute_kpt.x\
+	vasp_recompute_kpt_odd.x vasp_recompute_cell.x expand_poslows.x \
+	convexhull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x\
+	espresso_restruct.x ternaries.x
 
 SRC_F= dpmpar.f enorm.f lmder.f lmpar.f qrfac.f qrsolv.f
 SRC_= alborz_init_final.F90 processors.F90 \
@@ -44,16 +47,76 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		potential_main.F90 potential_sec_main.F90 potential_main_vc.F90 potential_ANN.F90 potential_LJ.F90 \
 		potential_MPMD.F90 potential_BLJ_vc.F90 potential_BigDFT.F90 potential_VASP.F90 \
 		potential_QSC.F90 potential_LTB.F90 potential_FF.F90 potential_NetSock.F90 \
-		potential_DFTB.F90
+		potential_DFTB.F90\
+	potential_alborz.F90  potential_corerepulsion.F90\
+	potential_confinement.F90 potential_IPI.F90 potential_MSOCK.F90\
+	potential_abinit.o potential_LJ_voids.F90 potential_BLJ_minhocao.F90\
+	potential_MLJ.F90 potential_LenoskyTB_minhocao.F90\
+	potential_LenoskyTB_LJ_minhocao.F90 potential_LenoskyMEAM.F90\
+	potential_PWSCF.F90 potential_VASP_minhocao.F90\
+	potential_SIESTA_minhocao.F90 potential_CP2K.F90\
+	potential_TERSOFF.F90 potential_EDIP.F90 potential_DFTB_minhocao.F90\
+	potential_MOPAC.F90 parser_minhocao.F90\
+	io_vasp_minhocao.F90 io_ascii.F90 potential_main_minhocao.F90\
+	spher_harm_mathematica.F90 dynamics_md_fixlat.F90\
+	find_symmetry.F90 optimizer_sqnm_minhocao_module.F90\
+	optimizer_sqnm_minhocao.F90\
+	optimizer_bfgs_qe.F90 optimizer_sd_minhocao.F90\
+	optimizer_bfgs_minhocao.F90 optimizer_nlbfgs_minhocao.F90\
+	quaternions.F90 envelope.F90 cell_niggli.F90\
+	fingerprint_GOM.F90 fingerprint_MOLGOM.F90 fingerprint_oganov.F90\
+	fingerprint_oganov_cont.F90 fingerprint_BCM.F90\
+	fingerprint_atorb.F90 fingerprint_gaussmol.F90\
+	fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90\
+	potential_LAMMPS_interface.F90 potential_LAMMPS.F90
+
+
+#LAMMPS-wrapper.o : LAMMPS-wrapper.cpp LAMMPS-wrapper.h
+#	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c $< -I$(LAMMPS_SRC)    $(MPI_STUBS)
+
+
+OBJ_MINHOCAO=potential_alborz.o  potential_corerepulsion.o\
+	potential_confinement.o potential_IPI.o potential_MSOCK.o\
+	potential_abinit.o potential_LJ_voids.o potential_BLJ_minhocao.o\
+	potential_MLJ.o potential_LenoskyTB_minhocao.o\
+	potential_LenoskyTB_LJ_minhocao.o potential_LenoskyMEAM.o\
+	potential_PWSCF.o potential_VASP_minhocao.o\
+	potential_SIESTA_minhocao.o potential_CP2K.o\
+	potential_TERSOFF.o potential_EDIP.o potential_DFTB_minhocao.o\
+	potential_MOPAC.o parser_minhocao.o\
+	io_vasp_minhocao.o io_ascii.o potential_main_minhocao.o\
+	spher_harm_mathematica.o dynamics_md_fixlat.o\
+	find_symmetry.o optimizer_sqnm_minhocao_module.o\
+	optimizer_sqnm_minhocao.o\
+	optimizer_bfgs_qe.o optimizer_sd_minhocao.o\
+	optimizer_bfgs_minhocao.o optimizer_nlbfgs_minhocao.o\
+	quaternions.o envelope.o cell_niggli.o\
+	fingerprint_GOM.o fingerprint_MOLGOM.o fingerprint_oganov.o\
+	fingerprint_oganov_cont.o fingerprint_BCM.o\
+	fingerprint_atorb.o fingerprint_gaussmol.o\
+	fingerprint_XYZ2SM.o atoms_minhocao.o minhocao.o
+
+
 
 #ifeq ($(findstring BPS,$(OPTIONS)),BPS)
 #   The following file is renamed to es_hartee_bps.F90
 #	SRC_ += es_coulomb_bps.F90
 #endif
 
-_SOURCES_C = sockets.c
+_SOURCES_C = sockets.c lenosky_tb/clsfunc.c lenosky_tb/nrutil.c\
+	lenosky_tb/tblink.c lenosky_tb/minimize.c lenosky_tb/tbnorth.c
 
-_SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp
+
+
+lenosky_tn%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+sockets.o: sockets.c
+	$(CC) $(FLAGS) -c -o sockets.o sockets.c
+%.o: %.F90
+	$(FC) $(FFLAGS) $(PRE_PROC) -c $<
+
+_SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp \
+	potential_LAMMPS_wrapper.cpp
 
 ifeq ($(findstring SIESTA,$(POTENTIALS)),SIESTA)
 	_SOURCES += potential_SIESTA.F90
@@ -66,6 +129,17 @@ ifeq ($(findstring PLATO,$(POTENTIALS)),PLATO)
 	INCLUDES_C += -I/home/ghasemi/Alborz/packages/plato/plato_Horsfield/src/TB2
 endif
 
+EXEC2 = vasp_recompute_kpt.o 
+EXEC3 = expand_poslows.o
+EXEC4 = convex_hull.o envelope.o
+EXEC5 = vasp_recompute_kpt_odd.o 
+EXEC6 = vasp_recompute_cell.o 
+EXEC7 = binaries.o 
+EXEC8 = ascii2POSCAR.o
+EXEC9 = POSCAR2ascii.o 
+EXEC10 = recompute_kpt.o 
+EXEC11 = espresso_restruct.o
+EXEC12 = ternaries.o
 
 SRCDIR = .
 SRC = $(patsubst %,$(SRCDIR)/%,$(SRC_))
@@ -104,10 +178,58 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp potential_QSC_parameters.h potential_QSC_class.h
 
 #print-%  : ; @echo $* = $($*)
 
+$(SPGLIB_OBJ): $(SPGLIB_EX)/spglib_f08.f90
+	$(FC) $(FFLAGS) -c $< -o $@
+spglib_f08.mod: $(SPGLIB_EX)/spglib_f08.f90 $(SPGLIB_OBJ)
+	@true
+
+MODULE: $(MODULES) $(SPGLIB_OBJ) spglib_f08.mod 
+	@true
+
+
 libsrc.a: $(OBJ_ALL)
 	ar -scruv libsrc.a $(OBJ_ALL)
 
+libminhocao.a: $(OBJ_MINHOCAO) $(_OBJECTS_C)
+	ar -scru libminhocao.a $(OBJ_MINHOCAO)
+
+vasp_recompute_kpt.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC2)
+	$(LD) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(MODULES) $(PARSER) $(LDFLAGS)
+
+expand_poslows.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC3)
+	$(LD) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(LDFLAGS)
+
+hull.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC4)
+	$(LD) $(FFLAGS)  -o hull.x $(EXEC4) $(MODULES) $(PARSER) $(LDFLAGS) 
+
+vasp_recompute_kpt_odd.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC5)
+	$(LD) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(MODULES) $(PARSER) $(LDFLAGS)
+
+vasp_recompute_cell.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC6)
+	$(LD) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(LDFLAGS)
+
+binaries.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC7)
+	$(LD) $(FFLAGS)  -o binaries.x $(EXEC7) $(LDFLAGS)
+
+ascii2POSCAR.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC8)
+	$(LD) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(LDFLAGS)
+
+POSCAR2ascii.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC9)
+	$(LD) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(LDFLAGS)
+
+recompute_kpt.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC10)
+	$(LD) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(MODULES) $(PARSER) $(LDFLAGS)
+
+espresso_restruct.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC11)
+	$(LD) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(MODULES) $(PARSER) $(LDFLAGS)
+
+ternaries.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC12)
+	$(LD) $(FFLAGS)  -o ternaries.x $(EXEC12) $(LDFLAGS)
+
 clean:
-	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o
+	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o 
+	rm -rf libminhocao.a vasp_recompute_kpt.o *.mod *~
+	rm -rf vasp_recompute_kpt.x vasp_recompute_kpt_odd.x vasp_recompute_cell.x expand_poslows.x \
+		convexhull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x espresso_restruct.x ternaries.x
 
 #*****************************************************************************************
