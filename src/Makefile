@@ -64,8 +64,9 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		fingerprint_GOM.F90 fingerprint_MOLGOM.F90 fingerprint_oganov.F90\
 		fingerprint_oganov_cont.F90 fingerprint_BCM.F90\
 		fingerprint_atorb.F90 fingerprint_gaussmol.F90\
-		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90 \
-		vasp_recompute_kpt.F90 \
+		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90 
+
+SRC2_ = vasp_recompute_kpt.F90 \
 		expand_poslows.F90\
 		convex_hull.F90 envelope.F90\
 		vasp_recompute_kpt_odd.F90 \

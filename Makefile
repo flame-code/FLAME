@@ -84,37 +84,37 @@ EXEC10 = $(OBJDIR)/recompute_kpt.o
 EXEC11 = $(OBJDIR)/PWSCF_restruct.o
 EXEC12 = $(OBJDIR)/ternaries.o
 vasp_recompute_kpt.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC2)
-	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(INCLUDES) $(PARSER) $(LIB)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(INCLUDES) $(PARSER) $(MKL)
 
 expand_poslows.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC3)
-	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(LIB)
+	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(MKL)
 
 hull.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC4)
-	$(F90) $(FFLAGS)  -o hull.x $(EXEC4) $(INCLUDES) $(PARSER) $(LIB) 
+	$(F90) $(FFLAGS)  -o hull.x $(EXEC4) $(INCLUDES) $(PARSER) $(MKL) 
 
 vasp_recompute_kpt_odd.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC5)
-	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(INCLUDES) $(PARSER) $(LIB)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(INCLUDES) $(PARSER) $(MKL)
 
 vasp_recompute_cell.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC6)
-	$(F90) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(LIB)
+	$(F90) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(MKL)
 
 binaries.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC7)
-	$(F90) $(FFLAGS)  -o binaries.x $(EXEC7) $(LIB)
+	$(F90) $(FFLAGS)  -o binaries.x $(EXEC7) $(MKL)
 
 ascii2POSCAR.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC8)
-	$(F90) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(LIB)
+	$(F90) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(MKL)
 
 POSCAR2ascii.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC9)
-	$(F90) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(LIB)
+	$(F90) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(MKL)
 
 recompute_kpt.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC10)
-	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(INCLUDES) $(PARSER) $(LIB)
+	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(INCLUDES) $(PARSER) $(MKL)
 
 espresso_restruct.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC11)
-	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(INCLUDES) $(PARSER) $(LIB)
+	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(INCLUDES) $(PARSER) $(MKL)
 
 ternaries.x: $(INCLUDES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC12)
-	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) $(LIB)
+	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) $(MKL)
 
 clean:
 	rm -f flame liball.a
