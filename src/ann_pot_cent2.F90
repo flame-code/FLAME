@@ -154,7 +154,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
             enddo
         enddo
         do ia=1,ann_arr%n
-            ekf%g(ekf%loc(ia)+ekf%num(1)-1)=0.d0
+            ekf%g(ekf%loc(ia)+ekf%num(1)-1)=ekf%g(ekf%loc(ia)+ekf%num(1)-1)*1.d-2
             !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
         enddo
     endif
