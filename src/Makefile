@@ -78,7 +78,7 @@ SRC2_ = vasp_recompute_kpt.F90 \
 		PWSCF_restruct.F90 \
 		ternaries.F90
 
-SRC += $(SRC2_ )
+SRC_ += $(SRC2_ )
 
 ifdef LAMMPS
     SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90
