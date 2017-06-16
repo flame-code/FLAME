@@ -56,7 +56,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		potential_PWSCF.F90 potential_VASP_minhocao.F90\
 		potential_SIESTA_minhocao.F90 potential_CP2K.F90\
 		potential_TERSOFF.F90 potential_EDIP.F90 potential_DFTB_minhocao.F90\
-		potential_MOPAC.F90 parser_minhocao.F90\
+		potential_MOPAC.F90 parser_minhocao.F90 parser_core_minhocao.F90\
 		io_vasp_minhocao.F90 io_ascii.F90 potential_main_minhocao.F90\
 		spher_harm_mathematica.F90 dynamics_md_fixlat.F90\
 		find_symmetry.F90 optimizer_sqnm_minhocao_module.F90\
@@ -86,6 +86,9 @@ ifdef LAMMPS
 endif
 #LAMMPS-wrapper.o : LAMMPS-wrapper.cpp LAMMPS-wrapper.h
 #	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c $< -I$(LAMMPS_SRC)    $(MPI_STUBS)
+
+
+PARSER = $(OBJDIR)/parser_core_minhocao.o
 
 
 OBJ_MINHOCAO_ = potential_alborz.o potential_corerepulsion.o \
@@ -209,37 +212,37 @@ libsrc.a: $(OBJ_ALL)
 libminhocao.a: $(OBJ_MINHOCAO) $(_OBJECTS_C)
 	ar -scru libminhocao.a $(OBJ_MINHOCAO)
 
-vasp_recompute_kpt.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC2)
-	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(MODULES) $(PARSER) $(LDFLAGS)
+vasp_recompute_kpt.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC2)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(INCLUDES) $(PARSER) $(LDFLAGS)
 
-expand_poslows.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC3)
+expand_poslows.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC3)
 	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(LDFLAGS)
 
-hull.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC4)
-	$(F90) $(FFLAGS)  -o hull.x $(EXEC4) $(MODULES) $(PARSER) $(LDFLAGS) 
+hull.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC4)
+	$(F90) $(FFLAGS)  -o hull.x $(EXEC4) $(INCLUDES) $(PARSER) $(LDFLAGS) 
 
-vasp_recompute_kpt_odd.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC5)
-	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(MODULES) $(PARSER) $(LDFLAGS)
+vasp_recompute_kpt_odd.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC5)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(INCLUDES) $(PARSER) $(LDFLAGS)
 
-vasp_recompute_cell.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC6)
+vasp_recompute_cell.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC6)
 	$(F90) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(LDFLAGS)
 
-binaries.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC7)
+binaries.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC7)
 	$(F90) $(FFLAGS)  -o binaries.x $(EXEC7) $(LDFLAGS)
 
-ascii2POSCAR.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC8)
+ascii2POSCAR.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC8)
 	$(F90) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(LDFLAGS)
 
-POSCAR2ascii.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC9)
+POSCAR2ascii.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC9)
 	$(F90) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(LDFLAGS)
 
-recompute_kpt.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC10)
-	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(MODULES) $(PARSER) $(LDFLAGS)
+recompute_kpt.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC10)
+	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(INCLUDES) $(PARSER) $(LDFLAGS)
 
-espresso_restruct.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC11)
-	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(MODULES) $(PARSER) $(LDFLAGS)
+espresso_restruct.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC11)
+	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(INCLUDES) $(PARSER) $(LDFLAGS)
 
-ternaries.x: $(MODULES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC12)
+ternaries.x: $(INCLUDES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC12)
 	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) $(LDFLAGS)
 
 clean:
