@@ -43,7 +43,7 @@ DIRS += src
 all: build/install/lib/libfutile-1.a $(DIRS) liball.a flame\
 	vasp_recompute_kpt.x\
 	vasp_recompute_kpt_odd.x vasp_recompute_cell.x expand_poslows.x \
-	convexhull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x\
+	convex_hull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x\
 	espresso_restruct.x ternaries.x
 	@echo "POTENTIALS: $(POTENTIALS)"
 	@echo "Pre-processing: $(PRE_PROC)"
@@ -65,7 +65,7 @@ LIBS_A = $(LIB_SRC) $(LIB_POT) $(LIB_MOD)
 #LIBS += /home/ghasemi/ghasemi/ghasemi/oldsilicon/Coulomb/EE2DP1DF/MMM2D/MMM2D-1.0/Linux/libMMM2D.a
 
 liball.a: $(LIBS_A)
-	ar -scru liball.a `ls -1 src/ofiles/*.o  src/ofiles/lenosky_tb/*.o modules/ofiles/*.o  |grep -v alborz.o | grep -v vasp_recompute_kpt.o | grep -v expand_poslows.o | grep -v convex_hull.o | grep -v vasp_recompute_kpt_odd.o | grep -v vasp_recompute_cell.o | grep -v binaries.o | grep -v ascii2POSCAR.o | grep -v POSCAR2ascii.o | grep -v recompute_kpt.o | grep -v PWSCF_restruct.o | grep -v ternaries.o`
+	ar -scru liball.a `ls -1 src/ofiles/*.o  src/ofiles/lenosky_tb/*.o modules/ofiles/*.o  |grep -v \<alborz.o\> | grep -v vasp_recompute_kpt.o | grep -v expand_poslows.o | grep -v convex_hull.o | grep -v vasp_recompute_kpt_odd.o | grep -v vasp_recompute_cell.o | grep -v binaries.o | grep -v ascii2POSCAR.o | grep -v POSCAR2ascii.o | grep -v recompute_kpt.o | grep -v PWSCF_restruct.o | grep -v ternaries.o`
 
 #FFLAGS := $(filter-out -traceback,$(FFLAGS))
 flame: liball.a src/ofiles/alborz.o
@@ -84,41 +84,44 @@ EXEC9 = $(OBJDIR)/POSCAR2ascii.o
 EXEC10 = $(OBJDIR)/recompute_kpt.o 
 EXEC11 = $(OBJDIR)/PWSCF_restruct.o
 EXEC12 = $(OBJDIR)/ternaries.o
-vasp_recompute_kpt.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC2)
+vasp_recompute_kpt.x: $(OBJ_MINHOCAO)  $(EXEC2)
 	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(INCLUDES) $(PARSER) $(MKL)
 
-expand_poslows.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC3)
-	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(MKL)
+expand_poslows.x: $(OBJ_MINHOCAO) $(EXEC3)
+	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(MKL) $(OBJ_MINHOCAO)
 
-hull.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC4)
-	$(F90) $(FFLAGS)  -o hull.x $(EXEC4) $(INCLUDES) $(PARSER) $(MKL) 
+convex_hull.x: $(OBJ_MINHOCAO) $(EXEC4)
+	$(F90) $(FFLAGS)  -o convex_hull.x $(EXEC4) $(INCLUDES) $(PARSER) $(MKL) src/ofiles/atoms_minhocao.o src/ofiles/envelope.o
 
-vasp_recompute_kpt_odd.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC5)
+vasp_recompute_kpt_odd.x: $(OBJ_MINHOCAO) $(EXEC5)
 	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(INCLUDES) $(PARSER) $(MKL)
 
-vasp_recompute_cell.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC6)
+vasp_recompute_cell.x: $(OBJ_MINHOCAO)  $(EXEC6)
 	$(F90) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(MKL)
 
-binaries.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC7)
+binaries.x: $(OBJ_MINHOCAO)  $(EXEC7)
 	$(F90) $(FFLAGS)  -o binaries.x $(EXEC7) $(MKL)
 
-ascii2POSCAR.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC8)
+ascii2POSCAR.x: $(OBJ_MINHOCAO)  $(EXEC8)
 	$(F90) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(MKL)
 
-POSCAR2ascii.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC9)
+POSCAR2ascii.x: $(OBJ_MINHOCAO) $(EXEC9)
 	$(F90) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(MKL)
 
-recompute_kpt.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC10)
+recompute_kpt.x: $(OBJ_MINHOCAO)  $(EXEC10)
 	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(INCLUDES) $(PARSER) $(MKL)
 
-espresso_restruct.x: $(OBJ_MINHOCAO) libminhocao.a $(EXEC11)
+espresso_restruct.x: $(OBJ_MINHOCAO)  $(EXEC11)
 	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(INCLUDES) $(PARSER) $(MKL)
 
-ternaries.x: $(INCLUDES) $(OBJ_MINHOCAO) libminhocao.a $(EXEC12)
+ternaries.x: $(OBJ_MINHOCAO)  $(EXEC12)
 	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) $(MKL)
 
 clean:
-	rm -f flame liball.a
+	rm -f flame liball.a vasp_recompute_kpt.x expand_poslows.x \
+	convex_hull.x vasp_recompute_kpt_odd.x vasp_recompute_cell.x \
+	binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x \
+	espresso_restruct.x ternaries.x
 
 cleanall: clean
 	for pot in $(DIRS); do printf "\n" ; $(MAKE) -C $$pot clean ; done
