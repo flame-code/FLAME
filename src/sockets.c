@@ -185,7 +185,26 @@ Args:
       sockfd = accept(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
       if (sockfd < 0) 
       { perror("Error creating UNIX socket: path unavailable, or already existing"); exit(-1); }*/
-      perror("Error creating UNIX socket: not implemented :-("); exit(-1);
+      struct sockaddr_un local, serv_addr;
+      int len;
+      sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+      local.sun_family = AF_UNIX;  /* local is declared before socket() ^ */
+      strcpy(local.sun_path, "/tmp/ipi_");
+      strcpy(local.sun_path+9, host);
+      unlink(local.sun_path);
+      len = strlen(local.sun_path) + sizeof(local.sun_family);
+      bind(sockfd, (struct sockaddr *)&local, len);
+//      perror("Error creating UNIX socket: not implemented :-("); exit(-1);
+     if (listen(sockfd, 5) == -1) {
+        perror("listen");
+        exit(1);
+    }
+
+
+      printf("Waiting for a connection...\n");
+      len = sizeof(serv_addr);
+      sockfd = accept(sockfd, (struct sockaddr *)&serv_addr, &len);
+
    }
 
    *psockfd=sockfd;
