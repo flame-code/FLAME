@@ -65,13 +65,14 @@ LIBS_A = $(LIB_SRC) $(LIB_POT) $(LIB_MOD)
 #LIBS += /home/ghasemi/ghasemi/ghasemi/oldsilicon/Coulomb/EE2DP1DF/MMM2D/MMM2D-1.0/Linux/libMMM2D.a
 
 liball.a: $(LIBS_A)
-	ar -scru liball.a `ls -1 src/ofiles/*.o modules/ofiles/*.o |grep -v alborz.o`
+	ar -scru liball.a `ls -1 src/ofiles/*.o modules/ofiles/*.o |grep -v alborz.o | grep -v vasp_recompute_kpt.o | grep -v expand_poslows.o | grep -v convex_hull.o envelope.o | grep -v vasp_recompute_kpt_odd.o | grep -v vasp_recompute_cell.o | grep -v binaries.o | grep -v ascii2POSCAR.o | grep -v POSCAR2ascii.o | grep -v recompute_kpt.o | grep -v PWSCF_restruct.o | grep -v ternaries.o `
 
 #FFLAGS := $(filter-out -traceback,$(FFLAGS))
 flame: liball.a src/ofiles/alborz.o
 	$(F90) $(filter-out -traceback,$(FFLAGS)) -openmp src/ofiles/alborz.o $(MINHOCAO) $(LIBS) $(INCLUDES) $(FUTILE) -o flame
 
-PARSER = $(OBJDIR)/parser_core_minhocao.o  ../modules/ofiles/minhocao_mod.o
+OBJDIR = src/ofiles
+PARSER = $(OBJDIR)/parser_core_minhocao.o  modules/ofiles/minhocao_mod.o
 EXEC2 = $(OBJDIR)/vasp_recompute_kpt.o 
 EXEC3 = $(OBJDIR)/expand_poslows.o
 EXEC4 = $(OBJDIR)/convex_hull.o envelope.o
