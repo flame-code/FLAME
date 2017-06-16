@@ -1,3 +1,4 @@
+include ../machines/thismachine.make
 include ../def_pot.mk
 LIB_MOD= ../modules/libmodules.a
 include ../def_opt.mk
@@ -77,6 +78,10 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		PWSCF_restruct.F90 \
 		ternaries.F90
 
+
+ifdef SPGLIB
+    SRC_ += spglib_int.F90
+endif
 
 ifdef LAMMPS
     SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90
@@ -159,6 +164,15 @@ OBJ = $(patsubst %,$(OBJDIR)/%,$(OBJ_))
 OBJ_ALL = $(OBJ_F) $(OBJ) $(patsubst %,$(OBJDIR)/%,$(_OBJECTS_C)) \
 		  $(patsubst %,$(OBJDIR)/%,$(_OBJECTS_CPP))
 
+ifdef SPGLIB
+	# Path to spglib
+	LIB_SPGLIB =  $(SPGLIB_ROOT)/src/.libs/libsymspg.a
+	SPGLIB_EX = $(SPGLIB_ROOT)/example/
+	SPGLIB_OBJ= ofiles/spglib_f08.o
+	LIBS+= $(LIB_SPGLIB)
+	override PRE_PROC+= -DSPGLIB
+endif
+
 print_vars:
 	@echo $(LIB_POT) $(LIB_MOD)
 
@@ -171,7 +185,7 @@ $(OBJDIR)/basic_c_wrappers.o: basic_c_wrappers.c
 $(OBJDIR)/alborz.o: $(SRCDIR)/alborz.F90
 	$(F90) $(FFLAGS) $(PRE_PROC) $(INCLUDES) -c $< -o $@
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.F90 $(OBJDIR)/alborz.o $(LIB_MOD)
+$(OBJDIR)/%.o: $(SRCDIR)/%.F90 $(OBJDIR)/alborz.o $(LIB_MOD) $(SPGLIB_OBJ)
 	$(F90) $(FFLAGS) $(PRE_PROC) $(INCLUDES) -I../build/install/include -c $< -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
@@ -183,7 +197,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp potential_QSC_parameters.h potential_QSC_class.h
 #print-%  : ; @echo $* = $($*)
 
 $(SPGLIB_OBJ): $(SPGLIB_EX)/spglib_f08.f90
-	$(FC) $(FFLAGS) -c $< -o $@
+	$(F90) $(FFLAGS) -c $< -o $@
 spglib_f08.mod: $(SPGLIB_EX)/spglib_f08.f90 $(SPGLIB_OBJ)
 	@true
 
@@ -199,7 +213,7 @@ libminhocao.a: $(OBJ_MINHOCAO) $(_OBJECTS_C)
 
 
 clean:
-	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o 
+	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o ofiles/spglib_int.o ofiles/spglib_f08.o
 	rm -rf libminhocao.a vasp_recompute_kpt.o *.mod *~
 
 #*****************************************************************************************

@@ -85,37 +85,37 @@ EXEC10 = $(OBJDIR)/recompute_kpt.o
 EXEC11 = $(OBJDIR)/PWSCF_restruct.o
 EXEC12 = $(OBJDIR)/ternaries.o
 vasp_recompute_kpt.x: $(OBJ_MINHOCAO)  $(EXEC2)
-	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(INCLUDES) $(PARSER) $(MKL)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt.x $(EXEC2) $(INCLUDES) $(PARSER) 
 
 expand_poslows.x: $(OBJ_MINHOCAO) $(EXEC3)
-	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3) $(MKL) $(OBJ_MINHOCAO)
+	$(F90) $(FFLAGS)  -o expand_poslows.x $(EXEC3)  $(OBJ_MINHOCAO)
 
 convex_hull.x: $(OBJ_MINHOCAO) $(EXEC4)
-	$(F90) $(FFLAGS)  -o convex_hull.x $(EXEC4) $(INCLUDES) $(PARSER) $(MKL) src/ofiles/atoms_minhocao.o src/ofiles/envelope.o
+	$(F90) $(FFLAGS)  -o convex_hull.x $(EXEC4) $(INCLUDES) $(PARSER) src/ofiles/atoms_minhocao.o src/ofiles/envelope.o
 
 vasp_recompute_kpt_odd.x: $(OBJ_MINHOCAO) $(EXEC5)
-	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(INCLUDES) $(PARSER) $(MKL)
+	$(F90) $(FFLAGS)  -o vasp_recompute_kpt_odd.x $(EXEC5) $(INCLUDES) $(PARSER) 
 
 vasp_recompute_cell.x: $(OBJ_MINHOCAO)  $(EXEC6)
-	$(F90) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6) $(MKL)
+	$(F90) $(FFLAGS)  -o vasp_recompute_cell.x $(EXEC6)
 
 binaries.x: $(OBJ_MINHOCAO)  $(EXEC7)
-	$(F90) $(FFLAGS)  -o binaries.x $(EXEC7) $(MKL)
+	$(F90) $(FFLAGS)  -o binaries.x $(EXEC7) 
 
 ascii2POSCAR.x: $(OBJ_MINHOCAO)  $(EXEC8)
-	$(F90) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) $(MKL)
+	$(F90) $(FFLAGS)  -o ascii2POSCAR.x $(EXEC8) 
 
 POSCAR2ascii.x: $(OBJ_MINHOCAO) $(EXEC9)
-	$(F90) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) $(MKL)
+	$(F90) $(FFLAGS)  -o POSCAR2ascii.x $(EXEC9) 
 
 recompute_kpt.x: $(OBJ_MINHOCAO)  $(EXEC10)
-	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(INCLUDES) $(PARSER) $(MKL)
+	$(F90) $(FFLAGS)  -o recompute_kpt.x $(EXEC10) $(INCLUDES) $(PARSER) 
 
 espresso_restruct.x: $(OBJ_MINHOCAO)  $(EXEC11)
-	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(INCLUDES) $(PARSER) $(MKL)
+	$(F90) $(FFLAGS)  -o espresso_restruct.x $(EXEC11) $(INCLUDES) $(PARSER) 
 
 ternaries.x: $(OBJ_MINHOCAO)  $(EXEC12)
-	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) $(MKL)
+	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) 
 
 clean:
 	rm -f flame liball.a vasp_recompute_kpt.x expand_poslows.x \
