@@ -64,9 +64,8 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		fingerprint_GOM.F90 fingerprint_MOLGOM.F90 fingerprint_oganov.F90\
 		fingerprint_oganov_cont.F90 fingerprint_BCM.F90\
 		fingerprint_atorb.F90 fingerprint_gaussmol.F90\
-		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90 
-
-SRC2_ = vasp_recompute_kpt.F90 \
+		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90\
+		 vasp_recompute_kpt.F90 \
 		expand_poslows.F90\
 		convex_hull.F90 envelope.F90\
 		vasp_recompute_kpt_odd.F90 \
@@ -78,7 +77,6 @@ SRC2_ = vasp_recompute_kpt.F90 \
 		PWSCF_restruct.F90 \
 		ternaries.F90
 
-SRC_ += $(SRC2_ )
 
 ifdef LAMMPS
     SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90
@@ -203,7 +201,5 @@ libminhocao.a: $(OBJ_MINHOCAO) $(_OBJECTS_C)
 clean:
 	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o 
 	rm -rf libminhocao.a vasp_recompute_kpt.o *.mod *~
-	rm -rf vasp_recompute_kpt.x vasp_recompute_kpt_odd.x vasp_recompute_cell.x expand_poslows.x \
-		convexhull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x espresso_restruct.x ternaries.x
 
 #*****************************************************************************************
