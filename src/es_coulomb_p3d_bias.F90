@@ -555,7 +555,7 @@ end subroutine sollaplaceq
     real(8):: tfx,tfy,tfz ,tmp
     real(8):: fatp(3,atoms%nat) 
     call f_routine(id='calculate_force_ener_plane')
-    nlgx=10 ;  nlgy=10 ; nlgz=8 
+    nlgx=8 ;  nlgy=8 ; nlgz=6 
     ngpx=ewald_p3d%poisson_p3d%ngpx
     ngpy=ewald_p3d%poisson_p3d%ngpy
     ngpz=ewald_p3d%poisson_p3d%ngpz

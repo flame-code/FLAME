@@ -373,7 +373,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     !local variables
     type(typ_atoms):: atoms
     type(typ_file_info):: file_info
-    integer:: iat, ierr, nat_t, i
+    integer:: iat, ierr, nat_t, i, j
     integer:: imd, ff,ntherm, ith
     real(8):: etot, epotold, etotold
     real(8):: DNRM2, fnrm, t1, aboltzmann, totmass, temp, etotavg
@@ -390,8 +390,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: r, dx(3) , rsq, msd1, msd2, msd3
     real(8):: nof, enhc 
     real(8):: dt2, dt4, dt8 
+    integer:: jj(3,atoms%nat)
 
-!    call random_seed() 
+    call random_seed() 
     rat_init=atoms%rat
 !   dt=parini%dt_dynamics
 
@@ -417,7 +418,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     dt8 = 0.5d0*dt4
 
     kt = aboltzmann*temp_trget
-    nof = (3.d0*atoms%nat)
+    jj=atoms%bemoved
+    nof= (-sum(jj))
+    !nof = (3.d0*atoms%nat)
     !nof = (3.d0*atoms%nat+ntherm)
     ekin_target=0.5d0*nof*aboltzmann*parini%init_temp_dynamics
 
@@ -500,12 +503,28 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         dzeta(ntherm) =dzeta(ntherm) + azeta(ntherm) *dt4;
 ! ___________________ end of  chain _________________________________________    
 
-        atoms%rat = atoms%rat + atoms%vat*dt2
+        do iat=1,atoms%nat
+            do j=1,3
+                if (atoms%bemoved(j,iat)) then
+                    atoms%rat(j,iat) = atoms%rat(j,iat) + atoms%vat(j,iat)*dt2
+                else
+                    atoms%vat(j,iat) = 0.d0
+                    atoms%rat(j,iat) = rat_init(j,iat) 
+                endif
+            enddo
+        enddo
 
         call cal_potential_forces(parini,atoms)
         do iat=1,atoms%nat
-            atoms%vat(1:3,iat) = atoms%vat(1:3,iat) + atoms%fat(1:3,iat) / atoms%amass(iat)*dt
-            atoms%rat(1:3,iat) = atoms%rat(1:3,iat) + atoms%vat(1:3,iat)*dt2
+            do j=1,3
+                if (atoms%bemoved(j,iat)) then
+                    atoms%vat(j,iat) = atoms%vat(j,iat) + atoms%fat(j,iat) / atoms%amass(iat)*dt
+                    atoms%rat(j,iat) = atoms%rat(j,iat) + atoms%vat(j,iat)*dt2
+                else
+                    atoms%vat(j,iat) = 0.d0
+                    atoms%rat(j,iat) = rat_init(j,iat) 
+                endif
+            enddo
         enddo
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
 
@@ -540,9 +559,11 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         if(mod(imd-1,100)==0) then
             file_info%file_position='append'
             call acf_write(file_info,atoms=atoms,strkey='posout')
-            write(1111,*) '#'
-            write(1111,*) '#    imd = ',imd, parini%time_dynamics
-            write(1111,*) '#'
+            if(mod(imd-1,1000)==0) then
+                write(1111,*) '#'
+                write(1111,*) '#    imd = ',imd, parini%time_dynamics
+                write(1111,*) '#'
+            endif
             msd1= 0.d0
             msd2= 0.d0
             msd3= 0.d0
@@ -554,7 +575,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
                 msd1 = msd1 + rsq                !all directions
                 msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
                 msd3 = msd3 + dx(3)**2           !z   direction
-                if(mod(imd-1,300)==0) then
+                if(mod(imd-1,1000)==0) then
                     write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
                 endif
             enddo
