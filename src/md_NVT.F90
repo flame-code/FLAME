@@ -473,6 +473,18 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
                 enddo
             enddo
         endif
+        if(parini%vflip_dynamics) then
+            if (atoms%cellvec(3,3)-atoms%rat(3,iat) < 3.d0 .and. atoms%vat(3,iat) > 0.d0)then
+                do iat=1,atoms%nat
+                    atoms%vat(3,iat) = -atoms%vat(3,iat)
+                enddo
+            endif
+            if (atoms%rat(3,iat) < 3.d0 .and. atoms%vat(3,iat) < 0.d0)then
+                do iat=1,atoms%nat
+                    atoms%vat(3,iat) = -atoms%vat(3,iat)
+                enddo
+            endif
+        endif
 
         call cal_potential_forces(parini,atoms)
         etot=atoms%epot+atoms%ekin

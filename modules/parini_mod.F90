@@ -100,6 +100,7 @@ module mod_parini
         logical:: print_force_dynamics=.false.
         logical:: restart_dynamics=.false.
         logical:: fix_cm_dynamics=.false.
+        logical:: vflip_dynamics=.false.
         real(8):: time_dynamics = 0.d0
         !-----------------------------------------------------------------------
         !parameters of [genconf]
