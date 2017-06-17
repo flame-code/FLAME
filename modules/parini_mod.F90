@@ -99,6 +99,7 @@ module mod_parini
         character(20):: md_method_dynamics='unknown'
         logical:: print_force_dynamics=.false.
         logical:: restart_dynamics=.false.
+        logical:: fix_cm_dynamics=.false.
         real(8):: time_dynamics = 0.d0
         !-----------------------------------------------------------------------
         !parameters of [genconf]

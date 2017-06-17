@@ -380,6 +380,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: t2,t3,t4 
     real(8):: rl, ru 
     real(8):: rcm(3), vcm(3)
+    real(8):: drcm(3), rcm_init(3)
     real(8):: scale_vat, temp_trget, ekin_target
     real(8) :: sum1, sum2, sum3
     real(8) :: kt, temp_prev, tol, tolerance 
@@ -454,12 +455,26 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
             call set_velocities(atoms, ekin_target)
         endif
     endif
+    call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
+    rcm_init = rcm 
     !____________________________________________________________________
     do imd=1,nmd
         epotold=atoms%epot
-        call cal_potential_forces(parini,atoms)
 
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
+        if(parini%fix_cm_dynamics) then
+            drcm = (rcm - rcm_init)/atoms%nat*totmass
+            do iat=1,atoms%nat
+                do j=1,3
+                    if (atoms%bemoved(j,iat)) then
+                        atoms%rat(j,iat) = atoms%rat(j,iat) - drcm(j)/atoms%amass(iat)
+                        atoms%vat(j,iat) = atoms%vat(j,iat) - vcm(j)/atoms%amass(iat)/atoms%nat*totmass
+                    endif
+                enddo
+            enddo
+        endif
+
+        call cal_potential_forces(parini,atoms)
         etot=atoms%epot+atoms%ekin
         etotold=etot
         enhc=atoms%epot+atoms%ekin+0.5*sum(dzeta**2*mass_q)+nof*kt*zeta(1)+sum(zeta*kt)
