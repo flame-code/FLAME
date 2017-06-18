@@ -169,8 +169,8 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
         charge0= -dipole/(2*pi*d)
         charge = -dipole/(2*pi*d)+c*(vu-vl)
-        write(88,*)vu , beta, charge
-        write(89,*)vu , beta, charge0
+        !write(88,*)vu , beta, charge
+        !write(89,*)vu , beta, charge0
         write(*,*)'dipole = ', dipole/(2*pi)
         dipole_correction = 3/(4*pi)*dipole**2/(ewald_p3d%cell(3)*ewald_p3d%cell(2)*ewald_p3d%cell(1))
         write(*,*)'dipole correction ', dipole_correction
@@ -241,8 +241,8 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
         charge0= -dipole/(2*pi*d)
         charge = -dipole/(2*pi*d)+c*(vu-vl)
-        write(88,*)vu , beta, charge
-        write(89,*)vu , beta, charge0
+        !write(88,*)vu , beta, charge
+        !write(89,*)vu , beta, charge0
         write(*,*)'dipole = ', dipole/(2*pi)
         write(*,*)'charge on upper  plate  ', charge
         write(*,*)'--------------------------------------------------------'

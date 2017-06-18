@@ -64,9 +64,9 @@ subroutine md_nvt_langevin(parini,atoms)
     !____________________________________________________________________
     epotold=atoms%epot
     call cal_potential_forces(parini,atoms)
-    if (trim(bias)=='yes') then
-        call plane_repulsion(atoms)
-    endif
+    !if (trim(bias)=='yes') then
+    !    call plane_repulsion(atoms)
+    !endif
 
     write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
     file_info%filename_positions='posout.acf'
@@ -105,9 +105,9 @@ subroutine md_nvt_langevin(parini,atoms)
         !endif
         epotold=atoms%epot
         call cal_potential_forces(parini,atoms)
-        if (trim(bias)=='yes') then
-            call plane_repulsion(atoms)
-        endif
+       ! if (trim(bias)=='yes') then
+       !     call plane_repulsion(atoms)
+       ! endif
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
         etot=atoms%epot+atoms%ekin
         etotold=etot
@@ -485,8 +485,11 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
                 enddo
             endif
         endif
-
         call cal_potential_forces(parini,atoms)
+        if(parini%wall_repulsion_dynamics) then
+            call plane_repulsion(atoms)
+        endif
+
         etot=atoms%epot+atoms%ekin
         etotold=etot
         enhc=atoms%epot+atoms%ekin+0.5*sum(dzeta**2*mass_q)+nof*kt*zeta(1)+sum(zeta*kt)
@@ -664,6 +667,7 @@ subroutine back_to_cell(atoms)
 
 end subroutine back_to_cell
 !***********************************************************************************************
+!It works just for repolsive of wall in z direction.
 subroutine plane_repulsion(atoms)
     use mod_atoms, only: typ_atoms
     implicit none
@@ -672,16 +676,16 @@ subroutine plane_repulsion(atoms)
     type(typ_atoms):: atoms
     do iat=1,atoms%nat
         rl=atoms%rat(3,iat)
-        if (rl<7.d0) then
-            t1=100.d0*exp(-2.d0*rl)
+        if (rl<4.0d0) then
+            t1=100.d0*exp(-1.5d0*rl)
             atoms%fat(3,iat)=atoms%fat(3,iat)+t1
-            atoms%epot = atoms%epot+t1/3.d0
+            !atoms%epot = atoms%epot+t1/3.d0
         endif
         ru=atoms%cellvec(3,3)-atoms%rat(3,iat)
-        if (ru<7.d0) then
-            t2=100.d0*exp(-2.d0*ru)
+        if (ru<4.0d0) then
+            t2=100.d0*exp(-1.5d0*ru)
             atoms%fat(3,iat)=atoms%fat(3,iat)-t2
-            atoms%epot = atoms%epot+t2/3.d0
+            !atoms%epot = atoms%epot+t2/3.d0
         endif
     enddo
 end subroutine plane_repulsion
