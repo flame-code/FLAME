@@ -86,7 +86,7 @@ subroutine destruct_ewald_p3d(parini,atoms,ewald_p3d)
     call f_free(ewald_p3d%poisson_p3d%rho)
     call f_free(ewald_p3d%poisson_p3d%pot)
     if(trim(bias)=='yes') then
-        call f_free(ewald_p3d%poisson_p3d%pots)
+        deallocate(ewald_p3d%poisson_p3d%pots)
     endif
     call f_free(ewald_p3d%mboundg)
     call f_release_routine()
@@ -185,12 +185,12 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         npl=ewald_p3d%poisson_p3d%npl
         npu=ewald_p3d%poisson_p3d%npu
 
-        ewald_p3d%poisson_p3d%pots=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx+2,1.to.ewald_p3d%poisson_p3d%ngpy,npl.to.npu],id='ewald_p3d%poisson_p3d%pots')
+        allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
         write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
         nlayer=1
         if (parini%cal_charge) then 
             nlayer=5
-            pots_layer=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx,1.to.ewald_p3d%poisson_p3d%ngpy,1.to.2,1.to.nlayer],id='pots_layer')
+            allocate(pots_layer(1:ewald_p3d%poisson_p3d%ngpx,1:ewald_p3d%poisson_p3d%ngpy,1:2,1:nlayer))
         endif
         ewald_p3d%poisson_p3d%pots=0.d0
         call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
@@ -214,7 +214,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
 
         if (parini%cal_charge) then 
             call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
-            call f_free(pots_layer)
+            deallocate(pots_layer)
         endif
         !   do iy=1,ewald_p3d%poisson_p3d%ngpy
         !   do ix=1,ewald_p3d%poisson_p3d%ngpx
@@ -225,7 +225,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         !   enddo 
         !   enddo 
         epotplane = epotplane+dipole_correction
-        call f_free(ewald_p3d%poisson_p3d%pots)
+        deallocate(ewald_p3d%poisson_p3d%pots)
     end if
 
     if (trim(parini%bias_field)=='yes') then
@@ -263,12 +263,12 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         npl=ewald_p3d%poisson_p3d%npl
         npu=ewald_p3d%poisson_p3d%npu
 
-        ewald_p3d%poisson_p3d%pots=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx+2,1.to.ewald_p3d%poisson_p3d%ngpy,npl.to.npu],id='ewald_p3d%poisson_p3d%pots')
+        allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
         write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
         nlayer=1
         if (parini%cal_charge) then 
             nlayer=5
-            pots_layer=f_malloc([1.to.ewald_p3d%poisson_p3d%ngpx,1.to.ewald_p3d%poisson_p3d%ngpy,1.to.2,1.to.nlayer],id='pots_layer')
+            allocate(pots_layer(1:ewald_p3d%poisson_p3d%ngpx,1:ewald_p3d%poisson_p3d%ngpy,1:2,1:nlayer))
         endif
         ewald_p3d%poisson_p3d%pots=0.d0
         call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
@@ -280,9 +280,9 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
 
         if (parini%cal_charge) then 
             call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
-            call f_free(pots_layer)
+            deallocate(pots_layer)
         endif
-        call f_free(ewald_p3d%poisson_p3d%pots)
+        deallocate(ewald_p3d%poisson_p3d%pots)
 !*****************************************************************************
     endif
     call cpu_time(time(6))
