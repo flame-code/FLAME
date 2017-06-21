@@ -66,6 +66,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
     use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -76,7 +77,8 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
-    real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha
+    real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha, tt
+    real(8), allocatable:: epotall(:), eref_all(:)
     !return
     ann_arr%event='evalu'
     do ia=1,ann_arr%n
@@ -84,13 +86,31 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     enddo
     nsatur=3
     isatur=0
+    epotall=f_malloc([1.to.atoms_train%nconf],id='epotall')
+    eref_all=f_malloc([1.to.atoms_train%nconf],id='eref_all')
+    do iconf=1,atoms_train%nconf
+        tt=0.d0
+        do iat=1,atoms_train%atoms(iconf)%nat
+            tt=tt+ann_arr%ann(atoms_train%atoms(iconf)%itypat(iat))%ener_ref
+        enddo
+        eref_all(iconf)=tt
+    enddo
     alpha=1.d0/real(atoms_train%nconf,8)
     do istep=0,50
         rmse=0.d0
         g=0.d0
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+            if(istep==0) then
+                call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+                epotall(iconf)=atoms%epot
+            else
+                tt=0.d0
+                do iat=1,atoms%nat
+                    tt=tt+ann_arr%ann(atoms%itypat(iat))%ener_ref
+                enddo
+                atoms%epot=epotall(iconf)-eref_all(iconf)+tt
+            endif
             rmse=rmse+((symfunc_train%symfunc(iconf)%epot-atoms%epot)/atoms%nat)**2
             anat=0.d0
             do iat=1,atoms%nat
@@ -118,6 +138,8 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse_old=rmse
     enddo
+    call f_free(epotall)
+    call f_free(eref_all)
     !stop
 end subroutine prefit_cent
 !*****************************************************************************************
