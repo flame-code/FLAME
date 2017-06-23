@@ -268,13 +268,24 @@ k = index(all_line(1:n),"S") !In selective dynamics
   if(k.ne.0) then  !ignore this line
   read(46,'(a150)',end=99)all_line
   endif 
-if(trim(adjustl(all_line)).eq."Direct".or.trim(adjustl(all_line)).eq."direct") then
+all_line=adjustl(all_line)
+all_line=trim(all_line)
+all_line=all_line(1:1)
+if(trim(all_line).eq."D".or.trim(all_line).eq."d") then
   red=.true.
-elseif(trim(adjustl(all_line)).eq."Cartesian".or.trim(adjustl(all_line)).eq."cartesian") then
+elseif(trim(all_line).eq."C".or.trim(all_line).eq."c") then
   red=.false.
 else
   stop "Coordinates must be either Direct or Cartesian"
 endif
+!!!
+!!!if(trim(adjustl(all_line)).eq."Direct".or.trim(adjustl(all_line)).eq."direct") then
+!!!  red=.true.
+!!!elseif(trim(adjustl(all_line)).eq."Cartesian".or.trim(adjustl(all_line)).eq."cartesian") then
+!!!  red=.false.
+!!!else
+!!!  stop "Coordinates must be either Direct or Cartesian"
+!!!endif
 
 !Read positions
 do iat=1,nat

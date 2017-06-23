@@ -187,7 +187,7 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   !        then dkptx is directly the cutoff length in Bohr
   !mode 2: setting up the monkhorst pack mesh by setting up the mesh according to 
   !        dkptx as the density of the mesh in the B-Zone
-  siesta_kpt_mode=1
+!  siesta_kpt_mode=2
   
   getwfk=.false.
   
