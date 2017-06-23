@@ -60,9 +60,12 @@ k = index(all_line(1:n),"S") !In selective dynamics
   if(k.ne.0) then  !ignore this line
   read(2,'(a150)',end=99)all_line
   endif 
-if(trim(all_line).eq."Direct") then
+all_line=adjustl(all_line)
+all_line=trim(all_line)
+all_line=all_line(1:1)
+if(trim(all_line).eq."D".or.trim(all_line).eq."d") then
   red=.true.
-elseif(trim(all_line).eq."Cartesian") then
+elseif(trim(all_line).eq."C".or.trim(all_line).eq."c") then
   red=.false.
 else
   stop "Coordinates must be either Direct or Cartesian"

@@ -87,7 +87,7 @@ transmat(3,3)=1.d0
 !0 step
 !Initiallize the niggli matrix
 call init_nigmat(latvec_in,nigmat,l,m,n,eps,pi)
-write(888,'(a,6(1x,es15.7))') "step 0",nigmat
+if(debug) write(888,'(a,6(1x,es15.7))') "step 0",nigmat
 !1 step
 1000 continue
     ! A1

@@ -15,7 +15,7 @@ implicit none
     integer :: nummax,nummin, istepnext
     real(8) :: enmin1, enmin2, en0000, econs_max, econs_min, devcon
     logical:: getwfk
-    real(8):: pressure,int_pressure_gpa,energy,rkin,rkin_0,dt
+    real(8):: pressure,int_pressure_gpa,energy,rkin,rkin_0,dt,dt_ratio
     if((all(fixlat(1:6)).and..not.fixlat(7)).or.bc==2) then
        continue
     else
@@ -178,14 +178,15 @@ implicit none
       write(*,'(a,es10.2,es10.2,a,es10.2)') " # MD: energy conservation :",devcon,rkin_0,&
       &", dtion_md set to: ",dtion_md
     else 
-       if(real(istep,8)/real(mdmin,8).lt.real(nit_per_min,8)) then
+       dt_ratio=real(istep,8)/real(nummin,8) 
+       if(dt_ratio.lt.real(nit_per_min,8)) then
          dtion_md=dtion_md*1.d0/1.1d0
        else
          dtion_md=dtion_md*1.1d0 
        endif
-       dtion_md=min(dtion_md,real(istep,8)*dt/(real(mdmin,8)*15.d0))
-       write(*,'(3(a,es10.2))') " # MD: steps per minium: ",real(istep,8)/real(mdmin,8),&
-      &", dtion_md set to: ",dtion_md,", upper boundary: ",real(istep,8)*dt/(real(mdmin,8)*15.d0)
+       dtion_md=min(dtion_md,dt*dt_ratio/15.d0)
+       write(*,'(3(a,es10.2))') " # MD: steps per minium: ",dt_ratio,&
+      &", dtion_md set to: ",dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
      endif
   endif
    
