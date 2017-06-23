@@ -547,7 +547,7 @@ end subroutine sollaplaceq
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: tfx,tfy,tfz ,tmp
     real(8):: fatp(3,atoms%nat) 
-    nlgx=8 ;  nlgy=8 ; nlgz=6 
+    nlgx=9;  nlgy=9; nlgz=8
     ngpx=ewald_p3d%poisson_p3d%ngpx
     ngpy=ewald_p3d%poisson_p3d%ngpy
     ngpz=ewald_p3d%poisson_p3d%ngpz

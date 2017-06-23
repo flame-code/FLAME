@@ -392,7 +392,8 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: nof, enhc 
     real(8):: dt2, dt4, dt8 
     integer:: jj(3,atoms%nat)
-
+    real(8):: temp1, temp2
+    real(8):: sumf1, sumf2, sumf3
     call random_seed() 
     rat_init=atoms%rat
 !   dt=parini%dt_dynamics
@@ -461,31 +462,31 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     do imd=1,nmd
         epotold=atoms%epot
 
-        call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
-        if(parini%fix_cm_dynamics) then
-            drcm = (rcm - rcm_init)/atoms%nat*totmass
+        if(parini%vflip_dynamics) then
             do iat=1,atoms%nat
-                do j=1,3
-                    if (atoms%bemoved(j,iat)) then
-                        atoms%rat(j,iat) = atoms%rat(j,iat) - drcm(j)/atoms%amass(iat)
-                        atoms%vat(j,iat) = atoms%vat(j,iat) - vcm(j)/atoms%amass(iat)/atoms%nat*totmass
-                    endif
-                enddo
+                if (atoms%cellvec(3,3)-atoms%rat(3,iat) < 5.5d0 .and. atoms%vat(3,iat) > 0.d0)then
+                    atoms%vat(3,iat) = -atoms%vat(3,iat)
+                endif
+            enddo
+            do iat=1,atoms%nat
+                if (atoms%rat(3,iat) < 5.5d0 .and. atoms%vat(3,iat) < 0.d0)then
+                    atoms%vat(3,iat) = -atoms%vat(3,iat)
+                endif
             enddo
         endif
-        if(parini%vflip_dynamics) then
-            if (atoms%cellvec(3,3)-atoms%rat(3,iat) < 3.d0 .and. atoms%vat(3,iat) > 0.d0)then
-                do iat=1,atoms%nat
-                    atoms%vat(3,iat) = -atoms%vat(3,iat)
-                enddo
-            endif
-            if (atoms%rat(3,iat) < 3.d0 .and. atoms%vat(3,iat) < 0.d0)then
-                do iat=1,atoms%nat
-                    atoms%vat(3,iat) = -atoms%vat(3,iat)
-                enddo
-            endif
-        endif
+        call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
         call cal_potential_forces(parini,atoms)
+
+        if(parini%fix_cm_dynamics) then
+            sumf1 = sum(atoms%fat(1,:))/atoms%nat
+            sumf2 = sum(atoms%fat(2,:))/atoms%nat
+            sumf3 = sum(atoms%fat(3,:))/atoms%nat
+            write(23,'(i5,3es15.4)') imd, sumf1*atoms%nat, sumf2*atoms%nat, sumf3*atoms%nat
+            atoms%fat(1,:)=atoms%fat(1,:)-sumf1
+            atoms%fat(2,:)=atoms%fat(2,:)-sumf2
+           ! atoms%fat(3,:)=atoms%fat(3,:)-sumf3
+        endif
+
         if(parini%wall_repulsion_dynamics) then
             call plane_repulsion(atoms)
         endif
@@ -676,14 +677,14 @@ subroutine plane_repulsion(atoms)
     type(typ_atoms):: atoms
     do iat=1,atoms%nat
         rl=atoms%rat(3,iat)
-        if (rl<4.0d0) then
-            t1=100.d0*exp(-1.5d0*rl)
+        if (rl<5.5d0) then
+            t1=200.d0*exp(-1.5d0*rl)
             atoms%fat(3,iat)=atoms%fat(3,iat)+t1
             !atoms%epot = atoms%epot+t1/3.d0
         endif
         ru=atoms%cellvec(3,3)-atoms%rat(3,iat)
-        if (ru<4.0d0) then
-            t2=100.d0*exp(-1.5d0*ru)
+        if (ru<5.5d0) then
+            t2=200.d0*exp(-1.5d0*ru)
             atoms%fat(3,iat)=atoms%fat(3,iat)-t2
             !atoms%epot = atoms%epot+t2/3.d0
         endif
