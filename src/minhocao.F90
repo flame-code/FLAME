@@ -170,7 +170,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 
 !Some parameter setup
 !  code="lammps"          !Define what code to use for force evaluation
-  siesta_kpt_mode=1          !Mode of generating automatic k-point mesh, only siesta
+  siesta_kpt_mode=2          !Mode of generating automatic k-point mesh, only siesta
   vasp_kpt_mode=2            !Mode of generating automatic k-point mesh, only vasp
   abinit_kpt_mode=1          !Mode of generating automatic k-point mesh, only abinit
   correctalg=2               !Method to correct cell vectors when torn out of shape
@@ -1420,6 +1420,7 @@ implicit none
  real(8):: counter
  real(8):: dt
  real(8):: vpressure
+ real(8):: dt_ratio
  integer:: i,ii
  integer:: j
  integer:: iat
@@ -1784,7 +1785,7 @@ endif
              vlatpred=vlatcur+dt/6.d0*(2.d0*acclatpred+5.d0*acclatcur-acclatprev)
              if(md_type==4) vvolpred=vvolcur+dt/6.d0*(2.d0*accvolpred+5.d0*accvolcur-accvolprev)
              call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekinatom,ekinlat,f0,md_type,nat)
-if(verb.gt.0)write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
+if(verb.gt.1)write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
                   & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)
             ! write(67,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
             !      & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)
@@ -1876,15 +1877,18 @@ endif
      enddo 
 !Adjust MD stepsize
 !Minimum number of steps per crossed minimum is 15, average should be nit_per_min
+     
      if(auto_dtion_md) then
-       if(real(itime,8)/real(mdmin,8).lt.real(nit_per_min,8)) then
+!       dt_ratio=real(itime,8)/real(mdmin,8) !old version version
+       dt_ratio=real(itime,8)/real(nummin,8) 
+       if(dt_ratio.lt.real(nit_per_min,8)) then
          dtion_md=dtion_md*1.d0/1.1d0
        else
          dtion_md=dtion_md*1.1d0 
        endif
-     dtion_md=min(dtion_md,real(itime,8)*dt/(real(mdmin,8)*15.d0))
-     write(*,'(3(a,es10.2))') " # MD: steps per minium: ",real(itime,8)/real(mdmin,8),&
-           &", dtion_md set to: ",dtion_md,", upper boundary: ",real(itime,8)*dt/(real(mdmin,8)*15.d0) 
+     dtion_md=min(dtion_md,dt*dt_ratio/15.d0)
+     write(*,'(3(a,es10.2))') " # MD: steps per minium: ",dt_ratio,&
+           &", dtion_md set to: ",dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
      endif
    
 
@@ -2646,6 +2650,7 @@ implicit none
  real(8):: toldff_tmp
  real(8):: counter
  real(8):: dt
+ real(8):: dt_ratio
  integer:: i
  integer:: j
  integer:: iat
@@ -2927,7 +2932,7 @@ endif
              vlatpred=vlatcur+dt/6.d0*(2.d0*acclatpred+5.d0*acclatcur-acclatprev)
              if(md_type==4) vvolpred=vvolcur+dt/6.d0*(2.d0*accvolpred+5.d0*accvolcur-accvolprev)
              call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekinatom,ekinlat,f0,md_type,nat)
-             write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
+if(verb.gt.1)write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
                   & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)
         !     write(67,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
         !          & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)
@@ -3002,14 +3007,16 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
 !Adjust MD stepsize
 !Minimum number of steps per crossed minimum is 15, average should be nit_per_min
      if(auto_dtion_md) then
-       if(real(itime,8)/real(mdmin,8).lt.real(nit_per_min,8)) then
+!       dt_ratio=real(itime,8)/real(mdmin,8) !old version version
+       dt_ratio=real(itime,8)/real(nummin,8) 
+       if(dt_ratio.lt.real(nit_per_min,8)) then
          dtion_md=dtion_md*1.d0/1.1d0
        else
          dtion_md=dtion_md*1.1d0 
        endif
-     dtion_md=min(dtion_md,real(itime,8)*dt/(real(mdmin,8)*15.d0))
-     write(*,'(3(a,es10.2))') " # MD: steps per minium: ",real(itime,8)/real(mdmin,8),&
-           &", dtion_md set to: ",dtion_md,", upper boundary: ",real(itime,8)*dt/(real(mdmin,8)*15.d0) 
+     dtion_md=min(dtion_md,dt*dt_ratio/15.d0)
+     write(*,'(3(a,es10.2))') " # MD: steps per minium: ",dt_ratio,&
+           &", dtion_md set to: ",dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
      endif
    
 
@@ -4030,7 +4037,7 @@ call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,f
              vlatpred=vlatcur+dt/6.d0*(2.d0*acclatpred+5.d0*acclatcur-acclatprev)
              if(md_type==4) vvolpred=0.d0! vvolpred=vvolcur+dt/6.d0*(2.d0*accvolpred+5.d0*accvolcur-accvolprev)
              call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekinatom,ekinlat,f0,md_type,nat)
-if(verb.gt.0)write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
+if(verb.gt.1)write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
                   & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)
 !             write(67,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
 !                  & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)
@@ -7094,7 +7101,7 @@ do i=1,3
    endif
 enddo
 endif
-write(*,*) "elim_fixed_lat norm", sqrt(sum(x*x))
+!write(*,*) "elim_fixed_lat norm", sqrt(sum(x*x))
 enddo
 !!The simple way:
 !!This means only keep the components along the lattice vectors...
@@ -8957,7 +8964,7 @@ endif
              vlatpred=vlatcur+dt/6.d0*(2.d0*acclatpred+5.d0*acclatcur-acclatprev)
              if(md_type==4) vvolpred=vvolcur+dt/6.d0*(2.d0*accvolpred+5.d0*accvolcur-accvolprev)
              call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekinatom,ekinlat,f0,md_type,nmol)
-             write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
+if(verb.gt.1)write(* ,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
                   & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)
 !             write(67,'(a,i5,1x,es15.5,es15.5)') " # Beeman: Corrector relative convergence: it, atoms, lattice: ",&
 !                  & i,abs(ekinatom-ekinatom_prev)/ekinatom,abs(ekinlat-ekinlat_prev)/max(ekinlat,1.d-100)

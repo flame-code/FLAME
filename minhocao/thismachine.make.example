@@ -1,5 +1,0 @@
-SPGLIB_ROOT = /home/maxamsler/Homefolder/spglib-1.6.0/
-LIB_ALBORZ = ~/Homefolder/Alborz/Alborz/Alborz.max/liball.a
-LAMMPS_ROOT = /home/maxamsler/Homefolder/lammps-30Oct14
-TINKER_ROOT = /home/maxamsler/Homefolder/tinker
-#FUTILE = -I/home/ghasemi/Alborz/build/install/include -L/home/ghasemi/Alborz/build/install/lib -L/opt/intel/composer_xe_2013.2.146/mkl/lib/intel64 -lfutile-1 -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm -lyaml -lrt
