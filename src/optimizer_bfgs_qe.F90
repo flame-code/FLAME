@@ -1337,10 +1337,10 @@ END MODULE bfgs_module
 !
 !----------------------------------------------------------------------------
 !SUBROUTINE move_ions()
-subroutine GEOPT_qbfgs(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,&
                    &char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max,&
-                   &units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine,verb
+                   &units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1395,7 +1395,9 @@ subroutine GEOPT_qbfgs(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counte
 !  USE dynamics_module,        ONLY : smart_MC
 !  USE dfunct,                 only : newd
   !
+  use mod_parini, only: typ_parini
   IMPLICIT NONE
+  type(typ_parini), intent(in):: parini
   !
   LOGICAL, SAVE         :: lcheck_mag = .FALSE., &
                            restart_with_starting_magnetiz = .FALSE., &
@@ -1556,7 +1558,7 @@ qe_units=.true.
        sock_extra_string="BFGS"//trim(fn4)
        latvec_in = at * alat
        xred_in=xred
-       call get_energyandforces_single(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        fcart=fcart_in
        etot=etot_in
        sigma(1,1)=-strten_in(1)
@@ -1570,16 +1572,16 @@ qe_units=.true.
        counter=real(itime,8)
        call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
        call getvol(latvec_in,vol)
-if(verb.gt.0) then
+if(parini%verb.gt.0) then
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in QBFGS: ",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
-       if(verb.ge.3) then
+       if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
@@ -1603,7 +1605,7 @@ do itime=1,ntime_geopt
        sock_extra_string="BFGS"//trim(fn4)
        latvec_in = at * alat
        xred_in=xred
-       call get_energyandforces_single(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        fcart=fcart_in
        etot=etot_in
        sigma(1,1)=-strten_in(1)
@@ -1618,16 +1620,16 @@ do itime=1,ntime_geopt
        counter=real(itime,8)
        call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
        call getvol(latvec_in,vol)
-if(verb.gt.0) then
+if(parini%verb.gt.0) then
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in QBFGS: ",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
-       if(verb.ge.3) then
+       if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
