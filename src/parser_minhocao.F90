@@ -40,7 +40,8 @@
 !!   END FUNCTION StrLowCase 
 !!END MODULE String_Utility 
 
-subroutine params_read()
+subroutine params_read(parini)
+use mod_parini, only: typ_parini
 use String_Utility
 use defs_basis
 use interface_ipi
@@ -51,7 +52,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,verb,geopt_ext,energy_conservation,use_confine,&
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -73,6 +74,7 @@ use fingerprint, only: &
 use confinement
 
 implicit none
+type(typ_parini), intent(inout):: parini
 integer:: calls=0
 integer:: itype,n,k1,k2,l,m,mdmin_in,n_lj,iat,n2,kpt_abc(3),i,j
 real(8):: tmp_val,alpha_lat_in,alpha_at_in,dtion_md_in,dkpt_12(2)
@@ -176,7 +178,7 @@ endif
 
 
 !Feed arrays with standard parameters
-call params_defaults(mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
+call params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
 
 !Read znucl
 if(.not.read_poscur) then
@@ -527,7 +529,7 @@ open(unit=12,file="params_new.in")
 !Block MSOCK****************
 
 !VERBOSE
-   call parsescalar_int("VERBOSE",7,all_line(1:n),n,verb,found)
+   call parsescalar_int("VERBOSE",7,all_line(1:n),n,parini%verb,found)
    if(found) cycle
 !BOUNDARY
    call parsescalar_int("BOUNDARY",8,all_line(1:n),n,bc,found)
@@ -614,12 +616,12 @@ endif
 call fp_assign()
 
 !Increase calls to the routine
-if(calls==0) call params_echo()
-if(calls==0) call params_check()
+if(calls==0) call params_echo(parini)
+if(calls==0) call params_check(parini)
 calls=calls+1
 
 !Check range of parameters
-call params_check()
+call params_check(parini)
 
 !Copy parameters of fire to the fire module
     dtmin=dtion_fire_min
@@ -636,7 +638,7 @@ call params_check()
 end subroutine
 
 !************************************************************************************
-subroutine params_defaults(mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
+subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
 use defs_basis
 use fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
@@ -644,7 +646,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,verb,geopt_ext,energy_conservation,use_confine,&
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -662,7 +664,9 @@ use fingerprint, only: &
    fp_18_width_overlap,fp_18_large_vanradius
    
 use confinement
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(out):: parini
 integer:: mdmin_in,itype,i,j
 real(8):: dtion_md_in,alpha_lat_in,alpha_at_in
 logical:: read_poscur
@@ -713,7 +717,7 @@ ka=1;kb=1;kc=1
 dkpt1=0.04d0
 dkpt2=0.06d0
 bc=1
-verb=3
+parini%verb=3
 code="vasp"
 !Define if the external optimizer should be used. Only available for:
 geopt_ext=.false.
@@ -793,7 +797,7 @@ end subroutine
 
 !************************************************************************************
 
-subroutine params_check()
+subroutine params_check(parini)
 use defs_basis
 use fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
@@ -801,7 +805,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,verb,voids,core_rep,md_presscomp
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,voids,core_rep,md_presscomp
 use sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -816,7 +820,9 @@ use fingerprint, only: &
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
 use confinement
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,j
 !This routine will check if all values are valid...
 if(any(typat(:).lt.1)) stop "Error in typat"
@@ -855,7 +861,7 @@ if(kc.lt.0) stop "Error in kc"
 if(dkpt1.lt.0.d0) stop "Error in dkpt1"
 if(dkpt2.lt.0.d0) stop "Error in dkpt2"
 if(bc.lt.1.or.bc.gt.3) stop "Error in bc"
-if(verb.lt.0.or.verb.gt.3) stop "Error in verb"
+if(parini%verb.lt.0.or.parini%verb.gt.3) stop "Error in verb"
 if(trim(fp_method_ch).ne."OGANOV".and.trim(fp_method_ch).ne."BCM".and.trim(fp_method_ch).ne."ATORB".and.&
   &trim(fp_method_ch).ne."XYZ2SM".and.trim(fp_method_ch).ne."GAUSS".and.trim(fp_method_ch).ne."COGANOV".and.&
   &trim(fp_method_ch).ne."CAOGANOV".and.trim(fp_method_ch).ne."GOM".and.trim(fp_method_ch).ne."MOLGOM") stop "Error in fp_method_ch"
@@ -912,7 +918,7 @@ end subroutine
 
 !************************************************************************************
 
-subroutine params_echo()
+subroutine params_echo(parini)
 use defs_basis
 use String_Utility 
 use fire,   only:dtmin, dtmax
@@ -921,7 +927,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,verb,geopt_ext,energy_conservation,use_confine,&
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -938,13 +944,15 @@ use fingerprint, only: &
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
 use confinement
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,j
 character(1):: fn1
 character(60):: formatting,string
 !Echo the variables
 write(*,'(a)')             " ################################ Echo params_new.in #############################"
-write(*,'(a,i5)')          " # VERBOSITY     ", verb
+write(*,'(a,i5)')          " # VERBOSITY     ", parini%verb
 write(*,'(a)')             " # SYSTEM parameters *************************************************************"
 write(*,'(a,i5)')          " # BOUNDARY      ", bc
 write(*,'(a,es15.7)')      " # PRESS         ", target_pressure_gpa

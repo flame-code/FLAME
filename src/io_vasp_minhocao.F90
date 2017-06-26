@@ -90,16 +90,17 @@ end subroutine
 
 !************************************************************************************
 
-subroutine write_atomic_file_poscar(filename,nat,units,xred,latvec0,fcart,strten,char_type,&
+subroutine write_atomic_file_poscar(parini,filename,nat,units,xred,latvec0,fcart,strten,char_type,&
            &ntypat,typat,fixat,fixlat,energy,pressure,printval1,printval2)
 !This routine will write the file "filename" in vasp file format
 !The input unit will always be in atomic units (bohr, hartree), but the output can be specified by the vaule in "units"
 !So if units==angstroem, the file will be converted to angstroem
 !   if units==bohr, the positions will not be changed
 use defs_basis, only: Ha_eV,Bohr_Ang,HaBohr3_GPa
-use global, only: reduced,fragarr,verb
-
+use global, only: reduced,fragarr
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: nat,natin,iat,ntypat,typat(nat)
 character(40):: filename,units
 real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol,fcart(3,nat),strten(6)
@@ -169,7 +170,7 @@ do iat=1,nat
 write(46,*)xred(:,iat)
 enddo
 write(46,*) " "
-if(verb.ge.3) then
+if(parini%verb.ge.3) then
 do iat=1,nat
 write(46,*)fcart(:,iat)*hartree2ev/angbohr
 enddo

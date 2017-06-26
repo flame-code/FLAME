@@ -9,10 +9,10 @@
 !!    For the list of contributors, see ~/AUTHORS
 !subroutine geopt(nat,wpos,etot,fout,fnrmtol,count,count_sd,displr)
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
-subroutine GEOPT_sqnm(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,&
                    &char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max,&
-                   &units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine,verb
+                   &units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -24,7 +24,9 @@ subroutine GEOPT_sqnm(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter
 !   use bigdft_run!module_types
 !   use yaml_output
    use module_sqn, only: modify_gradient, getSubSpaceEvecEval!, findbonds
+   use mod_parini, only: typ_parini
    implicit none
+   type(typ_parini), intent(in):: parini
    !parameter
 !   integer, intent(in)                    :: nproc
 !   integer, intent(in)                    :: iproc
@@ -280,10 +282,10 @@ endif
 call sqnm_invhess(nat,latvec_in,metric,hessinv)
 
 
-!   call minenergyandforces(iproc,nproc,.false.,imode,runObj,outs,nat,rxyz(1,1,0),&
+!   call minenergyandforces(parini,iproc,nproc,.false.,imode,runObj,outs,nat,rxyz(1,1,0),&
 !       rxyzraw(1,1,0),fxyz(1,1,0),fstretch(1,1,0),fxyzraw(1,1,0),&
 !       etot,iconnect,nbond,wold,beta_stretchx,beta_stretch)
-!   call minenergyandforces(iproc,nproc,.true.,imode,nat,rxyz(1,1,0),&
+!   call minenergyandforces(parini,iproc,nproc,.true.,imode,nat,rxyz(1,1,0),&
 !       rxyzraw(1,1,0),fxyz(1,1,0),fstretch(1,1,0),fxyzraw(1,1,0),&
 !       etot,iconnect,nbond,wold,beta_stretchx,beta_stretch)
    write(fn4,'(i4.4)') 0
@@ -292,7 +294,7 @@ call sqnm_invhess(nat,latvec_in,metric,hessinv)
           call rxyz_cart2int(rxyz(:,nat+1:nat+3,0),pos_tmp,rxyz(:,1:nat,0),nat)
           rxyz(:,1:nat,0)=pos_tmp(:,:)
    endif
-   call minenergyandforces(.true.,imode,nat,rxyz(1,1,0),&
+   call minenergyandforces(parini,.true.,imode,nat,rxyz(1,1,0),&
        rxyzraw(1,1,0),fxyz(1,1,0),fstretch(1,1,0),fxyzraw(1,1,0),&
        etot,beta_stretchx,beta_stretch,&
        latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
@@ -312,7 +314,7 @@ call sqnm_invhess(nat,latvec_in,metric,hessinv)
 
 !   if (iproc==0.and.verbosity > 0) then
    it=0
-if(verb>0) then
+if(parini%verb>0) then
        !avoid space for leading sign (numbers are positive, anyway)
        write(cdmy8,'(es8.1)')abs(maxd)
        write(cdmy12_1,'(es12.5)')abs(displr)
@@ -338,11 +340,11 @@ if(verb>0) then
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
-       if(verb.ge.3) then
+       if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
@@ -462,7 +464,7 @@ endif
       delta=rxyz(:,:,nhist)-rxyzOld
       displr=displr+dnrm2(3*nat+9,delta(1,1),1)
 !      runObj%inputs%inputPsiId=1
-!      call minenergyandforces(iproc,nproc,.true.,imode,runObj,outs,nat,rxyz(1,1,nhist),rxyzraw(1,1,nhist),&
+!      call minenergyandforces(parini,iproc,nproc,.true.,imode,runObj,outs,nat,rxyz(1,1,nhist),rxyzraw(1,1,nhist),&
 !                             fxyz(1,1,nhist),fstretch(1,1,nhist),fxyzraw(1,1,nhist),&
 !                             etotp,iconnect,nbond,wold,beta_stretchx,beta_stretch)
        write(fn4,'(i4.4)') it
@@ -471,7 +473,7 @@ endif
           call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
           rxyz(:,1:nat,nhist)=pos_tmp(:,:)
    endif
-       call minenergyandforces(.true.,imode,nat,rxyz(1,1,nhist),&
+       call minenergyandforces(parini,.true.,imode,nat,rxyz(1,1,nhist),&
            rxyzraw(1,1,nhist),fxyz(1,1,nhist),fstretch(1,1,nhist),fxyzraw(1,1,nhist),&
            etotp,beta_stretchx,beta_stretch,&
            latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
@@ -490,16 +492,16 @@ endif
        counter=real(it,8)
        write(*,*) "Pressure, Energy",pressure,etot_in
        call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
-if(verb.gt.0) then
+if(parini%verb.gt.0) then
        write(fn4,'(i4.4)') it
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
-       if(verb.ge.3) then
+       if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
@@ -526,16 +528,16 @@ endif
 !!MHM: Write output to file in every step***********************************
 !       write(*,*) "Pressure, Energy",pressure,etot_in
 !       call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
-!if(verb.gt.0) then
+!if(parini%verb.gt.0) then
 !       write(fn4,'(i4.4)') it
 !       filename=trim(folder)//"posgeoptP."//fn4//".ascii"
 !       units=units
 !       write(*,*) "# Writing the positions in SQNM:",filename
-!       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+!       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
 !            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
-!       if(verb.ge.3) then
+!       if(parini%verb.ge.3) then
 !       filename=trim(folder)//"posgeoptP."//fn4//".vasp"
-!       call write_atomic_file_poscar(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+!       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
 !            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
 !       endif
 !endif
@@ -563,7 +565,7 @@ endif
              "WARNING: Prevent energy to rise by more than maxrise: it,maxrise,detot,beta,1.e-1*betax ",&
              it,maxrise,detot,beta,1.d-1*betax
 !         if (iproc==0.and.verbosity > 0) then
-         if (verb > 0) then
+         if (parini%verb > 0) then
             !avoid space for leading sign (numbers are positive, anyway)
             write(cdmy8,'(es8.1)')abs(maxd)
             write(cdmy12_1,'(es12.5)')abs(displr)
@@ -647,7 +649,7 @@ endif
       rxyzOld=rxyz(:,:,nhist)
 !      displp=displp+tt
 !      if (iproc==0.and.verbosity > 0) then
-      if (verb > 0) then
+      if (parini%verb > 0) then
          !avoid space for leading sign (numbers are positive, anyway)
          write(cdmy8,'(es8.1)')abs(maxd)
          write(cdmy12_1,'(es12.5)')abs(displr)
@@ -724,7 +726,7 @@ endif
 
 !      call getSubSpaceEvecEval('(SQNM)',iproc,verbosity,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
 !                   &fxyz,aa,rr,ff,rrr,fff,eval,res,success)
-      call getSubSpaceEvecEval('(SQNM)',verb,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
+      call getSubSpaceEvecEval('(SQNM)',parini%verb,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
                    &fxyz,aa,rr,ff,rrr,fff,eval,res,success)
       if(.not.success)stop 'subroutine minimizer_sqnm: no success in getSubSpaceEvecEval.'
 
@@ -848,16 +850,18 @@ deallocate(scpr)
 !   call deallocate_global_output(outs)
 max_kpt=.false.
 end subroutine
-!subroutine minenergyandforces(iproc,nproc,eeval,imode,runObj,outs,nat,rat,rxyzraw,fat,fstretch,&
+!subroutine minenergyandforces(parini,iproc,nproc,eeval,imode,runObj,outs,nat,rat,rxyzraw,fat,fstretch,&
 !           fxyzraw,epot,iconnect,nbond_,wold,alpha_stretch0,alpha_stretch)
-subroutine minenergyandforces(eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
+subroutine minenergyandforces(parini,eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
            fxyzraw,epot,alpha_stretch0,alpha_stretch,&
            latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
 !    use module_base
 !    use bigdft_run!module_types
     use module_sqn
 !    use module_interfaces
+    use mod_parini, only: typ_parini
     implicit none
+    type(typ_parini), intent(in):: parini
     !parameter
     integer, intent(in)           :: imode
     integer, intent(in)           :: nat
@@ -901,10 +905,10 @@ subroutine minenergyandforces(eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
 !        call call_bigdft(runObj,outs,infocode)
           
          getwfk=.false.
-!         call get_energyandforces_single(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
-!!!!         call get_BFGS_forces_strainlatt(rat,force_all,enthalpy,getwfk,iprec,latvec0,&
+!         call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+!!!!         call get_BFGS_forces_strainlatt(parini,rat,force_all,enthalpy,getwfk,iprec,latvec0,&
 !!!!             &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-          call get_BFGS_forces_PR(rat,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+          call get_BFGS_forces_PR(parini,rat,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
     endif
 !    call vcopy(3 * outs%fdim, outs%fxyz(1,1), 1, fat(1,1), 1)
     fat=force_all
