@@ -16,7 +16,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     integer:: iat, i, j, ng, ia
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
-    real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
+    real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
     call f_routine(id='cal_ann_eem2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
@@ -68,12 +68,6 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
     enddo over_iat
-    do iat=1,atoms%nat
-        write(82,*) iat,trim(atoms%sat(iat)),ann_arr%chi_o(iat)
-    !    !write(*,*) iat,trim(atoms%sat(iat))
-    !    if(trim(atoms%sat(iat))=='Na') ann_arr%chi_o(iat)=-0.32d0
-    !    if(trim(atoms%sat(iat))=='Cl') ann_arr%chi_o(iat)= 0.32d0
-    enddo
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     atoms%stress(1:3,1:3)=0.d0
@@ -81,6 +75,14 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
     call get_qat_from_chi2(parini,ann_arr,atoms,cent)
+    if(parini%iverbose>=3) then
+        do iat=1,atoms%nat
+            write(82,'(i5,1x,a,1x,2f8.3)') iat,trim(atoms%sat(iat)), &
+                ann_arr%chi_o(iat),atoms%zat(iat)+atoms%qat(iat)
+        enddo
+    endif
+    !write(*,'(a,4f8.3)') 'TEST ',ann_arr%chi_o(71),ann_arr%chi_o(84), &
+    !    atoms%zat(71)+atoms%qat(71),atoms%zat(84)+atoms%qat(84)
     if(parini%iverbose>=2) call cpu_time(time5)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
@@ -157,6 +159,15 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
             ekf%g(ekf%loc(ia)+ekf%num(1)-1)=ekf%g(ekf%loc(ia)+ekf%num(1)-1)*1.d-2
             !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
         enddo
+    endif
+    if(parini%iverbose>=3) then
+        fnet=0.d0
+        do iat=1,atoms%nat
+            fnet(1)=fnet(1)+atoms%fat(1,iat)
+            fnet(2)=fnet(2)+atoms%fat(2,iat)
+            fnet(3)=fnet(3)+atoms%fat(3,iat)
+        enddo
+        write(*,'(a,3es14.5)') 'NET FORCE ',fnet(1),fnet(2),fnet(3)
     endif
     call f_release_routine()
 end subroutine cal_ann_eem2
@@ -245,6 +256,10 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         qat_old=atoms%qat
     enddo
     !write(*,'(a,i5,2f8.3)') 'DISP ',istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+    !write(*,'(a,9f10.2)') 'WHAT ', &
+    !                    cent%rel(1:3,70)-atoms%rat(1:3,70), &
+    !                    cent%rel(1:3,51)-atoms%rat(1:3,70), &
+    !                    atoms%rat(1:3,51)-atoms%rat(1:3,70)
 
     call cent2_force(parini,ann_arr,atoms,cent)
 
@@ -306,6 +321,8 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     rcut=cent%ewald_p3d%linked_lists%rcut
     error_erfc_over_r=erfc(rcut/alpha_largest)/rcut
     write(*,*) 'short range at cut-off: ',error_erfc_over_r !CORRECT_IT
+    !cent%ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
+    cent%ewald_p3d%rgcut=sqrt(-log(1.d-8))*alpha_largest
 end subroutine init_cent2
 !*****************************************************************************************
 subroutine final_cent2(cent)
@@ -428,7 +445,6 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
     associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
     associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
-    cent%ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
     !-------------------------------------------------------
     atoms%stress=0.d0
     !-------------------------------------------------------
@@ -1015,7 +1031,8 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
         dz=cent%rel(3,jat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         if(r>0.3d0) then
-            write(*,'(a,es14.5)') 'ERROR: Center of electron far from atom: r= ',r
+            write(*,'(a,es14.5,i6,1x,a)') 'ERROR: Center of electron far from atom: r= ', &
+                r,iat,trim(atoms%sat(iat))
             stop
         endif
         if(r<0.1d0) then
@@ -1331,7 +1348,8 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
         dz=cent%rel(3,jat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         if(r>0.3d0) then
-            write(*,'(a,es14.5)') 'ERROR: Center of electron far from atom: r= ',r
+            write(*,'(a,es14.5,i6,1x,a)') 'ERROR: Center of electron far from atom: r= ', &
+                r,iat,trim(atoms%sat(iat))
             stop
         endif
         if(r<0.1d0) then
