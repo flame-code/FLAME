@@ -1683,7 +1683,7 @@ subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
                    &ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
  use defs_basis
  use minpar
- use fire,   only:dtmin, dtmax
+ use mod_fire,   only:dtmin, dtmax
 !SUBROUTINE dfpmin_pos(nat,latvec,rxyz,fxyz,stress,pressure,etot,fnrmtol,iter,count)
 use mbfgs_interface
 use mod_parini, only: typ_parini
