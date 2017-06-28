@@ -190,18 +190,18 @@ MODULE basic_algebra_routines
   CONTAINS
      !
      !-----------------------------------------------------------------------
-     FUNCTION dot_product_( vec1, vec2 )
+     FUNCTION dot_product_( vec1, vec2 ) result(dotprod)
        !-----------------------------------------------------------------------
        !
        IMPLICIT NONE
        !
        REAL(8), INTENT(IN) :: vec1(:), vec2(:)
-       REAL(8)             :: dot_product_
+       REAL(8)             :: dotprod
        !
        REAL(8) :: ddot
        EXTERNAL    ddot
        !
-       dot_product_ = ddot( SIZE( vec1 ), vec1, 1, vec2, 1 )
+       dotprod = ddot( SIZE( vec1 ), vec1, 1, vec2, 1 )
        !
      END FUNCTION dot_product_
      !
@@ -222,18 +222,18 @@ MODULE basic_algebra_routines
      END FUNCTION external_product_
      !     
      !----------------------------------------------------------------------- 
-     FUNCTION norm( vec )
+     FUNCTION norm( vec ) result(dnrm)
        !-----------------------------------------------------------------------
        !
        IMPLICIT NONE
        !
        REAL(8), INTENT(IN) :: vec(:)
-       REAL(8)             :: norm
+       REAL(8)             :: dnrm
        !
        REAL(8) :: dnrm2
        EXTERNAL    dnrm2   
        !
-       norm = dnrm2( SIZE( vec ), vec, 1 )
+       dnrm = dnrm2( SIZE( vec ), vec, 1 )
        !
      END FUNCTION norm
      !
@@ -319,18 +319,18 @@ MODULE basic_algebra_routines
      !
      !
      !-----------------------------------------------------------------------
-     FUNCTION identity( dim )
+     FUNCTION identity( dim ) result(iden)
        !-----------------------------------------------------------------------
        !
        IMPLICIT NONE
        !
        INTEGER, INTENT(IN) :: dim
-       REAL(8)            :: identity(dim,dim)
+       REAL(8)            :: iden(dim,dim)
        INTEGER             :: i
        !
-       identity = 0.0d0
+       iden = 0.0d0
        !
-       FORALL( i = 1:dim ) identity(i,i) = 1.0d0
+       FORALL( i = 1:dim ) iden(i,i) = 1.0d0
        !
      END FUNCTION identity
      !    
@@ -1162,12 +1162,13 @@ use save_bfgs
    END SUBROUTINE check_wolfe_conditions
    !
    !------------------------------------------------------------------------
-   LOGICAL FUNCTION energy_wolfe_condition ( energy )
+   FUNCTION energy_wolfe_condition ( energy ) result(res)
       !------------------------------------------------------------------------
       IMPLICIT NONE
       REAL(8), INTENT(IN)  :: energy
+      LOGICAL:: res
       !
-      energy_wolfe_condition = &
+      res = &
           ( energy-energy_p ) < w_1 * ( grad_p.dot.step_old ) * trust_radius_old
 !          ( energy-energy_p ) < abs(w_1 * ( grad_p.dot.step_old ) * trust_radius_old)
       write(*,*) "EWOLFE", energy-energy_p,w_1 * ( grad_p.dot.step_old ) * trust_radius_old
@@ -1175,12 +1176,13 @@ use save_bfgs
    END FUNCTION energy_wolfe_condition
    !
    !------------------------------------------------------------------------
-   LOGICAL FUNCTION gradient_wolfe_condition ( grad )
+   FUNCTION gradient_wolfe_condition ( grad ) result(res)
       !------------------------------------------------------------------------
       IMPLICIT NONE
       REAL(8), INTENT(IN)  :: grad(:)
+      LOGICAL:: res
       !
-      gradient_wolfe_condition = &
+      res = &
           ABS( grad .dot. step_old ) < - w_2 * ( grad_p .dot. step_old )
       !
    END FUNCTION gradient_wolfe_condition
@@ -1248,24 +1250,26 @@ use save_bfgs
    END SUBROUTINE compute_trust_radius
    !
    !----------------------------------------------------------------------- 
-   REAL(8) FUNCTION scnorm1( vect )
+   FUNCTION scnorm1( vect ) result(res)
       !-----------------------------------------------------------------------
       IMPLICIT NONE
       REAL(8), INTENT(IN) :: vect(:)
+      REAL(8):: res
       !
-      scnorm1 = SQRT( DOT_PRODUCT( vect  ,  MATMUL( metric, vect ) ) )
+      res = SQRT( DOT_PRODUCT( vect  ,  MATMUL( metric, vect ) ) )
       !
    END FUNCTION scnorm1
    !
    !----------------------------------------------------------------------- 
-   REAL(8) FUNCTION scnorm( vect )
+   FUNCTION scnorm( vect ) result(res)
       !-----------------------------------------------------------------------
       IMPLICIT NONE
       REAL(8), INTENT(IN) :: vect(:)
       REAL(8) :: ss
       INTEGER :: i,k,l,n
+      REAL(8):: res
       !
-      scnorm = 0.d0
+      res = 0.d0
       n = SIZE (vect) / 3
       do i=1,n
          ss = 0.d0
@@ -1275,7 +1279,7 @@ use save_bfgs
                     vect(k+(i-1)*3)*metric(k+(i-1)*3,l+(i-1)*3)*vect(l+(i-1)*3)
             end do
          end do
-         scnorm = MAX (scnorm, SQRT (ss) )
+         res = MAX (res, SQRT (ss) )
       end do
       !
    END FUNCTION scnorm
@@ -1338,9 +1342,9 @@ END MODULE bfgs_module
 !----------------------------------------------------------------------------
 !SUBROUTINE move_ions()
 subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,&
-                   &char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max,&
-                   &units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string

@@ -10,9 +10,9 @@
 !subroutine geopt(nat,wpos,etot,fout,fnrmtol,count,count_sd,displr)
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_SD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,&
-                   &char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max,&
-                   &units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use steepest_descent
  use defs_basis
  use interface_code
@@ -22,7 +22,7 @@ subroutine GEOPT_SD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,co
 !   use module_base
 !   use bigdft_run!module_types
 !   use yaml_output
-   use module_sqn, only: modify_gradient, getSubSpaceEvecEval!, findbonds
+   use module_sqn, only: modify_gradient_minhocao, getSubSpaceEvecEval!, findbonds
    use mod_parini, only: typ_parini
    implicit none
    type(typ_parini), intent(in):: parini

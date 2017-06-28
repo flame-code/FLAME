@@ -4312,7 +4312,7 @@ end subroutine
 !************************************************************************************
 
  subroutine latvec2dproj(dproj,latvec,rotmat,rxyz,nat)
- use mod_interface
+ use mod_interface, except_this_one=>norm
  !This subroutine will convert the lattice vector representation of thei
  !periodic cell (vec1,vec2,vec3) into the projective representation (dxx,dyx,dyy,dzx,dzy,dzz)
  !The cell will thus be rotated. The rotational matrix is stored in rotmat as an operator rotmat
@@ -5352,7 +5352,7 @@ end subroutine init_vel
 !************************************************************************************
 
         subroutine soften_pos(parini,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use mod_interface
+ use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
  use global, only: char_type,alpha_at,bmass,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
@@ -5537,7 +5537,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 !************************************************************************************
 
         subroutine soften_lat(parini,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use mod_interface
+ use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
  use global, only: char_type,alpha_at,alpha_lat,bmass,strfact,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
@@ -5860,7 +5860,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,
 
  subroutine nveclatvec(latvec,nvec)
  !Will calculate the normalized normal vector to the 3 planes of the cell
- use mod_interface
+ use mod_interface, except_this_one=>norm
  implicit none
  real*8, intent(in) :: latvec(3,3)
  real*8, intent(out):: nvec(3,3)
@@ -5926,7 +5926,7 @@ end subroutine
 !************************************************************************************
  
  subroutine correct_latvec_oganov(latvec,pos_red,nat,iproc)
- use mod_interface
+ use mod_interface, except_this_one=>norm
  !use cell_utils
  !This subroutine will use the algorithm proposed by oganov and glass (J.Phys,Cond.Mat 20,2008) to perform a transformation of the lattice vectors into an equivalent
  !system where the length of all cell vectors are similar (no nasty angles).
@@ -8389,7 +8389,7 @@ subroutine rbmd_symasym_s4(Inprin,L_til_t5,quat_t,dt,quat_t10)
 !Fourth step: equations 3 and 9/10
 !We construct the new quaternion at time T=t+dt: quat_t10
 !We thus need to first obtain omega_tilde at T=t+0.5*dt by using L_tilde at T=t+0.5*dt
-use mod_interface
+use mod_interface, except_this_one=>norm
 implicit none
 real(8),intent(in) :: Inprin(3),L_til_t5(3),dt,quat_t(4)
 real(8),intent(out):: quat_t10(4)

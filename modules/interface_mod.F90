@@ -9,7 +9,6 @@ interface
 ! ./modules/constants_mod.F90 :
 ! ./modules/dynamics_mod.F90 :
 ! ./modules/electrostatics_mod.F90 :
-! ./modules/fsockets.F90 :
 ! ./modules/genconf_mod.F90 :
 ! ./modules/linked_lists_mod.F90 :
 ! ./modules/minhopp_mod.F90 :
@@ -3241,6 +3240,399 @@ subroutine init_mybfgs(paropt,epot,fmax)
     type(typ_paropt), intent(inout):: paropt
     real(8), intent(in):: epot, fmax
 end subroutine init_mybfgs
+! ./src/optimizer_bfgs_minhocao.F90 :
+subroutine geopt_init()
+  implicit none
+end subroutine geopt_init
+subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use global, only: tolmxf,nat,target_pressure_habohr,strfact,nat,ntime_geopt
+ use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iprec,iat,i,istr
+real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),counter,flat(9)
+character(40):: folder
+end subroutine geopt_rbfgs_mhm
+subroutine bfgs_driver_atoms(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    real(8) :: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy
+    real(8), intent(inout) :: counter
+    real(8) :: fmax,fmax_at,fmax_lat,fmax_tol,en0000,betax
+    character(len=40) :: comment,filename,coord,folder
+    integer ::  nwork,iprec
+end subroutine bfgs_driver_atoms
+subroutine bfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    real(8) :: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy,latvec(9)
+    real(8), intent(inout) :: counter
+    real(8) :: fmax,fmax_at,fmax_lat,fmax_tol,en0000
+    character(len=40) :: comment, filename,coord,folder
+    integer ::  nwork,iprec
+end subroutine bfgs_driver_lattice
+subroutine init_parameters(r0,fc)
+    implicit none
+    real(kind=8) :: r0(4,4),fc(4,4)
+end subroutine init_parameters
+subroutine pseudohess(nat,rat,nbond,indbond1,indbond2,sprcons,xl0,hess)
+    implicit none
+    integer :: nat,nbond,indbond1(nbond),indbond2(nbond)
+    real(kind=8) :: rat(3,nat),sprcons(nbond),xl0(nbond),hess(3*nat,3*nat)
+end subroutine pseudohess
+subroutine bfgs_reza(nat,nr,x,epot,f,nwork,work,alphax_at,alphax_lat,fmax,fmax_at,fmax_lat,counter,coord)
+    implicit none
+    integer :: nat,nr,nwork,mf,my,ms,nrsqtwo,iw1,iw2,iw3,iw4,info,i,j,l,mx
+    integer :: counter
+    real(kind=8) :: x(nr),f(nr),epot,work(nwork),alphax_at,alphax_lat,alphax
+    real(kind=8) :: DDOT,tt1,tt2,de,fnrm,fmax,beta,beta_lat,fmax_at,fmax_lat
+    character(40):: coord
+end subroutine bfgs_reza
+subroutine lbfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use mod_parini, only: typ_parini
+ implicit none
+  type(typ_parini), intent(in):: parini
+  real(8) :: latvec_in(3*3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy,enthalpyprev
+  real(8), intent(inout) :: counter
+  logical, intent(out) :: fail
+  real(8) :: fmax,fmax_lat,fmax_at,fmax_tol,latvec_write(3*3),pressure,strtarget(6),dstr(6),de,str_matrix(3,3),vol
+  integer :: check,istr,iexit,iprec
+  character(40):: filename,folder
+end subroutine lbfgs_driver_lattice
+subroutine atomic_copymoving_forward(nat,n,x,nr,xa)
+    implicit none
+    integer :: n,nr,i,iat,ixyz,ir,nat
+    real(kind=8) :: x(n),xa(nr)
+end subroutine atomic_copymoving_forward
+subroutine atomic_copymoving_backward(nat,nr,xa,n,x)
+    implicit none
+    integer :: n,nr,i,iat,ixyz,ir,nat
+    real(kind=8) :: x(n),xa(nr)
+end subroutine atomic_copymoving_backward
+subroutine get_BFGS_forces_PR(parini,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iprec,iat
+real(8):: pos_all(3*nat+9)
+real(8):: force_all(3*nat+9)
+real(8):: enthalpy,pressure
+real(8):: xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,latvec_in(3,3)
+logical:: getwfk
+end subroutine get_bfgs_forces_pr
+subroutine getvol_strain(strain,latvec0,vol)
+implicit none
+real(8), dimension(3,3):: latvec0,latvec,strain,unitmat
+real(8):: vol
+end subroutine getvol_strain
+subroutine get_BFGS_forces_strainlatt(parini,pos_all,force_all,enthalpy,getwfk,iprec,latvec0,&
+           &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iprec,iat,lattdeg
+real(8):: pos_all(3*nat+9)
+real(8):: force_all(3*nat+9)
+real(8):: enthalpy,pressure,vol,unitmat(3,3)
+real(8):: xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+real(8):: str_matrix(3,3),flat(3,3),pressure_mat(3,3),tmplat(3,3),sigma(3,3),crossp(3),stressvol(3,3),latvec0(3,3)
+logical:: getwfk
+end subroutine get_bfgs_forces_strainlatt
+subroutine correct_hessin(hess,hessin,latvec,ndim,hessupdate,lattdeg)
+implicit none
+integer:: ndim,LWORK,info,i,j,hessupdate,lattdeg
+real(8):: hessin(ndim,ndim),hess(ndim,ndim),hess_tmp(ndim,ndim),dmat(ndim,ndim),latvec(3,3)
+end subroutine correct_hessin
+subroutine get_BFGS_forces_max(parini,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iprec,iat
+real(8):: pos_all(3*nat+9)
+real(8):: force_all(3*nat+9)
+real(8):: enthalpy,pressure,vol
+real(8):: xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+logical:: getwfk
+end subroutine get_bfgs_forces_max
+subroutine get_BFGS_forces_atom(parini,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iprec,iat
+real(8):: pos(3*nat),latvec(3,3)
+real(8):: force(3*nat)
+real(8):: enthalpy,pressure,vol
+real(8):: xred_in(3,nat),fcart_in(3*nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+logical:: getwfk
+end subroutine get_bfgs_forces_atom
+subroutine get_BFGS_forces_lattice(parini,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+use global, only: target_pressure_habohr,target_pressure_gpa,nat
+ use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iprec,iat
+real(8):: pos(3,nat),latvec(3,3)
+real(8):: force(9)
+real(8):: enthalpy,pressure,vol
+real(8):: xred_in(3,nat),fcart_in(3*nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+logical:: getwfk
+end subroutine get_bfgs_forces_lattice
+subroutine sd_minhocao(nat,nr,x,epot,f,betax,betax_lat,fmax,iter)
+implicit none
+integer:: nr,i,iter,nat
+real(8):: x(nr),f(nr),epot,betax,betax_lat,fmax
+end subroutine sd_minhocao
+        subroutine stress_volume(latvec,vol,pressure,stressvol)
+        implicit none
+        real(8):: latvec(3,3),vol,stressvol(3,3),inv_latvec(3,3),pressure
+end subroutine stress_volume
+subroutine get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+use global, only: nat,strfact,target_pressure_habohr
+implicit none
+real(8):: fcart_in(3,nat),strten_in(6),fmax,fmax_at,fmax_lat
+end subroutine get_fmax
+subroutine init_hessinv(hessin,latvec,omega,b0,lattdeg) 
+use global, only: nat,ntypat,typat,znucl
+implicit none
+integer:: itype,iat,i,j,k,lattdeg
+real(8):: omega,b0,hessin(3*nat+9,3*nat+9),diagat,avmass,diaglat
+real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
+end subroutine init_hessinv
+subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
+use mod_parini, only: typ_parini
+IMPLICIT NONE
+type(typ_parini), intent(in):: parini
+REAL(8) :: fret, counter
+REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
+REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
+INTEGER :: choice,status,sumstatus,iprec,iexit,lattdeg,hessupdate
+character(40)::filename,folder
+end subroutine geopt_mbfgs_mhm
+subroutine GEOPT_MBFGS_MHM_OLD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,fixat,fixlat
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+REAL(8) :: fret, counter
+REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
+REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
+INTEGER :: choice,status,sumstatus,iprec,iexit
+character(40)::filename,folder
+end subroutine geopt_mbfgs_mhm_old
+FUNCTION vabs(v) result(res)
+implicit none
+real(8),dimension(:):: v
+real(8):: res
+end function vabs
+function outerprod(a,b)
+implicit none
+real(8),dimension(:),intent(in)::a,b
+real(8),dimension(size(a),size(b))::outerprod
+end function outerprod
+SUBROUTINE unit_matrix(mat)
+implicit none
+real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
+end subroutine unit_matrix
+FUNCTION assert_eq(n1,n2,n3,n4,string) result(res)
+implicit none
+CHARACTER(LEN=*), INTENT(IN) :: string
+INTEGER, INTENT(IN) :: n1,n2,n3,n4
+INTEGER :: res
+end function assert_eq
+subroutine findmin(choice,dedv_1,dedv_2,dedv_predict,&
+& d2edv2_1,d2edv2_2,d2edv2_predict,&
+& etotal_1,etotal_2,etotal_predict,&
+& lambda_1,lambda_2,lambda_predict,status)
+ implicit none
+ integer,intent(in) :: choice
+ integer,intent(out) :: status
+ real(8),intent(in) :: dedv_1,dedv_2,etotal_1,etotal_2,lambda_1,lambda_2
+ real(8),intent(out) :: d2edv2_1,d2edv2_2,d2edv2_predict,dedv_predict
+ real(8),intent(out) :: etotal_predict,lambda_predict
+end subroutine findmin
+! ./src/optimizer_bfgs_qe.F90 :
+     FUNCTION dot_product_( vec1, vec2 ) result(dotprod)
+       IMPLICIT NONE
+       REAL(8), INTENT(IN) :: vec1(:), vec2(:)
+       REAL(8)             :: dotprod
+end function dot_product_
+     FUNCTION external_product_( vec1, vec2 )
+       IMPLICIT NONE
+       REAL(8), INTENT(IN) :: vec1(:), vec2(:)
+       REAL(8)             :: external_product_(SIZE( vec1 ))
+end function external_product_
+     FUNCTION norm( vec ) result(dnrm)
+       IMPLICIT NONE
+       REAL(8), INTENT(IN) :: vec(:)
+       REAL(8)             :: dnrm
+end function norm
+     FUNCTION matrix_times_vector( mat, vec )
+       IMPLICIT NONE
+       REAL(8), INTENT(IN) :: vec(:)
+       REAL(8), INTENT(IN) :: mat(:,:)
+       REAL(8)             :: matrix_times_vector(SIZE( vec ))
+       REAL(8)             :: aux(SIZE( vec ))
+end function matrix_times_vector
+     FUNCTION vector_times_matrix( vec, mat )
+       IMPLICIT NONE
+       REAL(8), INTENT(IN) :: vec(:)
+       REAL(8), INTENT(IN) :: mat(:,:)
+       REAL(8)             :: vector_times_matrix(SIZE( vec ))
+       REAL(8)             :: aux(SIZE( vec ))
+end function vector_times_matrix
+     FUNCTION matrix( vec1, vec2 )
+       IMPLICIT NONE
+       REAL(8), INTENT(IN) :: vec1(:), vec2(:)
+       REAL(8)             :: matrix(SIZE( vec1 ),SIZE( vec2 ))
+       REAL(8)             :: aux(SIZE( vec1 ),SIZE( vec2 ))
+end function matrix
+     FUNCTION identity( dim ) result(iden)
+       IMPLICIT NONE
+       INTEGER, INTENT(IN) :: dim
+       REAL(8)            :: iden(dim,dim)
+end function identity
+   SUBROUTINE bfgs( pos_in, h, energy, grad_in, fcell, fixion, scratch, stdout,&
+                 energy_thr, grad_thr, cell_thr, energy_error, grad_error,     &
+                 cell_error, istep, nstep, step_accepted, stop_bfgs, lmovecell)
+      IMPLICIT NONE
+      REAL(8),         INTENT(INOUT) :: pos_in(:)
+      REAL(8),         INTENT(INOUT) :: h(3,3)
+      REAL(8),         INTENT(INOUT) :: energy
+      REAL(8),         INTENT(INOUT) :: grad_in(:)
+      REAL(8),         INTENT(INOUT) :: fcell(3,3)
+      INTEGER,          INTENT(IN)    :: fixion(:)
+      CHARACTER(LEN=*), INTENT(IN)    :: scratch
+      INTEGER,          INTENT(IN)    :: stdout
+      REAL(8),         INTENT(IN)    :: energy_thr, grad_thr, cell_thr
+      INTEGER,          INTENT(OUT)   :: istep
+      INTEGER,          INTENT(IN)    :: nstep
+      REAL(8),         INTENT(OUT)   :: energy_error, grad_error, cell_error
+      LOGICAL,          INTENT(OUT)   :: step_accepted, stop_bfgs
+      LOGICAL,          INTENT(IN)    :: lmovecell
+end subroutine bfgs
+SUBROUTINE gdiis_step()
+ IMPLICIT NONE
+ REAL(8), ALLOCATABLE :: res(:,:), overlap(:,:), work(:)
+ INTEGER,  ALLOCATABLE :: iwork(:)
+ INTEGER               :: k, k_m, info
+ REAL(8)              :: gamma0
+end subroutine gdiis_step
+SUBROUTINE reset_bfgs( n )
+INTEGER, INTENT(IN) :: n
+end subroutine reset_bfgs
+SUBROUTINE read_bfgs_file( pos, grad, fixion, energy, scratch, n, stdout )
+IMPLICIT NONE
+REAL(8),         INTENT(INOUT) :: pos(:)
+REAL(8),         INTENT(INOUT) :: grad(:)
+INTEGER,          INTENT(IN)    :: fixion(:)
+CHARACTER(LEN=*), INTENT(IN)    :: scratch
+INTEGER,          INTENT(IN)    :: n
+INTEGER,          INTENT(IN)    :: stdout
+REAL(8),         INTENT(INOUT) :: energy
+end subroutine read_bfgs_file
+SUBROUTINE write_bfgs_file( pos, energy, grad, scratch, n)
+      IMPLICIT NONE
+      INTEGER,         INTENT(IN) :: n
+      REAL(8),         INTENT(IN) :: pos(:)
+      REAL(8),         INTENT(IN) :: energy
+      REAL(8),         INTENT(IN) :: grad(:)
+      CHARACTER(LEN=*), INTENT(IN) :: scratch
+end subroutine write_bfgs_file
+   SUBROUTINE update_inverse_hessian( pos, grad, n, stdout )
+      IMPLICIT NONE
+      REAL(8), INTENT(IN)  :: pos(:)
+      REAL(8), INTENT(IN)  :: grad(:)
+      INTEGER,  INTENT(IN)  :: n
+      INTEGER,  INTENT(IN)  :: stdout
+end subroutine update_inverse_hessian
+   SUBROUTINE check_wolfe_conditions( lwolfe, energy, grad )
+      IMPLICIT NONE
+      REAL(8), INTENT(IN)  :: energy
+      REAL(8), INTENT(IN)  :: grad(:)
+      LOGICAL,  INTENT(OUT) :: lwolfe
+end subroutine check_wolfe_conditions
+   FUNCTION energy_wolfe_condition ( energy ) result(res)
+      IMPLICIT NONE
+      REAL(8), INTENT(IN)  :: energy
+      LOGICAL:: res
+end function energy_wolfe_condition
+   FUNCTION gradient_wolfe_condition ( grad ) result(res)
+      IMPLICIT NONE
+      REAL(8), INTENT(IN)  :: grad(:)
+      LOGICAL:: res
+end function gradient_wolfe_condition
+   SUBROUTINE compute_trust_radius( lwolfe, energy, grad, n, stdout )
+      IMPLICIT NONE
+      LOGICAL,  INTENT(IN)  :: lwolfe
+      REAL(8), INTENT(IN)  :: energy
+      REAL(8), INTENT(IN)  :: grad(:)
+      INTEGER,  INTENT(IN)  :: n
+      INTEGER,  INTENT(IN)  :: stdout
+end subroutine compute_trust_radius
+   FUNCTION scnorm1( vect ) result(res)
+      IMPLICIT NONE
+      REAL(8), INTENT(IN) :: vect(:)
+      REAL(8):: res
+end function scnorm1
+   FUNCTION scnorm( vect ) result(res)
+      IMPLICIT NONE
+      REAL(8), INTENT(IN) :: vect(:)
+      REAL(8):: res
+end function scnorm
+   SUBROUTINE terminate_bfgs( energy, energy_thr, grad_thr, cell_thr, &
+                              lmovecell, stdout, scratch )
+      IMPLICIT NONE
+      REAL(8),         INTENT(IN) :: energy, energy_thr, grad_thr, cell_thr
+      LOGICAL,          INTENT(IN) :: lmovecell
+      INTEGER,          INTENT(IN) :: stdout
+      CHARACTER(LEN=*), INTENT(IN) :: scratch
+end subroutine terminate_bfgs
+subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+  use mod_parini, only: typ_parini
+  IMPLICIT NONE
+  type(typ_parini), intent(in):: parini
+  real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,xred(3,nat),fcart(3,nat),latvec(3,3)
+  integer:: iprec
+  character(40):: folder
+end subroutine geopt_qbfgs
+subroutine recips (a1, a2, a3, b1, b2, b3)
+  implicit none
+  real(8) :: a1 (3), a2 (3), a3 (3), b1 (3), b2 (3), b3 (3)
+end subroutine recips
+subroutine cryst_to_cart (nvec, vec, trmat, iflag)
+  implicit none
+  integer, intent(in) :: nvec, iflag
+  real(8), intent(in) :: trmat (3, 3)
+  real(8), intent(inout) :: vec (3, nvec)
+end subroutine cryst_to_cart
+  subroutine cell_force( fcell, ainv, stress, omega, press)!, wmassIN )
+    REAL(8), intent(out) :: fcell(3,3)
+    REAL(8), intent(in) :: stress(3,3), ainv(3,3)
+    REAL(8), intent(in) :: omega, press
+end subroutine cell_force
+subroutine invmat (n, a, a_inv, da)
+  implicit none
+  integer :: n
+  real(8), DIMENSION (n,n) :: a, a_inv
+  real(8) :: da
+  integer :: info, lda, lwork, ipiv (n)
+  real(8) :: work (n) 
+end subroutine invmat
+subroutine qe_volume (alat, a1, a2, a3, omega)
+  implicit none
+  real(8) :: alat, a1 (3), a2 (3), a3 (3), omega
+end subroutine qe_volume
 ! ./src/optimizer_cg.F90 :
 subroutine cgminimum(iproc,n,nr,x,f,epot,paropt,nwork,work)
     use mod_opt, only: typ_paropt, frmt_base
@@ -3386,6 +3778,29 @@ subroutine gmdfire(nr,x,epot,f,work,paropt)
     type(typ_paropt)::paropt
 end subroutine gmdfire
 ! ./src/optimizer_nlbfgs.F90 :
+      SUBROUTINE NLBFGS(N,M,X,F,G,DIAG,W,paropt)
+      use mod_opt, only: typ_paropt
+      implicit none
+      INTEGER N,M
+      real(8):: X(N),G(N),DIAG(N),W(N*(2*M+1)+2*M)
+      real(8):: F,fmax
+      type(typ_paropt):: paropt
+end subroutine nlbfgs
+      SUBROUTINE NLB1(ITER,NFUN,GNORM,N,M,X,F,G,STP,FINISH,paropt)
+      use mod_opt, only: typ_paropt
+      type(typ_paropt):: paropt
+      INTEGER ITER,NFUN,N,M
+      LOGICAL FINISH
+end subroutine nlb1
+      SUBROUTINE NMCSRCH(N,X,F,G,S,STP,FTOL,MAXFEV,INFO,NFEV,WA,paropt)
+      use mod_opt, only: typ_paropt
+      type(typ_paropt):: paropt
+      INTEGER N,MAXFEV,INFO,NFEV
+end subroutine nmcsrch
+      SUBROUTINE NMCSTEP(STX,FX,DX,STY,FY,DY,STP,FP,DP,BRACKT,STPMIN,STPMAX,INFO)
+      INTEGER INFO
+      LOGICAL BRACKT,BOUND
+end subroutine nmcstep
 ! ./src/optimizer_sd.F90 :
 subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
     use mod_parini, only: typ_parini
@@ -3423,6 +3838,17 @@ subroutine final_sdminimum(paropt)
     implicit none
     type(typ_paropt), intent(inout):: paropt
 end subroutine final_sdminimum
+! ./src/optimizer_sd_minhocao.F90 :
+subroutine GEOPT_SD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+   use mod_parini, only: typ_parini
+   implicit none
+   type(typ_parini), intent(in):: parini
+   integer :: it,i,iat,l,j,idim,jdim,ihist,icheck !<counter variables
+   integer:: ncount_cluster_x,iexit,iprec,lattdeg
+   real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,pressure,latvec0(3,3),enthalpy_old
+   character(40)::filename,folder
+end subroutine geopt_sd
 ! ./src/optimizer_sqnm.F90 :
 subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    use mod_parini, only: typ_parini
@@ -3516,6 +3942,48 @@ subroutine projectbond(nat,nbond,rat,fat,fstretch,iconnect,wold,alpha_stretch0,a
     real(8), intent(inout) :: alpha_stretch
     real(8) :: ss(nbond,nbond),w(nbond),vv(3,nat,nbond)
 end subroutine projectbond
+! ./src/optimizer_sqnm_minhocao.F90 :
+subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+   use mod_parini, only: typ_parini
+   implicit none
+   type(typ_parini), intent(in):: parini
+   integer :: it,i,iat,l,j,idim,jdim,ihist,icheck !<counter variables
+   integer:: ncount_cluster_x,iexit,iprec
+   real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,pressure
+   character(40)::filename,folder
+end subroutine geopt_sqnm
+subroutine minenergyandforces(parini,eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
+           fxyzraw,epot,alpha_stretch0,alpha_stretch,&
+           latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in)           :: imode
+    integer, intent(in)           :: nat
+    real(8),intent(inout)        :: rat(3,nat+3)
+    real(8),intent(out)          :: rxyzraw(3,nat+3)
+    real(8),intent(out)          :: fxyzraw(3,nat+3)
+    real(8),intent(inout)        :: fat(3,nat+3)
+    real(8),intent(out)          :: fstretch(3,nat+3)
+    real(8), intent(in)          :: alpha_stretch0
+    real(8), intent(inout)       :: alpha_stretch
+    real(8), intent(inout)       :: epot
+    logical, intent(in)          :: eeval
+    real(8):: rxyz(3,nat+3)
+    real(8):: fxyz(3,nat+3)
+    real(8):: force_all(3,nat+3)
+    real(8):: latvec0(3,3),latvec_in(3,3),xred_in(3,nat),etot_in,fcart_in(3,nat),strten_in(6) 
+    integer:: lattdeg=1,iprec
+end subroutine minenergyandforces
+subroutine sqnm_invhess(nat,h,metric,hessinv)
+implicit none
+integer:: nat,info,i,j,k
+real(8):: metric(3*(nat+3),3*(nat+3)),hessinv(3*(nat+3),3*(nat+3))
+real(8):: h(3,3),hinv(3,3),g(3,3),ginv(3,3)
+real(8):: hessinv_at(3*nat,3*nat),hessinv_lat(9,9)
+real(8):: eval(3*(nat+3)),eval_at(3*nat),eval_lat(9)
+end subroutine sqnm_invhess
 ! ./src/parser_all.F90 :
 subroutine get_main_parameters(file_ini,parini)
     use mod_task, only: typ_file_ini

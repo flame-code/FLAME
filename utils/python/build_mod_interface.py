@@ -10,6 +10,12 @@ def is_routine(routine):
     i_fun=str_routine.find('function')
     check_routine=False
     if (i_sub==0 or i_fun==0): check_routine=True
+    i_rrb=str_routine.find(')')
+    if i_rrb>-1 and i_rrb+1<len(str_routine):
+        str_routine=str_routine[i_rrb+1:]
+        str_routine=str_routine.strip()
+        i_bind=str_routine.find('bind')
+        if i_bind==0: check_routine=False
     return check_routine
 #*****************************************************************************************
 def check_var_define(line):
@@ -22,6 +28,7 @@ def check_var_define(line):
     i_integer=tt.find('integer')
     i_real=tt.find('real')
     i_external=tt.find('external')
+    if tt.find('external_')>-1: i_external=-1
     i_character=tt.find('character')
     i_logical=tt.find('logical')
     i_type=tt.find('type')
@@ -119,13 +126,16 @@ def get_files():
                    './src/task_netsock.F90',
                    './modules/constants_minhocao_mod.F90',
                    './modules/minhocao_mod.F90',
+                   './modules/fsockets.F90',
+                   './src/optimizer_nlbfgs_minhocao.F90',
+                   './src/optimizer_sqnm_minhocao_module.F90',
+                   './src/optimizer_subs_minhocao.F90',
                    './src/potential_LAMMPS_interface.F90',
                    './src/POSCAR2ascii.F90',
                    './src/potential_abinit.F90',
                    './src/potential_alborz.F90',
                    './src/ascii2POSCAR.F90',
                    './src/atoms_minhocao.F90',
-                   './src/optimizer_bfgs_minhocao.F90',
                    './src/binaries.F90',
                    './src/potential_BLJ_minhocao.F90',
                    './src/cell_utils.F90',
@@ -158,24 +168,18 @@ def get_files():
                    './src/lenosky_tb/',
                    './src/potential_LenoskyTB_minhocao.F90',
                    './src/potential_LenoskyTB_LJ_minhocao.F90',
-                   './src/optimizer_nlbfgs_minhocao.F90',
                    './src/potential_LJ_voids.F90',
                    './src/dynamics_md_fixlat.F90',
                    './src/potential_MLJ.F90',
-                   './src/optimizer_sqnm_minhocao_module.F90',
                    './src/potential_MOPAC.F90',
                    './src/potential_MSOCK.F90',
                    './src/msock_slave_template.F90',
                    './src/cell_niggli.F90',
                    './src/parser_core_minhocao.F90',
-                   './src/optimizer_bfgs_qe.F90',
                    './src/recompute_kpt.F90',
-                   './src/optimizer_sd_minhocao.F90',
                    './src/potential_SIESTA_minhocao.F90',
                    './src/spglib_int.F90',
                    './src/spher_harm_mathematica.F90',
-                   './src/optimizer_sqnm_minhocao.F90',
-                   './src/optimizer_subs_minhocao.F90',
                    './src/ternaries.F90',
                    './src/potential_TERSOFF.F90',
                    './src/potential_TINKER.F90',
@@ -200,7 +204,7 @@ def make_one_line(lines,iline):
     for i in range(100):
         tt=str(lines[iline+i])
         i_comment=tt.find('!')
-        if i_comment>0: tt=tt[:i_comment]
+        if i_comment>-1: tt=tt[:i_comment]
         oneline_arg=oneline_arg+tt
         #print oneline_arg.replace("&","")
         oneline_arg=oneline_arg.replace("&","")
@@ -225,7 +229,10 @@ for file in files:
     iline=-1
     for line in lines:
         iline+=1
-        if 'subroutine' in line or 'function' in line:
+        str_line=str(line).lower()
+        i_sub=str_line.find('subroutine')
+        i_fun=str_line.find('function')
+        if i_sub>-1 or i_fun>-1:
             check_routine=is_routine(line)
             if check_routine:
                 routines.append(line)
@@ -248,6 +255,11 @@ for file in files:
                 definitions.append(lines[iline_routines[iroutine]+k+1])
         stat_implicit_none=False
         for k in range(nline_routine):
+            str_line=str(lines[iline_routines[iroutine]+k+1])
+            str_line=str_line.lower()
+            i_endsub=str_line.find("end subroutine")
+            i_endfun=str_line.find("end function")
+            if i_endsub>-1 or i_endfun>-1: break
             stat_line=check_var_define(lines[iline_routines[iroutine]+k+1])
             print_line=False
             if stat_line=='use':
