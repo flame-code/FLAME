@@ -666,7 +666,7 @@ use fingerprint, only: &
 use confinement
 use mod_parini, only: typ_parini
 implicit none
-type(typ_parini), intent(out):: parini
+type(typ_parini), intent(inout):: parini
 integer:: mdmin_in,itype,i,j
 real(8):: dtion_md_in,alpha_lat_in,alpha_at_in
 logical:: read_poscur

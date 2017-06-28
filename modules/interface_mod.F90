@@ -3664,6 +3664,33 @@ subroutine get_one_param(file_ini,var_name,int_var,real_var,char_var,char_line_v
     character(*), optional, intent(out):: char_line_var
     logical, optional, intent(out):: log_var
 end subroutine get_one_param
+! ./src/parser_minhocao.F90 :
+subroutine params_read(parini)
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(inout):: parini
+end subroutine params_read
+subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(inout):: parini
+integer:: mdmin_in,itype,i,j
+real(8):: dtion_md_in,alpha_lat_in,alpha_at_in
+logical:: read_poscur
+end subroutine params_defaults
+subroutine params_check(parini)
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+end subroutine params_check
+subroutine params_echo(parini)
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+end subroutine params_echo
+subroutine fp_assign()
+implicit none
+end subroutine fp_assign
 ! ./src/phonon.F90 :
 subroutine cal_hessian_4p(parini)
     use mod_parini, only: typ_parini

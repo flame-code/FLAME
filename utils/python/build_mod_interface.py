@@ -167,7 +167,6 @@ def get_files():
                    './src/potential_MSOCK.F90',
                    './src/msock_slave_template.F90',
                    './src/cell_niggli.F90',
-                   './src/parser_minhocao.F90',
                    './src/parser_core_minhocao.F90',
                    './src/optimizer_bfgs_qe.F90',
                    './src/recompute_kpt.F90',
