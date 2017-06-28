@@ -2924,7 +2924,7 @@ integer:: fp_len,iat,nmax
 real(8):: convert,latvec(3,3),vol
 end subroutine init_fp
 subroutine get_fp(fp_len,pos_red,latvec,fp)
-use fingerprint, only: fp_15_fp_size
+use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
 use global, only: ntypat,nat,typat,rcov,char_type
 implicit none
 integer:: fp_len,iat,natmol

@@ -9258,10 +9258,10 @@ subroutine get_fp(fp_len,pos_red,latvec,fp)
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
 use mod_interface
-!use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
-!use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim, fp_17_natx_sphere
-!use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
-!use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
+use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
+use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim, fp_17_natx_sphere
+use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
+use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
 use global, only: ntypat,nat,typat,rcov,char_type
 implicit none
