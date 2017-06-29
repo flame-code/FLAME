@@ -2,7 +2,7 @@ program convert
 implicit none
 real(8), allocatable:: rxyz(:,:),xred(:,:)
 real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),angdeg(6)
-integer:: nat, iat,count,jat,ntype
+integer:: nat, iat,count,jat,ntype,n,k
 real(8):: angbohr,pressure_gpa,pressconv
 parameter(angbohr=1.889725989d0)
 parameter(pressconv=29421.033d0)
@@ -10,6 +10,7 @@ character(3), allocatable:: typat(:)
 character(3), allocatable:: typatt(:)
 integer, allocatable:: kinds(:),nkindsat(:)
 character(40):: filename
+character(400):: line
 character(40):: type_format,formatt
 logical::new
 write(*,*) "Input file:"
@@ -20,8 +21,16 @@ allocate(kinds(nat),rxyz(3,nat),xred(3,nat),typat(nat))
 read(12,*) dproj(1:3)
 read(12,*) dproj(4:6)
 
+
 do iat=1,nat
-read(12,*) rxyz(:,iat),typat(iat)
+   1000 continue
+   read(12,'(a400)') line
+   n = len_trim(line)
+   k = index(line(1:n),"keyword")
+    if(k.ne.0) then
+        goto 1000
+    endif
+read(line,*) rxyz(:,iat),typat(iat)
 enddo
 close(12)
 

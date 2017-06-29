@@ -156,23 +156,23 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
 endif
 
 !Allocate the arrays
- if(.not.allocated(znucl))        allocate(znucl(ntypat))
- if(.not.allocated(char_type))    allocate(char_type(ntypat))
- if(.not.allocated(amu))          allocate(amu(ntypat))
- if(.not.allocated(amutmp))       allocate(amutmp(ntypat))
- if(.not.allocated(rcov))         allocate(rcov(ntypat))
- if(.not.allocated(typat))        allocate(typat(nat))          
- if(.not.allocated(fixat))        allocate(fixat(nat))
- if(.not.allocated(fragarr))      allocate(fragarr(nat))
- if(.not.allocated(conf_dim))     allocate(conf_dim     (nconfine))
- if(.not.allocated(conf_av))      allocate(conf_av      (nconfine))
- if(.not.allocated(conf_exp))     allocate(conf_exp     (nconfine))
- if(.not.allocated(conf_prefac))  allocate(conf_prefac  (nconfine))
- if(.not.allocated(conf_cut))     allocate(conf_cut     (nconfine))
- if(.not.allocated(conf_eq))      allocate(conf_eq      (nconfine))
- if(.not.allocated(conf_list))    allocate(conf_list    (nat,nconfine))
- if(.not.allocated(conf_nat))     allocate(conf_nat     (nconfine))
- if(.not.allocated(conf_cartred)) allocate(conf_cartred (nconfine))
+ if(.not.allocated(znucl))       then;   allocate(znucl(ntypat))                       ; znucl=0                 ; endif
+ if(.not.allocated(char_type))   then;   allocate(char_type(ntypat))                   ; char_type="  "          ; endif
+ if(.not.allocated(amu))         then;   allocate(amu(ntypat))                         ; amu=0                   ; endif
+ if(.not.allocated(amutmp))      then;   allocate(amutmp(ntypat))                      ; amutmp=0                ; endif
+ if(.not.allocated(rcov))        then;   allocate(rcov(ntypat))                        ; rcov=0                  ; endif
+ if(.not.allocated(typat))       then;   allocate(typat(nat))                          ; typat=0                 ; endif
+ if(.not.allocated(fixat))       then;   allocate(fixat(nat))                          ; fixat=.false.           ; endif
+ if(.not.allocated(fragarr))     then;   allocate(fragarr(nat))                        ; fragarr=0               ; endif
+ if(.not.allocated(conf_dim))    then;   allocate(conf_dim     (nconfine))             ; conf_dim=0              ; endif
+ if(.not.allocated(conf_av))     then;   allocate(conf_av      (nconfine))             ; conf_av=0               ; endif
+ if(.not.allocated(conf_exp))    then;   allocate(conf_exp     (nconfine))             ; conf_exp=0              ; endif
+ if(.not.allocated(conf_prefac)) then;   allocate(conf_prefac  (nconfine))             ; conf_prefac=0           ; endif
+ if(.not.allocated(conf_cut))    then;   allocate(conf_cut     (nconfine))             ; conf_cut=0              ; endif
+ if(.not.allocated(conf_eq))     then;   allocate(conf_eq      (nconfine))             ; conf_eq=0               ; endif
+ if(.not.allocated(conf_list))   then;   allocate(conf_list    (nat,nconfine))         ; conf_list=0             ; endif
+ if(.not.allocated(conf_nat))    then;   allocate(conf_nat     (nconfine))             ; conf_nat=0              ; endif
+ if(.not.allocated(conf_cartred))then;   allocate(conf_cartred (nconfine))             ; conf_cartred="C"        ; endif
 
 
 !Feed arrays with standard parameters
