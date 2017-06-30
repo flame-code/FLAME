@@ -1,4 +1,5 @@
 subroutine find_symmetry(nat,xred,latvec,typat,tolmin,tolmax,ntol,tolcur,spgcur)
+use mod_interface
 use global, only: code,znucl,voids
 use tb_lj_params
 use void_lj_params, only: nat_atoms

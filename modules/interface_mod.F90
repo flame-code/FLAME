@@ -3059,12 +3059,12 @@ subroutine readnat(atoms_curr)
     implicit none
     type(typ_atoms):: atoms_curr
 end subroutine readnat
-subroutine read_poscur(atoms_curr,atoms_allproc)
+subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     implicit none
     type(typ_atoms):: atoms_curr
     type(typ_atoms_arr):: atoms_allproc
-end subroutine read_poscur
+end subroutine read_poscur_alborz
 subroutine read_minhopp_parameters 
     implicit none
 end subroutine read_minhopp_parameters
@@ -4691,6 +4691,42 @@ subroutine solve_poisson(parini)
     implicit none
     type(typ_parini), intent(in):: parini
 end subroutine solve_poisson
+! ./src/spglib_int.F90 :
+subroutine get_spg(num_atom,positions,lattice,atom_types,symprec,spg)
+implicit none
+integer:: nat, typat(num_atom), spg
+  integer, intent(in) :: num_atom!, max_num_sym, is_time_reversal
+  real(8), intent(in) :: symprec
+  integer, intent(in), dimension(num_atom) :: atom_types
+  real(8), intent(in), dimension(3, 3) :: lattice
+  real(8), intent(in), dimension(3, num_atom) :: positions
+end subroutine get_spg
+subroutine spg_cell_refine(nat_in,nat_out,nat_max,positions,lattice,atom_types,symprec,spg)
+implicit none
+integer:: nat, spg
+  integer:: nat_in,nat_max!, max_num_sym, is_time_reversal
+  integer:: nat_out
+  real(8), intent(in) :: symprec
+  integer, intent(inout), dimension(nat_max) :: atom_types
+  real(8), intent(inout), dimension(3, 3) :: lattice
+  real(8), intent(inout), dimension(3, nat_max) :: positions
+end subroutine spg_cell_refine
+subroutine spg_cell_primitive(nat_in,nat_out,nat_max,positions,lattice,atom_types,symprec,spg)
+implicit none
+integer:: nat, spg
+  integer:: nat_in,nat_max!, max_num_sym, is_time_reversal
+  integer:: nat_out
+  real(8), intent(in) :: symprec
+  integer, intent(inout), dimension(nat_max) :: atom_types
+  real(8), intent(inout), dimension(3, 3) :: lattice
+  real(8), intent(inout), dimension(3, nat_max) :: positions
+end subroutine spg_cell_primitive
+! ./src/spher_harm_mathematica.F90 :
+subroutine ylm_mathematica(l,m,theta,phi,ylm_r,ylm_i)
+implicit none
+integer:: l,m
+real(8):: theta,phi,ylm_r,ylm_i
+end subroutine ylm_mathematica
 ! ./src/task_ann.F90 :
 subroutine task_ann(parini)
     use mod_parini, only: typ_parini
