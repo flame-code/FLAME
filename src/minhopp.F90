@@ -174,7 +174,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
         !enddo
     endif
     call readnat(atoms_curr) !read number of atoms.
-    call read_poscur(atoms_curr,atoms_allproc) !Read initial positions.
+    call read_poscur_alborz(atoms_curr,atoms_allproc) !Read initial positions.
     call allocate_minhopp_arrays2(atoms_curr%nat,nproc)
     if(nlmin>0) call read_earr
     !call allocateatomsarrays(nproc)
@@ -440,7 +440,7 @@ subroutine readnat(atoms_curr)
 #endif
 end subroutine readnat
 !*****************************************************************************************
-subroutine read_poscur(atoms_curr,atoms_allproc)
+subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
     use mod_interface
     !use mod_minhopp, only: eratallproc
     use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
@@ -568,7 +568,7 @@ subroutine read_poscur(atoms_curr,atoms_allproc)
 #endif
     !atoms_curr%rat(1:3,1:atoms_curr%nat)=atoms_allproc%ratall(1:3,1:atoms_curr%nat,iproc+1)
     call atom_copy(atoms_allproc%atoms(iproc+1),atoms_curr,'allproc%atoms(iproc+1)=>atoms_curr')
-end subroutine read_poscur
+end subroutine read_poscur_alborz
 !*****************************************************************************************
 subroutine read_minhopp_parameters 
     use mod_interface

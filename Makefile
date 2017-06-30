@@ -118,6 +118,8 @@ espresso_restruct.x: $(OBJ_MINHOCAO)  $(EXEC11)
 ternaries.x: $(OBJ_MINHOCAO)  $(EXEC12)
 	$(F90) $(FFLAGS)  -o ternaries.x $(EXEC12) 
 
+interface: 
+	./utils/python/build_mod_interface.py
 clean:
 	rm -f flame liball.a vasp_recompute_kpt.x expand_poslows.x \
 	convex_hull.x vasp_recompute_kpt_odd.x vasp_recompute_cell.x \

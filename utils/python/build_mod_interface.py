@@ -21,6 +21,7 @@ def is_routine(routine):
 def check_var_define(line):
     tt=str(line).strip()
     tt=tt.lower()
+    tt=tt.replace(" ","")
     i_use=tt.find('use')
     i_mod_interface=tt.find('mod_interface')
     i_comment=tt.find('!')
@@ -31,7 +32,7 @@ def check_var_define(line):
     if tt.find('external_')>-1: i_external=-1
     i_character=tt.find('character')
     i_logical=tt.find('logical')
-    i_type=tt.find('type')
+    i_type=tt.find('type(')
     stat_line='unknown'
     if i_use==0:
         if i_mod_interface>i_use:
@@ -72,9 +73,12 @@ def get_arguments(line):
         tt=tt.replace("(",",",1)
         tt=tt.replace(")","",1)
         ttl=tt.split(",")
-        ttl.pop(0)
         if (i_fun>-1 and i_res>-1):
+            ttl.pop(0)
             ttl.remove('result')
+        if (i_fun>-1 and not i_res>-1):
+            ttl.insert(0,str(ttl[0]).replace("function","",1))
+            ttl.pop(1)
     else:
         ttl=[]
     return ttl
@@ -131,15 +135,16 @@ def get_files():
                    './src/optimizer_sqnm_minhocao_module.F90',
                    './src/optimizer_subs_minhocao.F90',
                    './src/potential_LAMMPS_interface.F90',
-                   './src/POSCAR2ascii.F90',
+                   './src/POSCAR2ascii.F90',         #Do not touch this !!!"
                    './src/potential_abinit.F90',
                    './src/potential_alborz.F90',
-                   './src/ascii2POSCAR.F90',
+                   './src/ascii2POSCAR.F90',         #Do not touch this !!!"
                    './src/atoms_minhocao.F90',
-                   './src/binaries.F90',
+                   './src/binaries.F90',             #Do not touch this !!!"
                    './src/potential_BLJ_minhocao.F90',
                    './src/cell_utils.F90',
                    './src/potential_confinement.F90',
+                   './src/potential_MLJ.F90',
                    './src/potential_corerepulsion.F90',
                    './src/potential_CP2K.F90',
                    './src/potential_DFTB_minhocao.F90',
@@ -158,7 +163,7 @@ def get_files():
                    './src/fingerprint_oganov.F90',
                    './src/fingerprint_oganov_cont.F90',
                    './src/fingerprint_XYZ2SM.F90',
-                   './src/convex_hull.F90',
+                   './src/convex_hull.F90',           #Do not touch this !!!"
                    './src/potential_main_minhocao.F90',
                    './src/io_ascii.F90',
                    './src/io_vasp_minhocao.F90',
@@ -169,24 +174,19 @@ def get_files():
                    './src/potential_LenoskyTB_minhocao.F90',
                    './src/potential_LenoskyTB_LJ_minhocao.F90',
                    './src/potential_LJ_voids.F90',
-                   './src/dynamics_md_fixlat.F90',
-                   './src/potential_MLJ.F90',
                    './src/potential_MOPAC.F90',
                    './src/potential_MSOCK.F90',
                    './src/msock_slave_template.F90',
-                   './src/cell_niggli.F90',
                    './src/parser_core_minhocao.F90',
-                   './src/recompute_kpt.F90',
+                   './src/recompute_kpt.F90', 
                    './src/potential_SIESTA_minhocao.F90',
-                   './src/spglib_int.F90',
-                   './src/spher_harm_mathematica.F90',
-                   './src/ternaries.F90',
+                   './src/ternaries.F90',              #Do not touch this !!!"
                    './src/potential_TERSOFF.F90',
                    './src/potential_TINKER.F90',
                    './src/potential_VASP_minhocao.F90',
-                   './src/vasp_recompute_cell.F90',
-                   './src/vasp_recompute_kpt.F90',
-                   './src/vasp_recompute_kpt_odd.F90']
+                   './src/vasp_recompute_cell.F90',    #Do not touch this !!!"
+                   './src/vasp_recompute_kpt.F90',     #Do not touch this !!!"     
+                   './src/vasp_recompute_kpt_odd.F90'] #Do not touch this !!!"
     
     for file in exclude_files:
         if file in files: files.remove(file)
