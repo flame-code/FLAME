@@ -1,8 +1,8 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,mdmin,dtion_md,units,usewf_md,auto_dtion_md,energy_conservation,&
-                   &nit_per_min,fixat,fixlat,bc
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,mdmin,dtion_md,units,usewf_md,auto_dtion_md,energy_conservation
+ use global, only: nit_per_min,fixat,fixlat,bc
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini

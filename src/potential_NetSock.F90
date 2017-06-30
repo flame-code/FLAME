@@ -141,19 +141,19 @@ endif
             call writebuffer(sock_socket,send_array,3*nat)           ! Writing the positions
             deallocate(send_array)
             write(*,'(a)') " # SOCKET MASTER: positions and lattice sent"
-  contains
-       subroutine latvec2dist_ang(dist_ang,latvec,pi)
-       !This subroutine will generate the distance and angles of a cell starting from latvec
-       implicit none
-       real(8):: dist_ang(6),latvec(3,3),pi,convang
-       convang=180.d0/pi
-       dist_ang(1)=sqrt(dot_product(latvec(:,1),latvec(:,1)))
-       dist_ang(2)=sqrt(dot_product(latvec(:,2),latvec(:,2)))
-       dist_ang(3)=sqrt(dot_product(latvec(:,3),latvec(:,3)))
-       dist_ang(4)=convang*acos(dot_product(latvec(:,2),latvec(:,3))/(dist_ang(2)*dist_ang(3)))
-       dist_ang(5)=convang*acos(dot_product(latvec(:,3),latvec(:,1))/(dist_ang(3)*dist_ang(1)))
-       dist_ang(6)=convang*acos(dot_product(latvec(:,1),latvec(:,2))/(dist_ang(1)*dist_ang(2)))
-       end subroutine
+!!  contains
+!!       subroutine latvec2dist_ang(dist_ang,latvec,pi)
+!!       !This subroutine will generate the distance and angles of a cell starting from latvec
+!!       implicit none
+!!       real(8):: dist_ang(6),latvec(3,3),pi,convang
+!!       convang=180.d0/pi
+!!       dist_ang(1)=sqrt(dot_product(latvec(:,1),latvec(:,1)))
+!!       dist_ang(2)=sqrt(dot_product(latvec(:,2),latvec(:,2)))
+!!       dist_ang(3)=sqrt(dot_product(latvec(:,3),latvec(:,3)))
+!!       dist_ang(4)=convang*acos(dot_product(latvec(:,2),latvec(:,3))/(dist_ang(2)*dist_ang(3)))
+!!       dist_ang(5)=convang*acos(dot_product(latvec(:,3),latvec(:,1))/(dist_ang(3)*dist_ang(1)))
+!!       dist_ang(6)=convang*acos(dot_product(latvec(:,1),latvec(:,2))/(dist_ang(1)*dist_ang(2)))
+!!       end subroutine
 !**********************************************************************************************
 
   end subroutine

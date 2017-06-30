@@ -45,10 +45,11 @@
 
 
 subroutine fixcell_niggli(nat,latvec,xred)
+use mod_interface
 implicit none
 !This routine will apply the niggli reduction to the cell and to the reduced coordinates and transform them back into the cell
 integer:: nat,iat
-real(8):: latvec(3,3),xred(3,nat),latvec_out(3,3),eps,transmat(3,3),invmat(3,3),epsvol,a(3,3),vol
+real(8):: latvec(3,3),xred(3,nat),latvec_out(3,3),eps,transmat(3,3),imat(3,3),epsvol,a(3,3),vol
 
 epsvol=1.d-6
     a=latvec
@@ -56,9 +57,9 @@ epsvol=1.d-6
          a(1,2)*a(2,3)*a(3,1)+a(1,3)*a(2,1)*a(3,2)-a(1,3)*a(2,2)*a(3,1)
     eps=epsvol*vol**(1.d0/3.d0)
     call niggli(latvec,latvec_out,transmat,eps)
-    call invertmat(transmat,invmat,3)
+    call invertmat(transmat,imat,3)
     do iat=1,nat
-       xred(:,iat)=matmul(invmat,xred(:,iat))
+       xred(:,iat)=matmul(imat,xred(:,iat))
        xred(1,iat)=modulo(xred(1,iat),1.d0)
        xred(2,iat)=modulo(xred(2,iat),1.d0)
        xred(3,iat)=modulo(xred(3,iat),1.d0)
@@ -70,11 +71,13 @@ end subroutine
 subroutine niggli(latvec_in,latvec_out,transmat,eps)
 !This soubroutine will produce the niggli reduced cell based on the improved algorithm of R. W. Grosse-Kunstleve,* N. K. Sauter and P. D. Adams
 !On exit, latvec_out will contain the reduced cell, and transmat will provide the transformation operator in latvec_in
+use mod_interface
 implicit none
 real(8):: latvec_in(3,3),latvec_out(3,3),transmat(3,3),eps,tmpmat(3,3)
 real(8):: pi,nigmat(6),dist_ang(6),nigmat_check(6)
 integer:: iout,l,m,n
-logical:: def_gt_0,feq,flt,fgt,is_niggli_cell,debug
+!logical:: def_gt_0,feq,flt,fgt,is_niggli_cell,
+logical:: debug
 
 !debug=.true.
 debug=.false.
@@ -91,7 +94,7 @@ if(debug) write(888,'(a,6(1x,es15.7))') "step 0",nigmat
 !1 step
 1000 continue
     ! A1
-    if (fgt(nigmat(1),nigmat(2),eps) .or. (feq(nigmat(1), nigmat(2), eps) .and. fgt(abs(nigmat(4)), abs(nigmat(5))))) then
+    if (fgt(nigmat(1),nigmat(2),eps) .or. (feq(nigmat(1), nigmat(2), eps) .and. fgt(abs(nigmat(4)), abs(nigmat(5)),eps))) then
       call a1_action(nigmat,tmpmat,eps)
       transmat=matmul(transmat,tmpmat)
 if(debug) then
@@ -107,7 +110,7 @@ if(debug) then
 endif
     endif
     ! A2
-    if (fgt(nigmat(2), nigmat(3),eps) .or. (feq(nigmat(2),nigmat(3),eps) .and. fgt(abs(nigmat(5)), abs(nigmat(6))))) then
+    if (fgt(nigmat(2), nigmat(3),eps) .or. (feq(nigmat(2),nigmat(3),eps) .and. fgt(abs(nigmat(5)), abs(nigmat(6)),eps))) then
       call a2_action(nigmat,tmpmat,eps)
       transmat=matmul(transmat,tmpmat)
 if(debug) then
@@ -195,7 +198,7 @@ endif
     ! A7
     if (fgt(abs(nigmat(6)),nigmat(1),eps)&
         &.or. (feq(nigmat(6), nigmat(1),eps) .and. flt(nigmat(4)+nigmat(4),nigmat(5),eps))&
-        &.or. (feq(nigmat(6),-nigmat(1)) .and. flt(nigmat(5), 0.d0,eps))) then
+        &.or. (feq(nigmat(6),-nigmat(1),eps) .and. flt(nigmat(5), 0.d0,eps))) then
       call a7_action(nigmat,tmpmat,eps)
       transmat=matmul(transmat,tmpmat)
 if(debug) then
@@ -247,21 +250,25 @@ endif
 end subroutine
 
 subroutine  a1_action(nigmat,tmpmat,eps)
+use mod_interface
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n1_action(nigmat,tmpmat,eps)
 end subroutine
 subroutine  a2_action(nigmat,tmpmat,eps)
+use mod_interface
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n2_action(nigmat,tmpmat,eps)
 end subroutine
 subroutine  a3_action(nigmat,tmpmat,eps)
+use mod_interface
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n3_true_action(nigmat,tmpmat,eps)
 end subroutine
 subroutine  a4_action(nigmat,tmpmat,eps)
+use mod_interface
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n3_false_action(nigmat,tmpmat,eps)
@@ -444,12 +451,12 @@ enddo
 if(npositive==3.or.(nzero==0.and.npositive==1)) def_gt_0=.true.
 end function
 
-function fpos(nigmat,eps)
+function fpositive(nigmat,eps)
 implicit none
 real(8):: nigmat(6),eps
 integer:: nzero,npositive,i
-logical:: fpos,flt
-fpos=.false.
+logical:: fpositive,flt
+fpositive=.false.
 nzero=0
 npositive=0
 do i=4,6
@@ -460,10 +467,10 @@ if(flt(0.d0,nigmat(i),eps)) then
   nzero=nzero+1
 endif
 enddo
-if(npositive==3.or.(nzero==0.and.npositive==1)) fpos=.true.
+if(npositive==3.or.(nzero==0.and.npositive==1)) fpositive=.true.
 end function
 
-function flt(a,b,eps)
+function flt(a,b,eps) 
 implicit none
 real(8)::a,b,eps
 logical:: flt
@@ -474,14 +481,14 @@ else
 endif
 end function
 
-function fgt(a,b,eps)
+function fgt(a,b,eps) 
 implicit none
 real(8)::a,b,eps
 logical:: fgt,flt
 fgt=flt(b,a,eps)
 end function
 
-function fle(a,b,eps)
+function fle(a,b,eps) 
 implicit none
 real(8)::a,b,eps
 logical:: fle
@@ -492,7 +499,7 @@ else
 endif
 end function
 
-function fge(a,b,eps)
+function fge(a,b,eps) 
 implicit none
 real(8)::a,b,eps
 logical:: fge
@@ -503,7 +510,7 @@ else
 endif
 end function
 
-function feq(a,b,eps)
+function feq(a,b,eps) 
 implicit none
 real(8)::a,b,eps
 logical:: feq,flt
@@ -575,7 +582,7 @@ dist_ang(5)=convang*acos(dot_product(latvec(:,3),latvec(:,1))/(dist_ang(3)*dist_
 dist_ang(6)=convang*acos(dot_product(latvec(:,1),latvec(:,2))/(dist_ang(1)*dist_ang(2)))
 end subroutine
 
-function is_niggli_cell(nigmat,eps)
+function is_niggli_cell(nigmat,eps) 
 implicit none
 real(8):: nigmat(6),eps
 logical::is_niggli_cell,is_buerger_cell,feq,fgt
@@ -628,7 +635,7 @@ is_niggli_cell=.true.
     endif
 end function
 
-function  meets_primary_conditions(nigmat,eps)
+function  meets_primary_conditions(nigmat,eps) 
 implicit none
 real(8):: nigmat(6),eps
 logical::meets_primary_conditions,fgt
@@ -655,7 +662,7 @@ meets_primary_conditions=.true.
     endif
 end function
 
-function  meets_main_conditions(nigmat,eps)
+function  meets_main_conditions(nigmat,eps) 
 implicit none
 integer:: typer
 real(8):: nigmat(6),eps
@@ -678,7 +685,7 @@ meets_main_conditions=.true.
     endif
 end function
 
-function is_buerger_cell(nigmat,eps)
+function is_buerger_cell(nigmat,eps) 
 implicit none
 real(8):: nigmat(6),eps
 logical::is_buerger_cell,meets_main_conditions,feq,fgt
@@ -703,7 +710,7 @@ logical::is_buerger_cell,meets_main_conditions,feq,fgt
 
 end function
 
-function typer(nigmat,eps)
+function typer(nigmat,eps) 
 implicit none
 real(8):: nigmat(6),eps
 integer:: nzero,npositive,i,typer
