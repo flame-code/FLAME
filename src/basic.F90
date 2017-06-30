@@ -235,7 +235,7 @@ end subroutine dproj2latvec_alborz
 !The cell will thus be rotated. The rotational matrix is stored in rotmat as an operator rotmat
 !and the atomic position rxyz are transformed into the new coordination sizstem as well
 subroutine latvec2dproj_alborz(dproj,latvec,rotmat,rxyz,nat)
-    use mod_interface
+    use mod_interface, except_this_one=> norm
     implicit none
     integer, intent(in):: nat
     real(8),intent(inout):: dproj(6), latvec(3,3), rotmat(3,3), rxyz(3,nat)

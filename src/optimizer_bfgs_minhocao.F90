@@ -73,8 +73,8 @@ end subroutine GEOPT_RBFGS_MHM
 !contains
 
 subroutine bfgs_driver_atoms(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,tolmxf,strfact,units,usewf_geopt,fixat,fixlat
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,fixat,fixlat
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
 !    use module_base
@@ -169,7 +169,7 @@ pressure=target_pressure_habohr
 !        endif
 
         call bfgs_reza(nat,nr,x,epot,f,nwork,work,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,fmax_at,fmax_lat,int(counter),coord)
-!        call sd(nat,nr,x,epot,f,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,int(counter))
+!        call sd_minhocao(nat,nr,x,epot,f,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,int(counter))
 
 
 
@@ -218,8 +218,8 @@ pressure=target_pressure_habohr
 END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,tolmxf,strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -338,7 +338,7 @@ latvec(7:9)=latvec_in(:,3)
 !        endif
 
         call bfgs_reza(nat,nr,x,epot,f,nwork,work,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,fmax_at,fmax_lat,int(counter),coord)
-!        call sd(nat,nr,x,epot,f,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,int(counter))
+!        call sd_minhocao(nat,nr,x,epot,f,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,int(counter))
 
 
 
@@ -865,8 +865,8 @@ end subroutine bfgs_reza
 !!! This is helpfull when we are looking for the source of problems during BFGS runs
 subroutine lbfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,tolmxf,strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine lbfgsdriver(rxyz,fxyz,etot,at,rst,in,ncount_bigdft,fail) 
@@ -1532,7 +1532,7 @@ logical:: getwfk
 end subroutine
 
 
-subroutine sd(nat,nr,x,epot,f,betax,betax_lat,fmax,iter)
+subroutine sd_minhocao(nat,nr,x,epot,f,betax,betax_lat,fmax,iter)
 !Simple SD for testing purpose
 implicit none
 integer:: nr,i,iter,nat
@@ -1602,22 +1602,23 @@ end subroutine
 
 module mbfgs_interface
 !Module used for the geometry optimizer BFGS with ABINIT LINESEARCH
-interface
-   subroutine unit_matrix(mat)
-     implicit none
-     real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
-   end subroutine unit_matrix
+!interface
+   !subroutine unit_matrix(mat)
+   !  implicit none
+   !  real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
+   !end subroutine unit_matrix
 
-   real(8) function vabs(v)
-     implicit none
-     real(8),dimension(:):: v
-   end function vabs
+   !function vabs(v) result(res)
+   !  implicit none
+   !  real(8),dimension(:):: v
+   !  real(8):: res
+   !end function vabs
 
-   function outerprod(a,b)
-     real(8),dimension(:),intent(in)::a,b
-     real(8),dimension(size(a),size(b))::outerprod
-   end function outerprod
-end interface
+   !function outerprod(a,b)
+   !  real(8),dimension(:),intent(in)::a,b
+   !  real(8),dimension(size(a),size(b))::outerprod
+   !end function outerprod
+!end interface
 end module mbfgs_interface
 
 !************************************************************************************
@@ -1679,11 +1680,12 @@ end subroutine init_hessinv
 !************************************************************************************
 subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
  use defs_basis
  use minpar
- use fire,   only:dtmin, dtmax
+ use mod_fire,   only:dtmin, dtmax
 !SUBROUTINE dfpmin_pos(nat,latvec,rxyz,fxyz,stress,pressure,etot,fnrmtol,iter,count)
 use mbfgs_interface
 use mod_parini, only: typ_parini
@@ -1703,7 +1705,7 @@ REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 !   Parameters: ITMAX is the maximum allowed number of iterations; STPMX is the scaled
 !   maximum step length allowed in line searches; EPS is the machine precision; TOLX is the
 !   convergence criterion on x values.
-INTEGER :: its,assert_eq,i,j,info,LWORK
+INTEGER :: its,i,j,info,LWORK
 LOGICAL :: check
 REAL(8) :: den,fac,fad,fae,fp,stpmax,sumdg,sumxi
 REAL(8):: dg(3*nat+9),g(3*nat+9),hdg(3*nat+9),pnew(3*nat+9),xi(3*nat+9),p(3*nat+9)
@@ -1743,7 +1745,7 @@ tolmxf=5.d-2
 vel_in=0.d0;vel_lat_in=0.d0;vvol_in=0.d0
 !Some conservative time steps for FIRE
 dtion_fire=10.d0;dtmin=1.d0;dtmax=50.d0
-call GEOPT_FIRE_MHM(latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
+call GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
 tolmxf=tolmxf0
 
 !Now start the real BFGS
@@ -2085,8 +2087,9 @@ END SUBROUTINE
 !************************************************************************************
 subroutine GEOPT_MBFGS_MHM_OLD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,fixat,fixlat
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
 
@@ -2109,7 +2112,7 @@ REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 !   Parameters: ITMAX is the maximum allowed number of iterations; STPMX is the scaled
 !   maximum step length allowed in line searches; EPS is the machine precision; TOLX is the
 !   convergence criterion on x values.
-INTEGER :: its,assert_eq,i
+INTEGER :: its,i
 LOGICAL :: check
 REAL(8) :: den,fac,fad,fae,fp,stpmax,sumdg,sumxi
 REAL(8):: dg(3*nat+9),g(3*nat+9),hdg(3*nat+9),pnew(3*nat+9),xi(3*nat+9),p(3*nat+9)
@@ -2363,16 +2366,17 @@ END SUBROUTINE
 
 !************************************************************************************
 
-real(8) FUNCTION vabs(v)
+FUNCTION vabs(v) result(res)
 implicit none
 real(8),dimension(:):: v
 real(8)::sumv
 integer::i
+real(8):: res
 sumv=0.d0
 do i=1,size(v)
 sumv=sumv+v(i)*v(i)
 enddo
-vabs=sqrt(sumv)
+res=sqrt(sumv)
 !read(*,*) i
 END FUNCTION vabs
 
@@ -2410,11 +2414,11 @@ END SUBROUTINE unit_matrix
 
 !************************************************************************************
 
-FUNCTION assert_eq(n1,n2,n3,n4,string)
+FUNCTION assert_eq(n1,n2,n3,n4,string) result(res)
 implicit none
 CHARACTER(LEN=*), INTENT(IN) :: string
 INTEGER, INTENT(IN) :: n1,n2,n3,n4
-INTEGER :: assert_eq
+INTEGER :: res
 !Action:
 !Embedding program dies gracefully with an error message if any of the
 !integer arguments are not equal to the first. Otherwise, return the value of
@@ -2422,7 +2426,7 @@ INTEGER :: assert_eq
 !passed to a subprogram. nrutil implements and overloads forms with 1, 2,
 !3, and 4 integer arguments.
 if (n1==n2.and.n2==n3.and.n3==n4) then
-assert_eq=n1
+res=n1
 else
 write (*,*) "error: an assert_eq failed with this tag:", string
 STOP "program terminated by assert_eq"

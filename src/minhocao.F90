@@ -1,4 +1,5 @@
 subroutine task_minhocao(parini)
+ use mod_interface
  use global
  use defs_basis
  !use cell_utils
@@ -16,7 +17,6 @@ subroutine task_minhocao(parini)
 
 !******************************************************************
 !Minima Hopping Variables
-  real(8):: round
   real(8), parameter :: beta1=1.10d0,beta2=1.10d0,beta3=1.d0/1.10d0
   real(8), parameter :: alpha1=1.d0/1.10d0,alpha2=1.10d0
   integer :: npminx=100        !Number of posloc files to be saved for verbosity 0
@@ -1315,9 +1315,10 @@ end subroutine task_minhocao
 
 !**********************************************************************************************
 subroutine MD_MHM   (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,md_algo,md_integrator,auto_dtion_md,&
-                   &nit_per_min,fixat,fixlat,md_presscomp
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,md_algo,md_integrator,auto_dtion_md
+ use global, only: nit_per_min,fixat,fixlat,md_presscomp
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1903,6 +1904,7 @@ end subroutine
 !**********************************************************************************************
 
 subroutine acceleration_fire(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
+use mod_interface
 use global, only: fixlat
 implicit none
 integer:: iat,i,j,md_type,nat
@@ -2065,6 +2067,7 @@ end subroutine
 !**********************************************************************************************
 
 subroutine acceleration(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
+use mod_interface
 use global, only: fixlat
 implicit none
 integer:: iat,i,j,md_type,nat
@@ -2226,6 +2229,7 @@ end subroutine
 !**********************************************************************************************
 
 subroutine stress_velocity(vpos,latvec,amass,nat,vpressure)
+use mod_interface
 implicit none
 real(8):: velmat(3,3),vpostmp(3),latvec(3,3),vpos(3,nat),vpressure,a(3,3),vol,amass(nat)
 integer:: iat,nat,i,j
@@ -2380,6 +2384,7 @@ end subroutine
 
 subroutine fpos_flat(pressure,fpos,flat,strten,fcart,latvec,md_type) 
 !Computes the pure generalized forces on atom and cell (no contributions from velocities)
+use mod_interface
 use global, only: nat
 implicit none
 integer:: iat,i,j,md_type
@@ -2433,6 +2438,7 @@ end subroutine
 
 
 subroutine ekin_at_lat(amass,latmass,latvec,vpos,vlat,ekinat,ekinlat,f0,md_type,nat)
+use mod_interface
 implicit none
 integer:: iat,i,md_type,nat
 real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol
@@ -2484,6 +2490,7 @@ end subroutine
 
 !**********************************************************************************************
 subroutine ekin_at_lat_andersen(amass,latmass,latvec,vpos,vlat,vvol,ekinat,ekinlat,f0,md_type,nat)
+use mod_interface
 implicit none
 integer:: iat,i,md_type,nat
 real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol,vvol
@@ -2548,9 +2555,10 @@ end subroutine
 
 !**********************************************************************************************
 subroutine MD_ANDERSEN_MHM     (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,md_algo,md_integrator,auto_dtion_md,&
-                   &nit_per_min,fixat,fixlat
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,md_algo,md_integrator,auto_dtion_md
+ use global, only: nit_per_min,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -3034,8 +3042,9 @@ end subroutine
 
 !**********************************************************************************************
 subroutine MD_PR_MHM_OLD    (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,fixat,fixlat
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -3474,11 +3483,12 @@ end subroutine
 !**********************************************************************************************
 
 subroutine GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max,&
-                   &units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
- use fire
+ use mod_fire
  use interface_code
  use modsocket, only: sock_extra_string
  use mod_parini, only: typ_parini
@@ -4240,6 +4250,7 @@ end subroutine GEOPT_FIRE_MHM
 !************************************************************************************
 
 subroutine get_char_type(filename,nat,char_type,typat,ntypat)
+use mod_interface
 implicit none
 integer:: nat,natin,iat,ntypat,nfound,typat(ntypat),ierror
 character(40):: filename
@@ -4281,6 +4292,7 @@ end subroutine
 !************************************************************************************
 
  subroutine dproj2latvec(dproj,latvec)
+ use mod_interface
  !This subroutine will convert the distance and projective representation of 
  !a periodic cell (dxx,dyx,dyy,dzx,dzy,dzz) into a 
  !lattice vektor format (vec1(:,1),vec2(:,2),vec3(:,3)) with dxx oriented into x direction
@@ -4300,6 +4312,7 @@ end subroutine
 !************************************************************************************
 
  subroutine latvec2dproj(dproj,latvec,rotmat,rxyz,nat)
+ use mod_interface, except_this_one=>norm
  !This subroutine will convert the lattice vector representation of thei
  !periodic cell (vec1,vec2,vec3) into the projective representation (dxx,dyx,dyy,dzx,dzy,dzz)
  !The cell will thus be rotated. The rotational matrix is stored in rotmat as an operator rotmat
@@ -4448,6 +4461,7 @@ end subroutine
 !************************************************************************************
 
  subroutine cross_product(a,b,crossp)
+ use mod_interface
  !a very simple implementation of the cross product
  implicit none
  real(8)::a(3),b(3)
@@ -4459,6 +4473,7 @@ end subroutine
  end subroutine
 
  subroutine dot_p(a,b,dotp)
+ use mod_interface
  !a very simple implementation of the dot product
  implicit none
  real(8)::a(3),b(3)
@@ -4470,6 +4485,7 @@ end subroutine
 !************************************************************************************
 
  subroutine rotation(rotmat,angle,axe)
+ use mod_interface
  !This subroutine will calculate the rotational matrix rotmat for a
  !3-dim vector around an axis 'axe' by the angle 'angle'.
  implicit none
@@ -4504,6 +4520,7 @@ end subroutine
 !************************************************************************************
 
  subroutine rxyz_int2cart(latvec,rxyzint,rxyzcart,nat)
+ use mod_interface
  !This subrouine will convert the internal coordinates into cartesian coordinates
  implicit none
  real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3)
@@ -4516,6 +4533,7 @@ end subroutine
 !************************************************************************************
 
  subroutine rxyz_cart2int(latvec,rxyzint,rxyzcart,nat)
+ use mod_interface
  !This subrouine will convert the internal coordinates into cartesian coordinates
  implicit none
  real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3),latvecinv(3,3)
@@ -4529,6 +4547,7 @@ end subroutine
 !************************************************************************************
 
  subroutine invertmat(mat,matinv,n)
+ use mod_interface
  implicit none
  real(8),intent(in) :: mat(n,n)
  integer               :: n
@@ -4570,6 +4589,7 @@ end subroutine
 !************************************************************************************
 
  subroutine latvec2acell_rprim(latvec,acell,rprim)
+ use mod_interface
 !This routine will split up the latvec into two parts, 
 !acell and rprim, where rprim is normalized to 1
  implicit none
@@ -4584,6 +4604,7 @@ end subroutine
 !************************************************************************************
 
  subroutine acell_rprim2latvec(latvec,acell,rprim)
+ use mod_interface
 !This routine will combine 
 !acell and rprim to latvec
  implicit none
@@ -4598,6 +4619,7 @@ end subroutine
 
 !subroutine get_enthalpy(acell,rprim,energy,pressure,enthalpy)
 subroutine get_enthalpy(latvec,energy,pressure,enthalpy)
+use mod_interface
 !This routine will compute the enthalpy within the given units
 implicit none
 integer:: nat,natin,iat
@@ -4630,6 +4652,7 @@ end function round
 !************************************************************************************
 
 subroutine wtioput(ediff,ekinetic,ekinetic_max,nsoften)
+  use mod_interface
   implicit none
   integer:: nsoften
   real(8):: ediff, ekinetic,ekinetic_max
@@ -4641,6 +4664,7 @@ END SUBROUTINE wtioput
 !************************************************************************************
 
 subroutine hunt(xx,n,x,jlo)
+  use mod_interface
   implicit none
   !C x is in interval [xx(jlo),xx(jlow+1)[ ; xx(0)=-Infinity ; xx(n+1) = Infinity
   !Arguments
@@ -4708,6 +4732,7 @@ subroutine insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_
   &e_arr,ent_arr,fp_arr,pl_arr,lat_arr,f_arr,str_arr,spg_arr,spgtol_arr,dos_arr,ct_arr)
   ! inserts the energy re_wpos at position k_e_wpos and shifts up all other energies
 !  implicit real*8 (a-h,o-z)
+  use mod_interface
   implicit none
   integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
   integer:: k, nlmin, k_e_wpos, nlminx,i
@@ -4788,6 +4813,7 @@ END SUBROUTINE insert
 
 subroutine save_low_conf(nat,npmin,npminx,ent_wpos,e_wpos,pos,latvec,spg,spgtol,fdos,elocmin,poslocmin,latlocmin)
   !C save configuration if it is among the lowest ones in energy
+  use mod_interface
 !  implicit real*8 (a-h,o-z)
   implicit none
   integer:: iat,nat, npmin, npminx, kmax, k 
@@ -4839,6 +4865,7 @@ END SUBROUTINE save_low_conf
 subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
    &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
    &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,pressure)
+  use mod_interface
   use mod_parini, only: typ_parini
   implicit none
   type(typ_parini), intent(in):: parini
@@ -5003,6 +5030,7 @@ END SUBROUTINE winter
 !************************************************************************************
 
 subroutine torque_cell(latvec0,vlat,torquenrm)
+use mod_interface
 implicit none
 real(8), intent(in)    :: latvec0(3,3)
 real(8), intent(inout) :: vlat(3,3),torquenrm
@@ -5025,6 +5053,7 @@ end subroutine torque_cell
 !Various methods to initialize the velocities for the MD part of Minima Hopping
 !GAUSSIAN DISTRIBUTION**********************************************************
       subroutine gausdist(nat,vxyz,amass)
+      use mod_interface
 !generates 3*nat random numbers distributed according to  exp(-.5*vxyz**2)
       implicit none!real*8 (a-h,o-z)
       real:: s1,s2
@@ -5057,6 +5086,7 @@ end subroutine torque_cell
 
 !GAUSSIAN DISTRIBUTION FOR THE CELL VECTORS***************************************
       subroutine gausdist_cell(latvec,vlat)
+      use mod_interface
 ! generates 3*3 random numbers distributed according to  exp(-.5*vxyz**2) for the cell vectors
       implicit none
       integer:: i
@@ -5089,6 +5119,7 @@ end subroutine torque_cell
 !************************************************************************************
 
         subroutine elim_moment(nat,vxyz,atmass)
+        use mod_interface
         implicit none
         real(8):: vxyz(3,nat),sx,sz,sy,atmass(nat)
         integer:: iat,nat       
@@ -5111,6 +5142,7 @@ end subroutine torque_cell
 !************************************************************************************
 
 subroutine elim_torque_cell(latvec0,vlat)
+use mod_interface
 implicit none
 real(8), intent(in)    :: latvec0(3,3)
 real(8), intent(inout) :: vlat(3,3)
@@ -5176,8 +5208,9 @@ end subroutine elim_torque_cell
 !************************************************************************************
 
 subroutine init_vel(parini,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,&
-                  &amu,amutmp,typat,char_type,bmass,fixat,fixlat,mol_soften,bc,code
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
+ use global, only: amu,amutmp,typat,char_type,bmass,fixat,fixlat,mol_soften,bc,code
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5319,8 +5352,9 @@ end subroutine init_vel
 !************************************************************************************
 
         subroutine soften_pos(parini,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,alpha_at,bmass,units,usewf_soften,auto_soft,fixat,fixlat
+ use mod_interface, except_this_one=>norm
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,alpha_at,bmass,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5503,8 +5537,9 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 !************************************************************************************
 
         subroutine soften_lat(parini,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,alpha_at,alpha_lat,bmass,strfact,units,usewf_soften,auto_soft,fixat,fixlat
+ use mod_interface, except_this_one=>norm
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,alpha_at,alpha_lat,bmass,strfact,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5709,6 +5744,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,
 !************************************************************************************
 
  subroutine fxyz_cart2int(nat,fxyz_cart,fxyz_int,latvec)
+ use mod_interface
  !This subrtouine will transform theforces initially in the cartesian system into the internal coordinates with respect to the
  !cell vectors provided in the latvec
  implicit none
@@ -5725,6 +5761,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,
 !************************************************************************************
 
  subroutine strten2flat(strten,flat,latvec,press)
+ use mod_interface
  !flat is the force on the lettice vector per unit cell volume
  implicit none
  real(8):: strten(6),flat(3,3),latvec(3,3),press,pressmat(3,3),str_matrix(3,3),latvect(3,3),latvectinv(3,3),vol
@@ -5756,6 +5793,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,
 !*************************************************************************
 
  subroutine backtocell(nat,latvec,rxyz_red)
+ use mod_interface
  !This subroutine will transform back all atoms into the periodic cell
  !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
  implicit none
@@ -5822,6 +5860,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,
 
  subroutine nveclatvec(latvec,nvec)
  !Will calculate the normalized normal vector to the 3 planes of the cell
+ use mod_interface, except_this_one=>norm
  implicit none
  real*8, intent(in) :: latvec(3,3)
  real*8, intent(out):: nvec(3,3)
@@ -5839,6 +5878,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,
 !************************************************************************************
 
 subroutine getvol(latvec,vol)
+use mod_interface
 implicit none
 real(8):: latvec(3,3),v(3,3),vol
  v=latvec
@@ -5849,6 +5889,7 @@ end subroutine
 !************************************************************************************
 
 subroutine correct_latvec(latvec,pos_red,nat,correctalg,iout)
+use mod_interface
 implicit none
 integer:: correctalg,nat,iproc,iout
 real(8):: latvec(3,3),pos_red(3,nat),latvec0(3,3),diff(9)
@@ -5885,6 +5926,7 @@ end subroutine
 !************************************************************************************
  
  subroutine correct_latvec_oganov(latvec,pos_red,nat,iproc)
+ use mod_interface, except_this_one=>norm
  !use cell_utils
  !This subroutine will use the algorithm proposed by oganov and glass (J.Phys,Cond.Mat 20,2008) to perform a transformation of the lattice vectors into an equivalent
  !system where the length of all cell vectors are similar (no nasty angles).
@@ -6021,6 +6063,7 @@ end subroutine
  subroutine backtocell_cart(nat,latvec,rxyz)
  !This subroutine will transform back all atoms into the periodic cell
  !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
+ use mod_interface
  implicit none
  integer:: nat,i,iat,j
  real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
@@ -6084,14 +6127,15 @@ end subroutine
 !************************************************************************************
 
 subroutine read_params()
+use mod_interface
 use defs_basis
-use fire,   only:dtmin, dtmax
+use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
-                &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
+use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type
+use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
+use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
+use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md
+use global, only: nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
 implicit none
 integer:: itype,n
 real(8):: tmp_val
@@ -6258,6 +6302,7 @@ end subroutine
 !************************************************************************************
 
 subroutine pathintegral(parini,code,latvec,xred)
+ use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,fixat,fixlat
  use defs_basis
  use interface_code
@@ -6492,6 +6537,7 @@ subroutine pathintegral(parini,code,latvec,xred)
 !****************************************************************************************************************   
 
 subroutine plot_fp_grid(nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
+use mod_interface
 implicit none
 integer:: nlminx,nlmin,fp_len,i,kk,nat
 real(8):: fp_arr(fp_len,nlminx),fp_dist
@@ -6642,8 +6688,9 @@ end subroutine
 !****************************************************************************************************************   
 
 subroutine rotate_like_crazy(parini,code,latvec,xred,tolmin,tolmax,ntol)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa,&
-                   &geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use mod_interface
+ use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6706,8 +6753,9 @@ end subroutine
 !****************************************************************************************************************   
 
 subroutine poslowrelax(parini,code,latvec,xred,tolmin,tolmax,ntol)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa,&
-                   &geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use mod_interface
+ use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6806,8 +6854,9 @@ end subroutine
 !****************************************************************************************************************   
 
 subroutine enthalpyrelax(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa,&
-                   &geopt_ext,geopt_method,fixat,fixlat
+ use mod_interface
+ use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: geopt_ext,geopt_method,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6907,8 +6956,9 @@ end subroutine
 !****************************************************************************************************************   
 
 subroutine varvol(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa,&
-                   &geopt_ext,geopt_method,fixat,fixlat
+ use mod_interface
+ use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: geopt_ext,geopt_method,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -7012,6 +7062,7 @@ end subroutine
 !****************************************************************************************************************   
 
  subroutine updaterxyz(latvecold,latvecnew,rxyz,nat)
+ use mod_interface
  !This subroutine will update the atomic positions in the cartesian coordinates after the cell shape has been changed according
  !to the change in the lattice vectors thus keeping the relative coordinates of all atoms constant
  implicit none
@@ -7031,6 +7082,7 @@ end subroutine
 
 
 subroutine k_expansion(latvec,xred,ka,kb,kc,k_latvec,k_xcart)
+use mod_interface
 !This routine expands the cell defined by latevec to a supercell
 !of dimension ka,kb,kc. The atomic positions in real space
 !will be returned in k_xcart. k_nat will then be the number of
@@ -7057,6 +7109,7 @@ end subroutine
 !************************************************************************************
 
 subroutine elim_fixed_at(nat,x)
+use mod_interface
 use global, only: fixat
 implicit none
 integer:: iat,nat
@@ -7074,6 +7127,7 @@ end subroutine
 !************************************************************************************
 
 subroutine elim_fixed_lat(latvec,x)
+use mod_interface
 use global, only: fixlat,bc
 implicit none
 integer:: i,k
@@ -7153,6 +7207,7 @@ end subroutine
 !************************************************************************************
 
 subroutine diagcomp(latvec,x)
+use mod_interface
 implicit none
 real(8):: latvec(3,3),x(3,3),xnrm,latvect(3,3),latvecinv(3,3),sigma(3,3)
 real(8):: len1,len2,len3,tmp1,tmp2,tmp3,tmpvec(3),vol
@@ -7193,6 +7248,7 @@ end subroutine
 !************************************************************************************
 
 subroutine slab_stress(flat,fix_z)
+use mod_interface
 !This routine will eliminate all z-components of the first two cell forces,
 !and all x-y-components of the last cell force 
 implicit none
@@ -7224,6 +7280,7 @@ end subroutine
 !************************************************************************************
 
 subroutine propagate(nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
+use mod_interface
 !This subroutine will propagate the coordinates of the atoms and the cells according to the
 !value of fixed or free degrees of freedom according to
 !xred=xred+dxred,latvec=latvec+dlatvec
@@ -7294,6 +7351,7 @@ end subroutine propagate
 !************************************************************************************
 
 subroutine convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+use mod_interface
 use global, only: fixat, fixlat
 use defs_basis
 implicit none
@@ -7394,6 +7452,7 @@ end subroutine
 !************************************************************************************
 
 subroutine dist_ang2latvec(dist_ang,latvec,pi)
+use mod_interface
 !This subroutine will generate the lattice vector representation of the cell
 !from the length/angle representation
 implicit none
@@ -7414,6 +7473,7 @@ end subroutine
 !************************************************************************************
 
 subroutine dist_latvec2ang(dist_ang,latvec,pi)
+use mod_interface
 !This subroutine will generate the angdeg represenation of the cell from the lattice vectors
 implicit none
 real(8):: dist_ang(6),latvec(3,3),pi,convang
@@ -7429,6 +7489,7 @@ end subroutine
 !************************************************************************************
 
 subroutine fragments(latvec,xred,nfrag,xcart,fragarr,fragsize)
+use mod_interface
 use global, only: nat,ntypat,znucl,rcov,typat,char_type
 implicit none
 real(8),dimension(3,nat), INTENT(IN) :: xred
@@ -7499,6 +7560,7 @@ end subroutine fragments
 !************************************************************************************
 
 subroutine pbc_distance0(latvec,xred_1,xred_2,distance2,dxyz)
+use mod_interface
 !This routine computes the distance of the reduced coordinates xred_1 and xred_2 and applies 
 !periodic boundary conditions to them and computes the squared distance
 implicit none
@@ -7519,6 +7581,7 @@ end subroutine
 !************************************************************************************
 
 subroutine pbc_distance1(latvec,xred_1,xred_2,distance2)
+use mod_interface
 !This routine computes the distance of the reduced coordinates xred_1 and xred_2 and applies 
 !periodic boundary conditions to them and computes the squared distance. Minimal image convention
 implicit none
@@ -7538,6 +7601,7 @@ end subroutine
 !************************************************************************************
 
 subroutine pbc_distance2(latvec,xred_1,xcart_1,xred_2,xcart_2,distance2)
+use mod_interface
 !This routine computes the distance of the reduced coordinates xred_1 and xred_2 and applies 
 !periodic boundary conditions to them and computes the squared distance
 implicit none
@@ -7601,10 +7665,11 @@ end subroutine
 !************************************************************************************
 
 subroutine inertia_tensor(nat,xcart,cmass,amass,intens)
+use mod_interface
 !This routine computes the inertia tensor with respect to the center of mass of a system with nat atoms
 implicit none
 integer:: nat,iat,i,j
-real(8):: xcart(3,nat),amass(nat),intens(3,3),cmass(3),xtmp(3),dist2,delta
+real(8):: xcart(3,nat),amass(nat),intens(3,3),cmass(3),xtmp(3),dist2
 
 intens=0.d0
 do iat=1,nat
@@ -7612,7 +7677,7 @@ xtmp=xcart(:,iat)-cmass(:)
 dist2=dot_product(xtmp,xtmp)
   do i=1,3
   do j=1,i
-     intens(i,j)=intens(i,j)+amass(iat)*(dist2*delta(i,j)-xtmp(i)*xtmp(j))
+     intens(i,j)=intens(i,j)+amass(iat)*(dist2*delta_kronecker(i,j)-xtmp(i)*xtmp(j))
   enddo
   enddo
 enddo
@@ -7625,6 +7690,7 @@ end subroutine
 !************************************************************************************
 
 subroutine rot_ener(omega,intens,erot)
+use mod_interface
 !This routine computes the rotational kinetic energy of a system with known tensor of intertia and a given 
 !angular velocity omega, based on its orientation and magnitude
 implicit none
@@ -7636,6 +7702,7 @@ end subroutine
 !************************************************************************************
 
 subroutine init_rotvels(nat,xred,latvec,temp,amass,vel)
+use mod_interface
 !This routine will first find the correct partitioning of the system into molecules, then assign
 !rotational and translational velocities to these molecules according to the tempereature temp
 use global, only: char_type,typat,units
@@ -7887,18 +7954,8 @@ end subroutine
 
 !************************************************************************************
 
-function delta(i,j)
-!This function implements the Kronecker Delta
-implicit none
-integer:: i,j
-real(8):: delta
-delta=0.d0
-if(i==j) delta=1.d0
-end function
-
-!************************************************************************************
-
 subroutine assign_vel(nat,xcart,cmass,omega,vel)
+use mod_interface
 !This routine will take the cartesian coordinates and the center of mass and compute the 
 !velocities of every atom in the system with nat atoms
 implicit none
@@ -7914,6 +7971,7 @@ end subroutine
 !************************************************************************************
 
 subroutine refragment(fragarr,nat)
+use mod_interface
 !This routine will rearragne the integer array fragarr such that the fragment indexes are well 
 !assigned in ascending order, and new array indexes are assigned to atoms with 
 !values <0
@@ -7949,6 +8007,7 @@ end subroutine
 !************************************************************************************
 
 subroutine make_linked_list(fragarr,fragsize,lhead,llist,nat,nmol)
+use mod_interface
 !This subroutine will create a linked list to represent molecules.
 !lhead is an array of length nat, of which only nmol will be significant. Their entries point to a
 !position in array lhead, the first atom in the molecule, 
@@ -7975,6 +8034,7 @@ end subroutine
 !************************************************************************************
 
 subroutine get_fcm_torque(fcm,torque,fcart,quat,xcart_mol,lhead,llist,nat,nmol)
+use mod_interface
 !Computes the total force on molecules and the torques,assuming xcart_mol has molecules with CM at origin
 implicit none
 integer:: nat,nmol,iat,ifrag,llist(nat),lhead(nmol)
@@ -7998,6 +8058,7 @@ end subroutine
 !************************************************************************************
 
 subroutine expand_rigid(latvec,xred_cm,quat,xcart_mol,lhead,llist,nat,nmol,xred_in)
+use mod_interface
 !This routine will produce the desired, expanded form of xred_in which can be directly fed into 
 !the single point energy routine. Input are quat and the xred_cm, the center of masses of each molecule
 !in the cell
@@ -8023,6 +8084,7 @@ end subroutine expand_rigid
 !************************************************************************************
 
 subroutine init_cm_mol(latvec,xred,xcart_shifted,xred_cm,quat,amass,masstot,intens,inprin,inaxis,lhead,llist,nat,nmol)
+use mod_interface
 !This routine will get the cm and shift all molecular units into xcart_shifted
 !and write, for each molecule, an xyz file containing the shifted molecular unit
 !We will also express the center of masses in reduced coordinates (xred_cm), and of
@@ -8162,7 +8224,8 @@ do imol=1,nmol
    enddo
    close(22)
 enddo
-contains
+end subroutine
+!contains
 
 !************************************************************************************
 
@@ -8189,6 +8252,7 @@ end subroutine
 !************************************************************************************
 
 subroutine get_inertia_tensor(intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+use mod_interface
 !This routine will compute the intertia tensors of all molecules involved
 !given the center of mass and atomic masses, the principle  moments of inertia inprin,
 !and the axis of the inertia tensor for each molecule
@@ -8196,7 +8260,7 @@ use global, only: fragsize
 implicit none
 integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
 real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
-real(8):: delta,inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
+real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
 real(8),allocatable:: work(:),eval(:)
 !Compute the tensor of intertia
 do ifrag=1,nmol
@@ -8207,7 +8271,7 @@ do ifrag=1,nmol
        dist2=dot_product(xtmp,xtmp)
          do i=1,3
          do j=1,i
-            intens(i,j,ifrag)=intens(i,j,ifrag)+amass(iat)*(dist2*delta(i,j)-xtmp(i)*xtmp(j))
+            intens(i,j,ifrag)=intens(i,j,ifrag)+amass(iat)*(dist2*delta_kronecker(i,j)-xtmp(i)*xtmp(j))
          enddo
          enddo
        iat=llist(iat)
@@ -8251,11 +8315,11 @@ enddo
 deallocate(work,eval)
 end subroutine
 
-end subroutine
 
 !************************************************************************************
 
 subroutine get_fragsize(fragsize,lhead,llist,nat,nmol)
+use mod_interface
 implicit none
 integer:: nat,nmol,iat,ifrag,llist(nat),lhead(nmol),fragsize(nmol)
 fragsize=0
@@ -8271,6 +8335,7 @@ end subroutine
 !************************************************************************************
 
 subroutine rbmd_symasym_s1(T_t,L_t,dt,L_til_t)
+use mod_interface
 !J.Chem.Phys. 110,7,3291,Matubayasi
 !Symmetric top: we assume Ix=Iy
 !First step: equation 15
@@ -8293,6 +8358,7 @@ subroutine rbmd_sym_s23(Inprin,L_til_t,dt,L_til_t5,L_til_t10)
 !We construct the vector of L^tilde at T=t+0.5dt: L_til_t5
 !Then, We construct the vector of L^tilde at T=t+dt: L_til_t10
 !Input is the principal inertia tensor Inprin, symmetric Ix=Iz, and L^tilde at T=t, L_til_t
+use mod_interface
 implicit none
 real(8),intent(in) :: Inprin(3), L_til_t(3),dt
 real(8),intent(out):: L_til_t10(3),L_til_t5(3)
@@ -8323,6 +8389,7 @@ subroutine rbmd_symasym_s4(Inprin,L_til_t5,quat_t,dt,quat_t10)
 !Fourth step: equations 3 and 9/10
 !We construct the new quaternion at time T=t+dt: quat_t10
 !We thus need to first obtain omega_tilde at T=t+0.5*dt by using L_tilde at T=t+0.5*dt
+use mod_interface, except_this_one=>norm
 implicit none
 real(8),intent(in) :: Inprin(3),L_til_t5(3),dt,quat_t(4)
 real(8),intent(out):: quat_t10(4)
@@ -8349,7 +8416,8 @@ real(8):: ca,sa,angle
   expmat=expmat+sa/norm*A_omega(omega_til_t5(1:3))
   quat_t10(:)=matmul(expmat,quat_t)
 !enddo
-contains
+end subroutine rbmd_symasym_s4
+!contains
 !end subroutine
 
 function A_omega(omega)
@@ -8370,7 +8438,6 @@ A_omega(2,3)=-A_omega(3,2)
 A_omega(2,4)=-A_omega(4,2)
 A_omega(3,4)=-A_omega(4,3)
 end function A_omega
-end subroutine rbmd_symasym_s4
 
 !************************************************************************************
 
@@ -8380,6 +8447,7 @@ subroutine rbmd_symasym_s5(T_t10,L_til_t10,dt,L_t10)
 !Fifth  step, fourth step according to the manuscript: equation 19
 !We construct the vector of L at T=t+dt: L_t10
 !Input is the L_til_t10 (L^tilde at T=t+dt) and the torque at T=t+dt: T_t10
+use mod_interface
 implicit none
 real(8),intent(in) :: T_t10(3), L_til_t10(3),dt
 real(8),intent(out):: L_t10(3)
@@ -8431,11 +8499,12 @@ end subroutine
 subroutine rbmd_driver(quat_t,T_t,L_t,quat_t10,T_t10,L_t10,dt,inprin,&
            &fragsize,symtop,nmol)
 !Currently implemented only to propagate the assymtric tops with fragsize.ge.3
+use mod_interface
 implicit none
-real(8),intent(in) :: inprin(3,nmol),L_t(3,nmol),T_t(3,nmol),quat_t(4,nmol),dt
+real(8),intent(in) :: inprin(3,nmol),L_t(3,nmol),T_t(3,nmol),quat_t(4,nmol),dt,T_t10(3,nmol)
 integer,intent(in) :: nmol,fragsize(nmol)
 logical,intent(in) :: symtop(nmol)
-real(8),intent(out):: L_t10(3,nmol),T_t10(3,nmol),quat_t10(4,nmol)
+real(8),intent(out):: L_t10(3,nmol),quat_t10(4,nmol)
 real(8) :: L_til_t(3,nmol),L_til_t5(3,nmol),L_til_t10(3,nmol)
 integer :: imol
 do imol=1,nmol
@@ -8454,6 +8523,7 @@ end subroutine
 
  subroutine find_kpt(k1, k2, k3, lat, gridden)
 ! This code will define the KPT mesh based on the desired grid density
+   use mod_interface
    implicit none
    integer, intent(out) :: k1,k2,k3
    real(8), intent(in)  :: lat(3,3), gridden
@@ -8496,13 +8566,18 @@ end subroutine
    call track_kpt(gridden, glen(2), k2)
    call track_kpt(gridden, glen(3), k3)
    
- contains
+ end subroutine find_kpt
+ !contains
    
    subroutine track_kpt(gridden, glen, kpt)
+     use mod_interface
      implicit none
      real(8), intent(in) :: gridden, glen
      integer :: kpt,j
      real(8) :: d_test
+   real(8) :: pi
+   
+   pi = acos(-1.d0)
      
      kpt = int(glen/(gridden*2.d0*pi))
      if (kpt == 0) kpt = 1
@@ -8516,7 +8591,6 @@ end subroutine
      endif
    end subroutine track_kpt
    
- end subroutine find_kpt
 
 !***
 
@@ -8524,9 +8598,10 @@ end subroutine
 subroutine MD_MHM_ROT(parini,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcart_in,strten_in,&
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,md_algo,md_integrator,auto_dtion_md,&
-                   &nit_per_min,fixat,fixlat
+ use mod_interface
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,bmass,mdmin,dtion_md,strfact,units,usewf_md,md_algo,md_integrator,auto_dtion_md
+ use global, only: nit_per_min,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -9083,6 +9158,7 @@ subroutine init_fp(fp_len,latvec)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
+use mod_interface
 use fingerprint
 use global, only: ntypat,nat,typat,units
 use defs_basis, only: Bohr_Ang,pi
@@ -9181,6 +9257,11 @@ subroutine get_fp(fp_len,pos_red,latvec,fp)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
+use mod_interface
+use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
+use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim, fp_17_natx_sphere
+use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
+use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
 use global, only: ntypat,nat,typat,rcov,char_type
 implicit none
@@ -9256,6 +9337,7 @@ subroutine get_fp_distance(fp_len,fp1,fp2,fp_dist)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
+use mod_interface
 use fingerprint
 use global, only: ntypat,nat,typat
 use defs_basis, only: pi
@@ -9290,6 +9372,7 @@ end subroutine
 
 subroutine identical(nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
            &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
+use mod_interface
 implicit none
 integer:: nlminx,nlmin,fp_len,kid,k_e_wpos,n_unique,n_nonuni
 integer:: i,l,klow,k,khigh,fp_method,lid(nlminx),nid
@@ -9365,6 +9448,7 @@ subroutine replace(nlminx,nlmin,fp_len,nat,kid,e_wpos,ent_wpos,fp_wpos,wpos_red,
   &wpos_latvec,spg_wpos,spgtol_wpos,fdos_wpos,&
   &e_arr,ent_arr,fp_arr,pl_arr,lat_arr,spg_arr,spgtol_arr,dos_arr,ct_arr,findsym)
 !Replace the structure kid with wpos, only if the symmetry index is higher in wpos
+  use mod_interface
   implicit none
   integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
   integer:: k, nlmin,nlminx,i,kid
@@ -9394,6 +9478,8 @@ end subroutine
  !This subroutine will calculate  the distance between a plane and a point in space
  !The point is 'point', the normalized normal vector of the plane is 'nvec', 'ppoint' is an arbitrary point on the plane
  !and the output is the distance 'dist'  
+ use mod_interface
+ implicit none
  real(8), intent(in) :: point(3),nvec(3),ppoint(3)
  real(8), intent(out):: dist
  integer             :: i
@@ -9410,6 +9496,8 @@ end subroutine
  !This subroutine will calculate a the distance between a plane and a line in space
  !The point is 'point', 'ppoint1' and 'ppoint2' are arbitrary points on the line
  !and the output is the distance 'dist'  
+ use mod_interface
+ implicit none
  real(8), intent(in) :: point(3),ppoint1(3),ppoint2(3)
  real(8), intent(out):: dist
  integer             :: i
@@ -9425,6 +9513,7 @@ end subroutine
 !**********************************************************************************************
 
 subroutine compare_lammps(parini)
+use mod_interface
 use global
 use interface_code
 use defs_basis
@@ -9528,6 +9617,7 @@ end subroutine
 !**********************************************************************************************
 
 subroutine bin_write(filename,array,n)
+use mod_interface
 implicit none
 integer:: n
 real(8):: array(n)
@@ -9546,6 +9636,7 @@ subroutine rotmat_fcart_stress(latvec_init,latvec_trans,rotmat)
 !This subroutine will compute a rotation matrix, which transforms
 !fcart_trans into the original orientation forces fcart by fcart=matmul(rotmat,fcart_trans)
 !stress_trans into the original orientation stress by stress=rotmat*stress_trans*rotnat^T
+use mod_interface
 implicit none
 real(8):: latvec_init(3,3),latvec_trans(3,3),latvec_trans_inv(3,3),rotmat(3,3)
 call invertmat(latvec_trans,latvec_trans_inv,3)
@@ -9556,6 +9647,7 @@ end subroutine
 
 subroutine rotate_stresstensor(strten,rotmat)
 !This subroutine will rotate the stress tensor by rotmat according to rotmat*stress*rotmat^T
+use mod_interface
 implicit none
 real(8):: strten(6),rotmat(3,3),stress(3,3)
         stress(1,1) =  strten(1) 
@@ -9580,6 +9672,7 @@ end subroutine
 !**********************************************************************************************
 
 subroutine bin_read(filename,array,n)
+use mod_interface
 implicit none
 integer:: n
 real(8):: array(n)
@@ -9591,6 +9684,7 @@ end subroutine
 
 !**********************************************************************************************
 subroutine print_logo()
+use mod_interface
 implicit none  
 !!!!     write(*,'(a,23x,a)')' #',' ____           _           _ _        __  __ _       _   _             '
 !!!!     write(*,'(a,23x,a)')' #','|  _ \ ___ _ __(_) ___   __| (_) ___  |  \/  (_)_ __ | | | | ___  _ __  '

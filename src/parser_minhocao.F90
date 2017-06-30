@@ -46,7 +46,7 @@ use String_Utility
 use defs_basis
 use interface_ipi
 use interface_msock
-use fire,   only:dtmin, dtmax
+use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
@@ -640,7 +640,7 @@ end subroutine
 !************************************************************************************
 subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
 use defs_basis
-use fire,   only:dtmin, dtmax
+use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
@@ -666,7 +666,7 @@ use fingerprint, only: &
 use confinement
 use mod_parini, only: typ_parini
 implicit none
-type(typ_parini), intent(out):: parini
+type(typ_parini), intent(inout):: parini
 integer:: mdmin_in,itype,i,j
 real(8):: dtion_md_in,alpha_lat_in,alpha_at_in
 logical:: read_poscur
@@ -799,7 +799,7 @@ end subroutine
 
 subroutine params_check(parini)
 use defs_basis
-use fire,   only:dtmin, dtmax
+use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
@@ -921,7 +921,7 @@ end subroutine
 subroutine params_echo(parini)
 use defs_basis
 use String_Utility 
-use fire,   only:dtmin, dtmax
+use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&

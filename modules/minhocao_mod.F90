@@ -64,7 +64,7 @@ implicit none
   logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
 end module global
 
-module fire
+module mod_fire
 implicit none
    integer,parameter:: Nmin=5
    real(8),parameter:: finc=1.1d0
@@ -75,7 +75,7 @@ implicit none
    real(8),parameter:: latmass_at=1.d0
    real(8):: dtmax    !=5.d+1, will be provided trough params.in
    real(8):: dtmin    !=1.d0,  will be provided trough params.in
-end module fire
+end module mod_fire
 !> Module which define the type parameterminimization
 module minpar
    implicit none

@@ -8,9 +8,10 @@
       SUBROUTINE NLBFGS(N,M,X,F,G,DIAG,W,paropt)
 !
       use mod_opt, only: typ_paropt
+      implicit none
       INTEGER N,M
-      DOUBLE PRECISION X(N),G(N),DIAG(N),W(N*(2*M+1)+2*M)
-      DOUBLE PRECISION F,fmax
+      real(8):: X(N),G(N),DIAG(N),W(N*(2*M+1)+2*M)
+      real(8):: F,fmax
       type(typ_paropt):: paropt
       !LOGICAL DIAGCO
 !

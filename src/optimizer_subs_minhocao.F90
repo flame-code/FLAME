@@ -12,9 +12,10 @@ interface
      real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
    end subroutine unit_matrix
 
-   real(8) function vabs(v)
+   function vabs(v) result(res)
      implicit none
      real(8),dimension(:):: v
+     real(8):: res
    end function vabs
 
    function outerprod(a,b)
