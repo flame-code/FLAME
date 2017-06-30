@@ -116,7 +116,7 @@ def get_subroutine_name(line):
     return procedure,ttl
 #*****************************************************************************************
 def get_files():
-    cmd='find . -not -path "./futile/*" -not -path "./minhocao/*" -iname "*.F90" |sort'
+    cmd='find . -not -path "./futile/*" -not -path "./minhocao/*" -iname "*.F90" | LC_COLLATE=en_US.UTF-8 sort'
     str_files=commands.getoutput(cmd)
     files=str_files.splitlines()
     exclude_files=['./modules/interface_mod.F90',
