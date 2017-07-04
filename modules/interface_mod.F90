@@ -878,6 +878,27 @@ subroutine set_annweights(parini,ekf)
     type(typ_parini), intent(in):: parini
     type(typ_ekf), intent(inout):: ekf
 end subroutine set_annweights
+! ./src/atoms_minhocao.F90 :
+subroutine atmdata(amu,rcov,symbol,znucl)
+ real(8),intent(in) :: znucl
+ real(8),intent(out) :: amu,rcov
+ character(len=2),intent(out) :: symbol
+end subroutine atmdata
+subroutine mlj_atmdata(amu,sigma,eps,rcov,symbol,znucl)
+ real(8),intent(in) :: znucl
+ real(8),intent(out) :: amu,rcov,sigma,eps
+ character(len=2),intent(out) :: symbol
+end subroutine mlj_atmdata
+subroutine symbol2znucl(amu,rcov,symbol,znucl)
+ real(8),intent(out) :: znucl
+ real(8),intent(out) :: amu,rcov
+ character(len=2),intent(in) :: symbol
+end subroutine symbol2znucl
+subroutine mlj_symbol2znucl(amu,sigma,eps,rcov,symbol,znucl)
+ real(8),intent(out) :: znucl
+ real(8),intent(out) :: amu,rcov,sigma,eps
+ character(len=2),intent(in) :: symbol
+end subroutine mlj_symbol2znucl
 ! ./src/bader_neargrid.F90 :
 subroutine bader_neargrid(parini)
     use mod_parini, only: typ_parini
@@ -1343,6 +1364,11 @@ end subroutine hunt2
 subroutine hpsort(n,ra)
     real*8 ::ra(n)
 end subroutine hpsort
+! ./src/best_charge_density.F90 :
+subroutine best_charge_density(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+end subroutine best_charge_density
 ! ./src/cell_linkedlists.F90 :
 subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     use mod_parini, only: typ_parini
@@ -1499,6 +1525,11 @@ subroutine MD_fixlat(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,
     real(8):: latvec_in(3,3), xred_in(3,nat),fcart_in(3,nat),vel_in(3,nat), strten_in(6), etot_in, counter
     character(40):: filename,folder
 end subroutine md_fixlat
+! ./src/envelope.F90 :
+SUBROUTINE envelope(x, y, n, vertex, nvert, iwk)
+INTEGER :: n, vertex(n), nvert, iwk(n)
+REAL(8) :: x(n), y(n)
+end subroutine envelope
 ! ./src/es_coulomb_p3d_bias.F90 :
 subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
     use mod_electrostatics, only: typ_ewald_p3d
@@ -1788,6 +1819,62 @@ subroutine calbeta(hzsq,ngpz,analc00,beta)
     integer::ngpz,iz
     real(8)::analc00(ngpz),hzsq,beta
 end subroutine calbeta
+! ./src/fingerprint_atorb.F90 :
+subroutine get_fp_malypso(nat,rxyz,rcov,latvec,r_cut_in,kinds,nkinds,fp_dim,nl,fp)
+integer:: nl !Number of l components, here only even ones 
+integer:: fp_dim !Number of AB interactions, doublecounting eliminated
+integer:: nat,nkinds
+integer:: nbond(fp_dim,nat),kinds(nat)
+integer:: llist(nl)
+real(8):: latvec(3,3),rxyz(3,nat),fp(nl,fp_dim,nat),fp_ri(2,nl,nat),rcov(nkinds)
+real(8):: sigma,r_cut_in(fp_dim) !Cutoff for each AB interaction
+real(8):: r_cut(fp_dim,fp_dim)
+real(8):: min_bond(fp_dim,fp_dim),ylm_r,ylm_i
+end subroutine get_fp_malypso
+subroutine get_distance_malypso(fp1,fp2,fp_dim,nat,kinds,nl,dist)
+integer:: fp_dim,nl,yll,i,j,mode,nat,iarr,i_dim,ii,jj,kinds(nat),k(nat),iii,jjj,nmat,imax,imin
+real(8):: fp1(nl,fp_dim,nat),fp2(nl,fp_dim,nat),dist,a(nat,nat),summ,vec(nl),vec1(nl),vec2(nl),norm1,norm2
+end subroutine get_distance_malypso
+SUBROUTINE assndx(mode, a, n, m, k, sum)
+INTEGER, INTENT(IN)   :: mode
+REAL(8), INTENT(IN OUT)  :: a(:,:)
+INTEGER, INTENT(IN)   :: n
+INTEGER, INTENT(IN)   :: m
+INTEGER, INTENT(OUT)  :: k(:)
+REAL(8), INTENT(OUT)  :: sum
+end subroutine assndx
+! ./src/fingerprint_GOM.F90 :
+subroutine get_fp_gauss(nat, ntypat, natx_sphere, typat, lseg, width_cutoff, nex_cutoff, alat, rxyz, rcov, fp)
+  integer, intent(in) :: nat, ntypat, natx_sphere, lseg
+  integer, dimension(nat), intent(in) :: typat
+  real(8), intent(in) :: width_cutoff, nex_cutoff
+  real(8), dimension(3,3), intent(in) :: alat
+  real(8), dimension(3,nat), intent(in) :: rxyz
+  real(8), dimension(nat), intent(in) :: rcov
+  real(8), dimension(lseg*(ntypat+1), nat), intent(out) :: fp
+  integer, dimension(lseg*natx_sphere) :: ind_small
+  real(8), dimension(natx_sphere) :: amplitude
+  real(8), dimension(lseg*natx_sphere) :: fpp
+  real(8), dimension(3, natx_sphere) :: rxyz_sphere
+  real(8), dimension(natx_sphere) :: rcov_sphere
+  real(8), dimension(lseg*(ntypat+1), lseg*(ntypat+1)) :: omsa, omsb, omsaa, omsbb
+end subroutine get_fp_gauss
+subroutine get_distance_gauss(fp1, fp2, lseg, nat, ntypat, typat, fpd)
+  integer, intent(in)  :: lseg, nat, ntypat
+  integer, dimension(nat) :: typat
+  real(8), dimension(lseg*(ntypat+1), nat) :: fp1, fp2
+  real(8), intent(out) :: fpd
+  real(8), dimension(nat, nat) :: cost
+  real(8), dimension(ntypat)   :: dist
+end subroutine get_distance_gauss
+subroutine mltampl_4(nat,amplitude,om)
+end subroutine mltampl_4
+subroutine mltampl_1(nat,amplitude,om)
+end subroutine mltampl_1
+subroutine create_om_1(nat,rxyz,rcov,om)
+end subroutine create_om_1
+subroutine create_om_4(nat,rxyz,rcov,om)
+end subroutine create_om_4
 ! ./src/forcefield.F90 :
 subroutine forcefield_init(parini,atoms)
     use mod_parini, only: typ_parini
@@ -3825,6 +3912,25 @@ subroutine cell_vol(nat,latvec,vol)
     integer:: nat
     real(8):: latvec(3,3),vol,a(3,3)
 end subroutine cell_vol
+! ./src/potential_confinement.F90 :
+subroutine init_confinement(nat,filename)
+integer:: i,io,iconf,nat
+character(40):: filename,my_fmt,allatoms
+end subroutine init_confinement
+subroutine init_confinement_parser()
+integer:: i,io,iconf
+character(40):: filename,my_fmt,allatoms
+character(200):: line
+end subroutine init_confinement_parser
+subroutine confinement_energy_forces(nat,xred,latvec,energy,forces,strten)
+integer:: nat,iconf,iat
+real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
+real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),norm,ft(3)
+end subroutine confinement_energy_forces
+subroutine conf_latforce(latvec,conf_dim,xred_point,xred_ppoint,str)
+real(8):: latvec(3,3),xred_point(3),xred_ppoint(3),str(3,3)
+integer:: conf_dim
+end subroutine conf_latforce
 ! ./src/potential_DFTB.F90 :
 subroutine init_potential_forces_dftb(atoms)
     use mod_atoms, only: typ_atoms

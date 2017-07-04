@@ -131,6 +131,9 @@ def get_files():
                    './modules/constants_minhocao_mod.F90',
                    './modules/minhocao_mod.F90',
                    './modules/fsockets.F90',
+                   './src/fingerprint_BCM.F90',
+                   './src/fingerprint_gaussmol.F90',
+                   './src/recompute_kpt.F90', 
                    './src/optimizer_nlbfgs_minhocao.F90',
                    './src/optimizer_sqnm_minhocao_module.F90',
                    './src/optimizer_subs_minhocao.F90',
@@ -139,31 +142,28 @@ def get_files():
                    './src/potential_abinit.F90',
                    './src/potential_alborz.F90',
                    './src/ascii2POSCAR.F90',         #Do not touch this !!!"
-                   './src/atoms_minhocao.F90',
                    './src/binaries.F90',             #Do not touch this !!!"
+                   './src/vasp_recompute_cell.F90',    #Do not touch this !!!"
+                   './src/vasp_recompute_kpt.F90',     #Do not touch this !!!"     
+                   './src/vasp_recompute_kpt_odd.F90',  #Do not touch this !!!"
+                   './src/ternaries.F90',              #Do not touch this !!!"
+                   './src/convex_hull.F90',           #Do not touch this !!!"
                    './src/potential_BLJ_minhocao.F90',
                    './src/cell_utils.F90',
-                   './src/potential_confinement.F90',
                    './src/potential_MLJ.F90',
                    './src/potential_corerepulsion.F90',
                    './src/potential_CP2K.F90',
                    './src/potential_DFTB_minhocao.F90',
                    './src/potential_EDIP.F90',
-                   './src/envelope.F90',
                    './src/potential_PWSCF.F90',
                    './src/PWSCF_restruct.F90',
                    './src/quaternions.F90',
                    './src/expand_poslows.F90',
                    './src/find_symmetry.F90',
-                   './src/fingerprint_atorb.F90',
-                   './src/fingerprint_BCM.F90',
-                   './src/fingerprint_gaussmol.F90',
-                   './src/fingerprint_GOM.F90',
                    './src/fingerprint_MOLGOM.F90',
                    './src/fingerprint_oganov.F90',
                    './src/fingerprint_oganov_cont.F90',
                    './src/fingerprint_XYZ2SM.F90',
-                   './src/convex_hull.F90',           #Do not touch this !!!"
                    './src/potential_main_minhocao.F90',
                    './src/io_ascii.F90',
                    './src/io_vasp_minhocao.F90',
@@ -178,15 +178,11 @@ def get_files():
                    './src/potential_MSOCK.F90',
                    './src/msock_slave_template.F90',
                    './src/parser_core_minhocao.F90',
-                   './src/recompute_kpt.F90', 
                    './src/potential_SIESTA_minhocao.F90',
-                   './src/ternaries.F90',              #Do not touch this !!!"
                    './src/potential_TERSOFF.F90',
                    './src/potential_TINKER.F90',
                    './src/potential_VASP_minhocao.F90',
-                   './src/vasp_recompute_cell.F90',    #Do not touch this !!!"
-                   './src/vasp_recompute_kpt.F90',     #Do not touch this !!!"     
-                   './src/vasp_recompute_kpt_odd.F90'] #Do not touch this !!!"
+                   ]
     
     for file in exclude_files:
         if file in files: files.remove(file)
