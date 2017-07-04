@@ -9,6 +9,8 @@ subroutine miscellaneous_task(parini)
         call solve_poisson(parini)
     elseif(trim(parini%subtask_misc)=='linkedlist_test') then
         call linkedlist_test(parini)
+    elseif(trim(parini%subtask_misc)=='best_charge_density') then
+        call best_charge_density(parini)
     else
         write(*,'(2a)') 'ERROR: unknown parini%subtask_misc ',trim(parini%subtask_misc)
         stop
