@@ -13,7 +13,7 @@ program alborz
         call minimahopping(parini)
     elseif(trim(parini%task)=='minhocao') then
         parini_of_potential=parini
-        call task_minhocao()
+        call task_minhocao(parini)
     elseif(trim(parini%task)=='geopt') then
         call geopt(parini)
     elseif(trim(parini%task)=='saddle_1s') then

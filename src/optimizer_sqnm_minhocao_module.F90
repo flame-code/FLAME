@@ -9,14 +9,14 @@ module module_sqn
     implicit none
     private
 
-    public :: modify_gradient
+    public :: modify_gradient_minhocao
     public :: getSubSpaceEvecEval
 !    public :: findbonds
 !    public :: projectbond
 
 contains
 
-subroutine modify_gradient(nat,ndim,rrr,eval,res,fxyz,alpha,alphalat_scale,dd)
+subroutine modify_gradient_minhocao(nat,ndim,rrr,eval,res,fxyz,alpha,alphalat_scale,dd)
 !    use module_base
     implicit none
     !parameters

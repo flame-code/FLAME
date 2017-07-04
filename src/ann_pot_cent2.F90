@@ -256,6 +256,10 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         qat_old=atoms%qat
     enddo
     !write(*,'(a,i5,2f8.3)') 'DISP ',istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+    !write(*,'(a,9f10.2)') 'WHAT ', &
+    !                    cent%rel(1:3,70)-atoms%rat(1:3,70), &
+    !                    cent%rel(1:3,51)-atoms%rat(1:3,70), &
+    !                    atoms%rat(1:3,51)-atoms%rat(1:3,70)
 
     call cent2_force(parini,ann_arr,atoms,cent)
 

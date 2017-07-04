@@ -39,6 +39,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
 		task_testforces.F90 \
 		task_miscellaneous.F90 solve_poisson_cube.F90 \
+		best_charge_density.F90 \
 		tightbinding.F90 lenosky_tightbinding.F90 \
 		task_linkedlist.F90 \
 		task_potential.F90 \

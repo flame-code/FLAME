@@ -66,8 +66,10 @@ contains
     endif
   end subroutine
 
-  subroutine get_energyandforces_single(latvec, xred, fcart, strten, energy, iprec, getwfk)
+  subroutine get_energyandforces_single(parini,latvec, xred, fcart, strten, energy, iprec, getwfk)
+    use mod_parini, only: typ_parini
     implicit none
+    type(typ_parini), intent(in):: parini
     real(8), intent(in)  :: latvec(3,3)
     real(8), intent(in)  :: xred(3,nat)
     real(8), intent(out) :: fcart(3,nat)
@@ -122,7 +124,7 @@ contains
         ka1 = ka
         kb1 = kb
         kc1 = kc
-if(verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
+if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(code)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
@@ -270,7 +272,10 @@ if(verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh se
 
 
   !************************************************************************************
-  subroutine get_dos(latvec, xred, efermi, fdos, iprec, getwfk)
+  subroutine get_dos(parini, latvec, xred, efermi, fdos, iprec, getwfk)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
     real(8), intent(in)  :: latvec(3,3)
     real(8), intent(in)  :: xred(3,nat)
     real(8), intent(out) :: efermi
@@ -309,7 +314,7 @@ if(verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh se
         ka1 = ka
         kb1 = kb
         kc1 = kc
-if(verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
+if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(code)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
