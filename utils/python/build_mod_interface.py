@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import commands
 import string
 import re
@@ -211,29 +212,44 @@ def make_one_line(lines,iline):
         #if i_comment>0: break
     return oneline_arg,iline+i
 #*****************************************************************************************
-fout=open('modules/interface_mod.F90',"w")
-fout.write("!"+"*"*99+"\n")
-fout.write("module mod_interface\n")
-fout.write("    implicit none\n")
-fout.write("interface\n")
-files=get_files()
-for file in files:
-    allcontent=commands.getoutput('cat '+file)
-    lines=allcontent.splitlines()
-    routines=[]
-    iline_routines=[]
-    iline=-1
-    for line in lines:
-        iline+=1
-        str_line=str(line).lower()
-        i_sub=str_line.find('subroutine')
-        i_fun=str_line.find('function')
-        if i_sub>-1 or i_fun>-1:
-            check_routine=is_routine(line)
-            if check_routine:
-                routines.append(line)
-                iline_routines.append(iline)
-    fout.write("! %s :\n" % file)
+def routines_missing_use_interface(lines,routines,iline_routines):
+    excluded_routines=['sort_alborz','sort2_alborz',
+        'ylm_mathematica',
+        'spg_cell_primitive',
+        'spg_cell_refine',
+        'get_spg',
+        'final_netsock',
+        'rotate_stresstensor_other',
+        'init_lenosky_tb',
+        'conf_latforce',
+        'alborz_initialize_timing_categories',
+        'erf_over_r_taylor',
+        'fp_assign',
+        'params_echo'
+        ]
+    for iroutine in range(len(routines)):
+        tt=str(lines[iline_routines[iroutine]]).split()[1]
+        i_roundbracket=tt.find('(')
+        if i_roundbracket>-1: tt=tt[0:i_roundbracket]
+        if tt in excluded_routines: continue
+        if iroutine==len(routines)-1:
+            nline_routine=len(lines)-iline_routines[iroutine]-1
+        else:
+            nline_routine=iline_routines[iroutine+1]-iline_routines[iroutine]-1
+        uses_modinterface=False
+        for iline in range(nline_routine):
+	    tt=str(lines[iline_routines[iroutine]+iline]).strip()
+            tt=tt.lower()
+            tt=tt.replace(" ","")
+            i_modinterface=tt.find('usemod_interface')
+            i_comment=tt.find('!')
+            if i_comment==0: continue
+            if i_modinterface==0:
+                uses_modinterface=True
+                break
+        if not uses_modinterface: print routines[iroutine]
+#*****************************************************************************************
+def make_interface_routines(lines,routines,iline_routines,fout):
     for iroutine in range(len(routines)):
         oneline_arg,iline_arg_end=make_one_line(lines,iline_routines[iroutine])
         nline_arg=iline_arg_end-iline_routines[iroutine]+1
@@ -286,9 +302,42 @@ for file in files:
                 fout.write("%s\n" % lines[iline_routines[iroutine]+k+1])
         procedure,subroutine_name=get_subroutine_name(routines[iroutine])
         fout.write("end %s %s\n" % (procedure,subroutine_name))
+#*****************************************************************************************
+str1="Generates modules/interface_mod.F90."
+parser=argparse.ArgumentParser(description=str1)
+str2="if present, it checks routines for using the module mod_interface."
+parser.add_argument("-use",action='store_false',help=str2)
+args=parser.parse_args()
+use_modinterface=not args.use
+
+fout=open('modules/interface_mod.F90',"w")
+fout.write("!"+"*"*89+"\n")
+fout.write("module mod_interface\n")
+fout.write("    implicit none\n")
+fout.write("interface\n")
+files=get_files()
+for file in files:
+    allcontent=commands.getoutput('cat '+file)
+    lines=allcontent.splitlines()
+    routines=[]
+    iline_routines=[]
+    iline=-1
+    for line in lines:
+        iline+=1
+        str_line=str(line).lower()
+        i_sub=str_line.find('subroutine')
+        i_fun=str_line.find('function')
+        if i_sub>-1 or i_fun>-1:
+            check_routine=is_routine(line)
+            if check_routine:
+                routines.append(line)
+                iline_routines.append(iline)
+    fout.write("! %s :\n" % file)
+    if use_modinterface: routines_missing_use_interface(lines,routines,iline_routines)
+    make_interface_routines(lines,routines,iline_routines,fout)
 
 fout.write("end interface\n")
 fout.write("end module mod_interface\n")
-fout.write("!"+"*"*99+"\n")
+fout.write("!"+"*"*89+"\n")
 fout.close()
 #*****************************************************************************************

@@ -1,4 +1,4 @@
-!***************************************************************************************************
+!*****************************************************************************************
 module mod_interface
     implicit none
 interface
@@ -3925,7 +3925,7 @@ end subroutine init_confinement_parser
 subroutine confinement_energy_forces(nat,xred,latvec,energy,forces,strten)
 integer:: nat,iconf,iat
 real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
-real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),norm,ft(3)
+real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
 end subroutine confinement_energy_forces
 subroutine conf_latforce(latvec,conf_dim,xred_point,xred_ppoint,str)
 real(8):: latvec(3,3),xred_point(3),xred_ppoint(3),str(3,3)
@@ -4536,4 +4536,4 @@ subroutine tosifumi_parameters(s,p)
 end subroutine tosifumi_parameters
 end interface
 end module mod_interface
-!***************************************************************************************************
+!*****************************************************************************************
