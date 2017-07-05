@@ -27,7 +27,7 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     type(typ_linked_lists), intent(inout):: linked_lists
     !local variables
     real(8):: sclinv, vol,tmp(3), nrm_tmp
-    call f_routine(id='linkedlists_init')
+    integer:: istat 
     linked_lists%avgnndis=2.8d0/bohr2ang
     associate(mlimnb=>linked_lists%mlimnb)
     !linked_lists%avgnndis=2.82d0   
@@ -66,8 +66,10 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
         linked_lists%mz=max(1,floor(cell(3)*sclinv)) !calculating number of cells in z direction.
     endif
     mlimnb=ceiling(linked_lists%rcut/linked_lists%scl)
-    linked_lists%limnbx=f_malloc([1.to.2,-mlimnb.to.mlimnb,0.to.mlimnb],id='linked_lists%limnbx')
-    linked_lists%limnby=f_malloc([1.to.2,0.to.mlimnb],id='linked_lists%limnby')
+    allocate(linked_lists%limnbx(2,-mlimnb:mlimnb,0:mlimnb),stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating array limnbx.'
+    allocate(linked_lists%limnby(2,0:mlimnb),stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating array limnby.'
     end associate
 !    if(linked_lists%triplex==.true.) then
 !        linked_lists%next=2
@@ -103,35 +105,30 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     if(parini%iverbose>1) then
         write(*,*) 'mx,my,mz,total number of cells',mx,my,mz,mx*my*mz
     endif
-    linked_lists%head=f_malloc([1.to.mx,1.to.my,1.to.mz],id='linked_lists%head')
-    linked_lists%list=f_malloc([1.to.atoms%nat],id='linked_lists%list')
+    allocate(linked_lists%head(mx,my,mz),stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating linked_lists%head'
+    allocate(linked_lists%list(atoms%nat),stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating linked_lists%list'
     associate(n=>linked_lists%mlimnb)
     if (trim(atoms%boundcond)=='bulk') then
-        linked_lists%prime=f_malloc([1-(n+linked_lists%mlimnb1).to.mx+(n+linked_lists%mlimnb1), &
-                                     1-(n+linked_lists%mlimnb2).to.my+(n+linked_lists%mlimnb2), &
-                                     1.to.mz+linked_lists%mlimnb3],id='linked_lists%prime')
+        allocate(linked_lists%prime(1-(n+linked_lists%mlimnb1):mx+(n+linked_lists%mlimnb1),&
+                 1-(n+linked_lists%mlimnb2):my+(n+linked_lists%mlimnb2),1:mz+linked_lists%mlimnb3),stat=istat)
     else
-        linked_lists%prime=f_malloc([1-n.to.mx+(n+linked_lists%mlimnb1), &
-                                     1-(n+linked_lists%mlimnb2).to.my+(n+linked_lists%mlimnb2), &
-                                     1.to.mz],id='linked_lists%prime')
+        allocate(linked_lists%prime(1-n:mx+(n+linked_lists%mlimnb1),1-(n+linked_lists%mlimnb2):my+(n+linked_lists%mlimnb2),mz),stat=istat)
     endif
     if (trim(atoms%boundcond)=='bulk') then
-        linked_lists%last=f_malloc([1-(n+linked_lists%mlimnb1).to.mx+(n+linked_lists%mlimnb1), &
-                                    1-(n+linked_lists%mlimnb2).to.my+(n+linked_lists%mlimnb2), &
-                                    1.to.mz+linked_lists%mlimnb3],id='linked_lists%last')
+        allocate(linked_lists%last(1-(n+linked_lists%mlimnb1):mx+(n+linked_lists%mlimnb1),&
+                 1-(n+linked_lists%mlimnb2):my+(n+linked_lists%mlimnb2),1:mz+linked_lists%mlimnb3),stat=istat)
     else
-        linked_lists%last=f_malloc([1-n.to.mx+(n+linked_lists%mlimnb1), &
-                                    1-(n+linked_lists%mlimnb2).to.my+(n+linked_lists%mlimnb2), &
-                                    1.to.mz],id='linked_lists%last')
+        allocate(linked_lists%last(1-n:mx+(n+linked_lists%mlimnb1),1-(n+linked_lists%mlimnb2):my+(n+linked_lists%mlimnb2),mz),stat=istat)
     endif
     end associate
     end associate
     call make_list_new(parini,atoms,linked_lists,cell)
     call atom_allocate_old(linked_lists%typ_atoms,linked_lists%natim,linked_lists%natim,0)
-    linked_lists%maincell=f_malloc([1.to.linked_lists%natim],id='linked_lists%maincell')
-    linked_lists%perm=f_malloc([1.to.linked_lists%natim],id='linked_lists%perm')
+    allocate(linked_lists%maincell(1:linked_lists%natim))
+    allocate(linked_lists%perm(1:linked_lists%natim))
     call prepprimelast(atoms,linked_lists,cell)
-    call f_release_routine()
 end subroutine linkedlists_init
 !*****************************************************************************************
 subroutine linkedlists_final(linked_lists)
@@ -142,17 +139,27 @@ subroutine linkedlists_final(linked_lists)
     implicit none
     type(typ_linked_lists), intent(inout):: linked_lists
     !local variables
-    call f_routine(id='linkedlists_final')
-    call f_free(linked_lists%head)
-    call f_free(linked_lists%list)
-    call f_free(linked_lists%prime)
-    call f_free(linked_lists%last)
-    call f_free(linked_lists%limnbx)
-    call f_free(linked_lists%limnby)
-    call f_free(linked_lists%perm)
+    integer:: istat
+    deallocate(linked_lists%head,stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating linked_lists%head'
+    deallocate(linked_lists%list,stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating linked_lists%list'
+    deallocate(linked_lists%prime,stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating linked_lists%prime'
+    deallocate(linked_lists%last,stat=istat)
+    if(istat/=0) stop 'ERROR: failure allocating linked_lists%last'
+    deallocate(linked_lists%limnbx,stat=istat)
+    if(istat/=0) then
+        write(*,*) 'ERROR: failure deallocating array limnbx.'
+    endif
+    deallocate(linked_lists%limnby,stat=istat)
+    if(istat/=0) then
+        write(*,*) 'ERROR: failure deallocating array limnby.'
+    endif
+    deallocate(linked_lists%perm,stat=istat)
+
     call atom_deallocate_old(linked_lists%typ_atoms)
-    call f_free(linked_lists%maincell)
-    call f_release_routine()
+    deallocate(linked_lists%maincell)
 end subroutine linkedlists_final
 !*****************************************************************************************
 subroutine prepprimelast(atoms,linked_lists,cell)
@@ -265,8 +272,7 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
     integer:: iat, ix, iy, iz, ind, ishift1, ishift2, ishift3
     integer:: mx, my, mz, mlimnb1, mlimnb2, mlimnb3
     real(8), allocatable:: rat_int(:,:)
-    call f_routine(id='make_list_new')
-    rat_int=f_malloc([1.to.3,1.to.atoms%nat],id='rat_int')
+    allocate(rat_int(1:3,1:atoms%nat))
     mx=linked_lists%mx
     my=linked_lists%my
     mz=linked_lists%mz
@@ -314,8 +320,7 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
     linked_lists%natim=atoms%nat
     if(trim(atoms%boundcond)=='free') then
         natim=0
-        call f_free(rat_int)
-        call f_release_routine()
+        deallocate(rat_int)
         return
     endif
     natimarr(1)=0 ; natimarr(2)=0 ; natimarr(3)=0 ; natimarr(4)=0 ; natimarr(5)=0
@@ -393,8 +398,7 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
         write(*,'(a,i6)') 'natim= ',natim
     endif
     linked_lists%natim=linked_lists%natim+natim
-    call f_free(rat_int)
-    call f_release_routine()
+    deallocate(rat_int)
 end subroutine make_list_new
 !*****************************************************************************************
 !This subroutine determines the bounds of ix and iy to count
@@ -498,6 +502,7 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     type(typ_pia_arr), intent(inout):: pia_arr
     !local variables
     integer::nimat ,iat_maincell, jat_maincell
+    integer:: istat
     integer:: iat, jat, niat,kat,kkz,conf
     integer:: ix,iy,iz,jy,jz,kx,ky,kz,dkjz,dkiy 
     integer:: llx,mmx,lly,mmy ,jp,jl,kp,kl,ip,il ,kpt,jpt
@@ -511,17 +516,16 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     real(8), allocatable:: bound_dist(:,:,:)
     integer, allocatable:: neighbor(:)
     logical :: yes
-    call f_routine(id='call_linkedlist')
     call linkedlists_init(parini,atoms,cell,linked_lists)
     nmax=150
     if (.not. linked_lists%triplex) then
         !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
         !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)
     else
-        bound_rad=f_malloc([1.to.nmax,1.to.linked_lists%nat],id='bound_rad')
-        bound_dist=f_malloc([1.to.4,1.to.nmax,1.to.linked_lists%nat],id='bound_dist')
+        allocate(bound_rad(1:nmax,1:linked_lists%nat))
+        allocate(bound_dist(1:4,1:nmax,1:linked_lists%nat))
         linked_lists%prime_bound=f_malloc([1.to.linked_lists%nat+1],id='linked_lists%prime_bound')
-        neighbor=f_malloc([1.to.linked_lists%nat],id='neighbor')
+        allocate(neighbor(1:linked_lists%nat))
     endif
 
     rcutsq=linked_lists%rcut**2
@@ -623,8 +627,8 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
         stop
     endif
     linked_lists%prime_bound(linked_lists%nat+1)=linked_lists%maxbound_rad+1
-    call f_free(bound_rad)
-    call f_free(bound_dist)
+    deallocate(bound_rad)
+    deallocate(bound_dist)
     ntot=0
     do iat=1,linked_lists%nat
         n=linked_lists%prime_bound(iat+1)-linked_lists%prime_bound(iat)
@@ -649,7 +653,6 @@ subroutine call_linkedlist(parini,atoms,linked_lists,pia_arr)
     end associate
     end associate
     call linkedlists_final(linked_lists)
-    call f_free(neighbor)
-    call f_release_routine()
+    deallocate(neighbor)
 end subroutine call_linkedlist 
 !***************************************************************************************************
