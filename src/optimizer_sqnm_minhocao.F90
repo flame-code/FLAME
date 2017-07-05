@@ -10,6 +10,7 @@
 !subroutine geopt(nat,wpos,etot,fout,fnrmtol,count,count_sd,displr)
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
@@ -855,6 +856,7 @@ end subroutine
 subroutine minenergyandforces(parini,eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
            fxyzraw,epot,alpha_stretch0,alpha_stretch,&
            latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
+    use mod_interface
 !    use module_base
 !    use bigdft_run!module_types
     use module_sqn
@@ -1132,6 +1134,7 @@ end subroutine minenergyandforces
 !!end subroutine give_rcov_sqnm
 
 subroutine sqnm_invhess(nat,h,metric,hessinv)
+use mod_interface
 implicit none
 integer:: nat,info,i,j,k
 real(8):: metric(3*(nat+3),3*(nat+3)),hessinv(3*(nat+3),3*(nat+3))

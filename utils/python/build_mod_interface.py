@@ -225,7 +225,16 @@ def routines_missing_use_interface(lines,routines,iline_routines):
         'alborz_initialize_timing_categories',
         'erf_over_r_taylor',
         'fp_assign',
-        'params_echo'
+        'params_echo',
+        'params_check',
+        'NLB1',
+        'NMCSRCH',
+        'NMCSTEP',
+        'qe_volume',
+        'invmat',
+        'cell_force',
+        'cryst_to_cart',
+        'recips'
         ]
     for iroutine in range(len(routines)):
         tt=str(lines[iline_routines[iroutine]]).split()[1]
