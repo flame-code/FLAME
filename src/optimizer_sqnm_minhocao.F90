@@ -24,7 +24,7 @@ subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,
 !   use module_base
 !   use bigdft_run!module_types
 !   use yaml_output
-   use module_sqn, only: modify_gradient_minhocao, getSubSpaceEvecEval!, findbonds
+   use module_sqn, only: modify_gradient_minhocao, getSubSpaceEvecEval_minhocao!, findbonds
    use mod_parini, only: typ_parini
    implicit none
    type(typ_parini), intent(in):: parini
@@ -725,11 +725,11 @@ endif
 !      if (debug.and.iproc==0) write(100,*) 'cosangle ',cosangle,beta
        write(*,*) 'cosangle ',cosangle,beta
 
-!      call getSubSpaceEvecEval('(SQNM)',iproc,verbosity,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
+!      call getSubSpaceEvecEval_minhocao('(SQNM)',iproc,verbosity,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
 !                   &fxyz,aa,rr,ff,rrr,fff,eval,res,success)
-      call getSubSpaceEvecEval('(SQNM)',parini%verb,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
+      call getSubSpaceEvecEval_minhocao('(SQNM)',parini%verb,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
                    &fxyz,aa,rr,ff,rrr,fff,eval,res,success)
-      if(.not.success)stop 'subroutine minimizer_sqnm: no success in getSubSpaceEvecEval.'
+      if(.not.success)stop 'subroutine minimizer_sqnm: no success in getSubSpaceEvecEval_minhocao.'
 
 
 !Set precision if necessary

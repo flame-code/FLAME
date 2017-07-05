@@ -7,7 +7,7 @@
 !
       SUBROUTINE NLBFGS(N,M,X,F,G,DIAG,W,paropt)
 !
-      use mod_interface
+      !use mod_interface
       use mod_opt, only: typ_paropt
       implicit none
       INTEGER N,M
