@@ -49,6 +49,7 @@
 !!!end program
 
 subroutine init_confinement(nat,filename)
+use mod_interface
 use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
 use global, only: units
 use defs_basis, only: Bohr_Ang, Ha_eV
@@ -116,6 +117,7 @@ if(minval(conf_av(:)).lt.1.or.maxval(conf_av(:)).gt.2) stop "Wrong average in co
 end subroutine
 
 subroutine init_confinement_parser()
+use mod_interface
 use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
 use global, only: units,nat
 use defs_basis, only: Bohr_Ang, Ha_eV
@@ -156,11 +158,12 @@ if(minval(conf_av(:)).lt.1.or.maxval(conf_av(:)).gt.2) stop "Wrong average in co
 end subroutine
 
 subroutine confinement_energy_forces(nat,xred,latvec,energy,forces,strten)
+use mod_interface
 use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
 implicit none
 integer:: nat,iconf,iat
 real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
-real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),norm,ft(3)
+real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
 !Initiallize
 strten=0.d0
 energy=0.d0
