@@ -335,7 +335,7 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
                 enddo
         enddo
             !-----------------------------------------
-            write(*,*)"part sinh finished"
+ !           write(*,*)"part sinh finished"
 
     else
          do iz=npl+1,npu-1
@@ -500,7 +500,7 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
                 enddo
         enddo
             !-----------------------------------------
-            write(*,*)"part exp finished"
+!            write(*,*)"part exp finished"
     endif
   
     do iz=npl,npu
@@ -619,8 +619,8 @@ end subroutine sollaplaceq
         enddo 
     enddo 
     call cpu_time (time2)
-    write(*,*)"------------------------------------------"
-    write(*,*)"time for interpolation =",time2-time1
+!    write(*,*)"------------------------------------------"
+!    write(*,*)"time for interpolation =",time2-time1
     epot=0.d0
     do iat=1,atoms%nat
         epot=epot+pot_atom(iat)*atoms%qat(iat)

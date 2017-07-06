@@ -161,11 +161,11 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
         d= ewald_p3d%cell(3)
         write(*,*)'--------------------------------------------------------'
-        write(*,*)"distance between planes",d
+!        write(*,*)"distance between planes",d
         A= ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy*ewald_p3d%hgx*ewald_p3d%hgy
-        write(*,*)"A= ", A
+!        write(*,*)"A= ", A
         c= A/(4.d0*pi*d)
-        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
+!        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
         dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
         charge0= -dipole/(2*pi*d)
         charge = -dipole/(2*pi*d)+c*(vu-vl)
@@ -173,20 +173,19 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         !write(89,*)vu , beta, charge0
         write(*,*)'dipole = ', dipole/(2*pi)
         dipole_correction = 3/(4*pi)*dipole**2/(ewald_p3d%cell(3)*ewald_p3d%cell(2)*ewald_p3d%cell(1))
-        write(*,*)'dipole correction ', dipole_correction
-        write(*,*)'pot correction ', charge0*(vu-vl)
+!        write(*,*)'dipole correction ', dipole_correction
+!        write(*,*)'pot correction ', charge0*(vu-vl)
         !dipole_correction =0.d0
         dipole_correction =dipole_correction +0.5*charge0*(vu-vl)+0.5*c*(vu-vl)**2
         write(*,*)'charge on upper  plate  ', charge
-        write(*,*)'--------------------------------------------------------'
         ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
         ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
-        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
+!        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
         npl=ewald_p3d%poisson_p3d%npl
         npu=ewald_p3d%poisson_p3d%npu
 
         allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
-        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
+!        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
         nlayer=1
         if (parini%cal_charge) then 
             nlayer=5
@@ -234,10 +233,10 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         d = ewald_p3d%cell(3)
         E =- (vu-vl)/d
         write(*,*)'--------------------------------------------------------'
-        write(*,*)"distance between planes",d
+!        write(*,*)"distance between planes",d
         A= ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy*ewald_p3d%hgx*ewald_p3d%hgy
         c= A/(4.d0*pi*d)
-        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
+!        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
         dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
         charge0= -dipole/(2*pi*d)
         charge = -dipole/(2*pi*d)+c*(vu-vl)
@@ -245,10 +244,9 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         !write(89,*)vu , beta, charge0
         write(*,*)'dipole = ', dipole/(2*pi)
         write(*,*)'charge on upper  plate  ', charge
-        write(*,*)'--------------------------------------------------------'
         ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
         ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
-        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
+!        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
         npl=ewald_p3d%poisson_p3d%npl
         npu=ewald_p3d%poisson_p3d%npu
         epotplane = 0.d0
@@ -264,7 +262,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
         npu=ewald_p3d%poisson_p3d%npu
 
         allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
-        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
+!        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
         nlayer=1
         if (parini%cal_charge) then 
             nlayer=5
@@ -294,13 +292,13 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     write(*,'(a50,e32.15)') 'epotplane',epotplane
     write(*,'(a50,e32.15)') 'epottotal',atoms%epot
     !write(*,*) '-----------------------------------------------------------'
-    write(*,'(a50,f32.15)') 'Time for putgaussgrid ',time(2)-time(1)
-    write(*,'(a50,f32.15)') 'Time for long range ', time(3)-time(2)
-    write(*,'(a50,f32.15)') 'Time for long range forces',time(4)-time(3)
-    write(*,'(a50,f32.15)') 'Time for short range',time(5)-time(4)
-    write(*,'(a50,f32.15)') 'Time for plane ',time(6)-time(5)
-    write(*,'(a50,f32.15)') 'Time for Total without plane',time(5)-time(1)
-    write(*,'(a50,f32.15)') 'Time for Total',time(6)-time(1)
+!    write(*,'(a50,f32.15)') 'Time for putgaussgrid ',time(2)-time(1)
+!    write(*,'(a50,f32.15)') 'Time for long range ', time(3)-time(2)
+!    write(*,'(a50,f32.15)') 'Time for long range forces',time(4)-time(3)
+!    write(*,'(a50,f32.15)') 'Time for short range',time(5)-time(4)
+!    write(*,'(a50,f32.15)') 'Time for plane ',time(6)-time(5)
+!    write(*,'(a50,f32.15)') 'Time for Total without plane',time(5)-time(1)
+!    write(*,'(a50,f32.15)') 'Time for Total',time(6)-time(1)
     call f_release_routine()
 end subroutine calculate_forces_energy
 !*****************************************************************************************

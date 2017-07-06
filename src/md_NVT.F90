@@ -391,24 +391,24 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: r, dx(3) , rsq, msd1, msd2, msd3
     real(8):: nof, enhc 
     real(8):: dt2, dt4, dt8 
-    integer:: jj(3,atoms%nat)
+    integer:: jj(3,atoms%nat), vfile
     real(8):: temp1, temp2
     real(8):: sumf1, sumf2, sumf3
+    logical:: lfist= .true.
     call random_seed() 
     rat_init=atoms%rat
 !   dt=parini%dt_dynamics
 
     call init_potential_forces(parini,atoms)
 
-    open(unit=1000,file="velocity",status='replace')
     open(unit=1111,file="displace.txt",status='replace')
     open(unit=1112,file="MSD.txt",status='replace')
     write(1112,'(a15,3a25)') "imd " , " MSD       "  , " MSD_xy       " , " MSD_z       " 
 
-    file_info%filename_positions='posout.acf'
+    file_info%filename_positions='trajectory.acf'
     file_info%file_position='new'
     file_info%print_force=parini%print_force_dynamics
-    call acf_write(file_info,atoms=atoms,strkey='posout')
+    call acf_write(file_info,atoms=atoms,strkey='trajectory')
 
     !  ___________parameters_______________________________________
     ntherm=2
@@ -449,6 +449,10 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         do iat=1,atoms%nat
             read(1001,*) atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
         enddo
+        do ith=1,ntherm
+            read(1001,*) zeta(ith),dzeta(ith)
+        enddo
+        close(1001)
     else
         if ( parini%init_temp_dynamics==0.d0) then
             atoms%vat(:,:)=0.d0
@@ -501,7 +505,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
 
     !___________________  some steps temperature rescaling for pre_equilibrium  __________________
 
-        if (imd<200) then
+        if (imd<200 .and. (.not. parini%restart_dynamics)) then
             tt=ekin_target/atoms%ekin
             atoms%vat =  atoms%vat*tt
         endif
@@ -585,43 +589,30 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
             azeta(ith+1) = (mass_q(ith)*dzeta(ith)*dzeta(ith)-kt)/mass_q(2);
         enddo
         dzeta(ntherm) =dzeta(ntherm) + azeta(ntherm) *dt4;
-! __________________ end of  chain ______________________________________________
 
-        if(mod(imd-1,100)==0) then
-            file_info%file_position='append'
-            call acf_write(file_info,atoms=atoms,strkey='posout')
-            if(mod(imd-1,1000)==0) then
-                write(1111,*) '#'
-                write(1111,*) '#    imd = ',imd, parini%time_dynamics
-                write(1111,*) '#'
-            endif
-            msd1= 0.d0
-            msd2= 0.d0
-            msd3= 0.d0
-            do iat=1,atoms%nat
-
-                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
-                rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
-                r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
-                msd1 = msd1 + rsq                !all directions
-                msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
-                msd3 = msd3 + dx(3)**2           !z   direction
-                if(mod(imd-1,1000)==0) then
-                    write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
-                endif
-            enddo
-            write(1112,'(i15,3es25.14)') imd-1 , msd1/atoms%nat , msd2/atoms%nat, msd3/atoms%nat 
-            !   write(1000,*) '#'
-            !   write(1000,*) '#    imd = ', imd
-            !   write(1000,*) '#'
-            !   do iat=1,atoms%nat
-            !       write(1000,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
-            !   enddo
+        if(mod(imd,100)==0) then
+            call write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
         endif
         etotold=etot
-        !write(221,'(i9,4es25.15)') imd,etot,atoms%epot,atoms%ekin,temp
     enddo !end of loop over imd
-    close(1000)
+!____________________ write restart ________________________________________________   
+    open(unit=1003,file="velocity_r",status='replace')
+
+    write(1003,*) '#'
+    write(1003,*) '#    imd = ', imd
+    write(1003,*) '#'
+    do iat=1,atoms%nat
+        write(1003,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
+    enddo
+    do ith=1,ntherm
+        write(1003,'(2es25.17)') zeta(ith),dzeta(ith)
+    enddo
+    file_info%filename_positions='posout.acf'
+    file_info%file_position='new'
+    file_info%print_force=parini%print_force_dynamics
+    call acf_write(file_info,atoms=atoms,strkey='posout')
+    close(1003)
+
     call final_potential_forces(parini,atoms)
 end subroutine md_nvt_nose_hoover_chain
 !*****************************************************************************************
@@ -840,3 +831,73 @@ subroutine get_atomic_mass(atoms,totmass)
     enddo
 end subroutine get_atomic_mass
 !*****************************************************************************************
+subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, typ_file_info
+    implicit none
+    type(typ_parini), intent(inout):: parini
+    !local variables
+    type(typ_atoms):: atoms
+    type(typ_file_info):: file_info
+    integer:: iat
+    integer:: imd, ntherm, ith
+    real(8):: zeta(ntherm), dzeta(ntherm)
+    real(8):: rat_init(3,atoms%nat)
+    real(8):: r, dx(3) , rsq, msd1, msd2, msd3
+    integer::  vfile
+    real(8):: sumf1, sumf2, sumf3
+    logical:: lfist= .true.
+
+    if(mod(imd-1,1000)==0) then
+        write(1111,*) '#'
+        write(1111,*) '#    imd = ',imd, parini%time_dynamics
+        write(1111,*) '#'
+    endif
+    msd1= 0.d0
+    msd2= 0.d0
+    msd3= 0.d0
+    do iat=1,atoms%nat
+
+        dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+        rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
+        r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
+        msd1 = msd1 + rsq                !all directions
+        msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
+        msd3 = msd3 + dx(3)**2           !z   direction
+        if(mod(imd,1000)==0) then
+            write(1111,'(i5,2a5,4es25.17)')iat," ",atoms%sat(iat), dx, r
+        endif
+    enddo
+    write(1112,'(i15,3es25.14)') imd-1 , msd1/atoms%nat , msd2/atoms%nat, msd3/atoms%nat 
+    if (lfist) then
+        open(unit=1000,file="velocity0",status='replace')
+        vfile=1000
+        lfist = .false.
+    else
+        open(unit=1002,file="velocity1",status='replace')
+        vfile = 1002
+        lfist = .true.
+    endif
+
+    file_info%file_position='append'
+    call acf_write(file_info,atoms=atoms,strkey='trajectory')
+
+    if(mod(imd,5000)==0) then
+        write(vfile,*) '#'
+        write(vfile,*) '#    imd = ', imd
+        write(vfile,*) '#'
+        do iat=1,atoms%nat
+            write(vfile,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
+        enddo
+        do ith=1,ntherm
+            write(vfile,'(2es25.17)') zeta(ith),dzeta(ith)
+        enddo
+
+        if (lfist) then
+            close(1002)
+        else
+            close(1000)
+        endif
+    endif
+end subroutine write_trajectory_velocity
