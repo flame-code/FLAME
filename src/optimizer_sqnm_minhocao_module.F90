@@ -10,7 +10,7 @@ module module_sqn
     private
 
     public :: modify_gradient_minhocao
-    public :: getSubSpaceEvecEval
+    public :: getSubSpaceEvecEval_minhocao
 !    public :: findbonds
 !    public :: projectbond
 
@@ -79,7 +79,7 @@ subroutine modify_gradient_minhocao(nat,ndim,rrr,eval,res,fxyz,alpha,alphalat_sc
     enddo
 end subroutine
 
-subroutine getSubSpaceEvecEval(label,verbosity,nat,nhist,nhistx&
+subroutine getSubSpaceEvecEval_minhocao(label,verbosity,nat,nhist,nhistx&
                               ,ndim,cutoffratio,lwork,work,rxyz,&
                               fxyz,aa,rr,ff,rrr,fff,eval,res,success)
 !    use module_base
