@@ -12,9 +12,10 @@ interface
      real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
    end subroutine unit_matrix
 
-   real(8) function vabs(v)
+   function vabs(v) result(res)
      implicit none
      real(8),dimension(:):: v
+     real(8):: res
    end function vabs
 
    function outerprod(a,b)
@@ -49,7 +50,7 @@ END SUBROUTINE geopt_init
 
 !************************************************************************************
 
-subroutine GEOPT_RBFGS_MHM(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
+subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type,&
                    &ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat
@@ -58,7 +59,9 @@ subroutine GEOPT_RBFGS_MHM(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,co
 
 !SUBROUTINE dfpmin_pos(nat,latvec,rxyz,fxyz,stress,pressure,etot,fnrmtol,iter,count)
 use interfaces
+use mod_parini, only: typ_parini
 IMPLICIT NONE
+type(typ_parini), intent(in):: parini
 !REAL(8), INTENT(IN) :: fnrmtol!gtol 
 REAL(8) :: fret, counter
 REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
@@ -124,7 +127,7 @@ call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
        filename="posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",0,fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
@@ -194,7 +197,7 @@ do its=1,ITMAX
        units=units
        write(*,*) "# Writing the positions in :",filename
        call fcart_in,strten_in,&
-            &write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+            &write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS LS ",(its)*2-1,fp,fmax,fmax_lat,fmax_at,gamma0,iprec
 !*********************************************************************
@@ -272,7 +275,7 @@ lambda_predict=max(lambda_predict,-1.d0)
        filename="posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",its*2,fp,fmax,fmax_lat,fmax_at,lambda_predict,iprec
 !*********************************************************************
@@ -776,7 +779,7 @@ logical:: getwfk
     do iat=1,3
       latvec_in(:,iat)=pos_all(3*nat+(iat-1)*3+1:3*nat+iat*3)
     enddo
-       call get_energyandforces_single(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 !Conversion of forces is more complicate: 
 !start with atomic forces

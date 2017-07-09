@@ -1,11 +1,13 @@
 !**********************************************************************************************
-subroutine MD_fixlat(latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,&
-                   &char_type,mdmin,dtion_md,units,usewf_md,auto_dtion_md,energy_conservation,&
-                   &nit_per_min,fixat,fixlat,verb,bc
+subroutine MD_fixlat(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: char_type,mdmin,dtion_md,units,usewf_md,auto_dtion_md,energy_conservation
+ use global, only: nit_per_min,fixat,fixlat,bc
  use defs_basis
  use interface_code
+ use mod_parini, only: typ_parini
 implicit none
+    type(typ_parini), intent(in):: parini
     integer:: iat,iprec,istep
     real(8):: latvec_in(3,3), xred_in(3,nat),fcart_in(3,nat),vel_in(3,nat), strten_in(6), etot_in, counter
     real(8):: rxyz(3,nat),fxyz(3,nat),fxyz_old(3,nat),vxyz(3,nat),amass(nat)
@@ -46,7 +48,7 @@ implicit none
 
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
        getwfk=.false.
-       call get_energyandforces_single(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        write(*,*) "Energy",etot_in
        istep=0
        energy=etot_in
@@ -63,14 +65,14 @@ implicit none
        rkin=rkin*.5d0
        rkin_0=rkin
        int_pressure_gpa=1.d0/3.d0*(strten_in(1)+strten_in(2)+strten_in(3))*HaBohr3_GPa
-       if(verb.gt.0) then
+       if(parini%verb.gt.0) then
        write(*,'(a,i5,1x,3(1x,1pe17.10),3(1x,i2))') ' # MD: it,energy,ekinat,pressure,nmax,nmin,mdmin ',&
              &istep,energy,rkin,int_pressure_gpa,nummax,nummin,mdmin
        write(fn4,'(i4.4)') istep
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in MD:",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,etot_in,etot_in)
        endif
 !*********************************************************************
@@ -95,7 +97,7 @@ implicit none
            getwfk=.false.
        endif
        call rxyz_cart2int(latvec_in,xred_in,rxyz,nat)
-       call get_energyandforces_single(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        fxyz=fcart_in
        energy=etot_in
 !       call call_bigdft(runObj, outs, nproc,iproc,infocode)
@@ -143,14 +145,14 @@ implicit none
        devcon=econs_max-econs_min
        counter=real(istep,8)
        int_pressure_gpa=1.d0/3.d0*(strten_in(1)+strten_in(2)+strten_in(3))*HaBohr3_GPa
-       if(verb.gt.0) then
+       if(parini%verb.gt.0) then
        write(*,'(a,i5,1x,3(1x,1pe17.10),3(1x,i2))') ' # MD: it,energy,ekinat,pressure,nmax,nmin,mdmin ',&
              &istep,energy,rkin,int_pressure_gpa,nummax,nummin,mdmin
        write(fn4,'(i4.4)') istep
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
-       call write_atomic_file_ascii(filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,etot_in,etot_in)
        endif
        if (nummin.ge.mdmin) then

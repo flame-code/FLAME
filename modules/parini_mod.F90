@@ -160,6 +160,8 @@ module mod_parini
         integer:: inisock_inet, inisock_port        ! socket ID & address of the socket
         CHARACTER(LEN=1024) :: inisock_host
         !-----------------------------------------------------------------------
+        !Minhocao global module
+        integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
     end type typ_parini
 end module mod_parini
 !*****************************************************************************************

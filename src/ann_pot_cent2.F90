@@ -256,6 +256,10 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         qat_old=atoms%qat
     enddo
     !write(*,'(a,i5,2f8.3)') 'DISP ',istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+    !write(*,'(a,9f10.2)') 'WHAT ', &
+    !                    cent%rel(1:3,70)-atoms%rat(1:3,70), &
+    !                    cent%rel(1:3,51)-atoms%rat(1:3,70), &
+    !                    atoms%rat(1:3,51)-atoms%rat(1:3,70)
 
     call cent2_force(parini,ann_arr,atoms,cent)
 
@@ -527,6 +531,7 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
     real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
+    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: cvinv_norm
     real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
@@ -534,13 +539,15 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
     integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz
-    integer:: iii
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
+    integer:: iii, nlim, nlimsq, iix, iiy, iiz
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: ilgx, ilgy, ilgz, irgx, irgy, irgz
+    integer:: finalx, igxs, igxf 
     real(8), allocatable:: wa(:,:,:)
-    real(8), allocatable:: wm(:,:,:)
     real(8), allocatable:: ratred(:,:)
+    real(8), allocatable:: exponentval(:), expval(:)
+    real(8):: sqpi, tt
+    integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
     call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
@@ -583,13 +590,16 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     nagx=nbgx+1
     nagy=nbgy+1
     nagz=nbgz+1
+    nlim = max(nagx,nagy,nagz)
+    nlimsq = nlim**2
     !detemining the largest dimension for the pseudogrid.
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
 
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    wm=f_malloc0([1.to.ngx,1.to.ngy,1.to.ngz],id='wm')
+    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
+   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
 
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
@@ -601,139 +611,89 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     !endif
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
+    sqpi=sqrt(pi)
     !-------------------------------------------------------
     do iat=1,nat
         gwsq_inv=1.d0/gw(iat)**2
-        fac=1.d0/(gw(iat)*sqrt(pi))**3
+        fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
         imgz=nint(ratred(3,iat)*hrzinv)+1
         facqiat=fac*qat(iat)
         do igz=-nbgz,nbgz
-            jgz=imgz+igz
+            jgz=igz+imgz
+            hzx_g=(jgz-1)*hzx
+            hzy_g=(jgz-1)*hzy
+            hzz_g=(jgz-1)*hzz
             do igy=-nbgy,nbgy
-                jgy=imgy+igy
-                do igx=-nbgx,nbgx
-                    jgx=imgx+igx
-                    ximg=(jgx-1)*hxx+(jgy-1)*hyx+(jgz-1)*hzx
-                    yimg=(jgx-1)*hxy+(jgy-1)*hyy+(jgz-1)*hzy
-                    zimg=(jgx-1)*hxz+(jgy-1)*hyz+(jgz-1)*hzz
+                igzysq=igz**2+igy**2
+                if(igzysq>nlimsq) cycle
+                jgy=igy+imgy
+                hyx_g=(jgy-1)*hyx
+                hyy_g=(jgy-1)*hyy
+                hyz_g=(jgy-1)*hyz
+                tt=nlimsq-igzysq
+                iix=min(floor(sqrt(tt)),nbgx)
+                do igx=-iix,iix
+                    jgx=igx+imgx
+                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
+                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
+                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
                     dmx=ximg-rxyz(1,iat)
                     dmy=yimg-rxyz(2,iat)
                     dmz=zimg-rxyz(3,iat)
                     dmsq=dmx**2+dmy**2+dmz**2
-                    wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
+                    exponentval(igx)=-dmsq*gwsq_inv
                 enddo
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+                wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*expval(-iix:iix)
             enddo
         enddo
     enddo
-    !---------------------------------------------------------------------------
-    ncellx=nagx/ngx
-    ncelly=nagy/ngy
-    ncellz=nagz/ngz
-    ilgx=-ncellx*ngx+1 ; irgx=(ncellx+1)*ngx
-    ilgy=-ncelly*ngy+1 ; irgy=(ncelly+1)*ngy
-    ilgz=-ncellz*ngz+1 ; irgz=(ncellz+1)*ngz
-    !---------------------------------------------------------------------------
-    !extended box constructed by integer number of cells
-    nex=max(ngx,irgx-ilgx+1)
-    ney=max(ngy,irgy-ilgy+1)
-    nez=max(ngz,irgz-ilgz+1)
-    !wrap around grid points that are outside the extended box in into the extended box,
-    !these grid points do not form a complete cell.
-    do igz=1-nagz,ngz+nagz
-        do igy=1-nagy,ilgy-1
-            do igx=1-nagx,ilgx-1
-                wa(igx+nex,igy+ney,igz)=wa(igx+nex,igy+ney,igz)+wa(igx,igy,igz)
-            enddo
-            do igx=ilgx,irgx
-                wa(igx,igy+ney,igz)=wa(igx,igy+ney,igz)+wa(igx,igy,igz)
-            enddo
-            do igx=irgx+1,ngx+nagx
-                wa(igx-nex,igy+ney,igz)=wa(igx-nex,igy+ney,igz)+wa(igx,igy,igz)
-            enddo
-        enddo
-        do igy=ilgy,irgy
-            do igx=1-nagx,ilgx-1
-                wa(igx+nex,igy,igz)=wa(igx+nex,igy,igz)+wa(igx,igy,igz)
-            enddo
-            do igx=irgx+1,ngx+nagx
-                wa(igx-nex,igy,igz)=wa(igx-nex,igy,igz)+wa(igx,igy,igz)
-            enddo
-        enddo
-        do igy=irgy+1,ngy+nagy
-            do igx=1-nagx,ilgx-1
-                wa(igx+nex,igy-ney,igz)=wa(igx+nex,igy-ney,igz)+wa(igx,igy,igz)
-            enddo
-            do igx=ilgx,irgx
-                wa(igx,igy-ney,igz)=wa(igx,igy-ney,igz)+wa(igx,igy,igz)
-            enddo
-            do igx=irgx+1,ngx+nagx
-                wa(igx-nex,igy-ney,igz)=wa(igx-nex,igy-ney,igz)+wa(igx,igy,igz)
-            enddo
-        enddo
-    enddo
-    do igz=1-nagz,ilgz-1
-        do igy=ilgy,irgy
-            do igx=ilgx,irgx
-                wa(igx,igy,igz+nez)=wa(igx,igy,igz+nez)+wa(igx,igy,igz)
-            enddo
-        enddo
-    enddo
-    do igz=irgz+1,ngz+nagz
-        do igy=ilgy,irgy
-            do igx=ilgx,irgx
-                wa(igx,igy,igz-nez)=wa(igx,igy,igz-nez)+wa(igx,igy,igz)
-            enddo
-        enddo
-    enddo
-    !---------------------------------------------------------------------------
-    if(ncellx==0 .and. ncelly==0 .and. ncellz==0) then
-        do igz=1,ngz
-            do igy=1,ngy
-                do igx=1,ngx
-                    wm(igx,igy,igz)=wa(igx,igy,igz)
-                enddo
-            enddo
-        enddo
-    else
-        !wrap around grid points which form a complete cell and are outside the main cell.
-        do igz=ilgz,irgz
-            jgz=modulo(igz-1,ngz)+1
-            do igy=ilgy,irgy
-                jgy=modulo(igy-1,ngy)+1
-                do igx=ilgx,irgx
-                    jgx=modulo(igx-1,ngx)+1
-                    wm(jgx,jgy,jgz)=wm(jgx,jgy,jgz)+wa(igx,igy,igz)
-                enddo
-            enddo
-        enddo
-    endif
     !---------------------------------------------------------------------------
     if(reset) then
         !if the input array of charge density does not contain any previous value
         !wanted to be preserved.
-        do igz=1,ngz
-            do igy=1,ngy
-                do igx=1,ngx
-                    rho(igx,igy,igz)=wm(igx,igy,igz)
-                enddo
-            enddo
-        enddo
-    else
-        !if the input array of charge density already some value that must be preserved.
-        do igz=1,ngz
-            do igy=1,ngy
-                do igx=1,ngx
-                    rho(igx,igy,igz)=rho(igx,igy,igz)+wm(igx,igy,igz)
-                enddo
-            enddo
-        enddo
+        rho = 0.d0
     endif
+        !if the input array of charge density already some value that must be preserved.
+    istartx = modulo((1-nagx-1),ngx)+1
+    finalx = modulo((ngx+nagx-1),ngx)+1
+    igxs = 1-nagx+(ngx-istartx+1)
+    igxf = ngx+nagx-finalx+1
+    istarty = modulo((-nagy),ngy)+1
+    istartz = modulo((-nagz),ngz)+1
+    iiz=istartz-1
+
+    do igz=1-nagz,ngz+nagz
+        iiy=istarty-1
+        iiz=iiz+1
+        if (iiz==ngz+1) iiz=1
+        do igy=1-nagy,ngy+nagy
+            iiy=iiy+1
+            if (iiy==ngy+1) iiy=1
+            iix=istartx-1
+            do igx=1-nagx,igxs-1
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+            enddo
+            do igx=igxs,igxf-1,ngx
+                do iix=1,ngx
+                    jgx=igx+iix-1
+                    rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(jgx,igy,igz)
+                enddo
+            enddo
+            iix=0
+            do igx=igxf,ngx+nagx
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+            enddo
+        enddo
+    enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
+    deallocate(exponentval,expval)
     call f_free(wa)
-    call f_free(wm)
 end subroutine gauss_grid
 !*****************************************************************************************
 subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
@@ -762,20 +722,24 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
     real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
+    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, expval
-    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
+    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, tt1
+    real(8):: dmsq, gwsq_inv
     real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
     integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt
-    integer:: iii
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
+    integer:: iii, nlim, nlimsq, iix, iiy, iiz
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: ilgx, ilgy, ilgz, irgx, irgy, irgz
+    integer:: finalx, igxs, igxf 
     real(8), allocatable:: wa(:,:,:)
-    real(8), allocatable:: wm(:,:,:)
     real(8), allocatable:: ratred(:,:)
+    real(8), allocatable:: exponentval(:), expval(:)
+    real(8), allocatable:: dmxarr(:), dmyarr(:), dmzarr(:)
+    real(8):: sqpi, tt
+    integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
     call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
@@ -818,13 +782,17 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     nagx=nbgx+1
     nagy=nbgy+1
     nagz=nbgz+1
+    nlim = max(nagx,nagy,nagz)
+    nlimsq = nlim**2
     !detemining the largest dimension for the pseudogrid.
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
 
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    wm=f_malloc0([1.to.ngx,1.to.ngy,1.to.ngz],id='wm')
+    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
+    allocate(dmxarr(-nbgx:nbgx),dmyarr(-nbgx:nbgx),dmzarr(-nbgx:nbgx))
+   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
 
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
@@ -837,55 +805,36 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
     !---------------------------------------------------------------------------
-    ncellx=nagx/ngx
-    ncelly=nagy/ngy
-    ncellz=nagz/ngz
-    ilgx=-ncellx*ngx+1 ; irgx=(ncellx+1)*ngx
-    ilgy=-ncelly*ngy+1 ; irgy=(ncelly+1)*ngy
-    ilgz=-ncellz*ngz+1 ; irgz=(ncellz+1)*ngz
-    !---------------------------------------------------------------------------
-    !extended box constructed by integer number of cells
-    nex=max(ngx,irgx-ilgx+1)
-    ney=max(ngy,irgy-ilgy+1)
-    nez=max(ngz,irgz-ilgz+1)
-    !write(*,'(a,3i5)') 'ncellx,ncelly,ncellz ',ncellx,ncelly,ncellz
-    !write(*,'(a,3i5)') 'nagx,nagy,nagz ',nagx,nagy,nagz
-    !write(*,'(a,6i5)') 'ngx,ngy,ngz,nex,ney,nez ',ngx,ngy,ngz,nex,ney,nez
-    !---------------------------------------------------------------------------
-    if(ncellx==0 .and. ncelly==0 .and. ncellz==0) then
-        do igz=1,ngz
-            do igy=1,ngy
-                do igx=1,ngx
-                    wa(igx,igy,igz)=pot(igx,igy,igz)
-                enddo
-            enddo
-        enddo
-    else
-        !wrap around grid points which form a complete cell and are outside the main cell.
-        do igz=ilgz,irgz
-            jgz=modulo(igz-1,ngz)+1
-            do igy=ilgy,irgy
-                jgy=modulo(igy-1,ngy)+1
-                do igx=ilgx,irgx
-                    jgx=modulo(igx-1,ngx)+1
-                    wa(igx,igy,igz)=pot(jgx,jgy,jgz)
-                enddo
-            enddo
-        enddo
-    endif
-    !-------------------------------------------------------
+    istartx = modulo((1-nagx-1),ngx)+1
+    finalx = modulo((ngx+nagx-1),ngx)+1
+    igxs = 1-nagx+(ngx-istartx+1)
+    igxf = ngx+nagx-finalx+1
+    istarty = modulo((-nagy),ngy)+1
+    istartz = modulo((-nagz),ngz)+1
+    iiz=istartz-1
+
     do igz=1-nagz,ngz+nagz
-        igzt=igz+(sign(irgz,-igz)+sign(irgz,nez-igz))/2
+        iiy=istarty-1
+        iiz=iiz+1
+        if (iiz==ngz+1) iiz=1
         do igy=1-nagy,ngy+nagy
-            igyt=igy+(sign(irgy,-igy)+sign(irgy,ney-igy))/2
-            do igx=1-nagx,0
-                wa(igx,igy,igz)=wa(igx+irgx,igyt,igzt)
+            iiy=iiy+1
+            if (iiy==ngy+1) iiy=1
+            iix=istartx-1
+            do igx=1-nagx,igxs-1
+                iix=iix+1
+                wa(igx,igy,igz)=pot(iix,iiy,iiz)
             enddo
-            do igx=1,ngx
-                wa(igx,igy,igz)=wa(igx,igyt,igzt)
+            do igx=igxs,igxf-1,ngx
+                do iix=1,ngx
+                    jgx=igx+iix-1
+                    wa(jgx,igy,igz)=pot(iix,iiy,iiz)
+                enddo
             enddo
-            do igx=ngx+1,ngx+nagx
-                wa(igx,igy,igz)=wa(igx-irgx,igyt,igzt)
+            iix=0
+            do igx=igxf,ngx+nagx
+                iix=iix+1
+                wa(igx,igy,igz)=pot(iix,iiy,iiz)
             enddo
         enddo
     enddo
@@ -903,24 +852,37 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
         tty=0.d0
         ttz=0.d0
         do igz=-nbgz,nbgz
-            jgz=imgz+igz
+            jgz=igz+imgz
+            hzx_g=(jgz-1)*hzx
+            hzy_g=(jgz-1)*hzy
+            hzz_g=(jgz-1)*hzz
             do igy=-nbgy,nbgy
-                jgy=imgy+igy
-                do igx=-nbgx,nbgx
-                    jgx=imgx+igx
-                    ximg=(jgx-1)*hxx+(jgy-1)*hyx+(jgz-1)*hzx
-                    yimg=(jgx-1)*hxy+(jgy-1)*hyy+(jgz-1)*hzy
-                    zimg=(jgx-1)*hxz+(jgy-1)*hyz+(jgz-1)*hzz
-                    dmx=ximg-rxyz(1,iat)
-                    dmy=yimg-rxyz(2,iat)
-                    dmz=zimg-rxyz(3,iat)
-                    dmsq=dmx**2+dmy**2+dmz**2
-                    !wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
-                    expval=exp(-dmsq*gwsq_inv)
-                    ttq=ttq+fac*expval*wa(jgx,jgy,jgz)
-                    ttx=ttx+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmx*gwsq_inv)
-                    tty=tty+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmy*gwsq_inv)
-                    ttz=ttz+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmz*gwsq_inv)
+                igzysq=igz**2+igy**2
+                if(igzysq>nlimsq) cycle
+                jgy=igy+imgy
+                hyx_g=(jgy-1)*hyx
+                hyy_g=(jgy-1)*hyy
+                hyz_g=(jgy-1)*hyz
+                tt=nlimsq-igzysq
+                iix=min(floor(sqrt(tt)),nbgx)
+                do igx=-iix,iix
+                    jgx=igx+imgx
+                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
+                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
+                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
+                    dmxarr(igx)=ximg-rxyz(1,iat)
+                    dmyarr(igx)=yimg-rxyz(2,iat)
+                    dmzarr(igx)=zimg-rxyz(3,iat)
+                    dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
+                    exponentval(igx)=-dmsq*gwsq_inv
+                enddo
+                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+                do igx=-iix,iix
+                    ttq=ttq+fac*expval(igx)*wa(igx+imgx,jgy,jgz)
+                    tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
+                    ttx=ttx+tt1*dmxarr(igx)
+                    tty=tty+tt1*dmyarr(igx)
+                    ttz=ttz+tt1*dmzarr(igx)
                 enddo
             enddo
         enddo
@@ -931,8 +893,9 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
+    deallocate(exponentval,expval)
+    deallocate(dmxarr,dmyarr,dmzarr)
     call f_free(wa)
-    call f_free(wm)
 end subroutine gauss_gradient
 !*****************************************************************************************
 subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
@@ -1092,20 +1055,24 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
     real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
+    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, expval
-    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
+    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, tt1
+    real(8):: dmsq, gwsq_inv
     real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
     integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt
-    integer:: iii
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
+    integer:: iii, nlim, nlimsq, iix, iiy, iiz
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: ilgx, ilgy, ilgz, irgx, irgy, irgz
+    integer:: finalx, igxs, igxf 
     real(8), allocatable:: wa(:,:,:)
-    real(8), allocatable:: wm(:,:,:)
     real(8), allocatable:: ratred(:,:)
+    real(8), allocatable:: exponentval(:), expval(:)
+    real(8), allocatable:: dmxarr(:), dmyarr(:), dmzarr(:)
+    real(8):: sqpi, tt
+    integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
     call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
@@ -1148,13 +1115,17 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     nagx=nbgx+1
     nagy=nbgy+1
     nagz=nbgz+1
+    nlim = max(nagx,nagy,nagz)
+    nlimsq = nlim**2
     !detemining the largest dimension for the pseudogrid.
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
 
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    wm=f_malloc0([1.to.ngx,1.to.ngy,1.to.ngz],id='wm')
+    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
+    allocate(dmxarr(-nbgx:nbgx),dmyarr(-nbgx:nbgx),dmzarr(-nbgx:nbgx))
+   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
 
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
@@ -1167,55 +1138,36 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
     !---------------------------------------------------------------------------
-    ncellx=nagx/ngx
-    ncelly=nagy/ngy
-    ncellz=nagz/ngz
-    ilgx=-ncellx*ngx+1 ; irgx=(ncellx+1)*ngx
-    ilgy=-ncelly*ngy+1 ; irgy=(ncelly+1)*ngy
-    ilgz=-ncellz*ngz+1 ; irgz=(ncellz+1)*ngz
-    !---------------------------------------------------------------------------
-    !extended box constructed by integer number of cells
-    nex=max(ngx,irgx-ilgx+1)
-    ney=max(ngy,irgy-ilgy+1)
-    nez=max(ngz,irgz-ilgz+1)
-    !write(*,'(a,3i5)') 'ncellx,ncelly,ncellz ',ncellx,ncelly,ncellz
-    !write(*,'(a,3i5)') 'nagx,nagy,nagz ',nagx,nagy,nagz
-    !write(*,'(a,6i5)') 'ngx,ngy,ngz,nex,ney,nez ',ngx,ngy,ngz,nex,ney,nez
-    !---------------------------------------------------------------------------
-    if(ncellx==0 .and. ncelly==0 .and. ncellz==0) then
-        do igz=1,ngz
-            do igy=1,ngy
-                do igx=1,ngx
-                    wa(igx,igy,igz)=pot(igx,igy,igz)
-                enddo
-            enddo
-        enddo
-    else
-        !wrap around grid points which form a complete cell and are outside the main cell.
-        do igz=ilgz,irgz
-            jgz=modulo(igz-1,ngz)+1
-            do igy=ilgy,irgy
-                jgy=modulo(igy-1,ngy)+1
-                do igx=ilgx,irgx
-                    jgx=modulo(igx-1,ngx)+1
-                    wa(igx,igy,igz)=pot(jgx,jgy,jgz)
-                enddo
-            enddo
-        enddo
-    endif
-    !-------------------------------------------------------
+    istartx = modulo((1-nagx-1),ngx)+1
+    finalx = modulo((ngx+nagx-1),ngx)+1
+    igxs = 1-nagx+(ngx-istartx+1)
+    igxf = ngx+nagx-finalx+1
+    istarty = modulo((-nagy),ngy)+1
+    istartz = modulo((-nagz),ngz)+1
+    iiz=istartz-1
+
     do igz=1-nagz,ngz+nagz
-        igzt=igz+(sign(irgz,-igz)+sign(irgz,nez-igz))/2
+        iiy=istarty-1
+        iiz=iiz+1
+        if (iiz==ngz+1) iiz=1
         do igy=1-nagy,ngy+nagy
-            igyt=igy+(sign(irgy,-igy)+sign(irgy,ney-igy))/2
-            do igx=1-nagx,0
-                wa(igx,igy,igz)=wa(igx+irgx,igyt,igzt)
+            iiy=iiy+1
+            if (iiy==ngy+1) iiy=1
+            iix=istartx-1
+            do igx=1-nagx,igxs-1
+                iix=iix+1
+                wa(igx,igy,igz)=pot(iix,iiy,iiz)
             enddo
-            do igx=1,ngx
-                wa(igx,igy,igz)=wa(igx,igyt,igzt)
+            do igx=igxs,igxf-1,ngx
+                do iix=1,ngx
+                    jgx=igx+iix-1
+                    wa(jgx,igy,igz)=pot(iix,iiy,iiz)
+                enddo
             enddo
-            do igx=ngx+1,ngx+nagx
-                wa(igx,igy,igz)=wa(igx-irgx,igyt,igzt)
+            iix=0
+            do igx=igxf,ngx+nagx
+                iix=iix+1
+                wa(igx,igy,igz)=pot(iix,iiy,iiz)
             enddo
         enddo
     enddo
@@ -1232,23 +1184,36 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
         tty=0.d0
         ttz=0.d0
         do igz=-nbgz,nbgz
-            jgz=imgz+igz
+            jgz=igz+imgz
+            hzx_g=(jgz-1)*hzx
+            hzy_g=(jgz-1)*hzy
+            hzz_g=(jgz-1)*hzz
             do igy=-nbgy,nbgy
-                jgy=imgy+igy
-                do igx=-nbgx,nbgx
-                    jgx=imgx+igx
-                    ximg=(jgx-1)*hxx+(jgy-1)*hyx+(jgz-1)*hzx
-                    yimg=(jgx-1)*hxy+(jgy-1)*hyy+(jgz-1)*hzy
-                    zimg=(jgx-1)*hxz+(jgy-1)*hyz+(jgz-1)*hzz
-                    dmx=ximg-rxyz(1,iat)
-                    dmy=yimg-rxyz(2,iat)
-                    dmz=zimg-rxyz(3,iat)
-                    dmsq=dmx**2+dmy**2+dmz**2
-                    !wa(jgx,jgy,jgz)=wa(jgx,jgy,jgz)+facqiat*exp(-dmsq*gwsq_inv)
-                    expval=exp(-dmsq*gwsq_inv)
-                    ttx=ttx+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmx*gwsq_inv)
-                    tty=tty+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmy*gwsq_inv)
-                    ttz=ttz+facqiat*expval*wa(jgx,jgy,jgz)*(2.d0*dmz*gwsq_inv)
+                igzysq=igz**2+igy**2
+                if(igzysq>nlimsq) cycle
+                jgy=igy+imgy
+                hyx_g=(jgy-1)*hyx
+                hyy_g=(jgy-1)*hyy
+                hyz_g=(jgy-1)*hyz
+                tt=nlimsq-igzysq
+                iix=min(floor(sqrt(tt)),nbgx)
+                do igx=-iix,iix
+                    jgx=igx+imgx
+                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
+                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
+                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
+                    dmxarr(igx)=ximg-rxyz(1,iat)
+                    dmyarr(igx)=yimg-rxyz(2,iat)
+                    dmzarr(igx)=zimg-rxyz(3,iat)
+                    dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
+                    exponentval(igx)=-dmsq*gwsq_inv
+                enddo
+                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+                do igx=-iix,iix
+                    tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
+                    ttx=ttx+tt1*dmxarr(igx)
+                    tty=tty+tt1*dmyarr(igx)
+                    ttz=ttz+tt1*dmzarr(igx)
                 enddo
             enddo
         enddo
@@ -1258,8 +1223,9 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     enddo
     !---------------------------------------------------------------------------
     deallocate(ratred)
+    deallocate(exponentval,expval)
+    deallocate(dmxarr,dmyarr,dmzarr)
     call f_free(wa)
-    call f_free(wm)
 end subroutine gauss_force
 !*****************************************************************************************
 subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)

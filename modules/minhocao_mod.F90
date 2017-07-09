@@ -56,7 +56,7 @@ implicit none
   logical:: mol_soften            !Switch on molecular softening
   integer:: correctalg            !Method to perform cell corrections
   integer:: bc                    !1: periodic, 2:free, 3:surface/slab
-  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
+!  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
   integer:: confine               !0: No confinement, 1: confinement used, but not currently, 2: confinement in action, 3: confinement always on
   logical:: use_confine           !if true, confinement is enable, otherwise disabled
   logical:: energy_conservation   !Only used in fixed cell MD
@@ -64,7 +64,7 @@ implicit none
   logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
 end module global
 
-module fire
+module mod_fire
 implicit none
    integer,parameter:: Nmin=5
    real(8),parameter:: finc=1.1d0
@@ -75,7 +75,7 @@ implicit none
    real(8),parameter:: latmass_at=1.d0
    real(8):: dtmax    !=5.d+1, will be provided trough params.in
    real(8):: dtmin    !=1.d0,  will be provided trough params.in
-end module fire
+end module mod_fire
 !> Module which define the type parameterminimization
 module minpar
    implicit none
@@ -315,7 +315,7 @@ implicit none
       real(8)             :: sock_ecutwf(2)
 end module modsocket
 
-module sqnm
+module mod_sqnm
 implicit none
       real(8):: sqnm_beta_lat
       real(8):: sqnm_beta_at
@@ -324,7 +324,7 @@ implicit none
       real(8):: sqnm_cutoffRatio
       real(8):: sqnm_steepthresh             
       real(8):: sqnm_trustr
-end module sqnm
+end module mod_sqnm
 
 module steepest_descent
 implicit none

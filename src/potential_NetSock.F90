@@ -16,6 +16,7 @@
 
 !  subroutine evaluate_msock(iproc,nat,latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
   subroutine cal_potential_forces_netsock(atoms)
+  use mod_interface
 !  use defs_basis
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf,reset
@@ -69,6 +70,7 @@ endif
   end subroutine
 
   subroutine init_netsock(parini)
+  use mod_interface
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_parini, only: typ_parini
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
@@ -84,6 +86,7 @@ endif
   end subroutine
   
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)
+  use mod_interface, except_this_one=> send_data
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
   implicit none
@@ -141,42 +144,25 @@ endif
             call writebuffer(sock_socket,send_array,3*nat)           ! Writing the positions
             deallocate(send_array)
             write(*,'(a)') " # SOCKET MASTER: positions and lattice sent"
-  contains
-       subroutine latvec2dist_ang(dist_ang,latvec,pi)
-       !This subroutine will generate the distance and angles of a cell starting from latvec
-       implicit none
-       real(8):: dist_ang(6),latvec(3,3),pi,convang
-       convang=180.d0/pi
-       dist_ang(1)=sqrt(dot_product(latvec(:,1),latvec(:,1)))
-       dist_ang(2)=sqrt(dot_product(latvec(:,2),latvec(:,2)))
-       dist_ang(3)=sqrt(dot_product(latvec(:,3),latvec(:,3)))
-       dist_ang(4)=convang*acos(dot_product(latvec(:,2),latvec(:,3))/(dist_ang(2)*dist_ang(3)))
-       dist_ang(5)=convang*acos(dot_product(latvec(:,3),latvec(:,1))/(dist_ang(3)*dist_ang(1)))
-       dist_ang(6)=convang*acos(dot_product(latvec(:,1),latvec(:,2))/(dist_ang(1)*dist_ang(2)))
-       end subroutine
-       !************************************************************************************
-       subroutine dist_ang2latvec(dist_ang,latvec,pi)
-       !This subroutine will generate the lattice vector representation of the cell
-       !from the length/angle representation
-       implicit none
-       real(8):: dist_ang(6),latvec(3,3),pi,convang
-       convang=pi/180.d0
-       
-       latvec(1,1)=dist_ang(1)
-       latvec(2,1)=0.d0
-       latvec(3,1)=0.d0
-       latvec(1,2)=dist_ang(2)*cos(convang*dist_ang(6))
-       latvec(2,2)=dist_ang(2)*sin(convang*dist_ang(6))
-       latvec(3,2)=0.d0
-       latvec(1,3)=dist_ang(3)*cos(convang*dist_ang(5))
-       latvec(2,3)=(dist_ang(2)*dist_ang(3)*cos(convang*dist_ang(4))-latvec(1,2)*latvec(1,3))/latvec(2,2)
-       latvec(3,3)=sqrt(dist_ang(3)**2-latvec(1,3)**2-latvec(2,3)**2)
-       end subroutine
+!!  contains
+!!       subroutine latvec2dist_ang(dist_ang,latvec,pi)
+!!       !This subroutine will generate the distance and angles of a cell starting from latvec
+!!       implicit none
+!!       real(8):: dist_ang(6),latvec(3,3),pi,convang
+!!       convang=180.d0/pi
+!!       dist_ang(1)=sqrt(dot_product(latvec(:,1),latvec(:,1)))
+!!       dist_ang(2)=sqrt(dot_product(latvec(:,2),latvec(:,2)))
+!!       dist_ang(3)=sqrt(dot_product(latvec(:,3),latvec(:,3)))
+!!       dist_ang(4)=convang*acos(dot_product(latvec(:,2),latvec(:,3))/(dist_ang(2)*dist_ang(3)))
+!!       dist_ang(5)=convang*acos(dot_product(latvec(:,3),latvec(:,1))/(dist_ang(3)*dist_ang(1)))
+!!       dist_ang(6)=convang*acos(dot_product(latvec(:,1),latvec(:,2))/(dist_ang(1)*dist_ang(2)))
+!!       end subroutine
 !**********************************************************************************************
 
   end subroutine
 
   subroutine get_data(etot,fcart,strten,latvec,latvec_rot,nat)
+  use mod_interface, except_this_one=> get_data
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
   implicit none
@@ -228,7 +214,7 @@ endif
     deallocate(get_array)
 !Convert the forces and stresses with rotation matrix
 !Rotate forces back to original cell
-    call rotmat_fcart_stress(latvec,latvec_rot,rotmat)
+    call rotmat_fcart_stress_other(latvec,latvec_rot,rotmat)
     do iat=1,nat
        fcart(:,iat)=matmul(rotmat,fcart(:,iat))
     enddo
@@ -243,20 +229,22 @@ endif
     strten=strten/vol
 !If cell is ortho    call rotate_stresstensor(strten,rotmat)
     write(*,'(a)') " # SOCKET MASTER: force, stress and energy received"
-    contains
+    !contains
+  end subroutine
        !************************************************************************************
-       subroutine rotmat_fcart_stress(latvec_init,latvec_trans,rotmat)
+       subroutine rotmat_fcart_stress_other(latvec_init,latvec_trans,rotmat)
        !This subroutine will compute a rotation matrix, which transforms
        !fcart_trans into the original orientation forces fcart by fcart=matmul(rotmat,fcart_trans)
        !stress_trans into the original orientation stress by stress=rotmat*stress_trans*rotnat^T
+       use mod_interface , except_this_one=> rotmat_fcart_stress_other
        implicit none
        real(8):: latvec_init(3,3),latvec_trans(3,3),latvec_trans_inv(3,3),rotmat(3,3)
 !       call invertmat_alborz(latvec_trans,latvec_trans_inv,3)
        call invertmat_alborz(latvec_trans,latvec_trans_inv)
        rotmat=matmul(latvec_init,latvec_trans_inv)
-       end subroutine
+       end subroutine rotmat_fcart_stress_other
        !**********************************************************************************************
-       subroutine rotate_stresstensor(strten,rotmat)
+       subroutine rotate_stresstensor_other(strten,rotmat)
        !This subroutine will rotate the stress tensor by rotmat according to rotmat*stress*rotmat^T
        implicit none
        real(8):: strten(6),rotmat(3,3),stress(3,3)
@@ -276,8 +264,7 @@ endif
                strten(6) =  stress(2,1)
                strten(5) =  stress(3,1)
                strten(4) =  stress(3,2)
-       end subroutine
-  end subroutine
+       end subroutine rotate_stresstensor_other
 
   subroutine final_netsock()
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
