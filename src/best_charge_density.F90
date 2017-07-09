@@ -11,5 +11,7 @@ subroutine best_charge_density(parini)
     !type(typ_ewald_p3d):: ewald_p3d
     !type(typ_atoms):: atoms
     !call cube_read('rho.cube',atoms,poisson_p3d%typ_poisson)
+    call cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
+    write(*,*) "epot_es:" epot_es
 end subroutine best_charge_density
 !*****************************************************************************************
