@@ -1,8 +1,10 @@
 !*****************************************************************************************
 module mod_parini
+    use dictionaries
     use mod_opt, only: typ_paropt
     implicit none
     type typ_parini
+        logical:: exists_yaml_file
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'
@@ -162,6 +164,11 @@ module mod_parini
         !-----------------------------------------------------------------------
         !Minhocao global module
         integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
+        !-----------------------------------------------------------------------
+        type(dictionary), pointer :: dict_user
+        type(dictionary), pointer :: dict
+        type(dictionary), pointer :: subdict
+        type(dictionary), pointer :: subsubdict
     end type typ_parini
 end module mod_parini
 !*****************************************************************************************
