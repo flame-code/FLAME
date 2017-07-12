@@ -32,7 +32,11 @@ subroutine ann_gen_symmetry_function(parini)
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
     
-    call read_input_ann(parini,iproc,ann_arr)
+    if( parini%exists_yaml_file) then
+        call read_input_ann_yaml(parini,iproc,ann_arr)
+    else
+        call read_input_ann(parini,iproc,ann_arr)
+    endif
     
     call read_data(parini,'list_posinp_gen',atoms_gen)
     !---------------------------------------------------------- 

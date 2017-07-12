@@ -36,7 +36,11 @@ subroutine ann_check_symmetry_function(parini)
     if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in check_symmetry_function'
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
-    call read_input_ann(parini,iproc,ann_arr)
+    if( parini%exists_yaml_file) then
+        call read_input_ann_yaml(parini,iproc,ann_arr)
+    else 
+        call read_input_ann(parini,iproc,ann_arr) 
+    endif
     call read_data(parini,'list_posinp_check',atoms_check)
     !---------------------------------------------------------- 
     open(unit=1,file='list_posinp_check',status='old',iostat=ios)

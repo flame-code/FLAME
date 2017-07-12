@@ -28,7 +28,11 @@ subroutine ann_train(parini)
     write(*,*) 'Here', ann_arr%n
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
-    call read_input_ann(parini,iproc,ann_arr)
+    if( parini%exists_yaml_file) then
+        call read_input_ann_yaml(parini,iproc,ann_arr)
+    else
+        call read_input_ann(parini,iproc,ann_arr)
+    endif
     !---------------------------------------------
     ekf%num(1:10)=0
     ekf%n=0
@@ -120,7 +124,11 @@ subroutine ann_train(parini)
 
     !call convert_x_ann(ekf%n,ekf%x,ann_arr) !HERE
     if(iproc==0) then
+    if( parini%exists_yaml_file) then
+        call write_ann_all_yaml(parini,ann_arr,-1)
+    else
         call write_ann_all(parini,ann_arr,-1)
+    endif
     endif
     call f_free(ekf%x)
 

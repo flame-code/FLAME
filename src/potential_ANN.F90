@@ -35,7 +35,11 @@ subroutine init_potential_ann(parini,atoms)
             endif
         enddo
     enddo
-    call read_ann(parini,ann_arr)
+    if( parini%exists_yaml_file) then
+        call read_ann_yaml(parini,ann_arr)
+    else
+        call read_ann(parini,ann_arr)
+    endif
     ann_boundcheck=trim(parini%potential_ann_boundcheck)
     ann_arr%event='potential'
 end subroutine init_potential_ann
