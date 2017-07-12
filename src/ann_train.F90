@@ -19,6 +19,7 @@ subroutine ann_train(parini)
     integer:: ialpha, i, iconf, ios, ia
     real(8):: time1, time2, time3
     character(15):: fnout
+    character (50)::fname
     call f_routine(id='ann_train')
     ann_arr%n=parini%ntypat
     if(parini%bondbased_ann) then
@@ -28,7 +29,9 @@ subroutine ann_train(parini)
     write(*,*) 'Here', ann_arr%n
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
-    if( parini%exists_yaml_file) then
+    fname = trim(parini%stypat(1))//'.ann.input.yaml'
+    inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
+    if( ann_arr%exists_yaml_file) then
         call read_input_ann_yaml(parini,iproc,ann_arr)
     else
         call read_input_ann(parini,iproc,ann_arr)
@@ -124,7 +127,7 @@ subroutine ann_train(parini)
 
     !call convert_x_ann(ekf%n,ekf%x,ann_arr) !HERE
     if(iproc==0) then
-    if( parini%exists_yaml_file) then
+    if( ann_arr%exists_yaml_file) then
         call write_ann_all_yaml(parini,ann_arr,-1)
     else
         call write_ann_all(parini,ann_arr,-1)

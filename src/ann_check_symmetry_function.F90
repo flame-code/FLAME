@@ -22,6 +22,7 @@ subroutine ann_check_symmetry_function(parini)
     real(8):: gminarr(140), gmaxarr(140)
     integer,allocatable:: F(:)
     integer:: nconftot, ios, k
+    character (50)::fname
     call f_routine(id='ann_check_symmetry_function')
     associate(etol=>parini%etol_ann,dtol=>parini%dtol_ann)
     !---------------------------------------------------------- 
@@ -36,7 +37,9 @@ subroutine ann_check_symmetry_function(parini)
     if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in check_symmetry_function'
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
-    if( parini%exists_yaml_file) then
+    fname = trim(parini%stypat(1))//'.ann.input.yaml'
+    inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
+    if( ann_arr%exists_yaml_file) then
         call read_input_ann_yaml(parini,iproc,ann_arr)
     else 
         call read_input_ann(parini,iproc,ann_arr) 

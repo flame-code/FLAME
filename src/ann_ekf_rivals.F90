@@ -52,7 +52,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
         enddo
         if(iproc==0) then
-            if( parini%exists_yaml_file) then
+            if( ann_arr%exists_yaml_file) then
                 call write_ann_all_yaml(parini,ann_arr,iter)
             else
                 call write_ann_all(parini,ann_arr,iter)
@@ -184,15 +184,15 @@ subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train
             call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
         enddo
         if(iproc==0) then
-            if( parini%exists_yaml_file) then
-                write(fn,'(a11,i5.5)') '.symfunc.param.yaml',iter
+            if( ann_arr%exists_yaml_file) then
+                write(fn,'(a11,i5.5)') '.ann.param.yaml',iter
             else
                 write(fn,'(a11,i5.5)') '.ann.param.',iter  
             endif
             do i=1,ann_arr%n
                 filename=trim(parini%stypat(i))//trim(fn)
                 write(*,'(a)') trim(filename)
-                if( parini%exists_yaml_file) then
+                if( ann_arr%exists_yaml_file) then
                     call write_ann_yaml(parini,filename,ann_arr%ann(i))
                 else
                     call write_ann(parini,filename,ann_arr%ann(i))

@@ -222,13 +222,14 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     integer, intent(in):: iproc
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine read_input_ann_yaml
-subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
+subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     type(typ_parini), intent(in):: parini
     type(typ_ann), intent(inout):: ann
     integer, intent(in):: iproc
     character(50):: fname, method, sat1, sat2
+    real(8)::rcut
 end subroutine get_symfunc_parameters_yaml
 subroutine write_ann_all_yaml(parini,ann_arr,iter)
     use mod_parini, only: typ_parini

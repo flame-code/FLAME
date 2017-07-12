@@ -1,17 +1,17 @@
 main :
     nodes : [3 , 3]    #number of nodes at each hidden layer
+    rcut           : 12.0
     ampl_chi       : 1.00
     prefactor_chi  : 1.00
-    zion           : 0.90
-    gausswidth_ion : 0.60
+    zion           : 0.900
+    gausswidth_ion : 0.600
     ener_ref       : -74.2513991369539
     gausswidth     : 2.10
     hardness       : 0.10
     chi0           : 0.25
     spring_const   : 1.00
-    qinit          : -1.50
+    qinit          : -1.5
     method         : behler
-
 
 symfunc:
     g02_001 :  0.0010  0.0000  0.0000  0.0000   O 

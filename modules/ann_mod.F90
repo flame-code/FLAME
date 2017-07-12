@@ -70,6 +70,7 @@ module mod_ann
         
     end type typ_ann
     type typ_ann_arr
+        logical:: exists_yaml_file = .false.
         integer:: n=-1
         integer:: natmax=1000
         logical:: compute_symfunc=.true.

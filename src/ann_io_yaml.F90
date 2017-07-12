@@ -12,6 +12,7 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     integer:: ios, iann, i, j
     character(50):: fname,str1
     character(5):: stypat
+    real(8)::rcut
     !call f_lib_initialize()
     !call yaml_new_document()
     do iann=1,ann_arr%n
@@ -21,16 +22,17 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
             stypat=parini%stypat(iann)
         endif
         !-------------------------------------------------------
-        fname = trim(stypat)//'symfunc.input.yaml'
-        write(*,*),trim(fname)
-        call get_symfunc_parameters_yaml(parini,iproc,fname,ann_arr%ann(iann))
+        fname = trim(stypat)//'.ann.input.yaml'
+        write(*,*)trim(fname)
+        call get_symfunc_parameters_yaml(parini,iproc,fname,ann_arr%ann(iann),rcut)
+        ann_arr%rcut = rcut
         !-------------------------------------------------------
 
     enddo
     !call f_lib_finalize()
 end subroutine read_input_ann_yaml
 !*****************************************************************************************
-subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
+subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
@@ -46,8 +48,9 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
     integer:: ig, ios, i0, i, il 
     character(50):: fname, method, sat1, sat2
     character(250):: tt, str1
-    integer :: count1=0, count2=0, count3=0, count4=0, count5=0, count6=0
+    integer :: count1, count2, count3, count4, count5, count6
     character(5):: stypat
+    real(8)::rcut
     call set_dict_ann(ann,fname,stypat)
     call yaml_comment('USER INPUT FILE',hfill='~')
     call yaml_dict_dump(ann%dict_ann)
@@ -60,7 +63,6 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
     enddo
     ann%nl=ann%nl+1 !adding the output layer to total number of layers
     ann%nn(ann%nl)=1 !setting the output layer
-    write(*,*)"injaaaa",ann%nn
     if(trim(parini%approach_ann)/='atombased' .and. trim(parini%approach_ann)/='tb' ) then
         ann%ampl_chi       =  ann%dict_ann//"main"//"ampl_chi" 
         ann%prefactor_chi  =  ann%dict_ann//"main"//"prefactor_chi" 
@@ -72,10 +74,9 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
         ann%chi0           =  ann%dict_ann//"main"//"chi0" 
         ann%spring_const   =  ann%dict_ann//"main"//"spring_const"
         ann%qinit          =  ann%dict_ann//"main"//"qinit"
-        !ann%rcut           =  ann%dict_ann//"main"//"rcut"
+        rcut               =  ann%dict_ann//"main"//"rcut"
     elseif(trim(parini%approach_ann)=='tb') then
         ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
-
     endif
     !ann%rionic    = ann%dict_ann//"main"//"rionic"
     !---------------------------------------------
@@ -113,6 +114,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
     if(ann%ng3>0) stop 'ERROR: symmetry function of type G3 not implemented yet.'
     if(mod(ann%ng6,3)/=0) stop 'ERROR: ng6 must be multiple of three.'
     
+    count1=0; count2=0; count3=0; count4=0; count5=0; count6=0
 
     dict_tmp=>dict_iter(ann%dict_ann//"symfunc")
     do while(associated(dict_tmp))
@@ -133,17 +135,16 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
             endif
         endif
         method =  ann%dict_ann//"main"//"method" 
-
         if (tt(1:3)=="g02") then
             count2=count2+1
             i0=i0+1
             str1=ann%dict_ann//"symfunc"//tt
             if (trim(method) == "behler") then
                 read(str1,*,iostat=ios)ann%g2eta(count2),ann%g2rs(count2),ann%gbounds(1,i0),ann%gbounds(2,i0),sat1
+                call set_radial_atomtype(parini,sat1,ann%g2i(count2))
             else
                 read(str1,*,iostat=ios)ann%g2eta(count2),ann%g2rs(count2),ann%gbounds(1,i0),ann%gbounds(2,i0)
             endif
-            call set_radial_atomtype(parini,sat1,ann%g2i(count2))
             if(ios<0) then
                 write(*,*)ios
                 write(*,'(a)') 'ERROR: 4 columns are required for each of G2 symmetry functions,'
@@ -159,7 +160,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
             str1=ann%dict_ann//"symfunc"//tt
             read(str1,*,iostat=ios) ann%g4eta(count4),ann%g4zeta(count4), &
                 ann%g4lambda(count4),ann%gbounds(1,i0),ann%gbounds(2,i0)
-            call set_radial_atomtype(parini,sat1,ann%g2i(count2))
+            call set_radial_atomtype(parini,sat1,ann%g2i(count4))
             if(ios<0) then
                 write(*,'(a)') 'ERROR: 6 columns are required for each of G4 symmetry functions,'
                 write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
@@ -174,11 +175,11 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
             if (trim(method) == "behler") then
                 read(str1,*,iostat=ios) ann%g5eta(count5),ann%g5zeta(count5), &
                     ann%g5lambda(count5),ann%gbounds(1,i0),ann%gbounds(2,i0),sat1,sat2
+                call set_angular_atomtype(parini,sat1,sat2,ann%g5i(1,count5))
             else
                 read(str1,*,iostat=ios) ann%g5eta(count5),ann%g5zeta(count5), &
                     ann%g5lambda(count5),ann%gbounds(1,i0),ann%gbounds(2,i0)
             endif
-            call set_angular_atomtype(parini,sat1,sat2,ann%g5i(1,count5))
                 if(ios<0) then
                     write(*,'(a)') 'ERROR: 5 columns are required for each of G5 symmetry functions,'
                 write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
@@ -191,6 +192,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann)
     nullify(dict_tmp)
 
 
+    write(*,*)"i0=======",i0
 
 !    do ig=1,ann%ng6/3
 !        stop 'ERROR: g6 is not ready.'
@@ -238,9 +240,9 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
     character(50):: filename
     integer:: i
     if(iter==-1) then
-        write(fn,'(a10)') '.symfunc.param.yaml'
+        write(fn,'(a10)') '.ann.param.yaml'
     else
-        write(fn,'(a11,i5.5)') '.symfunc.param.yaml.',iter
+        write(fn,'(a11,i5.5)') '.ann.param.yaml.',iter
     endif
     if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
         if(parini%ntypat>1) then
@@ -349,7 +351,6 @@ subroutine write_ann_yaml(parini,filename,ann)
     enddo
     call yaml_dict_dump(ann%dict_ann)
 
-    stop
     !-------------------------------------------------------
 end subroutine write_ann_yaml
 !*****************************************************************************************
@@ -371,7 +372,7 @@ subroutine read_ann_yaml(parini,ann_arr)
     character(1):: fn_tt
     character(50):: filename
     do iann=1,ann_arr%n
-        write(fn,'(a10)') '.symfunc.param.yaml'
+        write(fn,'(a10)') '.ann.param.yaml'
         if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
             if(parini%ntypat>1) then
                 stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
@@ -385,7 +386,8 @@ subroutine read_ann_yaml(parini,ann_arr)
             stop 'ERROR: reading ANN parameters is only for eem1,cent2,tb'
         endif
         !-------------------------------------------------------
-        call get_symfunc_parameters_yaml(parini,iproc,filename,ann_arr%ann(iann))
+        call get_symfunc_parameters_yaml(parini,iproc,filename,ann_arr%ann(iann),rcut)
+        ann_arr%rcut = rcut
         do i0=1,ann_arr%ann(iann)%nn(0)
             bound_l=ann_arr%ann(iann)%gbounds(1,i0)
             bound_u=ann_arr%ann(iann)%gbounds(2,i0)

@@ -38,7 +38,7 @@ subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
         enddo
         if(iproc==0) then
-            if( parini%exists_yaml_file) then
+            if( ann_arr%exists_yaml_file) then
                 call write_ann_all_yaml(parini,ann_arr,iter)
             else
                 call write_ann_all(parini,ann_arr,iter) 

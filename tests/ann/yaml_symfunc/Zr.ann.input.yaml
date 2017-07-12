@@ -1,5 +1,6 @@
 main :
     nodes : [3 , 3]    #number of nodes at each hidden layer
+    rcut           : 12.0
     ampl_chi       : 1.00
     prefactor_chi  : 1.00
     zion           : 1.20

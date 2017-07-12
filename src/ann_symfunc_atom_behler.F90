@@ -131,6 +131,7 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
         symfunc%y0dr(i0,8,ib)=symfunc%y0dr(i0,8,ib)+ttjz*pia%dr(2) !sigma(3,2)
         symfunc%y0dr(i0,9,ib)=symfunc%y0dr(i0,9,ib)+ttjz*pia%dr(3) !sigma(3,3)
     enddo
+    write(1000,*)sum(symfunc%y(:,:))
 end subroutine symmetry_functions_g02_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,kat_maincell,rij,rik,rjk,drij,drik,drjk,fcij,fcdij,fcik,fcdik,fcjk,fcdjk,symfunc)
@@ -279,6 +280,7 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         symfunc%y0dr(i0,8,ibik)=symfunc%y0dr(i0,8,ibik)+(1.d0*ttkz*piaik%dr(2))  !sigma(3,2)
         symfunc%y0dr(i0,9,ibik)=symfunc%y0dr(i0,9,ibik)+(1.d0*ttkz*piaik%dr(3))  !sigma(3,3)
     enddo
+    write(1000,*)sum(symfunc%y(:,:))
 end subroutine symmetry_functions_g05_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g06_atom(ann,iat,jat_maincell,r,dr,fc,fcd)
