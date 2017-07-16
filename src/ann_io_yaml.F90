@@ -234,14 +234,14 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
     type(typ_ann_arr), intent(in):: ann_arr
     integer, intent(in):: iter
     !local variables
-    character(16):: fn
+    character(21):: fn
     character(1):: fn_tt
     character(50):: filename
     integer:: i
     if(iter==-1) then
-        write(fn,'(a10)') '.ann.param.yaml'
+        write(fn,'(a15)') '.ann.param.yaml'
     else
-        write(fn,'(a11,i5.5)') '.ann.param.yaml.',iter
+        write(fn,'(a16,i5.5)') '.ann.param.yaml.',iter
     endif
     if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
         if(parini%ntypat>1) then
@@ -276,7 +276,7 @@ subroutine write_ann_yaml(parini,filename,ann)
     !local variables
     !integer:: 
     !real(8):: 
-    integer:: i, j, k, l, ios, ialpha, i0, iline
+    integer:: i, j, k, l, ios, ialpha, i0, iline, ierr, iunit
     character(5):: sat1, sat2
     character(8):: key1
     character(250):: str1
@@ -348,8 +348,15 @@ subroutine write_ann_yaml(parini,filename,ann)
             i0=i0+1
         enddo
     enddo
-    call yaml_dict_dump(ann%dict_ann)
-
+    iunit=f_get_free_unit(10**5)
+    call yaml_set_stream(unit=iunit,filename=trim(filename),&
+         record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
+    if (ierr==0) then
+        call yaml_dict_dump(ann%dict_ann,unit=iunit)
+       call yaml_close_stream(unit=iunit)
+    else
+       call yaml_warning('Failed to create'//trim(filename)//', error code='//trim(yaml_toa(ierr)))
+    end if
     !-------------------------------------------------------
 end subroutine write_ann_yaml
 !*****************************************************************************************
