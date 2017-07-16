@@ -103,7 +103,7 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     i0=ann_arr%ann(isat)%ng1
     do ig=1,ann_arr%ann(isat)%ng2
         i0=i0+1
-        if(.not.(jsat==ann_arr%ann(isat)%g2i(ig))) cycle
+        if((ann_arr%ann(isat)%g2i(ig)/=0).and.(.not.(jsat==ann_arr%ann(isat)%g2i(ig)))) cycle
         rs=ann_arr%ann(jsat)%g2rs(ig)
         !The central atom is i:
         etaj=ann_arr%ann(jsat)%g2eta(ig)
@@ -218,7 +218,7 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         i0=i0+1
         ii1=ann_arr%ann(isat)%g5i(1,ig)+ann_arr%ann(isat)%g5i(2,ig)
         ii2=abs(ann_arr%ann(isat)%g5i(1,ig)-ann_arr%ann(isat)%g5i(2,ig))
-        if(.not.((jsat+ksat)==ii1 .and. abs(jsat-ksat)==ii2)) cycle
+        if((ann_arr%ann(isat)%g5i(1,ig)/=0).and. (.not.((jsat+ksat)==ii1 .and. abs(jsat-ksat)==ii2))) cycle
         zeta=ann_arr%ann(ksat)%g5zeta(ig)
         alam=ann_arr%ann(ksat)%g5lambda(ig)
         etai=ann_arr%ann(isat)%g5eta(ig)

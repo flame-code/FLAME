@@ -214,6 +214,49 @@ subroutine read_data(parini,filename_list,atoms_arr)
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
 end subroutine read_data
+! ./src/ann_io_yaml.F90 :
+subroutine read_input_ann_yaml(parini,iproc,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iproc
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine read_input_ann_yaml
+subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann
+    type(typ_parini), intent(in):: parini
+    type(typ_ann), intent(inout):: ann
+    integer, intent(in):: iproc
+    character(50):: fname, method, sat1, sat2
+    real(8)::rcut
+end subroutine get_symfunc_parameters_yaml
+subroutine write_ann_all_yaml(parini,ann_arr,iter)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    integer, intent(in):: iter
+end subroutine write_ann_all_yaml
+subroutine write_ann_yaml(parini,filename,ann)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann
+    type(typ_parini), intent(in):: parini
+    character(*):: filename
+    type(typ_ann), intent(in):: ann
+end subroutine write_ann_yaml
+subroutine read_ann_yaml(parini,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine read_ann_yaml
+subroutine set_dict_ann(ann,fname,stypat)
+    use mod_ann, only: typ_ann
+    type(typ_ann), intent(inout):: ann
+    character(5):: stypat
+    character(len=*):: fname 
+end subroutine set_dict_ann
 ! ./src/ann_lm.F90 :
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
