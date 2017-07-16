@@ -24,6 +24,7 @@ subroutine yaml_get_parameters(parini)
         select case(trim(dict_key(parini%subdict)))
         case("main")
             call yaml_get_main_parameters(parini)
+            call set_atomc_types_info(parini)
         case("minhopp")
             call yaml_get_minhopp_parameters(parini)
         case("geopt")
@@ -73,6 +74,7 @@ subroutine yaml_get_main_parameters(parini)
     !local variales
     if(dict_size(parini%subdict)<1) stop 'ERROR: main block in flame_in.yaml is empty.'
     parini%task=parini%subdict//"task"
+    parini%types_main=parini%subdict//"types"
     parini%two_level_geopt=parini%subdict//"two_level_geopt"
     parini%iverbose=parini%subdict//"verbosity"
     parini%iseed=parini%subdict//"seed"
