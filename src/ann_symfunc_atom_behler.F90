@@ -103,7 +103,7 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     i0=ann_arr%ann(isat)%ng1
     do ig=1,ann_arr%ann(isat)%ng2
         i0=i0+1
-        if(.not.(jsat==ann_arr%ann(isat)%g2i(ig))) cycle
+        if((ann_arr%ann(isat)%g2i(ig)/=0).and.(.not.(jsat==ann_arr%ann(isat)%g2i(ig)))) cycle
         rs=ann_arr%ann(jsat)%g2rs(ig)
         !The central atom is i:
         etaj=ann_arr%ann(jsat)%g2eta(ig)
@@ -131,7 +131,6 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
         symfunc%y0dr(i0,8,ib)=symfunc%y0dr(i0,8,ib)+ttjz*pia%dr(2) !sigma(3,2)
         symfunc%y0dr(i0,9,ib)=symfunc%y0dr(i0,9,ib)+ttjz*pia%dr(3) !sigma(3,3)
     enddo
-    write(1000,*)sum(symfunc%y(:,:))
 end subroutine symmetry_functions_g02_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,kat_maincell,rij,rik,rjk,drij,drik,drjk,fcij,fcdij,fcik,fcdik,fcjk,fcdjk,symfunc)
@@ -219,7 +218,7 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         i0=i0+1
         ii1=ann_arr%ann(isat)%g5i(1,ig)+ann_arr%ann(isat)%g5i(2,ig)
         ii2=abs(ann_arr%ann(isat)%g5i(1,ig)-ann_arr%ann(isat)%g5i(2,ig))
-        if(.not.((jsat+ksat)==ii1 .and. abs(jsat-ksat)==ii2)) cycle
+        if((ann_arr%ann(isat)%g5i(1,ig)/=0).and. (.not.((jsat+ksat)==ii1 .and. abs(jsat-ksat)==ii2))) cycle
         zeta=ann_arr%ann(ksat)%g5zeta(ig)
         alam=ann_arr%ann(ksat)%g5lambda(ig)
         etai=ann_arr%ann(isat)%g5eta(ig)
@@ -280,7 +279,6 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         symfunc%y0dr(i0,8,ibik)=symfunc%y0dr(i0,8,ibik)+(1.d0*ttkz*piaik%dr(2))  !sigma(3,2)
         symfunc%y0dr(i0,9,ibik)=symfunc%y0dr(i0,9,ibik)+(1.d0*ttkz*piaik%dr(3))  !sigma(3,3)
     enddo
-    write(1000,*)sum(symfunc%y(:,:))
 end subroutine symmetry_functions_g05_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g06_atom(ann,iat,jat_maincell,r,dr,fc,fcd)

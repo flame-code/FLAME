@@ -192,7 +192,6 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     nullify(dict_tmp)
 
 
-    write(*,*)"i0=======",i0
 
 !    do ig=1,ann%ng6/3
 !        stop 'ERROR: g6 is not ready.'
@@ -372,7 +371,7 @@ subroutine read_ann_yaml(parini,ann_arr)
     character(1):: fn_tt
     character(50):: filename
     do iann=1,ann_arr%n
-        write(fn,'(a10)') '.ann.param.yaml'
+        write(fn,'(a15)') '.ann.param.yaml'
         if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
             if(parini%ntypat>1) then
                 stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
@@ -398,13 +397,13 @@ subroutine read_ann_yaml(parini,ann_arr)
         do ialpha=1,ann_arr%ann(iann)%nl
             do j=1,ann_arr%ann(iann)%nn(ialpha)
                 do i=1,ann_arr%ann(iann)%nn(ialpha-1)
-                    i1=i1+1
                     ann_arr%ann(iann)%a(i,j,ialpha)=ann_arr%ann(iann)%dict_ann//"weights"//i1
+                    i1=i1+1
                 enddo
             enddo
             do i=1,ann_arr%ann(iann)%nn(ialpha)
-                i1=i1+1
                 ann_arr%ann(iann)%b(i,ialpha)=ann_arr%ann(iann)%dict_ann//"weights"//i1
+                i1=i1+1
             enddo
         enddo
         !-------------------------------------------------------
