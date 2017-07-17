@@ -280,6 +280,8 @@ subroutine write_ann_yaml(parini,filename,ann)
     character(5):: sat1, sat2
     character(8):: key1
     character(250):: str1
+    character(50)::  method
+    method =  ann%dict_ann//"main"//"method"
     i0=0
     do i=1,ann%ng1
         write(key1,'(a,i3.3)')"g01_",i 
@@ -291,8 +293,12 @@ subroutine write_ann_yaml(parini,filename,ann)
     do i=1,ann%ng2
         write(key1,'(a,i3.3)')"g02_",i 
         i0=i0+1
-        sat1=parini%stypat(ann%g2i(i))
-        write(str1,'(2f8.4,2es24.15,1a5)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0),trim(sat1)
+        if (trim(method) == "behler") then
+            sat1=parini%stypat(ann%g2i(i))
+            write(str1,'(2f8.4,2es24.15,1a5)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0),trim(sat1)
+        else
+            write(str1,'(2f8.4,2es24.15)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+        endif
         call set(ann%dict_ann//"symfunc"//key1,str1)
     enddo
     !-------------------------------------------------------
@@ -312,9 +318,14 @@ subroutine write_ann_yaml(parini,filename,ann)
     do i=1,ann%ng5
         write(key1,'(a,i3.3)')"g05_",i 
         i0=i0+1
-        sat1=parini%stypat(ann%g5i(1,i))
-        sat2=parini%stypat(ann%g5i(2,i))
-        write(str1,'(3f8.4,2es24.15,2a5)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0),trim(sat1),trim(sat2)
+        if (trim(method) == "behler") then
+            sat1=parini%stypat(ann%g5i(1,i))
+            sat2=parini%stypat(ann%g5i(2,i))
+            write(str1,'(3f8.4,2es24.15,2a5)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0), &
+                                               ann%gbounds(2,i0),trim(sat1),trim(sat2)
+        else
+            write(str1,'(3f8.4,2es24.15)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+        endif
         call set(ann%dict_ann//"symfunc"//key1,str1)
     enddo
 !    !-------------------------------------------------------
