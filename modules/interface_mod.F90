@@ -214,6 +214,49 @@ subroutine read_data(parini,filename_list,atoms_arr)
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
 end subroutine read_data
+! ./src/ann_io_yaml.F90 :
+subroutine read_input_ann_yaml(parini,iproc,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iproc
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine read_input_ann_yaml
+subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann
+    type(typ_parini), intent(in):: parini
+    type(typ_ann), intent(inout):: ann
+    integer, intent(in):: iproc
+    character(50):: fname, method, sat1, sat2
+    real(8)::rcut
+end subroutine get_symfunc_parameters_yaml
+subroutine write_ann_all_yaml(parini,ann_arr,iter)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    integer, intent(in):: iter
+end subroutine write_ann_all_yaml
+subroutine write_ann_yaml(parini,filename,ann)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann
+    type(typ_parini), intent(in):: parini
+    character(*):: filename
+    type(typ_ann), intent(in):: ann
+end subroutine write_ann_yaml
+subroutine read_ann_yaml(parini,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine read_ann_yaml
+subroutine set_dict_ann(ann,fname,stypat)
+    use mod_ann, only: typ_ann
+    type(typ_ann), intent(inout):: ann
+    character(5):: stypat
+    character(len=*):: fname 
+end subroutine set_dict_ann
 ! ./src/ann_lm.F90 :
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
@@ -3828,6 +3871,93 @@ type(typ_parini), intent(in):: parini
 end subroutine params_echo
 subroutine fp_assign()
 end subroutine fp_assign
+! ./src/parser_yaml.F90 :
+subroutine yaml_get_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_parameters
+subroutine yaml_get_main_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_main_parameters
+subroutine yaml_get_minhopp_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_minhopp_parameters
+subroutine yaml_get_opt_parameters(parini,paropt)
+    use mod_parini, only: typ_parini
+    use mod_opt, only: typ_paropt
+    type(typ_parini), intent(in):: parini
+    type(typ_paropt), intent(inout):: paropt
+end subroutine yaml_get_opt_parameters
+subroutine yaml_get_geopt_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_geopt_parameters
+subroutine yaml_get_geopt_prec_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_geopt_prec_parameters
+subroutine yaml_get_saddle_1s_opt_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_saddle_1s_opt_parameters
+subroutine yaml_get_saddle_1s_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_saddle_1s_parameters
+subroutine yaml_get_potential_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_potential_parameters
+subroutine yaml_get_ann_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_ann_parameters
+subroutine yaml_get_dynamics_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_dynamics_parameters
+subroutine yaml_get_bader_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_bader_parameters
+subroutine yaml_get_genconf_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_genconf_parameters
+subroutine yaml_get_conf_comp_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_conf_comp_parameters
+subroutine yaml_get_testforces_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_testforces_parameters
+subroutine yaml_get_single_point_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_single_point_parameters
+subroutine yaml_get_ewald_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_ewald_parameters
+subroutine yaml_get_misc_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_misc_parameters
+subroutine set_dict_parini_default(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine set_dict_parini_default
+subroutine set_dict_parini_user(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine set_dict_parini_user
+subroutine check_nonoptional_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+end subroutine check_nonoptional_parameters
 ! ./src/phonon.F90 :
 subroutine cal_hessian_4p(parini)
     use mod_parini, only: typ_parini

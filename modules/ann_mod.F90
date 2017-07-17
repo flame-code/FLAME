@@ -1,9 +1,11 @@
 !*****************************************************************************************
 module mod_ann
+    use dictionaries
     use mod_linked_lists, only: typ_linked_lists
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type typ_ann
+        type(dictionary), pointer :: dict_ann
         integer:: nl !number of hidden layer plus one
         integer:: nn(0:10)
         !integer:: n0=-1
@@ -68,6 +70,7 @@ module mod_ann
         
     end type typ_ann
     type typ_ann_arr
+        logical:: exists_yaml_file = .false.
         integer:: n=-1
         integer:: natmax=1000
         logical:: compute_symfunc=.true.

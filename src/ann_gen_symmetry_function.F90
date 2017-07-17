@@ -17,6 +17,7 @@ subroutine ann_gen_symmetry_function(parini)
     real(8) :: distance
     real(8), allocatable:: diff(:),tt1(:),tt2(:)
     integer:: nconftot, ios, k
+    character (50)::fname
     
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%n)
@@ -32,7 +33,13 @@ subroutine ann_gen_symmetry_function(parini)
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
     
-    call read_input_ann(parini,iproc,ann_arr)
+    fname = trim(parini%stypat(1))//'.ann.input.yaml'
+    inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
+    if( ann_arr%exists_yaml_file) then
+        call read_input_ann_yaml(parini,iproc,ann_arr)
+    else
+        call read_input_ann(parini,iproc,ann_arr)
+    endif
     
     call read_data(parini,'list_posinp_gen',atoms_gen)
     !---------------------------------------------------------- 
