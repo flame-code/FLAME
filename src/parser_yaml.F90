@@ -217,6 +217,8 @@ subroutine yaml_get_ann_parameters(parini)
     parini%symfunc_type_ann=parini%subdict//"symfunc_type"
     parini%syslinsolver_ann=parini%subdict//"syslinsolver"
     parini%psolver_ann=parini%subdict//"psolver"
+    parini%rgnrmtol=parini%subdict//"rgnrmtol"
+    parini%qgnrmtol=parini%subdict//"qgnrmtol"
     parini%etol_ann=parini%subdict//"etol"
     parini%dtol_ann=parini%subdict//"dtol"
     parini%normalization_ann=parini%subdict//"normalization"
