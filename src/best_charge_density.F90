@@ -1,5 +1,4 @@
 !!--------------------------------------------------------------------------------------------------
-!!this subroutine reads electronic_density.cube and gives hartree energy
 subroutine best_charge_density(parini)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -18,6 +17,7 @@ subroutine best_charge_density(parini)
     real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi
     real(8):: ehartree
     real(8),allocatable::  gausswidth(:) , gwit(:)
+    open (unit = 10 , file="forces.txt")
     nx=cent%ewald_p3d%poisson_p3d%ngpx
     ny=cent%ewald_p3d%poisson_p3d%ngpy
     nz=cent%ewald_p3d%poisson_p3d%ngpz
@@ -36,6 +36,7 @@ subroutine best_charge_density(parini)
     write(*,*) "Hartree energy : ", ehartree
     !-----------------------------------------------------------------------------------
     write(*,*) "calculating gauss_force of bigdft charge density..."
+    write(10,*) "calculating gauss_force of bigdft charge density..."
     atoms%zat(:)=1
     allocate(gwit(atoms%nat))
     nx=cent%ewald_p3d%poisson_p3d%ngpx
@@ -45,17 +46,14 @@ subroutine best_charge_density(parini)
     cent%gwit = 0.8d0
     call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
         cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
-        write(*,*) "atoms forces are :"
-        write(*,*) atoms%fat
+        write(10,*) "atoms forces are :"
+        write(10,*) atoms%fat
     !-----------------------------------------------------------------------------------
     write(*,*) "calculating cent_electronic_density..."
     atoms%qat = 1.d0
     allocate(cent%gwe(atoms%nat))
     cent%gwe = 0.8d0
-   ! cent%ewald_p3d%rgcut=6.d0*cent%gwe(1)
-    cent%ewald_p3d%rgcut=6.d0*cent%gwit(1)
-    call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat, &
-        cent%gwit,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+    cent%ewald_p3d%rgcut=6.d0*cent%gwe(1)
     call gauss_grid(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat, &
         cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
     call cube_write('cent_electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson,'rho')
@@ -63,6 +61,7 @@ subroutine best_charge_density(parini)
     deallocate(cent%ewald_p3d%poisson_p3d%pot)
     !-----------------------------------------------------------------------------------
     write(*,*) "calculating gauss_force of CENT2 charge density..."
+    write(10,*) "calculating gauss_force of CENT2 charge density..."
      write(*,*) "reading cent electronic density..."
     call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
     cent%ewald_p3d%hgx=cent%ewald_p3d%poisson_p3d%hx
@@ -82,8 +81,8 @@ subroutine best_charge_density(parini)
     cent%gwit = 0.8d0
     call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
         cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
-        write(*,*) "atoms forces are :"
-        write(*,*) atoms%fat
+        write(10,*) "atoms forces are :"
+        write(10,*) atoms%fat
     !-----------------------------------------------------------------------------------
     call destruct_ewald_bps(cent%ewald_p3d)
 end subroutine best_charge_density
