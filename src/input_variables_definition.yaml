@@ -140,6 +140,8 @@
    symfunc_type: behler
    syslinsolver: direct
    psolver: unknown
+   rgnrmtol: 5.E-4
+   qgnrmtol: 5.E-4
    etol: 1.0
    dtol: 1.0
    normalization: False

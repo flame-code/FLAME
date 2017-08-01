@@ -82,6 +82,8 @@ module mod_parini
         integer:: nstep_cep=200
         integer:: nat_force=0
         real(8):: ampl_rand=1.d0
+        real(8):: rgnrmtol=-1.d0
+        real(8):: qgnrmtol=-1.d0
         real(8):: etol_ann !the tolerance difference of energies of two configuration
         real(8):: dtol_ann !distance between two FP
         logical:: normalization_ann=.false.

@@ -27,7 +27,7 @@ OBJ_ = $(SRC_:.F90=.o)
 OBJ = $(patsubst %,$(OBJDIR)/%,$(OBJ_))
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.F90
-	$(F90) $(FFLAGS) $(PRE_PROC) $(INCLUDES) -I../build/install/include -c $< -o $@
+	$(F90) $(FFLAGS) $(PRE_PROC) $(INCLUDES) -c $< -o $@
 
 libmodules.a: $(OBJ)
 	ar -scruv libmodules.a $(OBJ)
