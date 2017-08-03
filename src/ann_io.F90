@@ -218,7 +218,7 @@ subroutine set_radial_atomtype(parini,sat1,ityp)
     !local variables
     integer:: i
     character(200):: str
-    str='ERROR: set_radial_atomtype: types in input.ini and input.ann.* are inconsistent.'
+    str='ERROR: set_radial_atomtype: types in input.ini and input.ann.* are inconsistent:'
     do i=1,parini%ntypat
         !write(*,*) trim(parini%stypat(i)),trim(sat1)
         if(trim(parini%stypat(i))==trim(sat1)) then
@@ -226,7 +226,7 @@ subroutine set_radial_atomtype(parini,sat1,ityp)
             exit
         endif
         if(i==parini%ntypat) then
-            write(*,'(a)') trim(str)
+            write(*,'(a,2(1x,a))') trim(str),trim(parini%stypat(i)),trim(sat1)
             stop
         endif
     enddo
@@ -504,7 +504,9 @@ subroutine read_data(parini,filename_list,atoms_arr)
         filename_force=filename(1:ind)//'force_'//filename(ind+1:len_filename)
         !write(*,*) trim(filename_force)
         !stop
-        open(unit=2,file=trim(filename_force),status='old',iostat=ios)
+        if(parini%read_forces_ann) then
+            open(unit=2,file=trim(filename_force),status='old',iostat=ios)
+        endif
         if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning force of list_posinp';stop;endif
         over_iconf: do iconf=1,atoms_arr_of%nconf
             !atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)=0.d0
@@ -521,7 +523,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%qtot=atoms_arr_of%atoms(iconf)%qtot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
-            read(2,*)
+            if(parini%read_forces_ann) read(2,*)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
                 ttx=atoms_arr_of%atoms(iconf)%rat(1,iat) !+5.d0
                 tty=atoms_arr_of%atoms(iconf)%rat(2,iat) !+5.d0
@@ -533,10 +535,16 @@ subroutine read_data(parini,filename_list,atoms_arr)
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(2,iat)=tty
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(3,iat)=ttz
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)
-                read(2,*) fx,fy,fz
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=fx
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=fy
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(3,iat)=fz
+                if(parini%read_forces_ann) then
+                    read(2,*) fx,fy,fz
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=fx
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=fy
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(3,iat)=fz
+                else
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=0.d0
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=0.d0
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(3,iat)=0.d0
+                endif
             enddo
             atoms_arr_t%fn(atoms_arr_t%nconf)=trim(filename)
             atoms_arr_t%lconf(atoms_arr_t%nconf)=iconf
@@ -544,7 +552,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
         enddo over_iconf
         deallocate(atoms_arr_of%atoms)
         !call atom_all_deallocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.,qtotall=.true.)
-        close(2)
+        if(parini%read_forces_ann) close(2)
     enddo
     close(1)
     
