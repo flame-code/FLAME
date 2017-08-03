@@ -1,8 +1,10 @@
 !*****************************************************************************************
 module mod_parini
+    use dictionaries
     use mod_opt, only: typ_paropt
     implicit none
     type typ_parini
+        logical:: exists_yaml_file
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'
@@ -80,11 +82,13 @@ module mod_parini
         integer:: nstep_cep=200
         integer:: nat_force=0
         real(8):: ampl_rand=1.d0
+        real(8):: rgnrmtol=-1.d0
+        real(8):: qgnrmtol=-1.d0
         real(8):: etol_ann !the tolerance difference of energies of two configuration
         real(8):: dtol_ann !distance between two FP
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
-
+        logical:: read_forces_ann
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
@@ -162,6 +166,11 @@ module mod_parini
         !-----------------------------------------------------------------------
         !Minhocao global module
         integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
+        !-----------------------------------------------------------------------
+        type(dictionary), pointer :: dict_user
+        type(dictionary), pointer :: dict
+        type(dictionary), pointer :: subdict
+        type(dictionary), pointer :: subsubdict
     end type typ_parini
 end module mod_parini
 !*****************************************************************************************

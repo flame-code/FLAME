@@ -1,0 +1,191 @@
+## Definitions of the input variables
+##inputvar: #name of the variable as declared in the code
+## DESCRIPTION: Extended description of the variable to be used for documentation
+## COMMENT: This is the description of the variable as will appear in the logfile
+## RANGE: [from,to] #always put two numbers (also .inf can be put)
+## EXCLUSIVE: #here follows a mapping of allowed values (either RANGE or EXCLUSIVE)
+##  Value1:  comments of value1
+##  Value2:  comment of value2
+## CONDITION: #here the conditions for which the variable makes sense are written
+##   MASTER_KEY: foo #this means that inputvar makes sense only if foo is specified
+##   WHEN: #provide a list of allowed values of foo for which inputvar is meaningful
+##     - fooval1
+##     - fooval2
+## PROFILE_FROM: foo #inputvar inherit the profile from the one specified by foo variable
+###then the profiles follows, which gives to the variables the allowed name
+## default: value of the default, written as a string
+## profile1: value1 # if the user specifies inputvar: profile1 then inputvars will be value1
+## profile2: value2
+##
+## DO NOT USE the character ':' and "" in the COMMENT or DESCRIPTION
+############################################
+ main:
+   task: unknown
+   types: unknown
+   two_level_geopt: False
+   verbosity: 0
+   seed: -2
+ minhopp:
+   nstep: 0
+   nsoften: 7
+   mdmin: 3
+   minter: 1
+   nrandoff: 0
+   npminx: 1000
+   etoler: 1.E-2
+   eref: -1.E50
+   ekinmax: 1.E20
+   #The value of next line is 1.d0/1.02d0
+   alpha1: 0.9803921568627451
+   alpha2: 1.02d0
+   beta1: 1.05d0
+   beta2: 1.05d0
+   #The value of next line is 1.d0/1.05d0
+   beta3: 0.9523809523809523
+   trajectory: False
+   print_force: False
+ geopt:
+   method: unknown
+   fmaxtol: -1.0
+   alphax: -1.0
+   condnum: 10.0
+   precaution: normal
+   lprint: False
+   dt_start: -1.0
+   nit: -1
+   dxmax: -1.0
+   anoise: -1.0
+   nsatur: -1
+   cellrelax: False
+   funits: -1.0
+   print_force: False
+   trajectory: False
+   nhist: 10
+ geopt_prec:
+   method: unknown
+   fmaxtol: -1.0
+   alphax: -1.0
+   condnum: 10.0
+   precaution: normal
+   lprint: False
+   dt_start: -1.0
+   nit: -1
+   dxmax: -1.0
+   anoise: -1.0
+   nsatur: -1
+   cellrelax: False
+   funits: -1.0
+   print_force: False
+   trajectory: False
+   nhist: 10
+ saddle_1s_opt:
+   method: unknown
+   fmaxtol: -1.0
+   alphax: -1.0
+   condnum: 10.0
+   precaution: normal
+   lprint: False
+   dt_start: -1.0
+   nit: -1
+   dxmax: -1.0
+   anoise: -1.0
+   nsatur: -1
+   cellrelax: False
+   funits: -1.0
+   print_force: False
+   trajectory: False
+   nhist: 10
+ saddle_1s:
+   list_random_displace: None
+   dimsep: -1.0
+   ampl: -1.0
+ potential:
+   potential: unknown
+   bias: no
+   bias_field: no
+   cal_charge: False
+   potential_sec: unknown
+   ann_boundcheck: none
+   component_ff: no
+   sockinet: 0
+   sockport: 0
+   sockhost: unknown
+   drift: False
+   add_repulsive: True
+   ewald:
+     hx: -1.0
+     hy: -1.0
+     hz: -1.0
+     alpha: -1.0
+     ecut: 250.0
+     rcut: -1.0
+     rgcut: -1.0
+     nsp: -1
+     plane_voltageu: 0.0
+     plane_voltagel: 0.0
+     plane_voltageu_ac: 0.0
+     frequency: 0.0
+     gnrmtol: 1.E-7
+     ewald: False
+     ewald_tol: 1.E-6
+ ann:
+   subtask: unknown
+   optimizer: unknown
+   approach: atombased
+   symfunc: only_calculate
+   nstep_ekf: 100
+   nstep_cep: 200
+   nat_force: 0
+   ampl_rand: 1.0
+   symfunc_type: behler
+   syslinsolver: direct
+   psolver: unknown
+   rgnrmtol: 5.E-4
+   qgnrmtol: 5.E-4
+   etol: 1.0
+   dtol: 1.0
+   normalization: False
+   bondbased: False
+   prefit: False
+   read_forces: True
+ dynamics:
+  nmd: 0
+  dt: -1.0
+  temp: 0.0
+  init_temp: 0.0
+  md_method: unknown
+  print_force: False
+  restart: False
+ bader:
+   method: unknown
+   filename: total_density.cube
+   vacuum: yes
+ genconf:
+   subtask: unknown
+   cal_pot: no
+   nat_add: 0
+   sat: unknown
+   amargin: 0.0
+   dmin:  1.0
+   dmax: -1.0
+   npoint: 0
+   fbmin: -1.0
+   fbmax: -1.0
+   variable_cell: False
+   nonorthogonal: False
+ conf_comp:
+   tol: 1.0
+ testforces:
+   method: unknown
+ single_point:
+   print_force: False
+   format: unknown
+   usesocket: no
+   sockinet: 0
+   sockport: 0
+   sockhost: 0
+ misc:
+   subtask: unknown
+   gaussian_width: -1.0
+   boundcond: unknown
+   posinp: unknown
