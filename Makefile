@@ -5,7 +5,7 @@ include def_opt.mk
 LIB_MOD = modules/libmodules.a
 LIBS = liball.a
 
-INCLUDES = -I../modules
+INCLUDES = -I../modules -I../build/install/include
 
 LIB_SRC = src/libsrc.a
 

@@ -222,7 +222,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
                 istep,atoms%epot,de,gnrm,gnrm2,q1,qtot,alpha_r,alpha_q
             write(51,'(i5,2f8.3)') istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
         endif
-        if(gnrm<5.d-4 .and. gnrm2<1.d-3) then
+        if(gnrm<parini%rgnrmtol .and. gnrm2<parini%qgnrmtol) then
             write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
                 istep,atoms%epot,gnrm,gnrm2,q1,qtot
             exit

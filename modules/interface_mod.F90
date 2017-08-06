@@ -1366,8 +1366,9 @@ subroutine calmaxforcecomponent(n,v,vmax)
     real(8), intent(out):: vmax
 end subroutine calmaxforcecomponent
 subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
-    integer:: nat,iat
-    real(8):: rxyzint(3,nat), rxyzcart(3,nat), latvec(3,3), latvecinv(3,3)
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyzcart(3,nat), latvec(3,3)
+    real(8), intent(out):: rxyzint(3,nat)
 end subroutine rxyz_cart2int_alborz
 subroutine rxyz_int2cart_alborz(nat,cellvec,rat_int,rat_cart)
     integer, intent(in):: nat
@@ -1378,6 +1379,10 @@ subroutine invertmat_alborz(a,ainv)
     real(8),intent(in):: a(3,3)
     real(8),intent(out):: ainv(3,3)
 end subroutine invertmat_alborz
+subroutine invertmat_alborz_qp(a,ainv)
+    real(16),intent(in):: a(3,3)
+    real(16),intent(out):: ainv(3,3)
+end subroutine invertmat_alborz_qp
 subroutine convertupper(str)
     character(*), intent(inout):: str
 end subroutine convertupper
@@ -1774,15 +1779,15 @@ end subroutine set_ngp_bps
 ! ./src/es_hartee_fourier.F90 :
 subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), ratred(3,nat), qat(nat)
+    real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), gwsq(nat), ecut
-    real(8), intent(out):: fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine kwald
 subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
     integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), ratred(3,nat), qat(nat)
+    real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), alphasq, ecut
-    real(8), intent(out):: fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine kwald_samare
 ! ./src/es_hartee_main.F90 :
 subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
