@@ -53,7 +53,7 @@ END SUBROUTINE geopt_init
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl, &
-     amu,amutmp,typat,char_type,strfact,units,usewf_geopt,nat
+     amu,amutmp,typat,char_type,units,usewf_geopt,nat
  use defs_basis
  use minpar
 
@@ -117,7 +117,7 @@ p(3*nat+1:3*nat+9)=latvec_in(:)
 getwfk=.false.
 iprec=1
 call get_BFGS_forces_max(p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -187,7 +187,7 @@ do its=1,ITMAX
  endif
  counter=counter+1.d0
  call get_BFGS_forces_max(tp,tg,tfp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
@@ -266,7 +266,7 @@ lambda_predict=max(lambda_predict,-1.d0)
    endif
    counter=counter+1.d0
    call get_BFGS_forces_max(p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+   call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
@@ -813,8 +813,10 @@ logical:: getwfk
 end subroutine
 
 
-subroutine get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
-use global, only: nat,strfact,target_pressure_habohr
+subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+use mod_parini, only: typ_parini
+use global, only: nat,target_pressure_habohr
+type(typ_parini), intent(in):: parini
 implicit none
 integer:: iat,i,istr
 real(8):: fcart_in(3,nat),strten_in(6),fmax,fmax_at,fmax_lat
@@ -836,7 +838,7 @@ real(8):: dstr(6), strtarget(6)
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
-     if(abs(dstr(istr))*strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*strfact
+     if(abs(dstr(istr))*parini%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%strfact
  end do
  fmax=max(fmax_at,fmax_lat)
 end subroutine

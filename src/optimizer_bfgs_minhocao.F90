@@ -34,7 +34,7 @@ END SUBROUTINE geopt_init
 !!    For the list of contributors, see ~/AUTHORS
 
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat,target_pressure_habohr,strfact,nat
+ use global, only: nat,target_pressure_habohr,nat
  use minpar
  use mod_parini, only: typ_parini
 implicit none
@@ -51,13 +51,13 @@ getwfk=.false.
 call get_BFGS_forces_lattice(parini,xred_in,flat,latvec_in,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 do 
 !!Compute maximal component of forces, EXCLUDING any fixed components
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
  fmax_tol=min((fmax_at+fmax_lat)/2.d0*0.3d0,fmax_tol*0.5d0)
  fmax_tol=max(fmax_tol,parini%paropt_geopt%fmaxtol*1.d-2)
  write(*,*) "# New tolarance",fmax_tol
  if(fmax.lt.parini%paropt_geopt%fmaxtol.or.int(counter).gt.parini%paropt_geopt%nit) exit
  call bfgs_driver_atoms(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
  if(fmax.lt.parini%paropt_geopt%fmaxtol.or.int(counter).gt.parini%paropt_geopt%nit) exit
  fail=.false.
  call lbfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
@@ -74,7 +74,7 @@ end subroutine GEOPT_RBFGS_MHM
 
 subroutine bfgs_driver_atoms(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: strfact,units,usewf_geopt,fixat,fixlat
+ use global, only: units,usewf_geopt,fixat,fixlat
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
 !    use module_base
@@ -148,7 +148,7 @@ pressure=target_pressure_habohr
         call atomic_copymoving_forward(nat,3*nat,rxyz,nr,x)
 !FIRE: check for convergence
 !!Compute maximal component of forces, EXCLUDING any fixed components
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
          if(fmax_at.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
@@ -219,7 +219,7 @@ END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -317,7 +317,7 @@ latvec(7:9)=latvec_in(:,3)
         !endif
 !FIRE: check for convergence
 !!Compute maximal component of forces, EXCLUDING any fixed components
-         call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+         call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
          if(fmax_lat.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
@@ -866,7 +866,7 @@ end subroutine bfgs_reza
 subroutine lbfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine lbfgsdriver(rxyz,fxyz,etot,at,rst,in,ncount_bigdft,fail) 
@@ -921,7 +921,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
   
   enthalpyprev=0.d0
   !check if the convergence is reached after entering routine
-  call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+  call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
          if(fmax_lat.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
@@ -1054,7 +1054,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
 !      call fnrmandforcemax(fxyz,fnrm,fmax,at%nat)
 !      call fnrmandforcemax(fxyz,fnrm,fmax,at)
 !check if the convergence is reached
-  call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+  call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
          if(fmax_lat.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
@@ -1566,9 +1566,11 @@ end subroutine
         end subroutine
 
 
-subroutine get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
-use global, only: nat,strfact,target_pressure_habohr
+subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+use mod_parini, only: typ_parini
+use global, only: nat,target_pressure_habohr
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: iat,i,istr
 real(8):: fcart_in(3,nat),strten_in(6),fmax,fmax_at,fmax_lat
 real(8):: dstr(6), strtarget(6)
@@ -1589,7 +1591,7 @@ real(8):: dstr(6), strtarget(6)
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
-     if(abs(dstr(istr))*strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*strfact
+     if(abs(dstr(istr))*parini%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%strfact
  end do
  fmax=max(fmax_at,fmax_lat)
 end subroutine
@@ -1682,7 +1684,7 @@ subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
+ use global, only: units,usewf_geopt,nat,dtion_fire,fixat,fixlat
  use defs_basis
  use minpar
  use mod_fire,   only:dtmin, dtmax
@@ -1787,7 +1789,7 @@ getwfk=.false.
 !This call is only to map all variables correctly
 fp=-1.d10
 call get_BFGS_forces_strainlatt(parini,p,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
    if(any(fixlat)) call elim_fixed_lat(p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
@@ -1892,7 +1894,7 @@ endif
  endif
  counter=counter+1.d0
  call get_BFGS_forces_strainlatt(parini,tp,tg,tfp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+ call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
    if(any(fixlat)) call elim_fixed_lat(tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,tg(1:3*nat))
@@ -1950,7 +1952,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    counter=counter+1.d0
    dg=g       !Save the old gradient,
    call get_BFGS_forces_strainlatt(parini,pnew,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       !Eliminate components not to be changed
       if(any(fixlat)) call elim_fixed_lat(pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
       if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
@@ -2091,7 +2093,7 @@ subroutine GEOPT_MBFGS_MHM_OLD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: strfact,units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
 
@@ -2155,7 +2157,7 @@ p(3*nat+1:3*nat+9)=latvec_in(:)
 getwfk=.false.
 iprec=1
 call get_BFGS_forces_max(parini,p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -2226,7 +2228,7 @@ do its=1,ITMAX
  endif
  counter=counter+1.d0
  call get_BFGS_forces_max(parini,tp,tg,tfp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
@@ -2304,7 +2306,7 @@ lambda_predict=max(lambda_predict,-1.d0)
    endif
    counter=counter+1.d0
    call get_BFGS_forces_max(parini,p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+   call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
