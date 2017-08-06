@@ -23,7 +23,7 @@ subroutine GEOPT_SD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,co
 !   use module_base
 !   use bigdft_run!module_types
 !   use yaml_output
-   use module_sqn, only: modify_gradient_minhocao, getSubSpaceEvecEval!, findbonds
+   use module_sqn, only: modify_gradient_minhocao, getSubSpaceEvecEval_minhocao !, findbonds
    use mod_parini, only: typ_parini
    implicit none
    type(typ_parini), intent(in):: parini

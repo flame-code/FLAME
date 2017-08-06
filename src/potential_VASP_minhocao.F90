@@ -161,7 +161,10 @@ contains
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
-  
+character(40):: filename,units_tmp
+real(8):: printval1,printval2
+logical:: readfix,readfrag
+logical:: fixat_tmp(nat),fixlat_tmp(7)
   !Set to true uf you are using vasp version 5.x
   vasp_5=.true.
   
@@ -273,20 +276,27 @@ contains
   endif
   
   !Since in CONTCAR the cell and atomic positions are written with higher accuracy, get it from there:
-  open(unit=32,file="CONTCAR")
-  read(32,*)ch_tmp
-  read(32,*)scaling
-  read(32,*) latvec(:,1)
-  read(32,*) latvec(:,2)
-  read(32,*) latvec(:,3)
-  latvec=latvec*scaling
-  if(vasp_5) read(32,*)ch_tmp
-  read(32,*)i_tmp
-  read(32,*)ch_tmp
-      do iat=1,nat
-        read(32,*)xred(:,iat)
-      enddo
-  close(32)
+  filename="CONTCAR"
+  units_tmp="angstrom"
+  readfix=.false.
+  readfrag=.false.  
+  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+  latvec=latvec*Bohr_Ang !Internally already converted
+!  open(unit=32,file="CONTCAR")
+!  read(32,*)ch_tmp
+!  read(32,*)scaling
+!  read(32,*) latvec(:,1)
+!  read(32,*) latvec(:,2)
+!  read(32,*) latvec(:,3)
+!  latvec=latvec*scaling
+!  if(vasp_5) read(32,*)ch_tmp
+!  read(32,*)i_tmp
+!  read(32,*)ch_tmp
+!      do iat=1,nat
+!        read(32,*)xred(:,iat)
+!      enddo
+!  close(32)
   
   !Transform all to bohr
   latvec=latvec/Bohr_Ang
@@ -503,6 +513,10 @@ contains
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
+character(40):: filename,units_tmp
+real(8):: printval1,printval2
+logical:: readfix,readfrag
+logical:: fixat_tmp(nat),fixlat_tmp(7)
   !if vasp is version 5.x, use vasp_5=.true.
   
   vasp_5=.true.
@@ -620,20 +634,27 @@ contains
   endif
   
   !Since in CONTCAR the cell and atomic positions are written with higher accuracy, get it from there:
-  open(unit=32,file="CONTCAR")
-  read(32,*)ch_tmp
-  read(32,*)scaling
-  read(32,*) latvec(:,1)
-  read(32,*) latvec(:,2)
-  read(32,*) latvec(:,3)
-  latvec=latvec*scaling
-  read(32,*)ch_tmp
-  if(vasp_5) read(32,*)ch_tmp
-  read(32,*)ch_tmp
-      do iat=1,nat
-        read(32,*)xred(:,iat)
-      enddo
-  close(32)
+  filename="CONTCAR"
+  units_tmp="angstrom"
+  readfix=.false.
+  readfrag=.false.  
+  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+  latvec=latvec*Bohr_Ang !Internally already converted
+!  open(unit=32,file="CONTCAR")
+!  read(32,*)ch_tmp
+!  read(32,*)scaling
+!  read(32,*) latvec(:,1)
+!  read(32,*) latvec(:,2)
+!  read(32,*) latvec(:,3)
+!  latvec=latvec*scaling
+!  read(32,*)ch_tmp
+!  if(vasp_5) read(32,*)ch_tmp
+!  read(32,*)ch_tmp
+!      do iat=1,nat
+!        read(32,*)xred(:,iat)
+!      enddo
+!  close(32)
   
   !Transform all to bohr
   latvec=latvec/Bohr_Ang

@@ -5290,9 +5290,11 @@ else
                   vcm(:)=vcm(:)+amass(iat)*vel(:,iat)
                 endif
              enddo
+             if (.not. (nat.gt.1 .and. (nat-count(fixat))==1)) then !Dont eliminate center of mass if there is only one atom to move
              do iat=1,nat
                 vel(:,iat)=vel(:,iat)-vcm(:)/s1
              enddo
+             endif
              call elim_fixed_at(nat,vel)
            endif
 !Recompute v2gauss
