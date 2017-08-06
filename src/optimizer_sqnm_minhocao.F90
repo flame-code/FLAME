@@ -12,7 +12,7 @@
 subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,dtion_fire,dtion_fire_min,dtion_fire_max
+ use global, only: char_type,bmass
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
@@ -306,7 +306,7 @@ call sqnm_invhess(nat,latvec_in,metric,hessinv)
    if(imode==2)rxyz(:,:,0)=rxyz(:,:,0)+beta_stretch*fstretch(:,:,0)
 
 !   call fnrmandforcemax(fxyzraw(1,1,0),fnrm,fmax,nat)
-   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !   fnrm=sqrt(fnrm)
 !   if (fmax < 3.d-1) call updatefluctsum(outs%fnoise,fluct)
 
@@ -488,7 +488,7 @@ endif
 
 
 !      call fnrmandforcemax(fxyzraw(1,1,nhist),fnrm,fmax,nat)
-      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !MHM: Write output to file in every step***********************************
        counter=real(it,8)
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -695,7 +695,7 @@ endif
 
 !      if (fnrm.le.fnrmtol) goto 1000
 !      call convcheck(fmax,fluct*runObj%inputs%frac_fluct,runObj%inputs%forcemax,icheck)
-      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !      if(icheck>5)then
       if(iexit==1)then
          goto 1000

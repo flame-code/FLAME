@@ -838,7 +838,7 @@ real(8):: dstr(6), strtarget(6)
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
-     if(abs(dstr(istr))*parini%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%strfact
+     if(abs(dstr(istr))*parini%paropt_geopt%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%paropt_geopt%strfact
  end do
  fmax=max(fmax_at,fmax_lat)
 end subroutine

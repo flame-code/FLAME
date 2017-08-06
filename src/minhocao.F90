@@ -657,7 +657,7 @@ write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
   endif
   if (parini%paropt_geopt%nit.le.0) goto 3000
 !Check if the structure is already relaxed
-  call convcheck(nat,pos_latvec,pos_fcart,pos_strten,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+  call convcheck(nat,pos_latvec,pos_fcart,pos_strten,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 if(iexit==1) then
   write(*,'(a,es15.7,es15.7)') ' # Input structure already relaxed. Proceeding with: Energy, Enthalpy: ',e_pos,ent_pos
   else 
@@ -1316,7 +1316,7 @@ end subroutine task_minhocao
 !**********************************************************************************************
 subroutine MD_MHM   (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_algo,md_integrator,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat,md_presscomp
  use defs_basis
@@ -1640,7 +1640,7 @@ call elim_fixed_at(nat,vposcur)
 if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
 
 
-        do itime=1,ntime_md
+        do itime=1,parini%nmd_dynamics
 
 !          if(itime.ne.1) e_rxyz=enthalpy  !e_rxyz=e_rxyz+pressure_md(1,1)*vol   
 !Check the torque on the cell for rotation
@@ -2556,7 +2556,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_ANDERSEN_MHM     (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_algo,md_integrator,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat
  use defs_basis
@@ -2797,7 +2797,7 @@ call elim_fixed_at(nat,accposcur);call elim_fixed_at(nat,accposprev)!;call elim_
 call elim_fixed_at(nat,vposcur)!;call elim_fixed_lat(latcur,vlatcur)
 
 
-        do itime=1,ntime_md
+        do itime=1,parini%nmd_dynamics
 
 !          if(itime.ne.1) e_rxyz=enthalpy  !e_rxyz=e_rxyz+pressure_md(1,1)*vol   
 !Check the torque on the cell for rotation
@@ -3043,7 +3043,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_PR_MHM_OLD    (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,fixat,fixlat
  use defs_basis
  use interface_code
@@ -3287,7 +3287,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
 
-        do itime=1,ntime_md
+        do itime=1,parini%nmd_dynamics
 
 !          if(itime.ne.1) e_rxyz=enthalpy  !e_rxyz=e_rxyz+pressure_md(1,1)*vol   
 !Check the torque on the cell for rotation
@@ -3484,8 +3484,8 @@ end subroutine
 
 subroutine GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
- use global, only: char_type,bmass,dtion_fire,dtion_fire_min,dtion_fire_max
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: char_type,bmass
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
@@ -3643,7 +3643,7 @@ alpha=alphastart
 !if(fixlat(7)) alpha=1.d0
 nstep=0
 latmass0=latmass_rel_fire*sum(amass(:))/real(nat,8)
-dt=dtion_fire
+dt=parini%paropt_geopt%dt_start
 vel_in=0.d0
 vel_lat_in=0.d0
 P=0.d0
@@ -3730,7 +3730,7 @@ endif
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 !FIRE: check for convergence
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !!!!!Compute maximal component of forces, EXCLUDING any fixed components
 !!! fmax=0.0d0
 !!! do iat=1,nat
@@ -4018,7 +4018,7 @@ endif
 !****************************************************************************************************************        
 
 !FIRE: check for convergence
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !!!!Compute maximal component of forces, EXCLUDING any fixed components
 !!! fmax=0.0d0
 !!! do iat=1,nat
@@ -5355,7 +5355,7 @@ end subroutine init_vel
 
         subroutine soften_pos(parini,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,alpha_at,bmass,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
  use interface_code
@@ -5540,7 +5540,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 
         subroutine soften_lat(parini,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,alpha_at,alpha_lat,bmass,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
  use interface_code
@@ -8598,7 +8598,7 @@ subroutine MD_MHM_ROT(parini,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcar
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_algo,md_integrator,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat
  use defs_basis
@@ -8921,7 +8921,7 @@ call elim_fixed_at(nmol,vposcur)
 if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
 
 
-        do itime=1,ntime_md
+        do itime=1,parini%nmd_dynamics
 
 !          if(itime.ne.1) e_rxyz=enthalpy  !e_rxyz=e_rxyz+pressure_md(1,1)*vol   
 !Check the torque on the cell for rotation

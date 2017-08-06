@@ -1343,7 +1343,7 @@ END MODULE bfgs_module
 !SUBROUTINE move_ions()
 subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,dtion_fire,dtion_fire_min,dtion_fire_max
+ use global, only: char_type,bmass
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
@@ -1589,7 +1589,7 @@ if(parini%verb.gt.0) then
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !Initial iprec after running the first force call
@@ -1637,7 +1637,7 @@ if(parini%verb.gt.0) then
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !*************************************************************************************************************        

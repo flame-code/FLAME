@@ -1591,7 +1591,7 @@ real(8):: dstr(6), strtarget(6)
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
-     if(abs(dstr(istr))*parini%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%strfact
+     if(abs(dstr(istr))*parini%paropt_geopt%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%paropt_geopt%strfact
  end do
  fmax=max(fmax_at,fmax_lat)
 end subroutine
@@ -1684,7 +1684,7 @@ subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: units,usewf_geopt,nat,dtion_fire,fixat,fixlat
+ use global, only: units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
  use mod_fire,   only:dtmin, dtmax
@@ -1748,7 +1748,7 @@ parini_tmp=parini
 parini_tmp%paropt_geopt%fmaxtol=5.d-2
 vel_in=0.d0;vel_lat_in=0.d0;vvol_in=0.d0
 !Some conservative time steps for FIRE
-dtion_fire=10.d0;dtmin=1.d0;dtmax=50.d0
+parini_tmp%paropt_geopt%dt_start=10.d0;dtmin=1.d0;dtmax=50.d0
 call GEOPT_FIRE_MHM(parini_tmp,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
 !parini_tmp%paropt_geopt%fmaxtol=tolmxf0
 
@@ -1789,7 +1789,7 @@ getwfk=.false.
 !This call is only to map all variables correctly
 fp=-1.d10
 call get_BFGS_forces_strainlatt(parini,p,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
    if(any(fixlat)) call elim_fixed_lat(p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
@@ -1894,7 +1894,7 @@ endif
  endif
  counter=counter+1.d0
  call get_BFGS_forces_strainlatt(parini,tp,tg,tfp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+ call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
    if(any(fixlat)) call elim_fixed_lat(tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,tg(1:3*nat))
@@ -1952,7 +1952,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    counter=counter+1.d0
    dg=g       !Save the old gradient,
    call get_BFGS_forces_strainlatt(parini,pnew,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       !Eliminate components not to be changed
       if(any(fixlat)) call elim_fixed_lat(pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
       if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
