@@ -50,8 +50,8 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,dtion_fire_min,&
-                &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
@@ -297,10 +297,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("GEOFIREDTINIT",13,all_line(1:n),n,parini%paropt_geopt%dt_start,found)
    if(found) cycle
 !GEOFIREDTMIN
-   call parsescalar_real("GEOFIREDTMIN",12,all_line(1:n),n,dtion_fire_min,found)
+   call parsescalar_real("GEOFIREDTMIN",12,all_line(1:n),n,parini%paropt_geopt%dtmin,found)
    if(found) cycle
 !GEOFIREDTMAX
-   call parsescalar_real("GEOFIREDTMAX",12,all_line(1:n),n,dtion_fire_max,found)
+   call parsescalar_real("GEOFIREDTMAX",12,all_line(1:n),n,parini%paropt_geopt%dtmax,found)
    if(found) cycle
 !GEOHESSLAT
    call parsescalar_real("GEOHESSLAT",10,all_line(1:n),n,alphax_lat,found)
@@ -625,8 +625,8 @@ calls=calls+1
 call params_check(parini)
 
 !Copy parameters of fire to the fire module
-    dtmin=dtion_fire_min
-    dtmax=dtion_fire_max
+    dtmin=parini%paropt_geopt%dtmin
+    dtmax=parini%paropt_geopt%dtmax
 !Copy parameters of bfgs to the bfgs module
     parmin_bfgs%betax=alphax_at
     parmin_bfgs%betax_lat=alphax_lat
@@ -645,8 +645,8 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,dtion_fire_min,&
-                &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
@@ -703,8 +703,8 @@ dtion_md_in=20.d0
 nit_per_min=25.d0
 parini%paropt_geopt%approach="FIRE"
 parini%paropt_geopt%dt_start=10.d0
-dtion_fire_min=1.d0
-dtion_fire_max=80.d0
+parini%paropt_geopt%dtmin=1.d0
+parini%paropt_geopt%dtmax=80.d0
 alphax_lat=1.d0
 alphax_at=1.d0
 parini%paropt_geopt%fmaxtol=2.d-4
@@ -804,8 +804,8 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,dtion_fire_min,&
-                &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -850,9 +850,9 @@ if(trim(parini%paropt_geopt%approach).ne."FIRE".and.&
    trim(parini%paropt_geopt%approach).ne."QBFGS".and.&
    trim(parini%paropt_geopt%approach).ne."SD") &
    stop "Error in parini%paropt_geopt%approach"
-if(parini%paropt_geopt%dt_start.lt.dtion_fire_min.or.parini%paropt_geopt%dt_start.gt.dtion_fire_max) stop "Error in parini%paropt_geopt%dt_start"
-if(dtion_fire_min.le.0.d0) stop "Error in dtion_fire_min"
-if(dtion_fire_max.lt.dtion_fire_min) stop "Error in dtion_fire_max"
+if(parini%paropt_geopt%dt_start.lt.parini%paropt_geopt%dtmin.or.parini%paropt_geopt%dt_start.gt.parini%paropt_geopt%dtmax) stop "Error in parini%paropt_geopt%dt_start"
+if(parini%paropt_geopt%dtmin.le.0.d0) stop "Error in parini%paropt_geopt%dtmin"
+if(parini%paropt_geopt%dtmax.lt.parini%paropt_geopt%dtmin) stop "Error in parini%paropt_geopt%dtmax"
 if(alphax_lat.le.0.d0) stop "Error in alphax_lat"
 if(alphax_at.le.0.d0) stop "Error in alphax_at"
 if(parini%paropt_geopt%fmaxtol.le.0.d0) stop "Error in parini%paropt_geopt%fmaxtol"
@@ -926,8 +926,8 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,dtion_fire_min,&
-                &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
@@ -999,8 +999,8 @@ if(.not.geopt_ext) then
 write(*,'(a,a)')           " # GEOALGO       ", trim(parini%paropt_geopt%approach) 
 if(trim(parini%paropt_geopt%approach)=="FIRE") then
 write(*,'(a,es15.7)')      " # GEOFIREDTINIT ", parini%paropt_geopt%dt_start
-write(*,'(a,es15.7)')      " # GEOFIREDTMIN  ", dtion_fire_min
-write(*,'(a,es15.7)')      " # GEOFIREDTMAX  ", dtion_fire_max
+write(*,'(a,es15.7)')      " # GEOFIREDTMIN  ", parini%paropt_geopt%dtmin
+write(*,'(a,es15.7)')      " # GEOFIREDTMAX  ", parini%paropt_geopt%dtmax
 elseif(trim(parini%paropt_geopt%approach)=="MBFGS".or.&
        trim(parini%paropt_geopt%approach)=="RBFGS".or.&
        trim(parini%paropt_geopt%approach)=="SQNM".or. &

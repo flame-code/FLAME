@@ -78,6 +78,7 @@ module mod_opt
         !integer:: nitfire=-1
         real(8):: dt=-1.d0
         real(8):: dt_start=-1.d0
+        real(8):: dtmin=-1.d0
         real(8):: dtmax=-1.d0
         real(8):: finc=-1.d0
         real(8):: fdec=-1.d0
