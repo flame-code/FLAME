@@ -317,7 +317,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      sym_fixat=.false.
      pos_strten=0.d0
      fragarr=0
-     call find_symmetry(nat,pos_red,pos_latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spg_pos)
+     call find_symmetry(parini,nat,pos_red,pos_latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spg_pos)
      call spg_cell_refine(nat,sym_nat,4*nat,sym_pos,pos_latvec,sym_type,spgtol_pos,spg_pos)
      filename="sym_poscur.ascii"
      call write_atomic_file_ascii(parini,filename,sym_nat,units,sym_pos,pos_latvec,sym_fcart,pos_strten,char_type,ntypat,sym_type,sym_fixat,fixlat,&
@@ -338,7 +338,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call pathintegral(parini,code,pos_latvec,pos_red)
+       call pathintegral(parini,pos_latvec,pos_red)
        goto 3001 
   endif 
 
@@ -351,7 +351,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call enthalpyrelax(parini,code,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
+       call enthalpyrelax(parini,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
        goto 3001 
   endif 
 
@@ -364,7 +364,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call varvol(parini,code,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
+       call varvol(parini,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
        goto 3001 
   endif 
 
@@ -377,7 +377,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call poslowrelax(parini,code,pos_latvec,pos_red,tolmin,tolmax,ntol)
+       call poslowrelax(parini,pos_latvec,pos_red,tolmin,tolmax,ntol)
        goto 3001
   endif
 
@@ -390,7 +390,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call rotate_like_crazy(parini,code,pos_latvec,pos_red,tolmin,tolmax,ntol)
+       call rotate_like_crazy(parini,pos_latvec,pos_red,tolmin,tolmax,ntol)
        goto 3001
   endif
 
@@ -516,9 +516,9 @@ call system_clock(count_max=clock_max)   !Find the time max
 !        if(findsym.and.elocmin(npmin,3).lt.1.d0) then
         if(findsym.and.spg_arr(kk).lt.1) then
           write(*,'(a,a)') " # Recomputing symmetry for ",trim(filename)
-!          call find_symmetry(nat,poslocmin(1:3,1:nat,npmin),latlocmin(1:3,1:3,npmin),typat,tolmin,tolmax,ntol,&
+!          call find_symmetry(parini,nat,poslocmin(1:3,1:nat,npmin),latlocmin(1:3,1:3,npmin),typat,tolmin,tolmax,ntol,&
 !          &elocmin(npmin,4),spgint)
-          call find_symmetry(nat,pl_arr(1:3,1:nat,kk),lat_arr(1:3,1:3,kk),typat,tolmin,tolmax,ntol,&
+          call find_symmetry(parini,nat,pl_arr(1:3,1:nat,kk),lat_arr(1:3,1:3,kk),typat,tolmin,tolmax,ntol,&
           &spgtol_arr(kk),spg_arr(kk))
 !          elocmin(npmin,3)=real(spgint,8)
         endif
@@ -563,7 +563,7 @@ call system_clock(count_max=clock_max)   !Find the time max
        kk=1
        do 
           kk=kk+1
-          call identical(nlminx,nlmin_t,fp_method,fp_len,ent_arr(kk),fp_arr(:,kk),ent_arr_t,fp_arr_t,&
+          call identical(parini,nlminx,nlmin_t,fp_method,fp_len,ent_arr(kk),fp_arr(:,kk),ent_arr_t,fp_arr_t,&
                          &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_pos,n_unique,n_nonuni,lid,nid)
           if (.not.newmin) then                    !The case the structure was previously found
 !!             do i=1,nid
@@ -595,7 +595,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   INQUIRE(FILE="plot_fpgrid.in", EXIST=file_exists)
      if(file_exists) then
        write(*,'(a)') " # plot_fpgrid.in found. Will write Howtoplot_fingerprint"
-       call plot_fp_grid(nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
+       call plot_fp_grid(parini,nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
      goto 3001
      endif
 
@@ -669,7 +669,7 @@ if(iexit==1) then
   vel_vol_in=0.d0
    iprec=1
    if(geopt_ext) then
-     call geopt_external(pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,ka,kb,kc,counter)
+     call geopt_external(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,ka,kb,kc,counter)
    else
      if(confine==2) confine=1
      if(geopt_method=="RBFGS")  call GEOPT_RBFGS_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
@@ -688,7 +688,7 @@ endif
 
 !Check for symmetry
    if(findsym) then
-      call find_symmetry(nat,pos_red,pos_latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spgint)
+      call find_symmetry(parini,nat,pos_red,pos_latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spgint)
       spg_pos=spgint
    else
       spg_pos=0
@@ -775,7 +775,7 @@ endif
      write(*,*) '#first configuration saved'
   else
 !           check whether new minimum
-            call identical(nlminx,nlmin,fp_method,fp_len,ent_pos,fp_pos,ent_arr,fp_arr,&
+            call identical(parini,nlminx,nlmin,fp_method,fp_len,ent_pos,fp_pos,ent_arr,fp_arr,&
                  &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_pos,n_unique,n_nonuni,lid,nid)
 !!            call hunt(earr(1,1),min(nlmin,nlminx),rent_pos,k_e_pos)
        if (.not.newmin) then
@@ -944,7 +944,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   vel_lat_in=0.d0
    iprec=1
    if(geopt_ext) then
-     call geopt_external(wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,ka,kb,kc,counter)
+     call geopt_external(parini,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,ka,kb,kc,counter)
    else
       if(confine==2) confine=1
       if(geopt_method=="RBFGS") call GEOPT_RBFGS_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
@@ -967,7 +967,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 
 !Check for symmetry
    if(findsym) then
-      call find_symmetry(nat,wpos_red,wpos_latvec,typat,tolmin,tolmax,ntol,spgtol_wpos,spgint)
+      call find_symmetry(parini,nat,wpos_red,wpos_latvec,typat,tolmin,tolmax,ntol,spgtol_wpos,spgint)
       spg_wpos=spgint
    else
       spg_wpos=0
@@ -1036,7 +1036,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !NEW
  if (abs(ent_wpos-ent_pos).lt.ent_delta) then
 !   call fpdistance(nid,wfp,fp,d)
-   call get_fp_distance(fp_len,fp_pos,fp_wpos,fp_dist)
+   call get_fp_distance(parini,fp_len,fp_pos,fp_wpos,fp_dist)
    write(*,'(a,2(e11.4))') ' # ID: checking escape: enthalpy difference < ent_delta, fp_dist ',e_wpos-e_pos,fp_dist
    if (fp_dist.lt.fp_delta) then ! not escaped
      escape_sam=escape_sam+1.d0
@@ -1091,7 +1091,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 
 !Continue since escaped
 !Check whether new minimum
-  call identical(nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
+  call identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
                  &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
   write(*,*) "k_e_wpos,kid: ",k_e_wpos,kid
 !!!  call hunt(earr(1,1),min(nlmin,nlminx),rent_wpos,k_e_wpos)
@@ -1308,7 +1308,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   deallocate(e_arr,ent_arr,ct_arr,pl_arr,lat_arr,dos_arr,spgtol_arr,spg_arr,fp_arr)
 3001 continue
 !Close socket on slave side
-if(trim(code)=="msock") call socket_stop()
+if(trim(parini%potential_potential)=="msock") call socket_stop()
 end subroutine task_minhocao
 !contains
 
@@ -5210,7 +5210,7 @@ end subroutine elim_torque_cell
 subroutine init_vel(parini,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
- use global, only: amu,amutmp,typat,char_type,bmass,fixat,fixlat,mol_soften,bc,code
+ use global, only: amu,amutmp,typat,char_type,bmass,fixat,fixlat,mol_soften,bc
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5274,7 +5274,7 @@ else
                vel(idim,:)=vel(idim,:)-s2/s1
              end do
            else
-             if(trim(code)=="lenosky_tb_lj") then
+             if(trim(parini%potential_potential)=="lenosky_tb_lj") then
                 write(*,'(a)') " Eliminating LJ atom velocities"  
                 do iat=1,nat
                   if(int(znucl(typat(iat))).gt.200) vel(:,iat)=0.d0
@@ -6126,182 +6126,182 @@ end subroutine
 
 !************************************************************************************
 
-subroutine read_params()
-use mod_interface
-use defs_basis
-use mod_fire,   only:dtmin, dtmax
-use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type
-use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
-use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
-use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md
-use global, only: nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
-implicit none
-integer:: itype,n
-real(8):: tmp_val
-character(250):: all_line
-character(4):: tmp_ch
-!The convention within abinit are followed:
-!First atomic data, then MD parameters, and then MD parameters
-!Example:
-! 120      target_pressure_gpa
-! 4        nat     
-! 2        ntypat    
-! 14    1  znucl     
-! 28    1  amu     
-! 1 2 2 2  typat  
-! 200      ntime_md
-! 200      ntime_geopt
-! 2.d0     bmass
-! Auto 6 12       mdmin or mdmin_min mdmin_max
-! 8 3.0 2.0 F nsoften, alpha_at, alpha_lat,mol_soften
-! FIRE     !Method of geopt: FIRE or BFGS
-! 20.d0 1.d0 50.d0    dtion_fire, min, max .or. alphax_at, alphax_lat 
-! 1.d-4    tolmxf   
-! 100      strfact 
-! .true. .false. .false. usewf_geopt,usewf_soften,usewf_md
-! .true. .false. !Determines if symmetry (isotropy)/FDOS calculation should be used
-! Auto dfine dcourse or ka kb kc    kpt mesh 
- open(unit=12,file="params.in") 
- read(12,*) target_pressure_gpa   !Target pressure in GPA
- target_pressure_habohr=target_pressure_gpa/HaBohr3_GPA
- write(*,'(a,2(1x,es15.7))') " # Target pressure for the run in GPa and Ha/Bohr**3: ",target_pressure_gpa,target_pressure_habohr
- read(12,*) nat                   !Number of atoms
- read(12,*) ntypat                !Number of atom types
- if(.not.allocated(znucl)) allocate(znucl(ntypat))
- if(.not.allocated(char_type)) allocate(char_type(ntypat))
- if(.not.allocated(amu)) allocate(amu(ntypat))
- if(.not.allocated(amutmp)) allocate(amutmp(ntypat))
- if(.not.allocated(rcov)) allocate(rcov(ntypat))
- read(12,*) znucl(1:ntypat)       !Nuclei charge 
- read(12,*) amutmp(1:ntypat)      !Atomic mass used for MD and Fire, if all 0, then automatic determination
- if(.not.allocated(typat)) allocate(typat(nat))          
- if(.not.allocated(fixat))then
-    allocate(fixat(nat))
-    fixat(:)=.false.
- endif
- if(.not.allocated(fragarr))then
-    allocate(fragarr(nat))
-    fragarr(:)=-1
- endif
- read(12,*) typat(1:nat)          !Types of atoms  
- read(12,*) ntime_md, md_algo, md_integrator          !Maximum number of iterations during MD, md_algo, md_integrator
- if(md_algo==4) fixlat(7)=.true.;if(fixlat(7)) md_algo=4
- read(12,*) ntime_geopt           !Maximum number of iterations during GEOPT
- read(12,*) bmass                 !Cell mass during MD and FIRE
-! read(12,*) mdmin                 !Number of enthalpy minima crossed unit stop MD
-!Block mdmin****************
- read(12,'(a250)') all_line
- n = len_trim(all_line)
- read(all_line(1:n),*) tmp_ch
-  if(trim(tmp_ch)=="Auto") then
-!   if(.not.auto_mdmin) then
-     read(all_line(1:n),*) tmp_ch,mdmin_min,mdmin_max  !Number of enthalpy minima crossed unit stop MD
-     if(.not.auto_mdmin) mdmin=mdmin_min
-!   endif
-   auto_mdmin=.true.
-  else
-   read(all_line(1:n),*)  mdmin  !Number of enthalpy minima crossed unit stop MD
-   auto_mdmin=.false.
-  endif
-!Block mdmin****************
-!Block soften****************
- read(12,'(a250)') all_line
- n = len_trim(all_line)
- read(all_line(1:n),*) tmp_ch
-  if(trim(tmp_ch)=="Auto") then
-   if(.not.auto_soft.and.alpha_at.lt.0.d0.and.alpha_lat.lt.0.d0) then
-     read(all_line(1:n),*) tmp_ch,nsoften, alpha_at, alpha_lat,mol_soften  !Number of softening steps, softening stepsize for atoms and lattice
-   else
-     read(all_line(1:n),*) tmp_ch,nsoften,tmp_val,tmp_val,mol_soften
-   endif
-   auto_soft=.true.
-  else
-   read(all_line(1:n),*) nsoften, alpha_at, alpha_lat,mol_soften   !Number of softening steps, softening stepsize for atoms and lattice
-   auto_soft=.false.
-  endif
-!Block soften****************
-!Block MD timestep***********
- read(12,'(a250)') all_line
- n = len_trim(all_line)
- read(all_line(1:n),*) tmp_ch
-  if(trim(tmp_ch)=="Auto") then
-   if(.not.auto_dtion_md) then
-     read(all_line(1:n),*) tmp_ch, dtion_md,nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
-   else
-     read(all_line(1:n),*) tmp_ch, tmp_val ,nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
-   endif
-   auto_dtion_md=.true.
-  else
-   read(all_line(1:n),*) dtion_md              !(Auto) MD timestep
-   auto_dtion_md=.false.
-  endif
-!Block MD timestep***********
- read(12,*) geopt_method          !Either FIRE or BFGS
- if    (trim(geopt_method)=="FIRE") then 
-   read(12,*) dtion_fire,dtion_fire_min,dtion_fire_max        !Initial timestep for FIRE, Min, Max
- elseif(trim(geopt_method)=="MBFGS".or.trim(geopt_method)=="RBFGS") then
-   read(12,*) alphax_at,alphax_lat    !Stepsize for atoms and for lattice in BFGS
- else
-   stop "Wrong options for geometry optimizer, only FIRE or RBFGS or MBFGS accepted"
- endif
-!Copy parameters of fire to the fire module
-    dtmin=dtion_fire_min
-    dtmax=dtion_fire_max
-!Copy parameters of bfgs to the bfgs module
-    parmin_bfgs%betax=alphax_at
-    parmin_bfgs%betax_lat=alphax_lat
- read(12,*) tolmxf                !Force tolerance for GEOPT convergance 
- read(12,*) strfact               !Factor to multiply stress 
- read(12,*) usewf_geopt,usewf_soften,usewf_md  !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
- read(12,*) findsym,finddos       !Determines if symmetry (isotropy)/FDOS calculation should be used
-! read(12,*) units                !Either angstroem or bohr
-!Block KPT****************
- read(12,'(a250)') all_line
- n = len_trim(all_line)
- read(all_line(1:n),*) tmp_ch
-  if(trim(tmp_ch)=="Auto") then
-    read(all_line(1:n),*) tmp_ch,dkpt1,dkpt2
-    ka=0;kb=0;kc=0
-    auto_kpt=.true.
-  else
-   read(all_line(1:n),*) ka,kb,kc
-   dkpt1=0.d0
-   dkpt2=0.d0
-   auto_kpt=.false.
-  endif
-!Block KPT****************
-
-
-
-
-
-
-! read(12,*) ka,kb,kc              !For fixed kpoint mesh
-!!To generate automatic kpoin mesh
-! if(ka==0.and.kb==0.and.kc==0)then
-! read(12,*) dkpt1,dkpt2
-! else
-! dkpt1=0.d0
-! dkpt2=0.d0
-! endif
- close(12) 
-
-!Initiallize LJ parameter if required
- if(trim(code)=="blj") call blj_init_parameter()
-
-!Get the correct atomic masses and atomic character
- do itype=1,ntypat
-   call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
- enddo
-
-!Put replace amu from file if desired
- if(amutmp(1).ne.0.d0) amu=amutmp
-end subroutine
+!!  subroutine read_params()
+!!  use mod_interface
+!!  use defs_basis
+!!  use mod_fire,   only:dtmin, dtmax
+!!  use minpar, only:parmin_bfgs
+!!  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type
+!!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
+!!  use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
+!!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md
+!!  use global, only: nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
+!!  implicit none
+!!  integer:: itype,n
+!!  real(8):: tmp_val
+!!  character(250):: all_line
+!!  character(4):: tmp_ch
+!!  !The convention within abinit are followed:
+!!  !First atomic data, then MD parameters, and then MD parameters
+!!  !Example:
+!!  ! 120      target_pressure_gpa
+!!  ! 4        nat     
+!!  ! 2        ntypat    
+!!  ! 14    1  znucl     
+!!  ! 28    1  amu     
+!!  ! 1 2 2 2  typat  
+!!  ! 200      ntime_md
+!!  ! 200      ntime_geopt
+!!  ! 2.d0     bmass
+!!  ! Auto 6 12       mdmin or mdmin_min mdmin_max
+!!  ! 8 3.0 2.0 F nsoften, alpha_at, alpha_lat,mol_soften
+!!  ! FIRE     !Method of geopt: FIRE or BFGS
+!!  ! 20.d0 1.d0 50.d0    dtion_fire, min, max .or. alphax_at, alphax_lat 
+!!  ! 1.d-4    tolmxf   
+!!  ! 100      strfact 
+!!  ! .true. .false. .false. usewf_geopt,usewf_soften,usewf_md
+!!  ! .true. .false. !Determines if symmetry (isotropy)/FDOS calculation should be used
+!!  ! Auto dfine dcourse or ka kb kc    kpt mesh 
+!!   open(unit=12,file="params.in") 
+!!   read(12,*) target_pressure_gpa   !Target pressure in GPA
+!!   target_pressure_habohr=target_pressure_gpa/HaBohr3_GPA
+!!   write(*,'(a,2(1x,es15.7))') " # Target pressure for the run in GPa and Ha/Bohr**3: ",target_pressure_gpa,target_pressure_habohr
+!!   read(12,*) nat                   !Number of atoms
+!!   read(12,*) ntypat                !Number of atom types
+!!   if(.not.allocated(znucl)) allocate(znucl(ntypat))
+!!   if(.not.allocated(char_type)) allocate(char_type(ntypat))
+!!   if(.not.allocated(amu)) allocate(amu(ntypat))
+!!   if(.not.allocated(amutmp)) allocate(amutmp(ntypat))
+!!   if(.not.allocated(rcov)) allocate(rcov(ntypat))
+!!   read(12,*) znucl(1:ntypat)       !Nuclei charge 
+!!   read(12,*) amutmp(1:ntypat)      !Atomic mass used for MD and Fire, if all 0, then automatic determination
+!!   if(.not.allocated(typat)) allocate(typat(nat))          
+!!   if(.not.allocated(fixat))then
+!!      allocate(fixat(nat))
+!!      fixat(:)=.false.
+!!   endif
+!!   if(.not.allocated(fragarr))then
+!!      allocate(fragarr(nat))
+!!      fragarr(:)=-1
+!!   endif
+!!   read(12,*) typat(1:nat)          !Types of atoms  
+!!   read(12,*) ntime_md, md_algo, md_integrator          !Maximum number of iterations during MD, md_algo, md_integrator
+!!   if(md_algo==4) fixlat(7)=.true.;if(fixlat(7)) md_algo=4
+!!   read(12,*) ntime_geopt           !Maximum number of iterations during GEOPT
+!!   read(12,*) bmass                 !Cell mass during MD and FIRE
+!!  ! read(12,*) mdmin                 !Number of enthalpy minima crossed unit stop MD
+!!  !Block mdmin****************
+!!   read(12,'(a250)') all_line
+!!   n = len_trim(all_line)
+!!   read(all_line(1:n),*) tmp_ch
+!!    if(trim(tmp_ch)=="Auto") then
+!!  !   if(.not.auto_mdmin) then
+!!       read(all_line(1:n),*) tmp_ch,mdmin_min,mdmin_max  !Number of enthalpy minima crossed unit stop MD
+!!       if(.not.auto_mdmin) mdmin=mdmin_min
+!!  !   endif
+!!     auto_mdmin=.true.
+!!    else
+!!     read(all_line(1:n),*)  mdmin  !Number of enthalpy minima crossed unit stop MD
+!!     auto_mdmin=.false.
+!!    endif
+!!  !Block mdmin****************
+!!  !Block soften****************
+!!   read(12,'(a250)') all_line
+!!   n = len_trim(all_line)
+!!   read(all_line(1:n),*) tmp_ch
+!!    if(trim(tmp_ch)=="Auto") then
+!!     if(.not.auto_soft.and.alpha_at.lt.0.d0.and.alpha_lat.lt.0.d0) then
+!!       read(all_line(1:n),*) tmp_ch,nsoften, alpha_at, alpha_lat,mol_soften  !Number of softening steps, softening stepsize for atoms and lattice
+!!     else
+!!       read(all_line(1:n),*) tmp_ch,nsoften,tmp_val,tmp_val,mol_soften
+!!     endif
+!!     auto_soft=.true.
+!!    else
+!!     read(all_line(1:n),*) nsoften, alpha_at, alpha_lat,mol_soften   !Number of softening steps, softening stepsize for atoms and lattice
+!!     auto_soft=.false.
+!!    endif
+!!  !Block soften****************
+!!  !Block MD timestep***********
+!!   read(12,'(a250)') all_line
+!!   n = len_trim(all_line)
+!!   read(all_line(1:n),*) tmp_ch
+!!    if(trim(tmp_ch)=="Auto") then
+!!     if(.not.auto_dtion_md) then
+!!       read(all_line(1:n),*) tmp_ch, dtion_md,nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
+!!     else
+!!       read(all_line(1:n),*) tmp_ch, tmp_val ,nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
+!!     endif
+!!     auto_dtion_md=.true.
+!!    else
+!!     read(all_line(1:n),*) dtion_md              !(Auto) MD timestep
+!!     auto_dtion_md=.false.
+!!    endif
+!!  !Block MD timestep***********
+!!   read(12,*) geopt_method          !Either FIRE or BFGS
+!!   if    (trim(geopt_method)=="FIRE") then 
+!!     read(12,*) dtion_fire,dtion_fire_min,dtion_fire_max        !Initial timestep for FIRE, Min, Max
+!!   elseif(trim(geopt_method)=="MBFGS".or.trim(geopt_method)=="RBFGS") then
+!!     read(12,*) alphax_at,alphax_lat    !Stepsize for atoms and for lattice in BFGS
+!!   else
+!!     stop "Wrong options for geometry optimizer, only FIRE or RBFGS or MBFGS accepted"
+!!   endif
+!!  !Copy parameters of fire to the fire module
+!!      dtmin=dtion_fire_min
+!!      dtmax=dtion_fire_max
+!!  !Copy parameters of bfgs to the bfgs module
+!!      parmin_bfgs%betax=alphax_at
+!!      parmin_bfgs%betax_lat=alphax_lat
+!!   read(12,*) tolmxf                !Force tolerance for GEOPT convergance 
+!!   read(12,*) strfact               !Factor to multiply stress 
+!!   read(12,*) usewf_geopt,usewf_soften,usewf_md  !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
+!!   read(12,*) findsym,finddos       !Determines if symmetry (isotropy)/FDOS calculation should be used
+!!  ! read(12,*) units                !Either angstroem or bohr
+!!  !Block KPT****************
+!!   read(12,'(a250)') all_line
+!!   n = len_trim(all_line)
+!!   read(all_line(1:n),*) tmp_ch
+!!    if(trim(tmp_ch)=="Auto") then
+!!      read(all_line(1:n),*) tmp_ch,dkpt1,dkpt2
+!!      ka=0;kb=0;kc=0
+!!      auto_kpt=.true.
+!!    else
+!!     read(all_line(1:n),*) ka,kb,kc
+!!     dkpt1=0.d0
+!!     dkpt2=0.d0
+!!     auto_kpt=.false.
+!!    endif
+!!  !Block KPT****************
+!!  
+!!  
+!!  
+!!  
+!!  
+!!  
+!!  ! read(12,*) ka,kb,kc              !For fixed kpoint mesh
+!!  !!To generate automatic kpoin mesh
+!!  ! if(ka==0.and.kb==0.and.kc==0)then
+!!  ! read(12,*) dkpt1,dkpt2
+!!  ! else
+!!  ! dkpt1=0.d0
+!!  ! dkpt2=0.d0
+!!  ! endif
+!!   close(12) 
+!!  
+!!  !Initiallize LJ parameter if required
+!!   if(trim(code)=="blj") call blj_init_parameter()
+!!  
+!!  !Get the correct atomic masses and atomic character
+!!   do itype=1,ntypat
+!!     call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
+!!   enddo
+!!  
+!!  !Put replace amu from file if desired
+!!   if(amutmp(1).ne.0.d0) amu=amutmp
+!!  end subroutine
 
 !************************************************************************************
 
-subroutine pathintegral(parini,code,latvec,xred)
+subroutine pathintegral(parini,latvec,xred)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,fixat,fixlat
  use defs_basis
@@ -6312,7 +6312,6 @@ subroutine pathintegral(parini,code,latvec,xred)
        implicit none
        type(typ_parini), intent(in):: parini
        integer count1,count2,count_rate,count_max,lwork,info,nint,i,iat,idispl,irep,iprec,istr,jstr,ilat,jlat
-       character(20):: code
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
        real(8):: rxyz0(3,nat),fxyz(3,nat),displ(3,nat)
@@ -6338,7 +6337,7 @@ subroutine pathintegral(parini,code,latvec,xred)
        if(cell.and.abs(stepsize_lat).le.1.d-12) stop "Increase stepsize for lattice"
        allocate(simpson(nint)) 
 
-       write(*,*) '# Testing ',trim(code),' potential'
+       write(*,*) '# Testing ',trim(parini%potential_potential),' potential'
        if (mod(nint,2).ne.1) stop '# nint has to be odd'
        simpson(1)=1.d0/3.d0
        simpson(2)=4.d0/3.d0
@@ -6536,9 +6535,11 @@ subroutine pathintegral(parini,code,latvec,xred)
 
 !****************************************************************************************************************   
 
-subroutine plot_fp_grid(nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
+subroutine plot_fp_grid(parini,nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
+use mod_parini, only: typ_parini
 use mod_interface
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: nlminx,nlmin,fp_len,i,kk,nat
 real(8):: fp_arr(fp_len,nlminx),fp_dist
 real(8):: tmp_acell(3),tmp_real,tmp_rprim(3,3),lat_arr(3,3,nlminx),pl_arr(3,nat,nlminx),randpos(3)
@@ -6593,7 +6594,7 @@ close(22)
 do i=1,nlmin
    write(fn2,'(i5.5)') i
 !   open(unit=24,file="fingerprint_assign"//fn//"_"//fn2)
-   call get_fp_distance(fp_len,fp_arr(:,kk),fp_arr(:,i),fp_dist)
+   call get_fp_distance(parini,fp_len,fp_arr(:,kk),fp_arr(:,i),fp_dist)
 !   close(24)
    write(11,*) kk,i,fp_dist
 !!   write(13,*) kk,i,abs(e_arr(i)-e_arr(kk))
@@ -6687,7 +6688,7 @@ end subroutine
 
 !****************************************************************************************************************   
 
-subroutine rotate_like_crazy(parini,code,latvec,xred,tolmin,tolmax,ntol)
+subroutine rotate_like_crazy(parini,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use global, only: geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
@@ -6699,7 +6700,6 @@ subroutine rotate_like_crazy(parini,code,latvec,xred,tolmin,tolmax,ntol)
        implicit none
        type(typ_parini), intent(in):: parini
        integer::  iprec,nstruct,i,ntol,spgint
-       character(20):: code
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
        real(8):: latvec(3,3),xred(3,nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,nat),vel_vol_in
@@ -6752,7 +6752,7 @@ end subroutine
 !****************************************************************************************************************   
 !****************************************************************************************************************   
 
-subroutine poslowrelax(parini,code,latvec,xred,tolmin,tolmax,ntol)
+subroutine poslowrelax(parini,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use global, only: geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
@@ -6764,7 +6764,6 @@ subroutine poslowrelax(parini,code,latvec,xred,tolmin,tolmax,ntol)
        type(typ_parini), intent(in):: parini
 !       use parameters 
        integer::  iprec,nstruct,i,ntol,spgint
-       character(20):: code
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
        real(8):: latvec(3,3),xred(3,nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,nat),vel_vol_in
@@ -6806,7 +6805,7 @@ if(file_exists) then
      vel_lat_in=0.d0
       iprec=1
       if(geopt_ext) then
-        call geopt_external(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+        call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
       else
         if(geopt_method=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
         if(geopt_method=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
@@ -6817,7 +6816,7 @@ if(file_exists) then
       endif
 !Check for symmetry
    if(findsym) then
-      call find_symmetry(nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spgint)
+      call find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spgint)
       spg_pos=real(spgint,8)
    else
       spg_pos=0.d0
@@ -6853,7 +6852,7 @@ end subroutine
 
 !****************************************************************************************************************   
 
-subroutine enthalpyrelax(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
+subroutine enthalpyrelax(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use global, only: geopt_ext,geopt_method,fixat,fixlat
@@ -6864,7 +6863,6 @@ subroutine enthalpyrelax(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
        implicit none
        type(typ_parini), intent(in):: parini
        integer::  ka,kb,kc,iprec
-       character(20):: code
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
        real(8):: latvec(3,3),xred(3,nat),pinit,pfinal,psteps,pcur,latvec0(3,3),xred0(3,nat),vel_vol_in
@@ -6909,7 +6907,7 @@ call system('rm -f posgeopt.*.ascii')
   vel_lat_in=0.d0
    iprec=1
    if(geopt_ext) then
-     call geopt_external(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+     call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
    else
      if(geopt_method=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
      if(geopt_method=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
@@ -6920,7 +6918,7 @@ call system('rm -f posgeopt.*.ascii')
    endif
 !Check for symmetry
    if(findsym) then
-      call find_symmetry(nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol,spgint)
+      call find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol,spgint)
    else
       spgint=0
       spgtol=0.d0
@@ -6955,7 +6953,7 @@ end subroutine
 
 !****************************************************************************************************************   
 
-subroutine varvol(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
+subroutine varvol(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use global, only: geopt_ext,geopt_method,fixat,fixlat
@@ -6966,7 +6964,6 @@ subroutine varvol(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
        implicit none
        type(typ_parini), intent(in):: parini
        integer::  ka,kb,kc,iprec
-       character(20):: code
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
        real(8):: latvec(3,3),xred(3,nat),latvec0(3,3),xred0(3,nat)
@@ -7029,7 +7026,7 @@ do while (vcur.le.vfinal+1.d-10)
    call get_energyandforces_single(parini,latvec,xred0,fcart,strten,energy,iprec,getwfk)
 !Check for symmetry
    if(findsym) then
-      call find_symmetry(nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol,spgint)
+      call find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol,spgint)
    else
       spgint=0
       spgtol=0.d0
@@ -9333,7 +9330,8 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine get_fp_distance(fp_len,fp1,fp2,fp_dist)
+subroutine get_fp_distance(parini,fp_len,fp1,fp2,fp_dist)
+use mod_parini, only: typ_parini
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
@@ -9342,11 +9340,12 @@ use fingerprint
 use global, only: ntypat,nat,typat
 use defs_basis, only: pi
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: fp_len
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),fp1(fp_len),fp2(fp_len),fp_dist
 select case(fp_method)
   case(11)!Oganov method
-        call get_cosinedistance(fp1,fp2,fp_11_fp_size,fp_11_fp_dim,ntypat,fp_11_nkinds_sum,fp_dist)
+        call get_cosinedistance(parini,fp1,fp2,fp_11_fp_size,fp_11_fp_dim,ntypat,fp_11_nkinds_sum,fp_dist)
   case(12)!Calypso method
         call get_distance_calypso(fp1,fp2,fp_12_fp_dim,fp_12_nl,fp_dist)
   case(13)!Modified Calypso method
@@ -9370,10 +9369,12 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine identical(nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
+subroutine identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
            &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
+use mod_parini, only: typ_parini
 use mod_interface
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: nlminx,nlmin,fp_len,kid,k_e_wpos,n_unique,n_nonuni
 integer:: i,l,klow,k,khigh,fp_method,lid(nlminx),nid
 real(8):: fp_arr(fp_len,nlminx),fp_wpos(fp_len),ent_arr(nlminx),ent_wpos,fp_delta,ent_delta,fp_dist_min,fp_dist
@@ -9416,7 +9417,7 @@ endif
 write(*,'(a,i5,i5)') ' # ID: Check k bounds: ',max(1,klow),min(nlmin,khigh)
 fp_dist_min=1.d100
 do k=max(1,klow),min(nlmin,khigh)
-call get_fp_distance(fp_len,fp_wpos,fp_arr(:,k),fp_dist)
+call get_fp_distance(parini,fp_len,fp_wpos,fp_arr(:,k),fp_dist)
 write(*,'(a,i5,es25.15)') ' # ID: Check fp_dist: ',k,fp_dist
 !!write(*,'(a,20(e10.3))') '(MH) fp_wpos', (fp_wpos(i),i=1,fp_len)
 !!write(*,'(a,20(e10.3))') '(MH) fp_arr ', (fp_arr(i,k),i=1,fp_len)

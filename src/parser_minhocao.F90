@@ -53,7 +53,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -536,8 +536,8 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("BOUNDARY",8,all_line(1:n),n,bc,found)
    if(found) cycle
 !CODE
-   call parsescalar_string("CODE",4,all_line(1:n),n,code,20,found)
-   if(found) code = StrLowCase( code )
+   call parsescalar_string("CODE",4,all_line(1:n),n,parini%potential_potential,20,found)
+   if(found) parini%potential_potential = StrLowCase( parini%potential_potential )
    if(found) cycle
   enddo
 97 continue
@@ -570,13 +570,13 @@ close(12)
 if(use_confine) call  init_confinement_parser()
 
 !Initiallize LJ parameter if required
-if(trim(code)=="blj".and.calls==0) call blj_init_parameter()
+if(trim(parini%potential_potential)=="blj".and.calls==0) call blj_init_parameter()
 
 !Initiallize LJ parameter if required
-if(trim(code)=="mlj") call mlj_init_parameter()
+if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter()
 
 !Initiallize TB-LJ parameter if required
-if(trim(code)=="lenosky_tb_lj".and.calls==0) then
+if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
   call check_lenosky_tb_lj()
   n_lj=0
   do iat=1,nat
@@ -592,22 +592,22 @@ if(voids.and.calls==0) then
 endif
 
 !Initiallize tersoff
-if(trim(code)=="tersoff".and.calls==0) then
+if(trim(parini%potential_potential)=="tersoff".and.calls==0) then
   call init_tersoff()
 endif
 
 !Initiallize edip
-if(trim(code)=="edip".and.calls==0) then
+if(trim(parini%potential_potential)=="edip".and.calls==0) then
   call init_edip()
 endif
 
 !Initiallize ipi
-if(trim(code)=="ipi".and.calls==0) then
+if(trim(parini%potential_potential)=="ipi".and.calls==0) then
   call init_ipi()
 endif
 
 !Initiallize msock
-if(trim(code)=="msock".and.calls==0) then
+if(trim(parini%potential_potential)=="msock".and.calls==0) then
   call init_msock()
 endif
 
@@ -648,7 +648,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -720,7 +720,7 @@ dkpt1=0.04d0
 dkpt2=0.06d0
 bc=1
 parini%verb=3
-code="vasp"
+parini%potential_potential="vasp"
 !Define if the external optimizer should be used. Only available for:
 geopt_ext=.false.
 
@@ -807,7 +807,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,voids,core_rep,md_presscomp
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -929,7 +929,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
+                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -961,7 +961,7 @@ write(*,'(a,es15.7)')      " # PRESS         ", target_pressure_gpa
 write(*,'(a,L3)')          " # VOIDS         ", voids
 write(*,'(a,L3)')          " # COREREP       ", core_rep
 write(*,'(a)')             " # COMPUTE parameters ************************************************************"
-write(*,'(a,a)')           " # CODE          ", trim(code)
+write(*,'(a,a)')           " # CODE          ", trim(parini%potential_potential)
 write(*,'(a,L3)')          " # FINDSYM       ", findsym
 write(*,'(a,L3)')          " # FINDDOS       ", finddos
 write(*,'(a,L3)')          " # USEWFGEO      ", usewf_geopt
@@ -1104,7 +1104,7 @@ write(*,trim(formatting))  " # CONFNAT       ",conf_nat
       endif
    enddo
 endif
-if(StrLowCase(trim(adjustl(code)))=="ipi") then
+if(StrLowCase(trim(adjustl(parini%potential_potential)))=="ipi") then
 write(*,'(a)')             " # IPI parameters ****************************************************************"
 write(formatting,'(a)') '(a,i4)'
 write(*,trim(formatting))  " # IPIINET       ",sock_inet
@@ -1115,7 +1115,7 @@ write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
 write(*,trim(formatting))  " # IPIECUTWF     ",sock_ecutwf(:)
 endif
-if(StrLowCase(trim(adjustl(code)))=="msock") then
+if(StrLowCase(trim(adjustl(parini%potential_potential)))=="msock") then
 write(*,'(a)')             " # MSOCK parameters **************************************************************"
 write(formatting,'(a)') '(a,i4)'
 write(*,trim(formatting))  " # SOCKINET      ",sock_inet

@@ -2556,58 +2556,49 @@ end subroutine correct_latvec_oganov
  real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
  real(8) :: v(3,3),vol,rxyz_red(3,nat)
 end subroutine backtocell_cart
-subroutine read_params()
-integer:: itype,n
-real(8):: tmp_val
-character(250):: all_line
-character(4):: tmp_ch
-end subroutine read_params
-subroutine pathintegral(parini,code,latvec,xred)
+subroutine pathintegral(parini,latvec,xred)
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,fixat,fixlat
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
-       character(20):: code
        real(8):: evals(3),s2(3,3),dmat(3,3),dproj(6),rotmat(3,3),xred(3,nat)
        real(8):: dlat(6),latvec(3,3),latvecinv(3,3),stress(3,3),displat(3,3),tstress(3,3)
 end subroutine pathintegral
-subroutine plot_fp_grid(nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
+subroutine plot_fp_grid(parini,nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nlminx,nlmin,fp_len,i,kk,nat
 real(8):: fp_arr(fp_len,nlminx),fp_dist
 real(8):: tmp_acell(3),tmp_real,tmp_rprim(3,3),lat_arr(3,3,nlminx),pl_arr(3,nat,nlminx),randpos(3)
 end subroutine plot_fp_grid
-subroutine rotate_like_crazy(parini,code,latvec,xred,tolmin,tolmax,ntol)
+subroutine rotate_like_crazy(parini,latvec,xred,tolmin,tolmax,ntol)
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        integer::  iprec,nstruct,i,ntol,spgint
-       character(20):: code
        real(8):: latvec(3,3),xred(3,nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,nat),vel_vol_in
        real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
 end subroutine rotate_like_crazy
-subroutine poslowrelax(parini,code,latvec,xred,tolmin,tolmax,ntol)
+subroutine poslowrelax(parini,latvec,xred,tolmin,tolmax,ntol)
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        integer::  iprec,nstruct,i,ntol,spgint
-       character(20):: code
        real(8):: latvec(3,3),xred(3,nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,nat),vel_vol_in
        real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
 end subroutine poslowrelax
-subroutine enthalpyrelax(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
+subroutine enthalpyrelax(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
-       character(20):: code
        real(8):: latvec(3,3),xred(3,nat),pinit,pfinal,psteps,pcur,latvec0(3,3),xred0(3,nat),vel_vol_in
        real(8):: tolmin,tolmax,spgtol
        integer:: ntol,spgint
        logical:: findsym
 end subroutine enthalpyrelax
-subroutine varvol(parini,code,latvec,xred,tolmin,tolmax,ntol,findsym)
+subroutine varvol(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
-       character(20):: code
        real(8):: latvec(3,3),xred(3,nat),latvec0(3,3),xred0(3,nat)
        real(8):: tolmin,tolmax,spgtol
        integer:: ntol,spgint,itime
@@ -2815,13 +2806,17 @@ use global, only: ntypat,nat,typat,rcov,char_type
 integer:: fp_len,iat,natmol
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),vol,rcov_arr(nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,nat)
 end subroutine get_fp
-subroutine get_fp_distance(fp_len,fp1,fp2,fp_dist)
+subroutine get_fp_distance(parini,fp_len,fp1,fp2,fp_dist)
+use mod_parini, only: typ_parini
 use global, only: ntypat,nat,typat
+type(typ_parini), intent(in):: parini
 integer:: fp_len
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),fp1(fp_len),fp2(fp_len),fp_dist
 end subroutine get_fp_distance
-subroutine identical(nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
+subroutine identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
            &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nlminx,nlmin,fp_len,kid,k_e_wpos,n_unique,n_nonuni
 integer:: i,l,klow,k,khigh,fp_method,lid(nlminx),nid
 real(8):: fp_arr(fp_len,nlminx),fp_wpos(fp_len),ent_arr(nlminx),ent_wpos,fp_delta,ent_delta,fp_dist_min,fp_dist

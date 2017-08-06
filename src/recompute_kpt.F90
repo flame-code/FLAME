@@ -8,6 +8,7 @@ logical:: tmpl,found
 character(8):: tmp_ch 
 character(40):: filename
 character(250):: all_line,arg
+character(20):: code            !What code should be used: abinit or siesta
 angbohr=1.d0/0.52917720859d0
 if(iargc().lt.1) stop "No arguments passed"
           DO i = 1, iargc()
