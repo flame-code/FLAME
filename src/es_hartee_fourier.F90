@@ -4,9 +4,9 @@ subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stres
     use dynamic_memory
     implicit none
     integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), ratred(3,nat), qat(nat)
+    real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), gwsq(nat), ecut
-    real(8), intent(out):: fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
     !local variables
     integer:: m1, m2, m3, m1_max, m2_max, m3_max, mtot, msq, msq_max
     integer:: iat, i, j, k, n, l
@@ -222,9 +222,9 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     use dynamic_memory
     implicit none
     integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), ratred(3,nat), qat(nat)
+    real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), alphasq, ecut
-    real(8), intent(out):: fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
     !local variables
     integer:: m1, m2, m3, m1_max, m2_max, m3_max, mtot, msq, msq_max
     integer:: iat, i, j, k, n, l

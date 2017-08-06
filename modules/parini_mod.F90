@@ -88,7 +88,7 @@ module mod_parini
         real(8):: dtol_ann !distance between two FP
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
-
+        logical:: read_forces_ann
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.

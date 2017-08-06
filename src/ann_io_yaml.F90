@@ -63,6 +63,12 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     enddo
     ann%nl=ann%nl+1 !adding the output layer to total number of layers
     ann%nn(ann%nl)=1 !setting the output layer
+    if(trim(parini%subtask_ann)=='check_symmetry_function') then
+        rcut=ann%dict_ann//"main"//"rcut"
+    endif
+    if(trim(parini%approach_ann)=='atombased') then
+        rcut=ann%dict_ann//"main"//"rcut"
+    endif
     if(trim(parini%approach_ann)/='atombased' .and. trim(parini%approach_ann)/='tb' ) then
         ann%ampl_chi       =  ann%dict_ann//"main"//"ampl_chi" 
         ann%prefactor_chi  =  ann%dict_ann//"main"//"prefactor_chi" 
@@ -253,7 +259,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             write(*,'(a)') trim(filename)
             call write_ann_yaml(parini,filename,ann_arr%ann(i))
         enddo
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
+    elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
         do i=1,ann_arr%n
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
