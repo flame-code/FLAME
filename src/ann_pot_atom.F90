@@ -86,7 +86,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     call f_free(symfunc%linked_lists%prime_bound)
     call f_free(symfunc%linked_lists%bound_rad)
     call f_free(symfunc%linked_lists%bound_ang)
-    call ann_deallocate(ann_arr)
+    !call ann_deallocate(ann_arr)
     call f_release_routine()
 end subroutine cal_ann_atombased
 !*****************************************************************************************
