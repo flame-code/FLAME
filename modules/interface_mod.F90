@@ -3070,7 +3070,7 @@ end subroutine init_mybfgs
 subroutine geopt_init()
 end subroutine geopt_init
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: tolmxf,nat,target_pressure_habohr,strfact,nat,ntime_geopt
+ use global, only: nat,target_pressure_habohr,strfact,nat,ntime_geopt
  use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 integer:: iprec,iat,i,istr
@@ -3213,7 +3213,7 @@ real(8):: omega,b0,hessin(3*nat+9,3*nat+9),diagat,avmass,diaglat
 real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
 end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
+ use global, only: ntime_geopt,strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 REAL(8) :: fret, counter
@@ -3223,7 +3223,7 @@ INTEGER :: choice,status,sumstatus,iprec,iexit,lattdeg,hessupdate
 character(40)::filename,folder
 end subroutine geopt_mbfgs_mhm
 subroutine GEOPT_MBFGS_MHM_OLD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,fixat,fixlat
+ use global, only: ntime_geopt,strfact,units,usewf_geopt,nat,fixat,fixlat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 REAL(8) :: fret, counter

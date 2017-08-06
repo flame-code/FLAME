@@ -23,7 +23,7 @@ implicit none
   integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
   real(8):: dtion_md              !Initial timestep for MD 
   real(8):: dtion_fire,dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep
-  real(8):: tolmxf                !Force tolerance for GEOPT convergance 
+!  real(8):: tolmxf                !Force tolerance for GEOPT convergance 
   real(8):: strfact               !Factor to multiply stress 
   character(40):: units           !Either angstroem or bohr
   integer:: ka,kb,kc              !The number of kpoints in each dimension

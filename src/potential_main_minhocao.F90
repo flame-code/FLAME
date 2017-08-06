@@ -56,13 +56,13 @@ contains
       stop "Cannot run external geometry optimizer when using voids!"
     endif
     if(trim(parini%potential_potential)=="siesta") then
-      call siesta_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+      call siesta_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
     elseif(trim(parini%potential_potential)=="vasp") then
-      call vasp_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+      call vasp_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
     elseif(trim(parini%potential_potential)=="espresso") then
-      call espresso_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+      call espresso_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
     elseif(trim(parini%potential_potential)=="dftb") then
-      call dftb_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+      call dftb_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
     else
       stop "Code interface not yet implemented"
     endif

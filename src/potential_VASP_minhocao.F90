@@ -295,11 +295,13 @@ contains
   fcart=fcart/Ha_eV*Bohr_Ang
   end subroutine
   
-  subroutine vasp_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine vasp_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
   !This routine will setup the input file for a vasp geometry optimization
   !It will also call the run script and harvest the output
   !use global, only: nat
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
@@ -307,7 +309,7 @@ contains
   character(4):: tmp_char
   getwfk=.false.
   !Set up the input file to perform geometry optimization
-   call make_input_vasp_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+   call make_input_vasp_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   ! call system("sleep 1")
   !Run the job NOW!
    call system("./runjob_geovasp.sh")
@@ -335,7 +337,7 @@ contains
    call system("cp vasprun.xml vasprun.xml.bak") 
   end subroutine
   
-  subroutine make_input_vasp_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_vasp_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !This routine will append some informations to a file already containing some informations about the abininit runs
   !The informations appended are:
   !-The atomic informations
@@ -348,7 +350,9 @@ contains
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,vasp_kpt_mode
   !use defs_basis,only: Bohr_Ang
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
@@ -389,7 +393,7 @@ contains
   !Setup for only a sequence of geopt
   write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.75d0)
   write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
-  write(87,'(a,es25.15)') "EDIFFG = ",-tolmxf*8.d0*HaBohr_eVAng
+  write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*8.d0*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
      write(87,'(a)') "ISIF   = 0"
@@ -406,7 +410,7 @@ contains
   !Setup for only a sequence of geopt
   write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.25d0)
   write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
-  write(87,'(a,es25.15)') "EDIFFG = ",-tolmxf*HaBohr_eVAng
+  write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
      write(87,'(a)') "ISIF   = 0"

@@ -53,7 +53,7 @@ END SUBROUTINE geopt_init
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat
+                   &ntime_geopt,strfact,units,usewf_geopt,nat
  use defs_basis
  use minpar
 
@@ -98,7 +98,7 @@ real(8):: tolmxf_switch
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
  multiprec=.true.
- tolmxf_switch=10.d0*tolmxf
+ tolmxf_switch=10.d0*parini%paropt_geopt%fmaxtol
 
  counter=0.d0
 write(*,'(a,es15.7,es15.7)') " # BFGS BETAX, BETAX_LAT: ", parmin_bfgs%betax, parmin_bfgs%betax_lat
@@ -132,7 +132,7 @@ call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",0,fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
    iexit=0
-   if(fmax.lt.tolmxf) iexit=1
+   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
    if(iexit==1) then
    write(*,'(a)') " # BFGS converged before entering optimization"
 !   call wtpos_inter(nat,rxyz,latvec,555)
@@ -290,7 +290,7 @@ lambda_predict=max(lambda_predict,-1.d0)
    write(16,'(a,1x,I5,1x,1pe21.14,1x,1pe12.5,1x,1pe12.5,1x,1pe12.5)') "  &
    &  BFGS_all",its,fp,fmax,fmax_at,fmax_lat
    iexit=0
-   if(fmax.lt.tolmxf) iexit=1
+   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
 !   if (fnrm < fnrmtol) then  !Test for convergence on zero gradient.
 !   latvec=p(3*nat+1:3*nat+9)
 !   call backtocell(nat,latvec,rxyz)

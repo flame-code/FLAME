@@ -657,7 +657,7 @@ write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
   endif
   if (ntime_geopt.le.0) goto 3000
 !Check if the structure is already relaxed
-  call convcheck(nat,pos_latvec,pos_fcart,pos_strten,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+  call convcheck(nat,pos_latvec,pos_fcart,pos_strten,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 if(iexit==1) then
   write(*,'(a,es15.7,es15.7)') ' # Input structure already relaxed. Proceeding with: Energy, Enthalpy: ',e_pos,ent_pos
   else 
@@ -3485,7 +3485,7 @@ end subroutine
 subroutine GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
- use global, only: char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: char_type,ntime_geopt,bmass,dtion_fire,strfact,dtion_fire_min,dtion_fire_max
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
@@ -3730,7 +3730,7 @@ endif
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 !FIRE: check for convergence
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !!!!!Compute maximal component of forces, EXCLUDING any fixed components
 !!! fmax=0.0d0
 !!! do iat=1,nat
@@ -4018,7 +4018,7 @@ endif
 !****************************************************************************************************************        
 
 !FIRE: check for convergence
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !!!!Compute maximal component of forces, EXCLUDING any fixed components
 !!! fmax=0.0d0
 !!! do iat=1,nat
