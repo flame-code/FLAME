@@ -49,7 +49,7 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
+use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
@@ -220,7 +220,7 @@ open(unit=12,file="params_new.in")
    call parsearray_int("TYPAT",5,all_line(1:n),n,typat(1:nat),nat,found)
    if(found) cycle
 !MDNIT
-   call parsescalar_int("MDNIT",5,all_line(1:n),n,ntime_md,found)
+   call parsescalar_int("MDNIT",5,all_line(1:n),n,parini%nmd_dynamics,found)
    if(found) cycle
 !MDALGO
    call parsescalar_int("MDALGO",6,all_line(1:n),n,md_algo,found)
@@ -644,7 +644,7 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
+use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
@@ -682,7 +682,7 @@ target_pressure_habohr=0.d0
 voids=.false.
 core_rep=.false.
 if(.not.read_poscur) typat(1:nat)=1
-ntime_md=300
+parini%nmd_dynamics=300
 md_algo=1
 md_integrator=3
 md_presscomp=-0.d0
@@ -803,7 +803,7 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
+use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
@@ -831,7 +831,7 @@ if(any(typat(:).lt.1)) stop "Error in typat"
 if(any(amu(:).le.0.d0)) stop "Error in amu"
 if(any(rcov(:).le.0.d0)) stop "Error in rcov"
 if(any(znucl(:).le.0)) stop "Error in znucl"
-if(ntime_md.lt.1) stop "Error in ntime_md"
+if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
 if(md_algo.lt.1.or.md_algo.gt.4) stop "Error in md_algo"
 if(md_integrator.lt.1.or.md_integrator.gt.3) stop "Error in md_integrator"
 if(parini%paropt_geopt%nit.lt.0) stop "Error in parini%paropt_geopt%nit"
@@ -925,7 +925,7 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
+use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
@@ -980,7 +980,7 @@ write(*,'(a)')             " # MD parameters ***********************************
 write(*,'(a,i5)')          " # MDALGO        ", md_algo
 write(*,'(a,es15.7)')      " # MDPRESSCOMP   ", md_presscomp
 write(*,'(a,i5)')          " # MDINT         ", md_integrator
-write(*,'(a,i5)')          " # MDNIT         ", ntime_md
+write(*,'(a,i5)')          " # MDNIT         ", parini%nmd_dynamics
 write(*,'(a,L3)')          " # AUTO_MDDT     ", auto_dtion_md
 write(*,'(a,L3)')          " # MDENCON       ", energy_conservation
 write(*,'(a,es15.7)')      " # MDDTINIT      ", dtion_md

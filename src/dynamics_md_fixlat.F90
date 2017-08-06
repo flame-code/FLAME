@@ -1,6 +1,6 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
+ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,mdmin,dtion_md,units,usewf_md,auto_dtion_md,energy_conservation
  use global, only: nit_per_min,fixat,fixlat,bc
  use defs_basis
@@ -78,7 +78,7 @@ implicit none
 !*********************************************************************
     e0 = etot_in
 
-    md_loop: do istep=1,ntime_md
+    md_loop: do istep=1,parini%nmd_dynamics
 
 !C      Evolution of the system according to 'VELOCITY VERLET' algorithm
        do iat=1,nat
