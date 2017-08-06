@@ -1684,7 +1684,7 @@ subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: units,usewf_geopt,nat,dtion_fire,fixat,fixlat
+ use global, only: units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
  use mod_fire,   only:dtmin, dtmax
@@ -1748,7 +1748,7 @@ parini_tmp=parini
 parini_tmp%paropt_geopt%fmaxtol=5.d-2
 vel_in=0.d0;vel_lat_in=0.d0;vvol_in=0.d0
 !Some conservative time steps for FIRE
-dtion_fire=10.d0;dtmin=1.d0;dtmax=50.d0
+parini_tmp%paropt_geopt%dt_start=10.d0;dtmin=1.d0;dtmax=50.d0
 call GEOPT_FIRE_MHM(parini_tmp,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
 !parini_tmp%paropt_geopt%fmaxtol=tolmxf0
 
