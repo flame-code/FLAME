@@ -162,7 +162,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="lenosky_meam") then
     elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
 !!! #if defined(ALBORZ)
-    elseif(trim(parini%potential_potential)=="alborz") then
+    elseif(trim(parini%potential_potential)=="ann") then
         icount_alborz=icount_alborz+1
         if(icount_alborz==1) then
             call call_to_alborz_init(nat)
@@ -195,7 +195,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="lenosky_meam") then
       call lenosky_meam(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
 !!! #if defined(ALBORZ)
-    elseif(trim(parini%potential_potential)=="alborz") then
+    elseif(trim(parini%potential_potential)=="ann") then
         call call_to_alborz_get('bulk',nat,latvec,xred,fcart,energy,strten)
 !!! #endif
     elseif(trim(parini%potential_potential)=="blj") then
