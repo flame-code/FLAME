@@ -228,7 +228,7 @@ contains
   write(*,'(a,i1)')' # GEOPT START NATIVE DFTB OPTIMIZER RUN 1, IPREC=',iprec
   call system("./runjob.sh")
   !Collect data
-  call get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
+  call get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   !Write intermediate data
   call system("grep 'Geometry step:' dftb.log|wc -l>tmp_count")
   open(unit=32,file="tmp_count")
@@ -243,7 +243,7 @@ contains
   write(*,'(a,i1)')' # GEOPT START NATIVE DFTB OPTIMIZER RUN 2, IPREC=',iprec
   call system("./runjob.sh")
   !Collect data
-  call get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
+  call get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   !Write intermediate data
   call system("grep 'Geometry step:' dftb.log|wc -l>tmp_count")
   open(unit=32,file="tmp_count")
@@ -256,7 +256,7 @@ contains
   write(*,'(a,i1)')' # GEOPT START NATIVE DFTB OPTIMIZER FINAL, IPREC=',iprec
   call system("./runjob.sh")
   !Collect data
-  call get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
+  call get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   !Write intermediate data
   call system("grep 'Geometry step:' dftb.log|wc -l>tmp_count")
   open(unit=32,file="tmp_count")
@@ -395,11 +395,13 @@ contains
   
   
   
-  subroutine get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
-  use global, only: nat,target_pressure_habohr,strfact
+  subroutine get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
+  use mod_parini, only: typ_parini
+  use global, only: nat,target_pressure_habohr
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,istr
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling,r_tmp
   real(8):: fmax,strtarget(6),dstr(6),xtmp(3,nat)
@@ -445,7 +447,7 @@ contains
    dstr(:)=strten(:)-strtarget(:)
   !Eventually take into account the stress
    do istr=1,6
-       if(abs(dstr(istr))*strfact >= fmax ) fmax=abs(dstr(istr))*strfact
+       if(abs(dstr(istr))*parini%strfact >= fmax ) fmax=abs(dstr(istr))*parini%strfact
    end do
   end subroutine
   

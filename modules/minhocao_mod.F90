@@ -24,7 +24,7 @@ implicit none
   real(8):: dtion_md              !Initial timestep for MD 
   real(8):: dtion_fire,dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep
 !  real(8):: tolmxf                !Force tolerance for GEOPT convergance 
-  real(8):: strfact               !Factor to multiply stress 
+!  real(8):: strfact               !Factor to multiply stress 
   character(40):: units           !Either angstroem or bohr
   integer:: ka,kb,kc              !The number of kpoints in each dimension
   integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)

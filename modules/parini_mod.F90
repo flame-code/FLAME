@@ -166,6 +166,7 @@ module mod_parini
         !-----------------------------------------------------------------------
         !Minhocao global module
         integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
+        real(8):: strfact               !Factor to multiply stress
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict
