@@ -454,7 +454,7 @@ call system_clock(count_max=clock_max)   !Find the time max
          write(*,'(A)') " # Anderson MD selected, switching FIXLAT"
          if(any(fixlat)) write(*,*) "# FIXLAT: a,b,c,alpha,beta,gamma,shape ", fixlat
   endif
-  if(fixlat(7).and.trim(geopt_method).ne."FIRE") stop "Fixed cell shape only implemented in FIRE"
+  if(fixlat(7).and.trim(parini%paropt_geopt%approach).ne."FIRE") stop "Fixed cell shape only implemented in FIRE"
 
 !Put all the atoms back into the cell
   !call backtocell(nat,pos_latvec,pos_red)
@@ -672,13 +672,13 @@ if(iexit==1) then
      call geopt_external(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,ka,kb,kc,counter)
    else
      if(confine==2) confine=1
-     if(geopt_method=="RBFGS")  call GEOPT_RBFGS_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(geopt_method=="MBFGS")  call GEOPT_MBFGS_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(geopt_method=="FIRE")   call GEOPT_FIRE_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,vel_in,vel_lat_in,&
+     if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,vel_in,vel_lat_in,&
                                                     &vel_vol_in,e_pos,iprec,counter,folder)
-     if(geopt_method=="SQNM")   call      GEOPT_SQNM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(geopt_method=="QBFGS")  call     GEOPT_qbfgs(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(geopt_method=="SD")     call        GEOPT_SD(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SQNM")   call      GEOPT_SQNM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="QBFGS")  call     GEOPT_qbfgs(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SD")     call        GEOPT_SD(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
    endif
 
 !Update GEOPT counter
@@ -947,17 +947,17 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      call geopt_external(parini,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,ka,kb,kc,counter)
    else
       if(confine==2) confine=1
-      if(geopt_method=="RBFGS") call GEOPT_RBFGS_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="RBFGS") call GEOPT_RBFGS_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(geopt_method=="MBFGS") call GEOPT_MBFGS_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="MBFGS") call GEOPT_MBFGS_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(geopt_method=="FIRE")  call GEOPT_FIRE_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="FIRE")  call GEOPT_FIRE_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,vel_in,vel_lat_in,vel_vol_in,e_wpos,iprec,counter,folder)
-      if(geopt_method=="SQNM")   call    GEOPT_SQNM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="SQNM")   call    GEOPT_SQNM(parini,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(geopt_method=="QBFGS")  call   GEOPT_QBFGS(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="QBFGS")  call   GEOPT_QBFGS(parini,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(geopt_method=="SD")     call      GEOPT_SD(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="SD")     call      GEOPT_SD(parini,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
    endif
 
@@ -6691,7 +6691,7 @@ end subroutine
 subroutine rotate_like_crazy(parini,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use global, only: geopt_ext,fixat,fixlat,findsym,fragarr,ka,kb,kc
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6755,7 +6755,7 @@ end subroutine
 subroutine poslowrelax(parini,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,geopt_method,fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use global, only: geopt_ext,fixat,fixlat,findsym,fragarr,ka,kb,kc
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6807,12 +6807,12 @@ if(file_exists) then
       if(geopt_ext) then
         call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
       else
-        if(geopt_method=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(geopt_method=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(geopt_method=="FIRE")   call GEOPT_FIRE_MHM(parini,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
-        if(geopt_method=="SQNM")   call     GEOPT_SQNM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(geopt_method=="QBFGS")  call    GEOPT_QBFGS(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(geopt_method=="SD")     call     GEOPT_SD  (parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="SQNM")   call     GEOPT_SQNM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="QBFGS")  call    GEOPT_QBFGS(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="SD")     call     GEOPT_SD  (parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
       endif
 !Check for symmetry
    if(findsym) then
@@ -6855,7 +6855,7 @@ end subroutine
 subroutine enthalpyrelax(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,geopt_method,fixat,fixlat
+ use global, only: geopt_ext,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6909,12 +6909,12 @@ call system('rm -f posgeopt.*.ascii')
    if(geopt_ext) then
      call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
    else
-     if(geopt_method=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(geopt_method=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(geopt_method=="FIRE")   call GEOPT_FIRE_MHM(parini,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
-     if(geopt_method=="SQNM")   call     GEOPT_SQNM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(geopt_method=="QBFGS")  call    GEOPT_QBFGS(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(geopt_method=="SD")     call     GEOPT_SD  (parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SQNM")   call     GEOPT_SQNM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="QBFGS")  call    GEOPT_QBFGS(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SD")     call     GEOPT_SD  (parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
    endif
 !Check for symmetry
    if(findsym) then
@@ -6956,7 +6956,7 @@ end subroutine
 subroutine varvol(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,geopt_method,fixat,fixlat
+ use global, only: geopt_ext,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
