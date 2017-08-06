@@ -259,7 +259,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             write(*,'(a)') trim(filename)
             call write_ann_yaml(parini,filename,ann_arr%ann(i))
         enddo
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
+    elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
         do i=1,ann_arr%n
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
