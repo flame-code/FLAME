@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,target_pressure_gpa,siesta_kpt_mode
+  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,target_pressure_gpa,siesta_kpt_mode
   use defs_basis
   !use cell_utils
 
@@ -222,7 +222,7 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   write(87,'(a)')            "MD.TypeOfRun         CG"
   !write(87,'(a)')           "MD.TypeOfRun         FIRE"
   !write(87,'(a)')           "MD.TypeOfRun         Broyden"
-  write(87,'(a,i5)')          "MD.NumCGsteps  ",ntime_geopt
+  write(87,'(a,i5)')          "MD.NumCGsteps  ",parini%paropt_geopt%nit
   write(87,'(a)')            "MD.VariableCell .true."
   write(87,'(a,es25.15,a)')        "MD.MaxForceTol  ",  2.d0*parini%paropt_geopt%fmaxtol ,"  Ry/Bohr"
   write(87,'(a)')            "MD.MaxStressTol 0.1 GPa"

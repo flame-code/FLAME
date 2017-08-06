@@ -50,7 +50,7 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
@@ -232,7 +232,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("MDPRESSCOMP",11,all_line(1:n),n,md_presscomp,found)
    if(found) cycle
 !GEONIT
-   call parsescalar_int("GEONIT",6,all_line(1:n),n,ntime_geopt,found)
+   call parsescalar_int("GEONIT",6,all_line(1:n),n,parini%paropt_geopt%nit,found)
    if(found) cycle
 !CELLMASS
    call parsescalar_real("CELLMASS",8,all_line(1:n),n,bmass,found)
@@ -645,7 +645,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
@@ -686,7 +686,7 @@ ntime_md=300
 md_algo=1
 md_integrator=3
 md_presscomp=-0.d0
-ntime_geopt=300
+parini%paropt_geopt%nit=300
 bmass=1.d0
 auto_mdmin=.false.
 mdmin_in=1
@@ -804,7 +804,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep,md_presscomp
@@ -834,7 +834,7 @@ if(any(znucl(:).le.0)) stop "Error in znucl"
 if(ntime_md.lt.1) stop "Error in ntime_md"
 if(md_algo.lt.1.or.md_algo.gt.4) stop "Error in md_algo"
 if(md_integrator.lt.1.or.md_integrator.gt.3) stop "Error in md_integrator"
-if(ntime_geopt.lt.0) stop "Error in ntime_geopt"
+if(parini%paropt_geopt%nit.lt.0) stop "Error in parini%paropt_geopt%nit"
 if(bmass.le.0.d0) stop "Error in bmass"
 if(mdmin_min.lt.0) stop "Error in mdmin_min"
 if(mdmin_max.lt.mdmin_min) stop "Error in mdmin_max"
@@ -926,7 +926,7 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type,&
-                &nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_fire,dtion_md,strfact,dtion_fire_min,&
                 &dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
@@ -992,7 +992,7 @@ write(*,'(a,i5)')          " # MDMINMAX      ", mdmin_max
 write(*,'(a,es15.7)')      " # CELLMASS      ", bmass
 write(*,'(a)')             " # GEOPT parameters **************************************************************"
 write(*,'(a,L3)')          " # GEOEXT        ", geopt_ext
-write(*,'(a,i5)')          " # GEONIT        ", ntime_geopt
+write(*,'(a,i5)')          " # GEONIT        ", parini%paropt_geopt%nit
 write(*,'(a,es15.7)')      " # GEOTOLMXF     ", parini%paropt_geopt%fmaxtol
 write(*,'(a,es15.7)')      " # STRFACT       ", strfact
 if(.not.geopt_ext) then

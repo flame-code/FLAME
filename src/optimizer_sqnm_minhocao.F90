@@ -12,7 +12,7 @@
 subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,ntime_geopt,bmass,dtion_fire,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: char_type,bmass,dtion_fire,strfact,dtion_fire_min,dtion_fire_max
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
@@ -156,7 +156,7 @@ latvec_io=0
 !   cutoffRatio=runObj%inputs%cutoffratio
 !   steepthresh=runObj%inputs%steepthresh
 !   trustr=runObj%inputs%trustr
-   nit=        ntime_geopt
+   nit=        parini%paropt_geopt%nit
 !   nat=        nat
    betax=      sqnm_beta_at !betax
    betalatx=   sqnm_beta_lat !betax
@@ -743,7 +743,7 @@ endif
            iprec=1
        endif
 !Reset everything, recompute cell and stuff
-         if((multiprec.and.it.ge.ntime_geopt/2).or.&
+         if((multiprec.and.it.ge.parini%paropt_geopt%nit/2).or.&
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
          if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run

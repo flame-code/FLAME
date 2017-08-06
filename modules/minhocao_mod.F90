@@ -17,7 +17,7 @@ implicit none
   logical,allocatable:: fixat(:)
   logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
   integer:: ntime_md              !Maximum number of iterations during MD
-  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
+!  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
   real(8):: bmass                 !Cell mass during MD and FIRE
   integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
   integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined

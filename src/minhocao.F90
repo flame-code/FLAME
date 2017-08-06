@@ -655,7 +655,7 @@ write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,e_pos,target_pressure_habohr,ent_pos,e_pos)
        endif
   endif
-  if (ntime_geopt.le.0) goto 3000
+  if (parini%paropt_geopt%nit.le.0) goto 3000
 !Check if the structure is already relaxed
   call convcheck(nat,pos_latvec,pos_fcart,pos_strten,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 if(iexit==1) then
@@ -3485,7 +3485,7 @@ end subroutine
 subroutine GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md
- use global, only: char_type,ntime_geopt,bmass,dtion_fire,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: char_type,bmass,dtion_fire,strfact,dtion_fire_min,dtion_fire_max
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
@@ -3849,7 +3849,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
 
 
 !FIRE cycles
-        do itime=1,ntime_geopt
+        do itime=1,parini%paropt_geopt%nit
 !          if(itime.ne.1) e_rxyz=enthalpy  !e_rxyz=e_rxyz+pressure_md(1,1)*vol   
 !Check the torque on the cell for rotation
           call torque_cell(latcur,vlatcur,torquenrm)
@@ -4211,7 +4211,7 @@ if(md_type==4)   volcur=volpred
          acclatprev=0.d0
          accvolprev=0.d0
          alpha=alphastart
-         if((multiprec.and.itime.ge.ntime_geopt/2).or.&
+         if((multiprec.and.itime.ge.parini%paropt_geopt%nit/2).or.&
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
          elseif(P.gt.0.d0 .and. nstep.gt.Nmin) then
            dt=min(dt*finc,dtmax)

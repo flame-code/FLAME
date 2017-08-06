@@ -52,8 +52,8 @@ END SUBROUTINE geopt_init
 
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,strfact,units,usewf_geopt,nat
+ use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl, &
+     amu,amutmp,typat,char_type,strfact,units,usewf_geopt,nat
  use defs_basis
  use minpar
 
@@ -299,7 +299,7 @@ lambda_predict=max(lambda_predict,-1.d0)
 !   call wtpos_inter(nat,rxyz,latvec,555)
    RETURN 
    endif
-   if(int(counter).gt.ntime_geopt) then
+   if(int(counter).gt.parini%paropt_geopt%nit) then
    write(*,'(a,i5)') " # BFGS did not converg in steps: ", int(counter)
    RETURN
    endif

@@ -275,7 +275,7 @@ contains
         endif
         write(87,'(a)')           'tstress     =   .true.   ,'
         write(87,'(a)')           'tprnfor     =   .true.   ,'
-        write(87,'(a,i5,a)')      'nstep       = ',int(ntime_geopt*0.5d0),' ,'
+        write(87,'(a,i5,a)')      'nstep       = ',int(parini%paropt_geopt%nit*0.5d0),' ,'
         write(87,'(a,es15.7,a)')  'forc_conv_thr = ',parini%paropt_geopt%fmaxtol*8.d0*2.d0,' ,'
 !Close block    
         write(87,'(a)') "/"
@@ -321,7 +321,7 @@ contains
         endif
         write(87,'(a)')           'tstress     =   .true.   ,'
         write(87,'(a)')           'tprnfor     =   .true.   ,'
-        write(87,'(a,i5,a)')      'nstep       = ',int(ntime_geopt*0.5d0),' ,'
+        write(87,'(a,i5,a)')      'nstep       = ',int(parini%paropt_geopt%nit*0.5d0),' ,'
         write(87,'(a,es15.7,a)')  'forc_conv_thr = ',parini%paropt_geopt%fmaxtol*2.d0,' ,'
 !Close block    
         write(87,'(a)') "/"

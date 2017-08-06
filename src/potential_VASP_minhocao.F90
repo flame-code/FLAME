@@ -391,7 +391,7 @@ contains
   !Setup for only one force call
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
-  write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.75d0)
+  write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.75d0)
   write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*8.d0*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
@@ -408,7 +408,7 @@ contains
   !Setup for only one force call
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
-  write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.25d0)
+  write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.25d0)
   write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"

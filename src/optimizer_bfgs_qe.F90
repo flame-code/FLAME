@@ -1343,7 +1343,7 @@ END MODULE bfgs_module
 !SUBROUTINE move_ions()
 subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,ntime_geopt,bmass,dtion_fire,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: char_type,bmass,dtion_fire,strfact,dtion_fire_min,dtion_fire_max
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
@@ -1484,7 +1484,7 @@ qe_units=.true.
      trust_radius_ini=qbfgs_trust_radius_ini
      w_1=qbfgs_w_1
      w_2=qbfgs_w_2
-     nstep=ntime_geopt
+     nstep=parini%paropt_geopt%nit
      sbfgs_iter=0
      upscale=100.D0
 
@@ -1602,8 +1602,8 @@ call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,f
      max_kpt=.false.
      return 
    endif
-!write(*,*) "NTIME_GEOPT",ntime_geopt
-do itime=1,ntime_geopt
+!write(*,*) "NTIME_GEOPT",parini%paropt_geopt%nit
+do itime=1,parini%paropt_geopt%nit
 !****************************************************************************************************************        
        write(fn4,'(i4.4)') itime
        sock_extra_string="BFGS"//trim(fn4)
@@ -1772,7 +1772,7 @@ endif
            iprec=1
        endif
 !Reset everything, recompute cell and stuff
-         if((multiprec.and.itime.ge.ntime_geopt/2).or.&
+         if((multiprec.and.itime.ge.parini%paropt_geopt%nit/2).or.&
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
          if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run

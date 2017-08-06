@@ -270,7 +270,7 @@ contains
   
   subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,target_pressure_habohr
+  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,target_pressure_habohr
   use defs_basis,only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -354,7 +354,7 @@ contains
   else
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
-  write(87,'(a,i5)') " MaxSteps = ",ntime_geopt 
+  write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
@@ -370,7 +370,7 @@ contains
   else
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
-  write(87,'(a,i5)') " MaxSteps = ",ntime_geopt 
+  write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
