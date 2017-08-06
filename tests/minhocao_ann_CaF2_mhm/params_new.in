@@ -1,0 +1,38 @@
+PRESS 20 
+COREREP .true.
+VERBOSE 1
+ZNUCL 20 9                !Nuclei charge 
+AMU 4 2                   !Atomic mass used for MD and Fire
+TYPAT 4*1 8*2
+NAT 12
+NTYPE 2                      !Number of atom types
+MDNIT 1000                 !Maximum number of iterations during MD, options for algorithm and integrator
+GEONIT 1900                    !Maximum number of iterations during GEOPT
+CELLMASS 2                     !Cell mass during MD 
+AUTO_MDMIN T
+MDMINMIN 2
+MDMINMAX 4
+AUTO_SOFT T
+SOFTNIT 20
+SOFTAT 1.d0
+SOFTLAT 1.d0
+AUTO_MDDT T Auto 10 50             !(Auto), init timestep, target number of samples per minimum crossed during MD
+MDDTINIT 20
+MDDTIPM 30
+CODE alborz
+GEOALGO fire 
+GEOFIREDTINIT 5 
+GEOFIREDTMIN  1
+GEOFIREDTMAX  140
+GEOTOLMXF  1.d-4                  !Force tolerance for GEOPT convergance 
+STRFACT 100                    !Factor to multiply stress 
+USEWFGEO  T   !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
+USEWFMD  F   !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
+USEWFSOFT  T   !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
+FINDSYM T .true. .false.          !Determines if symmetry (isotropy)/FDOS calculation should be used
+FINDDOS F .true. .false.          !Determines if symmetry (isotropy)/FDOS calculation should be used
+AUTO_KPT T
+KPTDEN 0.03 0.05  
+FPMETHOD OGANOV  !Fingerprint to determine structural identity
+FPCUT 30         !Cutoff radius for Fingerprint
+
