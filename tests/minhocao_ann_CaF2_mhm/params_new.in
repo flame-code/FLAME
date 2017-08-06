@@ -19,7 +19,7 @@ SOFTLAT 1.d0
 AUTO_MDDT T Auto 10 50             !(Auto), init timestep, target number of samples per minimum crossed during MD
 MDDTINIT 20
 MDDTIPM 30
-CODE alborz
+CODE ann
 GEOALGO fire 
 GEOFIREDTINIT 5 
 GEOFIREDTMIN  1

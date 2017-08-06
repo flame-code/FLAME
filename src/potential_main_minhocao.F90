@@ -41,7 +41,9 @@ module interface_code
 
 contains
  
-  subroutine geopt_external(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in)  :: latvec(3,3)
     real(8), intent(in)  :: xred(3,nat)
     real(8), intent(out) :: fcart(3,nat)
@@ -53,14 +55,14 @@ contains
     if(voids) then
       stop "Cannot run external geometry optimizer when using voids!"
     endif
-    if(trim(code)=="siesta") then
-      call siesta_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
-    elseif(trim(code)=="vasp") then
-      call vasp_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
-    elseif(trim(code)=="espresso") then
-      call espresso_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
-    elseif(trim(code)=="dftb") then
-      call dftb_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+    if(trim(parini%potential_potential)=="siesta") then
+      call siesta_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+    elseif(trim(parini%potential_potential)=="vasp") then
+      call vasp_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+    elseif(trim(parini%potential_potential)=="espresso") then
+      call espresso_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+    elseif(trim(parini%potential_potential)=="dftb") then
+      call dftb_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
     else
       stop "Code interface not yet implemented"
     endif
@@ -99,9 +101,9 @@ contains
 
 
 !Setting up the k-point mesh
-    if((trim(code)=="siesta".and.siesta_kpt_mode.ne.2).or.&
-       (trim(code)=="vasp".and.vasp_kpt_mode.ne.2).or.&
-       (trim(code)=="abinit".and.abinit_kpt_mode.ne.2)) then
+    if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="vasp".and.vasp_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
@@ -124,12 +126,12 @@ contains
         ka1 = ka
         kb1 = kb
         kc1 = kc
-if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
+if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
-    if((trim(code)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
-       (trim(code)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
-       (trim(code)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
+    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 
 !Copy global array sizes to handle voids for single point energy evaluation
@@ -142,43 +144,43 @@ if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT 
        ntypat=ntypat_atoms
     endif  
     
-    if(trim(code)=="abinit") then
+    if(trim(parini%potential_potential)=="abinit") then
       call make_input_abinit(latvec, xred, iprec, ka, kb, kc, getwfk)
-    elseif(trim(code)=="cp2k") then
+    elseif(trim(parini%potential_potential)=="cp2k") then
       call make_input_cp2k(latvec, xred, iprec, ka, kb, kc, getwfk)
-    elseif(trim(code)=="siesta") then
+    elseif(trim(parini%potential_potential)=="siesta") then
       call make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk)
-    elseif(trim(code)=="vasp") then
+    elseif(trim(parini%potential_potential)=="vasp") then
       call make_input_vasp  (latvec, xred, iprec, ka, kb, kc, getwfk)
-    elseif(trim(code)=="espresso") then
+    elseif(trim(parini%potential_potential)=="espresso") then
       call make_input_espresso  (latvec, xred, iprec, ka, kb, kc, getwfk)
-    elseif(trim(code)=="mopac") then
+    elseif(trim(parini%potential_potential)=="mopac") then
       call make_input_mopac (latvec, xred, iprec, ka, kb, kc, getwfk)
-    elseif(trim(code)=="dftb") then
+    elseif(trim(parini%potential_potential)=="dftb") then
       call make_input_dftb (latvec, xred, iprec, ka, kb, kc, getwfk)
-    elseif(trim(code)=="lenosky_tb") then
-    elseif(trim(code)=="lenosky_meam") then
-    elseif(trim(code)=="lenosky_tb_lj") then
+    elseif(trim(parini%potential_potential)=="lenosky_tb") then
+    elseif(trim(parini%potential_potential)=="lenosky_meam") then
+    elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
 !!! #if defined(ALBORZ)
-    elseif(trim(code)=="alborz") then
+    elseif(trim(parini%potential_potential)=="ann") then
         icount_alborz=icount_alborz+1
         if(icount_alborz==1) then
             call call_to_alborz_init(nat)
         endif
 !!! #endif
-    elseif(trim(code)=="blj") then
-    elseif(trim(code)=="mlj") then
-    elseif(trim(code)=="tersoff") then
-    elseif(trim(code)=="edip") then
-    elseif(trim(code)=="ipi") then
-    elseif(trim(code)=="msock") then
+    elseif(trim(parini%potential_potential)=="blj") then
+    elseif(trim(parini%potential_potential)=="mlj") then
+    elseif(trim(parini%potential_potential)=="tersoff") then
+    elseif(trim(parini%potential_potential)=="edip") then
+    elseif(trim(parini%potential_potential)=="ipi") then
+    elseif(trim(parini%potential_potential)=="msock") then
 #if defined(LAMMPS)
-    elseif(trim(code)=="lammps") then
+    elseif(trim(parini%potential_potential)=="lammps") then
           if(count_lammps==0) call init_lammps(nat)
           count_lammps=count_lammps+1
 #endif
 #if defined(TINKER)
-    elseif(trim(code)=="tinker") then
+    elseif(trim(parini%potential_potential)=="tinker") then
           if(count_tinker==0) call init_tinker(nat,xred,latvec)
           count_tinker=count_tinker+1
 #endif
@@ -186,34 +188,34 @@ if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT 
       stop "Code interface not yet implemented"
     endif
     
-    if(trim(code)=="lenosky_tb") then
+    if(trim(parini%potential_potential)=="lenosky_tb") then
       call lenosky_tb(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
-    elseif(trim(code)=="lenosky_tb_lj") then
+    elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
       call lenosky_tb_lj(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
-    elseif(trim(code)=="lenosky_meam") then
+    elseif(trim(parini%potential_potential)=="lenosky_meam") then
       call lenosky_meam(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
 !!! #if defined(ALBORZ)
-    elseif(trim(code)=="alborz") then
+    elseif(trim(parini%potential_potential)=="ann") then
         call call_to_alborz_get('bulk',nat,latvec,xred,fcart,energy,strten)
 !!! #endif
-    elseif(trim(code)=="blj") then
+    elseif(trim(parini%potential_potential)=="blj") then
       call blj(latvec,xred,fcart,strten,energy)
-    elseif(trim(code)=="mlj") then
+    elseif(trim(parini%potential_potential)=="mlj") then
       call mlj(latvec,xred,fcart,strten,energy)
-    elseif(trim(code)=="tersoff") then
+    elseif(trim(parini%potential_potential)=="tersoff") then
       call tersoff(latvec,xred,fcart,strten,energy)
-    elseif(trim(code)=="edip") then
+    elseif(trim(parini%potential_potential)=="edip") then
       call edip(latvec,xred,fcart,strten,energy)
-    elseif(trim(code)=="ipi") then
+    elseif(trim(parini%potential_potential)=="ipi") then
       call evaluate_ipi(latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
-    elseif(trim(code)=="msock") then
+    elseif(trim(parini%potential_potential)=="msock") then
       call evaluate_msock(latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
 #if defined(LAMMPS)
-    elseif(trim(code)=="lammps") then
+    elseif(trim(parini%potential_potential)=="lammps") then
       call call_lammps(latvec,xred,fcart,energy,strten)
 #endif
 #if defined(TINKER)
-    elseif(trim(code)=="tinker") then
+    elseif(trim(parini%potential_potential)=="tinker") then
       call tinker(latvec,xred,fcart,energy,strten)
 #endif
     else
@@ -222,19 +224,19 @@ if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT 
     !call system("sleep 1")
     endif
 
-    if(trim(code)=="abinit") then
+    if(trim(parini%potential_potential)=="abinit") then
       call get_output_abinit(fcart, energy, strten)
-    elseif(trim(code)=="cp2k") then
+    elseif(trim(parini%potential_potential)=="cp2k") then
       call get_output_cp2k(fcart, energy, strten)
-    elseif(trim(code)=="siesta") then
+    elseif(trim(parini%potential_potential)=="siesta") then
       call get_output_siesta(fcart, energy, strten)
-    elseif(trim(code)=="vasp") then
+    elseif(trim(parini%potential_potential)=="vasp") then
       call get_output_vasp  (fcart, energy, strten)
-    elseif(trim(code)=="espresso") then
+    elseif(trim(parini%potential_potential)=="espresso") then
       call get_output_espresso  (fcart, energy, strten)
-    elseif(trim(code)=="mopac") then
+    elseif(trim(parini%potential_potential)=="mopac") then
       call get_output_mopac (fcart, energy, strten)
-    elseif(trim(code)=="dftb") then
+    elseif(trim(parini%potential_potential)=="dftb") then
       call get_output_dftb (fcart, energy, strten)
     end if
 
@@ -293,9 +295,9 @@ if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT 
 
 
 !Setting up the k-point mesh
-    if((trim(code)=="siesta".and.siesta_kpt_mode.ne.2).or.&
-       (trim(code)=="vasp".and.vasp_kpt_mode.ne.2).or.&
-       (trim(code)=="abinit".and.abinit_kpt_mode.ne.2)) then
+    if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="vasp".and.vasp_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
@@ -314,20 +316,20 @@ if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT 
         ka1 = ka
         kb1 = kb
         kc1 = kc
-if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
+if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
-    if((trim(code)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
-       (trim(code)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
-       (trim(code)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
+    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 
 
-    if(trim(code)=="abinit") then
+    if(trim(parini%potential_potential)=="abinit") then
       call make_input_abinit(latvec, xred, iprec, ka, kb, kc, getwfk, dos=.true.)
-    elseif(trim(code)=="vasp") then
+    elseif(trim(parini%potential_potential)=="vasp") then
       call make_input_vasp(latvec,xred,iprec,ka,kb,kc,getwfk, dos=.true.)
-    elseif(trim(code)=="dftb") then
+    elseif(trim(parini%potential_potential)=="dftb") then
       call make_input_dftb(latvec,xred,iprec,ka,kb,kc,getwfk, dos=.true.)     
     else
       stop "Code not yet implemented"
@@ -337,11 +339,11 @@ if(parini%verb.gt.0.and.trim(code).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT 
     call system("./runjob.sh")
 !    call system("sleep 1")
 
-    if(trim(code)=="abinit") then
+    if(trim(parini%potential_potential)=="abinit") then
       call get_dos_abinit(fdos,efermi)
-    elseif(trim(code)=="vasp") then
+    elseif(trim(parini%potential_potential)=="vasp") then
       call get_dos_vasp(fdos,efermi)
-    elseif(trim(code)=="dftb") then
+    elseif(trim(parini%potential_potential)=="dftb") then
       call get_dos_dftb(fdos,efermi)
     endif
 

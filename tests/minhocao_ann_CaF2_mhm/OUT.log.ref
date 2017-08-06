@@ -214,7 +214,7 @@ iproc,seed    0  2147483562  2147483398
  # VOIDS           F
  # COREREP         T
  # COMPUTE parameters ************************************************************
- # CODE          alborz
+ # CODE          ann
  # FINDSYM         T
  # FINDDOS         F
  # USEWFGEO        T
