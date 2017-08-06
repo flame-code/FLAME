@@ -312,7 +312,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("GEOTOLMXF",9,all_line(1:n),n,parini%paropt_geopt%fmaxtol,found)
    if(found) cycle
 !GEOSTRFACT
-   call parsescalar_real("STRFACT",7,all_line(1:n),n,parini%strfact,found)
+   call parsescalar_real("STRFACT",7,all_line(1:n),n,parini%paropt_geopt%strfact,found)
    if(found) cycle
 !GEOEXT
    call parse_logical("GEOEXT",6,all_line(1:n),n,geopt_ext,found)
@@ -708,7 +708,7 @@ dtion_fire_max=80.d0
 alphax_lat=1.d0
 alphax_at=1.d0
 parini%paropt_geopt%fmaxtol=2.d-4
-parini%strfact=100.d0
+parini%paropt_geopt%strfact=100.d0
 usewf_geopt=.false.
 usewf_soften=.false.
 usewf_md=.false.
@@ -856,7 +856,7 @@ if(dtion_fire_max.lt.dtion_fire_min) stop "Error in dtion_fire_max"
 if(alphax_lat.le.0.d0) stop "Error in alphax_lat"
 if(alphax_at.le.0.d0) stop "Error in alphax_at"
 if(parini%paropt_geopt%fmaxtol.le.0.d0) stop "Error in parini%paropt_geopt%fmaxtol"
-if(parini%strfact.le.0.d0) stop "Error in parini%strfact"
+if(parini%paropt_geopt%strfact.le.0.d0) stop "Error in parini%paropt_geopt%strfact"
 if(ka.lt.0) stop "Error in ka"
 if(kb.lt.0) stop "Error in kb"
 if(kc.lt.0) stop "Error in kc"
@@ -994,7 +994,7 @@ write(*,'(a)')             " # GEOPT parameters ********************************
 write(*,'(a,L3)')          " # GEOEXT        ", geopt_ext
 write(*,'(a,i5)')          " # GEONIT        ", parini%paropt_geopt%nit
 write(*,'(a,es15.7)')      " # GEOTOLMXF     ", parini%paropt_geopt%fmaxtol
-write(*,'(a,es15.7)')      " # STRFACT       ", parini%strfact
+write(*,'(a,es15.7)')      " # STRFACT       ", parini%paropt_geopt%strfact
 if(.not.geopt_ext) then
 write(*,'(a,a)')           " # GEOALGO       ", trim(parini%paropt_geopt%approach) 
 if(trim(parini%paropt_geopt%approach)=="FIRE") then

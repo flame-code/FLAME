@@ -447,7 +447,7 @@ contains
    dstr(:)=strten(:)-strtarget(:)
   !Eventually take into account the stress
    do istr=1,6
-       if(abs(dstr(istr))*parini%strfact >= fmax ) fmax=abs(dstr(istr))*parini%strfact
+       if(abs(dstr(istr))*parini%paropt_geopt%strfact >= fmax ) fmax=abs(dstr(istr))*parini%paropt_geopt%strfact
    end do
   end subroutine
   

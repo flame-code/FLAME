@@ -304,7 +304,7 @@ contains
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
         write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
-        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%strfact*10.d0*HaBohr3_GPa*8.d0
+        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa*8.d0
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
 !Close block    
@@ -350,7 +350,7 @@ contains
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
         write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
-        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%strfact*10.d0*HaBohr3_GPa
+        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
 !Close block    
