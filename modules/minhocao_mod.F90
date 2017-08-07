@@ -48,9 +48,9 @@ implicit none
   logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
   logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
   logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
-  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
+!  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
   logical:: auto_kpt              !Currently a dummy variable
-  integer:: nit_per_min           !Target number of md steps per md minimum crossing
+!  integer:: nit_per_min           !Target number of md steps per md minimum crossing
 !  integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
 !  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
 !  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
@@ -60,7 +60,7 @@ implicit none
 !  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
   integer:: confine               !0: No confinement, 1: confinement used, but not currently, 2: confinement in action, 3: confinement always on
   logical:: use_confine           !if true, confinement is enable, otherwise disabled
-  logical:: energy_conservation   !Only used in fixed cell MD
+!  logical:: energy_conservation   !Only used in fixed cell MD
   logical:: voids                 !If or if not to use void creating LJ particles in the cell
   logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
 end module global

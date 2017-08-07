@@ -52,8 +52,8 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -276,16 +276,16 @@ open(unit=12,file="params_new.in")
 !Block soften****************
 !Block MD timestep***********
 !AUTO_MDDT
-   call parse_logical("AUTO_MDDT",9,all_line(1:n),n,auto_dtion_md,found)
+   call parse_logical("AUTO_MDDT",9,all_line(1:n),n,parini%auto_dtion_md,found)
    if(found) cycle
 !MDDTINIT
    call parsescalar_real("MDDTINIT",8,all_line(1:n),n,dtion_md_in,found)
    if(found) cycle
 !MDDTIPM
-   call parsescalar_int("MDDTIPM",7,all_line(1:n),n,nit_per_min,found)
+   call parsescalar_int("MDDTIPM",7,all_line(1:n),n,parini%nit_per_min,found)
    if(found) cycle
 !MDENCON
-   call parse_logical("MDENCON",7,all_line(1:n),n,energy_conservation,found)
+   call parse_logical("MDENCON",7,all_line(1:n),n,parini%energy_conservation,found)
    if(found) cycle
 !Block MD timestep***********
 !Block GEOPT*****************
@@ -557,7 +557,7 @@ close(12)
   if(calls==0.or..not.auto_soft) alpha_lat=alpha_lat_in
   if(calls==0.or..not.auto_soft) alpha_at=alpha_at_in
 !MDTIMESTE=P
-  if(calls==0.or..not.auto_dtion_md) dtion_md=dtion_md_in
+  if(calls==0.or..not.parini%auto_dtion_md) dtion_md=dtion_md_in
 !KPT
   if(auto_kpt) then
     ka=0;kb=0;kc=0
@@ -647,8 +647,8 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -692,15 +692,15 @@ auto_mdmin=.false.
 mdmin_in=1
 mdmin_min=2
 mdmin_max=2
-energy_conservation=.false.
+parini%energy_conservation=.false.
 auto_soft=.false.
 alpha_lat_in=1.d0
 alpha_at_in=1.d0
 mol_soften=.false.
 nsoften=10
-auto_dtion_md=.false.
+parini%auto_dtion_md=.false.
 dtion_md_in=20.d0
-nit_per_min=25.d0
+parini%nit_per_min=25.d0
 parini%paropt_geopt%approach="FIRE"
 parini%paropt_geopt%dt_start=10.d0
 parini%paropt_geopt%dtmin=1.d0
@@ -806,8 +806,8 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -842,7 +842,7 @@ if(alpha_lat.le.0.d0) stop "Error in alpha_lat"
 if(alpha_at.le.0.d0) stop "Error in alpha_at"
 if(nsoften.lt.1) stop "Error in nsoften"
 if(dtion_md.le.0.d0) stop "Error in dtion_md"
-if(nit_per_min.le.0) stop "Error in nit_per_min"
+if(parini%nit_per_min.le.0) stop "Error in parini%nit_per_min"
 if(trim(parini%paropt_geopt%approach).ne."FIRE".and.&
    trim(parini%paropt_geopt%approach).ne."MBFGS".and.&
    trim(parini%paropt_geopt%approach).ne."RBFGS".and.&
@@ -928,8 +928,8 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
@@ -981,10 +981,10 @@ write(*,'(a,i5)')          " # MDALGO        ", parini%md_algo
 write(*,'(a,es15.7)')      " # MDPRESSCOMP   ", parini%md_presscomp
 write(*,'(a,i5)')          " # MDINT         ", parini%md_integrator
 write(*,'(a,i5)')          " # MDNIT         ", parini%nmd_dynamics
-write(*,'(a,L3)')          " # AUTO_MDDT     ", auto_dtion_md
-write(*,'(a,L3)')          " # MDENCON       ", energy_conservation
+write(*,'(a,L3)')          " # AUTO_MDDT     ", parini%auto_dtion_md
+write(*,'(a,L3)')          " # MDENCON       ", parini%energy_conservation
 write(*,'(a,es15.7)')      " # MDDTINIT      ", dtion_md
-write(*,'(a,i5)')          " # MDDTIPM       ", nit_per_min
+write(*,'(a,i5)')          " # MDDTIPM       ", parini%nit_per_min
 write(*,'(a,L3)')          " # AUTO_MDMIN    ", auto_mdmin
 write(*,'(a,i5)')          " # MDMININIT     ", mdmin
 write(*,'(a,i5)')          " # MDMINMIN      ", mdmin_min

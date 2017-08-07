@@ -169,6 +169,9 @@ module mod_parini
         integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
         real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
         integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
+        logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
+        logical:: energy_conservation   !Only used in fixed cell MD
+        integer:: nit_per_min           !Target number of md steps per md minimum crossing
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

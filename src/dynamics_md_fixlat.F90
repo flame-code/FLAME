@@ -1,8 +1,8 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,mdmin,dtion_md,units,usewf_md,auto_dtion_md,energy_conservation
- use global, only: nit_per_min,fixat,fixlat,bc
+ use global, only: char_type,mdmin,dtion_md,units,usewf_md
+ use global, only: fixat,fixlat,bc
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -168,9 +168,9 @@ implicit none
     !  if (iproc == 0) write(67,*) 'EXIT MD',istep
     
     ! adjust time step to meet precision criterion
-!Minimum number of steps per crossed minimum is 15, average should be nit_per_min
- if(auto_dtion_md) then
-    if(energy_conservation) then
+!Minimum number of steps per crossed minimum is 15, average should be parini%nit_per_min
+ if(parini%auto_dtion_md) then
+    if(parini%energy_conservation) then
         devcon=devcon/(3*nat-3)
         if (devcon/rkin_0.lt.1.d-2) then
            dtion_md=dtion_md*1.05d0
@@ -181,7 +181,7 @@ implicit none
       &", dtion_md set to: ",dtion_md
     else 
        dt_ratio=real(istep,8)/real(nummin,8) 
-       if(dt_ratio.lt.real(nit_per_min,8)) then
+       if(dt_ratio.lt.real(parini%nit_per_min,8)) then
          dtion_md=dtion_md*1.d0/1.1d0
        else
          dtion_md=dtion_md*1.1d0 

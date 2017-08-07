@@ -163,7 +163,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 !Initialize auto logicals to false, otherwise it will read the params file and reset alpha_lat, alpha_at, mdmin_max, etc
   auto_soft=.false.
   auto_mdmin=.false.
-  auto_dtion_md=.false.
+  parini%auto_dtion_md=.false.
   alpha_at=-1.d10
   alpha_lat=-1.d10 
 
@@ -1317,8 +1317,8 @@ end subroutine task_minhocao
 subroutine MD_MHM   (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,auto_dtion_md
- use global, only: nit_per_min,fixat,fixlat
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md
+ use global, only: fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1881,12 +1881,12 @@ endif
 
      enddo 
 !Adjust MD stepsize
-!Minimum number of steps per crossed minimum is 15, average should be nit_per_min
+!Minimum number of steps per crossed minimum is 15, average should be parini%nit_per_min
      
-     if(auto_dtion_md) then
+     if(parini%auto_dtion_md) then
 !       dt_ratio=real(itime,8)/real(mdmin,8) !old version version
        dt_ratio=real(itime,8)/real(nummin,8) 
-       if(dt_ratio.lt.real(nit_per_min,8)) then
+       if(dt_ratio.lt.real(parini%nit_per_min,8)) then
          dtion_md=dtion_md*1.d0/1.1d0
        else
          dtion_md=dtion_md*1.1d0 
@@ -2557,8 +2557,8 @@ end subroutine
 subroutine MD_ANDERSEN_MHM     (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,auto_dtion_md
- use global, only: nit_per_min,fixat,fixlat
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md
+ use global, only: fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -3019,11 +3019,11 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
 !        e_rxyz=e_rxyz_pred
      enddo 
 !Adjust MD stepsize
-!Minimum number of steps per crossed minimum is 15, average should be nit_per_min
-     if(auto_dtion_md) then
+!Minimum number of steps per crossed minimum is 15, average should be parini%nit_per_min
+     if(parini%auto_dtion_md) then
 !       dt_ratio=real(itime,8)/real(mdmin,8) !old version version
        dt_ratio=real(itime,8)/real(nummin,8) 
-       if(dt_ratio.lt.real(nit_per_min,8)) then
+       if(dt_ratio.lt.real(parini%nit_per_min,8)) then
          dtion_md=dtion_md*1.d0/1.1d0
        else
          dtion_md=dtion_md*1.1d0 
@@ -6137,7 +6137,7 @@ end subroutine
 !!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
 !!  use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
 !!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,parini%md_algo,parini%md_integrator,auto_dtion_md
-!!  use global, only: nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
+!!  use global, only: parini%nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
 !!  implicit none
 !!  integer:: itype,n
 !!  real(8):: tmp_val
@@ -6229,15 +6229,15 @@ end subroutine
 !!   n = len_trim(all_line)
 !!   read(all_line(1:n),*) tmp_ch
 !!    if(trim(tmp_ch)=="Auto") then
-!!     if(.not.auto_dtion_md) then
-!!       read(all_line(1:n),*) tmp_ch, dtion_md,nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
+!!     if(.not.parini%auto_dtion_md) then
+!!       read(all_line(1:n),*) tmp_ch, dtion_md,parini%nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
 !!     else
-!!       read(all_line(1:n),*) tmp_ch, tmp_val ,nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
+!!       read(all_line(1:n),*) tmp_ch, tmp_val ,parini%nit_per_min    !(Auto) MD timestep, target number of iterations per minimum
 !!     endif
-!!     auto_dtion_md=.true.
+!!     parini%auto_dtion_md=.true.
 !!    else
 !!     read(all_line(1:n),*) dtion_md              !(Auto) MD timestep
-!!     auto_dtion_md=.false.
+!!     parini%auto_dtion_md=.false.
 !!    endif
 !!  !Block MD timestep***********
 !!   read(12,*) geopt_method          !Either FIRE or BFGS
@@ -8600,8 +8600,8 @@ subroutine MD_MHM_ROT(parini,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcar
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,auto_dtion_md
- use global, only: nit_per_min,fixat,fixlat
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md
+ use global, only: fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -9136,9 +9136,9 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
 
      enddo 
 !Adjust MD stepsize
-!Minimum number of steps per crossed minimum is 15, average should be nit_per_min
-     if(auto_dtion_md) then
-       if(real(itime,8)/real(mdmin,8).lt.real(nit_per_min,8)) then
+!Minimum number of steps per crossed minimum is 15, average should be parini%nit_per_min
+     if(parini%auto_dtion_md) then
+       if(real(itime,8)/real(mdmin,8).lt.real(parini%nit_per_min,8)) then
          dtion_md=dtion_md*1.d0/1.1d0
        else
          dtion_md=dtion_md*1.1d0 
