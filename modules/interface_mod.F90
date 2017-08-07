@@ -2856,9 +2856,10 @@ end subroutine dist2plane
  real(8), intent(in) :: point(3),ppoint1(3),ppoint2(3)
  real(8), intent(out):: dist
 end subroutine dist2line
-subroutine compare_lammps(parini)
+subroutine compare_lammps(parini,parres)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 end subroutine compare_lammps
 subroutine bin_write(filename,array,n)
 integer:: n

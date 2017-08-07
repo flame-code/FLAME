@@ -671,7 +671,7 @@ if(iexit==1) then
   vel_vol_in=0.d0
    iprec=1
    if(parini%geopt_ext) then
-     call geopt_external(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,parres%ka,kb,kc,counter)
+     call geopt_external(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,parres%ka,parres%kb,parres%kc,counter)
    else
      if(confine==2) confine=1
      if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
@@ -946,7 +946,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   vel_lat_in=0.d0
    iprec=1
    if(parini%geopt_ext) then
-     call geopt_external(parini,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,parres%ka,kb,kc,counter)
+     call geopt_external(parini,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,parres%ka,parres%kb,parres%kc,counter)
    else
       if(confine==2) confine=1
       if(parini%paropt_geopt%approach=="RBFGS") call GEOPT_RBFGS_MHM(parini,parres,wpos_latvec,wpos_red,wpos_fcart,&
@@ -6704,7 +6704,7 @@ end subroutine
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: fixat,fixlat,findsym,fragarr,kb,kc
+ use global, only: fixat,fixlat,findsym,fragarr
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6769,7 +6769,7 @@ end subroutine
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: fixat,fixlat,findsym,fragarr,kb,kc
+ use global, only: fixat,fixlat,findsym,fragarr
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6820,7 +6820,7 @@ if(file_exists) then
      vel_lat_in=0.d0
       iprec=1
       if(parini%geopt_ext) then
-        call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,parres%ka,kb,kc,counter)
+        call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,parres%ka,parres%kb,parres%kc,counter)
       else
         if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
         if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
