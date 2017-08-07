@@ -2765,9 +2765,9 @@ Velocity of CM:   9.2527233E-15
  # most frequent visits       1.
  # av. numb. visits per minimum 1.000E+00
  # minimum energy separation between presumably different configurations 0.00E+00
-CPU time: iproc,time(hrs)    0      0.745E-02
-CPU time: iproc,time(min)    0      0.447E+00
-CPU time: iproc,time(sec)    0      0.268E+02
+CPU time: iproc,time(hrs)    0      0.750E-02
+CPU time: iproc,time(min)    0      0.450E+00
+CPU time: iproc,time(sec)    0      0.270E+02
  Memory Consumption Report:
    Tot. No. of Allocations             :  3
    Tot. No. of Deallocations           :  3
@@ -2776,8 +2776,8 @@ CPU time: iproc,time(sec)    0      0.268E+02
      Peak Value (MB)                   :  0.000
      for the array                     : group_names
      in the routine                    : timing_dump_results
-     Memory Peak of process            : 160.624 MB
- Walltime since initialization         :  00:00:43.408294014
+     Memory Peak of process            : 160.620 MB
+ Walltime since initialization         :  00:00:27.104625084
  Max No. of dictionaries used          :  229 #( 184 still in use)
  Number of dictionary folders allocated:  1
 GAMMA POINT only tight binding code
