@@ -86,6 +86,12 @@ module mod_opt
         real(8):: alphastart=-1.d0
         !parameters for SQNM
         integer:: nhist=10
+        real(8):: beta_lat
+        real(8):: beta_at
+        real(8):: maxrise
+        real(8):: cutoffRatio
+        real(8):: steepthresh
+        real(8):: trustr
         !parameters for print information
         integer:: mp=6
         integer:: lp=6

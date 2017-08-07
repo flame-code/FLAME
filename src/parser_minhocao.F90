@@ -50,13 +50,10 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
-                &voids,core_rep,md_presscomp
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
-use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
+                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
+                &voids,core_rep
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -223,19 +220,19 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("MDNIT",5,all_line(1:n),n,parini%nmd_dynamics,found)
    if(found) cycle
 !MDALGO
-   call parsescalar_int("MDALGO",6,all_line(1:n),n,md_algo,found)
+   call parsescalar_int("MDALGO",6,all_line(1:n),n,parini%md_algo,found)
    if(found) cycle
 !MDINTEGRATOR
-   call parsescalar_int("MDINT",5,all_line(1:n),n,md_integrator,found)
+   call parsescalar_int("MDINT",5,all_line(1:n),n,parini%md_integrator,found)
    if(found) cycle
 !MDPRESSCOMP
-   call parsescalar_real("MDPRESSCOMP",11,all_line(1:n),n,md_presscomp,found)
+   call parsescalar_real("MDPRESSCOMP",11,all_line(1:n),n,parini%md_presscomp,found)
    if(found) cycle
 !GEONIT
    call parsescalar_int("GEONIT",6,all_line(1:n),n,parini%paropt_geopt%nit,found)
    if(found) cycle
 !CELLMASS
-   call parsescalar_real("CELLMASS",8,all_line(1:n),n,bmass,found)
+   call parsescalar_real("CELLMASS",8,all_line(1:n),n,parini%bmass,found)
    if(found) cycle
 !VOIDS
    call parse_logical("VOIDS",5,all_line(1:n),n,voids,found)
@@ -245,21 +242,21 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !Block mdmin****************
 !AUTO_MDMIN
-   call parse_logical("AUTO_MDMIN",10,all_line(1:n),n,auto_mdmin,found)
+   call parse_logical("AUTO_MDMIN",10,all_line(1:n),n,parini%auto_mdmin,found)
    if(found) cycle
 !MDMININIT
    call parsescalar_int("MDMININIT",9,all_line(1:n),n,mdmin_in,found)
    if(found) cycle
 !MDMINMIN
-   call parsescalar_int("MDMINMIN",8,all_line(1:n),n,mdmin_min,found)
+   call parsescalar_int("MDMINMIN",8,all_line(1:n),n,parini%mdmin_min,found)
    if(found) cycle
 !MDMINMAX
-   call parsescalar_int("MDMINMAX",8,all_line(1:n),n,mdmin_max,found)
+   call parsescalar_int("MDMINMAX",8,all_line(1:n),n,parini%mdmin_max,found)
    if(found) cycle
 !Block mdmin****************
 !Block soften****************
 !AUTO_SOFT
-   call parse_logical("AUTO_SOFT",9,all_line(1:n),n,auto_soft,found)
+   call parse_logical("AUTO_SOFT",9,all_line(1:n),n,parini%auto_soft,found)
    if(found) cycle
 !SOFTLAT
    call parsescalar_real("SOFTLAT",7,all_line(1:n),n,alpha_lat_in,found)
@@ -268,24 +265,24 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("SOFTAT",6,all_line(1:n),n,alpha_at_in,found)
    if(found) cycle
 !MOLSOFT
-   call parse_logical("MOLSOFT",7,all_line(1:n),n,mol_soften,found)
+   call parse_logical("MOLSOFT",7,all_line(1:n),n,parini%mol_soften,found)
    if(found) cycle
 !SOFTNIT
-   call parsescalar_int("SOFTNIT",7,all_line(1:n),n,nsoften,found)
+   call parsescalar_int("SOFTNIT",7,all_line(1:n),n,parini%nsoften_minhopp,found)
    if(found) cycle
 !Block soften****************
 !Block MD timestep***********
 !AUTO_MDDT
-   call parse_logical("AUTO_MDDT",9,all_line(1:n),n,auto_dtion_md,found)
+   call parse_logical("AUTO_MDDT",9,all_line(1:n),n,parini%auto_dtion_md,found)
    if(found) cycle
 !MDDTINIT
    call parsescalar_real("MDDTINIT",8,all_line(1:n),n,dtion_md_in,found)
    if(found) cycle
 !MDDTIPM
-   call parsescalar_int("MDDTIPM",7,all_line(1:n),n,nit_per_min,found)
+   call parsescalar_int("MDDTIPM",7,all_line(1:n),n,parini%nit_per_min,found)
    if(found) cycle
 !MDENCON
-   call parse_logical("MDENCON",7,all_line(1:n),n,energy_conservation,found)
+   call parse_logical("MDENCON",7,all_line(1:n),n,parini%energy_conservation,found)
    if(found) cycle
 !Block MD timestep***********
 !Block GEOPT*****************
@@ -303,10 +300,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("GEOFIREDTMAX",12,all_line(1:n),n,parini%paropt_geopt%dtmax,found)
    if(found) cycle
 !GEOHESSLAT
-   call parsescalar_real("GEOHESSLAT",10,all_line(1:n),n,alphax_lat,found)
+   call parsescalar_real("GEOHESSLAT",10,all_line(1:n),n,parini%alphax_lat,found)
    if(found) cycle
 !GEOHESSAT
-   call parsescalar_real("GEOHESSAT",9,all_line(1:n),n,alphax_at,found)
+   call parsescalar_real("GEOHESSAT",9,all_line(1:n),n,parini%alphax_at,found)
    if(found) cycle
 !GEOTOLMXF
    call parsescalar_real("GEOTOLMXF",9,all_line(1:n),n,parini%paropt_geopt%fmaxtol,found)
@@ -315,40 +312,40 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("STRFACT",7,all_line(1:n),n,parini%paropt_geopt%strfact,found)
    if(found) cycle
 !GEOEXT
-   call parse_logical("GEOEXT",6,all_line(1:n),n,geopt_ext,found)
+   call parse_logical("GEOEXT",6,all_line(1:n),n,parini%geopt_ext,found)
    if(found) cycle
 !GEOSQNMNHIS
-   call parsescalar_int ("GEOSQNMNHIST",12,all_line(1:n),n,sqnm_nhist,found)
+   call parsescalar_int ("GEOSQNMNHIST",12,all_line(1:n),n,parini%paropt_geopt%nhist,found)
    if(found) cycle
 !GEOSQNMMAXRISE
-   call parsescalar_real("GEOSQNMMAXRISE",14,all_line(1:n),n,sqnm_maxrise,found)
+   call parsescalar_real("GEOSQNMMAXRISE",14,all_line(1:n),n,parini%paropt_geopt%maxrise,found)
    if(found) cycle
 !GEOSQNMCUTOFF
-   call parsescalar_real("GEOSQNMCUTOFF",13,all_line(1:n),n,sqnm_cutoffRatio,found)
+   call parsescalar_real("GEOSQNMCUTOFF",13,all_line(1:n),n,parini%paropt_geopt%cutoffRatio,found)
    if(found) cycle
 !GEOSQNMSTEEP
-   call parsescalar_real("GEOSQNMSTEEP",12,all_line(1:n),n,sqnm_steepthresh,found)
+   call parsescalar_real("GEOSQNMSTEEP",12,all_line(1:n),n,parini%paropt_geopt%steepthresh,found)
    if(found) cycle
 !GEOSQNMTRUSTR
-   call parsescalar_real("GEOSQNMTRUSTR",13,all_line(1:n),n,sqnm_trustr,found)
+   call parsescalar_real("GEOSQNMTRUSTR",13,all_line(1:n),n,parini%paropt_geopt%trustr,found)
    if(found) cycle
 !GEOQBFGSNDIM
-   call parsescalar_int ("GEOQBFGSNDIM",12,all_line(1:n),n,qbfgs_bfgs_ndim,found)
+   call parsescalar_int ("GEOQBFGSNDIM",12,all_line(1:n),n,parini%qbfgs_bfgs_ndim,found)
    if(found) cycle
 !GEOQBFGSTRTI
-   call parsescalar_real("GEOQBFGSTRI",11,all_line(1:n),n,qbfgs_trust_radius_ini,found)
+   call parsescalar_real("GEOQBFGSTRI",11,all_line(1:n),n,parini%qbfgs_trust_radius_ini,found)
    if(found) cycle
 !GEOQBFGSTRTMIN
-   call parsescalar_real("GEOQBFGSTRMIN",13,all_line(1:n),n,qbfgs_trust_radius_min,found)
+   call parsescalar_real("GEOQBFGSTRMIN",13,all_line(1:n),n,parini%qbfgs_trust_radius_min,found)
    if(found) cycle
 !GEOQBFGSTRTMAX
-   call parsescalar_real("GEOQBFGSTRMAX",13,all_line(1:n),n,qbfgs_trust_radius_max,found)
+   call parsescalar_real("GEOQBFGSTRMAX",13,all_line(1:n),n,parini%qbfgs_trust_radius_max,found)
    if(found) cycle
 !GEOQBFGSW1
-   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,qbfgs_w_1,found)
+   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,parini%qbfgs_w_1,found)
    if(found) cycle
 !GEOQBFGSW2
-   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,qbfgs_w_2,found)
+   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,parini%qbfgs_w_2,found)
    if(found) cycle
 !Block GEOPT*****************
 !USEWFGEO
@@ -368,14 +365,14 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !Block KPT****************
 !AUTO_KPT
-   call parse_logical("AUTO_KPT",8,all_line(1:n),n,auto_kpt,found)
+   call parse_logical("AUTO_KPT",8,all_line(1:n),n,parini%auto_kpt,found)
    if(found) cycle
 !KPTMESH
    call parsearray_int("KPTMESH",7,all_line(1:n),n,kpt_abc(1:3),3,found)
    if(found) then
-     ka=kpt_abc(1)
-     kb=kpt_abc(2)
-     kc=kpt_abc(3)
+     parini%ka=kpt_abc(1)
+     parini%kb=kpt_abc(2)
+     parini%kc=kpt_abc(3)
    endif
    if(found) cycle
 !KPTDEN
@@ -547,20 +544,20 @@ close(12)
 !Post Processing
 !MDMIN
   if(calls==0) then
-      if(.not.auto_mdmin) then
-           mdmin=mdmin_in
+      if(.not.parini%auto_mdmin) then
+           parini%mdmin=mdmin_in
       else
-           mdmin=max(mdmin_in,mdmin_min)
+           parini%mdmin=max(mdmin_in,parini%mdmin_min)
       endif
   endif
 !SOFTEN
-  if(calls==0.or..not.auto_soft) alpha_lat=alpha_lat_in
-  if(calls==0.or..not.auto_soft) alpha_at=alpha_at_in
+  if(calls==0.or..not.parini%auto_soft) parini%alpha_lat=alpha_lat_in
+  if(calls==0.or..not.parini%auto_soft) parini%alpha_at=alpha_at_in
 !MDTIMESTE=P
-  if(calls==0.or..not.auto_dtion_md) dtion_md=dtion_md_in
+  if(calls==0.or..not.parini%auto_dtion_md) parini%dtion_md=dtion_md_in
 !KPT
-  if(auto_kpt) then
-    ka=0;kb=0;kc=0
+  if(parini%auto_kpt) then
+    parini%ka=0;parini%kb=0;parini%kc=0
   else
     dkpt1=0.d0
     dkpt2=0.d0
@@ -628,14 +625,14 @@ call params_check(parini)
     dtmin=parini%paropt_geopt%dtmin
     dtmax=parini%paropt_geopt%dtmax
 !Copy parameters of bfgs to the bfgs module
-    parmin_bfgs%betax=alphax_at
-    parmin_bfgs%betax_lat=alphax_lat
+    parmin_bfgs%betax=parini%alphax_at
+    parmin_bfgs%betax_lat=parini%alphax_lat
 !Copy parameters to sqnm module
-    sqnm_beta_lat=alphax_lat
-    sqnm_beta_at=alphax_at
+    parini%paropt_geopt%beta_lat=parini%alphax_lat
+    parini%paropt_geopt%beta_at=parini%alphax_at
 !Copy parameters to sd module
-    sd_beta_lat=alphax_lat
-    sd_beta_at=alphax_at
+    sd_beta_lat=parini%alphax_lat
+    sd_beta_at=parini%alphax_at
 end subroutine
 
 !************************************************************************************
@@ -645,13 +642,10 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
-                &voids,core_rep,md_presscomp
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
-use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
+                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
+                &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -683,30 +677,30 @@ voids=.false.
 core_rep=.false.
 if(.not.read_poscur) typat(1:nat)=1
 parini%nmd_dynamics=300
-md_algo=1
-md_integrator=3
-md_presscomp=-0.d0
+parini%md_algo=1
+parini%md_integrator=3
+parini%md_presscomp=-0.d0
 parini%paropt_geopt%nit=300
-bmass=1.d0
-auto_mdmin=.false.
+parini%bmass=1.d0
+parini%auto_mdmin=.false.
 mdmin_in=1
-mdmin_min=2
-mdmin_max=2
-energy_conservation=.false.
-auto_soft=.false.
+parini%mdmin_min=2
+parini%mdmin_max=2
+parini%energy_conservation=.false.
+parini%auto_soft=.false.
 alpha_lat_in=1.d0
 alpha_at_in=1.d0
-mol_soften=.false.
-nsoften=10
-auto_dtion_md=.false.
+parini%mol_soften=.false.
+parini%nsoften_minhopp=10
+parini%auto_dtion_md=.false.
 dtion_md_in=20.d0
-nit_per_min=25.d0
+parini%nit_per_min=25.d0
 parini%paropt_geopt%approach="FIRE"
 parini%paropt_geopt%dt_start=10.d0
 parini%paropt_geopt%dtmin=1.d0
 parini%paropt_geopt%dtmax=80.d0
-alphax_lat=1.d0
-alphax_at=1.d0
+parini%alphax_lat=1.d0
+parini%alphax_at=1.d0
 parini%paropt_geopt%fmaxtol=2.d-4
 parini%paropt_geopt%strfact=100.d0
 usewf_geopt=.false.
@@ -714,15 +708,15 @@ usewf_soften=.false.
 usewf_md=.false.
 findsym=.false.
 finddos=.false.
-auto_kpt=.true.
-ka=1;kb=1;kc=1
+parini%auto_kpt=.true.
+parini%ka=1;parini%kb=1;parini%kc=1
 dkpt1=0.04d0
 dkpt2=0.06d0
 bc=1
 parini%verb=3
 parini%potential_potential="vasp"
 !Define if the external optimizer should be used. Only available for:
-geopt_ext=.false.
+parini%geopt_ext=.false.
 
 fp_rcut=15.d0
 fp_method=11
@@ -754,21 +748,21 @@ fp_18_width_overlap = 1.d0
 fp_18_large_vanradius = 1.7d0/0.52917720859d0
 
 !SQNM
-sqnm_beta_lat=1.d0
-sqnm_beta_at=1.d0
-sqnm_nhist=10
-sqnm_maxrise=1.d-6
-sqnm_cutoffRatio=1.d-4
-sqnm_steepthresh=1.d0
-sqnm_trustr=0.1d0
+parini%paropt_geopt%beta_lat=1.d0
+parini%paropt_geopt%beta_at=1.d0
+parini%paropt_geopt%nhist=10
+parini%paropt_geopt%maxrise=1.d-6
+parini%paropt_geopt%cutoffRatio=1.d-4
+parini%paropt_geopt%steepthresh=1.d0
+parini%paropt_geopt%trustr=0.1d0
 
 !QBFGS
-qbfgs_bfgs_ndim=1
-qbfgs_trust_radius_max=0.5d0
-qbfgs_trust_radius_min=1.d-3
-qbfgs_trust_radius_ini=0.5D0
-qbfgs_w_1=0.01D0
-qbfgs_w_2=0.5D0
+parini%qbfgs_bfgs_ndim=1
+parini%qbfgs_trust_radius_max=0.5d0
+parini%qbfgs_trust_radius_min=1.d-3
+parini%qbfgs_trust_radius_ini=0.5D0
+parini%qbfgs_w_1=0.01D0
+parini%qbfgs_w_2=0.5D0
 
 use_confine=.false.
 conf_cartred="C"
@@ -804,11 +798,9 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep,md_presscomp
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
+                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,bc,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -832,17 +824,17 @@ if(any(amu(:).le.0.d0)) stop "Error in amu"
 if(any(rcov(:).le.0.d0)) stop "Error in rcov"
 if(any(znucl(:).le.0)) stop "Error in znucl"
 if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
-if(md_algo.lt.1.or.md_algo.gt.4) stop "Error in md_algo"
-if(md_integrator.lt.1.or.md_integrator.gt.3) stop "Error in md_integrator"
+if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
+if(parini%md_integrator.lt.1.or.parini%md_integrator.gt.3) stop "Error in parini%md_integrator"
 if(parini%paropt_geopt%nit.lt.0) stop "Error in parini%paropt_geopt%nit"
-if(bmass.le.0.d0) stop "Error in bmass"
-if(mdmin_min.lt.0) stop "Error in mdmin_min"
-if(mdmin_max.lt.mdmin_min) stop "Error in mdmin_max"
-if(alpha_lat.le.0.d0) stop "Error in alpha_lat"
-if(alpha_at.le.0.d0) stop "Error in alpha_at"
-if(nsoften.lt.1) stop "Error in nsoften"
-if(dtion_md.le.0.d0) stop "Error in dtion_md"
-if(nit_per_min.le.0) stop "Error in nit_per_min"
+if(parini%bmass.le.0.d0) stop "Error in bmass"
+if(parini%mdmin_min.lt.0) stop "Error in parini%mdmin_min"
+if(parini%mdmin_max.lt.parini%mdmin_min) stop "Error in parini%mdmin_max"
+if(parini%alpha_lat.le.0.d0) stop "Error in alpha_lat"
+if(parini%alpha_at.le.0.d0) stop "Error in alpha_at"
+if(parini%nsoften_minhopp.lt.1) stop "Error in nsoften"
+if(parini%dtion_md.le.0.d0) stop "Error in parini%dtion_md"
+if(parini%nit_per_min.le.0) stop "Error in parini%nit_per_min"
 if(trim(parini%paropt_geopt%approach).ne."FIRE".and.&
    trim(parini%paropt_geopt%approach).ne."MBFGS".and.&
    trim(parini%paropt_geopt%approach).ne."RBFGS".and.&
@@ -853,13 +845,13 @@ if(trim(parini%paropt_geopt%approach).ne."FIRE".and.&
 if(parini%paropt_geopt%dt_start.lt.parini%paropt_geopt%dtmin.or.parini%paropt_geopt%dt_start.gt.parini%paropt_geopt%dtmax) stop "Error in parini%paropt_geopt%dt_start"
 if(parini%paropt_geopt%dtmin.le.0.d0) stop "Error in parini%paropt_geopt%dtmin"
 if(parini%paropt_geopt%dtmax.lt.parini%paropt_geopt%dtmin) stop "Error in parini%paropt_geopt%dtmax"
-if(alphax_lat.le.0.d0) stop "Error in alphax_lat"
-if(alphax_at.le.0.d0) stop "Error in alphax_at"
+if(parini%alphax_lat.le.0.d0) stop "Error in alphax_lat"
+if(parini%alphax_at.le.0.d0) stop "Error in alphax_at"
 if(parini%paropt_geopt%fmaxtol.le.0.d0) stop "Error in parini%paropt_geopt%fmaxtol"
 if(parini%paropt_geopt%strfact.le.0.d0) stop "Error in parini%paropt_geopt%strfact"
-if(ka.lt.0) stop "Error in ka"
-if(kb.lt.0) stop "Error in kb"
-if(kc.lt.0) stop "Error in kc"
+if(parini%ka.lt.0) stop "Error in ka"
+if(parini%kb.lt.0) stop "Error in kb"
+if(parini%kc.lt.0) stop "Error in kc"
 if(dkpt1.lt.0.d0) stop "Error in dkpt1"
 if(dkpt2.lt.0.d0) stop "Error in dkpt2"
 if(bc.lt.1.or.bc.gt.3) stop "Error in bc"
@@ -907,13 +899,13 @@ if(sock_port.lt.1) stop "Error in sock_port"
 if(sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
 if(sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
 !SQNM
-if(sqnm_beta_lat.le.0d0) stop "Error in sqnm_beta_lat"
-if(sqnm_beta_at.le.0.d0) stop "Error in sqnm_beta_at"
-if(sqnm_nhist.lt.1)      stop "Error in sqnm_nhist"
-if(sqnm_maxrise.le.0.d0) stop "Error in sqnm_maxrise"
-if(sqnm_cutoffRatio.le.0.d0) stop "Error in sqnm_cutoffRatio"
-if(sqnm_steepthresh.le.0.d0) stop "Error in sqnm_steepthresh"
-if(sqnm_trustr.le.0.d0)  stop "Error in sqnm_trustr"
+if(parini%paropt_geopt%beta_lat.le.0d0) stop "Error in sqnm_beta_lat"
+if(parini%paropt_geopt%beta_at.le.0.d0) stop "Error in parini%paropt_geopt%beta_at"
+if(parini%paropt_geopt%nhist.lt.1)      stop "Error in sqnm_nhist"
+if(parini%paropt_geopt%maxrise.le.0.d0) stop "Error in sqnm_maxrise"
+if(parini%paropt_geopt%cutoffRatio.le.0.d0) stop "Error in sqnm_cutoffRatio"
+if(parini%paropt_geopt%steepthresh.le.0.d0) stop "Error in sqnm_steepthresh"
+if(parini%paropt_geopt%trustr.le.0.d0)  stop "Error in sqnm_trustr"
 
 
 end subroutine
@@ -926,13 +918,10 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
-                &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
-                &voids,core_rep,md_presscomp
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
-use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
+                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
+                &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -977,25 +966,25 @@ write(*,trim(formatting))  " # TYPAT         ", typat(:)
 write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
 write(*,trim(formatting))  " # AMU           ", int(amu(:))
 write(*,'(a)')             " # MD parameters *****************************************************************"
-write(*,'(a,i5)')          " # MDALGO        ", md_algo
-write(*,'(a,es15.7)')      " # MDPRESSCOMP   ", md_presscomp
-write(*,'(a,i5)')          " # MDINT         ", md_integrator
+write(*,'(a,i5)')          " # MDALGO        ", parini%md_algo
+write(*,'(a,es15.7)')      " # MDPRESSCOMP   ", parini%md_presscomp
+write(*,'(a,i5)')          " # MDINT         ", parini%md_integrator
 write(*,'(a,i5)')          " # MDNIT         ", parini%nmd_dynamics
-write(*,'(a,L3)')          " # AUTO_MDDT     ", auto_dtion_md
-write(*,'(a,L3)')          " # MDENCON       ", energy_conservation
-write(*,'(a,es15.7)')      " # MDDTINIT      ", dtion_md
-write(*,'(a,i5)')          " # MDDTIPM       ", nit_per_min
-write(*,'(a,L3)')          " # AUTO_MDMIN    ", auto_mdmin
-write(*,'(a,i5)')          " # MDMININIT     ", mdmin
-write(*,'(a,i5)')          " # MDMINMIN      ", mdmin_min
-write(*,'(a,i5)')          " # MDMINMAX      ", mdmin_max
-write(*,'(a,es15.7)')      " # CELLMASS      ", bmass
+write(*,'(a,L3)')          " # AUTO_MDDT     ", parini%auto_dtion_md
+write(*,'(a,L3)')          " # MDENCON       ", parini%energy_conservation
+write(*,'(a,es15.7)')      " # MDDTINIT      ", parini%dtion_md
+write(*,'(a,i5)')          " # MDDTIPM       ", parini%nit_per_min
+write(*,'(a,L3)')          " # AUTO_MDMIN    ", parini%auto_mdmin
+write(*,'(a,i5)')          " # MDMININIT     ", parini%mdmin
+write(*,'(a,i5)')          " # MDMINMIN      ", parini%mdmin_min
+write(*,'(a,i5)')          " # MDMINMAX      ", parini%mdmin_max
+write(*,'(a,es15.7)')      " # CELLMASS      ", parini%bmass
 write(*,'(a)')             " # GEOPT parameters **************************************************************"
-write(*,'(a,L3)')          " # GEOEXT        ", geopt_ext
+write(*,'(a,L3)')          " # GEOEXT        ", parini%geopt_ext
 write(*,'(a,i5)')          " # GEONIT        ", parini%paropt_geopt%nit
 write(*,'(a,es15.7)')      " # GEOTOLMXF     ", parini%paropt_geopt%fmaxtol
 write(*,'(a,es15.7)')      " # STRFACT       ", parini%paropt_geopt%strfact
-if(.not.geopt_ext) then
+if(.not.parini%geopt_ext) then
 write(*,'(a,a)')           " # GEOALGO       ", trim(parini%paropt_geopt%approach) 
 if(trim(parini%paropt_geopt%approach)=="FIRE") then
 write(*,'(a,es15.7)')      " # GEOFIREDTINIT ", parini%paropt_geopt%dt_start
@@ -1005,35 +994,35 @@ elseif(trim(parini%paropt_geopt%approach)=="MBFGS".or.&
        trim(parini%paropt_geopt%approach)=="RBFGS".or.&
        trim(parini%paropt_geopt%approach)=="SQNM".or. &
        trim(parini%paropt_geopt%approach)=="SD") then
-write(*,'(a,es15.7)')      " # GEOHESSAT     ", alphax_at
-write(*,'(a,es15.7)')      " # GEOHESSLAT    ", alphax_lat
+write(*,'(a,es15.7)')      " # GEOHESSAT     ", parini%alphax_at
+write(*,'(a,es15.7)')      " # GEOHESSLAT    ", parini%alphax_lat
 endif
 if(trim(parini%paropt_geopt%approach)=="QBFGS") then
-write(*,'(a,i5)'    )      " # GEOQBFGSNDIM  ",qbfgs_bfgs_ndim
-write(*,'(a,es15.7)')      " # GEOQBFGSTRI   ",qbfgs_trust_radius_ini
-write(*,'(a,es15.7)')      " # GEOQBFGSTRMIN ",qbfgs_trust_radius_min
-write(*,'(a,es15.7)')      " # GEOQBFGSTRMAX ",qbfgs_trust_radius_max
-write(*,'(a,es15.7)')      " # GEOQBFGSW1    ",qbfgs_w_1
-write(*,'(a,es15.7)')      " # GEOQBFGSW2    ",qbfgs_w_2
+write(*,'(a,i5)'    )      " # GEOQBFGSNDIM  ", parini%qbfgs_bfgs_ndim
+write(*,'(a,es15.7)')      " # GEOQBFGSTRI   ", parini%qbfgs_trust_radius_ini
+write(*,'(a,es15.7)')      " # GEOQBFGSTRMIN ", parini%qbfgs_trust_radius_min
+write(*,'(a,es15.7)')      " # GEOQBFGSTRMAX ", parini%qbfgs_trust_radius_max
+write(*,'(a,es15.7)')      " # GEOQBFGSW1    ", parini%qbfgs_w_1
+write(*,'(a,es15.7)')      " # GEOQBFGSW2    ", parini%qbfgs_w_2
 endif
 if(trim(parini%paropt_geopt%approach)=="SQNM") then
-write(*,'(a,i5)')          " # GEOSQNMNHIST  ",sqnm_nhist
-write(*,'(a,es15.7)')      " # GEOSQNMMAXRISE",sqnm_maxrise
-write(*,'(a,es15.7)')      " # GEOSQNMCUTOFF ",sqnm_cutoffRatio
-write(*,'(a,es15.7)')      " # GEOSQNMSTEEP  ",sqnm_steepthresh
-write(*,'(a,es15.7)')      " # GEOSQNMTRUSTR ",sqnm_trustr
+write(*,'(a,i5)')          " # GEOSQNMNHIST  ", parini%paropt_geopt%nhist
+write(*,'(a,es15.7)')      " # GEOSQNMMAXRISE", parini%paropt_geopt%maxrise
+write(*,'(a,es15.7)')      " # GEOSQNMCUTOFF ", parini%paropt_geopt%cutoffRatio
+write(*,'(a,es15.7)')      " # GEOSQNMSTEEP  ", parini%paropt_geopt%steepthresh
+write(*,'(a,es15.7)')      " # GEOSQNMTRUSTR ", parini%paropt_geopt%trustr
 endif
 endif 
 write(*,'(a)')             " # SOFTEN parameters *************************************************************"
-write(*,'(a,L3)')          " # AUTO_SOFT     ", auto_soft
-write(*,'(a,L3)')          " # MOLSOFT       ", mol_soften
-write(*,'(a,es15.7)')      " # SOFTAT        ", alpha_at
-write(*,'(a,es15.7)')      " # SOFTLAT       ", alpha_lat
-write(*,'(a,i5)')          " # SOFTNIT       ", nsoften
+write(*,'(a,L3)')          " # AUTO_SOFT     ", parini%auto_soft
+write(*,'(a,L3)')          " # MOLSOFT       ", parini%mol_soften
+write(*,'(a,es15.7)')      " # SOFTAT        ", parini%alpha_at
+write(*,'(a,es15.7)')      " # SOFTLAT       ", parini%alpha_lat
+write(*,'(a,i5)')          " # SOFTNIT       ", parini%nsoften_minhopp
 write(*,'(a)')             " # KPOINTS parameters ************************************************************"
-write(*,'(a,L3)')          " # AUTO_KPT     ", auto_kpt
-if(.not.auto_kpt) then
-write(*,'(a,3i5)')         " # KPTMESH      ", ka,kb,kc
+write(*,'(a,L3)')          " # AUTO_KPT     ", parini%auto_kpt
+if(.not.parini%auto_kpt) then
+write(*,'(a,3i5)')         " # KPTMESH      ", parini%ka,parini%kb,parini%kc
 else
 write(*,'(a,2es15.7)')     " # KPTDEN       ", dkpt1,dkpt2
 endif

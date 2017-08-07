@@ -1,7 +1,7 @@
 !*****************************************************************************************
 subroutine alborz_as_potential_init(nat,sat)
     use mod_interface
-    use mod_alborz_as_potential, only: parini, file_ini, atoms
+    use mod_alborz_as_potential, only: parini, parres, file_ini, atoms
     use mod_potential, only: potential
     implicit none
     integer, intent(in):: nat
@@ -9,7 +9,7 @@ subroutine alborz_as_potential_init(nat,sat)
     !local variables
     integer:: iat
     if(trim(parini%task)/='minhocao') then
-        call alborz_init(parini,file_ini)
+        call alborz_init(parini,parres,file_ini)
     endif
     potential=trim(parini%potential_potential)
     call atom_allocate_old(atoms,nat,0,0)
