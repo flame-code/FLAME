@@ -182,6 +182,8 @@ module mod_parini
         logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
         logical:: mol_soften            !Switch on molecular softening
         real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
+        logical:: auto_kpt              !Currently a dummy variable
+        integer:: ka,kb,kc              !The number of kpoints in each dimension
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

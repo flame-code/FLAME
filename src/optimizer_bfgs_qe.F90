@@ -1341,7 +1341,7 @@ END MODULE bfgs_module
 !
 !----------------------------------------------------------------------------
 !SUBROUTINE move_ions()
-subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
@@ -1401,6 +1401,7 @@ subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec
   use mod_parini, only: typ_parini
   IMPLICIT NONE
   type(typ_parini), intent(in):: parini
+  type(typ_parini), intent(inout):: parres
   !
   LOGICAL, SAVE         :: lcheck_mag = .FALSE., &
                            restart_with_starting_magnetiz = .FALSE., &
@@ -1561,7 +1562,7 @@ qe_units=.true.
        sock_extra_string="BFGS"//trim(fn4)
        latvec_in = at * alat
        xred_in=xred
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        fcart=fcart_in
        etot=etot_in
        sigma(1,1)=-strten_in(1)
@@ -1608,7 +1609,7 @@ do itime=1,parini%paropt_geopt%nit
        sock_extra_string="BFGS"//trim(fn4)
        latvec_in = at * alat
        xred_in=xred
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        fcart=fcart_in
        etot=etot_in
        sigma(1,1)=-strten_in(1)

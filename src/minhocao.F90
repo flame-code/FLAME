@@ -340,7 +340,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call pathintegral(parini,pos_latvec,pos_red)
+       call pathintegral(parini,parres,pos_latvec,pos_red)
        goto 3001 
   endif 
 
@@ -353,7 +353,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call enthalpyrelax(parini,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
+       call enthalpyrelax(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
        goto 3001 
   endif 
 
@@ -366,7 +366,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call varvol(parini,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
+       call varvol(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
        goto 3001 
   endif 
 
@@ -379,7 +379,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call poslowrelax(parini,pos_latvec,pos_red,tolmin,tolmax,ntol)
+       call poslowrelax(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol)
        goto 3001
   endif
 
@@ -392,7 +392,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call rotate_like_crazy(parini,pos_latvec,pos_red,tolmin,tolmax,ntol)
+       call rotate_like_crazy(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol)
        goto 3001
   endif
 
@@ -643,7 +643,7 @@ write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
 
 !A single point calculation to get the initial energy (will be converted to enthalpy)
   iprec=1;getwfk=.false.
-  call get_energyandforces_single(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,getwfk)
+  call get_energyandforces_single(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,getwfk)
 !Convert to enthalpy
   call get_enthalpy(pos_latvec,e_pos,target_pressure_habohr,ent_pos)
 !Write to file and exit if geopt iteration is 0
@@ -671,16 +671,16 @@ if(iexit==1) then
   vel_vol_in=0.d0
    iprec=1
    if(parini%geopt_ext) then
-     call geopt_external(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,ka,kb,kc,counter)
+     call geopt_external(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,parres%ka,kb,kc,counter)
    else
      if(confine==2) confine=1
-     if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,vel_in,vel_lat_in,&
+     if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,vel_in,vel_lat_in,&
                                                     &vel_vol_in,e_pos,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="SQNM")   call      GEOPT_SQNM(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="QBFGS")  call     GEOPT_qbfgs(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="SD")     call        GEOPT_SD(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SQNM")   call      GEOPT_SQNM(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="QBFGS")  call     GEOPT_qbfgs(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SD")     call        GEOPT_SD(parini,parres,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,counter,folder)
    endif
 
 !Update GEOPT counter
@@ -708,7 +708,7 @@ endif
      else
         getwfk=.false.
      endif
-     call get_dos(parini,pos_latvec,pos_red,efermi,fdos_pos,iprec,getwfk)
+     call get_dos(parini,parres,pos_latvec,pos_red,efermi,fdos_pos,iprec,getwfk)
      write(*,'(a,es15.7,es15.7)') " # FDOS found: ",fdos_pos,efermi
   endif
 
@@ -946,20 +946,20 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   vel_lat_in=0.d0
    iprec=1
    if(parini%geopt_ext) then
-     call geopt_external(parini,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,ka,kb,kc,counter)
+     call geopt_external(parini,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,parres%ka,kb,kc,counter)
    else
       if(confine==2) confine=1
-      if(parini%paropt_geopt%approach=="RBFGS") call GEOPT_RBFGS_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="RBFGS") call GEOPT_RBFGS_MHM(parini,parres,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(parini%paropt_geopt%approach=="MBFGS") call GEOPT_MBFGS_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="MBFGS") call GEOPT_MBFGS_MHM(parini,parres,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(parini%paropt_geopt%approach=="FIRE")  call GEOPT_FIRE_MHM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="FIRE")  call GEOPT_FIRE_MHM(parini,parres,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,vel_in,vel_lat_in,vel_vol_in,e_wpos,iprec,counter,folder)
-      if(parini%paropt_geopt%approach=="SQNM")   call    GEOPT_SQNM(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="SQNM")   call    GEOPT_SQNM(parini,parres,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(parini%paropt_geopt%approach=="QBFGS")  call   GEOPT_QBFGS(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="QBFGS")  call   GEOPT_QBFGS(parini,parres,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
-      if(parini%paropt_geopt%approach=="SD")     call      GEOPT_SD(parini,wpos_latvec,wpos_red,wpos_fcart,&
+      if(parini%paropt_geopt%approach=="SD")     call      GEOPT_SD(parini,parres,wpos_latvec,wpos_red,wpos_fcart,&
                                      &wpos_strten,e_wpos,iprec,counter,folder)
    endif
 
@@ -979,7 +979,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !Get FDOS
   if(finddos) then
      iprec=1;getwfk=.true.
-     call get_dos(parini,wpos_latvec,wpos_red,efermi,fdos_wpos,iprec,getwfk)
+     call get_dos(parini,parres,wpos_latvec,wpos_red,efermi,fdos_wpos,iprec,getwfk)
      write(*,'(a,es15.7,es15.7)') " # FDOS found: ",fdos_wpos,efermi
   endif
 
@@ -1771,7 +1771,7 @@ endif
        endif
        write(fn4,'(i4.4)') itime
        sock_extra_string="MD"//trim(fn4)
-       call get_energyandforces_single(parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 
@@ -2928,7 +2928,7 @@ endif
        else
            getwfk=.false.
        endif
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 
@@ -3382,7 +3382,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        else
            getwfk=.false.
        endif
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 
@@ -3487,7 +3487,7 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type
@@ -3499,6 +3499,7 @@ subroutine GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel
  use mod_parini, only: typ_parini
 implicit none
  type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
  real(8) :: latvec_in(3,3),xred_in(3,nat),vel_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),vel_lat_in(3,3),vvol_in
 !*********************************************************************
 !Variables for my MD part
@@ -3731,7 +3732,7 @@ endif
        getwfk=.false.
        write(fn4,'(i4.4)') 0
        sock_extra_string="FIRE"//trim(fn4)
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 !FIRE: check for convergence
@@ -4018,7 +4019,7 @@ endif
        endif
        write(fn4,'(i4.4)') itime
        sock_extra_string="FIRE"//trim(fn4)
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 
@@ -5419,7 +5420,7 @@ latvec_in=latvec
 iprec=1;getwfk=.false.
        write(fn4,'(i4.4)') 0
        sock_extra_string="SOFTAT"//trim(fn4)
-call get_energyandforces_single(parini,latvec_in,pos_red_in,fxyz,strten_in,etot_in,iprec,getwfk)
+call get_energyandforces_single(parini,parres,latvec_in,pos_red_in,fxyz,strten_in,etot_in,iprec,getwfk)
 call get_enthalpy(latvec_in,etot_in,pressure,etot0)
 
 !         call  fxyz_cart2int(nat,fxyzcart,fxyz,latvec)
@@ -5466,7 +5467,7 @@ else
 endif
        write(fn4,'(i4.4)') it
        sock_extra_string="SOFTAT"//trim(fn4)
-call get_energyandforces_single(parini,latvec_in,pos_red_in,fxyz,strten_in,etot_in,iprec,getwfk)
+call get_energyandforces_single(parini,parres,latvec_in,pos_red_in,fxyz,strten_in,etot_in,iprec,getwfk)
 call get_enthalpy(latvec_in,etot_in,pressure,etot)
 
         fd2=2.d0*(etot-etot0)/eps_dd**2
@@ -5606,7 +5607,7 @@ latvec_in=latvec
 iprec=1;getwfk=.false.
        write(fn4,'(i4.4)') 0
        sock_extra_string="SOFTLAT"//trim(fn4)
-call get_energyandforces_single(parini,latvec_in,rxyz,fcart_in,strten_in,etot_in,iprec,getwfk)
+call get_energyandforces_single(parini,parres,latvec_in,rxyz,fcart_in,strten_in,etot_in,iprec,getwfk)
 call strten2flat(strten_in,flat,latvec,pressure)
 call get_enthalpy(latvec_in,etot_in,pressure,etot0)
 !Multiply the force with the unit cell volume to get the correct force
@@ -5668,7 +5669,7 @@ else
 endif
        write(fn4,'(i4.4)') it
        sock_extra_string="SOFTLAT"//trim(fn4)
-call get_energyandforces_single(parini,latvec_in,rxyz,fcart_in,strten_in,etot_in,iprec,getwfk)
+call get_energyandforces_single(parini,parres,latvec_in,rxyz,fcart_in,strten_in,etot_in,iprec,getwfk)
 call strten2flat(strten_in,flat,wlat,pressure)
 call get_enthalpy(latvec_in,etot_in,pressure,etot)
 !Multiply the force with the unit cell volume to get the correct force
@@ -6312,7 +6313,7 @@ end subroutine
 
 !************************************************************************************
 
-subroutine pathintegral(parini,latvec,xred)
+subroutine pathintegral(parini,parres,latvec,xred)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,fixat,fixlat
  use defs_basis
@@ -6322,6 +6323,7 @@ subroutine pathintegral(parini,latvec,xred)
  use mod_parini, only: typ_parini
        implicit none
        type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
        integer count1,count2,count_rate,count_max,lwork,info,nint,i,iat,idispl,irep,iprec,istr,jstr,ilat,jlat
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
@@ -6391,7 +6393,7 @@ subroutine pathintegral(parini,latvec,xred)
        call rxyz_cart2int(latvec,xred_in,rxyz0,nat)
        latvec_in=latvec
        iprec=1; getwfk=.true.; if(idispl==1) getwfk=.false.
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk);count=count+1
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk);count=count+1
        fxyz=fcart_in
        ener=etot_in
 !Convert strten into "stress", which is actually the forces on the cell vectors
@@ -6492,7 +6494,7 @@ subroutine pathintegral(parini,latvec,xred)
       call rxyz_cart2int(latvec,xred_in,rxyz0,nat)
       latvec_in=latvec
       iprec=1; getwfk=.false. 
-      call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+      call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
       fxyz=fcart_in
       ener_comp1=etot_in
 !Convert strten into "stress", which is actually the forces on the cell vectors
@@ -6699,10 +6701,10 @@ end subroutine
 
 !****************************************************************************************************************   
 
-subroutine rotate_like_crazy(parini,latvec,xred,tolmin,tolmax,ntol)
+subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use global, only: fixat,fixlat,findsym,fragarr,kb,kc
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6710,6 +6712,7 @@ subroutine rotate_like_crazy(parini,latvec,xred,tolmin,tolmax,ntol)
  use mod_parini, only: typ_parini
        implicit none
        type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
        integer::  iprec,nstruct,i,ntol,spgint
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
@@ -6740,7 +6743,7 @@ call random_number(angle)
         call rotation(rotmat,angle,axis)
         latvec=matmul(rotmat,latvec)
 !Compute energy
-        call get_energyandforces_single(parini,latvec,xred,fcart,strten,energy,iprec,getwfk)
+        call get_energyandforces_single(parini,parres,latvec,xred,fcart,strten,energy,iprec,getwfk)
         call get_enthalpy(latvec,energy,target_pressure_habohr,enthalpy)
         call getvol(latvec,vol)
         ext_press=strten(1)+strten(2)+strten(3)
@@ -6763,16 +6766,17 @@ end subroutine
 !****************************************************************************************************************   
 !****************************************************************************************************************   
 
-subroutine poslowrelax(parini,latvec,xred,tolmin,tolmax,ntol)
+subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use global, only: fixat,fixlat,findsym,fragarr,kb,kc
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
 ! Main program to test potential subroutines
        implicit none
        type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
 !       use parameters 
        integer::  iprec,nstruct,i,ntol,spgint
 ! nat: number of atoms (e.g. vacancy)
@@ -6816,14 +6820,14 @@ if(file_exists) then
      vel_lat_in=0.d0
       iprec=1
       if(parini%geopt_ext) then
-        call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+        call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,parres%ka,kb,kc,counter)
       else
-        if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
-        if(parini%paropt_geopt%approach=="SQNM")   call     GEOPT_SQNM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(parini%paropt_geopt%approach=="QBFGS")  call    GEOPT_QBFGS(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-        if(parini%paropt_geopt%approach=="SD")     call     GEOPT_SD  (parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,parres,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="SQNM")   call     GEOPT_SQNM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="QBFGS")  call    GEOPT_QBFGS(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+        if(parini%paropt_geopt%approach=="SD")     call     GEOPT_SD  (parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
       endif
 !Check for symmetry
    if(findsym) then
@@ -6863,7 +6867,7 @@ end subroutine
 
 !****************************************************************************************************************   
 
-subroutine enthalpyrelax(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
+subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use global, only: fixat,fixlat
@@ -6873,6 +6877,7 @@ subroutine enthalpyrelax(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
 ! Main program to test potential subroutines
        implicit none
        type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
        integer::  ka,kb,kc,iprec
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
@@ -6920,12 +6925,12 @@ call system('rm -f posgeopt.*.ascii')
    if(parini%geopt_ext) then
      call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
    else
-     if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="SQNM")   call     GEOPT_SQNM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="QBFGS")  call    GEOPT_QBFGS(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
-     if(parini%paropt_geopt%approach=="SD")     call     GEOPT_SD  (parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="MBFGS")  call GEOPT_MBFGS_MHM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="FIRE")   call GEOPT_FIRE_MHM(parini,parres,latvec,xred,fcart,strten,vel_in,vel_lat_in,vel_vol_in,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SQNM")   call     GEOPT_SQNM(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="QBFGS")  call    GEOPT_QBFGS(parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
+     if(parini%paropt_geopt%approach=="SD")     call     GEOPT_SD  (parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
    endif
 !Check for symmetry
    if(findsym) then
@@ -6964,7 +6969,7 @@ end subroutine
 
 !****************************************************************************************************************   
 
-subroutine varvol(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
+subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
  use global, only: fixat,fixlat
@@ -6974,6 +6979,7 @@ subroutine varvol(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
 ! Main program to test potential subroutines
        implicit none
        type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
        integer::  ka,kb,kc,iprec
 ! nat: number of atoms (e.g. vacancy)
 !       parameter(nint=2*32*1+1)
@@ -7034,7 +7040,7 @@ do while (vcur.le.vfinal+1.d-10)
        else
            getwfk=.true.
        endif
-   call get_energyandforces_single(parini,latvec,xred0,fcart,strten,energy,iprec,getwfk)
+   call get_energyandforces_single(parini,parres,latvec,xred0,fcart,strten,energy,iprec,getwfk)
 !Check for symmetry
    if(findsym) then
       call find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol,spgint)
@@ -9053,7 +9059,7 @@ endif
        else
            getwfk=.false.
        endif
-       call get_energyandforces_single(parres,latvec_in,xred_cm_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_cm_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        call get_fcm_torque(fcart_cm,torque,fcart_in,quatpred,xcart_mol,lhead,llist,nat,nmol)
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
@@ -9525,7 +9531,7 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine compare_lammps(parini)
+subroutine compare_lammps(parini,parres)
 use mod_interface
 use global
 use interface_code
@@ -9534,6 +9540,7 @@ use mod_parini, only: typ_parini
 ! Main program to test potential subroutines
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 integer:: k,l,n,iat,iprec
 real(8):: latvec(3,3),xred(3,nat),xcart(3,nat),f_lammps(3,nat),f(3,nat),e_lammps,e,tmp_r,tmp_i,tilts(6),latvec_in(3,3),strten(6),latvec_box(3,3)
 character(400):: line_log,line_dump
@@ -9600,7 +9607,7 @@ do while(.true.)
 !!       enddo
        call rxyz_cart2int(latvec,xred,xcart,nat)
        latvec_in=latvec/Bohr_ang
-       call get_energyandforces_single(parini,latvec_in,xred,f,strten,e,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred,f,strten,e,iprec,getwfk)
        f=f*Ha_eV/Bohr_Ang
        e=e*Ha_eV
        write(*,*) tmp_i,e_lammps

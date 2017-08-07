@@ -49,7 +49,7 @@ implicit none
 
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
        getwfk=.false.
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        write(*,*) "Energy",etot_in
        istep=0
        energy=etot_in
@@ -98,7 +98,7 @@ implicit none
            getwfk=.false.
        endif
        call rxyz_cart2int(latvec_in,xred_in,rxyz,nat)
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        fxyz=fcart_in
        energy=etot_in
 !       call call_bigdft(runObj, outs, nproc,iproc,infocode)

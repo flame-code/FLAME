@@ -27,7 +27,8 @@ implicit none
 !  real(8):: tolmxf                !Force tolerance for GEOPT convergance 
 !  real(8):: strfact               !Factor to multiply stress 
   character(40):: units           !Either angstroem or bohr
-  integer:: ka,kb,kc              !The number of kpoints in each dimension
+!  integer:: ka,kb,kc              !The number of kpoints in each dimension
+  integer:: kb,kc              !The number of kpoints in each dimension
   integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
   integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
   integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
@@ -49,7 +50,7 @@ implicit none
 !  logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
 !  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
 !  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
-  logical:: auto_kpt              !Currently a dummy variable
+!  logical:: auto_kpt              !Currently a dummy variable
 !  integer:: nit_per_min           !Target number of md steps per md minimum crossing
 !  integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
 !  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman

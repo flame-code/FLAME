@@ -50,9 +50,9 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
+                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -365,12 +365,12 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !Block KPT****************
 !AUTO_KPT
-   call parse_logical("AUTO_KPT",8,all_line(1:n),n,auto_kpt,found)
+   call parse_logical("AUTO_KPT",8,all_line(1:n),n,parini%auto_kpt,found)
    if(found) cycle
 !KPTMESH
    call parsearray_int("KPTMESH",7,all_line(1:n),n,kpt_abc(1:3),3,found)
    if(found) then
-     ka=kpt_abc(1)
+     parini%ka=kpt_abc(1)
      kb=kpt_abc(2)
      kc=kpt_abc(3)
    endif
@@ -556,8 +556,8 @@ close(12)
 !MDTIMESTE=P
   if(calls==0.or..not.parini%auto_dtion_md) parini%dtion_md=dtion_md_in
 !KPT
-  if(auto_kpt) then
-    ka=0;kb=0;kc=0
+  if(parini%auto_kpt) then
+    parini%ka=0;kb=0;kc=0
   else
     dkpt1=0.d0
     dkpt2=0.d0
@@ -642,9 +642,9 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
+                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -708,8 +708,8 @@ usewf_soften=.false.
 usewf_md=.false.
 findsym=.false.
 finddos=.false.
-auto_kpt=.true.
-ka=1;kb=1;kc=1
+parini%auto_kpt=.true.
+parini%ka=1;kb=1;kc=1
 dkpt1=0.04d0
 dkpt2=0.06d0
 bc=1
@@ -798,9 +798,9 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,voids,core_rep
+                &fixat,fixlat,rcov,fragarr,bc,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -849,7 +849,7 @@ if(parini%alphax_lat.le.0.d0) stop "Error in alphax_lat"
 if(parini%alphax_at.le.0.d0) stop "Error in alphax_at"
 if(parini%paropt_geopt%fmaxtol.le.0.d0) stop "Error in parini%paropt_geopt%fmaxtol"
 if(parini%paropt_geopt%strfact.le.0.d0) stop "Error in parini%paropt_geopt%strfact"
-if(ka.lt.0) stop "Error in ka"
+if(parini%ka.lt.0) stop "Error in ka"
 if(kb.lt.0) stop "Error in kb"
 if(kc.lt.0) stop "Error in kc"
 if(dkpt1.lt.0.d0) stop "Error in dkpt1"
@@ -918,9 +918,9 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
+                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -1020,9 +1020,9 @@ write(*,'(a,es15.7)')      " # SOFTAT        ", parini%alpha_at
 write(*,'(a,es15.7)')      " # SOFTLAT       ", parini%alpha_lat
 write(*,'(a,i5)')          " # SOFTNIT       ", parini%nsoften_minhopp
 write(*,'(a)')             " # KPOINTS parameters ************************************************************"
-write(*,'(a,L3)')          " # AUTO_KPT     ", auto_kpt
-if(.not.auto_kpt) then
-write(*,'(a,3i5)')         " # KPTMESH      ", ka,kb,kc
+write(*,'(a,L3)')          " # AUTO_KPT     ", parini%auto_kpt
+if(.not.parini%auto_kpt) then
+write(*,'(a,3i5)')         " # KPTMESH      ", parini%ka,kb,kc
 else
 write(*,'(a,2es15.7)')     " # KPTDEN       ", dkpt1,dkpt2
 endif

@@ -68,10 +68,11 @@ contains
     endif
   end subroutine
 
-  subroutine get_energyandforces_single(parini,latvec, xred, fcart, strten, energy, iprec, getwfk)
+  subroutine get_energyandforces_single(parini,parres,latvec, xred, fcart, strten, energy, iprec, getwfk)
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parres
     real(8), intent(in)  :: latvec(3,3)
     real(8), intent(in)  :: xred(3,nat)
     real(8), intent(out) :: fcart(3,nat)
@@ -107,26 +108,26 @@ contains
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
-          call find_kpt(ka, kb, kc, latvec, dkpt)
+          call find_kpt(parres%ka, kb, kc, latvec, dkpt)
           if(max_kpt) then
 !if the ka1, kb1 and kc1 were reset or are complete garbage, set up new kpt mesh
-            if(ka1.le.0) ka1=ka
+            if(ka1.le.0) ka1=parres%ka
             if(kb1.le.0) kb1=kb
             if(kc1.le.0) kc1=kc
-            ka = max(min(ka1+1, ka), ka1)
+            parres%ka = max(min(ka1+1, parres%ka), ka1)
             kb = max(min(kb1+1, kb), kb1)
             kc = max(min(kc1+1, kc), kc1)
           endif
           if(reuse_kpt.and.ka1.ne.0.and.kb1.ne.0.and.kc1.ne.0) then
-            ka = ka1
+            parres%ka = ka1
             kb = kb1
             kc = kc1
           endif
         endif
-        ka1 = ka
+        ka1 = parres%ka
         kb1 = kb
         kc1 = kc
-if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
+if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, kb, kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
@@ -145,19 +146,19 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     endif  
     
     if(trim(parini%potential_potential)=="abinit") then
-      call make_input_abinit(latvec, xred, iprec, ka, kb, kc, getwfk)
+      call make_input_abinit(latvec, xred, iprec, parres%ka, kb, kc, getwfk)
     elseif(trim(parini%potential_potential)=="cp2k") then
-      call make_input_cp2k(latvec, xred, iprec, ka, kb, kc, getwfk)
+      call make_input_cp2k(latvec, xred, iprec, parres%ka, kb, kc, getwfk)
     elseif(trim(parini%potential_potential)=="siesta") then
-      call make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk)
+      call make_input_siesta(latvec, xred, iprec, parres%ka, kb, kc, getwfk)
     elseif(trim(parini%potential_potential)=="vasp") then
-      call make_input_vasp  (latvec, xred, iprec, ka, kb, kc, getwfk)
+      call make_input_vasp  (latvec, xred, iprec, parres%ka, kb, kc, getwfk)
     elseif(trim(parini%potential_potential)=="espresso") then
-      call make_input_espresso  (latvec, xred, iprec, ka, kb, kc, getwfk)
+      call make_input_espresso  (latvec, xred, iprec, parres%ka, kb, kc, getwfk)
     elseif(trim(parini%potential_potential)=="mopac") then
-      call make_input_mopac (latvec, xred, iprec, ka, kb, kc, getwfk)
+      call make_input_mopac (latvec, xred, iprec, parres%ka, kb, kc, getwfk)
     elseif(trim(parini%potential_potential)=="dftb") then
-      call make_input_dftb (latvec, xred, iprec, ka, kb, kc, getwfk)
+      call make_input_dftb (latvec, xred, iprec, parres%ka, kb, kc, getwfk)
     elseif(trim(parini%potential_potential)=="lenosky_tb") then
     elseif(trim(parini%potential_potential)=="lenosky_meam") then
     elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
@@ -189,11 +190,11 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     endif
     
     if(trim(parini%potential_potential)=="lenosky_tb") then
-      call lenosky_tb(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
+      call lenosky_tb(latvec,xred,iprec,parres%ka,kb,kc,fcart,energy,strten)
     elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
-      call lenosky_tb_lj(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
+      call lenosky_tb_lj(latvec,xred,iprec,parres%ka,kb,kc,fcart,energy,strten)
     elseif(trim(parini%potential_potential)=="lenosky_meam") then
-      call lenosky_meam(latvec,xred,iprec,ka,kb,kc,fcart,energy,strten)
+      call lenosky_meam(latvec,xred,iprec,parres%ka,kb,kc,fcart,energy,strten)
 !!! #if defined(ALBORZ)
     elseif(trim(parini%potential_potential)=="ann") then
         call call_to_alborz_get('bulk',nat,latvec,xred,fcart,energy,strten)
@@ -207,9 +208,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="edip") then
       call edip(latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="ipi") then
-      call evaluate_ipi(latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
+      call evaluate_ipi(latvec, xred, fcart, strten, energy, parres%ka, kb, kc, iprec)
     elseif(trim(parini%potential_potential)=="msock") then
-      call evaluate_msock(latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
+      call evaluate_msock(latvec, xred, fcart, strten, energy, parres%ka, kb, kc, iprec)
 #if defined(LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
       call call_lammps(latvec,xred,fcart,energy,strten)
@@ -274,10 +275,11 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 
 
   !************************************************************************************
-  subroutine get_dos(parini, latvec, xred, efermi, fdos, iprec, getwfk)
+  subroutine get_dos(parini,parres, latvec, xred, efermi, fdos, iprec, getwfk)
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parres
     real(8), intent(in)  :: latvec(3,3)
     real(8), intent(in)  :: xred(3,nat)
     real(8), intent(out) :: efermi
@@ -301,22 +303,22 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
-          call find_kpt(ka, kb, kc, latvec, dkpt)
+          call find_kpt(parres%ka, kb, kc, latvec, dkpt)
           if(max_kpt) then
-            ka = max(min(ka1+1, ka), ka1)
+            parres%ka = max(min(ka1+1, parres%ka), ka1)
             kb = max(min(kb1+1, kb), kb1)
             kc = max(min(kc1+1, kc), kc1)
           endif
           if(reuse_kpt.and.ka1.ne.0.and.kb1.ne.0.and.kc1.ne.0) then
-            ka = ka1
+            parres%ka = ka1
             kb = kb1
             kc = kc1
           endif
         endif
-        ka1 = ka
+        ka1 = parres%ka
         kb1 = kb
         kc1 = kc
-if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", ka, kb, kc
+if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, kb, kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
@@ -326,11 +328,11 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 
 
     if(trim(parini%potential_potential)=="abinit") then
-      call make_input_abinit(latvec, xred, iprec, ka, kb, kc, getwfk, dos=.true.)
+      call make_input_abinit(latvec, xred, iprec, parres%ka, kb, kc, getwfk, dos=.true.)
     elseif(trim(parini%potential_potential)=="vasp") then
-      call make_input_vasp(latvec,xred,iprec,ka,kb,kc,getwfk, dos=.true.)
+      call make_input_vasp(latvec,xred,iprec,parres%ka,kb,kc,getwfk, dos=.true.)
     elseif(trim(parini%potential_potential)=="dftb") then
-      call make_input_dftb(latvec,xred,iprec,ka,kb,kc,getwfk, dos=.true.)     
+      call make_input_dftb(latvec,xred,iprec,parres%ka,kb,kc,getwfk, dos=.true.)     
     else
       stop "Code not yet implemented"
     endif
