@@ -176,6 +176,8 @@ module mod_parini
         logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
         integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
         integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
+        real(8):: bmass                 !Cell mass during MD and FIRE
+        logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

@@ -182,7 +182,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 !vasp
 !siesta
 !dftb
-  geopt_ext=.false.
+  parini%geopt_ext=.false.
 
 
 !Unset fixed cell variables
@@ -670,7 +670,7 @@ if(iexit==1) then
   vel_lat_in=0.d0
   vel_vol_in=0.d0
    iprec=1
-   if(geopt_ext) then
+   if(parini%geopt_ext) then
      call geopt_external(parini,pos_latvec,pos_red,pos_fcart,pos_strten,e_pos,iprec,ka,kb,kc,counter)
    else
      if(confine==2) confine=1
@@ -911,7 +911,7 @@ endif
 
 !Here we call the softening routine
      if(confine==1) confine=2
-     call init_vel(parini,vel_in,vel_lat_in,vel_vol_in,wpos_latvec,wpos_red,bmass*amu_emass,ekinetic,nsoften,folder)
+     call init_vel(parini,vel_in,vel_lat_in,vel_vol_in,wpos_latvec,wpos_red,parini%bmass*amu_emass,ekinetic,nsoften,folder)
 
 !Call molecular dynamics 
      escape=escape+1.d0
@@ -945,7 +945,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   vel_in=0.d0
   vel_lat_in=0.d0
    iprec=1
-   if(geopt_ext) then
+   if(parini%geopt_ext) then
      call geopt_external(parini,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,e_wpos,iprec,ka,kb,kc,counter)
    else
       if(confine==2) confine=1
@@ -1319,7 +1319,7 @@ end subroutine task_minhocao
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,units,usewf_md
+ use global, only: char_type,units,usewf_md
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -1473,7 +1473,7 @@ endif
   do i=1,3
     unitmat(i,i)=1.d0
   enddo
-  latmass0=bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
+  latmass0=parini%bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
   vlat=vel_lat_in  !The initial cell velocity
   itime=0
   dt=parres%dtion_md
@@ -2560,7 +2560,7 @@ end subroutine
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,units,usewf_md
+ use global, only: char_type,units,usewf_md
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -2703,7 +2703,7 @@ implicit none
   do i=1,3
     unitmat(i,i)=1.d0
   enddo
-  latmass0=bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
+  latmass0=parini%bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
   vlat=vel_lat_in  !The initial cell volume velocity
 
   itime=0
@@ -3048,7 +3048,7 @@ end subroutine
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,units,usewf_md,fixat,fixlat
+ use global, only: char_type,units,usewf_md,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -3158,7 +3158,7 @@ implicit none
   do i=1,3
     unitmat(i,i)=1.d0
   enddo
-  latmass0=bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
+  latmass0=parini%bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
   vlat=vel_lat_in  !The initial cell velocity
   itime=0
   dt=parres%dtion_md
@@ -3490,7 +3490,7 @@ end subroutine
 subroutine GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass
+ use global, only: char_type
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
@@ -5215,7 +5215,7 @@ end subroutine elim_torque_cell
 subroutine init_vel(parini,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
- use global, only: amu,amutmp,typat,char_type,bmass,fixat,fixlat,mol_soften,bc
+ use global, only: amu,amutmp,typat,char_type,fixat,fixlat,mol_soften,bc
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5361,7 +5361,7 @@ end subroutine init_vel
         subroutine soften_pos(parini,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,alpha_at,bmass,units,usewf_soften,auto_soft,fixat,fixlat
+ use global, only: char_type,alpha_at,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5546,7 +5546,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
         subroutine soften_lat(parini,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,alpha_at,alpha_lat,bmass,units,usewf_soften,auto_soft,fixat,fixlat
+ use global, only: char_type,alpha_at,alpha_lat,units,usewf_soften,auto_soft,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -6139,7 +6139,7 @@ end subroutine
 !!  use mod_fire,   only:dtmin, dtmax
 !!  use minpar, only:parmin_bfgs
 !!  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type
-!!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,parres%mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
+!!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,parres%mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
 !!  use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
 !!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,parini%md_algo,parini%md_integrator,auto_dtion_md
 !!  use global, only: parini%nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
@@ -6699,7 +6699,7 @@ end subroutine
 subroutine rotate_like_crazy(parini,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use global, only: fixat,fixlat,findsym,fragarr,ka,kb,kc
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6763,7 +6763,7 @@ end subroutine
 subroutine poslowrelax(parini,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,fixat,fixlat,findsym,fragarr,ka,kb,kc
+ use global, only: fixat,fixlat,findsym,fragarr,ka,kb,kc
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6812,7 +6812,7 @@ if(file_exists) then
      vel_vol_in=0.d0
      vel_lat_in=0.d0
       iprec=1
-      if(geopt_ext) then
+      if(parini%geopt_ext) then
         call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
       else
         if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
@@ -6863,7 +6863,7 @@ end subroutine
 subroutine enthalpyrelax(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,fixat,fixlat
+ use global, only: fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6914,7 +6914,7 @@ call system('rm -f posgeopt.*.ascii')
   vel_in=0.d0
   vel_lat_in=0.d0
    iprec=1
-   if(geopt_ext) then
+   if(parini%geopt_ext) then
      call geopt_external(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
    else
      if(parini%paropt_geopt%approach=="RBFGS")  call GEOPT_RBFGS_MHM(parini,latvec,xred,fcart,strten,energy,iprec,counter,folder)
@@ -6964,7 +6964,7 @@ end subroutine
 subroutine varvol(parini,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
- use global, only: geopt_ext,fixat,fixlat
+ use global, only: fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -8605,7 +8605,7 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,units,usewf_md
+ use global, only: char_type,units,usewf_md
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -8768,7 +8768,7 @@ endif
   do i=1,3
     unitmat(i,i)=1.d0
   enddo
-  latmass0=bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
+  latmass0=parini%bmass*amu_emass !This means we use the barostat mass as the lattice mass (in ELECTRON MASS)
   vlat=vel_lat_in  !The initial cell velocity
   itime=0
   dt=parres%dtion_md

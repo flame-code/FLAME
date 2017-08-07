@@ -18,7 +18,7 @@ implicit none
   logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
   integer:: ntime_md              !Maximum number of iterations during MD
 !  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
-  real(8):: bmass                 !Cell mass during MD and FIRE
+!  real(8):: bmass                 !Cell mass during MD and FIRE
 !  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
 !  integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
 !  real(8):: dtion_md              !Initial timestep for MD 
@@ -34,7 +34,7 @@ implicit none
   character(2),allocatable:: char_type(:) 
   real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
 !  character(20):: code            !What code should be used: abinit or siesta
-  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
+!  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
   real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
   real(8):: alphax_lat, alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
   integer:: nsoften               !Number of softening steps
