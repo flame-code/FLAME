@@ -55,7 +55,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -317,19 +316,19 @@ open(unit=12,file="params_new.in")
    call parse_logical("GEOEXT",6,all_line(1:n),n,parini%geopt_ext,found)
    if(found) cycle
 !GEOSQNMNHIS
-   call parsescalar_int ("GEOSQNMNHIST",12,all_line(1:n),n,sqnm_nhist,found)
+   call parsescalar_int ("GEOSQNMNHIST",12,all_line(1:n),n,parini%paropt_geopt%nhist,found)
    if(found) cycle
 !GEOSQNMMAXRISE
-   call parsescalar_real("GEOSQNMMAXRISE",14,all_line(1:n),n,sqnm_maxrise,found)
+   call parsescalar_real("GEOSQNMMAXRISE",14,all_line(1:n),n,parini%paropt_geopt%maxrise,found)
    if(found) cycle
 !GEOSQNMCUTOFF
-   call parsescalar_real("GEOSQNMCUTOFF",13,all_line(1:n),n,sqnm_cutoffRatio,found)
+   call parsescalar_real("GEOSQNMCUTOFF",13,all_line(1:n),n,parini%paropt_geopt%cutoffRatio,found)
    if(found) cycle
 !GEOSQNMSTEEP
-   call parsescalar_real("GEOSQNMSTEEP",12,all_line(1:n),n,sqnm_steepthresh,found)
+   call parsescalar_real("GEOSQNMSTEEP",12,all_line(1:n),n,parini%paropt_geopt%steepthresh,found)
    if(found) cycle
 !GEOSQNMTRUSTR
-   call parsescalar_real("GEOSQNMTRUSTR",13,all_line(1:n),n,sqnm_trustr,found)
+   call parsescalar_real("GEOSQNMTRUSTR",13,all_line(1:n),n,parini%paropt_geopt%trustr,found)
    if(found) cycle
 !GEOQBFGSNDIM
    call parsescalar_int ("GEOQBFGSNDIM",12,all_line(1:n),n,parini%qbfgs_bfgs_ndim,found)
@@ -630,8 +629,8 @@ call params_check(parini)
     parmin_bfgs%betax=parini%alphax_at
     parmin_bfgs%betax_lat=parini%alphax_lat
 !Copy parameters to sqnm module
-    sqnm_beta_lat=parini%alphax_lat
-    sqnm_beta_at=parini%alphax_at
+    parini%paropt_geopt%beta_lat=parini%alphax_lat
+    parini%paropt_geopt%beta_at=parini%alphax_at
 !Copy parameters to sd module
     sd_beta_lat=parini%alphax_lat
     sd_beta_at=parini%alphax_at
@@ -649,7 +648,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -752,13 +750,13 @@ fp_18_width_overlap = 1.d0
 fp_18_large_vanradius = 1.7d0/0.52917720859d0
 
 !SQNM
-sqnm_beta_lat=1.d0
-sqnm_beta_at=1.d0
-sqnm_nhist=10
-sqnm_maxrise=1.d-6
-sqnm_cutoffRatio=1.d-4
-sqnm_steepthresh=1.d0
-sqnm_trustr=0.1d0
+parini%paropt_geopt%beta_lat=1.d0
+parini%paropt_geopt%beta_at=1.d0
+parini%paropt_geopt%nhist=10
+parini%paropt_geopt%maxrise=1.d-6
+parini%paropt_geopt%cutoffRatio=1.d-4
+parini%paropt_geopt%steepthresh=1.d0
+parini%paropt_geopt%trustr=0.1d0
 
 !QBFGS
 parini%qbfgs_bfgs_ndim=1
@@ -806,7 +804,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -905,13 +902,13 @@ if(sock_port.lt.1) stop "Error in sock_port"
 if(sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
 if(sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
 !SQNM
-if(sqnm_beta_lat.le.0d0) stop "Error in sqnm_beta_lat"
-if(sqnm_beta_at.le.0.d0) stop "Error in sqnm_beta_at"
-if(sqnm_nhist.lt.1)      stop "Error in sqnm_nhist"
-if(sqnm_maxrise.le.0.d0) stop "Error in sqnm_maxrise"
-if(sqnm_cutoffRatio.le.0.d0) stop "Error in sqnm_cutoffRatio"
-if(sqnm_steepthresh.le.0.d0) stop "Error in sqnm_steepthresh"
-if(sqnm_trustr.le.0.d0)  stop "Error in sqnm_trustr"
+if(parini%paropt_geopt%beta_lat.le.0d0) stop "Error in sqnm_beta_lat"
+if(parini%paropt_geopt%beta_at.le.0.d0) stop "Error in parini%paropt_geopt%beta_at"
+if(parini%paropt_geopt%nhist.lt.1)      stop "Error in sqnm_nhist"
+if(parini%paropt_geopt%maxrise.le.0.d0) stop "Error in sqnm_maxrise"
+if(parini%paropt_geopt%cutoffRatio.le.0.d0) stop "Error in sqnm_cutoffRatio"
+if(parini%paropt_geopt%steepthresh.le.0.d0) stop "Error in sqnm_steepthresh"
+if(parini%paropt_geopt%trustr.le.0.d0)  stop "Error in sqnm_trustr"
 
 
 end subroutine
@@ -929,7 +926,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
-use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -1014,11 +1010,11 @@ write(*,'(a,es15.7)')      " # GEOQBFGSW1    ", parini%qbfgs_w_1
 write(*,'(a,es15.7)')      " # GEOQBFGSW2    ", parini%qbfgs_w_2
 endif
 if(trim(parini%paropt_geopt%approach)=="SQNM") then
-write(*,'(a,i5)')          " # GEOSQNMNHIST  ",sqnm_nhist
-write(*,'(a,es15.7)')      " # GEOSQNMMAXRISE",sqnm_maxrise
-write(*,'(a,es15.7)')      " # GEOSQNMCUTOFF ",sqnm_cutoffRatio
-write(*,'(a,es15.7)')      " # GEOSQNMSTEEP  ",sqnm_steepthresh
-write(*,'(a,es15.7)')      " # GEOSQNMTRUSTR ",sqnm_trustr
+write(*,'(a,i5)')          " # GEOSQNMNHIST  ", parini%paropt_geopt%nhist
+write(*,'(a,es15.7)')      " # GEOSQNMMAXRISE", parini%paropt_geopt%maxrise
+write(*,'(a,es15.7)')      " # GEOSQNMCUTOFF ", parini%paropt_geopt%cutoffRatio
+write(*,'(a,es15.7)')      " # GEOSQNMSTEEP  ", parini%paropt_geopt%steepthresh
+write(*,'(a,es15.7)')      " # GEOSQNMTRUSTR ", parini%paropt_geopt%trustr
 endif
 endif 
 write(*,'(a)')             " # SOFTEN parameters *************************************************************"

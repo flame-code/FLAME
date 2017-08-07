@@ -16,7 +16,6 @@ subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
- use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
  use modsocket, only: sock_extra_string
 !subroutine sqnm(runObj,outsIO,nproc,iproc,verbosity,ncount_bigdft,fail)
 !call_bigdft has to be run once on runObj and outs !before calling this routine
@@ -158,14 +157,14 @@ latvec_io=0
 !   trustr=runObj%inputs%trustr
    nit=        parini%paropt_geopt%nit
 !   nat=        nat
-   betax=      sqnm_beta_at !betax
-   betalatx=   sqnm_beta_lat !betax
+   betax=      parini%paropt_geopt%beta_at !betax
+   betalatx=   parini%paropt_geopt%beta_lat !betax
    betalat_scale=betalatx/betax
-   nhistx=     sqnm_nhist!nhistx
-   maxrise=    sqnm_maxrise!1.d-6!maxrise
-   cutoffRatio=sqnm_cutoffRatio!2.d-4!cutoffratio
-   steepthresh=sqnm_steepthresh!1000.d0!steepthresh
-   trustr=     sqnm_trustr!0.2d0!trustr
+   nhistx=     parini%paropt_geopt%nhist!nhistx
+   maxrise=    parini%paropt_geopt%maxrise!1.d-6!maxrise
+   cutoffRatio=parini%paropt_geopt%cutoffRatio!2.d-4!cutoffratio
+   steepthresh=parini%paropt_geopt%steepthresh!1000.d0!steepthresh
+   trustr=     parini%paropt_geopt%trustr!0.2d0!trustr
    if(biomode)imode=2
 
 !!   if (iproc==0.and.verbosity > 0) then
@@ -760,8 +759,8 @@ endif
                 getwfk=.false.
                 ka1=0;kb1=0;kc1=0
    !Reset all
-                maxrise=    sqnm_maxrise!1.d-6!maxrise
-                trustr=     sqnm_trustr!0.2d0!trustr
+                maxrise=    parini%paropt_geopt%maxrise!1.d-6!maxrise
+                trustr=     parini%paropt_geopt%trustr!0.2d0!trustr
                 displr=0.0d0
                 displp=0.0d0
                 icheck=0

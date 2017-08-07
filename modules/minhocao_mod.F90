@@ -316,16 +316,16 @@ implicit none
       real(8)             :: sock_ecutwf(2)
 end module modsocket
 
-module mod_sqnm
-implicit none
-      real(8):: sqnm_beta_lat
-      real(8):: sqnm_beta_at
-      integer:: sqnm_nhist
-      real(8):: sqnm_maxrise
-      real(8):: sqnm_cutoffRatio
-      real(8):: sqnm_steepthresh             
-      real(8):: sqnm_trustr
-end module mod_sqnm
+!module mod_sqnm
+!implicit none
+!      real(8):: sqnm_beta_lat
+!      real(8):: sqnm_beta_at
+!      !integer:: sqnm_nhist
+!      real(8):: sqnm_maxrise
+!      real(8):: sqnm_cutoffRatio
+!      real(8):: sqnm_steepthresh             
+!      real(8):: sqnm_trustr
+!end module mod_sqnm
 
 module steepest_descent
 implicit none
