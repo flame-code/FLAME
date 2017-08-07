@@ -165,8 +165,8 @@ call system_clock(count_max=clock_max)   !Find the time max
   parini%auto_soft=.false.
   parini%auto_mdmin=.false.
   parini%auto_dtion_md=.false.
-  alpha_at=-1.d10
-  alpha_lat=-1.d10 
+  parini%alpha_at=-1.d10
+  parini%alpha_lat=-1.d10 
 
 !Initialize old kpt in history
   ka1=0;kb1=0;kc1=0;max_kpt=.false.;reuse_kpt=.false.
@@ -911,7 +911,7 @@ endif
 
 !Here we call the softening routine
      if(confine==1) confine=2
-     call init_vel(parini,vel_in,vel_lat_in,vel_vol_in,wpos_latvec,wpos_red,parini%bmass*amu_emass,ekinetic,parini%nsoften_minhopp,folder)
+     call init_vel(parini,parres,vel_in,vel_lat_in,vel_vol_in,wpos_latvec,wpos_red,parini%bmass*amu_emass,ekinetic,parini%nsoften_minhopp,folder)
 
 !Call molecular dynamics 
      escape=escape+1.d0
@@ -5212,7 +5212,7 @@ end subroutine elim_torque_cell
 
 !************************************************************************************
 
-subroutine init_vel(parini,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
+subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
  use global, only: amu,amutmp,typat,char_type,fixat,fixlat,bc
@@ -5220,6 +5220,7 @@ subroutine init_vel(parini,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoft
  use mod_parini, only: typ_parini
 implicit none
  type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
  real(8) :: acell_in(3),xred_in(3,nat),vel_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),vel_lat_in(3,3)
 !*********************************************************************************************
  real(8):: vel(3,nat),temp,pos_red(3,nat),vcm(3),vel_vol
@@ -5262,7 +5263,7 @@ if(parini%mol_soften) then
          call gausdist_cell(latvec,vel_lat)
 !Soften the velocities of lattice
          if(.not.fixlat(7)) then
-         call soften_lat(parini,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
+         call soften_lat(parini,parres,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
          call elim_fixed_lat(latvec,vel_lat)
          endif
 else
@@ -5270,7 +5271,7 @@ else
          if(.not.(all(fixat))) then
            call gausdist(nat,vel,amass)
 !Soften the velocities of atoms
-           call soften_pos(parini,latvec,pos_red,vel,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
+           call soften_pos(parini,parres,latvec,pos_red,vel,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
 !Get rid of center-of-mass velocity, taking also into account fixed atoms (This has already been done in gausdist for all free atoms, but lets do it again...)
            if(.not.any(fixat(:))) then
              s1=sum(amass(:))
@@ -5325,7 +5326,7 @@ else
          if(.not.(all(fixlat(1:6))).and.(.not.fixlat(7)).and.bc.ne.2) then
            call gausdist_cell(latvec,vel_lat)
 !Soften the velocities of lattice
-           call soften_lat(parini,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
+           call soften_lat(parini,parres,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
            call elim_fixed_lat(latvec,vel_lat)
          endif
 endif
@@ -5358,16 +5359,17 @@ end subroutine init_vel
 
 !************************************************************************************
 
-        subroutine soften_pos(parini,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
+        subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,alpha_at,units,usewf_soften,fixat,fixlat
+ use global, only: char_type,units,usewf_soften,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
  use mod_parini, only: typ_parini
 implicit none
  type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
  real(8) :: acell_in(3),xred_in(3,nat),vel_in(3,nat),etot_in,strten_in(6),vel_lat_in(3,3)
 !*******************************************************************
         integer:: nsoft,i,it,nit,iprec,iat
@@ -5407,7 +5409,7 @@ implicit none
         eps_dd=5.d-1
 !        alpha=3.d0    ! step size for  Si
 !        alpha=1.d0    ! step size for  C 
-        alpha=alpha_at
+        alpha=parres%alpha_at
         allocate(wpos(3*nat),fxyz(3*nat))
 
 !         call  rxyz_int2cart(latvec,rxyz,rxyzcart,nat)
@@ -5530,11 +5532,11 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
        if(parini%auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
        if(parini%auto_soft.and.nsoft.ge.3) then
           if(decrease) then 
-             alpha_at=alpha_at/1.1d0
+             parres%alpha_at=parres%alpha_at/1.1d0
           else
-             alpha_at=alpha_at*1.1d0
+             parres%alpha_at=parres%alpha_at*1.1d0
           endif
-       write(*,'(a,e18.10)') ' # SOFTEN: new alpha_at :  ',alpha_at
+       write(*,'(a,e18.10)') ' # SOFTEN: new alpha_at :  ',parres%alpha_at
        endif
 
 
@@ -5543,16 +5545,17 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 
 !************************************************************************************
 
-        subroutine soften_lat(parini,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
+        subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,alpha_at,alpha_lat,units,usewf_soften,fixat,fixlat
+ use global, only: char_type,units,usewf_soften,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
  use mod_parini, only: typ_parini
  implicit none
  type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
  real(8) :: acell_in(3),xred_in(3,nat),vel_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),vel_lat_in(3,3)
 !*******************************************************************
         integer:: nsoft,i,it,nit,iprec,iat
@@ -5597,7 +5600,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 !        eps_dd=1.d0
         eps_dd=1.d0
 !        alphalat=1.d0 !step size for Lattice
-        alphalat=alpha_lat
+        alphalat=parres%alpha_lat
 
 latvec_in=latvec
 iprec=1;getwfk=.false.
@@ -5738,11 +5741,11 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,
        if(parini%auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
        if(parini%auto_soft.and.nsoft.ge.3) then
           if(decrease) then
-             alpha_lat=alpha_lat/1.1d0
+             parres%alpha_lat=parres%alpha_lat/1.1d0
           else
-             alpha_lat=alpha_lat*1.1d0
+             parres%alpha_lat=parres%alpha_lat*1.1d0
           endif
-       write(*,'(a,es18.10,1x,es18.10)') ' # SOFTEN: new alpha_at, alpha_lat : ',alpha_at,alpha_lat
+       write(*,'(a,es18.10,1x,es18.10)') ' # SOFTEN: new alpha_at, alpha_lat : ',parres%alpha_at,parres%alpha_lat
        endif
 
 

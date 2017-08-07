@@ -2498,19 +2498,21 @@ subroutine elim_torque_cell(latvec0,vlat)
 real(8), intent(in)    :: latvec0(3,3)
 real(8), intent(inout) :: vlat(3,3)
 end subroutine elim_torque_cell
-subroutine init_vel(parini,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
+subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
  real(8):: vel(3,nat),temp,pos_red(3,nat),vcm(3),vel_vol
  integer:: i,iat,idim,nsoften
  real(8):: amass(nat),s1,s2,v2gauss,vtest,rescale_vel,vel_lat(3,3),latvec(3,3),latmass
  character(40):: folder
 end subroutine init_vel
-        subroutine soften_pos(parini,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
+        subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
         integer:: nsoft,i,it,nit,iprec,iat
         real(8):: curv0,curv,res,pressure,count_soft,alpha
         real(8):: latvec(9),latvec_in(9)
@@ -2519,10 +2521,11 @@ end subroutine init_vel
         real(8):: amass(nat)
         character(40):: filename,folder
 end subroutine soften_pos
-        subroutine soften_lat(parini,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
+        subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
         integer:: nsoft,i,it,nit,iprec,iat
         real(8):: curv0,curv,res,pressure,count_soft,alpha,alphalat
         real(8):: latvec(9),latvec_in(9)

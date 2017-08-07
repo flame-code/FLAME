@@ -35,7 +35,7 @@ implicit none
   real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
 !  character(20):: code            !What code should be used: abinit or siesta
 !  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
-  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
+!  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
 !  real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
 !  integer:: nsoften               !Number of softening steps
   logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step

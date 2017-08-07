@@ -50,7 +50,6 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
@@ -552,8 +551,8 @@ close(12)
       endif
   endif
 !SOFTEN
-  if(calls==0.or..not.parini%auto_soft) alpha_lat=alpha_lat_in
-  if(calls==0.or..not.parini%auto_soft) alpha_at=alpha_at_in
+  if(calls==0.or..not.parini%auto_soft) parini%alpha_lat=alpha_lat_in
+  if(calls==0.or..not.parini%auto_soft) parini%alpha_at=alpha_at_in
 !MDTIMESTE=P
   if(calls==0.or..not.parini%auto_dtion_md) parini%dtion_md=dtion_md_in
 !KPT
@@ -643,7 +642,6 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
@@ -800,7 +798,6 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,auto_kpt,bc,voids,core_rep
@@ -833,8 +830,8 @@ if(parini%paropt_geopt%nit.lt.0) stop "Error in parini%paropt_geopt%nit"
 if(parini%bmass.le.0.d0) stop "Error in bmass"
 if(parini%mdmin_min.lt.0) stop "Error in parini%mdmin_min"
 if(parini%mdmin_max.lt.parini%mdmin_min) stop "Error in parini%mdmin_max"
-if(alpha_lat.le.0.d0) stop "Error in alpha_lat"
-if(alpha_at.le.0.d0) stop "Error in alpha_at"
+if(parini%alpha_lat.le.0.d0) stop "Error in alpha_lat"
+if(parini%alpha_at.le.0.d0) stop "Error in alpha_at"
 if(parini%nsoften_minhopp.lt.1) stop "Error in nsoften"
 if(parini%dtion_md.le.0.d0) stop "Error in parini%dtion_md"
 if(parini%nit_per_min.le.0) stop "Error in parini%nit_per_min"
@@ -921,7 +918,6 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
@@ -1020,8 +1016,8 @@ endif
 write(*,'(a)')             " # SOFTEN parameters *************************************************************"
 write(*,'(a,L3)')          " # AUTO_SOFT     ", parini%auto_soft
 write(*,'(a,L3)')          " # MOLSOFT       ", parini%mol_soften
-write(*,'(a,es15.7)')      " # SOFTAT        ", alpha_at
-write(*,'(a,es15.7)')      " # SOFTLAT       ", alpha_lat
+write(*,'(a,es15.7)')      " # SOFTAT        ", parini%alpha_at
+write(*,'(a,es15.7)')      " # SOFTLAT       ", parini%alpha_lat
 write(*,'(a,i5)')          " # SOFTNIT       ", parini%nsoften_minhopp
 write(*,'(a)')             " # KPOINTS parameters ************************************************************"
 write(*,'(a,L3)')          " # AUTO_KPT     ", auto_kpt
