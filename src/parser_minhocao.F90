@@ -51,8 +51,8 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -303,10 +303,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("GEOFIREDTMAX",12,all_line(1:n),n,parini%paropt_geopt%dtmax,found)
    if(found) cycle
 !GEOHESSLAT
-   call parsescalar_real("GEOHESSLAT",10,all_line(1:n),n,alphax_lat,found)
+   call parsescalar_real("GEOHESSLAT",10,all_line(1:n),n,parini%alphax_lat,found)
    if(found) cycle
 !GEOHESSAT
-   call parsescalar_real("GEOHESSAT",9,all_line(1:n),n,alphax_at,found)
+   call parsescalar_real("GEOHESSAT",9,all_line(1:n),n,parini%alphax_at,found)
    if(found) cycle
 !GEOTOLMXF
    call parsescalar_real("GEOTOLMXF",9,all_line(1:n),n,parini%paropt_geopt%fmaxtol,found)
@@ -628,14 +628,14 @@ call params_check(parini)
     dtmin=parini%paropt_geopt%dtmin
     dtmax=parini%paropt_geopt%dtmax
 !Copy parameters of bfgs to the bfgs module
-    parmin_bfgs%betax=alphax_at
-    parmin_bfgs%betax_lat=alphax_lat
+    parmin_bfgs%betax=parini%alphax_at
+    parmin_bfgs%betax_lat=parini%alphax_lat
 !Copy parameters to sqnm module
-    sqnm_beta_lat=alphax_lat
-    sqnm_beta_at=alphax_at
+    sqnm_beta_lat=parini%alphax_lat
+    sqnm_beta_at=parini%alphax_at
 !Copy parameters to sd module
-    sd_beta_lat=alphax_lat
-    sd_beta_at=alphax_at
+    sd_beta_lat=parini%alphax_lat
+    sd_beta_at=parini%alphax_at
 end subroutine
 
 !************************************************************************************
@@ -646,8 +646,8 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -705,8 +705,8 @@ parini%paropt_geopt%approach="FIRE"
 parini%paropt_geopt%dt_start=10.d0
 parini%paropt_geopt%dtmin=1.d0
 parini%paropt_geopt%dtmax=80.d0
-alphax_lat=1.d0
-alphax_at=1.d0
+parini%alphax_lat=1.d0
+parini%alphax_at=1.d0
 parini%paropt_geopt%fmaxtol=2.d-4
 parini%paropt_geopt%strfact=100.d0
 usewf_geopt=.false.
@@ -805,8 +805,8 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -853,8 +853,8 @@ if(trim(parini%paropt_geopt%approach).ne."FIRE".and.&
 if(parini%paropt_geopt%dt_start.lt.parini%paropt_geopt%dtmin.or.parini%paropt_geopt%dt_start.gt.parini%paropt_geopt%dtmax) stop "Error in parini%paropt_geopt%dt_start"
 if(parini%paropt_geopt%dtmin.le.0.d0) stop "Error in parini%paropt_geopt%dtmin"
 if(parini%paropt_geopt%dtmax.lt.parini%paropt_geopt%dtmin) stop "Error in parini%paropt_geopt%dtmax"
-if(alphax_lat.le.0.d0) stop "Error in alphax_lat"
-if(alphax_at.le.0.d0) stop "Error in alphax_at"
+if(parini%alphax_lat.le.0.d0) stop "Error in alphax_lat"
+if(parini%alphax_at.le.0.d0) stop "Error in alphax_at"
 if(parini%paropt_geopt%fmaxtol.le.0.d0) stop "Error in parini%paropt_geopt%fmaxtol"
 if(parini%paropt_geopt%strfact.le.0.d0) stop "Error in parini%paropt_geopt%strfact"
 if(ka.lt.0) stop "Error in ka"
@@ -927,8 +927,8 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,&
-                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,&
+                &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -1005,8 +1005,8 @@ elseif(trim(parini%paropt_geopt%approach)=="MBFGS".or.&
        trim(parini%paropt_geopt%approach)=="RBFGS".or.&
        trim(parini%paropt_geopt%approach)=="SQNM".or. &
        trim(parini%paropt_geopt%approach)=="SD") then
-write(*,'(a,es15.7)')      " # GEOHESSAT     ", alphax_at
-write(*,'(a,es15.7)')      " # GEOHESSLAT    ", alphax_lat
+write(*,'(a,es15.7)')      " # GEOHESSAT     ", parini%alphax_at
+write(*,'(a,es15.7)')      " # GEOHESSLAT    ", parini%alphax_lat
 endif
 if(trim(parini%paropt_geopt%approach)=="QBFGS") then
 write(*,'(a,i5)'    )      " # GEOQBFGSNDIM  ",qbfgs_bfgs_ndim

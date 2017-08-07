@@ -178,6 +178,7 @@ module mod_parini
         integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
         real(8):: bmass                 !Cell mass during MD and FIRE
         logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
+        real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict
