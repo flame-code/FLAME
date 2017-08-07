@@ -1,7 +1,7 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,mdmin,units,usewf_md
+ use global, only: char_type,units,usewf_md
  use global, only: fixat,fixlat,bc
  use defs_basis
  use interface_code
@@ -68,7 +68,7 @@ implicit none
        int_pressure_gpa=1.d0/3.d0*(strten_in(1)+strten_in(2)+strten_in(3))*HaBohr3_GPa
        if(parini%verb.gt.0) then
        write(*,'(a,i5,1x,3(1x,1pe17.10),3(1x,i2))') ' # MD: it,energy,ekinat,pressure,nmax,nmin,mdmin ',&
-             &istep,energy,rkin,int_pressure_gpa,nummax,nummin,mdmin
+             &istep,energy,rkin,int_pressure_gpa,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') istep
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -148,7 +148,7 @@ implicit none
        int_pressure_gpa=1.d0/3.d0*(strten_in(1)+strten_in(2)+strten_in(3))*HaBohr3_GPa
        if(parini%verb.gt.0) then
        write(*,'(a,i5,1x,3(1x,1pe17.10),3(1x,i2))') ' # MD: it,energy,ekinat,pressure,nmax,nmin,mdmin ',&
-             &istep,energy,rkin,int_pressure_gpa,nummax,nummin,mdmin
+             &istep,energy,rkin,int_pressure_gpa,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') istep
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -156,7 +156,7 @@ implicit none
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,etot_in,etot_in)
        endif
-       if (nummin.ge.mdmin) then
+       if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
                write(*,*) '# WARNING: nummin,nummax',nummin,nummax
              write(*,*) " MD finished: exiting!"

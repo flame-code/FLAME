@@ -19,7 +19,7 @@ implicit none
   integer:: ntime_md              !Maximum number of iterations during MD
 !  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
   real(8):: bmass                 !Cell mass during MD and FIRE
-  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
+!  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
   integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
 !  real(8):: dtion_md              !Initial timestep for MD 
   !real(8):: dtion_fire,dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep
@@ -47,7 +47,7 @@ implicit none
   logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
   logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
   logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
-  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
+!  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
 !  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
   logical:: auto_kpt              !Currently a dummy variable
 !  integer:: nit_per_min           !Target number of md steps per md minimum crossing

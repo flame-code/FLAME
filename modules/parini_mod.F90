@@ -173,6 +173,8 @@ module mod_parini
         logical:: energy_conservation   !Only used in fixed cell MD
         integer:: nit_per_min           !Target number of md steps per md minimum crossing
         real(8):: dtion_md              !Initial timestep for MD
+        logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
+        integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

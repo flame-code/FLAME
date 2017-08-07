@@ -163,7 +163,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 
 !Initialize auto logicals to false, otherwise it will read the params file and reset alpha_lat, alpha_at, mdmin_max, etc
   auto_soft=.false.
-  auto_mdmin=.false.
+  parini%auto_mdmin=.false.
   parini%auto_dtion_md=.false.
   alpha_at=-1.d10
   alpha_lat=-1.d10 
@@ -405,7 +405,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   write(*,'(a,2(1x,1pe11.4))') ' # alpha1,alpha2',alpha1,alpha2
   write(*,'(a,2(1x,1pe10.3))') ' # predicted fraction accepted, rejected', &
   & ratio/(1.d0+ratio), 1.d0/(1.d0+ratio)
-  write(*,*) '# mdmin',mdmin
+  write(*,*) '# parres%mdmin',parres%mdmin
   
 
 !Read earr.dat. In this version, earr contains the enthalpies, not the energies, since they are compared during MinHopp
@@ -1058,8 +1058,8 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
           escape_sam/escape,escape_old/escape,escape_new/escape,'   S'
      write(*,'(a)')' # no escape from current minimum.'
 
-     if(auto_mdmin) mdmin   = min(mdmin_max, mdmin + 1)  ! MALM
-     write(*,*) "# nsoften, mdmin: ", nsoften, mdmin ! MALM
+     if(parini%auto_mdmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
+     write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
 
      goto 5555
    endif
@@ -1083,8 +1083,8 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !!!          escape_sam/escape,escape_old/escape,escape_new/escape,'   S'
 !!!     write(*,'(a)')' # no escape from current minimum.'
 !!!
-!!!     if(auto_mdmin) mdmin   = min(mdmin_max, mdmin + 1)  ! MALM
-!!!     write(*,*) "# nsoften, mdmin: ", nsoften, mdmin ! MALM
+!!!     if(parini%auto_mdmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
+!!!     write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
 !!!
 !!!     goto 5555
 !!!  endif
@@ -1114,7 +1114,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      ekinetic=max(min(ekinetic_max,ekinetic*beta2),100.d0)
      nvisit=ct_arr(kid)
 
-!     if(auto_mdmin) mdmin   = min(mdmin_max, mdmin + 1)  ! MALM
+!     if(parini%auto_mdmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
 !Update the temperature within dataset 2, belonging to MD
   else                                                                !A new minimum was found
 ! write intermediate results
@@ -1149,9 +1149,9 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !!     call save_low_conf(nat,npmin,npminx,rent_wpos,re_wpos,wpos_red,wpos_latvec,spg_wpos,&
 !!     &spgtol_wpos,fdos_wpos,elocmin,poslocmin,latlocmin)
 
-!     if(auto_mdmin) mdmin   = max(mdmin_min, mdmin - 1)  ! MALM
+!     if(parini%auto_mdmin) parres%mdmin   = max(mdmin_min, parres%mdmin - 1)  ! MALM
   endif
-!  write(*,*) "# nsoften, mdmin: ", nsoften, mdmin ! MALM
+!  write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
 
 !This part is to finally accept the configutaion for the next run, I guess
   if (ent_wpos.lt.ent_hop) then
@@ -1177,9 +1177,9 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   av_ediff=av_ediff+ediff
   if (ent_hop-ent_pos.lt.ediff) then
 !Local minima accepted  
-   if(auto_mdmin.and.newmin)      mdmin   = max(mdmin_min, mdmin - 1)  ! MALM
-   if(auto_mdmin.and..not.newmin) mdmin   = min(mdmin_max, mdmin + 1)  ! MALM
-   write(*,*) "# nsoften, mdmin: ", nsoften, mdmin ! MALM
+   if(parini%auto_mdmin.and.newmin)      parres%mdmin   = max(mdmin_min, parres%mdmin - 1)  ! MALM
+   if(parini%auto_mdmin.and..not.newmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
+   write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
    accepted=accepted+1.d0
    e_pos=e_hop
    ent_pos=ent_hop
@@ -1239,8 +1239,8 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      goto 1000
   else
 !local minima rejected
-!    if(auto_mdmin) mdmin   = min(mdmin_max, mdmin + 1)  ! MALM
-     write(*,*) "# nsoften, mdmin: ", nsoften, mdmin ! MALM
+!    if(parini%auto_mdmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
+     write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
      open(unit=222,file='global.mon',status='unknown',position='append')
      write(222,'(i10,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),l3,a,i5)')  &
           nhop,escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos,&
@@ -1319,7 +1319,7 @@ end subroutine task_minhocao
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,units,usewf_md
+ use global, only: char_type,bmass,units,usewf_md
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -1615,8 +1615,8 @@ endif
        en0000=enthalpy-ent_pos_0
 if(parres%verb.gt.0) then
        write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,(pressure_md(1,1)+pressure_md(2,2)+pressure_md(3,3))/3.d0*vol,ekinatom,ekinlat,nummax,nummin,mdmin
-!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+             &itime,enthalpy,(pressure_md(1,1)+pressure_md(2,2)+pressure_md(3,3))/3.d0*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
+!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -1836,10 +1836,10 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
         & .and. ensmoth(itime-5)>ensmoth(itime-4) .and. ensmoth(itime-5)>ensmoth(itime-3)) nummax=nummax+1
        endif
        !write(67,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-       !      &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+       !      &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
 if(parres%verb.gt.0) then
        write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -1854,7 +1854,7 @@ endif
         econs_max=max(econs_max,rkin+enthalpy)
         econs_min=min(econs_min,rkin+enthalpy)
 !        write(6,*) istep,e_rxyz-e_pos,nummax,nummin
-       if (nummin.ge.mdmin) then
+       if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
                write(*,*) '# WARNING: nummin,nummax',nummin,nummax
 
@@ -1887,7 +1887,7 @@ endif
 !Minimum number of steps per crossed minimum is 15, average should be parres%nit_per_min
      
      if(parres%auto_dtion_md) then
-!       dt_ratio=real(itime,8)/real(mdmin,8) !old version version
+!       dt_ratio=real(itime,8)/real(parres%mdmin,8) !old version version
        dt_ratio=real(itime,8)/real(nummin,8) 
        if(dt_ratio.lt.real(parres%nit_per_min,8)) then
          parres%dtion_md=parres%dtion_md*1.d0/1.1d0
@@ -2560,7 +2560,7 @@ end subroutine
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,units,usewf_md
+ use global, only: char_type,bmass,units,usewf_md
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -2778,7 +2778,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        ent_pos_0=enthalpy
        en0000=enthalpy-ent_pos_0
        write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -2976,9 +2976,9 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
        if (itime >= 3 .and. enmin1 > enmin2 .and. enmin1 > en0000)  nummax=nummax+1
        if (itime >= 3 .and. enmin1 < enmin2 .and. enmin1 < en0000)  nummin=nummin+1
 !       write(67,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -2992,7 +2992,7 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
         econs_max=max(econs_max,rkin+enthalpy)
         econs_min=min(econs_min,rkin+enthalpy)
 !        write(6,*) istep,e_rxyz-e_pos,nummax,nummin
-       if (nummin.ge.mdmin) then
+       if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
                write(*,*) '# WARNING: nummin,nummax',nummin,nummax
 
@@ -3025,7 +3025,7 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
 !Adjust MD stepsize
 !Minimum number of steps per crossed minimum is 15, average should be parini%nit_per_min
      if(parini%auto_dtion_md) then
-!       dt_ratio=real(itime,8)/real(mdmin,8) !old version version
+!       dt_ratio=real(itime,8)/real(parres%mdmin,8) !old version version
        dt_ratio=real(itime,8)/real(nummin,8) 
        if(dt_ratio.lt.real(parini%nit_per_min,8)) then
          parres%dtion_md=parres%dtion_md*1.d0/1.1d0
@@ -3048,7 +3048,7 @@ end subroutine
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,units,usewf_md,fixat,fixlat
+ use global, only: char_type,bmass,units,usewf_md,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -3281,9 +3281,9 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        ent_pos_0=enthalpy
        en0000=enthalpy-ent_pos_0
 !       write(67,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
-       write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
+       write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,parres%mdmin ',&
+             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -3444,9 +3444,9 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        if (itime >= 3 .and. enmin1 > enmin2 .and. enmin1 > en0000)  nummax=nummax+1
        if (itime >= 3 .and. enmin1 < enmin2 .and. enmin1 < en0000)  nummin=nummin+1
       ! write(67,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-      !       &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+      !       &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -3460,7 +3460,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
         econs_max=max(econs_max,rkin+enthalpy)
         econs_min=min(econs_min,rkin+enthalpy)
 !        write(6,*) istep,e_rxyz-e_pos,nummax,nummin
-       if (nummin.ge.mdmin) then
+       if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
                write(*,*) '# WARNING: nummin,nummax',nummin,nummax
 
@@ -6139,7 +6139,7 @@ end subroutine
 !!  use mod_fire,   only:dtmin, dtmax
 !!  use minpar, only:parmin_bfgs
 !!  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type
-!!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
+!!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,parres%mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
 !!  use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
 !!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,parini%md_algo,parini%md_integrator,auto_dtion_md
 !!  use global, only: parini%nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
@@ -6160,7 +6160,7 @@ end subroutine
 !!  ! 200      ntime_md
 !!  ! 200      ntime_geopt
 !!  ! 2.d0     bmass
-!!  ! Auto 6 12       mdmin or mdmin_min mdmin_max
+!!  ! Auto 6 12       parres%mdmin or mdmin_min mdmin_max
 !!  ! 8 3.0 2.0 F nsoften, alpha_at, alpha_lat,mol_soften
 !!  ! FIRE     !Method of geopt: FIRE or BFGS
 !!  ! 20.d0 1.d0 50.d0    dtion_fire, min, max .or. alphax_at, alphax_lat 
@@ -6197,22 +6197,22 @@ end subroutine
 !!   if(parini%md_algo==4) fixlat(7)=.true.;if(fixlat(7)) parini%md_algo=4
 !!   read(12,*) ntime_geopt           !Maximum number of iterations during GEOPT
 !!   read(12,*) bmass                 !Cell mass during MD and FIRE
-!!  ! read(12,*) mdmin                 !Number of enthalpy minima crossed unit stop MD
-!!  !Block mdmin****************
+!!  ! read(12,*) parres%mdmin                 !Number of enthalpy minima crossed unit stop MD
+!!  !Block parres%mdmin****************
 !!   read(12,'(a250)') all_line
 !!   n = len_trim(all_line)
 !!   read(all_line(1:n),*) tmp_ch
 !!    if(trim(tmp_ch)=="Auto") then
-!!  !   if(.not.auto_mdmin) then
+!!  !   if(.not.parini%auto_mdmin) then
 !!       read(all_line(1:n),*) tmp_ch,mdmin_min,mdmin_max  !Number of enthalpy minima crossed unit stop MD
-!!       if(.not.auto_mdmin) mdmin=mdmin_min
+!!       if(.not.parini%auto_mdmin) parres%mdmin=mdmin_min
 !!  !   endif
-!!     auto_mdmin=.true.
+!!     parini%auto_mdmin=.true.
 !!    else
-!!     read(all_line(1:n),*)  mdmin  !Number of enthalpy minima crossed unit stop MD
-!!     auto_mdmin=.false.
+!!     read(all_line(1:n),*)  parres%mdmin  !Number of enthalpy minima crossed unit stop MD
+!!     parini%auto_mdmin=.false.
 !!    endif
-!!  !Block mdmin****************
+!!  !Block parres%mdmin****************
 !!  !Block soften****************
 !!   read(12,'(a250)') all_line
 !!   n = len_trim(all_line)
@@ -8605,7 +8605,7 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,units,usewf_md
+ use global, only: char_type,bmass,units,usewf_md
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -8903,7 +8903,7 @@ endif
        ent_pos_0=enthalpy
        en0000=enthalpy-ent_pos_0
        write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -9102,9 +9102,9 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
        if (itime >= 3 .and. enmin1 > enmin2 .and. enmin1 > en0000)  nummax=nummax+1
        if (itime >= 3 .and. enmin1 < enmin2 .and. enmin1 < en0000)  nummin=nummin+1
 !       write(67,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+!             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,mdmin
+             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
@@ -9114,7 +9114,7 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
 !*********************************************************************
         econs_max=max(econs_max,rkin+enthalpy)
         econs_min=min(econs_min,rkin+enthalpy)
-       if (nummin.ge.mdmin) then
+       if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
                write(*,*) '# WARNING: nummin,nummax',nummin,nummax
 
@@ -9144,14 +9144,14 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
 !Adjust MD stepsize
 !Minimum number of steps per crossed minimum is 15, average should be parres%nit_per_min
      if(parres%auto_dtion_md) then
-       if(real(itime,8)/real(mdmin,8).lt.real(parres%nit_per_min,8)) then
+       if(real(itime,8)/real(parres%mdmin,8).lt.real(parres%nit_per_min,8)) then
          parres%dtion_md=parres%dtion_md*1.d0/1.1d0
        else
          parres%dtion_md=parres%dtion_md*1.1d0 
        endif
-     parres%dtion_md=min(parres%dtion_md,real(itime,8)*dt/(real(mdmin,8)*15.d0))
-     write(*,'(3(a,es10.2))') " # MD: steps per minium: ",real(itime,8)/real(mdmin,8),&
-           &", parres%dtion_md set to: ",parres%dtion_md,", upper boundary: ",real(itime,8)*dt/(real(mdmin,8)*15.d0) 
+     parres%dtion_md=min(parres%dtion_md,real(itime,8)*dt/(real(parres%mdmin,8)*15.d0))
+     write(*,'(3(a,es10.2))') " # MD: steps per minium: ",real(itime,8)/real(parres%mdmin,8),&
+           &", parres%dtion_md set to: ",parres%dtion_md,", upper boundary: ",real(itime,8)*dt/(real(parres%mdmin,8)*15.d0) 
      endif
 !MD stopped, now do relaxation
      write(*,'(a,i5,es15.7,es15.7)') ' # EXIT MD ',itime,enthalpy,etot_in

@@ -50,9 +50,9 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
+                &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -245,7 +245,7 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !Block mdmin****************
 !AUTO_MDMIN
-   call parse_logical("AUTO_MDMIN",10,all_line(1:n),n,auto_mdmin,found)
+   call parse_logical("AUTO_MDMIN",10,all_line(1:n),n,parini%auto_mdmin,found)
    if(found) cycle
 !MDMININIT
    call parsescalar_int("MDMININIT",9,all_line(1:n),n,mdmin_in,found)
@@ -547,10 +547,10 @@ close(12)
 !Post Processing
 !MDMIN
   if(calls==0) then
-      if(.not.auto_mdmin) then
-           mdmin=mdmin_in
+      if(.not.parini%auto_mdmin) then
+           parini%mdmin=mdmin_in
       else
-           mdmin=max(mdmin_in,mdmin_min)
+           parini%mdmin=max(mdmin_in,mdmin_min)
       endif
   endif
 !SOFTEN
@@ -645,9 +645,9 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
+                &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -688,7 +688,7 @@ parini%md_integrator=3
 parini%md_presscomp=-0.d0
 parini%paropt_geopt%nit=300
 bmass=1.d0
-auto_mdmin=.false.
+parini%auto_mdmin=.false.
 mdmin_in=1
 mdmin_min=2
 mdmin_max=2
@@ -804,9 +804,9 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
+                &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -926,9 +926,9 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
+                &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -985,8 +985,8 @@ write(*,'(a,L3)')          " # AUTO_MDDT     ", parini%auto_dtion_md
 write(*,'(a,L3)')          " # MDENCON       ", parini%energy_conservation
 write(*,'(a,es15.7)')      " # MDDTINIT      ", parini%dtion_md
 write(*,'(a,i5)')          " # MDDTIPM       ", parini%nit_per_min
-write(*,'(a,L3)')          " # AUTO_MDMIN    ", auto_mdmin
-write(*,'(a,i5)')          " # MDMININIT     ", mdmin
+write(*,'(a,L3)')          " # AUTO_MDMIN    ", parini%auto_mdmin
+write(*,'(a,i5)')          " # MDMININIT     ", parini%mdmin
 write(*,'(a,i5)')          " # MDMINMIN      ", mdmin_min
 write(*,'(a,i5)')          " # MDMINMAX      ", mdmin_max
 write(*,'(a,es15.7)')      " # CELLMASS      ", bmass
