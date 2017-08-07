@@ -12,7 +12,7 @@ TYPAT 8*1        !Atomic type indentities
 GEONIT 800       !Maximum number of iterations during GEOPT
 GEOEXT F         !DONT Use external geomatry optimizer
 GEOALGO  FIRE    !Geometry optimizer method
-GEOTOLMXF 1.d-4  !In atomic units: Force tolerance for GEOPT convergance 
+GEOTOLMXF 5.d-5  !In atomic units: Force tolerance for GEOPT convergance 
 STRFACT 100      !Factor to multiply stress
 GEOFIREDTINIT 20 !Initial FIRE timestep
 GEOFIREDTMIN   1 !Minimal FIRE timestep
