@@ -52,7 +52,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
+                &alphax_lat,findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -251,10 +251,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("MDMININIT",9,all_line(1:n),n,mdmin_in,found)
    if(found) cycle
 !MDMINMIN
-   call parsescalar_int("MDMINMIN",8,all_line(1:n),n,mdmin_min,found)
+   call parsescalar_int("MDMINMIN",8,all_line(1:n),n,parini%mdmin_min,found)
    if(found) cycle
 !MDMINMAX
-   call parsescalar_int("MDMINMAX",8,all_line(1:n),n,mdmin_max,found)
+   call parsescalar_int("MDMINMAX",8,all_line(1:n),n,parini%mdmin_max,found)
    if(found) cycle
 !Block mdmin****************
 !Block soften****************
@@ -550,7 +550,7 @@ close(12)
       if(.not.parini%auto_mdmin) then
            parini%mdmin=mdmin_in
       else
-           parini%mdmin=max(mdmin_in,mdmin_min)
+           parini%mdmin=max(mdmin_in,parini%mdmin_min)
       endif
   endif
 !SOFTEN
@@ -647,7 +647,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
+                &alphax_lat,findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -690,8 +690,8 @@ parini%paropt_geopt%nit=300
 bmass=1.d0
 parini%auto_mdmin=.false.
 mdmin_in=1
-mdmin_min=2
-mdmin_max=2
+parini%mdmin_min=2
+parini%mdmin_max=2
 parini%energy_conservation=.false.
 auto_soft=.false.
 alpha_lat_in=1.d0
@@ -806,7 +806,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
+                &alphax_lat,findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -836,8 +836,8 @@ if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
 if(parini%md_integrator.lt.1.or.parini%md_integrator.gt.3) stop "Error in parini%md_integrator"
 if(parini%paropt_geopt%nit.lt.0) stop "Error in parini%paropt_geopt%nit"
 if(bmass.le.0.d0) stop "Error in bmass"
-if(mdmin_min.lt.0) stop "Error in mdmin_min"
-if(mdmin_max.lt.mdmin_min) stop "Error in mdmin_max"
+if(parini%mdmin_min.lt.0) stop "Error in parini%mdmin_min"
+if(parini%mdmin_max.lt.parini%mdmin_min) stop "Error in parini%mdmin_max"
 if(alpha_lat.le.0.d0) stop "Error in alpha_lat"
 if(alpha_at.le.0.d0) stop "Error in alpha_at"
 if(nsoften.lt.1) stop "Error in nsoften"
@@ -928,7 +928,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,&
+                &alphax_lat,findsym,finddos,auto_soft,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -987,8 +987,8 @@ write(*,'(a,es15.7)')      " # MDDTINIT      ", parini%dtion_md
 write(*,'(a,i5)')          " # MDDTIPM       ", parini%nit_per_min
 write(*,'(a,L3)')          " # AUTO_MDMIN    ", parini%auto_mdmin
 write(*,'(a,i5)')          " # MDMININIT     ", parini%mdmin
-write(*,'(a,i5)')          " # MDMINMIN      ", mdmin_min
-write(*,'(a,i5)')          " # MDMINMAX      ", mdmin_max
+write(*,'(a,i5)')          " # MDMINMIN      ", parini%mdmin_min
+write(*,'(a,i5)')          " # MDMINMAX      ", parini%mdmin_max
 write(*,'(a,es15.7)')      " # CELLMASS      ", bmass
 write(*,'(a)')             " # GEOPT parameters **************************************************************"
 write(*,'(a,L3)')          " # GEOEXT        ", geopt_ext

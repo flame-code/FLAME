@@ -20,7 +20,7 @@ implicit none
 !  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
   real(8):: bmass                 !Cell mass during MD and FIRE
 !  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
-  integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
+!  integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
 !  real(8):: dtion_md              !Initial timestep for MD 
   !real(8):: dtion_fire,dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep
   real(8):: dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep

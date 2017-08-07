@@ -175,6 +175,7 @@ module mod_parini
         real(8):: dtion_md              !Initial timestep for MD
         logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
         integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
+        integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

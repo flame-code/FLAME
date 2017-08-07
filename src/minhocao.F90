@@ -1058,7 +1058,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
           escape_sam/escape,escape_old/escape,escape_new/escape,'   S'
      write(*,'(a)')' # no escape from current minimum.'
 
-     if(parini%auto_mdmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
+     if(parini%auto_mdmin) parres%mdmin   = min(parini%mdmin_max, parres%mdmin + 1)  ! MALM
      write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
 
      goto 5555
@@ -1149,7 +1149,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !!     call save_low_conf(nat,npmin,npminx,rent_wpos,re_wpos,wpos_red,wpos_latvec,spg_wpos,&
 !!     &spgtol_wpos,fdos_wpos,elocmin,poslocmin,latlocmin)
 
-!     if(parini%auto_mdmin) parres%mdmin   = max(mdmin_min, parres%mdmin - 1)  ! MALM
+!     if(parini%auto_mdmin) parres%mdmin   = max(parini%mdmin_min, parres%mdmin - 1)  ! MALM
   endif
 !  write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
 
@@ -1177,8 +1177,8 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   av_ediff=av_ediff+ediff
   if (ent_hop-ent_pos.lt.ediff) then
 !Local minima accepted  
-   if(parini%auto_mdmin.and.newmin)      parres%mdmin   = max(mdmin_min, parres%mdmin - 1)  ! MALM
-   if(parini%auto_mdmin.and..not.newmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
+   if(parini%auto_mdmin.and.newmin)      parres%mdmin   = max(parini%mdmin_min, parres%mdmin - 1)  ! MALM
+   if(parini%auto_mdmin.and..not.newmin) parres%mdmin   = min(parini%mdmin_max, parres%mdmin + 1)  ! MALM
    write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
    accepted=accepted+1.d0
    e_pos=e_hop
