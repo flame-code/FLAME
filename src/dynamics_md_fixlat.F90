@@ -1,13 +1,14 @@
 !**********************************************************************************************
-subroutine MD_fixlat(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
+subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,mdmin,dtion_md,units,usewf_md
+ use global, only: char_type,mdmin,units,usewf_md
  use global, only: fixat,fixlat,bc
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
 implicit none
     type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parres
     integer:: iat,iprec,istep
     real(8):: latvec_in(3,3), xred_in(3,nat),fcart_in(3,nat),vel_in(3,nat), strten_in(6), etot_in, counter
     real(8):: rxyz(3,nat),fxyz(3,nat),fxyz_old(3,nat),vxyz(3,nat),amass(nat)
@@ -25,7 +26,7 @@ implicit none
        stop
     endif
     pressure=target_pressure_habohr
-    dt=dtion_md
+    dt=parres%dtion_md
 
     !C initialize positions,velocities, forces
     call rxyz_int2cart(latvec_in,xred_in,rxyz,nat)
@@ -173,22 +174,22 @@ implicit none
     if(parini%energy_conservation) then
         devcon=devcon/(3*nat-3)
         if (devcon/rkin_0.lt.1.d-2) then
-           dtion_md=dtion_md*1.05d0
+           parres%dtion_md=parres%dtion_md*1.05d0
         else
-           dtion_md=dtion_md*(1.d0/1.05d0)
+           parres%dtion_md=parres%dtion_md*(1.d0/1.05d0)
         endif
       write(*,'(a,es10.2,es10.2,a,es10.2)') " # MD: energy conservation :",devcon,rkin_0,&
-      &", dtion_md set to: ",dtion_md
+      &", parres%dtion_md set to: ",parres%dtion_md
     else 
        dt_ratio=real(istep,8)/real(nummin,8) 
        if(dt_ratio.lt.real(parini%nit_per_min,8)) then
-         dtion_md=dtion_md*1.d0/1.1d0
+         parres%dtion_md=parres%dtion_md*1.d0/1.1d0
        else
-         dtion_md=dtion_md*1.1d0 
+         parres%dtion_md=parres%dtion_md*1.1d0 
        endif
-       dtion_md=min(dtion_md,dt*dt_ratio/15.d0)
+       parres%dtion_md=min(parres%dtion_md,dt*dt_ratio/15.d0)
        write(*,'(3(a,es10.2))') " # MD: steps per minium: ",dt_ratio,&
-      &", dtion_md set to: ",dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
+      &", parres%dtion_md set to: ",parres%dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
      endif
   endif
    

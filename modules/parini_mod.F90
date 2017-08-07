@@ -172,6 +172,7 @@ module mod_parini
         logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
         logical:: energy_conservation   !Only used in fixed cell MD
         integer:: nit_per_min           !Target number of md steps per md minimum crossing
+        real(8):: dtion_md              !Initial timestep for MD
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

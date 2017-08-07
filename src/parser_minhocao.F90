@@ -50,7 +50,7 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
@@ -557,7 +557,7 @@ close(12)
   if(calls==0.or..not.auto_soft) alpha_lat=alpha_lat_in
   if(calls==0.or..not.auto_soft) alpha_at=alpha_at_in
 !MDTIMESTE=P
-  if(calls==0.or..not.parini%auto_dtion_md) dtion_md=dtion_md_in
+  if(calls==0.or..not.parini%auto_dtion_md) parini%dtion_md=dtion_md_in
 !KPT
   if(auto_kpt) then
     ka=0;kb=0;kc=0
@@ -645,7 +645,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
@@ -804,7 +804,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
@@ -841,7 +841,7 @@ if(mdmin_max.lt.mdmin_min) stop "Error in mdmin_max"
 if(alpha_lat.le.0.d0) stop "Error in alpha_lat"
 if(alpha_at.le.0.d0) stop "Error in alpha_at"
 if(nsoften.lt.1) stop "Error in nsoften"
-if(dtion_md.le.0.d0) stop "Error in dtion_md"
+if(parini%dtion_md.le.0.d0) stop "Error in parini%dtion_md"
 if(parini%nit_per_min.le.0) stop "Error in parini%nit_per_min"
 if(trim(parini%paropt_geopt%approach).ne."FIRE".and.&
    trim(parini%paropt_geopt%approach).ne."MBFGS".and.&
@@ -926,7 +926,7 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
+                &nsoften,alpha_at,alpha_lat,bmass,mdmin,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
                 &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,&
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,use_confine,&
@@ -983,7 +983,7 @@ write(*,'(a,i5)')          " # MDINT         ", parini%md_integrator
 write(*,'(a,i5)')          " # MDNIT         ", parini%nmd_dynamics
 write(*,'(a,L3)')          " # AUTO_MDDT     ", parini%auto_dtion_md
 write(*,'(a,L3)')          " # MDENCON       ", parini%energy_conservation
-write(*,'(a,es15.7)')      " # MDDTINIT      ", dtion_md
+write(*,'(a,es15.7)')      " # MDDTINIT      ", parini%dtion_md
 write(*,'(a,i5)')          " # MDDTIPM       ", parini%nit_per_min
 write(*,'(a,L3)')          " # AUTO_MDMIN    ", auto_mdmin
 write(*,'(a,i5)')          " # MDMININIT     ", mdmin
