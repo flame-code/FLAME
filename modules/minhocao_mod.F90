@@ -51,9 +51,9 @@ implicit none
   logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
   logical:: auto_kpt              !Currently a dummy variable
   integer:: nit_per_min           !Target number of md steps per md minimum crossing
-  integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
-  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
-  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
+!  integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
+!  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
+!  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
   logical:: mol_soften            !Switch on molecular softening
   integer:: correctalg            !Method to perform cell corrections
   integer:: bc                    !1: periodic, 2:free, 3:surface/slab

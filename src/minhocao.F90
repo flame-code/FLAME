@@ -1317,8 +1317,8 @@ end subroutine task_minhocao
 subroutine MD_MHM   (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_integrator,auto_dtion_md
- use global, only: nit_per_min,fixat,fixlat,md_presscomp
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,auto_dtion_md
+ use global, only: nit_per_min,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1478,7 +1478,7 @@ endif
 !Set options=1 for Velocity Verlet of cell dynamics
 !Set options=2 for Normal Verlet of cell dynamics
 !Set options=3 for Beeman integration scheme, corrector-predictor
-  options=md_integrator
+  options=parini%md_integrator
   if(options.lt.1.or.options.gt.3) stop "Wrong algo option"
 
 !MD-type: 1 for PR and 2 for Cleveland and 3 for Wentzcovitch and 4 for Andersen
@@ -1509,12 +1509,12 @@ else
 endif
 
 !EXPERIMENTAL: add the pressure part from the initial velocities to the MD
-if(md_type==1.and.md_presscomp.gt.0.d0) then
+if(md_type==1.and.parini%md_presscomp.gt.0.d0) then
   call stress_velocity(vposcur,latvec,amass,nat,vpressure)
-  write(*,'(a,f10.5)') " # Internal pressure on top of external pressure: ", vpressure*HaBohr3_GPA*md_presscomp
-  pressure_md(1,1)=pressure_md(1,1)+vpressure*md_presscomp
-  pressure_md(2,2)=pressure_md(2,2)+vpressure*md_presscomp
-  pressure_md(3,3)=pressure_md(3,3)+vpressure*md_presscomp
+  write(*,'(a,f10.5)') " # Internal pressure on top of external pressure: ", vpressure*HaBohr3_GPA*parini%md_presscomp
+  pressure_md(1,1)=pressure_md(1,1)+vpressure*parini%md_presscomp
+  pressure_md(2,2)=pressure_md(2,2)+vpressure*parini%md_presscomp
+  pressure_md(3,3)=pressure_md(3,3)+vpressure*parini%md_presscomp
 endif
 
 !Compute f0
@@ -2557,7 +2557,7 @@ end subroutine
 subroutine MD_ANDERSEN_MHM     (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_integrator,auto_dtion_md
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat
  use defs_basis
  use interface_code
@@ -2708,7 +2708,7 @@ implicit none
 !Set options=1 for Velocity Verlet of cell dynamics
 !Set options=2 for Normal Verlet of cell dynamics
 !Set options=3 for Beeman integration scheme, corrector-predictor
-  options=md_integrator
+  options=parini%md_integrator
   if(options.lt.1.or.options.gt.3) stop "Wrong algo option"
 
 
@@ -6136,7 +6136,7 @@ end subroutine
 !!  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type
 !!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
 !!  use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
-!!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,parini%md_algo,md_integrator,auto_dtion_md
+!!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,parini%md_algo,parini%md_integrator,auto_dtion_md
 !!  use global, only: nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
 !!  implicit none
 !!  integer:: itype,n
@@ -6187,7 +6187,8 @@ end subroutine
 !!      fragarr(:)=-1
 !!   endif
 !!   read(12,*) typat(1:nat)          !Types of atoms  
-!!   read(12,*) ntime_md, parini%md_algo, md_integrator          !Maximum number of iterations during MD, parini%md_algo, md_integrator
+!!   read(12,*) ntime_md, parini%md_algo, parini%md_integrator          !Maximum number of iterations during MD, parini%md_algo,
+!parini%md_integrator
 !!   if(parini%md_algo==4) fixlat(7)=.true.;if(fixlat(7)) parini%md_algo=4
 !!   read(12,*) ntime_geopt           !Maximum number of iterations during GEOPT
 !!   read(12,*) bmass                 !Cell mass during MD and FIRE
@@ -8599,7 +8600,7 @@ subroutine MD_MHM_ROT(parini,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcar
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_integrator,auto_dtion_md
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat
  use defs_basis
  use interface_code
@@ -8769,7 +8770,7 @@ endif
 !Set options=1 for Velocity Verlet of cell dynamics
 !Set options=2 for Normal Verlet of cell dynamics
 !Set options=3 for Beeman integration scheme, corrector-predictor
-  options=md_integrator
+  options=parini%md_integrator
   if(options.lt.1.or.options.gt.3) stop "Wrong algo option"
 
 !MD-type: 1 for PR and 2 for Cleveland and 3 for Wentzcovitch and 4 for Andersen
