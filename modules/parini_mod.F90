@@ -180,6 +180,13 @@ module mod_parini
         logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
         real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
         !-----------------------------------------------------------------------
+        integer::qbfgs_bfgs_ndim!=1
+        real(8)::qbfgs_trust_radius_max!=0.5d0
+        real(8)::qbfgs_trust_radius_min!=1.d-5
+        real(8)::qbfgs_trust_radius_ini!=0.02D0
+        real(8)::qbfgs_w_1!=0.05D0
+        real(8)::qbfgs_w_2!=0.5D0
+        !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict
         type(dictionary), pointer :: subdict

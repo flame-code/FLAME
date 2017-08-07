@@ -56,7 +56,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
-use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -333,22 +332,22 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("GEOSQNMTRUSTR",13,all_line(1:n),n,sqnm_trustr,found)
    if(found) cycle
 !GEOQBFGSNDIM
-   call parsescalar_int ("GEOQBFGSNDIM",12,all_line(1:n),n,qbfgs_bfgs_ndim,found)
+   call parsescalar_int ("GEOQBFGSNDIM",12,all_line(1:n),n,parini%qbfgs_bfgs_ndim,found)
    if(found) cycle
 !GEOQBFGSTRTI
-   call parsescalar_real("GEOQBFGSTRI",11,all_line(1:n),n,qbfgs_trust_radius_ini,found)
+   call parsescalar_real("GEOQBFGSTRI",11,all_line(1:n),n,parini%qbfgs_trust_radius_ini,found)
    if(found) cycle
 !GEOQBFGSTRTMIN
-   call parsescalar_real("GEOQBFGSTRMIN",13,all_line(1:n),n,qbfgs_trust_radius_min,found)
+   call parsescalar_real("GEOQBFGSTRMIN",13,all_line(1:n),n,parini%qbfgs_trust_radius_min,found)
    if(found) cycle
 !GEOQBFGSTRTMAX
-   call parsescalar_real("GEOQBFGSTRMAX",13,all_line(1:n),n,qbfgs_trust_radius_max,found)
+   call parsescalar_real("GEOQBFGSTRMAX",13,all_line(1:n),n,parini%qbfgs_trust_radius_max,found)
    if(found) cycle
 !GEOQBFGSW1
-   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,qbfgs_w_1,found)
+   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,parini%qbfgs_w_1,found)
    if(found) cycle
 !GEOQBFGSW2
-   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,qbfgs_w_2,found)
+   call parsescalar_real("GEOQBFGSW1",10,all_line(1:n),n,parini%qbfgs_w_2,found)
    if(found) cycle
 !Block GEOPT*****************
 !USEWFGEO
@@ -651,7 +650,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
-use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -763,12 +761,12 @@ sqnm_steepthresh=1.d0
 sqnm_trustr=0.1d0
 
 !QBFGS
-qbfgs_bfgs_ndim=1
-qbfgs_trust_radius_max=0.5d0
-qbfgs_trust_radius_min=1.d-3
-qbfgs_trust_radius_ini=0.5D0
-qbfgs_w_1=0.01D0
-qbfgs_w_2=0.5D0
+parini%qbfgs_bfgs_ndim=1
+parini%qbfgs_trust_radius_max=0.5d0
+parini%qbfgs_trust_radius_min=1.d-3
+parini%qbfgs_trust_radius_ini=0.5D0
+parini%qbfgs_w_1=0.01D0
+parini%qbfgs_w_2=0.5D0
 
 use_confine=.false.
 conf_cartred="C"
@@ -932,7 +930,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
-use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -1009,12 +1006,12 @@ write(*,'(a,es15.7)')      " # GEOHESSAT     ", parini%alphax_at
 write(*,'(a,es15.7)')      " # GEOHESSLAT    ", parini%alphax_lat
 endif
 if(trim(parini%paropt_geopt%approach)=="QBFGS") then
-write(*,'(a,i5)'    )      " # GEOQBFGSNDIM  ",qbfgs_bfgs_ndim
-write(*,'(a,es15.7)')      " # GEOQBFGSTRI   ",qbfgs_trust_radius_ini
-write(*,'(a,es15.7)')      " # GEOQBFGSTRMIN ",qbfgs_trust_radius_min
-write(*,'(a,es15.7)')      " # GEOQBFGSTRMAX ",qbfgs_trust_radius_max
-write(*,'(a,es15.7)')      " # GEOQBFGSW1    ",qbfgs_w_1
-write(*,'(a,es15.7)')      " # GEOQBFGSW2    ",qbfgs_w_2
+write(*,'(a,i5)'    )      " # GEOQBFGSNDIM  ", parini%qbfgs_bfgs_ndim
+write(*,'(a,es15.7)')      " # GEOQBFGSTRI   ", parini%qbfgs_trust_radius_ini
+write(*,'(a,es15.7)')      " # GEOQBFGSTRMIN ", parini%qbfgs_trust_radius_min
+write(*,'(a,es15.7)')      " # GEOQBFGSTRMAX ", parini%qbfgs_trust_radius_max
+write(*,'(a,es15.7)')      " # GEOQBFGSW1    ", parini%qbfgs_w_1
+write(*,'(a,es15.7)')      " # GEOQBFGSW2    ", parini%qbfgs_w_2
 endif
 if(trim(parini%paropt_geopt%approach)=="SQNM") then
 write(*,'(a,i5)')          " # GEOSQNMNHIST  ",sqnm_nhist

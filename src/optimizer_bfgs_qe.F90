@@ -1348,7 +1348,6 @@ subroutine GEOPT_qbfgs(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
- use qbfgs,  only: qbfgs_bfgs_ndim,qbfgs_trust_radius_max,qbfgs_trust_radius_min,qbfgs_trust_radius_ini,qbfgs_w_1,qbfgs_w_2
  use save_bfgs, only: prev_bfgs,sbfgs_iter
   !----------------------------------------------------------------------------
   !
@@ -1478,12 +1477,12 @@ qe_units=.true.
      press=target_pressure_habohr*2.d0!In ry/bohr^3
      pressure=target_pressure_habohr
 !Default values of definable parameters
-     bfgs_ndim=qbfgs_bfgs_ndim
-     trust_radius_max=qbfgs_trust_radius_max
-     trust_radius_min=qbfgs_trust_radius_min
-     trust_radius_ini=qbfgs_trust_radius_ini
-     w_1=qbfgs_w_1
-     w_2=qbfgs_w_2
+     bfgs_ndim=parini%qbfgs_bfgs_ndim
+     trust_radius_max=parini%qbfgs_trust_radius_max
+     trust_radius_min=parini%qbfgs_trust_radius_min
+     trust_radius_ini=parini%qbfgs_trust_radius_ini
+     w_1=parini%qbfgs_w_1
+     w_2=parini%qbfgs_w_2
      nstep=parini%paropt_geopt%nit
      sbfgs_iter=0
      upscale=100.D0

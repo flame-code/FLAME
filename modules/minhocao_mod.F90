@@ -333,14 +333,14 @@ implicit none
       real(8):: sd_beta_at
 end module steepest_descent
 
-module qbfgs
-implicit none
-     integer::qbfgs_bfgs_ndim!=1
-     real(8)::qbfgs_trust_radius_max!=0.5d0
-     real(8)::qbfgs_trust_radius_min!=1.d-5
-     real(8)::qbfgs_trust_radius_ini!=0.02D0
-     real(8)::qbfgs_w_1!=0.05D0
-     real(8)::qbfgs_w_2!=0.5D0
-end module
+!module qbfgs
+!implicit none
+!     !integer::qbfgs_bfgs_ndim!=1
+!     real(8)::qbfgs_trust_radius_max!=0.5d0
+!     real(8)::qbfgs_trust_radius_min!=1.d-5
+!     !real(8)::qbfgs_trust_radius_ini!=0.02D0
+!     real(8)::qbfgs_w_1!=0.05D0
+!     real(8)::qbfgs_w_2!=0.5D0
+!end module
 
 
