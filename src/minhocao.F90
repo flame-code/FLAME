@@ -446,10 +446,10 @@ call system_clock(count_max=clock_max)   !Find the time max
 
 !Currently the fixed cell shape is implemented
   if(fixlat(7)) then
-          md_algo = 4
-          write(*,'(A,i5)') " # Variable volume algorithm selected, switching to Anderson MD: md_algo = ", md_algo
+          parini%md_algo = 4
+          write(*,'(A,i5)') " # Variable volume algorithm selected, switching to Anderson MD: parini%md_algo = ", parini%md_algo
   endif
-  if(md_algo==4) then
+  if(parini%md_algo==4) then
          fixlat(7)=.true.
          write(*,'(A)') " # Anderson MD selected, switching FIXLAT"
          if(any(fixlat)) write(*,*) "# FIXLAT: a,b,c,alpha,beta,gamma,shape ", fixlat
@@ -1317,7 +1317,7 @@ end subroutine task_minhocao
 subroutine MD_MHM   (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_algo,md_integrator,auto_dtion_md
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_integrator,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat,md_presscomp
  use defs_basis
  use interface_code
@@ -1451,7 +1451,7 @@ if(parini%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat
 !NEW VERISON OF MD: Directly implemented, simplest Parrinello-Rahman and other MD
 
 !Here we split the routine in the Abinit native part and my new implentation
-md_type=md_algo
+md_type=parini%md_algo
 if(md_type==1) then
  write(*,'(a)') ' # Entering standalone Parrinello Rahman MD '
 elseif(md_type==2) then
@@ -1482,7 +1482,7 @@ endif
   if(options.lt.1.or.options.gt.3) stop "Wrong algo option"
 
 !MD-type: 1 for PR and 2 for Cleveland and 3 for Wentzcovitch and 4 for Andersen
-  md_type=md_algo
+  md_type=parini%md_algo
   if(md_type.lt.1.or.md_type.gt.4) stop "Wrong integrator option"
 
 if(parini%verb.gt.0) write(*,'(a,i3,a,i3)') " # MD Algorithm: ",md_type, ", MD Integrator: ",options
@@ -2557,7 +2557,7 @@ end subroutine
 subroutine MD_ANDERSEN_MHM     (parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_algo,md_integrator,auto_dtion_md
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_integrator,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat
  use defs_basis
  use interface_code
@@ -2680,7 +2680,7 @@ implicit none
  character(4) ::fn4
  write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
 !MD-type: 1 for PR and 2 for Cleveland and 3 for Wentzcovitch
-  md_type=md_algo
+  md_type=parini%md_algo
 
 
 !Assign masses to each atom (for MD)
@@ -6136,7 +6136,7 @@ end subroutine
 !!  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,ntime_md,char_type
 !!  use global, only: nsoften,alpha_at,alpha_lat,ntime_geopt,bmass,mdmin,dtion_fire,dtion_md,tolmxf,strfact,dtion_fire_min
 !!  use global, only: dtion_fire_max,ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,geopt_method,alphax_at
-!!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md
+!!  use global, only: alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,parini%md_algo,md_integrator,auto_dtion_md
 !!  use global, only: nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,code,auto_kpt
 !!  implicit none
 !!  integer:: itype,n
@@ -6187,8 +6187,8 @@ end subroutine
 !!      fragarr(:)=-1
 !!   endif
 !!   read(12,*) typat(1:nat)          !Types of atoms  
-!!   read(12,*) ntime_md, md_algo, md_integrator          !Maximum number of iterations during MD, md_algo, md_integrator
-!!   if(md_algo==4) fixlat(7)=.true.;if(fixlat(7)) md_algo=4
+!!   read(12,*) ntime_md, parini%md_algo, md_integrator          !Maximum number of iterations during MD, parini%md_algo, md_integrator
+!!   if(parini%md_algo==4) fixlat(7)=.true.;if(fixlat(7)) parini%md_algo=4
 !!   read(12,*) ntime_geopt           !Maximum number of iterations during GEOPT
 !!   read(12,*) bmass                 !Cell mass during MD and FIRE
 !!  ! read(12,*) mdmin                 !Number of enthalpy minima crossed unit stop MD
@@ -8599,7 +8599,7 @@ subroutine MD_MHM_ROT(parini,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcar
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_algo,md_integrator,auto_dtion_md
+ use global, only: char_type,bmass,mdmin,dtion_md,units,usewf_md,md_integrator,auto_dtion_md
  use global, only: nit_per_min,fixat,fixlat
  use defs_basis
  use interface_code
@@ -8742,7 +8742,7 @@ implicit none
 !NEW VERISON OF MD: Directly implemented, simplest Parrinello-Rahman and other MD
 
 !Here we split the routine in the Abinit native part and my new implentation
-md_type=md_algo
+md_type=parini%md_algo
 if(md_type==1) then
  write(*,'(a)') ' # Entering standalone Parrinello Rahman MD '
 elseif(md_type==2) then
@@ -8773,7 +8773,7 @@ endif
   if(options.lt.1.or.options.gt.3) stop "Wrong algo option"
 
 !MD-type: 1 for PR and 2 for Cleveland and 3 for Wentzcovitch and 4 for Andersen
-  md_type=md_algo
+  md_type=parini%md_algo
   if(md_type.lt.1.or.md_type.gt.4) stop "Wrong integrator option"
 
   write(*,'(a,i3,a,i3)') " # MD Algorithm: ",md_type, ", MD Integrator: ",options

@@ -166,6 +166,7 @@ module mod_parini
         !-----------------------------------------------------------------------
         !Minhocao global module
         integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
+        integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

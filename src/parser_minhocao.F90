@@ -52,7 +52,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -223,7 +223,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("MDNIT",5,all_line(1:n),n,parini%nmd_dynamics,found)
    if(found) cycle
 !MDALGO
-   call parsescalar_int("MDALGO",6,all_line(1:n),n,md_algo,found)
+   call parsescalar_int("MDALGO",6,all_line(1:n),n,parini%md_algo,found)
    if(found) cycle
 !MDINTEGRATOR
    call parsescalar_int("MDINT",5,all_line(1:n),n,md_integrator,found)
@@ -647,7 +647,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -683,7 +683,7 @@ voids=.false.
 core_rep=.false.
 if(.not.read_poscur) typat(1:nat)=1
 parini%nmd_dynamics=300
-md_algo=1
+parini%md_algo=1
 md_integrator=3
 md_presscomp=-0.d0
 parini%paropt_geopt%nit=300
@@ -806,7 +806,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -832,7 +832,7 @@ if(any(amu(:).le.0.d0)) stop "Error in amu"
 if(any(rcov(:).le.0.d0)) stop "Error in rcov"
 if(any(znucl(:).le.0)) stop "Error in znucl"
 if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
-if(md_algo.lt.1.or.md_algo.gt.4) stop "Error in md_algo"
+if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
 if(md_integrator.lt.1.or.md_integrator.gt.3) stop "Error in md_integrator"
 if(parini%paropt_geopt%nit.lt.0) stop "Error in parini%paropt_geopt%nit"
 if(bmass.le.0.d0) stop "Error in bmass"
@@ -928,7 +928,7 @@ use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &nsoften,alpha_at,alpha_lat,bmass,mdmin,dtion_md,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,alphax_at,&
-                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_algo,md_integrator,auto_dtion_md,&
+                &alphax_lat,findsym,finddos,auto_soft,mdmin_max,mdmin_min,auto_mdmin,md_integrator,auto_dtion_md,&
                 &nit_per_min,fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,geopt_ext,energy_conservation,use_confine,&
                 &voids,core_rep,md_presscomp
 use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
@@ -977,7 +977,7 @@ write(*,trim(formatting))  " # TYPAT         ", typat(:)
 write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
 write(*,trim(formatting))  " # AMU           ", int(amu(:))
 write(*,'(a)')             " # MD parameters *****************************************************************"
-write(*,'(a,i5)')          " # MDALGO        ", md_algo
+write(*,'(a,i5)')          " # MDALGO        ", parini%md_algo
 write(*,'(a,es15.7)')      " # MDPRESSCOMP   ", md_presscomp
 write(*,'(a,i5)')          " # MDINT         ", md_integrator
 write(*,'(a,i5)')          " # MDNIT         ", parini%nmd_dynamics
