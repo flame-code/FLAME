@@ -179,6 +179,8 @@ module mod_parini
         real(8):: bmass                 !Cell mass during MD and FIRE
         logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
         real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
+        logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
+        logical:: mol_soften            !Switch on molecular softening
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

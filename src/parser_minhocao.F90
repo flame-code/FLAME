@@ -50,10 +50,10 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,&
+                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,auto_soft,&
-                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -257,7 +257,7 @@ open(unit=12,file="params_new.in")
 !Block mdmin****************
 !Block soften****************
 !AUTO_SOFT
-   call parse_logical("AUTO_SOFT",9,all_line(1:n),n,auto_soft,found)
+   call parse_logical("AUTO_SOFT",9,all_line(1:n),n,parini%auto_soft,found)
    if(found) cycle
 !SOFTLAT
    call parsescalar_real("SOFTLAT",7,all_line(1:n),n,alpha_lat_in,found)
@@ -266,10 +266,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("SOFTAT",6,all_line(1:n),n,alpha_at_in,found)
    if(found) cycle
 !MOLSOFT
-   call parse_logical("MOLSOFT",7,all_line(1:n),n,mol_soften,found)
+   call parse_logical("MOLSOFT",7,all_line(1:n),n,parini%mol_soften,found)
    if(found) cycle
 !SOFTNIT
-   call parsescalar_int("SOFTNIT",7,all_line(1:n),n,nsoften,found)
+   call parsescalar_int("SOFTNIT",7,all_line(1:n),n,parini%nsoften_minhopp,found)
    if(found) cycle
 !Block soften****************
 !Block MD timestep***********
@@ -552,8 +552,8 @@ close(12)
       endif
   endif
 !SOFTEN
-  if(calls==0.or..not.auto_soft) alpha_lat=alpha_lat_in
-  if(calls==0.or..not.auto_soft) alpha_at=alpha_at_in
+  if(calls==0.or..not.parini%auto_soft) alpha_lat=alpha_lat_in
+  if(calls==0.or..not.parini%auto_soft) alpha_at=alpha_at_in
 !MDTIMESTE=P
   if(calls==0.or..not.parini%auto_dtion_md) parini%dtion_md=dtion_md_in
 !KPT
@@ -643,10 +643,10 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,&
+                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,auto_soft,&
-                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -689,11 +689,11 @@ mdmin_in=1
 parini%mdmin_min=2
 parini%mdmin_max=2
 parini%energy_conservation=.false.
-auto_soft=.false.
+parini%auto_soft=.false.
 alpha_lat_in=1.d0
 alpha_at_in=1.d0
-mol_soften=.false.
-nsoften=10
+parini%mol_soften=.false.
+parini%nsoften_minhopp=10
 parini%auto_dtion_md=.false.
 dtion_md_in=20.d0
 parini%nit_per_min=25.d0
@@ -800,10 +800,10 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,&
+                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,auto_soft,&
-                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,voids,core_rep
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
@@ -835,7 +835,7 @@ if(parini%mdmin_min.lt.0) stop "Error in parini%mdmin_min"
 if(parini%mdmin_max.lt.parini%mdmin_min) stop "Error in parini%mdmin_max"
 if(alpha_lat.le.0.d0) stop "Error in alpha_lat"
 if(alpha_at.le.0.d0) stop "Error in alpha_at"
-if(nsoften.lt.1) stop "Error in nsoften"
+if(parini%nsoften_minhopp.lt.1) stop "Error in nsoften"
 if(parini%dtion_md.le.0.d0) stop "Error in parini%dtion_md"
 if(parini%nit_per_min.le.0) stop "Error in parini%nit_per_min"
 if(trim(parini%paropt_geopt%approach).ne."FIRE".and.&
@@ -921,10 +921,10 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &nsoften,alpha_at,alpha_lat,&
+                &alpha_at,alpha_lat,&
                 &ka,kb,kc,dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,auto_soft,&
-                &fixat,fixlat,rcov,mol_soften,fragarr,auto_kpt,bc,use_confine,&
+                &findsym,finddos,&
+                &fixat,fixlat,rcov,fragarr,auto_kpt,bc,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -1018,11 +1018,11 @@ write(*,'(a,es15.7)')      " # GEOSQNMTRUSTR ", parini%paropt_geopt%trustr
 endif
 endif 
 write(*,'(a)')             " # SOFTEN parameters *************************************************************"
-write(*,'(a,L3)')          " # AUTO_SOFT     ", auto_soft
-write(*,'(a,L3)')          " # MOLSOFT       ", mol_soften
+write(*,'(a,L3)')          " # AUTO_SOFT     ", parini%auto_soft
+write(*,'(a,L3)')          " # MOLSOFT       ", parini%mol_soften
 write(*,'(a,es15.7)')      " # SOFTAT        ", alpha_at
 write(*,'(a,es15.7)')      " # SOFTLAT       ", alpha_lat
-write(*,'(a,i5)')          " # SOFTNIT       ", nsoften
+write(*,'(a,i5)')          " # SOFTNIT       ", parini%nsoften_minhopp
 write(*,'(a)')             " # KPOINTS parameters ************************************************************"
 write(*,'(a,L3)')          " # AUTO_KPT     ", auto_kpt
 if(.not.auto_kpt) then

@@ -162,7 +162,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   folder=""
 
 !Initialize auto logicals to false, otherwise it will read the params file and reset alpha_lat, alpha_at, mdmin_max, etc
-  auto_soft=.false.
+  parini%auto_soft=.false.
   parini%auto_mdmin=.false.
   parini%auto_dtion_md=.false.
   alpha_at=-1.d10
@@ -473,7 +473,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   close(11)
 
   write(*,'(a,1x,3(1x,e10.3),1x,i4)') ' # In :ediff,temperature,maximum temperature,nsoften',&
-        &ediff,ekinetic,ekinetic_max,nsoften
+        &ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp
 
 !If restart run read previously found energies and other infos
 !  elocmin=0.d0
@@ -585,7 +585,7 @@ call system_clock(count_max=clock_max)   !Find the time max
        enddo 
      call winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin_t,npminx,& 
           &ent_arr_t,e_arr_t,ct_arr_t,spg_arr_t,spgtol_arr_t,dos_arr_t,pl_arr_t,lat_arr_t,f_arr_t,str_arr_t,fp_arr_t,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
      write(*,'(a,i5,a)') " # Rebinning completed, new nlmin: ",nlmin_t,". rebin.in will be deteled!"
      call system("rm rebin.in")
      goto 3001 
@@ -911,7 +911,7 @@ endif
 
 !Here we call the softening routine
      if(confine==1) confine=2
-     call init_vel(parini,vel_in,vel_lat_in,vel_vol_in,wpos_latvec,wpos_red,parini%bmass*amu_emass,ekinetic,nsoften,folder)
+     call init_vel(parini,vel_in,vel_lat_in,vel_vol_in,wpos_latvec,wpos_red,parini%bmass*amu_emass,ekinetic,parini%nsoften_minhopp,folder)
 
 !Call molecular dynamics 
      escape=escape+1.d0
@@ -1047,7 +1047,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      ekinetic=max(min(ekinetic_max,ekinetic*beta1),100.d0)       !This may still be changed into the temperature. Or we could use T=2/(3*kb)*ekinetic
 
 !Update the temperature within dataset 2, belonging to MD
-     call wtioput(ediff,ekinetic,ekinetic_max,nsoften)
+     call wtioput(ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp)
      open(unit=222,file='global.mon',status='unknown',position='append')
      write(222,'(i10,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a)')  &
           nhop,escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos, &
@@ -1059,7 +1059,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      write(*,'(a)')' # no escape from current minimum.'
 
      if(parini%auto_mdmin) parres%mdmin   = min(parini%mdmin_max, parres%mdmin + 1)  ! MALM
-     write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
+     write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
 
      goto 5555
    endif
@@ -1129,7 +1129,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !        if (tt.gt. accur*(1.1d0)) egap=min(egap,tt)
         egap=min(egap,tt)
      endif
-     call wtioput(ediff,ekinetic,ekinetic_max,nsoften)
+     call wtioput(ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp)
      nlmin=nlmin+1
 !!       call insert(nlminx,nlmin,k_e_wpos,rent_wpos,re_wpos,earr(0,1))
      call insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_red,wpos_latvec,wpos_fcart,wpos_strten,&
@@ -1142,7 +1142,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      if(modulo(nlmin,nwrite_inter)==0) then 
      call winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
           &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
      endif
      nvisit=1
 !!     npmin=npmin+1
@@ -1179,7 +1179,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !Local minima accepted  
    if(parini%auto_mdmin.and.newmin)      parres%mdmin   = max(parini%mdmin_min, parres%mdmin - 1)  ! MALM
    if(parini%auto_mdmin.and..not.newmin) parres%mdmin   = min(parini%mdmin_max, parres%mdmin + 1)  ! MALM
-   write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
+   write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
    accepted=accepted+1.d0
    e_pos=e_hop
    ent_pos=ent_hop
@@ -1197,7 +1197,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      pos_latvec=lathop
      pos_fcart=poshop_fcart
      pos_strten=poshop_strten
-     call wtioput(ediff,ekinetic,ekinetic_max,nsoften)
+     call wtioput(ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp)
       if (abs(ent_wpos-ent_hop).lt.1.d-10) then
          open(unit=222,file='global.mon',status='unknown',position='append')
          write(222,'(i10,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),l3,a,i5)')  &
@@ -1234,13 +1234,13 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      if(modulo(nlmin,nwrite_inter)==0) then 
      call winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
           &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
      endif
      goto 1000
   else
 !local minima rejected
 !    if(parini%auto_mdmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
-     write(*,*) "# nsoften, mdmin: ", nsoften, parres%mdmin ! MALM
+     write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
      open(unit=222,file='global.mon',status='unknown',position='append')
      write(222,'(i10,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),l3,a,i5)')  &
           nhop,escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos,&
@@ -1253,7 +1253,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 
      rejected=rejected+1.d0
      ediff=max(ediff*alpha2,1.d-4)
-     call wtioput(ediff,ekinetic,ekinetic_max,nsoften)
+     call wtioput(ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp)
      goto 1000
 !------------------------------------------------------------
   endif
@@ -1273,7 +1273,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
 !!      typat,fixat,fixlat,target_pressure_habohr)
      call winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
           &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,ntypat,typat,fixat,fixlat,target_pressure_habohr)
 
 
 !Print ratios from all the global counters
@@ -4933,7 +4933,7 @@ subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,po
      write(*,*) ' wrote earr.dat for  RESTART'
      close(12)
      
-     call wtioput(ediff,ekinetic,ekinetic_max,nsoften)
+     call wtioput(ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp)
      write(*,*) ' wrote ioput for  RESTART'
 
 !Write binaries
@@ -5215,7 +5215,7 @@ end subroutine elim_torque_cell
 subroutine init_vel(parini,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
- use global, only: amu,amutmp,typat,char_type,fixat,fixlat,mol_soften,bc
+ use global, only: amu,amutmp,typat,char_type,fixat,fixlat,bc
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5249,7 +5249,7 @@ implicit none
 
 pressure=target_pressure_habohr
 
-if(mol_soften) then
+if(parini%mol_soften) then
          if(any(fixat).or.any(fixlat)) stop "Fixed atoms or cell not yet implemented for molecular softening"
 !Init atomic velocities
          call init_rotvels(nat,pos_red,latvec,temp,amass,vel)
@@ -5262,7 +5262,7 @@ if(mol_soften) then
          call gausdist_cell(latvec,vel_lat)
 !Soften the velocities of lattice
          if(.not.fixlat(7)) then
-         call soften_lat(parini,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,nsoften,folder)
+         call soften_lat(parini,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
          call elim_fixed_lat(latvec,vel_lat)
          endif
 else
@@ -5270,7 +5270,7 @@ else
          if(.not.(all(fixat))) then
            call gausdist(nat,vel,amass)
 !Soften the velocities of atoms
-           call soften_pos(parini,latvec,pos_red,vel,curv0,curv,res,pressure,count_soft,amass,nsoften,folder)
+           call soften_pos(parini,latvec,pos_red,vel,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
 !Get rid of center-of-mass velocity, taking also into account fixed atoms (This has already been done in gausdist for all free atoms, but lets do it again...)
            if(.not.any(fixat(:))) then
              s1=sum(amass(:))
@@ -5325,7 +5325,7 @@ else
          if(.not.(all(fixlat(1:6))).and.(.not.fixlat(7)).and.bc.ne.2) then
            call gausdist_cell(latvec,vel_lat)
 !Soften the velocities of lattice
-           call soften_lat(parini,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,nsoften,folder)
+           call soften_lat(parini,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
            call elim_fixed_lat(latvec,vel_lat)
          endif
 endif
@@ -5361,7 +5361,7 @@ end subroutine init_vel
         subroutine soften_pos(parini,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,alpha_at,units,usewf_soften,auto_soft,fixat,fixlat
+ use global, only: char_type,alpha_at,units,usewf_soften,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5397,7 +5397,7 @@ implicit none
         real(8):: pos_prev(3*nat),dir_prev(3*nat),dir(3*nat),angle,norm
         logical:: decrease
         write(*,'(a,i5)')" # Entering SOFTENING routine for ATOMS, nsoft= ",nsoft 
-        if(auto_soft) write(*,'(a)')" # Automatic softening activated" 
+        if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated" 
         decrease=.false.
 !        rxyzcart=rxyz        
 !First transform the atomic positions from internal to external coordinates
@@ -5527,8 +5527,8 @@ endif
       
 write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
 !Decrease the stepsize if necessary
-       if(auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
-       if(auto_soft.and.nsoft.ge.3) then
+       if(parini%auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
+       if(parini%auto_soft.and.nsoft.ge.3) then
           if(decrease) then 
              alpha_at=alpha_at/1.1d0
           else
@@ -5546,7 +5546,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
         subroutine soften_lat(parini,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,alpha_at,alpha_lat,units,usewf_soften,auto_soft,fixat,fixlat
+ use global, only: char_type,alpha_at,alpha_lat,units,usewf_soften,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5587,7 +5587,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
         decrease=.false.
 
         write(*,'(a,i5)')" # Entering SOFTENING routine for LATTICE, nsoft= ",nsoft
-        if(auto_soft) write(*,'(a)')" # Automatic softening activated"
+        if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated"
 
 !        ddcart=dd
         rxyz=pos_red0
@@ -5735,8 +5735,8 @@ endif
 
 write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
 !Decrease the stepsize if necessary
-       if(auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
-       if(auto_soft.and.nsoft.ge.3) then
+       if(parini%auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
+       if(parini%auto_soft.and.nsoft.ge.3) then
           if(decrease) then
              alpha_lat=alpha_lat/1.1d0
           else

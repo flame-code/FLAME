@@ -37,7 +37,7 @@ implicit none
 !  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
   real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
 !  real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
-  integer:: nsoften               !Number of softening steps
+!  integer:: nsoften               !Number of softening steps
   logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
 !  character(5):: geopt_method
   integer:: ka1,kb1,kc1           !The previously used kpt mesh are stored in these variables, only abinit 
@@ -46,7 +46,7 @@ implicit none
   logical:: reduced               !If true, all output files will be written in reduced coordinates. Initiallized when reading poscur.ascii
   logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
   logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
-  logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
+!  logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
 !  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
 !  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
   logical:: auto_kpt              !Currently a dummy variable
@@ -54,7 +54,7 @@ implicit none
 !  integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
 !  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
 !  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
-  logical:: mol_soften            !Switch on molecular softening
+!  logical:: mol_soften            !Switch on molecular softening
   integer:: correctalg            !Method to perform cell corrections
   integer:: bc                    !1: periodic, 2:free, 3:surface/slab
 !  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
