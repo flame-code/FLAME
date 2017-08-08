@@ -7,6 +7,7 @@ module mod_opt
         character(10):: approach_current='unknown'
         character(20):: precaution='normal'
         logical:: print_force=.false.
+        real(8):: strfact
         !character(36):: frmt_base !="a4,i3.3,1x,i5,es23.15,es11.3,2es12.5"
         !parameter (frmt_base="a4,i3.3,1x,i5,es23.15,es11.3,2es12.5")
         integer:: iter=0
@@ -77,6 +78,7 @@ module mod_opt
         !integer:: nitfire=-1
         real(8):: dt=-1.d0
         real(8):: dt_start=-1.d0
+        real(8):: dtmin=-1.d0
         real(8):: dtmax=-1.d0
         real(8):: finc=-1.d0
         real(8):: fdec=-1.d0
@@ -84,6 +86,12 @@ module mod_opt
         real(8):: alphastart=-1.d0
         !parameters for SQNM
         integer:: nhist=10
+        real(8):: beta_lat
+        real(8):: beta_at
+        real(8):: maxrise
+        real(8):: cutoffRatio
+        real(8):: steepthresh
+        real(8):: trustr
         !parameters for print information
         integer:: mp=6
         integer:: lp=6

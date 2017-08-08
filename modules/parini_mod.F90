@@ -166,6 +166,31 @@ module mod_parini
         !-----------------------------------------------------------------------
         !Minhocao global module
         integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
+        integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
+        real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
+        integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
+        logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
+        logical:: energy_conservation   !Only used in fixed cell MD
+        integer:: nit_per_min           !Target number of md steps per md minimum crossing
+        real(8):: dtion_md              !Initial timestep for MD
+        logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
+        integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
+        integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
+        real(8):: bmass                 !Cell mass during MD and FIRE
+        logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
+        real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
+        logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
+        logical:: mol_soften            !Switch on molecular softening
+        real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
+        logical:: auto_kpt              !Currently a dummy variable
+        integer:: ka,kb,kc              !The number of kpoints in each dimension
+        !-----------------------------------------------------------------------
+        integer::qbfgs_bfgs_ndim!=1
+        real(8)::qbfgs_trust_radius_max!=0.5d0
+        real(8)::qbfgs_trust_radius_min!=1.d-5
+        real(8)::qbfgs_trust_radius_ini!=0.02D0
+        real(8)::qbfgs_w_1!=0.05D0
+        real(8)::qbfgs_w_2!=0.5D0
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

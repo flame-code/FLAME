@@ -161,7 +161,10 @@ contains
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
-  
+character(40):: filename,units_tmp
+real(8):: printval1,printval2
+logical:: readfix,readfrag
+logical:: fixat_tmp(nat),fixlat_tmp(7)
   !Set to true uf you are using vasp version 5.x
   vasp_5=.true.
   
@@ -273,20 +276,27 @@ contains
   endif
   
   !Since in CONTCAR the cell and atomic positions are written with higher accuracy, get it from there:
-  open(unit=32,file="CONTCAR")
-  read(32,*)ch_tmp
-  read(32,*)scaling
-  read(32,*) latvec(:,1)
-  read(32,*) latvec(:,2)
-  read(32,*) latvec(:,3)
-  latvec=latvec*scaling
-  if(vasp_5) read(32,*)ch_tmp
-  read(32,*)i_tmp
-  read(32,*)ch_tmp
-      do iat=1,nat
-        read(32,*)xred(:,iat)
-      enddo
-  close(32)
+  filename="CONTCAR"
+  units_tmp="angstrom"
+  readfix=.false.
+  readfrag=.false.  
+  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+  latvec=latvec*Bohr_Ang !Internally already converted
+!  open(unit=32,file="CONTCAR")
+!  read(32,*)ch_tmp
+!  read(32,*)scaling
+!  read(32,*) latvec(:,1)
+!  read(32,*) latvec(:,2)
+!  read(32,*) latvec(:,3)
+!  latvec=latvec*scaling
+!  if(vasp_5) read(32,*)ch_tmp
+!  read(32,*)i_tmp
+!  read(32,*)ch_tmp
+!      do iat=1,nat
+!        read(32,*)xred(:,iat)
+!      enddo
+!  close(32)
   
   !Transform all to bohr
   latvec=latvec/Bohr_Ang
@@ -295,11 +305,13 @@ contains
   fcart=fcart/Ha_eV*Bohr_Ang
   end subroutine
   
-  subroutine vasp_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine vasp_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
   !This routine will setup the input file for a vasp geometry optimization
   !It will also call the run script and harvest the output
   !use global, only: nat
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
@@ -307,7 +319,7 @@ contains
   character(4):: tmp_char
   getwfk=.false.
   !Set up the input file to perform geometry optimization
-   call make_input_vasp_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+   call make_input_vasp_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   ! call system("sleep 1")
   !Run the job NOW!
    call system("./runjob_geovasp.sh")
@@ -335,7 +347,7 @@ contains
    call system("cp vasprun.xml vasprun.xml.bak") 
   end subroutine
   
-  subroutine make_input_vasp_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_vasp_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !This routine will append some informations to a file already containing some informations about the abininit runs
   !The informations appended are:
   !-The atomic informations
@@ -348,7 +360,9 @@ contains
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,vasp_kpt_mode
   !use defs_basis,only: Bohr_Ang
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
@@ -387,9 +401,9 @@ contains
   !Setup for only one force call
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
-  write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.75d0)
+  write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.75d0)
   write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
-  write(87,'(a,es25.15)') "EDIFFG = ",-tolmxf*8.d0*HaBohr_eVAng
+  write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*8.d0*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
      write(87,'(a)') "ISIF   = 0"
@@ -404,9 +418,9 @@ contains
   !Setup for only one force call
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
-  write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.25d0)
+  write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.25d0)
   write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
-  write(87,'(a,es25.15)') "EDIFFG = ",-tolmxf*HaBohr_eVAng
+  write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
      write(87,'(a)') "ISIF   = 0"
@@ -499,6 +513,10 @@ contains
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
+character(40):: filename,units_tmp
+real(8):: printval1,printval2
+logical:: readfix,readfrag
+logical:: fixat_tmp(nat),fixlat_tmp(7)
   !if vasp is version 5.x, use vasp_5=.true.
   
   vasp_5=.true.
@@ -616,20 +634,27 @@ contains
   endif
   
   !Since in CONTCAR the cell and atomic positions are written with higher accuracy, get it from there:
-  open(unit=32,file="CONTCAR")
-  read(32,*)ch_tmp
-  read(32,*)scaling
-  read(32,*) latvec(:,1)
-  read(32,*) latvec(:,2)
-  read(32,*) latvec(:,3)
-  latvec=latvec*scaling
-  read(32,*)ch_tmp
-  if(vasp_5) read(32,*)ch_tmp
-  read(32,*)ch_tmp
-      do iat=1,nat
-        read(32,*)xred(:,iat)
-      enddo
-  close(32)
+  filename="CONTCAR"
+  units_tmp="angstrom"
+  readfix=.false.
+  readfrag=.false.  
+  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+  latvec=latvec*Bohr_Ang !Internally already converted
+!  open(unit=32,file="CONTCAR")
+!  read(32,*)ch_tmp
+!  read(32,*)scaling
+!  read(32,*) latvec(:,1)
+!  read(32,*) latvec(:,2)
+!  read(32,*) latvec(:,3)
+!  latvec=latvec*scaling
+!  read(32,*)ch_tmp
+!  if(vasp_5) read(32,*)ch_tmp
+!  read(32,*)ch_tmp
+!      do iat=1,nat
+!        read(32,*)xred(:,iat)
+!      enddo
+!  close(32)
   
   !Transform all to bohr
   latvec=latvec/Bohr_Ang

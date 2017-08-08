@@ -1,0 +1,1869 @@
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : minhocao
+   types                               : F Ca
+   two_level_geopt                     : False
+   verbosity                           : 0
+   seed                                : -2
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+ geopt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+ saddle_1s_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+ saddle_1s:
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+ potential:
+   potential                           : ann
+   bias                                : no
+   bias_field                          : no
+   cal_charge                          : False
+   potential_sec                       : unknown
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : unknown
+   drift                               : False
+   add_repulsive                       : False
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : 250.0
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     ewald                             : False
+     ewald_tol                         : 1.E-6
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : eem1
+   symfunc                             : only_calculate
+   nstep_ekf                           : 100
+   nstep_cep                           : 200
+   nat_force                           : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : operator
+   psolver                             : kwald
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   read_forces                         : True
+ dynamics:
+   nmd                                 : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ntypat  2
+type  1    F
+type  2   Ca
+iproc,seed    0  2147483562  2147483398
+ #                         
+ #                              ---_ ......._-_--.  
+ #                             (|\ /      / /| \  \  
+ #                             /  /     .'  -=-'   `.  
+ #                            /  /    .'             )  
+ #                          _/  /   .'        _.)   /  
+ #                         / o   o        _.-' /  .'  
+ #                         \          _.-'    / .'*|  
+ #                          \______.-'//    .'.' \*|  
+ #                           \|  \ | //   .'.' _ |*|  
+ #                            `   \|//  .'.'_ _ _|*|  
+ #                             .  .// .'.' | _ _ \*|      __  __ _       _                             
+ #                             \`-|\_/ /    \ _ _ \*\    |  \/  (_)_ __ | |__   ___   ___ __ _  ___    
+ #                              `/'\__/      \ _ _ \*\   | |\/| | | '_ \| '_ \ / _ \ / __/ _` |/ _ \   
+ #                             /^|            \ _ _ \*   | |  | | | | | | | | | (_) | (__ (_| | (_) |  
+ #                            '  `             \ _ _ \   |_|  |_|_|_| |_|_| |_|\___/ \___\__,_|\___/      
+ #                          
+ #                          
+ #                         Minima Hopping for Crystal Optimization, Version 3.0  
+ #                         
+ #     Maximilian Amsler  
+ #     Computational Physics Group  
+ #     University of Basel  
+ #       
+ #     Please cite the following references:  
+ #     M. Amsler and S. Goedecker: Crystal structure prediction using the minima hopping method,
+ #     J. Chem. Phys. 133, 224104 (2010)   
+ #     S. Goedecker: Minima hopping: An efficient search method for the global minimum of the potential energy surface of complex molecular systems,
+ #     J. Chem. Phys. 120, 9911 (2004)  
+ #     
+ #     ----> you can grep the standard output for #'  
+ #     
+ NAT or NTYPE or ZNUCL not found in params_new.in
+ Trying to read them from poscur.ascii                            
+ ################################ Echo params_new.in #############################
+ # VERBOSITY         1
+ # SYSTEM parameters *************************************************************
+ # BOUNDARY          1
+ # PRESS           2.0000000E+01
+ # VOIDS           F
+ # COREREP         T
+ # COMPUTE parameters ************************************************************
+ # CODE          ann
+ # FINDSYM         T
+ # FINDDOS         F
+ # USEWFGEO        T
+ # USEWFMD         F
+ # USEWFSOFT       T
+ # Atomic parameters *************************************************************
+ # NAT              12
+ # NTYPE             2
+ # ZNUCL           20   9
+ # TYPAT           1  1  1  1  2  2  2  2  2  2  2  2
+ # AMU              4   2
+ # MD parameters *****************************************************************
+ # MDALGO            1
+ # MDPRESSCOMP     0.0000000E+00
+ # MDINT             3
+ # MDNIT          1000
+ # AUTO_MDDT       T
+ # MDENCON         F
+ # MDDTINIT        2.0000000E+01
+ # MDDTIPM          30
+ # AUTO_MDMIN      T
+ # MDMININIT         2
+ # MDMINMIN          2
+ # MDMINMAX          4
+ # CELLMASS        2.0000000E+00
+ # GEOPT parameters **************************************************************
+ # GEOEXT          F
+ # GEONIT         1900
+ # GEOTOLMXF       1.0000000E-04
+ # STRFACT         1.0000000E+02
+ # GEOALGO       FIRE
+ # GEOFIREDTINIT   5.0000000E+00
+ # GEOFIREDTMIN    1.0000000E+00
+ # GEOFIREDTMAX    1.4000000E+02
+ # SOFTEN parameters *************************************************************
+ # AUTO_SOFT       T
+ # MOLSOFT         F
+ # SOFTAT          1.0000000E+00
+ # SOFTLAT         1.0000000E+00
+ # SOFTNIT          20
+ # KPOINTS parameters ************************************************************
+ # AUTO_KPT       T
+ # KPTDEN         3.0000000E-02  5.0000000E-02
+ # FINGERPRINT parameters ********************************************************
+ # FPMETHOD      OGANOV
+ # FPCUT           3.0000000E+01
+ # FPDBIN          5.0000000E-02
+ # FPSIGMA         2.0000000E-02
+ # CONFINEMENT parameters ********************************************************
+ # CONFINEMENT     F
+ ############################ END Echo params_new.in #############################
+ # Reading from poscur.ascii
+ # beta1,beta2,beta3  1.1000E+00  1.1000E+00  9.0909E-01
+ # alpha1,alpha2  9.0909E-01  1.1000E+00
+ # predicted fraction accepted, rejected  0.000E+00  1.000E+00
+ # mdmin           2
+ # Tolerance between structures: delta enthalpy, delta fingeprint:   4.0000000E-04  1.5000000E-01
+ # New run with nlminx=           2
+ # In :ediff,temperature,maximum temperature,nsoften   0.556E-01  0.100E+05  0.900E+05   20
+ # Number of poslocm_ files found:     0
+ # KPT mesh set up as follows:      6     3     3
+ parini         eem1                                              
+ ann_arr%n=            2
+           0     3  3    #number of nodes at each hidden layer
+           0     3    #number of nodes at each hidden layer
+ann%(0)=  70
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0  16   0   0  54   0
+           0     3  3    #number of nodes at each hidden layer
+           0     3    #number of nodes at each hidden layer
+ann%(0)=  70
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0  16   0   0  54   0
+ # Input structure already relaxed. Proceeding with: Energy, Enthalpy:  -3.5090742E+03 -3.5084710E+03
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     8
+ # SPGLIB: space_group     8
+ # SPGLIB: space_group     8
+ # SPGLIB: space_group     8
+ # SPGLIB: space_group     8
+ # SPGLIB: space_group    12
+ # SPGLIB: space_group    12
+ # SPGLIB: space_group    12
+ # SPGLIB: space_group    12
+ # SPGLIB: space_group    12
+ # SPGLIB: space_group    12
+ # SPGLIB: space_group    12
+ # FINAL SPGLIB  SPG, TOL:    12  3.1547867E-02
+ # Re-reading params.in
+ NAT or NTYPE or ZNUCL not found in params_new.in
+ Trying to read them from poscur.ascii                            
+ # Suggested minimal cutoff radius for Oganov FP:   1.9218586E+01
+ Creating expansion for periodic Oganov FP  10   5   6 ...
+ # Wrote file poslocm_00000.ascii, with a,b,c,alpha,beta,gamma:    6.4054579E+00   1.2843131E+01   1.2428098E+01   1.0658340E+02   1.0493269E+02   1.0444910E+02
+ # INPUT(relaxed): ent_pos,e_pos   -3.5084710470E+03 -3.5090742267E+03
+ #first configuration saved
+ # initial re_sm  -3508.47104704668     
+ #global:          0. -3.50847104704668E+03  5.560E-02  1.000E+04   12  0.000E+00
+ # Initializing velocities
+ # PARAMETERS: Ha_eV,kb_HaK,amu_emass -->   27.2113838600000     
+  3.166815419728528E-006   1822.88848426455     
+ # Temp   10000.0000000000     
+ # iat, AMU, EM:     1   4.0000000E+00   7.2915539E+03
+ # iat, AMU, EM:     2   4.0000000E+00   7.2915539E+03
+ # iat, AMU, EM:     3   4.0000000E+00   7.2915539E+03
+ # iat, AMU, EM:     4   4.0000000E+00   7.2915539E+03
+ # iat, AMU, EM:     5   2.0000000E+00   3.6457770E+03
+ # iat, AMU, EM:     6   2.0000000E+00   3.6457770E+03
+ # iat, AMU, EM:     7   2.0000000E+00   3.6457770E+03
+ # iat, AMU, EM:     8   2.0000000E+00   3.6457770E+03
+ # iat, AMU, EM:     9   2.0000000E+00   3.6457770E+03
+ # iat, AMU, EM:    10   2.0000000E+00   3.6457770E+03
+ # iat, AMU, EM:    11   2.0000000E+00   3.6457770E+03
+ # iat, AMU, EM:    12   2.0000000E+00   3.6457770E+03
+ # Entering SOFTENING routine for ATOMS, nsoft=    20
+ # Automatic softening activated
+ # KPT mesh set up as follows:      6     3     3
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.96026E-03    1
+ # SOFTEN: init atomic  it,fnrm,res,curv,fd2,etot     1  0.58441E-01  0.30988E-01  0.99097E-01  0.98577E-01  0.1232215387E-01
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     1  0.58441E-01  0.30988E-01  0.99097E-01  0.98577E-01  0.1232215387E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.85290E-03    2
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     2  0.54124E-01  0.29205E-01  0.91137E-01  0.91278E-01  0.1140975461E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.74684E-03    3
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     3  0.50167E-01  0.27328E-01  0.84139E-01  0.84818E-01  0.1060223044E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.64842E-03    4
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     4  0.46610E-01  0.25464E-01  0.78079E-01  0.79175E-01  0.9896917311E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.56124E-03    5
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     5  0.43463E-01  0.23691E-01  0.72878E-01  0.74283E-01  0.9285420368E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.48659E-03    6
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     6  0.40710E-01  0.22059E-01  0.68431E-01  0.70050E-01  0.8756302529E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.42412E-03    7
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     7  0.38315E-01  0.20594E-01  0.64620E-01  0.66378E-01  0.8297251240E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.37260E-03    8
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     8  0.36238E-01  0.19303E-01  0.61337E-01  0.63172E-01  0.7896519781E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.33042E-03    9
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     9  0.34431E-01  0.18177E-01  0.58483E-01  0.60350E-01  0.7543702392E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.29591E-03   10
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    10  0.32852E-01  0.17202E-01  0.55976E-01  0.57840E-01  0.7230019939E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.26756E-03   11
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    11  0.31461E-01  0.16357E-01  0.53749E-01  0.55586E-01  0.6948303399E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.24411E-03   12
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    12  0.30226E-01  0.15624E-01  0.51748E-01  0.53543E-01  0.6692821882E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.22452E-03   13
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    13  0.29117E-01  0.14984E-01  0.49931E-01  0.51672E-01  0.6459052258E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.20795E-03   14
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    14  0.28113E-01  0.14420E-01  0.48266E-01  0.49948E-01  0.6243446322E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.19376E-03   15
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    15  0.27196E-01  0.13920E-01  0.46727E-01  0.48346E-01  0.6043222539E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.18148E-03   16
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    16  0.26351E-01  0.13471E-01  0.45294E-01  0.46850E-01  0.5856192160E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.17071E-03   17
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    17  0.25566E-01  0.13066E-01  0.43951E-01  0.45445E-01  0.5680620143E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.16117E-03   18
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    18  0.24834E-01  0.12695E-01  0.42687E-01  0.44121E-01  0.5515117014E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.15265E-03   19
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    19  0.24146E-01  0.12355E-01  0.41491E-01  0.42868E-01  0.5358556359E-02
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.14497E-03   20
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    20  0.23497E-01  0.12041E-01  0.40356E-01  0.41680E-01  0.5210012645E-02
+ # SOFTEN: final atomic it,fnrm,res,curv,fd2,etot    21  0.23497E-01  0.12041E-01  0.40356E-01  0.41680E-01  0.5210012645E-02
+ # SOFTEN: new alpha_at :    0.1100000000E+01
+ # iat, VEL:     1   7.4699039E-03  -4.8459456E-04  -1.4005070E-03
+ # iat, VEL:     2  -3.5156960E-03  -3.9450175E-04  -1.5102341E-04
+ # iat, VEL:     3   9.4263589E-04  -7.5102816E-04  -1.0913097E-03
+ # iat, VEL:     4  -2.2641610E-03   1.4776716E-03  -1.1319517E-04
+ # iat, VEL:     5   3.2452639E-04  -5.3210925E-04  -8.0367417E-04
+ # iat, VEL:     6  -6.0755333E-03   5.7007624E-03   9.1209292E-04
+ # iat, VEL:     7  -3.8655294E-04  -2.7458458E-03   3.9175594E-03
+ # iat, VEL:     8  -4.8740232E-05  -4.9953686E-04   1.1705912E-03
+ # iat, VEL:     9   2.9998142E-03  -2.4400728E-03   6.7288473E-04
+ # iat, VEL:    10  -6.2409127E-04   6.5892456E-04   1.6575785E-03
+ # iat, VEL:    11  -4.3881068E-03   1.5929908E-03   6.9226241E-05
+ # iat, VEL:    12   2.9333185E-03  -1.4302074E-03  -2.0841883E-03
+ # Entering SOFTENING routine for LATTICE, nsoft=    20
+ # Automatic softening activated
+ # KPT mesh set up as follows:      6     3     3
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.48453E-01    1
+ # SOFTEN: init lattice  it,fnrm,res,curv,fd2,etot     1  0.30764E+00  0.22012E+00  0.21492E+00  0.19348E+00  0.9673956458E-01
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     1  0.30764E+00  0.22012E+00  0.21492E+00  0.19348E+00  0.9673956458E-01
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.17915E-01    2
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     2  0.18205E+00  0.13385E+00  0.12339E+00  0.11708E+00  0.5854094907E-01
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.71461E-02    3
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     3  0.12359E+00  0.84535E-01  0.90154E-01  0.88243E-01  0.4412145522E-01
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.32502E-02    4
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     4  0.95373E-01  0.57010E-01  0.76458E-01  0.76390E-01  0.3819491048E-01
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.16909E-02    5
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     5  0.81084E-01  0.41121E-01  0.69884E-01  0.70843E-01  0.3542156162E-01
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.10167E-02    6
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     6  0.73522E-01  0.31886E-01  0.66248E-01  0.67868E-01  0.3393382679E-01
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.71029E-03    7
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     7  0.69281E-01  0.26651E-01  0.63950E-01  0.66018E-01  0.3300879450E-01
+ # KPT mesh set up as follows:      7     3     3
+ # SOFTEN:   0.56755E-03    8
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     8  0.66700E-01  0.23823E-01  0.62300E-01  0.64683E-01  0.3234130067E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.50110E-03    9
+ # SOFTEN: it,fnrm,res,curv,fd2,etot     9  0.64960E-01  0.22385E-01  0.60981E-01  0.63588E-01  0.3179405827E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.47140E-03   10
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    10  0.63651E-01  0.21712E-01  0.59833E-01  0.62605E-01  0.3130255686E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.45976E-03   11
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    11  0.62566E-01  0.21442E-01  0.58777E-01  0.61671E-01  0.3083555348E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.45704E-03   12
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    12  0.61597E-01  0.21379E-01  0.57768E-01  0.60755E-01  0.3037765196E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.45873E-03   13
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    13  0.60688E-01  0.21418E-01  0.56783E-01  0.59842E-01  0.2992122006E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.46254E-03   14
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    14  0.59809E-01  0.21507E-01  0.55808E-01  0.58925E-01  0.2946250147E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.46730E-03   15
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    15  0.58942E-01  0.21617E-01  0.54835E-01  0.57999E-01  0.2899970424E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.47238E-03   16
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    16  0.58079E-01  0.21734E-01  0.53859E-01  0.57064E-01  0.2853204790E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.47747E-03   17
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    17  0.57216E-01  0.21851E-01  0.52879E-01  0.56119E-01  0.2805928572E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.48234E-03   18
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    18  0.56350E-01  0.21962E-01  0.51893E-01  0.55163E-01  0.2758146936E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.48689E-03   19
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    19  0.55479E-01  0.22066E-01  0.50902E-01  0.54198E-01  0.2709883352E-01
+ # KPT mesh set up as follows:      6     3     3
+ # SOFTEN:   0.49101E-03   20
+ # SOFTEN: it,fnrm,res,curv,fd2,etot    20  0.54604E-01  0.22159E-01  0.49906E-01  0.53223E-01  0.2661173195E-01
+ # SOFTEN: final lattice it,fnrm,res,curv,fd2,etot    21  0.54604E-01  0.22159E-01  0.49906E-01  0.53223E-01  0.2661173195E-01
+ # SOFTEN: new alpha_at, alpha_lat :   1.1000000000E+00   1.1000000000E+00
+ # lat, VEL:     1  -1.2029931E-03   7.5282027E-04   5.6407700E-04
+ # lat, VEL:     2  -8.4303979E-06  -2.7778521E-05   1.3296911E-03
+ # lat, VEL:     3  -5.3631226E-04   8.1465959E-04   1.6629177E-03
+ # PARAMETERS: Ha_eV,kb_HaK,amu_emass -->   27.2113838600000     
+  3.166815419728528E-006   1822.88848426455     
+ # MD: iat, AMU, EM:     1   4.0000000E+00   7.2915539E+03
+ # MD: iat, AMU, EM:     2   4.0000000E+00   7.2915539E+03
+ # MD: iat, AMU, EM:     3   4.0000000E+00   7.2915539E+03
+ # MD: iat, AMU, EM:     4   4.0000000E+00   7.2915539E+03
+ # MD: iat, AMU, EM:     5   2.0000000E+00   3.6457770E+03
+ # MD: iat, AMU, EM:     6   2.0000000E+00   3.6457770E+03
+ # MD: iat, AMU, EM:     7   2.0000000E+00   3.6457770E+03
+ # MD: iat, AMU, EM:     8   2.0000000E+00   3.6457770E+03
+ # MD: iat, AMU, EM:     9   2.0000000E+00   3.6457770E+03
+ # MD: iat, AMU, EM:    10   2.0000000E+00   3.6457770E+03
+ # MD: iat, AMU, EM:    11   2.0000000E+00   3.6457770E+03
+ # MD: iat, AMU, EM:    12   2.0000000E+00   3.6457770E+03
+ # Entering standalone Parrinello Rahman MD 
+ # MD Algorithm:   1, MD Integrator:   3
+ # MINHOP start MD
+ Pressure, Energy  6.797862974112412E-004  -3509.07422674704     
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     0  -3.5084710470E+03  6.0317970036E-01  5.7002677555E-01  1.4250669389E-02  0  0  2
+ # Writing the positions in MD:posmd.0000.ascii                        
+Velocity of CM:   2.9511056E-14
+ # Torquenrm, Ekin, Enthalpy:    1.1659464E-14   5.8427744E-01  -3.5084710E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     1  -3.5084690656E+03  6.0456440593E-01  5.7116756095E-01  1.2317299728E-02  0  0  2
+ # Writing the positions in MD: posmd.0001.ascii                        
+Velocity of CM:   1.5383701E-14
+ # Torquenrm, Ekin, Enthalpy:    7.3551913E-07   5.8348486E-01  -3.5084691E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     2  -3.5084634799E+03  6.0711234887E-01  5.6611587398E-01  1.1754159029E-02  0  0  2
+ # Writing the positions in MD: posmd.0002.ascii                        
+Velocity of CM:   2.6895826E-14
+ # Torquenrm, Ekin, Enthalpy:    7.9290953E-07   5.7787003E-01  -3.5084635E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     3  -3.5084547203E+03  6.1081292128E-01  5.5650826294E-01  1.2571958348E-02  0  0  2
+ # Writing the positions in MD: posmd.0003.ascii                        
+Velocity of CM:   1.8841110E-14
+ # Torquenrm, Ekin, Enthalpy:    7.8689962E-07   5.6908022E-01  -3.5084547E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     4  -3.5084431663E+03  6.1563025872E-01  5.4284954451E-01  1.4641860566E-02  0  0  2
+ # Writing the positions in MD: posmd.0004.ascii                        
+Velocity of CM:   1.1546319E-14
+ # Torquenrm, Ekin, Enthalpy:    7.4528511E-07   5.5749141E-01  -3.5084432E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     5  -3.5084291568E+03  6.2150173685E-01  5.2569479711E-01  1.7751812138E-02  0  0  2
+ # Writing the positions in MD: posmd.0005.ascii                        
+Velocity of CM:   2.7590773E-14
+ # Torquenrm, Ekin, Enthalpy:    6.9657578E-07   5.4344661E-01  -3.5084292E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     6  -3.5084130517E+03  6.2833806764E-01  5.0567152731E-01  2.1627585326E-02  0  0  2
+ # Writing the positions in MD: posmd.0006.ascii                        
+Velocity of CM:   2.8916994E-14
+ # Torquenrm, Ekin, Enthalpy:    6.6728991E-07   5.2729911E-01  -3.5084131E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     7  -3.5083952701E+03  6.3602717953E-01  4.8349919644E-01  2.5969995453E-02  0  0  2
+ # Writing the positions in MD: posmd.0007.ascii                        
+Velocity of CM:   2.8546336E-14
+ # Torquenrm, Ekin, Enthalpy:    6.7782382E-07   5.0946919E-01  -3.5083953E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     8  -3.5083762926E+03  6.4443881535E-01  4.5991588807E-01  3.0496022146E-02  0  0  2
+ # Writing the positions in MD: posmd.0008.ascii                        
+Velocity of CM:   2.5121479E-14
+ # Torquenrm, Ekin, Enthalpy:    7.3864672E-07   4.9041191E-01  -3.5083763E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin     9  -3.5083563239E+03  6.5343390448E-01  4.3545410109E-01  3.5026070753E-02  0  0  2
+ # Writing the positions in MD: posmd.0009.ascii                        
+Velocity of CM:   2.1846301E-14
+ # Torquenrm, Ekin, Enthalpy:    8.4158104E-07   4.7048017E-01  -3.5083563E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    10  -3.5083361333E+03  6.6288541909E-01  4.1075439191E-01  3.9480110906E-02  0  0  2
+ # Writing the positions in MD: posmd.0010.ascii                        
+Velocity of CM:   2.6778248E-14
+ # Torquenrm, Ekin, Enthalpy:    9.5968833E-07   4.5023450E-01  -3.5083361E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    11  -3.5083167645E+03  6.7265638048E-01  3.8719030110E-01  4.3615832491E-02  0  0  2
+ # Writing the positions in MD: posmd.0011.ascii                        
+Velocity of CM:   1.7084453E-14
+ # Torquenrm, Ekin, Enthalpy:    1.1504070E-06   4.3080613E-01  -3.5083168E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    12  -3.5082987774E+03  6.8259722302E-01  3.6558368599E-01  4.7198616550E-02  0  0  2
+ # Writing the positions in MD: posmd.0012.ascii                        
+Velocity of CM:   1.4888583E-14
+ # Torquenrm, Ekin, Enthalpy:    1.3787802E-06   4.1278230E-01  -3.5082988E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    13  -3.5082820092E+03  6.9254715052E-01  3.4597604355E-01  5.0026753410E-02  0  0  2
+ # Writing the positions in MD: posmd.0013.ascii                        
+Velocity of CM:   1.3930534E-14
+ # Torquenrm, Ekin, Enthalpy:    1.6234798E-06   3.9600280E-01  -3.5082820E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    14  -3.5082657992E+03  7.0234240132E-01  3.2780406829E-01  5.1996317892E-02  0  0  2
+ # Writing the positions in MD: posmd.0014.ascii                        
+Velocity of CM:   2.1893643E-14
+ # Torquenrm, Ekin, Enthalpy:    1.8823110E-06   3.7980039E-01  -3.5082658E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    15  -3.5082493550E+03  7.1182702803E-01  3.1021032725E-01  5.3176560635E-02  0  0  2
+ # Writing the positions in MD: posmd.0015.ascii                        
+Velocity of CM:   2.6012646E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1501549E-06   3.6338689E-01  -3.5082494E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    16  -3.5082322898E+03  7.2087997456E-01  2.9252406349E-01  5.3839081241E-02  0  0  2
+ # Writing the positions in MD: posmd.0016.ascii                        
+Velocity of CM:   3.2878351E-14
+ # Torquenrm, Ekin, Enthalpy:    2.3912395E-06   3.4636314E-01  -3.5082323E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    17  -3.5082158349E+03  7.2941378317E-01  2.7571803631E-01  5.4128066683E-02  0  0  2
+ # Writing the positions in MD: posmd.0017.ascii                        
+Velocity of CM:   1.4001140E-14
+ # Torquenrm, Ekin, Enthalpy:    2.5831283E-06   3.2984610E-01  -3.5082158E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    18  -3.5082015255E+03  7.3736741480E-01  2.6144922406E-01  5.4046472224E-02  0  0  2
+ # Writing the positions in MD: posmd.0018.ascii                        
+Velocity of CM:   3.2330182E-14
+ # Torquenrm, Ekin, Enthalpy:    2.7224428E-06   3.1549570E-01  -3.5082015E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    19  -3.5081904244E+03  7.4468780463E-01  2.5091666645E-01  5.3448902453E-02  0  0  2
+ # Writing the positions in MD: posmd.0019.ascii                        
+Velocity of CM:   1.8202241E-14
+ # Torquenrm, Ekin, Enthalpy:    2.8362975E-06   3.0436557E-01  -3.5081904E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    20  -3.5081824789E+03  7.5132524843E-01  2.4422543283E-01  5.2204436378E-02  0  0  2
+ # Writing the positions in MD: posmd.0020.ascii                        
+Velocity of CM:   1.8503125E-14
+ # Torquenrm, Ekin, Enthalpy:    2.9208966E-06   2.9642987E-01  -3.5081825E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    21  -3.5081766179E+03  7.5723559548E-01  2.4034821711E-01  5.0259742746E-02  0  0  2
+ # Writing the positions in MD: posmd.0021.ascii                        
+Velocity of CM:   2.1846301E-14
+ # Torquenrm, Ekin, Enthalpy:    2.9741707E-06   2.9060796E-01  -3.5081766E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    22  -3.5081715187E+03  7.6238870885E-01  2.3787707422E-01  4.7669132546E-02  0  0  2
+ # Writing the positions in MD: posmd.0022.ascii                        
+Velocity of CM:   2.3782625E-14
+ # Torquenrm, Ekin, Enthalpy:    2.9888402E-06   2.8554621E-01  -3.5081715E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    23  -3.5081664007E+03  7.6677757555E-01  2.3587252938E-01  4.4591267039E-02  0  0  2
+ # Writing the positions in MD: posmd.0023.ascii                        
+Velocity of CM:   1.9539925E-14
+ # Torquenrm, Ekin, Enthalpy:    2.9582760E-06   2.8046380E-01  -3.5081664E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    24  -3.5081614581E+03  7.7043508673E-01  2.3423871643E-01  4.1246588246E-02  0  0  2
+ # Writing the positions in MD: posmd.0024.ascii                        
+Velocity of CM:   2.6287681E-14
+ # Torquenrm, Ekin, Enthalpy:    2.8790433E-06   2.7548530E-01  -3.5081615E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    25  -3.5081566986E+03  7.7342811258E-01  2.3296588439E-01  3.7720584273E-02  0  0  2
+ # Writing the positions in MD: posmd.0025.ascii                        
+Velocity of CM:   2.7818565E-14
+ # Torquenrm, Ekin, Enthalpy:    2.7734067E-06   2.7068647E-01  -3.5081567E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    26  -3.5081518488E+03  7.7587410400E-01  2.3201458275E-01  3.3942534934E-02  0  0  2
+ # Writing the positions in MD: posmd.0026.ascii                        
+Velocity of CM:   2.3160860E-14
+ # Torquenrm, Ekin, Enthalpy:    2.6487202E-06   2.6595712E-01  -3.5081518E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    27  -3.5081479098E+03  7.7797333751E-01  2.3210720360E-01  2.9910308361E-02  0  0  2
+ # Writing the positions in MD: posmd.0027.ascii                        
+Velocity of CM:   1.7176553E-14
+ # Torquenrm, Ekin, Enthalpy:    2.5292405E-06   2.6201751E-01  -3.5081479E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    28  -3.5081463445E+03  7.7991029826E-01  2.3447979801E-01  2.5954491062E-02  0  0  2
+ # Writing the positions in MD: posmd.0028.ascii                        
+Velocity of CM:   1.4431191E-14
+ # Torquenrm, Ekin, Enthalpy:    2.4666735E-06   2.6043429E-01  -3.5081463E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    29  -3.5081476509E+03  7.8180320979E-01  2.3932306941E-01  2.2429889080E-02  0  0  2
+ # Writing the positions in MD: posmd.0029.ascii                        
+Velocity of CM:   2.7861068E-14
+ # Torquenrm, Ekin, Enthalpy:    2.4359099E-06   2.6175296E-01  -3.5081477E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    30  -3.5081506386E+03  7.8367499698E-01  2.4521355583E-01  1.9592431760E-02  0  0  2
+ # Writing the positions in MD: posmd.0030.ascii                        
+Velocity of CM:   2.6792973E-14
+ # Torquenrm, Ekin, Enthalpy:    2.3866726E-06   2.6480599E-01  -3.5081506E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    31  -3.5081530620E+03  7.8546730095E-01  2.4977892655E-01  1.7532419370E-02  0  0  2
+ # Writing the positions in MD: posmd.0031.ascii                        
+Velocity of CM:   2.0038219E-14
+ # Torquenrm, Ekin, Enthalpy:    2.2965790E-06   2.6731135E-01  -3.5081531E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    32  -3.5081529689E+03  7.8708591812E-01  2.5111019925E-01  1.6204029318E-02  0  0  2
+ # Writing the positions in MD: posmd.0032.ascii                        
+Velocity of CM:   1.5587468E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1846419E-06   2.6731423E-01  -3.5081530E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    33  -3.5081498485E+03  7.8849337561E-01  2.4867131638E-01  1.5481022559E-02  0  0  2
+ # Writing the positions in MD: posmd.0033.ascii                        
+Velocity of CM:   1.7874246E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1170876E-06   2.6415234E-01  -3.5081498E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    34  -3.5081433206E+03  7.8973006165E-01  2.4237985059E-01  1.5294835133E-02  0  0  2
+ # Writing the positions in MD: posmd.0034.ascii                        
+Velocity of CM:   5.1021966E-15
+ # Torquenrm, Ekin, Enthalpy:    2.1143410E-06   2.5767469E-01  -3.5081433E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    35  -3.5081334631E+03  7.9086439291E-01  2.3219891555E-01  1.5641752097E-02  0  0  2
+ # Writing the positions in MD: posmd.0035.ascii                        
+Velocity of CM:   8.9260826E-15
+ # Torquenrm, Ekin, Enthalpy:    2.1401861E-06   2.4784067E-01  -3.5081335E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    36  -3.5081196927E+03  7.9199380030E-01  2.1798064514E-01  1.6566564877E-02  0  0  2
+ # Writing the positions in MD: posmd.0036.ascii                        
+Velocity of CM:   2.3836465E-14
+ # Torquenrm, Ekin, Enthalpy:    2.2074153E-06   2.3454721E-01  -3.5081197E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    37  -3.5081037128E+03  7.9340045838E-01  2.0030310983E-01  1.8317359061E-02  0  0  2
+ # Writing the positions in MD: posmd.0037.ascii                        
+Velocity of CM:   1.8705858E-14
+ # Torquenrm, Ekin, Enthalpy:    2.5966393E-06   2.1862047E-01  -3.5081037E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    38  -3.5080912479E+03  7.9534419267E-01  1.8507139884E-01  2.0984897499E-02  0  0  2
+ # Writing the positions in MD: posmd.0038.ascii                        
+Velocity of CM:   2.3193035E-14
+ # Torquenrm, Ekin, Enthalpy:    3.0168442E-06   2.0605630E-01  -3.5080912E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    39  -3.5080875852E+03  7.9794687815E-01  1.7785932951E-01  2.4393380101E-02  0  0  2
+ # Writing the positions in MD: posmd.0039.ascii                        
+Velocity of CM:   2.8484956E-14
+ # Torquenrm, Ekin, Enthalpy:    3.2674126E-06   2.0225271E-01  -3.5080876E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    40  -3.5080933414E+03  8.0112173211E-01  1.8004611613E-01  2.7967074545E-02  0  0  2
+ # Writing the positions in MD: posmd.0040.ascii                        
+Velocity of CM:   3.0162126E-14
+ # Torquenrm, Ekin, Enthalpy:    3.2098766E-06   2.0801319E-01  -3.5080933E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    41  -3.5081041596E+03  8.0458778185E-01  1.8795262007E-01  3.1005476767E-02  0  0  2
+ # Writing the positions in MD: posmd.0041.ascii                        
+Velocity of CM:   2.3262815E-14
+ # Torquenrm, Ekin, Enthalpy:    2.8832556E-06   2.1895810E-01  -3.5081042E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    42  -3.5081147632E+03  8.0798170210E-01  1.9643395746E-01  3.3165704804E-02  0  0  2
+ # Writing the positions in MD: posmd.0042.ascii                        
+Velocity of CM:   2.1936389E-14
+ # Torquenrm, Ekin, Enthalpy:    2.4810977E-06   2.2959966E-01  -3.5081148E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    43  -3.5081225282E+03  8.1095097353E-01  2.0269079590E-01  3.4596949934E-02  1  0  2
+ # Writing the positions in MD: posmd.0043.ascii                        
+Velocity of CM:   2.5894628E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1632404E-06   2.3728775E-01  -3.5081225E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    44  -3.5081281942E+03  8.1325306482E-01  2.0701657965E-01  3.5747710179E-02  1  0  2
+ # Writing the positions in MD: posmd.0044.ascii                        
+Velocity of CM:   2.8324398E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1022931E-06   2.4276429E-01  -3.5081282E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    45  -3.5081315826E+03  8.1472628761E-01  2.0924303570E-01  3.6865521034E-02  1  0  2
+ # Writing the positions in MD: posmd.0045.ascii                        
+Velocity of CM:   2.3515771E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1246971E-06   2.4610856E-01  -3.5081316E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    46  -3.5081327145E+03  8.1525598594E-01  2.0909025604E-01  3.8105983426E-02  1  0  2
+ # Writing the positions in MD: posmd.0046.ascii                        
+Velocity of CM:   2.3364326E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1573939E-06   2.4719624E-01  -3.5081327E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    47  -3.5081316318E+03  8.1477996087E-01  2.0657658710E-01  3.9596902916E-02  1  0  2
+ # Writing the positions in MD: posmd.0047.ascii                        
+Velocity of CM:   3.0250267E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1796007E-06   2.4617349E-01  -3.5081316E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    48  -3.5081286392E+03  8.1328998278E-01  2.0176810461E-01  4.1393504489E-02  1  0  2
+ # Writing the positions in MD: posmd.0048.ascii                        
+Velocity of CM:   2.8100708E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1786013E-06   2.4316161E-01  -3.5081286E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    49  -3.5081236981E+03  8.1083269924E-01  1.9474877668E-01  4.3468220016E-02  1  0  2
+ # Writing the positions in MD: posmd.0049.ascii                        
+Velocity of CM:   2.6541530E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1659905E-06   2.3821700E-01  -3.5081237E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    50  -3.5081167232E+03  8.0750580894E-01  1.8551947125E-01  4.5697672687E-02  1  0  2
+ # Writing the positions in MD: posmd.0050.ascii                        
+Velocity of CM:   2.7576474E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1585824E-06   2.3121714E-01  -3.5081167E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    51  -3.5081072907E+03  8.0351709429E-01  1.7404938382E-01  4.7835500487E-02  1  1  2
+ # Writing the positions in MD: posmd.0051.ascii                        
+Velocity of CM:   3.6888820E-14
+ # Torquenrm, Ekin, Enthalpy:    2.2264451E-06   2.2188488E-01  -3.5081073E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    52  -3.5080961725E+03  7.9917321570E-01  1.6107410099E-01  4.9699705359E-02  1  1  2
+ # Writing the positions in MD: posmd.0052.ascii                        
+Velocity of CM:   3.0367390E-14
+ # Torquenrm, Ekin, Enthalpy:    2.5632335E-06   2.1077381E-01  -3.5080962E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    53  -3.5080847906E+03  7.9479334000E-01  1.4813362922E-01  5.1239109666E-02  1  1  2
+ # Writing the positions in MD: posmd.0053.ascii                        
+Velocity of CM:   2.7404299E-14
+ # Torquenrm, Ekin, Enthalpy:    3.0746783E-06   1.9937274E-01  -3.5080848E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    54  -3.5080752035E+03  7.9063479365E-01  1.3726876393E-01  5.2504713951E-02  1  1  2
+ # Writing the positions in MD: posmd.0054.ascii                        
+Velocity of CM:   2.9326705E-14
+ # Torquenrm, Ekin, Enthalpy:    3.4829584E-06   1.8977348E-01  -3.5080752E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    55  -3.5080688547E+03  7.8682028263E-01  1.2985137053E-01  5.3578881012E-02  1  1  2
+ # Writing the positions in MD: posmd.0055.ascii                        
+Velocity of CM:   2.9621116E-14
+ # Torquenrm, Ekin, Enthalpy:    3.6116394E-06   1.8343025E-01  -3.5080689E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    56  -3.5080655013E+03  7.8332946126E-01  1.2561990311E-01  5.4452562393E-02  1  1  2
+ # Writing the positions in MD: posmd.0056.ascii                        
+Velocity of CM:   3.7028226E-14
+ # Torquenrm, Ekin, Enthalpy:    3.4843804E-06   1.8007247E-01  -3.5080655E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    57  -3.5080633423E+03  7.8005568424E-01  1.2295780835E-01  5.5089865629E-02  1  1  2
+ # Writing the positions in MD: posmd.0057.ascii                        
+Velocity of CM:   4.2982697E-14
+ # Torquenrm, Ekin, Enthalpy:    3.3245214E-06   1.7804767E-01  -3.5080633E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    58  -3.5080612928E+03  7.7689386239E-01  1.2050489478E-01  5.5540705162E-02  1  1  2
+ # Writing the positions in MD: posmd.0058.ascii                        
+Velocity of CM:   4.7548663E-14
+ # Torquenrm, Ekin, Enthalpy:    3.3866065E-06   1.7604560E-01  -3.5080613E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    59  -3.5080601453E+03  7.7379774676E-01  1.1882950501E-01  5.5986184594E-02  1  1  2
+ # Writing the positions in MD: posmd.0059.ascii                        
+Velocity of CM:   4.5175028E-14
+ # Torquenrm, Ekin, Enthalpy:    3.4855157E-06   1.7481569E-01  -3.5080601E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    60  -3.5080609321E+03  7.7075360637E-01  1.1902293857E-01  5.6539747406E-02  1  1  2
+ # Writing the positions in MD: posmd.0060.ascii                        
+Velocity of CM:   4.8752825E-14
+ # Torquenrm, Ekin, Enthalpy:    3.4672164E-06   1.7556269E-01  -3.5080609E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    61  -3.5080647476E+03  7.6772216420E-01  1.2209451395E-01  5.7135252575E-02  1  1  2
+ # Writing the positions in MD: posmd.0061.ascii                        
+Velocity of CM:   4.6432282E-14
+ # Torquenrm, Ekin, Enthalpy:    3.1802754E-06   1.7922977E-01  -3.5080647E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    62  -3.5080716274E+03  7.6466005905E-01  1.2856249563E-01  5.7557053205E-02  1  1  2
+ # Writing the positions in MD: posmd.0062.ascii                        
+Velocity of CM:   4.5885398E-14
+ # Torquenrm, Ekin, Enthalpy:    2.7058679E-06   1.8611955E-01  -3.5080716E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    63  -3.5080806793E+03  7.6151017704E-01  1.3746872872E-01  5.7720486668E-02  2  1  2
+ # Writing the positions in MD: posmd.0063.ascii                        
+Velocity of CM:   4.6476858E-14
+ # Torquenrm, Ekin, Enthalpy:    2.1508029E-06   1.9518922E-01  -3.5080807E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    64  -3.5080912946E+03  7.5821999582E-01  1.4825028821E-01  5.7538060864E-02  2  1  2
+ # Writing the positions in MD: posmd.0064.ascii                        
+Velocity of CM:   4.6446748E-14
+ # Torquenrm, Ekin, Enthalpy:    1.7288185E-06   2.0578835E-01  -3.5080913E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    65  -3.5081034543E+03  7.5478232102E-01  1.6097174210E-01  5.6952839108E-02  2  1  2
+ # Writing the positions in MD: posmd.0065.ascii                        
+Velocity of CM:   4.3381174E-14
+ # Torquenrm, Ekin, Enthalpy:    1.6754568E-06   2.1792458E-01  -3.5081035E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    66  -3.5081163835E+03  7.5120555241E-01  1.7497800944E-01  5.5861675708E-02  2  1  2
+ # Writing the positions in MD: posmd.0066.ascii                        
+Velocity of CM:   3.3660087E-14
+ # Torquenrm, Ekin, Enthalpy:    1.7811306E-06   2.3083969E-01  -3.5081164E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    67  -3.5081284471E+03  7.4751385920E-01  1.8915261776E-01  5.3956882220E-02  2  1  2
+ # Writing the positions in MD: posmd.0067.ascii                        
+Velocity of CM:   4.1156793E-14
+ # Torquenrm, Ekin, Enthalpy:    1.9575693E-06   2.4310950E-01  -3.5081284E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    68  -3.5081387284E+03  7.4378479304E-01  2.0266242348E-01  5.0799438551E-02  2  1  2
+ # Writing the positions in MD: posmd.0068.ascii                        
+Velocity of CM:   4.5131351E-14
+ # Torquenrm, Ekin, Enthalpy:    2.2505136E-06   2.5346186E-01  -3.5081387E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    69  -3.5081477817E+03  7.4010369548E-01  2.1594151098E-01  4.6602508291E-02  2  1  2
+ # Writing the positions in MD: posmd.0069.ascii                        
+Velocity of CM:   3.5637986E-14
+ # Torquenrm, Ekin, Enthalpy:    2.4826403E-06   2.6254402E-01  -3.5081478E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    70  -3.5081567437E+03  7.3654331865E-01  2.2968807023E-01  4.1816967601E-02  2  1  2
+ # Writing the positions in MD: posmd.0070.ascii                        
+Velocity of CM:   4.6981196E-14
+ # Torquenrm, Ekin, Enthalpy:    2.5899067E-06   2.7150504E-01  -3.5081567E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    71  -3.5081653195E+03  7.3314324243E-01  2.4309826361E-01  3.7008910674E-02  2  1  2
+ # Writing the positions in MD: posmd.0071.ascii                        
+Velocity of CM:   5.2605361E-14
+ # Torquenrm, Ekin, Enthalpy:    2.5467087E-06   2.8010717E-01  -3.5081653E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    72  -3.5081707847E+03  7.2994859735E-01  2.5327503653E-01  3.2580477257E-02  2  1  2
+ # Writing the positions in MD: posmd.0072.ascii                        
+Velocity of CM:   5.1122365E-14
+ # Torquenrm, Ekin, Enthalpy:    2.6642084E-06   2.8585551E-01  -3.5081708E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    73  -3.5081728439E+03  7.2701924315E-01  2.5915570583E-01  2.8861915139E-02  2  1  2
+ # Writing the positions in MD: posmd.0073.ascii                        
+Velocity of CM:   4.8191353E-14
+ # Torquenrm, Ekin, Enthalpy:    2.9488504E-06   2.8801762E-01  -3.5081728E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    74  -3.5081735153E+03  7.2440857196E-01  2.6265120307E-01  2.6023527565E-02  2  1  2
+ # Writing the positions in MD: posmd.0074.ascii                        
+Velocity of CM:   4.4559656E-14
+ # Torquenrm, Ekin, Enthalpy:    3.1249027E-06   2.8867473E-01  -3.5081735E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    75  -3.5081745081E+03  7.2214512947E-01  2.6569579379E-01  2.3834281044E-02  2  1  2
+ # Writing the positions in MD: posmd.0075.ascii                        
+Velocity of CM:   4.3620322E-14
+ # Torquenrm, Ekin, Enthalpy:    2.9801605E-06   2.8953007E-01  -3.5081745E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    76  -3.5081737854E+03  7.2027295197E-01  2.6721466482E-01  2.1737710589E-02  2  1  2
+ # Writing the positions in MD: posmd.0076.ascii                        
+Velocity of CM:   5.2911883E-14
+ # Torquenrm, Ekin, Enthalpy:    2.4284428E-06   2.8895238E-01  -3.5081738E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    77  -3.5081679328E+03  7.1880290119E-01  2.6358543145E-01  1.9628560654E-02  2  1  2
+ # Writing the positions in MD: posmd.0077.ascii                        
+Velocity of CM:   4.5192487E-14
+ # Torquenrm, Ekin, Enthalpy:    1.6271575E-06   2.8321399E-01  -3.5081679E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    78  -3.5081558895E+03  7.1774541913E-01  2.5377945086E-01  1.7475949641E-02  2  1  2
+ # Writing the positions in MD: posmd.0078.ascii                        
+Velocity of CM:   4.5773514E-14
+ # Torquenrm, Ekin, Enthalpy:    8.4987233E-07   2.7125540E-01  -3.5081559E+03
+ # KPT mesh set up as follows:      4     2     2
+ # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin    79  -3.5081404407E+03  7.1714686163E-01  2.3998199844E-01  1.5445642959E-02  2  2  2
+ # Writing the positions in MD: posmd.0079.ascii                        
+  MD finished: exiting!
+ # MD: steps per minium:   3.95E+01, dtion_md set to:   2.20E+01, upper boundary:   5.27E+01
+ # EXIT MD    79 -3.5081404E+03 -3.5088576E+03
+ Cell changed
+  -6.95633858457532        1.34279732123806       -1.71070308341234     
+  -1.88512699759498       -5.23162743796787        10.9348617918598     
+   3.06383377378048        12.4607840677570        1.26806287142858     
+   6.95633858457532       -1.34279732123806        1.71070308341234     
+  -3.89250481079484        13.8035813889950      -0.442640211983762     
+  -1.88512699759498       -5.23162743796787        10.9348617918598     
+ # After exiting MD, we have energy, enthalpy:        -3.508857587588310E+03    -3.508140440726675E+03
+ # Counter of MD updated:      79
+ # FIRE: iat, AMU, EM:     1   4.0000000E+00   7.2915539E+03
+ # FIRE: iat, AMU, EM:     2   4.0000000E+00   7.2915539E+03
+ # FIRE: iat, AMU, EM:     3   4.0000000E+00   7.2915539E+03
+ # FIRE: iat, AMU, EM:     4   4.0000000E+00   7.2915539E+03
+ # FIRE: iat, AMU, EM:     5   2.0000000E+00   3.6457770E+03
+ # FIRE: iat, AMU, EM:     6   2.0000000E+00   3.6457770E+03
+ # FIRE: iat, AMU, EM:     7   2.0000000E+00   3.6457770E+03
+ # FIRE: iat, AMU, EM:     8   2.0000000E+00   3.6457770E+03
+ # FIRE: iat, AMU, EM:     9   2.0000000E+00   3.6457770E+03
+ # FIRE: iat, AMU, EM:    10   2.0000000E+00   3.6457770E+03
+ # FIRE: iat, AMU, EM:    11   2.0000000E+00   3.6457770E+03
+ # FIRE: iat, AMU, EM:    12   2.0000000E+00   3.6457770E+03
+ # FIRE: latmass, AMU, EM:    13   1.3333333E+00   2.4305180E+03
+ # Entering FIRE based on standalone PR MD 
+ # GEOPT Algorithm:   1, MD Integrator:   3
+ # KPT mesh set up as follows:      5     3     3
+ # MINHOP start FIRE
+ Pressure, Energy  6.797862974112412E-004  -3508.85740845870     
+ # Writing the positions in FIRE:posgeopt.0000.ascii                     
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5081403E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0001.ascii                     
+ # GEOPT FIRE       1   -3.50814049E+03    1.05297735E-01    1.05297735E-01    2.56026702E-02    0.00000000E+00    0.00000000E+00  0.00E+00  0.00E+00  5.00E+00    0    2
+Velocity of CM:   1.8118972E-01
+ # Torquenrm, Ekin, Enthalpy:    4.0657581E-20   1.1910057E-05   3.0231683E-04  -3.5081405E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0002.ascii                     
+ # GEOPT FIRE       2   -3.50814124E+03    1.04464746E-01    1.04464746E-01    2.52101396E-02    3.14226889E-04    5.88765536E-06  9.22E-07  4.97E-06  5.00E+00    1    2
+Velocity of CM:   5.0608313E-01
+ # Torquenrm, Ekin, Enthalpy:    1.5759148E-12   4.6552732E-05   1.3665293E-03  -3.5081412E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0003.ascii                     
+ # GEOPT FIRE       3   -3.50814257E+03    1.02941739E-01    1.02941739E-01    2.45186733E-02    1.41308199E-03    1.17151983E-05  1.98E-06  9.73E-06  5.00E+00    2    2
+Velocity of CM:   9.4485920E-01
+ # Torquenrm, Ekin, Enthalpy:    1.9217154E-11   1.0210368E-04   3.3902520E-03  -3.5081426E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0004.ascii                     
+ # GEOPT FIRE       4   -3.50814450E+03    1.00681325E-01    1.00681325E-01    2.35160482E-02    3.49235566E-03    1.73387263E-05  3.13E-06  1.42E-05  5.00E+00    3    2
+Velocity of CM:   1.4736484E+00
+ # Torquenrm, Ekin, Enthalpy:    6.8133918E-11   1.7647892E-04   6.5129894E-03  -3.5081445E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0005.ascii                     
+ # GEOPT FIRE       5   -3.50814703E+03    9.76776011E-02    9.76776011E-02    2.22018538E-02    6.68946833E-03    2.26232574E-05  4.31E-06  1.83E-05  5.00E+00    4    2
+Velocity of CM:   2.0729320E+00
+ # Torquenrm, Ekin, Enthalpy:    1.5844991E-10   2.6735081E-04   1.0809973E-02  -3.5081470E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0006.ascii                     
+ # GEOPT FIRE       6   -3.50815013E+03    9.39635538E-02    9.39635538E-02    2.07387310E-02    1.10773233E-02    2.74554922E-05  5.49E-06  2.20E-05  5.00E+00    5    2
+Velocity of CM:   2.7274809E+00
+ # Torquenrm, Ekin, Enthalpy:    2.9377787E-10   3.7239080E-04   1.6282023E-02  -3.5081501E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0007.ascii                     
+ # GEOPT FIRE       7   -3.50815379E+03    9.00152067E-02    9.00152067E-02    1.91980718E-02    1.66544133E-02    3.18186501E-05  6.62E-06  2.52E-05  5.00E+00    6    2
+Velocity of CM:   3.4248993E+00
+ # Torquenrm, Ekin, Enthalpy:    4.8824512E-10   4.8970140E-04   2.2851942E-02  -3.5081538E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0008.ascii                     
+ # GEOPT FIRE       8   -3.50815836E+03    8.79645842E-02    8.79645842E-02    1.81619640E-02    2.33416429E-02    3.57369704E-05  7.67E-06  2.81E-05  5.50E+00    7    2
+Velocity of CM:   4.1612423E+00
+ # Torquenrm, Ekin, Enthalpy:    8.7750460E-10   6.3266683E-04   3.0835791E-02  -3.5081584E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0009.ascii                     
+ # GEOPT FIRE       9   -3.50816394E+03    8.54172231E-02    8.54172231E-02    1.71474367E-02    3.14684575E-02    3.94983725E-05  8.66E-06  3.08E-05  6.05E+00    8    2
+Velocity of CM:   4.9340484E+00
+ # Torquenrm, Ekin, Enthalpy:    1.5312977E-09   8.0472305E-04   4.0181273E-02  -3.5081639E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0010.ascii                     
+ # GEOPT FIRE      10   -3.50817057E+03    8.23149196E-02    8.23149196E-02    1.76149043E-02    4.09859964E-02    4.30741896E-05  9.51E-06  3.36E-05  6.66E+00    9    2
+Velocity of CM:   5.7306231E+00
+ # Torquenrm, Ekin, Enthalpy:    2.5679408E-09   1.0105418E-03   5.0608684E-02  -3.5081706E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0011.ascii                     
+ # GEOPT FIRE      11   -3.50817826E+03    7.86159480E-02    7.86159480E-02    1.93264439E-02    5.16192257E-02    4.65349995E-05  1.02E-05  3.64E-05  7.32E+00   10    2
+Velocity of CM:   6.5249475E+00
+ # Torquenrm, Ekin, Enthalpy:    4.1194665E-09   1.2573696E-03   6.1516598E-02  -3.5081783E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0012.ascii                     
+ # GEOPT FIRE      12   -3.50818693E+03    7.43084512E-02    7.43084512E-02    2.10972505E-02    6.27739679E-02    5.00894374E-05  1.06E-05  3.95E-05  8.05E+00   11    2
+Velocity of CM:   7.2785237E+00
+ # Torquenrm, Ekin, Enthalpy:    6.2905898E-09   1.5572555E-03   7.1979995E-02  -3.5081869E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0013.ascii                     
+ # GEOPT FIRE      13   -3.50819641E+03    6.94227881E-02    6.94227881E-02    2.28075294E-02    7.35372502E-02    5.40989450E-05  1.06E-05  4.35E-05  8.86E+00   12    2
+Velocity of CM:   7.9485635E+00
+ # Torquenrm, Ekin, Enthalpy:    9.0799576E-09   1.9296694E-03   8.0932210E-02  -3.5081964E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0014.ascii                     
+ # GEOPT FIRE      14   -3.50820648E+03    6.40359875E-02    6.40359875E-02    2.43094284E-02    8.28618791E-02    5.90283437E-05  1.03E-05  4.87E-05  9.74E+00   13    2
+Velocity of CM:   8.5015980E+00
+ # Torquenrm, Ekin, Enthalpy:    1.2267066E-08   2.4034172E-03   8.7500540E-02  -3.5082065E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0015.ascii                     
+ # GEOPT FIRE      15   -3.50821692E+03    5.82626803E-02    5.82626803E-02    2.50003734E-02    8.99039570E-02    6.53117472E-05  9.65E-06  5.57E-05  1.07E+01   14    2
+Velocity of CM:   8.9384971E+00
+ # Torquenrm, Ekin, Enthalpy:    1.5302617E-08   3.0219230E-03   9.2186039E-02  -3.5082169E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0016.ascii                     
+ # GEOPT FIRE      16   -3.50822760E+03    5.22377392E-02    5.22377392E-02    2.51284311E-02    9.52079621E-02    7.32547933E-05  8.76E-06  6.45E-05  1.18E+01   15    2
+Velocity of CM:   9.2689186E+00
+ # Torquenrm, Ekin, Enthalpy:    1.3068126E-08   3.8229748E-03   9.5218722E-02  -3.5082276E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0017.ascii                     
+ # GEOPT FIRE      17   -3.50823831E+03    4.60916318E-02    4.60916318E-02    2.46887433E-02    9.90416969E-02    8.19926586E-05  7.66E-06  7.43E-05  1.30E+01   16    2
+Velocity of CM:   9.5032296E+00
+ # Torquenrm, Ekin, Enthalpy:    1.3267987E-08   4.8392542E-03   9.6698034E-02  -3.5082383E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0018.ascii                     
+ # GEOPT FIRE      18   -3.50824888E+03    3.99332992E-02    3.99332992E-02    2.35663650E-02    1.01537288E-01    9.08245386E-05  6.44E-06  8.44E-05  1.43E+01   17    2
+Velocity of CM:   9.6536661E+00
+ # Torquenrm, Ekin, Enthalpy:    1.9998346E-08   6.0931646E-03   9.7050209E-02  -3.5082489E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0019.ascii                     
+ # GEOPT FIRE      19   -3.50825923E+03    3.38374204E-02    3.38374204E-02    2.17542380E-02    1.03143374E-01    9.86185183E-05  5.23E-06  9.34E-05  1.57E+01   18    2
+Velocity of CM:   9.7276018E+00
+ # Torquenrm, Ekin, Enthalpy:    3.2070777E-08   7.5817042E-03   9.7153432E-02  -3.5082592E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0020.ascii                     
+ # GEOPT FIRE      20   -3.50826945E+03    2.88338760E-02    2.88338760E-02    2.12957643E-02    1.04735136E-01    1.03938985E-04  4.20E-06  9.97E-05  1.73E+01   19    2
+Velocity of CM:   9.7278330E+00
+ # Torquenrm, Ekin, Enthalpy:    4.6529633E-08   9.2579507E-03   9.8635419E-02  -3.5082694E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0021.ascii                     
+ # GEOPT FIRE      21   -3.50827983E+03    2.82037470E-02    2.82037470E-02    2.14652865E-02    1.07893370E-01    1.04843139E-04  3.55E-06  1.01E-04  1.90E+01   20    2
+Velocity of CM:   9.6490047E+00
+ # Torquenrm, Ekin, Enthalpy:    5.5739484E-08   1.1004946E-02   1.0412034E-01  -3.5082798E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0022.ascii                     
+ # GEOPT FIRE      22   -3.50829070E+03    2.89485869E-02    2.89485869E-02    2.01158609E-02    1.15125287E-01    9.92740773E-05  3.37E-06  9.59E-05  2.09E+01   21    2
+Velocity of CM:   9.4819032E+00
+ # Torquenrm, Ekin, Enthalpy:    4.8305480E-08   1.2597060E-02   1.1740475E-01  -3.5082907E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0023.ascii                     
+ # GEOPT FIRE      23   -3.50830215E+03    2.54814205E-02    2.54814205E-02    1.68129298E-02    1.30001811E-01    8.51807378E-05  3.62E-06  8.16E-05  2.30E+01   22    2
+Velocity of CM:   9.2355027E+00
+ # Torquenrm, Ekin, Enthalpy:    9.4703821E-08   1.3521988E-02   1.4311193E-01  -3.5083022E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0024.ascii                     
+ # GEOPT FIRE      24   -3.50831360E+03    1.91164167E-02    1.91164167E-02    1.09910997E-02    1.56633922E-01    6.07905814E-05  3.97E-06  5.68E-05  2.53E+01   23    2
+Velocity of CM:   8.7852344E+00
+ # Torquenrm, Ekin, Enthalpy:    3.1401573E-07   1.2251671E-02   1.7144521E-01  -3.5083136E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0025.ascii                     
+ # GEOPT FIRE      25   -3.50832378E+03    1.82438167E-02    1.82438167E-02    1.10339354E-02    1.83696885E-01    2.74579454E-05  4.03E-06  2.34E-05  2.78E+01   24    2
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5083238E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0026.ascii                     
+ # GEOPT FIRE      26   -3.50832387E+03    1.82442488E-02    1.82442488E-02    1.09741298E-02    0.00000000E+00   -3.14421168E-07  3.70E-06 -4.01E-06  1.39E+01    1    2
+Velocity of CM:   9.9641978E-02
+ # Torquenrm, Ekin, Enthalpy:    8.1315163E-20   2.1295847E-05   1.0476952E-04  -3.5083239E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0027.ascii                     
+ # GEOPT FIRE      27   -3.50832413E+03    1.82274055E-02    1.82274055E-02    1.08252007E-02    1.26065363E-04    2.76791260E-06  1.16E-07  2.65E-06  1.39E+01    2    2
+Velocity of CM:   2.6148377E-01
+ # Torquenrm, Ekin, Enthalpy:    2.7690629E-11   7.2677915E-05   4.1168966E-04  -3.5083241E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0028.ascii                     
+ # GEOPT FIRE      28   -3.50832456E+03    1.81812796E-02    1.81812796E-02    1.05916084E-02    4.84367573E-04    5.09733693E-06  2.36E-07  4.86E-06  1.39E+01    3    2
+Velocity of CM:   4.6670255E-01
+ # Torquenrm, Ekin, Enthalpy:    2.1454665E-10   1.5327218E-04   9.7283102E-04  -3.5083246E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0029.ascii                     
+ # GEOPT FIRE      29   -3.50832517E+03    1.80963055E-02    1.80963055E-02    1.02819041E-02    1.12610321E-03    7.34741990E-06  3.68E-07  6.98E-06  1.39E+01    4    2
+Velocity of CM:   6.9663970E-01
+ # Torquenrm, Ekin, Enthalpy:    6.6239018E-10   2.6142609E-04   1.8275446E-03  -3.5083252E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0030.ascii                     
+ # GEOPT FIRE      30   -3.50832597E+03    1.79652321E-02    1.79652321E-02    9.90883191E-03    2.08897067E-03    9.49289038E-06  5.08E-07  8.98E-06  1.39E+01    5    2
+Velocity of CM:   9.3264277E-01
+ # Torquenrm, Ekin, Enthalpy:    1.4228063E-09   3.9527456E-04   3.0030527E-03  -3.5083260E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0031.ascii                     
+ # GEOPT FIRE      31   -3.50832694E+03    1.77831043E-02    1.77831043E-02    9.48917777E-03    3.39832727E-03    1.15222525E-05  6.53E-07  1.09E-05  1.39E+01    6    2
+Velocity of CM:   1.1563906E+00
+ # Torquenrm, Ekin, Enthalpy:    2.4949990E-09   5.5290924E-04   4.5137150E-03  -3.5083269E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0032.ascii                     
+ # GEOPT FIRE      32   -3.50832821E+03    1.75237023E-02    1.75237023E-02    8.99631802E-03    5.06662429E-03    1.34401156E-05  7.99E-07  1.26E-05  1.53E+01    7    2
+Velocity of CM:   1.3493310E+00
+ # Torquenrm, Ekin, Enthalpy:    4.5366349E-09   7.5237640E-04   6.4807081E-03  -3.5083282E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0033.ascii                     
+ # GEOPT FIRE      33   -3.50832982E+03    1.71722851E-02    1.71722851E-02    8.44715434E-03    7.23308454E-03    1.54409879E-05  9.53E-07  1.45E-05  1.68E+01    8    2
+Velocity of CM:   1.4922047E+00
+ # Torquenrm, Ekin, Enthalpy:    8.1426951E-09   1.0013137E-03   8.9771875E-03  -3.5083298E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0034.ascii                     
+ # GEOPT FIRE      34   -3.50833186E+03    1.67138215E-02    1.67138215E-02    7.87550741E-03    9.97850124E-03    1.75525297E-05  1.11E-06  1.64E-05  1.85E+01    9    2
+Velocity of CM:   1.5660790E+00
+ # Torquenrm, Ekin, Enthalpy:    1.4067631E-08   1.3093113E-03   1.2078694E-02  -3.5083319E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0035.ascii                     
+ # GEOPT FIRE      35   -3.50833438E+03    1.61336150E-02    1.61336150E-02    7.33589819E-03    1.33880056E-02    1.98354645E-05  1.28E-06  1.86E-05  2.04E+01   10    2
+Velocity of CM:   1.5618403E+00
+ # Torquenrm, Ekin, Enthalpy:    2.3127495E-08   1.6893261E-03   1.5871528E-02  -3.5083344E+03
+ # KPT mesh set up as follows:      3     2     2
+ # Writing the positions in FIRE: posgeopt.0036.ascii                     
+ # GEOPT FIRE      36   -3.50833750E+03    1.54170613E-02    1.54170613E-02    7.13419844E-03    1.75608542E-02    2.23838605E-05  1.47E-06  2.09E-05  2.24E+01   11    2
+Velocity of CM:   1.4980312E+00
+ # Torquenrm, Ekin, Enthalpy:    3.5859833E-08   2.1596990E-03   2.0475590E-02  -3.5083375E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0037.ascii                     
+ # GEOPT FIRE      37   -3.50834134E+03    1.47507672E-02    1.47507672E-02    7.75354242E-03    2.26352894E-02    2.53063092E-05  1.66E-06  2.36E-05  2.46E+01   12    2
+Velocity of CM:   1.4470852E+00
+ # Torquenrm, Ekin, Enthalpy:    5.1855120E-08   2.7459084E-03   2.6077507E-02  -3.5083413E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0038.ascii                     
+ # GEOPT FIRE      38   -3.50834606E+03    1.57499456E-02    1.57499456E-02    8.11947883E-03    2.88234152E-02    2.86796641E-05  1.89E-06  2.68E-05  2.71E+01   13    2
+Velocity of CM:   1.5406266E+00
+ # Torquenrm, Ekin, Enthalpy:    6.8766545E-08   3.4802935E-03   3.2953405E-02  -3.5083461E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0039.ascii                     
+ # GEOPT FIRE      39   -3.50835186E+03    1.61347504E-02    1.61347504E-02    8.11504991E-03    3.64336982E-02    3.24813247E-05  2.14E-06  3.03E-05  2.98E+01   14    2
+Velocity of CM:   1.8792750E+00
+ # Torquenrm, Ekin, Enthalpy:    8.1379611E-08   4.3973216E-03   4.1453876E-02  -3.5083519E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0040.ascii                     
+ # GEOPT FIRE      40   -3.50835893E+03    1.57432793E-02    1.57432793E-02    8.29026405E-03    4.58511979E-02    3.65121877E-05  2.42E-06  3.41E-05  3.28E+01   15    2
+Velocity of CM:   2.4428521E+00
+ # Torquenrm, Ekin, Enthalpy:    8.1966162E-08   5.5212189E-03   5.1932381E-02  -3.5083589E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0041.ascii                     
+ # GEOPT FIRE      41   -3.50836742E+03    1.60822098E-02    1.60822098E-02    9.82387237E-03    5.74536000E-02    4.03153157E-05  2.73E-06  3.76E-05  3.61E+01   16    2
+Velocity of CM:   3.1759610E+00
+ # Torquenrm, Ekin, Enthalpy:    6.5621431E-08   6.8374987E-03   6.4669864E-02  -3.5083674E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0042.ascii                     
+ # GEOPT FIRE      42   -3.50837732E+03    1.67074558E-02    1.67074558E-02    1.16742807E-02    7.15073631E-02    4.29050799E-05  3.05E-06  3.99E-05  3.97E+01   17    2
+Velocity of CM:   4.0972935E+00
+ # Torquenrm, Ekin, Enthalpy:    6.8471117E-08   8.2391032E-03   7.9393692E-02  -3.5083773E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0043.ascii                     
+ # GEOPT FIRE      43   -3.50838832E+03    1.59866269E-02    1.59866269E-02    1.32482077E-02    8.76327954E-02    4.30423787E-05  3.34E-06  3.97E-05  4.36E+01   18    2
+Velocity of CM:   5.3390191E+00
+ # Torquenrm, Ekin, Enthalpy:    1.9300954E-07   9.4533910E-03   9.4150828E-02  -3.5083883E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0044.ascii                     
+ # GEOPT FIRE      44   -3.50839951E+03    1.34036537E-02    1.23098812E-02    1.34036537E-02    1.03604219E-01    3.92991329E-05  3.47E-06  3.58E-05  4.80E+01   19    2
+Velocity of CM:   6.8648853E+00
+ # Torquenrm, Ekin, Enthalpy:    4.9162585E-07   9.9414880E-03   1.0269546E-01  -3.5083995E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0045.ascii                     
+ # GEOPT FIRE      45   -3.50840890E+03    1.29718305E-02    1.29718305E-02    1.06322703E-02    1.12636943E-01    3.03461030E-05  3.12E-06  2.72E-05  5.28E+01   20    2
+Velocity of CM:   7.5333535E+00
+ # Torquenrm, Ekin, Enthalpy:    1.0526305E-06   9.1558390E-03   9.3355808E-02  -3.5084089E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0046.ascii                     
+ # GEOPT FIRE      46   -3.50841357E+03    1.61467643E-02    1.61467643E-02    6.87038308E-03    1.02511647E-01    1.71583668E-05  1.78E-06  1.54E-05  5.81E+01   21    2
+Velocity of CM:   6.1370230E+00
+ # Torquenrm, Ekin, Enthalpy:    1.7719354E-06   7.5142238E-03   6.6630310E-02  -3.5084136E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0047.ascii                     
+ # GEOPT FIRE      47   -3.50841391E+03    2.39107478E-02    2.39107478E-02    7.58589508E-03    7.41445339E-02    5.62744242E-06 -5.00E-07  6.13E-06  6.39E+01   22    2
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084139E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0048.ascii                     
+ # GEOPT FIRE      48   -3.50841424E+03    2.28077831E-02    2.28077831E-02    7.45787830E-03    0.00000000E+00   -8.63224439E-07 -1.50E-06  6.38E-07  3.19E+01    1    2
+Velocity of CM:   2.1136366E-01
+ # Torquenrm, Ekin, Enthalpy:    3.0304372E-19   6.0863337E-05   3.8651309E-04  -3.5084142E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0049.ascii                     
+ # GEOPT FIRE      49   -3.50841509E+03    1.99842074E-02    1.99842074E-02    7.15373284E-03    4.47376428E-04    3.55824144E-06  2.92E-07  3.27E-06  3.19E+01    2    2
+Velocity of CM:   5.2851684E-01
+ # Torquenrm, Ekin, Enthalpy:    1.8055637E-09   1.9749906E-04   1.4290425E-03  -3.5084151E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0050.ascii                     
+ # GEOPT FIRE      50   -3.50841632E+03    1.57680751E-02    1.57680751E-02    6.70570019E-03    1.62654153E-03    5.97412060E-06  5.27E-07  5.45E-06  3.19E+01    3    2
+Velocity of CM:   8.5565586E-01
+ # Torquenrm, Ekin, Enthalpy:    1.2302351E-08   3.8724997E-04   3.0063802E-03  -3.5084163E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0051.ascii                     
+ # GEOPT FIRE      51   -3.50841772E+03    1.07670830E-02    1.07670830E-02    6.15910520E-03    3.39363017E-03    7.57839457E-06  6.71E-07  6.91E-06  3.19E+01    4    2
+Velocity of CM:   1.0839103E+00
+ # Torquenrm, Ekin, Enthalpy:    3.1709060E-08   6.0918799E-04   4.7025485E-03  -3.5084177E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0052.ascii                     
+ # GEOPT FIRE      52   -3.50841910E+03    8.40660818E-03    8.40660818E-03    5.64842648E-03    5.31173652E-03    8.60183735E-06  6.93E-07  7.91E-06  3.19E+01    5    2
+Velocity of CM:   1.1492224E+00
+ # Torquenrm, Ekin, Enthalpy:    5.1656249E-08   8.5561811E-04   6.0769124E-03  -3.5084191E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0053.ascii                     
+ # GEOPT FIRE      53   -3.50842032E+03    7.45926696E-03    7.45926696E-03    4.94889254E-03    6.93253050E-03    9.30716227E-06  6.08E-07  8.70E-06  3.19E+01    6    2
+Velocity of CM:   1.0826104E+00
+ # Torquenrm, Ekin, Enthalpy:    5.8835558E-08   1.1243517E-03   7.0441836E-03  -3.5084203E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0054.ascii                     
+ # GEOPT FIRE      54   -3.50842147E+03    7.09865480E-03    7.09865480E-03    4.26991846E-03    8.16853531E-03    9.55613557E-06  4.75E-07  9.08E-06  3.51E+01    7    2
+Velocity of CM:   1.0801198E+00
+ # Torquenrm, Ekin, Enthalpy:    5.1521325E-08   1.4228359E-03   8.0039145E-03  -3.5084215E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0055.ascii                     
+ # GEOPT FIRE      55   -3.50842258E+03    6.67431029E-03    6.67431029E-03    3.49945076E-03    9.42675033E-03    8.83800028E-06  3.48E-07  8.49E-06  3.86E+01    8    2
+Velocity of CM:   1.5193204E+00
+ # Torquenrm, Ekin, Enthalpy:    1.2961739E-08   1.6491001E-03   9.4591009E-03  -3.5084226E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0056.ascii                     
+ # GEOPT FIRE      56   -3.50842377E+03    6.76867377E-03    6.76867377E-03    3.54761978E-03    1.11082010E-02    6.95295243E-06  2.94E-07  6.66E-06  4.25E+01    9    2
+Velocity of CM:   2.0943454E+00
+ # Torquenrm, Ekin, Enthalpy:    8.9480189E-08   1.6777656E-03   1.1244697E-02  -3.5084238E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0057.ascii                     
+ # GEOPT FIRE      57   -3.50842521E+03    5.83287819E-03    5.83287819E-03    3.25850365E-03    1.29224630E-02    5.13164005E-06  3.56E-07  4.78E-06  4.68E+01   10    2
+Velocity of CM:   2.4920105E+00
+ # Torquenrm, Ekin, Enthalpy:    1.7502115E-07   1.6465250E-03   1.4064243E-02  -3.5084252E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0058.ascii                     
+ # GEOPT FIRE      58   -3.50842699E+03    4.86518141E-03    4.86518141E-03    2.19592483E-03    1.57107679E-02    4.30646159E-06  4.67E-07  3.84E-06  5.14E+01   11    2
+Velocity of CM:   2.9047666E+00
+ # Torquenrm, Ekin, Enthalpy:    1.3802645E-07   1.5697181E-03   1.8503963E-02  -3.5084270E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0059.ascii                     
+ # GEOPT FIRE      59   -3.50842912E+03    4.01260270E-03    4.01260270E-03    2.05353668E-03    2.00736812E-02    3.38725055E-06  5.46E-07  2.84E-06  5.66E+01   12    2
+Velocity of CM:   3.2974350E+00
+ # Torquenrm, Ekin, Enthalpy:    2.5102763E-07   1.4762661E-03   2.0616886E-02  -3.5084291E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0060.ascii                     
+ # GEOPT FIRE      60   -3.50843107E+03    3.10951801E-03    3.10951801E-03    1.72527712E-03    2.20931520E-02    3.21307497E-06  5.18E-07  2.69E-06  6.22E+01   13    2
+Velocity of CM:   3.9796817E+00
+ # Torquenrm, Ekin, Enthalpy:    3.5473220E-07   1.5518767E-03   2.3150825E-02  -3.5084311E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0061.ascii                     
+ # GEOPT FIRE      61   -3.50843233E+03    3.28021768E-03    3.28021768E-03    3.25357225E-03    2.47027015E-02    2.66668227E-06  3.17E-07  2.35E-06  6.85E+01   14    2
+Velocity of CM:   3.6784371E+00
+ # Torquenrm, Ekin, Enthalpy:    4.2193363E-08   1.3263753E-03   1.7538938E-02  -3.5084323E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0062.ascii                     
+ # GEOPT FIRE      62   -3.50843217E+03    4.50509418E-03    4.50509418E-03    2.23324427E-03    1.88653136E-02    1.21537175E-06  6.60E-08  1.15E-06  7.53E+01   15    2
+Velocity of CM:   2.2008204E+00
+ # Torquenrm, Ekin, Enthalpy:    3.6761894E-07   1.1600266E-03   8.8295949E-03  -3.5084322E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0063.ascii                     
+ # GEOPT FIRE      63   -3.50843162E+03    6.61998223E-03    6.61998223E-03    1.46078078E-03    9.98962150E-03    9.17269875E-07 -2.06E-07  1.12E-06  8.28E+01   16    2
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084316E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0064.ascii                     
+ # GEOPT FIRE      64   -3.50843167E+03    6.53471498E-03    6.53471498E-03    1.41334218E-03    0.00000000E+00   -5.20627591E-07 -1.70E-07 -3.50E-07  4.14E+01    1    2
+Velocity of CM:   1.1191445E-01
+ # Torquenrm, Ekin, Enthalpy:    1.0606530E-19   4.5392315E-06   6.7194713E-05  -3.5084317E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0065.ascii                     
+ # GEOPT FIRE      65   -3.50843181E+03    6.28707931E-03    6.28707931E-03    1.29882577E-03    7.17339445E-05    2.21689569E-07  3.19E-08  1.90E-07  4.14E+01    2    2
+Velocity of CM:   2.8804340E-01
+ # Torquenrm, Ekin, Enthalpy:    1.1242999E-10   1.4407049E-05   2.5335693E-04  -3.5084318E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0066.ascii                     
+ # GEOPT FIRE      66   -3.50843202E+03    5.87060208E-03    5.87060208E-03    1.12694368E-03    2.67763975E-04    3.67721295E-07  6.02E-08  3.08E-07  4.14E+01    3    2
+Velocity of CM:   4.9267685E-01
+ # Torquenrm, Ekin, Enthalpy:    7.2031686E-10   2.7288394E-05   5.6282550E-04  -3.5084320E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0067.ascii                     
+ # GEOPT FIRE      67   -3.50843228E+03    5.29835403E-03    5.29835403E-03    9.39447397E-04    5.90113899E-04    4.51514134E-07  8.37E-08  3.68E-07  4.14E+01    4    2
+Velocity of CM:   6.7998979E-01
+ # Torquenrm, Ekin, Enthalpy:    1.7949031E-09   4.0680071E-05   9.6507125E-04  -3.5084323E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0068.ascii                     
+ # GEOPT FIRE      68   -3.50843255E+03    4.60028985E-03    4.60028985E-03    8.99726896E-04    1.00575132E-03    4.77031108E-07  9.90E-08  3.78E-07  4.14E+01    5    2
+Velocity of CM:   8.0306315E-01
+ # Torquenrm, Ekin, Enthalpy:    2.8852554E-09   5.2829401E-05   1.3997325E-03  -3.5084326E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0069.ascii                     
+ # GEOPT FIRE      69   -3.50843281E+03    3.81583730E-03    3.81583730E-03    8.42263365E-04    1.45256187E-03    4.60571744E-07  1.04E-07  3.56E-07  4.14E+01    6    2
+Velocity of CM:   8.3177493E-01
+ # Torquenrm, Ekin, Enthalpy:    3.4534278E-09   6.2784039E-05   1.8040755E-03  -3.5084328E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0070.ascii                     
+ # GEOPT FIRE      70   -3.50843305E+03    2.90296161E-03    2.90296161E-03    7.87779446E-04    1.86685950E-03    4.16309474E-07  1.01E-07  3.15E-07  4.56E+01    7    2
+Velocity of CM:   7.5723595E-01
+ # Torquenrm, Ekin, Enthalpy:    4.2401481E-09   7.0449429E-05   2.1081100E-03  -3.5084331E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0071.ascii                     
+ # GEOPT FIRE      71   -3.50843326E+03    1.90529095E-03    1.90529095E-03    7.81045779E-04    2.17855945E-03    3.49165279E-07  8.91E-08  2.60E-07  5.01E+01    8    2
+Velocity of CM:   6.3923627E-01
+ # Torquenrm, Ekin, Enthalpy:    6.2694289E-09   7.4695325E-05   2.1273322E-03  -3.5084333E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0072.ascii                     
+ # GEOPT FIRE      72   -3.50843340E+03    1.13082751E-03    1.13082751E-03    6.12080381E-04    2.20202755E-03    2.85992527E-07  6.85E-08  2.18E-07  5.51E+01    9    2
+Velocity of CM:   5.8393207E-01
+ # Torquenrm, Ekin, Enthalpy:    8.8826540E-09   7.8913938E-05   1.8581250E-03  -3.5084334E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0073.ascii                     
+ # GEOPT FIRE      73   -3.50843350E+03    1.27048021E-03    1.27048021E-03    5.49649963E-04    1.93703896E-03    2.49839333E-07  4.14E-08  2.08E-07  6.06E+01   10    2
+Velocity of CM:   6.0831677E-01
+ # Torquenrm, Ekin, Enthalpy:    7.2272415E-09   8.3469054E-05   1.4825469E-03  -3.5084335E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0074.ascii                     
+ # GEOPT FIRE      74   -3.50843357E+03    1.22060268E-03    1.22060268E-03    5.91113389E-04    1.56601600E-03    2.23945126E-07  1.87E-08  2.05E-07  6.67E+01   11    2
+Velocity of CM:   6.4494500E-01
+ # Torquenrm, Ekin, Enthalpy:    2.1800767E-09   8.9410393E-05   1.1872796E-03  -3.5084336E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0075.ascii                     
+ # GEOPT FIRE      75   -3.50843366E+03    1.37334065E-03    1.37334065E-03    6.72882401E-04    1.27668995E-03    2.41923029E-07  9.58E-09  2.32E-07  7.34E+01   12    2
+Velocity of CM:   6.9737437E-01
+ # Torquenrm, Ekin, Enthalpy:    4.3470195E-09   1.0225560E-04   1.0586502E-03  -3.5084337E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0076.ascii                     
+ # GEOPT FIRE      76   -3.50843379E+03    1.52608559E-03    1.52608559E-03    7.45527987E-04    1.16090577E-03    2.99490158E-07  1.23E-08  2.87E-07  8.07E+01   13    2
+Velocity of CM:   8.0333614E-01
+ # Torquenrm, Ekin, Enthalpy:    1.4291797E-08   1.2152808E-04   1.1336080E-03  -3.5084338E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0077.ascii                     
+ # GEOPT FIRE      77   -3.50843399E+03    1.54921382E-03    1.54921382E-03    7.84284109E-04    1.25513610E-03    3.42578072E-07  2.11E-08  3.21E-07  8.88E+01   14    2
+Velocity of CM:   1.0159108E+00
+ # Torquenrm, Ekin, Enthalpy:    1.5585872E-08   1.4341229E-04   1.5335635E-03  -3.5084340E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0078.ascii                     
+ # GEOPT FIRE      78   -3.50843428E+03    1.28982993E-03    1.28982993E-03    8.28715394E-04    1.67697577E-03    3.34066584E-07  3.09E-08  3.03E-07  9.77E+01   15    2
+Velocity of CM:   1.1560878E+00
+ # Torquenrm, Ekin, Enthalpy:    3.2084521E-08   1.6261696E-04   2.0870511E-03  -3.5084343E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0079.ascii                     
+ # GEOPT FIRE      79   -3.50843462E+03    1.24197832E-03    1.24197832E-03    9.17100417E-04    2.24966805E-03    3.39881099E-07  3.83E-08  3.02E-07  1.07E+02   16    2
+Velocity of CM:   1.1288218E+00
+ # Torquenrm, Ekin, Enthalpy:    4.2785163E-08   1.8362061E-04   2.5237513E-03  -3.5084346E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0080.ascii                     
+ # GEOPT FIRE      80   -3.50843503E+03    1.67161119E-03    1.67161119E-03    1.24496173E-03    2.70737190E-03    3.85767324E-07  4.04E-08  3.45E-07  1.18E+02   17    2
+Velocity of CM:   1.1614037E+00
+ # Torquenrm, Ekin, Enthalpy:    9.1246499E-08   2.2454118E-04   2.8750040E-03  -3.5084350E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0081.ascii                     
+ # GEOPT FIRE      81   -3.50843557E+03    1.70399934E-03    1.70399934E-03    1.30601035E-03    3.09954519E-03    5.60078579E-07  4.66E-08  5.13E-07  1.30E+02   18    2
+Velocity of CM:   1.2059450E+00
+ # Torquenrm, Ekin, Enthalpy:    8.3874148E-08   2.9439425E-04   3.3962460E-03  -3.5084356E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0082.ascii                     
+ # GEOPT FIRE      82   -3.50843633E+03    1.59769995E-03    1.59769995E-03    1.56733834E-03    3.69064025E-03    7.44036130E-07  6.20E-08  6.82E-07  1.40E+02   19    2
+Velocity of CM:   1.2000065E+00
+ # Torquenrm, Ekin, Enthalpy:    8.5685908E-08   3.9132713E-04   3.8771145E-03  -3.5084363E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0083.ascii                     
+ # GEOPT FIRE      83   -3.50843716E+03    1.93737052E-03    1.93737052E-03    1.49164018E-03    4.26844165E-03    1.04268355E-06  7.44E-08  9.68E-07  1.40E+02   20    2
+Velocity of CM:   1.1285777E+00
+ # Torquenrm, Ekin, Enthalpy:    1.6112692E-07   4.4517867E-04   4.1139762E-03  -3.5084372E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0084.ascii                     
+ # GEOPT FIRE      84   -3.50843792E+03    3.25566388E-03    1.95621314E-03    3.25566388E-03    4.55915488E-03    8.52170079E-07  7.05E-08  7.82E-07  1.40E+02   21    2
+Velocity of CM:   1.0521250E+00
+ # Torquenrm, Ekin, Enthalpy:    2.7892369E-07   4.5087253E-04   3.6449582E-03  -3.5084379E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0085.ascii                     
+ # GEOPT FIRE      85   -3.50843843E+03    4.56918550E-03    1.67046976E-03    4.56918550E-03    4.09583078E-03    8.50741276E-07  4.39E-08  8.07E-07  1.40E+02   22    2
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084384E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0086.ascii                     
+ # GEOPT FIRE      86   -3.50843852E+03    2.40582217E-03    1.44262852E-03    2.40582217E-03    0.00000000E+00   -1.45166015E-06  1.53E-08 -1.47E-06  7.00E+01    1    2
+Velocity of CM:   1.6828422E-02
+ # Torquenrm, Ekin, Enthalpy:    2.7105054E-20   7.4649912E-05   2.8363042E-05  -3.5084385E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0087.ascii                     
+ # GEOPT FIRE      87   -3.50843858E+03    1.43326022E-03    1.42599124E-03    1.43326022E-03    1.03012954E-04    1.16279075E-06  4.22E-09  1.16E-06  7.00E+01    2    2
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084386E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0088.ascii                     
+ # GEOPT FIRE      88   -3.50843858E+03    1.41588149E-03    1.41588149E-03    1.28284947E-03    0.00000000E+00   -5.96438861E-07  7.16E-09 -6.04E-07  3.50E+01    1    2
+Velocity of CM:   1.1465332E-02
+ # Torquenrm, Ekin, Enthalpy:    1.3969625E-20   1.8904678E-06   3.9481626E-06  -3.5084386E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0089.ascii                     
+ # GEOPT FIRE      89   -3.50843859E+03    1.38416155E-03    1.38416155E-03    9.57221918E-04    5.83863043E-06    8.81490774E-08  1.75E-09  8.64E-08  3.50E+01    2    2
+Velocity of CM:   3.2320004E-02
+ # Torquenrm, Ekin, Enthalpy:    3.4194037E-11   5.4829392E-06   1.7903116E-05  -3.5084386E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0090.ascii                     
+ # GEOPT FIRE      90   -3.50843861E+03    1.32799648E-03    1.32799648E-03    6.36664837E-04    2.33860547E-05    1.13677311E-07  3.53E-09  1.10E-07  3.50E+01    3    2
+Velocity of CM:   6.4012368E-02
+ # Torquenrm, Ekin, Enthalpy:    2.3128174E-10   8.4051411E-06   5.5917944E-05  -3.5084386E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0091.ascii                     
+ # GEOPT FIRE      91   -3.50843863E+03    1.24657369E-03    1.24657369E-03    6.31384613E-04    6.43230851E-05    8.21184127E-08  5.60E-09  7.65E-08  3.50E+01    4    2
+Velocity of CM:   8.7056652E-02
+ # Torquenrm, Ekin, Enthalpy:    6.2648038E-10   7.7732290E-06   1.1357512E-04  -3.5084386E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0092.ascii                     
+ # GEOPT FIRE      92   -3.50843866E+03    1.15868338E-03    1.15868338E-03    6.31951489E-04    1.21348345E-04    3.15672869E-08  8.29E-09  2.33E-08  3.50E+01    5    2
+Velocity of CM:   8.8441743E-02
+ # Torquenrm, Ekin, Enthalpy:    1.1313698E-09   6.2930157E-06   1.4333965E-04  -3.5084387E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0093.ascii                     
+ # GEOPT FIRE      93   -3.50843869E+03    1.08627135E-03    1.08627135E-03    6.36667442E-04    1.49632664E-04    2.82756699E-08  1.05E-08  1.78E-08  3.50E+01    6    2
+Velocity of CM:   8.4689768E-02
+ # Torquenrm, Ekin, Enthalpy:    1.3343243E-09   6.5971244E-06   1.5779352E-04  -3.5084387E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0094.ascii                     
+ # GEOPT FIRE      94   -3.50843873E+03    1.02905301E-03    1.02905301E-03    6.45111309E-04    1.64390647E-04    6.49538390E-08  1.09E-08  5.41E-08  3.85E+01    7    2
+Velocity of CM:   8.6763381E-02
+ # Torquenrm, Ekin, Enthalpy:    1.2129818E-09   9.1290142E-06   1.8058971E-04  -3.5084387E+03
+ # KPT mesh set up as follows:      4     2     2
+ # Writing the positions in FIRE: posgeopt.0095.ascii                     
+ # GEOPT FIRE      95   -3.50843877E+03    9.87252427E-04    9.87252427E-04    6.57569069E-04    1.89718722E-04    9.83496199E-08  1.07E-08  8.77E-08  4.24E+01    8    2
+ Cell not changed
+  -5.99114519955508       0.752095188896254       -1.54242222579473     
+  -1.88556924862681       -5.43649526306776        11.2582789752894     
+   3.23043749729160        12.2997712765029        1.26718237769649     
+  -5.99114519955508       0.752095188896254       -1.54242222579473     
+  -1.88556924862681       -5.43649526306776        11.2582789752894     
+   3.23043749729160        12.2997712765029        1.26718237769649     
+Velocity of CM:   1.0968271E-01
+ # Torquenrm, Ekin, Enthalpy:    6.4969498E-10   1.2894906E-05   2.3504333E-04  -3.5084388E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0096.ascii                     
+ # GEOPT FIRE      96   -3.50843882E+03    1.01670432E-03    1.01670432E-03    7.93113851E-04    2.47938235E-04    9.80855910E-08  1.07E-08  8.74E-08  4.66E+01    9    1
+Velocity of CM:   1.4832199E-01
+ # Torquenrm, Ekin, Enthalpy:    8.4499465E-10   1.4802143E-05   2.9741093E-04  -3.5084388E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0097.ascii                     
+ # GEOPT FIRE      97   -3.50843887E+03    1.04808329E-03    1.04808329E-03    9.85096785E-04    3.12213075E-04    7.77764398E-08  1.13E-08  6.64E-08  5.12E+01   10    1
+Velocity of CM:   1.7722528E-01
+ # Torquenrm, Ekin, Enthalpy:    2.0624836E-09   1.6711524E-05   3.3359803E-04  -3.5084389E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0098.ascii                     
+ # GEOPT FIRE      98   -3.50843894E+03    9.30052068E-04    9.30052068E-04    9.25691462E-04    3.50309558E-04    9.50117436E-08  1.18E-08  8.32E-08  5.64E+01   11    1
+Velocity of CM:   2.0735293E-01
+ # Torquenrm, Ekin, Enthalpy:    2.3328226E-09   2.2112685E-05   3.8507625E-04  -3.5084389E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0099.ascii                     
+ # GEOPT FIRE      99   -3.50843901E+03    9.26045467E-04    9.26045467E-04    7.10594686E-04    4.07188938E-04    1.27255451E-07  1.16E-08  1.16E-07  6.20E+01   12    1
+Velocity of CM:   2.3274918E-01
+ # Torquenrm, Ekin, Enthalpy:    1.1849806E-09   2.8773429E-05   4.5021579E-04  -3.5084390E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0100.ascii                     
+ # GEOPT FIRE     100   -3.50843909E+03    9.24582295E-04    9.24582295E-04    7.17799534E-04    4.78989221E-04    1.35768276E-07  1.14E-08  1.24E-07  6.82E+01   13    1
+Velocity of CM:   2.5973092E-01
+ # Torquenrm, Ekin, Enthalpy:    2.0674109E-09   3.6889742E-05   5.1094260E-04  -3.5084391E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0101.ascii                     
+ # GEOPT FIRE     101   -3.50843919E+03    8.32437219E-04    8.32437219E-04    7.19231294E-04    5.47832343E-04    1.61604562E-07  1.16E-08  1.50E-07  7.50E+01   14    1
+Velocity of CM:   3.2132647E-01
+ # Torquenrm, Ekin, Enthalpy:    2.3966059E-09   4.8243800E-05   6.0727879E-04  -3.5084392E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0102.ascii                     
+ # GEOPT FIRE     102   -3.50843930E+03    7.46268953E-04    7.46268953E-04    7.06990254E-04    6.55522589E-04    1.72236032E-07  1.19E-08  1.60E-07  8.25E+01   15    1
+Velocity of CM:   3.8866380E-01
+ # Torquenrm, Ekin, Enthalpy:    2.3129354E-09   5.9273204E-05   6.9874189E-04  -3.5084393E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0103.ascii                     
+ # GEOPT FIRE     103   -3.50843942E+03    6.95290840E-04    6.95290840E-04    5.90475468E-04    7.58015096E-04    1.81778302E-07  1.27E-08  1.69E-07  9.08E+01   16    1
+Velocity of CM:   4.7133763E-01
+ # Torquenrm, Ekin, Enthalpy:    3.7518094E-09   7.0709507E-05   8.1820441E-04  -3.5084394E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0104.ascii                     
+ # GEOPT FIRE     104   -3.50843955E+03    6.63158096E-04    6.63158096E-04    4.66632639E-04    8.88913913E-04    1.71699954E-07  1.32E-08  1.59E-07  9.99E+01   17    1
+Velocity of CM:   6.1904715E-01
+ # Torquenrm, Ekin, Enthalpy:    9.0527526E-09   8.3266239E-05   9.8940874E-04  -3.5084395E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0105.ascii                     
+ # GEOPT FIRE     105   -3.50843969E+03    5.71043201E-04    5.71043201E-04    2.90606374E-04    1.07267498E-03    1.62315636E-07  1.35E-08  1.49E-07  1.10E+02   18    1
+Velocity of CM:   8.2009953E-01
+ # Torquenrm, Ekin, Enthalpy:    8.3698893E-09   9.3079296E-05   1.2436001E-03  -3.5084397E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0106.ascii                     
+ # GEOPT FIRE     106   -3.50843984E+03    6.96495802E-04    6.96495802E-04    4.42234749E-04    1.33667935E-03    1.34274430E-07  1.43E-08  1.20E-07  1.21E+02   19    1
+Velocity of CM:   1.0676688E+00
+ # Torquenrm, Ekin, Enthalpy:    2.0095132E-08   9.1077373E-05   1.4596171E-03  -3.5084398E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0107.ascii                     
+ # GEOPT FIRE     107   -3.50844001E+03    8.75404188E-04    8.68826485E-04    8.75404188E-04    1.55069443E-03    9.51180216E-08  1.56E-08  7.95E-08  1.33E+02   20    1
+Velocity of CM:   9.9993701E-01
+ # Torquenrm, Ekin, Enthalpy:    2.9907784E-08   7.5307136E-05   1.2591456E-03  -3.5084400E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0108.ascii                     
+ # GEOPT FIRE     108   -3.50844017E+03    1.89010973E-03    1.31616501E-03    1.89010973E-03    1.33445273E-03    7.71688098E-08  1.84E-08  5.87E-08  1.40E+02   21    1
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0109.ascii                     
+ # GEOPT FIRE     109   -3.50844019E+03    1.02038939E-03    1.02038939E-03    1.01867685E-03    0.00000000E+00   -6.33024593E-08  1.64E-08 -7.97E-08  7.00E+01    1    1
+Velocity of CM:   6.8029378E-02
+ # Torquenrm, Ekin, Enthalpy:    3.0304372E-20   1.1615949E-05   9.9592639E-06  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0110.ascii                     
+ # GEOPT FIRE     110   -3.50844021E+03    8.59773827E-04    8.59773827E-04    6.94920114E-04    2.15752127E-05    1.85602868E-07  1.75E-09  1.84E-07  7.00E+01    2    1
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0111.ascii                     
+ # GEOPT FIRE     111   -3.50844021E+03    8.55790014E-04    8.55790014E-04    6.50338279E-04    0.00000000E+00   -7.53104666E-08  2.96E-09 -7.83E-08  3.50E+01    1    1
+Velocity of CM:   1.9993970E-02
+ # Torquenrm, Ekin, Enthalpy:    6.0043823E-21   4.9105801E-07   1.4174673E-06  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0112.ascii                     
+ # GEOPT FIRE     112   -3.50844021E+03    8.46813616E-04    8.46813616E-04    5.48990125E-04    1.90852531E-06    2.36469517E-08  6.94E-10  2.30E-08  3.50E+01    2    1
+Velocity of CM:   5.7715898E-02
+ # Torquenrm, Ekin, Enthalpy:    2.1623327E-11   1.4937732E-06   5.9737022E-06  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0113.ascii                     
+ # GEOPT FIRE     113   -3.50844022E+03    8.34712255E-04    8.34712255E-04    4.14109598E-04    7.46747535E-06    3.46435981E-08  1.40E-09  3.32E-08  3.50E+01    3    1
+Velocity of CM:   1.1436009E-01
+ # Torquenrm, Ekin, Enthalpy:    1.4606653E-10   2.5821766E-06   1.5688581E-05  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0114.ascii                     
+ # GEOPT FIRE     114   -3.50844023E+03    8.22433048E-04    8.22433048E-04    3.36302303E-04    1.82707578E-05    3.56389835E-08  2.25E-09  3.34E-08  3.50E+01    4    1
+Velocity of CM:   1.7687247E-01
+ # Torquenrm, Ekin, Enthalpy:    3.9014476E-10   3.3908263E-06   3.0494038E-05  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0115.ascii                     
+ # GEOPT FIRE     115   -3.50844024E+03    8.13404578E-04    8.13404578E-04    3.38032306E-04    3.38848643E-05    3.42023539E-08  3.27E-09  3.09E-08  3.50E+01    5    1
+Velocity of CM:   2.2938109E-01
+ # Torquenrm, Ekin, Enthalpy:    6.7349239E-10   4.1339757E-06   4.6895365E-05  -3.5084402E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0116.ascii                     
+ # GEOPT FIRE     116   -3.50844025E+03    8.09661619E-04    8.09661619E-04    3.42950147E-04    5.10293411E-05    4.00896479E-08  4.34E-09  3.58E-08  3.50E+01    6    1
+Velocity of CM:   2.7642846E-01
+ # Torquenrm, Ekin, Enthalpy:    8.0195967E-10   5.3047734E-06   6.4753980E-05  -3.5084403E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0117.ascii                     
+ # GEOPT FIRE     117   -3.50844027E+03    8.11833965E-04    8.11833965E-04    3.50710287E-04    7.00587531E-05    5.34179370E-08  5.28E-09  4.81E-08  3.85E+01    7    1
+Velocity of CM:   3.2992972E-01
+ # Torquenrm, Ekin, Enthalpy:    7.3937266E-10   7.3122188E-06   8.9440552E-05  -3.5084403E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0118.ascii                     
+ # GEOPT FIRE     118   -3.50844030E+03    8.20267518E-04    8.20267518E-04    3.76310600E-04    9.67527707E-05    6.81014938E-08  6.24E-09  6.19E-08  4.24E+01    8    1
+Velocity of CM:   3.9541738E-01
+ # Torquenrm, Ekin, Enthalpy:    2.3116558E-10   1.0052693E-05   1.2573993E-04  -3.5084403E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0119.ascii                     
+ # GEOPT FIRE     119   -3.50844033E+03    8.45978232E-04    8.45978232E-04    5.16014114E-04    1.35792621E-04    7.91387713E-08  7.44E-09  7.17E-08  4.66E+01    9    1
+Velocity of CM:   4.6330942E-01
+ # Torquenrm, Ekin, Enthalpy:    8.8531624E-10   1.3251472E-05   1.7241013E-04  -3.5084403E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0120.ascii                     
+ # GEOPT FIRE     120   -3.50844037E+03    8.94961419E-04    8.94961419E-04    5.93555004E-04    1.85661603E-04    9.10886061E-08  9.04E-09  8.20E-08  5.12E+01   10    1
+Velocity of CM:   5.3477380E-01
+ # Torquenrm, Ekin, Enthalpy:    2.1071532E-09   1.7489129E-05   2.3210017E-04  -3.5084404E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0121.ascii                     
+ # GEOPT FIRE     121   -3.50844043E+03    9.49750383E-04    9.49750383E-04    5.74634016E-04    2.49589298E-04    1.11223160E-07  1.10E-08  1.00E-07  5.64E+01   11    1
+Velocity of CM:   6.2363906E-01
+ # Torquenrm, Ekin, Enthalpy:    1.9920157E-09   2.3481605E-05   3.1824551E-04  -3.5084404E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0122.ascii                     
+ # GEOPT FIRE     122   -3.50844052E+03    1.01329559E-03    1.01329559E-03    5.25195583E-04    3.41727111E-04    1.34624488E-07  1.35E-08  1.21E-07  6.20E+01   12    1
+Velocity of CM:   7.2181815E-01
+ # Torquenrm, Ekin, Enthalpy:    1.4403675E-09   3.1059229E-05   4.3417217E-04  -3.5084405E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0123.ascii                     
+ # GEOPT FIRE     123   -3.50844063E+03    1.12843699E-03    1.12843699E-03    5.77511440E-04    4.65231404E-04    1.62224827E-07  1.69E-08  1.45E-07  6.82E+01   13    1
+Velocity of CM:   8.2845408E-01
+ # Torquenrm, Ekin, Enthalpy:    6.0892445E-09   4.1568619E-05   5.9149035E-04  -3.5084406E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0124.ascii                     
+ # GEOPT FIRE     124   -3.50844079E+03    1.30315230E-03    1.30315230E-03    7.45160487E-04    6.33058965E-04    2.06541226E-07  2.17E-08  1.85E-07  7.50E+01   14    1
+Velocity of CM:   9.5486545E-01
+ # Torquenrm, Ekin, Enthalpy:    6.0886826E-09   5.6498416E-05   8.1818094E-04  -3.5084408E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0125.ascii                     
+ # GEOPT FIRE     125   -3.50844102E+03    1.49939091E-03    1.49939091E-03    8.56772751E-04    8.74679361E-04    2.64015595E-07  2.83E-08  2.36E-07  8.25E+01   15    1
+Velocity of CM:   1.1125995E+00
+ # Torquenrm, Ekin, Enthalpy:    3.2780426E-09   7.7558750E-05   1.1482870E-03  -3.5084410E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0126.ascii                     
+ # GEOPT FIRE     126   -3.50844137E+03    1.72179321E-03    1.72179321E-03    8.75445039E-04    1.22584576E-03    3.45222865E-07  3.82E-08  3.07E-07  9.08E+01   16    1
+Velocity of CM:   1.3094368E+00
+ # Torquenrm, Ekin, Enthalpy:    5.0212358E-09   1.0802419E-04   1.6322213E-03  -3.5084414E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0127.ascii                     
+ # GEOPT FIRE     127   -3.50844190E+03    2.05452216E-03    2.05452216E-03    1.07456077E-03    1.74024553E-03    4.65963726E-07  5.28E-08  4.13E-07  9.99E+01   17    1
+Velocity of CM:   1.5455915E+00
+ # Torquenrm, Ekin, Enthalpy:    2.2126547E-08   1.5476188E-04   2.3622660E-03  -3.5084419E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0128.ascii                     
+ # GEOPT FIRE     128   -3.50844274E+03    2.53749250E-03    2.53749250E-03    1.36949019E-03    2.51702788E-03    6.59254138E-07  7.56E-08  5.84E-07  1.10E+02   18    1
+Velocity of CM:   1.8341078E+00
+ # Torquenrm, Ekin, Enthalpy:    2.4255205E-08   2.2850862E-04   3.5028354E-03  -3.5084427E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0129.ascii                     
+ # GEOPT FIRE     129   -3.50844413E+03    3.20517035E-03    3.20517035E-03    1.57064672E-03    3.73134406E-03    9.61369917E-07  1.12E-07  8.49E-07  1.21E+02   19    1
+Velocity of CM:   2.1916263E+00
+ # Torquenrm, Ekin, Enthalpy:    4.0537997E-08   3.4831480E-04   5.2925089E-03  -3.5084441E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0130.ascii                     
+ # GEOPT FIRE     130   -3.50844646E+03    4.11548226E-03    4.11548226E-03    2.21633946E-03    5.64082372E-03    1.46927338E-06  1.73E-07  1.30E-06  1.33E+02   20    1
+Velocity of CM:   2.6602517E+00
+ # Torquenrm, Ekin, Enthalpy:    1.5553477E-07   5.5392465E-04   8.2943187E-03  -3.5084465E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0131.ascii                     
+ # GEOPT FIRE     131   -3.50845027E+03    5.19651367E-03    5.19651367E-03    2.35090280E-03    8.84824335E-03    2.29938568E-06  2.77E-07  2.02E-06  1.40E+02   21    1
+Velocity of CM:   3.2024029E+00
+ # Torquenrm, Ekin, Enthalpy:    2.0307349E-07   8.9361284E-04   1.2769844E-02  -3.5084503E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0132.ascii                     
+ # GEOPT FIRE     132   -3.50845584E+03    6.29977574E-03    6.29977574E-03    3.55709624E-03    1.36634565E-02    3.76688246E-06  4.41E-07  3.33E-06  1.40E+02   22    1
+Velocity of CM:   3.9258810E+00
+ # Torquenrm, Ekin, Enthalpy:    6.2602235E-07   1.4007092E-03   1.9761619E-02  -3.5084558E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0133.ascii                     
+ # GEOPT FIRE     133   -3.50846302E+03    6.60616471E-03    6.60616471E-03    3.30252563E-03    2.11623280E-02    5.16907616E-06  6.77E-07  4.49E-06  1.40E+02   23    1
+Velocity of CM:   4.3711494E+00
+ # Torquenrm, Ekin, Enthalpy:    6.3800829E-07   2.0150436E-03   2.5909746E-02  -3.5084630E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0134.ascii                     
+ # GEOPT FIRE     134   -3.50846897E+03    6.14249044E-03    6.14249044E-03    5.19148594E-03    2.79247891E-02    7.15301081E-06  8.65E-07  6.29E-06  1.40E+02   24    1
+Velocity of CM:   3.9234816E+00
+ # Torquenrm, Ekin, Enthalpy:    2.3406376E-06   1.9383708E-03   2.5112254E-02  -3.5084690E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0135.ascii                     
+ # GEOPT FIRE     135   -3.50847027E+03    1.39153389E-02    1.39153389E-02    8.62334159E-03    2.70506245E-02    7.74140346E-07  8.65E-07 -9.12E-08  1.40E+02   25    1
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084703E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0136.ascii                     
+ # GEOPT FIRE     136   -3.50847080E+03    1.21237995E-02    1.21237995E-02    5.02742085E-03    0.00000000E+00   -2.92302198E-06  1.29E-07 -3.05E-06  7.00E+01    1    1
+Velocity of CM:   3.3538290E-01
+ # Torquenrm, Ekin, Enthalpy:    1.7838441E-19   2.2619672E-04   5.0980960E-04  -3.5084708E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0137.ascii                     
+ # GEOPT FIRE     137   -3.50847165E+03    7.47556233E-03    7.47556233E-03    3.97864366E-03    7.36006319E-04    3.90637857E-06  8.72E-08  3.82E-06  7.00E+01    2    1
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084716E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0138.ascii                     
+ # GEOPT FIRE     138   -3.50847169E+03    7.29334657E-03    7.29334657E-03    3.73961917E-03    0.00000000E+00   -5.31926139E-07  1.44E-07 -6.76E-07  3.50E+01    1    1
+Velocity of CM:   7.4187937E-02
+ # Torquenrm, Ekin, Enthalpy:    8.1315163E-20   7.7822335E-06   5.2477633E-05  -3.5084717E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0139.ascii                     
+ # GEOPT FIRE     139   -3.50847181E+03    6.81378380E-03    6.81378380E-03    3.18269617E-03    6.02598664E-05    3.93999617E-07  2.75E-08  3.67E-07  3.50E+01    2    1
+Velocity of CM:   2.0145427E-01
+ # Torquenrm, Ekin, Enthalpy:    2.5185953E-10   2.3245951E-05   2.0901906E-04  -3.5084718E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0140.ascii                     
+ # GEOPT FIRE     140   -3.50847199E+03    6.04308748E-03    6.04308748E-03    2.41982356E-03    2.32265007E-04    5.69894405E-07  5.25E-08  5.17E-07  3.50E+01    3    1
+Velocity of CM:   3.6081007E-01
+ # Torquenrm, Ekin, Enthalpy:    1.6839107E-09   3.8990561E-05   4.9288034E-04  -3.5084720E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0141.ascii                     
+ # GEOPT FIRE     141   -3.50847221E+03    5.02657296E-03    5.02657296E-03    1.74724391E-03    5.31870901E-04    5.70009663E-07  7.50E-08  4.95E-07  3.50E+01    4    1
+Velocity of CM:   4.8718044E-01
+ # Torquenrm, Ekin, Enthalpy:    4.3721101E-09   4.9349988E-05   8.2452723E-04  -3.5084722E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0142.ascii                     
+ # GEOPT FIRE     142   -3.50847245E+03    3.89034720E-03    3.89034720E-03    1.93938327E-03    8.73877217E-04    5.18912239E-07  9.15E-08  4.27E-07  3.50E+01    5    1
+Velocity of CM:   5.3832275E-01
+ # Torquenrm, Ekin, Enthalpy:    7.2237807E-09   5.8111710E-05   1.0693156E-03  -3.5084724E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0143.ascii                     
+ # GEOPT FIRE     143   -3.50847268E+03    3.22884109E-03    3.22884109E-03    1.81995331E-03    1.12742728E-03    5.59125041E-07  9.62E-08  4.63E-07  3.50E+01    6    1
+Velocity of CM:   5.3206867E-01
+ # Torquenrm, Ekin, Enthalpy:    8.2340742E-09   7.1729414E-05   1.2274060E-03  -3.5084727E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0144.ascii                     
+ # GEOPT FIRE     144   -3.50847290E+03    2.63576845E-03    2.63576845E-03    1.35747406E-03    1.29913541E-03    6.58922131E-07  8.93E-08  5.70E-07  3.85E+01    7    1
+Velocity of CM:   4.8113330E-01
+ # Torquenrm, Ekin, Enthalpy:    7.7944188E-09   9.2712327E-05   1.4005701E-03  -3.5084729E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0145.ascii                     
+ # GEOPT FIRE     145   -3.50847311E+03    1.92628543E-03    1.92628543E-03    1.27043031E-03    1.49328245E-03    6.74957683E-07  7.62E-08  5.99E-07  4.24E+01    8    1
+Velocity of CM:   3.8003390E-01
+ # Torquenrm, Ekin, Enthalpy:    6.3343394E-09   1.1068873E-04   1.6392326E-03  -3.5084731E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0146.ascii                     
+ # GEOPT FIRE     146   -3.50847330E+03    2.28099102E-03    2.28099102E-03    1.58701524E-03    1.74992128E-03    5.26593482E-07  6.13E-08  4.65E-07  4.66E+01    9    1
+Velocity of CM:   2.7343426E-01
+ # Torquenrm, Ekin, Enthalpy:    1.0545308E-08   1.1342458E-04   1.6990750E-03  -3.5084733E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0147.ascii                     
+ # GEOPT FIRE     147   -3.50847346E+03    2.32778107E-03    2.32778107E-03    1.41056838E-03    1.81249956E-03    3.97570647E-07  4.56E-08  3.52E-07  5.12E+01   10    1
+Velocity of CM:   2.2583577E-01
+ # Torquenrm, Ekin, Enthalpy:    1.5749425E-08   1.2196058E-04   1.6811992E-03  -3.5084735E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0148.ascii                     
+ # GEOPT FIRE     148   -3.50847358E+03    2.01904652E-03    2.01904652E-03    7.33227251E-04    1.80315976E-03    4.07892233E-07  2.84E-08  3.79E-07  5.64E+01   11    1
+Velocity of CM:   2.7131663E-01
+ # Torquenrm, Ekin, Enthalpy:    1.0493292E-08   1.3125167E-04   1.7736153E-03  -3.5084736E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0149.ascii                     
+ # GEOPT FIRE     149   -3.50847371E+03    1.70307649E-03    1.70307649E-03    4.59029225E-04    1.90486697E-03    3.15735457E-07  1.74E-08  2.98E-07  6.20E+01   12    1
+Velocity of CM:   3.2306538E-01
+ # Torquenrm, Ekin, Enthalpy:    1.3254810E-08   1.2453559E-04   1.8972331E-03  -3.5084737E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0150.ascii                     
+ # GEOPT FIRE     150   -3.50847384E+03    1.46368741E-03    1.46368741E-03    6.16605064E-04    2.02176864E-03    2.11325581E-07  1.76E-08  1.94E-07  6.82E+01   13    1
+Velocity of CM:   3.5145760E-01
+ # Torquenrm, Ekin, Enthalpy:    2.0845501E-08   8.9295741E-05   2.2504003E-03  -3.5084738E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0151.ascii                     
+ # GEOPT FIRE     151   -3.50847396E+03    8.25625278E-04    8.25625278E-04    2.92418199E-04    2.33969606E-03    2.28057157E-09  1.98E-08 -1.76E-08  7.50E+01   14    1
+Velocity of CM:   0.0000000E+00
+ # Torquenrm, Ekin, Enthalpy:    0.0000000E+00   0.0000000E+00   0.0000000E+00  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0152.ascii                     
+ # GEOPT FIRE     152   -3.50847396E+03    8.29270360E-04    8.29270360E-04    2.87750507E-04    0.00000000E+00   -9.29355412E-08  1.51E-08 -1.08E-07  3.75E+01    1    1
+Velocity of CM:   2.8792498E-03
+ # Torquenrm, Ekin, Enthalpy:    6.9848126E-21   9.7815657E-08   1.4868167E-06  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0153.ascii                     
+ # GEOPT FIRE     153   -3.50847397E+03    8.33314252E-04    8.33314252E-04    2.76306524E-04    1.58463237E-06    5.17880426E-09  6.63E-10  4.52E-09  3.75E+01    2    1
+Velocity of CM:   7.6701773E-03
+ # Torquenrm, Ekin, Enthalpy:    1.9942959E-12   3.2027279E-07   5.6612271E-06  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0154.ascii                     
+ # GEOPT FIRE     154   -3.50847397E+03    8.33062576E-04    8.33062576E-04    2.58479473E-04    5.98149992E-06    8.97069128E-09  1.25E-09  7.72E-09  3.75E+01    3    1
+Velocity of CM:   1.3896023E-02
+ # Torquenrm, Ekin, Enthalpy:    1.2632454E-11   6.3654075E-07   1.2980494E-05  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0155.ascii                     
+ # GEOPT FIRE     155   -3.50847398E+03    8.23522023E-04    8.23522023E-04    2.34771369E-04    1.36170351E-05    1.18034505E-08  1.77E-09  1.00E-08  3.75E+01    4    1
+Velocity of CM:   2.1004917E-02
+ # Torquenrm, Ekin, Enthalpy:    3.1083237E-11   1.0097307E-06   2.3655357E-05  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0156.ascii                     
+ # GEOPT FIRE     156   -3.50847399E+03    8.00008141E-04    8.00008141E-04    2.05703030E-04    2.46650873E-05    1.35975962E-08  2.18E-09  1.14E-08  3.75E+01    5    1
+Velocity of CM:   2.8422904E-02
+ # Torquenrm, Ekin, Enthalpy:    4.9287876E-11   1.4057052E-06   3.7802884E-05  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0157.ascii                     
+ # GEOPT FIRE     157   -3.50847400E+03    7.59081632E-04    7.59081632E-04    1.71711297E-04    3.92085897E-05    1.43842345E-08  2.42E-09  1.20E-08  3.75E+01    6    1
+Velocity of CM:   3.5554917E-02
+ # Torquenrm, Ekin, Enthalpy:    5.9019638E-11   1.7901539E-06   5.5677362E-05  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0158.ascii                     
+ # GEOPT FIRE     158   -3.50847401E+03    6.93696076E-04    6.93696076E-04    1.29050382E-04    5.74675162E-05    1.42093679E-08  2.50E-09  1.17E-08  4.13E+01    7    1
+Velocity of CM:   4.1303581E-02
+ # Torquenrm, Ekin, Enthalpy:    7.9752310E-11   2.1539213E-06   7.8276228E-05  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0159.ascii                     
+ # GEOPT FIRE     159   -3.50847402E+03    6.02607721E-04    6.02607721E-04    1.57987435E-04    8.04301491E-05    1.30806767E-08  2.41E-09  1.07E-08  4.54E+01    8    1
+Velocity of CM:   4.3183841E-02
+ # Torquenrm, Ekin, Enthalpy:    1.5007707E-10   2.4138533E-06   1.0234689E-04  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0160.ascii                     
+ # GEOPT FIRE     160   -3.50847403E+03    4.99865911E-04    4.99865911E-04    2.18080607E-04    1.04760743E-04    1.13319085E-08  2.17E-09  9.16E-09  4.99E+01    9    1
+Velocity of CM:   3.8946137E-02
+ # Torquenrm, Ekin, Enthalpy:    2.9556977E-10   2.5374787E-06   1.1935760E-04  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0161.ascii                     
+ # GEOPT FIRE     161   -3.50847404E+03    4.86759580E-04    4.86759580E-04    2.84361948E-04    1.21895081E-04    9.82332219E-09  1.82E-09  8.01E-09  5.49E+01   10    1
+Velocity of CM:   3.1310513E-02
+ # Torquenrm, Ekin, Enthalpy:    5.0274485E-10   2.6157970E-06   1.2282839E-04  -3.5084740E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0162.ascii                     
+ # GEOPT FIRE     162   -3.50847405E+03    4.36058479E-04    4.36058479E-04    3.31991352E-04    1.25444187E-04    9.54638748E-09  1.43E-09  8.11E-09  6.04E+01   11    1
+Velocity of CM:   2.7587462E-02
+ # Torquenrm, Ekin, Enthalpy:    7.6801608E-10   2.8306691E-06   1.1507966E-04  -3.5084741E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0163.ascii                     
+ # GEOPT FIRE     163   -3.50847406E+03    3.45382203E-04    3.45382203E-04    3.41700010E-04    1.17910325E-04    1.13407417E-08  1.12E-09  1.02E-08  6.65E+01   12    1
+Velocity of CM:   3.0133242E-02
+ # Torquenrm, Ekin, Enthalpy:    1.0213167E-09   3.3639131E-06   1.0247380E-04  -3.5084741E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0164.ascii                     
+ # GEOPT FIRE     164   -3.50847407E+03    3.14166786E-04    2.76563299E-04    3.14166786E-04    1.05837716E-04    1.49771196E-08  9.30E-10  1.40E-08  7.31E+01   13    1
+Velocity of CM:   3.2479208E-02
+ # Torquenrm, Ekin, Enthalpy:    1.1917445E-09   4.3231001E-06   8.9153351E-05  -3.5084741E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0165.ascii                     
+ # GEOPT FIRE     165   -3.50847408E+03    2.69111906E-04    2.55620819E-04    2.69111906E-04    9.34764509E-05    1.89916826E-08  8.20E-10  1.82E-08  8.04E+01   14    1
+Velocity of CM:   2.7291074E-02
+ # Torquenrm, Ekin, Enthalpy:    1.2628296E-09   5.6947406E-06   7.6755121E-05  -3.5084741E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0166.ascii                     
+ # GEOPT FIRE     166   -3.50847408E+03    2.07144060E-04    1.94396188E-04    2.07144060E-04    8.24498612E-05    2.12927469E-08  7.42E-10  2.06E-08  8.85E+01   15    1
+Velocity of CM:   1.3560111E-02
+ # Torquenrm, Ekin, Enthalpy:    1.1305880E-09   7.2339691E-06   6.5560966E-05  -3.5084741E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0167.ascii                     
+ # GEOPT FIRE     167   -3.50847409E+03    1.55362565E-04    1.31737345E-04    1.55362565E-04    7.27949352E-05    1.98827869E-08  6.59E-10  1.92E-08  9.73E+01   16    1
+Velocity of CM:   2.5312254E-02
+ # Torquenrm, Ekin, Enthalpy:    9.4564058E-10   8.4092493E-06   5.5806285E-05  -3.5084741E+03
+ # KPT mesh set up as follows:      6     3     3
+ # Writing the positions in FIRE: posgeopt.0168.ascii                     
+ # GEOPT FIRE     168   -3.50847409E+03    9.12818796E-05    9.12818796E-05    6.75879893E-05    6.42155344E-05    1.40551443E-08  5.20E-10  1.35E-08  1.07E+02   17    1
+ # FIRE converged 168    -3.508474090675502E+03     9.128187962155997E-05
+ # EXIT FIRE   168 -3.5084741E+03 -3.5090796E+03
+ # Counter of GEOPT updated:     168
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     1
+ # SPGLIB: space_group     2
+ # SPGLIB: space_group     2
+ # SPGLIB: space_group    12
+ # SPGLIB: space_group    71
+ # SPGLIB: space_group    71
+ # SPGLIB: space_group    71
+ # SPGLIB: space_group    71
+ # SPGLIB: space_group    71
+ # SPGLIB: space_group    71
+ # SPGLIB: space_group    71
+ # SPGLIB: space_group    71
+ # FINAL SPGLIB  SPG, TOL:    71  1.9905358E-02
+ # Re-reading params.in
+ NAT or NTYPE or ZNUCL not found in params_new.in
+ Trying to read them from poscur.ascii                            
+ # After exiting GEOPT, we have energy, enthalpy:     -3.509079587195039E+03    -3.508474090675502E+03
+ # Wrote file poslocm_00001.ascii, with a,b,c,alpha,beta,gamma:    6.2209829E+00   1.2792679E+01   1.2775983E+01   1.0650765E+02   1.0406444E+02   1.0407805E+02
+ # Suggested minimal cutoff radius for Oganov FP:   1.9243161E+01
+ Creating expansion for periodic Oganov FP  11   5   5 ...
+ # nlmin,ent_wpos,ent_pos  1 -3.5084741E+03 -3.5084710E+03
+ # nlmin,e_wpos,e_pos      1 -3.5090796E+03 -3.5090742E+03
+ # ID: Check identical: ent_wpos,k_e_wpos -0.35084740906755023E+04  0
+ # ID: there is no minimum in the given enthalpy range
+ # ID: wpos is a new minimum:    T
+ k_e_wpos,kid:            0      -32765
+   -----   INSERT -----------
+  wrote poscur.ascii for RESTART  -3508.47104704668     
+  wrote poslow files           2
+  wrote earr.dat for  RESTART
+  wrote ioput for  RESTART
+  wrote binary files poslow.bin, fcart.bin, strten.bin, latvec.bin and fp.bin fo
+ r RESTART
+ # nsoften, mdmin:           20           2
+ #global:          1. -3.50847409067550E+03  5.560E-02  9.091E+03   71  0.000E+00  0.00  0.00  1.00  T A     1
+ WINTER
+  wrote poscur.ascii for RESTART  -3508.47409067550     
+  wrote poslow files           2
+  wrote earr.dat for  RESTART
+  wrote ioput for  RESTART
+  wrote binary files poslow.bin, fcart.bin, strten.bin, latvec.bin and fp.bin fo
+ r RESTART
+  # writing final results
+  # found in total            2  minima
+  # Accepeted            2  minima
+  wrote poscur.ascii for RESTART  -3508.47409067550     
+  wrote poslow files           2
+  wrote earr.dat for  RESTART
+  wrote ioput for  RESTART
+  wrote binary files poslow.bin, fcart.bin, strten.bin, latvec.bin and fp.bin fo
+ r RESTART
+ # ratio stuck,same,old,new  0.000E+00  0.000E+00  1.000E+00
+ # ratio acc,rej  1.000E+00  0.000E+00
+ # count_md,count_geopt         79.0        168.0
+ # average ediff, ekinetic  2.780E-02  1.000E+04
+ # number of configurations for which atoms escaped         0
+ # most frequent visits       1.
+ # av. numb. visits per minimum 1.000E+00
+ # minimum energy separation between presumably different configurations 0.00E+00
+CPU time: iproc,time(hrs)    0      0.885E-02
+CPU time: iproc,time(min)    0      0.531E+00
+CPU time: iproc,time(sec)    0      0.318E+02
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  56461
+   Tot. No. of Deallocations           :  56461
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  51.646
+     for the array                     : linked_lists%bound_rad
+     in the routine                    : call_linkedlist
+     Memory Peak of process            : 102.084 MB
+ Walltime since initialization         :  00:00:31.946576507
+ Max No. of dictionaries used          :  538 #( 184 still in use)
+ Number of dictionary folders allocated:  1

@@ -9,10 +9,10 @@
 !!    For the list of contributors, see ~/AUTHORS
 !subroutine geopt(nat,wpos,etot,fout,fnrmtol,count,count_sd,displr)
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
-subroutine GEOPT_SD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max
+ use global, only: char_type
  use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use steepest_descent
  use defs_basis
@@ -23,10 +23,11 @@ subroutine GEOPT_SD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,co
 !   use module_base
 !   use bigdft_run!module_types
 !   use yaml_output
-   use module_sqn, only: modify_gradient_minhocao, getSubSpaceEvecEval!, findbonds
+   use module_sqn, only: modify_gradient_minhocao, getSubSpaceEvecEval_minhocao !, findbonds
    use mod_parini, only: typ_parini
    implicit none
    type(typ_parini), intent(in):: parini
+   type(typ_parini), intent(inout):: parres
    !parameter
 !   integer, intent(in)                    :: nproc
 !   integer, intent(in)                    :: iproc
@@ -139,7 +140,7 @@ subroutine GEOPT_SD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,co
 !   cutoffRatio=runObj%inputs%cutoffratio
 !   steepthresh=runObj%inputs%steepthresh
 !   trustr=runObj%inputs%trustr
-   nit=        ntime_geopt
+   nit=        parini%paropt_geopt%nit
 !   nat=        nat
    betax=       sd_beta_at
    beta_scale=  sd_beta_lat/sd_beta_at
@@ -260,10 +261,10 @@ enthalpy_old=10.d0
 counter=0.d0
 do it=1,nit
       lattdeg=1
-      call get_BFGS_forces_strainlatt(parini,rxyz(:,:,0),fxyz(:,:,0),enthalpy,getwfk,iprec,latvec0,&
+      call get_BFGS_forces_strainlatt(parini,parres,rxyz(:,:,0),fxyz(:,:,0),enthalpy,getwfk,iprec,latvec0,&
              &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
       call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
-      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       counter=real(it,8)
       write(*,'(i,a,5es15.7)') it," GEOPT_SD ",enthalpy,fmax,fmax_at,fmax_lat,beta
       if(iexit==1) then

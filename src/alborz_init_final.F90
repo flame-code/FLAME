@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine alborz_init(parini,file_ini)
+subroutine alborz_init(parini,parres,file_ini)
     use mod_interface
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_task, only: typ_file_ini, time_start
@@ -11,6 +11,7 @@ subroutine alborz_init(parini,file_ini)
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
+    type(typ_parini), intent(inout):: parres
     !local variables
     integer:: istat
     call f_lib_initialize()
@@ -56,6 +57,7 @@ subroutine alborz_init(parini,file_ini)
     if(trim(parini%task)/='potential') then
         call init_random_seed(parini)
     endif
+    parres=parini
     !-----------------------------------------------------------------
     call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     call f_release_routine()
