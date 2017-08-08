@@ -13,79 +13,115 @@ subroutine best_charge_density(parini)
     type(typ_atoms):: atoms
     type(typ_cent):: cent
     type(typ_ann_arr):: ann_arr
-    integer:: istat, igpx, igpy, igpz, iat, nx ,ny, nz
-    real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi
-    real(8):: ehartree
-    real(8),allocatable::  gausswidth(:) , gwit(:)
-    open (unit = 10 , file="forces.txt")
-    nx=cent%ewald_p3d%poisson_p3d%ngpx
-    ny=cent%ewald_p3d%poisson_p3d%ngpy
-    nz=cent%ewald_p3d%poisson_p3d%ngpz
+    integer:: istat, igpx, igpy, igpz, iat, nx ,ny, nz,iter,iter_max,gweiat
+    real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi,h
+    real(8):: ehartree,exit_cond,SDA,ener,dft_ener,coeff
+    real(8),allocatable::  gausswidth(:) , gwit(:), diff(:,:),bigforce(:,:),agrad(:)
     pi=4.d0*atan(1.d0)
-    write(*,*) "reading electronic density..."
     call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
-    write(*,*) "reading posinp.acf..."
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     cent%ewald_p3d%hgx=cent%ewald_p3d%poisson_p3d%hx
     cent%ewald_p3d%hgy=cent%ewald_p3d%poisson_p3d%hy
     cent%ewald_p3d%hgz=cent%ewald_p3d%poisson_p3d%hz
     atoms%boundcond='bulk'
-    allocate(cent%ewald_p3d%poisson_p3d%pot(cent%ewald_p3d%poisson_p3d%ngpx+2,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
+    allocate(cent%ewald_p3d%poisson_p3d%pot(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
     call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
     call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
-    write(*,*) "Hartree energy : ", ehartree
-    !-----------------------------------------------------------------------------------
-    write(*,*) "calculating gauss_force of bigdft charge density..."
-    write(10,*) "calculating gauss_force of bigdft charge density..."
-    atoms%zat(:)=1
-    allocate(gwit(atoms%nat))
+    dft_ener = ehartree
+    write(*,*) "dft_Hartree : " , dft_ener
+!   atoms%zat(:)=1.d0
     nx=cent%ewald_p3d%poisson_p3d%ngpx
     ny=cent%ewald_p3d%poisson_p3d%ngpy
     nz=cent%ewald_p3d%poisson_p3d%ngpz
-    allocate(cent%gwit(atoms%nat))
-    cent%gwit = 0.8d0
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
-        cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
-        write(10,*) "atoms forces are :"
-        write(10,*) atoms%fat
-    !-----------------------------------------------------------------------------------
-    write(*,*) "calculating cent_electronic_density..."
-    atoms%qat = 1.d0
-    allocate(cent%gwe(atoms%nat))
-    cent%gwe = 0.8d0
-    cent%ewald_p3d%rgcut=6.d0*cent%gwe(1)
-    call gauss_grid(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat, &
-        cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
-    call cube_write('cent_electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson,'rho')
-    !-----------------------------------------------------------------------------------
-    deallocate(cent%ewald_p3d%poisson_p3d%pot)
-    !-----------------------------------------------------------------------------------
-    write(*,*) "calculating gauss_force of CENT2 charge density..."
-    write(10,*) "calculating gauss_force of CENT2 charge density..."
-     write(*,*) "reading cent electronic density..."
-    call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
-    cent%ewald_p3d%hgx=cent%ewald_p3d%poisson_p3d%hx
-    cent%ewald_p3d%hgy=cent%ewald_p3d%poisson_p3d%hy
-    cent%ewald_p3d%hgz=cent%ewald_p3d%poisson_p3d%hz
-    atoms%boundcond='bulk'
-    allocate(cent%ewald_p3d%poisson_p3d%pot(cent%ewald_p3d%poisson_p3d%ngpx+2,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
-    call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
-    call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
-    write(*,*) "Hartree energy : ", ehartree
-    !-----------------------------------------------------------------------------------
-    write(*,*) "calculating gauss_force of cent charge density..."
-    atoms%zat(:)=1
-    nx=cent%ewald_p3d%poisson_p3d%ngpx
-    ny=cent%ewald_p3d%poisson_p3d%ngpy
-    nz=cent%ewald_p3d%poisson_p3d%ngpz
-    cent%gwit = 0.8d0
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
-        cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
-        write(10,*) "atoms forces are :"
-        write(10,*) atoms%fat
-    !-----------------------------------------------------------------------------------
+!   allocate(cent%gwit(atoms%nat))
+!   allocate(bigforce(3,atoms%nat))
+!   cent%gwit = 1.3d0
+!   call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
+!   bigforce = atoms%fat
     call destruct_ewald_bps(cent%ewald_p3d)
+    deallocate(cent%ewald_p3d%poisson_p3d%pot)
+   !/////////////////CENT_FORCE////////////////////////! 
+    atoms%qat = 2.d0
+   ! atoms%qat =[0.991363025367481,0.991363025367481,0.991363025367481,0.991363025367482,0.991363025367481,0.991363025367481,0.991363025367481,0.991363025367481]
+
+    SDA  = 1.d-3
+    allocate(cent%gwe(atoms%nat))
+    cent%gwe=1.5d0
+    !cent%gwe = [0.179276855138007,0.179276855138007,0.179276855138007,0.179276855138007,0.179276855138008,0.179276855138007,0.179276855138007,0.179276855138007]
+    do iter=1,huge(iter_max)
+         cent%ewald_p3d%rgcut=6.d0*maxval(abs(cent%gwe))
+         call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+         !call cube_write('cent_electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson,'rho')
+         !-----------------------------------------------------------------------------------
+         !write(*,*) "calculating gauss_force of CENT2 charge density..."
+         !write(*,*) "reading cent electronic density..."
+         !call cube_read('cent_electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
+!!!         cent%ewald_p3d%hgx=cent%ewald_p3d%poisson_p3d%hx
+!!!         cent%ewald_p3d%hgy=cent%ewald_p3d%poisson_p3d%hy
+!!!         cent%ewald_p3d%hgz=cent%ewald_p3d%poisson_p3d%hz
+         atoms%boundcond='bulk'
+         allocate(cent%ewald_p3d%poisson_p3d%pot(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
+         call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
+         call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
+         ener = ehartree
+         write(*,*) "Hartree : " , ener ;
+!         atoms%zat(:)=1.d0
+!         cent%gwit = 1.3d0
+!         atoms%fat = 0.d0
+!         call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
+         !write(*,*) "norm",cent%gwit(1),sqrt(sum(((bigforce(1:3,1:atoms%nat)-atoms%fat(1:3,1:atoms%nat))**2)))
+         allocate(cent%rgrad(1:3,atoms%nat),cent%qgrad(atoms%nat),agrad(atoms%nat))
+         call gauss_gradient_rzx(parini,atoms%boundcond,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,cent%rgrad,cent%qgrad,agrad)
+        ! write(*,*)"rgrad",cent%rgrad
+        ! write(*,*)"qgrad",cent%qgrad
+        ! write(*,*)"agrad",agrad
+        ! write(*,*)"pot" ,shape(cent%ewald_p3d%poisson_p3d%pot)
+!         exit_cond = sqrt(sum(((bigforce(1:3,1:atoms%nat)-atoms%fat(1:3,1:atoms%nat))**2))/atoms%nat)
+         exit_cond = (dft_ener-ener)**2.d0
+         write(*,*)"SD",iter,exit_cond
+         if (exit_cond < 1.d-4)then
+            write(*,*) "max conversion reached"
+            write(*,*) "qat : "
+            write(*,*) atoms%qat
+            write(*,*) "gwe : "
+            write(*,*) cent%gwe
+            exit
+         endif
+         coeff = 2.d0*(ener - dft_ener)
+         atoms%qat = atoms%qat - SDA*coeff*cent%qgrad
+         cent%gwe = cent%gwe - SDA*coeff*agrad
+         call destruct_ewald_bps(cent%ewald_p3d)
+         deallocate(cent%ewald_p3d%poisson_p3d%pot,cent%rgrad,cent%qgrad,agrad)
+    enddo
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!CHECKING AGRAD    h = 1d-8
+!!CHECKING AGRAD    atoms%qat = 1.d0
+!!CHECKING AGRAD    gweiat = 8
+!!CHECKING AGRAD    cent%gwe(gweiat) = cent%gwe(gweiat)+h
+!!CHECKING AGRAD    call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+!!CHECKING AGRAD    allocate(cent%ewald_p3d%poisson_p3d%pot(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
+!!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
+!!CHECKING AGRAD    call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
+!!CHECKING AGRAD    ener = ehartree
+!!CHECKING AGRAD    write(*,*) "ener2" , ener
+!!CHECKING AGRAD    call destruct_ewald_bps(cent%ewald_p3d)
+!!CHECKING AGRAD    deallocate(cent%ewald_p3d%poisson_p3d%pot)
+!!CHECKING AGRAD    cent%gwe(gweiat)=cent%gwe(gweiat)-(2.d0*h)
+!!CHECKING AGRAD    call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+!!CHECKING AGRAD    !-----------------------------------------------------------------------------------
+!!CHECKING AGRAD    allocate(cent%ewald_p3d%poisson_p3d%pot(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
+!!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
+!!CHECKING AGRAD    call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
+!!CHECKING AGRAD    write(*,*) "ener3",ehartree
+!!CHECKING AGRAD    ener = ener - ehartree
+!!CHECKING AGRAD    ener = ener/(2.d0*h)
+!!CHECKING AGRAD    write(*,*) "agrad(",gweiat,")",ener ;
+!!CHECKING AGRAD    call destruct_ewald_bps(cent%ewald_p3d)
+!!CHECKING AGRAD    deallocate(cent%ewald_p3d%poisson_p3d%pot)
+!!CHECKING AGRAD    
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end subroutine best_charge_density
+
 !*****************************************************************************************
 subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
     use mod_interface
@@ -116,7 +152,7 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, tt1, tta
-    real(8):: dmsq, gwsq_inv
+    real(8):: dmsq, gwsq_inv, gw_inv
     real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
@@ -232,6 +268,7 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     do iat=1,nat
+        gw_inv = 1.d0/gw(iat)
         gwsq_inv=1.d0/gw(iat)**2
         fac=1.d0/(gw(iat)*sqrt(pi))**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
@@ -244,7 +281,6 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
         ttz=0.d0
         !------------------------
         tta=0.d0
-        !________________________
         do igz=-nbgz,nbgz
             jgz=igz+imgz
             hzx_g=(jgz-1)*hzx
@@ -278,7 +314,8 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
                     tty=tty+tt1*dmyarr(igx)
                     ttz=ttz+tt1*dmzarr(igx)
                     !-----------------------
-                    tta=tta-2.d0*facqiat*exponentval(igx)*sqrt(gwsq_inv)*expval(igx)
+                    tta=tta+(-3.d0 - (2.d0*exponentval(igx)))*facqiat*gw_inv*expval(igx)*wa(igx+imgx,jgy,jgz)
+
                     !_______________________
                 enddo
             enddo
@@ -298,4 +335,3 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     call f_free(wa)
 end subroutine gauss_gradient_rzx
 !*****************************************************************************************
-
