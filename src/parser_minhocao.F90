@@ -118,7 +118,7 @@ endif
    if(.not.znucl_found) then
    call parsescalar_real("ZNUCL",5,all_line(1:n),n,tmp_val,found)
    if(found) znucl_found=.true.
-   if(found) exit
+   if(found) cycle
    endif
 !CONFNCONF
    call parsescalar_int("CONFNCONF",9,all_line(1:n),n,nconfine,found)
