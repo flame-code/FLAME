@@ -32,7 +32,7 @@ implicit none
   integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
   integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
   character(2),allocatable:: char_type(:) 
-  real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
+!  real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
 !  character(20):: code            !What code should be used: abinit or siesta
 !  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
 !  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
@@ -119,14 +119,14 @@ module fingerprint
    implicit none
    save
 !All
-   real(8):: fp_rcut   
-   integer:: fp_nl
+!   real(8):: fp_rcut   
+!   integer:: fp_nl
    integer:: fp_method
-   integer:: fp_at_nmax
+!   integer:: fp_at_nmax
    integer:: fp_all_nmax
-   character(20):: fp_method_ch
-   real(8):: fp_sigma   
-   real(8):: fp_dbin
+!   character(20):: fp_method_ch
+!   real(8):: fp_sigma   
+!   real(8):: fp_dbin
 !Oganov parameters
    real(8):: fp_11_rcut
    real(8):: fp_11_sigma   
@@ -143,9 +143,9 @@ module fingerprint
    integer:: fp_13_fp_dim
    real(8),allocatable:: fp_13_r_cut(:)
 !xyz2sm parameters
-   integer:: fp_14_m
-   real(8):: fp_14_w1
-   real(8):: fp_14_w2
+!   integer:: fp_14_m
+!   real(8):: fp_14_w1
+!   real(8):: fp_14_w2
 !Continuous Oganov parameters
    real(8):: fp_15_rcut
    real(8):: fp_15_sigma  
@@ -161,9 +161,9 @@ module fingerprint
 ! gom parameters
    real(8):: fp_17_width_cutoff
    real(8):: fp_17_nex_cutoff
-   integer:: fp_17_natx_sphere
-   integer:: fp_17_lseg
-   character(len=2) :: fp_17_orbital
+!   integer:: fp_17_natx_sphere
+!   integer:: fp_17_lseg
+!   character(len=2) :: fp_17_orbital
 !Molecular GOM
 !
 !

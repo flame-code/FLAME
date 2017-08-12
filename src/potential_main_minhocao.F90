@@ -95,9 +95,9 @@ contains
     fcart_voidlj=0.d0
 
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
 
@@ -146,19 +146,19 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     endif  
     
     if(trim(parini%potential_potential)=="abinit") then
-      call make_input_abinit(latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
+      call make_input_abinit(parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
     elseif(trim(parini%potential_potential)=="cp2k") then
-      call make_input_cp2k(latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
+      call make_input_cp2k(parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
     elseif(trim(parini%potential_potential)=="siesta") then
-      call make_input_siesta(latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
+      call make_input_siesta(parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
     elseif(trim(parini%potential_potential)=="vasp") then
-      call make_input_vasp  (latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
+      call make_input_vasp  (parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
     elseif(trim(parini%potential_potential)=="espresso") then
-      call make_input_espresso  (latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
+      call make_input_espresso  (parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
     elseif(trim(parini%potential_potential)=="mopac") then
-      call make_input_mopac (latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
+      call make_input_mopac (parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
     elseif(trim(parini%potential_potential)=="dftb") then
-      call make_input_dftb (latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
+      call make_input_dftb (parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk)
     elseif(trim(parini%potential_potential)=="lenosky_tb") then
     elseif(trim(parini%potential_potential)=="lenosky_meam") then
     elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
@@ -290,9 +290,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     real(8) :: dkpt
 
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
 
@@ -328,11 +328,11 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 
 
     if(trim(parini%potential_potential)=="abinit") then
-      call make_input_abinit(latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk, dos=.true.)
+      call make_input_abinit(parini,latvec, xred, iprec, parres%ka, parres%kb, parres%kc, getwfk, dos=.true.)
     elseif(trim(parini%potential_potential)=="vasp") then
-      call make_input_vasp(latvec,xred,iprec,parres%ka,parres%kb,parres%kc,getwfk, dos=.true.)
+      call make_input_vasp(parini,latvec,xred,iprec,parres%ka,parres%kb,parres%kc,getwfk, dos=.true.)
     elseif(trim(parini%potential_potential)=="dftb") then
-      call make_input_dftb(latvec,xred,iprec,parres%ka,parres%kb,parres%kc,getwfk, dos=.true.)     
+      call make_input_dftb(parini,latvec,xred,iprec,parres%ka,parres%kb,parres%kc,getwfk, dos=.true.)     
     else
       stop "Code not yet implemented"
     endif

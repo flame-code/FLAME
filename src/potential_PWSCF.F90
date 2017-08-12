@@ -26,7 +26,9 @@ contains
   !The meaning of dkpt1 and dkpt2 is different depending on vasp_kpt_mode:
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
-  subroutine make_input_espresso(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+  subroutine make_input_espresso(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -40,9 +42,9 @@ contains
     character(1):: fn
 
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     write(fn,'(i1.1)') iprec
@@ -250,9 +252,9 @@ contains
   HaBohr_eVAng=Ha_eV/Bohr_Ang
   
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     write(fn,'(i1.1)') iprec

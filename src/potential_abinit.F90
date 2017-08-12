@@ -18,7 +18,9 @@ contains
   ! - Read/dont read wavefunction from file
   ! - The kpoint mesh
   ! - The atomic informations
-  subroutine make_input_abinit(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+  subroutine make_input_abinit(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -31,9 +33,9 @@ contains
     character(150):: command
 
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     call system("rm -f abirun.in")

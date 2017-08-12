@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,target_pressure_gpa,siesta_kpt_mode
+  use global, only: nat,ntypat,znucl,typat,char_type,target_pressure_gpa,siesta_kpt_mode
   use defs_basis
   !use cell_utils
 
@@ -21,7 +21,9 @@ contains
 ! - Read/dont read wavefunction from file is ignored for siesta
 ! - The kpoint mesh
 ! - The atomic informations
-subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -32,9 +34,9 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
     integer :: iat, iprec, itype
     character(1):: fn
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
     !For siesta, there are two modes for setting up the k-point mesh:
     !mode 1: setting up of the mesh done by seista, using kgrid_cutoff
@@ -196,9 +198,9 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   getwfk=.false.
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   

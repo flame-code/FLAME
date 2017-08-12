@@ -50,20 +50,17 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -378,49 +375,49 @@ open(unit=12,file="params_new.in")
 !KPTDEN
    call parsearray_real("KPTDEN",6,all_line(1:n),n,dkpt_12(1:2),2,found)
    if(found) then
-     dkpt1=dkpt_12(1)
-     dkpt2=dkpt_12(2)
+     parini%dkpt1=dkpt_12(1)
+     parini%dkpt2=dkpt_12(2)
    endif
    if(found) cycle
 !Block KPT****************
 !Block FINGERPRINT****************
 !FPMETHOD
-   call parsescalar_string("FPMETHOD",8,all_line(1:n),n,fp_method_ch,20,found)
-   if(found) fp_method_ch=StrUpCase(fp_method_ch)
+   call parsescalar_string("FPMETHOD",8,all_line(1:n),n,parini%fp_method_ch,20,found)
+   if(found) parini%fp_method_ch=StrUpCase(parini%fp_method_ch)
    if(found) cycle
 !FPCUT
-   call parsescalar_real("FPCUT",5,all_line(1:n),n,fp_rcut,found)
+   call parsescalar_real("FPCUT",5,all_line(1:n),n,parini%fp_rcut,found)
    if(found) cycle
 !FPDBIN
-   call parsescalar_real("FPDBIN",6,all_line(1:n),n,fp_dbin,found)
+   call parsescalar_real("FPDBIN",6,all_line(1:n),n,parini%fp_dbin,found)
    if(found) cycle
 !FPSIGMA
-   call parsescalar_real("FPSIGMA",7,all_line(1:n),n,fp_sigma,found)
+   call parsescalar_real("FPSIGMA",7,all_line(1:n),n,parini%fp_sigma,found)
    if(found) cycle
 !FPNL
-   call parsescalar_int("FPNL",4,all_line(1:n),n,fp_nl,found)
+   call parsescalar_int("FPNL",4,all_line(1:n),n,parini%fp_nl,found)
    if(found) cycle
 !FPPOWER
-   call parsescalar_int("FPPOWER",7,all_line(1:n),n,fp_14_m,found)
+   call parsescalar_int("FPPOWER",7,all_line(1:n),n,parini%fp_14_m,found)
    if(found) cycle
 !FPGAUSSFAC1
-   call parsescalar_real("FPGAUSSFAC1",11,all_line(1:n),n,fp_14_w1,found)
+   call parsescalar_real("FPGAUSSFAC1",11,all_line(1:n),n,parini%fp_14_w1,found)
    if(found) cycle
 !FPGAUSSFAC2
-   call parsescalar_real("FPGAUSSFAC2",11,all_line(1:n),n,fp_14_w2,found)
+   call parsescalar_real("FPGAUSSFAC2",11,all_line(1:n),n,parini%fp_14_w2,found)
    if(found) cycle
 !FPNMAX
-   call parsescalar_int("FPATNMAX",8,all_line(1:n),n,fp_at_nmax,found)
+   call parsescalar_int("FPATNMAX",8,all_line(1:n),n,parini%fp_at_nmax,found)
    if(found) cycle
 
 !FPWIDTHCUT
 !   call parsescalar_real("FPWIDTHCUT",10,all_line(1:n),n,fp_17_width_cutoff,found)
 !FPNATX
-   call parsescalar_int("FPNATX",6,all_line(1:n),n,fp_17_natx_sphere,found)
+   call parsescalar_int("FPNATX",6,all_line(1:n),n,parini%fp_17_natx_sphere,found)
    if(found) cycle
 !FPORBITAL
-   call parsescalar_string("FPORBITAL",9,all_line(1:n),n,fp_17_orbital,2,found)
-   fp_18_orbital=fp_17_orbital
+   call parsescalar_string("FPORBITAL",9,all_line(1:n),n,parini%fp_17_orbital,2,found)
+   fp_18_orbital=parini%fp_17_orbital
    if(found) cycle
 !FPNEXCUT
    call parsescalar_real("FPNEXCUT",8,all_line(1:n),n,fp_17_nex_cutoff,found)
@@ -559,8 +556,8 @@ close(12)
   if(parini%auto_kpt) then
     parini%ka=0;parini%kb=0;parini%kc=0
   else
-    dkpt1=0.d0
-    dkpt2=0.d0
+    parini%dkpt1=0.d0
+    parini%dkpt2=0.d0
   endif
 
 !Initiallize confinement
@@ -611,7 +608,7 @@ endif
 
 
 !Assign correct parameters for fingerprint, not allocating any arrays!
-call fp_assign()
+call fp_assign(parini)
 
 !Increase calls to the routine
 if(calls==0) call params_echo(parini)
@@ -642,19 +639,16 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -710,31 +704,31 @@ findsym=.false.
 finddos=.false.
 parini%auto_kpt=.true.
 parini%ka=1;parini%kb=1;parini%kc=1
-dkpt1=0.04d0
-dkpt2=0.06d0
+parini%dkpt1=0.04d0
+parini%dkpt2=0.06d0
 bc=1
 parini%verb=3
 parini%potential_potential="vasp"
 !Define if the external optimizer should be used. Only available for:
 parini%geopt_ext=.false.
 
-fp_rcut=15.d0
+parini%fp_rcut=15.d0
 fp_method=11
-fp_method_ch="OGANOV"
-fp_nl=6
-fp_sigma=0.02d0
-fp_dbin= 0.05d0
+parini%fp_method_ch="OGANOV"
+parini%fp_nl=6
+parini%fp_sigma=0.02d0
+parini%fp_dbin= 0.05d0
 fp_12_nl=6
 fp_13_nl=6
-fp_14_m=3
-fp_14_w1=1.d0
-fp_14_w2=1.5d0
-fp_at_nmax=10000
+parini%fp_14_m=3
+parini%fp_14_w1=1.d0
+parini%fp_14_w2=1.5d0
+parini%fp_at_nmax=10000
 fp_17_nex_cutoff=3
-fp_17_width_cutoff=fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
-fp_17_orbital='S'
-fp_17_lseg=1
-fp_17_natx_sphere=75
+fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
+parini%fp_17_orbital='S'
+parini%fp_17_lseg=1
+parini%fp_17_natx_sphere=75
 
 fp_18_orbital='S'
 fp_18_principleev = 6
@@ -798,18 +792,15 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -852,22 +843,22 @@ if(parini%paropt_geopt%strfact.le.0.d0) stop "Error in parini%paropt_geopt%strfa
 if(parini%ka.lt.0) stop "Error in ka"
 if(parini%kb.lt.0) stop "Error in kb"
 if(parini%kc.lt.0) stop "Error in kc"
-if(dkpt1.lt.0.d0) stop "Error in dkpt1"
-if(dkpt2.lt.0.d0) stop "Error in dkpt2"
+if(parini%dkpt1.lt.0.d0) stop "Error in dkpt1"
+if(parini%dkpt2.lt.0.d0) stop "Error in dkpt2"
 if(bc.lt.1.or.bc.gt.3) stop "Error in bc"
 if(parini%verb.lt.0.or.parini%verb.gt.3) stop "Error in verb"
-if(trim(fp_method_ch).ne."OGANOV".and.trim(fp_method_ch).ne."BCM".and.trim(fp_method_ch).ne."ATORB".and.&
-  &trim(fp_method_ch).ne."XYZ2SM".and.trim(fp_method_ch).ne."GAUSS".and.trim(fp_method_ch).ne."COGANOV".and.&
-  &trim(fp_method_ch).ne."CAOGANOV".and.trim(fp_method_ch).ne."GOM".and.trim(fp_method_ch).ne."MOLGOM") stop "Error in fp_method_ch"
-if(fp_rcut.le.0.d0) stop "Error in fp_rcut"
-if(fp_dbin.le.0.d0) stop "Error in fp_dbin"
-if(fp_sigma.le.0.d0) stop "Error in fp_sigma"
-if(fp_nl.le.0) stop "Error in fp_nl"
-if(fp_14_m.lt.1) stop "Error in fp_14_m"
-if(fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
-if(fp_14_w2.lt.fp_14_w1) stop "Error in p_14_w2"
-if(fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
-if(trim(fp_17_orbital).ne.'S'.and.trim(fp_17_orbital).ne.'SP') stop "Error in fp_17_orbital"
+if(trim(parini%fp_method_ch).ne."OGANOV".and.trim(parini%fp_method_ch).ne."BCM".and.trim(parini%fp_method_ch).ne."ATORB".and.&
+  &trim(parini%fp_method_ch).ne."XYZ2SM".and.trim(parini%fp_method_ch).ne."GAUSS".and.trim(parini%fp_method_ch).ne."COGANOV".and.&
+  &trim(parini%fp_method_ch).ne."CAOGANOV".and.trim(parini%fp_method_ch).ne."GOM".and.trim(parini%fp_method_ch).ne."MOLGOM") stop "Error in fp_method_ch"
+if(parini%fp_rcut.le.0.d0) stop "Error in fp_rcut"
+if(parini%fp_dbin.le.0.d0) stop "Error in fp_dbin"
+if(parini%fp_sigma.le.0.d0) stop "Error in fp_sigma"
+if(parini%fp_nl.le.0) stop "Error in fp_nl"
+if(parini%fp_14_m.lt.1) stop "Error in fp_14_m"
+if(parini%fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
+if(parini%fp_14_w2.lt.parini%fp_14_w1) stop "Error in p_14_w2"
+if(parini%fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
+if(trim(parini%fp_17_orbital).ne.'S'.and.trim(parini%fp_17_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(trim(fp_18_orbital).ne.'S'.and.trim(fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(fp_18_principleev.lt.0) stop "Error in fp_18_principleev"
 if(fp_18_molecules.lt.1) stop "Error in fp_18_molecules"
@@ -918,19 +909,16 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_rcut,fp_method,fp_method_ch,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -1024,34 +1012,34 @@ write(*,'(a,L3)')          " # AUTO_KPT     ", parini%auto_kpt
 if(.not.parini%auto_kpt) then
 write(*,'(a,3i5)')         " # KPTMESH      ", parini%ka,parini%kb,parini%kc
 else
-write(*,'(a,2es15.7)')     " # KPTDEN       ", dkpt1,dkpt2
+write(*,'(a,2es15.7)')     " # KPTDEN       ", parini%dkpt1,parini%dkpt2
 endif
 write(*,'(a)')             " # FINGERPRINT parameters ********************************************************"
-write(*,'(a,a)')           " # FPMETHOD      ", trim(fp_method_ch)
+write(*,'(a,a)')           " # FPMETHOD      ", trim(parini%fp_method_ch)
 if(bc==1.or.bc==3) then
-write(*,'(a,es15.7)')      " # FPCUT         ", fp_rcut
+write(*,'(a,es15.7)')      " # FPCUT         ", parini%fp_rcut
 endif
-if(trim(fp_method_ch)=="OGANOV") then
-write(*,'(a,es15.7)')      " # FPDBIN        ", fp_dbin
-write(*,'(a,es15.7)')      " # FPSIGMA       ", fp_sigma
-elseif(trim(fp_method_ch)=="BCM".or.trim(fp_method_ch)=="ATORB") then
-write(*,'(a,i5)')          " # FPNL          ", fp_nl
-elseif(trim(fp_method_ch)=="XYZ2SM") then
-write(*,'(a,i5)')          " # FPPOWER       ", fp_14_m
-write(*,'(a,es15.7)')      " # FPGAUSSFAC1   ", fp_14_w1
-write(*,'(a,es15.7)')      " # FPGAUSSFAC2   ", fp_14_w2
-elseif(trim(fp_method_ch)=="COGANOV") then
-write(*,'(a,es15.7)')      " # FPSIGMA       ", fp_sigma
-write(*,'(a,i5)')          " # FPATNMAX      ", fp_at_nmax
-elseif(trim(fp_method_ch)=="CAOGANOV") then
-write(*,'(a,es15.7)')      " # FPSIGMA       ", fp_sigma
-write(*,'(a,i5)')          " # FPATNMAX        ", fp_at_nmax
-elseif(trim(fp_method_ch)=="GOM") then
-write(*,'(a,i5)')          " # FPNATX        ", fp_17_natx_sphere
-write(*,'(a,i5)')          " # FPLSEG        ", fp_17_lseg
-write(*,'(a,a)')           " # FPORBITAL     ", fp_17_orbital
+if(trim(parini%fp_method_ch)=="OGANOV") then
+write(*,'(a,es15.7)')      " # FPDBIN        ", parini%fp_dbin
+write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
+elseif(trim(parini%fp_method_ch)=="BCM".or.trim(parini%fp_method_ch)=="ATORB") then
+write(*,'(a,i5)')          " # FPNL          ", parini%fp_nl
+elseif(trim(parini%fp_method_ch)=="XYZ2SM") then
+write(*,'(a,i5)')          " # FPPOWER       ", parini%fp_14_m
+write(*,'(a,es15.7)')      " # FPGAUSSFAC1   ", parini%fp_14_w1
+write(*,'(a,es15.7)')      " # FPGAUSSFAC2   ", parini%fp_14_w2
+elseif(trim(parini%fp_method_ch)=="COGANOV") then
+write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
+write(*,'(a,i5)')          " # FPATNMAX      ", parini%fp_at_nmax
+elseif(trim(parini%fp_method_ch)=="CAOGANOV") then
+write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
+write(*,'(a,i5)')          " # FPATNMAX        ", parini%fp_at_nmax
+elseif(trim(parini%fp_method_ch)=="GOM") then
+write(*,'(a,i5)')          " # FPNATX        ", parini%fp_17_natx_sphere
+write(*,'(a,i5)')          " # FPLSEG        ", parini%fp_17_lseg
+write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_17_orbital
 write(*,'(a,es15.7)')      " # FPNEXCUT      ", fp_17_nex_cutoff
-elseif(trim(fp_method_ch)=="MOLGOM") then
+elseif(trim(parini%fp_method_ch)=="MOLGOM") then
 write(*,'(a,a)')           " # FPORBITAL     ", fp_18_orbital
 write(*,'(a,i5)')          " # FPNEXCUT      ", fp_18_nex_cutoff
 write(*,'(a,i5)')          " # FPPRINCIPLEEV ", fp_18_principleev
@@ -1119,35 +1107,37 @@ write(*,'(a)')             " ############################ END Echo params_new.in
 end subroutine
 
 !************************************************************************************
-subroutine fp_assign()
+subroutine fp_assign(parini)
+use mod_parini, only: typ_parini
 use fingerprint 
 use global, only: bc
 implicit none
+type(typ_parini), intent(inout):: parini
 if(bc==2) then !Molecular systems
   fp_method=21
-  fp_method_ch="GAUSS"
+  parini%fp_method_ch="GAUSS"
 elseif(bc==1) then !Crystals
-  if(trim(fp_method_ch)=="OGANOV") then
+  if(trim(parini%fp_method_ch)=="OGANOV") then
     fp_method=11
-  elseif(trim(fp_method_ch)=="BCM") then
+  elseif(trim(parini%fp_method_ch)=="BCM") then
     fp_method=12
-  elseif(trim(fp_method_ch)=="ATORB") then
+  elseif(trim(parini%fp_method_ch)=="ATORB") then
     fp_method=13
-  elseif(trim(fp_method_ch)=="XYZ2SM") then
+  elseif(trim(parini%fp_method_ch)=="XYZ2SM") then
     fp_method=14
-  elseif(trim(fp_method_ch)=="COGANOV") then
+  elseif(trim(parini%fp_method_ch)=="COGANOV") then
     fp_method=15
-  elseif(trim(fp_method_ch)=="CAOGANOV") then
+  elseif(trim(parini%fp_method_ch)=="CAOGANOV") then
     fp_method=16
-  elseif(trim(fp_method_ch)=="GOM") then
+  elseif(trim(parini%fp_method_ch)=="GOM") then
     fp_method=17
-    if(trim(fp_17_orbital)=="S")then
-    fp_17_lseg=1
-    elseif(trim(fp_17_orbital)=="SP")then
-    fp_17_lseg=4 
+    if(trim(parini%fp_17_orbital)=="S")then
+    parini%fp_17_lseg=1
+    elseif(trim(parini%fp_17_orbital)=="SP")then
+    parini%fp_17_lseg=4 
     endif
-    fp_17_width_cutoff=fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
-  elseif(trim(fp_method_ch)=="MOLGOM") then
+    fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
+  elseif(trim(parini%fp_method_ch)=="MOLGOM") then
     fp_method=18
     if(trim(fp_18_orbital)=="S")then
       fp_18_lseg=1

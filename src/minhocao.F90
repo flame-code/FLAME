@@ -249,7 +249,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 
 !Initiallize Fingerprint
 !  fp_method=11 !11: Oganov FP, 12: CALYPSO FP, 13: Modified CALYPSO, 21: molecular gaussian overlap, 22: molecular sprint
-  call init_fp(fp_len,pos_latvec)
+  call init_fp(parini,fp_len,pos_latvec)
   allocate(fp_pos(fp_len),fp_wpos(fp_len),fp_hop(fp_len))
 
 !Check correct assignment of FP method
@@ -534,7 +534,7 @@ call system_clock(count_max=clock_max)   !Find the time max
              write(*,*) "# read fingerprints from file fp.bin"
            endif
         else
-           call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+           call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
            write(*,*) "# fingerprints computed from poslow files"
         endif
 !!        kk=kk+1
@@ -718,7 +718,7 @@ endif
   !call params_read(parini)
 
 !Get the fingerprint
-   call get_fp(fp_len,pos_red,pos_latvec,fp_pos)
+   call get_fp(parini,fp_len,pos_red,pos_latvec,fp_pos)
 
 !Convert to enthalpy
   call get_enthalpy(pos_latvec,e_pos,target_pressure_habohr,ent_pos)
@@ -1010,7 +1010,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   endif
 
 !Get the fingerprint
- call get_fp(fp_len,wpos_red,wpos_latvec,fp_wpos)
+ call get_fp(parini,fp_len,wpos_red,wpos_latvec,fp_wpos)
 
 !Compute relative energy and enthalpy
 !!  re_wpos=round(e_wpos-eref,accur)
@@ -6590,10 +6590,10 @@ open(unit=11,file="fingerprint_grid.plot")
 !!!Get the oganov fp
 !!!fp_method=11 !11: Oganov FP, 12: CALYPSO FP, 13: Modified CALYPSO 21: molecular gaussian overlap, 22: molecular sprint
 !!  deallocate(fp_arr)
-!!  call init_fp(fp_len)
+!!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !do kk=1,nlmin
-!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+!   call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
 !enddo
 
 !Get the fp distances and write to file
@@ -6622,10 +6622,10 @@ close(11)
 !!!Get the calypso fp
 !!fp_method=12 !11: Oganov FP, 12: CALYPSO FP, 21: molecular gaussian overlap, 22: molecular sprint
 !!  deallocate(fp_arr)
-!!  call init_fp(fp_len)
+!!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !!do kk=1,nlmin
-!!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+!!   call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
 !!enddo
 !!
 !!!Get the fp distances and write to file
@@ -6641,10 +6641,10 @@ close(11)
 !!!Get the malypso fp
 !!fp_method=13 
 !!  deallocate(fp_arr)
-!!  call init_fp(fp_len)
+!!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !!do kk=1,nlmin
-!!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+!!   call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
 !!enddo
 !!
 !!!Get the fp distances and write to file
@@ -9169,15 +9169,17 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine init_fp(fp_len,latvec)
+subroutine init_fp(parini,fp_len,latvec)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
 use mod_interface
+use mod_parini, only: typ_parini
 use fingerprint
 use global, only: ntypat,nat,typat,units
 use defs_basis, only: Bohr_Ang,pi
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,nmax
 real(8):: convert,latvec(3,3),vol
 !Convert cutoff, sigma and dbin into atomic units
@@ -9189,18 +9191,18 @@ endif
 !Get recomended size of the continuous oganov FP
 if(fp_method==15.or.fp_method==16) then
    call getvol(latvec,vol)
-   call estimate_nmax_per_atom(vol,nat,ntypat,fp_rcut*convert,pi,nmax)
-   write(*,*) vol,fp_rcut*convert,nmax,nat,pi,ntypat
+   call estimate_nmax_per_atom(vol,nat,ntypat,parini%fp_rcut*convert,pi,nmax)
+   write(*,*) vol,parini%fp_rcut*convert,nmax,nat,pi,ntypat
    write(*,'(a,i10)') " # Estimated fingerprint size for COGANOV and CAOGANOV: ",nmax
-   if(nmax.gt.fp_at_nmax) write(*,'(a,i10,i10)') " # WARNING: FPATNMAX too small!", fp_at_nmax, nmax
+   if(nmax.gt.parini%fp_at_nmax) write(*,'(a,i10,i10)') " # WARNING: FPATNMAX too small!", parini%fp_at_nmax, nmax
 endif
 
 select case(fp_method)
   case(11)!Oganov method
 !     read(56,*) fp_11_rcut,fp_11_sigma,fp_11_dbin
-     fp_11_rcut=fp_rcut*convert
-     fp_11_sigma=fp_sigma*convert
-     fp_11_dbin=fp_dbin*convert
+     fp_11_rcut=parini%fp_rcut*convert
+     fp_11_sigma=parini%fp_sigma*convert
+     fp_11_dbin=parini%fp_dbin*convert
      fp_11_fp_size=ceiling(fp_11_rcut/fp_11_dbin)
      fp_11_fp_dim=ntypat*(ntypat+1)/2
      fp_len=fp_11_fp_size*fp_11_fp_dim
@@ -9213,26 +9215,26 @@ select case(fp_method)
 !TEMPORARY READ FROM STDINPUT
 !     read(*,*) tmpvar,fp_12_nl
 !     read(56,*) tmpvar,fp_12_nl
-     fp_12_nl=fp_nl
+     fp_12_nl=parini%fp_nl
      fp_12_fp_dim=ntypat*(ntypat+1)/2
      fp_len=fp_12_fp_dim*fp_12_nl
      if(.not.allocated(fp_12_r_cut)) allocate(fp_12_r_cut(fp_12_fp_dim))
-     fp_12_r_cut=fp_rcut*convert
+     fp_12_r_cut=parini%fp_rcut*convert
   case(13)!Modified Calypso method
 !TEMPORARY READ FROM STDINPUT
 !     read(*,*) tmpvar,fp_13_nl
 !     read(56,*) tmpvar,fp_13_nl
-     fp_12_nl=fp_nl
+     fp_12_nl=parini%fp_nl
      fp_13_fp_dim=ntypat!*(ntypat+1)/2
      fp_len=fp_13_nl*nat*fp_13_fp_dim
      if(.not.allocated(fp_13_r_cut)) allocate(fp_13_r_cut(fp_13_fp_dim))
-     fp_13_r_cut=fp_rcut*convert
+     fp_13_r_cut=parini%fp_rcut*convert
   case(14)!xyz2sm
-     fp_len=3*fp_14_m*nat
+     fp_len=3*parini%fp_14_m*nat
   case(15)!Continuous Oganov method
-     fp_15_rcut=fp_rcut*convert
-     fp_15_sigma=fp_sigma*convert
-     fp_15_fp_size=fp_at_nmax
+     fp_15_rcut=parini%fp_rcut*convert
+     fp_15_sigma=parini%fp_sigma*convert
+     fp_15_fp_size=parini%fp_at_nmax
      fp_15_fp_dim=ntypat*(ntypat+1)/2
      fp_len=3*fp_15_fp_size*fp_15_fp_dim
 !Careful: the FP has 3 entries for the gaussians
@@ -9242,9 +9244,9 @@ select case(fp_method)
        fp_15_nkinds_sum(typat(iat))=fp_15_nkinds_sum(typat(iat))+1
      enddo
   case(16)!Continuous Atomic Oganov method
-     fp_16_rcut=fp_rcut*convert
-     fp_16_sigma=fp_sigma*convert
-     fp_16_fp_size=fp_at_nmax
+     fp_16_rcut=parini%fp_rcut*convert
+     fp_16_sigma=parini%fp_sigma*convert
+     fp_16_fp_size=parini%fp_at_nmax
      fp_16_fp_dim=ntypat*(ntypat+1)/2
      fp_len=3*fp_16_fp_size*ntypat*nat
 !Careful: the FP has 3 entries for the gaussians, nmax entries for all possible neighbors, ndim possible AB interaction, nat atomic lists of gaussians
@@ -9254,7 +9256,7 @@ select case(fp_method)
        fp_16_nkinds_sum(typat(iat))=fp_16_nkinds_sum(typat(iat))+1
      enddo
   case(17)
-     fp_len=fp_17_lseg*(ntypat+1)*nat
+     fp_len=parini%fp_17_lseg*(ntypat+1)*nat
   case(18) !Molecular gaussian orbital fingerprint
      fp_len=fp_18_lseg*fp_18_molecules_sphere*fp_18_principleev*fp_18_molecules
   case(21)!Gaussian molecular overlap
@@ -9268,18 +9270,20 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine get_fp(fp_len,pos_red,latvec,fp)
+subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
+use mod_parini, only: typ_parini
 use mod_interface
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
-use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim, fp_17_natx_sphere
+use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim
 use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
 use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
 use global, only: ntypat,nat,typat,rcov,char_type
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),vol,rcov_arr(nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,nat)
 real(8):: rvan(nat) !nat*molecules)
@@ -9303,7 +9307,7 @@ select case(fp_method)
         rcov_arr(iat)=rcov(typat(iat))
      enddo
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call xyz2sm(nat,latvec,rxyz,rcov_arr,fp_14_w1,fp_14_w2,fp_14_m,fp)
+     call xyz2sm(nat,latvec,rxyz,rcov_arr,parini%fp_14_w1,parini%fp_14_w2,parini%fp_14_m,fp)
   case(15)!C-Oganov fingerprint
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
      call get_fp_coganov(nat,rxyz,latvec,fp_15_rcut,fp_15_sigma,rcov,&
@@ -9317,7 +9321,7 @@ select case(fp_method)
         rcov_arr(iat) = rcov(typat(iat))
      end do
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call get_fp_gauss(nat, ntypat, fp_17_natx_sphere, typat, fp_17_lseg, fp_17_width_cutoff,&
+     call get_fp_gauss(nat, ntypat, parini%fp_17_natx_sphere, typat, parini%fp_17_lseg, fp_17_width_cutoff,&
           & fp_17_nex_cutoff, latvec, rxyz, rcov_arr, fp)
   case(18)!MOLGOM
 !This fingerprint wants to have the number of atoms per molecule
@@ -9375,7 +9379,7 @@ select case(fp_method)
   case(16)!Continuous Atomic Oganov
         call get_cosinedistance_coganov_atomic(fp1,fp2,nat,fp_16_fp_size,fp_16_fp_dim,typat,ntypat,fp_16_nkinds_sum,fp_16_rcut,pi,fp_dist)
   case(17)!GOM
-        call get_distance_gauss(fp1, fp2, fp_17_lseg, nat, ntypat, typat, fp_dist)
+        call get_distance_gauss(fp1, fp2, parini%fp_17_lseg, nat, ntypat, typat, fp_dist)
   case(18)!MOLGOM
         call get_distance_molgom(fp1,fp2,fp_dist,fp_18_lseg,fp_18_molecules,fp_18_molecules_sphere,fp_18_principleev)
   case(21)!Gaussian molecular overlap
