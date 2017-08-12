@@ -534,7 +534,7 @@ call system_clock(count_max=clock_max)   !Find the time max
              write(*,*) "# read fingerprints from file fp.bin"
            endif
         else
-           call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+           call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
            write(*,*) "# fingerprints computed from poslow files"
         endif
 !!        kk=kk+1
@@ -718,7 +718,7 @@ endif
   !call params_read(parini)
 
 !Get the fingerprint
-   call get_fp(fp_len,pos_red,pos_latvec,fp_pos)
+   call get_fp(parini,fp_len,pos_red,pos_latvec,fp_pos)
 
 !Convert to enthalpy
   call get_enthalpy(pos_latvec,e_pos,target_pressure_habohr,ent_pos)
@@ -1010,7 +1010,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
   endif
 
 !Get the fingerprint
- call get_fp(fp_len,wpos_red,wpos_latvec,fp_wpos)
+ call get_fp(parini,fp_len,wpos_red,wpos_latvec,fp_wpos)
 
 !Compute relative energy and enthalpy
 !!  re_wpos=round(e_wpos-eref,accur)
@@ -6593,7 +6593,7 @@ open(unit=11,file="fingerprint_grid.plot")
 !!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !do kk=1,nlmin
-!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+!   call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
 !enddo
 
 !Get the fp distances and write to file
@@ -6625,7 +6625,7 @@ close(11)
 !!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !!do kk=1,nlmin
-!!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+!!   call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
 !!enddo
 !!
 !!!Get the fp distances and write to file
@@ -6644,7 +6644,7 @@ close(11)
 !!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !!do kk=1,nlmin
-!!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
+!!   call get_fp(parini,fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
 !!enddo
 !!
 !!!Get the fp distances and write to file
@@ -9215,7 +9215,7 @@ select case(fp_method)
 !TEMPORARY READ FROM STDINPUT
 !     read(*,*) tmpvar,fp_12_nl
 !     read(56,*) tmpvar,fp_12_nl
-     fp_12_nl=fp_nl
+     fp_12_nl=parini%fp_nl
      fp_12_fp_dim=ntypat*(ntypat+1)/2
      fp_len=fp_12_fp_dim*fp_12_nl
      if(.not.allocated(fp_12_r_cut)) allocate(fp_12_r_cut(fp_12_fp_dim))
@@ -9224,13 +9224,13 @@ select case(fp_method)
 !TEMPORARY READ FROM STDINPUT
 !     read(*,*) tmpvar,fp_13_nl
 !     read(56,*) tmpvar,fp_13_nl
-     fp_12_nl=fp_nl
+     fp_12_nl=parini%fp_nl
      fp_13_fp_dim=ntypat!*(ntypat+1)/2
      fp_len=fp_13_nl*nat*fp_13_fp_dim
      if(.not.allocated(fp_13_r_cut)) allocate(fp_13_r_cut(fp_13_fp_dim))
      fp_13_r_cut=parini%fp_rcut*convert
   case(14)!xyz2sm
-     fp_len=3*fp_14_m*nat
+     fp_len=3*parini%fp_14_m*nat
   case(15)!Continuous Oganov method
      fp_15_rcut=parini%fp_rcut*convert
      fp_15_sigma=parini%fp_sigma*convert
@@ -9270,10 +9270,11 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine get_fp(fp_len,pos_red,latvec,fp)
+subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
+use mod_parini, only: typ_parini
 use mod_interface
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
 use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim, fp_17_natx_sphere
@@ -9282,6 +9283,7 @@ use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
 use global, only: ntypat,nat,typat,rcov,char_type
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),vol,rcov_arr(nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,nat)
 real(8):: rvan(nat) !nat*molecules)
@@ -9305,7 +9307,7 @@ select case(fp_method)
         rcov_arr(iat)=rcov(typat(iat))
      enddo
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call xyz2sm(nat,latvec,rxyz,rcov_arr,fp_14_w1,fp_14_w2,fp_14_m,fp)
+     call xyz2sm(nat,latvec,rxyz,rcov_arr,fp_14_w1,fp_14_w2,parini%fp_14_m,fp)
   case(15)!C-Oganov fingerprint
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
      call get_fp_coganov(nat,rxyz,latvec,fp_15_rcut,fp_15_sigma,rcov,&

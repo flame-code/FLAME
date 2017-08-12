@@ -120,7 +120,7 @@ module fingerprint
    save
 !All
 !   real(8):: fp_rcut   
-   integer:: fp_nl
+!   integer:: fp_nl
    integer:: fp_method
    integer:: fp_at_nmax
    integer:: fp_all_nmax
@@ -143,7 +143,7 @@ module fingerprint
    integer:: fp_13_fp_dim
    real(8),allocatable:: fp_13_r_cut(:)
 !xyz2sm parameters
-   integer:: fp_14_m
+!   integer:: fp_14_m
    real(8):: fp_14_w1
    real(8):: fp_14_w2
 !Continuous Oganov parameters

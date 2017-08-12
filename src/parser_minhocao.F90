@@ -57,10 +57,10 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_method,fp_nl,&!All
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
+   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -397,10 +397,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("FPSIGMA",7,all_line(1:n),n,parini%fp_sigma,found)
    if(found) cycle
 !FPNL
-   call parsescalar_int("FPNL",4,all_line(1:n),n,fp_nl,found)
+   call parsescalar_int("FPNL",4,all_line(1:n),n,parini%fp_nl,found)
    if(found) cycle
 !FPPOWER
-   call parsescalar_int("FPPOWER",7,all_line(1:n),n,fp_14_m,found)
+   call parsescalar_int("FPPOWER",7,all_line(1:n),n,parini%fp_14_m,found)
    if(found) cycle
 !FPGAUSSFAC1
    call parsescalar_real("FPGAUSSFAC1",11,all_line(1:n),n,fp_14_w1,found)
@@ -647,10 +647,10 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_method,fp_nl,&!All
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
+   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -719,12 +719,12 @@ parini%geopt_ext=.false.
 parini%fp_rcut=15.d0
 fp_method=11
 parini%fp_method_ch="OGANOV"
-fp_nl=6
+parini%fp_nl=6
 parini%fp_sigma=0.02d0
 parini%fp_dbin= 0.05d0
 fp_12_nl=6
 fp_13_nl=6
-fp_14_m=3
+parini%fp_14_m=3
 fp_14_w1=1.d0
 fp_14_w2=1.5d0
 fp_at_nmax=10000
@@ -801,10 +801,10 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &fixat,fixlat,rcov,fragarr,bc,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_method,fp_nl,&!All
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
+   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -859,8 +859,8 @@ if(trim(parini%fp_method_ch).ne."OGANOV".and.trim(parini%fp_method_ch).ne."BCM".
 if(parini%fp_rcut.le.0.d0) stop "Error in fp_rcut"
 if(parini%fp_dbin.le.0.d0) stop "Error in fp_dbin"
 if(parini%fp_sigma.le.0.d0) stop "Error in fp_sigma"
-if(fp_nl.le.0) stop "Error in fp_nl"
-if(fp_14_m.lt.1) stop "Error in fp_14_m"
+if(parini%fp_nl.le.0) stop "Error in fp_nl"
+if(parini%fp_14_m.lt.1) stop "Error in fp_14_m"
 if(fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
 if(fp_14_w2.lt.fp_14_w1) stop "Error in p_14_w2"
 if(fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
@@ -921,10 +921,10 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
-   fp_method,fp_nl,&!All
+   fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
+   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -1031,9 +1031,9 @@ if(trim(parini%fp_method_ch)=="OGANOV") then
 write(*,'(a,es15.7)')      " # FPDBIN        ", parini%fp_dbin
 write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
 elseif(trim(parini%fp_method_ch)=="BCM".or.trim(parini%fp_method_ch)=="ATORB") then
-write(*,'(a,i5)')          " # FPNL          ", fp_nl
+write(*,'(a,i5)')          " # FPNL          ", parini%fp_nl
 elseif(trim(parini%fp_method_ch)=="XYZ2SM") then
-write(*,'(a,i5)')          " # FPPOWER       ", fp_14_m
+write(*,'(a,i5)')          " # FPPOWER       ", parini%fp_14_m
 write(*,'(a,es15.7)')      " # FPGAUSSFAC1   ", fp_14_w1
 write(*,'(a,es15.7)')      " # FPGAUSSFAC2   ", fp_14_w2
 elseif(trim(parini%fp_method_ch)=="COGANOV") then

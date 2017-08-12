@@ -2818,9 +2818,11 @@ type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,nmax
 real(8):: convert,latvec(3,3),vol
 end subroutine init_fp
-subroutine get_fp(fp_len,pos_red,latvec,fp)
+subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
+use mod_parini, only: typ_parini
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
 use global, only: ntypat,nat,typat,rcov,char_type
+type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),vol,rcov_arr(nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,nat)
 end subroutine get_fp
