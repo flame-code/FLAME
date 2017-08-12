@@ -249,7 +249,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 
 !Initiallize Fingerprint
 !  fp_method=11 !11: Oganov FP, 12: CALYPSO FP, 13: Modified CALYPSO, 21: molecular gaussian overlap, 22: molecular sprint
-  call init_fp(fp_len,pos_latvec)
+  call init_fp(parini,fp_len,pos_latvec)
   allocate(fp_pos(fp_len),fp_wpos(fp_len),fp_hop(fp_len))
 
 !Check correct assignment of FP method
@@ -6590,7 +6590,7 @@ open(unit=11,file="fingerprint_grid.plot")
 !!!Get the oganov fp
 !!!fp_method=11 !11: Oganov FP, 12: CALYPSO FP, 13: Modified CALYPSO 21: molecular gaussian overlap, 22: molecular sprint
 !!  deallocate(fp_arr)
-!!  call init_fp(fp_len)
+!!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !do kk=1,nlmin
 !   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
@@ -6622,7 +6622,7 @@ close(11)
 !!!Get the calypso fp
 !!fp_method=12 !11: Oganov FP, 12: CALYPSO FP, 21: molecular gaussian overlap, 22: molecular sprint
 !!  deallocate(fp_arr)
-!!  call init_fp(fp_len)
+!!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !!do kk=1,nlmin
 !!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
@@ -6641,7 +6641,7 @@ close(11)
 !!!Get the malypso fp
 !!fp_method=13 
 !!  deallocate(fp_arr)
-!!  call init_fp(fp_len)
+!!  call init_fp(parini,fp_len)
 !!  allocate(fp_arr(fp_len,nlminx))
 !!do kk=1,nlmin
 !!   call get_fp(fp_len,pl_arr(:,:,kk),lat_arr(:,:,kk),fp_arr(:,kk))
@@ -9169,15 +9169,17 @@ end subroutine
 
 !**********************************************************************************************
 
-subroutine init_fp(fp_len,latvec)
+subroutine init_fp(parini,fp_len,latvec)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
 use mod_interface
+use mod_parini, only: typ_parini
 use fingerprint
 use global, only: ntypat,nat,typat,units
 use defs_basis, only: Bohr_Ang,pi
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,nmax
 real(8):: convert,latvec(3,3),vol
 !Convert cutoff, sigma and dbin into atomic units
@@ -9189,8 +9191,8 @@ endif
 !Get recomended size of the continuous oganov FP
 if(fp_method==15.or.fp_method==16) then
    call getvol(latvec,vol)
-   call estimate_nmax_per_atom(vol,nat,ntypat,fp_rcut*convert,pi,nmax)
-   write(*,*) vol,fp_rcut*convert,nmax,nat,pi,ntypat
+   call estimate_nmax_per_atom(vol,nat,ntypat,parini%fp_rcut*convert,pi,nmax)
+   write(*,*) vol,parini%fp_rcut*convert,nmax,nat,pi,ntypat
    write(*,'(a,i10)') " # Estimated fingerprint size for COGANOV and CAOGANOV: ",nmax
    if(nmax.gt.fp_at_nmax) write(*,'(a,i10,i10)') " # WARNING: FPATNMAX too small!", fp_at_nmax, nmax
 endif
@@ -9198,7 +9200,7 @@ endif
 select case(fp_method)
   case(11)!Oganov method
 !     read(56,*) fp_11_rcut,fp_11_sigma,fp_11_dbin
-     fp_11_rcut=fp_rcut*convert
+     fp_11_rcut=parini%fp_rcut*convert
      fp_11_sigma=fp_sigma*convert
      fp_11_dbin=fp_dbin*convert
      fp_11_fp_size=ceiling(fp_11_rcut/fp_11_dbin)
@@ -9217,7 +9219,7 @@ select case(fp_method)
      fp_12_fp_dim=ntypat*(ntypat+1)/2
      fp_len=fp_12_fp_dim*fp_12_nl
      if(.not.allocated(fp_12_r_cut)) allocate(fp_12_r_cut(fp_12_fp_dim))
-     fp_12_r_cut=fp_rcut*convert
+     fp_12_r_cut=parini%fp_rcut*convert
   case(13)!Modified Calypso method
 !TEMPORARY READ FROM STDINPUT
 !     read(*,*) tmpvar,fp_13_nl
@@ -9226,11 +9228,11 @@ select case(fp_method)
      fp_13_fp_dim=ntypat!*(ntypat+1)/2
      fp_len=fp_13_nl*nat*fp_13_fp_dim
      if(.not.allocated(fp_13_r_cut)) allocate(fp_13_r_cut(fp_13_fp_dim))
-     fp_13_r_cut=fp_rcut*convert
+     fp_13_r_cut=parini%fp_rcut*convert
   case(14)!xyz2sm
      fp_len=3*fp_14_m*nat
   case(15)!Continuous Oganov method
-     fp_15_rcut=fp_rcut*convert
+     fp_15_rcut=parini%fp_rcut*convert
      fp_15_sigma=fp_sigma*convert
      fp_15_fp_size=fp_at_nmax
      fp_15_fp_dim=ntypat*(ntypat+1)/2
@@ -9242,7 +9244,7 @@ select case(fp_method)
        fp_15_nkinds_sum(typat(iat))=fp_15_nkinds_sum(typat(iat))+1
      enddo
   case(16)!Continuous Atomic Oganov method
-     fp_16_rcut=fp_rcut*convert
+     fp_16_rcut=parini%fp_rcut*convert
      fp_16_sigma=fp_sigma*convert
      fp_16_fp_size=fp_at_nmax
      fp_16_fp_dim=ntypat*(ntypat+1)/2

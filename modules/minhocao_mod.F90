@@ -119,12 +119,12 @@ module fingerprint
    implicit none
    save
 !All
-   real(8):: fp_rcut   
+!   real(8):: fp_rcut   
    integer:: fp_nl
    integer:: fp_method
    integer:: fp_at_nmax
    integer:: fp_all_nmax
-   character(20):: fp_method_ch
+!   character(20):: fp_method_ch
    real(8):: fp_sigma   
    real(8):: fp_dbin
 !Oganov parameters

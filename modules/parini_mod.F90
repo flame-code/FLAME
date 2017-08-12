@@ -186,6 +186,9 @@ module mod_parini
         integer:: ka,kb,kc              !The number of kpoints in each dimension
         real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
         !-----------------------------------------------------------------------
+        character(20):: fp_method_ch
+        real(8):: fp_rcut
+        !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0
         real(8)::qbfgs_trust_radius_min!=1.d-5
