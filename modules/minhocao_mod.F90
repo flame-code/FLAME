@@ -162,8 +162,8 @@ module fingerprint
    real(8):: fp_17_width_cutoff
    real(8):: fp_17_nex_cutoff
 !   integer:: fp_17_natx_sphere
-   integer:: fp_17_lseg
-   character(len=2) :: fp_17_orbital
+!   integer:: fp_17_lseg
+!   character(len=2) :: fp_17_orbital
 !Molecular GOM
 !
 !

@@ -196,6 +196,8 @@ module mod_parini
         real(8):: fp_14_w2
         integer:: fp_at_nmax
         integer:: fp_17_natx_sphere
+        integer:: fp_17_lseg
+        character(len=2) :: fp_17_orbital
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

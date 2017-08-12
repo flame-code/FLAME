@@ -9256,7 +9256,7 @@ select case(fp_method)
        fp_16_nkinds_sum(typat(iat))=fp_16_nkinds_sum(typat(iat))+1
      enddo
   case(17)
-     fp_len=fp_17_lseg*(ntypat+1)*nat
+     fp_len=parini%fp_17_lseg*(ntypat+1)*nat
   case(18) !Molecular gaussian orbital fingerprint
      fp_len=fp_18_lseg*fp_18_molecules_sphere*fp_18_principleev*fp_18_molecules
   case(21)!Gaussian molecular overlap
@@ -9321,7 +9321,7 @@ select case(fp_method)
         rcov_arr(iat) = rcov(typat(iat))
      end do
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call get_fp_gauss(nat, ntypat, parini%fp_17_natx_sphere, typat, fp_17_lseg, fp_17_width_cutoff,&
+     call get_fp_gauss(nat, ntypat, parini%fp_17_natx_sphere, typat, parini%fp_17_lseg, fp_17_width_cutoff,&
           & fp_17_nex_cutoff, latvec, rxyz, rcov_arr, fp)
   case(18)!MOLGOM
 !This fingerprint wants to have the number of atoms per molecule
@@ -9379,7 +9379,7 @@ select case(fp_method)
   case(16)!Continuous Atomic Oganov
         call get_cosinedistance_coganov_atomic(fp1,fp2,nat,fp_16_fp_size,fp_16_fp_dim,typat,ntypat,fp_16_nkinds_sum,fp_16_rcut,pi,fp_dist)
   case(17)!GOM
-        call get_distance_gauss(fp1, fp2, fp_17_lseg, nat, ntypat, typat, fp_dist)
+        call get_distance_gauss(fp1, fp2, parini%fp_17_lseg, nat, ntypat, typat, fp_dist)
   case(18)!MOLGOM
         call get_distance_molgom(fp1,fp2,fp_dist,fp_18_lseg,fp_18_molecules,fp_18_molecules_sphere,fp_18_principleev)
   case(21)!Gaussian molecular overlap
