@@ -125,8 +125,8 @@ module fingerprint
    integer:: fp_at_nmax
    integer:: fp_all_nmax
 !   character(20):: fp_method_ch
-   real(8):: fp_sigma   
-   real(8):: fp_dbin
+!   real(8):: fp_sigma   
+!   real(8):: fp_dbin
 !Oganov parameters
    real(8):: fp_11_rcut
    real(8):: fp_11_sigma   

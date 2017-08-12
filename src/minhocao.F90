@@ -9201,8 +9201,8 @@ select case(fp_method)
   case(11)!Oganov method
 !     read(56,*) fp_11_rcut,fp_11_sigma,fp_11_dbin
      fp_11_rcut=parini%fp_rcut*convert
-     fp_11_sigma=fp_sigma*convert
-     fp_11_dbin=fp_dbin*convert
+     fp_11_sigma=parini%fp_sigma*convert
+     fp_11_dbin=parini%fp_dbin*convert
      fp_11_fp_size=ceiling(fp_11_rcut/fp_11_dbin)
      fp_11_fp_dim=ntypat*(ntypat+1)/2
      fp_len=fp_11_fp_size*fp_11_fp_dim
@@ -9233,7 +9233,7 @@ select case(fp_method)
      fp_len=3*fp_14_m*nat
   case(15)!Continuous Oganov method
      fp_15_rcut=parini%fp_rcut*convert
-     fp_15_sigma=fp_sigma*convert
+     fp_15_sigma=parini%fp_sigma*convert
      fp_15_fp_size=fp_at_nmax
      fp_15_fp_dim=ntypat*(ntypat+1)/2
      fp_len=3*fp_15_fp_size*fp_15_fp_dim
@@ -9245,7 +9245,7 @@ select case(fp_method)
      enddo
   case(16)!Continuous Atomic Oganov method
      fp_16_rcut=parini%fp_rcut*convert
-     fp_16_sigma=fp_sigma*convert
+     fp_16_sigma=parini%fp_sigma*convert
      fp_16_fp_size=fp_at_nmax
      fp_16_fp_dim=ntypat*(ntypat+1)/2
      fp_len=3*fp_16_fp_size*ntypat*nat

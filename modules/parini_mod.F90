@@ -188,6 +188,8 @@ module mod_parini
         !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut
+        real(8):: fp_dbin
+        real(8):: fp_sigma
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

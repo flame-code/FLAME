@@ -58,7 +58,6 @@ use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
@@ -392,10 +391,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("FPCUT",5,all_line(1:n),n,parini%fp_rcut,found)
    if(found) cycle
 !FPDBIN
-   call parsescalar_real("FPDBIN",6,all_line(1:n),n,fp_dbin,found)
+   call parsescalar_real("FPDBIN",6,all_line(1:n),n,parini%fp_dbin,found)
    if(found) cycle
 !FPSIGMA
-   call parsescalar_real("FPSIGMA",7,all_line(1:n),n,fp_sigma,found)
+   call parsescalar_real("FPSIGMA",7,all_line(1:n),n,parini%fp_sigma,found)
    if(found) cycle
 !FPNL
    call parsescalar_int("FPNL",4,all_line(1:n),n,fp_nl,found)
@@ -649,7 +648,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
@@ -722,8 +720,8 @@ parini%fp_rcut=15.d0
 fp_method=11
 parini%fp_method_ch="OGANOV"
 fp_nl=6
-fp_sigma=0.02d0
-fp_dbin= 0.05d0
+parini%fp_sigma=0.02d0
+parini%fp_dbin= 0.05d0
 fp_12_nl=6
 fp_13_nl=6
 fp_14_m=3
@@ -804,7 +802,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
@@ -860,8 +857,8 @@ if(trim(parini%fp_method_ch).ne."OGANOV".and.trim(parini%fp_method_ch).ne."BCM".
   &trim(parini%fp_method_ch).ne."XYZ2SM".and.trim(parini%fp_method_ch).ne."GAUSS".and.trim(parini%fp_method_ch).ne."COGANOV".and.&
   &trim(parini%fp_method_ch).ne."CAOGANOV".and.trim(parini%fp_method_ch).ne."GOM".and.trim(parini%fp_method_ch).ne."MOLGOM") stop "Error in fp_method_ch"
 if(parini%fp_rcut.le.0.d0) stop "Error in fp_rcut"
-if(fp_dbin.le.0.d0) stop "Error in fp_dbin"
-if(fp_sigma.le.0.d0) stop "Error in fp_sigma"
+if(parini%fp_dbin.le.0.d0) stop "Error in fp_dbin"
+if(parini%fp_sigma.le.0.d0) stop "Error in fp_sigma"
 if(fp_nl.le.0) stop "Error in fp_nl"
 if(fp_14_m.lt.1) stop "Error in fp_14_m"
 if(fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
@@ -925,7 +922,6 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,am
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,fp_nl,&!All
-   fp_sigma,fp_dbin,&              !Oganov parameters
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_14_m,fp_14_w1,fp_14_w2,&          !xyz2sm parameters
@@ -1032,8 +1028,8 @@ if(bc==1.or.bc==3) then
 write(*,'(a,es15.7)')      " # FPCUT         ", parini%fp_rcut
 endif
 if(trim(parini%fp_method_ch)=="OGANOV") then
-write(*,'(a,es15.7)')      " # FPDBIN        ", fp_dbin
-write(*,'(a,es15.7)')      " # FPSIGMA       ", fp_sigma
+write(*,'(a,es15.7)')      " # FPDBIN        ", parini%fp_dbin
+write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
 elseif(trim(parini%fp_method_ch)=="BCM".or.trim(parini%fp_method_ch)=="ATORB") then
 write(*,'(a,i5)')          " # FPNL          ", fp_nl
 elseif(trim(parini%fp_method_ch)=="XYZ2SM") then
@@ -1041,10 +1037,10 @@ write(*,'(a,i5)')          " # FPPOWER       ", fp_14_m
 write(*,'(a,es15.7)')      " # FPGAUSSFAC1   ", fp_14_w1
 write(*,'(a,es15.7)')      " # FPGAUSSFAC2   ", fp_14_w2
 elseif(trim(parini%fp_method_ch)=="COGANOV") then
-write(*,'(a,es15.7)')      " # FPSIGMA       ", fp_sigma
+write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
 write(*,'(a,i5)')          " # FPATNMAX      ", fp_at_nmax
 elseif(trim(parini%fp_method_ch)=="CAOGANOV") then
-write(*,'(a,es15.7)')      " # FPSIGMA       ", fp_sigma
+write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
 write(*,'(a,i5)')          " # FPATNMAX        ", fp_at_nmax
 elseif(trim(parini%fp_method_ch)=="GOM") then
 write(*,'(a,i5)')          " # FPNATX        ", fp_17_natx_sphere
