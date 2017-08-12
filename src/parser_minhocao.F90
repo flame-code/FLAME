@@ -60,8 +60,7 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -408,13 +407,13 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("FPGAUSSFAC2",11,all_line(1:n),n,parini%fp_14_w2,found)
    if(found) cycle
 !FPNMAX
-   call parsescalar_int("FPATNMAX",8,all_line(1:n),n,fp_at_nmax,found)
+   call parsescalar_int("FPATNMAX",8,all_line(1:n),n,parini%fp_at_nmax,found)
    if(found) cycle
 
 !FPWIDTHCUT
 !   call parsescalar_real("FPWIDTHCUT",10,all_line(1:n),n,fp_17_width_cutoff,found)
 !FPNATX
-   call parsescalar_int("FPNATX",6,all_line(1:n),n,fp_17_natx_sphere,found)
+   call parsescalar_int("FPNATX",6,all_line(1:n),n,parini%fp_17_natx_sphere,found)
    if(found) cycle
 !FPORBITAL
    call parsescalar_string("FPORBITAL",9,all_line(1:n),n,fp_17_orbital,2,found)
@@ -649,8 +648,7 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -725,12 +723,12 @@ fp_13_nl=6
 parini%fp_14_m=3
 parini%fp_14_w1=1.d0
 parini%fp_14_w2=1.5d0
-fp_at_nmax=10000
+parini%fp_at_nmax=10000
 fp_17_nex_cutoff=3
 fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
 fp_17_orbital='S'
 fp_17_lseg=1
-fp_17_natx_sphere=75
+parini%fp_17_natx_sphere=75
 
 fp_18_orbital='S'
 fp_18_principleev = 6
@@ -802,8 +800,7 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -860,7 +857,7 @@ if(parini%fp_nl.le.0) stop "Error in fp_nl"
 if(parini%fp_14_m.lt.1) stop "Error in fp_14_m"
 if(parini%fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
 if(parini%fp_14_w2.lt.parini%fp_14_w1) stop "Error in p_14_w2"
-if(fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
+if(parini%fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
 if(trim(fp_17_orbital).ne.'S'.and.trim(fp_17_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(trim(fp_18_orbital).ne.'S'.and.trim(fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(fp_18_principleev.lt.0) stop "Error in fp_18_principleev"
@@ -921,8 +918,7 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_at_nmax,&
-   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
+   fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -1034,12 +1030,12 @@ write(*,'(a,es15.7)')      " # FPGAUSSFAC1   ", parini%fp_14_w1
 write(*,'(a,es15.7)')      " # FPGAUSSFAC2   ", parini%fp_14_w2
 elseif(trim(parini%fp_method_ch)=="COGANOV") then
 write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
-write(*,'(a,i5)')          " # FPATNMAX      ", fp_at_nmax
+write(*,'(a,i5)')          " # FPATNMAX      ", parini%fp_at_nmax
 elseif(trim(parini%fp_method_ch)=="CAOGANOV") then
 write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
-write(*,'(a,i5)')          " # FPATNMAX        ", fp_at_nmax
+write(*,'(a,i5)')          " # FPATNMAX        ", parini%fp_at_nmax
 elseif(trim(parini%fp_method_ch)=="GOM") then
-write(*,'(a,i5)')          " # FPNATX        ", fp_17_natx_sphere
+write(*,'(a,i5)')          " # FPNATX        ", parini%fp_17_natx_sphere
 write(*,'(a,i5)')          " # FPLSEG        ", fp_17_lseg
 write(*,'(a,a)')           " # FPORBITAL     ", fp_17_orbital
 write(*,'(a,es15.7)')      " # FPNEXCUT      ", fp_17_nex_cutoff

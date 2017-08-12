@@ -9194,7 +9194,7 @@ if(fp_method==15.or.fp_method==16) then
    call estimate_nmax_per_atom(vol,nat,ntypat,parini%fp_rcut*convert,pi,nmax)
    write(*,*) vol,parini%fp_rcut*convert,nmax,nat,pi,ntypat
    write(*,'(a,i10)') " # Estimated fingerprint size for COGANOV and CAOGANOV: ",nmax
-   if(nmax.gt.fp_at_nmax) write(*,'(a,i10,i10)') " # WARNING: FPATNMAX too small!", fp_at_nmax, nmax
+   if(nmax.gt.parini%fp_at_nmax) write(*,'(a,i10,i10)') " # WARNING: FPATNMAX too small!", parini%fp_at_nmax, nmax
 endif
 
 select case(fp_method)
@@ -9234,7 +9234,7 @@ select case(fp_method)
   case(15)!Continuous Oganov method
      fp_15_rcut=parini%fp_rcut*convert
      fp_15_sigma=parini%fp_sigma*convert
-     fp_15_fp_size=fp_at_nmax
+     fp_15_fp_size=parini%fp_at_nmax
      fp_15_fp_dim=ntypat*(ntypat+1)/2
      fp_len=3*fp_15_fp_size*fp_15_fp_dim
 !Careful: the FP has 3 entries for the gaussians
@@ -9246,7 +9246,7 @@ select case(fp_method)
   case(16)!Continuous Atomic Oganov method
      fp_16_rcut=parini%fp_rcut*convert
      fp_16_sigma=parini%fp_sigma*convert
-     fp_16_fp_size=fp_at_nmax
+     fp_16_fp_size=parini%fp_at_nmax
      fp_16_fp_dim=ntypat*(ntypat+1)/2
      fp_len=3*fp_16_fp_size*ntypat*nat
 !Careful: the FP has 3 entries for the gaussians, nmax entries for all possible neighbors, ndim possible AB interaction, nat atomic lists of gaussians
@@ -9277,7 +9277,7 @@ subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
 use mod_parini, only: typ_parini
 use mod_interface
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
-use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim, fp_17_natx_sphere
+use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim
 use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
 use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
@@ -9321,7 +9321,7 @@ select case(fp_method)
         rcov_arr(iat) = rcov(typat(iat))
      end do
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call get_fp_gauss(nat, ntypat, fp_17_natx_sphere, typat, fp_17_lseg, fp_17_width_cutoff,&
+     call get_fp_gauss(nat, ntypat, parini%fp_17_natx_sphere, typat, fp_17_lseg, fp_17_width_cutoff,&
           & fp_17_nex_cutoff, latvec, rxyz, rcov_arr, fp)
   case(18)!MOLGOM
 !This fingerprint wants to have the number of atoms per molecule

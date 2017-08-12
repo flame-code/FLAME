@@ -122,7 +122,7 @@ module fingerprint
 !   real(8):: fp_rcut   
 !   integer:: fp_nl
    integer:: fp_method
-   integer:: fp_at_nmax
+!   integer:: fp_at_nmax
    integer:: fp_all_nmax
 !   character(20):: fp_method_ch
 !   real(8):: fp_sigma   
@@ -161,7 +161,7 @@ module fingerprint
 ! gom parameters
    real(8):: fp_17_width_cutoff
    real(8):: fp_17_nex_cutoff
-   integer:: fp_17_natx_sphere
+!   integer:: fp_17_natx_sphere
    integer:: fp_17_lseg
    character(len=2) :: fp_17_orbital
 !Molecular GOM

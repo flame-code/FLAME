@@ -194,6 +194,8 @@ module mod_parini
         integer:: fp_14_m
         real(8):: fp_14_w1
         real(8):: fp_14_w2
+        integer:: fp_at_nmax
+        integer:: fp_17_natx_sphere
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0
