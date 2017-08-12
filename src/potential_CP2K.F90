@@ -14,7 +14,7 @@ module interface_cp2k
 contains
 
 
-  subroutine make_input_cp2k(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_cp2k(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !This routine will append some informations to a file already containing some informations about the cp2k runs
   !The informations appended are:
   !-Read/dont read wavefunction from file
@@ -22,7 +22,9 @@ contains
   !-The atomic informations
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,ka1,kb1,kc1,max_kpt,reuse_kpt,char_type
   !use defs_basis, only: Bohr_Ang
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,k_latvec(3,3)
   real(8), allocatable:: k_xcart(:,:,:,:,:)
@@ -33,9 +35,9 @@ contains
   
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   

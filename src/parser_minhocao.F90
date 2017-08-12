@@ -50,7 +50,7 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
@@ -378,8 +378,8 @@ open(unit=12,file="params_new.in")
 !KPTDEN
    call parsearray_real("KPTDEN",6,all_line(1:n),n,dkpt_12(1:2),2,found)
    if(found) then
-     dkpt1=dkpt_12(1)
-     dkpt2=dkpt_12(2)
+     parini%dkpt1=dkpt_12(1)
+     parini%dkpt2=dkpt_12(2)
    endif
    if(found) cycle
 !Block KPT****************
@@ -559,8 +559,8 @@ close(12)
   if(parini%auto_kpt) then
     parini%ka=0;parini%kb=0;parini%kc=0
   else
-    dkpt1=0.d0
-    dkpt2=0.d0
+    parini%dkpt1=0.d0
+    parini%dkpt2=0.d0
   endif
 
 !Initiallize confinement
@@ -642,7 +642,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
@@ -710,8 +710,8 @@ findsym=.false.
 finddos=.false.
 parini%auto_kpt=.true.
 parini%ka=1;parini%kb=1;parini%kc=1
-dkpt1=0.04d0
-dkpt2=0.06d0
+parini%dkpt1=0.04d0
+parini%dkpt2=0.06d0
 bc=1
 parini%verb=3
 parini%potential_potential="vasp"
@@ -798,7 +798,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -852,8 +852,8 @@ if(parini%paropt_geopt%strfact.le.0.d0) stop "Error in parini%paropt_geopt%strfa
 if(parini%ka.lt.0) stop "Error in ka"
 if(parini%kb.lt.0) stop "Error in kb"
 if(parini%kc.lt.0) stop "Error in kc"
-if(dkpt1.lt.0.d0) stop "Error in dkpt1"
-if(dkpt2.lt.0.d0) stop "Error in dkpt2"
+if(parini%dkpt1.lt.0.d0) stop "Error in dkpt1"
+if(parini%dkpt2.lt.0.d0) stop "Error in dkpt2"
 if(bc.lt.1.or.bc.gt.3) stop "Error in bc"
 if(parini%verb.lt.0.or.parini%verb.gt.3) stop "Error in verb"
 if(trim(fp_method_ch).ne."OGANOV".and.trim(fp_method_ch).ne."BCM".and.trim(fp_method_ch).ne."ATORB".and.&
@@ -918,7 +918,7 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &dkpt1,dkpt2,usewf_geopt,usewf_soften,usewf_md,&
+                &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,bc,use_confine,&
                 &voids,core_rep
@@ -1024,7 +1024,7 @@ write(*,'(a,L3)')          " # AUTO_KPT     ", parini%auto_kpt
 if(.not.parini%auto_kpt) then
 write(*,'(a,3i5)')         " # KPTMESH      ", parini%ka,parini%kb,parini%kc
 else
-write(*,'(a,2es15.7)')     " # KPTDEN       ", dkpt1,dkpt2
+write(*,'(a,2es15.7)')     " # KPTDEN       ", parini%dkpt1,parini%dkpt2
 endif
 write(*,'(a)')             " # FINGERPRINT parameters ********************************************************"
 write(*,'(a,a)')           " # FPMETHOD      ", trim(fp_method_ch)

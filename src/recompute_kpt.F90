@@ -11,6 +11,7 @@ character(250):: all_line,arg
 character(20):: code            !What code should be used: abinit or siesta
 logical:: auto_kpt              !Currently a dummy variable
 integer:: ka,kb,kc              !The number of kpoints in each dimension
+real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
 angbohr=1.d0/0.52917720859d0
 if(iargc().lt.1) stop "No arguments passed"
           DO i = 1, iargc()

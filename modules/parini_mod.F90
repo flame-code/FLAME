@@ -184,6 +184,7 @@ module mod_parini
         real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
         logical:: auto_kpt              !Currently a dummy variable
         integer:: ka,kb,kc              !The number of kpoints in each dimension
+        real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0
