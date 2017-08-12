@@ -144,8 +144,8 @@ module fingerprint
    real(8),allocatable:: fp_13_r_cut(:)
 !xyz2sm parameters
 !   integer:: fp_14_m
-   real(8):: fp_14_w1
-   real(8):: fp_14_w2
+!   real(8):: fp_14_w1
+!   real(8):: fp_14_w2
 !Continuous Oganov parameters
    real(8):: fp_15_rcut
    real(8):: fp_15_sigma  

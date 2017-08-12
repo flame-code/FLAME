@@ -60,7 +60,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -403,10 +402,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("FPPOWER",7,all_line(1:n),n,parini%fp_14_m,found)
    if(found) cycle
 !FPGAUSSFAC1
-   call parsescalar_real("FPGAUSSFAC1",11,all_line(1:n),n,fp_14_w1,found)
+   call parsescalar_real("FPGAUSSFAC1",11,all_line(1:n),n,parini%fp_14_w1,found)
    if(found) cycle
 !FPGAUSSFAC2
-   call parsescalar_real("FPGAUSSFAC2",11,all_line(1:n),n,fp_14_w2,found)
+   call parsescalar_real("FPGAUSSFAC2",11,all_line(1:n),n,parini%fp_14_w2,found)
    if(found) cycle
 !FPNMAX
    call parsescalar_int("FPATNMAX",8,all_line(1:n),n,fp_at_nmax,found)
@@ -650,7 +649,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -725,8 +723,8 @@ parini%fp_dbin= 0.05d0
 fp_12_nl=6
 fp_13_nl=6
 parini%fp_14_m=3
-fp_14_w1=1.d0
-fp_14_w2=1.5d0
+parini%fp_14_w1=1.d0
+parini%fp_14_w2=1.5d0
 fp_at_nmax=10000
 fp_17_nex_cutoff=3
 fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
@@ -804,7 +802,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -861,8 +858,8 @@ if(parini%fp_dbin.le.0.d0) stop "Error in fp_dbin"
 if(parini%fp_sigma.le.0.d0) stop "Error in fp_sigma"
 if(parini%fp_nl.le.0) stop "Error in fp_nl"
 if(parini%fp_14_m.lt.1) stop "Error in fp_14_m"
-if(fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
-if(fp_14_w2.lt.fp_14_w1) stop "Error in p_14_w2"
+if(parini%fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
+if(parini%fp_14_w2.lt.parini%fp_14_w1) stop "Error in p_14_w2"
 if(fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
 if(trim(fp_17_orbital).ne.'S'.and.trim(fp_17_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(trim(fp_18_orbital).ne.'S'.and.trim(fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
@@ -924,7 +921,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_14_w1,fp_14_w2,&          !xyz2sm parameters
    fp_at_nmax,&
    fp_17_width_cutoff,fp_17_nex_cutoff,fp_17_natx_sphere,fp_17_lseg,fp_17_orbital,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
@@ -1034,8 +1030,8 @@ elseif(trim(parini%fp_method_ch)=="BCM".or.trim(parini%fp_method_ch)=="ATORB") t
 write(*,'(a,i5)')          " # FPNL          ", parini%fp_nl
 elseif(trim(parini%fp_method_ch)=="XYZ2SM") then
 write(*,'(a,i5)')          " # FPPOWER       ", parini%fp_14_m
-write(*,'(a,es15.7)')      " # FPGAUSSFAC1   ", fp_14_w1
-write(*,'(a,es15.7)')      " # FPGAUSSFAC2   ", fp_14_w2
+write(*,'(a,es15.7)')      " # FPGAUSSFAC1   ", parini%fp_14_w1
+write(*,'(a,es15.7)')      " # FPGAUSSFAC2   ", parini%fp_14_w2
 elseif(trim(parini%fp_method_ch)=="COGANOV") then
 write(*,'(a,es15.7)')      " # FPSIGMA       ", parini%fp_sigma
 write(*,'(a,i5)')          " # FPATNMAX      ", fp_at_nmax

@@ -9307,7 +9307,7 @@ select case(fp_method)
         rcov_arr(iat)=rcov(typat(iat))
      enddo
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call xyz2sm(nat,latvec,rxyz,rcov_arr,fp_14_w1,fp_14_w2,parini%fp_14_m,fp)
+     call xyz2sm(nat,latvec,rxyz,rcov_arr,parini%fp_14_w1,parini%fp_14_w2,parini%fp_14_m,fp)
   case(15)!C-Oganov fingerprint
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
      call get_fp_coganov(nat,rxyz,latvec,fp_15_rcut,fp_15_sigma,rcov,&
