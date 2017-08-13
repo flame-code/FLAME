@@ -89,6 +89,7 @@ module mod_parini
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
         logical:: read_forces_ann
+        logical:: restart_param=.false. 
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.

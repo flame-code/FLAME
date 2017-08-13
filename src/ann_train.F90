@@ -32,7 +32,11 @@ subroutine ann_train(parini)
     fname = trim(parini%stypat(1))//'.ann.input.yaml'
     inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
     if( ann_arr%exists_yaml_file) then
-        call read_input_ann_yaml(parini,iproc,ann_arr)
+        if (parini%restart_param) then
+            call read_ann_yaml(parini,ann_arr)
+        else
+            call read_input_ann_yaml(parini,iproc,ann_arr)
+        endif
     else
         call read_input_ann(parini,iproc,ann_arr)
     endif
@@ -97,11 +101,17 @@ subroutine ann_train(parini)
     call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !-------------------------------------------------------
     ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
-    call set_annweights(parini,ekf)
-    if(trim(parini%approach_ann)=='cent2') then
-        do ia=1,ann_arr%n
-            ekf%x(ekf%loc(ia)+ekf%num(1)-1)=0.d0
-            !write(*,*) 'XXX ',ia,ekf%loc(ia)+ekf%num(1)-1
+    if (.not. parini%restart_param) then
+        call set_annweights(parini,ekf)
+        if(trim(parini%approach_ann)=='cent2') then
+            do ia=1,ann_arr%n
+                ekf%x(ekf%loc(ia)+ekf%num(1)-1)=0.d0
+                !write(*,*) 'XXX ',ia,ekf%loc(ia)+ekf%num(1)-1
+            enddo
+        endif
+    else
+        do i=1,ann_arr%n
+            call convert_ann_x(ekf%num(i),ekf%x(ekf%loc(i)),ann_arr%ann(i))
         enddo
     endif
 
@@ -110,7 +120,8 @@ subroutine ann_train(parini)
     else
         ann_arr%compute_symfunc=.true.
     endif
-    if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
+    !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
+    if(parini%prefit_ann ) then
         call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     endif
     if(trim(parini%optimizer_ann)=='behler') then
@@ -999,6 +1010,31 @@ subroutine convert_x_ann(n,x,ann)
     enddo
     if(l/=n) stop 'ERROR: l/=n'
 end subroutine convert_x_ann
+!*****************************************************************************************
+subroutine convert_ann_x(n,x,ann)
+    use mod_interface
+    use mod_ann, only: typ_ann
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(inout):: x(n)
+    type(typ_ann), intent(inout):: ann
+    !local variables
+    integer:: i, j, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do j=1,ann%nn(ialpha)
+            do i=1,ann%nn(ialpha-1)
+                l=l+1
+                x(l)=ann%a(i,j,ialpha)
+            enddo
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            x(l)=ann%b(i,ialpha)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_ann_x
 !*****************************************************************************************
 subroutine convert_ann_epotd(ann,n,epotd)
     use mod_interface

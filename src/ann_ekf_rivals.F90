@@ -392,6 +392,7 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
         ssmax=ann_arr%chi_max(i)
         write(71,'(i6,5f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin,ann_arr%chi_delta(i)
         !write(71,'(i6,4es14.5)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
+        if (trim(parini%stypat(i))=='O' .and. ssmax-ssmin> 0.1) stop
         close(61)
         close(71)
     enddo

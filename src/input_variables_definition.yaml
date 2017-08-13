@@ -148,6 +148,7 @@
    bondbased: False
    prefit: False
    read_forces: True
+   restart_param: False
  dynamics:
   nmd: 0
   dt: -1.0
