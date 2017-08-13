@@ -26,7 +26,9 @@ contains
   !The meaning of dkpt1 and dkpt2 is different depending on vasp_kpt_mode:
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
-  subroutine make_input_espresso(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+  subroutine make_input_espresso(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -40,9 +42,9 @@ contains
     character(1):: fn
 
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     write(fn,'(i1.1)') iprec
@@ -177,11 +179,13 @@ contains
   fcart=fcart*0.5d0
   end subroutine
   
-  subroutine espresso_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine espresso_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
   !This routine will setup the input file for a vasp geometry optimization
   !It will also call the run script and harvest the output
   !use global, only: nat
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
@@ -189,7 +193,7 @@ contains
   character(4):: tmp_char
   getwfk=.false.
   !Set up the input file to perform geometry optimization
-   call make_input_espresso_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+   call make_input_espresso_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   ! call system("sleep 1")
   !Run the job NOW!
    call system("./runjob_geoespresso.sh")
@@ -217,7 +221,7 @@ contains
    call system("cp vasprun.xml vasprun.xml.bak") 
   end subroutine
   
-  subroutine make_input_espresso_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_espresso_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !This routine will append some informations to a file already containing some informations about the abininit runs
   !The informations appended are:
   !-The atomic informations
@@ -230,7 +234,9 @@ contains
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,vasp_kpt_mode
   !use defs_basis,only: Bohr_Ang
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
@@ -246,9 +252,9 @@ contains
   HaBohr_eVAng=Ha_eV/Bohr_Ang
   
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     write(fn,'(i1.1)') iprec
@@ -271,8 +277,8 @@ contains
         endif
         write(87,'(a)')           'tstress     =   .true.   ,'
         write(87,'(a)')           'tprnfor     =   .true.   ,'
-        write(87,'(a,i5,a)')      'nstep       = ',int(ntime_geopt*0.5d0),' ,'
-        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',tolmxf*8.d0*2.d0,' ,'
+        write(87,'(a,i5,a)')      'nstep       = ',int(parini%paropt_geopt%nit*0.5d0),' ,'
+        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',parini%paropt_geopt%fmaxtol*8.d0*2.d0,' ,'
 !Close block    
         write(87,'(a)') "/"
     close(87)
@@ -300,7 +306,7 @@ contains
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
         write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
-        write(87,'(a,es15.7,a)') "press_conv_thr  = ",tolmxf/strfact*10.d0*HaBohr3_GPa*8.d0
+        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa*8.d0
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
 !Close block    
@@ -317,8 +323,8 @@ contains
         endif
         write(87,'(a)')           'tstress     =   .true.   ,'
         write(87,'(a)')           'tprnfor     =   .true.   ,'
-        write(87,'(a,i5,a)')      'nstep       = ',int(ntime_geopt*0.5d0),' ,'
-        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',tolmxf*2.d0,' ,'
+        write(87,'(a,i5,a)')      'nstep       = ',int(parini%paropt_geopt%nit*0.5d0),' ,'
+        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',parini%paropt_geopt%fmaxtol*2.d0,' ,'
 !Close block    
         write(87,'(a)') "/"
     close(87)
@@ -346,7 +352,7 @@ contains
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
         write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
-        write(87,'(a,es15.7,a)') "press_conv_thr  = ",tolmxf/strfact*10.d0*HaBohr3_GPa
+        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
 !Close block    

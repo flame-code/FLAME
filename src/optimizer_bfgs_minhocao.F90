@@ -33,12 +33,13 @@ END SUBROUTINE geopt_init
 !!    or http://www.gnu.org/copyleft/gpl.txt .
 !!    For the list of contributors, see ~/AUTHORS
 
-subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: tolmxf,nat,target_pressure_habohr,strfact,nat,ntime_geopt
+subroutine GEOPT_RBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+ use global, only: nat,target_pressure_habohr,nat
  use minpar
  use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 integer:: iprec,iat,i,istr
 real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),counter,flat(9)
 real(8):: fmax_tol,fmax_at,fmax_lat,fmax,pressure,strtarget(6),dstr(6),enthalpy
@@ -48,22 +49,22 @@ parmin_bfgs%maxiter_lat=20
 fmax_tol=1.d10
 counter=0.d0
 getwfk=.false.
-call get_BFGS_forces_lattice(parini,xred_in,flat,latvec_in,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+call get_BFGS_forces_lattice(parini,parres,xred_in,flat,latvec_in,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 do 
 !!Compute maximal component of forces, EXCLUDING any fixed components
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
  fmax_tol=min((fmax_at+fmax_lat)/2.d0*0.3d0,fmax_tol*0.5d0)
- fmax_tol=max(fmax_tol,tolmxf*1.d-2)
+ fmax_tol=max(fmax_tol,parini%paropt_geopt%fmaxtol*1.d-2)
  write(*,*) "# New tolarance",fmax_tol
- if(fmax.lt.tolmxf.or.int(counter).gt.ntime_geopt) exit
- call bfgs_driver_atoms(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
- if(fmax.lt.tolmxf.or.int(counter).gt.ntime_geopt) exit
+ if(fmax.lt.parini%paropt_geopt%fmaxtol.or.int(counter).gt.parini%paropt_geopt%nit) exit
+ call bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ if(fmax.lt.parini%paropt_geopt%fmaxtol.or.int(counter).gt.parini%paropt_geopt%nit) exit
  fail=.false.
- call lbfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
+ call lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
  if(fail) write(*,*) "# LBFGS GEOPT FAILED, switching to backup routine by ALIREZA"
- if(fmax.lt.tolmxf.or.int(counter).gt.ntime_geopt) exit
- if(fail) call bfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
+ if(fmax.lt.parini%paropt_geopt%fmaxtol.or.int(counter).gt.parini%paropt_geopt%nit) exit
+ if(fail) call bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
 enddo
 
 call get_enthalpy(latvec_in,etot_in,target_pressure_habohr,enthalpy)
@@ -72,9 +73,9 @@ write(*,'(a,i5,a,es15.7,a,es12.4)') " # Combined BFGS  exited in iterations: ", 
 end subroutine GEOPT_RBFGS_MHM
 !contains
 
-subroutine bfgs_driver_atoms(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
+subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,fixat,fixlat
+ use global, only: units,usewf_geopt,fixat,fixlat
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
 !    use module_base
@@ -84,6 +85,7 @@ subroutine bfgs_driver_atoms(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parres
     real(8) :: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy
     real(8), intent(inout) :: counter
 !    type(atoms_data), intent(inout) :: at
@@ -130,7 +132,7 @@ pressure=target_pressure_habohr
        endif
 !       call get_BFGS_forces_PR(parini,rxyz,fxyz,epot,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !       call get_BFGS_forces_max(parini,rxyz,fxyz,epot,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-       if(icall.ne.0) call get_BFGS_forces_atom(parini,rxyz,fxyz,latvec_in,enthalpy,getwfk,iprec,latvec_in,&
+       if(icall.ne.0) call get_BFGS_forces_atom(parini,parres,rxyz,fxyz,latvec_in,enthalpy,getwfk,iprec,latvec_in,&
                            &xred_in,etot_in,fcart_in,strten_in)
        if(icall.ne.0) counter=counter+1
        if(icall==0)   then
@@ -148,9 +150,9 @@ pressure=target_pressure_habohr
         call atomic_copymoving_forward(nat,3*nat,rxyz,nr,x)
 !FIRE: check for convergence
 !!Compute maximal component of forces, EXCLUDING any fixed components
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
-         if(fmax_at.lt.fmax_tol.or.fmax.lt.tolmxf) iexit=1
+         if(fmax_at.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
           
 !        call fnrmandforcemax(fxyz,fnrm,fmax,nat)
@@ -209,7 +211,7 @@ pressure=target_pressure_habohr
 !        if(parmin_bfgs%converged) exit
 !        if(parmin_bfgs%iflag<=0) exit
         icall=icall+1
-        if(int(counter)>ntime_geopt) exit
+        if(int(counter)>parini%paropt_geopt%nit) exit
     enddo
     deallocate(work,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating work.'
     deallocate(x,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating x.'
@@ -217,9 +219,9 @@ pressure=target_pressure_habohr
 !contains
 END SUBROUTINE
 
-subroutine bfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
+subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -230,6 +232,7 @@ subroutine bfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parres
     real(8) :: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy,latvec(9)
     real(8), intent(inout) :: counter
 !    type(atoms_data), intent(inout) :: at
@@ -307,7 +310,7 @@ latvec(7:9)=latvec_in(:,3)
 !       call get_BFGS_forces_PR(parini,rxyz,fxyz,epot,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !       if(icall.ne.0) call get_BFGS_forces_max(parini,xred_in,fxyz,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !       if(icall.ne.0) call get_BFGS_forces_atom(parini,rxyz,fxyz,latvec_in,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-       if(ICALL.ne.0) call get_BFGS_forces_lattice(parini,xred_in,f,x,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+       if(ICALL.ne.0) call get_BFGS_forces_lattice(parini,parres,xred_in,f,x,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
        if(icall.ne.0) counter=counter+1
        call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
        epot=enthalpy
@@ -317,9 +320,9 @@ latvec(7:9)=latvec_in(:,3)
         !endif
 !FIRE: check for convergence
 !!Compute maximal component of forces, EXCLUDING any fixed components
-         call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+         call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
-         if(fmax_lat.lt.fmax_tol.or.fmax.lt.tolmxf) iexit=1
+         if(fmax_lat.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
           
 !        call fnrmandforcemax(fxyz,fnrm,fmax,nat)
@@ -377,7 +380,7 @@ latvec(7:9)=latvec_in(:,3)
 !        if(parmin_bfgs%converged) exit
 !        if(parmin_bfgs%iflag<=0) exit
         icall=icall+1
-        if(int(counter)>ntime_geopt.or.icall>parmin_bfgs%maxiter_lat) exit
+        if(int(counter)>parini%paropt_geopt%nit.or.icall>parmin_bfgs%maxiter_lat) exit
     enddo
     deallocate(work,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating work.'
     deallocate(x,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating x.'
@@ -863,10 +866,10 @@ end subroutine bfgs_reza
 !!> Driver for the LBFGS routine found on the Nocedal Homepage
 !!! The subroutines have only been modified slightly, so a VIMDIFF will show all modifications!
 !!! This is helpfull when we are looking for the source of problems during BFGS runs
-subroutine lbfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
+subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine lbfgsdriver(rxyz,fxyz,etot,at,rst,in,ncount_bigdft,fail) 
@@ -874,6 +877,7 @@ subroutine lbfgs_driver_lattice(parini,latvec_in,xred_in,fcart_in,strten_in,etot
  use mod_parini, only: typ_parini
  implicit none
   type(typ_parini), intent(in):: parini
+  type(typ_parini), intent(inout):: parres
   real(8) :: latvec_in(3*3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy,enthalpyprev
   real(8), intent(inout) :: counter
 !  real(8), dimension(3*at%nat), intent(inout) :: rxyz
@@ -921,9 +925,9 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
   
   enthalpyprev=0.d0
   !check if the convergence is reached after entering routine
-  call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+  call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
-         if(fmax_lat.lt.fmax_tol.or.fmax.lt.tolmxf) iexit=1
+         if(fmax_lat.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
          if(iexit==1) then
                write(*,*) "# Lattice L-BFGS converged before entering routine"
@@ -1047,18 +1051,18 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
        else
            getwfk=.false.
        endif
-      if(ICALL.ne.0) call get_BFGS_forces_lattice(parini,xred_in,G,X,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+      if(ICALL.ne.0) call get_BFGS_forces_lattice(parini,parres,xred_in,G,X,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
       if(ICALL.ne.0) counter=counter+1
       F=enthalpy
       G=-G
 !      call fnrmandforcemax(fxyz,fnrm,fmax,at%nat)
 !      call fnrmandforcemax(fxyz,fnrm,fmax,at)
 !check if the convergence is reached
-  call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+  call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
          iexit=0
-         if(fmax_lat.lt.fmax_tol.or.fmax.lt.tolmxf) iexit=1
+         if(fmax_lat.lt.fmax_tol.or.fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
          if(iexit==1) parmin_bfgs%converged=.true.
-         if(int(counter)>ntime_geopt) goto 50
+         if(int(counter)>parini%paropt_geopt%nit) goto 50
          if(icall>parmin_bfgs%maxiter_lat) goto 50
 
       CALL LBFGS(IPROC,parmin_bfgs,N,M,X,F,G,DIAG,IPRINT,EPS,W,IFLAG)
@@ -1068,7 +1072,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
       ICALL=ICALL + 1
 !     We allow at most the given number of evaluations of F and G
 !      if(ncount_bigdft>in%ncount_cluster_x-1)  then
-      if(int(counter).gt.ntime_geopt) then 
+      if(int(counter).gt.parini%paropt_geopt%nit) then 
         goto 100
       endif
       close(16)
@@ -1142,7 +1146,7 @@ END SUBROUTINE atomic_copymoving_backward
 
 
 
-subroutine get_BFGS_forces_PR(parini,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+subroutine get_BFGS_forces_PR(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
 use global, only: target_pressure_habohr,target_pressure_gpa,nat
@@ -1150,6 +1154,7 @@ use interface_code
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
 real(8):: pos_all(3*nat+9)
 real(8):: force_all(3*nat+9)
@@ -1169,7 +1174,7 @@ logical:: getwfk
     do iat=1,3
       latvec_in(:,iat)=pos_all(3*nat+(iat-1)*3+1:3*nat+iat*3)
     enddo
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 !Conversion of forces is more complicate: 
 !start with atomic forces
@@ -1224,7 +1229,7 @@ unitmat(3,3)=1.d0
     call getvol(latvec,vol)
 end subroutine
 
-subroutine get_BFGS_forces_strainlatt(parini,pos_all,force_all,enthalpy,getwfk,iprec,latvec0,&
+subroutine  get_BFGS_forces_strainlatt(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec0,&
            &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
@@ -1234,6 +1239,7 @@ use interface_code
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 integer:: iprec,iat,lattdeg
 real(8):: pos_all(3*nat+9)
 real(8):: force_all(3*nat+9)
@@ -1270,7 +1276,7 @@ elseif(lattdeg==2) then
     enddo
     latvec_in=matmul(unitmat+strainall,latvec0) 
 endif
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 1000 continue
 !Conversion of forces is more complicate: 
@@ -1383,7 +1389,7 @@ endif
 end subroutine
 
 
-subroutine get_BFGS_forces_max(parini,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+subroutine get_BFGS_forces_max(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
 use global, only: target_pressure_habohr,target_pressure_gpa,nat
@@ -1392,6 +1398,7 @@ use interface_code
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
 real(8):: pos_all(3*nat+9)
 real(8):: force_all(3*nat+9)
@@ -1411,7 +1418,7 @@ logical:: getwfk
     do iat=1,3
       latvec_in(:,iat)=pos_all(3*nat+(iat-1)*3+1:3*nat+iat*3)
     enddo
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 !Conversion of forces is more complicate: 
 !start with atomic forces
@@ -1444,7 +1451,7 @@ logical:: getwfk
         call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
 end subroutine
 
-subroutine get_BFGS_forces_atom(parini,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+subroutine get_BFGS_forces_atom(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
 use global, only: target_pressure_habohr,target_pressure_gpa,nat
@@ -1453,6 +1460,7 @@ use interface_code
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
 real(8):: pos(3*nat),latvec(3,3)
 real(8):: force(3*nat)
@@ -1468,7 +1476,7 @@ logical:: getwfk
 !Generate a set of variables containing all degrees of freedome
     call rxyz_cart2int(latvec,xred_in,pos,nat)
     latvec_in=latvec
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 !Conversion of forces is more complicate: 
 !start with atomic forces
@@ -1477,7 +1485,7 @@ logical:: getwfk
         call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
 end subroutine
 
-subroutine get_BFGS_forces_lattice(parini,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+subroutine get_BFGS_forces_lattice(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
 use global, only: target_pressure_habohr,target_pressure_gpa,nat
@@ -1486,6 +1494,7 @@ use global, only: target_pressure_habohr,target_pressure_gpa,nat
  use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
 real(8):: pos(3,nat),latvec(3,3)
 real(8):: force(9)
@@ -1501,7 +1510,7 @@ logical:: getwfk
 !Generate a set of variables containing all degrees of freedome
     xred_in=pos
     latvec_in=latvec
-       call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+       call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 !Conversion of forces is more complicate: 
 !Convert strten into "stress", which is actually the forces on the cell vectors
@@ -1566,9 +1575,11 @@ end subroutine
         end subroutine
 
 
-subroutine get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
-use global, only: nat,strfact,target_pressure_habohr
+subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+use mod_parini, only: typ_parini
+use global, only: nat,target_pressure_habohr
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: iat,i,istr
 real(8):: fcart_in(3,nat),strten_in(6),fmax,fmax_at,fmax_lat
 real(8):: dstr(6), strtarget(6)
@@ -1589,7 +1600,7 @@ real(8):: dstr(6), strtarget(6)
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
-     if(abs(dstr(istr))*strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*strfact
+     if(abs(dstr(istr))*parini%paropt_geopt%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%paropt_geopt%strfact
  end do
  fmax=max(fmax_at,fmax_lat)
 end subroutine
@@ -1678,11 +1689,11 @@ if(lattdeg==2) diaglat=1.d0/(3.d0*vol*b0)*HaBohr3_GPa          !Appropriate if o
 ! enddo
 end subroutine init_hessinv
 !************************************************************************************
-subroutine GEOPT_MBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,dtion_fire,fixat,fixlat
+ use global, only: units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
  use mod_fire,   only:dtmin, dtmax
@@ -1691,6 +1702,7 @@ use mbfgs_interface
 use mod_parini, only: typ_parini
 IMPLICIT NONE
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 !REAL(8), INTENT(IN) :: fnrmtol!gtol 
 REAL(8) :: fret, counter
 REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
@@ -1724,12 +1736,13 @@ REAL(8) :: ent_pos_0,enthalpy,en0000,vvol_in
 character(40)::filename,folder
 character(4) ::fn4
 logical:: multiprec
-real(8):: tolmxf_switch,lambda,vol0,vol1,vol2,tolmxf0
+real(8):: tolmxf_switch,lambda,vol0,vol1,vol2 !,tolmxf0
 real(8), allocatable:: WORK(:)
+type(typ_parini):: parini_tmp
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
  multiprec=.true.
- tolmxf_switch=10.d0*tolmxf
+ tolmxf_switch=10.d0*parini%paropt_geopt%fmaxtol
  counter=0.d0
 
 !lattdeg: this variable defines if the lattice degrees of freedom are treated directly or through the strain
@@ -1740,13 +1753,14 @@ real(8), allocatable:: WORK(:)
 
 !If the initial forces are too large, FIRE should be run initially to get down the high energy components
 iprec=2
-tolmxf0=tolmxf
-tolmxf=5.d-2
+parini_tmp=parini
+!tolmxf0=parini%paropt_geopt%fmaxtol
+parini_tmp%paropt_geopt%fmaxtol=5.d-2
 vel_in=0.d0;vel_lat_in=0.d0;vvol_in=0.d0
 !Some conservative time steps for FIRE
-dtion_fire=10.d0;dtmin=1.d0;dtmax=50.d0
-call GEOPT_FIRE_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
-tolmxf=tolmxf0
+parini_tmp%paropt_geopt%dt_start=10.d0;dtmin=1.d0;dtmax=50.d0
+call GEOPT_FIRE_MHM(parini_tmp,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
+!parini_tmp%paropt_geopt%fmaxtol=tolmxf0
 
 !Now start the real BFGS
 iexit=0
@@ -1784,8 +1798,8 @@ getwfk=.false.
 !iprec=1
 !This call is only to map all variables correctly
 fp=-1.d10
-call get_BFGS_forces_strainlatt(parini,p,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+call  get_BFGS_forces_strainlatt(parini,parres,p,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
    if(any(fixlat)) call elim_fixed_lat(p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
@@ -1805,7 +1819,7 @@ if(counter==0.d0) then
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",int(counter),fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
 endif
-!   if(fmax.lt.tolmxf) iexit=1
+!   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
    if(iexit==1) then
    write(*,'(a)') " # BFGS converged before entering optimization"
 !   call wtpos_inter(nat,rxyz,latvec,555)
@@ -1889,8 +1903,8 @@ endif
      iprec=1
  endif
  counter=counter+1.d0
- call get_BFGS_forces_strainlatt(parini,tp,tg,tfp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+ call  get_BFGS_forces_strainlatt(parini,parres,tp,tg,tfp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+ call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
    if(any(fixlat)) call elim_fixed_lat(tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,tg(1:3*nat))
@@ -1908,7 +1922,7 @@ endif
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS LS ",int(counter),tfp,fmax,fmax_lat,fmax_at,lambda,iprec
 !*********************************************************************
  tg=-tg
-! if(fmax.lt.tolmxf) then
+! if(fmax.lt.parini%paropt_geopt%fmaxtol) then
 !   iexit=1
  if(iexit==1) then
    fp=tfp
@@ -1947,8 +1961,8 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    endif
    counter=counter+1.d0
    dg=g       !Save the old gradient,
-   call get_BFGS_forces_strainlatt(parini,pnew,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+   call  get_BFGS_forces_strainlatt(parini,parres,pnew,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       !Eliminate components not to be changed
       if(any(fixlat)) call elim_fixed_lat(pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
       if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
@@ -1985,7 +1999,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
 1002 continue
    write(16,'(a,1x,I5,1x,1pe21.14,1x,1pe12.5,1x,1pe12.5,1x,1pe12.5)') "  &
    &  BFGS_all",int(counter),fp,fmax,fmax_at,fmax_lat
-!   if(fmax.lt.tolmxf) iexit=1
+!   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
 !   if (fnrm < fnrmtol) then  !Test for convergence on zero gradient.
 !   latvec=p(3*nat+1:3*nat+9)
 !   call backtocell(nat,latvec,rxyz)
@@ -1994,7 +2008,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
 !   call wtpos_inter(nat,rxyz,latvec,555)
    RETURN 
    endif
-   if(int(counter).gt.ntime_geopt) then
+   if(int(counter).gt.parini%paropt_geopt%nit) then
    write(*,'(a,i5)') " # BFGS did not converge in steps: ", int(counter)
    RETURN
    endif
@@ -2085,11 +2099,11 @@ END SUBROUTINE
 
 !************************************************************************************
 !************************************************************************************
-subroutine GEOPT_MBFGS_MHM_OLD(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
 
@@ -2098,6 +2112,7 @@ use mbfgs_interface
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
 !REAL(8), INTENT(IN) :: fnrmtol!gtol 
 REAL(8) :: fret, counter
 REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
@@ -2134,7 +2149,7 @@ real(8):: tolmxf_switch
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
  multiprec=.true.
- tolmxf_switch=10.d0*tolmxf
+ tolmxf_switch=10.d0*parini%paropt_geopt%fmaxtol
 
  counter=0.d0
 write(*,'(a,es15.7,es15.7)') " # BFGS BETAX, BETAX_LAT: ", parmin_bfgs%betax, parmin_bfgs%betax_lat
@@ -2152,8 +2167,8 @@ p(3*nat+1:3*nat+9)=latvec_in(:)
 !Calculate starting function value and gradient.
 getwfk=.false.
 iprec=1
-call get_BFGS_forces_max(parini,p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+call get_BFGS_forces_max(parini,parres,p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -2168,7 +2183,7 @@ call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",0,fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
    iexit=0
-   if(fmax.lt.tolmxf) iexit=1
+   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
    if(iexit==1) then
    write(*,'(a)') " # BFGS converged before entering optimization"
 !   call wtpos_inter(nat,rxyz,latvec,555)
@@ -2223,8 +2238,8 @@ do its=1,ITMAX
      iprec=1
  endif
  counter=counter+1.d0
- call get_BFGS_forces_max(parini,tp,tg,tfp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_BFGS_forces_max(parini,parres,tp,tg,tfp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
@@ -2301,8 +2316,8 @@ lambda_predict=max(lambda_predict,-1.d0)
        getwfk=.false.
    endif
    counter=counter+1.d0
-   call get_BFGS_forces_max(parini,p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+   call get_BFGS_forces_max(parini,parres,p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+   call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
@@ -2326,7 +2341,7 @@ lambda_predict=max(lambda_predict,-1.d0)
    write(16,'(a,1x,I5,1x,1pe21.14,1x,1pe12.5,1x,1pe12.5,1x,1pe12.5)') "  &
    &  BFGS_all",its,fp,fmax,fmax_at,fmax_lat
    iexit=0
-   if(fmax.lt.tolmxf) iexit=1
+   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
 !   if (fnrm < fnrmtol) then  !Test for convergence on zero gradient.
 !   latvec=p(3*nat+1:3*nat+9)
 !   call backtocell(nat,latvec,rxyz)
@@ -2335,7 +2350,7 @@ lambda_predict=max(lambda_predict,-1.d0)
 !   call wtpos_inter(nat,rxyz,latvec,555)
    RETURN 
    endif
-   if(int(counter).gt.ntime_geopt) then
+   if(int(counter).gt.parini%paropt_geopt%nit) then
    write(*,'(a,i5)') " # BFGS did not converg in steps: ", int(counter)
    RETURN
    endif

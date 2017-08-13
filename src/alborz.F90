@@ -7,13 +7,14 @@ program alborz
     implicit none
     type(typ_file_ini):: file_ini
     type(typ_parini):: parini
-    call alborz_init(parini,file_ini)
+    type(typ_parini):: parres
+    call alborz_init(parini,parres,file_ini)
     !-----------------------------------------------------------------
     if(trim(parini%task)=='minhopp') then
         call minimahopping(parini)
     elseif(trim(parini%task)=='minhocao') then
         parini_of_potential=parini
-        call task_minhocao(parini)
+        call task_minhocao(parini,parres)
     elseif(trim(parini%task)=='geopt') then
         call geopt(parini)
     elseif(trim(parini%task)=='saddle_1s') then

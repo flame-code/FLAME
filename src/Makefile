@@ -3,13 +3,14 @@ include ../def_pot.mk
 LIB_MOD= ../modules/libmodules.a
 include ../def_opt.mk
 
-all: libsrc.a ofiles/basic_c_wrappers.o 
+all: libsrc.a ofiles/basic_c_wrappers.o ofiles/input_variables_definition.o
 
 SRC_F= dpmpar.f enorm.f lmder.f lmpar.f qrfac.f qrsolv.f
 SRC_= alborz_init_final.F90 processors.F90 \
 		mpi_utilities.F90 \
+		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		lmder_modified.F90 \
-		ann_basic.F90 ann_process.F90 ann_weights_init.F90 ann_io.F90 ann_best_symfunc.F90 \
+		ann_basic.F90 ann_process.F90 ann_weights_init.F90 ann_io.F90 ann_io_yaml.F90 ann_best_symfunc.F90 \
 		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
 		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
@@ -18,7 +19,6 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		ann_pot_tb.F90 \
 		shortrange.F90 tosifumi.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
-		parser_core.F90 parser_all.F90 \
 		md.F90 md_NVT.F90\
 		phonon.F90 \
 		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartee_p3d.F90 \
@@ -125,7 +125,7 @@ OBJ_MINHOCAO =$(patsubst %,$(OBJDIR)/%,$(OBJ_MINHOCAO_))
 _SOURCES_C = sockets.c lenosky_tb/clsfunc.c lenosky_tb/nrutil.c\
 	lenosky_tb/tblink.c lenosky_tb/minimize.c lenosky_tb/tbnorth.c
 
-
+SED = /bin/sed
 
 lenosky_tn%.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -180,6 +180,41 @@ print_vars:
 $(OBJDIR)/%.o: minpack/%.f
 	$(F90) $(FFLAGS) -c $< -o $@ 
 
+YAML_DATABASE = input_variables_definition.yaml
+DATABASE_SOURCES = $(YAML_DATABASE:.yaml=.c)
+
+$(DATABASE_SOURCES): $(YAML_DATABASE)
+	@base=$(shell basename $< .yaml);\
+	routinelc="get_"$$base;\
+	routineuc=`echo $$routinelc | tr a-z A-Z`;\
+	array=$$base"_arr";\
+	file=$@;\
+	echo "#include <config.h>" > $$file &&\
+	echo "#define _GNU_SOURCE" >> $$file &&\
+	echo "#include <fcntl.h>" >> $$file &&\
+	echo "#include <stdio.h>" >> $$file &&\
+	echo "#include <stdlib.h>" >> $$file &&\
+	echo "#include <string.h>" >> $$file &&\
+	echo "static const char $$array[] =" >> $$file &&\
+	$(SED) -e "s/^/\"/;s/$$/\\\n\"/" $< >> $$file &&\
+	echo "  ;" >> $$file &&\
+	echo "void FC_FUNC_($$routinelc, $$routineuc)(char* db_ptr,int* db_len)" >> $$file &&\
+	echo "{" >> $$file &&\
+	echo "  if (*db_len==0)" >> $$file &&\
+	echo "    {" >> $$file &&\
+	echo "    *db_len=strlen($$array);" >> $$file &&\
+	echo "    return;" >> $$file &&\
+	echo "    }" >> $$file &&\
+	echo "  else" >> $$file &&\
+	echo "    {" >> $$file &&\
+	echo "      memcpy(db_ptr,$$array, sizeof(char) * (*db_len));" >> $$file &&\
+	echo "    }" >> $$file &&\
+	echo "}" >> $$file
+
+
+$(OBJDIR)/input_variables_definition.o: $(DATABASE_SOURCES)
+	$(CC) -c $(DATABASE_SOURCES) -I. -o $(OBJDIR)/input_variables_definition.o
+
 $(OBJDIR)/basic_c_wrappers.o: basic_c_wrappers.c
 	$(CC) -c basic_c_wrappers.c -o $(OBJDIR)/basic_c_wrappers.o
 
@@ -214,7 +249,9 @@ libminhocao.a: $(OBJ_MINHOCAO) $(_OBJECTS_C)
 
 
 clean:
-	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o $(OBJDIR)/alborz.o ofiles/spglib_int.o ofiles/spglib_f08.o
+	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o \
+	$(OBJDIR)/alborz.o ofiles/spglib_int.o ofiles/spglib_f08.o \
+	$(OBJDIR)/input_variables_definition.c $(OBJDIR)/input_variables_definition.o
 	rm -rf libminhocao.a vasp_recompute_kpt.o *.mod *~
 
 #*****************************************************************************************

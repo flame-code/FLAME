@@ -17,49 +17,50 @@ implicit none
   logical,allocatable:: fixat(:)
   logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
   integer:: ntime_md              !Maximum number of iterations during MD
-  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
-  real(8):: bmass                 !Cell mass during MD and FIRE
-  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
-  integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
-  real(8):: dtion_md              !Initial timestep for MD 
-  real(8):: dtion_fire,dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep
-  real(8):: tolmxf                !Force tolerance for GEOPT convergance 
-  real(8):: strfact               !Factor to multiply stress 
+!  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
+!  real(8):: bmass                 !Cell mass during MD and FIRE
+!  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
+!  integer:: mdmin_min,mdmin_max   !min,max number of enthalpy minima crossed unit stop MD, only if automatically determined
+!  real(8):: dtion_md              !Initial timestep for MD 
+  !real(8):: dtion_fire,dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep
+  real(8):: dtion_fire_min,dtion_fire_max      !Initial timestep for FIRE, minimal_timestep, maximal_timestep
+!  real(8):: tolmxf                !Force tolerance for GEOPT convergance 
+!  real(8):: strfact               !Factor to multiply stress 
   character(40):: units           !Either angstroem or bohr
-  integer:: ka,kb,kc              !The number of kpoints in each dimension
+!  integer:: ka,kb,kc              !The number of kpoints in each dimension
   integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
   integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
   integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
   character(2),allocatable:: char_type(:) 
-  real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
-  character(20):: code            !What code should be used: abinit or siesta
-  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
-  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
-  real(8):: alphax_lat, alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
-  integer:: nsoften               !Number of softening steps
+!  real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
+!  character(20):: code            !What code should be used: abinit or siesta
+!  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used
+!  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
+!  real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
+!  integer:: nsoften               !Number of softening steps
   logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
-  character(5):: geopt_method
+!  character(5):: geopt_method
   integer:: ka1,kb1,kc1           !The previously used kpt mesh are stored in these variables, only abinit 
   logical:: max_kpt               !If true, the single point in abinit will first evaluate if the new set is better and choose the better one. Default=false
   logical:: reuse_kpt             !If true, the single point in abinit will reuse previous kpt mesh. Default=false
   logical:: reduced               !If true, all output files will be written in reduced coordinates. Initiallized when reading poscur.ascii
   logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
   logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
-  logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
-  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
-  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
-  logical:: auto_kpt              !Currently a dummy variable
-  integer:: nit_per_min           !Target number of md steps per md minimum crossing
-  integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
-  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
-  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
-  logical:: mol_soften            !Switch on molecular softening
+!  logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
+!  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
+!  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
+!  logical:: auto_kpt              !Currently a dummy variable
+!  integer:: nit_per_min           !Target number of md steps per md minimum crossing
+!  integer:: md_algo               !Algorithm for VCMD: 1=PR, 2=Cleveland, 3=Wentzcovitch
+!  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
+!  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
+!  logical:: mol_soften            !Switch on molecular softening
   integer:: correctalg            !Method to perform cell corrections
   integer:: bc                    !1: periodic, 2:free, 3:surface/slab
 !  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
   integer:: confine               !0: No confinement, 1: confinement used, but not currently, 2: confinement in action, 3: confinement always on
   logical:: use_confine           !if true, confinement is enable, otherwise disabled
-  logical:: energy_conservation   !Only used in fixed cell MD
+!  logical:: energy_conservation   !Only used in fixed cell MD
   logical:: voids                 !If or if not to use void creating LJ particles in the cell
   logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
 end module global
@@ -118,14 +119,14 @@ module fingerprint
    implicit none
    save
 !All
-   real(8):: fp_rcut   
-   integer:: fp_nl
+!   real(8):: fp_rcut   
+!   integer:: fp_nl
    integer:: fp_method
-   integer:: fp_at_nmax
+!   integer:: fp_at_nmax
    integer:: fp_all_nmax
-   character(20):: fp_method_ch
-   real(8):: fp_sigma   
-   real(8):: fp_dbin
+!   character(20):: fp_method_ch
+!   real(8):: fp_sigma   
+!   real(8):: fp_dbin
 !Oganov parameters
    real(8):: fp_11_rcut
    real(8):: fp_11_sigma   
@@ -142,9 +143,9 @@ module fingerprint
    integer:: fp_13_fp_dim
    real(8),allocatable:: fp_13_r_cut(:)
 !xyz2sm parameters
-   integer:: fp_14_m
-   real(8):: fp_14_w1
-   real(8):: fp_14_w2
+!   integer:: fp_14_m
+!   real(8):: fp_14_w1
+!   real(8):: fp_14_w2
 !Continuous Oganov parameters
    real(8):: fp_15_rcut
    real(8):: fp_15_sigma  
@@ -160,9 +161,9 @@ module fingerprint
 ! gom parameters
    real(8):: fp_17_width_cutoff
    real(8):: fp_17_nex_cutoff
-   integer:: fp_17_natx_sphere
-   integer:: fp_17_lseg
-   character(len=2) :: fp_17_orbital
+!   integer:: fp_17_natx_sphere
+!   integer:: fp_17_lseg
+!   character(len=2) :: fp_17_orbital
 !Molecular GOM
 !
 !
@@ -315,16 +316,16 @@ implicit none
       real(8)             :: sock_ecutwf(2)
 end module modsocket
 
-module mod_sqnm
-implicit none
-      real(8):: sqnm_beta_lat
-      real(8):: sqnm_beta_at
-      integer:: sqnm_nhist
-      real(8):: sqnm_maxrise
-      real(8):: sqnm_cutoffRatio
-      real(8):: sqnm_steepthresh             
-      real(8):: sqnm_trustr
-end module mod_sqnm
+!module mod_sqnm
+!implicit none
+!      real(8):: sqnm_beta_lat
+!      real(8):: sqnm_beta_at
+!      !integer:: sqnm_nhist
+!      real(8):: sqnm_maxrise
+!      real(8):: sqnm_cutoffRatio
+!      real(8):: sqnm_steepthresh             
+!      real(8):: sqnm_trustr
+!end module mod_sqnm
 
 module steepest_descent
 implicit none
@@ -332,14 +333,14 @@ implicit none
       real(8):: sd_beta_at
 end module steepest_descent
 
-module qbfgs
-implicit none
-     integer::qbfgs_bfgs_ndim!=1
-     real(8)::qbfgs_trust_radius_max!=0.5d0
-     real(8)::qbfgs_trust_radius_min!=1.d-5
-     real(8)::qbfgs_trust_radius_ini!=0.02D0
-     real(8)::qbfgs_w_1!=0.05D0
-     real(8)::qbfgs_w_2!=0.5D0
-end module
+!module qbfgs
+!implicit none
+!     !integer::qbfgs_bfgs_ndim!=1
+!     real(8)::qbfgs_trust_radius_max!=0.5d0
+!     real(8)::qbfgs_trust_radius_min!=1.d-5
+!     !real(8)::qbfgs_trust_radius_ini!=0.02D0
+!     real(8)::qbfgs_w_1!=0.05D0
+!     real(8)::qbfgs_w_2!=0.5D0
+!end module
 
 

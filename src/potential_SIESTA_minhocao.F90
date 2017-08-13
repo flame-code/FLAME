@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,siesta_kpt_mode
+  use global, only: nat,ntypat,znucl,typat,char_type,target_pressure_gpa,siesta_kpt_mode
   use defs_basis
   !use cell_utils
 
@@ -21,7 +21,9 @@ contains
 ! - Read/dont read wavefunction from file is ignored for siesta
 ! - The kpoint mesh
 ! - The atomic informations
-subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -32,9 +34,9 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
     integer :: iat, iprec, itype
     character(1):: fn
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
     !For siesta, there are two modes for setting up the k-point mesh:
     !mode 1: setting up of the mesh done by seista, using kgrid_cutoff
@@ -137,11 +139,13 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
 
   end subroutine get_output_siesta
 
-  subroutine siesta_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine siesta_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  use mod_parini, only: typ_parini
   !This routine will setup the input file for a siesta geometry optimization
   !It will also call the run script and harvest the output
   use global, only: nat
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
@@ -149,7 +153,7 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   character(4):: tmp_char
   getwfk=.false.
   !Set up the input file to perform geometry optimization
-   call make_input_siesta_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+   call make_input_siesta_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   ! call system("sleep 1")
   !Run the job NOW!
    call system("./runjob.sh")
@@ -168,7 +172,8 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   end subroutine
   
   
-  subroutine make_input_siesta_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_siesta_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
+  use mod_parini, only: typ_parini
   !This routine will append some informations to a file already containing some informations about the siesta runs
   !The informations appended are:
   !-Geometry optimization parameters
@@ -176,6 +181,7 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   !-The atomic informations
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,siesta_kpt_mode
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt
   integer:: iat,iprec,ka,kb,kc,itype
@@ -192,9 +198,9 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   getwfk=.false.
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   
@@ -218,9 +224,9 @@ subroutine make_input_siesta(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
   write(87,'(a)')            "MD.TypeOfRun         CG"
   !write(87,'(a)')           "MD.TypeOfRun         FIRE"
   !write(87,'(a)')           "MD.TypeOfRun         Broyden"
-  write(87,'(a,i5)')          "MD.NumCGsteps  ",ntime_geopt
+  write(87,'(a,i5)')          "MD.NumCGsteps  ",parini%paropt_geopt%nit
   write(87,'(a)')            "MD.VariableCell .true."
-  write(87,'(a,es25.15,a)')        "MD.MaxForceTol  ",  2.d0*tolmxf ,"  Ry/Bohr"
+  write(87,'(a,es25.15,a)')        "MD.MaxForceTol  ",  2.d0*parini%paropt_geopt%fmaxtol ,"  Ry/Bohr"
   write(87,'(a)')            "MD.MaxStressTol 0.1 GPa"
   write(87,'(a,es25.15,a)')  "MD.TargetPressure  ",target_pressure_gpa, " GPa"
   

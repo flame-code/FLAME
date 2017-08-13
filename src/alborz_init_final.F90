@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine alborz_init(parini,file_ini)
+subroutine alborz_init(parini,parres,file_ini)
     use mod_interface
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_task, only: typ_file_ini, time_start
@@ -11,6 +11,7 @@ subroutine alborz_init(parini,file_ini)
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
+    type(typ_parini), intent(inout):: parres
     !local variables
     integer:: istat
     call f_lib_initialize()
@@ -22,35 +23,41 @@ subroutine alborz_init(parini,file_ini)
     istat=getcwd(parini%cwd)
     if(istat/=0) stop 'ERROR: could not get CWD'
     call cpu_time(time_start)
-    allocate(file_ini%file_lines(file_ini%nline_max)) !,comment_line(nline_max))
-    file_ini%file_lines(1:file_ini%nline_max)=' '
-    !reading file input.ini into array file_lines which later it will be parsed.
-    call read_file_input(file_ini)
-    allocate(file_ini%stat_line_is_read(file_ini%nline),source=.false.)
     !parsing all blocks in input.ini
-    call get_main_parameters(file_ini,parini)
-    call set_atomc_types_info(parini)
-    call get_minhopp_parameters(file_ini,parini)
-    call get_geopt_parameters(file_ini,parini)
-    call get_geopt_prec_parameters(file_ini,parini)
-    call get_saddle_1s_opt_parameters(file_ini,parini)
-    call get_saddle_1s_parameters(file_ini,parini)
-    call get_potential_parameters(file_ini,parini)
-    call get_ann_parameters(file_ini,parini)
-    call get_dynamics_parameters(file_ini,parini)
-    call get_bader_parameters(file_ini,parini)
-    call get_genconf_parameters(file_ini,parini)
-    call get_conf_comp_parameters(file_ini,parini)
-    call get_testforces_parameters(file_ini,parini)
-    call get_single_point_parameters(file_ini,parini)
-    call get_ewald_parameters(file_ini,parini)
-    call get_misc_parameters(file_ini,parini)
+    inquire(file="flame_in.yaml",exist=parini%exists_yaml_file)
+    if(parini%exists_yaml_file) then
+        call yaml_get_parameters(parini)
+    else
+        allocate(file_ini%file_lines(file_ini%nline_max)) !,comment_line(nline_max))
+        file_ini%file_lines(1:file_ini%nline_max)=' '
+        !reading file input.ini into array file_lines which later it will be parsed.
+        call read_file_input(file_ini)
+        allocate(file_ini%stat_line_is_read(file_ini%nline),source=.false.)
+        call get_main_parameters(file_ini,parini)
+        call set_atomc_types_info(parini)
+        call get_minhopp_parameters(file_ini,parini)
+        call get_geopt_parameters(file_ini,parini)
+        call get_geopt_prec_parameters(file_ini,parini)
+        call get_saddle_1s_opt_parameters(file_ini,parini)
+        call get_saddle_1s_parameters(file_ini,parini)
+        call get_potential_parameters(file_ini,parini)
+        call get_ann_parameters(file_ini,parini)
+        call get_dynamics_parameters(file_ini,parini)
+        call get_bader_parameters(file_ini,parini)
+        call get_genconf_parameters(file_ini,parini)
+        call get_conf_comp_parameters(file_ini,parini)
+        call get_testforces_parameters(file_ini,parini)
+        call get_single_point_parameters(file_ini,parini)
+        call get_ewald_parameters(file_ini,parini)
+        call get_misc_parameters(file_ini,parini)
+    endif
     if(trim(parini%task)/='minhocao') then
         call initprocessors !start MPI in parallel version.
     endif
     if(trim(parini%task)/='potential') then
         call init_random_seed(parini)
     endif
+    parres=parini
     !-----------------------------------------------------------------
     call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     call f_release_routine()
@@ -94,7 +101,9 @@ subroutine alborz_final(parini,file_ini)
     !local variables
     call f_routine(id='alborz_final')
     call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
-    deallocate(file_ini%file_lines,file_ini%stat_line_is_read) !,comment_line)
+    if(.not. parini%exists_yaml_file) then
+        deallocate(file_ini%file_lines,file_ini%stat_line_is_read) !,comment_line)
+    endif
     call cpu_time(time_end)
     write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(hrs)',iproc,(time_end-time_start)/3600.d0
     write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(min)',iproc,(time_end-time_start)/60.d0

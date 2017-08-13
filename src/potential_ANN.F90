@@ -10,6 +10,7 @@ subroutine init_potential_ann(parini,atoms)
     !local variables
     integer:: i, iat
     character(10):: fn
+    character (50)::fname
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%n)
     ann_arr%approach=trim(parini%approach_ann)
@@ -35,7 +36,13 @@ subroutine init_potential_ann(parini,atoms)
             endif
         enddo
     enddo
-    call read_ann(parini,ann_arr)
+    fname = trim(parini%stypat(1))//'.ann.param.yaml'
+    inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
+    if( ann_arr%exists_yaml_file) then
+        call read_ann_yaml(parini,ann_arr)
+    else
+        call read_ann(parini,ann_arr)
+    endif
     ann_boundcheck=trim(parini%potential_ann_boundcheck)
     ann_arr%event='potential'
 end subroutine init_potential_ann
