@@ -4,7 +4,7 @@ import atoms
 from vasp import *
 from ascii import *
 
-atoms_all=xdatcar_read("Reduced")
+atoms_all=xdatcar_read()
 
 nconf=0
 for atoms in atoms_all:
