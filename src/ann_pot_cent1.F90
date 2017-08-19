@@ -130,9 +130,9 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     enddo
 
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-        call f_free(symfunc%linked_lists%prime_bound)
-        call f_free(symfunc%linked_lists%bound_rad)
-        call f_free(symfunc%linked_lists%bound_ang)
+        deallocate(symfunc%linked_lists%prime_bound)
+        deallocate(symfunc%linked_lists%bound_rad)
+        deallocate(symfunc%linked_lists%bound_ang)
     endif
     if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
         call f_free(symfunc%y)

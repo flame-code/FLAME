@@ -90,6 +90,7 @@ module mod_parini
         logical:: prefit_ann=.false.
         logical:: read_forces_ann
         logical:: restart_param=.false. 
+        integer:: restart_iter=0  
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.

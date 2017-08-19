@@ -134,9 +134,9 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo
 
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-        call f_free(symfunc%linked_lists%prime_bound)
-        call f_free(symfunc%linked_lists%bound_rad)
-        call f_free(symfunc%linked_lists%bound_ang)
+        deallocate(symfunc%linked_lists%prime_bound)
+        deallocate(symfunc%linked_lists%bound_rad)
+        deallocate(symfunc%linked_lists%bound_ang)
     endif
     if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
         call f_free(symfunc%y)
@@ -344,9 +344,9 @@ subroutine final_cent2(cent)
     implicit none
     type(typ_cent), intent(inout):: cent
     !local variables
-    call f_free(cent%ewald_p3d%linked_lists%prime_bound)
-    call f_free(cent%ewald_p3d%linked_lists%bound_rad)
-    call f_free(cent%ewald_p3d%linked_lists%bound_ang)
+    deallocate(cent%ewald_p3d%linked_lists%prime_bound)
+    deallocate(cent%ewald_p3d%linked_lists%bound_rad)
+    deallocate(cent%ewald_p3d%linked_lists%bound_ang)
     deallocate(cent%ewald_p3d%pia_arr%pia)
     deallocate(cent%rgrad)
     deallocate(cent%qgrad)

@@ -155,14 +155,14 @@ subroutine ann_train(parini)
 
     if(trim(parini%symfunc)/='do_not_save') then
     do iconf=1,atoms_train%nconf
-        call f_free(symfunc_train%symfunc(iconf)%linked_lists%prime_bound)
-        call f_free(symfunc_train%symfunc(iconf)%linked_lists%bound_rad)
-        call f_free(symfunc_train%symfunc(iconf)%linked_lists%bound_ang)
+        deallocate(symfunc_train%symfunc(iconf)%linked_lists%prime_bound)
+        deallocate(symfunc_train%symfunc(iconf)%linked_lists%bound_rad)
+        deallocate(symfunc_train%symfunc(iconf)%linked_lists%bound_ang)
     enddo
     do iconf=1,atoms_valid%nconf
-        call f_free(symfunc_valid%symfunc(iconf)%linked_lists%prime_bound)
-        call f_free(symfunc_valid%symfunc(iconf)%linked_lists%bound_rad)
-        call f_free(symfunc_valid%symfunc(iconf)%linked_lists%bound_ang)
+        deallocate(symfunc_valid%symfunc(iconf)%linked_lists%prime_bound)
+        deallocate(symfunc_valid%symfunc(iconf)%linked_lists%bound_rad)
+        deallocate(symfunc_valid%symfunc(iconf)%linked_lists%bound_ang)
     enddo
     endif
 
@@ -655,7 +655,7 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
     else
         nwa=3+nat*(3+ng)
     endif
-    wa=f_malloc([1.to.nwa],id='wa')
+    allocate(wa(1:nwa))
     wa(1)=real(nat,8)
     wa(2)=real(ng,8)
     wa(3)=real(nb,8)
@@ -707,7 +707,7 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
     !    enddo
     !enddo
     close(311)
-    call f_free(wa)
+    deallocate(wa)
 end subroutine write_symfunc
 !*****************************************************************************************
 subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
@@ -973,9 +973,9 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     if(trim(parini%symfunc)=='do_not_save') then
         do iconf=1,atoms_arr%nconf
             call f_free(symfunc_arr%symfunc(iconf)%y)
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
-            call f_free(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
         enddo
     endif
     deallocate(gminarr)

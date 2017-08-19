@@ -226,6 +226,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%prefit_ann=parini%subdict//"prefit"
     parini%read_forces_ann=parini%subdict//"read_forces"
     parini%restart_param=parini%subdict//"restart_param"
+    parini%restart_iter=parini%subdict//"restart_iter"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)

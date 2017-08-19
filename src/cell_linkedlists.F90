@@ -19,7 +19,6 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
     use mod_const, only: bohr2ang
-    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini 
     type(typ_atoms), intent(in):: atoms
@@ -135,7 +134,6 @@ subroutine linkedlists_final(linked_lists)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
-    use dynamic_memory
     implicit none
     type(typ_linked_lists), intent(inout):: linked_lists
     !local variables
@@ -259,7 +257,6 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
-    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini 
     type(typ_atoms), intent(in):: atoms
@@ -495,7 +492,6 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     use mod_atoms, only: typ_atoms, type_pairs
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
-    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini 
     type(typ_atoms), intent(in):: atoms 
@@ -526,7 +522,7 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     !else
         allocate(bound_rad(1:nmax,1:linked_lists%nat))
         allocate(bound_dist(1:4,1:nmax,1:linked_lists%nat))
-        linked_lists%prime_bound=f_malloc([1.to.linked_lists%nat+1],id='linked_lists%prime_bound')
+        allocate(linked_lists%prime_bound(1:linked_lists%nat+1))
         allocate(neighbor(1:linked_lists%nat))
     !endif
 
@@ -593,7 +589,7 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     else
         linked_lists%maxbound_rad=maxnbr
     endif
-    linked_lists%bound_rad=f_malloc([1.to.2,1.to.linked_lists%maxbound_rad],id='linked_lists%bound_rad')
+    allocate(linked_lists%bound_rad(1:2,1:linked_lists%maxbound_rad))
     allocate(pia_arr%pia(linked_lists%maxbound_rad))
     njat=0
     ibr=0
@@ -643,7 +639,7 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
         ntot=ntot+(n*(n-1))/2.d0
     enddo
     linked_lists%maxbound_ang=ntot
-    linked_lists%bound_ang=f_malloc([1.to.2,1.to.linked_lists%maxbound_ang],id='linked_lists%bound_ang')
+    allocate(linked_lists%bound_ang(1:2,1:linked_lists%maxbound_ang))
     maxnba=0
     do iat=1,linked_lists%nat
         do inbr=linked_lists%prime_bound(iat),linked_lists%prime_bound(iat+1)-1
