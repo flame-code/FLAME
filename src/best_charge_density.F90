@@ -53,7 +53,7 @@ subroutine best_charge_density(parini)
  
     !/////////////////CENT_FORCE////////////////////////! 
     read(1370,*)
-    read(1370,*) q1,q2,q3
+    read(1370,*) q1,q2,q3!,a11,a12,a21,a22,a31,a32,sd_s,fd_s
     read(1370,*)
     read(1370,*) a11,a12
     read(1370,*)
@@ -170,9 +170,11 @@ subroutine best_charge_density(parini)
              end do
          end do 
          exit_cond = sqrt((err_cent))
-         write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,atoms%qat,cent%gwe
+         write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,q(:,1),a(:,1)
+         write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,q(:,2),a(:,2)
+         write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,q(:,3),a(:,3)
          write(*,'(a,i4,2(2x,8es14.4))') "a-q-grad",iter,err_agrad,err_qgrad
-         if (exit_cond < 1.d-3)then
+         if (exit_cond < 1.d-2)then
             write(*,*) "max conversion reached"
             write(*,*) "qat : "
             write(*,*) Q
