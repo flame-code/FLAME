@@ -280,7 +280,8 @@ def poscar_read(filename):
                 x=xred*atoms.cellvec[0][0]+yred*atoms.cellvec[1][0]+zred*atoms.cellvec[2][0]
                 y=xred*atoms.cellvec[0][1]+yred*atoms.cellvec[1][1]+zred*atoms.cellvec[2][1]
                 z=xred*atoms.cellvec[0][2]+yred*atoms.cellvec[1][2]+zred*atoms.cellvec[2][2]
-                posred=[xred,yred,zred]
+                posred= np.zeros((1,3))
+                posred[0][:]=([xred,yred,zred])
             elif(atoms.coordinates=="Cartesian"):
                 x=xred*scale_factor
                 y=yred*scale_factor
