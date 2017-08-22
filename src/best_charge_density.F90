@@ -350,9 +350,6 @@ subroutine best_charge_density_force(parini)
         cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
     allocate(err_qgrad(atoms%nat,lcn),err_agrad(atoms%nat,lcn))
     
-    atoms%zat = 1.d0
-    cent%gwit = 1.3d0
-    
     do iter=1,huge(iter_max)
          
          cent_rho_1=0.d0
@@ -363,6 +360,8 @@ subroutine best_charge_density_force(parini)
                 A(:,1),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
          cent_rho_1 = cent%ewald_p3d%poisson_p3d%rho
          atoms%boundcond='bulk'
+         atoms%zat = 1.d0
+         cent%gwit = 1.3d0
          call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
          call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
          atoms%fat = 0.d0
@@ -377,6 +376,8 @@ subroutine best_charge_density_force(parini)
          call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                 A(:,1),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
          cent_rho_2 = cent%ewald_p3d%poisson_p3d%rho
+         atoms%zat = 1.d0
+         cent%gwit = 1.3d0
          atoms%boundcond='bulk'
          call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
          call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
@@ -385,19 +386,12 @@ subroutine best_charge_density_force(parini)
          cent_fat_2 = atoms%fat
          call destruct_ewald_bps(cent%ewald_p3d)
          rho_err = sqrt(sum((cent_rho_1-dft_rho_1)**2+(cent_rho_2-dft_rho_2)**2)/(nx*ny*nz))
-         
-         write(*,*) "check",cent_fat_1
-         write(*,*) "check",cent_fat_2
-         write(*,*) "check",dft_fat_1
-         write(*,*) "check",dft_fat_2
          err_cent = dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
                              + dot_product((cent_fat_2(1,:)-dft_fat_2(1,:)),(cent_fat_2(1,:)-dft_fat_2(1,:)))
-         write(*,*) "err_cent",err_cent
         !//////////////////FDM_part///////////////////////////
          do i = 1 , atoms%nat
             do j = 1 , lcn
                  A(i,j) = A(i,j) + fd_s
-                 
                  cent_rho_1=0.d0
                  cent%ewald_p3d%poisson_p3d%pot = 0.d0
                  cent%ewald_p3d%rgcut=6.d0*maxval(abs(A))
@@ -405,13 +399,14 @@ subroutine best_charge_density_force(parini)
                  call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
                  cent_rho_1 = cent%ewald_p3d%poisson_p3d%rho
+                 atoms%zat = 1.d0
+                 cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
                  call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
                  call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
                  atoms%fat = 0.d0
                  call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
                  cent_fat_1 = atoms%fat
-                 write(*,*) "check_2" ,atoms%fat   
                  call destruct_ewald_bps(cent%ewald_p3d)
                  
                  cent_rho_2=0.d0
@@ -421,6 +416,8 @@ subroutine best_charge_density_force(parini)
                  call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
                  cent_rho_2 = cent%ewald_p3d%poisson_p3d%rho
+                 atoms%zat = 1.d0
+                 cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
                  call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
                  call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
@@ -432,8 +429,7 @@ subroutine best_charge_density_force(parini)
                  err_fdm = 0.d0
                  err_fdm = err_fdm + dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
                                    + dot_product((cent_fat_2(1,:)-dft_fat_2(1,:)),(cent_fat_2(1,:)-dft_fat_2(1,:)))
-                write(*,*) "err_fdm",err_fdm 
-                err_agrad(i,j) = (err_fdm - err_cent)/fd_s
+                 err_agrad(i,j) = (err_fdm - err_cent)/fd_s
                  A(i,j) = A(i,j) - fd_s
                  !/////////////////////////////////////////////////////////////////////////////
                  Q(i,j) = Q(i,j) + fd_s
@@ -444,6 +440,8 @@ subroutine best_charge_density_force(parini)
                  call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
                  cent_rho_1 = cent%ewald_p3d%poisson_p3d%rho
+                 atoms%zat = 1.d0
+                 cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
                  call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
                  call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
@@ -459,6 +457,8 @@ subroutine best_charge_density_force(parini)
                  call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
                  cent_rho_2 = cent%ewald_p3d%poisson_p3d%rho
+                 atoms%zat = 1.d0
+                 cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
                  call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
                  call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
@@ -477,7 +477,7 @@ subroutine best_charge_density_force(parini)
          end do 
          exit_cond = sqrt((err_cent))
          !do jj = 1, lcn
-            write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,q(:,1),a(:,1)
+            write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,q,a
          !end do
          write(*,'(a,i4,2(2x,8es14.4))') "a-q-grad",iter,err_agrad,err_qgrad
          if (exit_cond < 1.d-6)then
