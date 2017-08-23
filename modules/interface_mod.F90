@@ -4621,17 +4621,6 @@ subroutine read_poscar_for_single_point(parini,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_atoms):: atoms
 end subroutine read_poscar_for_single_point
-subroutine poscar_getsystem_alborz(filename)
-character(*) :: filename
-end subroutine poscar_getsystem_alborz
-subroutine read_atomic_file_poscar_alborz(filename,nat,units,xred,latvec,fcart,strten,&
-           &fixat,fixlat,readfix,fragarr,readfrag,printval1,printval2)
-integer:: i,ntypat_tmp,nat,natin,iat,ierror,io,n,k,fragarr(nat),fragarr_tmp,lhead(nat),llist(nat),nmol
-logical:: fixat(nat),fixlat(7),readfix,reduced_tmp,readfrag
-character(*):: filename,units
-real(8):: pos(3,nat),xred(3,nat),latvec(3,3),dproj(6),strten(6),fcart(3,nat)
-real(8):: angbohr,evhartree,enthalpy_at,printval1,printval2,scaling
-end subroutine read_atomic_file_poscar_alborz
 ! ./src/task_testforces.F90 :
 subroutine task_testforces(parini)
     use mod_parini, only: typ_parini
