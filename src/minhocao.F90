@@ -153,7 +153,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 
 
 !Define the boundary condition: 1: periodic, 2:free, 3:surface/slab
-  bc=1
+  parini%bc=1
 
 !Verbosity
   parini%verb=1
@@ -253,9 +253,9 @@ call system_clock(count_max=clock_max)   !Find the time max
   allocate(fp_pos(fp_len),fp_wpos(fp_len),fp_hop(fp_len))
 
 !Check correct assignment of FP method
-  if(bc==1.and.(fp_method.lt.11.or.fp_method.gt.19)) stop "Incompatible fingerprint and boundary conditions"
-  if(bc==2.and.(fp_method.lt.21.or.fp_method.gt.29)) stop "Incompatible fingerprint and boundary conditions"
-  if(bc==3.and.(fp_method.lt.31.or.fp_method.gt.39)) stop "Incompatible fingerprint and boundary conditions"
+  if(parini%bc==1.and.(fp_method.lt.11.or.fp_method.gt.19)) stop "Incompatible fingerprint and boundary conditions"
+  if(parini%bc==2.and.(fp_method.lt.21.or.fp_method.gt.29)) stop "Incompatible fingerprint and boundary conditions"
+  if(parini%bc==3.and.(fp_method.lt.31.or.fp_method.gt.39)) stop "Incompatible fingerprint and boundary conditions"
 
 
 !Assign atomic masses in electron units
@@ -659,7 +659,7 @@ write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
   endif
   if (parini%paropt_geopt%nit.le.0) goto 3000
 !Check if the structure is already relaxed
-  call convcheck(nat,pos_latvec,pos_fcart,pos_strten,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+  call convcheck(parini,nat,pos_latvec,pos_fcart,pos_strten,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 if(iexit==1) then
   write(*,'(a,es15.7,es15.7)') ' # Input structure already relaxed. Proceeding with: Energy, Enthalpy: ',e_pos,ent_pos
   else 
@@ -916,7 +916,7 @@ endif
 !Call molecular dynamics 
      escape=escape+1.d0
      iprec=2
-     if((all(fixlat(1:6)).and..not.fixlat(7)).or.bc==2) then
+     if((all(fixlat(1:6)).and..not.fixlat(7)).or.parini%bc==2) then
      call MD_fixlat(parini,parres,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,vel_in,e_wpos,iprec,counter,folder)
      else
      call MD_MHM(parini,parres,wpos_latvec,wpos_red,wpos_fcart,wpos_strten,vel_in,vel_lat_in,vel_vol_in,e_wpos,iprec,counter,folder)
@@ -1637,10 +1637,10 @@ call acceleration(pressure_md,accposcur,acclatcur,accvolcur,vposcur,vlatcur,vvol
 
 !Eliminate the unnecessary atmic and cell components
 call elim_fixed_at(nat,accposcur);call elim_fixed_at(nat,accposprev)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatprev)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatprev)
 call elim_fixed_at(nat,vposcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatcur)
 
 
         do itime=1,parres%nmd_dynamics
@@ -1659,7 +1659,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
               dxred(:,iat)=dt*vposcur(:,iat) + 0.5d0*dt*dt*accposcur(:,iat)  !0.5 was missing before
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           do iat=1,nat
              vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
           enddo
@@ -1674,7 +1674,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
               dxred(:,iat)=dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=(latpred-latcur)/dt
           do iat=1,nat
               vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
@@ -1692,7 +1692,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt/6.d0*(4.d0*accposcur(:,iat)-accposprev(:,iat))             
              dxred(:,iat)=dt*vposcur(:,iat) + dt*dt/6.d0*(4.d0*accposcur(:,iat)-accposprev(:,iat))             
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=vlatcur(:,:) + 0.5d0*(3.d0*acclatcur(:,:)-acclatprev(:,:))  
           do iat=1,nat
              vpospred(:,iat)=vposcur(:,iat)+0.5d0*(3.d0*accposcur(:,iat)-accposprev(:,iat))
@@ -1806,8 +1806,8 @@ call acceleration(pressure_md,accpospred,acclatpred,accvolpred,vpospred,&
 
 !Eliminate the unnecessary atmic and cell components
 call elim_fixed_at(nat,accpospred);call elim_fixed_at(nat,vpospred)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatpred)
-if(md_type.ne.4) call elim_fixed_lat(latcur,vlatpred)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatpred)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatpred)
 
 !Compute the "predicted" kinetic energies:
 call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekinatom,ekinlat,f0,md_type,nat)
@@ -2817,7 +2817,7 @@ call elim_fixed_at(nat,vposcur)!;call elim_fixed_lat(latcur,vlatcur)
               dxred(:,iat)=dt*vposcur(:,iat) + 0.5d0*dt*dt*accposcur(:,iat)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           do iat=1,nat
              vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
           enddo
@@ -2832,7 +2832,7 @@ call elim_fixed_at(nat,vposcur)!;call elim_fixed_lat(latcur,vlatcur)
               dxred(:,iat)=dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=(latpred-latcur)/dt
           do iat=1,nat
               vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
@@ -2850,7 +2850,7 @@ call elim_fixed_at(nat,vposcur)!;call elim_fixed_lat(latcur,vlatcur)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt/6.d0*(4.d0*accposcur(:,iat)-accposprev(:,iat))             
              dxred(:,iat)=dt*vposcur(:,iat) + dt*dt/6.d0*(4.d0*accposcur(:,iat)-accposprev(:,iat))             
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=vlatcur(:,:) + 0.5d0*(3.d0*acclatcur(:,:)-acclatprev(:,:))  
           do iat=1,nat
              vpospred(:,iat)=vposcur(:,iat)+0.5d0*(3.d0*accposcur(:,iat)-accposprev(:,iat))
@@ -3736,7 +3736,7 @@ endif
 !Single point calculation finished. Now returning to MD part. All output variables are now in *_in
 !****************************************************************************************************************        
 !FIRE: check for convergence
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !!!!!Compute maximal component of forces, EXCLUDING any fixed components
 !!! fmax=0.0d0
 !!! do iat=1,nat
@@ -3848,10 +3848,10 @@ call acceleration_fire(pressure_md,accposcur,acclatcur,accvolcur,vposcur,&
 
 !Eliminate the unnecessary atmic and cell components
 call elim_fixed_at(nat,accposcur);call elim_fixed_at(nat,accposprev)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatprev)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatprev)
 call elim_fixed_at(nat,vposcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatcur)
 
 
 !FIRE cycles
@@ -3870,7 +3870,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
               dxred(:,iat)=dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           do iat=1,nat
              vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
           enddo
@@ -3886,7 +3886,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
               dxred(:,iat)=dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=(latpred-latcur)/dt
           do iat=1,nat
               vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
@@ -3905,7 +3905,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt/6.d0*(4.d0*accposcur(:,iat)-accposprev(:,iat))             
              dxred(:,iat)=dt*vposcur(:,iat) + dt*dt/6.d0*(4.d0*accposcur(:,iat)-accposprev(:,iat))
           enddo
-          call propagate(nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nat,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=vlatcur(:,:) + 0.5d0*(3.d0*acclatcur(:,:)-acclatprev(:,:))
           do iat=1,nat
              vpospred(:,iat)=vposcur(:,iat)+0.5d0*(3.d0*accposcur(:,iat)-accposprev(:,iat))
@@ -4024,7 +4024,7 @@ endif
 !****************************************************************************************************************        
 
 !FIRE: check for convergence
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !!!!Compute maximal component of forces, EXCLUDING any fixed components
 !!! fmax=0.0d0
 !!! do iat=1,nat
@@ -4077,8 +4077,8 @@ call acceleration_fire(pressure_md,accpospred,acclatpred,accvolpred,vpospred,&
 
 !Eliminate the unnecessary atmic and cell components
 call elim_fixed_at(nat,accpospred);call elim_fixed_at(nat,vpospred)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatpred)
-if(md_type.ne.4) call elim_fixed_lat(latcur,vlatpred)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatpred)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatpred)
 !Compute the "predicted" kinetic energies:
 call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekinatom,ekinlat,f0,md_type,nat)
 
@@ -4241,8 +4241,8 @@ if(md_type==4)   volcur=volpred
              &vlatcur,vvolcur,strten_in,fcart_in,latcur,amass,latmass,f0inv,md_type,nat)
 !Eliminate the unnecessary atmic and cell components
         call elim_fixed_at(nat,accposcur);call elim_fixed_at(nat,vposcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatcur)
 
 
      enthalpy_min=min(enthalpy,enthalpy_min)
@@ -5216,7 +5216,7 @@ end subroutine elim_torque_cell
 subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
  use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
- use global, only: amu,amutmp,typat,char_type,fixat,fixlat,bc
+ use global, only: amu,amutmp,typat,char_type,fixat,fixlat
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5265,7 +5265,7 @@ if(parini%mol_soften) then
 !Soften the velocities of lattice
          if(.not.fixlat(7)) then
          call soften_lat(parini,parres,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
-         call elim_fixed_lat(latvec,vel_lat)
+         call elim_fixed_lat(parini,latvec,vel_lat)
          endif
 else
 !Get random Gaussian distributed atomic velocities
@@ -5324,11 +5324,11 @@ else
          endif
 
 !Now get some cell velocity
-         if(.not.(all(fixlat(1:6))).and.(.not.fixlat(7)).and.bc.ne.2) then
+         if(.not.(all(fixlat(1:6))).and.(.not.fixlat(7)).and.parini%bc.ne.2) then
            call gausdist_cell(latvec,vel_lat)
 !Soften the velocities of lattice
            call soften_lat(parini,parres,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
-           call elim_fixed_lat(latvec,vel_lat)
+           call elim_fixed_lat(parini,latvec,vel_lat)
          endif
 endif
 
@@ -5339,7 +5339,7 @@ if(fixlat(7)) then !Andersen MD
          call random_number(vel_vol)
          vel_vol=(vel_vol-0.5d0)*2.d0
          vel_vol=vel_vol*sqrt(kb_HaK*temp*temp_fac_lat)
-elseif(.not.all(fixlat(1:6)).and.bc.ne.2) then
+elseif(.not.all(fixlat(1:6)).and.parini%bc.ne.2) then
 !        Recompute v2gauss
          v2gauss=0.d0
          vtest=0.d0
@@ -7140,10 +7140,12 @@ end subroutine
 
 !************************************************************************************
 
-subroutine elim_fixed_lat(latvec,x)
+subroutine elim_fixed_lat(parini,latvec,x)
 use mod_interface
-use global, only: fixlat,bc
+use mod_parini, only: typ_parini
+use global, only: fixlat
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,k
 real(8):: x(3,3),latvec(3,3),lenlat,tmpvec(3)
 real(8):: len1,len2,len3,tmp1(3),tmp2(3),tmp3(3),tmp1len,tmp2len,tmp3len
@@ -7161,7 +7163,7 @@ elseif(all(fixlat(1:6))) then
 !When the whole cell is fixed
    x=0.d0
    return
-elseif(bc==2) then
+elseif(parini%bc==2) then
 !If the boundary condition is free
    x=0.d0
    return
@@ -7293,13 +7295,15 @@ end subroutine
 
 !************************************************************************************
 
-subroutine propagate(nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
+subroutine propagate(parini,nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
 use mod_interface
+use mod_parini, only: typ_parini
 !This subroutine will propagate the coordinates of the atoms and the cells according to the
 !value of fixed or free degrees of freedom according to
 !xred=xred+dxred,latvec=latvec+dlatvec
 use global, only: fixat, fixlat
 implicit none
+type(typ_parini), intent(in):: parini
 integer::nat,i,iat,j
 real(8):: xred(3,nat),latvec(3,3),dxred(3,nat),dlatvec(3,3),xredout(3,nat),latvecout(3,3),len1,len2
 real(8):: orig_angle(3),new_angle(3),axis(3),rotmat(3,3),center(3),latvec0(3,3)
@@ -7307,7 +7311,7 @@ real(8):: orig_angle(3),new_angle(3),axis(3),rotmat(3,3),center(3),latvec0(3,3)
 latvec=latvec0
 !write(*,*) "In propagate", fixlat
 !Eliminate components not to be changed
-if(any(fixlat)) call elim_fixed_lat(latvec,dlatvec)
+if(any(fixlat)) call elim_fixed_lat(parini,latvec,dlatvec)
 if(any(fixat))  call elim_fixed_at(nat,dxred)
 
 !Propagate
@@ -7364,11 +7368,13 @@ end subroutine propagate
 
 !************************************************************************************
 
-subroutine convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+subroutine convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
 use mod_interface
+use mod_parini, only: typ_parini
 use global, only: fixat, fixlat
 use defs_basis
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: nat, iexit,iat,istr,i
 real(8):: latvec_in(3,3),fcart_in(3,nat),strten_in(6),target_pressure_habohr,fmax,dstr(6)
 real(8):: tolmxf,strtarget(6),strfact,fmax_at,fmax_lat
@@ -7442,7 +7448,7 @@ else
  flat=matmul(strmat,latvectinv)
 !Eliminate fixed lattice components from the lattice gradient difference
  dflat=flat-flattarget
- call elim_fixed_lat(latvec_in,dflat)
+ call elim_fixed_lat(parini,latvec_in,dflat)
 !Transform back
  dstrmat=-matmul(dflat,latvect)
 !Extract components
@@ -8931,10 +8937,10 @@ call acceleration(pressure_md,accposcur,acclatcur,accvolcur,vposcur,vlatcur,vvol
 
 !Eliminate the unnecessary atmic and cell components
 call elim_fixed_at(nmol,accposcur);call elim_fixed_at(nmol,accposprev)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatprev)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatprev)
 call elim_fixed_at(nmol,vposcur)
-if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatcur)
 
 
         do itime=1,parres%nmd_dynamics
@@ -8953,7 +8959,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
               dxred(:,iat)=dt*vposcur(:,iat) + 0.5d0*dt*dt*accposcur(:,iat)  !0.5 was missing before
 !             pospred(:,iat)=poscur(:,iat) + dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nmol,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nmol,poscur,latcur,dxred,dlatvec,pospred,latpred)
           do iat=1,nmol
              vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
           enddo
@@ -8966,7 +8972,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
           do iat=1,nmol
               dxred(:,iat)=dt*vposcur(:,iat) + dt*dt*accposcur(:,iat)
           enddo
-          call propagate(nmol,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nmol,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=(latpred-latcur)/dt
           do iat=1,nmol
               vpospred(:,iat)=(pospred(:,iat)-poscur(:,iat))/dt   !Update dummy variable vposcur for next iteration
@@ -8982,7 +8988,7 @@ if(md_type.ne.4) call elim_fixed_lat(latcur,vlatcur)
 !Predictor part of Beeman
              dxred(:,iat)=dt*vposcur(:,iat) + dt*dt/6.d0*(4.d0*accposcur(:,iat)-accposprev(:,iat))             
           enddo
-          call propagate(nmol,poscur,latcur,dxred,dlatvec,pospred,latpred)
+          call propagate(parini,nmol,poscur,latcur,dxred,dlatvec,pospred,latpred)
           vlatpred(:,:)=vlatcur(:,:) + 0.5d0*(3.d0*acclatcur(:,:)-acclatprev(:,:))  
           do iat=1,nmol
              vpospred(:,iat)=vposcur(:,iat)+0.5d0*(3.d0*accposcur(:,iat)-accposprev(:,iat))
@@ -9095,8 +9101,8 @@ call acceleration(pressure_md,accpospred,acclatpred,accvolpred,vpospred,&
 
 !Eliminate the unnecessary atmic and cell components
 call elim_fixed_at(nmol,accpospred);call elim_fixed_at(nmol,vpospred)
-if(md_type.ne.4) call elim_fixed_lat(latcur,acclatpred)
-if(md_type.ne.4) call elim_fixed_lat(latcur,vlatpred)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,acclatpred)
+if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatpred)
 
 !Compute the "predicted" kinetic energies:
 call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekinatom,ekinlat,f0,md_type,nmol)

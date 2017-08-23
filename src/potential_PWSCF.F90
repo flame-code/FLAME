@@ -101,11 +101,13 @@ contains
 
 
 
-  subroutine get_output_espresso(fcart,energy,strten)
+  subroutine get_output_espresso(parini,fcart,energy,strten)
   !use global, only: nat,target_pressure_gpa
   !use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,i_tmp
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
@@ -161,7 +163,7 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) strten=0.d0
+  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
   if(target_pressure_gpa.ne.0.d0) then
@@ -199,7 +201,7 @@ contains
    call system("./runjob_geoespresso.sh")
   ! call system("sleep 1")
   !Now harvest the structure, energy, forces, etc
-   call get_output_espresso_geopt(latvec,xred,fcart,energy,strten)
+   call get_output_espresso_geopt(parini,latvec,xred,fcart,energy,strten)
   !Check how many iterations have been needed
 !   call system("grep Conjugate OUTCAR_geo_a |wc -l>tmp_count") 
 !   call system("grep Conjugate OUTCAR_geo_b |wc -l>>tmp_count") 
@@ -270,7 +272,7 @@ contains
 
 !BLOCK A_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_a.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
@@ -301,7 +303,7 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_a.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
              continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
@@ -316,7 +318,7 @@ contains
 
 !BLOCK B_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_b.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
@@ -347,7 +349,7 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_b.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
            continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
@@ -423,11 +425,13 @@ contains
 
   end  subroutine
   
-  subroutine get_output_espresso_geopt(latvec,xred,fcart,energy,strten)
+  subroutine get_output_espresso_geopt(parini,latvec,xred,fcart,energy,strten)
   !use global, only: nat,target_pressure_gpa
   !use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,i_tmp
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling,xcart(3,nat),alat
   character(11):: ch_tmp
@@ -546,7 +550,7 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) strten=0.d0
+  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
   if(target_pressure_gpa.ne.0.d0) then

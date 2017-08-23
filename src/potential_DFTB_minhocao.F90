@@ -77,13 +77,13 @@ contains
   !The Geometry section
   !write(87,'(a)') "#Geometry section: lattice and atoms"
   open(unit=87,file="input_geometry.gen")
-    if(bc==2) then
+    if(parini%bc==2) then
       write(87,'(i5,a)') nat, " C"
     else
       write(87,'(i5,a)') nat, " F"
     endif
       write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
-    if(bc==2) then
+    if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,nat)
       do iat = 1, nat
         write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xcart(:, iat)*Bohr_Ang
@@ -100,11 +100,13 @@ contains
   close(87)
   end  subroutine
   
-  subroutine get_output_dftb(fcart,energy,strten)
+  subroutine get_output_dftb(parini,fcart,energy,strten)
+  use mod_parini, only: typ_parini
   use global, only: nat,target_pressure_gpa
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,nat_cell
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
@@ -153,7 +155,7 @@ contains
   
   99 continue 
   close(32)
-  if(bc==2) strten=0.d0
+  if(parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   !Transform all to bohr
   energy=energy!/real(nat_cell,8)*real(nat,8)/Ha_eV
@@ -327,13 +329,13 @@ contains
   
   !The Geometry section
   open(unit=87,file="input_geometry.gen")
-    if(bc==2) then
+    if(parini%bc==2) then
       write(87,'(i5,a)') nat, " C"
     else
       write(87,'(i5,a)') nat, " F"
     endif
       write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
-    if(bc==2) then
+    if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,nat)
       do iat = 1, nat
         write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xcart(:, iat)*Bohr_Ang
@@ -357,7 +359,7 @@ contains
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
   write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
@@ -373,12 +375,12 @@ contains
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
   write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
-  if(bc==1) write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
+  if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
   if(any(fixat(:))) then
      write(87,'(a)') "Constraints = {"
      do iat=1,nat
@@ -410,7 +412,7 @@ contains
   character(11):: ch_tmp
   character(150)::all_line
   logical:: cartesian
-  call get_output_dftb(fcart,energy,strten)
+  call get_output_dftb(parini,fcart,energy,strten)
   open(unit=87,file="geo_end.gen")
   read(87,*) int_tmp,ch_tmp
   if(trim(ch_tmp)=="C") then

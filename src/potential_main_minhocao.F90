@@ -177,12 +177,12 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="msock") then
 #if defined(LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
-          if(count_lammps==0) call init_lammps(nat)
+          if(count_lammps==0) call init_lammps(parini,nat)
           count_lammps=count_lammps+1
 #endif
 #if defined(TINKER)
     elseif(trim(parini%potential_potential)=="tinker") then
-          if(count_tinker==0) call init_tinker(nat,xred,latvec)
+          if(count_tinker==0) call init_tinker(parini,nat,xred,latvec)
           count_tinker=count_tinker+1
 #endif
     else
@@ -232,13 +232,13 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="siesta") then
       call get_output_siesta(fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="vasp") then
-      call get_output_vasp  (fcart, energy, strten)
+      call get_output_vasp  (parini,fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="espresso") then
-      call get_output_espresso  (fcart, energy, strten)
+      call get_output_espresso  (parini,fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="mopac") then
       call get_output_mopac (fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="dftb") then
-      call get_output_dftb (fcart, energy, strten)
+      call get_output_dftb (parini,fcart, energy, strten)
     end if
 
 !Copy back global array sizes and compte/add the LJ forces

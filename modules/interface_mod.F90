@@ -2639,7 +2639,9 @@ subroutine elim_fixed_at(nat,x)
 integer:: iat,nat
 real(8):: x(3,nat)
 end subroutine elim_fixed_at
-subroutine elim_fixed_lat(latvec,x)
+subroutine elim_fixed_lat(parini,latvec,x)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 real(8):: x(3,3),latvec(3,3),lenlat,tmpvec(3)
 end subroutine elim_fixed_lat
 subroutine diagcomp(latvec,x)
@@ -2649,12 +2651,16 @@ subroutine slab_stress(flat,fix_z)
 real(8):: flat(3,3),ekin1,ekin2
 logical:: fix_z
 end subroutine slab_stress
-subroutine propagate(nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
+subroutine propagate(parini,nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer::nat,i,iat,j
 real(8):: xred(3,nat),latvec(3,3),dxred(3,nat),dlatvec(3,3),xredout(3,nat),latvecout(3,3),len1,len2
 real(8):: orig_angle(3),new_angle(3),axis(3),rotmat(3,3),center(3),latvec0(3,3)
 end subroutine propagate
-subroutine convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+subroutine convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nat, iexit,iat,istr,i
 real(8):: latvec_in(3,3),fcart_in(3,nat),strten_in(6),target_pressure_habohr,fmax,dstr(6)
 real(8):: tolmxf,strtarget(6),strfact,fmax_at,fmax_lat
@@ -4123,12 +4129,12 @@ subroutine writexyz_dftb(filename,atoms)
     character(*):: filename !,comment
     type(typ_atoms), intent(in):: atoms
 end subroutine writexyz_dftb
-subroutine get_output_dftb(filename,atoms,success)
+subroutine get_output_dftb_alborz(filename,atoms,success)
     use mod_atoms, only: typ_atoms
     character(*), intent(in):: filename
     type(typ_atoms), intent(inout):: atoms
     logical, intent(out):: success
-end subroutine get_output_dftb
+end subroutine get_output_dftb_alborz
 ! ./src/potential_FF.F90 :
 subroutine init_potential_forces_ff(parini,atoms)
     use mod_parini, only: typ_parini
@@ -4309,13 +4315,13 @@ subroutine add_repulsive_wall(iproc,nat,rat,cellvec,fat,epot)
     real(8), intent(in):: rat(3,nat), cellvec(3,3)
     real(8), intent(inout):: fat(3,nat), epot
 end subroutine add_repulsive_wall
-subroutine get_output_vasp_geopt(filename1,filename2,nat,latvec,xred,fcart,energy,strten,success)
+subroutine get_output_vasp_geopt_alborz(filename1,filename2,nat,latvec,xred,fcart,energy,strten,success)
     character(*):: filename1
     character(*):: filename2
     integer:: nat
     real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
     logical:: success
-end subroutine get_output_vasp_geopt
+end subroutine get_output_vasp_geopt_alborz
 ! ./src/processors.F90 :
 subroutine initprocessors
 end subroutine initprocessors

@@ -188,6 +188,8 @@ module mod_parini
         integer:: ka,kb,kc              !The number of kpoints in each dimension
         real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
         !-----------------------------------------------------------------------
+        integer:: bc                    !1: periodic, 2:free, 3:surface/slab
+        !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut
         real(8):: fp_dbin

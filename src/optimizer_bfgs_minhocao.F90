@@ -1799,9 +1799,9 @@ getwfk=.false.
 !This call is only to map all variables correctly
 fp=-1.d10
 call  get_BFGS_forces_strainlatt(parini,parres,p,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
-   if(any(fixlat)) call elim_fixed_lat(p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
+   if(any(fixlat)) call elim_fixed_lat(parini,p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
 !call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 if(counter==0.d0) then
@@ -1904,9 +1904,9 @@ endif
  endif
  counter=counter+1.d0
  call  get_BFGS_forces_strainlatt(parini,parres,tp,tg,tfp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+ call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
-   if(any(fixlat)) call elim_fixed_lat(tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
+   if(any(fixlat)) call elim_fixed_lat(parini,tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,tg(1:3*nat))
 ! call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
@@ -1953,7 +1953,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
 !   pnew(:)=p(:)+lambda_predict*xi(:)
    dlatvec=lambda_predict*xi(3*nat+1:3*nat+9)
    dxred=lambda_predict*xi(1:3*nat)
-   call propagate(nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
+   call propagate(parini,nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
    if(usewf_geopt) then
        getwfk=.true.
    else
@@ -1962,9 +1962,9 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    counter=counter+1.d0
    dg=g       !Save the old gradient,
    call  get_BFGS_forces_strainlatt(parini,parres,pnew,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       !Eliminate components not to be changed
-      if(any(fixlat)) call elim_fixed_lat(pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
+      if(any(fixlat)) call elim_fixed_lat(parini,pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
       if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
 !   call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
@@ -1985,7 +1985,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    !   pnew=p+lambda_predict*xi
       dlatvec=lambda_predict*xi(3*nat+1:3*nat+9)
       dxred=lambda_predict*xi(1:3*nat)
-      call propagate(nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
+      call propagate(parini,nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
       if(tp(5).ne.pnew(5)) stop "Womething srong!!!"
       fp=tfp
       dg=g       !Save the old gradient,
