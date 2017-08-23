@@ -89,6 +89,8 @@ module mod_parini
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
         logical:: read_forces_ann
+        logical:: restart_param=.false. 
+        integer:: restart_iter=0  
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
@@ -184,6 +186,20 @@ module mod_parini
         real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
         logical:: auto_kpt              !Currently a dummy variable
         integer:: ka,kb,kc              !The number of kpoints in each dimension
+        real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
+        !-----------------------------------------------------------------------
+        character(20):: fp_method_ch
+        real(8):: fp_rcut
+        real(8):: fp_dbin
+        real(8):: fp_sigma
+        integer:: fp_nl
+        integer:: fp_14_m
+        real(8):: fp_14_w1
+        real(8):: fp_14_w2
+        integer:: fp_at_nmax
+        integer:: fp_17_natx_sphere
+        integer:: fp_17_lseg
+        character(len=2) :: fp_17_orbital
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

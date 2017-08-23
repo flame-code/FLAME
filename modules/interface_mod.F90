@@ -2812,13 +2812,17 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
  integer:: iprec 
  character(40)::filename,folder
 end subroutine md_mhm_rot
-subroutine init_fp(fp_len,latvec)
+subroutine init_fp(parini,fp_len,latvec)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,nmax
 real(8):: convert,latvec(3,3),vol
 end subroutine init_fp
-subroutine get_fp(fp_len,pos_red,latvec,fp)
+subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
+use mod_parini, only: typ_parini
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
 use global, only: ntypat,nat,typat,rcov,char_type
+type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),vol,rcov_arr(nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,nat)
 end subroutine get_fp
@@ -3903,7 +3907,9 @@ subroutine params_echo(parini)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 end subroutine params_echo
-subroutine fp_assign()
+subroutine fp_assign(parini)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(inout):: parini
 end subroutine fp_assign
 ! ./src/parser_yaml.F90 :
 subroutine yaml_get_parameters(parini)

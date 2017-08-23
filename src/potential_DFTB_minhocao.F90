@@ -15,7 +15,7 @@ module interface_dftb
 
 contains
 
-  subroutine make_input_dftb(latvec,xred0,iprec,ka,kb,kc,getwfk,dos)
+  subroutine make_input_dftb(parini,latvec,xred0,iprec,ka,kb,kc,getwfk,dos)
   !This routine will append some informations to a file already containing some informations about the abininit runs
   !The informations appended are:
   !-The atomic informations
@@ -26,9 +26,11 @@ contains
   !The meaning of dkpt1 and dkpt2 is different depending on vasp_kpt_mode:
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,vasp_kpt_mode,target_pressure_gpa
+  use mod_parini, only: typ_parini
+  use global, only: nat,ntypat,znucl,typat,char_type,vasp_kpt_mode,target_pressure_gpa
   use defs_basis, only: Bohr_Ang
   implicit none
+  type(typ_parini), intent(in):: parini
   logical, intent(in), optional :: dos
   real(8):: xred(3,nat),xcart(3,nat),xred0(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
@@ -43,9 +45,9 @@ contains
   !getwfk=.false.
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   write(fn,'(i1.1)') iprec
@@ -270,7 +272,7 @@ contains
   
   subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,target_pressure_habohr
+  use global, only: nat,ntypat,znucl,typat,char_type,target_pressure_habohr
   use defs_basis,only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -285,9 +287,9 @@ contains
   getwfk=.false.
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   write(fn,'(i1.1)') iprec

@@ -4,7 +4,6 @@ subroutine  linkedlist_test(parini)
     use mod_atoms, only: typ_atoms, type_pairs, typ_file_info
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
-    use dynamic_memory
     implicit none
     type(typ_linked_lists):: linked_lists
     type(typ_parini), intent(in):: parini
@@ -25,7 +24,6 @@ subroutine  linkedlist_test(parini)
     integer :: i,j,k,nec(3),ii
     logical :: yes
     character(2):: numb
-    call f_routine(id='linkedlist_test')
     !**************************************************************
 !    call random_seed()
     maxconf=20
@@ -169,11 +167,11 @@ call system_clock(t1)
         write(3200+conf,'(3i6)')iat,min(jat,kat),max(jat,kat)
         !call sort2(iat,jat,kat,conf,3200)
     enddo
-call f_free(linked_lists%bound_rad)
-call f_free(linked_lists%bound_ang)
-call f_free(linked_lists%prime_bound)
-deallocate(pia_arr%pia)
-call system_clock(t2)
+    deallocate(linked_lists%bound_rad)
+    deallocate(linked_lists%bound_ang)
+    deallocate(linked_lists%prime_bound)
+    deallocate(pia_arr%pia)
+    call system_clock(t2)
     write(*,*) "time for linked list2 part = " ,t2-t1
 !******************************************************************************************************
     do iat= 1,atoms%nat
@@ -185,7 +183,6 @@ call system_clock(t2)
     call atom_deallocate_old(atoms)
 enddo
 write(*,*) "*************************************  end   ************************************"    
-call f_release_routine()
 end subroutine linkedlist_test
 !**************************************************************************************************************
 subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)

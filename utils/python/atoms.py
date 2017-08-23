@@ -2,6 +2,7 @@ class Atoms:
     def __init__(self):
         self.sat=[]
         self.rat=[]
+        self.posred=[]
         self.fat=[]
         self.bemoved=[]
         self.qat=[]
