@@ -13,7 +13,7 @@ integer, allocatable:: nitype(:)
 real(8):: scaling_tmp,latvec_tmp(3,3)
 logical:: vasp_5,red
 character(250):: firstline,line_vaspversion,all_line
-character(40) :: filename
+character(*) :: filename
 character(1)  :: CHARAC
 logical       :: nat_found,ntypat_found,znucl_found
 !Vasp only uses angstroem
@@ -102,7 +102,7 @@ use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nat,natin,iat,ntypat,typat(nat)
-character(40):: filename,units
+character(*):: filename,units
 real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol,fcart(3,nat),strten(6)
 real(8):: angbohr,hartree2ev,in_GPA,in_ang3,int_press
 real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2
@@ -192,7 +192,7 @@ integer, allocatable:: nitype(:)
 logical:: fixat(nat),fixlat(7),readfix,reduced_tmp,readfrag
 character(1) :: isfixed,ch_tmp,tmp_ch
 character(2) :: element
-character(40):: filename,units
+character(*):: filename,units
 real(8):: pos(3,nat),xred(3,nat),latvec(3,3),dproj(6),strten(6),fcart(3,nat)
 real(8):: angbohr,evhartree,enthalpy_at,printval1,printval2,scaling
 character(200):: line
