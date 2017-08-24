@@ -150,6 +150,7 @@
    read_forces: True
    restart_param: False
    restart_iter : 0
+   write_energy : False
  dynamics:
   nmd: 0
   dt: -1.0

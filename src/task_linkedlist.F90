@@ -33,7 +33,7 @@ do conf=1,maxconf
         call acf_read(parini,'posinp.acf',1,atoms=atoms)
         allocate(posat1st(atoms%nat), nim(atoms%nat))
         allocate(posat1st_list(atoms%nat), nim_list(atoms%nat))
-        rcut=12.00d0!/bohr2ang
+        rcut=12.00d0!bohr2ang
         do iat= 1,atoms%nat
             allocate(posat1st(iat)%posat2nd(3,9*atoms%nat))
             allocate(posat1st_list(iat)%posat2nd(3,9*atoms%nat))
@@ -158,6 +158,9 @@ call system_clock(t1)
     call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
     do ibr= 1,linked_lists%maxbound_rad
         write(2200+conf,*)linked_lists%bound_rad(1,ibr),linked_lists%bound_rad(2,ibr)
+        !if (atoms%sat(linked_lists%bound_rad(1,ibr))=='O' .and. atoms%sat(linked_lists%bound_rad(2,ibr))=='O' )then
+        !    write(2200+conf,'(2i6,6es25.15)')linked_lists%bound_rad(1,ibr),linked_lists%bound_rad(2,ibr),(atoms%rat(:,linked_lists%bound_rad(1,ibr))+atoms%rat(:,linked_lists%bound_rad(2,ibr)))/2*bohr2ang
+        !endif
     enddo
     
     do iba= 1,linked_lists%maxbound_ang
