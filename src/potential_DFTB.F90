@@ -75,7 +75,7 @@ subroutine cal_potential_forces_dftb(atoms)
     call system(trim(command))
     filename=dir//'/detailed.out'
     !write(*,*) filename
-    call get_output_dftb(filename,atoms,success)
+    call get_output_dftb_alborz(filename,atoms,success)
     !if(success) exit
     if(.not. success) then
         write(*,'(3a,i3.3)') 'ERROR: failed to find requested variables from ', &
@@ -137,7 +137,7 @@ subroutine writexyz_dftb(filename,atoms)
     close(1358)
 end subroutine writexyz_dftb
 !*****************************************************************************************
-subroutine get_output_dftb(filename,atoms,success)
+subroutine get_output_dftb_alborz(filename,atoms,success)
     use mod_interface
     use mod_atoms, only: typ_atoms
     implicit none
@@ -251,5 +251,5 @@ subroutine get_output_dftb(filename,atoms,success)
 !            fat(3,iat)=fat(3,iat)*(27.2114d0/0.529177d0)
 !        enddo
 !    endif
-end subroutine get_output_dftb
+end subroutine get_output_dftb_alborz
 !*****************************************************************************************

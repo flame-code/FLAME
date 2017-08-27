@@ -287,6 +287,8 @@ subroutine write_ann_yaml(parini,filename,ann)
     character(8):: key1
     character(250):: str1
     character(50)::  method
+
+    call set(ann%dict_ann//"main"//"ener_ref",ann%ener_ref ) 
     method =  ann%dict_ann//"main"//"method"
     i0=0
     do i=1,ann%ng1
@@ -395,7 +397,11 @@ subroutine read_ann_yaml(parini,ann_arr)
     character(1):: fn_tt
     character(50):: filename
     do iann=1,ann_arr%n
-        write(fn,'(a15)') '.ann.param.yaml'
+        if (parini%restart_param) then
+            write(fn,'(a15)') '.ann.input.yaml'
+        else
+            write(fn,'(a15)') '.ann.param.yaml'
+        endif
         if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
             if(parini%ntypat>1) then
                 stop 'ERROR: writing ANN parameters for tb available only ntypat=1'

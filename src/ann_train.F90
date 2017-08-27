@@ -381,6 +381,10 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     ilarge2=0
     ilarge3=0
     ann_arr%event='evalu'
+        if (parini%print_energy) then
+            write(110+iter,*)"*****************************************************************************" 
+            write(110+iter,'(a2,a44,4a23)')"#", " ","E_dft","E_ann","E_dft-E_ann/atom (Ha)","E_dft-E_ann (eV)" 
+        endif
     configuration: do iconf=1,atoms_arr%nconf
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
         call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
@@ -393,6 +397,11 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
                 (atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         endif
         tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
+        !HERE
+        if (parini%print_energy) then
+            write(110+iter,'(a40,i6,4es23.9)')trim(atoms_arr%fn(iconf)), atoms_arr%lconf(iconf),atoms_arr%atoms(iconf)%epot,atoms%epot &
+                  ,(atoms_arr%atoms(iconf)%epot-atoms%epot)/atoms_arr%atoms(iconf)%nat,(atoms_arr%atoms(iconf)%epot-atoms%epot)*27.21138386d0 
+        endif
         if(tt>1.d-2) ilarge1=ilarge1+1
         if(tt>1.d-3) ilarge2=ilarge2+1
         if(tt>1.d-4) ilarge3=ilarge3+1

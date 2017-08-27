@@ -56,7 +56,7 @@ implicit none
 !  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
 !  logical:: mol_soften            !Switch on molecular softening
   integer:: correctalg            !Method to perform cell corrections
-  integer:: bc                    !1: periodic, 2:free, 3:surface/slab
+!  integer:: bc                    !1: periodic, 2:free, 3:surface/slab
 !  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
   integer:: confine               !0: No confinement, 1: confinement used, but not currently, 2: confinement in action, 3: confinement always on
   logical:: use_confine           !if true, confinement is enable, otherwise disabled

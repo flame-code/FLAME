@@ -1589,7 +1589,7 @@ if(parini%verb.gt.0) then
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !Initial iprec after running the first force call
@@ -1637,7 +1637,7 @@ if(parini%verb.gt.0) then
             &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !*************************************************************************************************************        

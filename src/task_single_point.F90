@@ -13,7 +13,15 @@ subroutine single_point_task(parini)
     type(typ_file_info):: file_info
     real(8):: tt1, tt2, fxyz(3)
     integer:: iconf, iat
-    call acf_read_new(parini,'posinp.acf',10000,atoms_arr)
+    logical:: acf_exists
+    inquire(file='posinp.acf',exist=acf_exists)
+    if(acf_exists) then
+        call acf_read_new(parini,'posinp.acf',10000,atoms_arr)
+    else
+        atoms_arr%nconf=1
+        allocate(atoms_arr%atoms(atoms_arr%nconf))
+        call read_poscar_for_single_point(parini,atoms_arr%atoms(1))
+    endif
     do iconf=1,atoms_arr%nconf
         call set_ndof(atoms_arr%atoms(iconf))
     enddo
@@ -54,4 +62,56 @@ subroutine single_point_task(parini)
     enddo
     !call atom_all_deallocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.)
 end subroutine single_point_task
+!*****************************************************************************************
+subroutine read_poscar_for_single_point(parini,atoms)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use global, only: nat, ntypat, typat, znucl, char_type, units, amu, rcov
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms):: atoms
+    !local variables
+    real(8), allocatable:: xred(:,:)
+    real(8), allocatable:: fcart(:,:)
+    logical, allocatable:: fixat(:)
+    integer, allocatable:: fragarr(:)
+    real(8):: strten(6), printval1, printval2
+    logical:: fixlat(7), readfix, readfrag
+    integer:: iat
+    character(40):: filename
+    logical:: file_exists
+    filename='posinp.vasp'
+    inquire(file=trim(filename),exist=file_exists)
+    if (.not. file_exists) then 
+        filename='POSCAR'
+        inquire(file=trim(filename),exist=file_exists)
+        if (.not. file_exists) stop "VASP file not found"
+    endif
+    write (*,*) "Reading structure from ",trim(filename)
+
+    call poscar_getsystem(trim(filename))
+    allocate(xred(3,nat),source=0.d0)
+    allocate(fcart(3,nat),source=0.d0)
+    if(.not.allocated(fixat)) allocate(fixat(nat),source=.false.)
+    if(.not.allocated(fragarr)) allocate(fragarr(nat),source=0)
+    atoms%nat=nat
+    atoms%boundcond='bulk'
+    call atom_allocate_old(atoms,nat,0,0)
+    call read_atomic_file_poscar(filename,atoms%nat,units,xred,atoms%cellvec,fcart,strten, &
+        fixat,fixlat,readfix,fragarr,readfrag,printval1,printval2)
+    call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,xred,atoms%rat)
+    do iat=1,nat
+        atoms%sat(iat)=trim(char_type(typat(iat)))
+    enddo
+    deallocate(fixat)
+    deallocate(xred)
+    deallocate(fcart)
+    deallocate(fragarr)
+    if(allocated(znucl)) deallocate(znucl)
+    if(allocated(char_type)) deallocate(char_type)
+    if(allocated(amu)) deallocate(amu)
+    if(allocated(rcov)) deallocate(rcov)
+    if(allocated(typat)) deallocate(typat)
+end subroutine read_poscar_for_single_point
 !*****************************************************************************************
