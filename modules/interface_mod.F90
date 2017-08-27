@@ -1438,12 +1438,11 @@ subroutine linkedlists_final(linked_lists)
     use mod_electrostatics, only: typ_linked_lists
     type(typ_linked_lists), intent(inout):: linked_lists
 end subroutine linkedlists_final
-subroutine prepprimelast(atoms,linked_lists,cell)
+subroutine prepprimelast(atoms,linked_lists)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
     type(typ_atoms), intent(in):: atoms
     type(typ_linked_lists), intent(inout):: linked_lists
-    real(8):: cell(3)
 end subroutine prepprimelast
 subroutine make_list_new(parini,atoms,linked_lists,cell)
     use mod_parini, only: typ_parini

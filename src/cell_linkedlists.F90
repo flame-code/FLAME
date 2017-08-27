@@ -127,7 +127,7 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     call atom_allocate_old(linked_lists%typ_atoms,linked_lists%natim,linked_lists%natim,0)
     allocate(linked_lists%maincell(1:linked_lists%natim))
     allocate(linked_lists%perm(1:linked_lists%natim))
-    call prepprimelast(atoms,linked_lists,cell)
+    call prepprimelast(atoms,linked_lists)
 end subroutine linkedlists_init
 !*****************************************************************************************
 subroutine linkedlists_final(linked_lists)
@@ -160,7 +160,7 @@ subroutine linkedlists_final(linked_lists)
     deallocate(linked_lists%maincell)
 end subroutine linkedlists_final
 !*****************************************************************************************
-subroutine prepprimelast(atoms,linked_lists,cell)
+subroutine prepprimelast(atoms,linked_lists)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
@@ -168,10 +168,12 @@ subroutine prepprimelast(atoms,linked_lists,cell)
     type(typ_atoms), intent(in):: atoms
     type(typ_linked_lists), intent(inout):: linked_lists
     !local variables
-    real(8):: cell(3)
     integer:: iat, jat, ix, iy, iz, natpopnatim, ishiftx, ishifty, ishift_l, ishiftz
     integer:: nx, ny, nz
     integer:: mx, my, mz, mlimnb, mlimnb1, mlimnb2,bulkbc, ishift_r ,mlimnb3
+    real(8), allocatable:: rat_int(:,:)
+    real(8):: rcart(3), rfrac(3)
+    allocate(rat_int(1:3,1:atoms%nat))
     mx=linked_lists%mx
     my=linked_lists%my
     mz=linked_lists%mz
@@ -190,6 +192,30 @@ subroutine prepprimelast(atoms,linked_lists,cell)
     !later corresponding atoms in main cell will be +1.
     linked_lists%maincell=-1
     linked_lists%last=0
+    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
+    !we are doing the following since in mutiple application of h and h^0-1, i.e.,
+    !in going from reduced to Cartesian and vice versa, there can be rounding
+    !which can put atoms outside cell, e.g. 0 can be -2.E-17
+    if(trim(atoms%boundcond)=='bulk') then
+        do iat=1,atoms%nat
+            rat_int(1,iat)=modulo(modulo(rat_int(1,iat),1.d0),1.d0)
+            rat_int(2,iat)=modulo(modulo(rat_int(2,iat),1.d0),1.d0)
+            rat_int(3,iat)=modulo(modulo(rat_int(3,iat),1.d0),1.d0)
+        enddo
+    elseif(trim(atoms%boundcond)=='slab') then
+        do iat=1,atoms%nat
+            rat_int(1,iat)=modulo(modulo(rat_int(1,iat),1.d0),1.d0)
+            rat_int(2,iat)=modulo(modulo(rat_int(2,iat),1.d0),1.d0)
+        enddo
+    elseif(trim(atoms%boundcond)=='wire') then
+        do iat=1,atoms%nat
+            rat_int(1,iat)=modulo(modulo(rat_int(1,iat),1.d0),1.d0)
+        enddo
+    elseif(trim(atoms%boundcond)=='free') then
+    else
+        write(*,'(2a)') 'ERROR: unknown BC in linkedlists_init ',trim(atoms%boundcond)
+        stop
+    endif
     jat=1
     do iz=1,mz+mlimnb3
         ishiftz=(isign(1,iz-1)-isign(1,mz-iz))/2
@@ -212,9 +238,13 @@ subroutine prepprimelast(atoms,linked_lists,cell)
                     nx=floor((ix-1)/real(mx))
                     ny=floor((iy-1)/real(my))
                     nz=floor((iz-1)/real(mz))
-                    linked_lists%rat(1,jat)=atoms%rat(1,iat)+atoms%cellvec(1,1)*nx+atoms%cellvec(1,2)*ny+atoms%cellvec(1,3)*nz
-                    linked_lists%rat(2,jat)=atoms%rat(2,iat)+atoms%cellvec(2,1)*nx+atoms%cellvec(2,2)*ny+atoms%cellvec(2,3)*nz
-                    linked_lists%rat(3,jat)=atoms%rat(3,iat)+atoms%cellvec(3,1)*nx+atoms%cellvec(3,2)*ny+atoms%cellvec(3,3)*nz
+                    rfrac(1)=rat_int(1,iat)+real(nx,kind=8)
+                    rfrac(2)=rat_int(2,iat)+real(ny,kind=8)
+                    rfrac(3)=rat_int(3,iat)+real(nz,kind=8)
+                    rcart=matmul(atoms%cellvec,rfrac)
+                    linked_lists%rat(1,jat)=rcart(1)
+                    linked_lists%rat(2,jat)=rcart(2)
+                    linked_lists%rat(3,jat)=rcart(3)
                     linked_lists%itypat(jat)=atoms%itypat(iat)
                     linked_lists%perm(jat)=iat
                     linked_lists%qat(jat)=atoms%qat(iat)
@@ -247,6 +277,7 @@ subroutine prepprimelast(atoms,linked_lists,cell)
         linked_lists%natim=jat-1
         !stop
     endif
+    deallocate(rat_int)
     !write(*,*) 'jat-1',jat-1
 end subroutine prepprimelast
 !*****************************************************************************************
