@@ -91,6 +91,7 @@ module mod_parini
         logical:: read_forces_ann
         logical:: restart_param=.false. 
         integer:: restart_iter=0  
+        logical:: print_energy=.false. 
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
