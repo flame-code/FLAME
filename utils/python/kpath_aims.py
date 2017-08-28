@@ -1,43 +1,40 @@
 #!/usr/bin/env python
-import sys
+import argparse 
 import pymatgen as mg
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 from pprint import pprint
 #************************************************************
-if len(sys.argv) < 5:
-    print "usage: kpath_aims.py POSCAR tolerance in_number npoints"
-    print "  for phonon band:     in_number = 0"
-    print "  for electronic band: in_number = 1"
-    print "suggested values for npoints : "
-    print "  phonon band :       npoints = 100"
-    print "  electronic band :   npoints = 20"
-    exit()
-else:
-    file = sys.argv[1]
-    tol = float(sys.argv[2])
-    bb = int(sys.argv[3])
-    np = int(sys.argv[4])
-
+str1 = "This script should be used for calculations by FHI-aims and gets all paths in the reciprocal lattice of a structure."
+parser = argparse.ArgumentParser(description=str1)
+parser.add_argument('POSCAR', action='store' ,type=str, help="POSCAR is the name of the input file in VASP5 format")
+parser.add_argument('tol', type=float, help='the tolerance for analysing space group. A number less than 0.05 is recommended.')
+parser.add_argument('npoints', type=int, help='the number of sampling points. Usually 50 is proper')
+parser.add_argument('type', type=int, help='this number determine the type of output: 0 for phonon and 1 for electronic band structure calculations should be used.')
+args=parser.parse_args()
+#************************************************************
+tol = args.tol
+np = args.npoints
+tp = args.type
 keyword = ['phonon band','output band']
 #structure = read_structure(file)
 structure = mg.Structure.from_file("POSCAR")   #str(open("rlx_str040.cif").read(),fmt="cif")  #str(open("POSCAR").read(),fmt="poscar")
 #from pymatgen.symmetry.finder import SymmetryFinder
 #symmetries = SymmetryFinder(structure, 0.001, 5)
-finder = SpacegroupAnalyzer(structure,symprec = tol,angle_tolerance=5)
+finder = SpacegroupAnalyzer(structure,symprec=tol,angle_tolerance=5)
 spg_s = finder.get_spacegroup_symbol()
 spg_n = finder.get_spacegroup_number()
 pg = finder.get_point_group()
-pm = finder.find_primitive()
+pm =finder.find_primitive()
 
 #print "Spacegroup : ", spg_s
-print "space_group : ", spg_n
+print "SPG (Int number) : ", spg_n
 #print "pointgroup : ", pg
-pather = HighSymmKpath(structure,symprec = tol,angle_tolerance=5)
-kpoints_path = pather.kpath
-kk = kpoints_path["kpoints"]
-pp = kpoints_path["path"]
-count = 1
+pather = HighSymmKpath(structure,symprec=tol, angle_tolerance=5)
+kpoints_path=pather.kpath
+kk=kpoints_path["kpoints"]
+pp=kpoints_path["path"]
+count=1
 
 #pp[1]=['K','X']
 #print pp
@@ -62,12 +59,12 @@ for i_path in range(0, len(pp)):
     if i_path>0:
 	    i = pp_l[0]
 	    if j != i: 
-                print >> f, str(keyword[bb]), "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", str(np),j , i
+                print >> f, str(keyword[tp]), "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", str(np),j , i
     for i in pp_l[:size-1]:
       if iold != i :
           iold=i
       for j in pp_l[count2+1:count2+2]:
-          print >> f, str(keyword[bb]),"  ".join(map(str,kk[i])), "  ","  ".join(map(str, kk[j])) , "  ", str(np),i,j
+          print >> f, str(keyword[tp]),"  ".join(map(str,kk[i])), "  ","  ".join(map(str, kk[j])) , "  ", str(np),i,j
       count2=count2+1
     iold=j
 f.close()
