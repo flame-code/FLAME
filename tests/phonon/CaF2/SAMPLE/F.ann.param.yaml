@@ -7,8 +7,8 @@ main :
     gausswidth_ion : 1.40
     ener_ref       : -99.650697742
     gausswidth     : 1.0
-    hardness       : 0.01
-    chi0           : -0.57
+    hardness       : 0.02
+    chi0           : 0.17
     spring_const   : 1.0
     qinit          : 0.0
     method         : behler
