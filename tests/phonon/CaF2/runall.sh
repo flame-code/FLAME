@@ -17,7 +17,7 @@ sed -i '5 a Ca F' POSCAR*
 #POSCAR2ascii.x < in
 poscar2ascii.py POSCAR > POSCAR.ascii
 ascii2acf.py POSCAR.ascii  > posinp.acf
-~/FLAME/flame
+~/FLAME/flame >&o1
 cd ..
 echo '---------------------------------------------------------------------'
 done
