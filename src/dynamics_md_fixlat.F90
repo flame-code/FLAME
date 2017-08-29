@@ -1,6 +1,6 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,units,usewf_md
  use global, only: fixat,fixlat
  use defs_basis
@@ -25,7 +25,7 @@ implicit none
        write(*,*) "This routine only intended for fixed cell MD calculation"
        stop
     endif
-    pressure=target_pressure_habohr
+    pressure=parini%target_pressure_habohr
     dt=parres%dtion_md
 
     !C initialize positions,velocities, forces

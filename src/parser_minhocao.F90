@@ -49,7 +49,7 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
@@ -204,8 +204,8 @@ open(unit=12,file="params_new.in")
    read(12,'(a450)',end=97)all_line
    n = len_trim(all_line)
 !Press
-   call parsescalar_real("PRESS",5,all_line(1:n),n,target_pressure_gpa,found)
-   if(found) target_pressure_habohr=target_pressure_gpa/HaBohr3_GPA
+   call parsescalar_real("PRESS",5,all_line(1:n),n,parini%target_pressure_gpa,found)
+   if(found) parini%target_pressure_habohr=parini%target_pressure_gpa/HaBohr3_GPA
    if(found) cycle
 !Amu
    call parsearray_real("AMU",3,all_line(1:n),n,amu(1:ntypat),ntypat,found)
@@ -638,7 +638,7 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
@@ -661,8 +661,8 @@ integer:: mdmin_in,itype,i,j
 real(8):: dtion_md_in,alpha_lat_in,alpha_at_in
 logical:: read_poscur
 !These are the default variables
-target_pressure_gpa=0.d0
-target_pressure_habohr=0.d0
+parini%target_pressure_gpa=0.d0
+parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
    call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
@@ -791,7 +791,7 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,voids,core_rep
@@ -908,7 +908,7 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
@@ -934,7 +934,7 @@ write(*,'(a)')             " ################################ Echo params_new.in
 write(*,'(a,i5)')          " # VERBOSITY     ", parini%verb
 write(*,'(a)')             " # SYSTEM parameters *************************************************************"
 write(*,'(a,i5)')          " # BOUNDARY      ", parini%bc
-write(*,'(a,es15.7)')      " # PRESS         ", target_pressure_gpa
+write(*,'(a,es15.7)')      " # PRESS         ", parini%target_pressure_gpa
 write(*,'(a,L3)')          " # VOIDS         ", voids
 write(*,'(a,L3)')          " # COREREP       ", core_rep
 write(*,'(a)')             " # COMPUTE parameters ************************************************************"

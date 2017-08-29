@@ -270,7 +270,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -406,7 +406,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
   write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.75d0)
-  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
+  write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*8.d0*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
@@ -423,7 +423,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
   write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.25d0)
-  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
+  write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
@@ -630,7 +630,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol

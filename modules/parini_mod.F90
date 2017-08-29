@@ -190,6 +190,8 @@ module mod_parini
         real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
         !-----------------------------------------------------------------------
         integer:: bc                    !1: periodic, 2:free, 3:surface/slab
+        real(8):: target_pressure_gpa !Target pressures
+        real(8):: target_pressure_habohr  !Target pressures
         !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut

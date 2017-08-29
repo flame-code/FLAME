@@ -27,7 +27,7 @@ contains
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,typat,char_type,vasp_kpt_mode,target_pressure_gpa
+  use global, only: nat,ntypat,znucl,typat,char_type,vasp_kpt_mode
   use defs_basis, only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -102,7 +102,7 @@ contains
   
   subroutine get_output_dftb(parini,fcart,energy,strten)
   use mod_parini, only: typ_parini
-  use global, only: nat,target_pressure_gpa
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
@@ -274,7 +274,7 @@ contains
   
   subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,typat,char_type,target_pressure_habohr
+  use global, only: nat,ntypat,znucl,typat,char_type
   use defs_basis,only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -364,7 +364,7 @@ contains
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
-  write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
+  write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
   close(87)
 
   open(unit=87,file="dftb_in.hsd",access="append")
@@ -380,7 +380,7 @@ contains
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
-  if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
+  if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
   if(any(fixat(:))) then
      write(87,'(a)') "Constraints = {"
      do iat=1,nat
@@ -401,7 +401,7 @@ contains
   
   subroutine get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   use mod_parini, only: typ_parini
-  use global, only: nat,target_pressure_habohr
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
@@ -447,7 +447,7 @@ contains
      end do
    end do
    strtarget=0.d0
-   strtarget(1:3)=-target_pressure_habohr
+   strtarget(1:3)=-parini%target_pressure_habohr
    dstr(:)=strten(:)-strtarget(:)
   !Eventually take into account the stress
    do istr=1,6

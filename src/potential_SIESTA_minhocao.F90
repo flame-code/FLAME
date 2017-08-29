@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: nat,ntypat,znucl,typat,char_type,target_pressure_gpa,siesta_kpt_mode
+  use global, only: nat,ntypat,znucl,typat,char_type,siesta_kpt_mode
   use defs_basis
   !use cell_utils
 
@@ -228,7 +228,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   write(87,'(a)')            "MD.VariableCell .true."
   write(87,'(a,es25.15,a)')        "MD.MaxForceTol  ",  2.d0*parini%paropt_geopt%fmaxtol ,"  Ry/Bohr"
   write(87,'(a)')            "MD.MaxStressTol 0.1 GPa"
-  write(87,'(a,es25.15,a)')  "MD.TargetPressure  ",target_pressure_gpa, " GPa"
+  write(87,'(a,es25.15,a)')  "MD.TargetPressure  ",parini%target_pressure_gpa, " GPa"
   
   !Kpoint mesh
   write(87,'(a)') "# Definition of the k-point mesh"

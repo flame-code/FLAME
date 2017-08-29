@@ -166,7 +166,7 @@ contains
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -307,7 +307,7 @@ contains
              continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
-        write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
+        write(87,'(a,es15.7,a)') "press           = ",parini%target_pressure_gpa*10.d0
         write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa*8.d0
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
@@ -353,7 +353,7 @@ contains
            continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
-        write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
+        write(87,'(a,es15.7,a)') "press           = ",parini%target_pressure_gpa*10.d0
         write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
@@ -553,7 +553,7 @@ contains
   if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
