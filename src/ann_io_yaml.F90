@@ -69,19 +69,22 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     if(trim(parini%approach_ann)=='atombased') then
         rcut=ann%dict_ann//"main"//"rcut"
     endif
-    if(trim(parini%approach_ann)/='atombased' .and. trim(parini%approach_ann)/='tb' ) then
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
+        rcut               =  ann%dict_ann//"main"//"rcut"
         ann%ampl_chi       =  ann%dict_ann//"main"//"ampl_chi" 
         ann%prefactor_chi  =  ann%dict_ann//"main"//"prefactor_chi" 
-        ann%zion           =  ann%dict_ann//"main"//"zion" 
-        ann%gausswidth_ion =  ann%dict_ann//"main"//"gausswidth_ion" 
         ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
         ann%gausswidth     =  ann%dict_ann//"main"//"gausswidth" 
         ann%hardness       =  ann%dict_ann//"main"//"hardness" 
         ann%chi0           =  ann%dict_ann//"main"//"chi0" 
-        ann%spring_const   =  ann%dict_ann//"main"//"spring_const"
         ann%qinit          =  ann%dict_ann//"main"//"qinit"
-        rcut               =  ann%dict_ann//"main"//"rcut"
-    elseif(trim(parini%approach_ann)=='tb') then
+    endif
+    if(trim(parini%approach_ann)=='cent2' ) then
+        ann%zion           =  ann%dict_ann//"main"//"zion" 
+        ann%gausswidth_ion =  ann%dict_ann//"main"//"gausswidth_ion" 
+        ann%spring_const   =  ann%dict_ann//"main"//"spring_const"
+    endif
+    if(trim(parini%approach_ann)=='tb') then
         ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
     endif
     !ann%rionic    = ann%dict_ann//"main"//"rionic"
