@@ -86,7 +86,7 @@ subroutine cal_potential_ann(parini,atoms)
     endif
     !atoms%epot=0.d0
     !atoms%fat(1:3,1:atoms%nat)=0.d0
-    !call cal_ann_eem1(atoms,symfunc,ann_arr,ekf)
+    !call cal_ann_cent1(atoms,symfunc,ann_arr,ekf)
     call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
 !    do iat=1,atoms%nat
 !        call symmetry_functions(ann_arr%ann(i),iat,atoms,.true.)

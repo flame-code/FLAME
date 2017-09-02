@@ -498,8 +498,8 @@ subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
     endif
     if(trim(ann_arr%approach)=='atombased') then
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='eem1') then
-        call cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
+        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then
         call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then

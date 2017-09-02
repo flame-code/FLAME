@@ -295,7 +295,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_atombased
 ! ./src/ann_pot_cent1.F90 :
-subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
@@ -305,7 +305,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
-end subroutine cal_ann_eem1
+end subroutine cal_ann_cent1
 subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -326,7 +326,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi_dir
-subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -338,7 +338,7 @@ subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3
     real(8), intent(out):: epot_c
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine cal_electrostatic_eem1
+end subroutine cal_electrostatic_cent1
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
