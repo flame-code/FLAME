@@ -8,7 +8,7 @@ potential:
     print_force : True
     ewald:
         ewald: False
-        ecut: 250.0
+        ecut: 400.0
         #hx: 1.5
         #hy: 1.5
         #hz: 1.5
