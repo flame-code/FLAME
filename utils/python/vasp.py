@@ -19,14 +19,30 @@ def poscar_util(atoms):
             atom_types.append(atoms.sat[iat])
             atom_nn.append(1)
             rat.append(atoms.rat[iat])
-            posred.append(atoms.posred[iat])
+#this generation of the drect coordinates will be replaced! All routines reading files should automatically store the reduced coordinates while reading
+            try:
+                posred.append(atoms.posred[iat])
+            except:
+                poscart=[]
+                poscart.append(atoms.rat[iat]) 
+                n = 1
+                posred_tmp=rxyz_cart2int(atoms.cellvec,poscart,n)
+                posred.append(posred_tmp)
         else:
             ind=atom_types.index(atoms.sat[iat])
             jat=0
             for jj in range(ind+1):
                 jat+=atom_nn[jj]
             rat.insert(jat,atoms.rat[iat])
-            posred.insert(jat,atoms.posred[iat])
+#this generation of the drect coordinates will be replaced! All routines reading files should automatically store the reduced coordinates while reading
+            try:
+                posred.insert(jat,atoms.posred[iat])
+            except:
+                poscart=[]
+                poscart.append(atoms.rat[jat]) 
+                n = 1
+                posred_tmp=rxyz_cart2int(atoms.cellvec,poscart,n)
+                posred.insert(jat,posred_tmp)
             atom_nn[ind]+=1
     return atom_types,atom_nn,rat,posred
 #*****************************************************************************************
