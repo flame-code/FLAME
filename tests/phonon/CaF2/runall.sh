@@ -15,8 +15,8 @@ sed -i '5 a Ca F' POSCAR*
 #echo "T">> in
 #echo "Na Cl" >> in
 #POSCAR2ascii.x < in
-../../../../utils/python/poscar2ascii.py POSCAR > POSCAR.ascii
-../../../../utils/python/ascii2acf.py POSCAR.ascii  > posinp.acf
+#poscar2ascii.py POSCAR > POSCAR.ascii
+#ascii2acf.py POSCAR.ascii  > posinp.acf
 ../../../../flame >&o1
 cd ..
 echo '---------------------------------------------------------------------'
