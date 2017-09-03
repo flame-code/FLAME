@@ -49,10 +49,10 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
+                &fixat,fixlat,rcov,fragarr,use_confine,&
                 &voids,core_rep
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -204,8 +204,8 @@ open(unit=12,file="params_new.in")
    read(12,'(a450)',end=97)all_line
    n = len_trim(all_line)
 !Press
-   call parsescalar_real("PRESS",5,all_line(1:n),n,target_pressure_gpa,found)
-   if(found) target_pressure_habohr=target_pressure_gpa/HaBohr3_GPA
+   call parsescalar_real("PRESS",5,all_line(1:n),n,parini%target_pressure_gpa,found)
+   if(found) parini%target_pressure_habohr=parini%target_pressure_gpa/HaBohr3_GPA
    if(found) cycle
 !Amu
    call parsearray_real("AMU",3,all_line(1:n),n,amu(1:ntypat),ntypat,found)
@@ -527,7 +527,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("VERBOSE",7,all_line(1:n),n,parini%verb,found)
    if(found) cycle
 !BOUNDARY
-   call parsescalar_int("BOUNDARY",8,all_line(1:n),n,bc,found)
+   call parsescalar_int("BOUNDARY",8,all_line(1:n),n,parini%bc,found)
    if(found) cycle
 !CODE
    call parsescalar_string("CODE",4,all_line(1:n),n,parini%potential_potential,20,found)
@@ -638,10 +638,10 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
+                &fixat,fixlat,rcov,fragarr,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -661,8 +661,8 @@ integer:: mdmin_in,itype,i,j
 real(8):: dtion_md_in,alpha_lat_in,alpha_at_in
 logical:: read_poscur
 !These are the default variables
-target_pressure_gpa=0.d0
-target_pressure_habohr=0.d0
+parini%target_pressure_gpa=0.d0
+parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
    call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
@@ -706,7 +706,7 @@ parini%auto_kpt=.true.
 parini%ka=1;parini%kb=1;parini%kc=1
 parini%dkpt1=0.04d0
 parini%dkpt2=0.06d0
-bc=1
+parini%bc=1
 parini%verb=3
 parini%potential_potential="vasp"
 !Define if the external optimizer should be used. Only available for:
@@ -791,10 +791,10 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,voids,core_rep
+                &fixat,fixlat,rcov,fragarr,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
@@ -845,7 +845,7 @@ if(parini%kb.lt.0) stop "Error in kb"
 if(parini%kc.lt.0) stop "Error in kc"
 if(parini%dkpt1.lt.0.d0) stop "Error in dkpt1"
 if(parini%dkpt2.lt.0.d0) stop "Error in dkpt2"
-if(bc.lt.1.or.bc.gt.3) stop "Error in bc"
+if(parini%bc.lt.1.or.parini%bc.gt.3) stop "Error in bc"
 if(parini%verb.lt.0.or.parini%verb.gt.3) stop "Error in verb"
 if(trim(parini%fp_method_ch).ne."OGANOV".and.trim(parini%fp_method_ch).ne."BCM".and.trim(parini%fp_method_ch).ne."ATORB".and.&
   &trim(parini%fp_method_ch).ne."XYZ2SM".and.trim(parini%fp_method_ch).ne."GAUSS".and.trim(parini%fp_method_ch).ne."COGANOV".and.&
@@ -908,10 +908,10 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
+use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
                 &usewf_geopt,usewf_soften,usewf_md,&
                 &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
+                &fixat,fixlat,rcov,fragarr,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -933,8 +933,8 @@ character(60):: formatting,string
 write(*,'(a)')             " ################################ Echo params_new.in #############################"
 write(*,'(a,i5)')          " # VERBOSITY     ", parini%verb
 write(*,'(a)')             " # SYSTEM parameters *************************************************************"
-write(*,'(a,i5)')          " # BOUNDARY      ", bc
-write(*,'(a,es15.7)')      " # PRESS         ", target_pressure_gpa
+write(*,'(a,i5)')          " # BOUNDARY      ", parini%bc
+write(*,'(a,es15.7)')      " # PRESS         ", parini%target_pressure_gpa
 write(*,'(a,L3)')          " # VOIDS         ", voids
 write(*,'(a,L3)')          " # COREREP       ", core_rep
 write(*,'(a)')             " # COMPUTE parameters ************************************************************"
@@ -1016,7 +1016,7 @@ write(*,'(a,2es15.7)')     " # KPTDEN       ", parini%dkpt1,parini%dkpt2
 endif
 write(*,'(a)')             " # FINGERPRINT parameters ********************************************************"
 write(*,'(a,a)')           " # FPMETHOD      ", trim(parini%fp_method_ch)
-if(bc==1.or.bc==3) then
+if(parini%bc==1.or.parini%bc==3) then
 write(*,'(a,es15.7)')      " # FPCUT         ", parini%fp_rcut
 endif
 if(trim(parini%fp_method_ch)=="OGANOV") then
@@ -1110,13 +1110,12 @@ end subroutine
 subroutine fp_assign(parini)
 use mod_parini, only: typ_parini
 use fingerprint 
-use global, only: bc
 implicit none
 type(typ_parini), intent(inout):: parini
-if(bc==2) then !Molecular systems
+if(parini%bc==2) then !Molecular systems
   fp_method=21
   parini%fp_method_ch="GAUSS"
-elseif(bc==1) then !Crystals
+elseif(parini%bc==1) then !Crystals
   if(trim(parini%fp_method_ch)=="OGANOV") then
     fp_method=11
   elseif(trim(parini%fp_method_ch)=="BCM") then

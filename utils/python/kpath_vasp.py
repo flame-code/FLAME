@@ -1,34 +1,41 @@
 #!/usr/bin/env python
-import sys
-file = sys.argv[1]
+import argparse 
 import pymatgen as mg
-#from pymatgen.io.smartio import read_structure, write_structure, read_mol, write_mol
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+from pymatgen.symmetry.bandstructure import HighSymmKpath
+from pprint import pprint
+#************************************************************
+str1 = "This script should be used for calculations by VASP or PHONOPY and gets all paths in the reciprocal lattice of a structure."
+parser = argparse.ArgumentParser(description=str1)
+parser.add_argument('POSCAR', action='store' ,type=str, help="POSCAR is the name of the input file in VASP5 format")
+parser.add_argument('tol', type=float, help='the tolerance for analysing space group. A number less than 0.05 is recommended.')
+#parser.add_argument('npoints', type=int, help='the number of sampling points. Usually 50 is proper')
+args=parser.parse_args()
+#************************************************************
+tol = args.tol
+#np = args.npoints
 #structure = read_structure(file)
 structure = mg.Structure.from_file("POSCAR")   #str(open("rlx_str040.cif").read(),fmt="cif")  #str(open("POSCAR").read(),fmt="poscar")
 #from pymatgen.symmetry.finder import SymmetryFinder
 #symmetries = SymmetryFinder(structure, 0.001, 5)
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-finder = SpacegroupAnalyzer(structure,symprec=0.01,angle_tolerance=5)
+finder = SpacegroupAnalyzer(structure,symprec=tol,angle_tolerance=5)
 spg_s = finder.get_spacegroup_symbol()
 spg_n = finder.get_spacegroup_number()
 pg = finder.get_point_group()
 pm =finder.find_primitive()
-#spg=symmetries.get_spacegroup_number()
-print "Spacegroup : ", spg_s
-print "Int number : ", spg_n
-print "pointgroup : ", pg
-print "primitive  : ", pm
-from pymatgen.symmetry.bandstructure import HighSymmKpath
-pather = HighSymmKpath(structure,symprec=0.01, angle_tolerance=5)
+
+#print "Spacegroup : ", spg_s
+print "SPG (Int number) : ", spg_n
+#print "pointgroup : ", pg
+pather = HighSymmKpath(structure,symprec=tol, angle_tolerance=5)
 kpoints_path=pather.kpath
-from pprint import pprint
 kk=kpoints_path["kpoints"]
 pp=kpoints_path["path"]
 count=1
 
 #pp[1]=['K','X']
-print pp
-print kk
+#print pp
+#print kk
 ##print pp[1:2]
 ##print len(pp)
 
@@ -68,7 +75,8 @@ for i_path in range(0, len(pp)):
     print >> h, " ".join(map(str, kk[j]))
     iold=j
 f.close()
-
+g.close()
+h.close()
 #*****************************************************************************************
 #from pymatgen.io.vaspio.vasp_input import Kpoints
 #

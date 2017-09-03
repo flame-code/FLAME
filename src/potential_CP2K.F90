@@ -82,7 +82,7 @@ contains
   end subroutine
   
   subroutine get_output_cp2k(fcart,energy,strten)
-  use global, only: nat,target_pressure_gpa
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none

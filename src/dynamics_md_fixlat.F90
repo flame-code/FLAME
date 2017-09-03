@@ -1,8 +1,8 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type,units,usewf_md
- use global, only: fixat,fixlat,bc
+ use global, only: fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -19,13 +19,13 @@ implicit none
     real(8) :: enmin1, enmin2, en0000, econs_max, econs_min, devcon
     logical:: getwfk
     real(8):: pressure,int_pressure_gpa,energy,rkin,rkin_0,dt,dt_ratio
-    if((all(fixlat(1:6)).and..not.fixlat(7)).or.bc==2) then
+    if((all(fixlat(1:6)).and..not.fixlat(7)).or.parini%bc==2) then
        continue
     else
        write(*,*) "This routine only intended for fixed cell MD calculation"
        stop
     endif
-    pressure=target_pressure_habohr
+    pressure=parini%target_pressure_habohr
     dt=parres%dtion_md
 
     !C initialize positions,velocities, forces

@@ -71,8 +71,10 @@ module interface_lammps
 
 contains
 
-subroutine init_lammps(nnat)
+subroutine init_lammps(parini,nnat)
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: iat,nnat
 write(*,'(a)') " # Initiallizing lammps"
 ! And here's how to to it with a string constant of your choice
@@ -110,9 +112,9 @@ endif
 !!!Set atomic type
 call lammps_file (lmp, 'in.lammps_init')
 !   call lammps_command (lmp, 'atom_style charge')
-if(bc==1) then
+if(parini%bc==1) then
    call lammps_command (lmp, 'boundary p p p')
-elseif(bc==2) then
+elseif(parini%bc==2) then
    call lammps_command (lmp, 'boundary p p f')
 else
    call lammps_command (lmp, 'boundary f f f')

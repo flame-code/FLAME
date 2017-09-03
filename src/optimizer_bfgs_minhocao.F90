@@ -34,7 +34,7 @@ END SUBROUTINE geopt_init
 !!    For the list of contributors, see ~/AUTHORS
 
 subroutine GEOPT_RBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat,target_pressure_habohr,nat
+ use global, only: nat
  use minpar
  use mod_parini, only: typ_parini
 implicit none
@@ -67,14 +67,14 @@ do
  if(fail) call bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
 enddo
 
-call get_enthalpy(latvec_in,etot_in,target_pressure_habohr,enthalpy)
+call get_enthalpy(latvec_in,etot_in,parini%target_pressure_habohr,enthalpy)
 write(*,'(a,i5,a,es15.7,a,es12.4)') " # Combined BFGS  exited in iterations: ", int(counter), " Enthalpy=",enthalpy," fmax=",fmax
 
 end subroutine GEOPT_RBFGS_MHM
 !contains
 
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type
  use global, only: units,usewf_geopt,fixat,fixlat
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -107,7 +107,7 @@ write(*,'(a,es15.7,es15.7)') " # BFGS BETAX, BETAX_LAT: ", parmin_bfgs%betax, pa
 coord="atoms"
 !Reset counter
 !counter=0.d0
-pressure=target_pressure_habohr
+pressure=parini%target_pressure_habohr
 !Generate a set of variables containing all degrees of freedome
     call rxyz_int2cart(latvec_in,xred_in,rxyz,nat)
 !    counter=counter+1
@@ -220,7 +220,7 @@ pressure=target_pressure_habohr
 END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type
  use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
@@ -257,7 +257,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
 coord="lattice"
 !Reset counter
 !counter=0.d0
-pressure=target_pressure_habohr
+pressure=parini%target_pressure_habohr
 latvec(1:3)=latvec_in(:,1)
 latvec(4:6)=latvec_in(:,2)
 latvec(7:9)=latvec_in(:,3)
@@ -868,7 +868,7 @@ end subroutine bfgs_reza
 !!! This is helpfull when we are looking for the source of problems during BFGS runs
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type
  use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
@@ -908,7 +908,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
 !Initialize parameters
   latvec_write=latvec_in
   call geopt_init()
-  pressure=target_pressure_habohr
+  pressure=parini%target_pressure_habohr
   check=0
   iproc=0
   latvec_write=latvec_in
@@ -1149,7 +1149,7 @@ END SUBROUTINE atomic_copymoving_backward
 subroutine get_BFGS_forces_PR(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use interface_code
 use mod_parini, only: typ_parini
 implicit none
@@ -1184,7 +1184,7 @@ logical:: getwfk
         enddo
 !now the stresses   
 !Setup pressure matrix
-pressure=target_pressure_habohr
+pressure=parini%target_pressure_habohr
 pressure_mat=0.d0
 pressure_mat(1,1)=1.d0;pressure_mat(2,2)=1.d0;pressure_mat(3,3)=1.d0
 pressure_mat=pressure_mat*pressure  !Here the pressure is not passed to the energyandforces, so we move on the ENERGY surface
@@ -1233,7 +1233,7 @@ subroutine  get_BFGS_forces_strainlatt(parini,parres,pos_all,force_all,enthalpy,
            &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use interface_code
 
 use mod_parini, only: typ_parini
@@ -1300,7 +1300,7 @@ endif
        str_matrix(2,3)=strten_in(4)
        str_matrix(3,2)=strten_in(4)
        call getvol(latvec_in,vol)
-       pressure=target_pressure_habohr
+       pressure=parini%target_pressure_habohr
 if(lattdeg==1) then
        call invertmat(transpose(latvec_in),transformed_inv,3)
        flat=(-vol*matmul(str_matrix,transformed_inv))
@@ -1392,7 +1392,7 @@ end subroutine
 subroutine get_BFGS_forces_max(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use interface_code
 
 use mod_parini, only: typ_parini
@@ -1440,7 +1440,7 @@ logical:: getwfk
        transformed(:,3)=latvec_in(3,:)
        call invertmat(transformed,transformed_inv,3)
        flat=(-vol*matmul(str_matrix,transformed_inv))
-       pressure=target_pressure_habohr
+       pressure=parini%target_pressure_habohr
        call stress_volume(latvec_in,vol,pressure,stressvol)
        flat=flat+stressvol
 !Finally, write those values into fxyz
@@ -1454,7 +1454,7 @@ end subroutine
 subroutine get_BFGS_forces_atom(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use interface_code
 
 use mod_parini, only: typ_parini
@@ -1488,7 +1488,7 @@ end subroutine
 subroutine get_BFGS_forces_lattice(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
  use interface_code
 
  use mod_parini, only: typ_parini
@@ -1529,7 +1529,7 @@ logical:: getwfk
        transformed(:,3)=latvec_in(3,:)
        call invertmat(transformed,transformed_inv,3)
        flat=(-vol*matmul(str_matrix,transformed_inv))
-       pressure=target_pressure_habohr
+       pressure=parini%target_pressure_habohr
        call stress_volume(latvec_in,vol,pressure,stressvol)
        flat=flat+stressvol
 !Finally, write those values into fxyz
@@ -1577,7 +1577,7 @@ end subroutine
 
 subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 use mod_parini, only: typ_parini
-use global, only: nat,target_pressure_habohr
+use global, only: nat
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: iat,i,istr
@@ -1596,7 +1596,7 @@ real(8):: dstr(6), strtarget(6)
    end do
  end do
  strtarget=0.d0
- strtarget(1:3)=-target_pressure_habohr
+ strtarget(1:3)=-parini%target_pressure_habohr
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
@@ -1692,7 +1692,7 @@ end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: ntypat,znucl,amu,amutmp,typat,char_type
  use global, only: units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
@@ -1770,7 +1770,7 @@ call getvol(latvec0,vol0)
 
 lambda_predict_prev=1.d0
  
-pressure=target_pressure_habohr
+pressure=parini%target_pressure_habohr
 
 open(unit=16,file="geopt.mon")
 alpha_pl=1.d-0
@@ -1799,9 +1799,9 @@ getwfk=.false.
 !This call is only to map all variables correctly
 fp=-1.d10
 call  get_BFGS_forces_strainlatt(parini,parres,p,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
-   if(any(fixlat)) call elim_fixed_lat(p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
+   if(any(fixlat)) call elim_fixed_lat(parini,p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
 !call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 if(counter==0.d0) then
@@ -1904,9 +1904,9 @@ endif
  endif
  counter=counter+1.d0
  call  get_BFGS_forces_strainlatt(parini,parres,tp,tg,tfp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+ call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
-   if(any(fixlat)) call elim_fixed_lat(tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
+   if(any(fixlat)) call elim_fixed_lat(parini,tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
    if(any(fixat))  call elim_fixed_at(nat,tg(1:3*nat))
 ! call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
@@ -1953,7 +1953,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
 !   pnew(:)=p(:)+lambda_predict*xi(:)
    dlatvec=lambda_predict*xi(3*nat+1:3*nat+9)
    dxred=lambda_predict*xi(1:3*nat)
-   call propagate(nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
+   call propagate(parini,nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
    if(usewf_geopt) then
        getwfk=.true.
    else
@@ -1962,9 +1962,9 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    counter=counter+1.d0
    dg=g       !Save the old gradient,
    call  get_BFGS_forces_strainlatt(parini,parres,pnew,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       !Eliminate components not to be changed
-      if(any(fixlat)) call elim_fixed_lat(pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
+      if(any(fixlat)) call elim_fixed_lat(parini,pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
       if(any(fixat))  call elim_fixed_at(nat,g(1:3*nat))
 !   call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
@@ -1985,7 +1985,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    !   pnew=p+lambda_predict*xi
       dlatvec=lambda_predict*xi(3*nat+1:3*nat+9)
       dxred=lambda_predict*xi(1:3*nat)
-      call propagate(nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
+      call propagate(parini,nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
       if(tp(5).ne.pnew(5)) stop "Womething srong!!!"
       fp=tfp
       dg=g       !Save the old gradient,
@@ -2102,7 +2102,7 @@ END SUBROUTINE
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: ntypat,znucl,amu,amutmp,typat,char_type
  use global, only: units,usewf_geopt,nat,fixat,fixlat
  use defs_basis
  use minpar
@@ -2154,7 +2154,7 @@ real(8):: tolmxf_switch
  counter=0.d0
 write(*,'(a,es15.7,es15.7)') " # BFGS BETAX, BETAX_LAT: ", parmin_bfgs%betax, parmin_bfgs%betax_lat
  
-pressure=target_pressure_habohr
+pressure=parini%target_pressure_habohr
 
 open(unit=16,file="geopt.mon")
 alpha_pl=1.d-0

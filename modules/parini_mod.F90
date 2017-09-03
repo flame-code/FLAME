@@ -91,6 +91,7 @@ module mod_parini
         logical:: read_forces_ann
         logical:: restart_param=.false. 
         integer:: restart_iter=0  
+        logical:: print_energy=.false. 
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
@@ -187,6 +188,10 @@ module mod_parini
         logical:: auto_kpt              !Currently a dummy variable
         integer:: ka,kb,kc              !The number of kpoints in each dimension
         real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
+        !-----------------------------------------------------------------------
+        integer:: bc                    !1: periodic, 2:free, 3:surface/slab
+        real(8):: target_pressure_gpa !Target pressures
+        real(8):: target_pressure_habohr  !Target pressures
         !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut

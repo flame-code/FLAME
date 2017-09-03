@@ -52,8 +52,7 @@ END SUBROUTINE geopt_init
 
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl, &
-     amu,amutmp,typat,char_type,units,usewf_geopt,nat
+ use global, only: ntypat,znucl,amu,amutmp,typat,char_type,units,usewf_geopt,nat
  use defs_basis
  use minpar
 
@@ -103,7 +102,7 @@ real(8):: tolmxf_switch
  counter=0.d0
 write(*,'(a,es15.7,es15.7)') " # BFGS BETAX, BETAX_LAT: ", parmin_bfgs%betax, parmin_bfgs%betax_lat
  
-pressure=target_pressure_habohr
+pressure=parini%target_pressure_habohr
 
 open(unit=16,file="geopt.mon")
 alpha_pl=1.d-0
@@ -758,7 +757,7 @@ end subroutine findmin
 subroutine get_BFGS_forces_max(pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 implicit none
 integer:: iprec,iat
 real(8):: pos_all(3*nat+9)
@@ -801,7 +800,7 @@ logical:: getwfk
        transformed(:,3)=latvec_in(3,:)
        call invertmat(transformed,transformed_inv,3)
        flat=(-vol*matmul(str_matrix,transformed_inv))
-       pressure=target_pressure_habohr
+       pressure=parini%target_pressure_habohr
        call stress_volume(latvec_in,vol,pressure,stressvol)
        flat=flat+stressvol
 !Finally, write those values into fxyz
@@ -815,7 +814,7 @@ end subroutine
 
 subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 use mod_parini, only: typ_parini
-use global, only: nat,target_pressure_habohr
+use global, only: nat
 type(typ_parini), intent(in):: parini
 implicit none
 integer:: iat,i,istr
@@ -834,7 +833,7 @@ real(8):: dstr(6), strtarget(6)
    end do
  end do
  strtarget=0.d0
- strtarget(1:3)=-target_pressure_habohr
+ strtarget(1:3)=-parini%target_pressure_habohr
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
