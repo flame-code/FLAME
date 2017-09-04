@@ -10,6 +10,6 @@ run:
 	phonopy -d --tol=0.001 -s -p band.conf
 
 clean:
-	rm -rf DIR_POSCAR-??? FORCE_SETS POSCAR-??? SPOSCAR band.yaml disp.yaml band.pdf
+	rm -rf DIR_POSCAR-??? FORCE_SETS POSCAR-??? SPOSCAR band.yaml disp.yaml band.pdf phonopy_disp.yaml  phonopy.yaml 
 
 .PHONY: run clean
