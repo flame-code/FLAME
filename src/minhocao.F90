@@ -294,7 +294,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 !  file_exists=.false.
 !  filename="confine.in"
 !  INQUIRE(FILE=trim(filename), EXIST=file_exists)
-     if(use_confine) then
+     if(parini%use_confine) then
 !        call init_confinement(nat,filename)
         confine=1!Or 3 if confinement should be always switched on
      else

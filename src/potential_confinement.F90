@@ -48,87 +48,89 @@
 !!!
 !!!end program
 
-subroutine init_confinement(nat,filename)
-use mod_interface
-use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
-use global, only: units
-use defs_basis, only: Bohr_Ang, Ha_eV
-implicit none
-integer:: i,io,iconf,nat
-character(40):: filename,my_fmt,allatoms
-character(200):: line
-open(unit=67,file=trim(filename))
-read(67,*,iostat=io) nconfine
-if(io.lt.0) stop "Could not read nconfine"
-allocate(conf_dim(nconfine),conf_av(nconfine),conf_exp(nconfine),conf_prefac(nconfine),&
-        &conf_cut(nconfine),conf_eq(nconfine),conf_list(nat,nconfine),conf_nat(nconfine),conf_cartred(nconfine))
-conf_cartred="C"
-!Read each block of confinements
-conf_eq=0.d0
-write(*,'(a,a)') " # Constraints in the internal, atomic units. Input interpreted as ",trim(units) 
-do iconf=1,nconfine
-  read(67,'(a200)',end=99) line
-  !Dimension
-  read(line,*,iostat=io) conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf)
-  if(conf_av(iconf)==1) then
-    read(line,*,iostat=io) &
-    &conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf),conf_eq(iconf),conf_cartred(iconf)
-    if(conf_cartred(iconf).ne."C".and.conf_cartred(iconf).ne."c".and.conf_cartred(iconf).ne."k".and.conf_cartred(iconf).ne."K"&
-    &.and.conf_cartred(iconf).ne."r".and.conf_cartred(iconf).ne."R".and.conf_cartred(iconf).ne."D".and.conf_cartred(iconf).ne."d")&
-    stop "Provide cartesian or reduced indicator for the equilirium position"
-  endif
+!subroutine init_confinement(nat,filename)
+!use mod_interface
+!use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
+!use global, only: units
+!use defs_basis, only: Bohr_Ang, Ha_eV
+!implicit none
+!integer:: i,io,iconf,nat
+!character(40):: filename,my_fmt,allatoms
+!character(200):: line
+!open(unit=67,file=trim(filename))
+!read(67,*,iostat=io) nconfine
+!if(io.lt.0) stop "Could not read nconfine"
+!allocate(conf_dim(nconfine),conf_av(nconfine),conf_exp(nconfine),conf_prefac(nconfine),&
+!        &conf_cut(nconfine),conf_eq(nconfine),conf_list(nat,nconfine),conf_nat(nconfine),conf_cartred(nconfine))
+!conf_cartred="C"
+!!Read each block of confinements
+!conf_eq=0.d0
+!write(*,'(a,a)') " # Constraints in the internal, atomic units. Input interpreted as ",trim(units) 
+!do iconf=1,nconfine
+!  read(67,'(a200)',end=99) line
+!  !Dimension
+!  read(line,*,iostat=io) conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf)
+!  if(conf_av(iconf)==1) then
+!    read(line,*,iostat=io) &
+!    &conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf),conf_eq(iconf),conf_cartred(iconf)
+!    if(conf_cartred(iconf).ne."C".and.conf_cartred(iconf).ne."c".and.conf_cartred(iconf).ne."k".and.conf_cartred(iconf).ne."K"&
+!    &.and.conf_cartred(iconf).ne."r".and.conf_cartred(iconf).ne."R".and.conf_cartred(iconf).ne."D".and.conf_cartred(iconf).ne."d")&
+!    stop "Provide cartesian or reduced indicator for the equilirium position"
+!  endif
+!
+!  if(io.lt.0) then
+!    write(*,*) "Could not read the confinement specifications for No. ",iconf
+!    stop
+!  endif
+!  !Convert here the units if necessary
+!  if(trim(units)=="angstroem") then
+!   conf_prefac(iconf)=conf_prefac(iconf)/Ha_eV
+!   if(conf_cartred(iconf).eq."C".or.conf_cartred(iconf).eq."c".or.conf_cartred(iconf).eq."k".or.conf_cartred(iconf).eq."K") then   
+!      conf_eq(iconf)=conf_eq(iconf)/Bohr_Ang
+!   endif
+!   conf_cut(iconf)=conf_cut(iconf)/Bohr_Ang
+!  endif
+!  !Read nat
+!  !Its possible to select all atoms simply by writing "All" or "all" instead of nat
+!  read(67,'(a200)',end=99) line
+!  read(line,*) allatoms
+!  if(trim(allatoms)=="All".or.trim(allatoms)=="all") then
+!    conf_nat(iconf)=nat
+!    do i=1,nat
+!      conf_list(i,iconf)=i
+!    enddo
+!  else
+!    read(line,*,iostat=io) conf_nat(iconf);if(io.lt.0) stop "Could not read conf_nat"
+!    read(67,*,iostat=io) conf_list(1:conf_nat(iconf),iconf);if(io.lt.0) stop "Could not read conf_list"
+!  endif
+!  !Read list
+!  write(my_fmt,'(a,i5,a)') '(a,',conf_nat(iconf),'(i4))'
+!  write(*, '(a,i3,a,i3,i3,es15.7,es15.7,i3,es15.7)') ' # Constraint No. ',iconf,' with dim, exp, coeff, cutoff, av, eq: ',&
+!  &conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf),conf_eq(iconf)
+!  write(*,my_fmt) ' # Containing atoms: ', (conf_list(i,iconf), i = 1, conf_nat(iconf))
+!enddo
+!99 continue
+!close(67)
+!!Check some input stuff
+!if(minval(conf_dim(:)).lt.1.or.maxval(conf_dim(:)).gt.3) stop "Wrong dimension confined"
+!if(minval(conf_av(:)).lt.1.or.maxval(conf_av(:)).gt.2) stop "Wrong average in confinement"
+!end subroutine
 
-  if(io.lt.0) then
-    write(*,*) "Could not read the confinement specifications for No. ",iconf
-    stop
-  endif
-  !Convert here the units if necessary
-  if(trim(units)=="angstroem") then
-   conf_prefac(iconf)=conf_prefac(iconf)/Ha_eV
-   if(conf_cartred(iconf).eq."C".or.conf_cartred(iconf).eq."c".or.conf_cartred(iconf).eq."k".or.conf_cartred(iconf).eq."K") then   
-      conf_eq(iconf)=conf_eq(iconf)/Bohr_Ang
-   endif
-   conf_cut(iconf)=conf_cut(iconf)/Bohr_Ang
-  endif
-  !Read nat
-  !Its possible to select all atoms simply by writing "All" or "all" instead of nat
-  read(67,'(a200)',end=99) line
-  read(line,*) allatoms
-  if(trim(allatoms)=="All".or.trim(allatoms)=="all") then
-    conf_nat(iconf)=nat
-    do i=1,nat
-      conf_list(i,iconf)=i
-    enddo
-  else
-    read(line,*,iostat=io) conf_nat(iconf);if(io.lt.0) stop "Could not read conf_nat"
-    read(67,*,iostat=io) conf_list(1:conf_nat(iconf),iconf);if(io.lt.0) stop "Could not read conf_list"
-  endif
-  !Read list
-  write(my_fmt,'(a,i5,a)') '(a,',conf_nat(iconf),'(i4))'
-  write(*, '(a,i3,a,i3,i3,es15.7,es15.7,i3,es15.7)') ' # Constraint No. ',iconf,' with dim, exp, coeff, cutoff, av, eq: ',&
-  &conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf),conf_eq(iconf)
-  write(*,my_fmt) ' # Containing atoms: ', (conf_list(i,iconf), i = 1, conf_nat(iconf))
-enddo
-99 continue
-close(67)
-!Check some input stuff
-if(minval(conf_dim(:)).lt.1.or.maxval(conf_dim(:)).gt.3) stop "Wrong dimension confined"
-if(minval(conf_av(:)).lt.1.or.maxval(conf_av(:)).gt.2) stop "Wrong average in confinement"
-end subroutine
-
-subroutine init_confinement_parser()
+subroutine init_confinement_parser(parini)
 use mod_interface
-use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
+use mod_parini, only: typ_parini
+use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
 use global, only: units,nat
 use defs_basis, only: Bohr_Ang, Ha_eV
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,io,iconf
 character(40):: filename,my_fmt,allatoms
 character(200):: line
 !Read each block of confinements
 !write(*,'(a)') " # Initiallizing confinements"
 write(*,'(a,a)') " # Constraints in the internal, atomic units. Input interpreted as ",trim(units) 
-do iconf=1,nconfine
+do iconf=1,parini%nconfine
   !Dimension
 !  read(line,*,iostat=io) conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf)
   if(conf_av(iconf)==1) then
@@ -157,10 +159,12 @@ if(minval(conf_dim(:)).lt.1.or.maxval(conf_dim(:)).gt.3) stop "Wrong dimension c
 if(minval(conf_av(:)).lt.1.or.maxval(conf_av(:)).gt.2) stop "Wrong average in confinement"
 end subroutine
 
-subroutine confinement_energy_forces(nat,xred,latvec,energy,forces,strten)
+subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
 use mod_interface
-use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
+use mod_parini, only: typ_parini
+use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: nat,iconf,iat
 real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
 real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
@@ -181,7 +185,7 @@ enddo
 !First compute the average if not provided by input
 call nveclatvec(latvec,nvec)
 point0=0.d0
-do iconf=1,nconfine
+do iconf=1,parini%nconfine
    if(conf_av(iconf)==2) then
      dist_av=0.d0
      do iat=1,conf_nat(iconf)
@@ -194,7 +198,7 @@ do iconf=1,nconfine
 enddo
 
 !Run over all confinements and compute the forces and energies
-do iconf=1,nconfine
+do iconf=1,parini%nconfine
 ! write(*,*) "EQ",conf_eq(iconf)
  if(conf_cartred(iconf).eq."R".or.conf_cartred(iconf).eq."r".or.conf_cartred(iconf).eq."D".or.conf_cartred(iconf).eq."d") then
   point0=0.d0

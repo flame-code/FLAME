@@ -257,7 +257,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 !Add confinement potential
     if(confine.ge.2) then
       write(*,'(a,i3)') " # Running confinement with option :",confine
-      call confinement_energy_forces(nat,xred,latvec,energy_c,fcart_c,strten_c)
+      call confinement_energy_forces(parini,nat,xred,latvec,energy_c,fcart_c,strten_c)
       energy=energy+energy_c
       fcart=fcart+fcart_c
       strten=strten+strten_c

@@ -199,6 +199,9 @@ module mod_parini
         integer:: correctalg            !Method to perform cell corrections
 !        integer:: ntime_md              !Maximum number of iterations during MD
         !-----------------------------------------------------------------------
+        logical:: use_confine           !if true, confinement is enable, otherwise disabled
+        integer:: nconfine       !number of different confinements
+        !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut
         real(8):: fp_dbin

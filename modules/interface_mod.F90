@@ -4094,16 +4094,13 @@ subroutine cell_vol(nat,latvec,vol)
     real(8):: latvec(3,3),vol,a(3,3)
 end subroutine cell_vol
 ! ./src/potential_confinement.F90 :
-subroutine init_confinement(nat,filename)
-integer:: i,io,iconf,nat
-character(40):: filename,my_fmt,allatoms
-end subroutine init_confinement
-subroutine init_confinement_parser()
-integer:: i,io,iconf
-character(40):: filename,my_fmt,allatoms
-character(200):: line
+subroutine init_confinement_parser(parini)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 end subroutine init_confinement_parser
-subroutine confinement_energy_forces(nat,xred,latvec,energy,forces,strten)
+subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nat,iconf,iat
 real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
 real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
