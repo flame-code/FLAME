@@ -119,11 +119,11 @@
 subroutine init_confinement_parser(parini)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
+use confinement, only: conf_eq,conf_nat,conf_list
 use global, only: units,nat
 use defs_basis, only: Bohr_Ang, Ha_eV
 implicit none
-type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parini
 integer:: i,io,iconf
 character(40):: filename,my_fmt,allatoms
 character(200):: line
@@ -140,18 +140,18 @@ do iconf=1,parini%nconfine
   endif
   !Convert here the units if necessary
   if(trim(units)=="angstroem") then
-   conf_prefac(iconf)=conf_prefac(iconf)/Ha_eV
+   parini%conf_prefac(iconf)=parini%conf_prefac(iconf)/Ha_eV
    if(parini%conf_cartred(iconf).eq."C".or.parini%conf_cartred(iconf).eq."c".or.parini%conf_cartred(iconf).eq."k".or.parini%conf_cartred(iconf).eq."K") then   
       conf_eq(iconf)=conf_eq(iconf)/Bohr_Ang
    endif
-   conf_cut(iconf)=conf_cut(iconf)/Bohr_Ang
+   parini%conf_cut(iconf)=parini%conf_cut(iconf)/Bohr_Ang
   endif
   !Read nat
   !Its possible to select all atoms simply by writing "All" or "all" instead of nat
   !Read list
   write(my_fmt,'(a,i5,a)') '(a,',conf_nat(iconf),'(i4))'
   write(*, '(a,i3,a,i3,i3,es15.7,es15.7,i3,es15.7)') ' # Constraint in atomic units, No. ',iconf,' with dim, exp, coeff, cutoff, av, eq: ',&
-  &parini%conf_dim(iconf),parini%conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),parini%conf_av(iconf),conf_eq(iconf)
+  &parini%conf_dim(iconf),parini%conf_exp(iconf),parini%conf_prefac(iconf),parini%conf_cut(iconf),parini%conf_av(iconf),conf_eq(iconf)
 !  write(*,my_fmt) ' # Containing atoms: ', (conf_list(i,iconf), i = 1, conf_nat(iconf))
 enddo
 !Check some input stuff
@@ -162,7 +162,7 @@ end subroutine
 subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
+use confinement, only: conf_eq,conf_nat,conf_list
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nat,iconf,iat
@@ -216,9 +216,9 @@ do iconf=1,parini%nconfine
 !    write(*,*)"dist",dist
 !    write(*,*)"xcart",conf_list(iat,iconf),xcart(:,conf_list(iat,iconf))
 !Compute energy and forces and stress
-    if(abs(dist).gt.conf_cut(iconf)) then
-      energy=energy+conf_prefac(iconf)*(abs(dist)-conf_cut(iconf))**parini%conf_exp(iconf)  
-      tt=conf_prefac(iconf)*(abs(dist)-conf_cut(iconf))**(parini%conf_exp(iconf)-1)*parini%conf_exp(iconf)
+    if(abs(dist).gt.parini%conf_cut(iconf)) then
+      energy=energy+parini%conf_prefac(iconf)*(abs(dist)-parini%conf_cut(iconf))**parini%conf_exp(iconf)  
+      tt=parini%conf_prefac(iconf)*(abs(dist)-parini%conf_cut(iconf))**(parini%conf_exp(iconf)-1)*parini%conf_exp(iconf)
       ft(1)=-tt*dist/abs(dist)*nvec(1,mod(parini%conf_dim(iconf),3)+1)
       ft(2)=-tt*dist/abs(dist)*nvec(2,mod(parini%conf_dim(iconf),3)+1)
       ft(3)=-tt*dist/abs(dist)*nvec(3,mod(parini%conf_dim(iconf),3)+1)

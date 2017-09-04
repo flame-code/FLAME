@@ -206,6 +206,8 @@ module mod_parini
                                              !1: confinement with respect to a fixed value along latvec(:,i)
                                              !2: confinement with respect to the average
         integer,allocatable:: conf_exp(:)    !The polynomial order for each confinement
+        real(8),allocatable:: conf_cut(:)    !The cutoff distance from each confinement equilibrium
+        real(8),allocatable:: conf_prefac(:) !The polynomial predactor for each confinement
         character(1),allocatable:: conf_cartred(:)!Cartesian or reduced coordinates, only if conf_eq is provided. d,D,r,R for reduced, C,c,K,k for cartesian
         !-----------------------------------------------------------------------
         character(20):: fp_method_ch
