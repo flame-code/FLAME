@@ -1,7 +1,7 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_md
+ use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -92,7 +92,7 @@ implicit none
 
        enmin2=enmin1
        enmin1=en0000
-       if(istep.ne.1.and.usewf_md) then
+       if(istep.ne.1.and.parini%usewf_md) then
            getwfk=.true.
        else
            getwfk=.false.
