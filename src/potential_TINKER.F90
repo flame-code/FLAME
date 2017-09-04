@@ -40,8 +40,8 @@ character(300):: all_line
      close(26)
      else
        do iat=1,nat
-          tinker_char_type(iat)=char_type(typat(iat))
-          tinker_typat(iat)=typat(iat)
+          tinker_char_type(iat)=char_type(parini%typat_global(iat))
+          tinker_typat(iat)=parini%typat_global(iat)
        enddo
      endif
 !Initiallize tinker

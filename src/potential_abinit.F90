@@ -89,7 +89,7 @@ contains
     write(87,*) "znucl"
     write(87,*)  int(znucl)  !Atom type
     write(87,*) "typat" 
-    write(87,*)  typat
+    write(87,*)  parini%typat_global
     write(87,*) " "
     write(87,*) " "
     write(87,*) "acell"

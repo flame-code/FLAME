@@ -1,6 +1,6 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,typat
+ use global, only: nat,ntypat,znucl
  use global, only: char_type,units
  use defs_basis
  use interface_code
@@ -42,8 +42,8 @@ implicit none
 
 !Assign masses to each atom (for MD)
     do iat=1,nat
-      amass(iat)=amu_emass*parini%amu(typat(iat))
-      write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(typat(iat)),amass(iat)
+      amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
+      write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
     enddo
 
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
@@ -73,7 +73,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
 !*********************************************************************
     e0 = etot_in
@@ -153,7 +153,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
        if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &

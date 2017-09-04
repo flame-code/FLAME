@@ -1453,12 +1453,14 @@ end subroutine
 
 
 end module
-subroutine init_edip()
+subroutine init_edip(parini)
+use mod_parini, only: typ_parini
 use global
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: iat
 do iat=1,nat
-   if(int(znucl(typat(iat))).ne.14) then
+   if(int(znucl(parini%typat_global(iat))).ne.14) then
      stop "EDIP only allowed with Silicon"
    endif
 enddo

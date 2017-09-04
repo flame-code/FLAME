@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: nat,ntypat,znucl,typat,char_type,siesta_kpt_mode
+  use global, only: nat,ntypat,znucl,char_type,siesta_kpt_mode
   use defs_basis
   !use cell_utils
 
@@ -97,7 +97,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     write(87,*) "AtomicCoordinatesFormat Fractional" 
     write(87,*) "%block AtomicCoordinatesAndAtomicSpecies"
     do iat=1,nat
-      write(87,'(3(1x,es25.15),i5)') xred(:,iat),typat(iat)
+      write(87,'(3(1x,es25.15),i5)') xred(:,iat),parini%typat_global(iat)
     enddo
     write(87,*) "%endblock AtomicCoordinatesAndAtomicSpecies"
     close(87)
@@ -283,7 +283,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   write(87,*) "AtomicCoordinatesFormat Fractional" 
   write(87,*) "%block AtomicCoordinatesAndAtomicSpecies"
   do iat=1,nat
-  write(87,'(3(1x,es25.15),i5)') xred(:,iat),typat(iat)
+  write(87,'(3(1x,es25.15),i5)') xred(:,iat),parini%typat_global(iat)
   enddo 
   write(87,*) "%endblock AtomicCoordinatesAndAtomicSpecies"
   close(87)

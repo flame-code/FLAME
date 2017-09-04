@@ -11,7 +11,7 @@
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,typat
+ use global, only: nat,ntypat,znucl
  use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
@@ -342,11 +342,11 @@ if(parini%verb>0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 
@@ -499,11 +499,11 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 !*********************************************************************

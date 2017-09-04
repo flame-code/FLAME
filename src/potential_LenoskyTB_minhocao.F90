@@ -12,32 +12,36 @@ module interface_lenosky_tb
  
 
 contains
-subroutine check_lenosky_tb(n_silicon)
+subroutine check_lenosky_tb(parini,n_silicon)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: n_silicon,iat
 logical:: in_h
 !Check typat for consistentcy and provide n_silicon
 in_h=.false.
 n_silicon=0
 do iat=1,nat
-   if(int(znucl(typat(iat))).ne.1.and.int(znucl(typat(iat))).ne.14.and.int(znucl(typat(iat))).lt.200) stop "Lenosky TB only implemented for Si and H"
-   if(.not.voids.and.int(znucl(typat(iat))).ge.200) stop "LJ particles only allowed when using voids"
-   if(int(znucl(typat(iat)))==14) n_silicon=n_silicon+1
-   if(int(znucl(typat(iat)))==14.and.in_h) stop "Lenosky TB: First Si, then H"
-   if(int(znucl(typat(iat)))==1) in_h=.true.
+   if(int(znucl(parini%typat_global(iat))).ne.1.and.int(znucl(parini%typat_global(iat))).ne.14.and.int(znucl(parini%typat_global(iat))).lt.200) stop "Lenosky TB only implemented for Si and H"
+   if(.not.voids.and.int(znucl(parini%typat_global(iat))).ge.200) stop "LJ particles only allowed when using voids"
+   if(int(znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
+   if(int(znucl(parini%typat_global(iat)))==14.and.in_h) stop "Lenosky TB: First Si, then H"
+   if(int(znucl(parini%typat_global(iat)))==1) in_h=.true.
 enddo
 end subroutine
 
 !********************************************************************************
-subroutine lenosky_tb(latvec,xred0,iprec,ka,kb,kc,fcart,energy,strten)
+subroutine lenosky_tb(parini,latvec,xred0,iprec,ka,kb,kc,fcart,energy,strten)
+use mod_parini, only: typ_parini
 !All H-Atoms have to be at the end of the rxyz-array
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,n_in(3),offset_in(3),do_kpt_in,cellsearch,tb_or_meam,n_silicon,nec1,nec2,nec3,iprec,ka,kb,kc,iat
 real(8), parameter:: cut=5.24d0
 real(8):: xred(3,nat),rxyz(3,nat),xred0(3,nat),fcart(3,nat),latvec(3,3),latvec_ang(3,3),strten(6),stress(3,3),energy,count
 real(8):: vol
 
 !Check if the atomic types are allright
-call check_lenosky_tb(n_silicon)
+call check_lenosky_tb(parini,n_silicon)
 
 !Number of kpoints
 n_in(1)=ka
@@ -58,7 +62,7 @@ endif
 !TB or MEAM
 tb_or_meam=0
 
-call check_lenosky_tb(n_silicon)
+call check_lenosky_tb(parini,n_silicon)
 
 latvec_ang=latvec*Bohr_Ang
 xred=xred0

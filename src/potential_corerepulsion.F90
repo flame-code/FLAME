@@ -107,7 +107,7 @@ end subroutine
                 r2red(3)=r2red(3)+real(k,8)*rec_nec(3)
                 call pbc_distance0(latvec_x,r1red,r2red,dd,dxyz)
 !                if(dd.gt.rcut2_lj(iat-n_silicon-n_h)) then
-                if(dd.gt.rcut2_lj(typat(iat),typat(jat))) then
+                if(dd.gt.rcut2_lj(parini%typat_global(iat),parini%typat_global(jat))) then
                    goto 1003
                 elseif(dd.lt.1.d-12) then
                    goto 1003
@@ -118,7 +118,7 @@ end subroutine
                 dd6=dd2*dd2*dd2
                 dd12=dd6*dd6
 !                s=sigmavoidlj(iat-n_silicon-n_h)*sigma_lj_lj_fact  !Sigma
-                s=sigma_lj(typat(iat),typat(jat))  !Sigma
+                s=sigma_lj(parini%typat_global(iat),parini%typat_global(jat))  !Sigma
                 if(s.lt.1.d-14) goto 1003
                 s2=s*s
                 s6=s2*s2*s2

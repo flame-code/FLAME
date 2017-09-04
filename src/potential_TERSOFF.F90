@@ -1244,17 +1244,19 @@ end subroutine
 end module
 
 
-subroutine init_tersoff()
+subroutine init_tersoff(parini)
+use mod_parini, only: typ_parini
 use global
 use tersoff_params
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: iat
 only_c=.true.
 if(.not.allocated(Kinds_tersoff)) allocate(Kinds_tersoff(nat))
 do iat=1,nat
-   if(int(znucl(typat(iat)))==6) then
+   if(int(znucl(parini%typat_global(iat)))==6) then
      Kinds_tersoff(iat)=1
-   elseif(int(znucl(typat(iat)))==14) then
+   elseif(int(znucl(parini%typat_global(iat)))==14) then
      Kinds_tersoff(iat)=2
      only_c=.false.
    else 

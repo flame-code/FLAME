@@ -49,7 +49,7 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,typat,char_type,&
+use global, only: nat,ntypat,znucl,char_type,&
                 &fragarr,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
@@ -154,7 +154,8 @@ endif
  if(.not.allocated(char_type))   then;   allocate(char_type(ntypat))                   ; char_type="  "          ; endif
  if(.not.allocated(parini%amu))         then;   allocate(parini%amu(ntypat))                         ; parini%amu=0                   ; endif
  if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(ntypat))                        ; parini%rcov=0                  ; endif
- if(.not.allocated(typat))       then;   allocate(typat(nat))                          ; typat=0                 ; endif
+ if(.not.allocated(parini%typat_global))       then;   allocate(parini%typat_global(nat))                          ;
+     parini%typat_global=0                 ; endif
  if(.not.allocated(parini%fixat))       then;   allocate(parini%fixat(nat))                          ; parini%fixat=.false.           ; endif
  if(.not.allocated(fragarr))     then;   allocate(fragarr(nat))                        ; fragarr=0               ; endif
  if(.not.allocated(parini%conf_dim))    then;   allocate(parini%conf_dim     (parini%nconfine))             ; parini%conf_dim=0              ; endif
@@ -207,7 +208,7 @@ open(unit=12,file="params_new.in")
    call parsearray_real("AMU",3,all_line(1:n),n,parini%amu(1:ntypat),ntypat,found)
    if(found) cycle
 !TYPAT
-   call parsearray_int("TYPAT",5,all_line(1:n),n,typat(1:nat),nat,found)
+   call parsearray_int("TYPAT",5,all_line(1:n),n,parini%typat_global(1:nat),nat,found)
    if(found) cycle
 !MDNIT
    call parsescalar_int("MDNIT",5,all_line(1:n),n,parini%nmd_dynamics,found)
@@ -567,28 +568,28 @@ if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter(parini)
 
 !Initiallize TB-LJ parameter if required
 if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
-  call check_lenosky_tb_lj()
+  call check_lenosky_tb_lj(parini)
   n_lj=0
   do iat=1,nat
-     if(znucl(typat(iat)).gt.200) n_lj=n_lj+1
+     if(znucl(parini%typat_global(iat)).gt.200) n_lj=n_lj+1
   enddo
   call lenosky_tb_lj_init_parameter()
 endif
 
 !Initiallize voids
 if(voids.and.calls==0) then
-  call check_voids() 
+  call check_voids(parini) 
   call voids_init_parameter()
 endif
 
 !Initiallize tersoff
 if(trim(parini%potential_potential)=="tersoff".and.calls==0) then
-  call init_tersoff()
+  call init_tersoff(parini)
 endif
 
 !Initiallize edip
 if(trim(parini%potential_potential)=="edip".and.calls==0) then
-  call init_edip()
+  call init_edip(parini)
 endif
 
 !Initiallize ipi
@@ -634,7 +635,7 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,typat,char_type,&
+use global, only: nat,ntypat,znucl,char_type,&
                 &fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -662,7 +663,7 @@ parini%target_pressure_habohr=0.d0
  enddo
 voids=.false.
 parini%core_rep=.false.
-if(.not.read_poscur) typat(1:nat)=1
+if(.not.read_poscur) parini%typat_global(1:nat)=1
 parini%nmd_dynamics=300
 parini%md_algo=1
 parini%md_integrator=3
@@ -784,7 +785,7 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,typat,char_type,&
+use global, only: nat,ntypat,znucl,char_type,&
                 &fragarr,voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -800,7 +801,7 @@ implicit none
 type(typ_parini), intent(in):: parini
 integer:: i,j
 !This routine will check if all values are valid...
-if(any(typat(:).lt.1)) stop "Error in typat"
+if(any(parini%typat_global(:).lt.1)) stop "Error in typat"
 if(any(parini%amu(:).le.0.d0)) stop "Error in amu"
 if(any(parini%rcov(:).le.0.d0)) stop "Error in rcov"
 if(any(znucl(:).le.0)) stop "Error in znucl"
@@ -898,7 +899,7 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,typat,char_type,&
+use global, only: nat,ntypat,znucl,char_type,&
                 &fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -937,7 +938,7 @@ write(*,'(a,i5)')          " # NTYPE         ", ntypat
 write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
 write(*,trim(formatting))  " # ZNUCL         ", int(znucl(:))
 write(formatting,'(a,i5,a)') '(a,',nat,'i3)'
-write(*,trim(formatting))  " # TYPAT         ", typat(:)
+write(*,trim(formatting))  " # TYPAT         ", parini%typat_global(:)
 write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
 write(*,trim(formatting))  " # AMU           ", int(parini%amu(:))
 write(*,'(a)')             " # MD parameters *****************************************************************"
