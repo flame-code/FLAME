@@ -64,7 +64,6 @@ use fingerprint, only: &
    fp_18_width_overlap,fp_18_large_vanradius
 
 
-use confinement
 
 implicit none
 type(typ_parini), intent(inout):: parini
@@ -164,9 +163,9 @@ endif
  if(.not.allocated(parini%conf_exp))    then;   allocate(parini%conf_exp     (parini%nconfine))             ; parini%conf_exp=0              ; endif
  if(.not.allocated(parini%conf_prefac)) then;   allocate(parini%conf_prefac  (parini%nconfine))             ; parini%conf_prefac=0           ; endif
  if(.not.allocated(parini%conf_cut))    then;   allocate(parini%conf_cut     (parini%nconfine))             ; parini%conf_cut=0              ; endif
- if(.not.allocated(conf_eq))     then;   allocate(conf_eq      (parini%nconfine))             ; conf_eq=0               ; endif
- if(.not.allocated(conf_list))   then;   allocate(conf_list    (nat,parini%nconfine))         ; conf_list=0             ; endif
- if(.not.allocated(conf_nat))    then;   allocate(conf_nat     (parini%nconfine))             ; conf_nat=0              ; endif
+ if(.not.allocated(parini%conf_eq))     then;   allocate(parini%conf_eq      (parini%nconfine))             ; parini%conf_eq=0               ; endif
+ if(.not.allocated(parini%conf_list))   then;   allocate(parini%conf_list    (nat,parini%nconfine))         ; parini%conf_list=0             ; endif
+ if(.not.allocated(parini%conf_nat))    then;   allocate(parini%conf_nat     (parini%nconfine))             ; parini%conf_nat=0              ; endif
  if(.not.allocated(parini%conf_cartred))then;   allocate(parini%conf_cartred (parini%nconfine))             ; parini%conf_cartred="C"        ; endif
 
 
@@ -465,10 +464,10 @@ open(unit=12,file="params_new.in")
    call parsearray_int("CONFAV",6,all_line(1:n),n,parini%conf_av(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFEQ
-   call parsearray_real("CONFEQ",6,all_line(1:n),n,conf_eq(1:parini%nconfine),parini%nconfine,found)
+   call parsearray_real("CONFEQ",6,all_line(1:n),n,parini%conf_eq(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFNAT
-   call parsearray_int("CONFNAT",7,all_line(1:n),n,conf_nat(1:parini%nconfine),parini%nconfine,found)
+   call parsearray_int("CONFNAT",7,all_line(1:n),n,parini%conf_nat(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFLIST#
 !Go through all number of confinements
@@ -477,12 +476,12 @@ open(unit=12,file="params_new.in")
         write(fn1,'(i1.1)') i
         write(find_string,'(a,a)') "CONFLIST"//fn1 
         call exist_string(trim(find_string),9,all_line(1:n),n,found)
-        if(found.and.conf_nat(i)==nat) then
+        if(found.and.parini%conf_nat(i)==nat) then
           do j=1,nat
-            conf_list(j,i)=j
+            parini%conf_list(j,i)=j
           enddo
         else
-          call parsearray_int(trim(find_string),9,all_line(1:n),n,conf_list(1:conf_nat(i),i),conf_nat(i),found)
+          call parsearray_int(trim(find_string),9,all_line(1:n),n,parini%conf_list(1:parini%conf_nat(i),i),parini%conf_nat(i),found)
         endif
       else
         stop "Loop not implemented for nconfine greater than 9"
@@ -649,7 +648,6 @@ use fingerprint, only: &
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
    
-use confinement
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(inout):: parini
@@ -761,11 +759,11 @@ parini%conf_exp=4
 parini%conf_prefac=1.d-2
 parini%conf_cut=1.d0
 parini%conf_av=2
-conf_eq=0
-conf_nat=nat
+parini%conf_eq=0
+parini%conf_nat=nat
    do i=1,parini%nconfine
           do j=1,nat
-            conf_list(j,i)=j
+            parini%conf_list(j,i)=j
           enddo
    enddo
 !Block LAYER-CONFINEMENT****************
@@ -798,7 +796,6 @@ use fingerprint, only: &
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
-use confinement
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -871,7 +868,7 @@ do i=1,parini%nconfine
   if(parini%conf_prefac(i).lt.0.d0) stop "Error in conf_prefac"
   if(parini%conf_av(i).lt.1.or.parini%conf_av(i).gt.2) stop "Error in parini%conf_av"
           do j=1,nat
-            if(conf_list(j,i).lt.1.or.conf_list(j,i).gt.nat) stop "Error in conf_list"
+            if(parini%conf_list(j,i).lt.1.or.parini%conf_list(j,i).gt.nat) stop "Error in conf_list"
           enddo
 enddo
 !if(ipi_inet.lt.0 .or. ipi_inet.gt.1) stop "Error in ipi_inet: must be 0 for unix socket, 1 for tcp"
@@ -914,7 +911,6 @@ use fingerprint, only: &
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
-use confinement
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -1058,16 +1054,16 @@ write(*,trim(formatting))  " # CONFCUT       ",parini%conf_cut
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
 write(*,trim(formatting))  " # CONFAV        ",parini%conf_av
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'es9.2)'
-write(*,trim(formatting))  " # CONFEQ        ",conf_eq
+write(*,trim(formatting))  " # CONFEQ        ",parini%conf_eq
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
-write(*,trim(formatting))  " # CONFNAT       ",conf_nat
+write(*,trim(formatting))  " # CONFNAT       ",parini%conf_nat
 !Go through all number of confinements
    do i=1,parini%nconfine
       if(i.lt.10) then
         write(fn1,'(i1.1)') i
         write(string,'(a)') "CONFLIST"//fn1
-        write(formatting,'(a,i5,a)') '(a,',conf_nat(i),'i4)'
-        write(*,trim(formatting))  " # "//trim(string)//"     ",conf_list(1:conf_nat(i),i)
+        write(formatting,'(a,i5,a)') '(a,',parini%conf_nat(i),'i4)'
+        write(*,trim(formatting))  " # "//trim(string)//"     ",parini%conf_list(1:parini%conf_nat(i),i)
       else
         stop "Loop not implemented for nconfine greater than 9"
       endif

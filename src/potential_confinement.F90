@@ -119,7 +119,6 @@
 subroutine init_confinement_parser(parini)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_eq,conf_nat,conf_list
 use global, only: units,nat
 use defs_basis, only: Bohr_Ang, Ha_eV
 implicit none
@@ -142,16 +141,16 @@ do iconf=1,parini%nconfine
   if(trim(units)=="angstroem") then
    parini%conf_prefac(iconf)=parini%conf_prefac(iconf)/Ha_eV
    if(parini%conf_cartred(iconf).eq."C".or.parini%conf_cartred(iconf).eq."c".or.parini%conf_cartred(iconf).eq."k".or.parini%conf_cartred(iconf).eq."K") then   
-      conf_eq(iconf)=conf_eq(iconf)/Bohr_Ang
+      parini%conf_eq(iconf)=parini%conf_eq(iconf)/Bohr_Ang
    endif
    parini%conf_cut(iconf)=parini%conf_cut(iconf)/Bohr_Ang
   endif
   !Read nat
   !Its possible to select all atoms simply by writing "All" or "all" instead of nat
   !Read list
-  write(my_fmt,'(a,i5,a)') '(a,',conf_nat(iconf),'(i4))'
+  write(my_fmt,'(a,i5,a)') '(a,',parini%conf_nat(iconf),'(i4))'
   write(*, '(a,i3,a,i3,i3,es15.7,es15.7,i3,es15.7)') ' # Constraint in atomic units, No. ',iconf,' with dim, exp, coeff, cutoff, av, eq: ',&
-  &parini%conf_dim(iconf),parini%conf_exp(iconf),parini%conf_prefac(iconf),parini%conf_cut(iconf),parini%conf_av(iconf),conf_eq(iconf)
+  &parini%conf_dim(iconf),parini%conf_exp(iconf),parini%conf_prefac(iconf),parini%conf_cut(iconf),parini%conf_av(iconf),parini%conf_eq(iconf)
 !  write(*,my_fmt) ' # Containing atoms: ', (conf_list(i,iconf), i = 1, conf_nat(iconf))
 enddo
 !Check some input stuff
@@ -162,12 +161,12 @@ end subroutine
 subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_eq,conf_nat,conf_list
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nat,iconf,iat
 real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
 real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
+real(8),allocatable:: conf_eq(:)
 !Initiallize
 strten=0.d0
 energy=0.d0
@@ -181,18 +180,19 @@ do iat=1,nat
 !!  point(3)=modulo(modulo(point(3),1.d0),1.d0) 
   xcart(:,iat)=matmul(latvec,point(:))
 enddo
-
+allocate(conf_eq      (parini%nconfine))
+conf_eq(1:parini%nconfine)=parini%conf_eq(1:parini%nconfine)
 !First compute the average if not provided by input
 call nveclatvec(latvec,nvec)
 point0=0.d0
 do iconf=1,parini%nconfine
    if(parini%conf_av(iconf)==2) then
      dist_av=0.d0
-     do iat=1,conf_nat(iconf)
-      call dist2plane(xcart(:,conf_list(iat,iconf)),nvec(:,mod(parini%conf_dim(iconf),3)+1),point0,dist)
+     do iat=1,parini%conf_nat(iconf)
+      call dist2plane(xcart(:,parini%conf_list(iat,iconf)),nvec(:,mod(parini%conf_dim(iconf),3)+1),point0,dist)
       dist_av=dist_av+dist
      enddo
-     dist_av=dist_av/real(conf_nat(iconf),8)
+     dist_av=dist_av/real(parini%conf_nat(iconf),8)
      conf_eq(iconf)=dist_av
    endif
 enddo
@@ -209,9 +209,9 @@ do iconf=1,parini%nconfine
  endif
 ! write(*,*) "POINT0",point0(:)
  fcart_all=0.d0
- do iat=1,conf_nat(iconf)
+ do iat=1,parini%conf_nat(iconf)
 !Compute the distance of the atom to the equilibrium plane
-    call dist2plane(xcart(:,conf_list(iat,iconf)),nvec(:,mod(parini%conf_dim(iconf),3)+1),point0,dist)
+    call dist2plane(xcart(:,parini%conf_list(iat,iconf)),nvec(:,mod(parini%conf_dim(iconf),3)+1),point0,dist)
     call rxyz_cart2int(latvec,xred_ppoint,point0,1)
 !    write(*,*)"dist",dist
 !    write(*,*)"xcart",conf_list(iat,iconf),xcart(:,conf_list(iat,iconf))
@@ -222,22 +222,22 @@ do iconf=1,parini%nconfine
       ft(1)=-tt*dist/abs(dist)*nvec(1,mod(parini%conf_dim(iconf),3)+1)
       ft(2)=-tt*dist/abs(dist)*nvec(2,mod(parini%conf_dim(iconf),3)+1)
       ft(3)=-tt*dist/abs(dist)*nvec(3,mod(parini%conf_dim(iconf),3)+1)
-      forces(1,conf_list(iat,iconf))=forces(1,conf_list(iat,iconf))+ft(1)!-tt*dist/abs(dist)*nvec(1,mod(conf_dim(iconf),3)+1)
-      forces(2,conf_list(iat,iconf))=forces(2,conf_list(iat,iconf))+ft(2)!-tt*dist/abs(dist)*nvec(2,mod(conf_dim(iconf),3)+1)
-      forces(3,conf_list(iat,iconf))=forces(3,conf_list(iat,iconf))+ft(3)!-tt*dist/abs(dist)*nvec(3,mod(conf_dim(iconf),3)+1)
+      forces(1,parini%conf_list(iat,iconf))=forces(1,parini%conf_list(iat,iconf))+ft(1)!-tt*dist/abs(dist)*nvec(1,mod(conf_dim(iconf),3)+1)
+      forces(2,parini%conf_list(iat,iconf))=forces(2,parini%conf_list(iat,iconf))+ft(2)!-tt*dist/abs(dist)*nvec(2,mod(conf_dim(iconf),3)+1)
+      forces(3,parini%conf_list(iat,iconf))=forces(3,parini%conf_list(iat,iconf))+ft(3)!-tt*dist/abs(dist)*nvec(3,mod(conf_dim(iconf),3)+1)
       write(*,'(a,i5,a,i5,a,3(es15.7))') " # Confinement No: ",iconf,", atom : ,",iat,&
             &", force along confinement :",dot_product(ft,nvec(:,mod(parini%conf_dim(iconf),3)+1)) 
-      fcart_all=fcart_all+forces(:,conf_list(iat,iconf))
-      call conf_latforce(latvec,parini%conf_dim(iconf),xred(:,conf_list(iat,iconf)),xred_ppoint,str)
+      fcart_all=fcart_all+forces(:,parini%conf_list(iat,iconf))
+      call conf_latforce(latvec,parini%conf_dim(iconf),xred(:,parini%conf_list(iat,iconf)),xred_ppoint,str)
       flat=flat+str*tt
     endif     
 !    write(*,*)"fcart",conf_list(iat,iconf),forces(:,conf_list(iat,iconf))
  enddo
 !Project out translation if conf_av(iconf)==2
  if(parini%conf_av(iconf)==2) then
- fcart_all=fcart_all/real(conf_nat(iconf),8)
- do iat=1,conf_nat(iconf)
-    forces(:,conf_list(iat,iconf))=forces(:,conf_list(iat,iconf))-fcart_all
+ fcart_all=fcart_all/real(parini%conf_nat(iconf),8)
+ do iat=1,parini%conf_nat(iconf)
+    forces(:,parini%conf_list(iat,iconf))=forces(:,parini%conf_list(iat,iconf))-fcart_all
  enddo
  endif
  
@@ -255,7 +255,7 @@ flat=matmul(flat,transpose(latvec))/vol
   strten(6) = flat(2,1)
   strten(5) = flat(3,1)
   strten(4) = flat(3,2)
-
+  deallocate(conf_eq)
 end subroutine
 !!
 !!!-**************************************
