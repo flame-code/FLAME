@@ -1344,7 +1344,7 @@ END MODULE bfgs_module
 subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type
- use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1762,7 +1762,7 @@ if(iexit==1) then
     exit
 endif
 !Set precision if necessary
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.

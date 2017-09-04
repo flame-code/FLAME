@@ -353,7 +353,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call enthalpyrelax(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
+       call enthalpyrelax(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol,parini%findsym)
        goto 3001 
   endif 
 
@@ -366,7 +366,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      !Put all the atoms back into the cell
        call backtocell(nat,pos_latvec,pos_red)
      !Run path integral
-       call varvol(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol,findsym)
+       call varvol(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol,parini%findsym)
        goto 3001 
   endif 
 
@@ -516,7 +516,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 !        read(787,*) tmp_real, elocmin(npmin,1:5)          
 !Recomute symmetries if not available for some of the structures
 !        if(findsym.and.elocmin(npmin,3).lt.1.d0) then
-        if(findsym.and.spg_arr(kk).lt.1) then
+        if(parini%findsym.and.spg_arr(kk).lt.1) then
           write(*,'(a,a)') " # Recomputing symmetry for ",trim(filename)
 !          call find_symmetry(parini,nat,poslocmin(1:3,1:nat,npmin),latlocmin(1:3,1:3,npmin),typat,tolmin,tolmax,ntol,&
 !          &elocmin(npmin,4),spgint)
@@ -689,7 +689,7 @@ if(iexit==1) then
 endif
 
 !Check for symmetry
-   if(findsym) then
+   if(parini%findsym) then
       call find_symmetry(parini,nat,pos_red,pos_latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spgint)
       spg_pos=spgint
    else
@@ -701,9 +701,9 @@ endif
    accepted=accepted+1.d0
 
 !Get FDOS
-  if(finddos) then
+  if(parini%finddos) then
      iprec=1
-     if(usewf_geopt) then
+     if(parini%usewf_geopt) then
         getwfk=.true.
      else
         getwfk=.false.
@@ -968,7 +968,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
      write(*,'(a,i7)') " # Counter of GEOPT updated: ", int(count_geopt)
 
 !Check for symmetry
-   if(findsym) then
+   if(parini%findsym) then
       call find_symmetry(parini,nat,wpos_red,wpos_latvec,typat,tolmin,tolmax,ntol,spgtol_wpos,spgint)
       spg_wpos=spgint
    else
@@ -977,7 +977,7 @@ if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_la
    endif
 
 !Get FDOS
-  if(finddos) then
+  if(parini%finddos) then
      iprec=1;getwfk=.true.
      call get_dos(parini,parres,wpos_latvec,wpos_red,efermi,fdos_wpos,iprec,getwfk)
      write(*,'(a,es15.7,es15.7)') " # FDOS found: ",fdos_wpos,efermi
@@ -3491,7 +3491,7 @@ subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type
- use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
  use interface_code
@@ -4007,7 +4007,7 @@ else
        latvec_in=latpred
 endif
 !       getwfk=.true.
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -6704,7 +6704,7 @@ end subroutine
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units
- use global, only: fixat,fixlat,findsym,fragarr
+ use global, only: fixat,fixlat,fragarr
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6769,7 +6769,7 @@ end subroutine
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,typat,char_type,units
- use global, only: fixat,fixlat,findsym,fragarr
+ use global, only: fixat,fixlat,fragarr
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6830,7 +6830,7 @@ if(file_exists) then
         if(parini%paropt_geopt%approach=="SD")     call     GEOPT_SD  (parini,parres,latvec,xred,fcart,strten,energy,iprec,counter,folder)
       endif
 !Check for symmetry
-   if(findsym) then
+   if(parini%findsym) then
       call find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,spgtol_pos,spgint)
       spg_pos=real(spgint,8)
    else

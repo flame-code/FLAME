@@ -50,8 +50,7 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
+                &usewf_soften,usewf_md,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
                 &voids,core_rep
 use steepest_descent, only: sd_beta_lat,sd_beta_at
@@ -346,7 +345,7 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !Block GEOPT*****************
 !USEWFGEO
-   call parse_logical("USEWFGEO",8,all_line(1:n),n,usewf_geopt,found)
+   call parse_logical("USEWFGEO",8,all_line(1:n),n,parini%usewf_geopt,found)
    if(found) cycle
 !USEWFSOFT
    call parse_logical("USEWFSOFT",9,all_line(1:n),n,usewf_soften,found)
@@ -355,10 +354,10 @@ open(unit=12,file="params_new.in")
    call parse_logical("USEWFMD",7,all_line(1:n),n,usewf_md,found)
    if(found) cycle
 !FINDSYM
-   call parse_logical("FINDSYM",7,all_line(1:n),n,findsym,found)
+   call parse_logical("FINDSYM",7,all_line(1:n),n,parini%findsym,found)
    if(found) cycle
 !FINDDOS
-   call parse_logical("FINDDOS",7,all_line(1:n),n,finddos,found)
+   call parse_logical("FINDDOS",7,all_line(1:n),n,parini%finddos,found)
    if(found) cycle
 !Block KPT****************
 !AUTO_KPT
@@ -639,8 +638,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
+                &usewf_soften,usewf_md,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -697,11 +695,11 @@ parini%alphax_lat=1.d0
 parini%alphax_at=1.d0
 parini%paropt_geopt%fmaxtol=2.d-4
 parini%paropt_geopt%strfact=100.d0
-usewf_geopt=.false.
+parini%usewf_geopt=.false.
 usewf_soften=.false.
 usewf_md=.false.
-findsym=.false.
-finddos=.false.
+parini%findsym=.false.
+parini%finddos=.false.
 parini%auto_kpt=.true.
 parini%ka=1;parini%kb=1;parini%kc=1
 parini%dkpt1=0.04d0
@@ -792,8 +790,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
+                &usewf_soften,usewf_md,&
                 &fixat,fixlat,rcov,fragarr,voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -909,8 +906,7 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
+                &usewf_soften,usewf_md,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
                 &voids,core_rep
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -939,9 +935,9 @@ write(*,'(a,L3)')          " # VOIDS         ", voids
 write(*,'(a,L3)')          " # COREREP       ", core_rep
 write(*,'(a)')             " # COMPUTE parameters ************************************************************"
 write(*,'(a,a)')           " # CODE          ", trim(parini%potential_potential)
-write(*,'(a,L3)')          " # FINDSYM       ", findsym
-write(*,'(a,L3)')          " # FINDDOS       ", finddos
-write(*,'(a,L3)')          " # USEWFGEO      ", usewf_geopt
+write(*,'(a,L3)')          " # FINDSYM       ", parini%findsym
+write(*,'(a,L3)')          " # FINDDOS       ", parini%finddos
+write(*,'(a,L3)')          " # USEWFGEO      ", parini%usewf_geopt
 write(*,'(a,L3)')          " # USEWFMD       ", usewf_md
 write(*,'(a,L3)')          " # USEWFSOFT     ", usewf_soften
 write(*,'(a)')             " # Atomic parameters *************************************************************"
