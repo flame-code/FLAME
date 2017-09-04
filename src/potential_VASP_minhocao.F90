@@ -102,7 +102,7 @@ contains
     nat_type=0
     do itype=1,ntypat
       do iat=1,nat
-        if(typat(iat)==itype) nat_type(itype) = nat_type(itype) + 1
+        if(parini%typat_global(iat)==itype) nat_type(itype) = nat_type(itype) + 1
       enddo
     enddo
 
@@ -479,7 +479,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   nat_type=0
   do itype=1,ntypat
   do iat=1,nat
-  if(typat(iat)==itype) nat_type(itype)=nat_type(itype)+1
+  if(parini%typat_global(iat)==itype) nat_type(itype)=nat_type(itype)+1
   enddo
   enddo
   

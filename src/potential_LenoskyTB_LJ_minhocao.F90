@@ -353,10 +353,13 @@ sigma_lj_lj_fact=1.5d0
 end module interface_lenosky_tb_lj
 
 !!!********************************************************
-subroutine check_lenosky_tb_lj()
+subroutine check_lenosky_tb_lj(parini)
+use mod_parini, only: typ_parini
 use global
 use tb_lj_params
 use defs_basis
+implicit none
+type(typ_parini), intent(in):: parini
 integer:: iat
 logical:: in_h,in_lj
 !Check typat for consistentcy and provide n_silicon
@@ -366,17 +369,17 @@ n_silicon=0
 n_h=0
 n_lj=0
 do iat=1,nat
-   if(int(znucl(typat(iat))).ne.1.and.int(znucl(typat(iat))).ne.14.and.&
-     &int(znucl(typat(iat))).ne.201) &
+   if(int(znucl(parini%typat_global(iat))).ne.1.and.int(znucl(parini%typat_global(iat))).ne.14.and.&
+     &int(znucl(parini%typat_global(iat))).ne.201) &
      &stop "Lenosky TB and LJ only implemented for Si and H and LJ particles"
-   if(int(znucl(typat(iat)))==14) n_silicon=n_silicon+1
-   if(int(znucl(typat(iat)))==14.and.(in_h.or.in_lj)) stop "Lenosky TB: First Si, then H, then LJ"
-   if(int(znucl(typat(iat)))==1.and.in_lj) stop "Lenosky TB: First H, then LJ"
-   if(int(znucl(typat(iat)))==1) then
+   if(int(znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
+   if(int(znucl(parini%typat_global(iat)))==14.and.(in_h.or.in_lj)) stop "Lenosky TB: First Si, then H, then LJ"
+   if(int(znucl(parini%typat_global(iat)))==1.and.in_lj) stop "Lenosky TB: First H, then LJ"
+   if(int(znucl(parini%typat_global(iat)))==1) then
        n_h=n_h+1
        in_h=.true.
    endif
-   if(int(znucl(typat(iat))).gt.200) then 
+   if(int(znucl(parini%typat_global(iat))).gt.200) then 
        n_lj=n_lj+1 
        in_h=.true.
        in_lj=.true.

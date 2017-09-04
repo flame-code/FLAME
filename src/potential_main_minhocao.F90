@@ -166,7 +166,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="ann") then
         icount_alborz=icount_alborz+1
         if(icount_alborz==1) then
-            call call_to_alborz_init(nat)
+            call call_to_alborz_init(parini,nat)
         endif
 !!! #endif
     elseif(trim(parini%potential_potential)=="blj") then
@@ -190,7 +190,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     endif
     
     if(trim(parini%potential_potential)=="lenosky_tb") then
-      call lenosky_tb(latvec,xred,iprec,parres%ka,parres%kb,parres%kc,fcart,energy,strten)
+      call lenosky_tb(parini,latvec,xred,iprec,parres%ka,parres%kb,parres%kc,fcart,energy,strten)
     elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
       call lenosky_tb_lj(latvec,xred,iprec,parres%ka,parres%kb,parres%kc,fcart,energy,strten)
     elseif(trim(parini%potential_potential)=="lenosky_meam") then
@@ -200,9 +200,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
         call call_to_alborz_get('bulk',nat,latvec,xred,fcart,energy,strten)
 !!! #endif
     elseif(trim(parini%potential_potential)=="blj") then
-      call blj(latvec,xred,fcart,strten,energy)
+      call blj(parini,latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="mlj") then
-      call mlj(latvec,xred,fcart,strten,energy)
+      call mlj(parini,latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="tersoff") then
       call tersoff(latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="edip") then
@@ -213,7 +213,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
       call evaluate_msock(latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
 #if defined(LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
-      call call_lammps(latvec,xred,fcart,energy,strten)
+      call call_lammps(parini,latvec,xred,fcart,energy,strten)
 #endif
 #if defined(TINKER)
     elseif(trim(parini%potential_potential)=="tinker") then

@@ -79,7 +79,7 @@ contains
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
-           write(87,'(a,2x,3(es25.15))') trim(char_type(typat(iat))),xred(:,iat)
+           write(87,'(a,2x,3(es25.15))') trim(char_type(parini%typat_global(iat))),xred(:,iat)
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"
            write(87,'(3(es25.15))') latvec(:,1)
@@ -401,9 +401,9 @@ contains
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
         if(parini%fixat(iat)) then
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 0 0 0 '
+              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 0 0 0 '
         else
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 1 1 1 '
+              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 1 1 1 '
         endif
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"

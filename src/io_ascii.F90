@@ -7,7 +7,7 @@ subroutine ascii_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: nat,ntypat,typat,znucl,char_type,units
+use global, only: nat,ntypat,znucl,char_type,units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat,jat
@@ -27,7 +27,7 @@ read(46,*) dproj_tmp(1:3)
 read(46,*) dproj_tmp(4:6)
 !Here we allocate a temporary array for the atomic character 
 if(.not.allocated(char_type_tmp)) allocate(char_type_tmp(nat))
-if(.not.allocated(typat)) allocate(typat(nat))
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))
 !There are some comment lines possible, reduced and/or fixlat
 k=0
 do iat=1,nat
@@ -46,20 +46,20 @@ do iat=1,nat
 enddo
 
 !Count how many different atom kinds there are
-if(.not.allocated(typat)) allocate(typat(nat))          
-typat(1)=1
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))          
+parini%typat_global(1)=1
 ntypat=1
 do iat=2,nat
 new=.true.
  do jat=1,iat-1
  if(trim(char_type_tmp(iat))==trim(char_type_tmp(jat))) then
      new=.false.
-     typat(iat)=typat(jat)
+     parini%typat_global(iat)=parini%typat_global(jat)
  endif
  enddo
  if(new) then
  ntypat=ntypat+1
- typat(iat)=ntypat
+ parini%typat_global(iat)=ntypat
  endif
 enddo
 
@@ -71,7 +71,7 @@ if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
 
 !Now get the sole atomic characters
 do iat=1,nat
-  char_type(typat(iat))=char_type_tmp(iat)
+  char_type(parini%typat_global(iat))=char_type_tmp(iat)
 enddo
 
 !Assign Znucl here
