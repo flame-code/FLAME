@@ -14,8 +14,8 @@ implicit none
 !  real(8),allocatable:: amu(:)
 !  real(8),allocatable:: rcov(:) 
   integer,allocatable:: typat(:)
-  logical,allocatable:: fixat(:)
-  logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
+!  logical,allocatable:: fixat(:)
+!  logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
 !  integer:: ntime_md              !Maximum number of iterations during MD
 !  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
 !  real(8):: bmass                 !Cell mass during MD and FIRE

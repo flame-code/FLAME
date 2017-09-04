@@ -13,7 +13,7 @@ subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in
  use mod_interface
  use global, only: nat,ntypat,znucl,typat
  use global, only: char_type
- use global, only: units,max_kpt,fixat,fixlat,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -342,11 +342,11 @@ if(parini%verb>0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 
@@ -499,11 +499,11 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 !*********************************************************************
@@ -745,7 +745,7 @@ endif
 !Reset everything, recompute cell and stuff
          if((multiprec.and.it.ge.parini%paropt_geopt%nit/2).or.&
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
-         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
+         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
              if(cart_forces) then
                     call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)

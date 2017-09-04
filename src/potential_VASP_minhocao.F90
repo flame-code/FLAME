@@ -63,7 +63,7 @@ contains
 !    write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
     write(87,'(a)') "NSW    = 0"
     write(87,'(a)') "IBRION = 2"
-    if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+    if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
         write(87,'(a)') "ISIF   = 0"
     else
         write(87,'(a)') "ISIF   = 2"
@@ -267,7 +267,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
   if(parini%target_pressure_gpa.ne.0.d0) then
@@ -409,7 +409,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*8.d0*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 3"
@@ -426,7 +426,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 3"
@@ -440,7 +440,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a,i5)') "NSW = ",0
 !  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
   write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 2"
@@ -491,11 +491,11 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,*)latvec(:,2)/angbohr 
   write(87,*)latvec(:,3)/angbohr 
   write(87,*) nat_type(:) 
-  if(any(fixat(:))) write(87,'(a)') "Selective dynamics"
+  if(any(parini%fixat(:))) write(87,'(a)') "Selective dynamics"
   write(87,'(a)') "Direct"
   do iat=1,nat
-  if(any(fixat(:))) then
-    if(fixat(iat)) then
+  if(any(parini%fixat(:))) then
+    if(parini%fixat(iat)) then
          write(87,'(3(1x,es25.15),a)') xred(:,iat), " F F F "  
     else
          write(87,'(3(1x,es25.15),a)') xred(:,iat), " T T T "  
@@ -627,7 +627,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
   if(parini%target_pressure_gpa.ne.0.d0) then

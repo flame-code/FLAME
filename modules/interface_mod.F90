@@ -2572,7 +2572,7 @@ end subroutine correct_latvec_oganov
  real(8) :: v(3,3),vol,rxyz_red(3,nat)
 end subroutine backtocell_cart
 subroutine pathintegral(parini,parres,latvec,xred)
- use global, only: nat,ntypat,znucl,typat,char_type,units,fixat,fixlat
+ use global, only: nat,ntypat,znucl,typat,char_type,units
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        type(typ_parini), intent(inout):: parres
@@ -2634,7 +2634,9 @@ use global, only: nat
 real(8):: latvec(3,3),k_latvec(3,3),k_xcart(3,nat,ka,kb,kc),xred(3,nat) 
 integer:: iat,k,l,m,ka,kb,kc
 end subroutine k_expansion
-subroutine elim_fixed_at(nat,x)
+subroutine elim_fixed_at(parini,nat,x)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: iat,nat
 real(8):: x(3,nat)
 end subroutine elim_fixed_at
@@ -3260,7 +3262,7 @@ real(8):: omega,b0,hessin(3*nat+9,3*nat+9),diagat,avmass,diaglat
 real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
 end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: units,nat,fixat,fixlat
+ use global, only: units,nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3271,7 +3273,7 @@ INTEGER :: choice,status,sumstatus,iprec,iexit,lattdeg,hessupdate
 character(40)::filename,folder
 end subroutine geopt_mbfgs_mhm
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: units,nat,fixat,fixlat
+ use global, only: units,nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres

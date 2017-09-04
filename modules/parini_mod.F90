@@ -235,6 +235,8 @@ module mod_parini
         !-----------------------------------------------------------------------
         real(8),allocatable:: amu(:)
         real(8),allocatable:: rcov(:)
+        logical,allocatable:: fixat(:)
+        logical:: fixlat(7)
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

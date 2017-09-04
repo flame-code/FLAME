@@ -13,7 +13,7 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
  use mod_interface
  use global, only: nat,ntypat,znucl,typat
  use global, only: char_type
- use global, only: units,max_kpt,fixat,fixlat,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use steepest_descent
  use defs_basis
  use interface_code

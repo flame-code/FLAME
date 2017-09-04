@@ -2,7 +2,6 @@
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units
- use global, only: fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -19,7 +18,7 @@ implicit none
     real(8) :: enmin1, enmin2, en0000, econs_max, econs_min, devcon
     logical:: getwfk
     real(8):: pressure,int_pressure_gpa,energy,rkin,rkin_0,dt,dt_ratio
-    if((all(fixlat(1:6)).and..not.fixlat(7)).or.parini%bc==2) then
+    if((all(parini%fixlat(1:6)).and..not.parini%fixlat(7)).or.parini%bc==2) then
        continue
     else
        write(*,*) "This routine only intended for fixed cell MD calculation"
@@ -56,9 +55,9 @@ implicit none
        fxyz=fcart_in
        fxyz_old=fcart_in
        vxyz=vel_in
-       call elim_fixed_at(nat,vxyz)
-       call elim_fixed_at(nat,fxyz)
-       call elim_fixed_at(nat,fxyz_old)
+       call elim_fixed_at(parini,nat,vxyz)
+       call elim_fixed_at(parini,nat,fxyz)
+       call elim_fixed_at(parini,nat,fxyz_old)
        rkin=0.d0
        do iat=1,nat
           rkin=rkin+amass(iat)*(vxyz(1,iat)**2+vxyz(2,iat)**2+vxyz(3,iat)**2)
@@ -74,7 +73,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,etot_in,etot_in)
+            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
 !*********************************************************************
     e0 = etot_in
@@ -120,9 +119,9 @@ implicit none
           fxyz_old(2,iat) = at2
           fxyz_old(3,iat) = at3
        end do
-       call elim_fixed_at(nat,vxyz)
-       call elim_fixed_at(nat,fxyz)
-       call elim_fixed_at(nat,fxyz_old)
+       call elim_fixed_at(parini,nat,vxyz)
+       call elim_fixed_at(parini,nat,fxyz)
+       call elim_fixed_at(parini,nat,fxyz_old)
        rkin=0.d0
        do iat=1,nat
           rkin=rkin+amass(iat)*(vxyz(1,iat)**2+vxyz(2,iat)**2+vxyz(3,iat)**2)
@@ -154,7 +153,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,etot_in,etot_in)
+            &char_type(1:ntypat),ntypat,typat,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
        if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
