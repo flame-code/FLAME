@@ -265,7 +265,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 
 !Add core repulsion (no repulsion on LJ particles)
     if(parini%core_rep) then
-       call core_repulsion(latvec,xred,fcart_rep,strten_rep,energy_rep)
+       call core_repulsion(parini,latvec,xred,fcart_rep,strten_rep,energy_rep)
        energy=energy+energy_rep
        fcart=fcart+fcart_rep
        strten=strten+strten_rep

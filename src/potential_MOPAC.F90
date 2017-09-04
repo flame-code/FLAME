@@ -66,7 +66,7 @@ contains
   do l=1,kb
   do m=1,kc
   do iat=1,nat
-  if(.not.fixat(iat)) then
+  if(.not.parini%fixat(iat)) then
       write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(typat(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,1,k_xcart(2,iat,k,l,m)*Bohr_Ang,1,k_xcart(3,iat,k,l,m)*Bohr_Ang,1
   else

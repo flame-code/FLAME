@@ -127,7 +127,7 @@ call lammps_command (lmp, 'region simbox prism 0 1 0 1 0 1 0 0 0 side in units b
 write(command_line,'(a,i5,a)') "create_box ",ntypat," simbox"
 call lammps_command (lmp, trim(command_line))
 do iat=1,ntypat
-write(command_line,'(a,i5,es25.15)') "mass ",iat,amu_emass*amu(iat)
+write(command_line,'(a,i5,es25.15)') "mass ",iat,amu_emass*parini%amu(iat)
 call lammps_command (lmp, trim(command_line))
 enddo
 !Setup all atoms

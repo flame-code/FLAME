@@ -359,7 +359,7 @@ contains
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
   write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
@@ -375,16 +375,16 @@ contains
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
   write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
   if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
-  if(any(fixat(:))) then
+  if(any(parini%fixat(:))) then
      write(87,'(a)') "Constraints = {"
      do iat=1,nat
-       if(fixat(iat)) then
+       if(parini%fixat(iat)) then
           write(87,'(i5,1x,a)') iat, " 1.0, 0.0, 0.0 "
           write(87,'(i5,1x,a)') iat, " 0.0, 1.0, 0.0 "
           write(87,'(i5,1x,a)') iat, " 0.0, 0.0, 1.0 "

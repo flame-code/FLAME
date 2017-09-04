@@ -52,7 +52,7 @@ END SUBROUTINE geopt_init
 
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use global, only: ntypat,znucl,amu,amutmp,typat,char_type,units,nat
+ use global, only: ntypat,znucl,typat,char_type,units,nat
  use defs_basis
  use minpar
 

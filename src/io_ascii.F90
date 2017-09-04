@@ -1,4 +1,4 @@
-subroutine ascii_getsystem(filename)
+subroutine ascii_getsystem(parini,filename)
 !This subroutine simply returns the 
 !Number of atoms
 !Types of atoms
@@ -6,8 +6,10 @@ subroutine ascii_getsystem(filename)
 !and allocates the necessary arrays
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
-use global, only: nat,ntypat,typat,znucl,char_type,units,amu,rcov
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,typat,znucl,char_type,units
 implicit none
+type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat,jat
 integer, allocatable:: nitype(:)
 real(8):: scaling_tmp,dproj_tmp(6),pos(3)
@@ -64,8 +66,8 @@ enddo
 !Here we allocate the arrays of types, and the character stuff
 if(.not.allocated(znucl)) allocate(znucl(ntypat))
 if(.not.allocated(char_type)) allocate(char_type(ntypat))
-if(.not.allocated(amu)) allocate(amu(ntypat))
-if(.not.allocated(rcov)) allocate(rcov(ntypat))
+if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
+if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
 
 !Now get the sole atomic characters
 do iat=1,nat
@@ -74,7 +76,7 @@ enddo
 
 !Assign Znucl here
 do i=1,ntypat
-      call symbol2znucl(amu(i),rcov(i),char_type(i),znucl(i))
+      call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),znucl(i))
 enddo
 
 99 continue

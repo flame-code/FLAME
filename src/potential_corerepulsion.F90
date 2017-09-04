@@ -37,14 +37,16 @@ end subroutine
 !*********************************************************************************
 
 
-        subroutine core_repulsion(latvec,xred0,fxyz,strten,etot)
+        subroutine core_repulsion(parini,latvec,xred0,fxyz,strten,etot)
 !This routine will compute a lennard-jones-like core repulsion. It is
 !useful for codes which have not a well defined repulsion potential when atoms
 !get too close to each other, like the DFTB code or similar.
 !The repulsive part behaves like 1/r^12 without an attractive part.
 !The cutoff/onset of repulsion is currently defined as sigma_lj_fact times the sum of
 !the covalent radii, which can be changed according to the problem desired
+        use mod_parini, only: typ_parini
         implicit none
+        type(typ_parini), intent(in):: parini
         integer:: iat, jat, kk, ll, l, nec(3), i, j, k, m
         real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3)
         real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol,strten(6)
@@ -68,7 +70,7 @@ end subroutine
         do i=1,ntypat
           do j=1,ntypat
 !Exclude interactions between LJ particles, since they are already LJ... hahaha
-             if(int(znucl(i)).lt.200.and.int(znucl(j)).lt.200) sigma_lj(i,j)=(rcov(i)+rcov(j))*Bohr_Ang*sigma_lj_fact
+             if(int(znucl(i)).lt.200.and.int(znucl(j)).lt.200) sigma_lj(i,j)=(parini%rcov(i)+parini%rcov(j))*Bohr_Ang*sigma_lj_fact
           enddo
         enddo
         xred=xred0

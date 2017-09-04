@@ -49,8 +49,8 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,&
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fragarr,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -133,7 +133,7 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
    INQUIRE(FILE=trim(filename), EXIST=file_exists)
    if(file_exists) then
      write(*,*) "Trying to read them from ",filename !Will also read ZNUCL here
-     call ascii_getsystem(filename)
+     call ascii_getsystem(parini,filename)
      read_poscur=.true.
    endif
    if(.not.read_poscur) then
@@ -143,7 +143,7 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
    INQUIRE(FILE=trim(filename), EXIST=file_exists)
    if(file_exists) then
      write(*,*) "Trying to read them from ",filename !Will also read ZNUCL here
-     call poscar_getsystem(filename)
+     call poscar_getsystem(parini,filename)
      read_poscur=.true.
    endif
    endif
@@ -152,11 +152,10 @@ endif
 !Allocate the arrays
  if(.not.allocated(znucl))       then;   allocate(znucl(ntypat))                       ; znucl=0                 ; endif
  if(.not.allocated(char_type))   then;   allocate(char_type(ntypat))                   ; char_type="  "          ; endif
- if(.not.allocated(amu))         then;   allocate(amu(ntypat))                         ; amu=0                   ; endif
- if(.not.allocated(amutmp))      then;   allocate(amutmp(ntypat))                      ; amutmp=0                ; endif
- if(.not.allocated(rcov))        then;   allocate(rcov(ntypat))                        ; rcov=0                  ; endif
+ if(.not.allocated(parini%amu))         then;   allocate(parini%amu(ntypat))                         ; parini%amu=0                   ; endif
+ if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(ntypat))                        ; parini%rcov=0                  ; endif
  if(.not.allocated(typat))       then;   allocate(typat(nat))                          ; typat=0                 ; endif
- if(.not.allocated(fixat))       then;   allocate(fixat(nat))                          ; fixat=.false.           ; endif
+ if(.not.allocated(parini%fixat))       then;   allocate(parini%fixat(nat))                          ; parini%fixat=.false.           ; endif
  if(.not.allocated(fragarr))     then;   allocate(fragarr(nat))                        ; fragarr=0               ; endif
  if(.not.allocated(parini%conf_dim))    then;   allocate(parini%conf_dim     (parini%nconfine))             ; parini%conf_dim=0              ; endif
  if(.not.allocated(parini%conf_av))     then;   allocate(parini%conf_av      (parini%nconfine))             ; parini%conf_av=0               ; endif
@@ -192,7 +191,7 @@ endif
 
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
-   call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
  enddo
 
 !Read the other variables
@@ -205,7 +204,7 @@ open(unit=12,file="params_new.in")
    if(found) parini%target_pressure_habohr=parini%target_pressure_gpa/HaBohr3_GPA
    if(found) cycle
 !Amu
-   call parsearray_real("AMU",3,all_line(1:n),n,amu(1:ntypat),ntypat,found)
+   call parsearray_real("AMU",3,all_line(1:n),n,parini%amu(1:ntypat),ntypat,found)
    if(found) cycle
 !TYPAT
    call parsearray_int("TYPAT",5,all_line(1:n),n,typat(1:nat),nat,found)
@@ -564,7 +563,7 @@ if(parini%use_confine) call  init_confinement_parser(parini)
 if(trim(parini%potential_potential)=="blj".and.calls==0) call blj_init_parameter()
 
 !Initiallize LJ parameter if required
-if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter()
+if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter(parini)
 
 !Initiallize TB-LJ parameter if required
 if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
@@ -635,8 +634,8 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,&
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -659,7 +658,7 @@ parini%target_pressure_gpa=0.d0
 parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
-   call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
  enddo
 voids=.false.
 parini%core_rep=.false.
@@ -785,8 +784,8 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,voids
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fragarr,voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
@@ -802,8 +801,8 @@ type(typ_parini), intent(in):: parini
 integer:: i,j
 !This routine will check if all values are valid...
 if(any(typat(:).lt.1)) stop "Error in typat"
-if(any(amu(:).le.0.d0)) stop "Error in amu"
-if(any(rcov(:).le.0.d0)) stop "Error in rcov"
+if(any(parini%amu(:).le.0.d0)) stop "Error in amu"
+if(any(parini%rcov(:).le.0.d0)) stop "Error in rcov"
 if(any(znucl(:).le.0)) stop "Error in znucl"
 if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
 if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
@@ -899,8 +898,8 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,&
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -940,7 +939,7 @@ write(*,trim(formatting))  " # ZNUCL         ", int(znucl(:))
 write(formatting,'(a,i5,a)') '(a,',nat,'i3)'
 write(*,trim(formatting))  " # TYPAT         ", typat(:)
 write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
-write(*,trim(formatting))  " # AMU           ", int(amu(:))
+write(*,trim(formatting))  " # AMU           ", int(parini%amu(:))
 write(*,'(a)')             " # MD parameters *****************************************************************"
 write(*,'(a,i5)')          " # MDALGO        ", parini%md_algo
 write(*,'(a,es15.7)')      " # MDPRESSCOMP   ", parini%md_presscomp

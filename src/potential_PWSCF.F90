@@ -75,7 +75,7 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
@@ -163,7 +163,7 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
   if(parini%target_pressure_gpa.ne.0.d0) then
@@ -272,7 +272,7 @@ contains
 
 !BLOCK A_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_a.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
@@ -303,7 +303,7 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_a.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
              continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
@@ -318,7 +318,7 @@ contains
 
 !BLOCK B_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_b.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
@@ -349,7 +349,7 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_b.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
            continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
@@ -396,11 +396,11 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
-        if(fixat(iat)) then
+        if(parini%fixat(iat)) then
               write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 0 0 0 '
         else
               write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 1 1 1 '
@@ -550,7 +550,7 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
   if(parini%target_pressure_gpa.ne.0.d0) then
