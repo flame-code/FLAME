@@ -52,7 +52,7 @@ END SUBROUTINE geopt_init
 
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use global, only: ntypat,znucl,amu,amutmp,typat,char_type,units,usewf_geopt,nat
+ use global, only: ntypat,znucl,amu,amutmp,typat,char_type,units,nat
  use defs_basis
  use minpar
 
@@ -175,7 +175,7 @@ do its=1,ITMAX
  goto 1001
  endif
 
- if(usewf_geopt) then
+ if(parini%usewf_geopt) then
      getwfk=.true.
  else
      getwfk=.false.
@@ -258,7 +258,7 @@ lambda_predict=max(lambda_predict,-1.d0)
    p=pnew
    dg=g       !Save the old gradient,
 
-   if(usewf_geopt) then
+   if(parini%usewf_geopt) then
        getwfk=.true.
    else
        getwfk=.false.

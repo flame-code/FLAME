@@ -75,7 +75,7 @@ end subroutine GEOPT_RBFGS_MHM
 
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
  use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: units,usewf_geopt,fixat,fixlat
+ use global, only: units,fixat,fixlat
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
 !    use module_base
@@ -125,7 +125,7 @@ pressure=parini%target_pressure_habohr
     icall=0
     do 
 !Here we perform the force call
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -221,7 +221,7 @@ END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
  use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: units,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -302,7 +302,7 @@ latvec(7:9)=latvec_in(:,3)
 
     do 
 !Here we perform the force call
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -869,7 +869,7 @@ end subroutine bfgs_reza
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
  use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: units,usewf_geopt,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
+ use global, only: units,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
 !subroutine lbfgsdriver(rxyz,fxyz,etot,at,rst,in,ncount_bigdft,fail) 
@@ -1046,7 +1046,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
 !!      if(ICALL.ne.0) call call_bigdft(nproc,iproc,at,rxyz,in,F,fxyz,rst,infocode)
 !      if(ICALL.ne.0) call call_bigdft()!nproc,iproc,at,rxyz,in,F,fxyz,fnoise,rst,infocode)
 !Here we perform the force call
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -1693,7 +1693,7 @@ subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,et
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,nat,fixat,fixlat
  use defs_basis
  use minpar
  use mod_fire,   only:dtmin, dtmax
@@ -1893,7 +1893,7 @@ endif
    goto 1001
  endif
 
- if(usewf_geopt) then
+ if(parini%usewf_geopt) then
      getwfk=.true.
  else
      getwfk=.false.
@@ -1954,7 +1954,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    dlatvec=lambda_predict*xi(3*nat+1:3*nat+9)
    dxred=lambda_predict*xi(1:3*nat)
    call propagate(parini,nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
-   if(usewf_geopt) then
+   if(parini%usewf_geopt) then
        getwfk=.true.
    else
        getwfk=.false.
@@ -2103,7 +2103,7 @@ subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_i
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: ntypat,znucl,amu,amutmp,typat,char_type
- use global, only: units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,nat,fixat,fixlat
  use defs_basis
  use minpar
 
@@ -2228,7 +2228,7 @@ do its=1,ITMAX
  goto 1001
  endif
 
- if(usewf_geopt) then
+ if(parini%usewf_geopt) then
      getwfk=.true.
  else
      getwfk=.false.
@@ -2310,7 +2310,7 @@ lambda_predict=max(lambda_predict,-1.d0)
    p=pnew
    dg=g       !Save the old gradient,
 
-   if(usewf_geopt) then
+   if(parini%usewf_geopt) then
        getwfk=.true.
    else
        getwfk=.false.

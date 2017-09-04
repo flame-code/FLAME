@@ -39,14 +39,15 @@ implicit none
 !  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
 !  real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
 !  integer:: nsoften               !Number of softening steps
-  logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
+  logical:: usewf_md,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
+!  logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
 !  character(5):: geopt_method
   integer:: ka1,kb1,kc1           !The previously used kpt mesh are stored in these variables, only abinit 
   logical:: max_kpt               !If true, the single point in abinit will first evaluate if the new set is better and choose the better one. Default=false
   logical:: reuse_kpt             !If true, the single point in abinit will reuse previous kpt mesh. Default=false
   logical:: reduced               !If true, all output files will be written in reduced coordinates. Initiallized when reading poscur.ascii
-  logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
-  logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
+!  logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
+!  logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
 !  logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
 !  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
 !  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run

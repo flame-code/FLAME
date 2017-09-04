@@ -3256,7 +3256,7 @@ real(8):: omega,b0,hessin(3*nat+9,3*nat+9),diagat,avmass,diaglat
 real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
 end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,nat,fixat,fixlat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3267,7 +3267,7 @@ INTEGER :: choice,status,sumstatus,iprec,iexit,lattdeg,hessupdate
 character(40)::filename,folder
 end subroutine geopt_mbfgs_mhm
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,nat,fixat,fixlat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
