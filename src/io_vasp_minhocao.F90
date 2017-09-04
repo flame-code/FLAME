@@ -7,7 +7,7 @@ subroutine poscar_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: nat,ntypat,typat,znucl,char_type,units,rcov
+use global, only: nat,ntypat,typat,znucl,char_type,units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat
@@ -51,7 +51,7 @@ if(.not.allocated(znucl)) allocate(znucl(ntypat))
 if(.not.allocated(char_type)) allocate(char_type(ntypat))
 if(.not.allocated(nitype)) allocate(nitype(ntypat))          
 if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
-if(.not.allocated(rcov)) allocate(rcov(ntypat))
+if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
 !Check if the character is a number or a real character
       READ(line_vaspversion,*,ERR=99,END=99) CHARAC
       IF (.NOT.(CHARAC>='0' .AND. CHARAC<='9')) THEN
@@ -79,7 +79,7 @@ do i=1,ntypat
       iat=iat+1
       typat(iat)=i
     enddo
-    call symbol2znucl(parini%amu(i),rcov(i),char_type(i),znucl(i))
+    call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),znucl(i))
 enddo
 znucl_found=.true.
 

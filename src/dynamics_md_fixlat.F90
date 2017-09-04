@@ -1,6 +1,6 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis

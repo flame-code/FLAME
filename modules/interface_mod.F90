@@ -1572,7 +1572,7 @@ integer:: nzero,npositive,i,typer
 end function typer
 ! ./src/dynamics_md_fixlat.F90 :
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -2308,7 +2308,7 @@ subroutine task_minhocao(parini,parres)
  type(typ_parini), intent(inout):: parres
 end subroutine task_minhocao
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2355,7 +2355,7 @@ real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),cr
 real(8):: latmass,amass(nat),lattrans(3,3),latdottrans(3,3),ekintrace(3,3),sigma(3,3),sigmatrans(3,3),vol_1_3
 end subroutine ekin_at_lat_andersen
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2365,7 +2365,7 @@ subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_
  character(40)::filename,folder
 end subroutine md_andersen_mhm
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2375,7 +2375,7 @@ subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,
  character(40)::filename,folder
 end subroutine md_pr_mhm_old
 subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2515,7 +2515,7 @@ subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,tem
  character(40):: folder
 end subroutine init_vel
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2528,7 +2528,7 @@ end subroutine init_vel
         character(40):: filename,folder
 end subroutine soften_pos
         subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2670,8 +2670,10 @@ end subroutine dist_ang2latvec
 subroutine dist_latvec2ang(dist_ang,latvec,pi)
 real(8):: dist_ang(6),latvec(3,3),pi,convang
 end subroutine dist_latvec2ang
-subroutine fragments(latvec,xred,nfrag,xcart,fragarr,fragsize)
-use global, only: nat,ntypat,znucl,rcov,typat,char_type
+subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,znucl,typat,char_type
+type(typ_parini), intent(in):: parini
 real(8),dimension(3,nat), INTENT(IN) :: xred
 real(8):: latvec(3,3),rotmat(3,3),dproj(6)
 integer :: nfrag, nfragold
@@ -2694,7 +2696,9 @@ end subroutine inertia_tensor
 subroutine rot_ener(omega,intens,erot)
 real(8):: omega(3),intens(3,3),erot
 end subroutine rot_ener
-subroutine init_rotvels(nat,xred,latvec,temp,amass,vel)
+subroutine init_rotvels(parini,nat,xred,latvec,temp,amass,vel)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer,intent(in):: nat
 real(8),intent(in):: xred(3,nat),latvec(3,3),temp,amass(nat)
 real(8),intent(out):: vel(3,nat)
@@ -2787,7 +2791,7 @@ end subroutine track_kpt
 subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcart_in,strten_in,&
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2832,7 +2836,7 @@ end subroutine init_fp
 subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
 use mod_parini, only: typ_parini
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
-use global, only: ntypat,nat,typat,rcov,char_type
+use global, only: ntypat,nat,typat,char_type
 type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),vol,rcov_arr(nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,nat)
@@ -3111,7 +3115,7 @@ real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),cou
 character(40):: folder
 end subroutine geopt_rbfgs_mhm
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,typat,char_type
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -3122,7 +3126,7 @@ subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,
     integer ::  nwork,iprec
 end subroutine bfgs_driver_atoms
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,typat,char_type
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -3147,7 +3151,7 @@ subroutine bfgs_reza(nat,nr,x,epot,f,nwork,work,alphax_at,alphax_lat,fmax,fmax_a
     character(40):: coord
 end subroutine bfgs_reza
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,typat,char_type
  use mod_parini, only: typ_parini
   type(typ_parini), intent(in):: parini
   type(typ_parini), intent(inout):: parres
@@ -3422,7 +3426,7 @@ end function scnorm
       CHARACTER(LEN=*), INTENT(IN) :: scratch
 end subroutine terminate_bfgs
 subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
   use mod_parini, only: typ_parini
   type(typ_parini), intent(in):: parini
   type(typ_parini), intent(inout):: parres
@@ -3635,7 +3639,7 @@ subroutine final_sdminimum(paropt)
 end subroutine final_sdminimum
 ! ./src/optimizer_sd_minhocao.F90 :
 subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
    use mod_parini, only: typ_parini
    type(typ_parini), intent(in):: parini
    type(typ_parini), intent(inout):: parres
@@ -3732,7 +3736,7 @@ subroutine projectbond(nat,nbond,rat,fat,fstretch,iconnect,wold,alpha_stretch0,a
 end subroutine projectbond
 ! ./src/optimizer_sqnm_minhocao.F90 :
 subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
    use mod_parini, only: typ_parini
    type(typ_parini), intent(in):: parini
    type(typ_parini), intent(inout):: parres

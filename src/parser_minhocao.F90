@@ -49,8 +49,8 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,&
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fixat,fixlat,fragarr,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -153,8 +153,7 @@ endif
  if(.not.allocated(znucl))       then;   allocate(znucl(ntypat))                       ; znucl=0                 ; endif
  if(.not.allocated(char_type))   then;   allocate(char_type(ntypat))                   ; char_type="  "          ; endif
  if(.not.allocated(parini%amu))         then;   allocate(parini%amu(ntypat))                         ; parini%amu=0                   ; endif
- if(.not.allocated(amutmp))      then;   allocate(amutmp(ntypat))                      ; amutmp=0                ; endif
- if(.not.allocated(rcov))        then;   allocate(rcov(ntypat))                        ; rcov=0                  ; endif
+ if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(ntypat))                        ; parini%rcov=0                  ; endif
  if(.not.allocated(typat))       then;   allocate(typat(nat))                          ; typat=0                 ; endif
  if(.not.allocated(fixat))       then;   allocate(fixat(nat))                          ; fixat=.false.           ; endif
  if(.not.allocated(fragarr))     then;   allocate(fragarr(nat))                        ; fragarr=0               ; endif
@@ -192,7 +191,7 @@ endif
 
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
-   call atmdata(parini%amu(itype),rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
  enddo
 
 !Read the other variables
@@ -635,8 +634,8 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,&
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fixat,fixlat,fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -659,7 +658,7 @@ parini%target_pressure_gpa=0.d0
 parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
-   call atmdata(parini%amu(itype),rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
  enddo
 voids=.false.
 parini%core_rep=.false.
@@ -785,8 +784,8 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,voids
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fixat,fixlat,fragarr,voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
@@ -803,7 +802,7 @@ integer:: i,j
 !This routine will check if all values are valid...
 if(any(typat(:).lt.1)) stop "Error in typat"
 if(any(parini%amu(:).le.0.d0)) stop "Error in amu"
-if(any(rcov(:).le.0.d0)) stop "Error in rcov"
+if(any(parini%rcov(:).le.0.d0)) stop "Error in rcov"
 if(any(znucl(:).le.0)) stop "Error in znucl"
 if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
 if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
@@ -899,8 +898,8 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,amutmp,typat,char_type,&
-                &fixat,fixlat,rcov,fragarr,&
+use global, only: nat,ntypat,znucl,typat,char_type,&
+                &fixat,fixlat,fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 

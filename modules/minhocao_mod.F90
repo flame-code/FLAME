@@ -12,8 +12,7 @@ implicit none
   integer,allocatable:: llist(:) 
   real(8),allocatable:: znucl(:)
 !  real(8),allocatable:: amu(:)
-  real(8),allocatable:: amutmp(:) 
-  real(8),allocatable:: rcov(:) 
+!  real(8),allocatable:: rcov(:) 
   integer,allocatable:: typat(:)
   logical,allocatable:: fixat(:)
   logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape

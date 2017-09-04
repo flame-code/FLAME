@@ -74,7 +74,7 @@ end subroutine GEOPT_RBFGS_MHM
 !contains
 
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,typat,char_type
  use global, only: units,fixat,fixlat
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -220,7 +220,7 @@ pressure=parini%target_pressure_habohr
 END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: nat,ntypat,znucl,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,typat,char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
@@ -868,7 +868,7 @@ end subroutine bfgs_reza
 !!! This is helpfull when we are looking for the source of problems during BFGS runs
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
- use global, only: nat,ntypat,znucl,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,typat,char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1,fixat,fixlat
  use defs_basis
 
@@ -1692,7 +1692,7 @@ end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: ntypat,znucl,amutmp,typat,char_type
+ use global, only: ntypat,znucl,typat,char_type
  use global, only: units,nat,fixat,fixlat
  use defs_basis
  use minpar
@@ -2102,7 +2102,7 @@ END SUBROUTINE
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: ntypat,znucl,amutmp,typat,char_type
+ use global, only: ntypat,znucl,typat,char_type
  use global, only: units,nat,fixat,fixlat
  use defs_basis
  use minpar

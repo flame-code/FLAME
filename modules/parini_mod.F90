@@ -234,6 +234,7 @@ module mod_parini
         real(8)::qbfgs_w_2!=0.5D0
         !-----------------------------------------------------------------------
         real(8),allocatable:: amu(:)
+        real(8),allocatable:: rcov(:)
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

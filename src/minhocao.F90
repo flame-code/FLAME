@@ -1318,7 +1318,7 @@ end subroutine task_minhocao
 !**********************************************************************************************
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
@@ -2559,7 +2559,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
@@ -3047,7 +3047,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
@@ -3489,7 +3489,7 @@ end subroutine
 
 subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type
  use global, only: units,max_kpt,fixat,fixlat,ka1,kb1,kc1,confine
  use defs_basis
@@ -5216,7 +5216,7 @@ end subroutine elim_torque_cell
 subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
  use global, only: nat,ntypat,znucl
- use global, only: amutmp,typat,char_type,fixat,fixlat
+ use global, only: typat,char_type,fixat,fixlat
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5254,7 +5254,7 @@ pressure=parini%target_pressure_habohr
 if(parini%mol_soften) then
          if(any(fixat).or.any(fixlat)) stop "Fixed atoms or cell not yet implemented for molecular softening"
 !Init atomic velocities
-         call init_rotvels(nat,pos_red,latvec,temp,amass,vel)
+         call init_rotvels(parini,nat,pos_red,latvec,temp,amass,vel)
          if(parini%verb.gt.0) then
          do iat=1,nat
             write(*,'(a,i5,3(1x,es15.7))') " # iat, VEL: ",iat ,vel(:,iat)
@@ -5362,7 +5362,7 @@ end subroutine init_vel
 
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
@@ -5548,7 +5548,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 
         subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
@@ -7508,10 +7508,12 @@ end subroutine
 
 !************************************************************************************
 
-subroutine fragments(latvec,xred,nfrag,xcart,fragarr,fragsize)
+subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
 use mod_interface
-use global, only: nat,ntypat,znucl,rcov,typat,char_type
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,znucl,typat,char_type
 implicit none
+type(typ_parini), intent(in):: parini
 real(8),dimension(3,nat), INTENT(IN) :: xred
 real(8):: latvec(3,3),rotmat(3,3),dproj(6)
 real(8),allocatable:: pos(:,:)
@@ -7543,7 +7545,7 @@ do
 7000 niter=.false.
   do iat=1,nat                !Check if all the other atoms are part of the current cluster
     do jat=1,nat
-    bondlength=rcov(typat(iat))+rcov(typat(jat))
+    bondlength=parini%rcov(typat(iat))+parini%rcov(typat(jat))
     if(nfrag==fragarr(iat) .AND. jat.ne.iat .AND. fragarr(jat)==0) then
 !         call pbc_distance1(latvec,xred(:,iat),xred(:,jat),dist)
          call pbc_distance2(latvec,xred(:,iat),xcart(:,iat),xred(:,jat),xcart(:,jat),dist)
@@ -7721,13 +7723,15 @@ end subroutine
 
 !************************************************************************************
 
-subroutine init_rotvels(nat,xred,latvec,temp,amass,vel)
+subroutine init_rotvels(parini,nat,xred,latvec,temp,amass,vel)
 use mod_interface
+use mod_parini, only: typ_parini
 !This routine will first find the correct partitioning of the system into molecules, then assign
 !rotational and translational velocities to these molecules according to the tempereature temp
 use global, only: char_type,typat,units
 use defs_basis, only: Bohr_Ang,pi,kb_HaK
 implicit none
+type(typ_parini), intent(in):: parini
 integer,intent(in):: nat
 real(8),intent(in):: xred(3,nat),latvec(3,3),temp,amass(nat)
 real(8),intent(out):: vel(3,nat)
@@ -7785,7 +7789,7 @@ ekin_rot=ekin_rot*ekin_tot
 vel=0.d0
 
 !First identify the fragments or molecules in the cell
-call fragments(latvec,xred,nfrag,xcart,fragarr,fragsize)
+call fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
 
 !Allocate the arrays corresponding to molecular quantities
 allocate(cmass(3,nfrag),vel_cmass(3,nfrag),intens(3,3,nfrag))
@@ -8619,7 +8623,7 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amutmp,typat
+ use global, only: nat,ntypat,znucl,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
@@ -9287,7 +9291,7 @@ use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim
 use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
 use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
-use global, only: ntypat,nat,typat,rcov,char_type
+use global, only: ntypat,nat,typat,char_type
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
@@ -9307,24 +9311,24 @@ select case(fp_method)
      call get_fp_calypso(nat,rxyz,latvec,fp_12_r_cut,typat,ntypat,fp_12_fp_dim,fp_12_nl,fp)
   case(13)!Modified Calypso method
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call get_fp_malypso(nat,rxyz,rcov,latvec,fp_13_r_cut,typat,ntypat,fp_13_fp_dim,fp_13_nl,fp)
+     call get_fp_malypso(nat,rxyz,parini%rcov,latvec,fp_13_r_cut,typat,ntypat,fp_13_fp_dim,fp_13_nl,fp)
   case(14)!xyz2sm fingerprint
      do iat=1,nat
-        rcov_arr(iat)=rcov(typat(iat))
+        rcov_arr(iat)=parini%rcov(typat(iat))
      enddo
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
      call xyz2sm(nat,latvec,rxyz,rcov_arr,parini%fp_14_w1,parini%fp_14_w2,parini%fp_14_m,fp)
   case(15)!C-Oganov fingerprint
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call get_fp_coganov(nat,rxyz,latvec,fp_15_rcut,fp_15_sigma,rcov,&
+     call get_fp_coganov(nat,rxyz,latvec,fp_15_rcut,fp_15_sigma,parini%rcov,&
           &typat,ntypat,fp_15_nkinds_sum,fp_15_fp_size,fp_15_fp_dim,fp)
   case(16)!C-Atomic-Oganov fingerprint
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call get_fp_coganov_atomic(nat,rxyz,latvec,fp_16_rcut,fp_16_sigma,rcov,&
+     call get_fp_coganov_atomic(nat,rxyz,latvec,fp_16_rcut,fp_16_sigma,parini%rcov,&
           &typat,ntypat,fp_16_nkinds_sum,fp_16_fp_size,fp_16_fp_dim,fp)
   case(17)!GOM
      do iat = 1, nat
-        rcov_arr(iat) = rcov(typat(iat))
+        rcov_arr(iat) = parini%rcov(typat(iat))
      end do
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
      call get_fp_gauss(nat, ntypat, parini%fp_17_natx_sphere, typat, parini%fp_17_lseg, fp_17_width_cutoff,&
@@ -9347,7 +9351,7 @@ select case(fp_method)
 
   case(21)!Gaussian molecular overlap
      do iat=1,nat
-        rcov_arr(iat)=rcov(typat(iat))
+        rcov_arr(iat)=parini%rcov(typat(iat))
      enddo
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
      call fingerprint_gaussmol(nat,fp_len,rxyz,rcov_arr,fp)
