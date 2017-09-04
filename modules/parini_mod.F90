@@ -201,6 +201,7 @@ module mod_parini
         !-----------------------------------------------------------------------
         logical:: use_confine           !if true, confinement is enable, otherwise disabled
         integer:: nconfine       !number of different confinements
+        character(1),allocatable:: conf_cartred(:)!Cartesian or reduced coordinates, only if conf_eq is provided. d,D,r,R for reduced, C,c,K,k for cartesian
         !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut

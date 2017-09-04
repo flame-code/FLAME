@@ -119,7 +119,7 @@
 subroutine init_confinement_parser(parini)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
+use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
 use global, only: units,nat
 use defs_basis, only: Bohr_Ang, Ha_eV
 implicit none
@@ -134,14 +134,14 @@ do iconf=1,parini%nconfine
   !Dimension
 !  read(line,*,iostat=io) conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf)
   if(conf_av(iconf)==1) then
-    if(conf_cartred(iconf).ne."C".and.conf_cartred(iconf).ne."c".and.conf_cartred(iconf).ne."k".and.conf_cartred(iconf).ne."K"&
-    &.and.conf_cartred(iconf).ne."r".and.conf_cartred(iconf).ne."R".and.conf_cartred(iconf).ne."D".and.conf_cartred(iconf).ne."d")&
+    if(parini%conf_cartred(iconf).ne."C".and.parini%conf_cartred(iconf).ne."c".and.parini%conf_cartred(iconf).ne."k".and.parini%conf_cartred(iconf).ne."K"&
+    &.and.parini%conf_cartred(iconf).ne."r".and.parini%conf_cartred(iconf).ne."R".and.parini%conf_cartred(iconf).ne."D".and.parini%conf_cartred(iconf).ne."d")&
     stop "Provide cartesian or reduced indicator for the equilirium position"
   endif
   !Convert here the units if necessary
   if(trim(units)=="angstroem") then
    conf_prefac(iconf)=conf_prefac(iconf)/Ha_eV
-   if(conf_cartred(iconf).eq."C".or.conf_cartred(iconf).eq."c".or.conf_cartred(iconf).eq."k".or.conf_cartred(iconf).eq."K") then   
+   if(parini%conf_cartred(iconf).eq."C".or.parini%conf_cartred(iconf).eq."c".or.parini%conf_cartred(iconf).eq."k".or.parini%conf_cartred(iconf).eq."K") then   
       conf_eq(iconf)=conf_eq(iconf)/Bohr_Ang
    endif
    conf_cut(iconf)=conf_cut(iconf)/Bohr_Ang
@@ -162,7 +162,7 @@ end subroutine
 subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
+use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nat,iconf,iat
@@ -200,7 +200,7 @@ enddo
 !Run over all confinements and compute the forces and energies
 do iconf=1,parini%nconfine
 ! write(*,*) "EQ",conf_eq(iconf)
- if(conf_cartred(iconf).eq."R".or.conf_cartred(iconf).eq."r".or.conf_cartred(iconf).eq."D".or.conf_cartred(iconf).eq."d") then
+ if(parini%conf_cartred(iconf).eq."R".or.parini%conf_cartred(iconf).eq."r".or.parini%conf_cartred(iconf).eq."D".or.parini%conf_cartred(iconf).eq."d") then
   point0=0.d0
   call dist2plane(latvec(:,conf_dim(iconf)),nvec(:,mod(conf_dim(iconf),3)+1),point0,dist)
   point0(:)=nvec(:,mod(conf_dim(iconf),3)+1)*conf_eq(iconf)*dist

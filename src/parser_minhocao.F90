@@ -167,7 +167,7 @@ endif
  if(.not.allocated(conf_eq))     then;   allocate(conf_eq      (parini%nconfine))             ; conf_eq=0               ; endif
  if(.not.allocated(conf_list))   then;   allocate(conf_list    (nat,parini%nconfine))         ; conf_list=0             ; endif
  if(.not.allocated(conf_nat))    then;   allocate(conf_nat     (parini%nconfine))             ; conf_nat=0              ; endif
- if(.not.allocated(conf_cartred))then;   allocate(conf_cartred (parini%nconfine))             ; conf_cartred="C"        ; endif
+ if(.not.allocated(parini%conf_cartred))then;   allocate(parini%conf_cartred (parini%nconfine))             ; parini%conf_cartred="C"        ; endif
 
 
 !Feed arrays with standard parameters
@@ -447,7 +447,7 @@ open(unit=12,file="params_new.in")
    call parse_logical("CONFINEMENT",11,all_line(1:n),n,parini%use_confine,found)
    if(found) cycle
 !CONFCARTRED
-   call parsearray_string("CONFCARTRED",11,all_line(1:n),n,conf_cartred,1,parini%nconfine,found)
+   call parsearray_string("CONFCARTRED",11,all_line(1:n),n,parini%conf_cartred,1,parini%nconfine,found)
    if(found) cycle
 !CONFDIM
    call parsearray_int("CONFDIM",7,all_line(1:n),n,conf_dim(1:parini%nconfine),parini%nconfine,found)
@@ -755,7 +755,7 @@ parini%qbfgs_w_1=0.01D0
 parini%qbfgs_w_2=0.5D0
 
 parini%use_confine=.false.
-conf_cartred="C"
+parini%conf_cartred="C"
 conf_dim=1
 conf_exp=4
 conf_prefac=1.d-2
@@ -862,10 +862,10 @@ if(fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
 if(fp_18_width_cutoff.lt.0.d0) stop "Error in fp_18_width_cutoff"
 if(fp_18_width_overlap.lt.0.d0) stop "Error in fp_18_width_overlap"
 do i=1,parini%nconfine
-  if(.not.(conf_cartred(i).eq."C".or.conf_cartred(i).eq."c".or.&
-          &conf_cartred(i).eq."K".or.conf_cartred(i).eq."k".or.&
-          &conf_cartred(i).eq."R".or.conf_cartred(i).eq."r".or.&
-          &conf_cartred(i).eq."D".or.conf_cartred(i).eq."d")) stop "Error in conf_cartred"
+  if(.not.(parini%conf_cartred(i).eq."C".or.parini%conf_cartred(i).eq."c".or.&
+          &parini%conf_cartred(i).eq."K".or.parini%conf_cartred(i).eq."k".or.&
+          &parini%conf_cartred(i).eq."R".or.parini%conf_cartred(i).eq."r".or.&
+          &parini%conf_cartred(i).eq."D".or.parini%conf_cartred(i).eq."d")) stop "Error in conf_cartred"
   if(conf_dim(i).lt.1.or.conf_dim(i).gt.3) stop "Error in conf_dim"
   if(conf_exp(i).lt.1) stop "Error in conf_exp"
   if(conf_prefac(i).lt.0.d0) stop "Error in conf_prefac"
@@ -1046,7 +1046,7 @@ write(*,'(a,L3)')          " # CONFINEMENT   ",parini%use_confine
 if(parini%use_confine) then
 write(*,'(a,i5)')          " # CONFNCONF     ",parini%nconfine
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'A4)'
-write(*,trim(formatting))  " # CONFCARTRED   ",conf_cartred
+write(*,trim(formatting))  " # CONFCARTRED   ",parini%conf_cartred
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
 write(*,trim(formatting))  " # CONFDIM       ",conf_dim
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
