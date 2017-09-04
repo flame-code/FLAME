@@ -4096,7 +4096,7 @@ end subroutine cell_vol
 ! ./src/potential_confinement.F90 :
 subroutine init_confinement_parser(parini)
 use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parini
 end subroutine init_confinement_parser
 subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
 use mod_parini, only: typ_parini

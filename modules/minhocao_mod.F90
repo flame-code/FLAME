@@ -202,8 +202,8 @@ integer,allocatable:: conf_av(:)     !0: no confinement (should never occur)
                                      !1: confinement with respect to a fixed value along latvec(:,i)
                                      !2: confinement with respect to the average
 !integer,allocatable:: conf_exp(:)    !The polynomial order for each confinement
-real(8),allocatable:: conf_prefac(:) !The polynomial predactor for each confinement
-real(8),allocatable:: conf_cut(:)    !The cutoff distance from each confinement equilibrium
+!real(8),allocatable:: conf_prefac(:) !The polynomial predactor for each confinement
+!real(8),allocatable:: conf_cut(:)    !The cutoff distance from each confinement equilibrium
 real(8),allocatable:: conf_eq(:)     !Equlibrium position of confinement along the confinement direction, will be filled to average or fixed value
 integer,allocatable:: conf_nat(:)    !How many atoms per confinement
 integer,allocatable:: conf_list(:,:) !List of atoms per confinement
