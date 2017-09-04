@@ -201,6 +201,11 @@ module mod_parini
         !-----------------------------------------------------------------------
         logical:: use_confine           !if true, confinement is enable, otherwise disabled
         integer:: nconfine       !number of different confinements
+        integer,allocatable:: conf_dim(:)    !1,2 or 3 for each of the 3 dimensions latvec(:,1), latvec(:,2), latvec(:,3)
+        integer,allocatable:: conf_av(:)     !0: no confinement (should never occur)
+                                             !1: confinement with respect to a fixed value along latvec(:,i)
+                                             !2: confinement with respect to the average
+        integer,allocatable:: conf_exp(:)    !The polynomial order for each confinement
         character(1),allocatable:: conf_cartred(:)!Cartesian or reduced coordinates, only if conf_eq is provided. d,D,r,R for reduced, C,c,K,k for cartesian
         !-----------------------------------------------------------------------
         character(20):: fp_method_ch

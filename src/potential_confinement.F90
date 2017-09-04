@@ -119,7 +119,7 @@
 subroutine init_confinement_parser(parini)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
+use confinement, only: conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
 use global, only: units,nat
 use defs_basis, only: Bohr_Ang, Ha_eV
 implicit none
@@ -133,7 +133,7 @@ write(*,'(a,a)') " # Constraints in the internal, atomic units. Input interprete
 do iconf=1,parini%nconfine
   !Dimension
 !  read(line,*,iostat=io) conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf)
-  if(conf_av(iconf)==1) then
+  if(parini%conf_av(iconf)==1) then
     if(parini%conf_cartred(iconf).ne."C".and.parini%conf_cartred(iconf).ne."c".and.parini%conf_cartred(iconf).ne."k".and.parini%conf_cartred(iconf).ne."K"&
     &.and.parini%conf_cartred(iconf).ne."r".and.parini%conf_cartred(iconf).ne."R".and.parini%conf_cartred(iconf).ne."D".and.parini%conf_cartred(iconf).ne."d")&
     stop "Provide cartesian or reduced indicator for the equilirium position"
@@ -151,18 +151,18 @@ do iconf=1,parini%nconfine
   !Read list
   write(my_fmt,'(a,i5,a)') '(a,',conf_nat(iconf),'(i4))'
   write(*, '(a,i3,a,i3,i3,es15.7,es15.7,i3,es15.7)') ' # Constraint in atomic units, No. ',iconf,' with dim, exp, coeff, cutoff, av, eq: ',&
-  &conf_dim(iconf),conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),conf_av(iconf),conf_eq(iconf)
+  &parini%conf_dim(iconf),parini%conf_exp(iconf),conf_prefac(iconf),conf_cut(iconf),parini%conf_av(iconf),conf_eq(iconf)
 !  write(*,my_fmt) ' # Containing atoms: ', (conf_list(i,iconf), i = 1, conf_nat(iconf))
 enddo
 !Check some input stuff
-if(minval(conf_dim(:)).lt.1.or.maxval(conf_dim(:)).gt.3) stop "Wrong dimension confined"
-if(minval(conf_av(:)).lt.1.or.maxval(conf_av(:)).gt.2) stop "Wrong average in confinement"
+if(minval(parini%conf_dim(:)).lt.1.or.maxval(parini%conf_dim(:)).gt.3) stop "Wrong dimension confined"
+if(minval(parini%conf_av(:)).lt.1.or.maxval(parini%conf_av(:)).gt.2) stop "Wrong average in confinement"
 end subroutine
 
 subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
 use mod_interface
 use mod_parini, only: typ_parini
-use confinement, only: conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
+use confinement, only: conf_prefac,conf_cut,conf_eq,conf_nat,conf_list
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nat,iconf,iat
@@ -186,10 +186,10 @@ enddo
 call nveclatvec(latvec,nvec)
 point0=0.d0
 do iconf=1,parini%nconfine
-   if(conf_av(iconf)==2) then
+   if(parini%conf_av(iconf)==2) then
      dist_av=0.d0
      do iat=1,conf_nat(iconf)
-      call dist2plane(xcart(:,conf_list(iat,iconf)),nvec(:,mod(conf_dim(iconf),3)+1),point0,dist)
+      call dist2plane(xcart(:,conf_list(iat,iconf)),nvec(:,mod(parini%conf_dim(iconf),3)+1),point0,dist)
       dist_av=dist_av+dist
      enddo
      dist_av=dist_av/real(conf_nat(iconf),8)
@@ -202,39 +202,39 @@ do iconf=1,parini%nconfine
 ! write(*,*) "EQ",conf_eq(iconf)
  if(parini%conf_cartred(iconf).eq."R".or.parini%conf_cartred(iconf).eq."r".or.parini%conf_cartred(iconf).eq."D".or.parini%conf_cartred(iconf).eq."d") then
   point0=0.d0
-  call dist2plane(latvec(:,conf_dim(iconf)),nvec(:,mod(conf_dim(iconf),3)+1),point0,dist)
-  point0(:)=nvec(:,mod(conf_dim(iconf),3)+1)*conf_eq(iconf)*dist
+  call dist2plane(latvec(:,parini%conf_dim(iconf)),nvec(:,mod(parini%conf_dim(iconf),3)+1),point0,dist)
+  point0(:)=nvec(:,mod(parini%conf_dim(iconf),3)+1)*conf_eq(iconf)*dist
  else 
-  point0(:)=nvec(:,mod(conf_dim(iconf),3)+1)*conf_eq(iconf)
+  point0(:)=nvec(:,mod(parini%conf_dim(iconf),3)+1)*conf_eq(iconf)
  endif
 ! write(*,*) "POINT0",point0(:)
  fcart_all=0.d0
  do iat=1,conf_nat(iconf)
 !Compute the distance of the atom to the equilibrium plane
-    call dist2plane(xcart(:,conf_list(iat,iconf)),nvec(:,mod(conf_dim(iconf),3)+1),point0,dist)
+    call dist2plane(xcart(:,conf_list(iat,iconf)),nvec(:,mod(parini%conf_dim(iconf),3)+1),point0,dist)
     call rxyz_cart2int(latvec,xred_ppoint,point0,1)
 !    write(*,*)"dist",dist
 !    write(*,*)"xcart",conf_list(iat,iconf),xcart(:,conf_list(iat,iconf))
 !Compute energy and forces and stress
     if(abs(dist).gt.conf_cut(iconf)) then
-      energy=energy+conf_prefac(iconf)*(abs(dist)-conf_cut(iconf))**conf_exp(iconf)  
-      tt=conf_prefac(iconf)*(abs(dist)-conf_cut(iconf))**(conf_exp(iconf)-1)*conf_exp(iconf)
-      ft(1)=-tt*dist/abs(dist)*nvec(1,mod(conf_dim(iconf),3)+1)
-      ft(2)=-tt*dist/abs(dist)*nvec(2,mod(conf_dim(iconf),3)+1)
-      ft(3)=-tt*dist/abs(dist)*nvec(3,mod(conf_dim(iconf),3)+1)
+      energy=energy+conf_prefac(iconf)*(abs(dist)-conf_cut(iconf))**parini%conf_exp(iconf)  
+      tt=conf_prefac(iconf)*(abs(dist)-conf_cut(iconf))**(parini%conf_exp(iconf)-1)*parini%conf_exp(iconf)
+      ft(1)=-tt*dist/abs(dist)*nvec(1,mod(parini%conf_dim(iconf),3)+1)
+      ft(2)=-tt*dist/abs(dist)*nvec(2,mod(parini%conf_dim(iconf),3)+1)
+      ft(3)=-tt*dist/abs(dist)*nvec(3,mod(parini%conf_dim(iconf),3)+1)
       forces(1,conf_list(iat,iconf))=forces(1,conf_list(iat,iconf))+ft(1)!-tt*dist/abs(dist)*nvec(1,mod(conf_dim(iconf),3)+1)
       forces(2,conf_list(iat,iconf))=forces(2,conf_list(iat,iconf))+ft(2)!-tt*dist/abs(dist)*nvec(2,mod(conf_dim(iconf),3)+1)
       forces(3,conf_list(iat,iconf))=forces(3,conf_list(iat,iconf))+ft(3)!-tt*dist/abs(dist)*nvec(3,mod(conf_dim(iconf),3)+1)
       write(*,'(a,i5,a,i5,a,3(es15.7))') " # Confinement No: ",iconf,", atom : ,",iat,&
-            &", force along confinement :",dot_product(ft,nvec(:,mod(conf_dim(iconf),3)+1)) 
+            &", force along confinement :",dot_product(ft,nvec(:,mod(parini%conf_dim(iconf),3)+1)) 
       fcart_all=fcart_all+forces(:,conf_list(iat,iconf))
-      call conf_latforce(latvec,conf_dim(iconf),xred(:,conf_list(iat,iconf)),xred_ppoint,str)
+      call conf_latforce(latvec,parini%conf_dim(iconf),xred(:,conf_list(iat,iconf)),xred_ppoint,str)
       flat=flat+str*tt
     endif     
 !    write(*,*)"fcart",conf_list(iat,iconf),forces(:,conf_list(iat,iconf))
  enddo
 !Project out translation if conf_av(iconf)==2
- if(conf_av(iconf)==2) then
+ if(parini%conf_av(iconf)==2) then
  fcart_all=fcart_all/real(conf_nat(iconf),8)
  do iat=1,conf_nat(iconf)
     forces(:,conf_list(iat,iconf))=forces(:,conf_list(iat,iconf))-fcart_all

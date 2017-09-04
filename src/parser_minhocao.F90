@@ -159,9 +159,9 @@ endif
  if(.not.allocated(typat))       then;   allocate(typat(nat))                          ; typat=0                 ; endif
  if(.not.allocated(fixat))       then;   allocate(fixat(nat))                          ; fixat=.false.           ; endif
  if(.not.allocated(fragarr))     then;   allocate(fragarr(nat))                        ; fragarr=0               ; endif
- if(.not.allocated(conf_dim))    then;   allocate(conf_dim     (parini%nconfine))             ; conf_dim=0              ; endif
- if(.not.allocated(conf_av))     then;   allocate(conf_av      (parini%nconfine))             ; conf_av=0               ; endif
- if(.not.allocated(conf_exp))    then;   allocate(conf_exp     (parini%nconfine))             ; conf_exp=0              ; endif
+ if(.not.allocated(parini%conf_dim))    then;   allocate(parini%conf_dim     (parini%nconfine))             ; parini%conf_dim=0              ; endif
+ if(.not.allocated(parini%conf_av))     then;   allocate(parini%conf_av      (parini%nconfine))             ; parini%conf_av=0               ; endif
+ if(.not.allocated(parini%conf_exp))    then;   allocate(parini%conf_exp     (parini%nconfine))             ; parini%conf_exp=0              ; endif
  if(.not.allocated(conf_prefac)) then;   allocate(conf_prefac  (parini%nconfine))             ; conf_prefac=0           ; endif
  if(.not.allocated(conf_cut))    then;   allocate(conf_cut     (parini%nconfine))             ; conf_cut=0              ; endif
  if(.not.allocated(conf_eq))     then;   allocate(conf_eq      (parini%nconfine))             ; conf_eq=0               ; endif
@@ -450,10 +450,10 @@ open(unit=12,file="params_new.in")
    call parsearray_string("CONFCARTRED",11,all_line(1:n),n,parini%conf_cartred,1,parini%nconfine,found)
    if(found) cycle
 !CONFDIM
-   call parsearray_int("CONFDIM",7,all_line(1:n),n,conf_dim(1:parini%nconfine),parini%nconfine,found)
+   call parsearray_int("CONFDIM",7,all_line(1:n),n,parini%conf_dim(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFEXP
-   call parsearray_int("CONFEXP",7,all_line(1:n),n,conf_exp(1:parini%nconfine),parini%nconfine,found)
+   call parsearray_int("CONFEXP",7,all_line(1:n),n,parini%conf_exp(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFPREFAC
    call parsearray_real("CONFPREFAC",10,all_line(1:n),n,conf_prefac(1:parini%nconfine),parini%nconfine,found)
@@ -462,7 +462,7 @@ open(unit=12,file="params_new.in")
    call parsearray_real("CONFCUT",7,all_line(1:n),n,conf_cut(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFAV
-   call parsearray_int("CONFAV",6,all_line(1:n),n,conf_av(1:parini%nconfine),parini%nconfine,found)
+   call parsearray_int("CONFAV",6,all_line(1:n),n,parini%conf_av(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFEQ
    call parsearray_real("CONFEQ",6,all_line(1:n),n,conf_eq(1:parini%nconfine),parini%nconfine,found)
@@ -756,11 +756,11 @@ parini%qbfgs_w_2=0.5D0
 
 parini%use_confine=.false.
 parini%conf_cartred="C"
-conf_dim=1
-conf_exp=4
+parini%conf_dim=1
+parini%conf_exp=4
 conf_prefac=1.d-2
 conf_cut=1.d0
-conf_av=2
+parini%conf_av=2
 conf_eq=0
 conf_nat=nat
    do i=1,parini%nconfine
@@ -866,10 +866,10 @@ do i=1,parini%nconfine
           &parini%conf_cartred(i).eq."K".or.parini%conf_cartred(i).eq."k".or.&
           &parini%conf_cartred(i).eq."R".or.parini%conf_cartred(i).eq."r".or.&
           &parini%conf_cartred(i).eq."D".or.parini%conf_cartred(i).eq."d")) stop "Error in conf_cartred"
-  if(conf_dim(i).lt.1.or.conf_dim(i).gt.3) stop "Error in conf_dim"
-  if(conf_exp(i).lt.1) stop "Error in conf_exp"
+  if(parini%conf_dim(i).lt.1.or.parini%conf_dim(i).gt.3) stop "Error in conf_dim"
+  if(parini%conf_exp(i).lt.1) stop "Error in conf_exp"
   if(conf_prefac(i).lt.0.d0) stop "Error in conf_prefac"
-  if(conf_av(i).lt.1.or.conf_av(i).gt.2) stop "Error in conf_av"
+  if(parini%conf_av(i).lt.1.or.parini%conf_av(i).gt.2) stop "Error in parini%conf_av"
           do j=1,nat
             if(conf_list(j,i).lt.1.or.conf_list(j,i).gt.nat) stop "Error in conf_list"
           enddo
@@ -1048,15 +1048,15 @@ write(*,'(a,i5)')          " # CONFNCONF     ",parini%nconfine
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'A4)'
 write(*,trim(formatting))  " # CONFCARTRED   ",parini%conf_cartred
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
-write(*,trim(formatting))  " # CONFDIM       ",conf_dim
+write(*,trim(formatting))  " # CONFDIM       ",parini%conf_dim
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
-write(*,trim(formatting))  " # CONFEXP       ",conf_exp
+write(*,trim(formatting))  " # CONFEXP       ",parini%conf_exp
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'es9.2)'
 write(*,trim(formatting))  " # CONFPREFAC    ",conf_prefac
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'es9.2)'
 write(*,trim(formatting))  " # CONFCUT       ",conf_cut
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
-write(*,trim(formatting))  " # CONFAV        ",conf_av
+write(*,trim(formatting))  " # CONFAV        ",parini%conf_av
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'es9.2)'
 write(*,trim(formatting))  " # CONFEQ        ",conf_eq
 write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
