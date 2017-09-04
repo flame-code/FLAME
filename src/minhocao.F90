@@ -176,7 +176,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   siesta_kpt_mode=2          !Mode of generating automatic k-point mesh, only siesta
   vasp_kpt_mode=2            !Mode of generating automatic k-point mesh, only vasp
   abinit_kpt_mode=1          !Mode of generating automatic k-point mesh, only abinit
-  correctalg=2               !Method to correct cell vectors when torn out of shape
+  parini%correctalg=2               !Method to correct cell vectors when torn out of shape
 
 !Define if the external optimizer should be used. Only available for:
 !vasp
@@ -925,7 +925,7 @@ endif
 
 !Make the cell "good" before entering GEOPT
 !Put atoms back into cell after MD
-if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_latvec,wpos_red,nat,correctalg,latvec_io)
+if(.not.(any(fixlat).or.any(fixat).or.confine.ge.1)) call correct_latvec(wpos_latvec,wpos_red,nat,parini%correctalg,latvec_io)
 
 !Convert to enthalpy
      call get_enthalpy(wpos_latvec,e_wpos,parini%target_pressure_habohr,ent_wpos)
@@ -1319,7 +1319,7 @@ end subroutine task_minhocao
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_md
+ use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -1764,7 +1764,7 @@ else
 endif
        if(itime==1)  then
            getwfk=.false.
-       elseif(itime.ne.1.and.usewf_md) then
+       elseif(itime.ne.1.and.parini%usewf_md) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -2560,7 +2560,7 @@ end subroutine
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_md
+ use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -2923,7 +2923,7 @@ else
 endif
        if(itime==1)  then
            getwfk=.false.
-       elseif(itime.ne.1.and.usewf_md) then
+       elseif(itime.ne.1.and.parini%usewf_md) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -3048,7 +3048,7 @@ end subroutine
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_md,fixat,fixlat
+ use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -3377,7 +3377,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        latvec_in=latpred
        if(itime==1)  then
            getwfk=.false.
-       elseif(itime.ne.1.and.usewf_md) then
+       elseif(itime.ne.1.and.parini%usewf_md) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -3491,7 +3491,7 @@ subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type
- use global, only: units,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,fixat,fixlat,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
  use interface_code
@@ -4194,7 +4194,7 @@ if(md_type==4)   volcur=volpred
          if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
              cellfix_done=.true.
-             call correct_latvec(latcur,poscur,nat,correctalg,latvec_io)
+             call correct_latvec(latcur,poscur,nat,parini%correctalg,latvec_io)
              if(latvec_io.ne.0) then
                max_kpt=.false.
                ka1=0;kb1=0;kc1=0
@@ -5363,7 +5363,7 @@ end subroutine init_vel
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_soften,fixat,fixlat
+ use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5460,7 +5460,7 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot0)
 call rxyz_cart2int(latvec,pos_red_in,wpos,nat)
 latvec_in=latvec
 iprec=1
-if(usewf_soften) then
+if(parini%usewf_soften) then
     getwfk=.true.
 else
     getwfk=.false.
@@ -5549,7 +5549,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
         subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_soften,fixat,fixlat
+ use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5662,7 +5662,7 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot0)
 
 latvec_in=wlat
 iprec=1
-if(usewf_soften) then
+if(parini%usewf_soften) then
     getwfk=.true.
 else
     getwfk=.false.
@@ -8620,7 +8620,7 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_md
+ use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -9060,7 +9060,7 @@ else
 endif
        if(itime==1)  then
            getwfk=.false.
-       elseif(itime.ne.1.and.usewf_md) then
+       elseif(itime.ne.1.and.parini%usewf_md) then
            getwfk=.true.
        else
            getwfk=.false.

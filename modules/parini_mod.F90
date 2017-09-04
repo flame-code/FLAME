@@ -194,7 +194,10 @@ module mod_parini
         real(8):: target_pressure_habohr  !Target pressures
         logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
         logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization
-        logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
+        logical:: usewf_md,usewf_geopt,usewf_soften !Defines when the wavefunctions should be reused in the next step
+        logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
+        integer:: correctalg            !Method to perform cell corrections
+!        integer:: ntime_md              !Maximum number of iterations during MD
         !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut

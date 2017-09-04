@@ -50,9 +50,8 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_soften,usewf_md,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
-                &voids,core_rep
+                &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -234,7 +233,7 @@ open(unit=12,file="params_new.in")
    call parse_logical("VOIDS",5,all_line(1:n),n,voids,found)
    if(found) cycle
 !COREREP
-   call parse_logical("COREREP",7,all_line(1:n),n,core_rep,found)
+   call parse_logical("COREREP",7,all_line(1:n),n,parini%core_rep,found)
    if(found) cycle
 !Block mdmin****************
 !AUTO_MDMIN
@@ -348,10 +347,10 @@ open(unit=12,file="params_new.in")
    call parse_logical("USEWFGEO",8,all_line(1:n),n,parini%usewf_geopt,found)
    if(found) cycle
 !USEWFSOFT
-   call parse_logical("USEWFSOFT",9,all_line(1:n),n,usewf_soften,found)
+   call parse_logical("USEWFSOFT",9,all_line(1:n),n,parini%usewf_soften,found)
    if(found) cycle
 !USEWFMD
-   call parse_logical("USEWFMD",7,all_line(1:n),n,usewf_md,found)
+   call parse_logical("USEWFMD",7,all_line(1:n),n,parini%usewf_md,found)
    if(found) cycle
 !FINDSYM
    call parse_logical("FINDSYM",7,all_line(1:n),n,parini%findsym,found)
@@ -638,9 +637,8 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_soften,usewf_md,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
-                &voids,core_rep
+                &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
@@ -666,7 +664,7 @@ parini%target_pressure_habohr=0.d0
    call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
  enddo
 voids=.false.
-core_rep=.false.
+parini%core_rep=.false.
 if(.not.read_poscur) typat(1:nat)=1
 parini%nmd_dynamics=300
 parini%md_algo=1
@@ -696,8 +694,8 @@ parini%alphax_at=1.d0
 parini%paropt_geopt%fmaxtol=2.d-4
 parini%paropt_geopt%strfact=100.d0
 parini%usewf_geopt=.false.
-usewf_soften=.false.
-usewf_md=.false.
+parini%usewf_soften=.false.
+parini%usewf_md=.false.
 parini%findsym=.false.
 parini%finddos=.false.
 parini%auto_kpt=.true.
@@ -790,8 +788,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_soften,usewf_md,&
-                &fixat,fixlat,rcov,fragarr,voids,core_rep
+                &fixat,fixlat,rcov,fragarr,voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
@@ -906,9 +903,8 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_soften,usewf_md,&
                 &fixat,fixlat,rcov,fragarr,use_confine,&
-                &voids,core_rep
+                &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
@@ -932,14 +928,14 @@ write(*,'(a)')             " # SYSTEM parameters *******************************
 write(*,'(a,i5)')          " # BOUNDARY      ", parini%bc
 write(*,'(a,es15.7)')      " # PRESS         ", parini%target_pressure_gpa
 write(*,'(a,L3)')          " # VOIDS         ", voids
-write(*,'(a,L3)')          " # COREREP       ", core_rep
+write(*,'(a,L3)')          " # COREREP       ", parini%core_rep
 write(*,'(a)')             " # COMPUTE parameters ************************************************************"
 write(*,'(a,a)')           " # CODE          ", trim(parini%potential_potential)
 write(*,'(a,L3)')          " # FINDSYM       ", parini%findsym
 write(*,'(a,L3)')          " # FINDDOS       ", parini%finddos
 write(*,'(a,L3)')          " # USEWFGEO      ", parini%usewf_geopt
-write(*,'(a,L3)')          " # USEWFMD       ", usewf_md
-write(*,'(a,L3)')          " # USEWFSOFT     ", usewf_soften
+write(*,'(a,L3)')          " # USEWFMD       ", parini%usewf_md
+write(*,'(a,L3)')          " # USEWFSOFT     ", parini%usewf_soften
 write(*,'(a)')             " # Atomic parameters *************************************************************"
 write(*,'(a,i5)')          " # NAT           ", nat
 write(*,'(a,i5)')          " # NTYPE         ", ntypat

@@ -13,7 +13,7 @@ subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in
  use mod_interface
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type
- use global, only: units,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,fixat,fixlat,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -749,10 +749,10 @@ endif
 !Only perform the cell correction once, presumably close to the end of the optimization run
              if(cart_forces) then
                     call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),pos_tmp(:,:),nat,correctalg,latvec_io)
+             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),pos_tmp(:,:),nat,parini%correctalg,latvec_io)
                     call rxyz_int2cart(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
              else
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat,correctalg,latvec_io)
+             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat,parini%correctalg,latvec_io)
              endif
              cellfix_done=.true.
              if(latvec_io.ne.0) then

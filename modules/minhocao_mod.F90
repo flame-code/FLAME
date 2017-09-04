@@ -17,7 +17,7 @@ implicit none
   integer,allocatable:: typat(:)
   logical,allocatable:: fixat(:)
   logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
-  integer:: ntime_md              !Maximum number of iterations during MD
+!  integer:: ntime_md              !Maximum number of iterations during MD
 !  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
 !  real(8):: bmass                 !Cell mass during MD and FIRE
 !  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
@@ -39,8 +39,7 @@ implicit none
 !  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
 !  real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
 !  integer:: nsoften               !Number of softening steps
-  logical:: usewf_md,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
-!  logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
+!  logical:: usewf_md,usewf_geopt,usewf_soften !Defines when the wavefunctions should be reused in the next step
 !  character(5):: geopt_method
   integer:: ka1,kb1,kc1           !The previously used kpt mesh are stored in these variables, only abinit 
   logical:: max_kpt               !If true, the single point in abinit will first evaluate if the new set is better and choose the better one. Default=false
@@ -57,14 +56,14 @@ implicit none
 !  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
 !  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
 !  logical:: mol_soften            !Switch on molecular softening
-  integer:: correctalg            !Method to perform cell corrections
+!  integer:: correctalg            !Method to perform cell corrections
 !  integer:: bc                    !1: periodic, 2:free, 3:surface/slab
 !  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
   integer:: confine               !0: No confinement, 1: confinement used, but not currently, 2: confinement in action, 3: confinement always on
   logical:: use_confine           !if true, confinement is enable, otherwise disabled
 !  logical:: energy_conservation   !Only used in fixed cell MD
   logical:: voids                 !If or if not to use void creating LJ particles in the cell
-  logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
+!  logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
 end module global
 
 module mod_fire

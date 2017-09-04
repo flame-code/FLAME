@@ -1344,7 +1344,7 @@ END MODULE bfgs_module
 subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use global, only: nat,ntypat,znucl,amu,amutmp,typat
  use global, only: char_type
- use global, only: units,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,fixat,fixlat,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1776,7 +1776,7 @@ endif
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
          if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
-             call correct_latvec(h,pos,nat,correctalg,latvec_io)
+             call correct_latvec(h,pos,nat,parini%correctalg,latvec_io)
              write(*,*) "New cell found", latvec_io
              cellfix_done=.true.
              if(latvec_io.ne.0) then
