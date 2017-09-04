@@ -1,4 +1,4 @@
-subroutine poscar_getsystem(filename)
+subroutine poscar_getsystem(parini,filename)
 !This subroutine simply returns the 
 !Number of atoms
 !Types of atoms
@@ -6,8 +6,10 @@ subroutine poscar_getsystem(filename)
 !and allocates the necessary arrays
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
-use global, only: nat,ntypat,typat,znucl,char_type,units,amu,rcov
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,typat,znucl,char_type,units,rcov
 implicit none
+type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat
 integer, allocatable:: nitype(:)
 real(8):: scaling_tmp,latvec_tmp(3,3)
@@ -48,7 +50,7 @@ if(ntypat.gt.0) ntypat_found=.true.
 if(.not.allocated(znucl)) allocate(znucl(ntypat))
 if(.not.allocated(char_type)) allocate(char_type(ntypat))
 if(.not.allocated(nitype)) allocate(nitype(ntypat))          
-if(.not.allocated(amu)) allocate(amu(ntypat))
+if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
 if(.not.allocated(rcov)) allocate(rcov(ntypat))
 !Check if the character is a number or a real character
       READ(line_vaspversion,*,ERR=99,END=99) CHARAC
@@ -77,7 +79,7 @@ do i=1,ntypat
       iat=iat+1
       typat(iat)=i
     enddo
-    call symbol2znucl(amu(i),rcov(i),char_type(i),znucl(i))
+    call symbol2znucl(parini%amu(i),rcov(i),char_type(i),znucl(i))
 enddo
 znucl_found=.true.
 

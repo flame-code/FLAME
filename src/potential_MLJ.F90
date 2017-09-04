@@ -165,9 +165,11 @@ contains
 
 end module interface_mlj
 
-     subroutine mlj_init_parameter()
+     subroutine mlj_init_parameter(parini)
+     use mod_parini, only: typ_parini
      use global
      use mlj_params
+     type(typ_parini), intent(inout):: parini
 !We consider only the epsilon and sigma for each one of the lennard jones
 !elements. The rest, meaning the interaction parameters, will be constructed
 !from those elements by some mixing rule
@@ -182,7 +184,7 @@ end module interface_mlj
      sigmamlj=0.d0;epsmlj=0.d0
 !Get the LJ parameters from a lookup table
          do ityp=1,ntypat
-           call mlj_atmdata(amu,sigmamlj(ityp,ityp),epsmlj(ityp,ityp),rcov(ityp),char_type(ityp),znucl(ityp))
+           call mlj_atmdata(parini%amu,sigmamlj(ityp,ityp),epsmlj(ityp,ityp),rcov(ityp),char_type(ityp),znucl(ityp))
            alphamlj(ityp,ityp)=2.5d0
          enddo
 

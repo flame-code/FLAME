@@ -1,6 +1,6 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
@@ -43,8 +43,8 @@ implicit none
 
 !Assign masses to each atom (for MD)
     do iat=1,nat
-      amass(iat)=amu_emass*amu(typat(iat))
-      write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, amu(typat(iat)),amass(iat)
+      amass(iat)=amu_emass*parini%amu(typat(iat))
+      write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(typat(iat)),amass(iat)
     enddo
 
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT

@@ -75,7 +75,7 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
@@ -396,7 +396,7 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat

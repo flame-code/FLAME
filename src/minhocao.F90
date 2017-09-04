@@ -261,7 +261,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 !Assign atomic masses in electron units
  allocate(amass(nat))
  do iat=1,nat
-   amass(iat)=amu_emass*amu(typat(iat))
+   amass(iat)=amu_emass*parini%amu(typat(iat))
  enddo
 
 !Allocate and handle molecular crystal stuff
@@ -1318,7 +1318,7 @@ end subroutine task_minhocao
 !**********************************************************************************************
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
@@ -1447,8 +1447,8 @@ implicit none
 
 !Assign masses to each atom (for MD)
  do iat=1,nat
-   amass(iat)=amu_emass*amu(typat(iat))
-if(parres%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, amu(typat(iat)),amass(iat)
+   amass(iat)=amu_emass*parini%amu(typat(iat))
+if(parres%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(typat(iat)),amass(iat)
  enddo
 !******************************************************************
 !NEW VERISON OF MD: Directly implemented, simplest Parrinello-Rahman and other MD
@@ -2559,7 +2559,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
@@ -2689,8 +2689,8 @@ implicit none
 
 !Assign masses to each atom (for MD)
  do iat=1,nat
-   amass(iat)=amu_emass*amu(typat(iat))
-   write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, amu(typat(iat)),amass(iat)
+   amass(iat)=amu_emass*parini%amu(typat(iat))
+   write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(typat(iat)),amass(iat)
  enddo
 !******************************************************************
 !Here we split the routine in the Abinit native part and my new implentation
@@ -3047,7 +3047,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
@@ -3143,8 +3143,8 @@ implicit none
 
 !Assign masses to each atom (for MD)
  do iat=1,nat
-   amass(iat)=amu_emass*amu(typat(iat))
-   write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, amu(typat(iat)),amass(iat)
+   amass(iat)=amu_emass*parini%amu(typat(iat))
+   write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(typat(iat)),amass(iat)
  enddo
 !******************************************************************
 !NEW VERISON OF MD: Directly implemented, simplest Parrinello-Rahman MD
@@ -3489,7 +3489,7 @@ end subroutine
 
 subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type
  use global, only: units,max_kpt,fixat,fixlat,ka1,kb1,kc1,confine
  use defs_basis
@@ -3640,7 +3640,7 @@ alpha_lat=20.d0
 !Assign masses to each atom (for FIRE, all atoms have the same mass)
  do iat=1,nat
 !   amass(iat)=amu_emass*1.d0
-   amass(iat)=amu_emass*amu(typat(iat))
+   amass(iat)=amu_emass*parini%amu(typat(iat))
    if(parini%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # FIRE: iat, AMU, EM: ", iat, amass(iat)/amu_emass,amass(iat)
  enddo
 
@@ -5216,7 +5216,7 @@ end subroutine elim_torque_cell
 subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
  use global, only: nat,ntypat,znucl
- use global, only: amu,amutmp,typat,char_type,fixat,fixlat
+ use global, only: amutmp,typat,char_type,fixat,fixlat
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5244,8 +5244,8 @@ implicit none
 
 !Assign masses to each atom (for MD)
  do iat=1,nat
- amass(iat)=amu_emass*amu(typat(iat))
-  if(parini%verb.gt.0) write(*,'(a,i5,1x,es15.7,1x,es15.7)') " # iat, AMU, EM: ",iat,amu(typat(iat)),amass(iat)
+ amass(iat)=amu_emass*parini%amu(typat(iat))
+  if(parini%verb.gt.0) write(*,'(a,i5,1x,es15.7,1x,es15.7)') " # iat, AMU, EM: ",iat,parini%amu(typat(iat)),amass(iat)
  end do
 
 
@@ -5362,7 +5362,7 @@ end subroutine init_vel
 
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
@@ -5548,7 +5548,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 
         subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
@@ -6315,7 +6315,7 @@ end subroutine
 
 subroutine pathintegral(parini,parres,latvec,xred)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,fixat,fixlat
+ use global, only: nat,ntypat,znucl,typat,char_type,units,fixat,fixlat
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6703,7 +6703,7 @@ end subroutine
 
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units
+ use global, only: nat,ntypat,znucl,typat,char_type,units
  use global, only: fixat,fixlat,fragarr
  use defs_basis
  use interface_code
@@ -6768,7 +6768,7 @@ end subroutine
 
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units
+ use global, only: nat,ntypat,znucl,typat,char_type,units
  use global, only: fixat,fixlat,fragarr
  use defs_basis
  use interface_code
@@ -6869,7 +6869,7 @@ end subroutine
 
 subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units
+ use global, only: nat,ntypat,znucl,typat,char_type,units
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -6971,7 +6971,7 @@ end subroutine
 
 subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units
+ use global, only: nat,ntypat,znucl,typat,char_type,units
  use global, only: fixat,fixlat
  use defs_basis
  use interface_code
@@ -8619,7 +8619,7 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl,amutmp,typat
  use global, only: char_type,units
  use global, only: fixat,fixlat
  use defs_basis
