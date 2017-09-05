@@ -2744,7 +2744,9 @@ subroutine get_cmass(cmass,masstot,xcart,amass,lhead,llist,nat,nmol)
 integer:: nat,nmol,iat,ifrag,lhead(nmol),llist(nat)
 real(8):: xcart(3,nat),amass(nat),masstot(nmol),cmass(3,nmol)
 end subroutine get_cmass
-subroutine get_inertia_tensor(intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+subroutine get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
 real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
 real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val

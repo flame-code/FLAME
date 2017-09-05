@@ -241,6 +241,8 @@ module mod_parini
         integer,allocatable:: llist(:)
         integer,allocatable:: lhead(:)
         integer,allocatable:: fragarr(:)
+        integer,allocatable:: fragsize(:)
+        integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

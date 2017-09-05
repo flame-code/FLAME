@@ -174,7 +174,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 !Some parameter setup
 !  code="lammps"          !Define what code to use for force evaluation
   siesta_kpt_mode=2          !Mode of generating automatic k-point mesh, only siesta
-  vasp_kpt_mode=2            !Mode of generating automatic k-point mesh, only vasp
+  parini%vasp_kpt_mode=2            !Mode of generating automatic k-point mesh, only vasp
   abinit_kpt_mode=1          !Mode of generating automatic k-point mesh, only abinit
   parini%correctalg=2               !Method to correct cell vectors when torn out of shape
 
@@ -267,8 +267,8 @@ call system_clock(count_max=clock_max)   !Find the time max
 !Allocate and handle molecular crystal stuff
    call refragment(parini%fragarr,nat)
    nmol=maxval(parini%fragarr)
-   allocate(fragsize(nmol),parini%lhead(nmol),parini%llist(nat))
-   call make_linked_list(parini%fragarr,fragsize,parini%lhead,parini%llist,nat,nmol)
+   allocate(parini%fragsize(nmol),parini%lhead(nmol),parini%llist(nat))
+   call make_linked_list(parini%fragarr,parini%fragsize,parini%lhead,parini%llist,nat,nmol)
 !Here we will decompose the atomic position into a set of cm and quat 
    allocate(pos_cm(3,nmol),pos_quat(4,nmol),intens(3,3,nmol),inaxis(3,3,nmol),inprin(3,nmol),masstot(nmol))
    if(nmol.ne.nat) then 
@@ -8125,7 +8125,7 @@ call rxyz_cart2int(latvec,xred_cm,cmass,nmol)
 !Compute the fragment sizes
 call get_fragsize(fragsize,lhead,llist,nat,nmol)
 !Get inertia tensor
-call get_inertia_tensor(intens,inprin,inaxis,cmass,xcart_in,amass,lhead,llist,nat,nmol)
+call get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart_in,amass,lhead,llist,nat,nmol)
 !Circular matrix that will rotate xyz to zxy
 circular(1,:)=(/0.d0,0.d0,1.d0/)
 circular(2,:)=(/1.d0,0.d0,0.d0/)
@@ -8267,13 +8267,14 @@ end subroutine
 
 !************************************************************************************
 
-subroutine get_inertia_tensor(intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+subroutine get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
 use mod_interface
+use mod_parini, only: typ_parini
 !This routine will compute the intertia tensors of all molecules involved
 !given the center of mass and atomic masses, the principle  moments of inertia inprin,
 !and the axis of the inertia tensor for each molecule
-use global, only: fragsize
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
 real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
 real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
@@ -8309,7 +8310,7 @@ deallocate(WORK)
 allocate(WORK(LWORK))
 
 do ifrag=1,nmol
-if(fragsize(ifrag)==1) then !We have a single atom
+if(parini%fragsize(ifrag)==1) then !We have a single atom
   inprin(:,ifrag)=0.d0
   inaxis(:,1,ifrag)=(/1.d0,0.d0,0.d0/)
   inaxis(:,2,ifrag)=(/0.d0,1.d0,0.d0/)

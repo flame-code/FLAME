@@ -103,7 +103,7 @@ contains
 
 !Setting up the k-point mesh
     if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="vasp".and.vasp_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="vasp".and.parini%vasp_kpt_mode.ne.2).or.&
        (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
@@ -131,7 +131,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.parini%vasp_kpt_mode==1).or.&
        (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 
@@ -298,7 +298,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 
 !Setting up the k-point mesh
     if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="vasp".and.vasp_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="vasp".and.parini%vasp_kpt_mode.ne.2).or.&
        (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
@@ -322,7 +322,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.parini%vasp_kpt_mode==1).or.&
        (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 

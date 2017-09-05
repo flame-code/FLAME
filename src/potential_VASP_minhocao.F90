@@ -76,14 +76,14 @@ contains
 
     !Kpoint mesh
     open(unit=87,file="KPOINTS")
-    write(87,'(a,i5)') "# Definition of the k-point mesh ",vasp_kpt_mode
+    write(87,'(a,i5)') "# Definition of the k-point mesh ",parini%vasp_kpt_mode
     write(87,'(i5)') 0
 !    if(dkpt==0.d0.or.vasp_kpt_mode==2) then
-    if(vasp_kpt_mode==2) then
+    if(parini%vasp_kpt_mode==2) then
       write(87,'(a)') "Gamma"!"Monkhorst Pack"
       write(87,'(3(1x,i5),a)') ka, kb, kc,"  # Number of gridpoints in each dimension"
       write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-    elseif(vasp_kpt_mode==1) then
+    elseif(parini%vasp_kpt_mode==1) then
       write(87,'(a)') "Auto"
       write(87,'(i5,a)') dkpt," # K-mesh length"
     else
@@ -449,18 +449,18 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   
   !Kpoint mesh
   open(unit=87,file="KPOINTS")
-  write(87,'(a,i5)') "# Definition of the k-point mesh ",vasp_kpt_mode
+  write(87,'(a,i5)') "# Definition of the k-point mesh ",parini%vasp_kpt_mode
   write(87,'(i5)') 0
   if(dkpt==0.d0) then
   write(87,'(a)') "Gamma"!"Monkhorst Pack"
   write(87,'(3(1x,i5),a)') ka,kb,kc,"  # Number of gridpoints in each dimension"
   write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-  elseif(vasp_kpt_mode==2) then
+  elseif(parini%vasp_kpt_mode==2) then
   call find_kpt(ka,kb,kc,latvec,dkpt)
   write(87,'(a)') "Gamma"!"Monkhorst Pack"
   write(87,'(3(1x,i5),a)') ka,kb,kc,"  # Number of gridpoints in each dimension"
   write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-  elseif(vasp_kpt_mode==1) then
+  elseif(parini%vasp_kpt_mode==1) then
   write(87,'(a)') "Auto"
   write(87,'(i5,a)') dkpt," # K-mesh length"
   else
