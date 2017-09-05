@@ -57,7 +57,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -416,8 +415,8 @@ open(unit=12,file="params_new.in")
    fp_18_orbital=parini%fp_17_orbital
    if(found) cycle
 !FPNEXCUT
-   call parsescalar_real("FPNEXCUT",8,all_line(1:n),n,fp_17_nex_cutoff,found)
-   fp_18_nex_cutoff=int(fp_17_nex_cutoff)
+   call parsescalar_real("FPNEXCUT",8,all_line(1:n),n,parini%fp_17_nex_cutoff,found)
+   fp_18_nex_cutoff=int(parini%fp_17_nex_cutoff)
    if(found) cycle
 !FPPRINCIPLEEV
    call parsescalar_int("FPPRINCIPLEEV",13,all_line(1:n),n,fp_18_principleev,found)
@@ -641,7 +640,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -716,8 +714,8 @@ parini%fp_14_m=3
 parini%fp_14_w1=1.d0
 parini%fp_14_w2=1.5d0
 parini%fp_at_nmax=10000
-fp_17_nex_cutoff=3
-fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
+parini%fp_17_nex_cutoff=3
+parini%fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*parini%fp_17_nex_cutoff)
 parini%fp_17_orbital='S'
 parini%fp_17_lseg=1
 parini%fp_17_natx_sphere=75
@@ -790,7 +788,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -904,7 +901,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
    fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
    fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
@@ -1023,7 +1019,7 @@ elseif(trim(parini%fp_method_ch)=="GOM") then
 write(*,'(a,i5)')          " # FPNATX        ", parini%fp_17_natx_sphere
 write(*,'(a,i5)')          " # FPLSEG        ", parini%fp_17_lseg
 write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_17_orbital
-write(*,'(a,es15.7)')      " # FPNEXCUT      ", fp_17_nex_cutoff
+write(*,'(a,es15.7)')      " # FPNEXCUT      ", parini%fp_17_nex_cutoff
 elseif(trim(parini%fp_method_ch)=="MOLGOM") then
 write(*,'(a,a)')           " # FPORBITAL     ", fp_18_orbital
 write(*,'(a,i5)')          " # FPNEXCUT      ", fp_18_nex_cutoff
@@ -1120,7 +1116,7 @@ elseif(parini%bc==1) then !Crystals
     elseif(trim(parini%fp_17_orbital)=="SP")then
     parini%fp_17_lseg=4 
     endif
-    fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
+    parini%fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*parini%fp_17_nex_cutoff)
   elseif(trim(parini%fp_method_ch)=="MOLGOM") then
     fp_method=18
     if(trim(fp_18_orbital)=="S")then

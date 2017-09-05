@@ -159,8 +159,8 @@ module fingerprint
    integer:: fp_16_fp_dim
    integer,allocatable:: fp_16_nkinds_sum(:)
 ! gom parameters
-   real(8):: fp_17_width_cutoff
-   real(8):: fp_17_nex_cutoff
+!   real(8):: fp_17_width_cutoff
+!   real(8):: fp_17_nex_cutoff
 !   integer:: fp_17_natx_sphere
 !   integer:: fp_17_lseg
 !   character(len=2) :: fp_17_orbital

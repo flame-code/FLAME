@@ -9323,8 +9323,8 @@ select case(fp_method)
         rcov_arr(iat) = parini%rcov(parini%typat_global(iat))
      end do
      call rxyz_int2cart(latvec,pos_red,rxyz,nat)
-     call get_fp_gauss(nat, ntypat, parini%fp_17_natx_sphere, parini%typat_global, parini%fp_17_lseg, fp_17_width_cutoff,&
-          & fp_17_nex_cutoff, latvec, rxyz, rcov_arr, fp)
+     call get_fp_gauss(nat, ntypat, parini%fp_17_natx_sphere, parini%typat_global, parini%fp_17_lseg, parini%fp_17_width_cutoff,&
+          & parini%fp_17_nex_cutoff, latvec, rxyz, rcov_arr, fp)
   case(18)!MOLGOM
 !This fingerprint wants to have the number of atoms per molecule
      natmol=nat/fp_18_molecules     
