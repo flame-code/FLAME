@@ -222,7 +222,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   if(file_exists) then
   write(*,*) "# Reading from ",trim(filename) 
   call read_atomic_file_ascii(filename,nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,parini%fixat,parini%fixlat,&
-       &readfix,fragarr,readfrag,tmp_enthalpy,tmp_energy)
+       &readfix,parini%fragarr,readfrag,tmp_enthalpy,tmp_energy)
   endif
   readfix=.false.;readfrag=.false.
 !From a vasp file
@@ -234,7 +234,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      write(*,*) "# Reading from ",trim(filename) 
      filename="poscur.vasp"
      call read_atomic_file_poscar(filename,nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,parini%fixat,parini%fixlat,&
-          &readfix,fragarr,readfrag,tmp_enthalpy,tmp_energy)
+          &readfix,parini%fragarr,readfrag,tmp_enthalpy,tmp_energy)
      endif
   endif
   if(.not.file_exists) then
@@ -265,14 +265,14 @@ call system_clock(count_max=clock_max)   !Find the time max
  enddo
 
 !Allocate and handle molecular crystal stuff
-   call refragment(fragarr,nat)
-   nmol=maxval(fragarr)
-   allocate(fragsize(nmol),lhead(nmol),llist(nat))
-   call make_linked_list(fragarr,fragsize,lhead,llist,nat,nmol)
+   call refragment(parini%fragarr,nat)
+   nmol=maxval(parini%fragarr)
+   allocate(fragsize(nmol),parini%lhead(nmol),parini%llist(nat))
+   call make_linked_list(parini%fragarr,fragsize,parini%lhead,parini%llist,nat,nmol)
 !Here we will decompose the atomic position into a set of cm and quat 
    allocate(pos_cm(3,nmol),pos_quat(4,nmol),intens(3,3,nmol),inaxis(3,3,nmol),inprin(3,nmol),masstot(nmol))
    if(nmol.ne.nat) then 
-       call init_cm_mol(parini,pos_latvec,pos_red,xcart_mol,pos_cm,pos_quat,amass,masstot,intens,inprin,inaxis,lhead,llist,nat,nmol)
+       call init_cm_mol(parini,pos_latvec,pos_red,xcart_mol,pos_cm,pos_quat,amass,masstot,intens,inprin,inaxis,parini%lhead,parini%llist,nat,nmol)
 !Get the inertia tensor and the principle inertia and the principle axis
        deallocate(xcart_tmp);allocate(xcart_tmp(3,nmol))
        xcart_tmp=0.d0
@@ -318,7 +318,7 @@ call system_clock(count_max=clock_max)   !Find the time max
      sym_fcart=0.d0
      sym_fixat=.false.
      pos_strten=0.d0
-     fragarr=0
+     parini%fragarr=0
      call find_symmetry(parini,nat,pos_red,pos_latvec,parini%typat_global,tolmin,tolmax,ntol,spgtol_pos,spg_pos)
      call spg_cell_refine(nat,sym_nat,4*nat,sym_pos,pos_latvec,sym_type,spgtol_pos,spg_pos)
      filename="sym_poscur.ascii"
@@ -492,7 +492,7 @@ call system_clock(count_max=clock_max)   !Find the time max
       filename = 'poslow'//fn5//'.ascii'
 !        call read_atomic_file_ascii(filename,nat,units,poslocmin(1:3,1:nat,npmin),latlocmin(1:3,1:3,npmin),fixat,fixlat,readfix,&
       call read_atomic_file_ascii(filename,nat,units,pl_arr(1:3,1:nat,kk),lat_arr(1:3,1:3,kk),f_arr(1:3,1:nat,kk),str_arr(1:6,kk),&
-           &parini%fixat,parini%fixlat,readfix,fragarr,readfrag,tmp_enthalpy,tmp_energy)
+           &parini%fixat,parini%fixlat,readfix,parini%fragarr,readfrag,tmp_enthalpy,tmp_energy)
       write(*,*) '# read file ',filename
      elseif(kk==1) then 
       n_arr=3*nat*nlmin
@@ -6700,7 +6700,6 @@ end subroutine
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,char_type,units
- use global, only: fragarr
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6765,7 +6764,6 @@ end subroutine
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
  use global, only: nat,ntypat,znucl,char_type,units
- use global, only: fragarr
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6806,7 +6804,7 @@ do i=1,nstruct
         readfix=.false.
         readfrag=.false.
 if(file_exists) then
-   call read_atomic_file_ascii(filename,nat,units,xred,latvec,fcart,strten,parini%fixat,parini%fixlat,readfix,fragarr,readfrag,enthalpy,energy)
+   call read_atomic_file_ascii(filename,nat,units,xred,latvec,fcart,strten,parini%fixat,parini%fixlat,readfix,parini%fragarr,readfrag,enthalpy,energy)
    write(*,'(a,es15.7)') " # Now running "//trim(filename)//" at pressure GPa ",parres%target_pressure_gpa
    !First remove all posgeopt files
    call system('rm -f posgeopt.*.ascii')

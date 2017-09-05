@@ -6,10 +6,10 @@ implicit none
   integer:: nat                   !Number of atoms
   integer:: nmol                  !Number of molecules
   integer:: ntypat                !Number of atom types
-  integer,allocatable:: fragarr(:)
+!  integer,allocatable:: fragarr(:)
   integer,allocatable:: fragsize(:)
-  integer,allocatable:: lhead(:)
-  integer,allocatable:: llist(:) 
+!  integer,allocatable:: lhead(:)
+!  integer,allocatable:: llist(:) 
   real(8),allocatable:: znucl(:)
 !  real(8),allocatable:: amu(:)
 !  real(8),allocatable:: rcov(:) 

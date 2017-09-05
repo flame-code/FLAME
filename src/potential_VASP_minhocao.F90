@@ -285,7 +285,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   readfix=.false.
   readfrag=.false.  
   call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
-           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+           &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
   latvec=latvec*Bohr_Ang !Internally already converted
 !  open(unit=32,file="CONTCAR")
 !  read(32,*)ch_tmp
@@ -645,7 +645,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   readfix=.false.
   readfrag=.false.  
   call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
-           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+           &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
   latvec=latvec*Bohr_Ang !Internally already converted
 !  open(unit=32,file="CONTCAR")
 !  read(32,*)ch_tmp

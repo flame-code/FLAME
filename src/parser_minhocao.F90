@@ -50,7 +50,6 @@ use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
-                &fragarr,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
@@ -157,7 +156,7 @@ endif
  if(.not.allocated(parini%typat_global))       then;   allocate(parini%typat_global(nat))                          ;
      parini%typat_global=0                 ; endif
  if(.not.allocated(parini%fixat))       then;   allocate(parini%fixat(nat))                          ; parini%fixat=.false.           ; endif
- if(.not.allocated(fragarr))     then;   allocate(fragarr(nat))                        ; fragarr=0               ; endif
+ if(.not.allocated(parini%fragarr))     then;   allocate(parini%fragarr(nat))                        ; parini%fragarr=0               ; endif
  if(.not.allocated(parini%conf_dim))    then;   allocate(parini%conf_dim     (parini%nconfine))             ; parini%conf_dim=0              ; endif
  if(.not.allocated(parini%conf_av))     then;   allocate(parini%conf_av      (parini%nconfine))             ; parini%conf_av=0               ; endif
  if(.not.allocated(parini%conf_exp))    then;   allocate(parini%conf_exp     (parini%nconfine))             ; parini%conf_exp=0              ; endif
@@ -636,7 +635,6 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
-                &fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
@@ -786,7 +784,7 @@ use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
-                &fragarr,voids
+                &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
@@ -900,7 +898,6 @@ use String_Utility
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
-                &fragarr,&
                 &voids
 use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 

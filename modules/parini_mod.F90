@@ -238,6 +238,9 @@ module mod_parini
         logical,allocatable:: fixat(:)
         logical:: fixlat(7)
         integer,allocatable:: typat_global(:)
+        integer,allocatable:: llist(:)
+        integer,allocatable:: lhead(:)
+        integer,allocatable:: fragarr(:)
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict
