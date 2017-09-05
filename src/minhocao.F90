@@ -173,9 +173,9 @@ call system_clock(count_max=clock_max)   !Find the time max
 
 !Some parameter setup
 !  code="lammps"          !Define what code to use for force evaluation
-  siesta_kpt_mode=2          !Mode of generating automatic k-point mesh, only siesta
+  parini%siesta_kpt_mode=2          !Mode of generating automatic k-point mesh, only siesta
   parini%vasp_kpt_mode=2            !Mode of generating automatic k-point mesh, only vasp
-  abinit_kpt_mode=1          !Mode of generating automatic k-point mesh, only abinit
+  parini%abinit_kpt_mode=1          !Mode of generating automatic k-point mesh, only abinit
   parini%correctalg=2               !Method to correct cell vectors when torn out of shape
 
 !Define if the external optimizer should be used. Only available for:

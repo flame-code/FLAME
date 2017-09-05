@@ -243,6 +243,8 @@ module mod_parini
         integer,allocatable:: fragarr(:)
         integer,allocatable:: fragsize(:)
         integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
+        integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
+        integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

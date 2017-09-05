@@ -102,9 +102,9 @@ contains
 
 
 !Setting up the k-point mesh
-    if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
+    if((trim(parini%potential_potential)=="siesta".and.parini%siesta_kpt_mode.ne.2).or.&
        (trim(parini%potential_potential)=="vasp".and.parini%vasp_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
+       (trim(parini%potential_potential)=="abinit".and.parini%abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
@@ -130,9 +130,9 @@ contains
 if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
-    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
+    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.parini%siesta_kpt_mode==1).or.&
        (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.parini%vasp_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
+       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.parini%abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 
 !Copy global array sizes to handle voids for single point energy evaluation
@@ -297,9 +297,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 
 
 !Setting up the k-point mesh
-    if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
+    if((trim(parini%potential_potential)=="siesta".and.parini%siesta_kpt_mode.ne.2).or.&
        (trim(parini%potential_potential)=="vasp".and.parini%vasp_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
+       (trim(parini%potential_potential)=="abinit".and.parini%abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
@@ -321,9 +321,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
-    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
+    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.parini%siesta_kpt_mode==1).or.&
        (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.parini%vasp_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
+       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.parini%abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 
 
