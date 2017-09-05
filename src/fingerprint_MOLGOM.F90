@@ -432,16 +432,18 @@ subroutine create_molom_1(nat,rxyz,rvan,om,width_overlap)
 end subroutine create_molom_1
 
 
-subroutine periodic_fingerprint(rxyz,alat0,finalchar,rvan,fpsall,nat)
-   use fingerprint, only: fp_18_molecules,fp_18_lseg,fp_18_molecules,fp_18_molecules_sphere,fp_18_principleev,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
+subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
+   use mod_parini, only: typ_parini
+   use fingerprint, only: fp_18_molecules,fp_18_molecules,fp_18_molecules_sphere,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
    use defs_basis, only: bohr_ang
    implicit none
+   type(typ_parini), intent(in):: parini
    integer:: nat
    integer, dimension (fp_18_expaparameter+1) :: shifting
    real*8, dimension (3,(fp_18_expaparameter+1)**3) :: possibilites
    real*8, dimension(3,nat*fp_18_molecules):: rxyz
    real*8, dimension(nat*fp_18_molecules) :: rvan
-   real*8, dimension(fp_18_lseg*fp_18_molecules_sphere*fp_18_principleev,fp_18_molecules) :: fpsall
+   real*8, dimension(parini%fp_18_lseg*fp_18_molecules_sphere*parini%fp_18_principleev,fp_18_molecules) :: fpsall
    real*8, dimension(:,:,:), allocatable :: rxyz_b
    real*8, dimension(:,:), allocatable :: rxyz_b2
    real*8, dimension(:), allocatable :: rvan_b, amplitude, mol_amplitude, fp_t, fp_b
@@ -682,8 +684,8 @@ write(*,*) nat,fp_18_molecules
       allocate (amplitude(nat*molecules_system))
       allocate (mol_amplitude(molecules_system))
       allocate (finalchar_b(nat*molecules_system))
-      allocate (fp_t(molecules_system*fp_18_principleev*fp_18_lseg))
-      allocate (fp_b(molecules_system*fp_18_lseg*nat))
+      allocate (fp_t(molecules_system*parini%fp_18_principleev*parini%fp_18_lseg))
+      allocate (fp_b(molecules_system*parini%fp_18_lseg*nat))
 
 
       !array initialization step
@@ -768,14 +770,14 @@ write(*,*) nat,fp_18_molecules
 !         close(22)
 !      endif
 
-      call create_contracted_om_1(fp_18_width_overlap,fp_18_principleev,nat,molecules_system,rxyz_b2,rvan_b,mol_amplitude,fp_t,&
-      fp_18_lseg,.false.)
+      call create_contracted_om_1(fp_18_width_overlap,parini%fp_18_principleev,nat,molecules_system,rxyz_b2,rvan_b,mol_amplitude,fp_t,&
+      parini%fp_18_lseg,.false.)
 
-      do i=1,molecules_system*fp_18_lseg*fp_18_principleev
-         fpsall(i,mol)=fp_t(molecules_system*fp_18_lseg*fp_18_principleev+1-i)
+      do i=1,molecules_system*parini%fp_18_lseg*parini%fp_18_principleev
+         fpsall(i,mol)=fp_t(molecules_system*parini%fp_18_lseg*parini%fp_18_principleev+1-i)
       enddo
 
-      do i=molecules_system*fp_18_lseg*fp_18_principleev,fp_18_molecules_sphere*fp_18_lseg*fp_18_principleev
+      do i=molecules_system*parini%fp_18_lseg*parini%fp_18_principleev,fp_18_molecules_sphere*parini%fp_18_lseg*parini%fp_18_principleev
          fpsall(i,mol)=0.d0
       enddo
 
@@ -793,7 +795,7 @@ end subroutine periodic_fingerprint
 !Input is the structure, output whatever quantity was given originally
 !Here the total number of atom is nat*molecules. We should call it nattot or something
 subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
-   use fingerprint, only: fp_18_molecules,fp_18_lseg,fp_18_molecules,fp_18_molecules_sphere,fp_18_principleev,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
+   use fingerprint, only: fp_18_molecules,fp_18_molecules,fp_18_molecules_sphere,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
    use defs_basis, only: bohr_ang
    implicit none
    integer, dimension(nat*fp_18_molecules), intent(in) :: typat

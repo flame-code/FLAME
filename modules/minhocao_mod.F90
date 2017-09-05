@@ -178,8 +178,8 @@ module fingerprint
 !   integer :: fp_18_cluster_number = 20
 !   integer, parameter :: nat=20
 !   integer, parameter :: ntypat=4
-   integer :: fp_18_principleev = 6
-   integer :: fp_18_lseg!=1
+!   integer :: fp_18_principleev = 6
+!   integer :: fp_18_lseg!=1
 !   integer, parameter :: nconf=177
    integer :: fp_18_molecules=4
    integer :: fp_18_expaparameter = 4

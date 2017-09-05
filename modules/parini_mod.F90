@@ -227,6 +227,8 @@ module mod_parini
         character(len=2) :: fp_17_orbital
         real(8):: fp_17_nex_cutoff
         real(8):: fp_17_width_cutoff
+        integer :: fp_18_principleev = 6
+        integer :: fp_18_lseg!=1
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0
