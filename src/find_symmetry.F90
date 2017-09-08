@@ -1,9 +1,11 @@
-subroutine find_symmetry(nat,xred,latvec,typat,tolmin,tolmax,ntol,tolcur,spgcur)
+subroutine find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,tolcur,spgcur)
+use mod_parini, only: typ_parini
 use mod_interface
-use global, only: code,znucl,voids
+use global, only: znucl,voids
 use tb_lj_params
 use void_lj_params, only: nat_atoms
 implicit none
+type(typ_parini), intent(in):: parini
 real(8):: xred(3,nat)
 real(8):: latvec(3,3)
 real(8):: tol,tolfact,tolmax,tolmin,tolcur,tolcur2
@@ -14,9 +16,10 @@ integer:: typat(nat),nat_sym
 
 spgcur=0
 spgcur2=0
+tolcur2=0.d0
 tolfact=(tolmax/tolmin)**(1.d0/real(ntol,8))
 
-if(trim(code)=="lenosky_tb_lj") then
+if(trim(parini%potential_potential)=="lenosky_tb_lj") then
   nat_sym=n_silicon+n_h
 elseif(voids) then
   nat_sym=nat_atoms
@@ -24,6 +27,7 @@ else
   nat_sym=nat
 endif
 
+#if defined(SPGLIB)
 do itol=0,ntol
 tol=tolmin*tolfact**itol
 !call check_symmetry(nat,xred,latvec,typat,spg,tol)
@@ -33,9 +37,7 @@ tol=tolmin*tolfact**itol
 !endif
 !write(*,'(a,i5,es15.7)') " # FINDSYM SPG, TOL      : ",spg,tol
 
-#if defined(SPGLIB)
 call get_spg(nat_sym,xred(:,1:nat_sym),latvec,typat(1:nat_sym),tol,spg2)
-#endif
 
 if(spg2.gt.spgcur2) then
    spgcur2=spg2
@@ -43,6 +45,7 @@ if(spg2.gt.spgcur2) then
 endif
 !write(*,'(a,i5,es15.7)') " # SPGLIB  SPG, TOL      : ",spg2,tol
 enddo
+#endif
 
 !write(*,'(a,i5,es15.7)') " # FINAL FINDSYM SPG, TOL: ",spgcur,tolcur
 write(*,'(a,i5,es15.7)') " # FINAL SPGLIB  SPG, TOL: ",spgcur2,tolcur2
@@ -52,10 +55,12 @@ end subroutine
 
 
 
-subroutine check_symmetry(nat,xred,latvec,typat,spg,tol)
-use global, only: code,znucl
+subroutine check_symmetry(parini,nat,xred,latvec,typat,spg,tol)
+use mod_parini, only: typ_parini
+use global, only: znucl
 use tb_lj_params
 implicit none
+type(typ_parini), intent(in):: parini
 real(8):: xred(3,nat)
 real(8):: latvec(3,3)
 real(8):: angbohr,tol
@@ -67,7 +72,7 @@ parameter(angbohr=1.889725989d0)
 
 spg=0
 
-if(trim(code)=="lenosky_tb_lj") then
+if(trim(parini%potential_potential)=="lenosky_tb_lj") then
   nat_sym=n_silicon+n_h
 else
   nat_sym=nat

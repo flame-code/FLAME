@@ -1,4 +1,4 @@
-subroutine poscar_getsystem(filename)
+subroutine poscar_getsystem(parini,filename)
 !This subroutine simply returns the 
 !Number of atoms
 !Types of atoms
@@ -6,14 +6,16 @@ subroutine poscar_getsystem(filename)
 !and allocates the necessary arrays
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
-use global, only: nat,ntypat,typat,znucl,char_type,units,amu,rcov
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,znucl,char_type,units
 implicit none
+type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat
 integer, allocatable:: nitype(:)
 real(8):: scaling_tmp,latvec_tmp(3,3)
 logical:: vasp_5,red
 character(250):: firstline,line_vaspversion,all_line
-character(40) :: filename
+character(*) :: filename
 character(1)  :: CHARAC
 logical       :: nat_found,ntypat_found,znucl_found
 !Vasp only uses angstroem
@@ -48,8 +50,8 @@ if(ntypat.gt.0) ntypat_found=.true.
 if(.not.allocated(znucl)) allocate(znucl(ntypat))
 if(.not.allocated(char_type)) allocate(char_type(ntypat))
 if(.not.allocated(nitype)) allocate(nitype(ntypat))          
-if(.not.allocated(amu)) allocate(amu(ntypat))
-if(.not.allocated(rcov)) allocate(rcov(ntypat))
+if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
+if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
 !Check if the character is a number or a real character
       READ(line_vaspversion,*,ERR=99,END=99) CHARAC
       IF (.NOT.(CHARAC>='0' .AND. CHARAC<='9')) THEN
@@ -70,14 +72,14 @@ do i=1,ntypat
       nat=nat+nitype(i)
 enddo
 if(nat.gt.0) nat_found=.true.
-if(.not.allocated(typat)) allocate(typat(nat))          
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))          
 iat=0
 do i=1,ntypat
     do j=1,nitype(i)
       iat=iat+1
-      typat(iat)=i
+      parini%typat_global(iat)=i
     enddo
-    call symbol2znucl(amu(i),rcov(i),char_type(i),znucl(i))
+    call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),znucl(i))
 enddo
 znucl_found=.true.
 
@@ -97,12 +99,12 @@ subroutine write_atomic_file_poscar(parini,filename,nat,units,xred,latvec0,fcart
 !So if units==angstroem, the file will be converted to angstroem
 !   if units==bohr, the positions will not be changed
 use defs_basis, only: Ha_eV,Bohr_Ang,HaBohr3_GPa
-use global, only: reduced,fragarr
+use global, only: reduced
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nat,natin,iat,ntypat,typat(nat)
-character(40):: filename,units
+character(*):: filename,units
 real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol,fcart(3,nat),strten(6)
 real(8):: angbohr,hartree2ev,in_GPA,in_ang3,int_press
 real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2
@@ -192,7 +194,7 @@ integer, allocatable:: nitype(:)
 logical:: fixat(nat),fixlat(7),readfix,reduced_tmp,readfrag
 character(1) :: isfixed,ch_tmp,tmp_ch
 character(2) :: element
-character(40):: filename,units
+character(*):: filename,units
 real(8):: pos(3,nat),xred(3,nat),latvec(3,3),dproj(6),strten(6),fcart(3,nat)
 real(8):: angbohr,evhartree,enthalpy_at,printval1,printval2,scaling
 character(200):: line

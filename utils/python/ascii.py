@@ -41,7 +41,10 @@ def ascii_read(filename):
         #print tt[0]
         iline+=1
         if iline==1:
-            atoms.epot=float(line.split()[1])*27.211385
+            if len(line.split()) > 1:
+                atoms.epot=float(line.split()[1])*27.211385
+            else:
+                atoms.epot=0.0
             #print atoms.epot
             pass
         elif iline==2:

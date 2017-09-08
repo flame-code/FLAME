@@ -27,7 +27,9 @@ contains
   !The meaning of dkpt1 and dkpt2 is different depending on vasp_kpt_mode:
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
-  subroutine make_input_vasp(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+  subroutine make_input_vasp(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -41,9 +43,9 @@ contains
     character(1):: fn
 
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     call system("cp  vasprun.xml vasprun.xml.bak")
@@ -61,7 +63,7 @@ contains
 !    write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
     write(87,'(a)') "NSW    = 0"
     write(87,'(a)') "IBRION = 2"
-    if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+    if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
         write(87,'(a)') "ISIF   = 0"
     else
         write(87,'(a)') "ISIF   = 2"
@@ -74,14 +76,14 @@ contains
 
     !Kpoint mesh
     open(unit=87,file="KPOINTS")
-    write(87,'(a,i5)') "# Definition of the k-point mesh ",vasp_kpt_mode
+    write(87,'(a,i5)') "# Definition of the k-point mesh ",parini%vasp_kpt_mode
     write(87,'(i5)') 0
 !    if(dkpt==0.d0.or.vasp_kpt_mode==2) then
-    if(vasp_kpt_mode==2) then
+    if(parini%vasp_kpt_mode==2) then
       write(87,'(a)') "Gamma"!"Monkhorst Pack"
       write(87,'(3(1x,i5),a)') ka, kb, kc,"  # Number of gridpoints in each dimension"
       write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-    elseif(vasp_kpt_mode==1) then
+    elseif(parini%vasp_kpt_mode==1) then
       write(87,'(a)') "Auto"
       write(87,'(i5,a)') dkpt," # K-mesh length"
     else
@@ -100,7 +102,7 @@ contains
     nat_type=0
     do itype=1,ntypat
       do iat=1,nat
-        if(typat(iat)==itype) nat_type(itype) = nat_type(itype) + 1
+        if(parini%typat_global(iat)==itype) nat_type(itype) = nat_type(itype) + 1
       enddo
     enddo
 
@@ -151,17 +153,22 @@ contains
   end subroutine get_dos_vasp
 
 
-  subroutine get_output_vasp(fcart,energy,strten)
+  subroutine get_output_vasp(parini,fcart,energy,strten)
   !use global, only: nat,target_pressure_gpa
   !use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,i_tmp
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
-  
+character(40):: filename,units_tmp
+real(8):: printval1,printval2
+logical:: readfix,readfrag
+logical:: fixat_tmp(nat),fixlat_tmp(7)
   !Set to true uf you are using vasp version 5.x
   vasp_5=.true.
   
@@ -260,10 +267,10 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -273,20 +280,27 @@ contains
   endif
   
   !Since in CONTCAR the cell and atomic positions are written with higher accuracy, get it from there:
-  open(unit=32,file="CONTCAR")
-  read(32,*)ch_tmp
-  read(32,*)scaling
-  read(32,*) latvec(:,1)
-  read(32,*) latvec(:,2)
-  read(32,*) latvec(:,3)
-  latvec=latvec*scaling
-  if(vasp_5) read(32,*)ch_tmp
-  read(32,*)i_tmp
-  read(32,*)ch_tmp
-      do iat=1,nat
-        read(32,*)xred(:,iat)
-      enddo
-  close(32)
+  filename="CONTCAR"
+  units_tmp="angstrom"
+  readfix=.false.
+  readfrag=.false.  
+  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+           &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
+  latvec=latvec*Bohr_Ang !Internally already converted
+!  open(unit=32,file="CONTCAR")
+!  read(32,*)ch_tmp
+!  read(32,*)scaling
+!  read(32,*) latvec(:,1)
+!  read(32,*) latvec(:,2)
+!  read(32,*) latvec(:,3)
+!  latvec=latvec*scaling
+!  if(vasp_5) read(32,*)ch_tmp
+!  read(32,*)i_tmp
+!  read(32,*)ch_tmp
+!      do iat=1,nat
+!        read(32,*)xred(:,iat)
+!      enddo
+!  close(32)
   
   !Transform all to bohr
   latvec=latvec/Bohr_Ang
@@ -295,11 +309,13 @@ contains
   fcart=fcart/Ha_eV*Bohr_Ang
   end subroutine
   
-  subroutine vasp_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine vasp_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
   !This routine will setup the input file for a vasp geometry optimization
   !It will also call the run script and harvest the output
   !use global, only: nat
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
@@ -307,13 +323,13 @@ contains
   character(4):: tmp_char
   getwfk=.false.
   !Set up the input file to perform geometry optimization
-   call make_input_vasp_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+   call make_input_vasp_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   ! call system("sleep 1")
   !Run the job NOW!
    call system("./runjob_geovasp.sh")
   ! call system("sleep 1")
   !Now harvest the structure, energy, forces, etc
-   call get_output_vasp_geopt(latvec,xred,fcart,energy,strten)
+   call get_output_vasp_geopt(parini,latvec,xred,fcart,energy,strten)
   !Check how many iterations have been needed
 !   call system("grep Conjugate OUTCAR_geo_a |wc -l>tmp_count") 
 !   call system("grep Conjugate OUTCAR_geo_b |wc -l>>tmp_count") 
@@ -335,7 +351,7 @@ contains
    call system("cp vasprun.xml vasprun.xml.bak") 
   end subroutine
   
-  subroutine make_input_vasp_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_vasp_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !This routine will append some informations to a file already containing some informations about the abininit runs
   !The informations appended are:
   !-The atomic informations
@@ -348,7 +364,9 @@ contains
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,vasp_kpt_mode
   !use defs_basis,only: Bohr_Ang
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
@@ -361,9 +379,9 @@ contains
   getwfk=.false.
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   !Rescale tolmxf to units of eV/Ang from Ha/Bohr
@@ -387,11 +405,11 @@ contains
   !Setup for only one force call
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
-  write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.75d0)
-  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
-  write(87,'(a,es25.15)') "EDIFFG = ",-tolmxf*8.d0*HaBohr_eVAng
+  write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.75d0)
+  write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
+  write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*8.d0*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 3"
@@ -404,11 +422,11 @@ contains
   !Setup for only one force call
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
-  write(87,'(a,i5)') "NSW = ",int(ntime_geopt*0.25d0)
-  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
-  write(87,'(a,es25.15)') "EDIFFG = ",-tolmxf*HaBohr_eVAng
+  write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.25d0)
+  write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
+  write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 3"
@@ -422,7 +440,7 @@ contains
   write(87,'(a,i5)') "NSW = ",0
 !  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
   write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 2"
@@ -431,18 +449,18 @@ contains
   
   !Kpoint mesh
   open(unit=87,file="KPOINTS")
-  write(87,'(a,i5)') "# Definition of the k-point mesh ",vasp_kpt_mode
+  write(87,'(a,i5)') "# Definition of the k-point mesh ",parini%vasp_kpt_mode
   write(87,'(i5)') 0
   if(dkpt==0.d0) then
   write(87,'(a)') "Gamma"!"Monkhorst Pack"
   write(87,'(3(1x,i5),a)') ka,kb,kc,"  # Number of gridpoints in each dimension"
   write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-  elseif(vasp_kpt_mode==2) then
+  elseif(parini%vasp_kpt_mode==2) then
   call find_kpt(ka,kb,kc,latvec,dkpt)
   write(87,'(a)') "Gamma"!"Monkhorst Pack"
   write(87,'(3(1x,i5),a)') ka,kb,kc,"  # Number of gridpoints in each dimension"
   write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-  elseif(vasp_kpt_mode==1) then
+  elseif(parini%vasp_kpt_mode==1) then
   write(87,'(a)') "Auto"
   write(87,'(i5,a)') dkpt," # K-mesh length"
   else
@@ -461,7 +479,7 @@ contains
   nat_type=0
   do itype=1,ntypat
   do iat=1,nat
-  if(typat(iat)==itype) nat_type(itype)=nat_type(itype)+1
+  if(parini%typat_global(iat)==itype) nat_type(itype)=nat_type(itype)+1
   enddo
   enddo
   
@@ -473,11 +491,11 @@ contains
   write(87,*)latvec(:,2)/angbohr 
   write(87,*)latvec(:,3)/angbohr 
   write(87,*) nat_type(:) 
-  if(any(fixat(:))) write(87,'(a)') "Selective dynamics"
+  if(any(parini%fixat(:))) write(87,'(a)') "Selective dynamics"
   write(87,'(a)') "Direct"
   do iat=1,nat
-  if(any(fixat(:))) then
-    if(fixat(iat)) then
+  if(any(parini%fixat(:))) then
+    if(parini%fixat(iat)) then
          write(87,'(3(1x,es25.15),a)') xred(:,iat), " F F F "  
     else
          write(87,'(3(1x,es25.15),a)') xred(:,iat), " T T T "  
@@ -489,16 +507,22 @@ contains
   close(87)
   end  subroutine
   
-  subroutine get_output_vasp_geopt(latvec,xred,fcart,energy,strten)
+  subroutine get_output_vasp_geopt(parini,latvec,xred,fcart,energy,strten)
   !use global, only: nat,target_pressure_gpa
   !use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
+character(40):: filename,units_tmp
+real(8):: printval1,printval2
+logical:: readfix,readfrag
+logical:: fixat_tmp(nat),fixlat_tmp(7)
   !if vasp is version 5.x, use vasp_5=.true.
   
   vasp_5=.true.
@@ -603,10 +627,10 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -616,20 +640,27 @@ contains
   endif
   
   !Since in CONTCAR the cell and atomic positions are written with higher accuracy, get it from there:
-  open(unit=32,file="CONTCAR")
-  read(32,*)ch_tmp
-  read(32,*)scaling
-  read(32,*) latvec(:,1)
-  read(32,*) latvec(:,2)
-  read(32,*) latvec(:,3)
-  latvec=latvec*scaling
-  read(32,*)ch_tmp
-  if(vasp_5) read(32,*)ch_tmp
-  read(32,*)ch_tmp
-      do iat=1,nat
-        read(32,*)xred(:,iat)
-      enddo
-  close(32)
+  filename="CONTCAR"
+  units_tmp="angstrom"
+  readfix=.false.
+  readfrag=.false.  
+  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+           &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
+  latvec=latvec*Bohr_Ang !Internally already converted
+!  open(unit=32,file="CONTCAR")
+!  read(32,*)ch_tmp
+!  read(32,*)scaling
+!  read(32,*) latvec(:,1)
+!  read(32,*) latvec(:,2)
+!  read(32,*) latvec(:,3)
+!  latvec=latvec*scaling
+!  read(32,*)ch_tmp
+!  if(vasp_5) read(32,*)ch_tmp
+!  read(32,*)ch_tmp
+!      do iat=1,nat
+!        read(32,*)xred(:,iat)
+!      enddo
+!  close(32)
   
   !Transform all to bohr
   latvec=latvec/Bohr_Ang

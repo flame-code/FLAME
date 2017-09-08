@@ -381,7 +381,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     ilarge2=0
     ilarge3=0
     ann_arr%event='evalu'
-        if (parini%write_energy) then
+        if (parini%print_energy) then
             write(110+iter,*)"*****************************************************************************" 
             write(110+iter,'(a2,a44,4a23)')"#", " ","E_dft","E_ann","E_dft-E_ann/atom (Ha)","E_dft-E_ann (eV)" 
         endif
@@ -398,7 +398,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
         endif
         tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         !HERE
-        if (parini%write_energy) then
+        if (parini%print_energy) then
             write(110+iter,'(a40,i6,4es23.9)')trim(atoms_arr%fn(iconf)), atoms_arr%lconf(iconf),atoms_arr%atoms(iconf)%epot,atoms%epot &
                   ,(atoms_arr%atoms(iconf)%epot-atoms%epot)/atoms_arr%atoms(iconf)%nat,(atoms_arr%atoms(iconf)%epot-atoms%epot)*27.21138386d0 
         endif
@@ -498,8 +498,8 @@ subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
     endif
     if(trim(ann_arr%approach)=='atombased') then
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='eem1') then
-        call cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
+        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then
         call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then

@@ -14,8 +14,10 @@ module interface_tinker
  
 
 contains
-subroutine init_tinker(nat,xred,latvec)
+subroutine init_tinker(parini,nat,xred,latvec)
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer, parameter:: maxbond=8
 integer:: nat,iat,nat_tinker,tinker_typat(nat),tinker_bonded(maxbond,nat),j,n
 real(8):: rxyz(3,nat),xred(3,nat),latvec(3,3),latvec_ang(3,3),latvec_rot(3,3),dist_ang(6)
@@ -38,8 +40,8 @@ character(300):: all_line
      close(26)
      else
        do iat=1,nat
-          tinker_char_type(iat)=char_type(typat(iat))
-          tinker_typat(iat)=typat(iat)
+          tinker_char_type(iat)=char_type(parini%typat_global(iat))
+          tinker_typat(iat)=parini%typat_global(iat)
        enddo
      endif
 !Initiallize tinker
@@ -48,7 +50,7 @@ latvec_ang=latvec*Bohr_Ang
 call latvec2dist_ang(dist_ang,latvec_ang,pi)
 call dist_ang2latvec(dist_ang,latvec_rot,pi)
 call rxyz_int2cart(latvec_rot,xred,rxyz,nat)
-call mhm_tinker_init(nat,maxbond,bc,ntypat,rxyz,dist_ang,tinker_char_type,tinker_typat,tinker_bonded)
+call mhm_tinker_init(nat,maxbond,parini%bc,ntypat,rxyz,dist_ang,tinker_char_type,tinker_typat,tinker_bonded)
 end subroutine
 
 

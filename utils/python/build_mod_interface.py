@@ -137,7 +137,7 @@ def get_files():
                    './src/recompute_kpt.F90', 
                    './src/optimizer_nlbfgs_minhocao.F90',
                    './src/optimizer_sqnm_minhocao_module.F90',
-                   './src/optimizer_subs_minhocao.F90',
+                   './src/optimizer_subs_minhocao.F90', #keep this file excluded: duplicate routines
                    './src/potential_LAMMPS_interface.F90',
                    './src/POSCAR2ascii.F90',         #Do not touch this !!!"
                    './src/potential_abinit.F90',

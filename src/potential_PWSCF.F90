@@ -26,7 +26,9 @@ contains
   !The meaning of dkpt1 and dkpt2 is different depending on vasp_kpt_mode:
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
-  subroutine make_input_espresso(latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+  subroutine make_input_espresso(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -40,9 +42,9 @@ contains
     character(1):: fn
 
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     write(fn,'(i1.1)') iprec
@@ -73,11 +75,11 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
-           write(87,'(a,2x,3(es25.15))') trim(char_type(typat(iat))),xred(:,iat)
+           write(87,'(a,2x,3(es25.15))') trim(char_type(parini%typat_global(iat))),xred(:,iat)
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"
            write(87,'(3(es25.15))') latvec(:,1)
@@ -99,11 +101,13 @@ contains
 
 
 
-  subroutine get_output_espresso(fcart,energy,strten)
+  subroutine get_output_espresso(parini,fcart,energy,strten)
   !use global, only: nat,target_pressure_gpa
   !use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,i_tmp
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
@@ -159,10 +163,10 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -177,11 +181,13 @@ contains
   fcart=fcart*0.5d0
   end subroutine
   
-  subroutine espresso_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine espresso_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
   !This routine will setup the input file for a vasp geometry optimization
   !It will also call the run script and harvest the output
   !use global, only: nat
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
@@ -189,13 +195,13 @@ contains
   character(4):: tmp_char
   getwfk=.false.
   !Set up the input file to perform geometry optimization
-   call make_input_espresso_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+   call make_input_espresso_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   ! call system("sleep 1")
   !Run the job NOW!
    call system("./runjob_geoespresso.sh")
   ! call system("sleep 1")
   !Now harvest the structure, energy, forces, etc
-   call get_output_espresso_geopt(latvec,xred,fcart,energy,strten)
+   call get_output_espresso_geopt(parini,latvec,xred,fcart,energy,strten)
   !Check how many iterations have been needed
 !   call system("grep Conjugate OUTCAR_geo_a |wc -l>tmp_count") 
 !   call system("grep Conjugate OUTCAR_geo_b |wc -l>>tmp_count") 
@@ -217,7 +223,7 @@ contains
    call system("cp vasprun.xml vasprun.xml.bak") 
   end subroutine
   
-  subroutine make_input_espresso_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_espresso_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !This routine will append some informations to a file already containing some informations about the abininit runs
   !The informations appended are:
   !-The atomic informations
@@ -230,7 +236,9 @@ contains
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,vasp_kpt_mode
   !use defs_basis,only: Bohr_Ang
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
@@ -246,9 +254,9 @@ contains
   HaBohr_eVAng=Ha_eV/Bohr_Ang
   
     if(iprec == 1) then
-      dkpt = dkpt1
+      dkpt = parini%dkpt1
     else
-      dkpt = dkpt2
+      dkpt = parini%dkpt2
     endif
 
     write(fn,'(i1.1)') iprec
@@ -264,15 +272,15 @@ contains
 
 !BLOCK A_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_a.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
         endif
         write(87,'(a)')           'tstress     =   .true.   ,'
         write(87,'(a)')           'tprnfor     =   .true.   ,'
-        write(87,'(a,i5,a)')      'nstep       = ',int(ntime_geopt*0.5d0),' ,'
-        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',tolmxf*8.d0*2.d0,' ,'
+        write(87,'(a,i5,a)')      'nstep       = ',int(parini%paropt_geopt%nit*0.5d0),' ,'
+        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',parini%paropt_geopt%fmaxtol*8.d0*2.d0,' ,'
 !Close block    
         write(87,'(a)') "/"
     close(87)
@@ -295,12 +303,12 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_a.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
              continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
-        write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
-        write(87,'(a,es15.7,a)') "press_conv_thr  = ",tolmxf/strfact*10.d0*HaBohr3_GPa*8.d0
+        write(87,'(a,es15.7,a)') "press           = ",parini%target_pressure_gpa*10.d0
+        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa*8.d0
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
 !Close block    
@@ -310,15 +318,15 @@ contains
 
 !BLOCK B_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_b.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
         endif
         write(87,'(a)')           'tstress     =   .true.   ,'
         write(87,'(a)')           'tprnfor     =   .true.   ,'
-        write(87,'(a,i5,a)')      'nstep       = ',int(ntime_geopt*0.5d0),' ,'
-        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',tolmxf*2.d0,' ,'
+        write(87,'(a,i5,a)')      'nstep       = ',int(parini%paropt_geopt%nit*0.5d0),' ,'
+        write(87,'(a,es15.7,a)')  'forc_conv_thr = ',parini%paropt_geopt%fmaxtol*2.d0,' ,'
 !Close block    
         write(87,'(a)') "/"
     close(87)
@@ -341,12 +349,12 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_b.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
            continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
-        write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
-        write(87,'(a,es15.7,a)') "press_conv_thr  = ",tolmxf/strfact*10.d0*HaBohr3_GPa
+        write(87,'(a,es15.7,a)') "press           = ",parini%target_pressure_gpa*10.d0
+        write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
 !Close block    
@@ -388,14 +396,14 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
-        if(fixat(iat)) then
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 0 0 0 '
+        if(parini%fixat(iat)) then
+              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 0 0 0 '
         else
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 1 1 1 '
+              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 1 1 1 '
         endif
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"
@@ -417,11 +425,13 @@ contains
 
   end  subroutine
   
-  subroutine get_output_espresso_geopt(latvec,xred,fcart,energy,strten)
+  subroutine get_output_espresso_geopt(parini,latvec,xred,fcart,energy,strten)
   !use global, only: nat,target_pressure_gpa
   !use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,i_tmp
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling,xcart(3,nat),alat
   character(11):: ch_tmp
@@ -540,10 +550,10 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol

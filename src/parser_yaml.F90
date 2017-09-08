@@ -227,7 +227,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%read_forces_ann=parini%subdict//"read_forces"
     parini%restart_param=parini%subdict//"restart_param"
     parini%restart_iter=parini%subdict//"restart_iter"
-    parini%write_energy=parini%subdict//"write_energy"
+    parini%print_energy=parini%subdict//"print_energy"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)

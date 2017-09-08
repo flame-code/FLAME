@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -19,7 +19,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
-    call f_routine(id='cal_ann_eem1')
+    call f_routine(id='cal_ann_cent1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
         allocate(ann_arr%chi_i(1:atoms%nat))
@@ -48,7 +48,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call cal_electrostatic_eem1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -88,7 +88,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_eem1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
@@ -158,7 +158,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     call f_release_routine()
-end subroutine cal_ann_eem1
+end subroutine cal_ann_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
     use mod_interface
@@ -255,7 +255,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     end associate
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
-subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -329,10 +329,10 @@ subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3
         !write(81,'(i6,4es14.5,3f7.1)') atoms%nat,epot_c,tt1,tt2,epot_es,1.d2*tt1/epot_c,1.d2*tt2/epot_c,1.d2*epot_es/epot_c
         endif
     else
-        stop 'ERROR: unknown job in cal_electrostatic_eem1'
+        stop 'ERROR: unknown job in cal_electrostatic_cent1'
     endif
     end associate
-end subroutine cal_electrostatic_eem1
+end subroutine cal_electrostatic_cent1
 !*****************************************************************************************
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     use mod_interface
@@ -671,7 +671,7 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
             exit
         endif
         if(iter>1000) then
-            write(*,'(a)') 'ERROR: exceeds maximum number of iterations in CG eem1'
+            write(*,'(a)') 'ERROR: exceeds maximum number of iterations in CG cent1'
             stop
         endif
         if(iter==0) then
