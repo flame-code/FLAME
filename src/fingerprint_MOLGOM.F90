@@ -434,7 +434,7 @@ end subroutine create_molom_1
 
 subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
    use mod_parini, only: typ_parini
-   use fingerprint, only: fp_18_nex_cutoff,fp_18_width_cutoff,fp_18_width_overlap
+   use fingerprint, only: fp_18_nex_cutoff
    use defs_basis, only: bohr_ang
    implicit none
    type(typ_parini), intent(in):: parini
@@ -601,9 +601,9 @@ write(*,*) nat,parini%fp_18_molecules
 
 
 !cutoff radius is defined in order to reduce the system size with a cut off function
-   radius_cutoff=sqrt(2.d0*fp_18_nex_cutoff)*fp_18_width_cutoff
+   radius_cutoff=sqrt(2.d0*fp_18_nex_cutoff)*parini%fp_18_width_cutoff
    radius_cutoff2=radius_cutoff**2
-   factor_cutoff=1.d0/(2.d0*fp_18_nex_cutoff*fp_18_width_cutoff**2)
+   factor_cutoff=1.d0/(2.d0*fp_18_nex_cutoff*parini%fp_18_width_cutoff**2)
 
 
 !
@@ -770,7 +770,7 @@ write(*,*) nat,parini%fp_18_molecules
 !         close(22)
 !      endif
 
-      call create_contracted_om_1(fp_18_width_overlap,parini%fp_18_principleev,nat,molecules_system,rxyz_b2,rvan_b,mol_amplitude,fp_t,&
+      call create_contracted_om_1(parini%fp_18_width_overlap,parini%fp_18_principleev,nat,molecules_system,rxyz_b2,rvan_b,mol_amplitude,fp_t,&
       parini%fp_18_lseg,.false.)
 
       do i=1,molecules_system*parini%fp_18_lseg*parini%fp_18_principleev
@@ -796,7 +796,7 @@ end subroutine periodic_fingerprint
 !Here the total number of atom is nat*molecules. We should call it nattot or something
 subroutine findmolecule(parini,rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
     use mod_parini, only: typ_parini
-   use fingerprint, only: fp_18_nex_cutoff,fp_18_width_cutoff,fp_18_width_overlap
+   use fingerprint, only: fp_18_nex_cutoff
    use defs_basis, only: bohr_ang
    implicit none
     type(typ_parini), intent(in):: parini
