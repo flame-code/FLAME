@@ -234,6 +234,8 @@ module mod_parini
         integer :: fp_18_molecules_sphere = 50
         real*8  :: fp_18_width_cutoff = 1.d0
         real*8  :: fp_18_width_overlap = 1.d0
+        integer :: fp_18_nex_cutoff = 3
+        character:: fp_18_orbital
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

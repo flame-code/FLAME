@@ -57,8 +57,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,&
-   fp_18_nex_cutoff,&
    fp_18_large_vanradius
 
 
@@ -412,11 +410,11 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !FPORBITAL
    call parsescalar_string("FPORBITAL",9,all_line(1:n),n,parini%fp_17_orbital,2,found)
-   fp_18_orbital=parini%fp_17_orbital
+   parini%fp_18_orbital=parini%fp_17_orbital
    if(found) cycle
 !FPNEXCUT
    call parsescalar_real("FPNEXCUT",8,all_line(1:n),n,parini%fp_17_nex_cutoff,found)
-   fp_18_nex_cutoff=int(parini%fp_17_nex_cutoff)
+   parini%fp_18_nex_cutoff=int(parini%fp_17_nex_cutoff)
    if(found) cycle
 !FPPRINCIPLEEV
    call parsescalar_int("FPPRINCIPLEEV",13,all_line(1:n),n,parini%fp_18_principleev,found)
@@ -640,8 +638,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,&
-   fp_18_nex_cutoff,&
    fp_18_large_vanradius
    
 use mod_parini, only: typ_parini
@@ -720,12 +716,12 @@ parini%fp_17_orbital='S'
 parini%fp_17_lseg=1
 parini%fp_17_natx_sphere=75
 
-fp_18_orbital='S'
+parini%fp_18_orbital='S'
 parini%fp_18_principleev = 6
 parini%fp_18_lseg=1
 parini%fp_18_molecules=1
 parini%fp_18_expaparameter = 4
-fp_18_nex_cutoff = 3
+parini%fp_18_nex_cutoff = 3
 parini%fp_18_molecules_sphere = 50
 parini%fp_18_width_cutoff = 1.d0
 parini%fp_18_width_overlap = 1.d0
@@ -788,8 +784,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,&
-   fp_18_nex_cutoff,&
    fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
@@ -845,11 +839,11 @@ if(parini%fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
 if(parini%fp_14_w2.lt.parini%fp_14_w1) stop "Error in p_14_w2"
 if(parini%fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
 if(trim(parini%fp_17_orbital).ne.'S'.and.trim(parini%fp_17_orbital).ne.'SP') stop "Error in fp_17_orbital"
-if(trim(fp_18_orbital).ne.'S'.and.trim(fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
+if(trim(parini%fp_18_orbital).ne.'S'.and.trim(parini%fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(parini%fp_18_principleev.lt.0) stop "Error in fp_18_principleev"
 if(parini%fp_18_molecules.lt.1) stop "Error in fp_18_molecules"
 if(parini%fp_18_expaparameter.lt.1) stop "Error in fp_18_expaparameter"
-if(fp_18_nex_cutoff.lt.1) stop "Error in fp_18_nex_cutoff"
+if(parini%fp_18_nex_cutoff.lt.1) stop "Error in fp_18_nex_cutoff"
 if(parini%fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
 if(parini%fp_18_width_cutoff.lt.0.d0) stop "Error in fp_18_width_cutoff"
 if(parini%fp_18_width_overlap.lt.0.d0) stop "Error in fp_18_width_overlap"
@@ -901,8 +895,6 @@ use fingerprint, only: &
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,&
-   fp_18_nex_cutoff,&
    fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
@@ -1021,8 +1013,8 @@ write(*,'(a,i5)')          " # FPLSEG        ", parini%fp_17_lseg
 write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_17_orbital
 write(*,'(a,es15.7)')      " # FPNEXCUT      ", parini%fp_17_nex_cutoff
 elseif(trim(parini%fp_method_ch)=="MOLGOM") then
-write(*,'(a,a)')           " # FPORBITAL     ", fp_18_orbital
-write(*,'(a,i5)')          " # FPNEXCUT      ", fp_18_nex_cutoff
+write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_18_orbital
+write(*,'(a,i5)')          " # FPNEXCUT      ", parini%fp_18_nex_cutoff
 write(*,'(a,i5)')          " # FPPRINCIPLEEV ", parini%fp_18_principleev
 write(*,'(a,i5)')          " # FPMOLECULES   ", parini%fp_18_molecules
 write(*,'(a,i5)')          " # FPEXPA        ", parini%fp_18_expaparameter
@@ -1119,12 +1111,12 @@ elseif(parini%bc==1) then !Crystals
     parini%fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*parini%fp_17_nex_cutoff)
   elseif(trim(parini%fp_method_ch)=="MOLGOM") then
     fp_method=18
-    if(trim(fp_18_orbital)=="S")then
+    if(trim(parini%fp_18_orbital)=="S")then
       parini%fp_18_lseg=1
-    elseif(trim(fp_18_orbital)=="SP")then
+    elseif(trim(parini%fp_18_orbital)=="SP")then
       parini%fp_18_lseg=4 
     endif
-!    parini%fp_18_width_cutoff=fp_rcut/sqrt(2.d0*fp_18_nex_cutoff)
+!    parini%fp_18_width_cutoff=fp_rcut/sqrt(2.d0*parini%fp_18_nex_cutoff)
   endif
 endif    
 end subroutine

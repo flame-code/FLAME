@@ -434,7 +434,6 @@ end subroutine create_molom_1
 
 subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
    use mod_parini, only: typ_parini
-   use fingerprint, only: fp_18_nex_cutoff
    use defs_basis, only: bohr_ang
    implicit none
    type(typ_parini), intent(in):: parini
@@ -601,9 +600,9 @@ write(*,*) nat,parini%fp_18_molecules
 
 
 !cutoff radius is defined in order to reduce the system size with a cut off function
-   radius_cutoff=sqrt(2.d0*fp_18_nex_cutoff)*parini%fp_18_width_cutoff
+   radius_cutoff=sqrt(2.d0*parini%fp_18_nex_cutoff)*parini%fp_18_width_cutoff
    radius_cutoff2=radius_cutoff**2
-   factor_cutoff=1.d0/(2.d0*fp_18_nex_cutoff*parini%fp_18_width_cutoff**2)
+   factor_cutoff=1.d0/(2.d0*parini%fp_18_nex_cutoff*parini%fp_18_width_cutoff**2)
 
 
 !
@@ -717,7 +716,7 @@ write(*,*) nat,parini%fp_18_molecules
                      enddo
                      if (distance<=radius_cutoff2*(rvan(n)+rvan(m+(j-1)*nat))**2) then
                         factor2=1.d0/(rvan(n)+rvan(m+(j-1)*nat))**2
-                        amplitude(curpos)=(1.d0-distance*factor_cutoff*factor2)**fp_18_nex_cutoff+amplitude(curpos)
+                        amplitude(curpos)=(1.d0-distance*factor_cutoff*factor2)**parini%fp_18_nex_cutoff+amplitude(curpos)
                      endif
                   enddo
                enddo
@@ -796,7 +795,6 @@ end subroutine periodic_fingerprint
 !Here the total number of atom is nat*molecules. We should call it nattot or something
 subroutine findmolecule(parini,rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
     use mod_parini, only: typ_parini
-   use fingerprint, only: fp_18_nex_cutoff
    use defs_basis, only: bohr_ang
    implicit none
     type(typ_parini), intent(in):: parini
