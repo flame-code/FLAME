@@ -9260,7 +9260,7 @@ select case(fp_method)
   case(17)
      fp_len=parini%fp_17_lseg*(ntypat+1)*nat
   case(18) !Molecular gaussian orbital fingerprint
-     fp_len=parini%fp_18_lseg*fp_18_molecules_sphere*parini%fp_18_principleev*parini%fp_18_molecules
+     fp_len=parini%fp_18_lseg*parini%fp_18_molecules_sphere*parini%fp_18_principleev*parini%fp_18_molecules
   case(21)!Gaussian molecular overlap
 !The method only has a FP of length nat
      fp_len=nat  !If we only have stype orbitals, alse fp_len=4*nat
@@ -9383,7 +9383,7 @@ select case(fp_method)
   case(17)!GOM
         call get_distance_gauss(fp1, fp2, parini%fp_17_lseg, nat, ntypat, parini%typat_global, fp_dist)
   case(18)!MOLGOM
-        call get_distance_molgom(fp1,fp2,fp_dist,parini%fp_18_lseg,parini%fp_18_molecules,fp_18_molecules_sphere,parini%fp_18_principleev)
+        call get_distance_molgom(fp1,fp2,fp_dist,parini%fp_18_lseg,parini%fp_18_molecules,parini%fp_18_molecules_sphere,parini%fp_18_principleev)
   case(21)!Gaussian molecular overlap
         call fpdistance_gaussmol(fp_len,fp1,fp2,fp_dist)
   case default

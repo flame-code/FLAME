@@ -1960,15 +1960,16 @@ subroutine create_molom_1(nat,rxyz,rvan,om,width_overlap)
 end subroutine create_molom_1
 subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
    use mod_parini, only: typ_parini
-   use fingerprint, only: fp_18_molecules_sphere,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
    type(typ_parini), intent(in):: parini
    integer:: nat
+   integer, dimension (parini%fp_18_expaparameter+1) :: shifting
+   real*8, dimension (3,(parini%fp_18_expaparameter+1)**3) :: possibilites
    real*8, dimension(3,nat*parini%fp_18_molecules):: rxyz
    real*8, dimension(nat*parini%fp_18_molecules) :: rvan
-   real*8, dimension(parini%fp_18_lseg*fp_18_molecules_sphere*parini%fp_18_principleev,parini%fp_18_molecules) :: fpsall
+   real*8, dimension(parini%fp_18_lseg*parini%fp_18_molecules_sphere*parini%fp_18_principleev,parini%fp_18_molecules) :: fpsall
    real*8, dimension (3,3)::alat,alat0
    character(len=2), dimension(nat*parini%fp_18_molecules) :: finalchar
-   logical, dimension(parini%fp_18_molecules,(fp_18_expaparameter+1)**3) :: is_copied
+   logical, dimension(parini%fp_18_molecules,(parini%fp_18_expaparameter+1)**3) :: is_copied
 end subroutine periodic_fingerprint
 subroutine findmolecule(parini,rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
     use mod_parini, only: typ_parini

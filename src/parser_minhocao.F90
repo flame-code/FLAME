@@ -58,7 +58,7 @@ use fingerprint, only: &
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_18_orbital,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
+   fp_18_nex_cutoff,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
 
 
@@ -425,10 +425,10 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("FPMOLECULES",11,all_line(1:n),n,parini%fp_18_molecules,found)
    if(found) cycle
 !FPEXPA
-   call parsescalar_int("FPEXPA",6,all_line(1:n),n,fp_18_expaparameter,found)
+   call parsescalar_int("FPEXPA",6,all_line(1:n),n,parini%fp_18_expaparameter,found)
    if(found) cycle
 !FPMOLSPHERE
-   call parsescalar_int("FPMOLSPHERE",11,all_line(1:n),n,fp_18_molecules_sphere,found)
+   call parsescalar_int("FPMOLSPHERE",11,all_line(1:n),n,parini%fp_18_molecules_sphere,found)
    if(found) cycle
 !FPWIDTHCUT
    call parsescalar_real("FPWIDTHCUT",10,all_line(1:n),n,fp_18_width_cutoff,found)
@@ -641,7 +641,7 @@ use fingerprint, only: &
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_18_orbital,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
+   fp_18_nex_cutoff,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
    
 use mod_parini, only: typ_parini
@@ -724,9 +724,9 @@ fp_18_orbital='S'
 parini%fp_18_principleev = 6
 parini%fp_18_lseg=1
 parini%fp_18_molecules=1
-fp_18_expaparameter = 4
+parini%fp_18_expaparameter = 4
 fp_18_nex_cutoff = 3
-fp_18_molecules_sphere = 50
+parini%fp_18_molecules_sphere = 50
 fp_18_width_cutoff = 1.d0
 fp_18_width_overlap = 1.d0
 fp_18_large_vanradius = 1.7d0/0.52917720859d0
@@ -789,7 +789,7 @@ use fingerprint, only: &
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_18_orbital,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
+   fp_18_nex_cutoff,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
@@ -848,9 +848,9 @@ if(trim(parini%fp_17_orbital).ne.'S'.and.trim(parini%fp_17_orbital).ne.'SP') sto
 if(trim(fp_18_orbital).ne.'S'.and.trim(fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(parini%fp_18_principleev.lt.0) stop "Error in fp_18_principleev"
 if(parini%fp_18_molecules.lt.1) stop "Error in fp_18_molecules"
-if(fp_18_expaparameter.lt.1) stop "Error in fp_18_expaparameter"
+if(parini%fp_18_expaparameter.lt.1) stop "Error in fp_18_expaparameter"
 if(fp_18_nex_cutoff.lt.1) stop "Error in fp_18_nex_cutoff"
-if(fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
+if(parini%fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
 if(fp_18_width_cutoff.lt.0.d0) stop "Error in fp_18_width_cutoff"
 if(fp_18_width_overlap.lt.0.d0) stop "Error in fp_18_width_overlap"
 do i=1,parini%nconfine
@@ -902,7 +902,7 @@ use fingerprint, only: &
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
    fp_18_orbital,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
+   fp_18_nex_cutoff,fp_18_width_cutoff,&
    fp_18_width_overlap,fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
@@ -1025,8 +1025,8 @@ write(*,'(a,a)')           " # FPORBITAL     ", fp_18_orbital
 write(*,'(a,i5)')          " # FPNEXCUT      ", fp_18_nex_cutoff
 write(*,'(a,i5)')          " # FPPRINCIPLEEV ", parini%fp_18_principleev
 write(*,'(a,i5)')          " # FPMOLECULES   ", parini%fp_18_molecules
-write(*,'(a,i5)')          " # FPEXPA        ", fp_18_expaparameter
-write(*,'(a,i5)')          " # FPMOLSPHERE   ", fp_18_molecules_sphere
+write(*,'(a,i5)')          " # FPEXPA        ", parini%fp_18_expaparameter
+write(*,'(a,i5)')          " # FPMOLSPHERE   ", parini%fp_18_molecules_sphere
 write(*,'(a,es15.7)')      " # FPWIDTHCUT    ", fp_18_width_cutoff
 write(*,'(a,es15.7)')      " # FPWIDTHOVER   ", fp_18_width_overlap
 endif

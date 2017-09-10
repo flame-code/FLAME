@@ -230,6 +230,8 @@ module mod_parini
         integer :: fp_18_principleev = 6
         integer :: fp_18_lseg!=1
         integer :: fp_18_molecules=4
+        integer :: fp_18_expaparameter = 4
+        integer :: fp_18_molecules_sphere = 50
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

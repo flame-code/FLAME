@@ -434,23 +434,23 @@ end subroutine create_molom_1
 
 subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
    use mod_parini, only: typ_parini
-   use fingerprint, only: fp_18_molecules_sphere,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
+   use fingerprint, only: fp_18_nex_cutoff,fp_18_width_cutoff,fp_18_width_overlap
    use defs_basis, only: bohr_ang
    implicit none
    type(typ_parini), intent(in):: parini
    integer:: nat
-   integer, dimension (fp_18_expaparameter+1) :: shifting
-   real*8, dimension (3,(fp_18_expaparameter+1)**3) :: possibilites
+   integer, dimension (parini%fp_18_expaparameter+1) :: shifting
+   real*8, dimension (3,(parini%fp_18_expaparameter+1)**3) :: possibilites
    real*8, dimension(3,nat*parini%fp_18_molecules):: rxyz
    real*8, dimension(nat*parini%fp_18_molecules) :: rvan
-   real*8, dimension(parini%fp_18_lseg*fp_18_molecules_sphere*parini%fp_18_principleev,parini%fp_18_molecules) :: fpsall
+   real*8, dimension(parini%fp_18_lseg*parini%fp_18_molecules_sphere*parini%fp_18_principleev,parini%fp_18_molecules) :: fpsall
    real*8, dimension(:,:,:), allocatable :: rxyz_b
    real*8, dimension(:,:), allocatable :: rxyz_b2
    real*8, dimension(:), allocatable :: rvan_b, amplitude, mol_amplitude, fp_t, fp_b
    character(len=2), dimension(:), allocatable :: finalchar_b
    real*8, dimension (3,3)::alat,alat0
    character(len=2), dimension(nat*parini%fp_18_molecules) :: finalchar
-   logical, dimension(parini%fp_18_molecules,(fp_18_expaparameter+1)**3) :: is_copied
+   logical, dimension(parini%fp_18_molecules,(parini%fp_18_expaparameter+1)**3) :: is_copied
 
    real*8 :: distance, convert, sum
    integer :: i, j, m, n, k, molecules_system, mol
@@ -469,18 +469,18 @@ write(*,*) nat,parini%fp_18_molecules
 
 
    !termination condition for to big parameters
-   if ((fp_18_expaparameter+1)**3>2147483647) then
+   if ((parini%fp_18_expaparameter+1)**3>2147483647) then
       write(*,*) "expanding parameter is too large --> change integer type of position"
       stop
    endif
 
    !termination condition for odd epanding parameter
-   if (mod(fp_18_expaparameter,2)/=0) then
+   if (mod(parini%fp_18_expaparameter,2)/=0) then
       write(*,*) "expanding parameter has to be even --> change parameter"
       stop
    endif
 
-   allocate (rxyz_b(3, nat*parini%fp_18_molecules,(fp_18_expaparameter+1)**3))
+   allocate (rxyz_b(3, nat*parini%fp_18_molecules,(parini%fp_18_expaparameter+1)**3))
 
    !the unit cell is copied to rxyz_b(:,:,1)
    do i=1, nat*parini%fp_18_molecules
@@ -491,17 +491,17 @@ write(*,*) nat,parini%fp_18_molecules
 
    !first the sytstem size is expanded
    !the unit cell will be shifted into the the three directions from -fp_18_expaparameter to fp_18_expaparameter
-   n=-(fp_18_expaparameter/2)
-   do i=1,fp_18_expaparameter+1
+   n=-(parini%fp_18_expaparameter/2)
+   do i=1,parini%fp_18_expaparameter+1
       shifting(i)= n
       n=n+1
    enddo
 
    !write all permuations into possibilites(:,:)
    position=0
-   do i=1, fp_18_expaparameter+1
-      do j=1, fp_18_expaparameter+1
-         do k=1, fp_18_expaparameter+1
+   do i=1, parini%fp_18_expaparameter+1
+      do j=1, parini%fp_18_expaparameter+1
+         do k=1, parini%fp_18_expaparameter+1
             position=position+1
             possibilites(1,position)=shifting(k)
             possibilites(2,position)=shifting(j)
@@ -512,7 +512,7 @@ write(*,*) nat,parini%fp_18_molecules
 
    !the expanded system is stored in rxyz_b(:,:,:)
    k=2
-   do m = 1, (fp_18_expaparameter+1)**3
+   do m = 1, (parini%fp_18_expaparameter+1)**3
       if (possibilites(1,m)/=0 .or. possibilites(2,m)/=0 .or. possibilites(3,m)/=0) then
          do j=1, nat*parini%fp_18_molecules
             do i=1,3
@@ -542,7 +542,7 @@ write(*,*) nat,parini%fp_18_molecules
 !         write(16,*) alat(1,1),alat(1,2),alat(2,2)
 !         write(16,*) alat(1,3),alat(2,3),alat(3,3)
 !
-!         do i=1,(fp_18_expaparameter+1)**3
+!         do i=1,(parini%fp_18_expaparameter+1)**3
 !            do m=1,nat*fp_18_molecules
 !               write(16,"(3E26.15E2,1A4)") (rxyz_b(j,m,i),j=1,3), finalchar(m)
 !            enddo
@@ -557,7 +557,7 @@ write(*,*) nat,parini%fp_18_molecules
 !            enddo
 !         enddo
 !
-!         do i=2,(fp_18_expaparameter+1)**3
+!         do i=2,(parini%fp_18_expaparameter+1)**3
 !            do m=1,fp_18_molecules
 !               do n=1,nat
 !                  write(17,"(I2)")0
@@ -568,7 +568,7 @@ write(*,*) nat,parini%fp_18_molecules
 !
 !      f9='poslocm_'//trim(adjustl(f1))//'_expand_2.dat'
 !      open (18,file=trim(f9))
-!         do i=1,(fp_18_expaparameter+1)**3
+!         do i=1,(parini%fp_18_expaparameter+1)**3
 !            do m=1,fp_18_molecules
 !               do n=1,nat
 !                  write(18,"(I2)") m
@@ -585,7 +585,7 @@ write(*,*) nat,parini%fp_18_molecules
 !
 
    convert=1.d0/0.52917720859d0
-   do m = 1, (fp_18_expaparameter+1)**3
+   do m = 1, (parini%fp_18_expaparameter+1)**3
       do j=1, nat*parini%fp_18_molecules
          do i=1,3
             rxyz_b(i,j,m)=rxyz_b(i,j,m)*convert
@@ -625,14 +625,14 @@ write(*,*) nat,parini%fp_18_molecules
    do mol=1,parini%fp_18_molecules
       iat=(mol-1)*nat+1
 
-      do i=1,(fp_18_expaparameter+1)**3
+      do i=1,(parini%fp_18_expaparameter+1)**3
          do j=1, parini%fp_18_molecules
             is_copied(j,i)=.false.
          enddo
       enddo
 
       molecules_system=0
-      do i=1,(fp_18_expaparameter+1)**3
+      do i=1,(parini%fp_18_expaparameter+1)**3
          do j=1,parini%fp_18_molecules
             if (is_copied(j,i) .eqv. .false.) then
                do m=iat,iat+nat-1
@@ -654,7 +654,7 @@ write(*,*) nat,parini%fp_18_molecules
       enddo
 
       write (*,*) 'molecules in sphere:',molecules_system
-      if (molecules_system>fp_18_molecules_sphere) stop 'expand molecules_sphere'
+      if (molecules_system>parini%fp_18_molecules_sphere) stop 'expand molecules_sphere'
 
 !
 !write an ascii files with the molecules within radius= radius_cutoff2*radius2
@@ -667,7 +667,7 @@ write(*,*) nat,parini%fp_18_molecules
 !            write(20,*)
 !            write(20,*) alat(1,1)/convert,alat(1,2)/convert,alat(2,2)/convert
 !            write(20,*) alat(1,3)/convert,alat(2,3)/convert,alat(3,3)/convert
-!            do i=1,(fp_18_expaparameter+1)**3
+!            do i=1,(parini%fp_18_expaparameter+1)**3
 !               do n=1,fp_18_molecules
 !                  if(is_copied(n,i) .eqv. .true.) then
 !                     do m=1,nat
@@ -697,7 +697,7 @@ write(*,*) nat,parini%fp_18_molecules
       rvan_b=0.d0
 
       curpos=0
-      do i=1,(fp_18_expaparameter+1)**3
+      do i=1,(parini%fp_18_expaparameter+1)**3
          do j=1,parini%fp_18_molecules
             if (is_copied(j,i) .eqv. .true.) then
                do m=1,nat
@@ -777,7 +777,7 @@ write(*,*) nat,parini%fp_18_molecules
          fpsall(i,mol)=fp_t(molecules_system*parini%fp_18_lseg*parini%fp_18_principleev+1-i)
       enddo
 
-      do i=molecules_system*parini%fp_18_lseg*parini%fp_18_principleev,fp_18_molecules_sphere*parini%fp_18_lseg*parini%fp_18_principleev
+      do i=molecules_system*parini%fp_18_lseg*parini%fp_18_principleev,parini%fp_18_molecules_sphere*parini%fp_18_lseg*parini%fp_18_principleev
          fpsall(i,mol)=0.d0
       enddo
 
@@ -796,7 +796,7 @@ end subroutine periodic_fingerprint
 !Here the total number of atom is nat*molecules. We should call it nattot or something
 subroutine findmolecule(parini,rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
     use mod_parini, only: typ_parini
-   use fingerprint, only: fp_18_molecules_sphere,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
+   use fingerprint, only: fp_18_nex_cutoff,fp_18_width_cutoff,fp_18_width_overlap
    use defs_basis, only: bohr_ang
    implicit none
     type(typ_parini), intent(in):: parini
