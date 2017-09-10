@@ -161,7 +161,6 @@ def get_files():
                    './src/quaternions.F90',
                    './src/expand_poslows.F90',
                    './src/find_symmetry.F90',
-                   './src/fingerprint_MOLGOM.F90',
                    './src/fingerprint_oganov.F90',
                    './src/fingerprint_oganov_cont.F90',
                    './src/fingerprint_XYZ2SM.F90',

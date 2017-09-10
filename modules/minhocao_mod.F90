@@ -181,7 +181,7 @@ module fingerprint
 !   integer :: fp_18_principleev = 6
 !   integer :: fp_18_lseg!=1
 !   integer, parameter :: nconf=177
-   integer :: fp_18_molecules=4
+!   integer :: fp_18_molecules=4
    integer :: fp_18_expaparameter = 4
    integer :: fp_18_nex_cutoff = 3
    integer :: fp_18_molecules_sphere = 50
