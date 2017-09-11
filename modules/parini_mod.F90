@@ -5,6 +5,7 @@ module mod_parini
     implicit none
     type typ_parini
         logical:: exists_yaml_file
+        integer:: iunit
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'
