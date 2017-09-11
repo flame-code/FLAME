@@ -52,7 +52,6 @@ use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
-use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -493,7 +492,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("IPIPORT",7,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !IPIHOST
-   call parsescalar_string("IPIHOST",7,all_line(1:n),n,sock_host,1024,found)
+   call parsescalar_string("IPIHOST",7,all_line(1:n),n,parini%sock_host,1024,found)
    if(found) cycle
 !IPIECUTWF
    call parsearray_real("IPIECUTWF",9,all_line(1:n),n,parini%sock_ecutwf,2,found)
@@ -508,7 +507,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("SOCKPORT",8,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !MSOCKHOST
-   call parsescalar_string("SOCKHOST",8,all_line(1:n),n,sock_host,1024,found)
+   call parsescalar_string("SOCKHOST",8,all_line(1:n),n,parini%sock_host,1024,found)
    if(found) cycle
 !MSOCKECUTWF
    call parsearray_real("SOCKECUTWF",10,all_line(1:n),n,parini%sock_ecutwf,2,found)
@@ -633,7 +632,6 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -767,7 +765,7 @@ parini%conf_nat=nat
 !Block IPI_SOCKET****************
       parini%sock_inet=0 !0 for unix socket, 1 for tcp
       parini%sock_port=3141
-      sock_host="mh-driver"
+      parini%sock_host="mh-driver"
       parini%sock_ecutwf=1.d0
 end subroutine
 
@@ -779,7 +777,6 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -890,7 +887,6 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -1061,7 +1057,7 @@ write(*,trim(formatting))  " # IPIINET       ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
 write(*,trim(formatting))  " # IPIPORT       ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
-write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(sock_host))
+write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(parini%sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
 write(*,trim(formatting))  " # IPIECUTWF     ",parini%sock_ecutwf(:)
 endif
@@ -1072,7 +1068,7 @@ write(*,trim(formatting))  " # SOCKINET      ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
 write(*,trim(formatting))  " # SOCKPORT      ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
-write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(sock_host))
+write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(parini%sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
 write(*,trim(formatting))  " # SOCKECUTWF    ",parini%sock_ecutwf(:)
 endif

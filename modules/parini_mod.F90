@@ -237,8 +237,9 @@ module mod_parini
         integer :: fp_18_nex_cutoff = 3
         character:: fp_18_orbital
         !-----------------------------------------------------------------------
-        real(8)             :: sock_ecutwf(2)
-        INTEGER:: sock_inet, sock_port        ! socket ID & address of the socket
+        real(8):: sock_ecutwf(2)
+        integer:: sock_inet, sock_port        ! socket ID & address of the socket
+        character(len=1024):: sock_host
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

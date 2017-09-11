@@ -37,8 +37,8 @@ contains
 !      ipi_inet=0 !0 for unix socket, 1 for tcp
 !      ipi_port=3141
 !      ipi_host="mh-driver"//achar(0)
-      write(*,'(a,a,a,i6)') " # IPI: Trying to open the socket ", trim(sock_host), " on port ",parini%sock_port
-      sock_host_open=trim(adjustl(sock_host))//achar(0)
+      write(*,'(a,a,a,i6)') " # IPI: Trying to open the socket ", trim(parini%sock_host), " on port ",parini%sock_port
+      sock_host_open=trim(adjustl(parini%sock_host))//achar(0)
       CALL open_socket(sock_socket, parini%sock_inet, parini%sock_port, sock_host_open)
 !Dummy call to check mpi
 !Get the status of ipi to receive data

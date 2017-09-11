@@ -74,8 +74,8 @@ endif
   implicit none
   type(typ_parini), intent(in):: parini
   character*1024:: host
-      write(*,'(a,a,a,i6)') " # SOCKET MASTER: Trying to open the socket ", trim(sock_host), " on port ",parini%sock_port
-      host = TRIM(sock_host)//achar(0)
+      write(*,'(a,a,a,i6)') " # SOCKET MASTER: Trying to open the socket ", trim(parini%sock_host), " on port ",parini%sock_port
+      host = TRIM(parini%sock_host)//achar(0)
       call create_socket( sock_socket, parini%sock_inet, parini%sock_port, host )
   end subroutine
   
