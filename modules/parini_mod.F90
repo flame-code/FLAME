@@ -237,6 +237,8 @@ module mod_parini
         integer :: fp_18_nex_cutoff = 3
         character:: fp_18_orbital
         !-----------------------------------------------------------------------
+        real(8)             :: sock_ecutwf(2)
+        !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0
         real(8)::qbfgs_trust_radius_min!=1.d-5

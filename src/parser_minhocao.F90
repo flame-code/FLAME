@@ -52,7 +52,7 @@ use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
+use modsocket, only:sock_inet,sock_port,sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -496,7 +496,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_string("IPIHOST",7,all_line(1:n),n,sock_host,1024,found)
    if(found) cycle
 !IPIECUTWF
-   call parsearray_real("IPIECUTWF",9,all_line(1:n),n,sock_ecutwf,2,found)
+   call parsearray_real("IPIECUTWF",9,all_line(1:n),n,parini%sock_ecutwf,2,found)
    if(found) cycle
 !Block IPI_SOCKET****************
 
@@ -511,7 +511,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_string("SOCKHOST",8,all_line(1:n),n,sock_host,1024,found)
    if(found) cycle
 !MSOCKECUTWF
-   call parsearray_real("SOCKECUTWF",10,all_line(1:n),n,sock_ecutwf,2,found)
+   call parsearray_real("SOCKECUTWF",10,all_line(1:n),n,parini%sock_ecutwf,2,found)
    if(found) cycle
 
 !Block MSOCK****************
@@ -590,7 +590,7 @@ endif
 
 !Initiallize ipi
 if(trim(parini%potential_potential)=="ipi".and.calls==0) then
-  call init_ipi()
+  call init_ipi(nat)
 endif
 
 !Initiallize msock
@@ -633,7 +633,7 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
+use modsocket, only:sock_inet,sock_port,sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -768,7 +768,7 @@ parini%conf_nat=nat
       sock_inet=0 !0 for unix socket, 1 for tcp
       sock_port=3141
       sock_host="mh-driver"
-      sock_ecutwf=1.d0
+      parini%sock_ecutwf=1.d0
 end subroutine
 
 !************************************************************************************
@@ -779,7 +779,7 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
+use modsocket, only:sock_inet,sock_port,sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -867,8 +867,8 @@ enddo
 
 if(sock_inet.lt.0 .or. sock_inet.gt.1) stop "Error in sock_inet: must be 0 for unix socket, 1 for tcp"
 if(sock_port.lt.1) stop "Error in sock_port"
-if(sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
-if(sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
+if(parini%sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
+if(parini%sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
 !SQNM
 if(parini%paropt_geopt%beta_lat.le.0d0) stop "Error in sqnm_beta_lat"
 if(parini%paropt_geopt%beta_at.le.0.d0) stop "Error in parini%paropt_geopt%beta_at"
@@ -890,7 +890,7 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
+use modsocket, only:sock_inet,sock_port,sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -1063,7 +1063,7 @@ write(*,trim(formatting))  " # IPIPORT       ",sock_port
 write(formatting,'(a)') '(a,a)'
 write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
-write(*,trim(formatting))  " # IPIECUTWF     ",sock_ecutwf(:)
+write(*,trim(formatting))  " # IPIECUTWF     ",parini%sock_ecutwf(:)
 endif
 if(StrLowCase(trim(adjustl(parini%potential_potential)))=="msock") then
 write(*,'(a)')             " # MSOCK parameters **************************************************************"
@@ -1074,7 +1074,7 @@ write(*,trim(formatting))  " # SOCKPORT      ",sock_port
 write(formatting,'(a)') '(a,a)'
 write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
-write(*,trim(formatting))  " # SOCKECUTWF    ",sock_ecutwf(:)
+write(*,trim(formatting))  " # SOCKECUTWF    ",parini%sock_ecutwf(:)
 endif
 write(*,'(a)')             " ############################ END Echo params_new.in #############################"
 end subroutine

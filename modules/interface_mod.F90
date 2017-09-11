@@ -4294,7 +4294,7 @@ subroutine mpmd_init
 end subroutine mpmd_init
 ! ./src/potential_NetSock.F90 :
   subroutine cal_potential_forces_netsock(atoms)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf,reset
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
   use mod_atoms, only: typ_atoms
   type(typ_atoms), intent(inout):: atoms
   real(8):: xred(3,atoms%nat)
@@ -4305,7 +4305,7 @@ end subroutine cal_potential_forces_netsock
   type(typ_parini), intent(in):: parini
 end subroutine init_netsock
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   integer,intent(in):: nat, nmsg, repid
   real(8),intent(in):: latvec(3,3),pos(3,nat)
   real(8),intent(out)::latvec_rot(3,3)
@@ -4313,7 +4313,7 @@ end subroutine init_netsock
   character*1024:: msg
 end subroutine send_data
   subroutine get_data(etot,fcart,strten,latvec,latvec_rot,nat)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   integer,intent(in) :: nat
   real(8),intent(in) :: latvec(3,3),latvec_rot(3,3)
   real(8),intent(out):: fcart(3,nat),etot,strten(6)
