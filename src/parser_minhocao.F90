@@ -52,7 +52,7 @@ use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
-use modsocket, only:sock_inet,sock_port,sock_host
+use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -487,10 +487,10 @@ open(unit=12,file="params_new.in")
 
 !Block IPI_SOCKET****************
 !IPIINET
-   call parsescalar_int("IPIINET",7,all_line(1:n),n,sock_inet,found)
+   call parsescalar_int("IPIINET",7,all_line(1:n),n,parini%sock_inet,found)
    if(found) cycle
 !IPIPORT
-   call parsescalar_int("IPIPORT",7,all_line(1:n),n,sock_port,found)
+   call parsescalar_int("IPIPORT",7,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !IPIHOST
    call parsescalar_string("IPIHOST",7,all_line(1:n),n,sock_host,1024,found)
@@ -502,10 +502,10 @@ open(unit=12,file="params_new.in")
 
 !Block MSOCK****************
 !MSOCKINET
-   call parsescalar_int("SOCKINET",8,all_line(1:n),n,sock_inet,found)
+   call parsescalar_int("SOCKINET",8,all_line(1:n),n,parini%sock_inet,found)
    if(found) cycle
 !MSOCKPORT
-   call parsescalar_int("SOCKPORT",8,all_line(1:n),n,sock_port,found)
+   call parsescalar_int("SOCKPORT",8,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !MSOCKHOST
    call parsescalar_string("SOCKHOST",8,all_line(1:n),n,sock_host,1024,found)
@@ -590,12 +590,12 @@ endif
 
 !Initiallize ipi
 if(trim(parini%potential_potential)=="ipi".and.calls==0) then
-  call init_ipi(nat)
+  call init_ipi(parini,nat)
 endif
 
 !Initiallize msock
 if(trim(parini%potential_potential)=="msock".and.calls==0) then
-  call init_msock()
+  call init_msock(parini)
 endif
 
 
@@ -633,7 +633,7 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host
+use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -765,8 +765,8 @@ parini%conf_nat=nat
 !      ipi_host="mh-driver"
 !      ipi_ecutwf=1.d0
 !Block IPI_SOCKET****************
-      sock_inet=0 !0 for unix socket, 1 for tcp
-      sock_port=3141
+      parini%sock_inet=0 !0 for unix socket, 1 for tcp
+      parini%sock_port=3141
       sock_host="mh-driver"
       parini%sock_ecutwf=1.d0
 end subroutine
@@ -779,7 +779,7 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host
+use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -865,8 +865,8 @@ enddo
 !if(ipi_ecutwf(1).lt.0.d0) stop "Error in ipi_ecutwfc"
 !if(ipi_ecutwf(2).lt.0.d0) stop "Error in ipi_ecutwfc"
 
-if(sock_inet.lt.0 .or. sock_inet.gt.1) stop "Error in sock_inet: must be 0 for unix socket, 1 for tcp"
-if(sock_port.lt.1) stop "Error in sock_port"
+if(parini%sock_inet.lt.0 .or. parini%sock_inet.gt.1) stop "Error in sock_inet: must be 0 for unix socket, 1 for tcp"
+if(parini%sock_port.lt.1) stop "Error in sock_port"
 if(parini%sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
 if(parini%sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
 !SQNM
@@ -890,7 +890,7 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host
+use modsocket, only:sock_host
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -1057,9 +1057,9 @@ endif
 if(StrLowCase(trim(adjustl(parini%potential_potential)))=="ipi") then
 write(*,'(a)')             " # IPI parameters ****************************************************************"
 write(formatting,'(a)') '(a,i4)'
-write(*,trim(formatting))  " # IPIINET       ",sock_inet
+write(*,trim(formatting))  " # IPIINET       ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
-write(*,trim(formatting))  " # IPIPORT       ",sock_port
+write(*,trim(formatting))  " # IPIPORT       ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
 write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
@@ -1068,9 +1068,9 @@ endif
 if(StrLowCase(trim(adjustl(parini%potential_potential)))=="msock") then
 write(*,'(a)')             " # MSOCK parameters **************************************************************"
 write(formatting,'(a)') '(a,i4)'
-write(*,trim(formatting))  " # SOCKINET      ",sock_inet
+write(*,trim(formatting))  " # SOCKINET      ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
-write(*,trim(formatting))  " # SOCKPORT      ",sock_port
+write(*,trim(formatting))  " # SOCKPORT      ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
 write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(sock_host))
 write(formatting,'(a)') '(a,2f10.4)'

@@ -309,7 +309,8 @@ END MODULE String_Utility
 
 module modsocket
 implicit none
-      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
+!      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
+      INTEGER:: sock_socket
       CHARACTER(LEN=1024) :: sock_host
       INTEGER, PARAMETER  :: MSGLEN=12   ! length of the headers of the driver/wrapper communication protocol
       CHARACTER(LEN=60)   :: sock_extra_string="                                                            "

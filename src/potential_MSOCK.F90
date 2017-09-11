@@ -69,12 +69,14 @@ endif
 
   end subroutine
 
-  subroutine init_msock()
+  subroutine init_msock(parini)
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   character*1024:: host
-      write(*,'(a,a,a,i6)') " # SOCKET MASTER: Trying to open the socket ", trim(sock_host), " on port ",sock_port
+      write(*,'(a,a,a,i6)') " # SOCKET MASTER: Trying to open the socket ", trim(sock_host), " on port ",parini%sock_port
       host = TRIM(sock_host)//achar(0)
-      call create_socket( sock_socket, sock_inet, sock_port, host )
+      call create_socket( sock_socket, parini%sock_inet, parini%sock_port, host )
   end subroutine
   
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)

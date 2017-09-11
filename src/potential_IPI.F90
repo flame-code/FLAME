@@ -24,8 +24,10 @@ module interface_ipi
 
 contains
 
-  subroutine init_ipi(nat)
+  subroutine init_ipi(parini,nat)
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer, intent(in):: nat
   real(8):: vir_tmp(3*3),vir_tmp_inv(3*3),msgbuffer(3*nat)
   CHARACTER(LEN=2048) :: initbuffer      ! it's unlikely a string this large will ever be passed...
@@ -35,9 +37,9 @@ contains
 !      ipi_inet=0 !0 for unix socket, 1 for tcp
 !      ipi_port=3141
 !      ipi_host="mh-driver"//achar(0)
-      write(*,'(a,a,a,i6)') " # IPI: Trying to open the socket ", trim(sock_host), " on port ",sock_port
+      write(*,'(a,a,a,i6)') " # IPI: Trying to open the socket ", trim(sock_host), " on port ",parini%sock_port
       sock_host_open=trim(adjustl(sock_host))//achar(0)
-      CALL open_socket(sock_socket, sock_inet, sock_port, sock_host_open)
+      CALL open_socket(sock_socket, parini%sock_inet, parini%sock_port, sock_host_open)
 !Dummy call to check mpi
 !Get the status of ipi to receive data
     do
