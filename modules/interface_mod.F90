@@ -1572,8 +1572,8 @@ integer:: nzero,npositive,i,typer
 end function typer
 ! ./src/dynamics_md_fixlat.F90 :
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
+ use global, only: nat,ntypat,znucl, char_type,units
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
     integer:: iat,iprec,istep
@@ -1930,6 +1930,76 @@ subroutine create_om_1(nat,rxyz,rcov,om)
 end subroutine create_om_1
 subroutine create_om_4(nat,rxyz,rcov,om)
 end subroutine create_om_4
+! ./src/fingerprint_MOLGOM.F90 :
+subroutine get_distance_molgom(fp1,fp2,dist,lseg,molecules,molecules_sphere,principleev)
+integer:: lseg,molecules,molecules_sphere,principleev
+integer:: iassign(molecules)
+real(8):: tt,dtt,dist
+real(8):: cost(molecules,molecules)
+real(8):: fp1(lseg*molecules_sphere*principleev,molecules),fp2(lseg*molecules_sphere*principleev,molecules)
+end subroutine get_distance_molgom
+subroutine create_contracted_om_1(width_overlap,principleev,nat,molecules,rxyz,rvan,amplitude,fp_t,lseg,write_files)
+  logical :: write_files
+  integer :: principleev, xyz, alpha, beta, mu, nu, k, i, j, m, n
+  integer :: lwork, nat, molecules, lseg, info
+  real*8 :: width_overlap
+  real*8, dimension(3, molecules*nat):: rxyz
+  real*8, dimension(molecules) :: amplitude
+  real*8, dimension(3,nat) :: rxyz_temp
+  real*8, dimension(molecules*nat) :: rvan
+  real*8, dimension(nat) :: rvan_temp
+  real*8, dimension(nat,principleev,molecules) :: em
+  real*8, dimension(nat,nat) :: om
+  real*8, dimension(nat*molecules,nat*molecules) :: om_b
+  real*8, dimension(molecules,principleev,molecules,principleev) :: om_t
+  real*8, dimension(nat) :: fp
+  real*8, dimension(principleev*molecules) :: fp_t
+end subroutine create_contracted_om_1
+subroutine create_molom_1(nat,rxyz,rvan,om,width_overlap)
+   real*8 :: width_overlap
+end subroutine create_molom_1
+subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
+   use mod_parini, only: typ_parini
+   type(typ_parini), intent(in):: parini
+   integer:: nat
+   integer, dimension (parini%fp_18_expaparameter+1) :: shifting
+   real*8, dimension (3,(parini%fp_18_expaparameter+1)**3) :: possibilites
+   real*8, dimension(3,nat*parini%fp_18_molecules):: rxyz
+   real*8, dimension(nat*parini%fp_18_molecules) :: rvan
+   real*8, dimension(parini%fp_18_lseg*parini%fp_18_molecules_sphere*parini%fp_18_principleev,parini%fp_18_molecules) :: fpsall
+   real*8, dimension (3,3)::alat,alat0
+   character(len=2), dimension(nat*parini%fp_18_molecules) :: finalchar
+   logical, dimension(parini%fp_18_molecules,(parini%fp_18_expaparameter+1)**3) :: is_copied
+end subroutine periodic_fingerprint
+subroutine findmolecule(parini,rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+   integer, dimension(nat*parini%fp_18_molecules), intent(in) :: typat
+   character(2), dimension(ntypat), intent(in) :: char_type
+   integer, intent(in):: ntypat,nat
+   real*8, dimension(3,3), intent(in) :: alat0
+   real*8, dimension(3,nat*parini%fp_18_molecules), intent(out) :: rxyz
+   real*8, dimension(3,nat*parini%fp_18_molecules), intent(in)  :: xred
+   character(len=2), dimension(nat*parini%fp_18_molecules), intent(out) :: finalchar
+   real*8, dimension(3, nat*parini%fp_18_molecules,27) :: rxyz_b
+   real*8, dimension(nat*parini%fp_18_molecules) :: rcov
+   logical, dimension (2,nat*parini%fp_18_molecules,27) :: is_true
+   logical, dimension (2,nat*parini%fp_18_molecules) :: first_search_is_true
+   integer, dimension (nat*parini%fp_18_molecules) :: first_search_molecule_number
+   integer, dimension (nat*parini%fp_18_molecules,27) :: molecule_number
+   integer, dimension (nat*parini%fp_18_molecules,2) :: atom_number
+   integer, dimension(parini%fp_18_molecules,2) :: finalmolecules
+   integer, dimension (nat*parini%fp_18_molecules,27) :: finalmolecule_number
+   character(len=2), dimension(nat*parini%fp_18_molecules,27) :: is_char
+end subroutine findmolecule
+subroutine sym2rcov(sym,rcov)
+  real(8)  :: rcov
+  character(len=2) :: sym  ! chemical symbol 
+end subroutine sym2rcov
+subroutine sym2rvan(sym,rvan)
+  real(8)  :: rvan
+  character(len=2) :: sym  ! chemical symbol 
+end subroutine sym2rvan
 ! ./src/forcefield.F90 :
 subroutine forcefield_init(parini,atoms)
     use mod_parini, only: typ_parini
@@ -2744,7 +2814,9 @@ subroutine get_cmass(cmass,masstot,xcart,amass,lhead,llist,nat,nmol)
 integer:: nat,nmol,iat,ifrag,lhead(nmol),llist(nat)
 real(8):: xcart(3,nat),amass(nat),masstot(nmol),cmass(3,nmol)
 end subroutine get_cmass
-subroutine get_inertia_tensor(intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+subroutine get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
 real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
 real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
@@ -4222,7 +4294,7 @@ subroutine mpmd_init
 end subroutine mpmd_init
 ! ./src/potential_NetSock.F90 :
   subroutine cal_potential_forces_netsock(atoms)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf,reset
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
   use mod_atoms, only: typ_atoms
   type(typ_atoms), intent(inout):: atoms
   real(8):: xred(3,atoms%nat)
@@ -4233,7 +4305,7 @@ end subroutine cal_potential_forces_netsock
   type(typ_parini), intent(in):: parini
 end subroutine init_netsock
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   integer,intent(in):: nat, nmsg, repid
   real(8),intent(in):: latvec(3,3),pos(3,nat)
   real(8),intent(out)::latvec_rot(3,3)
@@ -4241,7 +4313,7 @@ end subroutine init_netsock
   character*1024:: msg
 end subroutine send_data
   subroutine get_data(etot,fcart,strten,latvec,latvec_rot,nat)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   integer,intent(in) :: nat
   real(8),intent(in) :: latvec(3,3),latvec_rot(3,3)
   real(8),intent(out):: fcart(3,nat),etot,strten(6)

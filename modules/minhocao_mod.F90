@@ -6,10 +6,10 @@ implicit none
   integer:: nat                   !Number of atoms
   integer:: nmol                  !Number of molecules
   integer:: ntypat                !Number of atom types
-  integer,allocatable:: fragarr(:)
-  integer,allocatable:: fragsize(:)
-  integer,allocatable:: lhead(:)
-  integer,allocatable:: llist(:) 
+!  integer,allocatable:: fragarr(:)
+!  integer,allocatable:: fragsize(:)
+!  integer,allocatable:: lhead(:)
+!  integer,allocatable:: llist(:) 
   real(8),allocatable:: znucl(:)
 !  real(8),allocatable:: amu(:)
 !  real(8),allocatable:: rcov(:) 
@@ -28,9 +28,9 @@ implicit none
 !  real(8):: strfact               !Factor to multiply stress 
   character(40):: units           !Either angstroem or bohr
 !  integer:: ka,kb,kc              !The number of kpoints in each dimension
-  integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
-  integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
-  integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
+!  integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
+!  integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
+!  integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
   character(2),allocatable:: char_type(:) 
 !  real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
 !  character(20):: code            !What code should be used: abinit or siesta
@@ -159,8 +159,8 @@ module fingerprint
    integer:: fp_16_fp_dim
    integer,allocatable:: fp_16_nkinds_sum(:)
 ! gom parameters
-   real(8):: fp_17_width_cutoff
-   real(8):: fp_17_nex_cutoff
+!   real(8):: fp_17_width_cutoff
+!   real(8):: fp_17_nex_cutoff
 !   integer:: fp_17_natx_sphere
 !   integer:: fp_17_lseg
 !   character(len=2) :: fp_17_orbital
@@ -172,21 +172,21 @@ module fingerprint
 !module parameter_molgom
 !   implicit none
 !   save
-   character:: fp_18_orbital
+!   character:: fp_18_orbital
 !   logical, parameter :: write_files = .false.
 !   logical, parameter :: clustering = .false.
 !   integer :: fp_18_cluster_number = 20
 !   integer, parameter :: nat=20
 !   integer, parameter :: ntypat=4
-   integer :: fp_18_principleev = 6
-   integer :: fp_18_lseg!=1
+!   integer :: fp_18_principleev = 6
+!   integer :: fp_18_lseg!=1
 !   integer, parameter :: nconf=177
-   integer :: fp_18_molecules=4
-   integer :: fp_18_expaparameter = 4
-   integer :: fp_18_nex_cutoff = 3
-   integer :: fp_18_molecules_sphere = 50
-   real*8  :: fp_18_width_cutoff = 1.d0
-   real*8  :: fp_18_width_overlap = 1.d0
+!   integer :: fp_18_molecules=4
+!   integer :: fp_18_expaparameter = 4
+!   integer :: fp_18_nex_cutoff = 3
+!   integer :: fp_18_molecules_sphere = 50
+!   real*8  :: fp_18_width_cutoff = 1.d0
+!   real*8  :: fp_18_width_overlap = 1.d0
    real*8  :: fp_18_large_vanradius = 1.7d0/0.52917720859d0
 !   real(8),allocatable  :: rvan(:) !nat*molecules)
 !   character(len=2),allocatable:: finalchar(:) ! dimension(nat*molecules) 
@@ -309,11 +309,12 @@ END MODULE String_Utility
 
 module modsocket
 implicit none
-      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
-      CHARACTER(LEN=1024) :: sock_host
+!      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
+      INTEGER:: sock_socket
+!      CHARACTER(LEN=1024) :: sock_host
       INTEGER, PARAMETER  :: MSGLEN=12   ! length of the headers of the driver/wrapper communication protocol
       CHARACTER(LEN=60)   :: sock_extra_string="                                                            "
-      real(8)             :: sock_ecutwf(2)
+!      real(8)             :: sock_ecutwf(2)
 end module modsocket
 
 !module mod_sqnm

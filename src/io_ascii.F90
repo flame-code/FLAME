@@ -249,7 +249,7 @@ subroutine write_atomic_file_ascii(parini,filename,nat,units,xred,latvec0,fcart,
 !So if units==angstroem, the file will be converted to angstroem
 !   if units==bohr, the positions will not be changed
 use defs_basis, only: Ha_eV,Bohr_Ang,HaBohr3_GPa
-use global, only: reduced,fragarr
+use global, only: reduced
 use mod_parini, only: typ_parini
 
 implicit none
@@ -326,8 +326,8 @@ do iat=1,nat
       else
          write(46,'(3(1x,es25.15),2x,a2)') pos(:,iat),trim(char_type(typat(iat)))
       endif 
-  elseif(all(fragarr.gt.0)) then 
-      write(46,'(3(1x,es25.15),2x,a2,2x,i5)')       pos(:,iat),trim(char_type(typat(iat))),fragarr(iat)
+  elseif(all(parini%fragarr.gt.0)) then 
+      write(46,'(3(1x,es25.15),2x,a2,2x,i5)')       pos(:,iat),trim(char_type(typat(iat))),parini%fragarr(iat)
   else 
       write(46,'(3(1x,es25.15),2x,a2)')       pos(:,iat),trim(char_type(typat(iat)))
   endif

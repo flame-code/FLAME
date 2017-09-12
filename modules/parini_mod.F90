@@ -5,6 +5,7 @@ module mod_parini
     implicit none
     type typ_parini
         logical:: exists_yaml_file
+        integer:: iunit
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'
@@ -225,6 +226,21 @@ module mod_parini
         integer:: fp_17_natx_sphere
         integer:: fp_17_lseg
         character(len=2) :: fp_17_orbital
+        real(8):: fp_17_nex_cutoff
+        real(8):: fp_17_width_cutoff
+        integer :: fp_18_principleev = 6
+        integer :: fp_18_lseg!=1
+        integer :: fp_18_molecules=4
+        integer :: fp_18_expaparameter = 4
+        integer :: fp_18_molecules_sphere = 50
+        real*8  :: fp_18_width_cutoff = 1.d0
+        real*8  :: fp_18_width_overlap = 1.d0
+        integer :: fp_18_nex_cutoff = 3
+        character:: fp_18_orbital
+        !-----------------------------------------------------------------------
+        real(8):: sock_ecutwf(2)
+        integer:: sock_inet, sock_port        ! socket ID & address of the socket
+        character(len=1024):: sock_host
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0
@@ -238,6 +254,13 @@ module mod_parini
         logical,allocatable:: fixat(:)
         logical:: fixlat(7)
         integer,allocatable:: typat_global(:)
+        integer,allocatable:: llist(:)
+        integer,allocatable:: lhead(:)
+        integer,allocatable:: fragarr(:)
+        integer,allocatable:: fragsize(:)
+        integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
+        integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
+        integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

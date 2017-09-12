@@ -4,6 +4,7 @@ subroutine alborz_init(parini,parres,file_ini)
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
+    use futile
     use ifport
     use time_profiling
     use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
@@ -13,12 +14,20 @@ subroutine alborz_init(parini,parres,file_ini)
     type(typ_parini), intent(inout):: parini
     type(typ_parini), intent(inout):: parres
     !local variables
-    integer:: istat
+    integer:: istat, ierr
+    character(len=*), parameter:: filename='flame_log.yaml'
     call f_lib_initialize()
     call f_routine(id='alborz_init')
     !-----------------------------------------------------------------
     call alborz_initialize_timing_categories()
     call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
+    !-----------------------------------------------------------------
+    parini%iunit=f_get_free_unit(10**5)
+    call yaml_set_stream(unit=parini%iunit,filename=trim(filename),&
+         record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
+    if (ierr/=0) then
+       call yaml_warning('Failed to create'//trim(filename)//', error code='//trim(yaml_toa(ierr)))
+    end if
     !-----------------------------------------------------------------
     istat=getcwd(parini%cwd)
     if(istat/=0) stop 'ERROR: could not get CWD'
@@ -111,6 +120,8 @@ subroutine alborz_final(parini,file_ini)
     if(trim(parini%task)/='minhocao') then
         call finalizeprocessors
     endif
+    !-----------------------------------------------------------------
+    call yaml_close_stream(unit=parini%iunit)
     !-----------------------------------------------------------------
     call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     call f_timing_stop(dict_info=dict_timing_info)

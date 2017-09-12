@@ -62,7 +62,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         call symmetry_functions_g05_atom(ann_arr,pia_arr%pia(ibij),pia_arr%pia(ibik),ibij,ibik,iat,isat,jsat,ksat,symfunc)
     enddo
     !-------------------------------------------------------------------------------------
-    if(parini%iverbose>=2) then
+    if(parini%iverbose>2) then
     do iat=1,atoms%nat
     do ig=1,ann_arr%ann(1)%nn(0)
         write(77,'(2i4,es24.15)') ig,iat,symfunc%y(ig,iat)

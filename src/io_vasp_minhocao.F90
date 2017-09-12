@@ -99,7 +99,7 @@ subroutine write_atomic_file_poscar(parini,filename,nat,units,xred,latvec0,fcart
 !So if units==angstroem, the file will be converted to angstroem
 !   if units==bohr, the positions will not be changed
 use defs_basis, only: Ha_eV,Bohr_Ang,HaBohr3_GPa
-use global, only: reduced,fragarr
+use global, only: reduced
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini

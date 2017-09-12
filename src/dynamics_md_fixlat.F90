@@ -1,10 +1,9 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl
- use global, only: char_type,units
+ use mod_parini, only: typ_parini
+ use global, only: nat,ntypat,znucl, char_type,units
  use defs_basis
  use interface_code
- use mod_parini, only: typ_parini
 implicit none
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
