@@ -48,6 +48,10 @@ subroutine set_atomc_types_info(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
 end subroutine set_atomc_types_info
+subroutine flm_print_logo(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine flm_print_logo
 ! ./src/ann_basic.F90 :
 subroutine ann_allocate(ekf,ann_arr)
     use mod_ann, only: typ_ann_arr, typ_ekf
