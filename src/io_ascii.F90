@@ -1,4 +1,4 @@
-subroutine ascii_getsystem(filename)
+subroutine ascii_getsystem(parini,filename)
 !This subroutine simply returns the 
 !Number of atoms
 !Types of atoms
@@ -6,8 +6,10 @@ subroutine ascii_getsystem(filename)
 !and allocates the necessary arrays
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
-use global, only: nat,ntypat,typat,znucl,char_type,units,amu,rcov
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,znucl,char_type,units
 implicit none
+type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat,jat
 integer, allocatable:: nitype(:)
 real(8):: scaling_tmp,dproj_tmp(6),pos(3)
@@ -25,7 +27,7 @@ read(46,*) dproj_tmp(1:3)
 read(46,*) dproj_tmp(4:6)
 !Here we allocate a temporary array for the atomic character 
 if(.not.allocated(char_type_tmp)) allocate(char_type_tmp(nat))
-if(.not.allocated(typat)) allocate(typat(nat))
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))
 !There are some comment lines possible, reduced and/or fixlat
 k=0
 do iat=1,nat
@@ -44,37 +46,37 @@ do iat=1,nat
 enddo
 
 !Count how many different atom kinds there are
-if(.not.allocated(typat)) allocate(typat(nat))          
-typat(1)=1
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))          
+parini%typat_global(1)=1
 ntypat=1
 do iat=2,nat
 new=.true.
  do jat=1,iat-1
  if(trim(char_type_tmp(iat))==trim(char_type_tmp(jat))) then
      new=.false.
-     typat(iat)=typat(jat)
+     parini%typat_global(iat)=parini%typat_global(jat)
  endif
  enddo
  if(new) then
  ntypat=ntypat+1
- typat(iat)=ntypat
+ parini%typat_global(iat)=ntypat
  endif
 enddo
 
 !Here we allocate the arrays of types, and the character stuff
 if(.not.allocated(znucl)) allocate(znucl(ntypat))
 if(.not.allocated(char_type)) allocate(char_type(ntypat))
-if(.not.allocated(amu)) allocate(amu(ntypat))
-if(.not.allocated(rcov)) allocate(rcov(ntypat))
+if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
+if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
 
 !Now get the sole atomic characters
 do iat=1,nat
-  char_type(typat(iat))=char_type_tmp(iat)
+  char_type(parini%typat_global(iat))=char_type_tmp(iat)
 enddo
 
 !Assign Znucl here
 do i=1,ntypat
-      call symbol2znucl(amu(i),rcov(i),char_type(i),znucl(i))
+      call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),znucl(i))
 enddo
 
 99 continue
@@ -247,7 +249,7 @@ subroutine write_atomic_file_ascii(parini,filename,nat,units,xred,latvec0,fcart,
 !So if units==angstroem, the file will be converted to angstroem
 !   if units==bohr, the positions will not be changed
 use defs_basis, only: Ha_eV,Bohr_Ang,HaBohr3_GPa
-use global, only: reduced,fragarr
+use global, only: reduced
 use mod_parini, only: typ_parini
 
 implicit none
@@ -324,8 +326,8 @@ do iat=1,nat
       else
          write(46,'(3(1x,es25.15),2x,a2)') pos(:,iat),trim(char_type(typat(iat)))
       endif 
-  elseif(all(fragarr.gt.0)) then 
-      write(46,'(3(1x,es25.15),2x,a2,2x,i5)')       pos(:,iat),trim(char_type(typat(iat))),fragarr(iat)
+  elseif(all(parini%fragarr.gt.0)) then 
+      write(46,'(3(1x,es25.15),2x,a2,2x,i5)')       pos(:,iat),trim(char_type(typat(iat))),parini%fragarr(iat)
   else 
       write(46,'(3(1x,es25.15),2x,a2)')       pos(:,iat),trim(char_type(typat(iat)))
   endif

@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -19,7 +19,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
-    call f_routine(id='cal_ann_eem1')
+    call f_routine(id='cal_ann_cent1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
         allocate(ann_arr%chi_i(1:atoms%nat))
@@ -48,7 +48,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call cal_electrostatic_eem1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -88,7 +88,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_eem1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
@@ -156,9 +156,13 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
+        do i=1,ann_arr%n
+            ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
+            !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        enddo
     endif
     call f_release_routine()
-end subroutine cal_ann_eem1
+end subroutine cal_ann_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
     use mod_interface
@@ -255,7 +259,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     end associate
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
-subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -332,7 +336,7 @@ subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3
         stop 'ERROR: unknown job in cal_electrostatic_eem1'
     endif
     end associate
-end subroutine cal_electrostatic_eem1
+end subroutine cal_electrostatic_cent1
 !*****************************************************************************************
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     use mod_interface
@@ -614,9 +618,12 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
         if(iter==0) epotlong_old=ann_arr%epot_es
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
-            write(*,'(a,i5,es24.15,3es14.5)') 'iter,gnrm ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
         endif
-        if(gnrm<1.d-7) exit
+        if(gnrm<1.d-7) then
+            write(*,'(a,i5,es24.15,3es14.5)') 'CEP converged: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            exit
+        endif
         if(iter==0) then
             gt=g
             qq=atoms%qat

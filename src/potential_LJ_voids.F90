@@ -368,11 +368,14 @@ sigma_lj_lj_fact=1.5d0
 end module interface_lj_voids
 
 !!!********************************************************
-subroutine check_voids()
+subroutine check_voids(parini)
+use mod_parini, only: typ_parini
 use global
 use void_lj_params
 use defs_basis
-integer:: iat
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iat, ityp
 logical:: in_atoms,in_lj
 !Check typat for consistentcy and provide nat_lj
 in_atoms=.false.
@@ -382,12 +385,12 @@ ntypat_atoms=0
 ntypat_lj=0
 nat_lj=0
 do iat=1,nat
-   if(int(znucl(typat(iat))).lt.200) then
+   if(int(znucl(parini%typat_global(iat))).lt.200) then
        nat_atoms=nat_atoms+1
        in_atoms=.true.
    endif
-   if(int(znucl(typat(iat))).lt.200.and.in_lj) stop "Void system: First the physical atoms, then LJ pseudoparticles"
-   if(int(znucl(typat(iat))).gt.200) then 
+   if(int(znucl(parini%typat_global(iat))).lt.200.and.in_lj) stop "Void system: First the physical atoms, then LJ pseudoparticles"
+   if(int(znucl(parini%typat_global(iat))).gt.200) then 
        nat_lj=nat_lj+1 
        in_lj=.true.
    endif

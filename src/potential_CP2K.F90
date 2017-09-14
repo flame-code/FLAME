@@ -71,7 +71,7 @@ contains
   do l=1,kb
   do m=1,kc
   do iat=1,nat
-  write(87,'(a2,3(1x,es25.15))') trim(char_type(typat(iat))),k_xcart(:,iat,k,l,m)*Bohr_Ang
+  write(87,'(a2,3(1x,es25.15))') trim(char_type(parini%typat_global(iat))),k_xcart(:,iat,k,l,m)*Bohr_Ang
   enddo
   enddo
   enddo
@@ -82,7 +82,7 @@ contains
   end subroutine
   
   subroutine get_output_cp2k(fcart,energy,strten)
-  use global, only: nat,target_pressure_gpa
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none

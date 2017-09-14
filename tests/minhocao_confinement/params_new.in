@@ -1,0 +1,56 @@
+!SYSTEM PARAMETERS**********************************************************************
+CODE blj         !Code to use 
+BOUNDARY 1       !Boundary condition: 2 for free, 1 for periodic
+PRESS 10         !External pressure
+VERBOSE 1        !Verbosity from 0 to 2
+NAT 32           !Number of atoms
+NTYPE 2          !Number of atom types
+ZNUCL  201 202   !Nuclei charge
+AMU 2  2         !Atomic mass used for MD
+TYPAT 16*1 16*2  !Atomic type indentities
+!GEOPT PARAMETERS***********************************************************************
+GEONIT 2000       !Maximum number of iterations during GEOPT
+GEOEXT F         !DONT Use external geomatry optimizer
+GEOALGO  FIRE    !Geometry optimizer method
+GEOTOLMXF 5.d-5  !In atomic units: Force tolerance for GEOPT convergance 
+STRFACT 100      !Factor to multiply stress
+GEOFIREDTINIT  1 !Initial FIRE timestep
+GEOFIREDTMIN  0.1 !Minimal FIRE timestep
+GEOFIREDTMAX  20 !Maxiaml FIRE timestep
+!MD PARAMETERS**************************************************************************
+MDNIT 300        !Maximum number of iterations during MD
+CELLMASS 1       !Cell mass during MD
+MDDTINIT 2       !Initial MD timestep
+AUTO_MDMIN T     !Switch on automatic determination of mdmin steps
+AUTO_MDDT T      !Switch on automatic determination of MD stepsize
+MDDTINIT 10      !Initial MD timestep
+MDDTIPM 25       !Target number of samples per minimum crossed during MD
+MDMINMIN 2       !Minimum value of mdmin
+MDMINMAX 4       !Maximum value of mdmin
+!SOFTENING PARAMETERS*******************************************************************
+AUTO_SOFT T      !Switch on automatic softening
+SOFTNIT 1        !Number of softening steps
+SOFTAT .5d0      !Stesize for softening on atoms
+SOFTLAT 0.5d0    !Stesize for softening on lattice
+USEWFMD  T       !Determines if the previous wavefunction should be read for MD
+USEWFSOFT  T     !Determines if the previous wavefunction should be read for SOFTENING
+
+!OTHER INPUT PARAMETERS*****************************************************************
+FPMETHOD OGANOV  !Fingerprint to determine structural identity
+FPCUT 15         !Cutoff radius for Fingerprint
+FPDBIN  0.06     !Fingerprint bin size
+FPSIGMA 0.04     !Fingerprint broadening
+FINDSYM T        !Determines if symmetry should be estimated
+
+!CONFINEMENT****************************************************************************
+CONFINEMENT  T   !Use confinement potential
+CONFNCONF  1     !Number of potentials
+CONFCARTRED  R   !Reduced coordinates
+CONFEQ  0.5      !Equilibrium position of the potential
+CONFAV  1        !Confinement with respect to a fixed value along latvec(:,i)
+CONFDIM  3       !Dimension of the non-periodic direction (3 for z axis)
+CONFEXP  4       !Exponent
+CONFPREFAC  0.01  !Prefactor
+CONFCUT 0.1      !Cutoff distance
+CONFNAT  32       !Number of atoms that feel the potential
+CONFLIST1        !Index of the atoms that feel the potential. If list is empty, all atoms feel the confinement up to CONFNAT(i)

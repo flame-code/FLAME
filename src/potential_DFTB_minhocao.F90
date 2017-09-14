@@ -27,7 +27,7 @@ contains
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,typat,char_type,vasp_kpt_mode,target_pressure_gpa
+  use global, only: nat,ntypat,znucl,char_type
   use defs_basis, only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -86,11 +86,11 @@ contains
     if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,nat)
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xcart(:, iat)*Bohr_Ang
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xcart(:, iat)*Bohr_Ang
       end do
     else
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xred(:, iat)
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xred(:, iat)
       end do
       write(87,'(3(1x,es25.15))') 0.d0,0.d0,0.d0
       write(87,'(3(1x,es25.15))') latvec(:, 1)*Bohr_Ang
@@ -102,7 +102,7 @@ contains
   
   subroutine get_output_dftb(parini,fcart,energy,strten)
   use mod_parini, only: typ_parini
-  use global, only: nat,target_pressure_gpa
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
@@ -274,7 +274,7 @@ contains
   
   subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,typat,char_type,target_pressure_habohr
+  use global, only: nat,ntypat,znucl,char_type
   use defs_basis,only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -338,11 +338,11 @@ contains
     if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,nat)
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xcart(:, iat)*Bohr_Ang
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xcart(:, iat)*Bohr_Ang
       end do
     else
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xred(:, iat)
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xred(:, iat)
       end do
       write(87,'(3(1x,es25.15))') 0.d0,0.d0,0.d0
       write(87,'(3(1x,es25.15))') latvec(:, 1)*Bohr_Ang
@@ -359,12 +359,12 @@ contains
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
   write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
-  write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
+  write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
   close(87)
 
   open(unit=87,file="dftb_in.hsd",access="append")
@@ -375,16 +375,16 @@ contains
   write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
   write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
-  if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
-  if(any(fixat(:))) then
+  if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
+  if(any(parini%fixat(:))) then
      write(87,'(a)') "Constraints = {"
      do iat=1,nat
-       if(fixat(iat)) then
+       if(parini%fixat(iat)) then
           write(87,'(i5,1x,a)') iat, " 1.0, 0.0, 0.0 "
           write(87,'(i5,1x,a)') iat, " 0.0, 1.0, 0.0 "
           write(87,'(i5,1x,a)') iat, " 0.0, 0.0, 1.0 "
@@ -401,7 +401,7 @@ contains
   
   subroutine get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   use mod_parini, only: typ_parini
-  use global, only: nat,target_pressure_habohr
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
@@ -447,7 +447,7 @@ contains
      end do
    end do
    strtarget=0.d0
-   strtarget(1:3)=-target_pressure_habohr
+   strtarget(1:3)=-parini%target_pressure_habohr
    dstr(:)=strten(:)-strtarget(:)
   !Eventually take into account the stress
    do istr=1,6

@@ -40,7 +40,10 @@ lat = np.array(datamap['lattice'])
 for arg,dat in zip(sys.argv[1:],datamap['displacements']):
     fout.write(" \n" )
     iat=dat['atom']-1
-    redpos=datamap['points'][iat]['coordinates']
+    try:
+        redpos=datamap['atoms'][iat]['position']
+    except:
+        redpos=datamap['points'][iat]['coordinates']
 #    print arg,dat['displacement'],dat['atom'],np.add(np.dot(lat.T,redpos),dat['displacement'])
     print "Extracting forces from", arg
     force = force_acf(arg)

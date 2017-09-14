@@ -7,7 +7,8 @@ subroutine single_point_task(parini)
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr
     implicit none
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
+    !so parini can be intent(in) in future.
     !local variables
     type(typ_atoms_arr):: atoms_arr
     type(typ_file_info):: file_info
@@ -67,9 +68,10 @@ subroutine read_poscar_for_single_point(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use global, only: nat, ntypat, typat, znucl, char_type, units, amu, rcov
+    use global, only: nat, ntypat, znucl, char_type, units
     implicit none
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
+    !so parini can be intent(in) in future.
     type(typ_atoms):: atoms
     !local variables
     real(8), allocatable:: xred(:,:)
@@ -90,7 +92,7 @@ subroutine read_poscar_for_single_point(parini,atoms)
     endif
     write (*,*) "Reading structure from ",trim(filename)
 
-    call poscar_getsystem(trim(filename))
+    call poscar_getsystem(parini,trim(filename))
     allocate(xred(3,nat),source=0.d0)
     allocate(fcart(3,nat),source=0.d0)
     if(.not.allocated(fixat)) allocate(fixat(nat),source=.false.)
@@ -102,7 +104,7 @@ subroutine read_poscar_for_single_point(parini,atoms)
         fixat,fixlat,readfix,fragarr,readfrag,printval1,printval2)
     call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,xred,atoms%rat)
     do iat=1,nat
-        atoms%sat(iat)=trim(char_type(typat(iat)))
+        atoms%sat(iat)=trim(char_type(parini%typat_global(iat)))
     enddo
     deallocate(fixat)
     deallocate(xred)
@@ -110,8 +112,8 @@ subroutine read_poscar_for_single_point(parini,atoms)
     deallocate(fragarr)
     if(allocated(znucl)) deallocate(znucl)
     if(allocated(char_type)) deallocate(char_type)
-    if(allocated(amu)) deallocate(amu)
-    if(allocated(rcov)) deallocate(rcov)
-    if(allocated(typat)) deallocate(typat)
+    if(allocated(parini%amu)) deallocate(parini%amu)
+    if(allocated(parini%rcov)) deallocate(parini%rcov)
+    if(allocated(parini%typat_global)) deallocate(parini%typat_global)
 end subroutine read_poscar_for_single_point
 !*****************************************************************************************

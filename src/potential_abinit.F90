@@ -53,11 +53,11 @@ contains
     ! Kpoint mesh
     write(87,'(a)') "# Definition of the k-point mesh"
     write(87,'(a)') "kptopt   1   # Option for the automatic generation of k points, taking into account the symmetry"
-    if(dkpt==0.d0.or.abinit_kpt_mode==2) then
+    if(dkpt==0.d0.or.parini%abinit_kpt_mode==2) then
        write(87,'(a,3(1x,i5),a)') "ngkpt  ", ka, kb, kc, "  # Number of gridpoints in each dimension"
        write(87,'(a)') "nshiftk  1"
        write(87,'(a)') "shiftk  0.5 0.5 0.5  # These shifts will be the same for all grids"
-    elseif(abinit_kpt_mode==1) then
+    elseif(parini%abinit_kpt_mode==1) then
       write(87,'(a)') "# Automatic generation of the kpt mesh"
       write(87,'(a,es25.15,a)') "kptrlen ",dkpt," # K-mesh length"
     else
@@ -89,7 +89,7 @@ contains
     write(87,*) "znucl"
     write(87,*)  int(znucl)  !Atom type
     write(87,*) "typat" 
-    write(87,*)  typat
+    write(87,*)  parini%typat_global
     write(87,*) " "
     write(87,*) " "
     write(87,*) "acell"

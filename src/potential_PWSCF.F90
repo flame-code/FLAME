@@ -75,11 +75,11 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
-           write(87,'(a,2x,3(es25.15))') trim(char_type(typat(iat))),xred(:,iat)
+           write(87,'(a,2x,3(es25.15))') trim(char_type(parini%typat_global(iat))),xred(:,iat)
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"
            write(87,'(3(es25.15))') latvec(:,1)
@@ -163,10 +163,10 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -272,7 +272,7 @@ contains
 
 !BLOCK A_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_a.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
@@ -303,11 +303,11 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_a.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
              continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
-        write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
+        write(87,'(a,es15.7,a)') "press           = ",parini%target_pressure_gpa*10.d0
         write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa*8.d0
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
@@ -318,7 +318,7 @@ contains
 
 !BLOCK B_GEOPT----------------------------------------------
     open(unit=87, file="espresso_geo_b.CONTROL", ACCESS="APPEND")
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
             write(87,'(a)')          'calculation =   "relax"    ,'
         else
             write(87,'(a)')          'calculation =   "vc-relax"  ,'
@@ -349,11 +349,11 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_b.CELL")
         write(87,'(a)') "&CELL"
-        if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+        if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
            continue
         else
         write(87,'(a)')          "cell_dynamics   = 'bfgs' ,"
-        write(87,'(a,es15.7,a)') "press           = ",target_pressure_gpa*10.d0
+        write(87,'(a,es15.7,a)') "press           = ",parini%target_pressure_gpa*10.d0
         write(87,'(a,es15.7,a)') "press_conv_thr  = ",parini%paropt_geopt%fmaxtol/parini%paropt_geopt%strfact*10.d0*HaBohr3_GPa
         write(87,'(a)')          "cell_factor     = 4.d0"
         endif
@@ -396,14 +396,14 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,ntypat
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,nat
-        if(fixat(iat)) then
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 0 0 0 '
+        if(parini%fixat(iat)) then
+              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 0 0 0 '
         else
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(typat(iat))),xred(:,iat),' 1 1 1 '
+              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 1 1 1 '
         endif
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"
@@ -550,10 +550,10 @@ contains
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol

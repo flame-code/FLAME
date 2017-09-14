@@ -63,7 +63,7 @@ contains
 !    write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
     write(87,'(a)') "NSW    = 0"
     write(87,'(a)') "IBRION = 2"
-    if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+    if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
         write(87,'(a)') "ISIF   = 0"
     else
         write(87,'(a)') "ISIF   = 2"
@@ -76,14 +76,14 @@ contains
 
     !Kpoint mesh
     open(unit=87,file="KPOINTS")
-    write(87,'(a,i5)') "# Definition of the k-point mesh ",vasp_kpt_mode
+    write(87,'(a,i5)') "# Definition of the k-point mesh ",parini%vasp_kpt_mode
     write(87,'(i5)') 0
 !    if(dkpt==0.d0.or.vasp_kpt_mode==2) then
-    if(vasp_kpt_mode==2) then
+    if(parini%vasp_kpt_mode==2) then
       write(87,'(a)') "Gamma"!"Monkhorst Pack"
       write(87,'(3(1x,i5),a)') ka, kb, kc,"  # Number of gridpoints in each dimension"
       write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-    elseif(vasp_kpt_mode==1) then
+    elseif(parini%vasp_kpt_mode==1) then
       write(87,'(a)') "Auto"
       write(87,'(i5,a)') dkpt," # K-mesh length"
     else
@@ -102,7 +102,7 @@ contains
     nat_type=0
     do itype=1,ntypat
       do iat=1,nat
-        if(typat(iat)==itype) nat_type(itype) = nat_type(itype) + 1
+        if(parini%typat_global(iat)==itype) nat_type(itype) = nat_type(itype) + 1
       enddo
     enddo
 
@@ -267,10 +267,10 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -285,7 +285,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   readfix=.false.
   readfrag=.false.  
   call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
-           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+           &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
   latvec=latvec*Bohr_Ang !Internally already converted
 !  open(unit=32,file="CONTCAR")
 !  read(32,*)ch_tmp
@@ -406,10 +406,10 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
   write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.75d0)
-  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
+  write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*8.d0*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 3"
@@ -423,10 +423,10 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a)') ""
   !Setup for only a sequence of geopt
   write(87,'(a,i5)') "NSW = ",int(parini%paropt_geopt%nit*0.25d0)
-  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
+  write(87,'(a,es25.15)') "PSTRESS = ",parini%target_pressure_gpa*10.d0
   write(87,'(a,es25.15)') "EDIFFG = ",-parini%paropt_geopt%fmaxtol*HaBohr_eVAng
   !write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 3"
@@ -440,7 +440,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,'(a,i5)') "NSW = ",0
 !  write(87,'(a,es25.15)') "PSTRESS = ",target_pressure_gpa*10.d0
   write(87,'(a)') "IBRION = 2"
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) then
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
      write(87,'(a)') "ISIF   = 0"
   else
      write(87,'(a)') "ISIF   = 2"
@@ -449,18 +449,18 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   
   !Kpoint mesh
   open(unit=87,file="KPOINTS")
-  write(87,'(a,i5)') "# Definition of the k-point mesh ",vasp_kpt_mode
+  write(87,'(a,i5)') "# Definition of the k-point mesh ",parini%vasp_kpt_mode
   write(87,'(i5)') 0
   if(dkpt==0.d0) then
   write(87,'(a)') "Gamma"!"Monkhorst Pack"
   write(87,'(3(1x,i5),a)') ka,kb,kc,"  # Number of gridpoints in each dimension"
   write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-  elseif(vasp_kpt_mode==2) then
+  elseif(parini%vasp_kpt_mode==2) then
   call find_kpt(ka,kb,kc,latvec,dkpt)
   write(87,'(a)') "Gamma"!"Monkhorst Pack"
   write(87,'(3(1x,i5),a)') ka,kb,kc,"  # Number of gridpoints in each dimension"
   write(87,'(3(1x,i5),a)') 0,0,0,"  # Shifts"
-  elseif(vasp_kpt_mode==1) then
+  elseif(parini%vasp_kpt_mode==1) then
   write(87,'(a)') "Auto"
   write(87,'(i5,a)') dkpt," # K-mesh length"
   else
@@ -479,7 +479,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   nat_type=0
   do itype=1,ntypat
   do iat=1,nat
-  if(typat(iat)==itype) nat_type(itype)=nat_type(itype)+1
+  if(parini%typat_global(iat)==itype) nat_type(itype)=nat_type(itype)+1
   enddo
   enddo
   
@@ -491,11 +491,11 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,*)latvec(:,2)/angbohr 
   write(87,*)latvec(:,3)/angbohr 
   write(87,*) nat_type(:) 
-  if(any(fixat(:))) write(87,'(a)') "Selective dynamics"
+  if(any(parini%fixat(:))) write(87,'(a)') "Selective dynamics"
   write(87,'(a)') "Direct"
   do iat=1,nat
-  if(any(fixat(:))) then
-    if(fixat(iat)) then
+  if(any(parini%fixat(:))) then
+    if(parini%fixat(iat)) then
          write(87,'(3(1x,es25.15),a)') xred(:,iat), " F F F "  
     else
          write(87,'(3(1x,es25.15),a)') xred(:,iat), " T T T "  
@@ -627,10 +627,10 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   
   99 continue 
   close(32)
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.parini%bc==2) strten=0.d0
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   
-  if(target_pressure_gpa.ne.0.d0) then
+  if(parini%target_pressure_gpa.ne.0.d0) then
   !In the vasprun.xml file at the end you will have the enthalpy instead of the total energy in the file, so 
   !we need to transform it back, remember pressures are in kilobar in vasp
   !        energy=energy-target_pressure_gpa*10.d0/1.60217733d-19/1.d22*vol
@@ -645,7 +645,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   readfix=.false.
   readfrag=.false.  
   call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
-           &fixat_tmp,fixlat_tmp,readfix,fragarr,readfrag,printval1,printval2)
+           &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
   latvec=latvec*Bohr_Ang !Internally already converted
 !  open(unit=32,file="CONTCAR")
 !  read(32,*)ch_tmp

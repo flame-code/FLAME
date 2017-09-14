@@ -1,22 +1,22 @@
 module global
 implicit none
 !Set of parms.in
-  real(8):: target_pressure_gpa,target_pressure_habohr  !Target pressures
+!  real(8):: target_pressure_gpa !Target pressures
+!  real(8):: target_pressure_habohr  !Target pressures
   integer:: nat                   !Number of atoms
   integer:: nmol                  !Number of molecules
   integer:: ntypat                !Number of atom types
-  integer,allocatable:: fragarr(:)
-  integer,allocatable:: fragsize(:)
-  integer,allocatable:: lhead(:)
-  integer,allocatable:: llist(:) 
+!  integer,allocatable:: fragarr(:)
+!  integer,allocatable:: fragsize(:)
+!  integer,allocatable:: lhead(:)
+!  integer,allocatable:: llist(:) 
   real(8),allocatable:: znucl(:)
-  real(8),allocatable:: amu(:)
-  real(8),allocatable:: amutmp(:) 
-  real(8),allocatable:: rcov(:) 
-  integer,allocatable:: typat(:)
-  logical,allocatable:: fixat(:)
-  logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
-  integer:: ntime_md              !Maximum number of iterations during MD
+!  real(8),allocatable:: amu(:)
+!  real(8),allocatable:: rcov(:) 
+!  integer,allocatable:: typat(:)
+!  logical,allocatable:: fixat(:)
+!  logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
+!  integer:: ntime_md              !Maximum number of iterations during MD
 !  integer:: ntime_geopt           !Maximum number of iterations during GEOPT
 !  real(8):: bmass                 !Cell mass during MD and FIRE
 !  integer:: mdmin                 !Number of enthalpy minima crossed unit stop MD
@@ -28,9 +28,9 @@ implicit none
 !  real(8):: strfact               !Factor to multiply stress 
   character(40):: units           !Either angstroem or bohr
 !  integer:: ka,kb,kc              !The number of kpoints in each dimension
-  integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
-  integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
-  integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
+!  integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
+!  integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
+!  integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
   character(2),allocatable:: char_type(:) 
 !  real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
 !  character(20):: code            !What code should be used: abinit or siesta
@@ -38,14 +38,14 @@ implicit none
 !  real(8):: alpha_lat, alpha_at   !Stepsize for softening the atomic and lattice coordinates
 !  real(8):: alphax_lat , alphax_at !Stepsize for BFGS of the atomic and lattice coordinates
 !  integer:: nsoften               !Number of softening steps
-  logical:: usewf_md,usewf_geopt,usewf_soften,usewf_bfgs !Defines when the wavefunctions should be reused in the next step
+!  logical:: usewf_md,usewf_geopt,usewf_soften !Defines when the wavefunctions should be reused in the next step
 !  character(5):: geopt_method
   integer:: ka1,kb1,kc1           !The previously used kpt mesh are stored in these variables, only abinit 
   logical:: max_kpt               !If true, the single point in abinit will first evaluate if the new set is better and choose the better one. Default=false
   logical:: reuse_kpt             !If true, the single point in abinit will reuse previous kpt mesh. Default=false
   logical:: reduced               !If true, all output files will be written in reduced coordinates. Initiallized when reading poscur.ascii
-  logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
-  logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
+!  logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
+!  logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization 
 !  logical:: auto_soft             !If true, the softening stepsize will be adjusted during run
 !  logical:: auto_mdmin            !If true, the mdmin parameter will be adjusted during run
 !  logical:: auto_dtion_md         !If true, the timestep during MD will be adjusted during run
@@ -55,14 +55,14 @@ implicit none
 !  integer:: md_integrator         !Integrator for VCMD: 1=Verlet, 2=Velocity-Verlet, 3=Beeman
 !  real(8):: md_presscomp          !Pressure compensation during MD by substracting the kinetic energy pressure from the external pressure
 !  logical:: mol_soften            !Switch on molecular softening
-  integer:: correctalg            !Method to perform cell corrections
+!  integer:: correctalg            !Method to perform cell corrections
 !  integer:: bc                    !1: periodic, 2:free, 3:surface/slab
 !  integer:: verb                  !0: very little output, 1: normal output, 2: folders for geopt and md, 3: output stress and forces
   integer:: confine               !0: No confinement, 1: confinement used, but not currently, 2: confinement in action, 3: confinement always on
-  logical:: use_confine           !if true, confinement is enable, otherwise disabled
+!  logical:: use_confine           !if true, confinement is enable, otherwise disabled
 !  logical:: energy_conservation   !Only used in fixed cell MD
   logical:: voids                 !If or if not to use void creating LJ particles in the cell
-  logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
+!  logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
 end module global
 
 module mod_fire
@@ -159,8 +159,8 @@ module fingerprint
    integer:: fp_16_fp_dim
    integer,allocatable:: fp_16_nkinds_sum(:)
 ! gom parameters
-   real(8):: fp_17_width_cutoff
-   real(8):: fp_17_nex_cutoff
+!   real(8):: fp_17_width_cutoff
+!   real(8):: fp_17_nex_cutoff
 !   integer:: fp_17_natx_sphere
 !   integer:: fp_17_lseg
 !   character(len=2) :: fp_17_orbital
@@ -172,42 +172,42 @@ module fingerprint
 !module parameter_molgom
 !   implicit none
 !   save
-   character:: fp_18_orbital
+!   character:: fp_18_orbital
 !   logical, parameter :: write_files = .false.
 !   logical, parameter :: clustering = .false.
 !   integer :: fp_18_cluster_number = 20
 !   integer, parameter :: nat=20
 !   integer, parameter :: ntypat=4
-   integer :: fp_18_principleev = 6
-   integer :: fp_18_lseg!=1
+!   integer :: fp_18_principleev = 6
+!   integer :: fp_18_lseg!=1
 !   integer, parameter :: nconf=177
-   integer :: fp_18_molecules=4
-   integer :: fp_18_expaparameter = 4
-   integer :: fp_18_nex_cutoff = 3
-   integer :: fp_18_molecules_sphere = 50
-   real*8  :: fp_18_width_cutoff = 1.d0
-   real*8  :: fp_18_width_overlap = 1.d0
+!   integer :: fp_18_molecules=4
+!   integer :: fp_18_expaparameter = 4
+!   integer :: fp_18_nex_cutoff = 3
+!   integer :: fp_18_molecules_sphere = 50
+!   real*8  :: fp_18_width_cutoff = 1.d0
+!   real*8  :: fp_18_width_overlap = 1.d0
    real*8  :: fp_18_large_vanradius = 1.7d0/0.52917720859d0
 !   real(8),allocatable  :: rvan(:) !nat*molecules)
 !   character(len=2),allocatable:: finalchar(:) ! dimension(nat*molecules) 
 end module !parameter_molgom
 
-module confinement
-implicit none
+!module confinement
+!implicit none
 !Confinement parameters
-integer:: nconfine       !number of different confinements
-integer,allocatable:: conf_dim(:)    !1,2 or 3 for each of the 3 dimensions latvec(:,1), latvec(:,2), latvec(:,3)
-integer,allocatable:: conf_av(:)     !0: no confinement (should never occur)
-                                     !1: confinement with respect to a fixed value along latvec(:,i)
-                                     !2: confinement with respect to the average
-integer,allocatable:: conf_exp(:)    !The polynomial order for each confinement
-real(8),allocatable:: conf_prefac(:) !The polynomial predactor for each confinement
-real(8),allocatable:: conf_cut(:)    !The cutoff distance from each confinement equilibrium
-real(8),allocatable:: conf_eq(:)     !Equlibrium position of confinement along the confinement direction, will be filled to average or fixed value
-integer,allocatable:: conf_nat(:)    !How many atoms per confinement
-integer,allocatable:: conf_list(:,:) !List of atoms per confinement
-character(1),allocatable:: conf_cartred(:)!Cartesian or reduced coordinates, only if conf_eq is provided. d,D,r,R for reduced, C,c,K,k for cartesian
-end module
+!integer:: nconfine       !number of different confinements
+!integer,allocatable:: conf_dim(:)    !1,2 or 3 for each of the 3 dimensions latvec(:,1), latvec(:,2), latvec(:,3)
+!integer,allocatable:: conf_av(:)     !0: no confinement (should never occur)
+!                                     !1: confinement with respect to a fixed value along latvec(:,i)
+!                                     !2: confinement with respect to the average
+!integer,allocatable:: conf_exp(:)    !The polynomial order for each confinement
+!real(8),allocatable:: conf_prefac(:) !The polynomial predactor for each confinement
+!real(8),allocatable:: conf_cut(:)    !The cutoff distance from each confinement equilibrium
+!real(8),allocatable:: conf_eq(:)     !Equlibrium position of confinement along the confinement direction, will be filled to average or fixed value
+!integer,allocatable:: conf_nat(:)    !How many atoms per confinement
+!integer,allocatable:: conf_list(:,:) !List of atoms per confinement
+!character(1),allocatable:: conf_cartred(:)!Cartesian or reduced coordinates, only if conf_eq is provided. d,D,r,R for reduced, C,c,K,k for cartesian
+!end module
 
 module blj_params
      implicit none
@@ -309,11 +309,12 @@ END MODULE String_Utility
 
 module modsocket
 implicit none
-      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
-      CHARACTER(LEN=1024) :: sock_host
+!      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
+      INTEGER:: sock_socket
+!      CHARACTER(LEN=1024) :: sock_host
       INTEGER, PARAMETER  :: MSGLEN=12   ! length of the headers of the driver/wrapper communication protocol
       CHARACTER(LEN=60)   :: sock_extra_string="                                                            "
-      real(8)             :: sock_ecutwf(2)
+!      real(8)             :: sock_ecutwf(2)
 end module modsocket
 
 !module mod_sqnm

@@ -11,9 +11,9 @@
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use global, only: char_type
- use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -145,7 +145,7 @@ latvec_io=0
    debug=.false.
 
 
-   pressure=target_pressure_habohr
+   pressure=parini%target_pressure_habohr
    biomode=.false.
    !set parameters
 !   nit=runObj%inputs%ncount_cluster_x
@@ -306,7 +306,7 @@ call sqnm_invhess(nat,latvec_in,metric,hessinv)
    if(imode==2)rxyz(:,:,0)=rxyz(:,:,0)+beta_stretch*fstretch(:,:,0)
 
 !   call fnrmandforcemax(fxyzraw(1,1,0),fnrm,fmax,nat)
-   call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !   fnrm=sqrt(fnrm)
 !   if (fmax < 3.d-1) call updatefluctsum(outs%fnoise,fluct)
 
@@ -342,11 +342,11 @@ if(parini%verb>0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 
@@ -488,7 +488,7 @@ endif
 
 
 !      call fnrmandforcemax(fxyzraw(1,1,nhist),fnrm,fmax,nat)
-      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !MHM: Write output to file in every step***********************************
        counter=real(it,8)
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -499,11 +499,11 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 !*********************************************************************
@@ -695,7 +695,7 @@ endif
 
 !      if (fnrm.le.fnrmtol) goto 1000
 !      call convcheck(parini,fmax,fluct*runObj%inputs%frac_fluct,runObj%inputs%forcemax,icheck)
-      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !      if(icheck>5)then
       if(iexit==1)then
          goto 1000
@@ -733,7 +733,7 @@ endif
 
 
 !Set precision if necessary
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -745,14 +745,14 @@ endif
 !Reset everything, recompute cell and stuff
          if((multiprec.and.it.ge.parini%paropt_geopt%nit/2).or.&
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
-         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
+         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
              if(cart_forces) then
                     call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),pos_tmp(:,:),nat,correctalg,latvec_io)
+             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),pos_tmp(:,:),nat,parini%correctalg,latvec_io)
                     call rxyz_int2cart(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
              else
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat,correctalg,latvec_io)
+             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat,parini%correctalg,latvec_io)
              endif
              cellfix_done=.true.
              if(latvec_io.ne.0) then

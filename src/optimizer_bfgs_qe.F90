@@ -1342,9 +1342,9 @@ END MODULE bfgs_module
 !----------------------------------------------------------------------------
 !SUBROUTINE move_ions()
 subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use global, only: char_type
- use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1475,8 +1475,8 @@ qe_units=.true.
      call getvol(latvec,omega)
      omega_old=omega
      at_old=at
-     press=target_pressure_habohr*2.d0!In ry/bohr^3
-     pressure=target_pressure_habohr
+     press=parini%target_pressure_habohr*2.d0!In ry/bohr^3
+     pressure=parini%target_pressure_habohr
 !Default values of definable parameters
      bfgs_ndim=parini%qbfgs_bfgs_ndim
      trust_radius_max=parini%qbfgs_trust_radius_max
@@ -1582,14 +1582,14 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in QBFGS: ",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !Initial iprec after running the first force call
@@ -1630,14 +1630,14 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in QBFGS: ",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,en0000)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !*************************************************************************************************************        
@@ -1672,7 +1672,7 @@ else
 !           etot = etot + press * omega
            etot = enthalpy                                
            sigma = sigma                                  
-           CALL cell_force( fcell, - transpose(bg)/alat, sigma, omega, target_pressure_habohr )
+           CALL cell_force( fcell, - transpose(bg)/alat, sigma, omega, parini%target_pressure_habohr )
            epsp1 = epsp / ry_kbar
 !        END IF
 endif
@@ -1762,7 +1762,7 @@ if(iexit==1) then
     exit
 endif
 !Set precision if necessary
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -1774,9 +1774,9 @@ endif
 !Reset everything, recompute cell and stuff
          if((multiprec.and.itime.ge.parini%paropt_geopt%nit/2).or.&
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
-         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
+         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
-             call correct_latvec(h,pos,nat,correctalg,latvec_io)
+             call correct_latvec(h,pos,nat,parini%correctalg,latvec_io)
              write(*,*) "New cell found", latvec_io
              cellfix_done=.true.
              if(latvec_io.ne.0) then

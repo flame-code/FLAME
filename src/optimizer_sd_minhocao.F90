@@ -11,9 +11,9 @@
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use global, only: char_type
- use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use steepest_descent
  use defs_basis
  use interface_code
@@ -129,7 +129,7 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
 
 
 
-   pressure=target_pressure_habohr
+   pressure=parini%target_pressure_habohr
    biomode=.false.
    !set parameters
 !   nit=runObj%inputs%ncount_cluster_x
@@ -264,7 +264,7 @@ do it=1,nit
       call get_BFGS_forces_strainlatt(parini,parres,rxyz(:,:,0),fxyz(:,:,0),enthalpy,getwfk,iprec,latvec0,&
              &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
       call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
-      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       counter=real(it,8)
       write(*,'(i,a,5es15.7)') it," GEOPT_SD ",enthalpy,fmax,fmax_at,fmax_lat,beta
       if(iexit==1) then

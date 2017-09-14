@@ -37,7 +37,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
         enddo
         deallocate(ekf%gs) !HERE
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
-        call cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then
         call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
@@ -129,11 +129,11 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         endif
         write(*,'(a,i4,3es19.10,i3)') 'pretrain: ',istep,rmse*1.d3, &
             ann_arr%ann(1)%ener_ref,ann_arr%ann(2)%ener_ref,isatur
-        if(rmse*1.d3<1.d0) exit
+        if(rmse*1.d3<2.d1) exit
         if(isatur>nsatur) exit
         do ia=1,ann_arr%n
             de0=alpha*g(ia)
-            de0=sign(min(abs(de0),5.d-2),de0)
+            de0=sign(min(abs(de0),1.d0),de0)
             ann_arr%ann(ia)%ener_ref=ann_arr%ann(ia)%ener_ref-de0
         enddo
         rmse_old=rmse

@@ -19,7 +19,7 @@
   use mod_interface
 !  use defs_basis
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf,reset
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
   use mod_atoms, only: typ_atoms
   implicit none
   type(typ_atoms), intent(inout):: atoms
@@ -73,7 +73,7 @@ endif
   use mod_interface
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_parini, only: typ_parini
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   implicit none
   type(typ_parini), intent(in):: parini
   character*1024:: host
@@ -88,7 +88,7 @@ endif
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)
   use mod_interface, except_this_one=> send_data
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   implicit none
   integer,intent(in):: nat, nmsg, repid
   real(8),intent(in):: latvec(3,3),pos(3,nat)
@@ -164,7 +164,7 @@ endif
   subroutine get_data(etot,fcart,strten,latvec,latvec_rot,nat)
   use mod_interface, except_this_one=> get_data
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   implicit none
   integer,intent(in) :: nat
   real(8),intent(in) :: latvec(3,3),latvec_rot(3,3)
@@ -268,7 +268,7 @@ endif
 
   subroutine final_netsock()
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   implicit none
   character*1024:: host
        call writebuffer(sock_socket,"STOP        ",MSGLEN)

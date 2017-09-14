@@ -48,6 +48,10 @@ subroutine set_atomc_types_info(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
 end subroutine set_atomc_types_info
+subroutine flm_print_logo(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine flm_print_logo
 ! ./src/ann_basic.F90 :
 subroutine ann_allocate(ekf,ann_arr)
     use mod_ann, only: typ_ann_arr, typ_ekf
@@ -295,7 +299,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_atombased
 ! ./src/ann_pot_cent1.F90 :
-subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
@@ -305,7 +309,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
-end subroutine cal_ann_eem1
+end subroutine cal_ann_cent1
 subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -326,7 +330,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi_dir
-subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -338,7 +342,7 @@ subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3
     real(8), intent(out):: epot_c
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine cal_electrostatic_eem1
+end subroutine cal_electrostatic_cent1
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -1572,8 +1576,8 @@ integer:: nzero,npositive,i,typer
 end function typer
 ! ./src/dynamics_md_fixlat.F90 :
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
  use mod_parini, only: typ_parini
+ use global, only: nat,ntypat,znucl, char_type,units
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
     integer:: iat,iprec,istep
@@ -1930,6 +1934,76 @@ subroutine create_om_1(nat,rxyz,rcov,om)
 end subroutine create_om_1
 subroutine create_om_4(nat,rxyz,rcov,om)
 end subroutine create_om_4
+! ./src/fingerprint_MOLGOM.F90 :
+subroutine get_distance_molgom(fp1,fp2,dist,lseg,molecules,molecules_sphere,principleev)
+integer:: lseg,molecules,molecules_sphere,principleev
+integer:: iassign(molecules)
+real(8):: tt,dtt,dist
+real(8):: cost(molecules,molecules)
+real(8):: fp1(lseg*molecules_sphere*principleev,molecules),fp2(lseg*molecules_sphere*principleev,molecules)
+end subroutine get_distance_molgom
+subroutine create_contracted_om_1(width_overlap,principleev,nat,molecules,rxyz,rvan,amplitude,fp_t,lseg,write_files)
+  logical :: write_files
+  integer :: principleev, xyz, alpha, beta, mu, nu, k, i, j, m, n
+  integer :: lwork, nat, molecules, lseg, info
+  real*8 :: width_overlap
+  real*8, dimension(3, molecules*nat):: rxyz
+  real*8, dimension(molecules) :: amplitude
+  real*8, dimension(3,nat) :: rxyz_temp
+  real*8, dimension(molecules*nat) :: rvan
+  real*8, dimension(nat) :: rvan_temp
+  real*8, dimension(nat,principleev,molecules) :: em
+  real*8, dimension(nat,nat) :: om
+  real*8, dimension(nat*molecules,nat*molecules) :: om_b
+  real*8, dimension(molecules,principleev,molecules,principleev) :: om_t
+  real*8, dimension(nat) :: fp
+  real*8, dimension(principleev*molecules) :: fp_t
+end subroutine create_contracted_om_1
+subroutine create_molom_1(nat,rxyz,rvan,om,width_overlap)
+   real*8 :: width_overlap
+end subroutine create_molom_1
+subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
+   use mod_parini, only: typ_parini
+   type(typ_parini), intent(in):: parini
+   integer:: nat
+   integer, dimension (parini%fp_18_expaparameter+1) :: shifting
+   real*8, dimension (3,(parini%fp_18_expaparameter+1)**3) :: possibilites
+   real*8, dimension(3,nat*parini%fp_18_molecules):: rxyz
+   real*8, dimension(nat*parini%fp_18_molecules) :: rvan
+   real*8, dimension(parini%fp_18_lseg*parini%fp_18_molecules_sphere*parini%fp_18_principleev,parini%fp_18_molecules) :: fpsall
+   real*8, dimension (3,3)::alat,alat0
+   character(len=2), dimension(nat*parini%fp_18_molecules) :: finalchar
+   logical, dimension(parini%fp_18_molecules,(parini%fp_18_expaparameter+1)**3) :: is_copied
+end subroutine periodic_fingerprint
+subroutine findmolecule(parini,rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+   integer, dimension(nat*parini%fp_18_molecules), intent(in) :: typat
+   character(2), dimension(ntypat), intent(in) :: char_type
+   integer, intent(in):: ntypat,nat
+   real*8, dimension(3,3), intent(in) :: alat0
+   real*8, dimension(3,nat*parini%fp_18_molecules), intent(out) :: rxyz
+   real*8, dimension(3,nat*parini%fp_18_molecules), intent(in)  :: xred
+   character(len=2), dimension(nat*parini%fp_18_molecules), intent(out) :: finalchar
+   real*8, dimension(3, nat*parini%fp_18_molecules,27) :: rxyz_b
+   real*8, dimension(nat*parini%fp_18_molecules) :: rcov
+   logical, dimension (2,nat*parini%fp_18_molecules,27) :: is_true
+   logical, dimension (2,nat*parini%fp_18_molecules) :: first_search_is_true
+   integer, dimension (nat*parini%fp_18_molecules) :: first_search_molecule_number
+   integer, dimension (nat*parini%fp_18_molecules,27) :: molecule_number
+   integer, dimension (nat*parini%fp_18_molecules,2) :: atom_number
+   integer, dimension(parini%fp_18_molecules,2) :: finalmolecules
+   integer, dimension (nat*parini%fp_18_molecules,27) :: finalmolecule_number
+   character(len=2), dimension(nat*parini%fp_18_molecules,27) :: is_char
+end subroutine findmolecule
+subroutine sym2rcov(sym,rcov)
+  real(8)  :: rcov
+  character(len=2) :: sym  ! chemical symbol 
+end subroutine sym2rcov
+subroutine sym2rvan(sym,rvan)
+  real(8)  :: rvan
+  character(len=2) :: sym  ! chemical symbol 
+end subroutine sym2rvan
 ! ./src/forcefield.F90 :
 subroutine forcefield_init(parini,atoms)
     use mod_parini, only: typ_parini
@@ -2308,7 +2382,7 @@ subroutine task_minhocao(parini,parres)
  type(typ_parini), intent(inout):: parres
 end subroutine task_minhocao
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2355,7 +2429,7 @@ real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),cr
 real(8):: latmass,amass(nat),lattrans(3,3),latdottrans(3,3),ekintrace(3,3),sigma(3,3),sigmatrans(3,3),vol_1_3
 end subroutine ekin_at_lat_andersen
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2365,7 +2439,7 @@ subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_
  character(40)::filename,folder
 end subroutine md_andersen_mhm
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2375,7 +2449,7 @@ subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,
  character(40)::filename,folder
 end subroutine md_pr_mhm_old
 subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2505,7 +2579,7 @@ real(8), intent(in)    :: latvec0(3,3)
 real(8), intent(inout) :: vlat(3,3)
 end subroutine elim_torque_cell
 subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2515,7 +2589,7 @@ subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,tem
  character(40):: folder
 end subroutine init_vel
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2528,7 +2602,7 @@ end subroutine init_vel
         character(40):: filename,folder
 end subroutine soften_pos
         subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2572,7 +2646,7 @@ end subroutine correct_latvec_oganov
  real(8) :: v(3,3),vol,rxyz_red(3,nat)
 end subroutine backtocell_cart
 subroutine pathintegral(parini,parres,latvec,xred)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,fixat,fixlat
+ use global, only: nat,ntypat,znucl,char_type,units
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        type(typ_parini), intent(inout):: parres
@@ -2587,7 +2661,7 @@ real(8):: fp_arr(fp_len,nlminx),fp_dist
 real(8):: tmp_acell(3),tmp_real,tmp_rprim(3,3),lat_arr(3,3,nlminx),pl_arr(3,nat,nlminx),randpos(3)
 end subroutine plot_fp_grid
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: nat,ntypat,znucl,char_type,units
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        type(typ_parini), intent(inout):: parres
@@ -2596,7 +2670,7 @@ subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
        real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
 end subroutine rotate_like_crazy
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: nat,ntypat,znucl,char_type,units
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        type(typ_parini), intent(inout):: parres
@@ -2605,7 +2679,7 @@ subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
        real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
 end subroutine poslowrelax
 subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: nat,ntypat,znucl,char_type,units
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        type(typ_parini), intent(inout):: parres
@@ -2615,7 +2689,7 @@ subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
        logical:: findsym
 end subroutine enthalpyrelax
 subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
- use global, only: nat,ntypat,znucl,amu,typat,char_type,units,target_pressure_habohr,target_pressure_gpa
+ use global, only: nat,ntypat,znucl,char_type,units
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
        type(typ_parini), intent(inout):: parres
@@ -2634,7 +2708,9 @@ use global, only: nat
 real(8):: latvec(3,3),k_latvec(3,3),k_xcart(3,nat,ka,kb,kc),xred(3,nat) 
 integer:: iat,k,l,m,ka,kb,kc
 end subroutine k_expansion
-subroutine elim_fixed_at(nat,x)
+subroutine elim_fixed_at(parini,nat,x)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: iat,nat
 real(8):: x(3,nat)
 end subroutine elim_fixed_at
@@ -2670,8 +2746,10 @@ end subroutine dist_ang2latvec
 subroutine dist_latvec2ang(dist_ang,latvec,pi)
 real(8):: dist_ang(6),latvec(3,3),pi,convang
 end subroutine dist_latvec2ang
-subroutine fragments(latvec,xred,nfrag,xcart,fragarr,fragsize)
-use global, only: nat,ntypat,znucl,rcov,typat,char_type
+subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,znucl,char_type
+type(typ_parini), intent(in):: parini
 real(8),dimension(3,nat), INTENT(IN) :: xred
 real(8):: latvec(3,3),rotmat(3,3),dproj(6)
 integer :: nfrag, nfragold
@@ -2694,7 +2772,9 @@ end subroutine inertia_tensor
 subroutine rot_ener(omega,intens,erot)
 real(8):: omega(3),intens(3,3),erot
 end subroutine rot_ener
-subroutine init_rotvels(nat,xred,latvec,temp,amass,vel)
+subroutine init_rotvels(parini,nat,xred,latvec,temp,amass,vel)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer,intent(in):: nat
 real(8),intent(in):: xred(3,nat),latvec(3,3),temp,amass(nat)
 real(8),intent(out):: vel(3,nat)
@@ -2723,7 +2803,9 @@ real(8),intent(out):: xred_in(3,nat)
 real(8):: rotmat(3,3),xcart_tmp(3,nat),cmass(3,nmol)
 integer:: nat,nmol,iat,imol,llist(nat),lhead(nmol)
 end subroutine expand_rigid
-subroutine init_cm_mol(latvec,xred,xcart_shifted,xred_cm,quat,amass,masstot,intens,inprin,inaxis,lhead,llist,nat,nmol)
+subroutine init_cm_mol(parini,latvec,xred,xcart_shifted,xred_cm,quat,amass,masstot,intens,inprin,inaxis,lhead,llist,nat,nmol)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 real(8),intent(in):: latvec(3,3),xred(3,nat)
 integer:: nat,nmol,iat,llist(nat),lhead(nmol),fragsize(nmol),imol,jmol,kmol
 real(8):: xcart_in(3,nat),xcart_shifted(3,nat),cmass(3,nmol),amass(nat)
@@ -2736,7 +2818,9 @@ subroutine get_cmass(cmass,masstot,xcart,amass,lhead,llist,nat,nmol)
 integer:: nat,nmol,iat,ifrag,lhead(nmol),llist(nat)
 real(8):: xcart(3,nat),amass(nat),masstot(nmol),cmass(3,nmol)
 end subroutine get_cmass
-subroutine get_inertia_tensor(intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+subroutine get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
 real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
 real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
@@ -2787,7 +2871,7 @@ end subroutine track_kpt
 subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcart_in,strten_in,&
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
  use mod_parini, only: typ_parini
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -2832,14 +2916,14 @@ end subroutine init_fp
 subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
 use mod_parini, only: typ_parini
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
-use global, only: ntypat,nat,typat,rcov,char_type
+use global, only: ntypat,nat,char_type
 type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),vol,rcov_arr(nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,nat)
 end subroutine get_fp
 subroutine get_fp_distance(parini,fp_len,fp1,fp2,fp_dist)
 use mod_parini, only: typ_parini
-use global, only: ntypat,nat,typat
+use global, only: ntypat,nat
 type(typ_parini), intent(in):: parini
 integer:: fp_len
 real(8):: fp(fp_len),pos_red(3,nat),latvec(3,3),rxyz(3,nat),fp1(fp_len),fp2(fp_len),fp_dist
@@ -3102,7 +3186,7 @@ end subroutine init_mybfgs
 subroutine geopt_init()
 end subroutine geopt_init
 subroutine GEOPT_RBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat,target_pressure_habohr,nat
+ use global, only: nat
  use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3111,7 +3195,7 @@ real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),cou
 character(40):: folder
 end subroutine geopt_rbfgs_mhm
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,char_type
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -3122,7 +3206,7 @@ subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,
     integer ::  nwork,iprec
 end subroutine bfgs_driver_atoms
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,char_type
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -3147,7 +3231,7 @@ subroutine bfgs_reza(nat,nr,x,epot,f,nwork,work,alphax_at,alphax_lat,fmax,fmax_a
     character(40):: coord
 end subroutine bfgs_reza
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type
+ use global, only: nat,ntypat,znucl,char_type
  use mod_parini, only: typ_parini
   type(typ_parini), intent(in):: parini
   type(typ_parini), intent(inout):: parres
@@ -3167,7 +3251,7 @@ subroutine atomic_copymoving_backward(nat,nr,xa,n,x)
     real(kind=8) :: x(n),xa(nr)
 end subroutine atomic_copymoving_backward
 subroutine get_BFGS_forces_PR(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3184,7 +3268,7 @@ real(8):: vol
 end subroutine getvol_strain
 subroutine  get_BFGS_forces_strainlatt(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec0,&
            &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3201,7 +3285,7 @@ integer:: ndim,LWORK,info,i,j,hessupdate,lattdeg
 real(8):: hessin(ndim,ndim),hess(ndim,ndim),hess_tmp(ndim,ndim),dmat(ndim,ndim),latvec(3,3)
 end subroutine correct_hessin
 subroutine get_BFGS_forces_max(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3213,7 +3297,7 @@ real(8):: xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,latvec_in(3,3),tra
 logical:: getwfk
 end subroutine get_bfgs_forces_max
 subroutine get_BFGS_forces_atom(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3225,7 +3309,7 @@ real(8):: xred_in(3,nat),fcart_in(3*nat),strten_in(6),etot_in,latvec_in(3,3),tra
 logical:: getwfk
 end subroutine get_bfgs_forces_atom
 subroutine get_BFGS_forces_lattice(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
  use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3245,18 +3329,20 @@ end subroutine sd_minhocao
 end subroutine stress_volume
 subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 use mod_parini, only: typ_parini
-use global, only: nat,target_pressure_habohr
+use global, only: nat
 type(typ_parini), intent(in):: parini
 real(8):: fcart_in(3,nat),strten_in(6),fmax,fmax_at,fmax_lat
 end subroutine get_fmax
-subroutine init_hessinv(hessin,latvec,omega,b0,lattdeg) 
-use global, only: nat,ntypat,typat,znucl
+subroutine init_hessinv(parini,hessin,latvec,omega,b0,lattdeg) 
+use mod_parini, only: typ_parini
+use global, only: nat,ntypat,znucl
+type(typ_parini), intent(in):: parini
 integer:: itype,iat,i,j,k,lattdeg
 real(8):: omega,b0,hessin(3*nat+9,3*nat+9),diagat,avmass,diaglat
 real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
 end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3267,7 +3353,7 @@ INTEGER :: choice,status,sumstatus,iprec,iexit,lattdeg,hessupdate
 character(40)::filename,folder
 end subroutine geopt_mbfgs_mhm
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: units,usewf_geopt,nat,fixat,fixlat
+ use global, only: units,nat
 use mod_parini, only: typ_parini
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
@@ -3422,7 +3508,7 @@ end function scnorm
       CHARACTER(LEN=*), INTENT(IN) :: scratch
 end subroutine terminate_bfgs
 subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
   use mod_parini, only: typ_parini
   type(typ_parini), intent(in):: parini
   type(typ_parini), intent(inout):: parres
@@ -3635,7 +3721,7 @@ subroutine final_sdminimum(paropt)
 end subroutine final_sdminimum
 ! ./src/optimizer_sd_minhocao.F90 :
 subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
    use mod_parini, only: typ_parini
    type(typ_parini), intent(in):: parini
    type(typ_parini), intent(inout):: parres
@@ -3732,7 +3818,7 @@ subroutine projectbond(nat,nbond,rat,fat,fstretch,iconnect,wold,alpha_stretch0,a
 end subroutine projectbond
 ! ./src/optimizer_sqnm_minhocao.F90 :
 subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
+ use global, only: nat,ntypat,znucl
    use mod_parini, only: typ_parini
    type(typ_parini), intent(in):: parini
    type(typ_parini), intent(inout):: parres
@@ -4094,16 +4180,13 @@ subroutine cell_vol(nat,latvec,vol)
     real(8):: latvec(3,3),vol,a(3,3)
 end subroutine cell_vol
 ! ./src/potential_confinement.F90 :
-subroutine init_confinement(nat,filename)
-integer:: i,io,iconf,nat
-character(40):: filename,my_fmt,allatoms
-end subroutine init_confinement
-subroutine init_confinement_parser()
-integer:: i,io,iconf
-character(40):: filename,my_fmt,allatoms
-character(200):: line
+subroutine init_confinement_parser(parini)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(inout):: parini
 end subroutine init_confinement_parser
-subroutine confinement_energy_forces(nat,xred,latvec,energy,forces,strten)
+subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
 integer:: nat,iconf,iat
 real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
 real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
@@ -4215,7 +4298,7 @@ subroutine mpmd_init
 end subroutine mpmd_init
 ! ./src/potential_NetSock.F90 :
   subroutine cal_potential_forces_netsock(atoms)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf,reset
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
   use mod_atoms, only: typ_atoms
   type(typ_atoms), intent(inout):: atoms
   real(8):: xred(3,atoms%nat)
@@ -4226,7 +4309,7 @@ end subroutine cal_potential_forces_netsock
   type(typ_parini), intent(in):: parini
 end subroutine init_netsock
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   integer,intent(in):: nat, nmsg, repid
   real(8),intent(in):: latvec(3,3),pos(3,nat)
   real(8),intent(out)::latvec_rot(3,3)
@@ -4234,7 +4317,7 @@ end subroutine init_netsock
   character*1024:: msg
 end subroutine send_data
   subroutine get_data(etot,fcart,strten,latvec,latvec_rot,nat)
-  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,sock_ecutwf
+  use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   integer,intent(in) :: nat
   real(8),intent(in) :: latvec(3,3),latvec_rot(3,3)
   real(8),intent(out):: fcart(3,nat),etot,strten(6)
@@ -4618,12 +4701,12 @@ end subroutine alborz_as_potential_final
 subroutine single_point_task(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
 end subroutine single_point_task
 subroutine read_poscar_for_single_point(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
     type(typ_atoms):: atoms
 end subroutine read_poscar_for_single_point
 ! ./src/task_testforces.F90 :

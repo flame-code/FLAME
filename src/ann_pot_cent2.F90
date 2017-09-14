@@ -13,7 +13,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
     !local variables
     type(typ_cent):: cent
-    integer:: iat, i, j, ng, ia
+    integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
@@ -159,8 +159,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        do ia=1,ann_arr%n
-            ekf%g(ekf%loc(ia)+ekf%num(1)-1)=ekf%g(ekf%loc(ia)+ekf%num(1)-1)*1.d-2
+        do i=1,ann_arr%n
+            ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
             !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
         enddo
     endif

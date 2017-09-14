@@ -3,13 +3,10 @@ main :
     rcut           : 12.0
     ampl_chi       :  0.50
     prefactor_chi  : 10.00
-    zion           : 2.0
-    gausswidth_ion : 1.60
     ener_ref       : -677.348068769
     gausswidth     : 1.0
     hardness       : 0.01
     chi0           : -0.57
-    spring_const   : 1.0
     qinit          : 0.0
     method         : behler
 
