@@ -7,7 +7,8 @@ else
 endif
 
 ifdef DEBUG
-	FFLAGS = -C -g -traceback -O0 -ftrapuv  -shared-intel -mcmodel=large  -mkl=sequential
+	#FFLAGS = -C -g -traceback -O0 -ftrapuv  -shared-intel -mcmodel=large  -mkl=sequential
+	FFLAGS = $(MY_FFLAGS_DEBUG)  -shared-intel -mcmodel=large  -mkl=sequential
 else
 	FFLAGS = $(MY_FFLAGS)  -shared-intel -mcmodel=large  -mkl=sequential
 endif

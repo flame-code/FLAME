@@ -82,7 +82,7 @@ contains
     logical, intent(in)  :: getwfk
 
 
-    real(8) :: dkpt,fcart_c(3,nat),energy_c,strten_c
+    real(8) :: dkpt,fcart_c(3,nat),energy_c,strten_c(6)
 
 !For the voids
     real(8):: energy_voidlj,strten_voidlj(6),fcart_voidlj(3,nat)

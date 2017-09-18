@@ -191,7 +191,7 @@ pressure=parini%target_pressure_habohr
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,'(a,a)') " # Writing the positions in BFGS ATOMS  : ",filename
-       call write_atomic_file_ascii(parini,parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
         write(*,'(a,i4,2(1x,es17.8))') " # GEOPT ",int(counter),enthalpy, fmax 
         if(iexit==1) then
@@ -360,7 +360,7 @@ latvec(7:9)=latvec_in(:,3)
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,'(a,a)') " # Writing the positions in BFGS2LATTICE: ",filename
-       call write_atomic_file_ascii(parini,parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
         write(*,'(a,i4,2(1x,es17.8))') " # GEOPT ",int(counter),enthalpy, fmax 
         if(iexit==1) then
@@ -999,7 +999,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
            units=units
            write(*,'(a,a)') " # Writing the positions in BFGS LATTICE: ",filename
            call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-                &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,icall)
+                &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
            write(*,'(a,i4,4(1x,es17.8),1x,i5)') " # GEOPT ",int(counter),enthalpy,fmax,fmax_at,fmax_lat,icall
            write(*,'(a,i5,2x,2x,1es21.14,2x,3(es15.7),es11.3,2x,a8,i3,1x,a6,1x,1pe8.2E1)')  " # GEOPT BFGS LATTICE",&
            int(counter),enthalpy,fmax,fmax_at,fmax_lat,de,"BFGS-it=",parmin_bfgs%finstep,"alpha=",parmin_bfgs%alpha
@@ -1093,7 +1093,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
            units=units
            write(*,'(a,a)') " # Writing the positions in BFGS LATTICE: ",filename
            call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-                &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,icall)
+                &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
            write(*,'(a,i4,4(1x,es17.8),1x,i5)') " # GEOPT ",int(counter),enthalpy,fmax,fmax_at,fmax_lat,icall
            write(*,'(a,i5,2x,2x,1es21.14,2x,3(es15.7),es11.3,2x,a8,i3,1x,a6,1x,1pe8.2E1)')  " # GEOPT BFGS LATTICE",&
            int(counter),enthalpy,fmax,fmax_at,fmax_lat,de,"BFGS-it=",parmin_bfgs%finstep,"alpha=",parmin_bfgs%alpha
@@ -1388,6 +1388,25 @@ endif
 !write(*,*) "ALPHA_2",hessin
 end subroutine
 
+!************************************************************************************
+
+SUBROUTINE unit_matrix(mat,ndim)
+implicit none
+real(8),DIMENSION(ndim,ndim), INTENT(INOUT) :: mat
+integer:: ndim
+INTEGER :: i,n
+!Action:
+!Sets the diagonal components of mat to unity, all other components to zero.
+!When mat is square, this will be the unit matrix; otherwise, a unit matrix
+!with appended rows or columns of zeros.
+mat(:,:)=0.0d0
+n=min(size(mat,1),size(mat,2))
+do i=1,n
+mat(i,i)=1.0d0
+end do
+END SUBROUTINE unit_matrix
+
+!************************************************************************************
 
 subroutine get_BFGS_forces_max(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
@@ -1648,7 +1667,7 @@ real(8):: amass(nat),rcov,amass_u(ntypat),vol
 real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
 character(2):: tmp_ch
  write(*,'(a)') " # BFGS: initiallizing hessian"
-call unit_matrix(hessin) !Initialize inverse Hessian to the unit matrix.
+call unit_matrix(hessin,3*nat+9) !Initialize inverse Hessian to the unit matrix.
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
    call atmdata(amass_u(itype),rcov,tmp_ch,znucl(itype))
@@ -2201,7 +2220,7 @@ write(16,*) "Initial energy",fp
 !call fxyz_cart2int(nat,fxyz,g(1:3*nat),latvec)
 g(3*nat+1:3*nat+9)=g(3*nat+1:3*nat+9)*alpha_pl
 g=-g
-call unit_matrix(hessin) !Initialize inverse Hessian to the unit matrix.
+call unit_matrix(hessin,3*nat+9) !Initialize inverse Hessian to the unit matrix.
 
 !Initialize Hessian diagonal elements
 hessin=hessin*parmin_bfgs%betax
@@ -2412,22 +2431,6 @@ enddo
 enddo
 end function
 
-!************************************************************************************
-
-SUBROUTINE unit_matrix(mat)
-implicit none
-real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
-INTEGER :: i,n
-!Action:
-!Sets the diagonal components of mat to unity, all other components to zero.
-!When mat is square, this will be the unit matrix; otherwise, a unit matrix
-!with appended rows or columns of zeros.
-mat(:,:)=0.0d0
-n=min(size(mat,1),size(mat,2))
-do i=1,n
-mat(i,i)=1.0d0
-end do
-END SUBROUTINE unit_matrix
 
 !************************************************************************************
 

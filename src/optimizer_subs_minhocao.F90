@@ -147,7 +147,7 @@ write(16,*) "Initial energy",fp
 !call fxyz_cart2int(nat,fxyz,g(1:3*nat),latvec)
 g(3*nat+1:3*nat+9)=g(3*nat+1:3*nat+9)*alpha_pl
 g=-g
-call unit_matrix(hessin) !Initialize inverse Hessian to the unit matrix.
+call unit_matrix(hessin,3*nat+9) !Initialize inverse Hessian to the unit matrix.
 
 !Initialize Hessian diagonal elements
 hessin=hessin*parmin_bfgs%betax

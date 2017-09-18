@@ -3280,6 +3280,9 @@ subroutine correct_hessin(hess,hessin,latvec,ndim,hessupdate,lattdeg)
 integer:: ndim,LWORK,info,i,j,hessupdate,lattdeg
 real(8):: hessin(ndim,ndim),hess(ndim,ndim),hess_tmp(ndim,ndim),dmat(ndim,ndim),latvec(3,3)
 end subroutine correct_hessin
+SUBROUTINE unit_matrix(mat,ndim)
+real(8),DIMENSION(ndim,ndim), INTENT(INOUT) :: mat
+end subroutine unit_matrix
 subroutine get_BFGS_forces_max(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 use global, only: nat
 use mod_parini, only: typ_parini
@@ -3367,9 +3370,6 @@ function outerprod(a,b)
 real(8),dimension(:),intent(in)::a,b
 real(8),dimension(size(a),size(b))::outerprod
 end function outerprod
-SUBROUTINE unit_matrix(mat)
-real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
-end subroutine unit_matrix
 FUNCTION assert_eq(n1,n2,n3,n4,string) result(res)
 CHARACTER(LEN=*), INTENT(IN) :: string
 INTEGER, INTENT(IN) :: n1,n2,n3,n4
