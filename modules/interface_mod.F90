@@ -31,8 +31,11 @@ subroutine alborz_init(parini,parres,file_ini)
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
     type(typ_parini), intent(inout):: parres
+    character(len=*), parameter:: filename='flame_log.yaml'
 end subroutine alborz_init
 subroutine alborz_initialize_timing_categories
+    character(len=*), parameter :: pscpt1='Alborz init-fin'
+    character(len=*), parameter :: pscpt2='potential'
 end subroutine alborz_initialize_timing_categories
 subroutine alborz_final(parini,file_ini)
     use mod_parini, only: typ_parini
@@ -274,6 +277,12 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
+    real(8), parameter:: ftol=1.d-10
+    real(8), parameter:: xtol=1.d-10
+    real(8), parameter:: gtol=1.d-10
+    integer, parameter:: maxfev=500
+    real(8), parameter:: factor=100.d0
+    integer, parameter:: nprint=1
 end subroutine ann_lm
 subroutine fcn_least_squares(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
@@ -707,6 +716,7 @@ subroutine symmetry_functions_g06(ann,iat,atoms,i0)
     integer, intent(in):: iat
     type(typ_atoms), intent(in):: atoms
     integer, intent(inout):: i0
+    integer, parameter::lwork=100
 end subroutine symmetry_functions_g06
 function cutoff_function(r, rc) result(fc)
     real(8), intent(in):: r, rc
@@ -727,6 +737,11 @@ subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     type(typ_symfunc), intent(inout):: symfunc
 end subroutine symmetry_functions_driver_stefan
 subroutine fingerprint_power(nat, npl, alat, rxyz, rcov, fpall)
+  integer, parameter:: natx_sphere=500,lseg=4
+  integer, parameter:: nwork=100
+  real(8):: fpall(4,npl,nat),amplitude(natx_sphere)
+  real(8):: rxyz(3,nat),rcov(nat)
+  real(8):: alat(3, 3),alatalat(3,3),eigalat(3),aa(4,4),aaev(4)
 end subroutine fingerprint_power
 subroutine fingerprint_periodic(nat, natx_sphere, lseg, alat, rxyz, rcov, fpall)
 end subroutine fingerprint_periodic
@@ -773,6 +788,7 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
     use mod_atoms, only: typ_atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
+    integer, parameter::lwork=100
 end subroutine symmetry_functions_driver_bond_tmp
 subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
     use mod_linked_lists, only: typ_pia
@@ -958,6 +974,7 @@ subroutine bader_neargrid(parini)
     use mod_parini, only: typ_parini
     use mod_poisson_neargrid, only: typ_poisson
     type(typ_parini), intent(in):: parini
+    integer,parameter::matl=1e5
 end subroutine bader_neargrid
   subroutine ongrid_neargrid(poisson,d,i_dist)
     use mod_poisson_neargrid, only: typ_poisson
@@ -1069,6 +1086,7 @@ subroutine bader_weight(parini)
     use mod_parini, only: typ_parini
     use mod_poisson_weight, only: typ_poisson
     type(typ_parini), intent(in):: parini
+    integer,parameter::matl=1e5
 end subroutine bader_weight
   subroutine calc_weight(poisson, p,nat)
     use mod_poisson_weight, only: typ_poisson
@@ -1349,6 +1367,7 @@ subroutine elim_torque_reza_alborz(nat,rat0,fat)
   integer, intent(in) :: nat
   real(8), dimension(3*nat), intent(in) :: rat0
   real(8), dimension(3*nat), intent(inout) :: fat
+  character(len=*), parameter :: subname='elim_torque_reza_alborz'
   real(8), dimension(3*nat) :: rat
   real(8), dimension(3*nat,3) :: vrot
 end subroutine elim_torque_reza_alborz
@@ -1361,6 +1380,8 @@ subroutine moment_of_inertia_alborz(nat,rat,teneria,evaleria)
   real(8), dimension(3,nat), intent(in) :: rat
   real(8), dimension(3), intent(out) :: evaleria
   real(8), dimension(3,3), intent(out) :: teneria
+  character(len=*), parameter :: subname='moment_of_inertia_alborz'
+  integer, parameter::lwork=100
 end subroutine moment_of_inertia_alborz
 subroutine normalizevector_alborz(n,v)
     integer, intent(in):: n
@@ -1405,10 +1426,12 @@ end subroutine check_whether_time_exceeded
 subroutine expdist(n,x)
     integer, intent(in):: n
     real(8), intent(out):: x(n)
+    real(8), parameter::eps=1.d-8
 end subroutine expdist
 subroutine gausdist_alborz(n,x)
     integer, intent(in) ::n
     real(8), intent(out) :: x(n)
+    real(8), parameter:: eps=1.d-8
 end subroutine gausdist_alborz
 subroutine randdist(a,n,x)
     real(8), intent(in) :: a
@@ -1854,6 +1877,7 @@ subroutine solsyslinequ(poisson_p3d,hz,cell,beta_arg)
     type(typ_poisson_p3d), intent(inout):: poisson_p3d
     real(8):: hz, cell(3)
     real(8), optional:: beta_arg !beta_arg is proportion to dipole moment as it is in paper.
+    integer, parameter:: nem=8 
     real(8):: d(poisson_p3d%ngpz+2*8) !nem was replaced by 8 to be able to compile interface_mod.F90
     real(8):: e1(poisson_p3d%ngpz), e2(poisson_p3d%ngpz-1), c(poisson_p3d%ngpz)
 end subroutine solsyslinequ
@@ -1888,6 +1912,7 @@ integer:: llist(nl)
 real(8):: latvec(3,3),rxyz(3,nat),fp(nl,fp_dim,nat),fp_ri(2,nl,nat),rcov(nkinds)
 real(8):: sigma,r_cut_in(fp_dim) !Cutoff for each AB interaction
 real(8):: r_cut(fp_dim,fp_dim)
+real(8), parameter :: pi=3.141592653589793238462643383279502884197d0
 real(8):: min_bond(fp_dim,fp_dim),ylm_r,ylm_i
 end subroutine get_fp_malypso
 subroutine get_distance_malypso(fp1,fp2,fp_dim,nat,kinds,nl,dist)
@@ -1911,6 +1936,7 @@ subroutine get_fp_gauss(nat, ntypat, natx_sphere, typat, lseg, width_cutoff, nex
   real(8), dimension(3,nat), intent(in) :: rxyz
   real(8), dimension(nat), intent(in) :: rcov
   real(8), dimension(lseg*(ntypat+1), nat), intent(out) :: fp
+  integer, parameter :: nwork = 100
   integer, dimension(lseg*natx_sphere) :: ind_small
   real(8), dimension(natx_sphere) :: amplitude
   real(8), dimension(lseg*natx_sphere) :: fpp
@@ -2039,6 +2065,7 @@ subroutine genrandom(parini,genconf)
     use mod_genconf, only: typ_genconf
     type(typ_parini), intent(inout):: parini
     type(typ_genconf), intent(in):: genconf
+    real(8),parameter::pi=4.d0*atan(1.d0)
 end subroutine genrandom
 ! ./src/genconf_rangrow.F90 :
 subroutine rangrow(parini,genconf)
@@ -2068,12 +2095,14 @@ end subroutine incr_inalborz
 subroutine INIT_inalborz(N,A,F,M,U,V,FB,P)
       integer:: n,m, F(n),FB(n),P(n)
       real(8) A(n,n) , U(n),V(n)
+      real(8), parameter :: INF = 1.d9
 end subroutine init_inalborz
 subroutine PATH_inalborz(N,A,II,F,JJ,U,V,FB,RC)
       integer:: N 
       real(8)::  A(n,n),U(n),V(N),PI(n), IA, MIN
       integer:: F(N),LR(n),UC(n)
       integer:: FB(n),RC(n)
+      real(8), parameter :: INF = 1.d9
       integer::  i,j,k,L,ii,jj,NUC,NLR,R
 end subroutine path_inalborz
 ! ./src/io_acf.F90 :
@@ -2130,6 +2159,31 @@ subroutine str_motion2bemoved(str_motion,bemoved)
     character(*), intent(in):: str_motion
     logical, intent(inout):: bemoved(3)
 end subroutine str_motion2bemoved
+! ./src/io_ascii.F90 :
+subroutine ascii_getsystem(parini,filename)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(inout):: parini
+character(40) :: filename
+end subroutine ascii_getsystem
+subroutine read_atomic_file_ascii(filename,nat,units,xred,latvec,fcart,strten,&
+           &fixat,fixlat,readfix,fragarr,readfrag,printval1,printval2)
+integer:: nat,natin,iat,ierror,io,n,k,fragarr(nat),fragarr_tmp,lhead(nat),llist(nat),nmol,m,l
+logical:: fixat(nat),fixlat(7),readfix,reduced_tmp,readfrag
+character(40):: filename,units
+real(8):: pos(3,nat),xred(3,nat),latvec(3,3),dproj(6),strten(6),fcart(3,nat)
+real(8):: angbohr,evhartree,enthalpy_at,printval1,printval2
+end subroutine read_atomic_file_ascii
+subroutine write_atomic_file_ascii(parini,filename,nat,units,xred,latvec0,fcart,strten,char_type,&
+           &ntypat,typat,fixat,fixlat,energy,pressure,printval1,printval2)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: nat,natin,iat,ntypat,typat(nat),j
+character(40):: filename,units
+real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol,fcart(3,nat),strten(6)
+real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2,tmp(3)
+character(2):: char_type(ntypat)
+logical:: fixat(nat),fixlat(7)
+end subroutine write_atomic_file_ascii
 ! ./src/io_cube.F90 :
 subroutine cube_read(filename,atoms,poisson)
     use mod_atoms, only: typ_atoms
@@ -2154,6 +2208,31 @@ subroutine write_poscar(filename,nat,rat,latvec,ntypat,natarr,comment,vasp5,comm
     character(*):: comment, comment2
     logical:: vasp5, atom_motion(3,nat)
 end subroutine write_poscar
+! ./src/io_vasp_minhocao.F90 :
+subroutine poscar_getsystem(parini,filename)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(inout):: parini
+character(*) :: filename
+end subroutine poscar_getsystem
+subroutine write_atomic_file_poscar(parini,filename,nat,units,xred,latvec0,fcart,strten,char_type,&
+           &ntypat,typat,fixat,fixlat,energy,pressure,printval1,printval2)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: nat,natin,iat,ntypat,typat(nat)
+character(*):: filename,units
+real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol,fcart(3,nat),strten(6)
+real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2
+character(2):: char_type(ntypat)
+logical:: fixat(nat),fixlat(7)
+end subroutine write_atomic_file_poscar
+subroutine read_atomic_file_poscar(filename,nat,units,xred,latvec,fcart,strten,&
+           &fixat,fixlat,readfix,fragarr,readfrag,printval1,printval2)
+integer:: i,ntypat_tmp,nat,natin,iat,ierror,io,n,k,fragarr(nat),fragarr_tmp,lhead(nat),llist(nat),nmol
+logical:: fixat(nat),fixlat(7),readfix,reduced_tmp,readfrag
+character(*):: filename,units
+real(8):: pos(3,nat),xred(3,nat),latvec(3,3),dproj(6),strten(6),fcart(3,nat)
+real(8):: angbohr,evhartree,enthalpy_at,printval1,printval2,scaling
+end subroutine read_atomic_file_poscar
 ! ./src/io_xyz.F90 :
 subroutine writexyz(filename,fn_position,nat,rat,bemoved,sat,cellvec,boundcond,comment)
     integer, intent(in):: nat
@@ -2380,6 +2459,8 @@ subroutine task_minhocao(parini,parres)
  use mod_parini, only: typ_parini
  type(typ_parini), intent(inout):: parini
  type(typ_parini), intent(inout):: parres
+  real(8), parameter :: beta1=1.10d0,beta2=1.10d0,beta3=1.d0/1.10d0
+  real(8), parameter :: alpha1=1.d0/1.10d0,alpha2=1.10d0
 end subroutine task_minhocao
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use global, only: nat,ntypat,znucl
@@ -2564,10 +2645,12 @@ real(8), intent(inout) :: vlat(3,3),torquenrm
 end subroutine torque_cell
       subroutine gausdist(nat,vxyz,amass)
       real(8):: t1,t2,tt,amass(nat)
+      real(8),parameter:: eps=1.d-8
       real(8),dimension(3*nat)::  vxyz
       integer:: nat,i
 end subroutine gausdist
       subroutine gausdist_cell(latvec,vlat)
+      real(8),parameter:: eps=1.d-8
       real(8)::  vlat(9),latvec(9)
 end subroutine gausdist_cell
         subroutine elim_moment(nat,vxyz,atmass)
@@ -2586,6 +2669,7 @@ subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,tem
  real(8):: vel(3,nat),temp,pos_red(3,nat),vcm(3),vel_vol
  integer:: i,iat,idim,nsoften
  real(8):: amass(nat),s1,s2,v2gauss,vtest,rescale_vel,vel_lat(3,3),latvec(3,3),latmass
+ real(8), parameter :: temp_fac_lat=1.d-1 !This percentage of the temperature that should be given to the lattice 
  character(40):: folder
 end subroutine init_vel
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
@@ -3176,6 +3260,7 @@ subroutine mybfgs(iproc,nr,x,epot,f,nwork,work,paropt)
     integer, intent(in):: iproc, nr, nwork
     real(8):: x(nr), f(nr), epot, work(nwork)
     type(typ_paropt), intent(inout):: paropt
+    character(51), parameter:: frmt='('//frmt_base//',2es12.4,i3,a)'
 end subroutine mybfgs
 subroutine init_mybfgs(paropt,epot,fmax)
     use mod_opt, only: typ_paropt
@@ -3286,6 +3371,7 @@ real(8):: hessin(ndim,ndim),hess(ndim,ndim),hess_tmp(ndim,ndim),dmat(ndim,ndim),
 end subroutine correct_hessin
 SUBROUTINE unit_matrix(mat,ndim)
 real(8),DIMENSION(ndim,ndim), INTENT(INOUT) :: mat
+integer:: ndim
 end subroutine unit_matrix
 subroutine get_BFGS_forces_max(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 use global, only: nat
@@ -3351,6 +3437,7 @@ type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 REAL(8) :: fret, counter
 REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
+INTEGER, PARAMETER :: ITMAX=4000
 REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 INTEGER :: choice,status,sumstatus,iprec,iexit,lattdeg,hessupdate
 character(40)::filename,folder
@@ -3362,6 +3449,7 @@ type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 REAL(8) :: fret, counter
 REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
+INTEGER, PARAMETER :: ITMAX=4000
 REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 INTEGER :: choice,status,sumstatus,iprec,iexit
 character(40)::filename,folder
@@ -3545,6 +3633,7 @@ subroutine cgminimum(iproc,n,nr,x,f,epot,paropt,nwork,work)
     type(typ_paropt):: paropt
     integer, intent(in):: iproc, n, nr, nwork
     real(8):: x(n), f(n), epot, work(nwork)
+    character(46), parameter:: frmt='('//frmt_base//',e12.4,a)'
 end subroutine cgminimum
 subroutine init_cgminimum(paropt,n,nr,f,nwork,work,epot,fnrm)
     use mod_opt, only: typ_paropt
@@ -3648,6 +3737,7 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
     real(8), intent(inout):: x(n), epot, f(n)
     real(8), intent(inout):: work(3*n) !1:n velocities, n+1:2*n previous force
     type(typ_paropt), intent(inout):: paropt
+    character(59), parameter:: frmt='('//frmt_base//',3es12.4,i4,1es12.4,a)'
 end subroutine fire
 subroutine init_fire(n,f,epot,work,paropt)
     use mod_opt, only: typ_paropt
@@ -3696,6 +3786,7 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
     real(8), intent(inout):: x(nr), f(nr), work(nwork)
     real(8), intent(in):: epot
     type(typ_paropt), intent(inout):: paropt
+    character(52), parameter:: frmt='('//frmt_base//',e12.4,i5,l2,a)'
 end subroutine sdminimum
 subroutine init_sdminimum(paropt,nr,x,nwork,work)
     use mod_opt, only: typ_paropt
@@ -3725,6 +3816,7 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
    use mod_parini, only: typ_parini
    type(typ_parini), intent(in):: parini
    type(typ_parini), intent(inout):: parres
+   character(len=*), parameter :: subname='sqnm'
    integer :: it,i,iat,l,j,idim,jdim,ihist,icheck !<counter variables
    integer:: ncount_cluster_x,iexit,iprec,lattdeg
    real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,pressure,latvec0(3,3),enthalpy_old
@@ -3740,6 +3832,8 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    type(typ_paropt), intent(inout):: paropt
    real(8), intent(inout):: count_sqnm
    logical, intent(out):: fail
+   character(len=*), parameter :: subname='sqnm'
+   character(41), parameter:: frmt='('//frmt_base//',i5)'
    integer :: nat    !< number of atoms
    real(8) :: trustr !< a single atoms is not allowed to be dsiplaced more than by trustr
 end subroutine sqnm
@@ -3822,6 +3916,7 @@ subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in
    use mod_parini, only: typ_parini
    type(typ_parini), intent(in):: parini
    type(typ_parini), intent(inout):: parres
+   character(len=*), parameter :: subname='sqnm'
    integer :: it,i,iat,l,j,idim,jdim,ihist,icheck !<counter variables
    integer:: ncount_cluster_x,iexit,iprec
    real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,pressure
@@ -4090,6 +4185,7 @@ end subroutine set_dict_parini_default
 subroutine set_dict_parini_user(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
+    character(len=*), parameter:: fname="flame_in.yaml"
 end subroutine set_dict_parini_user
 subroutine check_nonoptional_parameters(parini)
     use mod_parini, only: typ_parini
@@ -4165,6 +4261,7 @@ end subroutine get_output_bigdft
 subroutine init_lennardjones_vc(nat,sat)
     integer, intent(in):: nat
     character(5), intent(in):: sat(nat)
+    real(8), parameter:: alphalj=2.5d0
 end subroutine init_lennardjones_vc
 subroutine lennardjones_vc(iproc,nat,xred0,latvec,pressure,fxyz,celldv,stress,etot,enth)
     integer, intent(in):: iproc, nat
@@ -4314,6 +4411,7 @@ end subroutine init_netsock
   real(8),intent(in):: latvec(3,3),pos(3,nat)
   real(8),intent(out)::latvec_rot(3,3)
   real(8):: latvec_inv(3,3),pos_back(3,nat),pos_cart(3,nat),dist_ang(6)
+  real(8),parameter :: pi = 3.141592653589793239d0
   character*1024:: msg
 end subroutine send_data
   subroutine get_data(etot,fcart,strten,latvec,latvec_rot,nat)
@@ -4723,11 +4821,15 @@ subroutine teststress_fd(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     type(typ_parini), intent(in):: parini
+    integer, parameter:: m=3
+    real(8), parameter:: h=5.d-5
 end subroutine teststress_fd
 subroutine teststress_fd_cellvec(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     type(typ_parini), intent(in):: parini
+    integer, parameter:: m=3
+    real(8), parameter:: h=5.d-5
 end subroutine teststress_fd_cellvec
 ! ./src/tightbinding.F90 :
 subroutine set_indorb(partb,atoms)
@@ -4777,6 +4879,8 @@ end subroutine slatercoupling
 subroutine yfdocclocal(partb)
     use mod_tightbinding, only: typ_partb, lenosky
     type(typ_partb), intent(inout):: partb
+    integer, parameter:: fdmaxit= 20000 !Maximum number of NR iterations
+    real(8), parameter:: fdepsocc=1.d-9 !Allowed error in number of electrons
 end subroutine yfdocclocal
 subroutine Hamiltonian_der(u,flag2,mat)
     real(8), intent(in):: u(3)

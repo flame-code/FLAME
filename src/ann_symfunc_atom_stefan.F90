@@ -1,6 +1,6 @@
 !******************************************************************************************************
 subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
-    !use mod_interface
+    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc
     use mod_atoms, only: typ_atoms
@@ -189,14 +189,14 @@ end subroutine symmetry_functions_driver_stefan
 
 subroutine fingerprint_power(nat, npl, alat, rxyz, rcov, fpall)
   implicit real*8 (a-h,o-z)
-  parameter(natx_sphere=500,lseg=4)
-  parameter(nwork=100)
-  dimension workalat(nwork) 
-  dimension rxyz_sphere(3, natx_sphere),rcov_sphere(natx_sphere)
-  dimension fpall(4,npl,nat),amplitude(natx_sphere)
-  dimension rxyz(3,nat),rcov(nat)
-  dimension alat(3, 3),alatalat(3,3),eigalat(3),aa(4,4),aaev(4)
-  allocatable   :: om(:,:,:,:) , power(:,:,:,:)!,work(;),eval(:)
+  integer, parameter:: natx_sphere=500,lseg=4
+  integer, parameter:: nwork=100
+  real(8):: workalat(nwork) 
+  real(8):: rxyz_sphere(3, natx_sphere),rcov_sphere(natx_sphere)
+  real(8):: fpall(4,npl,nat),amplitude(natx_sphere)
+  real(8):: rxyz(3,nat),rcov(nat)
+  real(8):: alat(3, 3),alatalat(3,3),eigalat(3),aa(4,4),aaev(4)
+  real(8), allocatable   :: om(:,:,:,:) , power(:,:,:,:)!,work(;),eval(:)
   
 
 ! parameters for cutoff function
