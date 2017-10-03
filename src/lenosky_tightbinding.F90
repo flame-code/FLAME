@@ -233,7 +233,7 @@ subroutine pairenergy(partb,atoms,pplocal,natsi)
                 if(iat>natsi) atomtypej=1
                 atomtypem=0
                 if(mat>natsi) atomtypem=1
-                call clssplint(pplocal%phi(atomtypej+atomtypem),r,y,der,1)
+                call clssplint('pairenergy',pplocal%phi(atomtypej+atomtypem),r,y,der,1)
                 atoms%fat(1,iat)=atoms%fat(1,iat)-der*(g(1))
                 atoms%fat(2,iat)=atoms%fat(2,iat)-der*(g(2))
                 atoms%fat(3,iat)=atoms%fat(3,iat)-der*(g(3))
@@ -341,6 +341,7 @@ end subroutine CELLGRAD_F90
 subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     use mod_interface
     use mod_potl, only: potl_typ
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(potl_typ), intent(in):: pplocal
     real(8), intent(in):: r
@@ -353,7 +354,7 @@ subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     if(atomtypei+atomtypej==0) then
         do i=0,3
             !pplocal%h(i)s build various splines for different h(r)s.
-            call clssplint(pplocal%h(i),r,y,der,0)
+            call clssplint('hgen_r2',pplocal%h(i),r,y,der,0)
             !According to Lenosky paper, "radar"s are "h(r)s" not "g(r)"s.
             !Thus, clssplint returns "g(r)"s.
             radar(i)=y/(r)/(r)
@@ -362,7 +363,7 @@ subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     !If two atoms which ineract together are "H" and "Si", i start from 0 to 1  (because of 2 h(r)s).
     else if(atomtypei+atomtypej==1) then
         do i=0,1 
-            call clssplint(pplocal%h(4+i),r,y,der,0)
+            call clssplint('hgen_r2',pplocal%h(4+i),r,y,der,0)
             radar(i)=y/(r)/(r)
             dradar(i)=der/(r)/(r)-2.0 * y/(r)/(r)/(r) 
         enddo     
@@ -373,7 +374,7 @@ subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     !If two atoms which interact together are "H", i=0 (because of 1 possibility for interaction)
     else if(atomtypei+atomtypej==2) then
         i=0 
-        call clssplint(pplocal%h(6+i),r,y,der,0)
+        call clssplint('hgen_r2',pplocal%h(6+i),r,y,der,0)
         radar(i)=y/(r)/(r)
         dradar(i)=der/(r)/(r)-2.0 * y/(r)/(r)/(r) 
         radar(1)=0.d0
@@ -388,21 +389,25 @@ end subroutine radelmgeneralsp
 !This routine represented radial functions using cubic splines.
 !modified version of clssplint: returns f in y and df/dx in deriv
 !also modified to use endpoint deriv information if out of bounds
-subroutine clssplint(s,x,y,deriv,extype)
+subroutine clssplint(str_action,s,xt,yt,derivt,extype)
     use mod_interface
     use mod_splinetb, only: NSPMAX, spline_typ
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
+    character(*), intent(in) :: str_action
     type(spline_typ), intent(in) :: s
     !Flag to control method of extrapolation on lower bound 0=linear, 1= 1/r/r and 1/r 
     integer, intent(in)::  extype 
-    real(8), intent(in) :: x
-    real(8), intent(out) :: y, deriv
+    real(8), intent(in) :: xt
+    real(8), intent(out) :: yt, derivt
     !local variables
     integer :: klo, khi, k
     real(8) :: h, b, a
     real(8) ::  a1, b1
     real(8) ::  rc, yc, derc
+    real(8) ::  x, y, deriv
     !cubic spline passing through points(s%x(1),s%y(1)),...,(s%x(npt),s%y(npt)).
+    x=xt*bohr2ang
     if(x>s%x(1) .and. x < s%x(s%npt)) then
         !NR part
         klo=1
@@ -442,19 +447,26 @@ subroutine clssplint(s,x,y,deriv,extype)
         deriv=s%ypn
         y=s%y(s%npt)+deriv*(x-s%x(s%npt))
     endif
+    if(trim(str_action)=='pairenergy') then
+        derivt=deriv/(ha2ev/bohr2ang)
+        yt=y/ha2ev
+    else if(trim(str_action)=='hgen_r2') then
+        derivt=deriv/(ha2ev*bohr2ang)
+        yt=y/(ha2ev*bohr2ang**2)
+    else
+        stop 'ERROR: unknown value for str_action in clssplint'
+    endif
+
 end subroutine clssplint
 !*****************************************************************************************
 !This subroutine initialize array's elements. 
 subroutine eselfgeneral(eself)
     use mod_interface
     use mod_tightbinding, only: lenosky
+    use mod_const, only: ha2ev
     implicit none
     real(8), intent(inout):: eself(0:3)
-    if(lenosky) then 
-        eself(0)=-5.670225d0
-    else
-        eself(0)=-5.670225d0/27.211385d0
-    endif
+    eself(0)=-5.670225d0/ha2ev
     eself(1)=-eself(0)
     eself(2)=-eself(0)
     eself(3)=-eself(0)
@@ -464,6 +476,7 @@ subroutine prmst38c(partb,pplocal)
     use mod_interface
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(typ_partb):: partb
     integer:: unit
@@ -472,7 +485,7 @@ subroutine prmst38c(partb,pplocal)
     integer:: clsusetri,clsmrho,clsmhtb,clsmepstb,clsmrho2
     type(potl_typ):: pplocal
     open(unit=1,file='coeff.cls',status='old')
-    partb%paircut=5.24d0
+    partb%paircut=5.24d0/bohr2ang
     clsrhonecut=4.d0
     clstricut1=4.d0
     read(1,*) partb%usepairpot,clsusetri,clsmrho,clsmhtb,clsmepstb,clsmrho2
@@ -494,6 +507,7 @@ subroutine prmst38c(partb,pplocal)
     enddo
     do mm=0,clsmepstb-1
         read(1,*) pplocal%eps(mm)
+        !pplocal%eps(mm)=pplocal%eps(mm)/ha2ev
     enddo
     do mm=0,clsmrho2-1
         call clsfread_spline(1,pplocal%xrho(mm))
@@ -508,6 +522,7 @@ end subroutine prmst38c
 subroutine clsfread_spline(unit,s)
     use mod_interface
     use mod_splinetb, only: NSPMAX, spline_typ
+    !use mod_const, only: ha2ev, bohr2ang
     implicit none
     integer:: unit
     type(spline_typ), intent(out):: s
@@ -515,10 +530,15 @@ subroutine clsfread_spline(unit,s)
     integer:: i
     read(unit,*) s%npt
     read(unit,*) s%yp1, s%ypn
+    !s%yp1=s%yp1/(ha2ev/bohr2ang)
+    !s%ypn=s%ypn/(ha2ev/bohr2ang)
     !QUESTION: What is the meaning of below integer variables.
     read(unit,*) s%iset1, s%isetn, s%ider1, s%idern
     do i=1,s%npt
         read(unit,*) s%x(i), s%y(i), s%y2(i)
+        !s%x(i)=s%x(i)/bohr2ang
+        !s%y(i)=s%y(i)/ha2ev
+        !s%y2(i)=s%y2(i)/(ha2ev/bohr2ang**2)
     enddo
     call clsspline(s)
 end subroutine clsfread_spline

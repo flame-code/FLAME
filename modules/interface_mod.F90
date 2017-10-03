@@ -2314,12 +2314,13 @@ subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     real(8), intent(out):: radar(0:3), dradar(0:3)
     integer, intent(in):: atomtypei, atomtypej
 end subroutine radelmgeneralsp
-subroutine clssplint(s,x,y,deriv,extype)
+subroutine clssplint(str_action,s,xt,yt,derivt,extype)
     use mod_splinetb, only: NSPMAX, spline_typ
+    character(*), intent(in) :: str_action
     type(spline_typ), intent(in) :: s
     integer, intent(in)::  extype 
-    real(8), intent(in) :: x
-    real(8), intent(out) :: y, deriv
+    real(8), intent(in) :: xt
+    real(8), intent(out) :: yt, derivt
 end subroutine clssplint
 subroutine eselfgeneral(eself)
     real(8), intent(inout):: eself(0:3)

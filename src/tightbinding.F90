@@ -90,11 +90,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     !ggocc maximum is 2.0
     term1=0.d0
     term2=0.d0
-    if(lenosky) then
-        beta=11604.d0/partb%temp_fermi
-    else
-        beta=11604.d0*ha2ev/partb%temp_fermi
-    endif
+    beta=11604.d0*ha2ev/partb%temp_fermi
     do iorb=1,partb%norbcut
         term1=term1-partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
         term2=term2-partb%eval(iorb)*partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
@@ -493,11 +489,7 @@ subroutine yfdocclocal(partb)
     if(nocc*2/=partb%norb) partb%focc(nocc+1)=1.d0
     efermi=partb%eval(nocc)
     if(nocc*2/=partb%norb) efermi=partb%eval(nocc+1)
-    if(lenosky) then
-        beta=11604.d0/partb%temp_fermi !Conversion of temp into eV
-    else
-        beta=11604.d0*ha2ev/partb%temp_fermi !Conversion of temp into Ha
-    endif
+    beta=11604.d0*ha2ev/partb%temp_fermi !Conversion of temp into Ha
     it=0
     !Each iteration corresponds to steepest descent iteration. fermi-dirac function is minimized
     !which depend on efermi(chemical potential).
