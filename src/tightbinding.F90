@@ -67,12 +67,13 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
     call gammamat(partb,atoms,natsi,0,pplocal) 
+    !do iorb=1,partb%norb
+    !        write(8,'(i3,8es15.6)') iorb,partb%tbmat(iorb,1:8)
+    !enddo
+    !stop 'UUUUUUUUUUUUU'
     !write(*,*) partb%tbmat(1:8,1:8)
     !stop
     call forcediagonalizeg(partb)
-    do iorb=1,partb%norb
-            write(8,*) iorb, partb%tbmat(iorb,iorb)
-    enddo
     !Fermi dirac distribution: returns total energy :: E_TB = sum_n f_n*e_n
     !Create density matrix rho to obtain forces using Hellmann-Feynman theorem:
     !F_k = sum_ij rho_(ij)*dH_(ij)/dr_k
@@ -82,6 +83,10 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
     enddo
     call yfdocclocal(partb)
+    !do iorb=1,partb%norbcut
+    !    write(53,'(i4,es14.5)') iorb,partb%eval(iorb)
+    !enddo
+    !stop 'YYYYYYYYYYYYYYYYYYYYY'
     !write(61,'(6es14.5,i5)') partb%eval(60),partb%eval(61),partb%eval(61)-partb%eval(60),partb%focc(60),partb%focc(61),partb%focc(partb%norbcut),partb%norbcut
     !write(*,'(a,8f10.3)') 'fermi',partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5),partb%focc(6),partb%focc(7),partb%focc(8)
     !write(*,'(a,10es14.5)') 'eval ',parb%eband,partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5)
@@ -112,10 +117,12 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         do jorb=1,partb%norb
             reg1=partb%evec(jorb,iorb)*sterm*ggocc(iorb)/2.d0
             do korb=jorb+1,partb%norb
+                !write(*,'(a,3i4,2es14.5)') 'RHO ',iorb,jorb,korb,reg1,partb%evec(korb,iorb)
                 rho(korb,jorb)=rho(korb,jorb)+reg1*partb%evec(korb,iorb)
             enddo
         enddo
     enddo
+    !stop 'ZZZZZZZZZZZZZZ'
     !Take trace rho * H for Hellmann-Feynman theorem
     !Note that other triangle of rho, and we do sum with
     !factors of two to compensate.
@@ -141,10 +148,12 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
                 do jorb=iorb+1,partb%norb
                     jat=partb%indorb(jorb)
                     tt=rho(jorb,iorb)*partb%tbmat(jorb,iorb)*2.d0
+                    !write(*,'(a,5i4,2es14.5)') 'dedh ',ixyz,iorb,jorb,iat,jat,rho(jorb,iorb),partb%tbmat(jorb,iorb)
                     partb%dedh(ixyz,iat,jat)=partb%dedh(ixyz,iat,jat)+tt
                 enddo
             enddo
         enddo
+        !stop 'FFFFFFFFFFFFFFF'
     endif
     call f_free(rho)
     call f_free(ggocc)
@@ -197,12 +206,17 @@ subroutine gammamat(partb,atoms,natsi,flag2,pplocal)
             do iorb=1,norbi
                 do jorb=1,norbj
                     !off-diagonal terms of H_TB is constructed
-                    !write(*,'(a,2es14.5,4i5)') 'AAAAAAAAAAA-1 ',partb%tbmat(7,3),rex(jorb,iorb),jorb,iorb,norbj,norbi
+                    !write(*,'(a,es14.5,4i5)') 'AAAAAAAAAAA-1 ',rex(jorb,iorb),jorb,iorb,norbj,norbi
+                    !write(8,'(a,es15.6,4i5)') 'AAAAAAAAAAA-1 ',rex(jorb,iorb),jorb,iorb,norbj,norbi
                     partb%tbmat(indexj+jorb,indexi+iorb)=partb%tbmat(indexj+jorb,indexi+iorb)+rex(jorb,iorb)
                 enddo
             enddo
         enddo
     enddo
+    !do iorb=1,partb%norb
+    !        write(8,'(i3,8es15.6)') iorb,partb%tbmat(iorb,1:8)
+    !enddo
+    !stop 'DDDDDDDDDDDDD'
     !Compelet matrix of coupling by including on-site energies(eself for Si and es for H)
     !eself has 4 values, then it seems diagonal terms of H_TB also themselves
     !are diagonal.
@@ -272,6 +286,8 @@ subroutine forcediagonalizeg(partb)
     !    write(*,'(8es14.5)') (partb%tbmat(8,j),j=1,8)
     !    !stop
     !endif
+    !write(*,*)
+    !write(*,*)
     !write(*,*) size(partb%eval)
     !write(*,'(a,6i5)') 'FFFFF ',icall,n,size(a),nc,size(partb%eval),size(partb%evec)
     if(nc==n) then
@@ -285,6 +301,14 @@ subroutine forcediagonalizeg(partb)
         call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
              isuppz,work,lwork,iwork,liwork,ierr)
     endif
+    !write(*,'(8es14.5)') (partb%evec(1,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(2,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(3,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(4,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(5,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(6,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(7,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(8,j),j=1,8)
     !write(*,'(a,7f10.3)') 'FFFFF ',partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%eval(5),partb%eval(6),partb%eval(5)-partb%eval(4)
     if(ierr/= 0  .and. errcount < 250) then
         write(*,'(a,2i,a)') 'TBNORTH WARNING: ierr , errcount == ',ierr,errcount,' from dsygv diagonalize'
@@ -357,7 +381,7 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
             partb%dhgenall1(jat,iat)=dhgen(2)
             partb%dhgenall2(jat,iat)=dhgen(3)
             partb%dhgenall3(jat,iat)=dhgen(4)
-            write(44,'(a,5es14.5)') 'hgen-L',hgen(1)/ha2ev,hgen(2)/ha2ev,hgen(3)/ha2ev,hgen(4)/ha2ev,dist/bohr2ang
+            !write(44,'(a,5e26.17)') 'hgen-L',hgen(1),hgen(2),hgen(3),hgen(4),dist
             endif
         endif
         hgen(1)=partb%hgenall0(jat,iat)

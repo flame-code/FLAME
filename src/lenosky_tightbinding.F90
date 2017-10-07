@@ -70,6 +70,8 @@ subroutine lenoskytb_alborz(atoms,natsi,count_md)
     if(atoms%nat == 0) write(*,'(a)') 'WARNING lenoskytb_alborz called with zero atoms'
     if(atoms%nat < 0) write(*,'(a)') 'WARNING lenoskytb_alborz called with negative number of atoms'
     call totalenergy(partb,atoms,natsi,pplocal)
+    !write(61,*) atoms%epot
+    !stop 'BBBBBBBBBBBBBBB'
     !call lenoskytb_final(partb)
 end subroutine lenoskytb_alborz
 !*****************************************************************************************
@@ -341,7 +343,7 @@ end subroutine CELLGRAD_F90
 subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     use mod_interface
     use mod_potl, only: potl_typ
-    use mod_const, only: ha2ev, bohr2ang
+    !use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(potl_typ), intent(in):: pplocal
     real(8), intent(in):: r
