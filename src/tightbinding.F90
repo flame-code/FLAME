@@ -60,11 +60,13 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     real(8), allocatable:: ggocc(:)
     real(8), allocatable:: rho(:,:)
     integer:: iorb, jorb, korb, n1, n2, iat, jat, ixyz
-    call f_routine(id='gammaenergy')
+    !call f_routine(id='gammaenergy')
     call set_typat(atoms) !exists in basic_atoms.F90 file
     call set_indorb(partb,atoms)
-    rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
-    ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
+    !rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
+    !ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
+    allocate(rho(partb%norb,partb%norb))
+    allocate(ggocc(partb%norbcut))
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
     call gammamat(partb,atoms,natsi,0,pplocal) 
     !do iorb=1,partb%norb
@@ -155,9 +157,11 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
         !stop 'FFFFFFFFFFFFFFF'
     endif
-    call f_free(rho)
-    call f_free(ggocc)
-    call f_release_routine()
+    !call f_free(rho)
+    !call f_free(ggocc)
+    deallocate(rho)
+    deallocate(ggocc)
+    !call f_release_routine()
 end subroutine gammaenergy
 !*****************************************************************************************
 !Within the unit cell, this routine
@@ -183,8 +187,9 @@ subroutine gammamat(partb,atoms,natsi,flag2,pplocal)
     integer:: indexi, indexj, atomtypei, atomtypej, norbi, norbj
     real(8), allocatable:: rex(:,:)
     real(8) eself(4), es
-    call f_routine(id='gammamat')
-    rex=f_malloc([1.to.partb%nstride,1.to.partb%nstride],id='rex')
+    !call f_routine(id='gammamat')
+    !rex=f_malloc([1.to.partb%nstride,1.to.partb%nstride],id='rex')
+    allocate(rex(partb%nstride,partb%nstride))
     do iorb=1,partb%norb
         do jorb=1,partb%norb
             partb%tbmat(jorb,iorb)=0.d0
@@ -229,8 +234,9 @@ subroutine gammamat(partb,atoms,natsi,flag2,pplocal)
     do iorb=partb%nstride*natsi+1,partb%nstride*natsi+atoms%nat-natsi
         partb%tbmat(iorb,iorb)=partb%tbmat(iorb,iorb)+es
     enddo
-    call f_free(rex)
-    call f_release_routine()
+    !call f_free(rex)
+    deallocate(rex)
+    !call f_release_routine()
 end subroutine gammamat
 !*****************************************************************************************
 !Does the eigenvalue problem, with arguments having the same format as the
@@ -254,15 +260,19 @@ subroutine forcediagonalizeg(partb)
     !real(8):: w1(1000)
     !real(8):: w2(1000)
     icall=icall+1
-    call f_routine(id='forcediagonalizeg')
+    !call f_routine(id='forcediagonalizeg')
     n=partb%norb
     nc=partb%norbcut
     lwork=n*n+100*n
     liwork=n*n+50*n
-    isuppz=f_malloc([1.to.2*n],id='isuppz')
-    a=f_malloc([1.to.n,1.to.n],id='a')
-    work=f_malloc([1.to.lwork],id='work')
-    iwork=f_malloc([1.to.liwork],id='iwork')
+    !isuppz=f_malloc([1.to.2*n],id='isuppz')
+    !a=f_malloc([1.to.n,1.to.n],id='a')
+    !work=f_malloc([1.to.lwork],id='work')
+    !iwork=f_malloc([1.to.liwork],id='iwork')
+    allocate(isuppz(2*n))
+    allocate(a(n,n))
+    allocate(work(lwork))
+    allocate(iwork(liwork))
     !partb%tbmat=1.d-10
     !do i=1,n
     !    partb%tbmat(i,i)=1.d0
@@ -315,11 +325,15 @@ subroutine forcediagonalizeg(partb)
         write(*,'(a)') 'Will not print this message when errcount exceeds 250'
         errcount=errcount+1
     endif
-    call f_free(isuppz)
-    call f_free(a)
-    call f_free(work)
-    call f_free(iwork)
-    call f_release_routine()
+    !call f_free(isuppz)
+    !call f_free(a)
+    !call f_free(work)
+    !call f_free(iwork)
+    deallocate(isuppz)
+    deallocate(a)
+    deallocate(work)
+    deallocate(iwork)
+    !call f_release_routine()
 end subroutine forcediagonalizeg
 !*****************************************************************************************
 !README: There are too many arguments setting intents of variables postponed
@@ -341,9 +355,11 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
     real(8):: diff(3), dist
     integer:: iorb, jorb, ix, iy, iz
     real(8), allocatable:: hgen(:), dhgen(:)
-    call f_routine(id='gammacoupling')
-    hgen=f_malloc([1.to.4],id='hgen')
-    dhgen=f_malloc([1.to.4],id='dhgen')
+    !call f_routine(id='gammacoupling')
+    !hgen=f_malloc([1.to.4],id='hgen')
+    !dhgen=f_malloc([1.to.4],id='dhgen')
+    allocate(hgen(4))
+    allocate(dhgen(4))
     do jorb=1,partb%nstride
         do iorb=1,partb%nstride
             rem(iorb,jorb)=0.d0
@@ -401,9 +417,11 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
             call Hamiltonian_der(diff,flag2,rem)
         endif
     endif
-    call f_free(hgen)
-    call f_free(dhgen)
-    call f_release_routine()
+    !call f_free(hgen)
+    !call f_free(dhgen)
+    deallocate(hgen)
+    deallocate(dhgen)
+    !call f_release_routine()
 end subroutine gammacoupling
 !*****************************************************************************************
 !Generates the matrix of couplings for the program, if u is unit vector between atoms

@@ -20,18 +20,27 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
     real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc, tt1
-    call f_routine(id='cal_ann_tb')
+    !call f_routine(id='cal_ann_tb')
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
-    partb%dedh=f_malloc0([1.to.4,1.to.atoms%nat,1.to.atoms%nat],id='partb%dedh')
-    partb%hgenall0=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
-    partb%hgenall1=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
-    partb%hgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
-    partb%hgenall3=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall3')
-    partb%dhgenall0=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall0')
-    partb%dhgenall1=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall1')
-    partb%dhgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall2')
-    partb%dhgenall3=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall3')
+    !partb%dedh=f_malloc0([1.to.4,1.to.atoms%nat,1.to.atoms%nat],id='partb%dedh')
+    !partb%hgenall0=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
+    !partb%hgenall1=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
+    !partb%hgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
+    !partb%hgenall3=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall3')
+    !partb%dhgenall0=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall0')
+    !partb%dhgenall1=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall1')
+    !partb%dhgenall2=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall2')
+    !partb%dhgenall3=f_malloc0([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall3')
+    allocate(partb%dedh(4,atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%hgenall0(atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%hgenall1(atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%hgenall2(atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%hgenall3(atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%dhgenall0(atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%dhgenall1(atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%dhgenall2(atoms%nat,atoms%nat),source=0.d0)
+    allocate(partb%dhgenall3(atoms%nat,atoms%nat),source=0.d0)
     if(trim(ann_arr%event)=='train') then
         !The following is allocated with ekf%num(1), this means number of
         !nodes in the input layer is the same for all atom types.
@@ -46,10 +55,13 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     endif
     !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
     nb=symfunc%linked_lists%maxbound_rad!/2
-    hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
-    dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
+    !hgen=f_malloc([1.to.4,1.to.nb],id='hgen')
+    !dhgen=f_malloc([1.to.4,1.to.nb],id='dhgen')
+    allocate(hgen(4,nb))
+    allocate(dhgen(4,nb))
     if(trim(ann_arr%event)=='train') then
-        ann_arr%g_per_bond=f_malloc([1.to.ekf%num(1),1.to.4,1.to.nb],id='ann_arr%g_per_bond') !HERE
+        !ann_arr%g_per_bond=f_malloc([1.to.ekf%num(1),1.to.4,1.to.nb],id='ann_arr%g_per_bond') !HERE
+        allocate(ann_arr%g_per_bond(ekf%num(1),4,nb))
     endif
     over_i: do i=1,4
         over_ib: do ib=1,nb
@@ -133,13 +145,17 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
-    call f_free(hgen)
-    call f_free(dhgen)
+    !call f_free(hgen)
+    !call f_free(dhgen)
+    deallocate(hgen)
+    deallocate(dhgen)
     if(trim(ann_arr%event)=='train') then
-        call f_free(ann_arr%g_per_bond)
-        call f_free(partb%dedh)
+        !call f_free(ann_arr%g_per_bond)
+        !call f_free(partb%dedh)
+        deallocate(ann_arr%g_per_bond)
+        deallocate(partb%dedh)
     endif
-    call f_release_routine()
+    !call f_release_routine()
 end subroutine cal_ann_tb
 !*****************************************************************************************
 subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
