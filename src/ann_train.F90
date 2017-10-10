@@ -346,6 +346,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_processors, only: iproc
     use mod_tightbinding, only: typ_partb
+    use futile
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iter
@@ -363,10 +364,13 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     real(8):: time2=0.d0
     real(8), save:: time_p=0.d0
     real(8):: dtime1, dtime2
-    integer:: ilarge1, ilarge2, ilarge3
+    integer:: ilarge1, ilarge2, ilarge3, iunit, ios
     character(28):: frmt1='(i6,5f10.3,i7,i5,3i6,a40,i6)'
     character(28):: frmt2='(i6,5e10.1,i7,i5,3i6,a40,i6)'
     character(28):: frmt
+    character(15):: filename
+    character(5):: data_set
+    logical:: file_exists
     call cpu_time(time1)
     pi=4.d0*atan(1.d0)
     rmse=0.d0
@@ -381,10 +385,28 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     ilarge2=0
     ilarge3=0
     ann_arr%event='evalu'
-        if (parini%print_energy) then
-            write(110+iter,*)"*****************************************************************************" 
-            write(110+iter,'(a2,a44,4a23)')"#", " ","E_dft","E_ann","E_dft-E_ann/atom (Ha)","E_dft-E_ann (eV)" 
+    if(parini%print_energy) then
+        write(filename,'(a12,i3.3)') 'detailed_err',iter
+        iunit=f_get_free_unit(10**5)
+        inquire(file=trim(filename),exist=file_exists)
+        if(file_exists) then
+            open(unit=iunit,file=trim(filename),status='old',access='append',iostat=ios)
+        else
+            open(unit=iunit,file=trim(filename),status='new',iostat=ios)
         endif
+        if(ios/=0) then
+            write(*,'(a,a)') 'ERROR: failure openning file: ',trim(filename)
+            stop
+        endif
+        !write(iunit,'(a2,a44,4a23)') "#", " ","E_dft","E_ann","E_dft-E_ann/atom (Ha)","E_dft-E_ann (eV)" 
+        if(ifile==11) then
+            data_set='train'
+        elseif(ifile==12) then
+            data_set='valid'
+        else
+            stop 'ERROR: unknow value for ifile in ann_evaluate.'
+        endif
+    endif
     configuration: do iconf=1,atoms_arr%nconf
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
         call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
@@ -398,9 +420,8 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
         endif
         tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         !HERE
-        if (parini%print_energy) then
-            write(110+iter,'(a40,i6,4es23.9)')trim(atoms_arr%fn(iconf)), atoms_arr%lconf(iconf),atoms_arr%atoms(iconf)%epot,atoms%epot &
-                  ,(atoms_arr%atoms(iconf)%epot-atoms%epot)/atoms_arr%atoms(iconf)%nat,(atoms_arr%atoms(iconf)%epot-atoms%epot)*27.21138386d0 
+        if(parini%print_energy) then
+            write(iunit,'(i7,es14.5,a40,i6,a)') iconf,tt,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
         endif
         if(tt>1.d-2) ilarge1=ilarge1+1
         if(tt>1.d-3) ilarge2=ilarge2+1
@@ -469,6 +490,9 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     dtime2=time2-time1
     write(*,'(a,2f20.2)') 'TIME ',dtime1,dtime2
     time_p=time2
+    if(parini%print_energy) then
+        close(iunit)
+    endif
 end subroutine ann_evaluate
 !*****************************************************************************************
 !Subroutine cal_ann_main is called during training process.
