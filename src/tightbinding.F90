@@ -397,7 +397,7 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
             partb%dhgenall1(jat,iat)=dhgen(2)
             partb%dhgenall2(jat,iat)=dhgen(3)
             partb%dhgenall3(jat,iat)=dhgen(4)
-            !write(44,'(a,5e26.17)') 'hgen-L',hgen(1),hgen(2),hgen(3),hgen(4),dist
+            write(44,'(a,5e26.17)') 'hgen-L',hgen(1),hgen(2),hgen(3),hgen(4),dist
             endif
         endif
         hgen(1)=partb%hgenall0(jat,iat)

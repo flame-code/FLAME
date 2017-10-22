@@ -25,19 +25,20 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     real(8), parameter:: factor=100.d0
     integer, parameter:: nprint=1
     integer:: info, nfev, njev
-    allocate(ekf%g(ekf%n))
-    m=atoms_train%nconf
-    n=ekf%n
-    allocate(fvec(m),fjac(m,n),diag(n),qtf(n),wa1(n),wa2(n),wa3(n),wa4(m),ipvt(n),x(n))
-    x(1:n)=ekf%x(1:n)
-    fvec(1:m)=0.d0 ; fjac(1:m,1:n)=0.d0 ; diag(1:n)=0.d0 ; qtf(1:n)=0.d0
-    wa1(1:n)=0.d0 ; wa2(1:n)=0.d0 ; wa3(1:n)=0.d0 ; wa4(1:m)=0.d0 ; ipvt(1:n)=0
-    call lmder_modified(fcn_least_squares,m,n,x,fvec,fjac,m,ftol,xtol,gtol,maxfev,diag,1,factor, &
-        nprint,info,nfev,njev,ipvt,qtf,wa1,wa2,wa3,wa4, &
-        parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-    write(*,'(a,3i6)') '#nfev,njev,info ',nfev,njev,info
-    deallocate(fvec,fjac,diag,qtf,wa1,wa2,wa3,wa4,ipvt,x)
-    deallocate(ekf%g)
+    stop 'ERROR: this routine must be modified according to new lmder_modified.'
+    !allocate(ekf%g(ekf%n))
+    !m=atoms_train%nconf
+    !n=ekf%n
+    !allocate(fvec(m),fjac(m,n),diag(n),qtf(n),wa1(n),wa2(n),wa3(n),wa4(m),ipvt(n),x(n))
+    !x(1:n)=ekf%x(1:n)
+    !fvec(1:m)=0.d0 ; fjac(1:m,1:n)=0.d0 ; diag(1:n)=0.d0 ; qtf(1:n)=0.d0
+    !wa1(1:n)=0.d0 ; wa2(1:n)=0.d0 ; wa3(1:n)=0.d0 ; wa4(1:m)=0.d0 ; ipvt(1:n)=0
+    !call lmder_modified(fcn_least_squares,m,n,x,fvec,fjac,m,ftol,xtol,gtol,maxfev,diag,1,factor, &
+    !    nprint,info,nfev,njev,ipvt,qtf,wa1,wa2,wa3,wa4, &
+    !    parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+    !write(*,'(a,3i6)') '#nfev,njev,info ',nfev,njev,info
+    !deallocate(fvec,fjac,diag,qtf,wa1,wa2,wa3,wa4,ipvt,x)
+    !deallocate(ekf%g)
 end subroutine ann_lm
 !*****************************************************************************************
 subroutine fcn_least_squares(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)

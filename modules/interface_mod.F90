@@ -2341,20 +2341,19 @@ subroutine clsspline(s)
     type(spline_typ), intent(inout):: s
 end subroutine clsspline
 ! ./src/lmder_modified.F90 :
-subroutine lmder_modified(fcn,m,n,x,fvec,fjac,ldfjac,ftol,xtol,gtol,maxfev,diag,mode,factor,nprint,info,nfev,njev,ipvt,qtf,wa1,wa2,wa3,wa4,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
-    type(typ_symfunc_arr), intent(in):: symfunc_train, symfunc_valid
-    type(typ_ekf), intent(inout):: ekf
-      external fcn
-      integer:: m,n,ldfjac,maxfev,mode,nprint,info,nfev,njev
-      integer:: ipvt(n)
-      real(8):: ftol,xtol,gtol,factor
-      real(8):: x(n),fvec(m),fjac(ldfjac,n),diag(n),qtf(n), wa1(n),wa2(n),wa3(n),wa4(m)
+subroutine init_lmder_modified(parlm,m,ldfjac)
+    use mod_parlm, only: typ_parlm
+    type(typ_parlm), intent(inout):: parlm
+    integer, intent(in):: m, ldfjac
+end subroutine init_lmder_modified
+subroutine final_lmder_modified(parlm)
+    use mod_parlm, only: typ_parlm
+    type(typ_parlm), intent(inout):: parlm
+end subroutine final_lmder_modified
+subroutine lmder_modified(parlm,m,ldfjac)
+    use mod_parlm, only: typ_parlm
+      type(typ_parlm), intent(inout):: parlm
+      integer:: m,ldfjac
 end subroutine lmder_modified
 ! ./src/md.F90 :
 subroutine dynamics(parini)
