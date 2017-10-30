@@ -654,7 +654,6 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
         if(mod(linked_lists%maxbound_rad,2)/=0) then
             stop 'ERROR: linked_lists%maxbound_rad must be even.'
         endif
-        write(*,*) 'maxbound ',linked_lists%maxbound_rad
         linked_lists%maxbound_rad=linked_lists%maxbound_rad/2
     endif
     if (ibr/=linked_lists%maxbound_rad) then

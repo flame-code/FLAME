@@ -237,7 +237,6 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
         do ib=1,symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad
             iat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(1,ib)
             jat=symfunc_arr%symfunc(iconf)%linked_lists%bound_rad(2,ib)
-            write(*,*) 'QQQQQQQQ ',ib,iat,jat
             if(iat>jat) cycle
             do ig=1,symfunc_arr%symfunc(iconf)%ng
                 tt=symfunc_arr%symfunc(iconf)%y(ig,ib)

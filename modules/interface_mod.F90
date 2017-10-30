@@ -269,6 +269,7 @@ end subroutine set_dict_ann
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_parlm, only: typ_parlm
     use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr):: ann_arr
@@ -277,14 +278,8 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
-    real(8), parameter:: ftol=1.d-10
-    real(8), parameter:: xtol=1.d-10
-    real(8), parameter:: gtol=1.d-10
-    integer, parameter:: maxfev=500
-    real(8), parameter:: factor=100.d0
-    integer, parameter:: nprint=1
 end subroutine ann_lm
-subroutine fcn_least_squares(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
     use mod_atoms, only: typ_atoms, typ_atoms_arr
@@ -295,7 +290,7 @@ subroutine fcn_least_squares(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_t
     type(typ_ekf), intent(inout):: ekf
     integer:: m, n, ldfjac, iflag
     real(8):: x(n), fvec(m), fjac(ldfjac,n)
-end subroutine fcn_least_squares
+end subroutine fcn_epot
 ! ./src/ann_pot_atom.F90 :
 subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
@@ -614,6 +609,23 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     integer, intent(in):: natsi
     real(8), intent(inout):: count_md
 end subroutine lenoskytb_ann
+subroutine fit_hgen(parini,atoms_train,ann_arr,ekf)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_parlm, only: typ_parlm
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms_arr), intent(in):: atoms_train
+    type(typ_ekf), intent(inout):: ekf
+    type(typ_ann_arr), intent(inout):: ann_arr
+end subroutine fit_hgen
+subroutine fcn_hgen(m,n,x,fvec,fjac,ldfjac,iflag,iann,ann_arr,hgen_ltb,yall)
+    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    integer, intent(in):: m, n, ldfjac, iflag, iann
+    type(typ_ann_arr), intent(inout):: ann_arr
+    real(8), intent(in):: x(n), hgen_ltb(4,325), yall(ann_arr%ann(1)%nn(0),1000,325)
+    real(8), intent(inout):: fvec(m), fjac(m,n)
+end subroutine fcn_hgen
 ! ./src/ann_process.F90 :
 subroutine cal_architecture(ann,epot)
     use mod_ann, only: typ_ann

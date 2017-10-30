@@ -566,6 +566,7 @@ function cutoff_function(r, rc) result(fc)
     !else
     !    fc=0.d0
     !endif
+    !Compare it with: PHYSICAL REVIEW B 93, 155203 (2016).
 end function cutoff_function
 !*****************************************************************************************
 function cutoff_function_der(r, rc) result(fcd)
