@@ -600,10 +600,12 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(typ_partb), intent(inout):: partb
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
 end subroutine cal_ann_tb
-subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
+subroutine lenoskytb_ann(parini,partb,atoms,natsi,count_md)
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
@@ -2266,10 +2268,12 @@ subroutine readxyz(filename,nat,rat,sat,comment1,comment2,atom_motion)
     logical:: atom_motion(3,nat)
 end subroutine readxyz
 ! ./src/lenosky_tightbinding.F90 :
-subroutine lenoskytb_alborz(atoms,natsi,count_md)
+subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
     real(8), intent(inout):: count_md
@@ -2281,20 +2285,24 @@ subroutine lenoskytb_init(partb,atoms,natsi)
     type(typ_atoms), intent(in):: atoms
     integer, intent(in):: natsi
 end subroutine lenoskytb_init
-subroutine totalenergy(partb,atoms,natsi,pplocal)
+subroutine totalenergy(parini,partb,atoms,natsi,pplocal)
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
     type(potl_typ), intent(inout):: pplocal
 end subroutine totalenergy
-subroutine pairenergy(partb,atoms,pplocal,natsi)
+subroutine pairenergy(parini,partb,atoms,pplocal,natsi)
+    use mod_parini, only: typ_parini
     use mod_tightbinding, only: typ_partb
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
-    use mod_frame, only: clsframepp_type
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
@@ -2304,21 +2312,6 @@ subroutine lenoskytb_final(partb)
     use mod_tightbinding, only: typ_partb
     type(typ_partb), intent(inout):: partb
 end subroutine lenoskytb_final
-subroutine VECT_SUBTRACT_F90(a,b,c) 
-    real(8), intent(in):: a(3), b(3)
-    real(8), intent(out):: c(3)
-end subroutine vect_subtract_f90
-subroutine APPLY_PBC_F90(a)
-    real(8), intent(inout) :: a(3)
-end subroutine apply_pbc_f90
-subroutine CELLDIST_F90(p1,p2,a,d)
-    real(8), intent(in):: p1(3), p2(3), a(3,3)
-    real(8), intent(out):: d
-end subroutine celldist_f90
-subroutine CELLGRAD_F90(p1,p2,a,g)
-    real(8), intent(in):: p1(3), p2(3), a(3,3)
-    real(8), intent(out):: g(3)
-end subroutine cellgrad_f90
 subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     use mod_potl, only: potl_typ
     type(potl_typ), intent(in):: pplocal
@@ -4357,8 +4350,10 @@ subroutine init_lenosky_tb(atoms_t)
     use mod_atoms, only: typ_atoms
     type(typ_atoms), intent(in):: atoms_t
 end subroutine init_lenosky_tb
-subroutine lenosky_tb(atoms)
+subroutine lenosky_tb(parini,atoms)
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
 end subroutine lenosky_tb
 ! ./src/potential_main.F90 :

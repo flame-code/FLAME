@@ -115,7 +115,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
     enddo
         partb%event=ann_arr%event
-        call lenoskytb_ann(partb,atoms,atoms%nat,c)
+        call lenoskytb_ann(parini,partb,atoms,atoms%nat,c)
         atoms%epot=atoms%epot+atoms%nat*ann_arr%ann(atoms%itypat(1))%ener_ref
         if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
@@ -148,14 +148,15 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     endif
 end subroutine cal_ann_tb
 !*****************************************************************************************
-subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
+subroutine lenoskytb_ann(parini,partb,atoms,natsi,count_md)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_frame, only: CLSMAXATOM, CLSMAXNEIGHB
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_const, only: ha2ev, bohr2ang
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
@@ -179,21 +180,11 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
     call lenoskytb_init(partb,atoms,natsi)
     count_md=count_md+1.d0
     !PRINT SOME WARNINGS
-    if(atoms%nat>CLSMAXATOM) then
-        write(*,'(a,i,a,i)') 'WARNING Number of atoms = ',atoms%nat,' is greater than CLSMAXATOM = ',CLSMAXATOM
-        write(*,'(a)') 'THIS MAY CAUSE FAILURE OR UNPREDICTABLE BEHAVIOR'
-        write(*,'(a)') 'INCREASE CLSMAXATOM in defines.h and RECOMPILE'
-    endif
-    if(atoms%nat>CLSMAXNEIGHB) then
-        write(*,'(a,i,a,i)') 'WARNING Number of atoms = ',atoms%nat,' is greater than CLSMAXNEIGHB = ',CLSMAXNEIGHB
-        write(*,'(a)') 'THIS MAY CAUSE FAILURE OR UNPREDICTABLE BEHAVIOR'
-        write(*,'(a)') 'INCREASE CLSMAXNEIGHB in defines.h and RECOMPILE'
-    endif
     if(natsi>atoms%nat) write(*,'(a)') 'WARNING natsi = ',natsi,' is greater than number of atoms = ',atoms%nat
     if(atoms%nat == 0) write(*,'(a)') 'WARNING lenoskytb called with zero atoms'
     if(atoms%nat < 0) write(*,'(a)') 'WARNING lenoskytb called with negative number of atoms'
     !write(*,*) 'natsi ',natsi
-    call totalenergy(partb,atoms,natsi,pplocal) 
+    call totalenergy(parini,partb,atoms,natsi,pplocal) 
 
     allocate(fat(3,atoms%nat))
     do iat=1,atoms%nat
@@ -205,7 +196,7 @@ subroutine lenoskytb_ann(partb,atoms,natsi,count_md)
         atoms%fat(3,iat)=0.d0
     enddo
 
-    call pairenergy(partb,atoms,pplocal,natsi)
+    call pairenergy(parini,partb,atoms,pplocal,natsi)
     atoms%epot=atoms%epot+partb%pairen+atoms%nat*-0.789592525650303d+04/ha2ev
     !write(61,*) atoms%epot
     !stop 'BBBBBBBBB'

@@ -34,11 +34,13 @@ subroutine init_lenosky_tb(atoms_t)
    cell(3)=atoms_t%cellvec(3,3)
 end subroutine init_lenosky_tb
 !*****************************************************************************************
-subroutine lenosky_tb(atoms)
+subroutine lenosky_tb(parini,atoms)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: cell, natsi
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     !local variables
     integer:: iat
@@ -50,6 +52,6 @@ subroutine lenosky_tb(atoms)
         atoms%rat(2,iat)=modulo(modulo(atoms%rat(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
         atoms%rat(3,iat)=modulo(modulo(atoms%rat(3,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
     enddo
-    call lenoskytb_alborz(atoms,natsi,count_t)
+    call lenoskytb_alborz(parini,atoms,natsi,count_t)
 end subroutine lenosky_tb
 !*****************************************************************************************
