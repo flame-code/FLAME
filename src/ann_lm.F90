@@ -18,9 +18,9 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     real(8):: tt, epot
     integer:: m, iann
     allocate(ekf%g(ekf%n)) !,v1(ekf%n),ekf%epotd(ekf%num(1)))
-    !if(trim(parini%approach_ann)=='tb') then
-    !    call fit_hgen(parini,atoms_valid,ann_arr,ekf)
-    !endif
+    if(parini%fit_hoppint) then
+        call fit_hgen(parini,atoms_valid,ann_arr,ekf)
+    endif
     parlm%xtol=1.d-8
     parlm%ftol=1.d-8
     parlm%gtol=1.d-8

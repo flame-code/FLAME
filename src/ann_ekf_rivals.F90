@@ -47,9 +47,9 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         alpha=5.d-1
         rf=1.d-8
     endif
-    !if(trim(parini%approach_ann)=='tb') then
-    !    call fit_hgen(parini,atoms_valid,ann_arr,ekf)
-    !endif
+    if(parini%fit_hoppint) then
+        call fit_hgen(parini,atoms_valid,ann_arr,ekf)
+    endif
     do iter=0,parini%nstep_ekf
         call cpu_time(time_s)
         !call randomize_data_order(atoms_train)
