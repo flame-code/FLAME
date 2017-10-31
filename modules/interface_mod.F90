@@ -592,6 +592,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ekf), intent(inout):: ekf
@@ -600,11 +601,14 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(typ_partb), intent(inout):: partb
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
 end subroutine cal_ann_tb
-subroutine lenoskytb_ann(parini,partb,atoms,natsi,count_md)
+subroutine lenoskytb_ann(pia_arr,linked_lists,parini,partb,atoms,natsi,count_md)
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
@@ -2273,23 +2277,29 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
     real(8), intent(inout):: count_md
 end subroutine lenoskytb_alborz
-subroutine lenoskytb_init(partb,atoms,natsi)
+subroutine lenoskytb_init(partb,atoms,natsi,linked_lists)
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_linked_lists
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(in):: atoms
     integer, intent(in):: natsi
+    type(typ_linked_lists), intent(in):: linked_lists
 end subroutine lenoskytb_init
-subroutine totalenergy(parini,partb,atoms,natsi,pplocal)
+subroutine totalenergy(pia_arr,linked_lists,parini,partb,atoms,natsi,pplocal)
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
@@ -4845,19 +4855,25 @@ subroutine set_indorb(partb,atoms)
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
 end subroutine set_indorb
-subroutine gammaenergy(partb,atoms,natsi,pplocal)
+subroutine gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
     type(potl_typ), intent(inout):: pplocal
 end subroutine gammaenergy
-subroutine gammamat(partb,atoms,natsi,flag2,pplocal)
+subroutine gammamat(pia_arr,linked_lists,partb,atoms,natsi,flag2,pplocal)
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_tightbinding, only: typ_partb
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi, flag2
@@ -4867,13 +4883,15 @@ subroutine forcediagonalizeg(partb)
     use mod_tightbinding, only: typ_partb
     type(typ_partb), intent(inout):: partb
 end subroutine forcediagonalizeg
-subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,rem)
+subroutine gammacoupling(pia,ib,partb,atoms,flag2,atomtypei,atomtypej,pplocal,rem)
+    use mod_linked_lists, only: typ_pia !, typ_linked_lists
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
+    type(typ_pia), intent(in):: pia
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
-    integer, intent(in):: flag2, iat, jat, atomtypei, atomtypej
+    integer, intent(in):: ib, flag2, atomtypei, atomtypej
     type(potl_typ), intent(in):: pplocal
     real(8), intent(out):: rem(partb%nstride,partb%nstride)
 end subroutine gammacoupling

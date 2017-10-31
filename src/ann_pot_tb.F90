@@ -6,6 +6,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -15,6 +16,8 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_partb), intent(inout):: partb
     !local variables
+    type(typ_linked_lists):: linked_lists
+    type(typ_pia_arr):: pia_arr
     type(potl_typ):: pplocal
     real(8), allocatable:: hgen(:,:), dhgen(:,:)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
@@ -23,14 +26,17 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
     allocate(partb%dedh(4,atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%hgenall0(atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%hgenall1(atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%hgenall2(atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%hgenall3(atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%dhgenall0(atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%dhgenall1(atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%dhgenall2(atoms%nat,atoms%nat),source=0.d0)
-    allocate(partb%dhgenall3(atoms%nat,atoms%nat),source=0.d0)
+    linked_lists%rcut=partb%paircut !ann_arr%rcut
+    linked_lists%triplex=.true.
+    call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
+    allocate(partb%hgenall0(linked_lists%maxbound_rad),source=0.d0)
+    allocate(partb%hgenall1(linked_lists%maxbound_rad),source=0.d0)
+    allocate(partb%hgenall2(linked_lists%maxbound_rad),source=0.d0)
+    allocate(partb%hgenall3(linked_lists%maxbound_rad),source=0.d0)
+    allocate(partb%dhgenall0(linked_lists%maxbound_rad),source=0.d0)
+    allocate(partb%dhgenall1(linked_lists%maxbound_rad),source=0.d0)
+    allocate(partb%dhgenall2(linked_lists%maxbound_rad),source=0.d0)
+    allocate(partb%dhgenall3(linked_lists%maxbound_rad),source=0.d0)
     if(trim(ann_arr%event)=='train' .and. trim(parini%optimizer_ann)/='lm') then
         !The following is allocated with ekf%num(1), this means number of
         !nodes in the input layer is the same for all atom types.
@@ -97,25 +103,17 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         !    enddo
         !enddo
         
-        partb%hgenall0(iat,jat)=hgen(1,ib)
-        partb%hgenall1(iat,jat)=hgen(2,ib)
-        partb%hgenall2(iat,jat)=hgen(3,ib)
-        partb%hgenall3(iat,jat)=hgen(4,ib)
-        partb%hgenall0(jat,iat)=partb%hgenall0(iat,jat)
-        partb%hgenall1(jat,iat)=partb%hgenall1(iat,jat)
-        partb%hgenall2(jat,iat)=partb%hgenall2(iat,jat)
-        partb%hgenall3(jat,iat)=partb%hgenall3(iat,jat)
-        partb%dhgenall0(iat,jat)=dhgen(1,ib)
-        partb%dhgenall1(iat,jat)=dhgen(2,ib)
-        partb%dhgenall2(iat,jat)=dhgen(3,ib)
-        partb%dhgenall3(iat,jat)=dhgen(4,ib)
-        partb%dhgenall0(jat,iat)=partb%dhgenall0(iat,jat)
-        partb%dhgenall1(jat,iat)=partb%dhgenall1(iat,jat)
-        partb%dhgenall2(jat,iat)=partb%dhgenall2(iat,jat)
-        partb%dhgenall3(jat,iat)=partb%dhgenall3(iat,jat)
+        partb%hgenall0(ib)=hgen(1,ib)
+        partb%hgenall1(ib)=hgen(2,ib)
+        partb%hgenall2(ib)=hgen(3,ib)
+        partb%hgenall3(ib)=hgen(4,ib)
+        partb%dhgenall0(ib)=dhgen(1,ib)
+        partb%dhgenall1(ib)=dhgen(2,ib)
+        partb%dhgenall2(ib)=dhgen(3,ib)
+        partb%dhgenall3(ib)=dhgen(4,ib)
     enddo
         partb%event=ann_arr%event
-        call lenoskytb_ann(parini,partb,atoms,atoms%nat,c)
+        call lenoskytb_ann(pia_arr,linked_lists,parini,partb,atoms,atoms%nat,c)
         atoms%epot=atoms%epot+atoms%nat*ann_arr%ann(atoms%itypat(1))%ener_ref
         if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
@@ -146,16 +144,22 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         deallocate(symfunc%linked_lists%bound_rad)
         deallocate(symfunc%linked_lists%bound_ang)
     endif
+    deallocate(linked_lists%prime_bound)
+    deallocate(linked_lists%bound_rad)
+    deallocate(linked_lists%bound_ang)
 end subroutine cal_ann_tb
 !*****************************************************************************************
-subroutine lenoskytb_ann(parini,partb,atoms,natsi,count_md)
+subroutine lenoskytb_ann(pia_arr,linked_lists,parini,partb,atoms,natsi,count_md)
     use mod_interface
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_const, only: ha2ev, bohr2ang
     implicit none
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
@@ -177,14 +181,14 @@ subroutine lenoskytb_ann(parini,partb,atoms,natsi,count_md)
 
     icall=icall+1
     !write(*,'(a,f)') 'paircut= ',partb%paircut
-    call lenoskytb_init(partb,atoms,natsi)
+    call lenoskytb_init(partb,atoms,natsi,linked_lists)
     count_md=count_md+1.d0
     !PRINT SOME WARNINGS
     if(natsi>atoms%nat) write(*,'(a)') 'WARNING natsi = ',natsi,' is greater than number of atoms = ',atoms%nat
     if(atoms%nat == 0) write(*,'(a)') 'WARNING lenoskytb called with zero atoms'
     if(atoms%nat < 0) write(*,'(a)') 'WARNING lenoskytb called with negative number of atoms'
     !write(*,*) 'natsi ',natsi
-    call totalenergy(parini,partb,atoms,natsi,pplocal) 
+    call totalenergy(pia_arr,linked_lists,parini,partb,atoms,natsi,pplocal) 
 
     allocate(fat(3,atoms%nat))
     do iat=1,atoms%nat

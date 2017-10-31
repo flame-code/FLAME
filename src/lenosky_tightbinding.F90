@@ -36,6 +36,7 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -45,6 +46,9 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     integer, save:: firstcall=1
     type(potl_typ), save:: pplocal
     type(typ_partb), save:: partb
+    type(typ_parini):: parini_tmp
+    type(typ_linked_lists):: linked_lists
+    type(typ_pia_arr):: pia_arr
     if(firstcall==1) then
         write(*,'(a)') 'GAMMA POINT only tight binding code'
         if(lenosky) then
@@ -52,29 +56,39 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
         call prmst38c(partb,pplocal) !Reads potential 
         endif
         write(*,'(a,f)') 'paircut= ',partb%paircut
-        call lenoskytb_init(partb,atoms,natsi)
         firstcall=0
     endif
+    linked_lists%rcut=partb%paircut
+    linked_lists%triplex=.true.
+    parini_tmp=parini !TO_BE_CORRECTED
+    parini_tmp%bondbased_ann=.true. !TO_BE_CORRECTED
+    call call_linkedlist(parini_tmp,atoms,.true.,linked_lists,pia_arr)
+    call lenoskytb_init(partb,atoms,natsi,linked_lists)
     count_md=count_md+1.d0
     !PRINT SOME WARNINGS
     if(natsi>atoms%nat) write(*,'(a)') 'WARNING natsi = ',natsi,' is greater than number of atoms = ',atoms%nat
     if(atoms%nat == 0) write(*,'(a)') 'WARNING lenoskytb_alborz called with zero atoms'
     if(atoms%nat < 0) write(*,'(a)') 'WARNING lenoskytb_alborz called with negative number of atoms'
-    call totalenergy(parini,partb,atoms,natsi,pplocal)
+    call totalenergy(pia_arr,linked_lists,parini,partb,atoms,natsi,pplocal)
     !write(61,*) atoms%epot
     !stop 'BBBBBBBBBBBBBBB'
-    !call lenoskytb_final(partb)
+    call lenoskytb_final(partb)
+    deallocate(linked_lists%prime_bound)
+    deallocate(linked_lists%bound_rad)
+    deallocate(linked_lists%bound_ang)
 end subroutine lenoskytb_alborz
 !*****************************************************************************************
-subroutine lenoskytb_init(partb,atoms,natsi)
+subroutine lenoskytb_init(partb,atoms,natsi,linked_lists)
     use mod_interface
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_linked_lists
     use dynamic_memory
     implicit none
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(in):: atoms
     integer, intent(in):: natsi
+    type(typ_linked_lists), intent(in):: linked_lists
     !local variables
     !call f_routine(id='lenoskytb_init')
     partb%norb=partb%nstride*natsi+(atoms%nat-natsi)
@@ -105,14 +119,14 @@ subroutine lenoskytb_init(partb,atoms,natsi)
         !partb%hgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
         !partb%hgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
         !partb%hgenall3=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall3')
-        allocate(partb%hgenall0(atoms%nat,atoms%nat),source=0.d0)
-        allocate(partb%hgenall1(atoms%nat,atoms%nat),source=0.d0)
-        allocate(partb%hgenall2(atoms%nat,atoms%nat),source=0.d0)
-        allocate(partb%hgenall3(atoms%nat,atoms%nat),source=0.d0)
-        allocate(partb%dhgenall0(atoms%nat,atoms%nat),source=0.d0)
-        allocate(partb%dhgenall1(atoms%nat,atoms%nat),source=0.d0)
-        allocate(partb%dhgenall2(atoms%nat,atoms%nat),source=0.d0)
-        allocate(partb%dhgenall3(atoms%nat,atoms%nat),source=0.d0)
+        allocate(partb%hgenall0(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%hgenall1(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%hgenall2(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%hgenall3(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall0(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall1(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall2(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall3(linked_lists%maxbound_rad),source=0.d0)
     endif
     !partb%eval=f_malloc([1.to.partb%norbcut],id='partb%eval')
     !partb%focc=f_malloc([1.to.partb%norbcut],id='partb%focc')
@@ -121,13 +135,16 @@ subroutine lenoskytb_init(partb,atoms,natsi)
     !call f_release_routine()
 end subroutine lenoskytb_init
 !*****************************************************************************************
-subroutine totalenergy(parini,partb,atoms,natsi,pplocal)
-    use mod_parini, only: typ_parini
+subroutine totalenergy(pia_arr,linked_lists,parini,partb,atoms,natsi,pplocal)
     use mod_interface
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     implicit none
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
@@ -142,7 +159,7 @@ subroutine totalenergy(parini,partb,atoms,natsi,pplocal)
     if(lenosky) then
     call pairenergy(parini,partb,atoms,pplocal,natsi)
     endif
-    call gammaenergy(partb,atoms,natsi,pplocal)
+    call gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
     !partb%pairen=partb%pairen-natsi*(2*eself(0)+2*eself(1)) !the value in parantesses is 0 
     es=pplocal%eps(1) !eselfgeneral2 is replaced by this line
     partb%pairen=partb%pairen-(atoms%nat-natsi)*es
