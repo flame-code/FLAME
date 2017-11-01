@@ -63,14 +63,14 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     enddo
     ann%nl=ann%nl+1 !adding the output layer to total number of layers
     ann%nn(ann%nl)=1 !setting the output layer
-    if(trim(parini%subtask_ann)=='check_symmetry_function') then
-        rcut=ann%dict_ann//"main"//"rcut"
-    endif
-    if(trim(parini%approach_ann)=='atombased') then
-        rcut=ann%dict_ann//"main"//"rcut"
-    endif
+    !if(trim(parini%subtask_ann)=='check_symmetry_function') then
+    !    rcut=ann%dict_ann//"main"//"rcut"
+    !endif
+    !if(trim(parini%approach_ann)=='atombased') then
+    !    rcut=ann%dict_ann//"main"//"rcut"
+    !endif
+    rcut               =  ann%dict_ann//"main"//"rcut"
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
-        rcut               =  ann%dict_ann//"main"//"rcut"
         ann%ampl_chi       =  ann%dict_ann//"main"//"ampl_chi" 
         ann%prefactor_chi  =  ann%dict_ann//"main"//"prefactor_chi" 
         ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
