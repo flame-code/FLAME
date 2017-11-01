@@ -38,7 +38,8 @@ bondbased: if(parini%bondbased_ann) then
                 !ann_arr%yall_bond(i0,iat,jat)=(ann_arr%yall_bond(i0,iat,jat)-gleft)*ann_arr%ann(1)%two_over_gdiff(i0)-1.d0
                 symfunc%y(i0,ib)=(symfunc%y(i0,ib)-gleft)*ann_arr%ann(1)%two_over_gdiff(i0)-1.d0
                 !normalization of y0d
-                ann_arr%y0d_bond(i0,1:3,1:atoms%nat,1:atoms%nat)=ann_arr%y0d_bond(i0,1:3,1:atoms%nat,1:atoms%nat)*ann_arr%ann(1)%two_over_gdiff(i0)
+                !ann_arr%y0d_bond(i0,1:3,1:atoms%nat,1:atoms%nat)=ann_arr%y0d_bond(i0,1:3,1:atoms%nat,1:atoms%nat)*ann_arr%ann(1)%two_over_gdiff(i0)
+                symfunc%y0d_bond(i0,ib)=symfunc%y0d_bond(i0,ib)*ann_arr%ann(1)%two_over_gdiff(i0)
             enddo
             endif
             if(ann_arr%ann(1)%nn(0)/=ann_arr%ann(1)%ng1+ann_arr%ann(1)%ng2+ann_arr%ann(1)%ng3+ann_arr%ann(1)%ng4) then

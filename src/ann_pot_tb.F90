@@ -68,8 +68,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
                 !write(*,*) "dhda", ann_arr%g_per_bond(1,i,ib)
             elseif(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))          
-                iat=symfunc%linked_lists%bound_rad(1,ib)
-                jat=symfunc%linked_lists%bound_rad(2,ib)
                 dhgen(i,ib)=0.d0
                 do j=1,ann_arr%ann(i)%nn(0)
                     dhgen(i,ib)=dhgen(i,ib) + ann_arr%ann(i)%d(j)*symfunc%y0d_bond(j,ib)
