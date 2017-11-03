@@ -15,6 +15,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !local variables
     integer:: ig, i
     integer:: iat !, jat, kat
+    real(8)::factor
     type(typ_pia_arr):: pia_arr
     !real(8):: rc, en
     !real(8):: eval(3)
@@ -47,7 +48,24 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ib))
         pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
         pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
-        call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc)
+        if     (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Li') then
+            factor = 3.01/27.21138386d0
+        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Na') then
+            factor = 2.85/27.21138386d0
+        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'K') then
+            factor = 2.42/27.21138386d0
+        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'F') then
+            factor = 10.41/27.21138386d0
+        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Cl') then
+            factor = 8.30/27.21138386d0
+        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Br') then
+            factor = 7.59/27.21138386d0
+        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Zr') then
+            factor = 3.64/27.21138386d0
+        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'O') then
+            factor = 7.54/27.21138386d0
+        endif
+        call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc,factor)
     enddo
     do ia=1,symfunc%linked_lists%maxbound_ang
         ibij=symfunc%linked_lists%bound_ang(1,ia)
@@ -87,7 +105,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !stop
 end subroutine symmetry_functions_driver
 !*****************************************************************************************
-subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
+subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc,factor)
     use mod_interface
     use mod_ann, only: typ_ann_arr, typ_symfunc
     use mod_linked_lists, only: typ_pia
@@ -99,7 +117,8 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     !local variables
     integer:: i0, ig
     real(8):: ttei,ttej, ttix,ttiy,ttiz,ttjx,ttjy,ttjz,tt1i,tt1j
-    real(8):: etai,etaj, rs, vi,vj
+    real(8):: etai,etaj, rs, vi,vj,sign_chi0
+    real(8):: factor
     i0=ann_arr%ann(isat)%ng1
     do ig=1,ann_arr%ann(isat)%ng2
         i0=i0+1
@@ -107,7 +126,9 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
         rs=ann_arr%ann(jsat)%g2rs(ig)
         !The central atom is i:
         etaj=ann_arr%ann(jsat)%g2eta(ig)
-        vi=exp(-etaj*(pia%r-rs)**2)
+        sign_chi0=sign(1.d0,ann_arr%ann(jsat)%chi0)
+      !  vi=exp(-etaj*(pia%r-rs)**2) * sign_chi0
+        vi=exp(-etaj*(pia%r-rs)**2) * factor* sign_chi0
         ttei=vi*pia%fc
         tt1i=(-2.d0*etaj*(pia%r-rs)*pia%fc+pia%fcd)*vi/pia%r
         ttjx=tt1i*pia%dr(1)
@@ -213,7 +234,10 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
     real(8):: ss1, ss2, ss3, ss4
     real(8):: cos_theta_i, cos_theta_k, cos_theta_j, ui, uk, uj, vi, vk, vj
     real(8):: zeta, alam, etai, etaj, etak, zzz
+    real(8):: sign_chi0j, sign_chi0k 
     i0=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4
+    sign_chi0j=sign(1.d0,ann_arr%ann(jsat)%chi0)
+    sign_chi0k=sign(1.d0,ann_arr%ann(ksat)%chi0)
     do ig=1,ann_arr%ann(isat)%ng5
         i0=i0+1
         ii1=ann_arr%ann(isat)%g5i(1,ig)+ann_arr%ann(isat)%g5i(2,ig)
@@ -224,7 +248,7 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         etai=ann_arr%ann(isat)%g5eta(ig)
         etaj=ann_arr%ann(jsat)%g5eta(ig)
         etak=ann_arr%ann(ksat)%g5eta(ig)
-        zzz=2.d0**(1.d0-zeta)
+        zzz=2.d0**(1.d0-zeta)*sign_chi0k*sign_chi0j
 
         cos_theta_i=(piaij%dr(1)*piaik%dr(1)+piaij%dr(2)*piaik%dr(2)+piaij%dr(3)*piaik%dr(3))/(piaij%r*piaik%r)
         ui=(1.d0+alam*cos_theta_i)**zeta

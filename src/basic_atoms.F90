@@ -1807,6 +1807,8 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=1.d0
         elseif(trim(atoms%stypat(itypat))=='Cl') then
             atoms%qtypat(itypat)=-1.d0
+        elseif(trim(atoms%stypat(itypat))=='Li') then
+            atoms%qtypat(itypat)=1.0d0
         elseif(trim(atoms%stypat(itypat))=='Zn') then
             atoms%qtypat(itypat)=1.d0
         elseif(trim(atoms%stypat(itypat))=='Ti') then
@@ -1823,10 +1825,14 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=0.9d0
         elseif(trim(atoms%stypat(itypat))=='Te') then
             atoms%qtypat(itypat)=-0.9d0
+        elseif(trim(atoms%stypat(itypat))=='Sn') then
+            atoms%qtypat(itypat)=0.9d0
+        elseif(trim(atoms%stypat(itypat))=='Se') then
+            atoms%qtypat(itypat)=-0.9d0
         elseif(trim(atoms%stypat(itypat))=='Ca') then
             atoms%qtypat(itypat)=1.3d0
         elseif(trim(atoms%stypat(itypat))=='F') then
-            atoms%qtypat(itypat)=-0.65d0
+            atoms%qtypat(itypat)=-1.0d0
         elseif(trim(atoms%stypat(itypat))=='W') then
             atoms%qtypat(itypat)=0.8d0
         elseif(trim(atoms%stypat(itypat))=='S') then
@@ -1846,6 +1852,8 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Cl') then
             atoms%qat(iat)=-1.d0
+        else if(trim(atoms%sat(iat))=='Li') then
+            atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Zn') then
             atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Ti') then
@@ -1862,10 +1870,14 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=0.9d0
         else if(trim(atoms%sat(iat))=='Te') then
             atoms%qat(iat)=-0.9d0
+        else if(trim(atoms%sat(iat))=='Sn') then
+            atoms%qat(iat)=0.9d0
+        else if(trim(atoms%sat(iat))=='Se') then
+            atoms%qat(iat)=-0.9d0
         else if(trim(atoms%sat(iat))=='Ca') then
             atoms%qat(iat)=1.3d0
         else if(trim(atoms%sat(iat))=='F') then
-            atoms%qat(iat)=-0.65d0
+            atoms%qat(iat)=-1.0d0
         elseif(trim(atoms%sat(itypat))=='W') then
             atoms%qat(itypat)=0.8d0
         elseif(trim(atoms%sat(itypat))=='S') then
