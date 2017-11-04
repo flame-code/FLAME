@@ -172,7 +172,7 @@ module fingerprint
 !module parameter_molgom
 !   implicit none
 !   save
-   character:: fp_18_orbital
+!   character:: fp_18_orbital
 !   logical, parameter :: write_files = .false.
 !   logical, parameter :: clustering = .false.
 !   integer :: fp_18_cluster_number = 20
@@ -181,12 +181,12 @@ module fingerprint
 !   integer :: fp_18_principleev = 6
 !   integer :: fp_18_lseg!=1
 !   integer, parameter :: nconf=177
-   integer :: fp_18_molecules=4
-   integer :: fp_18_expaparameter = 4
-   integer :: fp_18_nex_cutoff = 3
-   integer :: fp_18_molecules_sphere = 50
-   real*8  :: fp_18_width_cutoff = 1.d0
-   real*8  :: fp_18_width_overlap = 1.d0
+!   integer :: fp_18_molecules=4
+!   integer :: fp_18_expaparameter = 4
+!   integer :: fp_18_nex_cutoff = 3
+!   integer :: fp_18_molecules_sphere = 50
+!   real*8  :: fp_18_width_cutoff = 1.d0
+!   real*8  :: fp_18_width_overlap = 1.d0
    real*8  :: fp_18_large_vanradius = 1.7d0/0.52917720859d0
 !   real(8),allocatable  :: rvan(:) !nat*molecules)
 !   character(len=2),allocatable:: finalchar(:) ! dimension(nat*molecules) 
@@ -309,11 +309,12 @@ END MODULE String_Utility
 
 module modsocket
 implicit none
-      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
-      CHARACTER(LEN=1024) :: sock_host
+!      INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
+      INTEGER:: sock_socket
+!      CHARACTER(LEN=1024) :: sock_host
       INTEGER, PARAMETER  :: MSGLEN=12   ! length of the headers of the driver/wrapper communication protocol
       CHARACTER(LEN=60)   :: sock_extra_string="                                                            "
-      real(8)             :: sock_ecutwf(2)
+!      real(8)             :: sock_ecutwf(2)
 end module modsocket
 
 !module mod_sqnm

@@ -5,6 +5,7 @@ module mod_parini
     implicit none
     type typ_parini
         logical:: exists_yaml_file
+        integer:: iunit
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'
@@ -92,6 +93,7 @@ module mod_parini
         logical:: restart_param=.false. 
         integer:: restart_iter=0  
         logical:: print_energy=.false. 
+        logical:: fit_hoppint=.false. 
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
@@ -229,6 +231,17 @@ module mod_parini
         real(8):: fp_17_width_cutoff
         integer :: fp_18_principleev = 6
         integer :: fp_18_lseg!=1
+        integer :: fp_18_molecules=4
+        integer :: fp_18_expaparameter = 4
+        integer :: fp_18_molecules_sphere = 50
+        real*8  :: fp_18_width_cutoff = 1.d0
+        real*8  :: fp_18_width_overlap = 1.d0
+        integer :: fp_18_nex_cutoff = 3
+        character:: fp_18_orbital
+        !-----------------------------------------------------------------------
+        real(8):: sock_ecutwf(2)
+        integer:: sock_inet, sock_port        ! socket ID & address of the socket
+        character(len=1024):: sock_host
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0

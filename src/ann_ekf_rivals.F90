@@ -37,13 +37,18 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         alpha=30.d-2
         rf=1.d-2
     elseif(trim(parini%approach_ann)=='tb') then
-        r0=100000.d0
+        r0=100.d0
         alpha=120.d-2
-        rf=1.d-6
+        rf=1.d-10
+        !alpha=20.d-2
+        !rf=1.d-10
     else
         r0=1.d0
         alpha=5.d-1
         rf=1.d-8
+    endif
+    if(parini%fit_hoppint) then
+        call fit_hgen(parini,atoms_valid,ann_arr,ekf)
     endif
     do iter=0,parini%nstep_ekf
         call cpu_time(time_s)

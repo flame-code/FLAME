@@ -253,7 +253,7 @@ use global, only: reduced
 use mod_parini, only: typ_parini
 
 implicit none
-type(typ_parini), intent(inout):: parini
+type(typ_parini), intent(in):: parini
 integer:: nat,natin,iat,ntypat,typat(nat),j
 character(40):: filename,units
 real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol,fcart(3,nat),strten(6)

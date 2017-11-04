@@ -52,14 +52,11 @@ use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
+   fp_18_large_vanradius
 
 
 
@@ -412,29 +409,29 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !FPORBITAL
    call parsescalar_string("FPORBITAL",9,all_line(1:n),n,parini%fp_17_orbital,2,found)
-   fp_18_orbital=parini%fp_17_orbital
+   parini%fp_18_orbital=parini%fp_17_orbital
    if(found) cycle
 !FPNEXCUT
    call parsescalar_real("FPNEXCUT",8,all_line(1:n),n,parini%fp_17_nex_cutoff,found)
-   fp_18_nex_cutoff=int(parini%fp_17_nex_cutoff)
+   parini%fp_18_nex_cutoff=int(parini%fp_17_nex_cutoff)
    if(found) cycle
 !FPPRINCIPLEEV
    call parsescalar_int("FPPRINCIPLEEV",13,all_line(1:n),n,parini%fp_18_principleev,found)
    if(found) cycle
 !FPMOLECULES
-   call parsescalar_int("FPMOLECULES",11,all_line(1:n),n,fp_18_molecules,found)
+   call parsescalar_int("FPMOLECULES",11,all_line(1:n),n,parini%fp_18_molecules,found)
    if(found) cycle
 !FPEXPA
-   call parsescalar_int("FPEXPA",6,all_line(1:n),n,fp_18_expaparameter,found)
+   call parsescalar_int("FPEXPA",6,all_line(1:n),n,parini%fp_18_expaparameter,found)
    if(found) cycle
 !FPMOLSPHERE
-   call parsescalar_int("FPMOLSPHERE",11,all_line(1:n),n,fp_18_molecules_sphere,found)
+   call parsescalar_int("FPMOLSPHERE",11,all_line(1:n),n,parini%fp_18_molecules_sphere,found)
    if(found) cycle
 !FPWIDTHCUT
-   call parsescalar_real("FPWIDTHCUT",10,all_line(1:n),n,fp_18_width_cutoff,found)
+   call parsescalar_real("FPWIDTHCUT",10,all_line(1:n),n,parini%fp_18_width_cutoff,found)
    if(found) cycle
 !FPWIDTHOVER
-   call parsescalar_real("FPWIDTHOVER",11,all_line(1:n),n,fp_18_width_overlap,found)
+   call parsescalar_real("FPWIDTHOVER",11,all_line(1:n),n,parini%fp_18_width_overlap,found)
    if(found) cycle
 !Block FINGERPRINT****************
 
@@ -489,31 +486,31 @@ open(unit=12,file="params_new.in")
 
 !Block IPI_SOCKET****************
 !IPIINET
-   call parsescalar_int("IPIINET",7,all_line(1:n),n,sock_inet,found)
+   call parsescalar_int("IPIINET",7,all_line(1:n),n,parini%sock_inet,found)
    if(found) cycle
 !IPIPORT
-   call parsescalar_int("IPIPORT",7,all_line(1:n),n,sock_port,found)
+   call parsescalar_int("IPIPORT",7,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !IPIHOST
-   call parsescalar_string("IPIHOST",7,all_line(1:n),n,sock_host,1024,found)
+   call parsescalar_string("IPIHOST",7,all_line(1:n),n,parini%sock_host,1024,found)
    if(found) cycle
 !IPIECUTWF
-   call parsearray_real("IPIECUTWF",9,all_line(1:n),n,sock_ecutwf,2,found)
+   call parsearray_real("IPIECUTWF",9,all_line(1:n),n,parini%sock_ecutwf,2,found)
    if(found) cycle
 !Block IPI_SOCKET****************
 
 !Block MSOCK****************
 !MSOCKINET
-   call parsescalar_int("SOCKINET",8,all_line(1:n),n,sock_inet,found)
+   call parsescalar_int("SOCKINET",8,all_line(1:n),n,parini%sock_inet,found)
    if(found) cycle
 !MSOCKPORT
-   call parsescalar_int("SOCKPORT",8,all_line(1:n),n,sock_port,found)
+   call parsescalar_int("SOCKPORT",8,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !MSOCKHOST
-   call parsescalar_string("SOCKHOST",8,all_line(1:n),n,sock_host,1024,found)
+   call parsescalar_string("SOCKHOST",8,all_line(1:n),n,parini%sock_host,1024,found)
    if(found) cycle
 !MSOCKECUTWF
-   call parsearray_real("SOCKECUTWF",10,all_line(1:n),n,sock_ecutwf,2,found)
+   call parsearray_real("SOCKECUTWF",10,all_line(1:n),n,parini%sock_ecutwf,2,found)
    if(found) cycle
 
 !Block MSOCK****************
@@ -592,12 +589,12 @@ endif
 
 !Initiallize ipi
 if(trim(parini%potential_potential)=="ipi".and.calls==0) then
-  call init_ipi()
+  call init_ipi(parini,nat)
 endif
 
 !Initiallize msock
 if(trim(parini%potential_potential)=="msock".and.calls==0) then
-  call init_msock()
+  call init_msock(parini)
 endif
 
 
@@ -635,14 +632,11 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
+   fp_18_large_vanradius
    
 use mod_parini, only: typ_parini
 implicit none
@@ -720,15 +714,15 @@ parini%fp_17_orbital='S'
 parini%fp_17_lseg=1
 parini%fp_17_natx_sphere=75
 
-fp_18_orbital='S'
+parini%fp_18_orbital='S'
 parini%fp_18_principleev = 6
 parini%fp_18_lseg=1
-fp_18_molecules=1
-fp_18_expaparameter = 4
-fp_18_nex_cutoff = 3
-fp_18_molecules_sphere = 50
-fp_18_width_cutoff = 1.d0
-fp_18_width_overlap = 1.d0
+parini%fp_18_molecules=1
+parini%fp_18_expaparameter = 4
+parini%fp_18_nex_cutoff = 3
+parini%fp_18_molecules_sphere = 50
+parini%fp_18_width_cutoff = 1.d0
+parini%fp_18_width_overlap = 1.d0
 fp_18_large_vanradius = 1.7d0/0.52917720859d0
 
 !SQNM
@@ -769,10 +763,10 @@ parini%conf_nat=nat
 !      ipi_host="mh-driver"
 !      ipi_ecutwf=1.d0
 !Block IPI_SOCKET****************
-      sock_inet=0 !0 for unix socket, 1 for tcp
-      sock_port=3141
-      sock_host="mh-driver"
-      sock_ecutwf=1.d0
+      parini%sock_inet=0 !0 for unix socket, 1 for tcp
+      parini%sock_port=3141
+      parini%sock_host="mh-driver"
+      parini%sock_ecutwf=1.d0
 end subroutine
 
 !************************************************************************************
@@ -783,14 +777,11 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
+   fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -845,14 +836,14 @@ if(parini%fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
 if(parini%fp_14_w2.lt.parini%fp_14_w1) stop "Error in p_14_w2"
 if(parini%fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
 if(trim(parini%fp_17_orbital).ne.'S'.and.trim(parini%fp_17_orbital).ne.'SP') stop "Error in fp_17_orbital"
-if(trim(fp_18_orbital).ne.'S'.and.trim(fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
+if(trim(parini%fp_18_orbital).ne.'S'.and.trim(parini%fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
 if(parini%fp_18_principleev.lt.0) stop "Error in fp_18_principleev"
-if(fp_18_molecules.lt.1) stop "Error in fp_18_molecules"
-if(fp_18_expaparameter.lt.1) stop "Error in fp_18_expaparameter"
-if(fp_18_nex_cutoff.lt.1) stop "Error in fp_18_nex_cutoff"
-if(fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
-if(fp_18_width_cutoff.lt.0.d0) stop "Error in fp_18_width_cutoff"
-if(fp_18_width_overlap.lt.0.d0) stop "Error in fp_18_width_overlap"
+if(parini%fp_18_molecules.lt.1) stop "Error in fp_18_molecules"
+if(parini%fp_18_expaparameter.lt.1) stop "Error in fp_18_expaparameter"
+if(parini%fp_18_nex_cutoff.lt.1) stop "Error in fp_18_nex_cutoff"
+if(parini%fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
+if(parini%fp_18_width_cutoff.lt.0.d0) stop "Error in fp_18_width_cutoff"
+if(parini%fp_18_width_overlap.lt.0.d0) stop "Error in fp_18_width_overlap"
 do i=1,parini%nconfine
   if(.not.(parini%conf_cartred(i).eq."C".or.parini%conf_cartred(i).eq."c".or.&
           &parini%conf_cartred(i).eq."K".or.parini%conf_cartred(i).eq."k".or.&
@@ -871,10 +862,10 @@ enddo
 !if(ipi_ecutwf(1).lt.0.d0) stop "Error in ipi_ecutwfc"
 !if(ipi_ecutwf(2).lt.0.d0) stop "Error in ipi_ecutwfc"
 
-if(sock_inet.lt.0 .or. sock_inet.gt.1) stop "Error in sock_inet: must be 0 for unix socket, 1 for tcp"
-if(sock_port.lt.1) stop "Error in sock_port"
-if(sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
-if(sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
+if(parini%sock_inet.lt.0 .or. parini%sock_inet.gt.1) stop "Error in sock_inet: must be 0 for unix socket, 1 for tcp"
+if(parini%sock_port.lt.1) stop "Error in sock_port"
+if(parini%sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
+if(parini%sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
 !SQNM
 if(parini%paropt_geopt%beta_lat.le.0d0) stop "Error in sqnm_beta_lat"
 if(parini%paropt_geopt%beta_at.le.0.d0) stop "Error in parini%paropt_geopt%beta_at"
@@ -896,14 +887,11 @@ use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
 use global, only: nat,ntypat,znucl,char_type,&
                 &voids
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_18_orbital,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
+   fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -1021,14 +1009,14 @@ write(*,'(a,i5)')          " # FPLSEG        ", parini%fp_17_lseg
 write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_17_orbital
 write(*,'(a,es15.7)')      " # FPNEXCUT      ", parini%fp_17_nex_cutoff
 elseif(trim(parini%fp_method_ch)=="MOLGOM") then
-write(*,'(a,a)')           " # FPORBITAL     ", fp_18_orbital
-write(*,'(a,i5)')          " # FPNEXCUT      ", fp_18_nex_cutoff
+write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_18_orbital
+write(*,'(a,i5)')          " # FPNEXCUT      ", parini%fp_18_nex_cutoff
 write(*,'(a,i5)')          " # FPPRINCIPLEEV ", parini%fp_18_principleev
-write(*,'(a,i5)')          " # FPMOLECULES   ", fp_18_molecules
-write(*,'(a,i5)')          " # FPEXPA        ", fp_18_expaparameter
-write(*,'(a,i5)')          " # FPMOLSPHERE   ", fp_18_molecules_sphere
-write(*,'(a,es15.7)')      " # FPWIDTHCUT    ", fp_18_width_cutoff
-write(*,'(a,es15.7)')      " # FPWIDTHOVER   ", fp_18_width_overlap
+write(*,'(a,i5)')          " # FPMOLECULES   ", parini%fp_18_molecules
+write(*,'(a,i5)')          " # FPEXPA        ", parini%fp_18_expaparameter
+write(*,'(a,i5)')          " # FPMOLSPHERE   ", parini%fp_18_molecules_sphere
+write(*,'(a,es15.7)')      " # FPWIDTHCUT    ", parini%fp_18_width_cutoff
+write(*,'(a,es15.7)')      " # FPWIDTHOVER   ", parini%fp_18_width_overlap
 endif
 write(*,'(a)')             " # CONFINEMENT parameters ********************************************************"
 write(*,'(a,L3)')          " # CONFINEMENT   ",parini%use_confine
@@ -1065,24 +1053,24 @@ endif
 if(StrLowCase(trim(adjustl(parini%potential_potential)))=="ipi") then
 write(*,'(a)')             " # IPI parameters ****************************************************************"
 write(formatting,'(a)') '(a,i4)'
-write(*,trim(formatting))  " # IPIINET       ",sock_inet
+write(*,trim(formatting))  " # IPIINET       ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
-write(*,trim(formatting))  " # IPIPORT       ",sock_port
+write(*,trim(formatting))  " # IPIPORT       ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
-write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(sock_host))
+write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(parini%sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
-write(*,trim(formatting))  " # IPIECUTWF     ",sock_ecutwf(:)
+write(*,trim(formatting))  " # IPIECUTWF     ",parini%sock_ecutwf(:)
 endif
 if(StrLowCase(trim(adjustl(parini%potential_potential)))=="msock") then
 write(*,'(a)')             " # MSOCK parameters **************************************************************"
 write(formatting,'(a)') '(a,i4)'
-write(*,trim(formatting))  " # SOCKINET      ",sock_inet
+write(*,trim(formatting))  " # SOCKINET      ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
-write(*,trim(formatting))  " # SOCKPORT      ",sock_port
+write(*,trim(formatting))  " # SOCKPORT      ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
-write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(sock_host))
+write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(parini%sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
-write(*,trim(formatting))  " # SOCKECUTWF    ",sock_ecutwf(:)
+write(*,trim(formatting))  " # SOCKECUTWF    ",parini%sock_ecutwf(:)
 endif
 write(*,'(a)')             " ############################ END Echo params_new.in #############################"
 end subroutine
@@ -1119,12 +1107,12 @@ elseif(parini%bc==1) then !Crystals
     parini%fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*parini%fp_17_nex_cutoff)
   elseif(trim(parini%fp_method_ch)=="MOLGOM") then
     fp_method=18
-    if(trim(fp_18_orbital)=="S")then
+    if(trim(parini%fp_18_orbital)=="S")then
       parini%fp_18_lseg=1
-    elseif(trim(fp_18_orbital)=="SP")then
+    elseif(trim(parini%fp_18_orbital)=="SP")then
       parini%fp_18_lseg=4 
     endif
-!    fp_18_width_cutoff=fp_rcut/sqrt(2.d0*fp_18_nex_cutoff)
+!    parini%fp_18_width_cutoff=fp_rcut/sqrt(2.d0*parini%fp_18_nex_cutoff)
   endif
 endif    
 end subroutine

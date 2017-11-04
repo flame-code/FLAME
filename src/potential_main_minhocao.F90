@@ -82,7 +82,7 @@ contains
     logical, intent(in)  :: getwfk
 
 
-    real(8) :: dkpt,fcart_c(3,nat),energy_c,strten_c
+    real(8) :: dkpt,fcart_c(3,nat),energy_c,strten_c(6)
 
 !For the voids
     real(8):: energy_voidlj,strten_voidlj(6),fcart_voidlj(3,nat)
@@ -208,9 +208,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="edip") then
       call edip(latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="ipi") then
-      call evaluate_ipi(latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
+      call evaluate_ipi(parini,nat,latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
     elseif(trim(parini%potential_potential)=="msock") then
-      call evaluate_msock(latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
+      call evaluate_msock(parini,latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
 #if defined(LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
       call call_lammps(parini,latvec,xred,fcart,energy,strten)

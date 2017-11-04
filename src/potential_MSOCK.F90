@@ -14,7 +14,9 @@ module interface_msock
  
 contains
 
-  subroutine evaluate_msock(latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
+  subroutine evaluate_msock(parini,latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -53,7 +55,7 @@ endif
 !Check if precision has changed
 if(iprec/=iprec_msock) then
       sock_extra_string=trim(sock_extra_string)//" CRESET "
-      write(ECUTWFSCL,'(f6.4)') sock_ecutwf(iprec)
+      write(ECUTWFSCL,'(f6.4)') parini%sock_ecutwf(iprec)
       sock_extra_string=trim(sock_extra_string)//" ECUTWF "//ECUTWFSCL
       iprec_msock=iprec
       last_reset=1000
@@ -67,12 +69,14 @@ endif
 
   end subroutine
 
-  subroutine init_msock()
+  subroutine init_msock(parini)
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   character*1024:: host
-      write(*,'(a,a,a,i6)') " # SOCKET MASTER: Trying to open the socket ", trim(sock_host), " on port ",sock_port
-      host = TRIM(sock_host)//achar(0)
-      call create_socket( sock_socket, sock_inet, sock_port, host )
+      write(*,'(a,a,a,i6)') " # SOCKET MASTER: Trying to open the socket ", trim(parini%sock_host), " on port ",parini%sock_port
+      host = TRIM(parini%sock_host)//achar(0)
+      call create_socket( sock_socket, parini%sock_inet, parini%sock_port, host )
   end subroutine
   
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)
