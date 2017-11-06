@@ -601,15 +601,17 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     type(typ_partb), intent(inout):: partb
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
 end subroutine cal_ann_tb
-subroutine lenoskytb_ann(pia_arr,linked_lists,parini,partb,atoms,natsi,count_md)
-    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,count_md)
     use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_tightbinding, only: typ_partb, lenosky
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
@@ -4209,9 +4211,17 @@ end subroutine check_nonoptional_parameters
 ! ./src/phonon.F90 :
 subroutine cal_hessian_4p(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
     type(typ_parini), intent(in):: parini
 end subroutine cal_hessian_4p
+subroutine projectout_rotation(atoms,hess,rlarge,lwork,work)
+    use mod_atoms, only: typ_atoms
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(inout):: hess(3*atoms%nat,3*atoms%nat)
+    real(8), intent(in):: rlarge
+    integer, intent(in):: lwork
+    real(8), intent(inout):: work(lwork)
+end subroutine projectout_rotation
 ! ./src/plain_ewald.F90 :
 subroutine plain_ewald(atoms,en)
     use mod_atoms, only: typ_atoms
