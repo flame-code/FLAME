@@ -23,6 +23,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
     real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc, tt1
+    real(8):: rc, rs, pi
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
     allocate(partb%dedh(4,atoms%nat,atoms%nat),source=0.d0)
@@ -77,18 +78,23 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             endif
         enddo over_ib
     enddo over_i
+    pi=4.d0*atan(1.d0)
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
+        if(trim(ann_arr%event)=='potential') then
         dx=atoms%rat(1,iat)-atoms%rat(1,jat)
         dy=atoms%rat(2,iat)-atoms%rat(2,jat)
         dz=atoms%rat(3,iat)-atoms%rat(3,jat)
         rsq=dx**2+dy**2+dz**2
         r=sqrt(rsq)
-        if(r<partb%paircut) then
-            fc=(1.d0-rsq/partb%paircut**2)**3
-            dfc=-6.d0*r*(1.d0-rsq/partb%paircut**2)**2/partb%paircut**2
-        else
+        rc=partb%paircut
+        rs=0.9*rc
+        if(r>rs .and. r<rc) then
+            tt=(r-rs)/(rc-rs)
+            fc= cos((1.d0-(1.d0-tt**2)**3)*pi*0.5d0)
+            dfc=sin((1.d0-(1.d0-tt**2)**3)*pi*0.5d0)*(-3.d0*pi*(1.d0-tt**2)**2*(r-rs)/(rc-rs)**2)
+        elseif(.not. r<rc) then
             fc=0.d0
             dfc=0.d0
         endif
@@ -100,6 +106,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
                 ann_arr%g_per_bond(j,i,ib)=fc*ann_arr%g_per_bond(j,i,ib)
             enddo
         enddo
+        endif
         
         partb%hgenall0(ib)=hgen(1,ib)
         partb%hgenall1(ib)=hgen(2,ib)
@@ -134,6 +141,11 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     if(trim(ann_arr%event)=='train') then
         deallocate(ann_arr%g_per_bond)
         deallocate(partb%dedh)
+    endif
+    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+        deallocate(symfunc%y)
+        deallocate(symfunc%y0d_bond)
+        deallocate(symfunc%y0dr)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. \
         trim(parini%symfunc)/='do_not_save')) then
