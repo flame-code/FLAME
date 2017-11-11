@@ -89,12 +89,15 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         rsq=dx**2+dy**2+dz**2
         r=sqrt(rsq)
         rc=partb%paircut
-        rs=0.9*rc
-        if(r>rs .and. r<rc) then
+        rs=0.9d0*rc
+        if(r<rs) then
+            fc=1.d0
+            dfc=0.d0
+        elseif(r<rc) then
             tt=(r-rs)/(rc-rs)
             fc= cos((1.d0-(1.d0-tt**2)**3)*pi*0.5d0)
             dfc=sin((1.d0-(1.d0-tt**2)**3)*pi*0.5d0)*(-3.d0*pi*(1.d0-tt**2)**2*(r-rs)/(rc-rs)**2)
-        elseif(.not. r<rc) then
+        else
             fc=0.d0
             dfc=0.d0
         endif
@@ -102,9 +105,9 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             hbar=hgen(i,ib)
             hgen(i,ib)=hbar*fc
             dhgen(i,ib)=dhgen(i,ib)*fc+hbar*dfc
-            do j=1, ekf%num(1)
-                ann_arr%g_per_bond(j,i,ib)=fc*ann_arr%g_per_bond(j,i,ib)
-            enddo
+            !do j=1, ekf%num(1)
+            !    ann_arr%g_per_bond(j,i,ib)=fc*ann_arr%g_per_bond(j,i,ib)
+            !enddo
         enddo
         endif
         
