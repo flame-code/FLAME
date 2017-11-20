@@ -87,12 +87,14 @@ module mod_parini
         real(8):: qgnrmtol=-1.d0
         real(8):: etol_ann !the tolerance difference of energies of two configuration
         real(8):: dtol_ann !distance between two FP
+        real(8):: weight_hardness
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
         logical:: read_forces_ann
         logical:: restart_param=.false. 
         integer:: restart_iter=0  
         logical:: print_energy=.false. 
+        logical:: fit_hoppint=.false. 
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.

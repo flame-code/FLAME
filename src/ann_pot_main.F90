@@ -22,6 +22,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
     !local variables
     !real(8):: g, g_tb, dis, E0, E1 
+    !real(8), allocatable:: xt(:), gt(:)
     integer:: i, j, iat
     type(typ_partb):: partb
     if(trim(ann_arr%approach)=='atombased') then
@@ -42,19 +43,22 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
         call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
-       ! do i=1,ekf%n
-       ! dis=1.d-4
-       ! g_tb=ekf%g(i)
-       ! !!Finite difference 
-       !     E0=atoms%epot
-       !     ekf%x(i)=ekf%x(i)+dis
-       !     call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
-       !     E1=atoms%epot
-       !     g=(E1-E0)/dis
-       !     write(*,'(a,2es19.10,es14.5,2es19.10)') 'FD-TEST',g_tb,g,g-g_tb,E0,E1
-       ! !endif
-       ! enddo
-       ! stop 'TTTTTT'
+        ! E0=atoms%epot
+        ! allocate(xt(ekf%n),gt(ekf%n))
+        ! xt(1:ekf%n)=ekf%x(1:ekf%n)
+        ! gt(1:ekf%n)=ekf%g(1:ekf%n)
+        ! do i=1,ekf%n
+        !     g_tb=gt(i)
+        !     !!Finite difference 
+        !     dis=1.d-4 !*abs(ekf%x(i))
+        !     ekf%x(i)=ekf%x(i)+dis
+        !     call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
+        !     E1=atoms%epot
+        !     g=(E1-E0)/dis
+        !     write(*,'(a,2es19.10,es14.5,2es19.10)') 'FD-TEST',g_tb,g,g-g_tb,E0,E1
+        !     ekf%x(i)=xt(i)
+        ! enddo
+        ! stop 'TTTTTTTTTTTTTTTT'
     else
         write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
         stop

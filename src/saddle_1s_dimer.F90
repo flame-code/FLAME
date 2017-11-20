@@ -110,7 +110,7 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
     if(nw>10) stop 'ERROR: nw>10'
     uvnt=f_malloc([1.to.3,1.to.nat,1.to.10],id='uvnt')
     uvnold=f_malloc([1.to.3,1.to.nat],id='uvnold')
-    if(istat/=0) stop 'ERROR: failure allocating uvnold'
+    !if(istat/=0) stop 'ERROR: failure allocating uvnold'
     !write(*,*) 'nit= ',nit
     if(nit==0) then
         uvnold=0.d0

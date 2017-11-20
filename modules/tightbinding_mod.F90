@@ -19,14 +19,14 @@ module mod_tightbinding
         integer, allocatable:: indat(:)
         integer, allocatable:: norbat(:)
         real(8), allocatable:: dedh(:,:,:)
-        real(8), allocatable:: hgenall0(:,:)
-        real(8), allocatable:: hgenall1(:,:)
-        real(8), allocatable:: hgenall2(:,:)
-        real(8), allocatable:: hgenall3(:,:)
-        real(8), allocatable:: dhgenall0(:,:)
-        real(8), allocatable:: dhgenall1(:,:)
-        real(8), allocatable:: dhgenall2(:,:)
-        real(8), allocatable:: dhgenall3(:,:)
+        real(8), allocatable:: hgenall0(:)
+        real(8), allocatable:: hgenall1(:)
+        real(8), allocatable:: hgenall2(:)
+        real(8), allocatable:: hgenall3(:)
+        real(8), allocatable:: dhgenall0(:)
+        real(8), allocatable:: dhgenall1(:)
+        real(8), allocatable:: dhgenall2(:)
+        real(8), allocatable:: dhgenall3(:)
         real(8), allocatable:: eval(:)
         real(8), allocatable:: evec(:,:)
         real(8), allocatable:: focc(:)
@@ -62,21 +62,3 @@ module mod_potl
     end type potl_typ
 end module mod_potl
 !***************************************************************************************
-module mod_frame 
-    implicit none
-    integer, parameter :: CLSMAXATOM=2000 
-    integer, parameter :: CLSMAXNEIGHB=2000 
-    type clsframepp_type
-        !Note that total storage in bytes is 56AN + 16A+ 8AR
-        !where A= Number of atoms
-        !      N = Number of neighbors max.
-        !      R = Number of emb. potls max.
-        !Normally only the first term is important--the other
-        !terms being typically less than 100 kilobytes
-        integer:: nbind(CLSMAXATOM,CLSMAXNEIGHB)
-        integer:: nb(CLSMAXATOM)
-        real(8):: r(CLSMAXATOM,CLSMAXNEIGHB)
-        real(8):: grad(3,CLSMAXATOM,CLSMAXNEIGHB)
-    end type clsframepp_type
-end module mod_frame
-!***************************************************************************************    

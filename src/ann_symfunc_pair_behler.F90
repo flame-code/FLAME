@@ -40,7 +40,7 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
         !write(*,*) 'BEFORE ',ib,iat,jat
-        if(iat>jat) cycle
+        if(iat>jat) cycle !TO_BE_CORRECTED
         !write(*,*) 'AFTER ',ib,iat,jat
         isat=atoms%itypat(iat)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ib))
