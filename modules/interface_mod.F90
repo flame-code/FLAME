@@ -1470,6 +1470,13 @@ subroutine best_charge_density(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density
+! ./src/buckingham.F90 :
+subroutine set_buckingham(atoms,tosifumi)
+    use mod_atoms, only: typ_atoms
+    use mod_shortrange, only: typ_tosifumi
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_tosifumi), intent(inout):: tosifumi
+end subroutine set_buckingham
 ! ./src/cell_linkedlists.F90 :
 subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     use mod_parini, only: typ_parini
@@ -1671,11 +1678,13 @@ subroutine LGW4(n, w, h, x, LGx, DLGx, ix1, nbgp)
     integer:: ix, jx, ix1,ixo ,n ,n2 ,nbgp
     real(8):: w(n), q(n), qinv(n), LGx(n), DLGx(n), h ,x ,diffx,x1,protot
 end subroutine lgw4
-subroutine surface_charge(ewald_p3d,pot_short,vl,vu)
+subroutine surface_charge(parini,ewald_p3d,pot_short,vl,vu)
     use mod_electrostatics, only: typ_ewald_p3d
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8):: t, tt ,density(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2),vl,vu
-    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,4)
+    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,5)
 end subroutine surface_charge
 subroutine determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
     use mod_electrostatics, only: typ_ewald_p3d
@@ -2409,6 +2418,7 @@ subroutine md_nvt_langevin(parini,atoms)
     real(8):: eta(3,atoms%nat)
     real(8):: langev(atoms%nat), forces_langevin(3,atoms%nat)
     real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
+    real(8):: rat_init(3,atoms%nat)
 end subroutine md_nvt_langevin
 subroutine md_nvt_nose_hoover_cp(parini,atoms)
     use mod_parini, only: typ_parini
@@ -2416,15 +2426,16 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     type(typ_parini), intent(inout):: parini
     type(typ_atoms):: atoms
     real(8):: forces_nosehoover(3,atoms%nat)
-    real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
+    real(8):: rat_next(3,atoms%nat), rat_prev(3,atoms%nat),vat_old(3,atoms%nat) 
+    real(8):: rat_init(3,atoms%nat)
 end subroutine md_nvt_nose_hoover_cp
 subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info
     type(typ_parini), intent(inout):: parini
     type(typ_atoms):: atoms
-    real(8):: forces_nosehoover(3,atoms%nat)
-    real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
+    real(8):: rat_init(3,atoms%nat)
+    integer:: jj(3,atoms%nat), vfile
 end subroutine md_nvt_nose_hoover_chain
 subroutine set_langevin_randforce(eta,nat)
     integer :: nat
@@ -2447,29 +2458,21 @@ subroutine thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,n
     real(8) :: dzeta(3,atoms%nat,ntherm), mass_q(ntherm)
     real(8) :: force_therm(3,atoms%nat,ntherm)
 end subroutine thermostat_evolution
-subroutine thermostat_evolution_2(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-    use mod_atoms, only: typ_atoms, typ_file_info
+subroutine get_atomic_mass(atoms,totmass)
+    use mod_atoms, only: typ_atoms
     type(typ_atoms):: atoms
-    integer :: ntherm, imd 
-    real(8) :: kt, t1, tt
-    real(8) :: zeta_next(ntherm), zeta(ntherm),zeta_prev(ntherm)
-    real(8) :: dzeta(ntherm), mass_q(ntherm)
-    real(8) :: force_therm(ntherm)
-end subroutine thermostat_evolution_2
-subroutine md_nvt_nose_hoover(parini,atoms)
+    real(8):: totmass,mass_conv = 1822.888484264545
+end subroutine get_atomic_mass
+subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info
     type(typ_parini), intent(inout):: parini
     type(typ_atoms):: atoms
-    real(8):: eta(3,atoms%nat)
-    real(8)::  forces_nose(3,atoms%nat)
-    real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
-end subroutine md_nvt_nose_hoover
-subroutine get_atomic_mass(atoms,totmass)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms):: atoms
-    real(8):: totmass
-end subroutine get_atomic_mass
+    type(typ_file_info):: file_info
+    integer:: imd, ntherm, ith
+    real(8):: zeta(ntherm), dzeta(ntherm)
+    real(8):: rat_init(3,atoms%nat)
+end subroutine write_trajectory_velocity
 ! ./src/minhocao.F90 :
 subroutine task_minhocao(parini,parres)
  use mod_parini, only: typ_parini

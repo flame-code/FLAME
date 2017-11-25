@@ -323,6 +323,9 @@ subroutine get_dynamics_parameters(file_ini,parini)
         call get_one_param(file_ini,'md_method',char_var=parini%md_method_dynamics)
         call get_one_param(file_ini,'print_force',log_var=parini%print_force_dynamics)
         call get_one_param(file_ini,'restart',log_var=parini%restart_dynamics)
+        call get_one_param(file_ini,'fix_cm',log_var=parini%fix_cm_dynamics)
+        call get_one_param(file_ini,'vflip',log_var=parini%vflip_dynamics)
+        call get_one_param(file_ini,'wall_repulsion',log_var=parini%wall_repulsion_dynamics)
     enddo
 end subroutine get_dynamics_parameters
 !*****************************************************************************************
