@@ -618,12 +618,9 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
         if(iter==0) epotlong_old=ann_arr%epot_es
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
-            write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            write(*,'(a,i5,es24.15,3es14.5)') 'iter,gnrm ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
         endif
-        if(gnrm<1.d-7) then
-            write(*,'(a,i5,es24.15,3es14.5)') 'CEP converged: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
-            exit
-        endif
+        if(gnrm<1.d-7) exit
         if(iter==0) then
             gt=g
             qq=atoms%qat

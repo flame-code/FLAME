@@ -387,11 +387,10 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     if(parini%print_energy) then
         write(filename,'(a12,i3.3)') 'detailed_err',iter
         iunit=f_get_free_unit(10**5)
-        inquire(file=trim(filename),exist=file_exists)
-        if(file_exists) then
+        if(ifile==11) then
+            open(unit=iunit,file=trim(filename),status='unknown',iostat=ios)
+        elseif(ifile==12) then
             open(unit=iunit,file=trim(filename),status='old',access='append',iostat=ios)
-        else
-            open(unit=iunit,file=trim(filename),status='new',iostat=ios)
         endif
         if(ios/=0) then
             write(*,'(a,a)') 'ERROR: failure openning file: ',trim(filename)
