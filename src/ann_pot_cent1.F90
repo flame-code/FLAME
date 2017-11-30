@@ -157,7 +157,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
             enddo
         enddo
         do i=1,ann_arr%n
-            ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
+    !        ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
             !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
         enddo
     endif

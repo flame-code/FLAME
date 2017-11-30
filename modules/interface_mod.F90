@@ -1639,6 +1639,16 @@ INTEGER :: n, vertex(n), nvert, iwk(n)
 REAL(8) :: x(n), y(n)
 end subroutine envelope
 ! ./src/es_coulomb_p3d_bias.F90 :
+subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane,beta)
+    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_parini), intent(in):: parini
+    real(8):: epotlong, epotplane !, epotshort
+    real(8):: beta, pi, charge,c,charge0,E,tmp
+end subroutine bias_potener_forces
 subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
@@ -1692,6 +1702,16 @@ subroutine determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
     integer:: ix, iy, iz, mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz), mboundgy(2,-nbgpz:nbgpz)
     integer:: nbgpx, nbgpy, nbgpz
 end subroutine determine_limitsphere
+subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane,beta)
+    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_parini), intent(in):: parini
+    real(8):: epotlong, epotplane !, epotshort
+    real(8):: beta, pi, charge,c,charge0,E,tmp
+end subroutine bias_field_potener_forces
 ! ./src/es_coulomb_p3d.F90 :
 subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
     use mod_parini, only: typ_parini

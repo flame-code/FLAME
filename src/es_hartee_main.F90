@@ -102,6 +102,7 @@ subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
     elseif(trim(atoms%boundcond)=='slab') then
         call calculate_potener_pot(ewald_p3d%poisson_p3d,ewald_p3d%cell,ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz,ehartree,dpm)
         ehartree=ehartree+epotreal
+        !!!!  why ??? 
         do igpz=1,ewald_p3d%poisson_p3d%ngpz
         do igpy=1,ewald_p3d%poisson_p3d%ngpy
         do igpx=1,ewald_p3d%poisson_p3d%ngpx
