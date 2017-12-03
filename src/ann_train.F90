@@ -122,6 +122,7 @@ subroutine ann_train(parini)
     endif
     !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
     if(parini%prefit_ann ) then
+        !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
         call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     endif
     if(trim(parini%optimizer_ann)=='behler') then
