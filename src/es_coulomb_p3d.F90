@@ -98,7 +98,7 @@ subroutine destruct_ewald_p3d(parini,atoms,ewald_p3d)
     call f_free(ewald_p3d%poisson_p3d%rho)
     call f_free(ewald_p3d%poisson_p3d%pot)
     if(trim(bias)=='yes') then
-        deallocate(ewald_p3d%poisson_p3d%pots)
+     !   deallocate(ewald_p3d%poisson_p3d%pots)
     endif
     call f_free(ewald_p3d%mboundg)
     call f_release_routine()
@@ -416,7 +416,7 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     hgxinv=1.d0/ewald_p3d%hgx
     hgyinv=1.d0/ewald_p3d%hgy
     hgzinv=1.d0/ewald_p3d%hgz
-    write(*,*) hgxinv,hgyinv,hgzinv
+!    write(*,*) hgxinv,hgyinv,hgzinv
     !assaigning the gaussian charge density on grid points, saving in the 
     !work array which is bigger than rho array.
     !write(*,*) '********************************** ',associated(wa)

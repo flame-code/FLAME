@@ -848,8 +848,9 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
     integer::  vfile
     real(8):: sumf1, sumf2, sumf3
     logical:: lfist= .true.
+    lfist= .true.
 
-    if(mod(imd-1,1000)==0) then
+    if(mod(imd-1,100)==0) then
         write(1111,*) '#'
         write(1111,*) '#    imd = ',imd, parini%time_dynamics
         write(1111,*) '#'
@@ -871,8 +872,8 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
     enddo
     write(1112,'(i15,3es25.14)') imd-1 , msd1/atoms%nat , msd2/atoms%nat, msd3/atoms%nat 
     if (lfist) then
-        open(unit=1000,file="velocity0",status='replace')
-        vfile=1000
+        open(unit=1003,file="velocity0",status='replace')
+        vfile=1003
         lfist = .false.
     else
         open(unit=1002,file="velocity1",status='replace')
@@ -883,7 +884,7 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
     file_info%file_position='append'
     call acf_write(file_info,atoms=atoms,strkey='trajectory')
 
-    if(mod(imd,5000)==0) then
+    if(mod(imd-1,500)==0) then
         write(vfile,*) '#'
         write(vfile,*) '#    imd = ', imd
         write(vfile,*) '#'
@@ -893,11 +894,10 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
         do ith=1,ntherm
             write(vfile,'(2es25.17)') zeta(ith),dzeta(ith)
         enddo
-
-        if (lfist) then
-            close(1002)
-        else
-            close(1000)
-        endif
+    endif
+    if (lfist) then
+        close(1002)
+    else
+        close(1003)
     endif
 end subroutine write_trajectory_velocity

@@ -77,11 +77,11 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         dtime4=0.d0 !time to convert derivative of ANN in typ_ann to 1D array
         dtime5=0.d0 !time to matrix-vector multiplication in Kalman filter
         dtime6=0.d0 !time of the rest of Kalman filter algorithm
-        if (.not. parini%restart_param) then
-            r=(r0-rf)*exp(-alpha*(iter))+rf
-        else
+       ! if (.not. parini%restart_param) then
+       !     r=(r0-rf)*exp(-alpha*(iter))+rf
+       ! else
             r=(r0-rf)*exp(-alpha*(iter+parini%restart_iter))+rf
-        endif
+       ! endif
         rinv=1.d0/r
         write(31,'(i6,es14.5)') iter,r
         do iconf=1,atoms_train%nconf
