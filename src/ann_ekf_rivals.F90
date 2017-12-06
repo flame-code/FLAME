@@ -29,17 +29,17 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         p(i,i)=1.d-2
     enddo
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1') then
-        r0=100000.d0
-        alpha=120.d-2
-        rf=1.d-6
+        r0=10.d0
+        alpha=100.d-2
+        rf=1.d-5
     elseif(trim(parini%approach_ann)=='cent2') then
         r0=1.d0
         alpha=30.d-2
         rf=1.d-2
     elseif(trim(parini%approach_ann)=='tb') then
         r0=100.d0
-        alpha=120.d-2
-        rf=1.d-10
+        alpha=100.d-2
+        rf=1.d-5
         !alpha=20.d-2
         !rf=1.d-10
     else
@@ -88,6 +88,11 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             ann_arr%event='train'
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+            if(trim(parini%approach_ann)=='tb') then
+                do j=1,ekf%n
+                    ekf%g(j)=ekf%g(j)+parini%weight_hardness*ekf%x(j)
+                enddo
+            endif
             call cpu_time(time1)
             call DGEMV('T',ekf%n,ekf%n,1.d0,p,ekf%n,ekf%g,1,0.d0,v1,1)
             !call cal_matvec_mpi(ekf%n,p,ekf%g,v1)

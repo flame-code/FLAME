@@ -294,6 +294,10 @@ subroutine write_ann_yaml(parini,filename,ann)
     character(50)::  method
 
     call set(ann%dict_ann//"main"//"ener_ref",ann%ener_ref ) 
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
+        call set(ann%dict_ann//"main"//"chi0",ann%chi0 ) 
+        call set(ann%dict_ann//"main"//"hardness",ann%hardness ) 
+    endif
     method =  ann%dict_ann//"main"//"method"
     i0=0
     do i=1,ann%ng1

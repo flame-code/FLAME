@@ -229,6 +229,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%restart_iter=parini%subdict//"restart_iter"
     parini%print_energy=parini%subdict//"print_energy"
     parini%fit_hoppint=parini%subdict//"fit_hoppint"
+    parini%weight_hardness=parini%subdict//"weight_hardness"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)

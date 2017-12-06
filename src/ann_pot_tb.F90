@@ -23,6 +23,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
     real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc, tt1
+    real(8):: rc, rs, pi
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
     allocate(partb%dedh(4,atoms%nat,atoms%nat),source=0.d0)
@@ -77,29 +78,38 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
             endif
         enddo over_ib
     enddo over_i
+    pi=4.d0*atan(1.d0)
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
+        if(trim(ann_arr%event)=='potential') then
         dx=atoms%rat(1,iat)-atoms%rat(1,jat)
         dy=atoms%rat(2,iat)-atoms%rat(2,jat)
         dz=atoms%rat(3,iat)-atoms%rat(3,jat)
         rsq=dx**2+dy**2+dz**2
         r=sqrt(rsq)
-        !if(r<partb%paircut) then
-        !    fc=(1.d0-rsq/partb%paircut**2)**3
-        !    dfc=-6.d0*r*(1.d0-rsq/partb%paircut**2)**2/partb%paircut**2
-        !else
-        !    fc=0.d0
-        !    dfc=0.d0
-        !endif
-        !do i=1,4
-        !    hbar=hgen(i,ib)
-        !    hgen(i,ib)=hbar*fc
-        !    dhgen(i,ib)=dhgen(i,ib)*fc+hbar*dfc
-        !    do j=1, ekf%num(1)
-        !        ann_arr%g_per_bond(j,i,ib)=fc*ann_arr%g_per_bond(j,i,ib)
-        !    enddo
-        !enddo
+        rc=partb%paircut
+        rs=0.9d0*rc
+        if(r<rs) then
+            fc=1.d0
+            dfc=0.d0
+        elseif(r<rc) then
+            tt=(r-rs)/(rc-rs)
+            fc= cos((1.d0-(1.d0-tt**2)**3)*pi*0.5d0)
+            dfc=sin((1.d0-(1.d0-tt**2)**3)*pi*0.5d0)*(-3.d0*pi*(1.d0-tt**2)**2*(r-rs)/(rc-rs)**2)
+        else
+            fc=0.d0
+            dfc=0.d0
+        endif
+        do i=1,4
+            hbar=hgen(i,ib)
+            hgen(i,ib)=hbar*fc
+            dhgen(i,ib)=dhgen(i,ib)*fc+hbar*dfc
+            !do j=1, ekf%num(1)
+            !    ann_arr%g_per_bond(j,i,ib)=fc*ann_arr%g_per_bond(j,i,ib)
+            !enddo
+        enddo
+        endif
         
         partb%hgenall0(ib)=hgen(1,ib)
         partb%hgenall1(ib)=hgen(2,ib)
@@ -111,8 +121,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         partb%dhgenall3(ib)=dhgen(4,ib)
     enddo
         partb%event=ann_arr%event
-        call lenoskytb_ann(pia_arr,linked_lists,parini,partb,atoms,atoms%nat,c)
-        atoms%epot=atoms%epot+atoms%nat*ann_arr%ann(atoms%itypat(1))%ener_ref
+        call lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,atoms%nat,c)
         if(trim(ann_arr%event)=='train') then
             ekf%g=0.d0
             do i=1,4
@@ -136,6 +145,11 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         deallocate(ann_arr%g_per_bond)
         deallocate(partb%dedh)
     endif
+    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+        deallocate(symfunc%y)
+        deallocate(symfunc%y0d_bond)
+        deallocate(symfunc%y0dr)
+    endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. \
         trim(parini%symfunc)/='do_not_save')) then
         deallocate(symfunc%linked_lists%prime_bound)
@@ -147,18 +161,20 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     deallocate(linked_lists%bound_ang)
 end subroutine cal_ann_tb
 !*****************************************************************************************
-subroutine lenoskytb_ann(pia_arr,linked_lists,parini,partb,atoms,natsi,count_md)
+subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,count_md)
     use mod_interface
-    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_const, only: ha2ev, bohr2ang
     implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_linked_lists), intent(in):: linked_lists
     type(typ_pia_arr), intent(in):: pia_arr
-    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
@@ -199,7 +215,13 @@ subroutine lenoskytb_ann(pia_arr,linked_lists,parini,partb,atoms,natsi,count_md)
     enddo
 
     call pairenergy(parini,partb,atoms,pplocal,natsi)
-    atoms%epot=atoms%epot+partb%pairen+atoms%nat*-0.789592525650303d+04/ha2ev
+    atoms%epot=atoms%epot+partb%pairen !+atoms%nat*-0.789592525650303d+04/ha2ev
+    ann_arr%ener_ref=0.d0
+    do iat=1,atoms%nat
+        ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
+    enddo
+    atoms%epot=atoms%epot+ann_arr%ener_ref
+
     !write(61,*) atoms%epot
     !stop 'BBBBBBBBB'
 

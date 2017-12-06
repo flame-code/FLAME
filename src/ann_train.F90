@@ -122,6 +122,7 @@ subroutine ann_train(parini)
     endif
     !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
     if(parini%prefit_ann ) then
+        !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
         call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     endif
     if(trim(parini%optimizer_ann)=='behler') then
@@ -590,6 +591,8 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         elseif(trim(parini%symfunc)=='do_not_save') then
             call f_free(symfunc_arr%symfunc(iconf)%y0d)
             call f_free(symfunc_arr%symfunc(iconf)%y0dr)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
         endif
 #if defined(MPI)
         if(nproc>1) then
@@ -1004,9 +1007,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     if(trim(parini%symfunc)=='do_not_save') then
         do iconf=1,atoms_arr%nconf
             call f_free(symfunc_arr%symfunc(iconf)%y)
-            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
             deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
-            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
         enddo
     endif
     deallocate(gminarr)

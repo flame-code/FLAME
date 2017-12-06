@@ -156,10 +156,10 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        do i=1,ann_arr%n
-    !        ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
-            !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
-        enddo
+        !do i=1,ann_arr%n
+        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        !enddo
     endif
     call f_release_routine()
 end subroutine cal_ann_cent1
@@ -618,9 +618,12 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
         if(iter==0) epotlong_old=ann_arr%epot_es
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
-            write(*,'(a,i5,es24.15,3es14.5)') 'iter,gnrm ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
         endif
-        if(gnrm<1.d-7) exit
+        if(gnrm<1.d-7) then
+            write(*,'(a,i5,es24.15,3es14.5)') 'CEP converged: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            exit
+        endif
         if(iter==0) then
             gt=g
             qq=atoms%qat
