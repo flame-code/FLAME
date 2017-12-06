@@ -156,10 +156,10 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        do i=1,ann_arr%n
-            ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
-            !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
-        enddo
+        !do i=1,ann_arr%n
+        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        !enddo
     endif
     call f_release_routine()
 end subroutine cal_ann_cent1
