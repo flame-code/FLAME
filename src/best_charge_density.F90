@@ -25,46 +25,59 @@ subroutine best_charge_density_rho(parini)
     type(typ_atoms):: atoms
     type(typ_cent):: cent
     type(typ_ann_arr):: ann_arr
-    integer:: istat, igpx, igpy, igpz, iat, nx ,ny,nz,iter,iter_max,gweiat,i,j,jj,lcn,ierr,lwork ! lcn = linear combinarion number
-    real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi,h,rho_err
-    real(8):: ehartree,rmse,SDA,dft_ener,cent_ener,ener_err,force_err,ener_err_old,coeff
-    real(8),allocatable:: dft_rho(:,:,:), cent_rho(:,:,:),cent_rho_1(:,:,:),cent_rho_2(:,:,:),work(:),EE(:,:),eig(:)
+    integer:: istat, igpx, igpy, igpz, iat, nx ,ny,nz,iter,iter_max,gweiat,i,j,k,jj,lcn,ierr,lwork ! lcn = linear combinarion number
+    real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi,h,rho_err,hx,hy,hz
+    real(8):: ehartree,rmse,SDA,dft_ener,cent_ener,ener_err,force_err,ener_err_old,coeff,w
+    real(8),allocatable:: dft_rho(:,:,:), cent_rho(:,:,:),cent_rho_1(:,:,:),cent_rho_2(:,:,:),weight(:,:,:),work(:),EE(:,:),eig(:)
     real(8),allocatable::A(:,:), Q(:,:), qpar(:,:), apar(:,:), qtemp(:)
     real(8),allocatable:: dft_fat(:,:),cent_fat(:,:)
-    real(8):: sd_s,err_fdm,err_cent,invvol
+    real(8):: sd_s,err_fdm,err_cent,volinv,err
     real(8):: q_max,a_max
+    real(8):: errmax, peak, c1, d1, temp1,cv1,cv2,cv3
     !open(unit=1370,file='param.txt')
-   
+    call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
+    call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    
     open(unit=1377,file='param_2.txt')
     pi=4.d0*atan(1.d0)
     read(1377,*)
-    read(1377,*) q_max
+    read(1377,*) lcn
+    allocate(Q(lcn,atoms%nat),A(lcn,atoms%nat))
     read(1377,*)
-    read(1377,*) a_max
+    do i = 1 , lcn
+        read(1377,*) A(i,:) , Q(i,:)
+    end do
     read(1377,*)
     read(1377,*) sd_s
     read(1377,*)
-    read(1377,*)
-    read(1377,*)
-    read(1377,*) lcn
-    write(*,'(a,es13.6,i)') "params q_max and LCN : ",q_max,lcn
-    write(*,'(a,es13.6)') "params max gw : ",a_max
+    read(1377,*) err
+
+
+    write(*,'(a,i,3es13.6)') "params q_max and LCN : ",lcn,A(:,1)
+    write(*,'(a,es13.6)') "params max gw : ",sum(Q(:,1))
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!dft part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
-    call acf_read(parini,'posinp.acf',1,atoms=atoms)
     write(*,'(a,es13.6,i)') "params sd_s and # of atoms : ",sd_s,atoms%nat
-    cent%ewald_p3d%poisson_p3d%rho=-1.d0*cent%ewald_p3d%poisson_p3d%rho
     nx=cent%ewald_p3d%poisson_p3d%ngpx
     ny=cent%ewald_p3d%poisson_p3d%ngpy
     nz=cent%ewald_p3d%poisson_p3d%ngpz
-    invvol = 1.d0/(nx*ny*nz)
+    cv1=atoms%cellvec(1,1)
+    cv2=atoms%cellvec(2,2)
+    cv3=atoms%cellvec(3,3)
+    !write(30,*) cv1,cv2,cv3 
+    volinv = (cv1*cv2*cv3)/(nx*ny*nz)
+    !invvol = 1.d0/(3.d0*atoms%nat)
     cent%ewald_p3d%hgx=cent%ewald_p3d%poisson_p3d%hx
     cent%ewald_p3d%hgy=cent%ewald_p3d%poisson_p3d%hy
     cent%ewald_p3d%hgz=cent%ewald_p3d%poisson_p3d%hz
+    hx=cent%ewald_p3d%poisson_p3d%hx
+    hy=cent%ewald_p3d%poisson_p3d%hy
+    hz=cent%ewald_p3d%poisson_p3d%hz
     allocate(cent%ewald_p3d%poisson_p3d%pot(nx,ny,nz),stat=istat)
-    allocate(dft_rho(nx,ny,nz),dft_fat(1:3,1:atoms%nat),cent%gwit(1:atoms%nat))
+    allocate(dft_rho(nx,ny,nz),weight(nx,ny,nz),dft_fat(1:3,1:atoms%nat),cent%gwit(1:atoms%nat))
+    cent%ewald_p3d%poisson_p3d%rho=-1.d0*cent%ewald_p3d%poisson_p3d%rho
     dft_rho = cent%ewald_p3d%poisson_p3d%rho
+    w=abs(1.d0/(volinv*sum(dft_rho)))
     cent%gwit(:) = 1.3d0
     atoms%zat(:) = 1.d0
     atoms%boundcond='bulk'   
@@ -83,7 +96,6 @@ subroutine best_charge_density_rho(parini)
     !deallocate(cent%ewald_p3d%poisson_p3d%pot)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!cent part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    
-    allocate(Q(lcn,atoms%nat),A(lcn,atoms%nat))
     allocate(cent_rho(nx,ny,nz))
     allocate(cent_rho_1(nx,ny,nz))
     allocate(cent_rho_2(nx,ny,nz))
@@ -92,10 +104,10 @@ subroutine best_charge_density_rho(parini)
     allocate(cent_fat(1:3,1:atoms%nat))
     !**************************************************
     
-    do i = 1 , lcn
-        Q(i,1:atoms%nat)=q_max/(i+0.d0)
-        A(i,1:atoms%nat)=a_max/(i+0.d0)
-    end do
+    !do i = 1 , lcn
+    !    Q(i,1:atoms%nat)=q_max/(i+0.d0)
+    !    A(i,1:atoms%nat)=a_max/(i+0.d0)
+    !end do
     !A(atoms%nat/2:atoms%nat) = a12
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!SD part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !eig_part!  !*************************eig_part********************************************
@@ -151,22 +163,43 @@ subroutine best_charge_density_rho(parini)
             do j = 1 , lcn
                 call gauss_grid(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,i),atoms%cellvec,qtemp(i),A(j,i),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
                 cent_rho_1 = cent%ewald_p3d%poisson_p3d%rho
-                qpar(j,i) = 2.d0*invvol*sum(cent_rho_1*(cent_rho-dft_rho))
+                qpar(j,i) = 2.d0*volinv*sum(cent_rho_1*(cent_rho-dft_rho))
             end do 
         end do 
-        rho_err = sum((cent_rho-dft_rho)**2)*invvol
-        rmse = sqrt(rho_err)
-        !ener_err_old = ener_err
+        !rho_err = sum((cent_rho-dft_rho)**2)*invvol
+        !rmse = sqrt(rho_err)
+        !!ener_err_old = ener_err
         ener_err = abs(cent_ener-dft_ener)
-        force_err = sqrt(sum((cent_fat-dft_fat)**2)*invvol)
-        write(*,'(a,i4,4f14.6)')"SD",iter,rmse,rho_err,ener_err,force_err
+        force_err = sqrt(sum((cent_fat-dft_fat)**2)/(3*atoms%nat))
+        errmax = 0.d0
+        rho_err = 0.d0
+        peak = maxval(abs(dft_rho))
+        write(*,*) "peak",peak
+        do i = 1 , nz
+            do j = 1 , ny
+                do k = 1 , nx
+                    c1 = cent_rho(k,j,i)
+                    d1 = dft_rho(k,j,i)
+                    temp1 = (abs(c1)-abs(d1))/(max(abs(d1),(1.d-2*peak)))
+                    !write(21,'(a,10es14.5)')"temp ",temp1,abs(c1),abs(d1),(1.d-2*peak),k*hx,j*hy,i*hz,atoms%rat
+                    errmax=max(errmax,temp1)
+                    rho_err = rho_err + ((c1-d1)**2)
+                end do
+            end do
+        end do
+        rho_err = sqrt(rho_err*volinv)*w
+        !write(40,*)iter,rho_err,volinv,w
+        rmse = sqrt(rho_err)
+        !stop 'AAAAAAAAAAAA'
+        write(*,'(a,i4,4es14.6)')"SD",iter,rmse,errmax,ener_err,force_err
         write(*,*)"SD --------------------------------------------------------------------"
+        write(*,'(a,i4,i4,es14.6)')"GTO_val_sum ",iter,i,sum(q(:,1))
         do i = 1 , lcn
             write(*,'(a,i4,i4,2es14.6)')"GTO_val ",iter,i,q(i,1),a(i,1)
             write(*,'(a,i4,i4,es14.4)') "a-q-partial",iter,i,qpar(i,1) 
         enddo
         write(*,'(a)')"GTO --------------------------------------------------------------------"
-        if (rmse < 1.d-4)then
+        if (abs(errmax) < err)then
             write(*,*) "max conversion reached"
             exit
         endif
