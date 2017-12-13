@@ -66,11 +66,11 @@ contains
   do l=1,kb
   do m=1,kc
   do iat=1,nat
-  if(.not.fixat(iat)) then
-      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(typat(iat))),k_xcart(1,iat,k,l,m)*&
+  if(.not.parini%fixat(iat)) then
+      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,1,k_xcart(2,iat,k,l,m)*Bohr_Ang,1,k_xcart(3,iat,k,l,m)*Bohr_Ang,1
   else
-      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(typat(iat))),k_xcart(1,iat,k,l,m)*&
+      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,0,k_xcart(2,iat,k,l,m)*Bohr_Ang,0,k_xcart(3,iat,k,l,m)*Bohr_Ang,0
   endif
   enddo
@@ -85,7 +85,7 @@ contains
   end subroutine
   
   subroutine get_output_mopac(fcart,energy,strten)
-  use global, only: nat,target_pressure_gpa
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none

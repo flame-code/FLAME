@@ -1,0 +1,28 @@
+# Tips for phonon calculations:
+
+# Before starting calculations, you should modify all *.conf files and runall.sh according to your system.
+# Also, modify the SAMPLE directory to contain the correct input parameters for FLAME.
+# For modify band.conf, you can find all points (k-vectors) and paths in the reciprocal lattice using python script
+"kpath_vasp.py".
+#
+1. Prepare unit/primitive cell structure named POSCAR      #in VASP5 format
+#
+2. Prepare a perfect supercell structure from POSCAR by typing:
+:~ > phonopy -d --tol=0.01 --amplitude=0.02 --dim="2 2 2"    
+#make supercells #use correct tolerance for symmetry analysing (--tol<=0.05) #default value for amplitude is 0.01
+#
+3. Then, Calculate force constants of the perfect supercell by running FLAME using the following command:
+:~ > ./runall.sh
+#
+4. Create FORCE_SET file by :
+:~ > python get_forces.py DIR_POSCAR-00?/force_posout.acf     
+5. Plot phonon band structure by:
+:~ > phonopy -d --tol=0.01 -p band.conf                       # frequency_unit THz
+  or phonopy -d --tol=0.01 --factor=521.471 -p band.conf      # frequency_unit cm^-1
+
+6. Calculate and plot Heat capacity, Free energy and ... by:
+:~ > phonopy -d --tol=0.01 -t -p  mesh.conf                  
+
+
+#Note: For more information, you can refer to the following website:
+http://atztogo.github.io/phonopy/

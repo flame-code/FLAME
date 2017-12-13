@@ -110,18 +110,16 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     ang_bc=acos(dot_product(cv2,cv3)/sqrt(dot_product(cv2,cv2)*dot_product(cv3,cv3)))
     ang_ac=acos(dot_product(cv1,cv3)/sqrt(dot_product(cv1,cv1)*dot_product(cv3,cv3)))
     ang_ab=acos(dot_product(cv1,cv2)/sqrt(dot_product(cv1,cv1)*dot_product(cv2,cv2)))
-    write(*,'(a,3f15.5)') 'alpha,beta,gamma ',ang_bc,ang_ac,ang_ab
+    !write(*,'(a,3f15.5)') 'alpha,beta,gamma ',ang_bc,ang_ac,ang_ab
     write(*,*) 'REZA-3'
-    write(*,*)"iproc,nproc", iproc, nproc
-    write(*,*) "geocode : ",geocode
+    write(*,*) 'iproc,nproc', iproc, nproc
+    write(*,*) 'geocode : ',geocode
     dict_input=>dict_new('kernel' .is. dict_new('isf_order' .is. itype_scf))
-    write(*,*) 'ehsan-1'
     alpha_bc = abs(ang_bc)!+pi/2.d0
     beta_ac = abs(ang_ac)!+pi/2.d0
     gamma_ab = abs(ang_ab)!+pi/2.d0
-    write(*,*) iproc,nproc,geocode,ndims, hgrids,alpha_bc,beta_ac,gamma_ab
+    !write(*,*) iproc,nproc,geocode,ndims, hgrids,alpha_bc,beta_ac,gamma_ab
     ewald_p3d%poisson_p3d%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
-    write(*,*) 'Ehsan-2'
     call dict_free(dict_input)
     write(*,*) 'REZA-4'
     call pkernel_set(ewald_p3d%poisson_p3d%pkernel,verbose=.true.)

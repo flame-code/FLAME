@@ -1,0 +1,12 @@
+Tips:
+---------------------------------------------------------------------------------------------------------------------------------------------
+1. In the new version of phonopy you must change the following keywords in get_force.py script:
+atoms -----> points
+position --> coordinates
+
+2. Command for converting unit cell to primitive cell:
+  phonopy --symmetry --tol=0.01      (default value for tolerance is 1.d-5)
+
+3. You can set  BAND_CONNECTION = .TRUE. in band.conf. 
+With this option, band connections are estimated from eigenvectors and band structure is drawn considering band crossings. 
+In sensitive cases, to obtain better band connections, it requires to increase number of points calculated in band segments by the BAND_POINTS tag.

@@ -13,16 +13,20 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
     !local variables
     type(typ_cent):: cent
-    integer:: iat, i, j, ng, ia
+    integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
     call f_routine(id='cal_ann_eem2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
-        ann_arr%chi_i=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_i')
-        ann_arr%chi_o=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_o')
-        ann_arr%chi_d=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_d')
+        allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
+        allocate(ann_arr%chi_i(1:atoms%nat))
+        allocate(ann_arr%chi_o(1:atoms%nat))
+        allocate(ann_arr%chi_d(1:atoms%nat))
+        ann_arr%fat_chi=0.d0
+        ann_arr%chi_i=0.d0
+        ann_arr%chi_o=0.d0
+        ann_arr%chi_d=0.d0
     else
         ann_arr%fat_chi=0.d0
         ann_arr%chi_i=0.d0
@@ -130,9 +134,9 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo
 
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-        call f_free(symfunc%linked_lists%prime_bound)
-        call f_free(symfunc%linked_lists%bound_rad)
-        call f_free(symfunc%linked_lists%bound_ang)
+        deallocate(symfunc%linked_lists%prime_bound)
+        deallocate(symfunc%linked_lists%bound_rad)
+        deallocate(symfunc%linked_lists%bound_ang)
     endif
     if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
         call f_free(symfunc%y)
@@ -140,10 +144,10 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         call f_free(symfunc%y0dr)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        call f_free(ann_arr%chi_i)
-        call f_free(ann_arr%chi_o)
-        call f_free(ann_arr%chi_d)
-        call f_free(ann_arr%fat_chi)
+        deallocate(ann_arr%chi_i)
+        deallocate(ann_arr%chi_o)
+        deallocate(ann_arr%chi_d)
+        deallocate(ann_arr%fat_chi)
         call f_free(ann_arr%fatpq)
         call f_free(ann_arr%stresspq)
     endif
@@ -155,8 +159,8 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        do ia=1,ann_arr%n
-            ekf%g(ekf%loc(ia)+ekf%num(1)-1)=ekf%g(ekf%loc(ia)+ekf%num(1)-1)*1.d-2
+        do i=1,ann_arr%n
+            ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
             !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
         enddo
     endif
@@ -283,12 +287,20 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
     real(8):: zion, alpha_elec, alpha_largest, error_erfc_over_r, rcut
-    cent%rgrad=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rgrad')
-    cent%qgrad=f_malloc0([1.to.atoms%nat],id='cent%qgrad')
-    cent%rel=f_malloc0([1.to.3,1.to.atoms%nat],id='cent%rel')
-    cent%gwe=f_malloc0([1.to.atoms%nat],id='cent%gwe')
-    cent%gwi=f_malloc0([1.to.atoms%nat],id='cent%gwi')
-    cent%gwit=f_malloc0([1.to.atoms%nat],id='cent%gwit')
+
+    allocate(cent%rgrad(1:3,1:atoms%nat))
+    allocate(cent%qgrad(1:atoms%nat))
+    allocate(cent%rel(1:3,1:atoms%nat))
+    allocate(cent%gwe(1:atoms%nat))
+    allocate(cent%gwi(1:atoms%nat))
+    allocate(cent%gwit(1:atoms%nat))
+
+    cent%rgrad= 0.d0
+    cent%qgrad= 0.d0
+    cent%rel= 0.d0
+    cent%gwe= 0.d0
+    cent%gwi= 0.d0
+    cent%gwit= 0.d0
 
     do iat=1,atoms%nat
         call random_number(ttrand)
@@ -332,16 +344,16 @@ subroutine final_cent2(cent)
     implicit none
     type(typ_cent), intent(inout):: cent
     !local variables
-    call f_free(cent%ewald_p3d%linked_lists%prime_bound)
-    call f_free(cent%ewald_p3d%linked_lists%bound_rad)
-    call f_free(cent%ewald_p3d%linked_lists%bound_ang)
+    deallocate(cent%ewald_p3d%linked_lists%prime_bound)
+    deallocate(cent%ewald_p3d%linked_lists%bound_rad)
+    deallocate(cent%ewald_p3d%linked_lists%bound_ang)
     deallocate(cent%ewald_p3d%pia_arr%pia)
-    call f_free(cent%rgrad)
-    call f_free(cent%qgrad)
-    call f_free(cent%rel)
-    call f_free(cent%gwi)
-    call f_free(cent%gwe)
-    call f_free(cent%gwit)
+    deallocate(cent%rgrad)
+    deallocate(cent%qgrad)
+    deallocate(cent%rel)
+    deallocate(cent%gwi)
+    deallocate(cent%gwe)
+    deallocate(cent%gwit)
 end subroutine final_cent2
 !*****************************************************************************************
 subroutine cent2_force(parini,ann_arr,atoms,cent)

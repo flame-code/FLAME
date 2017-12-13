@@ -43,14 +43,17 @@ end subroutine set_indorb
 !for nat atoms with orthogonal positions in cell given by coord,
 !for a coordinate system with lattice vectors latt.  Nonorthogonal case is assumed.
 !ADDS to the forces in array force[], which are already present from pair term.
-subroutine gammaenergy(partb,atoms,natsi,pplocal)
+subroutine gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
     use mod_interface
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_const, only: ha2ev
     use dynamic_memory
     implicit none
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
@@ -60,19 +63,22 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     real(8), allocatable:: ggocc(:)
     real(8), allocatable:: rho(:,:)
     integer:: iorb, jorb, korb, n1, n2, iat, jat, ixyz
-    call f_routine(id='gammaenergy')
+    !call f_routine(id='gammaenergy')
     call set_typat(atoms) !exists in basic_atoms.F90 file
     call set_indorb(partb,atoms)
-    rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
-    ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
+    !rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
+    !ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
+    allocate(rho(partb%norb,partb%norb))
+    allocate(ggocc(partb%norbcut))
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
-    call gammamat(partb,atoms,natsi,0,pplocal) 
+    call gammamat(pia_arr,linked_lists,partb,atoms,natsi,0,pplocal) 
+    !do iorb=1,partb%norb
+    !        write(8,'(i3,8es15.6)') iorb,partb%tbmat(iorb,1:8)
+    !enddo
+    !stop 'UUUUUUUUUUUUU'
     !write(*,*) partb%tbmat(1:8,1:8)
     !stop
     call forcediagonalizeg(partb)
-    do iorb=1,partb%norb
-            write(8,*) iorb, partb%tbmat(iorb,iorb)
-    enddo
     !Fermi dirac distribution: returns total energy :: E_TB = sum_n f_n*e_n
     !Create density matrix rho to obtain forces using Hellmann-Feynman theorem:
     !F_k = sum_ij rho_(ij)*dH_(ij)/dr_k
@@ -82,6 +88,10 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
     enddo
     call yfdocclocal(partb)
+    !do iorb=1,partb%norbcut
+    !    write(53,'(i4,es14.5)') iorb,partb%eval(iorb)
+    !enddo
+    !stop 'YYYYYYYYYYYYYYYYYYYYY'
     !write(61,'(6es14.5,i5)') partb%eval(60),partb%eval(61),partb%eval(61)-partb%eval(60),partb%focc(60),partb%focc(61),partb%focc(partb%norbcut),partb%norbcut
     !write(*,'(a,8f10.3)') 'fermi',partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5),partb%focc(6),partb%focc(7),partb%focc(8)
     !write(*,'(a,10es14.5)') 'eval ',parb%eband,partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%focc(1),partb%focc(2),partb%focc(3),partb%focc(4),partb%focc(5)
@@ -90,11 +100,7 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
     !ggocc maximum is 2.0
     term1=0.d0
     term2=0.d0
-    if(lenosky) then
-        beta=11604.d0/partb%temp_fermi
-    else
-        beta=11604.d0*ha2ev/partb%temp_fermi
-    endif
+    beta=11604.d0*ha2ev/partb%temp_fermi
     do iorb=1,partb%norbcut
         term1=term1-partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
         term2=term2-partb%eval(iorb)*partb%focc(iorb)*(1.d0-partb%focc(iorb)*0.5d0)
@@ -116,16 +122,18 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         do jorb=1,partb%norb
             reg1=partb%evec(jorb,iorb)*sterm*ggocc(iorb)/2.d0
             do korb=jorb+1,partb%norb
+                !write(*,'(a,3i4,2es14.5)') 'RHO ',iorb,jorb,korb,reg1,partb%evec(korb,iorb)
                 rho(korb,jorb)=rho(korb,jorb)+reg1*partb%evec(korb,iorb)
             enddo
         enddo
     enddo
+    !stop 'ZZZZZZZZZZZZZZ'
     !Take trace rho * H for Hellmann-Feynman theorem
     !Note that other triangle of rho, and we do sum with
     !factors of two to compensate.
     if(lenosky .or. trim(partb%event)/='train' )then 
         do ixyz=1,3
-            call gammamat(partb,atoms,natsi,ixyz,pplocal)
+            call gammamat(pia_arr,linked_lists,partb,atoms,natsi,ixyz,pplocal)
             do iorb=1,partb%norb
                 iat=partb%indorb(iorb)
                 do jorb=iorb+1,partb%norb
@@ -139,20 +147,24 @@ subroutine gammaenergy(partb,atoms,natsi,pplocal)
         enddo
     else if(trim(partb%event)=='train')then
         do ixyz=1,4
-            call gammamat(partb,atoms,natsi,ixyz,pplocal)
+            call gammamat(pia_arr,linked_lists,partb,atoms,natsi,ixyz,pplocal)
             do iorb=1,partb%norb
                 iat=partb%indorb(iorb)
                 do jorb=iorb+1,partb%norb
                     jat=partb%indorb(jorb)
                     tt=rho(jorb,iorb)*partb%tbmat(jorb,iorb)*2.d0
+                    !write(*,'(a,5i4,2es14.5)') 'dedh ',ixyz,iorb,jorb,iat,jat,rho(jorb,iorb),partb%tbmat(jorb,iorb)
                     partb%dedh(ixyz,iat,jat)=partb%dedh(ixyz,iat,jat)+tt
                 enddo
             enddo
         enddo
+        !stop 'FFFFFFFFFFFFFFF'
     endif
-    call f_free(rho)
-    call f_free(ggocc)
-    call f_release_routine()
+    !call f_free(rho)
+    !call f_free(ggocc)
+    deallocate(rho)
+    deallocate(ggocc)
+    !call f_release_routine()
 end subroutine gammaenergy
 !*****************************************************************************************
 !Within the unit cell, this routine
@@ -162,48 +174,51 @@ end subroutine gammaenergy
 !dimensioned properly on call.
 !Note hgen and dhgen are arrays used to store values of splines and
 !their derivatives for each atom pair.
-subroutine gammamat(partb,atoms,natsi,flag2,pplocal)
+subroutine gammamat(pia_arr,linked_lists,partb,atoms,natsi,flag2,pplocal)
     use mod_interface
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_tightbinding, only: typ_partb
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use dynamic_memory
     implicit none
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi, flag2
     type(potl_typ), intent(in):: pplocal
     !local variables
-    integer:: iat, jat, iorb, jorb
+    integer:: iat, jat, iorb, jorb, ib
     integer:: indexi, indexj, atomtypei, atomtypej, norbi, norbj
     real(8), allocatable:: rex(:,:)
     real(8) eself(4), es
-    call f_routine(id='gammamat')
-    rex=f_malloc([1.to.partb%nstride,1.to.partb%nstride],id='rex')
+    !call f_routine(id='gammamat')
+    !rex=f_malloc([1.to.partb%nstride,1.to.partb%nstride],id='rex')
+    allocate(rex(partb%nstride,partb%nstride))
     do iorb=1,partb%norb
         do jorb=1,partb%norb
             partb%tbmat(jorb,iorb)=0.d0
         enddo
     enddo
     !Include all atoms by loop over iat and jat 
-    do iat=1,atoms%nat
+    do ib=1,linked_lists%maxbound_rad
+        iat=linked_lists%bound_rad(1,ib)
+        jat=linked_lists%bound_rad(2,ib)
         atomtypei=0
         if(iat>natsi) atomtypei=1
         norbi=partb%norbat(iat) !number of orbitals of atom type iat
         indexi=partb%indat(iat)-1
-        do jat=iat,atoms%nat
-            atomtypej=0
-            if(jat>natsi) atomtypej=1
-            norbj=partb%norbat(jat) !number of orbitals of atom type jat
-            indexj=partb%indat(jat)-1
-            !Obtain matrix of coupling between atom iat and atom jat (iat/=jat)
-            call gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,rex)
-            do iorb=1,norbi
-                do jorb=1,norbj
-                    !off-diagonal terms of H_TB is constructed
-                    !write(*,'(a,2es14.5,4i5)') 'AAAAAAAAAAA-1 ',partb%tbmat(7,3),rex(jorb,iorb),jorb,iorb,norbj,norbi
-                    partb%tbmat(indexj+jorb,indexi+iorb)=partb%tbmat(indexj+jorb,indexi+iorb)+rex(jorb,iorb)
-                enddo
+        atomtypej=0
+        if(jat>natsi) atomtypej=1
+        norbj=partb%norbat(jat) !number of orbitals of atom type jat
+        indexj=partb%indat(jat)-1
+        !Obtain matrix of coupling between atom iat and atom jat (iat/=jat)
+        call gammacoupling(pia_arr%pia(ib),ib,partb,atoms,flag2,atomtypei,atomtypej,pplocal,rex)
+        do iorb=1,norbi
+            do jorb=1,norbj
+                !off-diagonal terms of H_TB is constructed
+                partb%tbmat(indexj+jorb,indexi+iorb)=partb%tbmat(indexj+jorb,indexi+iorb)+rex(jorb,iorb)
             enddo
         enddo
     enddo
@@ -219,8 +234,9 @@ subroutine gammamat(partb,atoms,natsi,flag2,pplocal)
     do iorb=partb%nstride*natsi+1,partb%nstride*natsi+atoms%nat-natsi
         partb%tbmat(iorb,iorb)=partb%tbmat(iorb,iorb)+es
     enddo
-    call f_free(rex)
-    call f_release_routine()
+    !call f_free(rex)
+    deallocate(rex)
+    !call f_release_routine()
 end subroutine gammamat
 !*****************************************************************************************
 !Does the eigenvalue problem, with arguments having the same format as the
@@ -244,15 +260,19 @@ subroutine forcediagonalizeg(partb)
     !real(8):: w1(1000)
     !real(8):: w2(1000)
     icall=icall+1
-    call f_routine(id='forcediagonalizeg')
+    !call f_routine(id='forcediagonalizeg')
     n=partb%norb
     nc=partb%norbcut
     lwork=n*n+100*n
     liwork=n*n+50*n
-    isuppz=f_malloc([1.to.2*n],id='isuppz')
-    a=f_malloc([1.to.n,1.to.n],id='a')
-    work=f_malloc([1.to.lwork],id='work')
-    iwork=f_malloc([1.to.liwork],id='iwork')
+    !isuppz=f_malloc([1.to.2*n],id='isuppz')
+    !a=f_malloc([1.to.n,1.to.n],id='a')
+    !work=f_malloc([1.to.lwork],id='work')
+    !iwork=f_malloc([1.to.liwork],id='iwork')
+    allocate(isuppz(2*n))
+    allocate(a(n,n))
+    allocate(work(lwork))
+    allocate(iwork(liwork))
     !partb%tbmat=1.d-10
     !do i=1,n
     !    partb%tbmat(i,i)=1.d0
@@ -276,6 +296,8 @@ subroutine forcediagonalizeg(partb)
     !    write(*,'(8es14.5)') (partb%tbmat(8,j),j=1,8)
     !    !stop
     !endif
+    !write(*,*)
+    !write(*,*)
     !write(*,*) size(partb%eval)
     !write(*,'(a,6i5)') 'FFFFF ',icall,n,size(a),nc,size(partb%eval),size(partb%evec)
     if(nc==n) then
@@ -289,41 +311,58 @@ subroutine forcediagonalizeg(partb)
         call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
              isuppz,work,lwork,iwork,liwork,ierr)
     endif
+    !write(*,'(8es14.5)') (partb%evec(1,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(2,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(3,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(4,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(5,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(6,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(7,j),j=1,8)
+    !write(*,'(8es14.5)') (partb%evec(8,j),j=1,8)
     !write(*,'(a,7f10.3)') 'FFFFF ',partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%eval(5),partb%eval(6),partb%eval(5)-partb%eval(4)
     if(ierr/= 0  .and. errcount < 250) then
         write(*,'(a,2i,a)') 'TBNORTH WARNING: ierr , errcount == ',ierr,errcount,' from dsygv diagonalize'
         write(*,'(a)') 'Will not print this message when errcount exceeds 250'
         errcount=errcount+1
     endif
-    call f_free(isuppz)
-    call f_free(a)
-    call f_free(work)
-    call f_free(iwork)
-    call f_release_routine()
+    !call f_free(isuppz)
+    !call f_free(a)
+    !call f_free(work)
+    !call f_free(iwork)
+    deallocate(isuppz)
+    deallocate(a)
+    deallocate(work)
+    deallocate(iwork)
+    !call f_release_routine()
 end subroutine forcediagonalizeg
 !*****************************************************************************************
 !README: There are too many arguments setting intents of variables postponed
 !after putting some variables in new derived types.
-subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,rem)
+subroutine gammacoupling(pia,ib,partb,atoms,flag2,atomtypei,atomtypej,pplocal,rem)
     use mod_interface
+    use mod_linked_lists, only: typ_pia !, typ_linked_lists
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_const, only: bohr2ang, ha2ev
     use dynamic_memory
     implicit none
+    !type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia), intent(in):: pia
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
-    integer, intent(in):: flag2, iat, jat, atomtypei, atomtypej
+    integer, intent(in):: ib, flag2, atomtypei, atomtypej
     type(potl_typ), intent(in):: pplocal
     real(8), intent(out):: rem(partb%nstride,partb%nstride)
     !local variables
     real(8):: diff(3), dist
-    integer:: iorb, jorb, ix, iy, iz
+    integer:: iorb, jorb, ix, iy, iz !, iat, jat
     real(8), allocatable:: hgen(:), dhgen(:)
-    call f_routine(id='gammacoupling')
-    hgen=f_malloc([1.to.4],id='hgen')
-    dhgen=f_malloc([1.to.4],id='dhgen')
+    !call f_routine(id='gammacoupling')
+    !hgen=f_malloc([1.to.4],id='hgen')
+    !dhgen=f_malloc([1.to.4],id='dhgen')
+    allocate(hgen(4))
+    allocate(dhgen(4))
     do jorb=1,partb%nstride
         do iorb=1,partb%nstride
             rem(iorb,jorb)=0.d0
@@ -331,14 +370,11 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
     enddo
     !Here want section to compute ix,iy,iz for nearest image, rather than
     !running through choices
-    ix=floor((atoms%rat(1,iat)-atoms%rat(1,jat))/atoms%cellvec(1,1)+0.5d0)
-    iy=floor((atoms%rat(2,iat)-atoms%rat(2,jat))/atoms%cellvec(2,2)+0.5d0)
-    iz=floor((atoms%rat(3,iat)-atoms%rat(3,jat))/atoms%cellvec(3,3)+0.5d0)
-    diff(1)=atoms%rat(1,iat)-atoms%cellvec(1,1)*ix-atoms%rat(1,jat)
-    diff(2)=atoms%rat(2,iat)-atoms%cellvec(2,2)*iy-atoms%rat(2,jat)
-    diff(3)=atoms%rat(3,iat)-atoms%cellvec(3,3)*iz-atoms%rat(3,jat)
+    diff(1)=-pia%dr(1)
+    diff(2)=-pia%dr(2)
+    diff(3)=-pia%dr(3)
     !The distance between two arbitrary atoms
-    dist=sqrt(diff(1)**2+diff(2)**2+diff(3)**2)
+    dist=pia%r
     !Intractions are considered over a fixed domain (r_low=0.0001,r_up=paircut).
     !write(*,*) 'HERE if ',iat,jat,dist,partb%paircut
     if(dist>=1.d-4 .and. .not. dist>partb%paircut) then
@@ -353,26 +389,26 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
             !Returns h(r)s and their derivatives using cubic splines in hgen and dhgen.
             if(lenosky)then
             call radelmgeneralsp(dist,hgen,dhgen,atomtypei,atomtypej,pplocal)
-            partb%hgenall0(jat,iat)=hgen(1)
-            partb%hgenall1(jat,iat)=hgen(2)
-            partb%hgenall2(jat,iat)=hgen(3)
-            partb%hgenall3(jat,iat)=hgen(4)
-            partb%dhgenall0(jat,iat)=dhgen(1)
-            partb%dhgenall1(jat,iat)=dhgen(2)
-            partb%dhgenall2(jat,iat)=dhgen(3)
-            partb%dhgenall3(jat,iat)=dhgen(4)
-            write(44,'(a,5es14.5)') 'hgen-L',hgen(1)/ha2ev,hgen(2)/ha2ev,hgen(3)/ha2ev,hgen(4)/ha2ev,dist/bohr2ang
+            partb%hgenall0(ib)=hgen(1)
+            partb%hgenall1(ib)=hgen(2)
+            partb%hgenall2(ib)=hgen(3)
+            partb%hgenall3(ib)=hgen(4)
+            partb%dhgenall0(ib)=dhgen(1)
+            partb%dhgenall1(ib)=dhgen(2)
+            partb%dhgenall2(ib)=dhgen(3)
+            partb%dhgenall3(ib)=dhgen(4)
+            write(44,'(a,5e26.17)') 'hgen-L',hgen(1),hgen(2),hgen(3),hgen(4),dist
             endif
         endif
-        hgen(1)=partb%hgenall0(jat,iat)
-        hgen(2)=partb%hgenall1(jat,iat)
-        hgen(3)=partb%hgenall2(jat,iat)
-        hgen(4)=partb%hgenall3(jat,iat)
+        hgen(1)=partb%hgenall0(ib)
+        hgen(2)=partb%hgenall1(ib)
+        hgen(3)=partb%hgenall2(ib)
+        hgen(4)=partb%hgenall3(ib)
         !write(55,'(a,5es14.5)') 'hgen_nn ',hgen(1),hgen(2),hgen(3),hgen(4),dist
-        dhgen(1)=partb%dhgenall0(jat,iat)
-        dhgen(2)=partb%dhgenall1(jat,iat)
-        dhgen(3)=partb%dhgenall2(jat,iat)
-        dhgen(4)=partb%dhgenall3(jat,iat)
+        dhgen(1)=partb%dhgenall0(ib)
+        dhgen(2)=partb%dhgenall1(ib)
+        dhgen(3)=partb%dhgenall2(ib)
+        dhgen(4)=partb%dhgenall3(ib)
         !Returns rem (matrix of coupling) 
         if(trim(partb%event)/='train' .or. lenosky .or. flag2==0) then
             call slatercoupling(diff,dist,hgen,dhgen,flag2,rem)
@@ -381,9 +417,11 @@ subroutine gammacoupling(partb,atoms,flag2,iat,jat,atomtypei,atomtypej,pplocal,r
             call Hamiltonian_der(diff,flag2,rem)
         endif
     endif
-    call f_free(hgen)
-    call f_free(dhgen)
-    call f_release_routine()
+    !call f_free(hgen)
+    !call f_free(dhgen)
+    deallocate(hgen)
+    deallocate(dhgen)
+    !call f_release_routine()
 end subroutine gammacoupling
 !*****************************************************************************************
 !Generates the matrix of couplings for the program, if u is unit vector between atoms
@@ -493,11 +531,7 @@ subroutine yfdocclocal(partb)
     if(nocc*2/=partb%norb) partb%focc(nocc+1)=1.d0
     efermi=partb%eval(nocc)
     if(nocc*2/=partb%norb) efermi=partb%eval(nocc+1)
-    if(lenosky) then
-        beta=11604.d0/partb%temp_fermi !Conversion of temp into eV
-    else
-        beta=11604.d0*ha2ev/partb%temp_fermi !Conversion of temp into Ha
-    endif
+    beta=11604.d0*ha2ev/partb%temp_fermi !Conversion of temp into Ha
     it=0
     !Each iteration corresponds to steepest descent iteration. fermi-dirac function is minimized
     !which depend on efermi(chemical potential).

@@ -148,6 +148,11 @@
    bondbased: False
    prefit: False
    read_forces: True
+   restart_param: False
+   restart_iter : 0
+   print_energy : False
+   fit_hoppint: False
+   weight_hardness: 0.001
  dynamics:
   nmd: 0
   dt: -1.0

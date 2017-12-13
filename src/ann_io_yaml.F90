@@ -63,25 +63,28 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     enddo
     ann%nl=ann%nl+1 !adding the output layer to total number of layers
     ann%nn(ann%nl)=1 !setting the output layer
-    if(trim(parini%subtask_ann)=='check_symmetry_function') then
-        rcut=ann%dict_ann//"main"//"rcut"
-    endif
-    if(trim(parini%approach_ann)=='atombased') then
-        rcut=ann%dict_ann//"main"//"rcut"
-    endif
-    if(trim(parini%approach_ann)/='atombased' .and. trim(parini%approach_ann)/='tb' ) then
+    !if(trim(parini%subtask_ann)=='check_symmetry_function') then
+    !    rcut=ann%dict_ann//"main"//"rcut"
+    !endif
+    !if(trim(parini%approach_ann)=='atombased') then
+    !    rcut=ann%dict_ann//"main"//"rcut"
+    !endif
+    rcut               =  ann%dict_ann//"main"//"rcut"
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
         ann%ampl_chi       =  ann%dict_ann//"main"//"ampl_chi" 
         ann%prefactor_chi  =  ann%dict_ann//"main"//"prefactor_chi" 
-        ann%zion           =  ann%dict_ann//"main"//"zion" 
-        ann%gausswidth_ion =  ann%dict_ann//"main"//"gausswidth_ion" 
         ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
         ann%gausswidth     =  ann%dict_ann//"main"//"gausswidth" 
         ann%hardness       =  ann%dict_ann//"main"//"hardness" 
         ann%chi0           =  ann%dict_ann//"main"//"chi0" 
-        ann%spring_const   =  ann%dict_ann//"main"//"spring_const"
         ann%qinit          =  ann%dict_ann//"main"//"qinit"
-        rcut               =  ann%dict_ann//"main"//"rcut"
-    elseif(trim(parini%approach_ann)=='tb') then
+    endif
+    if(trim(parini%approach_ann)=='cent2' ) then
+        ann%zion           =  ann%dict_ann//"main"//"zion" 
+        ann%gausswidth_ion =  ann%dict_ann//"main"//"gausswidth_ion" 
+        ann%spring_const   =  ann%dict_ann//"main"//"spring_const"
+    endif
+    if(trim(parini%approach_ann)=='tb') then
         ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
     endif
     !ann%rionic    = ann%dict_ann//"main"//"rionic"
@@ -259,14 +262,15 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             write(*,'(a)') trim(filename)
             call write_ann_yaml(parini,filename,ann_arr%ann(i))
         enddo
-    elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
+    elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
+        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
         do i=1,ann_arr%n
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann_yaml(parini,filename,ann_arr%ann(i))
         enddo
     else
-        stop 'ERROR: writing ANN parameters is only for eem1,cent2,tb'
+        stop 'ERROR: writing ANN parameters is only for cent1,cent2,tb'
     endif
 end subroutine write_ann_all_yaml
 !*****************************************************************************************
@@ -287,6 +291,12 @@ subroutine write_ann_yaml(parini,filename,ann)
     character(8):: key1
     character(250):: str1
     character(50)::  method
+
+    call set(ann%dict_ann//"main"//"ener_ref",ann%ener_ref ) 
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
+        call set(ann%dict_ann//"main"//"chi0",ann%chi0 ) 
+        call set(ann%dict_ann//"main"//"hardness",ann%hardness ) 
+    endif
     method =  ann%dict_ann//"main"//"method"
     i0=0
     do i=1,ann%ng1
@@ -395,7 +405,11 @@ subroutine read_ann_yaml(parini,ann_arr)
     character(1):: fn_tt
     character(50):: filename
     do iann=1,ann_arr%n
-        write(fn,'(a15)') '.ann.param.yaml'
+        if (parini%restart_param) then
+            write(fn,'(a15)') '.ann.input.yaml'
+        else
+            write(fn,'(a15)') '.ann.param.yaml'
+        endif
         if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
             if(parini%ntypat>1) then
                 stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
@@ -403,10 +417,10 @@ subroutine read_ann_yaml(parini,ann_arr)
             write(fn_tt,'(i1)') iann
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
-        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2') then
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
-            stop 'ERROR: reading ANN parameters is only for eem1,cent2,tb'
+            stop 'ERROR: reading ANN parameters is only for cent1,cent2,tb'
         endif
         !-------------------------------------------------------
         call get_symfunc_parameters_yaml(parini,iproc,filename,ann_arr%ann(iann),rcut)

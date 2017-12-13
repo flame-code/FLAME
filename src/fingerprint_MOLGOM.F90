@@ -432,23 +432,24 @@ subroutine create_molom_1(nat,rxyz,rvan,om,width_overlap)
 end subroutine create_molom_1
 
 
-subroutine periodic_fingerprint(rxyz,alat0,finalchar,rvan,fpsall,nat)
-   use fingerprint, only: fp_18_molecules,fp_18_lseg,fp_18_molecules,fp_18_molecules_sphere,fp_18_principleev,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
+subroutine periodic_fingerprint(parini,rxyz,alat0,finalchar,rvan,fpsall,nat)
+   use mod_parini, only: typ_parini
    use defs_basis, only: bohr_ang
    implicit none
+   type(typ_parini), intent(in):: parini
    integer:: nat
-   integer, dimension (fp_18_expaparameter+1) :: shifting
-   real*8, dimension (3,(fp_18_expaparameter+1)**3) :: possibilites
-   real*8, dimension(3,nat*fp_18_molecules):: rxyz
-   real*8, dimension(nat*fp_18_molecules) :: rvan
-   real*8, dimension(fp_18_lseg*fp_18_molecules_sphere*fp_18_principleev,fp_18_molecules) :: fpsall
+   integer, dimension (parini%fp_18_expaparameter+1) :: shifting
+   real*8, dimension (3,(parini%fp_18_expaparameter+1)**3) :: possibilites
+   real*8, dimension(3,nat*parini%fp_18_molecules):: rxyz
+   real*8, dimension(nat*parini%fp_18_molecules) :: rvan
+   real*8, dimension(parini%fp_18_lseg*parini%fp_18_molecules_sphere*parini%fp_18_principleev,parini%fp_18_molecules) :: fpsall
    real*8, dimension(:,:,:), allocatable :: rxyz_b
    real*8, dimension(:,:), allocatable :: rxyz_b2
    real*8, dimension(:), allocatable :: rvan_b, amplitude, mol_amplitude, fp_t, fp_b
    character(len=2), dimension(:), allocatable :: finalchar_b
    real*8, dimension (3,3)::alat,alat0
-   character(len=2), dimension(nat*fp_18_molecules) :: finalchar
-   logical, dimension(fp_18_molecules,(fp_18_expaparameter+1)**3) :: is_copied
+   character(len=2), dimension(nat*parini%fp_18_molecules) :: finalchar
+   logical, dimension(parini%fp_18_molecules,(parini%fp_18_expaparameter+1)**3) :: is_copied
 
    real*8 :: distance, convert, sum
    integer :: i, j, m, n, k, molecules_system, mol
@@ -458,7 +459,7 @@ subroutine periodic_fingerprint(rxyz,alat0,finalchar,rvan,fpsall,nat)
    !parameters for cutoff function
    real*8 :: radius_cutoff, radius_cutoff2, factor_cutoff, factor2
 
-write(*,*) nat,fp_18_molecules
+write(*,*) nat,parini%fp_18_molecules
    !Convert to angstrom
    alat=alat0*bohr_ang
 
@@ -467,21 +468,21 @@ write(*,*) nat,fp_18_molecules
 
 
    !termination condition for to big parameters
-   if ((fp_18_expaparameter+1)**3>2147483647) then
+   if ((parini%fp_18_expaparameter+1)**3>2147483647) then
       write(*,*) "expanding parameter is too large --> change integer type of position"
       stop
    endif
 
    !termination condition for odd epanding parameter
-   if (mod(fp_18_expaparameter,2)/=0) then
+   if (mod(parini%fp_18_expaparameter,2)/=0) then
       write(*,*) "expanding parameter has to be even --> change parameter"
       stop
    endif
 
-   allocate (rxyz_b(3, nat*fp_18_molecules,(fp_18_expaparameter+1)**3))
+   allocate (rxyz_b(3, nat*parini%fp_18_molecules,(parini%fp_18_expaparameter+1)**3))
 
    !the unit cell is copied to rxyz_b(:,:,1)
-   do i=1, nat*fp_18_molecules
+   do i=1, nat*parini%fp_18_molecules
       do j=1,3
          rxyz_b(j,i,1)=rxyz(j,i)
       enddo
@@ -489,17 +490,17 @@ write(*,*) nat,fp_18_molecules
 
    !first the sytstem size is expanded
    !the unit cell will be shifted into the the three directions from -fp_18_expaparameter to fp_18_expaparameter
-   n=-(fp_18_expaparameter/2)
-   do i=1,fp_18_expaparameter+1
+   n=-(parini%fp_18_expaparameter/2)
+   do i=1,parini%fp_18_expaparameter+1
       shifting(i)= n
       n=n+1
    enddo
 
    !write all permuations into possibilites(:,:)
    position=0
-   do i=1, fp_18_expaparameter+1
-      do j=1, fp_18_expaparameter+1
-         do k=1, fp_18_expaparameter+1
+   do i=1, parini%fp_18_expaparameter+1
+      do j=1, parini%fp_18_expaparameter+1
+         do k=1, parini%fp_18_expaparameter+1
             position=position+1
             possibilites(1,position)=shifting(k)
             possibilites(2,position)=shifting(j)
@@ -510,9 +511,9 @@ write(*,*) nat,fp_18_molecules
 
    !the expanded system is stored in rxyz_b(:,:,:)
    k=2
-   do m = 1, (fp_18_expaparameter+1)**3
+   do m = 1, (parini%fp_18_expaparameter+1)**3
       if (possibilites(1,m)/=0 .or. possibilites(2,m)/=0 .or. possibilites(3,m)/=0) then
-         do j=1, nat*fp_18_molecules
+         do j=1, nat*parini%fp_18_molecules
             do i=1,3
                if(i==1) then
                   rxyz_b(1,j,k)=possibilites(i,m)*alat(1,1)+rxyz_b(1,j,1)
@@ -540,7 +541,7 @@ write(*,*) nat,fp_18_molecules
 !         write(16,*) alat(1,1),alat(1,2),alat(2,2)
 !         write(16,*) alat(1,3),alat(2,3),alat(3,3)
 !
-!         do i=1,(fp_18_expaparameter+1)**3
+!         do i=1,(parini%fp_18_expaparameter+1)**3
 !            do m=1,nat*fp_18_molecules
 !               write(16,"(3E26.15E2,1A4)") (rxyz_b(j,m,i),j=1,3), finalchar(m)
 !            enddo
@@ -555,7 +556,7 @@ write(*,*) nat,fp_18_molecules
 !            enddo
 !         enddo
 !
-!         do i=2,(fp_18_expaparameter+1)**3
+!         do i=2,(parini%fp_18_expaparameter+1)**3
 !            do m=1,fp_18_molecules
 !               do n=1,nat
 !                  write(17,"(I2)")0
@@ -566,7 +567,7 @@ write(*,*) nat,fp_18_molecules
 !
 !      f9='poslocm_'//trim(adjustl(f1))//'_expand_2.dat'
 !      open (18,file=trim(f9))
-!         do i=1,(fp_18_expaparameter+1)**3
+!         do i=1,(parini%fp_18_expaparameter+1)**3
 !            do m=1,fp_18_molecules
 !               do n=1,nat
 !                  write(18,"(I2)") m
@@ -583,8 +584,8 @@ write(*,*) nat,fp_18_molecules
 !
 
    convert=1.d0/0.52917720859d0
-   do m = 1, (fp_18_expaparameter+1)**3
-      do j=1, nat*fp_18_molecules
+   do m = 1, (parini%fp_18_expaparameter+1)**3
+      do j=1, nat*parini%fp_18_molecules
          do i=1,3
             rxyz_b(i,j,m)=rxyz_b(i,j,m)*convert
          enddo
@@ -599,9 +600,9 @@ write(*,*) nat,fp_18_molecules
 
 
 !cutoff radius is defined in order to reduce the system size with a cut off function
-   radius_cutoff=sqrt(2.d0*fp_18_nex_cutoff)*fp_18_width_cutoff
+   radius_cutoff=sqrt(2.d0*parini%fp_18_nex_cutoff)*parini%fp_18_width_cutoff
    radius_cutoff2=radius_cutoff**2
-   factor_cutoff=1.d0/(2.d0*fp_18_nex_cutoff*fp_18_width_cutoff**2)
+   factor_cutoff=1.d0/(2.d0*parini%fp_18_nex_cutoff*parini%fp_18_width_cutoff**2)
 
 
 !
@@ -620,18 +621,18 @@ write(*,*) nat,fp_18_molecules
 !then create a overlap matrix and applied a cutoff function
 !
 
-   do mol=1,fp_18_molecules
+   do mol=1,parini%fp_18_molecules
       iat=(mol-1)*nat+1
 
-      do i=1,(fp_18_expaparameter+1)**3
-         do j=1, fp_18_molecules
+      do i=1,(parini%fp_18_expaparameter+1)**3
+         do j=1, parini%fp_18_molecules
             is_copied(j,i)=.false.
          enddo
       enddo
 
       molecules_system=0
-      do i=1,(fp_18_expaparameter+1)**3
-         do j=1,fp_18_molecules
+      do i=1,(parini%fp_18_expaparameter+1)**3
+         do j=1,parini%fp_18_molecules
             if (is_copied(j,i) .eqv. .false.) then
                do m=iat,iat+nat-1
                   if(is_copied(j,i) .eqv. .true.) exit
@@ -652,7 +653,7 @@ write(*,*) nat,fp_18_molecules
       enddo
 
       write (*,*) 'molecules in sphere:',molecules_system
-      if (molecules_system>fp_18_molecules_sphere) stop 'expand molecules_sphere'
+      if (molecules_system>parini%fp_18_molecules_sphere) stop 'expand molecules_sphere'
 
 !
 !write an ascii files with the molecules within radius= radius_cutoff2*radius2
@@ -665,7 +666,7 @@ write(*,*) nat,fp_18_molecules
 !            write(20,*)
 !            write(20,*) alat(1,1)/convert,alat(1,2)/convert,alat(2,2)/convert
 !            write(20,*) alat(1,3)/convert,alat(2,3)/convert,alat(3,3)/convert
-!            do i=1,(fp_18_expaparameter+1)**3
+!            do i=1,(parini%fp_18_expaparameter+1)**3
 !               do n=1,fp_18_molecules
 !                  if(is_copied(n,i) .eqv. .true.) then
 !                     do m=1,nat
@@ -682,8 +683,8 @@ write(*,*) nat,fp_18_molecules
       allocate (amplitude(nat*molecules_system))
       allocate (mol_amplitude(molecules_system))
       allocate (finalchar_b(nat*molecules_system))
-      allocate (fp_t(molecules_system*fp_18_principleev*fp_18_lseg))
-      allocate (fp_b(molecules_system*fp_18_lseg*nat))
+      allocate (fp_t(molecules_system*parini%fp_18_principleev*parini%fp_18_lseg))
+      allocate (fp_b(molecules_system*parini%fp_18_lseg*nat))
 
 
       !array initialization step
@@ -695,8 +696,8 @@ write(*,*) nat,fp_18_molecules
       rvan_b=0.d0
 
       curpos=0
-      do i=1,(fp_18_expaparameter+1)**3
-         do j=1,fp_18_molecules
+      do i=1,(parini%fp_18_expaparameter+1)**3
+         do j=1,parini%fp_18_molecules
             if (is_copied(j,i) .eqv. .true.) then
                do m=1,nat
                   curpos=curpos+1
@@ -715,7 +716,7 @@ write(*,*) nat,fp_18_molecules
                      enddo
                      if (distance<=radius_cutoff2*(rvan(n)+rvan(m+(j-1)*nat))**2) then
                         factor2=1.d0/(rvan(n)+rvan(m+(j-1)*nat))**2
-                        amplitude(curpos)=(1.d0-distance*factor_cutoff*factor2)**fp_18_nex_cutoff+amplitude(curpos)
+                        amplitude(curpos)=(1.d0-distance*factor_cutoff*factor2)**parini%fp_18_nex_cutoff+amplitude(curpos)
                      endif
                   enddo
                enddo
@@ -768,14 +769,14 @@ write(*,*) nat,fp_18_molecules
 !         close(22)
 !      endif
 
-      call create_contracted_om_1(fp_18_width_overlap,fp_18_principleev,nat,molecules_system,rxyz_b2,rvan_b,mol_amplitude,fp_t,&
-      fp_18_lseg,.false.)
+      call create_contracted_om_1(parini%fp_18_width_overlap,parini%fp_18_principleev,nat,molecules_system,rxyz_b2,rvan_b,mol_amplitude,fp_t,&
+      parini%fp_18_lseg,.false.)
 
-      do i=1,molecules_system*fp_18_lseg*fp_18_principleev
-         fpsall(i,mol)=fp_t(molecules_system*fp_18_lseg*fp_18_principleev+1-i)
+      do i=1,molecules_system*parini%fp_18_lseg*parini%fp_18_principleev
+         fpsall(i,mol)=fp_t(molecules_system*parini%fp_18_lseg*parini%fp_18_principleev+1-i)
       enddo
 
-      do i=molecules_system*fp_18_lseg*fp_18_principleev,fp_18_molecules_sphere*fp_18_lseg*fp_18_principleev
+      do i=molecules_system*parini%fp_18_lseg*parini%fp_18_principleev,parini%fp_18_molecules_sphere*parini%fp_18_lseg*parini%fp_18_principleev
          fpsall(i,mol)=0.d0
       enddo
 
@@ -792,34 +793,35 @@ write(*,*) nat,fp_18_molecules
 end subroutine periodic_fingerprint
 !Input is the structure, output whatever quantity was given originally
 !Here the total number of atom is nat*molecules. We should call it nattot or something
-subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
-   use fingerprint, only: fp_18_molecules,fp_18_lseg,fp_18_molecules,fp_18_molecules_sphere,fp_18_principleev,fp_18_nex_cutoff,fp_18_expaparameter,fp_18_width_cutoff,fp_18_width_overlap
+subroutine findmolecule(parini,rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
+    use mod_parini, only: typ_parini
    use defs_basis, only: bohr_ang
    implicit none
-   integer, dimension(nat*fp_18_molecules), intent(in) :: typat
+    type(typ_parini), intent(in):: parini
+   integer, dimension(nat*parini%fp_18_molecules), intent(in) :: typat
    character(2), dimension(ntypat), intent(in) :: char_type
    integer, intent(in):: ntypat,nat
    real*8, dimension(3,3), intent(in) :: alat0
    real*8 :: alat(3,3)
-   real*8, dimension(3,nat*fp_18_molecules), intent(out) :: rxyz
-   real*8, dimension(3,nat*fp_18_molecules), intent(in)  :: xred
-   character(len=2), dimension(nat*fp_18_molecules), intent(out) :: finalchar
+   real*8, dimension(3,nat*parini%fp_18_molecules), intent(out) :: rxyz
+   real*8, dimension(3,nat*parini%fp_18_molecules), intent(in)  :: xred
+   character(len=2), dimension(nat*parini%fp_18_molecules), intent(out) :: finalchar
 
    integer :: molecule_nr,true_nr1,true_nr2,i,j,k,position,m,n,l
    real*8  :: radius
    real*8 :: distance
    real*8, dimension (3,2) :: copy
-   real*8, dimension(3, nat*fp_18_molecules,27) :: rxyz_b
+   real*8, dimension(3, nat*parini%fp_18_molecules,27) :: rxyz_b
    real*8, dimension (3,27) :: possibilites
-   real*8, dimension(nat*fp_18_molecules) :: rcov
-   logical, dimension (2,nat*fp_18_molecules,27) :: is_true
-   logical, dimension (2,nat*fp_18_molecules) :: first_search_is_true
-   integer, dimension (nat*fp_18_molecules) :: first_search_molecule_number
-   integer, dimension (nat*fp_18_molecules,27) :: molecule_number
-   integer, dimension (nat*fp_18_molecules,2) :: atom_number
-   integer, dimension(fp_18_molecules,2) :: finalmolecules
-   integer, dimension (nat*fp_18_molecules,27) :: finalmolecule_number
-   character(len=2), dimension(nat*fp_18_molecules,27) :: is_char
+   real*8, dimension(nat*parini%fp_18_molecules) :: rcov
+   logical, dimension (2,nat*parini%fp_18_molecules,27) :: is_true
+   logical, dimension (2,nat*parini%fp_18_molecules) :: first_search_is_true
+   integer, dimension (nat*parini%fp_18_molecules) :: first_search_molecule_number
+   integer, dimension (nat*parini%fp_18_molecules,27) :: molecule_number
+   integer, dimension (nat*parini%fp_18_molecules,2) :: atom_number
+   integer, dimension(parini%fp_18_molecules,2) :: finalmolecules
+   integer, dimension (nat*parini%fp_18_molecules,27) :: finalmolecule_number
+   character(len=2), dimension(nat*parini%fp_18_molecules,27) :: is_char
    logical :: file_exists
 
    integer, dimension(:,:), allocatable :: molecule_id
@@ -859,15 +861,15 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 !            read(11, *) (rxyz_b(j, i, 1), j = 1, 3), is_char(i,1)
 !         end do
 !Using MHM data
-         write(*,*) nat,fp_18_molecules
-         call rxyz_int2cart(alat,xred,rxyz_b,nat*fp_18_molecules)
-         do i = 1, nat*fp_18_molecules
+         write(*,*) nat,parini%fp_18_molecules
+         call rxyz_int2cart(alat,xred,rxyz_b,nat*parini%fp_18_molecules)
+         do i = 1, nat*parini%fp_18_molecules
             is_char(i,1)=char_type(typat(i))
          end do
 
 
 
-         do i = 1, nat*fp_18_molecules
+         do i = 1, nat*parini%fp_18_molecules
             call sym2rcov(is_char(i,1), rcov(i))
          end do
 
@@ -878,17 +880,17 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
 !initialise first_search_is_true with .false.
          do i=1,2
-            do j=1,nat*fp_18_molecules
+            do j=1,nat*parini%fp_18_molecules
                first_search_is_true(i,j)=.false.
             enddo
          enddo
 
-         do i=1, nat*fp_18_molecules
+         do i=1, nat*parini%fp_18_molecules
             first_search_molecule_number(i)=0
          enddo
 
          molecule_nr=0
-         do i = 1, nat*fp_18_molecules
+         do i = 1, nat*parini%fp_18_molecules
             if(first_search_is_true(1,i) .eqv. .false. ) then
                molecule_nr=molecule_nr+1
                first_search_molecule_number(i)=molecule_nr
@@ -897,7 +899,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
 !calculate distance between the atom (i) and all other atoms
 
-               do j = 1, nat*fp_18_molecules
+               do j = 1, nat*parini%fp_18_molecules
                   distance=0.d0
                   do l=1,3
                      distance= (rxyz_b(l,i,1)-rxyz_b(l,j,1))**2+distance
@@ -914,10 +916,10 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
             j=1
             do while (j<2)
-               do k=1,nat*fp_18_molecules
+               do k=1,nat*parini%fp_18_molecules
                   if (first_search_is_true(1,k) .eqv. .true. .and. first_search_is_true(2,k) .eqv. .false.) then
                      first_search_is_true(2,k)=.true.
-                     do m=1,nat*fp_18_molecules
+                     do m=1,nat*parini%fp_18_molecules
                         distance=0.d0
                         do n=1,3
                            distance= (rxyz_b(n,k,1)-rxyz_b(n,m,1))**2+distance
@@ -935,7 +937,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 ! check if number of trues in is_true(1,:,:) is equal to number of trues in is_true(1,:,:), else set j = 1
                true_nr1=0
                true_nr2=0
-               do k = 1, nat*fp_18_molecules
+               do k = 1, nat*parini%fp_18_molecules
                   if(first_search_is_true(1,k) .eqv. .true.) then
                      true_nr1=true_nr1+1
                      if(first_search_is_true(2,k) .eqv. .true.) then
@@ -952,7 +954,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
 !initialise the rest of the rxyz_b array with zeros
          do j=2,27
-            do i=1,nat*fp_18_molecules
+            do i=1,nat*parini%fp_18_molecules
                do n=1,3
                   rxyz_b(n,i,j)=0.d0
                enddo
@@ -999,7 +1001,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
          k=2
          do m = 1, 27
             if (possibilites(1,m)/=0 .or. possibilites(2,m)/=0 .or. possibilites(3,m)/=0) then
-               do j=1, nat*fp_18_molecules
+               do j=1, nat*parini%fp_18_molecules
                   do i=1,3
                      if(i==1) then
                         rxyz_b(1,j,k)=possibilites(i,m)*alat(1,1)+rxyz_b(1,j,1)
@@ -1018,7 +1020,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
          enddo
 
          do position=2,27
-            do n=1, nat*fp_18_molecules
+            do n=1, nat*parini%fp_18_molecules
 !
 !            if (write_files .eqv. .true.) then
 !               write(11,"(3E26.15E2,1A4)") (rxyz_b(j,n,position),j=1,3), is_char(n,1)
@@ -1035,7 +1037,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 !search for connected atoms within radius (2*largest cov_radius of sytem)+10%
 !initialise is_true with .false.
       do i=1,2
-         do j=1,nat*fp_18_molecules
+         do j=1,nat*parini%fp_18_molecules
             do k=1,27
                is_true(i,j,k)=.false.
             enddo
@@ -1045,14 +1047,14 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
 
       do i=1,27
-         do j=1,nat*fp_18_molecules
+         do j=1,nat*parini%fp_18_molecules
             molecule_number(j,i)=0
          enddo
       enddo
 
 
       molecule_nr=0
-      do i = 1, nat *fp_18_molecules
+      do i = 1, nat *parini%fp_18_molecules
          if(is_true(1,i,1) .eqv. .false. ) then
             molecule_nr=molecule_nr+1
             molecule_number(i,1)=molecule_nr
@@ -1061,7 +1063,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
 !calculate distance between the atom (i,1) and all other atoms
             do k=1,27
-               do j = 1, nat*fp_18_molecules
+               do j = 1, nat*parini%fp_18_molecules
                   distance=0.d0
                   do l=1,3
                      distance= (rxyz_b(l,i,1)-rxyz_b(l,j,k))**2+distance
@@ -1078,11 +1080,11 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
          endif
          j=1
          do while (j<28)
-            do k=1,nat*fp_18_molecules
+            do k=1,nat*parini%fp_18_molecules
                if (is_true(1,k,j) .eqv. .true. .and. is_true(2,k,j) .eqv. .false.) then
                   is_true(2,k,j)=.true.
                   do l=1,27
-                     do m=1,nat*fp_18_molecules
+                     do m=1,nat*parini%fp_18_molecules
                         distance=0.d0
                         do n=1,3
                            distance= (rxyz_b(n,k,j)-rxyz_b(n,m,l))**2+distance
@@ -1102,7 +1104,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
             if (j==27) then
                true_nr1=0
                true_nr2=0
-               do k = 1, nat*fp_18_molecules
+               do k = 1, nat*parini%fp_18_molecules
                   do l =1, 27
                      if(is_true(1,k,l) .eqv. .true.) then
                         true_nr1=true_nr1+1
@@ -1126,7 +1128,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 !      if(write_files .eqv. .true.) then
 !         open (12,file=trim(f3))
 !            do j=1, 27
-!               do i=1, nat*fp_18_molecules
+!               do i=1, nat*parini%fp_18_molecules
 !                  write(12,"(I2)") (molecule_number(i,j))
 !               enddo
 !            enddo
@@ -1134,14 +1136,14 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 !      endif
 
 !initialise atom_number with 0
-      do i=1,nat*fp_18_molecules
+      do i=1,nat*parini%fp_18_molecules
          do j=1,2
             atom_number(i,j)=0
          enddo
       enddo
 
 !count the atoms of each molecule and save this number in the atom_number(i,:). save additional the number of the molecule into (:,j)
-      do j=1, nat*fp_18_molecules
+      do j=1, nat*parini%fp_18_molecules
          if(molecule_number(j,1)>=0) then
             k=molecule_number(j,1)
             atom_number(k,2)=k
@@ -1150,11 +1152,11 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
       enddo
 
 !all molecules, that don't have the number of "nat" atoms are deleted
-      do j=1,nat*fp_18_molecules
+      do j=1,nat*parini%fp_18_molecules
          if (atom_number(j,2)/=0) then
             m=0
             do n=1,27
-               do i=1,nat*fp_18_molecules
+               do i=1,nat*parini%fp_18_molecules
                   if (molecule_number(i,n)==atom_number(j,2)) then
                      m=m+1
                   endif
@@ -1169,7 +1171,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
 
 !bubblesort the number of atoms to know of which molecules the number of atoms is the largest in the unit cell
-      do j = nat*fp_18_molecules-1, 1, -1
+      do j = nat*parini%fp_18_molecules-1, 1, -1
          do i = 1, j
             if (atom_number(i,1) < atom_number(i+1,1)) then
                k = atom_number(i,1)
@@ -1184,7 +1186,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 
 !count the number of molecules in atom_number
       molecule_nr=0
-      do i = 1, nat*fp_18_molecules
+      do i = 1, nat*parini%fp_18_molecules
          if (atom_number(i,2)/=0) then
             molecule_nr=molecule_nr+1
          endif
@@ -1201,7 +1203,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
       do n=1,molecule_nr
          m=0
          do i=1,27
-            do j=1,nat*fp_18_molecules
+            do j=1,nat*parini%fp_18_molecules
                if (molecule_number(j,i)==atom_number(n,2)) then
                   m=m+1
                   if(m>nat) then
@@ -1228,13 +1230,13 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
       enddo
 
       do i=1,2
-         do j=1,fp_18_molecules
+         do j=1,parini%fp_18_molecules
             finalmolecules(j,i)=0
          enddo
       enddo
 
       do i=1,molecule_nr
-         do j=1, fp_18_molecules
+         do j=1, parini%fp_18_molecules
             if (finalmolecules(j,1)==molecule_id(1,i)) then
                exit
             else if (finalmolecules(j,1)==0) then
@@ -1247,7 +1249,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
       deallocate(molecule_id)
 
       do i=1,27
-         do j=1,nat*fp_18_molecules
+         do j=1,nat*parini%fp_18_molecules
             finalmolecule_number(j,i)=0
          enddo
       enddo
@@ -1256,23 +1258,23 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
 !check if there are enough molecules in the system
 !
       m=0
-      do i=1,fp_18_molecules
+      do i=1,parini%fp_18_molecules
          if (finalmolecules(i,2)/=0) then
             m=m+1
          endif
       enddo
-      if (m/=fp_18_molecules) then
+      if (m/=parini%fp_18_molecules) then
 !         write(*,*) 'there are too less molecules in poslow'//trim(adjustl(f1))//'.ascii'
          stop
       endif
 
 
       m=1
-      do i=1,fp_18_molecules
+      do i=1,parini%fp_18_molecules
          do j=1,27
-            do k=1,nat*fp_18_molecules
+            do k=1,nat*parini%fp_18_molecules
                if(atom_number(finalmolecules(i,2),2)==molecule_number(k,j)) then
-                  if (m>nat*fp_18_molecules+1) then
+                  if (m>nat*parini%fp_18_molecules+1) then
                      write(*,*) "searching aglortihm found too much atoms for molecules in the system "
                      write(*,*) "--> change searching radius in findmolecule subroutine"
                      stop
@@ -1289,7 +1291,7 @@ subroutine findmolecule(rxyz,alat0,finalchar,xred,char_type,typat,ntypat,nat)
          enddo
       enddo
 
-      if (m/=nat*fp_18_molecules+1) then
+      if (m/=nat*parini%fp_18_molecules+1) then
          write(*,*) "searching aglortihm found too less atoms for existing molecules"
          write(*,*) "--> change searching radius in findmolecule subroutine"
          stop

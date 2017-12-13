@@ -4,7 +4,6 @@ subroutine  linkedlist_test(parini)
     use mod_atoms, only: typ_atoms, type_pairs, typ_file_info
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
-    use dynamic_memory
     implicit none
     type(typ_linked_lists):: linked_lists
     type(typ_parini), intent(in):: parini
@@ -25,7 +24,6 @@ subroutine  linkedlist_test(parini)
     integer :: i,j,k,nec(3),ii
     logical :: yes
     character(2):: numb
-    call f_routine(id='linkedlist_test')
     !**************************************************************
 !    call random_seed()
     maxconf=20
@@ -35,7 +33,7 @@ do conf=1,maxconf
         call acf_read(parini,'posinp.acf',1,atoms=atoms)
         allocate(posat1st(atoms%nat), nim(atoms%nat))
         allocate(posat1st_list(atoms%nat), nim_list(atoms%nat))
-        rcut=12.00d0!/bohr2ang
+        rcut=12.00d0!bohr2ang
         do iat= 1,atoms%nat
             allocate(posat1st(iat)%posat2nd(3,9*atoms%nat))
             allocate(posat1st_list(iat)%posat2nd(3,9*atoms%nat))
@@ -160,6 +158,9 @@ call system_clock(t1)
     call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
     do ibr= 1,linked_lists%maxbound_rad
         write(2200+conf,*)linked_lists%bound_rad(1,ibr),linked_lists%bound_rad(2,ibr)
+        !if (atoms%sat(linked_lists%bound_rad(1,ibr))=='O' .and. atoms%sat(linked_lists%bound_rad(2,ibr))=='O' )then
+        !    write(2200+conf,'(2i6,6es25.15)')linked_lists%bound_rad(1,ibr),linked_lists%bound_rad(2,ibr),(atoms%rat(:,linked_lists%bound_rad(1,ibr))+atoms%rat(:,linked_lists%bound_rad(2,ibr)))/2*bohr2ang
+        !endif
     enddo
     
     do iba= 1,linked_lists%maxbound_ang
@@ -169,11 +170,11 @@ call system_clock(t1)
         write(3200+conf,'(3i6)')iat,min(jat,kat),max(jat,kat)
         !call sort2(iat,jat,kat,conf,3200)
     enddo
-call f_free(linked_lists%bound_rad)
-call f_free(linked_lists%bound_ang)
-call f_free(linked_lists%prime_bound)
-deallocate(pia_arr%pia)
-call system_clock(t2)
+    deallocate(linked_lists%bound_rad)
+    deallocate(linked_lists%bound_ang)
+    deallocate(linked_lists%prime_bound)
+    deallocate(pia_arr%pia)
+    call system_clock(t2)
     write(*,*) "time for linked list2 part = " ,t2-t1
 !******************************************************************************************************
     do iat= 1,atoms%nat
@@ -185,7 +186,6 @@ call system_clock(t2)
     call atom_deallocate_old(atoms)
 enddo
 write(*,*) "*************************************  end   ************************************"    
-call f_release_routine()
 end subroutine linkedlist_test
 !**************************************************************************************************************
 subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)

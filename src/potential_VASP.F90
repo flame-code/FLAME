@@ -137,7 +137,7 @@ subroutine cal_potential_forces_vasp(atoms)
     filename1=dir//'/vasprun.xml'
     filename2=dir//'/CONTCAR'
     !write(*,*) filename
-    call get_output_vasp_geopt(filename1,filename2,atoms%nat,cellvec,atoms%rat,atoms%fat,atoms%epot,stress,success)
+    call get_output_vasp_geopt_alborz(filename1,filename2,atoms%nat,cellvec,atoms%rat,atoms%fat,atoms%epot,stress,success)
     if(success) exit
     vasp_restart=.false.
     enddo !end of loop over itry
@@ -225,7 +225,7 @@ end subroutine add_repulsive_wall
 !    integer:: nat, iat
 !    real(8):: cellvec(3,3), stress(3,3), rat(3,60), fat(3,60), epot
 !    nat=60
-!    call get_output_vasp_geopt(nat,cellvec,rat,fat,epot,stress)
+!    call get_output_vasp_geopt_alborz(nat,cellvec,rat,fat,epot,stress)
 !    write(*,'(f16.8)') epot
 !    do iat=1,nat
 !        write(21,'(3f20.16)') rat(1,iat),rat(2,iat),rat(3,iat)
@@ -251,7 +251,7 @@ end subroutine add_repulsive_wall
 !!!    call system("./runjob_geovasp.sh")
 !!!    call system("sleep 1")
 !!!   !Now harvest the structure, energy, forces, etc
-!!!    call get_output_vasp_geopt(latvec,xred,fcart,energy,strten)
+!!!    call get_output_vasp_geopt_alborz(latvec,xred,fcart,energy,strten)
 !!!   !Check how many iterations have been needed
 !!!    call system("grep Conjugate OUTCAR_geo_a |wc -l>tmp_count")
 !!!    call system("grep Conjugate OUTCAR_geo_b |wc -l>>tmp_count")
@@ -400,7 +400,7 @@ end subroutine add_repulsive_wall
 !!!   end
 
 !*****************************************************************************************
-subroutine get_output_vasp_geopt(filename1,filename2,nat,latvec,xred,fcart,energy,strten,success)
+subroutine get_output_vasp_geopt_alborz(filename1,filename2,nat,latvec,xred,fcart,energy,strten,success)
     use mod_interface
     !use defs_basis
     !Since its a single call, we only have forces and stresses from one configuration!
@@ -570,7 +570,7 @@ subroutine get_output_vasp_geopt(filename1,filename2,nat,latvec,xred,fcart,energ
     !energy=energy/Ha_eV !commented by Alireza
     !strten=strten*0.1d0/HaBohr3_GPa !commented by Alireza
     !fcart=fcart/Ha_eV*Bohr_Ang !commented by Alireza
-end subroutine get_output_vasp_geopt
+end subroutine get_output_vasp_geopt_alborz
 !*****************************************************************************************
 
 

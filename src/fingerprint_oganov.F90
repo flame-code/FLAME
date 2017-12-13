@@ -139,7 +139,7 @@ enddo
 do i=1,nkinds
 if(nkinds_sum1(i).ne.nkinds_sum2(i)) write(*,*) "WARNING: The number of atoms A and B do not coincide"
 enddo
-call get_cosinedistance(fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum1,distance)
+call get_cosinedistance(parini,fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum1,distance)
 write(*,*) distance
 end subroutine
 

@@ -93,9 +93,9 @@ subroutine ann_check_symmetry_function(parini)
         configurations: do iconf=1,atoms_check%nconf
             call symmetry_functions(parini,ann_arr,atoms_check%atoms(iconf),symfunc,.false.)
             if(parini%symfunc_type_ann=='behler') then
-                call f_free(symfunc%linked_lists%prime_bound)
-                call f_free(symfunc%linked_lists%bound_rad)
-                call f_free(symfunc%linked_lists%bound_ang)
+                deallocate(symfunc%linked_lists%prime_bound)
+                deallocate(symfunc%linked_lists%bound_rad)
+                deallocate(symfunc%linked_lists%bound_ang)
             endif
             do iat=1,atoms_check%atoms(iconf)%nat
                 do ig=1,symfunc_check%symfunc(iconf)%ng

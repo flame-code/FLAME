@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: nat,ntypat,znucl,typat,char_type,target_pressure_gpa,siesta_kpt_mode
+  use global, only: nat,ntypat,znucl,char_type
   use defs_basis
   !use cell_utils
 
@@ -59,7 +59,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     !Kpoint mesh
     write(87,'(a)') "# Definition of the k-point mesh"
 
-    if(siesta_kpt_mode==1.and.dkpt.ne.0.d0) then
+    if(parini%siesta_kpt_mode==1.and.dkpt.ne.0.d0) then
       write(87,'(a,es25.15,a)') "kgrid_cutoff    ", dkpt,"  Bohr"
     else
       write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ",ka,kb,kc
@@ -97,7 +97,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     write(87,*) "AtomicCoordinatesFormat Fractional" 
     write(87,*) "%block AtomicCoordinatesAndAtomicSpecies"
     do iat=1,nat
-      write(87,'(3(1x,es25.15),i5)') xred(:,iat),typat(iat)
+      write(87,'(3(1x,es25.15),i5)') xred(:,iat),parini%typat_global(iat)
     enddo
     write(87,*) "%endblock AtomicCoordinatesAndAtomicSpecies"
     close(87)
@@ -228,19 +228,19 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   write(87,'(a)')            "MD.VariableCell .true."
   write(87,'(a,es25.15,a)')        "MD.MaxForceTol  ",  2.d0*parini%paropt_geopt%fmaxtol ,"  Ry/Bohr"
   write(87,'(a)')            "MD.MaxStressTol 0.1 GPa"
-  write(87,'(a,es25.15,a)')  "MD.TargetPressure  ",target_pressure_gpa, " GPa"
+  write(87,'(a,es25.15,a)')  "MD.TargetPressure  ",parini%target_pressure_gpa, " GPa"
   
   !Kpoint mesh
   write(87,'(a)') "# Definition of the k-point mesh"
   
   if(dkpt==0.d0) then
   write(87,'(a,3(1x,i5),a)') "#",ka,kb,kc,"  # Number of gridpoints in each dimension"
-  elseif(siesta_kpt_mode==2) then
+  elseif(parini%siesta_kpt_mode==2) then
   call find_kpt(ka,kb,kc,latvec,dkpt)
   write(87,'(a,3(1x,i5),a)') "#",ka,kb,kc,"  # Number of gridpoints in each dimension"
   endif
   
-  if(siesta_kpt_mode==1.and.dkpt.ne.0.d0) then
+  if(parini%siesta_kpt_mode==1.and.dkpt.ne.0.d0) then
   write(87,'(a,es25.15,a)') "kgrid_cutoff    ", dkpt,"  Bohr"
   else
   write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ",ka,kb,kc
@@ -283,7 +283,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   write(87,*) "AtomicCoordinatesFormat Fractional" 
   write(87,*) "%block AtomicCoordinatesAndAtomicSpecies"
   do iat=1,nat
-  write(87,'(3(1x,es25.15),i5)') xred(:,iat),typat(iat)
+  write(87,'(3(1x,es25.15),i5)') xred(:,iat),parini%typat_global(iat)
   enddo 
   write(87,*) "%endblock AtomicCoordinatesAndAtomicSpecies"
   close(87)

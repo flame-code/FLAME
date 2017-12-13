@@ -49,24 +49,16 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
-                &voids,core_rep
+use global, only: nat,ntypat,znucl,char_type,&
+                &voids
 use steepest_descent, only: sd_beta_lat,sd_beta_at
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
-   fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
+   fp_18_large_vanradius
 
 
-use confinement
 
 implicit none
 type(typ_parini), intent(inout):: parini
@@ -90,7 +82,7 @@ read_poscur=.false.
 
 !The parser will start reading some parameters first that are needed to allocate some arrays
 !These variables are: nat, ntypat, nconfine
-nconfine=1
+parini%nconfine=1
 file_exists=.false.
 filename="params_new.in"
 INQUIRE(FILE=trim(filename), EXIST=file_exists)
@@ -118,10 +110,10 @@ endif
    if(.not.znucl_found) then
    call parsescalar_real("ZNUCL",5,all_line(1:n),n,tmp_val,found)
    if(found) znucl_found=.true.
-   if(found) exit
+   if(found) cycle
    endif
 !CONFNCONF
-   call parsescalar_int("CONFNCONF",9,all_line(1:n),n,nconfine,found)
+   call parsescalar_int("CONFNCONF",9,all_line(1:n),n,parini%nconfine,found)
    if(found) cycle
    enddo
 99 continue
@@ -136,7 +128,7 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
    INQUIRE(FILE=trim(filename), EXIST=file_exists)
    if(file_exists) then
      write(*,*) "Trying to read them from ",filename !Will also read ZNUCL here
-     call ascii_getsystem(filename)
+     call ascii_getsystem(parini,filename)
      read_poscur=.true.
    endif
    if(.not.read_poscur) then
@@ -146,7 +138,7 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
    INQUIRE(FILE=trim(filename), EXIST=file_exists)
    if(file_exists) then
      write(*,*) "Trying to read them from ",filename !Will also read ZNUCL here
-     call poscar_getsystem(filename)
+     call poscar_getsystem(parini,filename)
      read_poscur=.true.
    endif
    endif
@@ -155,21 +147,21 @@ endif
 !Allocate the arrays
  if(.not.allocated(znucl))       then;   allocate(znucl(ntypat))                       ; znucl=0                 ; endif
  if(.not.allocated(char_type))   then;   allocate(char_type(ntypat))                   ; char_type="  "          ; endif
- if(.not.allocated(amu))         then;   allocate(amu(ntypat))                         ; amu=0                   ; endif
- if(.not.allocated(amutmp))      then;   allocate(amutmp(ntypat))                      ; amutmp=0                ; endif
- if(.not.allocated(rcov))        then;   allocate(rcov(ntypat))                        ; rcov=0                  ; endif
- if(.not.allocated(typat))       then;   allocate(typat(nat))                          ; typat=0                 ; endif
- if(.not.allocated(fixat))       then;   allocate(fixat(nat))                          ; fixat=.false.           ; endif
- if(.not.allocated(fragarr))     then;   allocate(fragarr(nat))                        ; fragarr=0               ; endif
- if(.not.allocated(conf_dim))    then;   allocate(conf_dim     (nconfine))             ; conf_dim=0              ; endif
- if(.not.allocated(conf_av))     then;   allocate(conf_av      (nconfine))             ; conf_av=0               ; endif
- if(.not.allocated(conf_exp))    then;   allocate(conf_exp     (nconfine))             ; conf_exp=0              ; endif
- if(.not.allocated(conf_prefac)) then;   allocate(conf_prefac  (nconfine))             ; conf_prefac=0           ; endif
- if(.not.allocated(conf_cut))    then;   allocate(conf_cut     (nconfine))             ; conf_cut=0              ; endif
- if(.not.allocated(conf_eq))     then;   allocate(conf_eq      (nconfine))             ; conf_eq=0               ; endif
- if(.not.allocated(conf_list))   then;   allocate(conf_list    (nat,nconfine))         ; conf_list=0             ; endif
- if(.not.allocated(conf_nat))    then;   allocate(conf_nat     (nconfine))             ; conf_nat=0              ; endif
- if(.not.allocated(conf_cartred))then;   allocate(conf_cartred (nconfine))             ; conf_cartred="C"        ; endif
+ if(.not.allocated(parini%amu))         then;   allocate(parini%amu(ntypat))                         ; parini%amu=0                   ; endif
+ if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(ntypat))                        ; parini%rcov=0                  ; endif
+ if(.not.allocated(parini%typat_global))       then;   allocate(parini%typat_global(nat))                          ;
+     parini%typat_global=0                 ; endif
+ if(.not.allocated(parini%fixat))       then;   allocate(parini%fixat(nat))                          ; parini%fixat=.false.           ; endif
+ if(.not.allocated(parini%fragarr))     then;   allocate(parini%fragarr(nat))                        ; parini%fragarr=0               ; endif
+ if(.not.allocated(parini%conf_dim))    then;   allocate(parini%conf_dim     (parini%nconfine))             ; parini%conf_dim=0              ; endif
+ if(.not.allocated(parini%conf_av))     then;   allocate(parini%conf_av      (parini%nconfine))             ; parini%conf_av=0               ; endif
+ if(.not.allocated(parini%conf_exp))    then;   allocate(parini%conf_exp     (parini%nconfine))             ; parini%conf_exp=0              ; endif
+ if(.not.allocated(parini%conf_prefac)) then;   allocate(parini%conf_prefac  (parini%nconfine))             ; parini%conf_prefac=0           ; endif
+ if(.not.allocated(parini%conf_cut))    then;   allocate(parini%conf_cut     (parini%nconfine))             ; parini%conf_cut=0              ; endif
+ if(.not.allocated(parini%conf_eq))     then;   allocate(parini%conf_eq      (parini%nconfine))             ; parini%conf_eq=0               ; endif
+ if(.not.allocated(parini%conf_list))   then;   allocate(parini%conf_list    (nat,parini%nconfine))         ; parini%conf_list=0             ; endif
+ if(.not.allocated(parini%conf_nat))    then;   allocate(parini%conf_nat     (parini%nconfine))             ; parini%conf_nat=0              ; endif
+ if(.not.allocated(parini%conf_cartred))then;   allocate(parini%conf_cartred (parini%nconfine))             ; parini%conf_cartred="C"        ; endif
 
 
 !Feed arrays with standard parameters
@@ -195,7 +187,7 @@ endif
 
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
-   call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
  enddo
 
 !Read the other variables
@@ -204,14 +196,14 @@ open(unit=12,file="params_new.in")
    read(12,'(a450)',end=97)all_line
    n = len_trim(all_line)
 !Press
-   call parsescalar_real("PRESS",5,all_line(1:n),n,target_pressure_gpa,found)
-   if(found) target_pressure_habohr=target_pressure_gpa/HaBohr3_GPA
+   call parsescalar_real("PRESS",5,all_line(1:n),n,parini%target_pressure_gpa,found)
+   if(found) parini%target_pressure_habohr=parini%target_pressure_gpa/HaBohr3_GPA
    if(found) cycle
 !Amu
-   call parsearray_real("AMU",3,all_line(1:n),n,amu(1:ntypat),ntypat,found)
+   call parsearray_real("AMU",3,all_line(1:n),n,parini%amu(1:ntypat),ntypat,found)
    if(found) cycle
 !TYPAT
-   call parsearray_int("TYPAT",5,all_line(1:n),n,typat(1:nat),nat,found)
+   call parsearray_int("TYPAT",5,all_line(1:n),n,parini%typat_global(1:nat),nat,found)
    if(found) cycle
 !MDNIT
    call parsescalar_int("MDNIT",5,all_line(1:n),n,parini%nmd_dynamics,found)
@@ -235,7 +227,7 @@ open(unit=12,file="params_new.in")
    call parse_logical("VOIDS",5,all_line(1:n),n,voids,found)
    if(found) cycle
 !COREREP
-   call parse_logical("COREREP",7,all_line(1:n),n,core_rep,found)
+   call parse_logical("COREREP",7,all_line(1:n),n,parini%core_rep,found)
    if(found) cycle
 !Block mdmin****************
 !AUTO_MDMIN
@@ -346,19 +338,19 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !Block GEOPT*****************
 !USEWFGEO
-   call parse_logical("USEWFGEO",8,all_line(1:n),n,usewf_geopt,found)
+   call parse_logical("USEWFGEO",8,all_line(1:n),n,parini%usewf_geopt,found)
    if(found) cycle
 !USEWFSOFT
-   call parse_logical("USEWFSOFT",9,all_line(1:n),n,usewf_soften,found)
+   call parse_logical("USEWFSOFT",9,all_line(1:n),n,parini%usewf_soften,found)
    if(found) cycle
 !USEWFMD
-   call parse_logical("USEWFMD",7,all_line(1:n),n,usewf_md,found)
+   call parse_logical("USEWFMD",7,all_line(1:n),n,parini%usewf_md,found)
    if(found) cycle
 !FINDSYM
-   call parse_logical("FINDSYM",7,all_line(1:n),n,findsym,found)
+   call parse_logical("FINDSYM",7,all_line(1:n),n,parini%findsym,found)
    if(found) cycle
 !FINDDOS
-   call parse_logical("FINDDOS",7,all_line(1:n),n,finddos,found)
+   call parse_logical("FINDDOS",7,all_line(1:n),n,parini%finddos,found)
    if(found) cycle
 !Block KPT****************
 !AUTO_KPT
@@ -417,74 +409,74 @@ open(unit=12,file="params_new.in")
    if(found) cycle
 !FPORBITAL
    call parsescalar_string("FPORBITAL",9,all_line(1:n),n,parini%fp_17_orbital,2,found)
-   fp_18_orbital=parini%fp_17_orbital
+   parini%fp_18_orbital=parini%fp_17_orbital
    if(found) cycle
 !FPNEXCUT
-   call parsescalar_real("FPNEXCUT",8,all_line(1:n),n,fp_17_nex_cutoff,found)
-   fp_18_nex_cutoff=int(fp_17_nex_cutoff)
+   call parsescalar_real("FPNEXCUT",8,all_line(1:n),n,parini%fp_17_nex_cutoff,found)
+   parini%fp_18_nex_cutoff=int(parini%fp_17_nex_cutoff)
    if(found) cycle
 !FPPRINCIPLEEV
-   call parsescalar_int("FPPRINCIPLEEV",13,all_line(1:n),n,fp_18_principleev,found)
+   call parsescalar_int("FPPRINCIPLEEV",13,all_line(1:n),n,parini%fp_18_principleev,found)
    if(found) cycle
 !FPMOLECULES
-   call parsescalar_int("FPMOLECULES",11,all_line(1:n),n,fp_18_molecules,found)
+   call parsescalar_int("FPMOLECULES",11,all_line(1:n),n,parini%fp_18_molecules,found)
    if(found) cycle
 !FPEXPA
-   call parsescalar_int("FPEXPA",6,all_line(1:n),n,fp_18_expaparameter,found)
+   call parsescalar_int("FPEXPA",6,all_line(1:n),n,parini%fp_18_expaparameter,found)
    if(found) cycle
 !FPMOLSPHERE
-   call parsescalar_int("FPMOLSPHERE",11,all_line(1:n),n,fp_18_molecules_sphere,found)
+   call parsescalar_int("FPMOLSPHERE",11,all_line(1:n),n,parini%fp_18_molecules_sphere,found)
    if(found) cycle
 !FPWIDTHCUT
-   call parsescalar_real("FPWIDTHCUT",10,all_line(1:n),n,fp_18_width_cutoff,found)
+   call parsescalar_real("FPWIDTHCUT",10,all_line(1:n),n,parini%fp_18_width_cutoff,found)
    if(found) cycle
 !FPWIDTHOVER
-   call parsescalar_real("FPWIDTHOVER",11,all_line(1:n),n,fp_18_width_overlap,found)
+   call parsescalar_real("FPWIDTHOVER",11,all_line(1:n),n,parini%fp_18_width_overlap,found)
    if(found) cycle
 !Block FINGERPRINT****************
 
 
 !Block LAYER-CONFINEMENT****************
 !CONFINEMENT
-   call parse_logical("CONFINEMENT",11,all_line(1:n),n,use_confine,found)
+   call parse_logical("CONFINEMENT",11,all_line(1:n),n,parini%use_confine,found)
    if(found) cycle
 !CONFCARTRED
-   call parsearray_string("CONFCARTRED",11,all_line(1:n),n,conf_cartred,1,nconfine,found)
+   call parsearray_string("CONFCARTRED",11,all_line(1:n),n,parini%conf_cartred,1,parini%nconfine,found)
    if(found) cycle
 !CONFDIM
-   call parsearray_int("CONFDIM",7,all_line(1:n),n,conf_dim(1:nconfine),nconfine,found)
+   call parsearray_int("CONFDIM",7,all_line(1:n),n,parini%conf_dim(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFEXP
-   call parsearray_int("CONFEXP",7,all_line(1:n),n,conf_exp(1:nconfine),nconfine,found)
+   call parsearray_int("CONFEXP",7,all_line(1:n),n,parini%conf_exp(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFPREFAC
-   call parsearray_real("CONFPREFAC",10,all_line(1:n),n,conf_prefac(1:nconfine),nconfine,found)
+   call parsearray_real("CONFPREFAC",10,all_line(1:n),n,parini%conf_prefac(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFCUT
-   call parsearray_real("CONFCUT",7,all_line(1:n),n,conf_cut(1:nconfine),nconfine,found)
+   call parsearray_real("CONFCUT",7,all_line(1:n),n,parini%conf_cut(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFAV
-   call parsearray_int("CONFAV",6,all_line(1:n),n,conf_av(1:nconfine),nconfine,found)
+   call parsearray_int("CONFAV",6,all_line(1:n),n,parini%conf_av(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFEQ
-   call parsearray_real("CONFEQ",6,all_line(1:n),n,conf_eq(1:nconfine),nconfine,found)
+   call parsearray_real("CONFEQ",6,all_line(1:n),n,parini%conf_eq(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFNAT
-   call parsearray_int("CONFNAT",7,all_line(1:n),n,conf_nat(1:nconfine),nconfine,found)
+   call parsearray_int("CONFNAT",7,all_line(1:n),n,parini%conf_nat(1:parini%nconfine),parini%nconfine,found)
    if(found) cycle
 !CONFLIST#
 !Go through all number of confinements
-   do i=1,nconfine
+   do i=1,parini%nconfine
       if(i.lt.10) then
         write(fn1,'(i1.1)') i
         write(find_string,'(a,a)') "CONFLIST"//fn1 
         call exist_string(trim(find_string),9,all_line(1:n),n,found)
-        if(found.and.conf_nat(i)==nat) then
+        if(found.and.parini%conf_nat(i)==nat) then
           do j=1,nat
-            conf_list(j,i)=j
+            parini%conf_list(j,i)=j
           enddo
         else
-          call parsearray_int(trim(find_string),9,all_line(1:n),n,conf_list(1:conf_nat(i),i),conf_nat(i),found)
+          call parsearray_int(trim(find_string),9,all_line(1:n),n,parini%conf_list(1:parini%conf_nat(i),i),parini%conf_nat(i),found)
         endif
       else
         stop "Loop not implemented for nconfine greater than 9"
@@ -494,31 +486,31 @@ open(unit=12,file="params_new.in")
 
 !Block IPI_SOCKET****************
 !IPIINET
-   call parsescalar_int("IPIINET",7,all_line(1:n),n,sock_inet,found)
+   call parsescalar_int("IPIINET",7,all_line(1:n),n,parini%sock_inet,found)
    if(found) cycle
 !IPIPORT
-   call parsescalar_int("IPIPORT",7,all_line(1:n),n,sock_port,found)
+   call parsescalar_int("IPIPORT",7,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !IPIHOST
-   call parsescalar_string("IPIHOST",7,all_line(1:n),n,sock_host,1024,found)
+   call parsescalar_string("IPIHOST",7,all_line(1:n),n,parini%sock_host,1024,found)
    if(found) cycle
 !IPIECUTWF
-   call parsearray_real("IPIECUTWF",9,all_line(1:n),n,sock_ecutwf,2,found)
+   call parsearray_real("IPIECUTWF",9,all_line(1:n),n,parini%sock_ecutwf,2,found)
    if(found) cycle
 !Block IPI_SOCKET****************
 
 !Block MSOCK****************
 !MSOCKINET
-   call parsescalar_int("SOCKINET",8,all_line(1:n),n,sock_inet,found)
+   call parsescalar_int("SOCKINET",8,all_line(1:n),n,parini%sock_inet,found)
    if(found) cycle
 !MSOCKPORT
-   call parsescalar_int("SOCKPORT",8,all_line(1:n),n,sock_port,found)
+   call parsescalar_int("SOCKPORT",8,all_line(1:n),n,parini%sock_port,found)
    if(found) cycle
 !MSOCKHOST
-   call parsescalar_string("SOCKHOST",8,all_line(1:n),n,sock_host,1024,found)
+   call parsescalar_string("SOCKHOST",8,all_line(1:n),n,parini%sock_host,1024,found)
    if(found) cycle
 !MSOCKECUTWF
-   call parsearray_real("SOCKECUTWF",10,all_line(1:n),n,sock_ecutwf,2,found)
+   call parsearray_real("SOCKECUTWF",10,all_line(1:n),n,parini%sock_ecutwf,2,found)
    if(found) cycle
 
 !Block MSOCK****************
@@ -527,7 +519,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_int("VERBOSE",7,all_line(1:n),n,parini%verb,found)
    if(found) cycle
 !BOUNDARY
-   call parsescalar_int("BOUNDARY",8,all_line(1:n),n,bc,found)
+   call parsescalar_int("BOUNDARY",8,all_line(1:n),n,parini%bc,found)
    if(found) cycle
 !CODE
    call parsescalar_string("CODE",4,all_line(1:n),n,parini%potential_potential,20,found)
@@ -561,48 +553,48 @@ close(12)
   endif
 
 !Initiallize confinement
-if(use_confine) call  init_confinement_parser()
+if(parini%use_confine) call  init_confinement_parser(parini)
 
 !Initiallize LJ parameter if required
 if(trim(parini%potential_potential)=="blj".and.calls==0) call blj_init_parameter()
 
 !Initiallize LJ parameter if required
-if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter()
+if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter(parini)
 
 !Initiallize TB-LJ parameter if required
 if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
-  call check_lenosky_tb_lj()
+  call check_lenosky_tb_lj(parini)
   n_lj=0
   do iat=1,nat
-     if(znucl(typat(iat)).gt.200) n_lj=n_lj+1
+     if(znucl(parini%typat_global(iat)).gt.200) n_lj=n_lj+1
   enddo
   call lenosky_tb_lj_init_parameter()
 endif
 
 !Initiallize voids
 if(voids.and.calls==0) then
-  call check_voids() 
+  call check_voids(parini) 
   call voids_init_parameter()
 endif
 
 !Initiallize tersoff
 if(trim(parini%potential_potential)=="tersoff".and.calls==0) then
-  call init_tersoff()
+  call init_tersoff(parini)
 endif
 
 !Initiallize edip
 if(trim(parini%potential_potential)=="edip".and.calls==0) then
-  call init_edip()
+  call init_edip(parini)
 endif
 
 !Initiallize ipi
 if(trim(parini%potential_potential)=="ipi".and.calls==0) then
-  call init_ipi()
+  call init_ipi(parini,nat)
 endif
 
 !Initiallize msock
 if(trim(parini%potential_potential)=="msock".and.calls==0) then
-  call init_msock()
+  call init_msock(parini)
 endif
 
 
@@ -638,22 +630,14 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
-                &voids,core_rep
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
+use global, only: nat,ntypat,znucl,char_type,&
+                &voids
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
-   fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
+   fp_18_large_vanradius
    
-use confinement
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(inout):: parini
@@ -661,15 +645,15 @@ integer:: mdmin_in,itype,i,j
 real(8):: dtion_md_in,alpha_lat_in,alpha_at_in
 logical:: read_poscur
 !These are the default variables
-target_pressure_gpa=0.d0
-target_pressure_habohr=0.d0
+parini%target_pressure_gpa=0.d0
+parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
-   call atmdata(amu(itype),rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
  enddo
 voids=.false.
-core_rep=.false.
-if(.not.read_poscur) typat(1:nat)=1
+parini%core_rep=.false.
+if(.not.read_poscur) parini%typat_global(1:nat)=1
 parini%nmd_dynamics=300
 parini%md_algo=1
 parini%md_integrator=3
@@ -697,16 +681,16 @@ parini%alphax_lat=1.d0
 parini%alphax_at=1.d0
 parini%paropt_geopt%fmaxtol=2.d-4
 parini%paropt_geopt%strfact=100.d0
-usewf_geopt=.false.
-usewf_soften=.false.
-usewf_md=.false.
-findsym=.false.
-finddos=.false.
+parini%usewf_geopt=.false.
+parini%usewf_soften=.false.
+parini%usewf_md=.false.
+parini%findsym=.false.
+parini%finddos=.false.
 parini%auto_kpt=.true.
 parini%ka=1;parini%kb=1;parini%kc=1
 parini%dkpt1=0.04d0
 parini%dkpt2=0.06d0
-bc=1
+parini%bc=1
 parini%verb=3
 parini%potential_potential="vasp"
 !Define if the external optimizer should be used. Only available for:
@@ -724,21 +708,21 @@ parini%fp_14_m=3
 parini%fp_14_w1=1.d0
 parini%fp_14_w2=1.5d0
 parini%fp_at_nmax=10000
-fp_17_nex_cutoff=3
-fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
+parini%fp_17_nex_cutoff=3
+parini%fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*parini%fp_17_nex_cutoff)
 parini%fp_17_orbital='S'
 parini%fp_17_lseg=1
 parini%fp_17_natx_sphere=75
 
-fp_18_orbital='S'
-fp_18_principleev = 6
-fp_18_lseg=1
-fp_18_molecules=1
-fp_18_expaparameter = 4
-fp_18_nex_cutoff = 3
-fp_18_molecules_sphere = 50
-fp_18_width_cutoff = 1.d0
-fp_18_width_overlap = 1.d0
+parini%fp_18_orbital='S'
+parini%fp_18_principleev = 6
+parini%fp_18_lseg=1
+parini%fp_18_molecules=1
+parini%fp_18_expaparameter = 4
+parini%fp_18_nex_cutoff = 3
+parini%fp_18_molecules_sphere = 50
+parini%fp_18_width_cutoff = 1.d0
+parini%fp_18_width_overlap = 1.d0
 fp_18_large_vanradius = 1.7d0/0.52917720859d0
 
 !SQNM
@@ -758,18 +742,18 @@ parini%qbfgs_trust_radius_ini=0.5D0
 parini%qbfgs_w_1=0.01D0
 parini%qbfgs_w_2=0.5D0
 
-use_confine=.false.
-conf_cartred="C"
-conf_dim=1
-conf_exp=4
-conf_prefac=1.d-2
-conf_cut=1.d0
-conf_av=2
-conf_eq=0
-conf_nat=nat
-   do i=1,nconfine
+parini%use_confine=.false.
+parini%conf_cartred="C"
+parini%conf_dim=1
+parini%conf_exp=4
+parini%conf_prefac=1.d-2
+parini%conf_cut=1.d0
+parini%conf_av=2
+parini%conf_eq=0
+parini%conf_nat=nat
+   do i=1,parini%nconfine
           do j=1,nat
-            conf_list(j,i)=j
+            parini%conf_list(j,i)=j
           enddo
    enddo
 !Block LAYER-CONFINEMENT****************
@@ -779,10 +763,10 @@ conf_nat=nat
 !      ipi_host="mh-driver"
 !      ipi_ecutwf=1.d0
 !Block IPI_SOCKET****************
-      sock_inet=0 !0 for unix socket, 1 for tcp
-      sock_port=3141
-      sock_host="mh-driver"
-      sock_ecutwf=1.d0
+      parini%sock_inet=0 !0 for unix socket, 1 for tcp
+      parini%sock_port=3141
+      parini%sock_host="mh-driver"
+      parini%sock_ecutwf=1.d0
 end subroutine
 
 !************************************************************************************
@@ -791,28 +775,21 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,voids,core_rep
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
+use global, only: nat,ntypat,znucl,char_type,&
+                &voids
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
-   fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
-use confinement
+   fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: i,j
 !This routine will check if all values are valid...
-if(any(typat(:).lt.1)) stop "Error in typat"
-if(any(amu(:).le.0.d0)) stop "Error in amu"
-if(any(rcov(:).le.0.d0)) stop "Error in rcov"
+if(any(parini%typat_global(:).lt.1)) stop "Error in typat"
+if(any(parini%amu(:).le.0.d0)) stop "Error in amu"
+if(any(parini%rcov(:).le.0.d0)) stop "Error in rcov"
 if(any(znucl(:).le.0)) stop "Error in znucl"
 if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
 if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
@@ -845,7 +822,7 @@ if(parini%kb.lt.0) stop "Error in kb"
 if(parini%kc.lt.0) stop "Error in kc"
 if(parini%dkpt1.lt.0.d0) stop "Error in dkpt1"
 if(parini%dkpt2.lt.0.d0) stop "Error in dkpt2"
-if(bc.lt.1.or.bc.gt.3) stop "Error in bc"
+if(parini%bc.lt.1.or.parini%bc.gt.3) stop "Error in bc"
 if(parini%verb.lt.0.or.parini%verb.gt.3) stop "Error in verb"
 if(trim(parini%fp_method_ch).ne."OGANOV".and.trim(parini%fp_method_ch).ne."BCM".and.trim(parini%fp_method_ch).ne."ATORB".and.&
   &trim(parini%fp_method_ch).ne."XYZ2SM".and.trim(parini%fp_method_ch).ne."GAUSS".and.trim(parini%fp_method_ch).ne."COGANOV".and.&
@@ -859,25 +836,25 @@ if(parini%fp_14_w1.lt.0.d0) stop "Error in p_14_w1"
 if(parini%fp_14_w2.lt.parini%fp_14_w1) stop "Error in p_14_w2"
 if(parini%fp_at_nmax.lt.0) stop "Error in fp_at_nmax"
 if(trim(parini%fp_17_orbital).ne.'S'.and.trim(parini%fp_17_orbital).ne.'SP') stop "Error in fp_17_orbital"
-if(trim(fp_18_orbital).ne.'S'.and.trim(fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
-if(fp_18_principleev.lt.0) stop "Error in fp_18_principleev"
-if(fp_18_molecules.lt.1) stop "Error in fp_18_molecules"
-if(fp_18_expaparameter.lt.1) stop "Error in fp_18_expaparameter"
-if(fp_18_nex_cutoff.lt.1) stop "Error in fp_18_nex_cutoff"
-if(fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
-if(fp_18_width_cutoff.lt.0.d0) stop "Error in fp_18_width_cutoff"
-if(fp_18_width_overlap.lt.0.d0) stop "Error in fp_18_width_overlap"
-do i=1,nconfine
-  if(.not.(conf_cartred(i).eq."C".or.conf_cartred(i).eq."c".or.&
-          &conf_cartred(i).eq."K".or.conf_cartred(i).eq."k".or.&
-          &conf_cartred(i).eq."R".or.conf_cartred(i).eq."r".or.&
-          &conf_cartred(i).eq."D".or.conf_cartred(i).eq."d")) stop "Error in conf_cartred"
-  if(conf_dim(i).lt.1.or.conf_dim(i).gt.3) stop "Error in conf_dim"
-  if(conf_exp(i).lt.1) stop "Error in conf_exp"
-  if(conf_prefac(i).lt.0.d0) stop "Error in conf_prefac"
-  if(conf_av(i).lt.1.or.conf_av(i).gt.2) stop "Error in conf_av"
+if(trim(parini%fp_18_orbital).ne.'S'.and.trim(parini%fp_18_orbital).ne.'SP') stop "Error in fp_17_orbital"
+if(parini%fp_18_principleev.lt.0) stop "Error in fp_18_principleev"
+if(parini%fp_18_molecules.lt.1) stop "Error in fp_18_molecules"
+if(parini%fp_18_expaparameter.lt.1) stop "Error in fp_18_expaparameter"
+if(parini%fp_18_nex_cutoff.lt.1) stop "Error in fp_18_nex_cutoff"
+if(parini%fp_18_molecules_sphere.lt.0) stop "Error in fp_18_molecules_sphere"
+if(parini%fp_18_width_cutoff.lt.0.d0) stop "Error in fp_18_width_cutoff"
+if(parini%fp_18_width_overlap.lt.0.d0) stop "Error in fp_18_width_overlap"
+do i=1,parini%nconfine
+  if(.not.(parini%conf_cartred(i).eq."C".or.parini%conf_cartred(i).eq."c".or.&
+          &parini%conf_cartred(i).eq."K".or.parini%conf_cartred(i).eq."k".or.&
+          &parini%conf_cartred(i).eq."R".or.parini%conf_cartred(i).eq."r".or.&
+          &parini%conf_cartred(i).eq."D".or.parini%conf_cartred(i).eq."d")) stop "Error in conf_cartred"
+  if(parini%conf_dim(i).lt.1.or.parini%conf_dim(i).gt.3) stop "Error in conf_dim"
+  if(parini%conf_exp(i).lt.1) stop "Error in conf_exp"
+  if(parini%conf_prefac(i).lt.0.d0) stop "Error in conf_prefac"
+  if(parini%conf_av(i).lt.1.or.parini%conf_av(i).gt.2) stop "Error in parini%conf_av"
           do j=1,nat
-            if(conf_list(j,i).lt.1.or.conf_list(j,i).gt.nat) stop "Error in conf_list"
+            if(parini%conf_list(j,i).lt.1.or.parini%conf_list(j,i).gt.nat) stop "Error in conf_list"
           enddo
 enddo
 !if(ipi_inet.lt.0 .or. ipi_inet.gt.1) stop "Error in ipi_inet: must be 0 for unix socket, 1 for tcp"
@@ -885,10 +862,10 @@ enddo
 !if(ipi_ecutwf(1).lt.0.d0) stop "Error in ipi_ecutwfc"
 !if(ipi_ecutwf(2).lt.0.d0) stop "Error in ipi_ecutwfc"
 
-if(sock_inet.lt.0 .or. sock_inet.gt.1) stop "Error in sock_inet: must be 0 for unix socket, 1 for tcp"
-if(sock_port.lt.1) stop "Error in sock_port"
-if(sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
-if(sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
+if(parini%sock_inet.lt.0 .or. parini%sock_inet.gt.1) stop "Error in sock_inet: must be 0 for unix socket, 1 for tcp"
+if(parini%sock_port.lt.1) stop "Error in sock_port"
+if(parini%sock_ecutwf(1).lt.0.d0) stop "Error in sock_ecutwfc"
+if(parini%sock_ecutwf(2).lt.0.d0) stop "Error in sock_ecutwfc"
 !SQNM
 if(parini%paropt_geopt%beta_lat.le.0d0) stop "Error in sqnm_beta_lat"
 if(parini%paropt_geopt%beta_at.le.0.d0) stop "Error in parini%paropt_geopt%beta_at"
@@ -908,21 +885,13 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat,char_type,&
-                &usewf_geopt,usewf_soften,usewf_md,&
-                &findsym,finddos,&
-                &fixat,fixlat,rcov,fragarr,bc,use_confine,&
-                &voids,core_rep
-use modsocket, only:sock_inet,sock_port,sock_host,sock_ecutwf
+use global, only: nat,ntypat,znucl,char_type,&
+                &voids
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
    fp_13_nl,&                            !Modified CALYPSO parameters
-   fp_17_width_cutoff,fp_17_nex_cutoff,&
-   fp_18_orbital,fp_18_principleev,fp_18_lseg,fp_18_molecules,&
-   fp_18_expaparameter,fp_18_nex_cutoff,fp_18_molecules_sphere,fp_18_width_cutoff,&
-   fp_18_width_overlap,fp_18_large_vanradius
-use confinement
+   fp_18_large_vanradius
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -933,26 +902,26 @@ character(60):: formatting,string
 write(*,'(a)')             " ################################ Echo params_new.in #############################"
 write(*,'(a,i5)')          " # VERBOSITY     ", parini%verb
 write(*,'(a)')             " # SYSTEM parameters *************************************************************"
-write(*,'(a,i5)')          " # BOUNDARY      ", bc
-write(*,'(a,es15.7)')      " # PRESS         ", target_pressure_gpa
+write(*,'(a,i5)')          " # BOUNDARY      ", parini%bc
+write(*,'(a,es15.7)')      " # PRESS         ", parini%target_pressure_gpa
 write(*,'(a,L3)')          " # VOIDS         ", voids
-write(*,'(a,L3)')          " # COREREP       ", core_rep
+write(*,'(a,L3)')          " # COREREP       ", parini%core_rep
 write(*,'(a)')             " # COMPUTE parameters ************************************************************"
 write(*,'(a,a)')           " # CODE          ", trim(parini%potential_potential)
-write(*,'(a,L3)')          " # FINDSYM       ", findsym
-write(*,'(a,L3)')          " # FINDDOS       ", finddos
-write(*,'(a,L3)')          " # USEWFGEO      ", usewf_geopt
-write(*,'(a,L3)')          " # USEWFMD       ", usewf_md
-write(*,'(a,L3)')          " # USEWFSOFT     ", usewf_soften
+write(*,'(a,L3)')          " # FINDSYM       ", parini%findsym
+write(*,'(a,L3)')          " # FINDDOS       ", parini%finddos
+write(*,'(a,L3)')          " # USEWFGEO      ", parini%usewf_geopt
+write(*,'(a,L3)')          " # USEWFMD       ", parini%usewf_md
+write(*,'(a,L3)')          " # USEWFSOFT     ", parini%usewf_soften
 write(*,'(a)')             " # Atomic parameters *************************************************************"
 write(*,'(a,i5)')          " # NAT           ", nat
 write(*,'(a,i5)')          " # NTYPE         ", ntypat
 write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
 write(*,trim(formatting))  " # ZNUCL         ", int(znucl(:))
 write(formatting,'(a,i5,a)') '(a,',nat,'i3)'
-write(*,trim(formatting))  " # TYPAT         ", typat(:)
+write(*,trim(formatting))  " # TYPAT         ", parini%typat_global(:)
 write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
-write(*,trim(formatting))  " # AMU           ", int(amu(:))
+write(*,trim(formatting))  " # AMU           ", int(parini%amu(:))
 write(*,'(a)')             " # MD parameters *****************************************************************"
 write(*,'(a,i5)')          " # MDALGO        ", parini%md_algo
 write(*,'(a,es15.7)')      " # MDPRESSCOMP   ", parini%md_presscomp
@@ -1016,7 +985,7 @@ write(*,'(a,2es15.7)')     " # KPTDEN       ", parini%dkpt1,parini%dkpt2
 endif
 write(*,'(a)')             " # FINGERPRINT parameters ********************************************************"
 write(*,'(a,a)')           " # FPMETHOD      ", trim(parini%fp_method_ch)
-if(bc==1.or.bc==3) then
+if(parini%bc==1.or.parini%bc==3) then
 write(*,'(a,es15.7)')      " # FPCUT         ", parini%fp_rcut
 endif
 if(trim(parini%fp_method_ch)=="OGANOV") then
@@ -1038,44 +1007,44 @@ elseif(trim(parini%fp_method_ch)=="GOM") then
 write(*,'(a,i5)')          " # FPNATX        ", parini%fp_17_natx_sphere
 write(*,'(a,i5)')          " # FPLSEG        ", parini%fp_17_lseg
 write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_17_orbital
-write(*,'(a,es15.7)')      " # FPNEXCUT      ", fp_17_nex_cutoff
+write(*,'(a,es15.7)')      " # FPNEXCUT      ", parini%fp_17_nex_cutoff
 elseif(trim(parini%fp_method_ch)=="MOLGOM") then
-write(*,'(a,a)')           " # FPORBITAL     ", fp_18_orbital
-write(*,'(a,i5)')          " # FPNEXCUT      ", fp_18_nex_cutoff
-write(*,'(a,i5)')          " # FPPRINCIPLEEV ", fp_18_principleev
-write(*,'(a,i5)')          " # FPMOLECULES   ", fp_18_molecules
-write(*,'(a,i5)')          " # FPEXPA        ", fp_18_expaparameter
-write(*,'(a,i5)')          " # FPMOLSPHERE   ", fp_18_molecules_sphere
-write(*,'(a,es15.7)')      " # FPWIDTHCUT    ", fp_18_width_cutoff
-write(*,'(a,es15.7)')      " # FPWIDTHOVER   ", fp_18_width_overlap
+write(*,'(a,a)')           " # FPORBITAL     ", parini%fp_18_orbital
+write(*,'(a,i5)')          " # FPNEXCUT      ", parini%fp_18_nex_cutoff
+write(*,'(a,i5)')          " # FPPRINCIPLEEV ", parini%fp_18_principleev
+write(*,'(a,i5)')          " # FPMOLECULES   ", parini%fp_18_molecules
+write(*,'(a,i5)')          " # FPEXPA        ", parini%fp_18_expaparameter
+write(*,'(a,i5)')          " # FPMOLSPHERE   ", parini%fp_18_molecules_sphere
+write(*,'(a,es15.7)')      " # FPWIDTHCUT    ", parini%fp_18_width_cutoff
+write(*,'(a,es15.7)')      " # FPWIDTHOVER   ", parini%fp_18_width_overlap
 endif
 write(*,'(a)')             " # CONFINEMENT parameters ********************************************************"
-write(*,'(a,L3)')          " # CONFINEMENT   ",use_confine
-if(use_confine) then
-write(*,'(a,i5)')          " # CONFNCONF     ",nconfine
-write(formatting,'(a,i5,a)') '(a,',nconfine,'A4)'
-write(*,trim(formatting))  " # CONFCARTRED   ",conf_cartred
-write(formatting,'(a,i5,a)') '(a,',nconfine,'i4)'
-write(*,trim(formatting))  " # CONFDIM       ",conf_dim
-write(formatting,'(a,i5,a)') '(a,',nconfine,'i4)'
-write(*,trim(formatting))  " # CONFEXP       ",conf_exp
-write(formatting,'(a,i5,a)') '(a,',nconfine,'es9.2)'
-write(*,trim(formatting))  " # CONFPREFAC    ",conf_prefac
-write(formatting,'(a,i5,a)') '(a,',nconfine,'es9.2)'
-write(*,trim(formatting))  " # CONFCUT       ",conf_cut
-write(formatting,'(a,i5,a)') '(a,',nconfine,'i4)'
-write(*,trim(formatting))  " # CONFAV        ",conf_av
-write(formatting,'(a,i5,a)') '(a,',nconfine,'es9.2)'
-write(*,trim(formatting))  " # CONFEQ        ",conf_eq
-write(formatting,'(a,i5,a)') '(a,',nconfine,'i4)'
-write(*,trim(formatting))  " # CONFNAT       ",conf_nat
+write(*,'(a,L3)')          " # CONFINEMENT   ",parini%use_confine
+if(parini%use_confine) then
+write(*,'(a,i5)')          " # CONFNCONF     ",parini%nconfine
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'A4)'
+write(*,trim(formatting))  " # CONFCARTRED   ",parini%conf_cartred
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
+write(*,trim(formatting))  " # CONFDIM       ",parini%conf_dim
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
+write(*,trim(formatting))  " # CONFEXP       ",parini%conf_exp
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'es9.2)'
+write(*,trim(formatting))  " # CONFPREFAC    ",parini%conf_prefac
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'es9.2)'
+write(*,trim(formatting))  " # CONFCUT       ",parini%conf_cut
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
+write(*,trim(formatting))  " # CONFAV        ",parini%conf_av
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'es9.2)'
+write(*,trim(formatting))  " # CONFEQ        ",parini%conf_eq
+write(formatting,'(a,i5,a)') '(a,',parini%nconfine,'i4)'
+write(*,trim(formatting))  " # CONFNAT       ",parini%conf_nat
 !Go through all number of confinements
-   do i=1,nconfine
+   do i=1,parini%nconfine
       if(i.lt.10) then
         write(fn1,'(i1.1)') i
         write(string,'(a)') "CONFLIST"//fn1
-        write(formatting,'(a,i5,a)') '(a,',conf_nat(i),'i4)'
-        write(*,trim(formatting))  " # "//trim(string)//"     ",conf_list(1:conf_nat(i),i)
+        write(formatting,'(a,i5,a)') '(a,',parini%conf_nat(i),'i4)'
+        write(*,trim(formatting))  " # "//trim(string)//"     ",parini%conf_list(1:parini%conf_nat(i),i)
       else
         stop "Loop not implemented for nconfine greater than 9"
       endif
@@ -1084,24 +1053,24 @@ endif
 if(StrLowCase(trim(adjustl(parini%potential_potential)))=="ipi") then
 write(*,'(a)')             " # IPI parameters ****************************************************************"
 write(formatting,'(a)') '(a,i4)'
-write(*,trim(formatting))  " # IPIINET       ",sock_inet
+write(*,trim(formatting))  " # IPIINET       ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
-write(*,trim(formatting))  " # IPIPORT       ",sock_port
+write(*,trim(formatting))  " # IPIPORT       ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
-write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(sock_host))
+write(*,trim(formatting))  " # IPIHOST       ",trim(adjustl(parini%sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
-write(*,trim(formatting))  " # IPIECUTWF     ",sock_ecutwf(:)
+write(*,trim(formatting))  " # IPIECUTWF     ",parini%sock_ecutwf(:)
 endif
 if(StrLowCase(trim(adjustl(parini%potential_potential)))=="msock") then
 write(*,'(a)')             " # MSOCK parameters **************************************************************"
 write(formatting,'(a)') '(a,i4)'
-write(*,trim(formatting))  " # SOCKINET      ",sock_inet
+write(*,trim(formatting))  " # SOCKINET      ",parini%sock_inet
 write(formatting,'(a)') '(a,i8)'
-write(*,trim(formatting))  " # SOCKPORT      ",sock_port
+write(*,trim(formatting))  " # SOCKPORT      ",parini%sock_port
 write(formatting,'(a)') '(a,a)'
-write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(sock_host))
+write(*,trim(formatting))  " # SOCKHOST      ",trim(adjustl(parini%sock_host))
 write(formatting,'(a)') '(a,2f10.4)'
-write(*,trim(formatting))  " # SOCKECUTWF    ",sock_ecutwf(:)
+write(*,trim(formatting))  " # SOCKECUTWF    ",parini%sock_ecutwf(:)
 endif
 write(*,'(a)')             " ############################ END Echo params_new.in #############################"
 end subroutine
@@ -1110,13 +1079,12 @@ end subroutine
 subroutine fp_assign(parini)
 use mod_parini, only: typ_parini
 use fingerprint 
-use global, only: bc
 implicit none
 type(typ_parini), intent(inout):: parini
-if(bc==2) then !Molecular systems
+if(parini%bc==2) then !Molecular systems
   fp_method=21
   parini%fp_method_ch="GAUSS"
-elseif(bc==1) then !Crystals
+elseif(parini%bc==1) then !Crystals
   if(trim(parini%fp_method_ch)=="OGANOV") then
     fp_method=11
   elseif(trim(parini%fp_method_ch)=="BCM") then
@@ -1136,15 +1104,15 @@ elseif(bc==1) then !Crystals
     elseif(trim(parini%fp_17_orbital)=="SP")then
     parini%fp_17_lseg=4 
     endif
-    fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*fp_17_nex_cutoff)
+    parini%fp_17_width_cutoff=parini%fp_rcut/sqrt(2.d0*parini%fp_17_nex_cutoff)
   elseif(trim(parini%fp_method_ch)=="MOLGOM") then
     fp_method=18
-    if(trim(fp_18_orbital)=="S")then
-      fp_18_lseg=1
-    elseif(trim(fp_18_orbital)=="SP")then
-      fp_18_lseg=4 
+    if(trim(parini%fp_18_orbital)=="S")then
+      parini%fp_18_lseg=1
+    elseif(trim(parini%fp_18_orbital)=="SP")then
+      parini%fp_18_lseg=4 
     endif
-!    fp_18_width_cutoff=fp_rcut/sqrt(2.d0*fp_18_nex_cutoff)
+!    parini%fp_18_width_cutoff=fp_rcut/sqrt(2.d0*parini%fp_18_nex_cutoff)
   endif
 endif    
 end subroutine

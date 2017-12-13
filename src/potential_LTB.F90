@@ -2,7 +2,6 @@
 subroutine init_lenosky_tb(atoms_t)
     use mod_potential, only: cell, natsi
     use mod_atoms, only: typ_atoms
-    use mod_const, only: bohr2ang
     use mod_tightbinding, only: lenosky
     implicit none
     type(typ_atoms), intent(in):: atoms_t
@@ -30,22 +29,22 @@ subroutine init_lenosky_tb(atoms_t)
        abs(atoms_t%cellvec(1,3))>1.d-12 .or. abs(atoms_t%cellvec(2,3))>1.d-12) then
         stop 'ERROR: LenoskyTB is only for Orthorhombic cells'
    endif
-   cell(1)=atoms_t%cellvec(1,1)*bohr2ang
-   cell(2)=atoms_t%cellvec(2,2)*bohr2ang
-   cell(3)=atoms_t%cellvec(3,3)*bohr2ang
+   cell(1)=atoms_t%cellvec(1,1)
+   cell(2)=atoms_t%cellvec(2,2)
+   cell(3)=atoms_t%cellvec(3,3)
 end subroutine init_lenosky_tb
 !*****************************************************************************************
-subroutine lenosky_tb(atoms)
+subroutine lenosky_tb(parini,atoms)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: cell, natsi
-    use mod_const, only: bohr2ang, ev2ha
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     !local variables
     integer:: iat
-    real(8):: count_t, tt, cellvec(3,3)
-    real(8), allocatable:: rat(:,:)
+    real(8):: count_t
     !if(iproc==0) call sleep(1)
     count_t=0.d0
     do iat=1,atoms%nat
@@ -53,30 +52,6 @@ subroutine lenosky_tb(atoms)
         atoms%rat(2,iat)=modulo(modulo(atoms%rat(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
         atoms%rat(3,iat)=modulo(modulo(atoms%rat(3,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
     enddo
-    allocate(rat(3,atoms%nat))
-    do iat=1,atoms%nat
-        rat(1,iat)=atoms%rat(1,iat)
-        rat(2,iat)=atoms%rat(2,iat)
-        rat(3,iat)=atoms%rat(3,iat)
-        atoms%rat(1,iat)=atoms%rat(1,iat)*bohr2ang
-        atoms%rat(2,iat)=atoms%rat(2,iat)*bohr2ang
-        atoms%rat(3,iat)=atoms%rat(3,iat)*bohr2ang
-    enddo
-    cellvec(1:3,1:3)=atoms%cellvec(1:3,1:3)
-    atoms%cellvec(1:3,1:3)=atoms%cellvec(1:3,1:3)*bohr2ang
-    call lenoskytb_alborz(atoms,natsi,count_t)
-    write(11,*) natsi, count_t
-    atoms%cellvec(1:3,1:3)=cellvec(1:3,1:3)
-    atoms%epot=atoms%epot*ev2ha
-    tt=bohr2ang*ev2ha
-    do iat=1,atoms%nat
-        atoms%rat(1,iat)=rat(1,iat)
-        atoms%rat(2,iat)=rat(2,iat)
-        atoms%rat(3,iat)=rat(3,iat)
-        atoms%fat(1,iat)=atoms%fat(1,iat)*tt
-        atoms%fat(2,iat)=atoms%fat(2,iat)*tt
-        atoms%fat(3,iat)=atoms%fat(3,iat)*tt
-    enddo
-    deallocate(rat)
+    call lenoskytb_alborz(parini,atoms,natsi,count_t)
 end subroutine lenosky_tb
 !*****************************************************************************************

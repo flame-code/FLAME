@@ -5,6 +5,7 @@ module mod_parini
     implicit none
     type typ_parini
         logical:: exists_yaml_file
+        integer:: iunit
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'
@@ -86,9 +87,14 @@ module mod_parini
         real(8):: qgnrmtol=-1.d0
         real(8):: etol_ann !the tolerance difference of energies of two configuration
         real(8):: dtol_ann !distance between two FP
+        real(8):: weight_hardness
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
         logical:: read_forces_ann
+        logical:: restart_param=.false. 
+        integer:: restart_iter=0  
+        logical:: print_energy=.false. 
+        logical:: fit_hoppint=.false. 
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
@@ -186,6 +192,30 @@ module mod_parini
         integer:: ka,kb,kc              !The number of kpoints in each dimension
         real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
         !-----------------------------------------------------------------------
+        integer:: bc                    !1: periodic, 2:free, 3:surface/slab
+        real(8):: target_pressure_gpa !Target pressures
+        real(8):: target_pressure_habohr  !Target pressures
+        logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
+        logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization
+        logical:: usewf_md,usewf_geopt,usewf_soften !Defines when the wavefunctions should be reused in the next step
+        logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
+        integer:: correctalg            !Method to perform cell corrections
+!        integer:: ntime_md              !Maximum number of iterations during MD
+        !-----------------------------------------------------------------------
+        logical:: use_confine           !if true, confinement is enable, otherwise disabled
+        integer:: nconfine       !number of different confinements
+        integer,allocatable:: conf_dim(:)    !1,2 or 3 for each of the 3 dimensions latvec(:,1), latvec(:,2), latvec(:,3)
+        integer,allocatable:: conf_av(:)     !0: no confinement (should never occur)
+                                             !1: confinement with respect to a fixed value along latvec(:,i)
+                                             !2: confinement with respect to the average
+        integer,allocatable:: conf_exp(:)    !The polynomial order for each confinement
+        real(8),allocatable:: conf_cut(:)    !The cutoff distance from each confinement equilibrium
+        real(8),allocatable:: conf_eq(:)     !Equlibrium position of confinement along the confinement direction, will be filled to average or fixed value
+        integer,allocatable:: conf_nat(:)    !How many atoms per confinement
+        integer,allocatable:: conf_list(:,:) !List of atoms per confinement
+        real(8),allocatable:: conf_prefac(:) !The polynomial predactor for each confinement
+        character(1),allocatable:: conf_cartred(:)!Cartesian or reduced coordinates, only if conf_eq is provided. d,D,r,R for reduced, C,c,K,k for cartesian
+        !-----------------------------------------------------------------------
         character(20):: fp_method_ch
         real(8):: fp_rcut
         real(8):: fp_dbin
@@ -198,6 +228,21 @@ module mod_parini
         integer:: fp_17_natx_sphere
         integer:: fp_17_lseg
         character(len=2) :: fp_17_orbital
+        real(8):: fp_17_nex_cutoff
+        real(8):: fp_17_width_cutoff
+        integer :: fp_18_principleev = 6
+        integer :: fp_18_lseg!=1
+        integer :: fp_18_molecules=4
+        integer :: fp_18_expaparameter = 4
+        integer :: fp_18_molecules_sphere = 50
+        real*8  :: fp_18_width_cutoff = 1.d0
+        real*8  :: fp_18_width_overlap = 1.d0
+        integer :: fp_18_nex_cutoff = 3
+        character:: fp_18_orbital
+        !-----------------------------------------------------------------------
+        real(8):: sock_ecutwf(2)
+        integer:: sock_inet, sock_port        ! socket ID & address of the socket
+        character(len=1024):: sock_host
         !-----------------------------------------------------------------------
         integer::qbfgs_bfgs_ndim!=1
         real(8)::qbfgs_trust_radius_max!=0.5d0
@@ -205,6 +250,19 @@ module mod_parini
         real(8)::qbfgs_trust_radius_ini!=0.02D0
         real(8)::qbfgs_w_1!=0.05D0
         real(8)::qbfgs_w_2!=0.5D0
+        !-----------------------------------------------------------------------
+        real(8),allocatable:: amu(:)
+        real(8),allocatable:: rcov(:)
+        logical,allocatable:: fixat(:)
+        logical:: fixlat(7)
+        integer,allocatable:: typat_global(:)
+        integer,allocatable:: llist(:)
+        integer,allocatable:: lhead(:)
+        integer,allocatable:: fragarr(:)
+        integer,allocatable:: fragsize(:)
+        integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
+        integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
+        integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
         !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict

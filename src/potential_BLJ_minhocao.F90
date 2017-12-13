@@ -65,7 +65,8 @@ contains
 !!!
 !!!end subroutine
 
-        subroutine blj(latvec,xred0,fxyz,strten,etot)
+        subroutine blj(parini,latvec,xred0,fxyz,strten,etot)
+        use mod_parini, only: typ_parini
         use blj_params
 !        energy and forces for the runcated Lennard Jones potential according to PRA 8, 1504 (1973)
 ! input: nat: number of atoms totally
@@ -80,6 +81,7 @@ contains
 !        before calling this routine be sure to initialize the variables by calling the subroutine init_parameter(nat)
 
         implicit none
+        type(typ_parini), intent(in):: parini
         integer:: iat, jat, kk, ll, l, nec(3), i, j, k, m
         real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3),rcut2(2,2)
         real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol,strten(6)
@@ -126,7 +128,7 @@ contains
                 r2red(2)=r2red(2)+real(j,8)*rec_nec(2)
                 r2red(3)=r2red(3)+real(k,8)*rec_nec(3)
                 call pbc_distance0(latvec_x,r1red,r2red,dd,dxyz)
-                if(dd.gt.rcut2(typat(iat),typat(jat))) then
+                if(dd.gt.rcut2(parini%typat_global(iat),parini%typat_global(jat))) then
                    goto 1002
                 elseif(dd.lt.1.d-12) then
                    goto 1002
@@ -136,15 +138,15 @@ contains
                 dd2=1.d0/dd
                 dd6=dd2*dd2*dd2
                 dd12=dd6*dd6
-                s=sigmalj(typat(iat),typat(jat))   !Sigma
+                s=sigmalj(parini%typat_global(iat),parini%typat_global(jat))   !Sigma
                 s2=s*s
                 s6=s2*s2*s2
                 s12=s6*s6
-                rc=1.d0/rcut(typat(iat),typat(jat)) !Cutoff
+                rc=1.d0/rcut(parini%typat_global(iat),parini%typat_global(jat)) !Cutoff
                 rc2=rc*rc
                 rc6=rc2*rc2*rc2
                 rc12=rc6*rc6
-                epscur=epslj(typat(iat),typat(jat))
+                epscur=epslj(parini%typat_global(iat),parini%typat_global(jat))
                    etot=etot+4.d0*epscur*((s12*dd12-s6*dd6)) !Simple LJ
                    if(truncated) etot=etot+4.d0*epscur*((6.d0*s12*rc12-3.d0*s6*rc6)*dd*rc2-7.d0*s12*rc12+4.d0*s6*rc6)
                    tt=24.d0*epscur*dd2*(2.d0*s12*dd12-s6*dd6) !Simple LJ

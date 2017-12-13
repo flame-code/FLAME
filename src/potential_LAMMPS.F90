@@ -71,8 +71,10 @@ module interface_lammps
 
 contains
 
-subroutine init_lammps(nnat)
+subroutine init_lammps(parini,nnat)
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: iat,nnat
 write(*,'(a)') " # Initiallizing lammps"
 ! And here's how to to it with a string constant of your choice
@@ -110,9 +112,9 @@ endif
 !!!Set atomic type
 call lammps_file (lmp, 'in.lammps_init')
 !   call lammps_command (lmp, 'atom_style charge')
-if(bc==1) then
+if(parini%bc==1) then
    call lammps_command (lmp, 'boundary p p p')
-elseif(bc==2) then
+elseif(parini%bc==2) then
    call lammps_command (lmp, 'boundary p p f')
 else
    call lammps_command (lmp, 'boundary f f f')
@@ -125,13 +127,13 @@ call lammps_command (lmp, 'region simbox prism 0 1 0 1 0 1 0 0 0 side in units b
 write(command_line,'(a,i5,a)') "create_box ",ntypat," simbox"
 call lammps_command (lmp, trim(command_line))
 do iat=1,ntypat
-write(command_line,'(a,i5,es25.15)') "mass ",iat,amu_emass*amu(iat)
+write(command_line,'(a,i5,es25.15)') "mass ",iat,amu_emass*parini%amu(iat)
 call lammps_command (lmp, trim(command_line))
 enddo
 !Setup all atoms
 nat_lammps=nnat
 do iat=1,nnat
-write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",typat(modulo(iat-1,nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
+write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",parini%typat_global(modulo(iat-1,nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
 write(*,*) trim(command_line)
 call lammps_command (lmp, trim(command_line))
 enddo
@@ -171,9 +173,11 @@ call lammps_command (lmp, "thermo 0")
 end subroutine
 
 !!!********************************************************************************
-subroutine call_lammps(latvec,xred0,fcart,energy,strten)
+subroutine call_lammps(parini,latvec,xred0,fcart,energy,strten)
 !!!All H-Atoms have to be at the end of the rxyz-array
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,n_in(3),offset_in(3),do_kpt_in,cellsearch,tb_or_meam,n_silicon,iprec,iat,nat_lammps_new
 integer:: nec1,nec2,nec3,nec1t,nec2t,nec3t,jat,k,l,m
 real(8):: xred(3,nat),xred0(3,nat),fcart(3,nat),strten(6),stress(3,3),energy,count
@@ -302,7 +306,7 @@ if(nat_lammps_new-nat_lammps.lt.0) then
 ! write(*,*) trim("now delete_atoms group delat compress no")
 elseif(nat_lammps_new-nat_lammps.gt.0) then
  do iat=nat_lammps+1,nat_lammps_new
- write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",typat(modulo(iat-1,nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
+ write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",parini%typat_global(modulo(iat-1,nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
  call lammps_command (lmp, trim(command_line))
  enddo
 !Get set commands

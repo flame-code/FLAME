@@ -36,7 +36,15 @@ subroutine init_potential_ann(parini,atoms)
             endif
         enddo
     enddo
-    fname = trim(parini%stypat(1))//'.ann.param.yaml'
+    if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
+        if(parini%ntypat>1) then
+            stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
+        endif
+        !write(fn_tt,'(i1)') iann
+        fname=trim(parini%stypat(1))//'1'//'.ann.param.yaml'
+    else
+        fname = trim(parini%stypat(1))//'.ann.param.yaml'
+    endif
     inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
     if( ann_arr%exists_yaml_file) then
         call read_ann_yaml(parini,ann_arr)
@@ -86,7 +94,7 @@ subroutine cal_potential_ann(parini,atoms)
     endif
     !atoms%epot=0.d0
     !atoms%fat(1:3,1:atoms%nat)=0.d0
-    !call cal_ann_eem1(atoms,symfunc,ann_arr,ekf)
+    !call cal_ann_cent1(atoms,symfunc,ann_arr,ekf)
     call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
 !    do iat=1,atoms%nat
 !        call symmetry_functions(ann_arr%ann(i),iat,atoms,.true.)

@@ -28,22 +28,27 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     do i=1,ekf%n
         p(i,i)=1.d-2
     enddo
-    if(trim(parini%approach_ann)=='eem1') then
-        r0=100000.d0
-        alpha=120.d-2
-        rf=1.d-6
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1') then
+        r0=10.d0
+        alpha=100.d-2
+        rf=1.d-5
     elseif(trim(parini%approach_ann)=='cent2') then
         r0=1.d0
         alpha=30.d-2
         rf=1.d-2
     elseif(trim(parini%approach_ann)=='tb') then
-        r0=100000.d0
-        alpha=120.d-2
-        rf=1.d-6
+        r0=100.d0
+        alpha=100.d-2
+        rf=1.d-5
+        !alpha=20.d-2
+        !rf=1.d-10
     else
         r0=1.d0
         alpha=5.d-1
         rf=1.d-8
+    endif
+    if(parini%fit_hoppint) then
+        call fit_hgen(parini,atoms_valid,ann_arr,ekf)
     endif
     do iter=0,parini%nstep_ekf
         call cpu_time(time_s)
@@ -72,13 +77,22 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         dtime4=0.d0 !time to convert derivative of ANN in typ_ann to 1D array
         dtime5=0.d0 !time to matrix-vector multiplication in Kalman filter
         dtime6=0.d0 !time of the rest of Kalman filter algorithm
-        r=(r0-rf)*exp(-alpha*(iter))+rf
+        if (.not. parini%restart_param) then
+            r=(r0-rf)*exp(-alpha*(iter))+rf
+        else
+            r=(r0-rf)*exp(-alpha*(iter+parini%restart_iter))+rf
+        endif
         rinv=1.d0/r
         write(31,'(i6,es14.5)') iter,r
         do iconf=1,atoms_train%nconf
             ann_arr%event='train'
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+            if(trim(parini%approach_ann)=='tb') then
+                do j=1,ekf%n
+                    ekf%g(j)=ekf%g(j)+parini%weight_hardness*ekf%x(j)
+                enddo
+            endif
             call cpu_time(time1)
             call DGEMV('T',ekf%n,ekf%n,1.d0,p,ekf%n,ekf%g,1,0.d0,v1,1)
             !call cal_matvec_mpi(ekf%n,p,ekf%g,v1)
@@ -163,7 +177,7 @@ subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train
     do i=1,ekf%n
         p(i,i)=1.d-2
     enddo
-    if(trim(parini%approach_ann)=='eem1') then
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1') then
         r0=300.d0
         alpha=20.d-2
         rf=1.d-8
@@ -330,7 +344,7 @@ subroutine analyze_epoch_init(parini,atoms_train,ann_arr)
     type(typ_atoms_arr), intent(in):: atoms_train
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2')) return
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(ann_arr%approach)=='cent2')) return
     ann_arr%natsum(1:10)=0
     ann_arr%qmin(1:10)=huge(1.d0)
     ann_arr%qmax(1:10)=-huge(1.d0)
@@ -355,7 +369,7 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
     integer:: i, ios
     real(8):: ttavg, ttmin, ttmax, ssavg, ssmin, ssmax
     character(50):: fn_charge, fn_chi
-    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent2')) return
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(ann_arr%approach)=='cent2')) return
     do i=1,parini%ntypat
         fn_charge='charge.'//trim(parini%stypat(i))
         fn_chi='chi.'//trim(parini%stypat(i))
@@ -392,6 +406,7 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
         ssmax=ann_arr%chi_max(i)
         write(71,'(i6,5f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin,ann_arr%chi_delta(i)
         !write(71,'(i6,4es14.5)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
+        !if (trim(parini%stypat(i))=='O' .and. ssmax-ssmin> 0.01) stop
         close(61)
         close(71)
     enddo

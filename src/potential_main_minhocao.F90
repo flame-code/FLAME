@@ -82,7 +82,7 @@ contains
     logical, intent(in)  :: getwfk
 
 
-    real(8) :: dkpt,fcart_c(3,nat),energy_c,strten_c
+    real(8) :: dkpt,fcart_c(3,nat),energy_c,strten_c(6)
 
 !For the voids
     real(8):: energy_voidlj,strten_voidlj(6),fcart_voidlj(3,nat)
@@ -102,9 +102,9 @@ contains
 
 
 !Setting up the k-point mesh
-    if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="vasp".and.vasp_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
+    if((trim(parini%potential_potential)=="siesta".and.parini%siesta_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="vasp".and.parini%vasp_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="abinit".and.parini%abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
@@ -130,9 +130,9 @@ contains
 if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
-    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
+    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.parini%siesta_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.parini%vasp_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.parini%abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 
 !Copy global array sizes to handle voids for single point energy evaluation
@@ -166,7 +166,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="ann") then
         icount_alborz=icount_alborz+1
         if(icount_alborz==1) then
-            call call_to_alborz_init(nat)
+            call call_to_alborz_init(parini,nat)
         endif
 !!! #endif
     elseif(trim(parini%potential_potential)=="blj") then
@@ -177,12 +177,12 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="msock") then
 #if defined(LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
-          if(count_lammps==0) call init_lammps(nat)
+          if(count_lammps==0) call init_lammps(parini,nat)
           count_lammps=count_lammps+1
 #endif
 #if defined(TINKER)
     elseif(trim(parini%potential_potential)=="tinker") then
-          if(count_tinker==0) call init_tinker(nat,xred,latvec)
+          if(count_tinker==0) call init_tinker(parini,nat,xred,latvec)
           count_tinker=count_tinker+1
 #endif
     else
@@ -190,7 +190,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     endif
     
     if(trim(parini%potential_potential)=="lenosky_tb") then
-      call lenosky_tb(latvec,xred,iprec,parres%ka,parres%kb,parres%kc,fcart,energy,strten)
+      call lenosky_tb(parini,latvec,xred,iprec,parres%ka,parres%kb,parres%kc,fcart,energy,strten)
     elseif(trim(parini%potential_potential)=="lenosky_tb_lj") then
       call lenosky_tb_lj(latvec,xred,iprec,parres%ka,parres%kb,parres%kc,fcart,energy,strten)
     elseif(trim(parini%potential_potential)=="lenosky_meam") then
@@ -200,20 +200,20 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
         call call_to_alborz_get('bulk',nat,latvec,xred,fcart,energy,strten)
 !!! #endif
     elseif(trim(parini%potential_potential)=="blj") then
-      call blj(latvec,xred,fcart,strten,energy)
+      call blj(parini,latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="mlj") then
-      call mlj(latvec,xred,fcart,strten,energy)
+      call mlj(parini,latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="tersoff") then
       call tersoff(latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="edip") then
       call edip(latvec,xred,fcart,strten,energy)
     elseif(trim(parini%potential_potential)=="ipi") then
-      call evaluate_ipi(latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
+      call evaluate_ipi(parini,nat,latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
     elseif(trim(parini%potential_potential)=="msock") then
-      call evaluate_msock(latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
+      call evaluate_msock(parini,latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
 #if defined(LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
-      call call_lammps(latvec,xred,fcart,energy,strten)
+      call call_lammps(parini,latvec,xred,fcart,energy,strten)
 #endif
 #if defined(TINKER)
     elseif(trim(parini%potential_potential)=="tinker") then
@@ -232,13 +232,13 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="siesta") then
       call get_output_siesta(fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="vasp") then
-      call get_output_vasp  (fcart, energy, strten)
+      call get_output_vasp  (parini,fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="espresso") then
-      call get_output_espresso  (fcart, energy, strten)
+      call get_output_espresso  (parini,fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="mopac") then
       call get_output_mopac (fcart, energy, strten)
     elseif(trim(parini%potential_potential)=="dftb") then
-      call get_output_dftb (fcart, energy, strten)
+      call get_output_dftb (parini,fcart, energy, strten)
     end if
 
 !Copy back global array sizes and compte/add the LJ forces
@@ -257,15 +257,15 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 !Add confinement potential
     if(confine.ge.2) then
       write(*,'(a,i3)') " # Running confinement with option :",confine
-      call confinement_energy_forces(nat,xred,latvec,energy_c,fcart_c,strten_c)
+      call confinement_energy_forces(parini,nat,xred,latvec,energy_c,fcart_c,strten_c)
       energy=energy+energy_c
       fcart=fcart+fcart_c
       strten=strten+strten_c
     endif
 
 !Add core repulsion (no repulsion on LJ particles)
-    if(core_rep) then
-       call core_repulsion(latvec,xred,fcart_rep,strten_rep,energy_rep)
+    if(parini%core_rep) then
+       call core_repulsion(parini,latvec,xred,fcart_rep,strten_rep,energy_rep)
        energy=energy+energy_rep
        fcart=fcart+fcart_rep
        strten=strten+strten_rep
@@ -297,9 +297,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 
 
 !Setting up the k-point mesh
-    if((trim(parini%potential_potential)=="siesta".and.siesta_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="vasp".and.vasp_kpt_mode.ne.2).or.&
-       (trim(parini%potential_potential)=="abinit".and.abinit_kpt_mode.ne.2)) then
+    if((trim(parini%potential_potential)=="siesta".and.parini%siesta_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="vasp".and.parini%vasp_kpt_mode.ne.2).or.&
+       (trim(parini%potential_potential)=="abinit".and.parini%abinit_kpt_mode.ne.2)) then
     write(*,'(a)') " # KPT mesh set up with kpt_mode /= 2"
     else
         if(dkpt.ne.0.d0) then
@@ -321,9 +321,9 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
 if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
     endif
 !Trigger exit if reuse and wrong kpt_options are used
-    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.siesta_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.vasp_kpt_mode==1).or.&
-       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.abinit_kpt_mode==1))&
+    if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.parini%siesta_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="vasp".and.reuse_kpt.and.parini%vasp_kpt_mode==1).or.&
+       (trim(parini%potential_potential)=="abinit".and.reuse_kpt.and.parini%abinit_kpt_mode==1))&
        stop "Incompatible kpt-modes"
 
 

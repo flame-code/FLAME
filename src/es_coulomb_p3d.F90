@@ -1,5 +1,5 @@
 !*****************************************************************************************
-!CAUTION: Why is this subroutine called in ANN eem1 when system is bulk
+!CAUTION: Why is this subroutine called in ANN cent1 when system is bulk
 !and kwald is the psolver.
 subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
     use mod_interface

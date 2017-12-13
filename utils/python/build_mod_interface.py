@@ -29,6 +29,7 @@ def check_var_define(line):
     i_implicit=tt.find('implicit none')
     i_integer=tt.find('integer')
     i_real=tt.find('real')
+    i_complex=tt.find('complex')
     i_external=tt.find('external')
     if tt.find('external_')>-1: i_external=-1
     i_character=tt.find('character')
@@ -50,7 +51,8 @@ def check_var_define(line):
             print 'ERROR: implicit or ',stat_line
         else:
             stat_line='implicit'
-    if (i_integer==0 or i_real==0 or i_character==0 or i_logical==0 or i_type==0 or i_external==0):
+    if (i_integer==0 or i_real==0 or i_complex==0 or i_character==0 or \
+            i_logical==0 or i_type==0 or i_external==0):
         if not stat_line=='unknown':
             print 'ERROR: definition or ',stat_line
         else:
@@ -161,13 +163,12 @@ def get_files():
                    './src/quaternions.F90',
                    './src/expand_poslows.F90',
                    './src/find_symmetry.F90',
-                   './src/fingerprint_MOLGOM.F90',
                    './src/fingerprint_oganov.F90',
                    './src/fingerprint_oganov_cont.F90',
                    './src/fingerprint_XYZ2SM.F90',
                    './src/potential_main_minhocao.F90',
-                   './src/io_ascii.F90',
-                   './src/io_vasp_minhocao.F90',
+#                   './src/io_ascii.F90',
+#                   './src/io_vasp_minhocao.F90',
                    './src/potential_IPI.F90',
                    './src/potential_LAMMPS.F90',
                    './src/potential_LenoskyMEAM.F90',
@@ -212,7 +213,7 @@ def make_one_line(lines,iline):
         #if i_comment>0: break
     return oneline_arg,iline+i
 #*****************************************************************************************
-def routines_missing_use_interface(lines,routines,iline_routines):
+def routines_missing_use_interface(file,lines,routines,iline_routines):
     excluded_routines=['sort_alborz','sort2_alborz',
         'ylm_mathematica',
         'spg_cell_primitive',
@@ -236,6 +237,7 @@ def routines_missing_use_interface(lines,routines,iline_routines):
         'cryst_to_cart',
         'recips'
         ]
+    filename_printed=False
     for iroutine in range(len(routines)):
         tt=str(lines[iline_routines[iroutine]]).split()[1]
         i_roundbracket=tt.find('(')
@@ -256,7 +258,12 @@ def routines_missing_use_interface(lines,routines,iline_routines):
             if i_modinterface==0:
                 uses_modinterface=True
                 break
-        if not uses_modinterface: print routines[iroutine]
+        if not uses_modinterface:
+            if not filename_printed:
+                print \
+                "\nRoutines in file %s do not use mod_interface!" % file
+                filename_printed=True
+            print routines[iroutine]
 #*****************************************************************************************
 def make_interface_routines(lines,routines,iline_routines,fout):
     for iroutine in range(len(routines)):
@@ -301,6 +308,7 @@ def make_interface_routines(lines,routines,iline_routines,fout):
             if stat_line=='definition':
                 tt=str(lines[iline_routines[iroutine]+k+1]).strip()
                 tt=tt.lower()
+                arg_list.append("parameter")
                 for l in range(len(arg_list)):
                     ttt=r"\b"+arg_list[l]+r"\b"
                     p=re.compile(ttt)
@@ -342,7 +350,7 @@ for file in files:
                 routines.append(line)
                 iline_routines.append(iline)
     fout.write("! %s :\n" % file)
-    if use_modinterface: routines_missing_use_interface(lines,routines,iline_routines)
+    if use_modinterface: routines_missing_use_interface(file,lines,routines,iline_routines)
     make_interface_routines(lines,routines,iline_routines,fout)
 
 fout.write("end interface\n")

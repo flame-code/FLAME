@@ -1,11 +1,9 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,units,usewf_md
- use global, only: fixat,fixlat,bc
+ use mod_parini, only: typ_parini
+ use global, only: nat,ntypat,znucl, char_type,units
  use defs_basis
  use interface_code
- use mod_parini, only: typ_parini
 implicit none
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -19,13 +17,13 @@ implicit none
     real(8) :: enmin1, enmin2, en0000, econs_max, econs_min, devcon
     logical:: getwfk
     real(8):: pressure,int_pressure_gpa,energy,rkin,rkin_0,dt,dt_ratio
-    if((all(fixlat(1:6)).and..not.fixlat(7)).or.bc==2) then
+    if((all(parini%fixlat(1:6)).and..not.parini%fixlat(7)).or.parini%bc==2) then
        continue
     else
        write(*,*) "This routine only intended for fixed cell MD calculation"
        stop
     endif
-    pressure=target_pressure_habohr
+    pressure=parini%target_pressure_habohr
     dt=parres%dtion_md
 
     !C initialize positions,velocities, forces
@@ -43,8 +41,8 @@ implicit none
 
 !Assign masses to each atom (for MD)
     do iat=1,nat
-      amass(iat)=amu_emass*amu(typat(iat))
-      write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, amu(typat(iat)),amass(iat)
+      amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
+      write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
     enddo
 
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
@@ -56,9 +54,9 @@ implicit none
        fxyz=fcart_in
        fxyz_old=fcart_in
        vxyz=vel_in
-       call elim_fixed_at(nat,vxyz)
-       call elim_fixed_at(nat,fxyz)
-       call elim_fixed_at(nat,fxyz_old)
+       call elim_fixed_at(parini,nat,vxyz)
+       call elim_fixed_at(parini,nat,fxyz)
+       call elim_fixed_at(parini,nat,fxyz_old)
        rkin=0.d0
        do iat=1,nat
           rkin=rkin+amass(iat)*(vxyz(1,iat)**2+vxyz(2,iat)**2+vxyz(3,iat)**2)
@@ -74,7 +72,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,etot_in,etot_in)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
 !*********************************************************************
     e0 = etot_in
@@ -92,7 +90,7 @@ implicit none
 
        enmin2=enmin1
        enmin1=en0000
-       if(istep.ne.1.and.usewf_md) then
+       if(istep.ne.1.and.parini%usewf_md) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -120,9 +118,9 @@ implicit none
           fxyz_old(2,iat) = at2
           fxyz_old(3,iat) = at3
        end do
-       call elim_fixed_at(nat,vxyz)
-       call elim_fixed_at(nat,fxyz)
-       call elim_fixed_at(nat,fxyz_old)
+       call elim_fixed_at(parini,nat,vxyz)
+       call elim_fixed_at(parini,nat,fxyz)
+       call elim_fixed_at(parini,nat,fxyz_old)
        rkin=0.d0
        do iat=1,nat
           rkin=rkin+amass(iat)*(vxyz(1,iat)**2+vxyz(2,iat)**2+vxyz(3,iat)**2)
@@ -154,7 +152,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,etot_in,etot_in)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
        if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
