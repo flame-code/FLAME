@@ -70,6 +70,7 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     integer:: nxyz(3), ndims(3)
     real(kind=8):: hgrids(3)
     real(kind=8):: cv1(3), cv2(3), cv3(3), ang_bc, ang_ac, ang_ab
+    real(kind=8):: alpha_bc,beta_ac, gamma_ab ,pi=4.d0*atan(1.d0)
     type(dictionary), pointer :: dict_input
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
@@ -111,11 +112,14 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     ang_ab=acos(dot_product(cv1,cv2)/sqrt(dot_product(cv1,cv1)*dot_product(cv2,cv2)))
     !write(*,'(a,3f15.5)') 'alpha,beta,gamma ',ang_bc,ang_ac,ang_ab
     write(*,*) 'REZA-3'
-    write(*,*) iproc, nproc
-    write(*,*) geocode
+    write(*,*) 'iproc,nproc', iproc, nproc
+    write(*,*) 'geocode : ',geocode
     dict_input=>dict_new('kernel' .is. dict_new('isf_order' .is. itype_scf))
-    ewald_p3d%poisson_p3d%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims, &
-        hgrids,alpha_bc=ang_bc,beta_ac=ang_ac,gamma_ab=ang_ab)
+    alpha_bc = abs(ang_bc)!+pi/2.d0
+    beta_ac = abs(ang_ac)!+pi/2.d0
+    gamma_ab = abs(ang_ab)!+pi/2.d0
+    !write(*,*) iproc,nproc,geocode,ndims, hgrids,alpha_bc,beta_ac,gamma_ab
+    ewald_p3d%poisson_p3d%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
     call dict_free(dict_input)
     write(*,*) 'REZA-4'
     call pkernel_set(ewald_p3d%poisson_p3d%pkernel,verbose=.true.)
