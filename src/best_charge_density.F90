@@ -33,7 +33,7 @@ subroutine best_charge_density_rho(parini)
     real(8),allocatable:: dft_fat(:,:),cent_fat(:,:)
     real(8):: sd_s,err_fdm,err_cent,volinv,err
     real(8):: q_max,a_max
-    real(8):: errmax, peak, c1, d1, temp1,cv1,cv2,cv3
+    real(8):: errmax, peak, c1, d1, temp1,cv1,cv2,cv3 , Ne
     !open(unit=1370,file='param.txt')
     call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
@@ -51,7 +51,8 @@ subroutine best_charge_density_rho(parini)
     read(1377,*) sd_s
     read(1377,*)
     read(1377,*) err
-
+    read(1377,*)
+    read(1377,*) Ne
 
     write(*,'(a,i,3es13.6)') "params q_max and LCN : ",lcn,A(:,1)
     write(*,'(a,es13.6)') "params max gw : ",sum(Q(:,1))
@@ -77,7 +78,10 @@ subroutine best_charge_density_rho(parini)
     allocate(dft_rho(nx,ny,nz),weight(nx,ny,nz),dft_fat(1:3,1:atoms%nat),cent%gwit(1:atoms%nat))
     cent%ewald_p3d%poisson_p3d%rho=-1.d0*cent%ewald_p3d%poisson_p3d%rho
     dft_rho = cent%ewald_p3d%poisson_p3d%rho
-    w=abs(1.d0/(volinv*sum(dft_rho)))
+    w=abs((volinv*sum(dft_rho)))
+    !write(*,*)"w ", w
+    w = 1.d0/Ne
+    !stop 'AAAAAAAAAAAAAAAAAAAAAAAAAAAA'
     cent%gwit(:) = 1.3d0
     atoms%zat(:) = 1.d0
     atoms%boundcond='bulk'   
@@ -191,12 +195,12 @@ subroutine best_charge_density_rho(parini)
         !write(40,*)iter,rho_err,volinv,w
         rmse = sqrt(rho_err)
         !stop 'AAAAAAAAAAAA'
-        write(*,'(a,i4,4es14.6)')"SD",iter,rmse,errmax,ener_err,force_err
+        write(*,'(a,i8,4es14.6)')"SD ",iter,rmse,errmax,ener_err,force_err
         write(*,*)"SD --------------------------------------------------------------------"
-        write(*,'(a,i4,i4,es14.6)')"GTO_val_sum ",iter,i,sum(q(:,1))
+        write(*,'(a,i8,i8,es14.6)')"GTO_val_sum ",iter,i,sum(q(:,1))
         do i = 1 , lcn
-            write(*,'(a,i4,i4,2es14.6)')"GTO_val ",iter,i,q(i,1),a(i,1)
-            write(*,'(a,i4,i4,es14.4)') "a-q-partial",iter,i,qpar(i,1) 
+            write(*,'(a,i8,i8,2es14.6)')"GTO_val ",iter,i,q(i,1),a(i,1)
+            write(*,'(a,i8,i8,es14.4)') "a-q-partial",iter,i,qpar(i,1) 
         enddo
         write(*,'(a)')"GTO --------------------------------------------------------------------"
         if (abs(errmax) < err)then
