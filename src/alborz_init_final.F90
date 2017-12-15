@@ -128,7 +128,6 @@ subroutine alborz_final(parini,file_ini)
     if(trim(parini%task)/='minhocao') then
         call finalizeprocessors
     endif
-    stop
     !-----------------------------------------------------------------
     call yaml_close_stream(unit=parini%iunit)
     !-----------------------------------------------------------------

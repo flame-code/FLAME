@@ -304,7 +304,8 @@ elif(atom_name=='O') :
 for i in range((len(list_new))):
     #list_new[i][1]*= (factorH/factor)
     list_new[i][1]*= (factor_ion_Li/factor_ion)**2*2 
-print "ionic radii" , factor_ion
+fact=factor_ion*0.85
+print "ionic radii" , fact
 
 #-----------------------------------------------------------------------------------
 
@@ -321,7 +322,7 @@ f.write ( '''main:
     gausswidth_ion: 0.600
     ener_ref: 0.0
 ''')
-f.write ("    gausswidth: %7.4f\n"% factor_ion)
+f.write ("    gausswidth: %7.4f\n"% fact)
 f.write ("    hardness: %7.4f\n"% hardness)
 f.write ('''    chi0: CHI0
     spring_const: 1.00

@@ -1652,7 +1652,7 @@ INTEGER :: n, vertex(n), nvert, iwk(n)
 REAL(8) :: x(n), y(n)
 end subroutine envelope
 ! ./src/es_coulomb_p3d_bias.F90 :
-subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane,cal_force)
+subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -1660,7 +1660,6 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane,cal_force)
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
     real(8):: epotlong, epotplane !, epotshort
-    logical, optional :: cal_force
 end subroutine bias_potener_forces
 subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
     use mod_electrostatics, only: typ_ewald_p3d
@@ -1680,14 +1679,13 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
     real(8):: cell(3)
     real(8):: hz , vlmvu, vlzumvuzl 
 end subroutine sollaplaceq
- subroutine calculate_force_ener_plane(atoms,ewald_p3d,epot,cal_force)
+ subroutine calculate_force_ener_plane(atoms,ewald_p3d,epot)
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     type(typ_atoms), intent(inout):: atoms
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: fatp(3,atoms%nat) 
-    logical:: cal_force
 end subroutine calculate_force_ener_plane
 subroutine LG_weight(nlx,nly,nlz,hx,hy,hz,wx,wy,wz)
     integer:: nlx ,nly, nlz !number of point for Lagrange interpolation
