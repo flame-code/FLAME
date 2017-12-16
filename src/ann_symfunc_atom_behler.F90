@@ -15,7 +15,6 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !local variables
     integer:: ig, i
     integer:: iat !, jat, kat
-    real(8)::factor
     type(typ_pia_arr):: pia_arr
     !real(8):: rc, en
     !real(8):: eval(3)
@@ -48,24 +47,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ib))
         pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
         pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
-        if     (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Li') then
-            factor = 3.01/27.21138386d0
-        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Na') then
-            factor = 2.85/27.21138386d0
-        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'K') then
-            factor = 2.42/27.21138386d0
-        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'F') then
-            factor = 10.41/27.21138386d0
-        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Cl') then
-            factor = 8.30/27.21138386d0
-        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Br') then
-            factor = 7.59/27.21138386d0
-        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'Zr') then
-            factor = 3.64/27.21138386d0
-        elseif (atoms%sat(symfunc%linked_lists%bound_rad(2,ib)) == 'O') then
-            factor = 7.54/27.21138386d0
-        endif
-        call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc,factor)
+        call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc)
     enddo
     do ia=1,symfunc%linked_lists%maxbound_ang
         ibij=symfunc%linked_lists%bound_ang(1,ia)
@@ -105,7 +87,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !stop
 end subroutine symmetry_functions_driver
 !*****************************************************************************************
-subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc,factor)
+subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     use mod_interface
     use mod_ann, only: typ_ann_arr, typ_symfunc
     use mod_linked_lists, only: typ_pia
@@ -118,7 +100,6 @@ subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc,fac
     integer:: i0, ig
     real(8):: ttei,ttej, ttix,ttiy,ttiz,ttjx,ttjy,ttjz,tt1i,tt1j
     real(8):: etai,etaj, rs, vi,vj,sign_chi0
-    real(8):: factor
     i0=ann_arr%ann(isat)%ng1
     do ig=1,ann_arr%ann(isat)%ng2
         i0=i0+1
@@ -130,8 +111,6 @@ subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc,fac
 
         if (trim(ann_arr%ann(isat)%method)=="sign" .or.  trim(ann_arr%ann(isat)%method)=="angle1" .or.  trim(ann_arr%ann(isat)%method)=="angle2") then
             vi=exp(-etaj*(pia%r-rs)**2) * sign_chi0
-        elseif (trim(ann_arr%ann(isat)%method)=="fact_sign") then
-            vi=exp(-etaj*(pia%r-rs)**2) * factor* sign_chi0
         else
             vi=exp(-etaj*(pia%r-rs)**2)
         endif

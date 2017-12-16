@@ -687,14 +687,13 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     type(typ_atoms), intent(in):: atoms
     type(typ_symfunc), intent(inout):: symfunc
 end subroutine symmetry_functions_driver
-subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc,factor)
+subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     use mod_ann, only: typ_ann_arr, typ_symfunc
     use mod_linked_lists, only: typ_pia
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_pia), intent(in):: pia
     integer, intent(in):: ib, iat, isat, jsat
     type(typ_symfunc), intent(inout):: symfunc
-    real(8):: factor
 end subroutine symmetry_functions_g02_atom
 subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,kat_maincell,rij,rik,rjk,drij,drik,drjk,fcij,fcdij,fcik,fcdik,fcjk,fcdjk,symfunc)
     use mod_ann, only: typ_ann_arr, typ_symfunc
