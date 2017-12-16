@@ -17,6 +17,7 @@ module mod_electrostatics
         real(8), allocatable:: pot(:,:,:) !potential array.
         real(8), allocatable:: pots(:,:,:) !surface potential array.
         integer:: npl, npu
+        real(8):: beta 
 #if defined(HAVE_BPS)
     type(coulomb_operator):: pkernel
 #endif

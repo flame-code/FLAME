@@ -55,6 +55,7 @@ subroutine set_interaction(atoms,shortrange)
     !character(20):: strtmpi, strtmpj
     !character(4):: namatnamat1, namatnamat2
     shortrange%ntypinter=(atoms%ntypat**2+atoms%ntypat)/2
+    allocate (shortrange%interaction(10,10),shortrange%qq(10))
     !nall=10
     !write(*,*) 'nall=',nall
     !call tosifumi_parameters(strint,parameters)

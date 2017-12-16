@@ -121,12 +121,12 @@ subroutine solsyslinequ(poisson_p3d,hz,cell,beta_arg)
     do iz=1,poisson_p3d%ngpz
         d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
     enddo
-    !write(*,*) 'beta_arg=',beta_arg
-    if(.not. present(beta_arg)) then
+  !  if(.not. present(beta_arg)) then
         call calbeta(hzsq,poisson_p3d%ngpz,d(1+nem),beta)
-    else
-        beta=beta_arg
-    endif
+  !  else
+  !      beta=beta_arg
+  !  endif
+    poisson_p3d%beta = beta
     call prepare00(poisson_p3d%ngpz,nem,d,c,hz)
     c(1)=c(1)-beta
     c(poisson_p3d%ngpz)=c(poisson_p3d%ngpz)+beta
