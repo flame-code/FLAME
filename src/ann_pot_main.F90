@@ -164,7 +164,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
     real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
-    real(8):: anat2(100), g2(100)
+    real(8):: anat2(100), g2(100), qnet
     ann_arr%event='evalu'
     do ia=1,ann_arr%n
         call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
@@ -184,8 +184,16 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
             anat1=0.d0
             anat2=0.d0
             do iat=1,atoms%nat
-                anat1(atoms%itypat(iat))=anat1(atoms%itypat(iat))+atoms%qat(iat)
-                anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*atoms%qat(iat)**2
+                if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
+                    qnet=atoms%qat(iat)
+                elseif(trim(ann_arr%approach)=='cent2') then
+                    qnet=atoms%zat(iat)+atoms%qat(iat)
+                else
+                    write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
+                    stop
+                endif
+                anat1(atoms%itypat(iat))=anat1(atoms%itypat(iat))+qnet
+                anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*qnet**2
             enddo
             do ia=1,ann_arr%n
                 g1(ia)=g1(ia)+2.d0*anat1(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
