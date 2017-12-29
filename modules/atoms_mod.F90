@@ -59,6 +59,8 @@ module mod_atoms
         !integer, allocatable:: inclusion(:)
         character(50), allocatable:: fn(:)
         integer, allocatable:: lconf(:)
+        logical, allocatable:: conf_inc(:)
+        integer:: nconf_inc=-1
     end type typ_atoms_arr
     !type typ_atoms_arr
     !    integer:: natmax=10000
