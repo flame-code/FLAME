@@ -223,7 +223,9 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
     real(8):: cos_theta_i, cos_theta_k, cos_theta_j, ui, uk, uj, vi, vk, vj
     real(8):: zeta, alam, etai, etaj, etak, zzz
     real(8):: sign_chi0j, sign_chi0k, sign_chi0i 
-    real(8):: factor 
+    real(8):: factor, fcj_fck, one_rij, one_rik, one_rijk, rijsq, riksq
+    real(8):: cos_one_rijsq, cos_one_riksq, fcd_one_rij, fcd_one_rik 
+    logical:: cal_stress 
     i0=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4
     sign_chi0i=sign(1.d0,ann_arr%ann(isat)%chi0)
     sign_chi0j=sign(1.d0,ann_arr%ann(jsat)%chi0)
@@ -236,7 +238,17 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
     else
         factor=1.d0
     endif
-
+    cos_theta_i=(piaij%dr(1)*piaik%dr(1)+piaij%dr(2)*piaik%dr(2)+piaij%dr(3)*piaik%dr(3))/(piaij%r*piaik%r)
+    fcj_fck=piaij%fc*piaik%fc
+    one_rij=1.d0/piaij%r
+    one_rik=1.d0/piaik%r
+    one_rijk=one_rij*one_rik
+    cos_one_rijsq=cos_theta_i/piaij%r**2
+    cos_one_riksq=cos_theta_i/piaik%r**2
+    fcd_one_rij=piaij%fcd/piaij%r
+    fcd_one_rik=piaik%fcd/piaik%r
+    rijsq=piaij%r**2
+    riksq=piaik%r**2
     do ig=1,ann_arr%ann(isat)%ng5
         i0=i0+1
         ii1=ann_arr%ann(isat)%g5i(1,ig)+ann_arr%ann(isat)%g5i(2,ig)
@@ -248,20 +260,19 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         etaj=ann_arr%ann(jsat)%g5eta(ig)
         etak=ann_arr%ann(ksat)%g5eta(ig)
         zzz=2.d0**(1.d0-zeta)*factor
-        cos_theta_i=(piaij%dr(1)*piaik%dr(1)+piaij%dr(2)*piaik%dr(2)+piaij%dr(3)*piaik%dr(3))/(piaij%r*piaik%r)
         ui=(1.d0+alam*cos_theta_i)**zeta
-        vi=exp(-(etaj*piaij%r**2+etak*piaik%r**2))
-        ttei=zzz*ui*vi*piaij%fc*piaik%fc
-        ss1=vi*piaij%fc*piaik%fc
-        ss2=ui*piaij%fc*piaik%fc
+        vi=exp(-(etaj*rijsq+etak*riksq))
+        ttei=zzz*ui*vi*fcj_fck
+        ss1=vi*fcj_fck
+        ss2=ui*fcj_fck
         ss3=ui*vi*piaik%fc
         ss4=ui*vi*piaij%fc
         tt1=zeta*alam*(1.d0+alam*cos_theta_i)**(zeta-1)*ss1
-        tt2=tt1/(piaij%r*piaik%r)
+        tt2=tt1*one_rijk
         ttj=2.d0*etaj*vi*ss2 !HERE etaj must be checked
         ttk=2.d0*etak*vi*ss2 !HERE etaj must be checked
-        tt4=-tt1*cos_theta_i/piaij%r**2-ttj+ss3*piaij%fcd/piaij%r
-        tt5=-tt1*cos_theta_i/piaik%r**2-ttk+ss4*piaik%fcd/piaik%r
+        tt4=-tt1*cos_one_rijsq-ttj+ss3*fcd_one_rij
+        tt5=-tt1*cos_one_riksq-ttk+ss4*fcd_one_rik
         ttjx=zzz*(tt2*piaik%dr(1)+tt4*piaij%dr(1))
         ttjy=zzz*(tt2*piaik%dr(2)+tt4*piaij%dr(2))
         ttjz=zzz*(tt2*piaik%dr(3)+tt4*piaij%dr(3))
