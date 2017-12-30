@@ -852,6 +852,23 @@ subroutine ann_train(parini)
     use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine init_ann_train(parini,ann_arr,ekf)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(inout):: ekf
+end subroutine init_ann_train
+subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(inout):: ekf
+    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+end subroutine final_ann_train
 subroutine set_conf_inc_random(parini,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr
