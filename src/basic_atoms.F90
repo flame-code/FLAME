@@ -1805,6 +1805,8 @@ subroutine set_qat(atoms)
     do itypat=1,atoms%ntypat
         if(trim(atoms%stypat(itypat))=='Na') then
             atoms%qtypat(itypat)=1.d0
+        elseif(trim(atoms%stypat(itypat))=='S') then
+            atoms%qtypat(itypat)=-0.9d0
         elseif(trim(atoms%stypat(itypat))=='Cl') then
             atoms%qtypat(itypat)=-1.d0
         elseif(trim(atoms%stypat(itypat))=='Li') then
@@ -1852,6 +1854,8 @@ subroutine set_qat(atoms)
     do iat=1,atoms%nat
         if(trim(atoms%sat(iat))=='Na') then
             atoms%qat(iat)=1.d0
+        else if(trim(atoms%sat(iat))=='S') then
+            atoms%qat(iat)=-0.9d0
         else if(trim(atoms%sat(iat))=='Cl') then
             atoms%qat(iat)=-1.d0
         else if(trim(atoms%sat(iat))=='Li') then
