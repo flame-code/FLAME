@@ -130,13 +130,13 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     enddo
 
     !if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train') .or. trim(ann_arr%event)=='evalu') then
         deallocate(symfunc%linked_lists%prime_bound)
         deallocate(symfunc%linked_lists%bound_rad)
         deallocate(symfunc%linked_lists%bound_ang)
     endif
     !if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
-    if(trim(ann_arr%event)=='potential') then
+    if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)

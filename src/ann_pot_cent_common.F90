@@ -19,7 +19,7 @@ subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     ann_arr%chi_i(iat)=out_ann
     tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
     ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-    if(.not. (trim(ann_arr%event)=='evalu')) then
+    if(trim(ann_arr%event)/='train') then
         tt2=ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
         do ib=symfunc%linked_lists%prime_bound(iat),symfunc%linked_lists%prime_bound(iat+1)-1
             ttx=0.d0 ; tty=0.d0 ; ttz=0.d0
@@ -76,8 +76,10 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     real(8):: ttx, tty, ttz, qnet, hinv(3,3), vol
     integer:: ib, i, j, iat, jat
     call getvol_alborz(atoms%cellvec,vol)
+    if(trim(ann_arr%event)=='potential') then
     atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)*vol !*atoms%nat !not certain if this is needed!!!
-    if(.not. (trim(ann_arr%event)=='evalu')) then
+    endif
+    if(trim(ann_arr%event)/='train') then
         do ib=1,symfunc%linked_lists%maxbound_rad
             iat=symfunc%linked_lists%bound_rad(1,ib)
             jat=symfunc%linked_lists%bound_rad(2,ib)
@@ -98,6 +100,7 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
             ann_arr%fat_chi(1,jat)=ann_arr%fat_chi(1,jat)-ttx
             ann_arr%fat_chi(2,jat)=ann_arr%fat_chi(2,jat)-tty
             ann_arr%fat_chi(3,jat)=ann_arr%fat_chi(3,jat)-ttz
+            if(trim(ann_arr%event)=='potential') then
             atoms%stress(1,1)=atoms%stress(1,1)+ann_arr%stresspq(1,1,ib)*qnet
             atoms%stress(2,1)=atoms%stress(2,1)+ann_arr%stresspq(2,1,ib)*qnet
             atoms%stress(3,1)=atoms%stress(3,1)+ann_arr%stresspq(3,1,ib)*qnet
@@ -107,6 +110,7 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
             atoms%stress(1,3)=atoms%stress(1,3)+ann_arr%stresspq(1,3,ib)*qnet
             atoms%stress(2,3)=atoms%stress(2,3)+ann_arr%stresspq(2,3,ib)*qnet
             atoms%stress(3,3)=atoms%stress(3,3)+ann_arr%stresspq(3,3,ib)*qnet
+            endif
         enddo
         do iat=1,atoms%nat
             atoms%fat(1,iat)=atoms%fat(1,iat)+ann_arr%fat_chi(1,iat)
