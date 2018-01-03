@@ -172,7 +172,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     nsatur=3
     isatur=0
     alpha1=0.2d0/real(atoms_train%nconf,8)
-    alpha2=0.2d0/real(atoms_train%nconf,8)
+    alpha2=0.02d0/real(atoms_train%nconf,8)
     do istep=0,50
         rmse=0.d0
         g1=0.d0
@@ -202,7 +202,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse=sqrt(rmse/atoms_train%nconf)
         if(istep==0) rmse_old=rmse
-        if(istep>0 .and. rmse<rmse_old .and. abs(rmse_old-rmse)<1.d-3) then
+        if(istep>0 .and. rmse<rmse_old .and. abs(rmse_old-rmse)<1.d-4) then
             isatur=isatur+1
         else
             isatur=0

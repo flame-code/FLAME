@@ -282,6 +282,9 @@ elif(atom_name=='K') :
 elif(atom_name=='F') :
     factor_ion=119/100./0.529
     hardness =  7.01/27.21
+elif(atom_name=='S') :
+    factor_ion=170/100./0.529
+    hardness =  4.14/27.21
 elif(atom_name=='Cl') :
     factor_ion=167/100./0.529
     hardness =  4.68/27.21

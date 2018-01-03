@@ -4,9 +4,8 @@ subroutine ann_train(parini)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
     use mod_atoms, only: typ_atoms_arr
+    use mod_processors, only: iproc
     use dynamic_memory
-    !use ifport
-    use mod_processors, only: iproc, mpi_comm_abz
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -16,11 +15,106 @@ subroutine ann_train(parini)
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
-    integer:: ialpha, i, iconf, ios, ia
+    integer:: iconf, ia
     real(8):: time1, time2, time3
+    call f_routine(id='ann_train')
+    call init_ann_train(parini,ann_arr,ekf)
+    call read_data(parini,'list_posinp_train',atoms_train)
+    call read_data(parini,'list_posinp_valid',atoms_valid)
+    if(iproc==0) then
+        write(*,'(a,i)') 'number of ANN wights:             ',ekf%n
+        write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
+        write(*,'(a,i)') 'number of validating data points: ',atoms_valid%nconf
+    endif
+    call set_conf_inc_random(parini,atoms_train)
+    call set_conf_inc_random(parini,atoms_valid)
+    call prepare_atoms_arr(parini,ann_arr,atoms_train)
+    call prepare_atoms_arr(parini,ann_arr,atoms_valid)
+    !allocate(atoms_train%inclusion(atoms_train%nconf),source=0)
+    !-------------------------------------------------------
+    call cpu_time(time1)
+    call set_gbounds(parini,ann_arr,atoms_valid,'bounds_valid',symfunc_valid)
+    call cpu_time(time2)
+    call set_gbounds(parini,ann_arr,atoms_train,'bounds_train',symfunc_train)
+    call cpu_time(time3)
+    write(*,'(a,2f10.1)') 'TIMING: evaluation symmetry functions: ',time2-time1,time3-time2
+    !-------------------------------------------------------------------------------------
+    !IMPORTANT: The following must be done after set_gbounds is called for training set.
+    !if(trim(parini%symfunc)/='do_not_save') then
+    if(parini%bondbased_ann) then
+        call apply_gbounds_bond(parini,ann_arr,atoms_valid,symfunc_valid)
+        call apply_gbounds_bond(parini,ann_arr,atoms_train,symfunc_train)
+    else
+        call apply_gbounds_atom(parini,ann_arr,atoms_valid,symfunc_valid)
+        call apply_gbounds_atom(parini,ann_arr,atoms_train,symfunc_train)
+    endif
+    !endif
+    !-------------------------------------------------------------------------------------
+    call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    !-------------------------------------------------------
+    ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
+    if (.not. parini%restart_param) then
+        call set_annweights(parini,ekf)
+        if(trim(parini%approach_ann)=='cent2') then
+            do ia=1,ann_arr%n
+                ekf%x(ekf%loc(ia)+ekf%num(1)-1)=0.d0
+                !write(*,*) 'XXX ',ia,ekf%loc(ia)+ekf%num(1)-1
+            enddo
+        endif
+    else
+        do ia=1,ann_arr%n
+            call convert_ann_x(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+        enddo
+    endif
+
+    !if(trim(parini%symfunc)/='do_not_save') then
+    !    ann_arr%compute_symfunc=.false.
+    !else
+    !    ann_arr%compute_symfunc=.true.
+    !endif
+    ann_arr%compute_symfunc=.false.
+    !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
+    if(parini%prefit_ann ) then
+        !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+        call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    endif
+    if(trim(parini%optimizer_ann)=='behler') then
+        call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    else if(trim(parini%optimizer_ann)=='rivals') then
+        call ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    else if(trim(parini%optimizer_ann)=='rivals_tmp') then
+        call ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    else if(trim(parini%optimizer_ann)=='lm') then
+        call ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+    else
+        write(*,*) 'ERROR: unknown optimzer in ANN training'
+    endif
+
+    !call convert_x_ann(ekf%n,ekf%x,ann_arr) !HERE
+    if(iproc==0) then
+        if( ann_arr%exists_yaml_file) then
+            call write_ann_all_yaml(parini,ann_arr,-1)
+        else
+            call write_ann_all(parini,ann_arr,-1)
+        endif
+    endif
+    call final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    call f_release_routine()
+end subroutine ann_train
+!*****************************************************************************************
+subroutine init_ann_train(parini,ann_arr,ekf)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf
+    use mod_processors, only: iproc
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(inout):: ekf
+    !local variables
+    integer:: ialpha, i, ios, ia
     character(15):: fnout
     character (50)::fname
-    call f_routine(id='ann_train')
     ann_arr%n=parini%ntypat
     if(parini%bondbased_ann) then
         ann_arr%n=4
@@ -52,18 +146,6 @@ subroutine ann_train(parini)
         write(*,'(a,3i5)') 'EKF: ',ekf%loc(i),ekf%num(i),ekf%n
     enddo
     call ann_allocate(ekf,ann_arr)
-    call read_data(parini,'list_posinp_train',atoms_train)
-    call read_data(parini,'list_posinp_valid',atoms_valid)
-    if(iproc==0) then
-        write(*,'(a,i)') 'number of ANN wights:             ',ekf%n
-        write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
-        write(*,'(a,i)') 'number of validating data points: ',atoms_valid%nconf
-    endif
-    call set_conf_inc_random(parini,atoms_train)
-    call set_conf_inc_random(parini,atoms_valid)
-    call prepare_atoms_arr(parini,ann_arr,atoms_train)
-    call prepare_atoms_arr(parini,ann_arr,atoms_valid)
-    !allocate(atoms_train%inclusion(atoms_train%nconf),source=0)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
         fnout='err_train'
@@ -74,80 +156,23 @@ subroutine ann_train(parini)
         open(unit=12,file=fnout,status='replace',iostat=ios)
         if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
     endif
-    !-------------------------------------------------------
-    call cpu_time(time1)
-    call set_gbounds(parini,ann_arr,atoms_valid,'bounds_valid',symfunc_valid)
-    call cpu_time(time2)
-    call set_gbounds(parini,ann_arr,atoms_train,'bounds_train',symfunc_train)
-    call cpu_time(time3)
-    write(*,'(a,2f10.1)') 'TIMING: evaluation symmetry functions: ',time2-time1,time3-time2
-    !do i=1,ann_arr%n !HERE
-    !    do ig=1,symfunc_valid%symfunc(1)%ng !There must ng of ann not typ_symfunc
-    !        ann_arr%ann(i)%gbounds(1,ig)=ann_arr%ann(1)%gbounds(1,ig)
-    !        ann_arr%ann(i)%gbounds(2,ig)=ann_arr%ann(1)%gbounds(2,ig)
-    !        ann_arr%ann(i)%two_over_gdiff(ig)=ann_arr%ann(1)%two_over_gdiff(ig)
-    !    enddo
-    !enddo
-    !-------------------------------------------------------------------------------------
-    !IMPORTANT: The following must be done after set_gbounds is called for training set.
-    !if(trim(parini%symfunc)/='do_not_save') then
-    if(parini%bondbased_ann) then
-        call apply_gbounds_bond(parini,ann_arr,atoms_valid,symfunc_valid)
-        call apply_gbounds_bond(parini,ann_arr,atoms_train,symfunc_train)
-    else
-        call apply_gbounds_atom(parini,ann_arr,atoms_valid,symfunc_valid)
-        call apply_gbounds_atom(parini,ann_arr,atoms_train,symfunc_train)
-    endif
-    !endif
-    !-------------------------------------------------------------------------------------
-    call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
-    !-------------------------------------------------------
-    ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
-    if (.not. parini%restart_param) then
-        call set_annweights(parini,ekf)
-        if(trim(parini%approach_ann)=='cent2') then
-            do ia=1,ann_arr%n
-                ekf%x(ekf%loc(ia)+ekf%num(1)-1)=0.d0
-                !write(*,*) 'XXX ',ia,ekf%loc(ia)+ekf%num(1)-1
-            enddo
-        endif
-    else
-        do i=1,ann_arr%n
-            call convert_ann_x(ekf%num(i),ekf%x(ekf%loc(i)),ann_arr%ann(i))
-        enddo
-    endif
-
-    !if(trim(parini%symfunc)/='do_not_save') then
-    !    ann_arr%compute_symfunc=.false.
-    !else
-    !    ann_arr%compute_symfunc=.true.
-    !endif
-    ann_arr%compute_symfunc=.false.
-    !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
-    if(parini%prefit_ann ) then
-        !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-        call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-    endif
-    if(trim(parini%optimizer_ann)=='behler') then
-        call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-    else if(trim(parini%optimizer_ann)=='rivals') then
-        call ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-    else if(trim(parini%optimizer_ann)=='rivals_tmp') then
-        call ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-    else if(trim(parini%optimizer_ann)=='lm') then
-        call ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-    else
-        write(*,*) 'ERROR: unknown optimzer in ANN training'
-    endif
-
-    !call convert_x_ann(ekf%n,ekf%x,ann_arr) !HERE
-    if(iproc==0) then
-    if( ann_arr%exists_yaml_file) then
-        call write_ann_all_yaml(parini,ann_arr,-1)
-    else
-        call write_ann_all(parini,ann_arr,-1)
-    endif
-    endif
+end subroutine init_ann_train
+!*****************************************************************************************
+subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    use mod_processors, only: iproc
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(inout):: ekf
+    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+    !local variables
+    integer:: iconf
     call f_free(ekf%x)
 
     if(iproc==0) then
@@ -180,8 +205,7 @@ subroutine ann_train(parini)
     deallocate(atoms_train%conf_inc)
     deallocate(atoms_valid%conf_inc)
     !deallocate(atoms_train%inclusion)
-    call f_release_routine()
-end subroutine ann_train
+end subroutine final_ann_train
 !*****************************************************************************************
 subroutine set_conf_inc_random(parini,atoms_arr)
     use mod_interface
@@ -375,7 +399,7 @@ end subroutine set_ebounds
 subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_processors, only: iproc
     use mod_tightbinding, only: typ_partb
@@ -390,6 +414,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     type(typ_partb), optional, intent(inout):: partb
     !local variables
     type(typ_atoms):: atoms
+    type(typ_symfunc):: symfunc
     real(8):: rmse, errmax, tt, pi
     real(8):: frmse, ttx, tty, ttz, ppx, ppy, ppz, tt1, tt2, tt3, ttn, tta, ttmax
     integer:: iconf, ierrmax, iat, nat_tot, nconf_force
@@ -443,7 +468,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     configuration: do iconf=1,atoms_arr%nconf
         if(.not. atoms_arr%conf_inc(iconf)) cycle
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
-        call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
+        call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
         !if(ifile==11) then
         !    write(71,'(2es24.15)') (atoms%rat(1,2)-atoms%rat(1,1))*0.529177210d0,atoms%epot*27.211385d0
         !endif
@@ -617,6 +642,10 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
         if(trim(parini%symfunc)/='read') then
             call symmetry_functions(parini,ann_arr,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf),.false.)
+            if(.not. parini%save_symfunc_force_ann) then
+                call f_free(symfunc_arr%symfunc(iconf)%y0d)
+            endif
+            call f_free(symfunc_arr%symfunc(iconf)%y0dr)
         !elseif(trim(parini%symfunc)/='read') then
         !    stop 'ERROR: arini%symfunc contains none of the three acceptable possibilies'
         endif
