@@ -10,7 +10,7 @@ from ascii import *
 #else:
 #    filename = sys.argv[1]
 
-atoms_all=xdatcar_read("Cartesian")
+atoms_all=xdatcar_read()
 
 if len(atoms_all)==1:
     ascii_write(atoms_all[0],"screen")

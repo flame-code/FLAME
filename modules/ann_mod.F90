@@ -1,9 +1,11 @@
 !*****************************************************************************************
 module mod_ann
+    use dictionaries
     use mod_linked_lists, only: typ_linked_lists
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type typ_ann
+        type(dictionary), pointer :: dict_ann
         integer:: nl !number of hidden layer plus one
         integer:: nn(0:10)
         !integer:: n0=-1
@@ -33,6 +35,7 @@ module mod_ann
         real(8):: ener_ref
         real(8):: ampl_chi=-1.d0
         real(8):: prefactor_chi=-1.d0
+        character(20):: method
 
         !The 1st type of symmetry functions introduced by Behler
         real(8):: g1eta(140)
@@ -68,6 +71,7 @@ module mod_ann
         
     end type typ_ann
     type typ_ann_arr
+        logical:: exists_yaml_file = .false.
         integer:: n=-1
         integer:: natmax=1000
         logical:: compute_symfunc=.true.
@@ -149,4 +153,39 @@ end module mod_ann
 !    real(8), allocatable:: pnt(:), f_p(:)
 !    real(8), allocatable:: ratall(:,:,:), epotall(:)
 !end module data_point
+!*****************************************************************************************
+module mod_parlm
+    implicit none
+    type typ_parlm
+        real(8):: ftol=1.d-8
+        real(8):: xtol=1.d-8
+        real(8):: gtol=1.d-8
+        real(8):: factor=100.d0
+        integer:: maxfev=1000
+        integer:: nprint=1
+        integer:: n=0
+        integer:: mode, info, nfev, njev
+        integer:: iter
+        integer:: icontinue
+        integer:: iflag
+        logical:: finish
+        real(8):: epsmch
+        real(8):: fnorm
+        !real(8):: fnorm1
+        real(8):: xnorm
+        real(8):: gnorm
+        real(8):: pnorm
+        real(8):: par
+        real(8):: delta
+        real(8):: actred
+        real(8):: prered
+        real(8):: ratio
+        real(8), allocatable:: wa1(:), wa2(:), wa3(:), wa4(:), qtf(:)
+        real(8), allocatable:: x(:)
+        real(8), allocatable:: fvec(:)
+        real(8), allocatable:: fjac(:,:)
+        real(8), allocatable:: diag(:)
+        integer, allocatable:: ipvt(:)
+    end type typ_parlm
+end module mod_parlm
 !*****************************************************************************************

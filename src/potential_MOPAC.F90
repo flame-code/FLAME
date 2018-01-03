@@ -14,14 +14,16 @@ module interface_mopac
 contains
 
 
-  subroutine make_input_mopac(latvec,xred,iprec,ka,kb,kc,getwfk)
+  subroutine make_input_mopac(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !This routine will append some informations to a file already containing some informations about the mopac runs
   !The informations appended are:
   !-The kpoint mesh
   !-The atomic informations
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,ka1,kb1,kc1,max_kpt,reuse_kpt,char_type
   !use defs_basis, only: Bohr_Ang
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,k_latvec(3,3)
   real(8), allocatable:: k_xcart(:,:,:,:,:)
@@ -32,9 +34,9 @@ contains
   
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   
@@ -64,11 +66,11 @@ contains
   do l=1,kb
   do m=1,kc
   do iat=1,nat
-  if(.not.fixat(iat)) then
-      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(typat(iat))),k_xcart(1,iat,k,l,m)*&
+  if(.not.parini%fixat(iat)) then
+      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,1,k_xcart(2,iat,k,l,m)*Bohr_Ang,1,k_xcart(3,iat,k,l,m)*Bohr_Ang,1
   else
-      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(typat(iat))),k_xcart(1,iat,k,l,m)*&
+      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,0,k_xcart(2,iat,k,l,m)*Bohr_Ang,0,k_xcart(3,iat,k,l,m)*Bohr_Ang,0
   endif
   enddo
@@ -83,7 +85,7 @@ contains
   end subroutine
   
   subroutine get_output_mopac(fcart,energy,strten)
-  use global, only: nat,target_pressure_gpa
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none

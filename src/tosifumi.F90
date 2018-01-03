@@ -17,6 +17,13 @@ subroutine set_tosifumi(atoms,tosifumi)
     tosifumi%ntypinter=(atoms%ntypat**2+atoms%ntypat)/2
     nall=10
     write(*,*) 'nall=',nall
+    allocate (tosifumi%interaction(nall,nall))
+    allocate (tosifumi%aaa(nall))
+    allocate (tosifumi%bbb(nall))
+    allocate (tosifumi%ccc(nall))
+    allocate (tosifumi%ddd(nall))
+    allocate (tosifumi%eee(nall))
+    allocate (tosifumi%fff(nall))
     call tosifumi_parameters(strint,parameters)
     !write(*,*) 'atoms%ntypat=',atoms%ntypat
     !stop
@@ -49,7 +56,6 @@ subroutine set_tosifumi(atoms,tosifumi)
             !write(*,'(i3,f10.4,2(2x,a))') itypinter,tosifumi%ccc(itypinter),namatnamat1,namatnamat2
         enddo
     enddo
-    !stop
 end subroutine set_tosifumi
 !*****************************************************************************************
 subroutine coulomb_free_direct(atoms)

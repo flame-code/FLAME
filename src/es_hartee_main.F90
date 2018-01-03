@@ -261,7 +261,7 @@ subroutine get_g_from_pot(parini,atoms,ewald_p3d,gausswidth,g)
     call f_free(wz)
     call f_free(wa)
     end associate
-    call f_release_routine()
+    ! call f_release_routine()
 end subroutine get_g_from_pot
 !*****************************************************************************************
 subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)

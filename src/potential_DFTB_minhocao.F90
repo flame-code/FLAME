@@ -15,7 +15,7 @@ module interface_dftb
 
 contains
 
-  subroutine make_input_dftb(latvec,xred0,iprec,ka,kb,kc,getwfk,dos)
+  subroutine make_input_dftb(parini,latvec,xred0,iprec,ka,kb,kc,getwfk,dos)
   !This routine will append some informations to a file already containing some informations about the abininit runs
   !The informations appended are:
   !-The atomic informations
@@ -26,9 +26,11 @@ contains
   !The meaning of dkpt1 and dkpt2 is different depending on vasp_kpt_mode:
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,vasp_kpt_mode,target_pressure_gpa
+  use mod_parini, only: typ_parini
+  use global, only: nat,ntypat,znucl,char_type
   use defs_basis, only: Bohr_Ang
   implicit none
+  type(typ_parini), intent(in):: parini
   logical, intent(in), optional :: dos
   real(8):: xred(3,nat),xcart(3,nat),xred0(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
@@ -43,9 +45,9 @@ contains
   !getwfk=.false.
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   write(fn,'(i1.1)') iprec
@@ -75,20 +77,20 @@ contains
   !The Geometry section
   !write(87,'(a)') "#Geometry section: lattice and atoms"
   open(unit=87,file="input_geometry.gen")
-    if(bc==2) then
+    if(parini%bc==2) then
       write(87,'(i5,a)') nat, " C"
     else
       write(87,'(i5,a)') nat, " F"
     endif
       write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
-    if(bc==2) then
+    if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,nat)
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xcart(:, iat)*Bohr_Ang
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xcart(:, iat)*Bohr_Ang
       end do
     else
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xred(:, iat)
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xred(:, iat)
       end do
       write(87,'(3(1x,es25.15))') 0.d0,0.d0,0.d0
       write(87,'(3(1x,es25.15))') latvec(:, 1)*Bohr_Ang
@@ -98,11 +100,13 @@ contains
   close(87)
   end  subroutine
   
-  subroutine get_output_dftb(fcart,energy,strten)
-  use global, only: nat,target_pressure_gpa
+  subroutine get_output_dftb(parini,fcart,energy,strten)
+  use mod_parini, only: typ_parini
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,nat_cell
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
@@ -151,7 +155,7 @@ contains
   
   99 continue 
   close(32)
-  if(bc==2) strten=0.d0
+  if(parini%bc==2) strten=0.d0
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10) stop "Could not find all requested variables"
   !Transform all to bohr
   energy=energy!/real(nat_cell,8)*real(nat,8)/Ha_eV
@@ -207,11 +211,13 @@ contains
   end subroutine get_dos_dftb
 
   
-  subroutine dftb_geopt(latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
+  subroutine dftb_geopt(parini,latvec,xred,fcart,strten,energy,iprec,ka,kb,kc,counter)
   !This routine will setup the input file for a vasp geometry optimization
   !It will also call the run script and harvest the output
+  use mod_parini, only: typ_parini
   use global, only: nat
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),fmax
   integer:: iat,iprec,ka,kb,kc,itype
@@ -221,12 +227,12 @@ contains
   !Set up the input file to perform geometry optimization
   !First run with low precision
   iprec=2
-  call make_input_dftb_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  call make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !Run the job NOW!
   write(*,'(a,i1)')' # GEOPT START NATIVE DFTB OPTIMIZER RUN 1, IPREC=',iprec
   call system("./runjob.sh")
   !Collect data
-  call get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
+  call get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   !Write intermediate data
   call system("grep 'Geometry step:' dftb.log|wc -l>tmp_count")
   open(unit=32,file="tmp_count")
@@ -236,12 +242,12 @@ contains
   write(*,'(a,i5,a,es15.7)')' # GEOPT INTERMEDIATE 1 FINISHED: ITER=',int(tmp),", FMAX=",fmax
   !Now run with high precision
   iprec=1
-  call make_input_dftb_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  call make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !Run the job NOW!
   write(*,'(a,i1)')' # GEOPT START NATIVE DFTB OPTIMIZER RUN 2, IPREC=',iprec
   call system("./runjob.sh")
   !Collect data
-  call get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
+  call get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   !Write intermediate data
   call system("grep 'Geometry step:' dftb.log|wc -l>tmp_count")
   open(unit=32,file="tmp_count")
@@ -249,12 +255,12 @@ contains
   counter=counter+tmp
   close(32)
   write(*,'(a,i5,a,es15.7)')' # GEOPT INTERMEDIATE 2 FINISHED: ITER=',int(tmp),", FMAX=",fmax
-  call make_input_dftb_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
+  call make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   !Run the job NOW!
   write(*,'(a,i1)')' # GEOPT START NATIVE DFTB OPTIMIZER FINAL, IPREC=',iprec
   call system("./runjob.sh")
   !Collect data
-  call get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
+  call get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   !Write intermediate data
   call system("grep 'Geometry step:' dftb.log|wc -l>tmp_count")
   open(unit=32,file="tmp_count")
@@ -266,10 +272,12 @@ contains
   end subroutine
   
   
-  subroutine make_input_dftb_geopt(latvec,xred,iprec,ka,kb,kc,getwfk)
-  use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_habohr
+  subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
+  use mod_parini, only: typ_parini
+  use global, only: nat,ntypat,znucl,char_type
   use defs_basis,only: Bohr_Ang
   implicit none
+  type(typ_parini), intent(in):: parini
   real(8):: xred(3,nat),xcart(3,nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   integer:: iat,iprec,ka,kb,kc,itype,nat_type(ntypat)
@@ -281,9 +289,9 @@ contains
   getwfk=.false.
   
   if(iprec==1) then
-  dkpt=dkpt1
+  dkpt=parini%dkpt1
   else
-  dkpt=dkpt2
+  dkpt=parini%dkpt2
   endif
   
   write(fn,'(i1.1)') iprec
@@ -321,20 +329,20 @@ contains
   
   !The Geometry section
   open(unit=87,file="input_geometry.gen")
-    if(bc==2) then
+    if(parini%bc==2) then
       write(87,'(i5,a)') nat, " C"
     else
       write(87,'(i5,a)') nat, " F"
     endif
       write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
-    if(bc==2) then
+    if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,nat)
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xcart(:, iat)*Bohr_Ang
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xcart(:, iat)*Bohr_Ang
       end do
     else
       do iat = 1, nat
-        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, typat(iat), xred(:, iat)
+        write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xred(:, iat)
       end do
       write(87,'(3(1x,es25.15))') 0.d0,0.d0,0.d0
       write(87,'(3(1x,es25.15))') latvec(:, 1)*Bohr_Ang
@@ -346,37 +354,37 @@ contains
   !The Geometry optimizer section
   open(unit=87,file="input_driver.gen")
   if(iprec==2) then
-  write(87,'(a,es25.15)') " MaxForceComponent = ", tolmxf*10.d0
+  write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol*10.d0
   else
-  write(87,'(a,es25.15)') " MaxForceComponent = ", tolmxf
+  write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
-  write(87,'(a,i5)') " MaxSteps = ",ntime_geopt 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+  write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
-  write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
+  write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
   close(87)
 
   open(unit=87,file="dftb_in.hsd",access="append")
   write(87,'(a)') " Driver = ConjugateGradient{"
   if(iprec==2) then
-  write(87,'(a,es25.15)') " MaxForceComponent = ", tolmxf*10.d0
+  write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol*10.d0
   else
-  write(87,'(a,es25.15)') " MaxForceComponent = ", tolmxf
+  write(87,'(a,es25.15)') " MaxForceComponent = ", parini%paropt_geopt%fmaxtol
   endif
-  write(87,'(a,i5)') " MaxSteps = ",ntime_geopt 
-  if(((all(fixlat(1:6))).and.(.not.fixlat(7))).or.bc==2) then
+  write(87,'(a,i5)') " MaxSteps = ",parini%paropt_geopt%nit 
+  if(((all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7))).or.parini%bc==2) then
     write(87,'(a)') " LatticeOpt = No"
   else
     write(87,'(a)') " LatticeOpt = Yes"
   endif
-  if(bc==1) write(87,'(a,es25.15)') " Pressure = ", target_pressure_habohr
-  if(any(fixat(:))) then
+  if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
+  if(any(parini%fixat(:))) then
      write(87,'(a)') "Constraints = {"
      do iat=1,nat
-       if(fixat(iat)) then
+       if(parini%fixat(iat)) then
           write(87,'(i5,1x,a)') iat, " 1.0, 0.0, 0.0 "
           write(87,'(i5,1x,a)') iat, " 0.0, 1.0, 0.0 "
           write(87,'(i5,1x,a)') iat, " 0.0, 0.0, 1.0 "
@@ -391,18 +399,20 @@ contains
   
   
   
-  subroutine get_output_dftb_geopt(latvec,xred,fcart,energy,strten,fmax)
-  use global, only: nat,target_pressure_habohr,strfact
+  subroutine get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
+  use mod_parini, only: typ_parini
+  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,istr
   real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling,r_tmp
   real(8):: fmax,strtarget(6),dstr(6),xtmp(3,nat)
   character(11):: ch_tmp
   character(150)::all_line
   logical:: cartesian
-  call get_output_dftb(fcart,energy,strten)
+  call get_output_dftb(parini,fcart,energy,strten)
   open(unit=87,file="geo_end.gen")
   read(87,*) int_tmp,ch_tmp
   if(trim(ch_tmp)=="C") then
@@ -437,11 +447,11 @@ contains
      end do
    end do
    strtarget=0.d0
-   strtarget(1:3)=-target_pressure_habohr
+   strtarget(1:3)=-parini%target_pressure_habohr
    dstr(:)=strten(:)-strtarget(:)
   !Eventually take into account the stress
    do istr=1,6
-       if(abs(dstr(istr))*strfact >= fmax ) fmax=abs(dstr(istr))*strfact
+       if(abs(dstr(istr))*parini%paropt_geopt%strfact >= fmax ) fmax=abs(dstr(istr))*parini%paropt_geopt%strfact
    end do
   end subroutine
   

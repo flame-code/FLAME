@@ -2,20 +2,22 @@
 subroutine cal_hessian_4p(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
     use mod_processors, only: iproc
     use mod_potential, only: potential
+    use futile
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
     type(typ_atoms):: atoms
-    real(8):: t1, t2, t3
+    type(typ_atoms_arr):: atoms_arr
+    type(typ_file_info):: file_info
     real(8), allocatable:: hess(:,:)
     real(8), allocatable:: rat_center(:), eval(:), work(:)
-    real(8):: h, rlarge, twelfth, twothird, cmx, cmy, cmz, shift, dm, tt, s
+    real(8):: h, rlarge, twelfth, twothird, shift, dm, tt, s, alpha
     integer:: istat, lwork, info, jj !, nat_yes
-    integer:: i, iat, ixyz, j, jat, jxyz
-    integer:: ii
+    integer:: i, iat, ixyz, j, jat, jxyz, imode, ii, iconf, iunit
+    character(5):: fn
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     potential=trim(parini%potential_potential)
     !logical, allocatable:: yes(:)
@@ -157,6 +159,11 @@ subroutine cal_hessian_4p(parini)
         !endif
         !-----------------------------------------
     enddo
+    do j=1,3*atoms%nat
+        jat=(j-1)/3+1
+        jxyz=mod(j-1,3)+1
+        atoms%rat(jxyz,jat)=rat_center(j)
+    enddo
     call final_potential_forces(parini,atoms)
     !-------------------------------------------------------
     !deallocate(yes)
@@ -179,17 +186,93 @@ subroutine cal_hessian_4p(parini)
     !enddo
     !-------------------------------------------------------
     !project out rotations
+    if(trim(atoms%boundcond)=='free') then
+        call projectout_rotation(atoms,hess,rlarge,lwork,work)
+    endif
+    !-------------------------------------------------------
+    !project out translations
+    shift=rlarge/atoms%nat
+    do j=1,3*atoms%nat-2,3
+        do i=1,3*atoms%nat-2,3
+            hess(i+0,j+0)=hess(i+0,j+0)+shift
+            hess(i+1,j+1)=hess(i+1,j+1)+shift
+            hess(i+2,j+2)=hess(i+2,j+2)+shift
+        enddo
+    enddo
+    !-------------------------------------------------------
+    !do j=1,3*atoms%nat
+    !    do i=1,3*atoms%nat
+    !        write(202,*) hess(i,j)
+    !    enddo
+    !enddo
+    !-------------------------------------------------------
+    !check
+    call DSYEV('V','L',3*atoms%nat,hess,3*atoms%nat,eval,work,lwork,info)
+    if(info/=0) stop 'DSYEV'
+    if(iproc==0) then
+        iunit=f_get_free_unit(10**5)
+        open(unit=iunit,file='phonons.dat',status='replace')
+        !write(iunit,*) '---  TB eigenvalues in a.u. -------------'
+        atoms_arr%nconf=2*10+1
+        allocate(atoms_arr%atoms(atoms_arr%nconf))
+        do imode=1,3*atoms%nat
+            write(fn,'(i5.5)') imode
+            file_info%filename_positions='mode_'//fn//'.acf'
+            file_info%file_position='new'
+            file_info%print_force=.false.
+            !tt=eval(imode)/(.529d0**2/27.2114d0)
+            !write(iunit,'(a,i6,2e15.5)') 'eval (eV/A^2), a.u. ',imode,tt,eval(imode)
+            !eval(imode)=tt
+            write(iunit,'(i6,e15.5)') imode,eval(imode)
+            if(trim(atoms%boundcond)=='free' .and. imode>3*atoms%nat-6) cycle
+            if(trim(atoms%boundcond)/='free' .and. imode>3*atoms%nat-3) cycle
+            iconf=0
+            do j=-10,10
+                iconf=iconf+1
+                call atom_copy_old(atoms,atoms_arr%atoms(iconf),'atoms->atoms_arr%atoms(iconf)')
+                alpha=j*5.d-2 !1.d-4/eval(imode)
+                do iat=1,atoms%nat
+                    atoms_arr%atoms(iconf)%rat(1,iat)=atoms%rat(1,iat)+alpha*hess(3*iat-2,imode)
+                    atoms_arr%atoms(iconf)%rat(2,iat)=atoms%rat(2,iat)+alpha*hess(3*iat-1,imode)
+                    atoms_arr%atoms(iconf)%rat(3,iat)=atoms%rat(3,iat)+alpha*hess(3*iat-0,imode)
+                enddo
+            enddo
+            call acf_write_new(file_info,atoms_arr=atoms_arr,strkey='mode'//fn)
+        enddo
+        close(iunit)
+        !open(unit=1359,file='eigenvectors.dat',status='replace')
+        !write(1359,*) hess
+        !close(1359)
+        deallocate(atoms_arr%atoms)
+    endif
+end subroutine cal_hessian_4p
+!*****************************************************************************************
+subroutine projectout_rotation(atoms,hess,rlarge,lwork,work)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(inout):: hess(3*atoms%nat,3*atoms%nat)
+    real(8), intent(in):: rlarge
+    integer, intent(in):: lwork
+    real(8), intent(inout):: work(lwork)
+    !local variables
+    real(8):: cmx, cmy, cmz
+    real(8):: t1, t2, t3
+    integer:: ixyz, iat, i, j
     cmx=0.d0 ; cmy=0.d0 ; cmz=0.d0
-    do i=1,3*atoms%nat-2,3
-        cmx=cmx+rat_center(i+0)
-        cmy=cmy+rat_center(i+1)
-        cmz=cmz+rat_center(i+2)
+    do iat=1,atoms%nat
+        cmx=cmx+atoms%rat(1,iat)
+        cmy=cmy+atoms%rat(2,iat)
+        cmz=cmz+atoms%rat(3,iat)
     enddo
     cmx=cmx/atoms%nat ; cmy=cmy/atoms%nat ; cmz=cmz/atoms%nat
     !x-y plane
     do i=1,3*atoms%nat-2,3
-        work(i+1)= (rat_center(i+0)-cmx)
-        work(i+0)=-(rat_center(i+1)-cmy)
+        iat=(i-1)/3+1
+        ixyz=mod(i-1,3)+1
+        work(i+1)= (atoms%rat(ixyz,iat)-cmx)
+        work(i+0)=-(atoms%rat(ixyz,iat)-cmy)
     enddo
     t1=0.d0  ; t2=0.d0
     do i=1,3*atoms%nat-2,3
@@ -211,8 +294,10 @@ subroutine cal_hessian_4p(parini)
     enddo
     !x-z plane
     do i=1,3*atoms%nat-2,3
-        work(i+2)= (rat_center(i+0)-cmx)
-        work(i+0)=-(rat_center(i+2)-cmz)
+        iat=(i-1)/3+1
+        ixyz=mod(i-1,3)+1
+        work(i+2)= (atoms%rat(ixyz,iat)-cmx)
+        work(i+0)=-(atoms%rat(ixyz,iat)-cmz)
     enddo
     t1=0.d0  ; t3=0.d0
     do i=1,3*atoms%nat-2,3
@@ -234,8 +319,10 @@ subroutine cal_hessian_4p(parini)
     enddo
     !y-z plane
     do i=1,3*atoms%nat-2,3
-        work(i+2)= (rat_center(i+1)-cmy)
-        work(i+1)=-(rat_center(i+2)-cmz)
+        iat=(i-1)/3+1
+        ixyz=mod(i-1,3)+1
+        work(i+2)= (atoms%rat(ixyz,iat)-cmy)
+        work(i+1)=-(atoms%rat(ixyz,iat)-cmz)
     enddo
     t2=0.d0 ; t3=0.d0
     do i=1,3*atoms%nat-2,3
@@ -255,39 +342,5 @@ subroutine cal_hessian_4p(parini)
             hess(i+2,j+2)=hess(i+2,j+2)+work(i+2)*work(j+2)
         enddo
     enddo
-    !-------------------------------------------------------
-    !Project out translations
-    shift=rlarge/atoms%nat
-    do j=1,3*atoms%nat-2,3
-        do i=1,3*atoms%nat-2,3
-            hess(i+0,j+0)=hess(i+0,j+0)+shift
-            hess(i+1,j+1)=hess(i+1,j+1)+shift
-            hess(i+2,j+2)=hess(i+2,j+2)+shift
-        enddo
-    enddo
-    !-------------------------------------------------------
-    !do j=1,3*atoms%nat
-    !    do i=1,3*atoms%nat
-    !        write(202,*) hess(i,j)
-    !    enddo
-    !enddo
-    !-------------------------------------------------------
-    !check
-    call DSYEV('V','L',3*atoms%nat,hess,3*atoms%nat,eval,WORK,LWORK,INFO)
-    if(info/=0) stop 'DSYEV'
-    if(iproc==0) then
-        open(unit=1358,file='phonons.dat',status='replace')
-        !write(1358,*) '---  TB eigenvalues in a.u. -------------'
-        do i=1,3*atoms%nat
-            !tt=eval(i)/(.529d0**2/27.2114d0)
-            !write(1358,'(a,i6,2e15.5)') 'eval (eV/A^2), a.u. ',i,tt,eval(i)
-            !eval(i)=tt
-            write(1358,'(i6,e15.5)') i,eval(i)
-        enddo
-        close(1358)
-        !open(unit=1359,file='eigenvectors.dat',status='replace')
-        !write(1359,*) hess
-        !close(1359)
-    endif
-end subroutine cal_hessian_4p
+end subroutine projectout_rotation
 !*****************************************************************************************

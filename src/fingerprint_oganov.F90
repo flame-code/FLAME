@@ -6,9 +6,11 @@ module parameters
      real(8):: rcut(2,2)
 end module parameters
 
-subroutine fingerprint_oganov
+subroutine fingerprint_oganov(parini)
+use mod_parini, only: typ_parini
 use parameters, only: kinds,rxyz
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,j,k,l,m,iat,jat,nat,nkinds,nec,nexp,fp_size,i_bin,near_bin,n_peaks,fp_dim
 integer, allocatable:: nkinds_sum1(:),nkinds_sum2(:),kinds1(:),kinds2(:)
 real(8):: latvec(3,3)
@@ -137,7 +139,7 @@ enddo
 do i=1,nkinds
 if(nkinds_sum1(i).ne.nkinds_sum2(i)) write(*,*) "WARNING: The number of atoms A and B do not coincide"
 enddo
-call get_cosinedistance(fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum1,distance)
+call get_cosinedistance(parini,fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum1,distance)
 write(*,*) distance
 end subroutine
 
@@ -409,12 +411,14 @@ deallocate(rxyzexp,transvecall)
 end subroutine
 
 
-subroutine get_cosinedistance(fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum,distance)
-use global, only: code,znucl
+subroutine get_cosinedistance(parini,fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum,distance)
+use mod_parini, only: typ_parini
+use global, only: znucl
 !This sunroutine will compute the cosine distance between two fingerprints fp1 and fp2 and 
 !store the output distance.  All conventions and 
 !methods are from J.Chem.Phys, 130, 104504 (2009) and IEEE Symposium, Okt 21-23. (2008) (M.Valle and A.Oganov)
 implicit none
+type(typ_parini), intent(in):: parini
 integer, intent(IN) :: nkinds, nkinds_sum(nkinds), fp_size,fp_dim
 !real(8), intent(IN) :: fp1(fp_size,nkinds,nkinds),fp2(fp_size,nkinds,nkinds)
 real(8), intent(INOUT) :: fp1(fp_size*fp_dim),fp2(fp_size*fp_dim)
@@ -482,7 +486,7 @@ w_ab=w_ab/w_norm
 !Compute the distance
 num=0.d0;  denom=0.d0;  tmp_1=0.d0;  tmp_2=0.d0
 
-if(trim(code).ne."lenosky_tb_lj") then
+if(trim(parini%potential_potential).ne."lenosky_tb_lj") then
 !Usual case: atoms in general
   do k=1,fp_dim
        imin=(k-1)*fp_size+1

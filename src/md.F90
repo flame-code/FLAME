@@ -36,7 +36,8 @@ subroutine dynamics(parini)
     else if(trim(md_method)=='nvt_nosecp') then
         call md_nvt_nose_hoover_cp(parini,atoms)
     else if(trim(md_method)=='nvt_nose') then
-        call md_nvt_nose_hoover(parini,atoms)
+        call md_nvt_nose_hoover_chain(parini,atoms)
+        !call md_nvt_nose_hoover(parini,atoms)
     else if(trim(md_method)=='nph') then
         call md_nph(parini,atoms)
     else 
@@ -409,8 +410,10 @@ subroutine ekin_temprature(atoms,temp,vcm,rcm,totmass)
     atoms%ekin=0.d0
     vcm(1:3)=0.d0
     rcm(1:3)=0.d0
+    totmass= 0.d0
     do iat=1,atoms%nat
         t1=atoms%amass(iat)
+        totmass=totmass + t1
         atoms%ekin=atoms%ekin+t1*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
         vcm(1:3)=vcm(1:3)+t1*atoms%vat(1:3,iat)
         rcm(1:3)=rcm(1:3)+t1*atoms%rat(1:3,iat)

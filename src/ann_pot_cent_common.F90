@@ -19,7 +19,7 @@ subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     ann_arr%chi_i(iat)=out_ann
     tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
     ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-    if(.not. (trim(ann_arr%event)=='evalu' .and. atoms%nat>parini%nat_force)) then
+    if(.not. (trim(ann_arr%event)=='evalu')) then
         tt2=ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
         do ib=symfunc%linked_lists%prime_bound(iat),symfunc%linked_lists%prime_bound(iat+1)-1
             ttx=0.d0 ; tty=0.d0 ; ttz=0.d0
@@ -77,7 +77,7 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     integer:: ib, i, j, iat, jat
     call getvol_alborz(atoms%cellvec,vol)
     atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)*vol !*atoms%nat !not certain if this is needed!!!
-    if(.not. (trim(ann_arr%event)=='evalu' .and. atoms%nat>parini%nat_force)) then
+    if(.not. (trim(ann_arr%event)=='evalu')) then
         do ib=1,symfunc%linked_lists%maxbound_rad
             iat=symfunc%linked_lists%bound_rad(1,ib)
             jat=symfunc%linked_lists%bound_rad(2,ib)

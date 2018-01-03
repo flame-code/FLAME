@@ -1,12 +1,11 @@
 !*****************************************************************************************
 subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
-    use dynamic_memory
     implicit none
     integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), ratred(3,nat), qat(nat)
+    real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), gwsq(nat), ecut
-    real(8), intent(out):: fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
     !local variables
     integer:: m1, m2, m3, m1_max, m2_max, m3_max, mtot, msq, msq_max
     integer:: iat, i, j, k, n, l
@@ -18,12 +17,11 @@ subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stres
     real(8):: recvec(3,3), g(3,3), cvinv(3,3), cvinv_vol(3,3)
     real(8):: den_dginv(3,3), dk2_dginv(3,3), dginv_da(3,3,3,3), ginv(3,3)
     real(8), allocatable:: tarr1(:), tarr2(:), tarr3(:)
-    call f_routine(id='kwald')
     !integer, save:: icall=-1
     !icall=icall+1
-    tarr1=f_malloc([1.to.nat],id='tarr1')
-    tarr2=f_malloc([1.to.nat],id='tarr2')
-    tarr3=f_malloc([1.to.nat],id='tarr3')
+    allocate(tarr1(1:nat))
+    allocate(tarr2(1:nat))
+    allocate(tarr3(1:nat))
     pi=4.d0*atan(1.d0)
     pisq=pi**2
     twopi=8.d0*atan(1.d0)
@@ -211,20 +209,18 @@ subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stres
     !    write(21,'(2i6,es14.5)') icall,iat,4.d0*pi/(3.d0*vol)*(rat(1,iat)*dpx+rat(2,iat)*dpy+rat(3,iat)*dpz)/eqd(iat)
     !    eqd(iat)=eqd(iat)+4.d0*pi/(3.d0*vol)*(rat(1,iat)*dpx+rat(2,iat)*dpy+rat(3,iat)*dpz)
     !enddo
-    call f_free(tarr1)
-    call f_free(tarr2)
-    call f_free(tarr3)
-    call f_release_routine()
+    deallocate(tarr1)
+    deallocate(tarr2)
+    deallocate(tarr3)
 end subroutine kwald
 !*****************************************************************************************
 subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
-    use dynamic_memory
     implicit none
     integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), ratred(3,nat), qat(nat)
+    real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), alphasq, ecut
-    real(8), intent(out):: fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
     !local variables
     integer:: m1, m2, m3, m1_max, m2_max, m3_max, mtot, msq, msq_max
     integer:: iat, i, j, k, n, l
@@ -237,9 +233,8 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     real(8):: den_dginv(3,3), dk2_dginv(3,3), dginv_da(3,3,3,3), ginv(3,3)
     real(8):: alphasq4th, alphasq2nd
     real(8), allocatable:: tarr1(:), tarr2(:)
-    call f_routine(id='kwald_samare')
-    tarr1=f_malloc([1.to.nat],id='tarr1')
-    tarr2=f_malloc([1.to.nat],id='tarr2')
+    allocate(tarr1(1:nat))
+    allocate(tarr2(1:nat))
     pi=4.d0*atan(1.d0)
     pisq=pi**2
     twopi=8.d0*atan(1.d0)
@@ -429,8 +424,7 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     !    fat(2,iat)=fat(2,iat)-2.d0*qat(iat)*dpy*twopi/(3.d0*vol)
     !    fat(3,iat)=fat(3,iat)-2.d0*qat(iat)*dpz*twopi/(3.d0*vol)
     !enddo
-    call f_free(tarr1)
-    call f_free(tarr2)
-    call f_release_routine()
+    deallocate(tarr1)
+    deallocate(tarr2)
 end subroutine kwald_samare
 !*****************************************************************************************

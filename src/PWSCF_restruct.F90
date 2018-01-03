@@ -24,7 +24,6 @@ end program
 
 
   subroutine rewrite_struct_espresso(filename_in,filename_out_struct,filename_out_kpt,niggli)
-  !use global, only: nat,target_pressure_gpa
   !use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
@@ -327,7 +326,7 @@ write(888,'(a,6(1x,es15.7))') "step 0",nigmat
 !1 step
 1000 continue
     ! A1
-    if (fgt(nigmat(1),nigmat(2),eps) .or. (feq(nigmat(1), nigmat(2), eps) .and. fgt(abs(nigmat(4)), abs(nigmat(5))))) then
+    if (fgt(nigmat(1),nigmat(2),eps) .or. (feq(nigmat(1), nigmat(2), eps) .and. fgt(abs(nigmat(4)), abs(nigmat(5)),eps))) then
       call a1_action(nigmat,tmpmat,eps)
       transmat=matmul(transmat,tmpmat)
 if(debug) then
@@ -343,7 +342,7 @@ if(debug) then
 endif
     endif
     ! A2
-    if (fgt(nigmat(2), nigmat(3),eps) .or. (feq(nigmat(2),nigmat(3),eps) .and. fgt(abs(nigmat(5)), abs(nigmat(6))))) then
+    if (fgt(nigmat(2), nigmat(3),eps) .or. (feq(nigmat(2),nigmat(3),eps) .and. fgt(abs(nigmat(5)), abs(nigmat(6)),eps))) then
       call a2_action(nigmat,tmpmat,eps)
       transmat=matmul(transmat,tmpmat)
 if(debug) then
@@ -431,7 +430,7 @@ endif
     ! A7
     if (fgt(abs(nigmat(6)),nigmat(1),eps)&
         &.or. (feq(nigmat(6), nigmat(1),eps) .and. flt(nigmat(4)+nigmat(4),nigmat(5),eps))&
-        &.or. (feq(nigmat(6),-nigmat(1)) .and. flt(nigmat(5), 0.d0,eps))) then
+        &.or. (feq(nigmat(6),-nigmat(1),eps) .and. flt(nigmat(5), 0.d0,eps))) then
       call a7_action(nigmat,tmpmat,eps)
       transmat=matmul(transmat,tmpmat)
 if(debug) then

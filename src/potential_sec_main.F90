@@ -52,7 +52,7 @@ subroutine cal_potential_forces_sec(parini,atoms)
     if(trim(potential_sec)=='lj') then
         call lennardjones(atoms)
     elseif(trim(potential_sec)=='ltb') then
-        call lenosky_tb(atoms)
+        call lenosky_tb(parini,atoms)
     elseif(trim(potential_sec)=='mpmd') then
         call cal_potential_forces_mpmd(atoms)
     elseif(trim(potential_sec)=='qsc') then

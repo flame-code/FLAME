@@ -83,10 +83,10 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
 !    !ekf%epot=(ekf%epot*atoms%nat+1.d0)*tt+ann_arr%ann(1)%ebounds(1)
 !    ekf%epot=((ekf%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1))
 !    tt=abs(ekf%epot-atoms%epot)/atoms%nat
-    call f_free(symfunc%linked_lists%prime_bound)
-    call f_free(symfunc%linked_lists%bound_rad)
-    call f_free(symfunc%linked_lists%bound_ang)
-    call ann_deallocate(ann_arr)
+    deallocate(symfunc%linked_lists%prime_bound)
+    deallocate(symfunc%linked_lists%bound_rad)
+    deallocate(symfunc%linked_lists%bound_ang)
+    !call ann_deallocate(ann_arr)
     call f_release_routine()
 end subroutine cal_ann_atombased
 !*****************************************************************************************

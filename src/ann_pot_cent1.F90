@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -19,13 +19,18 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
-    call f_routine(id='cal_ann_eem1')
+    call f_routine(id='cal_ann_cent1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        ann_arr%fat_chi=f_malloc0([1.to.3,1.to.atoms%nat],id='fat_chi')
-        ann_arr%chi_i=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_i')
-        ann_arr%chi_o=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_o')
-        ann_arr%chi_d=f_malloc0([1.to.atoms%nat],id='ann_arr%chi_d')
-        ann_arr%a=f_malloc0([1.to.(atoms%nat+1)*(atoms%nat+1)],id='a: aq=-chi')
+        allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
+        allocate(ann_arr%chi_i(1:atoms%nat))
+        allocate(ann_arr%chi_o(1:atoms%nat))
+        allocate(ann_arr%chi_d(1:atoms%nat))
+        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
+        ann_arr%fat_chi=0.d0
+        ann_arr%chi_i=0.d0
+        ann_arr%chi_o=0.d0
+        ann_arr%chi_d=0.d0
+        ann_arr%a=0.d0
     else
         ann_arr%fat_chi=0.d0
         ann_arr%chi_i=0.d0
@@ -43,14 +48,14 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call cal_electrostatic_eem1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
-        ann_arr%stresspq=f_malloc([1.to.3,1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='stresspq')
+        allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))
+        allocate(ann_arr%stresspq(1:3,1:3,1:symfunc%linked_lists%maxbound_rad))
     endif
     if(parini%iverbose>=2) call cpu_time(time3)
     over_iat: do iat=1,atoms%nat
@@ -83,7 +88,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_eem1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
@@ -95,7 +100,7 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:cent1: total time                 ',time7-time1
     endif !end of if for printing out timing.
     atoms%epot=epot_c
-    if(trim(ann_arr%event)=='evalu' .and. atoms%nat<=parini%nat_force) then
+    if(trim(ann_arr%event)=='evalu') then
         tt1=0.d0
         tt2=0.d0
         tt3=0.d0
@@ -124,24 +129,26 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
     enddo
     enddo
 
-    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-        call f_free(symfunc%linked_lists%prime_bound)
-        call f_free(symfunc%linked_lists%bound_rad)
-        call f_free(symfunc%linked_lists%bound_ang)
+    !if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        deallocate(symfunc%linked_lists%prime_bound)
+        deallocate(symfunc%linked_lists%bound_rad)
+        deallocate(symfunc%linked_lists%bound_ang)
     endif
-    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    !if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    if(trim(ann_arr%event)=='potential') then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        call f_free(ann_arr%chi_i)
-        call f_free(ann_arr%chi_o)
-        call f_free(ann_arr%chi_d)
-        call f_free(ann_arr%a)
-        call f_free(ann_arr%fat_chi)
-        call f_free(ann_arr%fatpq)
-        call f_free(ann_arr%stresspq)
+        deallocate(ann_arr%chi_i)
+        deallocate(ann_arr%chi_o)
+        deallocate(ann_arr%chi_d)
+        deallocate(ann_arr%a)
+        deallocate(ann_arr%fat_chi)
+        deallocate(ann_arr%fatpq)
+        deallocate(ann_arr%stresspq)
     endif
     if(trim(ann_arr%event)=='train') then
         ekf%g(1:ekf%n)=0.d0
@@ -151,9 +158,13 @@ subroutine cal_ann_eem1(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
+        !do i=1,ann_arr%n
+        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        !enddo
     endif
     call f_release_routine()
-end subroutine cal_ann_eem1
+end subroutine cal_ann_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
     use mod_interface
@@ -207,7 +218,6 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
-    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -215,11 +225,10 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     !local variables
     integer:: info !, iat
-    call f_routine(id='get_qat_from_chi_dir')
     associate(nat=>atoms%nat)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        ann_arr%ipiv=f_malloc([1.to.nat+1],id='ann_arr%ipiv')
-        ann_arr%qq=f_malloc([1.to.nat+1],id='ann_arr%qq')
+        allocate(ann_arr%ipiv(1:nat+1))
+        allocate(ann_arr%qq(1:nat+1))
     endif
     call DGETRF(nat+1,nat+1,a,nat+1,ann_arr%ipiv,info)
     if(info/=0) then
@@ -246,14 +255,13 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
         write(*,*) 'Lagrange ',ann_arr%qq(nat+1)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
-        call f_free(ann_arr%ipiv)
-        call f_free(ann_arr%qq)
+        deallocate(ann_arr%ipiv)
+        deallocate(ann_arr%qq)
     endif
     end associate
-    call f_release_routine()
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
-subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -330,7 +338,7 @@ subroutine cal_electrostatic_eem1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3
         stop 'ERROR: unknown job in cal_electrostatic_eem1'
     endif
     end associate
-end subroutine cal_electrostatic_eem1
+end subroutine cal_electrostatic_cent1
 !*****************************************************************************************
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     use mod_interface
@@ -350,8 +358,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     real(8):: tt2, tt3, ttf, gama, pi
     real(8):: dx, dy, dz, r, beta_iat, beta_jat
     real(8), allocatable:: gausswidth(:)
-    call f_routine(id='cal_electrostatic_ann')
-    gausswidth=f_malloc([1.to.atoms%nat],id='gausswidth')
+    allocate(gausswidth(1:atoms%nat))
     if(trim(atoms%boundcond)=='free') then
         pi=4.d0*atan(1.d0)
         tt2=0.d0
@@ -390,8 +397,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
     endif
-    call f_free(gausswidth)
-    call f_release_routine()
+    deallocate(gausswidth)
 end subroutine cal_electrostatic_ann
 !*****************************************************************************************
 subroutine charge_analysis(parini,atoms,ann_arr)
@@ -459,13 +465,12 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     real(8), allocatable:: qq(:), h(:), Ah(:), g(:)
     real(8):: hAh, ddot, alpha, beta, dot_gold, dot_gnew 
     real(8):: resnormtol, resnorm
-    call f_routine(id='get_qat_from_chi_iter')
     associate(nat=>atoms%nat)
-    ipiv=f_malloc([1.to.nat+1],id='get_qat_from_chi_iter')
-    qq=f_malloc([1.to.nat+1],id='qq')
-    h=f_malloc([1.to.nat+1],id='h')
-    Ah=f_malloc([1.to.nat+1],id='Ah')
-    g=f_malloc([1.to.nat+1],id='g')
+    allocate(ipiv(1:nat+1))
+    allocate(qq(1:nat+1))
+    allocate(h(1:nat+1))
+    allocate(Ah(1:nat+1))
+    allocate(g(1:nat+1))
 
     qq(1:nat+1)=0.d0  !??????????????????
     resnormtol=1.d-10
@@ -499,13 +504,12 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     if(parini%iverbose>1) then
         write(*,*) 'Lagrange ',qq(nat+1),iter
     endif
-    call f_free(ipiv)
-    call f_free(qq)
-    call f_free(h)
-    call f_free(Ah)
-    call f_free(g)
+    deallocate(ipiv)
+    deallocate(qq)
+    deallocate(h)
+    deallocate(Ah)
+    deallocate(g)
     end associate
-    call f_release_routine()
 end subroutine get_qat_from_chi_iter
 !*****************************************************************************************
 subroutine cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
@@ -525,9 +529,8 @@ subroutine cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
     real(8):: dpm, pi, gtot
     integer:: iat, igpx, igpy, igpz
     real(8), allocatable:: gausswidth(:)
-    call f_routine(id='cal_ugradient')
     pi=4.d0*atan(1.d0)
-    gausswidth=f_malloc([1.to.atoms%nat],id='gausswidth')
+    allocate(gausswidth(1:atoms%nat))
     gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
     call get_hartree(parini,ewald_p3d,atoms,gausswidth,ann_arr%epot_es,g)
     qtot=0.d0
@@ -540,8 +543,7 @@ subroutine cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
     do iat=1,atoms%nat
         g(iat)=g(iat)-gtot/atoms%nat
     enddo
-    call f_free(gausswidth)
-    call f_release_routine()
+    deallocate(gausswidth)
 end subroutine cal_ugradient
 !*****************************************************************************************
 subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
@@ -562,7 +564,6 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
     real(8) :: beta, dpm
     real(8) :: DDOT, aa, bb, gnrmtol, tt, qtot, y0, y1, gnrm, gnrm2, gnrm2old
     real(8) :: alpha, alphax, alpha0, de, epotlong_old, sss, qtot_tmp, dipole(3)
-    call f_routine(id='get_qat_from_chi_operator')
     associate(nat=>atoms%nat)
     gnrmtol=parini%gnrmtol_eem
     call set_qat(atoms)
@@ -587,10 +588,10 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
             atoms%qat(iat)=atoms%qat(iat)-sss
         enddo
     endif
-    qq=f_malloc([1.to.nat],id='qq')
-    g=f_malloc([1.to.nat],id='g')
-    h=f_malloc([1.to.nat],id='h')
-    gt=f_malloc([1.to.nat],id='gt')
+    allocate(qq(1:nat))
+    allocate(g(1:nat))
+    allocate(h(1:nat))
+    allocate(gt(1:nat))
     !---------------------------------------------------------------
     qtot_tmp=sum(atoms%qat(1:atoms%nat))
     if(parini%iverbose>=2) then
@@ -619,9 +620,12 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
         if(iter==0) epotlong_old=ann_arr%epot_es
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
-            write(*,'(a,i5,es24.15,3es14.5)') 'iter,gnrm ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
         endif
-        if(gnrm<1.d-7) exit
+        if(gnrm<1.d-7) then
+            write(*,'(a,i5,es24.15,3es14.5)') 'CEP converged: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            exit
+        endif
         if(iter==0) then
             gt=g
             qq=atoms%qat
@@ -708,16 +712,15 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
         iter=iter+1
     enddo
     call charge_analysis(parini,atoms,ann_arr)
-    call f_free(qq)
-    call f_free(g)
-    call f_free(h)
-    call f_free(gt)
+    deallocate(qq)
+    deallocate(g)
+    deallocate(h)
+    deallocate(gt)
     if(parini%iverbose>=2) then
         do iat=1,atoms%nat
             write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
         enddo
     endif
     end associate
-    call f_release_routine()
 end subroutine get_qat_from_chi_operator
 !******************************************************************************************************************

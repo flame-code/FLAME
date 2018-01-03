@@ -24,8 +24,11 @@ module interface_ipi
 
 contains
 
-  subroutine init_ipi()
+  subroutine init_ipi(parini,nat)
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
+  integer, intent(in):: nat
   real(8):: vir_tmp(3*3),vir_tmp_inv(3*3),msgbuffer(3*nat)
   CHARACTER(LEN=2048) :: initbuffer      ! it's unlikely a string this large will ever be passed...
   integer:: cbuf,i
@@ -34,9 +37,9 @@ contains
 !      ipi_inet=0 !0 for unix socket, 1 for tcp
 !      ipi_port=3141
 !      ipi_host="mh-driver"//achar(0)
-      write(*,'(a,a,a,i6)') " # IPI: Trying to open the socket ", trim(sock_host), " on port ",sock_port
-      sock_host_open=trim(adjustl(sock_host))//achar(0)
-      CALL open_socket(sock_socket, sock_inet, sock_port, sock_host_open)
+      write(*,'(a,a,a,i6)') " # IPI: Trying to open the socket ", trim(parini%sock_host), " on port ",parini%sock_port
+      sock_host_open=trim(adjustl(parini%sock_host))//achar(0)
+      CALL open_socket(sock_socket, parini%sock_inet, parini%sock_port, sock_host_open)
 !Dummy call to check mpi
 !Get the status of ipi to receive data
     do
@@ -60,7 +63,10 @@ contains
 
 
 
-  subroutine evaluate_ipi(latvec, xred0, fcart, strten, energy, ka, kb, kc, iprec)
+  subroutine evaluate_ipi(parini,nat,latvec, xred0, fcart, strten, energy, ka, kb, kc, iprec)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: nat
     real(8), intent(in) :: latvec(3,3)
     real(8), intent(in) :: xred0(3,nat)
     integer, intent(inout) :: ka, kb, kc
@@ -99,7 +105,7 @@ endif
 !Check if precision has changed
 if(iprec/=iprec_ipi) then
       sock_extra_string=trim(sock_extra_string)//" CRESET "
-      write(ECUTWFSCL,'(f6.4)') sock_ecutwf(iprec)
+      write(ECUTWFSCL,'(f6.4)') parini%sock_ecutwf(iprec)
       sock_extra_string=trim(sock_extra_string)//" ECUTWF "//ECUTWFSCL
       iprec_ipi=iprec
       last_reset=1000

@@ -26,6 +26,9 @@ subroutine cube_read(filename,atoms,poisson)
     read(1358,*) poisson%ngpx,poisson%hx
     read(1358,*) poisson%ngpy,tt,poisson%hy
     read(1358,*) poisson%ngpz,tt,tt,poisson%hz
+    atoms%cellvec(1,1) = poisson%ngpx*poisson%hx
+    atoms%cellvec(2,2) = poisson%ngpy*poisson%hy
+    atoms%cellvec(3,3) = poisson%ngpz*poisson%hz
     write(*,'(2a)') 'reading ',trim(filename)
     do iat=1,atoms%nat
         read(1358,*) iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)

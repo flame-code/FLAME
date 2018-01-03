@@ -9,14 +9,13 @@
 !!    For the list of contributors, see ~/AUTHORS
 !subroutine geopt(nat,wpos,etot,fout,fnrmtol,count,count_sd,displr)
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
-subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
+subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: target_pressure_habohr,target_pressure_gpa,nat,ntypat,znucl,amu,amutmp,typat
- use global, only: char_type,ntime_geopt,bmass,dtion_fire,tolmxf,strfact,dtion_fire_min,dtion_fire_max
- use global, only: units,usewf_geopt,max_kpt,fixat,fixlat,correctalg,ka1,kb1,kc1,confine
+ use global, only: nat,ntypat,znucl
+ use global, only: char_type
+ use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
  use interface_code
- use mod_sqnm,   only: sqnm_beta_lat,sqnm_beta_at,sqnm_nhist,sqnm_maxrise,sqnm_cutoffRatio,sqnm_steepthresh,sqnm_trustr
  use modsocket, only: sock_extra_string
 !subroutine sqnm(runObj,outsIO,nproc,iproc,verbosity,ncount_bigdft,fail)
 !call_bigdft has to be run once on runObj and outs !before calling this routine
@@ -28,6 +27,7 @@ subroutine GEOPT_sqnm(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,
    use mod_parini, only: typ_parini
    implicit none
    type(typ_parini), intent(in):: parini
+   type(typ_parini), intent(inout):: parres
    !parameter
 !   integer, intent(in)                    :: nproc
 !   integer, intent(in)                    :: iproc
@@ -145,7 +145,7 @@ latvec_io=0
    debug=.false.
 
 
-   pressure=target_pressure_habohr
+   pressure=parini%target_pressure_habohr
    biomode=.false.
    !set parameters
 !   nit=runObj%inputs%ncount_cluster_x
@@ -156,16 +156,16 @@ latvec_io=0
 !   cutoffRatio=runObj%inputs%cutoffratio
 !   steepthresh=runObj%inputs%steepthresh
 !   trustr=runObj%inputs%trustr
-   nit=        ntime_geopt
+   nit=        parini%paropt_geopt%nit
 !   nat=        nat
-   betax=      sqnm_beta_at !betax
-   betalatx=   sqnm_beta_lat !betax
+   betax=      parini%paropt_geopt%beta_at !betax
+   betalatx=   parini%paropt_geopt%beta_lat !betax
    betalat_scale=betalatx/betax
-   nhistx=     sqnm_nhist!nhistx
-   maxrise=    sqnm_maxrise!1.d-6!maxrise
-   cutoffRatio=sqnm_cutoffRatio!2.d-4!cutoffratio
-   steepthresh=sqnm_steepthresh!1000.d0!steepthresh
-   trustr=     sqnm_trustr!0.2d0!trustr
+   nhistx=     parini%paropt_geopt%nhist!nhistx
+   maxrise=    parini%paropt_geopt%maxrise!1.d-6!maxrise
+   cutoffRatio=parini%paropt_geopt%cutoffRatio!2.d-4!cutoffratio
+   steepthresh=parini%paropt_geopt%steepthresh!1000.d0!steepthresh
+   trustr=     parini%paropt_geopt%trustr!0.2d0!trustr
    if(biomode)imode=2
 
 !!   if (iproc==0.and.verbosity > 0) then
@@ -283,10 +283,10 @@ endif
 call sqnm_invhess(nat,latvec_in,metric,hessinv)
 
 
-!   call minenergyandforces(parini,iproc,nproc,.false.,imode,runObj,outs,nat,rxyz(1,1,0),&
+!   call minenergyandforces(parini,parres,iproc,nproc,.false.,imode,runObj,outs,nat,rxyz(1,1,0),&
 !       rxyzraw(1,1,0),fxyz(1,1,0),fstretch(1,1,0),fxyzraw(1,1,0),&
 !       etot,iconnect,nbond,wold,beta_stretchx,beta_stretch)
-!   call minenergyandforces(parini,iproc,nproc,.true.,imode,nat,rxyz(1,1,0),&
+!   call minenergyandforces(parini,parres,iproc,nproc,.true.,imode,nat,rxyz(1,1,0),&
 !       rxyzraw(1,1,0),fxyz(1,1,0),fstretch(1,1,0),fxyzraw(1,1,0),&
 !       etot,iconnect,nbond,wold,beta_stretchx,beta_stretch)
    write(fn4,'(i4.4)') 0
@@ -295,7 +295,7 @@ call sqnm_invhess(nat,latvec_in,metric,hessinv)
           call rxyz_cart2int(rxyz(:,nat+1:nat+3,0),pos_tmp,rxyz(:,1:nat,0),nat)
           rxyz(:,1:nat,0)=pos_tmp(:,:)
    endif
-   call minenergyandforces(parini,.true.,imode,nat,rxyz(1,1,0),&
+   call minenergyandforces(parini,parres,.true.,imode,nat,rxyz(1,1,0),&
        rxyzraw(1,1,0),fxyz(1,1,0),fstretch(1,1,0),fxyzraw(1,1,0),&
        etot,beta_stretchx,beta_stretch,&
        latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
@@ -306,7 +306,7 @@ call sqnm_invhess(nat,latvec_in,metric,hessinv)
    if(imode==2)rxyz(:,:,0)=rxyz(:,:,0)+beta_stretch*fstretch(:,:,0)
 
 !   call fnrmandforcemax(fxyzraw(1,1,0),fnrm,fmax,nat)
-   call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+   call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !   fnrm=sqrt(fnrm)
 !   if (fmax < 3.d-1) call updatefluctsum(outs%fnoise,fluct)
 
@@ -342,11 +342,11 @@ if(parini%verb>0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 
@@ -465,7 +465,7 @@ endif
       delta=rxyz(:,:,nhist)-rxyzOld
       displr=displr+dnrm2(3*nat+9,delta(1,1),1)
 !      runObj%inputs%inputPsiId=1
-!      call minenergyandforces(parini,iproc,nproc,.true.,imode,runObj,outs,nat,rxyz(1,1,nhist),rxyzraw(1,1,nhist),&
+!      call minenergyandforces(parini,parres,iproc,nproc,.true.,imode,runObj,outs,nat,rxyz(1,1,nhist),rxyzraw(1,1,nhist),&
 !                             fxyz(1,1,nhist),fstretch(1,1,nhist),fxyzraw(1,1,nhist),&
 !                             etotp,iconnect,nbond,wold,beta_stretchx,beta_stretch)
        write(fn4,'(i4.4)') it
@@ -474,7 +474,7 @@ endif
           call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
           rxyz(:,1:nat,nhist)=pos_tmp(:,:)
    endif
-       call minenergyandforces(parini,.true.,imode,nat,rxyz(1,1,nhist),&
+       call minenergyandforces(parini,parres,.true.,imode,nat,rxyz(1,1,nhist),&
            rxyzraw(1,1,nhist),fxyz(1,1,nhist),fstretch(1,1,nhist),fxyzraw(1,1,nhist),&
            etotp,beta_stretchx,beta_stretch,&
            latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
@@ -488,7 +488,7 @@ endif
 
 
 !      call fnrmandforcemax(fxyzraw(1,1,nhist),fnrm,fmax,nat)
-      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !MHM: Write output to file in every step***********************************
        counter=real(it,8)
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -499,11 +499,11 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
        call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,typat,fixat,fixlat,etot_in,pressure,enthalpy,etotp)
+            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
 !*********************************************************************
@@ -694,8 +694,8 @@ endif
 
 
 !      if (fnrm.le.fnrmtol) goto 1000
-!      call convcheck(fmax,fluct*runObj%inputs%frac_fluct,runObj%inputs%forcemax,icheck)
-      call convcheck(nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+!      call convcheck(parini,fmax,fluct*runObj%inputs%frac_fluct,runObj%inputs%forcemax,icheck)
+      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !      if(icheck>5)then
       if(iexit==1)then
          goto 1000
@@ -733,7 +733,7 @@ endif
 
 
 !Set precision if necessary
-       if(usewf_geopt) then
+       if(parini%usewf_geopt) then
            getwfk=.true.
        else
            getwfk=.false.
@@ -743,16 +743,16 @@ endif
            iprec=1
        endif
 !Reset everything, recompute cell and stuff
-         if((multiprec.and.it.ge.ntime_geopt/2).or.&
+         if((multiprec.and.it.ge.parini%paropt_geopt%nit/2).or.&
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
-         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(fixlat).or.any(fixat).or.confine.ge.1))) then
+         if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
              if(cart_forces) then
                     call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),pos_tmp(:,:),nat,correctalg,latvec_io)
+             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),pos_tmp(:,:),nat,parini%correctalg,latvec_io)
                     call rxyz_int2cart(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
              else
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat,correctalg,latvec_io)
+             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat,parini%correctalg,latvec_io)
              endif
              cellfix_done=.true.
              if(latvec_io.ne.0) then
@@ -760,8 +760,8 @@ endif
                 getwfk=.false.
                 ka1=0;kb1=0;kc1=0
    !Reset all
-                maxrise=    sqnm_maxrise!1.d-6!maxrise
-                trustr=     sqnm_trustr!0.2d0!trustr
+                maxrise=    parini%paropt_geopt%maxrise!1.d-6!maxrise
+                trustr=     parini%paropt_geopt%trustr!0.2d0!trustr
                 displr=0.0d0
                 displp=0.0d0
                 icheck=0
@@ -851,9 +851,9 @@ deallocate(scpr)
 !   call deallocate_global_output(outs)
 max_kpt=.false.
 end subroutine
-!subroutine minenergyandforces(parini,iproc,nproc,eeval,imode,runObj,outs,nat,rat,rxyzraw,fat,fstretch,&
+!subroutine minenergyandforces(parini,parres,iproc,nproc,eeval,imode,runObj,outs,nat,rat,rxyzraw,fat,fstretch,&
 !           fxyzraw,epot,iconnect,nbond_,wold,alpha_stretch0,alpha_stretch)
-subroutine minenergyandforces(parini,eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
+subroutine minenergyandforces(parini,parres,eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
            fxyzraw,epot,alpha_stretch0,alpha_stretch,&
            latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
     use mod_interface
@@ -864,6 +864,7 @@ subroutine minenergyandforces(parini,eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parres
     !parameter
     integer, intent(in)           :: imode
     integer, intent(in)           :: nat
@@ -907,10 +908,10 @@ subroutine minenergyandforces(parini,eeval,imode,nat,rat,rxyzraw,fat,fstretch,&
 !        call call_bigdft(runObj,outs,infocode)
           
          getwfk=.false.
-!         call get_energyandforces_single(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
+!         call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !!!!         call get_BFGS_forces_strainlatt(parini,rat,force_all,enthalpy,getwfk,iprec,latvec0,&
 !!!!             &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-          call get_BFGS_forces_PR(parini,rat,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
+          call get_BFGS_forces_PR(parini,parres,rat,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
     endif
 !    call vcopy(3 * outs%fdim, outs%fxyz(1,1), 1, fat(1,1), 1)
     fat=force_all

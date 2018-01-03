@@ -15,17 +15,22 @@ subroutine ann_allocate(ekf,ann_arr)
     !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%y0d.'
     !allocate(ann_arr%y0dr(ng,9,natmax,natmax),stat=istat)
     !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%y0dr.'
-    ann_arr%fat_chi=f_malloc0([1.to.3,1.to.ann_arr%natmax],id='fat_chi')
-    ann_arr%chi_i=f_malloc0([1.to.ann_arr%natmax],id='ann_arr%chi_i')
-    ann_arr%chi_o=f_malloc0([1.to.ann_arr%natmax],id='ann_arr%chi_o')
-    ann_arr%chi_d=f_malloc0([1.to.ann_arr%natmax],id='ann_arr%chi_d')
-    ann_arr%a=f_malloc0([1.to.(ann_arr%natmax+1)*(ann_arr%natmax+1)],id='a: aq=-chi')
-    ann_arr%g_per_atom=f_malloc([1.to.ekf%num(1),1.to.ann_arr%natmax],id='g_per_atom') !HERE
+    allocate(ann_arr%fat_chi(1:3,1:ann_arr%natmax))
+    allocate(ann_arr%chi_i(1:ann_arr%natmax))
+    allocate(ann_arr%chi_o(1:ann_arr%natmax))
+    allocate(ann_arr%chi_d(1:ann_arr%natmax))
+    allocate(ann_arr%a(1:(ann_arr%natmax+1)*(ann_arr%natmax+1)))
+    ann_arr%fat_chi=0.d0
+    ann_arr%chi_i=0.d0
+    ann_arr%chi_o=0.d0
+    ann_arr%chi_d=0.d0
+    ann_arr%a=0.d0
+    allocate(ann_arr%g_per_atom(1:ekf%num(1),1:ann_arr%natmax))
     !symfunc%linked_lists%maxbound_rad is assumed 10000
-    ann_arr%fatpq=f_malloc([1.to.3,1.to.10000],id='fatpq')
-    ann_arr%stresspq=f_malloc([1.to.3,1.to.3,1.to.10000],id='stresspq')
-    ann_arr%ipiv=f_malloc([1.to.ann_arr%natmax+1],id='ann_arr%ipiv')
-    ann_arr%qq=f_malloc([1.to.ann_arr%natmax+1],id='ann_arr%qq')
+    allocate(ann_arr%fatpq(1:3,1:10000))
+    allocate(ann_arr%stresspq(1:3,1:3,1:10000))
+    allocate(ann_arr%ipiv(1:ann_arr%natmax+1))
+    allocate(ann_arr%qq(1:ann_arr%natmax+1))
 end subroutine ann_allocate
 !*****************************************************************************************
 subroutine ann_deallocate(ann_arr)
@@ -42,15 +47,15 @@ subroutine ann_deallocate(ann_arr)
     !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%y0d.'
     !deallocate(ann_arr%y0dr,stat=istat)
     !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%y0dr.'
-    call f_free(ann_arr%chi_i)
-    call f_free(ann_arr%chi_o)
-    call f_free(ann_arr%chi_d)
-    call f_free(ann_arr%a)
-    call f_free(ann_arr%fat_chi)
-    call f_free(ann_arr%g_per_atom)
-    call f_free(ann_arr%fatpq)
-    call f_free(ann_arr%stresspq)
-    call f_free(ann_arr%ipiv)
-    call f_free(ann_arr%qq)
+    deallocate(ann_arr%chi_i)
+    deallocate(ann_arr%chi_o)
+    deallocate(ann_arr%chi_d)
+    deallocate(ann_arr%a)
+    deallocate(ann_arr%fat_chi)
+    deallocate(ann_arr%g_per_atom)
+    deallocate(ann_arr%fatpq)
+    deallocate(ann_arr%stresspq)
+    deallocate(ann_arr%ipiv)
+    deallocate(ann_arr%qq)
 end subroutine ann_deallocate
 !*****************************************************************************************

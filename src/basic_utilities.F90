@@ -227,9 +227,16 @@ subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
     use mod_interface
     !This subrouine will convert the internal coordinates into cartesian coordinates
     implicit none
-    integer:: nat,iat
-    real(8):: rxyzint(3,nat), rxyzcart(3,nat), latvec(3,3), latvecinv(3,3)
-    call invertmat_alborz(latvec,latvecinv)
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyzcart(3,nat), latvec(3,3)
+    real(8), intent(out):: rxyzint(3,nat)
+    !local variables
+    integer:: iat
+    real(8):: latvecinv(3,3)
+    real(16):: latvec_q(3,3), latvecinv_q(3,3)
+    latvec_q(1:3,1:3)=real(latvec(1:3,1:3),kind=16)
+    call invertmat_alborz_qp(latvec_q,latvecinv_q)
+    latvecinv(1:3,1:3)=real(latvecinv_q(1:3,1:3),kind=8)
     do iat=1,nat
         rxyzint(1,iat)=latvecinv(1,1)*rxyzcart(1,iat)+latvecinv(1,2)*rxyzcart(2,iat)+latvecinv(1,3)*rxyzcart(3,iat)
         rxyzint(2,iat)=latvecinv(2,1)*rxyzcart(1,iat)+latvecinv(2,2)*rxyzcart(2,iat)+latvecinv(2,3)*rxyzcart(3,iat)
@@ -284,6 +291,29 @@ subroutine invertmat_alborz(a,ainv)
     !call  DGETRI( n, ainv, n, IPIV, WORK,LDWORK , INFO )
     !if (info.ne.0) stop "Error in DGETRI"
 end subroutine invertmat_alborz
+!*****************************************************************************************
+subroutine invertmat_alborz_qp(a,ainv)
+    use mod_interface
+    implicit none
+    real(16),intent(in):: a(3,3)
+    real(16),intent(out):: ainv(3,3)
+    !local variables
+    real(16):: div
+    !integer:: ipiv(3), info, ldwork
+    !real(8), allocatable:: WORK(:)
+    div=(a(1,1)*a(2,2)*a(3,3)-a(1,1)*a(2,3)*a(3,2)-a(1,2)*a(2,1)*a(3,3)+ &
+         a(1,2)*a(2,3)*a(3,1)+a(1,3)*a(2,1)*a(3,2)-a(1,3)*a(2,2)*a(3,1))
+    div=1.q0/div
+    ainv(1,1) = (a(2,2)*a(3,3)-a(2,3)*a(3,2))*div
+    ainv(1,2) =-(a(1,2)*a(3,3)-a(1,3)*a(3,2))*div
+    ainv(1,3) = (a(1,2)*a(2,3)-a(1,3)*a(2,2))*div
+    ainv(2,1) =-(a(2,1)*a(3,3)-a(2,3)*a(3,1))*div
+    ainv(2,2) = (a(1,1)*a(3,3)-a(1,3)*a(3,1))*div
+    ainv(2,3) =-(a(1,1)*a(2,3)-a(1,3)*a(2,1))*div
+    ainv(3,1) = (a(2,1)*a(3,2)-a(2,2)*a(3,1))*div
+    ainv(3,2) =-(a(1,1)*a(3,2)-a(1,2)*a(3,1))*div
+    ainv(3,3) = (a(1,1)*a(2,2)-a(1,2)*a(2,1))*div
+end subroutine invertmat_alborz_qp
 !*****************************************************************************************
 subroutine convertupper(str)
     use mod_interface

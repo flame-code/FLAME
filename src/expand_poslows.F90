@@ -13,7 +13,7 @@ use global_expand
 implicit none
 integer:: i, nat_in,expansions(3),ntypat,iat,k,l,m
 real(8),allocatable::xred_in(:,:),xred(:,:),xcart(:,:),fcart_in(:,:),fcart(:,:),posnoise(:,:)
-real(8)::displ,latvec_in(3,3),latvec(3,3),strten_in(6),strten(6),target_pressure_gpa,energy,enthalpy,ext_press,target_pressure_habohr
+real(8)::displ,latvec_in(3,3),latvec(3,3),strten_in(6),strten(6),energy,enthalpy,ext_press
 logical,allocatable:: fixat_in(:),fixat(:)
 logical:: fixlat(7)             !Contains the information of the cell constraints: a,b,c,alpha,beta,gamma,cellshape
 logical:: file_exists
@@ -21,6 +21,7 @@ logical:: readfrag, readfix
 character(5):: fn5
 character(40):: units,filename
 character(2),allocatable:: char_typat(:),char_typat_in(:)
+real(8):: target_pressure_habohr
 !Set units
 units="angstroem"
 
@@ -81,6 +82,7 @@ do i=1,10000000
    call rxyz_cart2int(latvec,xred,xcart,nat)
    !Write the new atomic file
 !       filename = trim(filename)//".out"
+       !WARNING: the following is probably broken since target_pressure_habohr is a local variable.
        call write_atomic_file_ascii(filename,nat,units,xred,latvec,fcart,strten,&
              &char_typat,fixat,fixlat,energy,target_pressure_habohr,ext_press,enthalpy)
 endif

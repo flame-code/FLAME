@@ -52,8 +52,7 @@ END SUBROUTINE geopt_init
 
 subroutine GEOPT_RBFGS_MHM(parini,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use global, only: target_pressure_habohr,target_pressure_gpa,ntypat,znucl,amu,amutmp,typat,char_type,&
-                   &ntime_geopt,tolmxf,strfact,units,usewf_geopt,nat
+ use global, only: ntypat,znucl,typat,char_type,units,nat
  use defs_basis
  use minpar
 
@@ -98,12 +97,12 @@ real(8):: tolmxf_switch
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
  multiprec=.true.
- tolmxf_switch=10.d0*tolmxf
+ tolmxf_switch=10.d0*parini%paropt_geopt%fmaxtol
 
  counter=0.d0
 write(*,'(a,es15.7,es15.7)') " # BFGS BETAX, BETAX_LAT: ", parmin_bfgs%betax, parmin_bfgs%betax_lat
  
-pressure=target_pressure_habohr
+pressure=parini%target_pressure_habohr
 
 open(unit=16,file="geopt.mon")
 alpha_pl=1.d-0
@@ -117,7 +116,7 @@ p(3*nat+1:3*nat+9)=latvec_in(:)
 getwfk=.false.
 iprec=1
 call get_BFGS_forces_max(p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -132,7 +131,7 @@ call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",0,fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
    iexit=0
-   if(fmax.lt.tolmxf) iexit=1
+   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
    if(iexit==1) then
    write(*,'(a)') " # BFGS converged before entering optimization"
 !   call wtpos_inter(nat,rxyz,latvec,555)
@@ -148,7 +147,7 @@ write(16,*) "Initial energy",fp
 !call fxyz_cart2int(nat,fxyz,g(1:3*nat),latvec)
 g(3*nat+1:3*nat+9)=g(3*nat+1:3*nat+9)*alpha_pl
 g=-g
-call unit_matrix(hessin) !Initialize inverse Hessian to the unit matrix.
+call unit_matrix(hessin,3*nat+9) !Initialize inverse Hessian to the unit matrix.
 
 !Initialize Hessian diagonal elements
 hessin=hessin*parmin_bfgs%betax
@@ -176,7 +175,7 @@ do its=1,ITMAX
  goto 1001
  endif
 
- if(usewf_geopt) then
+ if(parini%usewf_geopt) then
      getwfk=.true.
  else
      getwfk=.false.
@@ -187,7 +186,7 @@ do its=1,ITMAX
  endif
  counter=counter+1.d0
  call get_BFGS_forces_max(tp,tg,tfp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
@@ -259,14 +258,14 @@ lambda_predict=max(lambda_predict,-1.d0)
    p=pnew
    dg=g       !Save the old gradient,
 
-   if(usewf_geopt) then
+   if(parini%usewf_geopt) then
        getwfk=.true.
    else
        getwfk=.false.
    endif
    counter=counter+1.d0
    call get_BFGS_forces_max(p,g,fp,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+   call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
        ent_pos_0=fp
@@ -290,7 +289,7 @@ lambda_predict=max(lambda_predict,-1.d0)
    write(16,'(a,1x,I5,1x,1pe21.14,1x,1pe12.5,1x,1pe12.5,1x,1pe12.5)') "  &
    &  BFGS_all",its,fp,fmax,fmax_at,fmax_lat
    iexit=0
-   if(fmax.lt.tolmxf) iexit=1
+   if(fmax.lt.parini%paropt_geopt%fmaxtol) iexit=1
 !   if (fnrm < fnrmtol) then  !Test for convergence on zero gradient.
 !   latvec=p(3*nat+1:3*nat+9)
 !   call backtocell(nat,latvec,rxyz)
@@ -299,7 +298,7 @@ lambda_predict=max(lambda_predict,-1.d0)
 !   call wtpos_inter(nat,rxyz,latvec,555)
    RETURN 
    endif
-   if(int(counter).gt.ntime_geopt) then
+   if(int(counter).gt.parini%paropt_geopt%nit) then
    write(*,'(a,i5)') " # BFGS did not converg in steps: ", int(counter)
    RETURN
    endif
@@ -758,7 +757,7 @@ end subroutine findmin
 subroutine get_BFGS_forces_max(pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: target_pressure_habohr,target_pressure_gpa,nat
+use global, only: nat
 implicit none
 integer:: iprec,iat
 real(8):: pos_all(3*nat+9)
@@ -801,7 +800,7 @@ logical:: getwfk
        transformed(:,3)=latvec_in(3,:)
        call invertmat(transformed,transformed_inv,3)
        flat=(-vol*matmul(str_matrix,transformed_inv))
-       pressure=target_pressure_habohr
+       pressure=parini%target_pressure_habohr
        call stress_volume(latvec_in,vol,pressure,stressvol)
        flat=flat+stressvol
 !Finally, write those values into fxyz
@@ -813,8 +812,10 @@ logical:: getwfk
 end subroutine
 
 
-subroutine get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
-use global, only: nat,strfact,target_pressure_habohr
+subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
+use mod_parini, only: typ_parini
+use global, only: nat
+type(typ_parini), intent(in):: parini
 implicit none
 integer:: iat,i,istr
 real(8):: fcart_in(3,nat),strten_in(6),fmax,fmax_at,fmax_lat
@@ -832,11 +833,11 @@ real(8):: dstr(6), strtarget(6)
    end do
  end do
  strtarget=0.d0
- strtarget(1:3)=-target_pressure_habohr
+ strtarget(1:3)=-parini%target_pressure_habohr
  dstr(:)=strten_in(:)-strtarget(:)
 !Eventually take into account the stress
  do istr=1,6
-     if(abs(dstr(istr))*strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*strfact
+     if(abs(dstr(istr))*parini%paropt_geopt%strfact >= fmax_lat ) fmax_lat=abs(dstr(istr))*parini%paropt_geopt%strfact
  end do
  fmax=max(fmax_at,fmax_lat)
 end subroutine
