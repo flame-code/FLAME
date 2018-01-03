@@ -67,11 +67,6 @@ subroutine ann_train(parini)
         enddo
     endif
 
-    !if(trim(parini%symfunc)/='do_not_save') then
-    !    ann_arr%compute_symfunc=.false.
-    !else
-    !    ann_arr%compute_symfunc=.true.
-    !endif
     ann_arr%compute_symfunc=.false.
     !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
     if(parini%prefit_ann ) then
@@ -181,26 +176,6 @@ subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_tr
     endif
 
     call ann_deallocate(ann_arr)
-
-    !if(trim(parini%symfunc)/='do_not_save') then
-    do iconf=1,atoms_train%nconf
-        deallocate(symfunc_train%symfunc(iconf)%linked_lists%prime_bound)
-        deallocate(symfunc_train%symfunc(iconf)%linked_lists%bound_rad)
-        deallocate(symfunc_train%symfunc(iconf)%linked_lists%bound_ang)
-    enddo
-    do iconf=1,atoms_valid%nconf
-        deallocate(symfunc_valid%symfunc(iconf)%linked_lists%prime_bound)
-        deallocate(symfunc_valid%symfunc(iconf)%linked_lists%bound_rad)
-        deallocate(symfunc_valid%symfunc(iconf)%linked_lists%bound_ang)
-    enddo
-    !endif
-
-    !do iconf=1,atoms_train%nconf
-    !    call atom_deallocate(atoms_train%atoms(iconf))
-    !enddo
-    !do iconf=1,atoms_valid%nconf
-    !    call atom_deallocate(atoms_valid%atoms(iconf))
-    !enddo
 
     deallocate(atoms_train%conf_inc)
     deallocate(atoms_valid%conf_inc)
@@ -646,6 +621,9 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
                 call f_free(symfunc_arr%symfunc(iconf)%y0d)
             endif
             call f_free(symfunc_arr%symfunc(iconf)%y0dr)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
         !elseif(trim(parini%symfunc)/='read') then
         !    stop 'ERROR: arini%symfunc contains none of the three acceptable possibilies'
         endif

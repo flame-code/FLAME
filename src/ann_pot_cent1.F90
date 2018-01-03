@@ -15,6 +15,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
     type(typ_ewald_p3d):: ewald_p3d
     !local variables
+    type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
@@ -52,6 +53,10 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+    else
+        symfunc%linked_lists%rcut=ann_arr%rcut
+        symfunc%linked_lists%triplex=.true.
+        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))
@@ -129,13 +134,9 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     enddo
     enddo
 
-    !if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train') .or. trim(ann_arr%event)=='evalu') then
-        deallocate(symfunc%linked_lists%prime_bound)
-        deallocate(symfunc%linked_lists%bound_rad)
-        deallocate(symfunc%linked_lists%bound_ang)
-    endif
-    !if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    deallocate(symfunc%linked_lists%prime_bound)
+    deallocate(symfunc%linked_lists%bound_rad)
+    deallocate(symfunc%linked_lists%bound_ang)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)
