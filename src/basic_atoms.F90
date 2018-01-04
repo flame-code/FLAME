@@ -1837,6 +1837,8 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=1.3d0
         elseif(trim(atoms%stypat(itypat))=='F') then
             atoms%qtypat(itypat)=-1.0d0
+        elseif(trim(atoms%stypat(itypat))=='Al') then
+            atoms%qtypat(itypat)=3.0d0
         elseif(trim(atoms%stypat(itypat))=='W') then
             atoms%qtypat(itypat)=0.8d0
         elseif(trim(atoms%stypat(itypat))=='S') then
@@ -1886,6 +1888,8 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=1.3d0
         else if(trim(atoms%sat(iat))=='F') then
             atoms%qat(iat)=-1.0d0
+        else if(trim(atoms%sat(iat))=='Al') then
+            atoms%qat(iat)=3.0d0
         elseif(trim(atoms%sat(itypat))=='W') then
             atoms%qat(itypat)=0.8d0
         elseif(trim(atoms%sat(itypat))=='S') then

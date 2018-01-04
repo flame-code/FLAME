@@ -165,7 +165,8 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     integer:: iconf, istep, iat, ia, isatur, nsatur
     real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
     real(8):: anat2(100), g2(100), qnet
-    ann_arr%event='evalu'
+    ann_arr%event='train'
+    allocate(ekf%g(ekf%n))
     do ia=1,ann_arr%n
         call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
     enddo
@@ -222,5 +223,6 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse_old=rmse
     enddo
+    deallocate(ekf%g)
 end subroutine prefit_cent
 !*****************************************************************************************
