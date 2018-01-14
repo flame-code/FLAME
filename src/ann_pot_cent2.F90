@@ -104,7 +104,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:cent2: total time                 ',time7-time1
     endif !end of if for printing out timing.
     !atoms%epot=epot_c
-    if(trim(ann_arr%event)=='evalu' .and. atoms%nat<=parini%nat_force) then
+    if(trim(ann_arr%event)=='evalu') then
         tt1=0.d0
         tt2=0.d0
         tt3=0.d0
@@ -133,12 +133,14 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo
     enddo
 
-    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
+    !if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         deallocate(symfunc%linked_lists%prime_bound)
         deallocate(symfunc%linked_lists%bound_rad)
         deallocate(symfunc%linked_lists%bound_ang)
     endif
-    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    !if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    if(trim(ann_arr%event)=='potential') then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)

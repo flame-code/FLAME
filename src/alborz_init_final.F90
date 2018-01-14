@@ -120,8 +120,6 @@ subroutine alborz_final(parini,file_ini)
         deallocate(file_ini%file_lines,file_ini%stat_line_is_read) !,comment_line)
     endif
     call cpu_time(time_end)
-    write(*,*) ""
-    write(*,*) "**************************************************************"
     write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(hrs)',iproc,(time_end-time_start)/3600.d0
     write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(min)',iproc,(time_end-time_start)/60.d0
     write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(sec)',iproc,(time_end-time_start)

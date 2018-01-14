@@ -687,7 +687,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     type(typ_atoms), intent(in):: atoms
     type(typ_symfunc), intent(inout):: symfunc
 end subroutine symmetry_functions_driver
-subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
+subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     use mod_ann, only: typ_ann_arr, typ_symfunc
     use mod_linked_lists, only: typ_pia
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -852,6 +852,29 @@ subroutine ann_train(parini)
     use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine init_ann_train(parini,ann_arr,ekf)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(inout):: ekf
+end subroutine init_ann_train
+subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(inout):: ekf
+    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+end subroutine final_ann_train
+subroutine set_conf_inc_random(parini,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine set_conf_inc_random
 subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
@@ -1482,6 +1505,41 @@ subroutine best_charge_density(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density
+subroutine best_charge_density_rho(parini)
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_cent, typ_ann_arr
+    type(typ_parini), intent(in):: parini
+end subroutine best_charge_density_rho
+subroutine best_charge_density_force(parini)
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_cent, typ_ann_arr
+    type(typ_parini), intent(in):: parini
+end subroutine best_charge_density_force
+subroutine best_charge_density_energy(parini)
+     use mod_parini, only: typ_parini
+     use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+     use mod_atoms, only: typ_atoms
+     use mod_ann, only: typ_cent, typ_ann_arr
+     type(typ_parini), intent(in):: parini
+end subroutine best_charge_density_energy
+subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat) 
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
+end subroutine gauss_gradient_rzx
 ! ./src/buckingham.F90 :
 subroutine set_buckingham(atoms,tosifumi)
     use mod_atoms, only: typ_atoms

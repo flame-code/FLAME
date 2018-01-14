@@ -87,7 +87,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !stop
 end subroutine symmetry_functions_driver
 !*****************************************************************************************
-subroutine  symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
+subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     use mod_interface
     use mod_ann, only: typ_ann_arr, typ_symfunc
     use mod_linked_lists, only: typ_pia
