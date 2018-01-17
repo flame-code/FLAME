@@ -308,6 +308,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
     use mod_electrostatics, only: typ_ewald_p3d
+    use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -397,16 +398,17 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
     type(typ_ewald_p3d),intent(inout):: ewald_p3d
 end subroutine get_qat_from_chi_operator
 ! ./src/ann_pot_cent2.F90 :
-subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf, typ_cent
+    use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
-end subroutine cal_ann_eem2
+end subroutine cal_ann_cent2
 subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -910,7 +912,7 @@ subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_val
 end subroutine set_ebounds
 subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_tightbinding, only: typ_partb
     type(typ_parini), intent(in):: parini
