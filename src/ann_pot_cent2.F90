@@ -160,7 +160,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
             do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
         !do i=1,ann_arr%n
