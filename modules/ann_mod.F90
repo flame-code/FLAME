@@ -35,6 +35,7 @@ module mod_ann
         real(8):: ener_ref
         real(8):: ampl_chi=-1.d0
         real(8):: prefactor_chi=-1.d0
+        character(20):: method
 
         !The 1st type of symmetry functions introduced by Behler
         real(8):: g1eta(140)

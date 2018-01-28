@@ -81,7 +81,7 @@ module mod_parini
         character(50):: symfunc='only_calculate'
         integer:: nstep_ekf=100
         integer:: nstep_cep=200
-        integer:: nat_force=0
+        integer:: nconf_rmse=0
         real(8):: ampl_rand=1.d0
         real(8):: rgnrmtol=-1.d0
         real(8):: qgnrmtol=-1.d0
@@ -95,6 +95,7 @@ module mod_parini
         integer:: restart_iter=0  
         logical:: print_energy=.false. 
         logical:: fit_hoppint=.false. 
+        logical:: save_symfunc_force_ann=.false.
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
@@ -111,6 +112,9 @@ module mod_parini
         character(20):: md_method_dynamics='unknown'
         logical:: print_force_dynamics=.false.
         logical:: restart_dynamics=.false.
+        logical:: fix_cm_dynamics=.false.
+        logical:: vflip_dynamics=.false.
+        logical:: wall_repulsion_dynamics=.false.
         real(8):: time_dynamics = 0.d0
         !-----------------------------------------------------------------------
         !parameters of [genconf]

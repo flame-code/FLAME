@@ -277,7 +277,7 @@ subroutine get_ann_parameters(file_ini,parini)
         call get_one_param(file_ini,'symfunc',char_var=parini%symfunc)
         call get_one_param(file_ini,'nstep_ekf',int_var=parini%nstep_ekf)
         call get_one_param(file_ini,'nstep_cep',int_var=parini%nstep_cep)
-        call get_one_param(file_ini,'nat_force',int_var=parini%nat_force)
+        call get_one_param(file_ini,'nconf_rmse',int_var=parini%nconf_rmse)
         call get_one_param(file_ini,'ampl_rand',real_var=parini%ampl_rand)
         call get_one_param(file_ini,'symfunc_type',char_var=parini%symfunc_type_ann)
         call get_one_param(file_ini,'syslinsolver',char_var=parini%syslinsolver_ann)
@@ -323,6 +323,9 @@ subroutine get_dynamics_parameters(file_ini,parini)
         call get_one_param(file_ini,'md_method',char_var=parini%md_method_dynamics)
         call get_one_param(file_ini,'print_force',log_var=parini%print_force_dynamics)
         call get_one_param(file_ini,'restart',log_var=parini%restart_dynamics)
+        call get_one_param(file_ini,'fix_cm',log_var=parini%fix_cm_dynamics)
+        call get_one_param(file_ini,'vflip',log_var=parini%vflip_dynamics)
+        call get_one_param(file_ini,'wall_repulsion',log_var=parini%wall_repulsion_dynamics)
     enddo
 end subroutine get_dynamics_parameters
 !*****************************************************************************************

@@ -40,7 +40,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         ! E0=atoms%epot
@@ -84,7 +84,8 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha, tt
     real(8), allocatable:: epotall(:), eref_all(:)
     !return
-    ann_arr%event='evalu'
+    ann_arr%event='train'
+    allocate(ekf%g(ekf%n))
     do ia=1,ann_arr%n
         call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
     enddo
@@ -144,6 +145,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     enddo
     call f_free(epotall)
     call f_free(eref_all)
+    deallocate(ekf%g)
     !stop
 end subroutine prefit_cent_ener_ref
 !*****************************************************************************************
@@ -164,15 +166,16 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
     real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
-    real(8):: anat2(100), g2(100)
-    ann_arr%event='evalu'
+    real(8):: anat2(100), g2(100), qnet
+    ann_arr%event='train'
+    allocate(ekf%g(ekf%n))
     do ia=1,ann_arr%n
         call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
     enddo
     nsatur=3
     isatur=0
     alpha1=0.2d0/real(atoms_train%nconf,8)
-    alpha2=0.2d0/real(atoms_train%nconf,8)
+    alpha2=0.02d0/real(atoms_train%nconf,8)
     do istep=0,50
         rmse=0.d0
         g1=0.d0
@@ -184,8 +187,16 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
             anat1=0.d0
             anat2=0.d0
             do iat=1,atoms%nat
-                anat1(atoms%itypat(iat))=anat1(atoms%itypat(iat))+atoms%qat(iat)
-                anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*atoms%qat(iat)**2
+                if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
+                    qnet=atoms%qat(iat)
+                elseif(trim(ann_arr%approach)=='cent2') then
+                    qnet=atoms%zat(iat)+atoms%qat(iat)
+                else
+                    write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
+                    stop
+                endif
+                anat1(atoms%itypat(iat))=anat1(atoms%itypat(iat))+qnet
+                anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*qnet**2
             enddo
             do ia=1,ann_arr%n
                 g1(ia)=g1(ia)+2.d0*anat1(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
@@ -194,7 +205,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse=sqrt(rmse/atoms_train%nconf)
         if(istep==0) rmse_old=rmse
-        if(istep>0 .and. rmse<rmse_old .and. abs(rmse_old-rmse)<1.d-3) then
+        if(istep>0 .and. rmse<rmse_old .and. abs(rmse_old-rmse)<1.d-4) then
             isatur=isatur+1
         else
             isatur=0
@@ -214,5 +225,6 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse_old=rmse
     enddo
+    deallocate(ekf%g)
 end subroutine prefit_cent
 !*****************************************************************************************

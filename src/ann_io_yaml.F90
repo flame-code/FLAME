@@ -78,6 +78,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         ann%hardness       =  ann%dict_ann//"main"//"hardness" 
         ann%chi0           =  ann%dict_ann//"main"//"chi0" 
         ann%qinit          =  ann%dict_ann//"main"//"qinit"
+        ann%method         =  ann%dict_ann//"main"//"method"
     endif
     if(trim(parini%approach_ann)=='cent2' ) then
         ann%zion           =  ann%dict_ann//"main"//"zion" 
@@ -313,7 +314,7 @@ subroutine write_ann_yaml(parini,filename,ann)
             sat1=parini%stypat(ann%g2i(i))
             write(str1,'(2f8.4,2es24.15,1a5)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0),trim(sat1)
         else
-            write(str1,'(2f8.4,2es24.15)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+            write(str1,'(2f10.6,2es24.15)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
         endif
         call set(ann%dict_ann//"symfunc"//key1,str1)
     enddo
@@ -340,7 +341,7 @@ subroutine write_ann_yaml(parini,filename,ann)
             write(str1,'(3f8.4,2es24.15,2a5)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0), &
                                                ann%gbounds(2,i0),trim(sat1),trim(sat2)
         else
-            write(str1,'(3f8.4,2es24.15)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+            write(str1,'(3f10.6,2es24.15)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
         endif
         call set(ann%dict_ann//"symfunc"//key1,str1)
     enddo
