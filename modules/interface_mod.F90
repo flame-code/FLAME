@@ -468,6 +468,15 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
     type(typ_atoms), intent(in):: atoms
     type(typ_cent), intent(inout):: cent
 end subroutine put_gauss_to_grid
+subroutine gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(out):: ratred(3,nat), vol
+    integer, intent(out):: nlimsq, nagx, nagy, nagz, nbgx, nbgy, nbgz
+end subroutine gauss_init
 subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
