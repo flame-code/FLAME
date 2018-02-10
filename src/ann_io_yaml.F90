@@ -63,14 +63,14 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     enddo
     ann%nl=ann%nl+1 !adding the output layer to total number of layers
     ann%nn(ann%nl)=1 !setting the output layer
-    if(trim(parini%subtask_ann)=='check_symmetry_function') then
-        rcut=ann%dict_ann//"main"//"rcut"
-    endif
-    if(trim(parini%approach_ann)=='atombased') then
-        rcut=ann%dict_ann//"main"//"rcut"
-    endif
+    !if(trim(parini%subtask_ann)=='check_symmetry_function') then
+    !    rcut=ann%dict_ann//"main"//"rcut"
+    !endif
+    !if(trim(parini%approach_ann)=='atombased') then
+    !    rcut=ann%dict_ann//"main"//"rcut"
+    !endif
+    rcut               =  ann%dict_ann//"main"//"rcut"
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
-        rcut               =  ann%dict_ann//"main"//"rcut"
         ann%ampl_chi       =  ann%dict_ann//"main"//"ampl_chi" 
         ann%prefactor_chi  =  ann%dict_ann//"main"//"prefactor_chi" 
         ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
@@ -78,6 +78,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         ann%hardness       =  ann%dict_ann//"main"//"hardness" 
         ann%chi0           =  ann%dict_ann//"main"//"chi0" 
         ann%qinit          =  ann%dict_ann//"main"//"qinit"
+        ann%method         =  ann%dict_ann//"main"//"method"
     endif
     if(trim(parini%approach_ann)=='cent2' ) then
         ann%zion           =  ann%dict_ann//"main"//"zion" 
@@ -293,6 +294,10 @@ subroutine write_ann_yaml(parini,filename,ann)
     character(50)::  method
 
     call set(ann%dict_ann//"main"//"ener_ref",ann%ener_ref ) 
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
+        call set(ann%dict_ann//"main"//"chi0",ann%chi0 ) 
+        call set(ann%dict_ann//"main"//"hardness",ann%hardness ) 
+    endif
     method =  ann%dict_ann//"main"//"method"
     i0=0
     do i=1,ann%ng1
@@ -309,7 +314,7 @@ subroutine write_ann_yaml(parini,filename,ann)
             sat1=parini%stypat(ann%g2i(i))
             write(str1,'(2f8.4,2es24.15,1a5)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0),trim(sat1)
         else
-            write(str1,'(2f8.4,2es24.15)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+            write(str1,'(2f10.6,2es24.15)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
         endif
         call set(ann%dict_ann//"symfunc"//key1,str1)
     enddo
@@ -336,7 +341,7 @@ subroutine write_ann_yaml(parini,filename,ann)
             write(str1,'(3f8.4,2es24.15,2a5)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0), &
                                                ann%gbounds(2,i0),trim(sat1),trim(sat2)
         else
-            write(str1,'(3f8.4,2es24.15)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+            write(str1,'(3f10.6,2es24.15)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
         endif
         call set(ann%dict_ann//"symfunc"//key1,str1)
     enddo

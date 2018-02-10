@@ -17,6 +17,17 @@ subroutine forcefield_init(parini,atoms)
     call set_qat(atoms)
     call set_interaction(atoms,shortrange)
     !-------------------------------------------------------
+    ind=index(parini%component_ff,'buck')
+    if(ind>0) then
+        call set_buckingham(atoms,shortrange%tosifumi)
+        ewald_p3d%spline%do_tosifumi=.true.
+
+        deallocate (shortrange%interaction,shortrange%qq)
+        allocate (shortrange%interaction(atoms%ntypat,atoms%ntypat),shortrange%qq(shortrange%ntypinter))
+        shortrange%interaction=shortrange%tosifumi%interaction(1:shortrange%ntypinter,1:shortrange%ntypinter)
+        shortrange%qq=shortrange%tosifumi%eee(1:shortrange%ntypinter)
+    endif
+    !-------------------------------------------------------
     ind=index(parini%component_ff,'coulomb')
     if(ind>0) then
         if(trim(atoms%boundcond)=='free') then

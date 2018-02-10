@@ -17,7 +17,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		ann_ekf_rivals.F90 ann_ekf_behler.F90 ann_lm.F90 \
 		ann_pot_main.F90 ann_pot_atom.F90 ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_cent_common.F90 \
 		ann_pot_tb.F90 \
-		shortrange.F90 tosifumi.F90 forcefield.F90 \
+		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
 		md.F90 md_NVT.F90\
 		phonon.F90 \
@@ -38,7 +38,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		task_bader.F90 \
 		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
 		task_testforces.F90 \
-		task_miscellaneous.F90 solve_poisson_cube.F90 \
+		task_miscellaneous.F90 solve_poisson_cube.F90 best_charge_density.F90 \
 		best_charge_density.F90 \
 		tightbinding.F90 lenosky_tightbinding.F90 \
 		task_linkedlist.F90 \

@@ -2140,6 +2140,10 @@ subroutine iatom_to_sat(iatom,sat)
         sat='Cl'
     else if(iatom==29) then
         sat='Cu'
+    else if(iatom==52) then
+        sat='Te'
+    else if(iatom==82) then
+        sat='Pb'
     else
         write(*,*) 'ERROR: no symbol stored for atomic number=',iatom
         stop

@@ -36,7 +36,15 @@ subroutine init_potential_ann(parini,atoms)
             endif
         enddo
     enddo
-    fname = trim(parini%stypat(1))//'.ann.param.yaml'
+    if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
+        if(parini%ntypat>1) then
+            stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
+        endif
+        !write(fn_tt,'(i1)') iann
+        fname=trim(parini%stypat(1))//'1'//'.ann.param.yaml'
+    else
+        fname = trim(parini%stypat(1))//'.ann.param.yaml'
+    endif
     inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
     if( ann_arr%exists_yaml_file) then
         call read_ann_yaml(parini,ann_arr)

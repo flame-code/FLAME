@@ -99,15 +99,24 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     !local variables
     integer:: i0, ig
     real(8):: ttei,ttej, ttix,ttiy,ttiz,ttjx,ttjy,ttjz,tt1i,tt1j
-    real(8):: etai,etaj, rs, vi,vj
+    real(8):: etai,etaj, rs, vi,vj,sign_chi0
+    real(8):: factor
     i0=ann_arr%ann(isat)%ng1
+    sign_chi0=sign(1.d0,ann_arr%ann(jsat)%chi0)
+    if (trim(ann_arr%ann(isat)%method)=="sign" .or. trim(ann_arr%ann(isat)%method)=="angle1" .or. trim(ann_arr%ann(isat)%method)=="angle2") then
+        factor= sign_chi0
+    else
+        factor= 1.d0
+    endif
     do ig=1,ann_arr%ann(isat)%ng2
         i0=i0+1
         if((ann_arr%ann(isat)%g2i(ig)/=0).and.(.not.(jsat==ann_arr%ann(isat)%g2i(ig)))) cycle
         rs=ann_arr%ann(jsat)%g2rs(ig)
         !The central atom is i:
         etaj=ann_arr%ann(jsat)%g2eta(ig)
-        vi=exp(-etaj*(pia%r-rs)**2)
+
+        vi=exp(-etaj*(pia%r-rs)**2) * factor
+
         ttei=vi*pia%fc
         tt1i=(-2.d0*etaj*(pia%r-rs)*pia%fc+pia%fcd)*vi/pia%r
         ttjx=tt1i*pia%dr(1)
@@ -213,19 +222,32 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
     real(8):: ss1, ss2, ss3, ss4
     real(8):: cos_theta_i, cos_theta_k, cos_theta_j, ui, uk, uj, vi, vk, vj
     real(8):: zeta, alam, etai, etaj, etak, zzz
+    real(8):: sign_chi0j, sign_chi0k, sign_chi0i 
+    real(8):: factor 
     i0=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4
+    sign_chi0i=sign(1.d0,ann_arr%ann(isat)%chi0)
+    sign_chi0j=sign(1.d0,ann_arr%ann(jsat)%chi0)
+    sign_chi0k=sign(1.d0,ann_arr%ann(ksat)%chi0)
+
+    if (trim(ann_arr%ann(isat)%method)=="angle1") then
+        factor=sign_chi0k*sign_chi0j
+    elseif (trim(ann_arr%ann(isat)%method)=="angle2") then
+        factor=(sign_chi0i*(sign_chi0k+sign_chi0j)-1)
+    else
+        factor=1.d0
+    endif
+
     do ig=1,ann_arr%ann(isat)%ng5
         i0=i0+1
         ii1=ann_arr%ann(isat)%g5i(1,ig)+ann_arr%ann(isat)%g5i(2,ig)
         ii2=abs(ann_arr%ann(isat)%g5i(1,ig)-ann_arr%ann(isat)%g5i(2,ig))
         if((ann_arr%ann(isat)%g5i(1,ig)/=0).and. (.not.((jsat+ksat)==ii1 .and. abs(jsat-ksat)==ii2))) cycle
-        zeta=ann_arr%ann(ksat)%g5zeta(ig)
-        alam=ann_arr%ann(ksat)%g5lambda(ig)
+        zeta=ann_arr%ann(isat)%g5zeta(ig)
+        alam=ann_arr%ann(isat)%g5lambda(ig)
         etai=ann_arr%ann(isat)%g5eta(ig)
         etaj=ann_arr%ann(jsat)%g5eta(ig)
         etak=ann_arr%ann(ksat)%g5eta(ig)
-        zzz=2.d0**(1.d0-zeta)
-
+        zzz=2.d0**(1.d0-zeta)*factor
         cos_theta_i=(piaij%dr(1)*piaik%dr(1)+piaij%dr(2)*piaik%dr(2)+piaij%dr(3)*piaik%dr(3))/(piaij%r*piaik%r)
         ui=(1.d0+alam*cos_theta_i)**zeta
         vi=exp(-(etaj*piaij%r**2+etak*piaik%r**2))
@@ -566,6 +588,8 @@ function cutoff_function(r, rc) result(fc)
     !else
     !    fc=0.d0
     !endif
+    !Compare it with: PHYSICAL REVIEW B 93, 155203 (2016) -> comparison is done:
+    !the second derivative in the cutoff function in PRB paper does not vanish.
 end function cutoff_function
 !*****************************************************************************************
 function cutoff_function_der(r, rc) result(fcd)

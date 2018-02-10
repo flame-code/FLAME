@@ -1,19 +1,51 @@
-subroutine lmder_modified(fcn,m,n,x,fvec,fjac,ldfjac,ftol,xtol,gtol,maxfev,diag,mode,factor,nprint,info,nfev,njev,ipvt,qtf,wa1,wa2,wa3,wa4,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms_arr
+!*****************************************************************************************
+subroutine init_lmder_modified(parlm,m,ldfjac)
+    !use mod_interface
+    use mod_parlm, only: typ_parlm
     implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
-    type(typ_symfunc_arr), intent(in):: symfunc_train, symfunc_valid
-    type(typ_ekf), intent(inout):: ekf
-      external fcn
-      integer:: m,n,ldfjac,maxfev,mode,nprint,info,nfev,njev
-      integer:: ipvt(n)
-      real(8):: ftol,xtol,gtol,factor
-      real(8):: x(n),fvec(m),fjac(ldfjac,n),diag(n),qtf(n), wa1(n),wa2(n),wa3(n),wa4(m)
+    type(typ_parlm), intent(inout):: parlm
+    integer, intent(in):: m, ldfjac
+    if(parlm%n<1) stop 'ERROR: n<1'
+    if(m<parlm%n) stop 'ERROR: m<n'
+    if(ldfjac<m) stop 'ERROR: ldfjac<m'
+    allocate(parlm%x(parlm%n))
+    allocate(parlm%fvec(m))
+    allocate(parlm%fjac(ldfjac,parlm%n))
+    allocate(parlm%diag(parlm%n))
+    allocate(parlm%ipvt(parlm%n))
+    allocate(parlm%qtf(parlm%n))
+    allocate(parlm%wa1(parlm%n))
+    allocate(parlm%wa2(parlm%n))
+    allocate(parlm%wa3(parlm%n))
+    allocate(parlm%wa4(m))
+    parlm%mode=1
+    parlm%icontinue=0
+    parlm%finish=.false.
+end subroutine init_lmder_modified
+!*****************************************************************************************
+subroutine final_lmder_modified(parlm)
+    !use mod_interface
+    use mod_parlm, only: typ_parlm
+    implicit none
+    type(typ_parlm), intent(inout):: parlm
+    deallocate(parlm%x)
+    deallocate(parlm%fvec)
+    deallocate(parlm%fjac)
+    deallocate(parlm%diag)
+    deallocate(parlm%ipvt)
+    deallocate(parlm%qtf)
+    deallocate(parlm%wa1)
+    deallocate(parlm%wa2)
+    deallocate(parlm%wa3)
+    deallocate(parlm%wa4)
+end subroutine final_lmder_modified
+!*****************************************************************************************
+subroutine lmder_modified(parlm,m,ldfjac)
+    !use mod_interface
+    use mod_parlm, only: typ_parlm
+    implicit none
+      type(typ_parlm), intent(inout):: parlm
+      integer:: m,ldfjac
 !     **********
 !
 !     subroutine lmder
@@ -191,47 +223,71 @@ subroutine lmder_modified(fcn,m,n,x,fvec,fjac,ldfjac,ftol,xtol,gtol,maxfev,diag,
 !     burton s. garbow, kenneth e. hillstrom, jorge j. more
 !
 !     **********
-      integer i,iflag,iter,j,l
-      double precision actred,delta,dirder,epsmch,fnorm,fnorm1,gnorm, &
-                       one,par,pnorm,prered,p1,p5,p25,p75,p0001,ratio, &
-                       sum,temp,temp1,temp2,xnorm,zero
+      integer i,j,l
+      double precision dirder,fnorm1, &
+                       one,p1,p5,p25,p75,p0001, &
+                       sum,temp,temp1,temp2,zero
       double precision dpmpar,enorm
       data one,p1,p5,p25,p75,p0001,zero &
            /1.0d0,1.0d-1,5.0d-1,2.5d-1,7.5d-1,1.0d-4,0.0d0/
+      if(parlm%icontinue==400) then
+        parlm%icontinue=0
+        goto 400
+      endif
+      if(parlm%icontinue==500) then
+        parlm%icontinue=0
+        goto 500
+      endif
+      if(parlm%icontinue==600) then
+        parlm%icontinue=0
+        goto 600
+      endif
+      if(parlm%icontinue==700) then
+        parlm%icontinue=0
+        goto 700
+      endif
+      if(parlm%icontinue==800) then
+        parlm%icontinue=0
+        goto 800
+      endif
 !
 !     epsmch is the machine precision.
 !
-      epsmch = dpmpar(1)
+      parlm%epsmch = dpmpar(1)
 !
-      info = 0
-      iflag = 0
-      nfev = 0
-      njev = 0
+      parlm%info = 0
+      parlm%iflag = 0
+      parlm%nfev = 0
+      parlm%njev = 0
 !
 !     check the input parameters for errors.
 !
-      if (n .le. 0 .or. m .lt. n .or. ldfjac .lt. m &
-          .or. ftol .lt. zero .or. xtol .lt. zero .or. gtol .lt. zero &
-          .or. maxfev .le. 0 .or. factor .le. zero) go to 300
-      if (mode .ne. 2) go to 20
-      do 10 j = 1, n
-         if (diag(j) .le. zero) go to 300
-   10    continue
-   20 continue
+      if (parlm%n .le. 0 .or. m .lt. parlm%n .or. ldfjac .lt. m &
+          .or. parlm%ftol .lt. zero .or. parlm%xtol .lt. zero .or. parlm%gtol .lt. zero &
+          .or. parlm%maxfev .le. 0 .or. parlm%factor .le. zero) go to 300
+      if (parlm%mode==2) then
+      do j = 1, parlm%n
+         if (parlm%diag(j) .le. zero) go to 300
+      enddo
+      endif
 !
 !     evaluate the function at the starting point
 !     and calculate its norm.
 !
-      iflag = 1
-      call fcn(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-      nfev = 1
-      if (iflag .lt. 0) go to 300
-      fnorm = enorm(m,fvec)
+      parlm%iflag = 1
+      if(parlm%icontinue/=400) then
+        parlm%icontinue=400
+        goto 900
+      endif
+  400 continue
+      parlm%nfev = 1
+      if (parlm%iflag .lt. 0) go to 300
+      parlm%fnorm = enorm(m,parlm%fvec)
 !
 !     initialize levenberg-marquardt parameter and iteration counter.
 !
-      par = zero
-      iter = 1
+      parlm%par = zero
+      parlm%iter = 1
 !
 !     beginning of the outer loop.
 !
@@ -239,95 +295,104 @@ subroutine lmder_modified(fcn,m,n,x,fvec,fjac,ldfjac,ftol,xtol,gtol,maxfev,diag,
 !
 !        calculate the jacobian matrix.
 !
-         iflag = 2
-         call fcn(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-         njev = njev + 1
-         if (iflag .lt. 0) go to 300
+         parlm%iflag = 2
+      if(parlm%icontinue/=500) then
+        parlm%icontinue=500
+        goto 900
+      endif
+  500 continue
+         parlm%njev = parlm%njev + 1
+         if (parlm%iflag .lt. 0) go to 300
 !
 !        if requested, call fcn to enable printing of iterates.
 !
-         if (nprint .le. 0) go to 40
-         iflag = 0
-         if (mod(iter-1,nprint) .eq. 0) &
-            call fcn(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-         if (iflag .lt. 0) go to 300
+         if (parlm%nprint .le. 0) go to 40
+         parlm%iflag = 0
+         if (mod(parlm%iter-1,parlm%nprint) .eq. 0) then
+      if(parlm%icontinue/=600) then
+        parlm%icontinue=600
+        goto 900
+      endif
+         endif
+  600 continue
+         if (parlm%iflag .lt. 0) go to 300
    40    continue
 !
 !        compute the qr factorization of the jacobian.
 !
-         call qrfac(m,n,fjac,ldfjac,.true.,ipvt,n,wa1,wa2,wa3)
+         call qrfac(m,parlm%n,parlm%fjac,ldfjac,.true.,parlm%ipvt,parlm%n,parlm%wa1,parlm%wa2,parlm%wa3)
 !
 !        on the first iteration and if mode is 1, scale according
 !        to the norms of the columns of the initial jacobian.
 !
-         if (iter .ne. 1) go to 80
-         if (mode .eq. 2) go to 60
-         do 50 j = 1, n
-            diag(j) = wa2(j)
-            if (wa2(j) .eq. zero) diag(j) = one
-   50       continue
-   60    continue
+         if (parlm%iter==1) then
+         if (parlm%mode/=2) then
+         do j = 1, parlm%n
+            parlm%diag(j) = parlm%wa2(j)
+            if (parlm%wa2(j) .eq. zero) parlm%diag(j) = one
+         enddo
+         endif
 !
 !        on the first iteration, calculate the norm of the scaled x
 !        and initialize the step bound delta.
 !
-         do 70 j = 1, n
-            wa3(j) = diag(j)*x(j)
-   70       continue
-         xnorm = enorm(n,wa3)
-         delta = factor*xnorm
-         if (delta .eq. zero) delta = factor
-   80    continue
+         do j = 1, parlm%n
+            parlm%wa3(j) = parlm%diag(j)*parlm%x(j)
+         enddo
+         parlm%xnorm = enorm(parlm%n,parlm%wa3)
+         parlm%delta = parlm%factor*parlm%xnorm
+         if (parlm%delta .eq. zero) parlm%delta = parlm%factor
+         endif
 !
 !        form (q transpose)*fvec and store the first n components in
 !        qtf.
 !
-         do 90 i = 1, m
-            wa4(i) = fvec(i)
-   90       continue
-         do 130 j = 1, n
-            if (fjac(j,j) .eq. zero) go to 120
+         do i = 1, m
+            parlm%wa4(i) = parlm%fvec(i)
+         enddo
+         do j = 1, parlm%n
+            if (parlm%fjac(j,j)/=zero) then
             sum = zero
-            do 100 i = j, m
-               sum = sum + fjac(i,j)*wa4(i)
-  100          continue
-            temp = -sum/fjac(j,j)
-            do 110 i = j, m
-               wa4(i) = wa4(i) + fjac(i,j)*temp
-  110          continue
-  120       continue
-            fjac(j,j) = wa1(j)
-            qtf(j) = wa4(j)
-  130       continue
+            do i = j, m
+               sum = sum + parlm%fjac(i,j)*parlm%wa4(i)
+            enddo
+            temp = -sum/parlm%fjac(j,j)
+            do i = j, m
+               parlm%wa4(i) = parlm%wa4(i) + parlm%fjac(i,j)*temp
+            enddo
+            endif
+            parlm%fjac(j,j) = parlm%wa1(j)
+            parlm%qtf(j) = parlm%wa4(j)
+         enddo
 !
 !        compute the norm of the scaled gradient.
 !
-         gnorm = zero
-         if (fnorm .eq. zero) go to 170
-         do 160 j = 1, n
-            l = ipvt(j)
-            if (wa2(l) .eq. zero) go to 150
+         parlm%gnorm = zero
+         if (parlm%fnorm/=zero) then
+         do j = 1, parlm%n
+            l = parlm%ipvt(j)
+            if (parlm%wa2(l)/=zero) then
             sum = zero
-            do 140 i = 1, j
-               sum = sum + fjac(i,j)*(qtf(i)/fnorm)
-  140          continue
-            gnorm = dmax1(gnorm,dabs(sum/wa2(l)))
-  150       continue
-  160       continue
-  170    continue
+            do i = 1, j
+               sum = sum + parlm%fjac(i,j)*(parlm%qtf(i)/parlm%fnorm)
+            enddo
+            parlm%gnorm = dmax1(parlm%gnorm,dabs(sum/parlm%wa2(l)))
+            endif
+         enddo
+         endif
 !
 !        test for convergence of the gradient norm.
 !
-         if (gnorm .le. gtol) info = 4
-         if (info .ne. 0) go to 300
+         if (parlm%gnorm .le. parlm%gtol) parlm%info = 4
+         if (parlm%info .ne. 0) go to 300
 !
 !        rescale if necessary.
 !
-         if (mode .eq. 2) go to 190
-         do 180 j = 1, n
-            diag(j) = dmax1(diag(j),wa2(j))
-  180       continue
-  190    continue
+         if (parlm%mode/=2) then
+         do j = 1, parlm%n
+            parlm%diag(j) = dmax1(parlm%diag(j),parlm%wa2(j))
+         enddo
+         endif
 !
 !        beginning of the inner loop.
 !
@@ -335,113 +400,114 @@ subroutine lmder_modified(fcn,m,n,x,fvec,fjac,ldfjac,ftol,xtol,gtol,maxfev,diag,
 !
 !           determine the levenberg-marquardt parameter.
 !
-            call lmpar(n,fjac,ldfjac,ipvt,diag,qtf,delta,par,wa1,wa2, &
-                       wa3,wa4)
+            call lmpar(parlm%n,parlm%fjac,ldfjac,parlm%ipvt,parlm%diag,parlm%qtf,parlm%delta,parlm%par,parlm%wa1,parlm%wa2, &
+                       parlm%wa3,parlm%wa4)
 !
 !           store the direction p and x + p. calculate the norm of p.
 !
-            do 210 j = 1, n
-               wa1(j) = -wa1(j)
-               wa2(j) = x(j) + wa1(j)
-               wa3(j) = diag(j)*wa1(j)
-  210          continue
-            pnorm = enorm(n,wa3)
+            do j = 1, parlm%n
+               parlm%wa1(j) = -parlm%wa1(j)
+               parlm%wa2(j) = parlm%x(j) + parlm%wa1(j)
+               parlm%wa3(j) = parlm%diag(j)*parlm%wa1(j)
+            enddo
+            parlm%pnorm = enorm(parlm%n,parlm%wa3)
 !
 !           on the first iteration, adjust the initial step bound.
 !
-            if (iter .eq. 1) delta = dmin1(delta,pnorm)
+            if (parlm%iter .eq. 1) parlm%delta = dmin1(parlm%delta,parlm%pnorm)
 !
 !           evaluate the function at x + p and calculate its norm.
 !
-            iflag = 1
-            call fcn(m,n,wa2,wa4,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-            nfev = nfev + 1
-            if (iflag .lt. 0) go to 300
-            fnorm1 = enorm(m,wa4)
+            parlm%iflag = 1
+      if(parlm%icontinue/=700) then
+        parlm%icontinue=700
+        goto 900
+      endif
+  700 continue
+            parlm%nfev = parlm%nfev + 1
+            if (parlm%iflag .lt. 0) go to 300
+            fnorm1 = enorm(m,parlm%wa4)
 !
 !           compute the scaled actual reduction.
 !
-            actred = -one
-            if (p1*fnorm1 .lt. fnorm) actred = one - (fnorm1/fnorm)**2
+            parlm%actred = -one
+            if (p1*fnorm1 .lt. parlm%fnorm) parlm%actred = one - (fnorm1/parlm%fnorm)**2
 !
 !           compute the scaled predicted reduction and
 !           the scaled directional derivative.
 !
-            do 230 j = 1, n
-               wa3(j) = zero
-               l = ipvt(j)
-               temp = wa1(l)
-               do 220 i = 1, j
-                  wa3(i) = wa3(i) + fjac(i,j)*temp
-  220             continue
-  230          continue
-            temp1 = enorm(n,wa3)/fnorm
-            temp2 = (dsqrt(par)*pnorm)/fnorm
-            prered = temp1**2 + temp2**2/p5
+            do j = 1, parlm%n
+               parlm%wa3(j) = zero
+               l = parlm%ipvt(j)
+               temp = parlm%wa1(l)
+               do i = 1, j
+                  parlm%wa3(i) = parlm%wa3(i) + parlm%fjac(i,j)*temp
+            enddo
+            enddo
+            temp1 = enorm(parlm%n,parlm%wa3)/parlm%fnorm
+            temp2 = (dsqrt(parlm%par)*parlm%pnorm)/parlm%fnorm
+            parlm%prered = temp1**2 + temp2**2/p5
             dirder = -(temp1**2 + temp2**2)
 !
 !           compute the ratio of the actual to the predicted
 !           reduction.
 !
-            ratio = zero
-            if (prered .ne. zero) ratio = actred/prered
+            parlm%ratio = zero
+            if (parlm%prered .ne. zero) parlm%ratio = parlm%actred/parlm%prered
 !
 !           update the step bound.
 !
-            if (ratio .gt. p25) go to 240
-               if (actred .ge. zero) temp = p5
-               if (actred .lt. zero) &
-                  temp = p5*dirder/(dirder + p5*actred)
-               if (p1*fnorm1 .ge. fnorm .or. temp .lt. p1) temp = p1
-               delta = temp*dmin1(delta,pnorm/p1)
-               par = par/temp
-               go to 260
-  240       continue
-               if (par .ne. zero .and. ratio .lt. p75) go to 250
-               delta = pnorm/p5
-               par = p5*par
-  250          continue
-  260       continue
+            if (.not. (parlm%ratio .gt. p25)) then
+               if (parlm%actred .ge. zero) temp = p5
+               if (parlm%actred .lt. zero) &
+                  temp = p5*dirder/(dirder + p5*parlm%actred)
+               if (p1*fnorm1 .ge. parlm%fnorm .or. temp .lt. p1) temp = p1
+               parlm%delta = temp*dmin1(parlm%delta,parlm%pnorm/p1)
+               parlm%par = parlm%par/temp
+            elseif (.not. (parlm%par .ne. zero .and. parlm%ratio .lt. p75)) then
+               parlm%delta = parlm%pnorm/p5
+               parlm%par = p5*parlm%par
+               endif
 !
 !           test for successful iteration.
 !
-            if (ratio .lt. p0001) go to 290
+            if (.not. (parlm%ratio<p0001)) then
 !
 !           successful iteration. update x, fvec, and their norms.
 !
-            do 270 j = 1, n
-               x(j) = wa2(j)
-               wa2(j) = diag(j)*x(j)
-  270          continue
-            do 280 i = 1, m
-               fvec(i) = wa4(i)
-  280          continue
-            xnorm = enorm(n,wa2)
-            fnorm = fnorm1
-            iter = iter + 1
-  290       continue
+            do j = 1, parlm%n
+               parlm%x(j) = parlm%wa2(j)
+               parlm%wa2(j) = parlm%diag(j)*parlm%x(j)
+            enddo
+            do i = 1, m
+               parlm%fvec(i) = parlm%wa4(i)
+            enddo
+            parlm%xnorm = enorm(parlm%n,parlm%wa2)
+            parlm%fnorm = fnorm1
+            parlm%iter = parlm%iter + 1
+            endif
 !
 !           tests for convergence.
 !
-            if (dabs(actred) .le. ftol .and. prered .le. ftol &
-                .and. p5*ratio .le. one) info = 1
-            if (delta .le. xtol*xnorm) info = 2
-            if (dabs(actred) .le. ftol .and. prered .le. ftol &
-                .and. p5*ratio .le. one .and. info .eq. 2) info = 3
-            if (info .ne. 0) go to 300
+            if (dabs(parlm%actred) .le. parlm%ftol .and. parlm%prered .le. parlm%ftol &
+                .and. p5*parlm%ratio .le. one) parlm%info = 1
+            if (parlm%delta .le. parlm%xtol*parlm%xnorm) parlm%info = 2
+            if (dabs(parlm%actred) .le. parlm%ftol .and. parlm%prered .le. parlm%ftol &
+                .and. p5*parlm%ratio .le. one .and. parlm%info .eq. 2) parlm%info = 3
+            if (parlm%info .ne. 0) go to 300
 !
 !           tests for termination and stringent tolerances.
 !
-            if (nfev .ge. maxfev) info = 5
-            if (dabs(actred) .le. epsmch .and. prered .le. epsmch &
-                .and. p5*ratio .le. one) info = 6
-            if (delta .le. epsmch*xnorm) info = 7
-            if (gnorm .le. epsmch) info = 8
-            if (info .ne. 0) go to 300
+            if (parlm%nfev .ge. parlm%maxfev) parlm%info = 5
+            if (dabs(parlm%actred) .le. parlm%epsmch .and. parlm%prered .le. parlm%epsmch &
+                .and. p5*parlm%ratio .le. one) parlm%info = 6
+            if (parlm%delta .le. parlm%epsmch*parlm%xnorm) parlm%info = 7
+            if (parlm%gnorm .le. parlm%epsmch) parlm%info = 8
+            if (parlm%info .ne. 0) go to 300
 !
 !           end of the inner loop. repeat if iteration unsuccessful.
 !
-            if (ratio .lt. p0001) go to 200
+            if (parlm%ratio .lt. p0001) go to 200
 !
 !        end of the outer loop.
 !
@@ -450,11 +516,18 @@ subroutine lmder_modified(fcn,m,n,x,fvec,fjac,ldfjac,ftol,xtol,gtol,maxfev,diag,
 !
 !     termination, either normal or user imposed.
 !
-      if (iflag .lt. 0) info = iflag
-      iflag = 0
-      if (nprint .gt. 0) call fcn(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
-      return
+      if (parlm%iflag .lt. 0) parlm%info = parlm%iflag
+      parlm%iflag = 0
+      if (parlm%nprint .gt. 0) then
+      if(parlm%icontinue/=800) then
+        parlm%icontinue=800
+        goto 900
+      endif
+      endif
+  800 continue
 !
 !     last card of subroutine lmder.
 !
+      parlm%finish=.true.
+  900 continue
       end

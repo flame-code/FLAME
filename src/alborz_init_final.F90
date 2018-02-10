@@ -230,6 +230,7 @@ subroutine set_atomc_types_info(parini)
 end subroutine set_atomc_types_info
 !*****************************************************************************************
 subroutine flm_print_logo(parini)
+    use mod_interface
     use mod_parini, only: typ_parini
     use futile
     implicit none

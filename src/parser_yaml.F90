@@ -212,7 +212,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%symfunc=parini%subdict//"symfunc"
     parini%nstep_ekf=parini%subdict//"nstep_ekf"
     parini%nstep_cep=parini%subdict//"nstep_cep"
-    parini%nat_force=parini%subdict//"nat_force"
+    parini%nconf_rmse=parini%subdict//"nconf_rmse"
     parini%ampl_rand=parini%subdict//"ampl_rand"
     parini%symfunc_type_ann=parini%subdict//"symfunc_type"
     parini%syslinsolver_ann=parini%subdict//"syslinsolver"
@@ -228,6 +228,9 @@ subroutine yaml_get_ann_parameters(parini)
     parini%restart_param=parini%subdict//"restart_param"
     parini%restart_iter=parini%subdict//"restart_iter"
     parini%print_energy=parini%subdict//"print_energy"
+    parini%fit_hoppint=parini%subdict//"fit_hoppint"
+    parini%save_symfunc_force_ann=parini%subdict//"save_symfunc_force"
+    parini%weight_hardness=parini%subdict//"weight_hardness"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)

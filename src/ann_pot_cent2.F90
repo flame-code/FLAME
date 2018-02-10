@@ -1,9 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf, typ_cent
+    use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -12,12 +13,13 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
     !local variables
+    type(typ_pia_arr):: pia_arr_tmp
     type(typ_cent):: cent
     integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
-    call f_routine(id='cal_ann_eem2')
+    call f_routine(id='cal_ann_cent2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
         allocate(ann_arr%chi_i(1:atoms%nat))
@@ -48,6 +50,10 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+    else
+        symfunc%linked_lists%rcut=ann_arr%rcut
+        symfunc%linked_lists%triplex=.true.
+        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
@@ -104,7 +110,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:cent2: total time                 ',time7-time1
     endif !end of if for printing out timing.
     !atoms%epot=epot_c
-    if(trim(ann_arr%event)=='evalu' .and. atoms%nat<=parini%nat_force) then
+    if(trim(ann_arr%event)=='evalu') then
         tt1=0.d0
         tt2=0.d0
         tt3=0.d0
@@ -133,12 +139,10 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
     enddo
     enddo
 
-    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-        deallocate(symfunc%linked_lists%prime_bound)
-        deallocate(symfunc%linked_lists%bound_rad)
-        deallocate(symfunc%linked_lists%bound_ang)
-    endif
-    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    deallocate(symfunc%linked_lists%prime_bound)
+    deallocate(symfunc%linked_lists%bound_rad)
+    deallocate(symfunc%linked_lists%bound_ang)
+    if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)
@@ -156,13 +160,13 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
             do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        do i=1,ann_arr%n
-            ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
-            !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
-        enddo
+        !do i=1,ann_arr%n
+        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        !enddo
     endif
     if(parini%iverbose>=3) then
         fnet=0.d0
@@ -174,7 +178,7 @@ subroutine cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,3es14.5)') 'NET FORCE ',fnet(1),fnet(2),fnet(3)
     endif
     call f_release_routine()
-end subroutine cal_ann_eem2
+end subroutine cal_ann_cent2
 !*****************************************************************************************
 subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     use mod_interface
@@ -517,51 +521,21 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
         cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
 end subroutine put_gauss_to_grid
 !*****************************************************************************************
-subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+subroutine gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     use mod_interface
-    use mod_atoms, only: typ_atoms
-    use mod_parini, only: typ_parini
-    use dynamic_memory
     implicit none
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
     real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz)
+    real(8), intent(out):: ratred(3,nat), vol
+    integer, intent(out):: nlimsq, nagx, nagy, nagz, nbgx, nbgy, nbgz
     !local variables
-    !work arrays to save the values of one dimensional gaussian function.
-    real(8):: pi
-    real(8):: facqiat, fac
-    real(8):: cell(3) !dimensions of a smaller orthogonal cell for replication
-    real(8):: vol
+    real(8):: htx, hty, htz, xred, yred, zred, cvinv_norm
+    integer:: iat, nlim
     real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
-    real(8):: htx, hty, htz
-    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
-    real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm
-    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
-    real(8):: xred, yred, zred
-    real(8):: ximg, yimg, zimg
-    integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
-    integer:: iii, nlim, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
-    real(8), allocatable:: wa(:,:,:)
-    real(8), allocatable:: ratred(:,:)
-    real(8), allocatable:: exponentval(:), expval(:)
-    real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
-
-    allocate(ratred(3,nat))
+    real(8):: cell(3) !dimensions of a smaller orthogonal cell for replication
     call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
     do iat=1,nat
         xred=ratred(1,iat)
@@ -590,9 +564,9 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     call cross_product_alborz(cv(1,1),cv(1,3),cvinv)
     cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
     cell(2)=vol/cvinv_norm
-    if(parini%iverbose>1) then
-        write(*,*) 'cell  ', cell(1),cell(2),cell(3)
-    endif
+    !if(parini%iverbose>1) then
+    !    write(*,*) 'cell  ', cell(1),cell(2),cell(3)
+    !endif
     htx=cell(1)/real(ngx,8)
     hty=cell(2)/real(ngy,8)
     htz=cell(3)/real(ngz,8)
@@ -604,7 +578,49 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     nagz=nbgz+1
     nlim = max(nagx,nagy,nagz)
     nlimsq = nlim**2
-    !detemining the largest dimension for the pseudogrid.
+end subroutine gauss_init
+!*****************************************************************************************
+subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
+    !local variables
+    !work arrays to save the values of one dimensional gaussian function.
+    real(8):: pi
+    real(8):: facqiat, fac
+    real(8):: vol
+    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
+    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hrxinv, hryinv, hrzinv
+    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
+    real(8):: ximg, yimg, zimg
+    integer:: imgx, imgy, imgz
+    integer:: ncellx, ncelly, ncellz
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
+    integer:: iii, nlimsq, iix, iiy, iiz
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
+    integer:: finalx, igxs, igxf 
+    real(8), allocatable:: wa(:,:,:)
+    real(8), allocatable:: ratred(:,:)
+    real(8), allocatable:: exponentval(:), expval(:)
+    real(8):: sqpi, tt
+    integer:: istartx, istarty, istartz
+
+    allocate(ratred(3,nat))
+    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -729,21 +745,17 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     !work arrays to save the values of one dimensional gaussian function.
     real(8):: pi
     real(8):: facqiat, fac
-    real(8):: cell(3) !dimensions of a smaller orthogonal cell for replication
     real(8):: vol
-    real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
-    real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
     real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, tt1
+    real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1
     real(8):: dmsq, gwsq_inv
-    real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
     integer:: ncellx, ncelly, ncellz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
-    integer:: iii, nlim, nlimsq, iix, iiy, iiz
+    integer:: iii, nlimsq, iix, iiy, iiz
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
     integer:: finalx, igxs, igxf 
     real(8), allocatable:: wa(:,:,:)
@@ -754,49 +766,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
-    do iat=1,nat
-        xred=ratred(1,iat)
-        yred=ratred(2,iat)
-        zred=ratred(3,iat)
-        if(xred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(yred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(zred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
-        if(.not. (xred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(.not. (yred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(.not. (zred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
-    enddo
-
-    !reciprocal lattice to be used to determine the distance of corners of
-    !the parallelepiped to its facets. Then those distances are used to
-    !determine the number of grid points in each direction that are within
-    !the cutoff of Gaussian function.
-    call cell_vol(nat,cv,vol)
-    vol=abs(vol)*nat
-    call cross_product_alborz(cv(1,1),cv(1,2),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(3)=vol/cvinv_norm
-    call cross_product_alborz(cv(1,2),cv(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(1)=vol/cvinv_norm
-    call cross_product_alborz(cv(1,1),cv(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(2)=vol/cvinv_norm
-    if(parini%iverbose>1) then
-        write(*,*) 'cell  ', cell(1),cell(2),cell(3)
-    endif
-    htx=cell(1)/real(ngx,8)
-    hty=cell(2)/real(ngy,8)
-    htz=cell(3)/real(ngz,8)
-    nbgx=int(rgcut/htx)+2
-    nbgy=int(rgcut/hty)+2
-    nbgz=int(rgcut/htz)+2
-    nagx=nbgx+1
-    nagy=nbgy+1
-    nagz=nbgz+1
-    nlim = max(nagx,nagy,nagz)
-    nlimsq = nlim**2
-    !detemining the largest dimension for the pseudogrid.
+    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -1062,21 +1032,17 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     !work arrays to save the values of one dimensional gaussian function.
     real(8):: pi
     real(8):: facqiat, fac
-    real(8):: cell(3) !dimensions of a smaller orthogonal cell for replication
     real(8):: vol
-    real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
-    real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
     real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, tt1
+    real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1
     real(8):: dmsq, gwsq_inv
-    real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
     integer:: ncellx, ncelly, ncellz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
-    integer:: iii, nlim, nlimsq, iix, iiy, iiz
+    integer:: iii, nlimsq, iix, iiy, iiz
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
     integer:: finalx, igxs, igxf 
     real(8), allocatable:: wa(:,:,:)
@@ -1087,49 +1053,7 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
-    do iat=1,nat
-        xred=ratred(1,iat)
-        yred=ratred(2,iat)
-        zred=ratred(3,iat)
-        if(xred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(yred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(zred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
-        if(.not. (xred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(.not. (yred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(.not. (zred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
-    enddo
-
-    !reciprocal lattice to be used to determine the distance of corners of
-    !the parallelepiped to its facets. Then those distances are used to
-    !determine the number of grid points in each direction that are within
-    !the cutoff of Gaussian function.
-    call cell_vol(nat,cv,vol)
-    vol=abs(vol)*nat
-    call cross_product_alborz(cv(1,1),cv(1,2),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(3)=vol/cvinv_norm
-    call cross_product_alborz(cv(1,2),cv(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(1)=vol/cvinv_norm
-    call cross_product_alborz(cv(1,1),cv(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(2)=vol/cvinv_norm
-    if(parini%iverbose>1) then
-        write(*,*) 'cell  ', cell(1),cell(2),cell(3)
-    endif
-    htx=cell(1)/real(ngx,8)
-    hty=cell(2)/real(ngy,8)
-    htz=cell(3)/real(ngz,8)
-    nbgx=int(rgcut/htx)+2
-    nbgy=int(rgcut/hty)+2
-    nbgz=int(rgcut/htz)+2
-    nagx=nbgx+1
-    nagy=nbgy+1
-    nagz=nbgz+1
-    nlim = max(nagx,nagy,nagz)
-    nlimsq = nlim**2
-    !detemining the largest dimension for the pseudogrid.
+    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz

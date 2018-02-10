@@ -135,7 +135,7 @@
    symfunc: only_calculate
    nstep_ekf: 100
    nstep_cep: 200
-   nat_force: 0
+   nconf_rmse: 0
    ampl_rand: 1.0
    symfunc_type: behler
    syslinsolver: direct
@@ -151,6 +151,9 @@
    restart_param: False
    restart_iter : 0
    print_energy : False
+   fit_hoppint: False
+   save_symfunc_force: False
+   weight_hardness: 0.001
  dynamics:
   nmd: 0
   dt: -1.0

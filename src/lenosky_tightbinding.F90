@@ -30,13 +30,15 @@
 !*****************************************************************************************
 !lenoskytb_() is interface routine by which TB routines may be called from external code
 !Note silicon atoms must be first in atoms%rat
-subroutine lenoskytb_alborz(atoms,natsi,count_md)
+subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
+    use mod_parini, only: typ_parini
     use mod_interface
     use mod_atoms, only: typ_atoms
-    use mod_frame, only: CLSMAXATOM, CLSMAXNEIGHB
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
     real(8), intent(inout):: count_md
@@ -44,6 +46,9 @@ subroutine lenoskytb_alborz(atoms,natsi,count_md)
     integer, save:: firstcall=1
     type(potl_typ), save:: pplocal
     type(typ_partb), save:: partb
+    type(typ_parini):: parini_tmp
+    type(typ_linked_lists):: linked_lists
+    type(typ_pia_arr):: pia_arr
     if(firstcall==1) then
         write(*,'(a)') 'GAMMA POINT only tight binding code'
         if(lenosky) then
@@ -51,39 +56,41 @@ subroutine lenoskytb_alborz(atoms,natsi,count_md)
         call prmst38c(partb,pplocal) !Reads potential 
         endif
         write(*,'(a,f)') 'paircut= ',partb%paircut
-        call lenoskytb_init(partb,atoms,natsi)
         firstcall=0
     endif
+    linked_lists%rcut=partb%paircut
+    linked_lists%triplex=.true.
+    parini_tmp=parini !TO_BE_CORRECTED
+    parini_tmp%bondbased_ann=.true. !TO_BE_CORRECTED
+    call call_linkedlist(parini_tmp,atoms,.true.,linked_lists,pia_arr)
+    call lenoskytb_init(partb,atoms,natsi,linked_lists)
     count_md=count_md+1.d0
     !PRINT SOME WARNINGS
-    if(atoms%nat>CLSMAXATOM) then
-        write(*,'(a,i,a,i)') 'WARNING Number of atoms = ',atoms%nat,' is greater than CLSMAXATOM = ',CLSMAXATOM
-        write(*,'(a)') 'THIS MAY CAUSE FAILURE OR UNPREDICTABLE BEHAVIOR'
-        write(*,'(a)') 'INCREASE CLSMAXATOM in defines.h and RECOMPILE'
-    endif
-    if(atoms%nat>CLSMAXNEIGHB) then
-        write(*,'(a,i,a,i)') 'WARNING Number of atoms = ',atoms%nat,' is greater than CLSMAXNEIGHB = ',CLSMAXNEIGHB
-        write(*,'(a)') 'THIS MAY CAUSE FAILURE OR UNPREDICTABLE BEHAVIOR'
-        write(*,'(a)') 'INCREASE CLSMAXNEIGHB in defines.h and RECOMPILE'
-    endif
     if(natsi>atoms%nat) write(*,'(a)') 'WARNING natsi = ',natsi,' is greater than number of atoms = ',atoms%nat
     if(atoms%nat == 0) write(*,'(a)') 'WARNING lenoskytb_alborz called with zero atoms'
     if(atoms%nat < 0) write(*,'(a)') 'WARNING lenoskytb_alborz called with negative number of atoms'
-    call totalenergy(partb,atoms,natsi,pplocal)
-    !call lenoskytb_final(partb)
+    call totalenergy(pia_arr,linked_lists,parini,partb,atoms,natsi,pplocal)
+    !write(61,*) atoms%epot
+    !stop 'BBBBBBBBBBBBBBB'
+    call lenoskytb_final(partb)
+    deallocate(linked_lists%prime_bound)
+    deallocate(linked_lists%bound_rad)
+    deallocate(linked_lists%bound_ang)
 end subroutine lenoskytb_alborz
 !*****************************************************************************************
-subroutine lenoskytb_init(partb,atoms,natsi)
+subroutine lenoskytb_init(partb,atoms,natsi,linked_lists)
     use mod_interface
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
+    use mod_linked_lists, only: typ_linked_lists
     use dynamic_memory
     implicit none
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(in):: atoms
     integer, intent(in):: natsi
+    type(typ_linked_lists), intent(in):: linked_lists
     !local variables
-    call f_routine(id='lenoskytb_init')
+    !call f_routine(id='lenoskytb_init')
     partb%norb=partb%nstride*natsi+(atoms%nat-natsi)
     !write(*,*) partb%nstride, natsi, partb%norb
     !Number of eigenvalues to compute=MIN(matrix*frac+extra,dimension of matrix)
@@ -93,32 +100,52 @@ subroutine lenoskytb_init(partb,atoms,natsi)
         partb%norbcut=floor((partb%norb*partb%frac+partb%extra))
     endif
     !---------------------------------------------------------
-    partb%indorb=f_malloc([1.to.partb%norb],id='partb%indorb')
-    partb%indat=f_malloc([1.to.atoms%nat],id='partb%indat')
-    partb%norbat=f_malloc([1.to.atoms%nat],id='partb%norbat')
-    partb%tbmat=f_malloc([1.to.partb%norb,1.to.partb%norb],id='partb%tbmat')
-    partb%evec=f_malloc([1.to.partb%norb,1.to.partb%norbcut],id='partb%evec')
+    !partb%indorb=f_malloc([1.to.partb%norb],id='partb%indorb')
+    !partb%indat=f_malloc([1.to.atoms%nat],id='partb%indat')
+    !partb%norbat=f_malloc([1.to.atoms%nat],id='partb%norbat')
+    !partb%tbmat=f_malloc([1.to.partb%norb,1.to.partb%norb],id='partb%tbmat')
+    !partb%evec=f_malloc([1.to.partb%norb,1.to.partb%norbcut],id='partb%evec')
+    allocate(partb%indorb(partb%norb))
+    allocate(partb%indat(atoms%nat))
+    allocate(partb%norbat(atoms%nat))
+    allocate(partb%tbmat(partb%norb,partb%norb))
+    allocate(partb%evec(partb%norb,partb%norbcut))
     if(lenosky) then
-        partb%dhgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall0')
-        partb%dhgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall1')
-        partb%dhgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall2')
-        partb%dhgenall3=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall3')
-        partb%hgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
-        partb%hgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
-        partb%hgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
-        partb%hgenall3=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall3')
+        !partb%dhgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall0')
+        !partb%dhgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall1')
+        !partb%dhgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall2')
+        !partb%dhgenall3=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall3')
+        !partb%hgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall0')
+        !partb%hgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall1')
+        !partb%hgenall2=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall2')
+        !partb%hgenall3=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%hgenall3')
+        allocate(partb%hgenall0(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%hgenall1(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%hgenall2(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%hgenall3(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall0(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall1(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall2(linked_lists%maxbound_rad),source=0.d0)
+        allocate(partb%dhgenall3(linked_lists%maxbound_rad),source=0.d0)
     endif
-    partb%eval=f_malloc([1.to.partb%norbcut],id='partb%eval')
-    partb%focc=f_malloc([1.to.partb%norbcut],id='partb%focc')
-    call f_release_routine()
+    !partb%eval=f_malloc([1.to.partb%norbcut],id='partb%eval')
+    !partb%focc=f_malloc([1.to.partb%norbcut],id='partb%focc')
+    allocate(partb%eval(partb%norbcut))
+    allocate(partb%focc(partb%norbcut))
+    !call f_release_routine()
 end subroutine lenoskytb_init
 !*****************************************************************************************
-subroutine totalenergy(partb,atoms,natsi,pplocal)
+subroutine totalenergy(pia_arr,linked_lists,parini,partb,atoms,natsi,pplocal)
     use mod_interface
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     implicit none
+    type(typ_linked_lists), intent(in):: linked_lists
+    type(typ_pia_arr), intent(in):: pia_arr
+    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
@@ -130,9 +157,9 @@ subroutine totalenergy(partb,atoms,natsi,pplocal)
     real(8):: es !, eself(0:3)
     partb%pairen=0.d0
     if(lenosky) then
-    call pairenergy(partb,atoms,pplocal,natsi)
+    call pairenergy(parini,partb,atoms,pplocal,natsi)
     endif
-    call gammaenergy(partb,atoms,natsi,pplocal)
+    call gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
     !partb%pairen=partb%pairen-natsi*(2*eself(0)+2*eself(1)) !the value in parantesses is 0 
     es=pplocal%eps(1) !eselfgeneral2 is replaced by this line
     partb%pairen=partb%pairen-(atoms%nat-natsi)*es
@@ -142,23 +169,27 @@ end subroutine totalenergy
 !*****************************************************************************************
 !Given atoms with reciprocal lattice latt, number of atoms nat, at coordinates coord,
 !return energy from pair potential, with forces in array force()
-subroutine pairenergy(partb,atoms,pplocal,natsi)
+subroutine pairenergy(parini,partb,atoms,pplocal,natsi)
+    use mod_parini, only: typ_parini
     use mod_interface
     use mod_tightbinding, only: typ_partb
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
-    use mod_frame, only: clsframepp_type
+    use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: natsi
     type(potl_typ), intent(in):: pplocal
     !local variables
-    integer:: iat, jat, kat, mat, iat_swap
+    type(typ_linked_lists):: linked_lists
+    type(typ_pia_arr):: pia_arr
+    type(typ_parini):: parini_tmp
+    integer:: iat, jat, kat, mat, iat_swap, ib
     integer:: atomtypej, atomtypem
     real(8):: r_swap
     real(8):: g(3), tempp(3)
-    type(clsframepp_type):: framepp
     real(8):: r, y, der !, epot_pair !, cell(3)
     !Accumulate energy for pair of atoms i<j, add to pairen; latt(1),latt(2),latt(3) are primitive
     !translation vectors for the unit cell: coord=n*latt(1)+m*latt(2)+p*latt(3);
@@ -170,81 +201,37 @@ subroutine pairenergy(partb,atoms,pplocal,natsi)
         atoms%fat(3,iat)=0.d0
     enddo
     partb%pairen=0.d0
-    !Set number of neigbors to 0
-    do iat=1,atoms%nat
-        framepp%nb(iat)=0
-    enddo
-    !Find atoms in space, then connect them together.
-    do iat=1,atoms%nat
-        do jat=iat+1,atoms%nat
-            !Set CELLDIST that calculates the shortest distance between two atoms.
-            !Because cells are assumed periodic.
-            call CELLDIST_F90(atoms%rat(1,iat),atoms%rat(1,jat),atoms%cellvec,r)
-            !Impose atoms intract together from 0 to 'paircut' distance.
-            if(.not. r>partb%paircut) then
-                framepp%nb(iat)=framepp%nb(iat)+1
-                !Set CELLGRAD that calculates derivatives, because we need them to
-                !calculate forces.
-                call CELLGRAD_F90(atoms%rat(1,iat),atoms%rat(1,jat),atoms%cellvec,g)
-                !add atom jat to list of atom iat, because atom jat is neighbor of atom iat according to if-condition.
-                framepp%nbind(iat,framepp%nb(iat))=jat
-                framepp%r(iat,framepp%nb(iat))=r
-                framepp%grad(1,iat,framepp%nb(iat))=g(1)
-                framepp%grad(2,iat,framepp%nb(iat))=g(2)
-                framepp%grad(3,iat,framepp%nb(iat))=g(3)
-                !In fact the condition of r<=paircut determine the number of neigbors
-            endif
-        enddo
-    enddo
-    !Do sorting of neighbor lists in order of increasing distance*/
-    do iat=1,atoms%nat
-        do jat=1,framepp%nb(iat)
-            do kat=jat+1,framepp%nb(iat)
-                if(framepp%r(iat,jat)>framepp%r(iat,kat)) then
-                    r_swap=framepp%r(iat,jat)
-                    framepp%r(iat,jat)=framepp%r(iat,kat)
-                    framepp%r(iat,kat)=r_swap
-                    iat_swap=framepp%nbind(iat,jat)
-                    framepp%nbind(iat,jat)=framepp%nbind(iat,kat)
-                    framepp%nbind(iat,kat)=iat_swap
-                    tempp(1)=framepp%grad(1,iat,jat)
-                    tempp(2)=framepp%grad(2,iat,jat)
-                    tempp(3)=framepp%grad(3,iat,jat)
-                    framepp%grad(1,iat,jat)=framepp%grad(1,iat,kat)
-                    framepp%grad(2,iat,jat)=framepp%grad(2,iat,kat)
-                    framepp%grad(3,iat,jat)=framepp%grad(3,iat,kat)
-                    framepp%grad(1,iat,kat)=tempp(1)
-                    framepp%grad(2,iat,kat)=tempp(2)
-                    framepp%grad(3,iat,kat)=tempp(3)
-                endif
-            enddo
-        enddo
-    enddo
     ! ---------------------------------
-    do iat=1,atoms%nat
-        do jat=1,framepp%nb(iat)
-            mat=framepp%nbind(iat,jat)
-            g(1)=framepp%grad(1,iat,jat)
-            g(2)=framepp%grad(2,iat,jat)
-            g(3)=framepp%grad(3,iat,jat)
-            r=framepp%r(iat,jat)
-            if(partb%usepairpot==1) then !Here I think the condition has not completed!!!
-                atomtypej=0
-                if(iat>natsi) atomtypej=1
-                atomtypem=0
-                if(mat>natsi) atomtypem=1
-                call clssplint(pplocal%phi(atomtypej+atomtypem),r,y,der,1)
-                atoms%fat(1,iat)=atoms%fat(1,iat)-der*(g(1))
-                atoms%fat(2,iat)=atoms%fat(2,iat)-der*(g(2))
-                atoms%fat(3,iat)=atoms%fat(3,iat)-der*(g(3))
-                atoms%fat(1,mat)=atoms%fat(1,mat)+der*(g(1))
-                atoms%fat(2,mat)=atoms%fat(2,mat)+der*(g(2))
-                atoms%fat(3,mat)=atoms%fat(3,mat)+der*(g(3))
-                if(iat<=atoms%nat) partb%pairen=partb%pairen+y/2 !QUESTION: Why y is divided by 2 ?
-                if(mat<=atoms%nat) partb%pairen=partb%pairen+y/2
-            endif
-        enddo !End of loop over pairs
+    linked_lists%rcut=partb%paircut !ann_arr%rcut
+    linked_lists%triplex=.true.
+    parini_tmp=parini !TO_BE_CORRECTED
+    parini_tmp%bondbased_ann=.true. !TO_BE_CORRECTED
+    call call_linkedlist(parini_tmp,atoms,.true.,linked_lists,pia_arr)
+    do ib=1,linked_lists%maxbound_rad
+        iat=linked_lists%bound_rad(1,ib)
+        jat=linked_lists%bound_rad(2,ib)
+        r=pia_arr%pia(ib)%r
+        g(1)=-pia_arr%pia(ib)%dr(1)/r
+        g(2)=-pia_arr%pia(ib)%dr(2)/r
+        g(3)=-pia_arr%pia(ib)%dr(3)/r
+        if(partb%usepairpot==1) then !Here I think the condition has not completed!!!
+            atomtypej=0
+            if(iat>natsi) atomtypej=1
+            atomtypem=0
+            if(jat>natsi) atomtypem=1
+            call clssplint('pairenergy',pplocal%phi(atomtypej+atomtypem),r,y,der,1)
+            atoms%fat(1,iat)=atoms%fat(1,iat)-der*(g(1))
+            atoms%fat(2,iat)=atoms%fat(2,iat)-der*(g(2))
+            atoms%fat(3,iat)=atoms%fat(3,iat)-der*(g(3))
+            atoms%fat(1,jat)=atoms%fat(1,jat)+der*(g(1))
+            atoms%fat(2,jat)=atoms%fat(2,jat)+der*(g(2))
+            atoms%fat(3,jat)=atoms%fat(3,jat)+der*(g(3))
+            partb%pairen=partb%pairen+y
+        endif
     enddo
+    deallocate(linked_lists%prime_bound)
+    deallocate(linked_lists%bound_rad)
+    deallocate(linked_lists%bound_ang)
 end subroutine pairenergy
 !*****************************************************************************************
 subroutine lenoskytb_final(partb)
@@ -253,83 +240,40 @@ subroutine lenoskytb_final(partb)
     use dynamic_memory
     implicit none
     type(typ_partb), intent(inout):: partb
-    call f_routine(id='lenoskytb_final')
+    !call f_routine(id='lenoskytb_final')
     !local variables
-    call f_free(partb%indorb)
-    call f_free(partb%indat)
-    call f_free(partb%norbat)
-    call f_free(partb%tbmat)
-    call f_free(partb%evec)
-    call f_free(partb%dhgenall0)
-    call f_free(partb%dhgenall1)
-    call f_free(partb%dhgenall2)
-    call f_free(partb%dhgenall3)
-    call f_free(partb%hgenall0)
-    call f_free(partb%hgenall1)
-    call f_free(partb%hgenall2)
-    call f_free(partb%hgenall3)
-    call f_free(partb%eval)
-    call f_free(partb%focc)
-    call f_release_routine()
+    !call f_free(partb%indorb)
+    !call f_free(partb%indat)
+    !call f_free(partb%norbat)
+    !call f_free(partb%tbmat)
+    !call f_free(partb%evec)
+    !call f_free(partb%dhgenall0)
+    !call f_free(partb%dhgenall1)
+    !call f_free(partb%dhgenall2)
+    !call f_free(partb%dhgenall3)
+    !call f_free(partb%hgenall0)
+    !call f_free(partb%hgenall1)
+    !call f_free(partb%hgenall2)
+    !call f_free(partb%hgenall3)
+    !call f_free(partb%eval)
+    !call f_free(partb%focc)
+    deallocate(partb%indorb)
+    deallocate(partb%indat)
+    deallocate(partb%norbat)
+    deallocate(partb%tbmat)
+    deallocate(partb%evec)
+    deallocate(partb%dhgenall0)
+    deallocate(partb%dhgenall1)
+    deallocate(partb%dhgenall2)
+    deallocate(partb%dhgenall3)
+    deallocate(partb%hgenall0)
+    deallocate(partb%hgenall1)
+    deallocate(partb%hgenall2)
+    deallocate(partb%hgenall3)
+    deallocate(partb%eval)
+    deallocate(partb%focc)
+    !call f_release_routine()
 end subroutine lenoskytb_final
-!*****************************************************************************************
-subroutine VECT_SUBTRACT_F90(a,b,c) 
-    use mod_interface
-    implicit none
-    real(8), intent(in):: a(3), b(3)
-    real(8), intent(out):: c(3)
-    c(1)=a(1)-b(1) 
-    c(2)=a(2)-b(2) 
-    c(3)=a(3)-b(3)
-end subroutine VECT_SUBTRACT_F90
-!*****************************************************************************************
-subroutine APPLY_PBC_F90(a)
-    use mod_interface
-    implicit none
-    real(8), intent(inout) :: a(3)
-    a(1)=a(1)-floor(a(1)+0.5d0)
-    a(2)=a(2)-floor(a(2)+0.5d0)
-    a(3)=a(3)-floor(a(3)+0.5d0)
-end subroutine APPLY_PBC_F90
-!*****************************************************************************************
-subroutine CELLDIST_F90(p1,p2,a,d)
-    use mod_interface
-    implicit none
-    real(8), intent(in):: p1(3), p2(3), a(3,3)
-    real(8), intent(out):: d
-    !local variables
-    real(8):: diff(3)
-    call VECT_SUBTRACT_F90(p1,p2,diff)
-    diff(1)=diff(1)/a(1,1)
-    diff(2)=diff(2)/a(2,2)
-    diff(3)=diff(3)/a(3,3)
-    call APPLY_PBC_F90(diff)
-    diff(1)=diff(1)*a(1,1)
-    diff(2)=diff(2)*a(2,2)
-    diff(3)=diff(3)*a(3,3)
-    d=sqrt(diff(1)**2+diff(2)**2+diff(3)**2)
-end subroutine CELLDIST_F90
-!*****************************************************************************************
-subroutine CELLGRAD_F90(p1,p2,a,g)
-    use mod_interface
-    implicit none
-    real(8), intent(in):: p1(3), p2(3), a(3,3)
-    real(8), intent(out):: g(3)
-    !local variables
-    real(8):: r, diff(3)
-    call VECT_SUBTRACT_F90(p1,p2,diff)
-    diff(1)=diff(1)/a(1,1)
-    diff(2)=diff(2)/a(2,2)
-    diff(3)=diff(3)/a(3,3)
-    call APPLY_PBC_F90(diff)
-    diff(1)=diff(1)*a(1,1)
-    diff(2)=diff(2)*a(2,2)
-    diff(3)=diff(3)*a(3,3)
-    r=sqrt(diff(1)**2+diff(2)**2+diff(3)**2)
-    g(1)=diff(1)/r
-    g(2)=diff(2)/r
-    g(3)=diff(3)/r
-end subroutine CELLGRAD_F90
 !*****************************************************************************************
 !This routine returns h(r)'s for tight binding link: units eV and Angstrom
 ! Index i denotes
@@ -341,6 +285,7 @@ end subroutine CELLGRAD_F90
 subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     use mod_interface
     use mod_potl, only: potl_typ
+    !use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(potl_typ), intent(in):: pplocal
     real(8), intent(in):: r
@@ -353,7 +298,7 @@ subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     if(atomtypei+atomtypej==0) then
         do i=0,3
             !pplocal%h(i)s build various splines for different h(r)s.
-            call clssplint(pplocal%h(i),r,y,der,0)
+            call clssplint('hgen_r2',pplocal%h(i),r,y,der,0)
             !According to Lenosky paper, "radar"s are "h(r)s" not "g(r)"s.
             !Thus, clssplint returns "g(r)"s.
             radar(i)=y/(r)/(r)
@@ -362,7 +307,7 @@ subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     !If two atoms which ineract together are "H" and "Si", i start from 0 to 1  (because of 2 h(r)s).
     else if(atomtypei+atomtypej==1) then
         do i=0,1 
-            call clssplint(pplocal%h(4+i),r,y,der,0)
+            call clssplint('hgen_r2',pplocal%h(4+i),r,y,der,0)
             radar(i)=y/(r)/(r)
             dradar(i)=der/(r)/(r)-2.0 * y/(r)/(r)/(r) 
         enddo     
@@ -373,7 +318,7 @@ subroutine radelmgeneralsp(r,radar,dradar,atomtypei,atomtypej,pplocal)
     !If two atoms which interact together are "H", i=0 (because of 1 possibility for interaction)
     else if(atomtypei+atomtypej==2) then
         i=0 
-        call clssplint(pplocal%h(6+i),r,y,der,0)
+        call clssplint('hgen_r2',pplocal%h(6+i),r,y,der,0)
         radar(i)=y/(r)/(r)
         dradar(i)=der/(r)/(r)-2.0 * y/(r)/(r)/(r) 
         radar(1)=0.d0
@@ -388,21 +333,25 @@ end subroutine radelmgeneralsp
 !This routine represented radial functions using cubic splines.
 !modified version of clssplint: returns f in y and df/dx in deriv
 !also modified to use endpoint deriv information if out of bounds
-subroutine clssplint(s,x,y,deriv,extype)
+subroutine clssplint(str_action,s,xt,yt,derivt,extype)
     use mod_interface
     use mod_splinetb, only: NSPMAX, spline_typ
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
+    character(*), intent(in) :: str_action
     type(spline_typ), intent(in) :: s
     !Flag to control method of extrapolation on lower bound 0=linear, 1= 1/r/r and 1/r 
     integer, intent(in)::  extype 
-    real(8), intent(in) :: x
-    real(8), intent(out) :: y, deriv
+    real(8), intent(in) :: xt
+    real(8), intent(out) :: yt, derivt
     !local variables
     integer :: klo, khi, k
     real(8) :: h, b, a
     real(8) ::  a1, b1
     real(8) ::  rc, yc, derc
+    real(8) ::  x, y, deriv
     !cubic spline passing through points(s%x(1),s%y(1)),...,(s%x(npt),s%y(npt)).
+    x=xt*bohr2ang
     if(x>s%x(1) .and. x < s%x(s%npt)) then
         !NR part
         klo=1
@@ -442,19 +391,26 @@ subroutine clssplint(s,x,y,deriv,extype)
         deriv=s%ypn
         y=s%y(s%npt)+deriv*(x-s%x(s%npt))
     endif
+    if(trim(str_action)=='pairenergy') then
+        derivt=deriv/(ha2ev/bohr2ang)
+        yt=y/ha2ev
+    else if(trim(str_action)=='hgen_r2') then
+        derivt=deriv/(ha2ev*bohr2ang)
+        yt=y/(ha2ev*bohr2ang**2)
+    else
+        stop 'ERROR: unknown value for str_action in clssplint'
+    endif
+
 end subroutine clssplint
 !*****************************************************************************************
 !This subroutine initialize array's elements. 
 subroutine eselfgeneral(eself)
     use mod_interface
     use mod_tightbinding, only: lenosky
+    use mod_const, only: ha2ev
     implicit none
     real(8), intent(inout):: eself(0:3)
-    if(lenosky) then 
-        eself(0)=-5.670225d0
-    else
-        eself(0)=-5.670225d0/27.211385d0
-    endif
+    eself(0)=-5.670225d0/ha2ev
     eself(1)=-eself(0)
     eself(2)=-eself(0)
     eself(3)=-eself(0)
@@ -464,6 +420,7 @@ subroutine prmst38c(partb,pplocal)
     use mod_interface
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
+    use mod_const, only: ha2ev, bohr2ang
     implicit none
     type(typ_partb):: partb
     integer:: unit
@@ -472,7 +429,7 @@ subroutine prmst38c(partb,pplocal)
     integer:: clsusetri,clsmrho,clsmhtb,clsmepstb,clsmrho2
     type(potl_typ):: pplocal
     open(unit=1,file='coeff.cls',status='old')
-    partb%paircut=5.24d0
+    partb%paircut=5.24d0/bohr2ang
     clsrhonecut=4.d0
     clstricut1=4.d0
     read(1,*) partb%usepairpot,clsusetri,clsmrho,clsmhtb,clsmepstb,clsmrho2
@@ -494,6 +451,7 @@ subroutine prmst38c(partb,pplocal)
     enddo
     do mm=0,clsmepstb-1
         read(1,*) pplocal%eps(mm)
+        !pplocal%eps(mm)=pplocal%eps(mm)/ha2ev
     enddo
     do mm=0,clsmrho2-1
         call clsfread_spline(1,pplocal%xrho(mm))
@@ -508,6 +466,7 @@ end subroutine prmst38c
 subroutine clsfread_spline(unit,s)
     use mod_interface
     use mod_splinetb, only: NSPMAX, spline_typ
+    !use mod_const, only: ha2ev, bohr2ang
     implicit none
     integer:: unit
     type(spline_typ), intent(out):: s
@@ -515,10 +474,15 @@ subroutine clsfread_spline(unit,s)
     integer:: i
     read(unit,*) s%npt
     read(unit,*) s%yp1, s%ypn
+    !s%yp1=s%yp1/(ha2ev/bohr2ang)
+    !s%ypn=s%ypn/(ha2ev/bohr2ang)
     !QUESTION: What is the meaning of below integer variables.
     read(unit,*) s%iset1, s%isetn, s%ider1, s%idern
     do i=1,s%npt
         read(unit,*) s%x(i), s%y(i), s%y2(i)
+        !s%x(i)=s%x(i)/bohr2ang
+        !s%y(i)=s%y(i)/ha2ev
+        !s%y2(i)=s%y2(i)/(ha2ev/bohr2ang**2)
     enddo
     call clsspline(s)
 end subroutine clsfread_spline

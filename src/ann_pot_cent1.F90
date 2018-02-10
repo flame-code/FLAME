@@ -15,6 +15,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ekf), intent(inout):: ekf
     type(typ_ewald_p3d):: ewald_p3d
     !local variables
+    type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
@@ -52,6 +53,10 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+    else
+        symfunc%linked_lists%rcut=ann_arr%rcut
+        symfunc%linked_lists%triplex=.true.
+        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))
@@ -100,7 +105,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         write(*,'(a,f8.3)') 'Timing:cent1: total time                 ',time7-time1
     endif !end of if for printing out timing.
     atoms%epot=epot_c
-    if(trim(ann_arr%event)=='evalu' .and. atoms%nat<=parini%nat_force) then
+    if(trim(ann_arr%event)=='evalu') then
         tt1=0.d0
         tt2=0.d0
         tt3=0.d0
@@ -129,12 +134,10 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     enddo
     enddo
 
-    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. trim(parini%symfunc)/='do_not_save')) then
-        deallocate(symfunc%linked_lists%prime_bound)
-        deallocate(symfunc%linked_lists%bound_rad)
-        deallocate(symfunc%linked_lists%bound_ang)
-    endif
-    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    deallocate(symfunc%linked_lists%prime_bound)
+    deallocate(symfunc%linked_lists%bound_rad)
+    deallocate(symfunc%linked_lists%bound_ang)
+    if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)
@@ -156,10 +159,10 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
                 ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        do i=1,ann_arr%n
-            ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
-            !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
-        enddo
+        !do i=1,ann_arr%n
+        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        !enddo
     endif
     call f_release_routine()
 end subroutine cal_ann_cent1
