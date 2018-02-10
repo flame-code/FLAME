@@ -1809,8 +1809,6 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=-1.d0
         elseif(trim(atoms%stypat(itypat))=='Zn') then
             atoms%qtypat(itypat)=1.d0
-        elseif(trim(atoms%stypat(itypat))=='Ti') then
-            atoms%qtypat(itypat)=2.0d0
         elseif(trim(atoms%stypat(itypat))=='Zr') then
             atoms%qtypat(itypat)=2.0d0
         elseif(trim(atoms%stypat(itypat))=='Sn') then
@@ -1835,7 +1833,12 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=1.d0
         elseif(trim(atoms%stypat(itypat))=='Br') then
             atoms%qtypat(itypat)=-1.d0
+        elseif(trim(atoms%stypat(itypat))=='Sr') then
+            atoms%qtypat(itypat)=2.d0
+        elseif(trim(atoms%stypat(itypat))=='Ti') then
+            atoms%qtypat(itypat)=4.d0
         else
+
             write(*,*) 'ERROR: no atomic charge stored for atomtype=',trim(atoms%stypat(itypat))
             stop
         endif
@@ -1848,8 +1851,6 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=-1.d0
         else if(trim(atoms%sat(iat))=='Zn') then
             atoms%qat(iat)=1.d0
-        else if(trim(atoms%sat(iat))=='Ti') then
-            atoms%qat(iat)=2.0d0
         else if(trim(atoms%sat(iat))=='Zr') then
             atoms%qat(iat)=2.0d0
         else if(trim(atoms%sat(iat))=='Sn') then
@@ -1874,8 +1875,12 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Br') then
             atoms%qat(iat)=-1.d0
+        else if(trim(atoms%sat(iat))=='Sr') then
+            atoms%qat(iat)=2.d0
+        else if(trim(atoms%sat(iat))=='Ti') then
+            atoms%qat(iat)=4.d0
         else
-            write(*,*) 'ERROR: no atomic charge stored for atomtype=',trim(atoms%sat(iat))
+            write(*,*) 'ERROR: no atomic charge stored for atomtype =',trim(atoms%sat(iat))
             stop
         endif
         !if(iproc==0) then
@@ -2144,6 +2149,10 @@ subroutine iatom_to_sat(iatom,sat)
         sat='Te'
     else if(iatom==82) then
         sat='Pb'
+    else if(iatom==22) then
+        sat='Ti'
+    else if(iatom==38) then
+        sat='Sr'
     else
         write(*,*) 'ERROR: no symbol stored for atomic number=',iatom
         stop

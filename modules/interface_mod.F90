@@ -1221,6 +1221,81 @@ subroutine near_grad_weight (poisson,d,i_dist,car_lat)
     integer, intent(inout):: d(3)
     real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
 end subroutine near_grad_weight
+! ./src/basic.F90 :
+subroutine elim_white_space(string)
+    character(256), intent(inout):: string
+end subroutine elim_white_space
+function delta_kronecker(i,j) result(delta)
+    integer, intent(in):: i, j
+    real(8):: delta
+end function delta_kronecker
+subroutine backtocell_alborz(nat,latvec,rxyz_red)
+    integer, intent(in):: nat
+    real(8), intent(in):: latvec(3,3)
+    real(8), intent(inout):: rxyz_red(3,nat)
+end subroutine backtocell_alborz
+subroutine getvol_alborz(cellvec,vol)
+    real(8), intent(in):: cellvec(3,3)
+    real(8), intent(out):: vol
+end subroutine getvol_alborz
+subroutine pbc_distance1_alborz(cellvec,xred_1,xred_2,distance2,dxyz)
+    real(8), intent(in):: cellvec(3,3), xred_1(3), xred_2(3)
+    real(8), intent(inout):: distance2, dxyz(3)
+end subroutine pbc_distance1_alborz
+subroutine n_rep_dim_alborz(cellvec,rcut,nec1,nec2,nec3)
+    real(8), intent(in):: cellvec(3,3), rcut
+    integer, intent(out):: nec1, nec2, nec3
+end subroutine n_rep_dim_alborz
+subroutine nveclatvec_alborz(cellvec,vn)
+    real(8), intent(in) :: cellvec(3,3)
+    real(8), intent(out):: vn(3,3)
+end subroutine nveclatvec_alborz
+subroutine dist2plane_alborz(r1,vn,r0,dist)
+    real(8), intent(in):: r1(3), vn(3), r0(3)
+    real(8), intent(out):: dist
+end subroutine dist2plane_alborz
+subroutine write_atomic_file_ascii_alborz(filename,nat,xred,latvec0,energy,pressure,printval1,printval2,kinds)
+integer:: nat,natin,iat
+character(40):: filename,units
+real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol
+real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2
+integer:: Kinds(nat)
+end subroutine write_atomic_file_ascii_alborz
+subroutine dproj2latvec_alborz(dproj,cellvec)
+    real(8), intent(in):: dproj(6)
+    real(8), intent(out):: cellvec(3,3)
+end subroutine dproj2latvec_alborz
+subroutine latvec2dproj_alborz(dproj,latvec,rotmat,rxyz,nat)
+    integer, intent(in):: nat
+    real(8),intent(inout):: dproj(6), latvec(3,3), rotmat(3,3), rxyz(3,nat)
+end subroutine latvec2dproj_alborz
+subroutine cross_product_alborz(a,b,c)
+    real(8), intent(in):: a(3), b(3)
+    real(8), intent(out):: c(3)
+end subroutine cross_product_alborz
+subroutine rotation_alborz(angle,axe,rotmat)
+    real(8), intent(in):: angle
+    real(8), intent(in):: axe(3)
+    real(8), intent(out):: rotmat(3,3)
+end subroutine rotation_alborz
+subroutine fxyz_cart2int_alborz(nat,v_cart,cv,v_int)
+    integer, intent(in):: nat
+    real(8), intent(in):: v_cart(3,nat), cv(3,3)
+    real(8), intent(out):: v_int(3,nat)
+end subroutine fxyz_cart2int_alborz
+subroutine fxyz_red2cart(nat,fint,cv,fcart)
+    integer, intent(in):: nat
+    real(8), intent(in):: fint(3,nat), cv(3,3)
+    real(8), intent(out):: fcart(3,nat)
+end subroutine fxyz_red2cart
+subroutine count_words(str,n)
+    character(*), intent(in):: str
+    integer, intent(out):: n
+end subroutine count_words
+subroutine count_substring(str1,str2,n)
+    character(*), intent(in) :: str1, str2
+    integer, intent(out):: n
+end subroutine count_substring
 ! ./src/basic_atoms.F90 :
 subroutine atom_allocate(atoms,nat,natim,nfp)
     use mod_atoms, only: typ_atoms
@@ -1343,81 +1418,6 @@ subroutine iatom_to_sat(iatom,sat)
     integer, intent(in) :: iatom
     character(*), intent(out) :: sat
 end subroutine iatom_to_sat
-! ./src/basic.F90 :
-subroutine elim_white_space(string)
-    character(256), intent(inout):: string
-end subroutine elim_white_space
-function delta_kronecker(i,j) result(delta)
-    integer, intent(in):: i, j
-    real(8):: delta
-end function delta_kronecker
-subroutine backtocell_alborz(nat,latvec,rxyz_red)
-    integer, intent(in):: nat
-    real(8), intent(in):: latvec(3,3)
-    real(8), intent(inout):: rxyz_red(3,nat)
-end subroutine backtocell_alborz
-subroutine getvol_alborz(cellvec,vol)
-    real(8), intent(in):: cellvec(3,3)
-    real(8), intent(out):: vol
-end subroutine getvol_alborz
-subroutine pbc_distance1_alborz(cellvec,xred_1,xred_2,distance2,dxyz)
-    real(8), intent(in):: cellvec(3,3), xred_1(3), xred_2(3)
-    real(8), intent(inout):: distance2, dxyz(3)
-end subroutine pbc_distance1_alborz
-subroutine n_rep_dim_alborz(cellvec,rcut,nec1,nec2,nec3)
-    real(8), intent(in):: cellvec(3,3), rcut
-    integer, intent(out):: nec1, nec2, nec3
-end subroutine n_rep_dim_alborz
-subroutine nveclatvec_alborz(cellvec,vn)
-    real(8), intent(in) :: cellvec(3,3)
-    real(8), intent(out):: vn(3,3)
-end subroutine nveclatvec_alborz
-subroutine dist2plane_alborz(r1,vn,r0,dist)
-    real(8), intent(in):: r1(3), vn(3), r0(3)
-    real(8), intent(out):: dist
-end subroutine dist2plane_alborz
-subroutine write_atomic_file_ascii_alborz(filename,nat,xred,latvec0,energy,pressure,printval1,printval2,kinds)
-integer:: nat,natin,iat
-character(40):: filename,units
-real(8):: pos(3,nat),xred(3,nat),latvec(3,3),latvec0(3,3),dproj(6),rotmat(3,3),v(3,3),ucvol
-real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2
-integer:: Kinds(nat)
-end subroutine write_atomic_file_ascii_alborz
-subroutine dproj2latvec_alborz(dproj,cellvec)
-    real(8), intent(in):: dproj(6)
-    real(8), intent(out):: cellvec(3,3)
-end subroutine dproj2latvec_alborz
-subroutine latvec2dproj_alborz(dproj,latvec,rotmat,rxyz,nat)
-    integer, intent(in):: nat
-    real(8),intent(inout):: dproj(6), latvec(3,3), rotmat(3,3), rxyz(3,nat)
-end subroutine latvec2dproj_alborz
-subroutine cross_product_alborz(a,b,c)
-    real(8), intent(in):: a(3), b(3)
-    real(8), intent(out):: c(3)
-end subroutine cross_product_alborz
-subroutine rotation_alborz(angle,axe,rotmat)
-    real(8), intent(in):: angle
-    real(8), intent(in):: axe(3)
-    real(8), intent(out):: rotmat(3,3)
-end subroutine rotation_alborz
-subroutine fxyz_cart2int_alborz(nat,v_cart,cv,v_int)
-    integer, intent(in):: nat
-    real(8), intent(in):: v_cart(3,nat), cv(3,3)
-    real(8), intent(out):: v_int(3,nat)
-end subroutine fxyz_cart2int_alborz
-subroutine fxyz_red2cart(nat,fint,cv,fcart)
-    integer, intent(in):: nat
-    real(8), intent(in):: fint(3,nat), cv(3,3)
-    real(8), intent(out):: fcart(3,nat)
-end subroutine fxyz_red2cart
-subroutine count_words(str,n)
-    character(*), intent(in):: str
-    integer, intent(out):: n
-end subroutine count_words
-subroutine count_substring(str1,str2,n)
-    character(*), intent(in) :: str1, str2
-    integer, intent(out):: n
-end subroutine count_substring
 ! ./src/basic_utilities.F90 :
 subroutine elim_moment_alborz(nat,atomic_vector)
   integer, intent(in):: nat
@@ -1747,6 +1747,63 @@ SUBROUTINE envelope(x, y, n, vertex, nvert, iwk)
 INTEGER :: n, vertex(n), nvert, iwk(n)
 REAL(8) :: x(n), y(n)
 end subroutine envelope
+! ./src/es_coulomb_p3d.F90 :
+subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+end subroutine construct_ewald_p3d
+subroutine destruct_ewald_p3d(parini,atoms,ewald_p3d)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+end subroutine destruct_ewald_p3d
+subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
+    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_parini), intent(in):: parini
+end subroutine calculate_forces_energy
+subroutine calparam(parini,atoms,ewald_p3d_rough,ewald_p3d)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+end subroutine calparam
+subroutine determine_glimitsphere(ewald_p3d)
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+end subroutine determine_glimitsphere
+subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
+    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gausswidth(nat)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+end subroutine putgaussgrid
+subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    real(8), intent(in):: gausswidth(atoms%nat)
+end subroutine longerange_forces
 ! ./src/es_coulomb_p3d_bias.F90 :
 subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
     use mod_electrostatics, only: typ_ewald_p3d
@@ -1819,63 +1876,6 @@ subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
     type(typ_parini), intent(in):: parini
     real(8):: epotlong, epotplane !, epotshort
 end subroutine bias_field_potener_forces
-! ./src/es_coulomb_p3d.F90 :
-subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine construct_ewald_p3d
-subroutine destruct_ewald_p3d(parini,atoms,ewald_p3d)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine destruct_ewald_p3d
-subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
-    use mod_electrostatics, only: typ_ewald_p3d
-    use mod_atoms, only: typ_atoms
-    use mod_parini, only: typ_parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_parini), intent(in):: parini
-end subroutine calculate_forces_energy
-subroutine calparam(parini,atoms,ewald_p3d_rough,ewald_p3d)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine calparam
-subroutine determine_glimitsphere(ewald_p3d)
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine determine_glimitsphere
-subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
-    use mod_electrostatics, only: typ_ewald_p3d
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gausswidth(nat)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine putgaussgrid
-subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8), intent(in):: gausswidth(atoms%nat)
-end subroutine longerange_forces
 ! ./src/es_coulomb_spline.F90 :
 subroutine build_shortrange_spline(shortrange,spline,rcut,a)
     use mod_shortrange, only: typ_shortrange
@@ -2057,31 +2057,6 @@ subroutine calbeta(hzsq,ngpz,analc00,beta)
     integer::ngpz,iz
     real(8)::analc00(ngpz),hzsq,beta
 end subroutine calbeta
-! ./src/fingerprint_atorb.F90 :
-subroutine get_fp_malypso(nat,rxyz,rcov,latvec,r_cut_in,kinds,nkinds,fp_dim,nl,fp)
-integer:: nl !Number of l components, here only even ones 
-integer:: fp_dim !Number of AB interactions, doublecounting eliminated
-integer:: nat,nkinds
-integer:: nbond(fp_dim,nat),kinds(nat)
-integer:: llist(nl)
-real(8):: latvec(3,3),rxyz(3,nat),fp(nl,fp_dim,nat),fp_ri(2,nl,nat),rcov(nkinds)
-real(8):: sigma,r_cut_in(fp_dim) !Cutoff for each AB interaction
-real(8):: r_cut(fp_dim,fp_dim)
-real(8), parameter :: pi=3.141592653589793238462643383279502884197d0
-real(8):: min_bond(fp_dim,fp_dim),ylm_r,ylm_i
-end subroutine get_fp_malypso
-subroutine get_distance_malypso(fp1,fp2,fp_dim,nat,kinds,nl,dist)
-integer:: fp_dim,nl,yll,i,j,mode,nat,iarr,i_dim,ii,jj,kinds(nat),k(nat),iii,jjj,nmat,imax,imin
-real(8):: fp1(nl,fp_dim,nat),fp2(nl,fp_dim,nat),dist,a(nat,nat),summ,vec(nl),vec1(nl),vec2(nl),norm1,norm2
-end subroutine get_distance_malypso
-SUBROUTINE assndx(mode, a, n, m, k, sum)
-INTEGER, INTENT(IN)   :: mode
-REAL(8), INTENT(IN OUT)  :: a(:,:)
-INTEGER, INTENT(IN)   :: n
-INTEGER, INTENT(IN)   :: m
-INTEGER, INTENT(OUT)  :: k(:)
-REAL(8), INTENT(OUT)  :: sum
-end subroutine assndx
 ! ./src/fingerprint_GOM.F90 :
 subroutine get_fp_gauss(nat, ntypat, natx_sphere, typat, lseg, width_cutoff, nex_cutoff, alat, rxyz, rcov, fp)
   integer, intent(in) :: nat, ntypat, natx_sphere, lseg
@@ -2185,6 +2160,31 @@ subroutine sym2rvan(sym,rvan)
   real(8)  :: rvan
   character(len=2) :: sym  ! chemical symbol 
 end subroutine sym2rvan
+! ./src/fingerprint_atorb.F90 :
+subroutine get_fp_malypso(nat,rxyz,rcov,latvec,r_cut_in,kinds,nkinds,fp_dim,nl,fp)
+integer:: nl !Number of l components, here only even ones 
+integer:: fp_dim !Number of AB interactions, doublecounting eliminated
+integer:: nat,nkinds
+integer:: nbond(fp_dim,nat),kinds(nat)
+integer:: llist(nl)
+real(8):: latvec(3,3),rxyz(3,nat),fp(nl,fp_dim,nat),fp_ri(2,nl,nat),rcov(nkinds)
+real(8):: sigma,r_cut_in(fp_dim) !Cutoff for each AB interaction
+real(8):: r_cut(fp_dim,fp_dim)
+real(8), parameter :: pi=3.141592653589793238462643383279502884197d0
+real(8):: min_bond(fp_dim,fp_dim),ylm_r,ylm_i
+end subroutine get_fp_malypso
+subroutine get_distance_malypso(fp1,fp2,fp_dim,nat,kinds,nl,dist)
+integer:: fp_dim,nl,yll,i,j,mode,nat,iarr,i_dim,ii,jj,kinds(nat),k(nat),iii,jjj,nmat,imax,imin
+real(8):: fp1(nl,fp_dim,nat),fp2(nl,fp_dim,nat),dist,a(nat,nat),summ,vec(nl),vec1(nl),vec2(nl),norm1,norm2
+end subroutine get_distance_malypso
+SUBROUTINE assndx(mode, a, n, m, k, sum)
+INTEGER, INTENT(IN)   :: mode
+REAL(8), INTENT(IN OUT)  :: a(:,:)
+INTEGER, INTENT(IN)   :: n
+INTEGER, INTENT(IN)   :: m
+INTEGER, INTENT(OUT)  :: k(:)
+REAL(8), INTENT(OUT)  :: sum
+end subroutine assndx
 ! ./src/forcefield.F90 :
 subroutine forcefield_init(parini,atoms)
     use mod_parini, only: typ_parini
@@ -3208,15 +3208,6 @@ character(40):: filename
 end subroutine bin_read
 subroutine print_logo()
 end subroutine print_logo
-! ./src/minhopp_allocation.F90 :
-subroutine allocate_minhopp_arrays1(nproc)
-    integer, intent(in):: nproc
-end subroutine allocate_minhopp_arrays1
-subroutine allocate_minhopp_arrays2(nat,nproc)
-    integer, intent(in):: nat, nproc
-end subroutine allocate_minhopp_arrays2
-subroutine deallocate_minhopp_arrays
-end subroutine deallocate_minhopp_arrays
 ! ./src/minhopp.F90 :
 subroutine minimahopping(parini)
     use mod_parini, only: typ_parini
@@ -3371,6 +3362,15 @@ subroutine MPI_atom_arr_copy(nat,atoms_arr)
     integer,intent(in)::nat
     type(typ_atoms_arr),intent(inout):: atoms_arr
 end subroutine mpi_atom_arr_copy
+! ./src/minhopp_allocation.F90 :
+subroutine allocate_minhopp_arrays1(nproc)
+    integer, intent(in):: nproc
+end subroutine allocate_minhopp_arrays1
+subroutine allocate_minhopp_arrays2(nat,nproc)
+    integer, intent(in):: nat, nproc
+end subroutine allocate_minhopp_arrays2
+subroutine deallocate_minhopp_arrays
+end subroutine deallocate_minhopp_arrays
 ! ./src/minhopp_pot.F90 :
 subroutine setpot_init(parini,atoms_curr,paropt,paropt_prec)
     use mod_parini, only: typ_parini
@@ -4389,6 +4389,25 @@ subroutine add_repulsive_potential(parini,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
 end subroutine add_repulsive_potential
+! ./src/potential_BLJ_vc.F90 :
+subroutine init_lennardjones_vc(nat,sat)
+    integer, intent(in):: nat
+    character(5), intent(in):: sat(nat)
+    real(8), parameter:: alphalj=2.5d0
+end subroutine init_lennardjones_vc
+subroutine lennardjones_vc(iproc,nat,xred0,latvec,pressure,fxyz,celldv,stress,etot,enth)
+    integer, intent(in):: iproc, nat
+    real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3),rcut2(2,2)
+    real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol
+    real(8):: latvec(3,3),latvecinv(3,3),celldv(3,3),pressure,gradvol(3,3),stress(3,3),tmplat(3,3)
+end subroutine lennardjones_vc
+subroutine stress_volume_alborz(latvec,vol,pressure,stressvol)
+    real(8):: latvec(3,3),vol,stressvol(3,3),inv_latvec(3,3),pressure
+end subroutine stress_volume_alborz
+subroutine cell_vol(nat,latvec,vol)
+    integer:: nat
+    real(8):: latvec(3,3),vol,a(3,3)
+end subroutine cell_vol
 ! ./src/potential_BigDFT.F90 :
 subroutine init_potential_forces_bigdft(atoms_t)
     use mod_atoms, only: typ_atoms
@@ -4411,41 +4430,6 @@ subroutine get_output_bigdft(iproc,filename,nat,fat,epot,success)
     real(8):: fat(3,nat),epot
     logical:: success
 end subroutine get_output_bigdft
-! ./src/potential_BLJ_vc.F90 :
-subroutine init_lennardjones_vc(nat,sat)
-    integer, intent(in):: nat
-    character(5), intent(in):: sat(nat)
-    real(8), parameter:: alphalj=2.5d0
-end subroutine init_lennardjones_vc
-subroutine lennardjones_vc(iproc,nat,xred0,latvec,pressure,fxyz,celldv,stress,etot,enth)
-    integer, intent(in):: iproc, nat
-    real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3),rcut2(2,2)
-    real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol
-    real(8):: latvec(3,3),latvecinv(3,3),celldv(3,3),pressure,gradvol(3,3),stress(3,3),tmplat(3,3)
-end subroutine lennardjones_vc
-subroutine stress_volume_alborz(latvec,vol,pressure,stressvol)
-    real(8):: latvec(3,3),vol,stressvol(3,3),inv_latvec(3,3),pressure
-end subroutine stress_volume_alborz
-subroutine cell_vol(nat,latvec,vol)
-    integer:: nat
-    real(8):: latvec(3,3),vol,a(3,3)
-end subroutine cell_vol
-! ./src/potential_confinement.F90 :
-subroutine init_confinement_parser(parini)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(inout):: parini
-end subroutine init_confinement_parser
-subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: nat,iconf,iat
-real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
-real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
-end subroutine confinement_energy_forces
-subroutine conf_latforce(latvec,conf_dim,xred_point,xred_ppoint,str)
-real(8):: latvec(3,3),xred_point(3),xred_ppoint(3),str(3,3)
-integer:: conf_dim
-end subroutine conf_latforce
 ! ./src/potential_DFTB.F90 :
 subroutine init_potential_forces_dftb(atoms)
     use mod_atoms, only: typ_atoms
@@ -4505,39 +4489,6 @@ subroutine lenosky_tb(parini,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
 end subroutine lenosky_tb
-! ./src/potential_main.F90 :
-subroutine init_potential_forces(parini,atoms)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-end subroutine init_potential_forces
-subroutine cal_potential_forces(parini,atoms)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-end subroutine cal_potential_forces
-subroutine final_potential_forces(parini,atoms)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-end subroutine final_potential_forces
-subroutine remove_drift(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-end subroutine remove_drift
-! ./src/potential_main_vc.F90 :
-subroutine vc_init_potential_forces(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-end subroutine vc_init_potential_forces
-subroutine cal_potential_forces_vc(iproc,nat,rat,cellvec,pressure,fat,celldv,stress,epot,enth)
-    integer, intent(in):: iproc, nat
-    real(8), intent(in):: rat(3,nat), cellvec(3,3), pressure
-    real(8), intent(inout):: fat(3,nat), celldv(3,3), stress(3,3), epot, enth
-end subroutine cal_potential_forces_vc
 ! ./src/potential_MPMD.F90 :
 subroutine init_potential_forces_mpmd(atoms_t)
     use mod_atoms, only: typ_atoms
@@ -4607,23 +4558,6 @@ subroutine cal_potential_forces_qsc(atoms)
 end subroutine cal_potential_forces_qsc
 subroutine final_potential_forces_qsc
 end subroutine final_potential_forces_qsc
-! ./src/potential_sec_main.F90 :
-subroutine init_potential_forces_sec(parini,atoms)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-end subroutine init_potential_forces_sec
-subroutine cal_potential_forces_sec(parini,atoms)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-end subroutine cal_potential_forces_sec
-subroutine final_potential_forces_sec(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(in):: atoms
-end subroutine final_potential_forces_sec
 ! ./src/potential_SIESTA.F90 :
 subroutine init_cal_potential_forces_siesta(atoms_t)
     use mod_atoms, only: typ_atoms
@@ -4658,45 +4592,77 @@ subroutine get_output_vasp_geopt_alborz(filename1,filename2,nat,latvec,xred,fcar
     real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
     logical:: success
 end subroutine get_output_vasp_geopt_alborz
+! ./src/potential_confinement.F90 :
+subroutine init_confinement_parser(parini)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(inout):: parini
+end subroutine init_confinement_parser
+subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: nat,iconf,iat
+real(8):: xred(3,nat),latvec(3,3),energy,forces(3,nat),dist,dist_av,nvec(3,3),point0(3),point(3)
+real(8):: xcart(3,nat),tt,flat(3,3),xred_ppoint(3),str(3,3),strten(6),vol,fcart_all(3),ft(3)
+end subroutine confinement_energy_forces
+subroutine conf_latforce(latvec,conf_dim,xred_point,xred_ppoint,str)
+real(8):: latvec(3,3),xred_point(3),xred_ppoint(3),str(3,3)
+integer:: conf_dim
+end subroutine conf_latforce
+! ./src/potential_main.F90 :
+subroutine init_potential_forces(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+end subroutine init_potential_forces
+subroutine cal_potential_forces(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+end subroutine cal_potential_forces
+subroutine final_potential_forces(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+end subroutine final_potential_forces
+subroutine remove_drift(atoms)
+    use mod_atoms, only: typ_atoms
+    type(typ_atoms), intent(inout):: atoms
+end subroutine remove_drift
+! ./src/potential_main_vc.F90 :
+subroutine vc_init_potential_forces(atoms)
+    use mod_atoms, only: typ_atoms
+    type(typ_atoms), intent(inout):: atoms
+end subroutine vc_init_potential_forces
+subroutine cal_potential_forces_vc(iproc,nat,rat,cellvec,pressure,fat,celldv,stress,epot,enth)
+    integer, intent(in):: iproc, nat
+    real(8), intent(in):: rat(3,nat), cellvec(3,3), pressure
+    real(8), intent(inout):: fat(3,nat), celldv(3,3), stress(3,3), epot, enth
+end subroutine cal_potential_forces_vc
+! ./src/potential_sec_main.F90 :
+subroutine init_potential_forces_sec(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+end subroutine init_potential_forces_sec
+subroutine cal_potential_forces_sec(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+end subroutine cal_potential_forces_sec
+subroutine final_potential_forces_sec(atoms)
+    use mod_atoms, only: typ_atoms
+    type(typ_atoms), intent(in):: atoms
+end subroutine final_potential_forces_sec
 ! ./src/processors.F90 :
 subroutine initprocessors
 end subroutine initprocessors
 subroutine finalizeprocessors
 end subroutine finalizeprocessors
-! ./src/saddle_1s_dimer.F90 :
-subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,paropt)
-    use mod_parini, only: typ_parini
-    use mod_opt, only: typ_paropt
-    use mod_atoms, only: typ_atoms, typ_file_info
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iproc, nat, ndof !number coordinates
-    type(typ_atoms), intent(inout):: atoms_s
-    real(8), intent(inout):: rat(3,nat) !positions
-    real(8), intent(out):: fat(3,nat) !forces
-    real(8), intent(out):: uvn(3,nat) !unit vector along the dimer, \hat{n}.
-    real(8), intent(out):: epot !potential energy 
-    real(8), intent(out):: curv !curvature
-    type(typ_paropt), intent(inout):: paropt
-end subroutine dimmethimproved
-subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,maxitlc,curv0,curv,nw)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iproc, nat, ndof, maxitlc, nw
-    type(typ_atoms), intent(inout):: atoms_s
-    real(8), intent(in):: rat(3,nat), fat(3,nat), angletol
-    real(8), intent(inout):: uvn(3,nat), curv0, curv
-end subroutine lowestcurvature
-subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iproc, nat, ndof
-    real(8), intent(in):: rat(3,nat), fat(3,nat)
-    real(8), intent(inout):: uvn(3,nat), curv0, curv, fnrm
-    type(typ_atoms), intent(inout):: atoms_s
-    real(8), allocatable:: uvp(:,:) !unit vector normal to uvn ie. \hat{\phi} 
-end subroutine rotatedimer
 ! ./src/saddle_1s.F90 :
 subroutine surface_walking(parini)
     use mod_parini, only: typ_parini
@@ -4731,6 +4697,40 @@ subroutine alongnegcurvature(iproc,atoms,uvn,c)
     real(8), intent(in):: uvn(3,atoms%nat) !unit vector along the dimer, \hat{n}.
     real(8), intent(inout):: c !curvature
 end subroutine alongnegcurvature
+! ./src/saddle_1s_dimer.F90 :
+subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,paropt)
+    use mod_parini, only: typ_parini
+    use mod_opt, only: typ_paropt
+    use mod_atoms, only: typ_atoms, typ_file_info
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iproc, nat, ndof !number coordinates
+    type(typ_atoms), intent(inout):: atoms_s
+    real(8), intent(inout):: rat(3,nat) !positions
+    real(8), intent(out):: fat(3,nat) !forces
+    real(8), intent(out):: uvn(3,nat) !unit vector along the dimer, \hat{n}.
+    real(8), intent(out):: epot !potential energy 
+    real(8), intent(out):: curv !curvature
+    type(typ_paropt), intent(inout):: paropt
+end subroutine dimmethimproved
+subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,maxitlc,curv0,curv,nw)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iproc, nat, ndof, maxitlc, nw
+    type(typ_atoms), intent(inout):: atoms_s
+    real(8), intent(in):: rat(3,nat), fat(3,nat), angletol
+    real(8), intent(inout):: uvn(3,nat), curv0, curv
+end subroutine lowestcurvature
+subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iproc, nat, ndof
+    real(8), intent(in):: rat(3,nat), fat(3,nat)
+    real(8), intent(inout):: uvn(3,nat), curv0, curv, fnrm
+    type(typ_atoms), intent(inout):: atoms_s
+    real(8), allocatable:: uvp(:,:) !unit vector normal to uvn ie. \hat{\phi} 
+end subroutine rotatedimer
 ! ./src/saddle_1s_optimizer.F90 :
 subroutine optimizer_saddle(parini,iproc,atoms_s,n,nr,x,f,epot,paropt,uvn)
     use mod_parini, only: typ_parini
