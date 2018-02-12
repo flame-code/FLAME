@@ -48,6 +48,7 @@ module mod_electrostatics
         !if or mod for the charges that leaks out the cell and needed to 
         !be wrapped around.
         integer:: ngpztot
+        real(8):: efield !external electric field
         real(8):: hgx, hgy, hgz !grid spacing in x,y,z directions.
         real(8):: vu, vl !voltage on upper and lower plane.
         real(8):: cell(3) !cell size in x,y,z direction.

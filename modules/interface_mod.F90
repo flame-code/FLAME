@@ -2019,8 +2019,10 @@ subroutine ps2dp1df_destruction(poisson_p3d)
     use mod_electrostatics, only: typ_poisson_p3d
     type(typ_poisson_p3d), intent(inout):: poisson_p3d
 end subroutine ps2dp1df_destruction
-subroutine calculate_potener_pot(poisson_p3d,cell,hx,hy,hz,epot,beta)
+subroutine calculate_potener_pot(parini,poisson_p3d,cell,hx,hy,hz,epot,beta)
+    use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson_p3d
+    type(typ_parini), intent(in):: parini
     type(typ_poisson_p3d), intent(inout):: poisson_p3d
     real(8):: cell(3) !cell array contains size of the simulation box.
     real(8):: hx, hy, hz

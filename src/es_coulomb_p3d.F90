@@ -80,7 +80,6 @@ subroutine destruct_ewald_p3d(parini,atoms,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
-    use mod_potential, only: bias  
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -97,7 +96,7 @@ subroutine destruct_ewald_p3d(parini,atoms,ewald_p3d)
     endif
     call f_free(ewald_p3d%poisson_p3d%rho)
     call f_free(ewald_p3d%poisson_p3d%pot)
-    if(trim(bias)=='yes') then
+    if(trim(parini%bias_type)=='p3dbias') then
      !   deallocate(ewald_p3d%poisson_p3d%pots)
     endif
     call f_free(ewald_p3d%mboundg)
@@ -108,7 +107,6 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     use mod_interface
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: bias 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -154,7 +152,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     !write(*,*) 'totrho',totrho
     !-----------------------------------------------------------------------
     !pot=0.d0
-    call calculate_potener_pot(ewald_p3d%poisson_p3d,ewald_p3d%cell,ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz,epotlong,beta)
+    call calculate_potener_pot(parini,ewald_p3d%poisson_p3d,ewald_p3d%cell,ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz,epotlong,beta)
     call cpu_time(time(3))
     do igpz=1,ewald_p3d%poisson_p3d%ngpz
     do igpy=1,ewald_p3d%poisson_p3d%ngpy
@@ -168,12 +166,11 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     !call shortenergy(atoms,ewald_p3d%linked_lists,ewald_p3d%spline,ewald_p3d%alpha,ewald_p3d%cell,epotshort)
     call cpu_time(time(5))
     epotplane=0.d0
-    if (trim(bias)=='yes') then
+    if(trim(parini%bias_type)=='p3dbias') then
         call bias_potener_forces(parini,ewald_p3d,atoms,epotplane) 
-
     end if
 
-    if (trim(parini%bias_field)=='yes') then
+    if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
         call bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane) 
     endif
     call cpu_time(time(6))

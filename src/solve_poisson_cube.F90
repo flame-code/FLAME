@@ -91,7 +91,7 @@ subroutine solve_poisson(parini)
     enddo
     !t1=t1*(2*pi)/(cell(1)*cell(2))
     write(*,*) 't1=',t1
-    call calculate_potener_pot(poisson_p3d,cell,poisson_p3d%hx,poisson_p3d%hy,poisson_p3d%hz,epot)
+    call calculate_potener_pot(parini,poisson_p3d,cell,poisson_p3d%hx,poisson_p3d%hy,poisson_p3d%hz,epot)
     call cube_write('pot_p3d.cube',atoms,poisson_p3d%typ_poisson,'pot')
     call ps2dp1df_destruction(poisson_p3d)
     deallocate(poisson_p3d%rho,stat=istat)

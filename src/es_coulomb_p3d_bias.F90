@@ -2,7 +2,7 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
     use mod_interface
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: bias, potential 
+    use mod_potential, only: potential 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -24,7 +24,7 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
     pi=4.d0*atan(1.d0)
     epotplane=0.d0
     beta = ewald_p3d%poisson_p3d%beta
-    if (trim(bias)=='yes') then
+    if(trim(parini%bias_type)=='p3dbias') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
         d= ewald_p3d%cell(3)
@@ -912,7 +912,7 @@ subroutine surface_charge(parini,ewald_p3d,pot_short,vl,vu)
   !  enddo
     t=t*ewald_p3d%hgx*ewald_p3d%hgy
     tt=tt*ewald_p3d%hgx*ewald_p3d%hgy
-    if (trim(parini%bias_field)=='yes') then
+    if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
         t =t -E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
         tt=tt+E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
     endif
@@ -978,7 +978,6 @@ subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
     use mod_interface
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: bias 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
