@@ -1,0 +1,24 @@
+main:
+    task : single_point
+    types : Na Cl
+
+potential:
+    potential : forcefield
+    component_ff : coulomb
+    bias : yes
+    cal_charge : .true.
+    ewald:
+        hx : 0.7
+        hz : 0.5
+        alpha : 2.26767135342053
+        rcut : 15.684726861158667
+        rgcut : 9.0
+        nsp : 10000
+        plane_voltageu : 0.036749323858
+        plane_voltagel : 0.000000000000
+        ewald : .true.
+
+single_point:
+    print_force : .true.
+    format : '(a5,2x,3f12.8,2x,3l1)'
+

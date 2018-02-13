@@ -24,6 +24,8 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
     pi=4.d0*atan(1.d0)
     epotplane=0.d0
     beta = ewald_p3d%poisson_p3d%beta
+    ngpx= ewald_p3d%poisson_p3d%ngpx
+    ngpy= ewald_p3d%poisson_p3d%ngpy
     if (trim(bias)=='yes') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
@@ -41,6 +43,8 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
         !write(89,*)vu , beta, charge0
         !!!!!!  why ????
         write(*,*)'dipole = ', dipole/(2*pi)
+        write(*,*)'real pot = ', beta/(ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy)+vl,&
+                                -beta/(ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy)+vu
         dipole_correction = 3/(4*pi)*dipole**2/(ewald_p3d%cell(3)*ewald_p3d%cell(2)*ewald_p3d%cell(1))
 !        write(*,*)'dipole correction ', dipole_correction
 !        write(*,*)'pot correction ', charge0*(vu-vl)
@@ -85,16 +89,27 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
             call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
             deallocate(pots_layer)
         endif
-        !   do iy=1,ewald_p3d%poisson_p3d%ngpy
-        !   do ix=1,ewald_p3d%poisson_p3d%ngpx
-        !   do iz=ewald_p3d%poisson_p3d%npl,ewald_p3d%poisson_p3d%npu
-        !       write(55,*)  (iz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz, ewald_p3d%poisson_p3d%pots(ix,iy,iz)
-        !   enddo 
-        !       write(55,*)   
-        !   enddo 
-        !   enddo 
+           !     open(unit=55, file="pots.txt" )
+           !        do iy=1,min(9,ewald_p3d%poisson_p3d%ngpy)
+           !        do ix=1,min(9,ewald_p3d%poisson_p3d%ngpx)
+           !        do iz=ewald_p3d%poisson_p3d%npl,ewald_p3d%poisson_p3d%npu
+           !            write(55,*)  (iz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz, ewald_p3d%poisson_p3d%pots(ix,iy,iz)
+           !        enddo 
+           !            write(55,*)   
+           !        enddo 
+           !        enddo 
+           !     close(55)
+           !     open(unit=66, file="pot_up.txt" )
+           !        do iy=1,ewald_p3d%poisson_p3d%ngpy
+           !        do ix=1,ewald_p3d%poisson_p3d%ngpx
+           !            iz=ewald_p3d%poisson_p3d%npu
+           !            write(66,*)   ewald_p3d%poisson_p3d%pots(ix,iy,iz)
+           !        enddo 
+           !            write(66,*)   
+           !        enddo 
+           !     close(66)
         epotplane = epotplane+dipole_correction
-   !     deallocate(ewald_p3d%poisson_p3d%pots)
+        deallocate(ewald_p3d%poisson_p3d%pots)
     end if
 end subroutine bias_potener_forces
 !*****************************************************************************************
@@ -646,7 +661,7 @@ end subroutine sollaplaceq
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: tfx,tfy,tfz ,tmp
     real(8):: fatp(3,atoms%nat) 
-    nlgx=9;  nlgy=9; nlgz=8
+    nlgx=9;  nlgy=9; nlgz=9
     ngpx=ewald_p3d%poisson_p3d%ngpx
     ngpy=ewald_p3d%poisson_p3d%ngpy
     ngpz=ewald_p3d%poisson_p3d%ngpz
@@ -996,11 +1011,18 @@ subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
+    real(8):: pot_correction  
 
+    beta = ewald_p3d%poisson_p3d%beta
     pi=4.d0*atan(1.d0)
+    ngpz=ewald_p3d%poisson_p3d%ngpz
+    ngpx= ewald_p3d%poisson_p3d%ngpx
+    ngpy= ewald_p3d%poisson_p3d%ngpy
     epotplane=0.d0
-        vl=parini%vl_ewald
-        vu=parini%vu_ewald
+        pot_correction= beta/(ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy)
+        vl=parini%vl_ewald+ pot_correction
+        vu=parini%vu_ewald- pot_correction
+        write(*,*)'real pot = vu , vl ',vu,vl 
         d = ewald_p3d%cell(3)
         E =- (vu-vl)/d
         write(*,*)'--------------------------------------------------------'
@@ -1011,8 +1033,6 @@ subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
         dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
         charge0= -dipole/(2*pi*d)
         charge = -dipole/(2*pi*d)+c*(vu-vl)
-        !write(88,*)vu , beta, charge
-        !write(89,*)vu , beta, charge0
         write(*,*)'dipole = ', dipole/(2*pi)
         write(*,*)'charge on upper  plate  ', charge
         ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
