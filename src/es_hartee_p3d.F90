@@ -41,17 +41,19 @@ subroutine ps2dp1df_destruction(poisson_p3d)
     endif
 end subroutine ps2dp1df_destruction
 !*****************************************************************************************
-subroutine calculate_potener_pot(poisson_p3d,cell,hx,hy,hz,epot,beta)
+subroutine calculate_potener_pot(parini,poisson_p3d,cell,hx,hy,hz,epot,beta)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson_p3d
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_poisson_p3d), intent(inout):: poisson_p3d
     real(8):: cell(3) !cell array contains size of the simulation box.
     real(8):: hx, hy, hz
     real(8):: epot
     real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
     !local variables
-    real(8):: valuengpxyinv
+    real(8):: valuengpxyinv, ext_pot, efield
     integer:: igpx, igpy, igpz
     !integer, save:: icall=0
     !icall=icall+1
@@ -66,17 +68,49 @@ subroutine calculate_potener_pot(poisson_p3d,cell,hx,hy,hz,epot,beta)
     else
         call solsyslinequ(poisson_p3d,hz,cell)
     endif
-    do igpz=1,poisson_p3d%ngpz
-        call dfftw_execute(poisson_p3d%plan_b(igpz))
-    enddo
     valuengpxyinv=1.d0/real(poisson_p3d%ngpx*poisson_p3d%ngpy,8)
     !DSCAL cannot be used due the first dimension of pot which is ngpx+2 NOT ngpx
     !call DSCAL(poisson_p3d%ngpx*poisson_p3d%ngpy*poisson_p3d%ngpz,valuengpxyinv,poisson_p3d%pot,1)
-    epot=0.d0
+    do igpz=1,poisson_p3d%ngpz
+        call dfftw_execute(poisson_p3d%plan_b(igpz))
+    enddo
     do igpz=1,poisson_p3d%ngpz
         do igpy=1,poisson_p3d%ngpy
             do igpx=1,poisson_p3d%ngpx
                 poisson_p3d%pot(igpx,igpy,igpz)=poisson_p3d%pot(igpx,igpy,igpz)*valuengpxyinv
+            enddo
+        enddo
+    enddo
+    if((.not. poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
+        do igpz=1,poisson_p3d%ngpz
+            !igpz=1 is not necessarily z=0, now in this way external potential is not
+            !zero at z=0 but since shift the potential, such that external potential
+            !to be zero at z=0, has no effect on energy, we keep it this way.
+            ext_pot=parini%efield*igpz*hz
+            do igpy=1,poisson_p3d%ngpy
+                do igpx=1,poisson_p3d%ngpx
+                    poisson_p3d%pot(igpx,igpy,igpz)=poisson_p3d%pot(igpx,igpy,igpz)+ext_pot
+                enddo
+            enddo
+        enddo
+    elseif((.not. poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
+        efield=0.d0 !to be corrected by Samare
+        do igpz=1,poisson_p3d%ngpz
+            !igpz=1 is not necessarily z=0, now in this way external potential is not
+            !zero at z=0 but since shift the potential, such that external potential
+            !to be zero at z=0, has no effect on energy, we keep it this way.
+            ext_pot=efield*igpz*hz
+            do igpy=1,poisson_p3d%ngpy
+                do igpx=1,poisson_p3d%ngpx
+                    poisson_p3d%pot(igpx,igpy,igpz)=poisson_p3d%pot(igpx,igpy,igpz)+ext_pot
+                enddo
+            enddo
+        enddo
+    endif
+    epot=0.d0
+    do igpz=1,poisson_p3d%ngpz
+        do igpy=1,poisson_p3d%ngpy
+            do igpx=1,poisson_p3d%ngpx
                 epot=epot+poisson_p3d%pot(igpx,igpy,igpz)*poisson_p3d%rho(igpx,igpy,igpz)
             enddo
         enddo

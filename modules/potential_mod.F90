@@ -10,7 +10,6 @@ module mod_potential
     real(8):: fcalls_sec
     character(50):: potential='unknown'
     character(50):: potential_sec='unknown'
-    character(50):: bias='no'
     !selected potentials
     real(8):: cell(3)
     integer:: ntypat

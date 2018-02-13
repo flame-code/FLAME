@@ -5,7 +5,6 @@ main:
 potential:
     potential : forcefield
     component_ff : coulomb
-    bias : yes
     cal_charge : .true.
     ewald:
         hx : 0.7
@@ -17,6 +16,7 @@ potential:
         plane_voltageu : 0.036749323858
         plane_voltagel : 0.000000000000
         ewald : .true.
+        bias_type: p3dbias
 
 single_point:
     print_force : .true.

@@ -18,6 +18,7 @@ module mod_electrostatics
         real(8), allocatable:: pots(:,:,:) !surface potential array.
         integer:: npl, npu
         real(8):: beta 
+        logical:: point_particle= .false.
 #if defined(HAVE_BPS)
     type(coulomb_operator):: pkernel
 #endif
@@ -27,7 +28,8 @@ module mod_electrostatics
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2
     end type typ_poisson_p3d
-    type typ_ewald
+    !type, extends(typ_ewald):: typ_ewald_p3d
+    type:: typ_ewald_p3d
         !bounds to assign charge density to grid points within a shpere.
         integer, allocatable:: mboundg(:,:,:)
         integer:: nbgpx !number of bound grid points in x direction.
@@ -40,8 +42,6 @@ module mod_electrostatics
         !real(8):: rcut !cutoff radius in real space.
         real(8):: alpha =-1 !splitting ewald parameter.
         real(8):: rgcut
-    end type typ_ewald
-    type, extends(typ_ewald):: typ_ewald_p3d
         !ngpztot is length of the third subscript of array pot which is bigger 
         !than needed for calculation of potential and this bigger value is used 
         !because pot array is used as a dummy array in two subroutines 
@@ -49,6 +49,7 @@ module mod_electrostatics
         !if or mod for the charges that leaks out the cell and needed to 
         !be wrapped around.
         integer:: ngpztot
+        real(8):: efield !external electric field
         real(8):: hgx, hgy, hgz !grid spacing in x,y,z directions.
         real(8):: vu, vl !voltage on upper and lower plane.
         real(8):: cell(3) !cell size in x,y,z direction.

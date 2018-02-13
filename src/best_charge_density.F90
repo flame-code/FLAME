@@ -25,69 +25,107 @@ subroutine best_charge_density_rho(parini)
     type(typ_atoms):: atoms
     type(typ_cent):: cent
     type(typ_ann_arr):: ann_arr
-    integer:: istat, igpx, igpy, igpz, iat, nx ,ny,nz,iter,iter_max,gweiat,i,j,k,jj,lcn,ierr,lwork ! lcn = linear combinarion number
+    integer:: typ_at,istat, igpx, igpy, igpz, iat, nx ,ny,nz,iter,iter_max,gweiat,i,j,k,jj,lcn,ierr,lwork, ss, Ne! lcn = linear combinarion number
     real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi,h,rho_err,hx,hy,hz
     real(8):: ehartree,rmse,SDA,dft_ener,cent_ener,ener_err,force_err,ener_err_old,coeff,w
-    real(8),allocatable:: dft_rho(:,:,:), cent_rho(:,:,:),cent_rho_1(:,:,:),cent_rho_2(:,:,:),weight(:,:,:),work(:),EE(:,:),eig(:)
-    real(8),allocatable::A(:,:), Q(:,:), qpar(:,:), apar(:,:), qtemp(:)
+    real(8),allocatable:: dft_rho(:,:,:), cent_rho(:,:,:),cent_rho_1(:,:,:),cent_rho_a_par(:,:,:),cent_rho_q_par(:,:,:),work(:),EE(:,:),eig(:)
+    real(8),allocatable:: A(:,:), Q(:,:), At(:,:), Qt(:,:), qpar(:,:), apar(:,:), qpar_t(:,:),qpar_tmp(:,:), apar_t(:,:), qtemp(:), rat_t(:,:)
     real(8),allocatable:: dft_fat(:,:),cent_fat(:,:)
     real(8):: sd_s,err_fdm,err_cent,volinv,err
-    real(8):: q_max,a_max
-    real(8):: errmax, peak, c1, d1, temp1,cv1,cv2,cv3 , Ne
-    !open(unit=1370,file='param.txt')
+    real(8):: q_max,a_max,qnrm,dft_q,gtot
+    real(8):: errmax, peak, c1, d1,temp1,cv1,cv2,cv3,peakx,peaky,peakz,errmax_old
+    integer, allocatable :: t_num(:)
+    logical :: esc
+    real(8) :: x_at , y_at , z_at , at_zat , t
+    integer :: at_range ,xg_at , yg_at , zg_at , n_at
+    open(unit=1370,file='plot')
+    
+    open(unit=1,file='rhoerr')
+    open(unit=2,file='errmax')
+    open(unit=3,file='enererr')
+    open(unit=4,file='forceerr')
+    open(unit=5,file='peakloc')
+
     call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
-    
-    open(unit=1377,file='param_2.txt')
+    open(unit=1377,file='params.txt')
     pi=4.d0*atan(1.d0)
-    read(1377,*)
+    read(1377,*) !Number of STO-NG's N
     read(1377,*) lcn
-    allocate(Q(lcn,atoms%nat),A(lcn,atoms%nat))
-    read(1377,*)
-    do i = 1 , lcn
-        read(1377,*) A(i,:) , Q(i,:)
+    read(1377,*) !Number of atoms types
+    read(1377,*) typ_at
+    allocate(t_num(0:typ_at),Qt(lcn,typ_at),At(lcn,typ_at),rat_t(1:3,typ_at),Q(1:lcn,1:atoms%nat),A(1:lcn,1:atoms%nat))
+    t_num(0) = 0
+    read(1377,*) !Number of each atom type Number
+    do i = 1 , typ_at
+        read(1377,*) t_num(i)
     end do
-    read(1377,*)
+    read(1377,*) !Q's and alpha's of atom types
+    do j = 1 , typ_at
+        do i = 1 ,lcn 
+            read(1377,*) Qt(i,j) , At(i,j)
+        end do
+    end do
+    read(1377,*) !Steepest descent step
     read(1377,*) sd_s
-    read(1377,*)
+    read(1377,*) !Minimum error to be reached
     read(1377,*) err
-    read(1377,*)
+    read(1377,*) !Number of Electrons for Single Atoms
     read(1377,*) Ne
-
-    write(*,'(a,i,3es13.6)') "params q_max and LCN : ",lcn,A(:,1)
-    write(*,'(a,es13.6)') "params max gw : ",sum(Q(:,1))
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!dft part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    write(*,'(a,es13.6,i)') "params sd_s and # of atoms : ",sd_s,atoms%nat
+    read(1377,*) !to be ploted atom number
+    read(1377,*) n_at
+    ss=0
+    do j = 1 , typ_at
+        ss = ss + t_num(j-1)
+        rat_t(1:3,j) = atoms%rat(1:3,ss+1)
+    end do
     nx=cent%ewald_p3d%poisson_p3d%ngpx
     ny=cent%ewald_p3d%poisson_p3d%ngpy
     nz=cent%ewald_p3d%poisson_p3d%ngpz
     cv1=atoms%cellvec(1,1)
     cv2=atoms%cellvec(2,2)
     cv3=atoms%cellvec(3,3)
-    !write(30,*) cv1,cv2,cv3 
     volinv = (cv1*cv2*cv3)/(nx*ny*nz)
-    !invvol = 1.d0/(3.d0*atoms%nat)
     cent%ewald_p3d%hgx=cent%ewald_p3d%poisson_p3d%hx
     cent%ewald_p3d%hgy=cent%ewald_p3d%poisson_p3d%hy
     cent%ewald_p3d%hgz=cent%ewald_p3d%poisson_p3d%hz
     hx=cent%ewald_p3d%poisson_p3d%hx
     hy=cent%ewald_p3d%poisson_p3d%hy
     hz=cent%ewald_p3d%poisson_p3d%hz
-    allocate(cent%ewald_p3d%poisson_p3d%pot(nx,ny,nz),stat=istat)
-    allocate(dft_rho(nx,ny,nz),weight(nx,ny,nz),dft_fat(1:3,1:atoms%nat),cent%gwit(1:atoms%nat))
+    x_at = atoms%rat(1,n_at) 
+    y_at = atoms%rat(2,n_at)
+    z_at = atoms%rat(3,n_at)
+    xg_at = int(x_at/hx)
+    yg_at = int(y_at/hy)
+    zg_at = int(z_at/hz) 
+    write(*,'(a,3i4)') "atom_grid",xg_at,yg_at,zg_at
+    allocate(cent%ewald_p3d%poisson_p3d%pot(nx,ny,nz))
     cent%ewald_p3d%poisson_p3d%rho=-1.d0*cent%ewald_p3d%poisson_p3d%rho
+    allocate(cent%gwit(1:atoms%nat))
+    allocate(dft_rho(nx,ny,nz),dft_fat(1:3,1:atoms%nat))
     dft_rho = cent%ewald_p3d%poisson_p3d%rho
-    w=abs((volinv*sum(dft_rho)))
-    !write(*,*)"w ", w
-    w = 1.d0/Ne
-    !stop 'AAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-    cent%gwit(:) = 1.3d0
-    atoms%zat(:) = 1.d0
+    peak = maxval(abs(dft_rho))
+    w = 1.d0/(Ne+0.d0)
+    cent%gwit(:) = 0.5d0
+    read(1377,*)!atoms z_at
+    at_range = atoms%nat/typ_at
+    do i = 1 , typ_at
+        read(1377,*) at_zat
+        atoms%zat(((i-1)*at_range)+1:at_range*i) = at_zat ! this will not be OK
+                                                          ! If a molecule
+                                                          ! do not have same
+                                                          ! number of each atom 
+                                                          ! for example :
+                                                          ! SrTiO_3
+    end do
+    write(*,*) "ZAT" , atoms%zat
+    a_max = maxval(at)
+    cent%ewald_p3d%rgcut=8.d0*a_max !ask Dr. Ghasemi if it's OK !
     atoms%boundcond='bulk'   
-    cent%ewald_p3d%rgcut=6.d0*a_max !ask Dr. Ghasemi if its OK !
     dft_fat = 0.d0
     dft_ener= 0.d0 
+    cent%ewald_p3d%poisson_p3d%pot = 0.d0
+    atoms%fat = 0.d0 
     call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
     call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
     dft_ener = ehartree 
@@ -95,25 +133,27 @@ subroutine best_charge_density_rho(parini)
         call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
         dft_fat = atoms%fat
     end if
+    write(21,*) atoms%nat 
+    write(21,*) atoms%rat
+    write(21,*) atoms%cellvec
+    write(21,*) atoms%zat
+    write(21,*) cent%gwit
+    write(21,*) cent%ewald_p3d%rgcut
+    write(21,*) nx,ny,nz
+    write(21,*) atoms%fat
+    write(21,*) ehartree
+    write(21,*) cent%ewald_p3d%poisson_p3d%pot(:,ny/2,nz/2) 
+    write(21,*) "------------------------------------------------------------"
     call destruct_ewald_bps(cent%ewald_p3d)
-    write(*,'(a,es14.6,3es14.6)') "DFT" , dft_ener , dft_fat
-    !deallocate(cent%ewald_p3d%poisson_p3d%pot)
+    write(*,'(a,es14.6,3es14.6)') "DFT1" , dft_ener , dft_fat
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!cent part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    
     allocate(cent_rho(nx,ny,nz))
     allocate(cent_rho_1(nx,ny,nz))
-    allocate(cent_rho_2(nx,ny,nz))
-    !allocate(cent%ewald_p3d%poisson_p3d%pot(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz),stat=istat)
-    allocate(qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat))
+    allocate(cent_rho_a_par(nx,ny,nz))
+    allocate(cent_rho_q_par(nx,ny,nz))
+    allocate(qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat),qpar_t(1:lcn,1:typ_at),qpar_tmp(1:lcn,1:typ_at),apar_t(1:lcn,1:typ_at))
     allocate(cent_fat(1:3,1:atoms%nat))
-    !**************************************************
-    
-    !do i = 1 , lcn
-    !    Q(i,1:atoms%nat)=q_max/(i+0.d0)
-    !    A(i,1:atoms%nat)=a_max/(i+0.d0)
-    !end do
-    !A(atoms%nat/2:atoms%nat) = a12
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!SD part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !eig_part!  !*************************eig_part********************************************
   !eig_part!  allocate(qtemp(atoms%nat))
   !eig_part!  qtemp(1:atoms%nat) = 1.d0
@@ -140,19 +180,47 @@ subroutine best_charge_density_rho(parini)
   !eig_part!  write(*,'(a,i4,i4,8f13.8)')"eig ",iter,ierr,eig(1:atoms%nat) 
     !*********************eig_part************************************************
     allocate(qtemp(1:atoms%nat))
-    qtemp = 1.d0 
+    qtemp = 1.d0
+
+    do i = 1 , lcn
+        ss=0
+        do j = 1 , typ_at
+            ss = ss + t_num(j-1)
+            Q(i,ss+1:t_num(j)+ss) = Qt(i,j)
+            A(i,ss+1:t_num(j)+ss) = At(i,j)
+        end do
+    end do
+    
+    dft_q = volinv*sum(dft_rho)
+    qnrm = (dft_q+0.d0)/(sum(Q(1:lcn,1:atoms%nat)))
+    Q(1:lcn,1:atoms%nat) = Q(1:lcn,1:atoms%nat)*qnrm
+    
+    do i = 1 , lcn
+        ss = 0
+        do j = 1 , typ_at
+            ss = ss + t_num(j-1)
+            qt(i,j)=q(i,1+ss)
+            at(i,j)=a(i,1+ss)
+        end do
+    end do
+    
     do iter=1,huge(iter_max)
+        a_max = maxval(at)
+        cent%ewald_p3d%rgcut=8.d0*a_max !ask Dr. Ghasemi if it's OK !
+        write(*,*) "rgcut" , cent%ewald_p3d%rgcut
         cent%ewald_p3d%poisson_p3d%rho = 0.d0
         cent%ewald_p3d%poisson_p3d%pot = 0.d0
-        !atoms%boundcond='bulk'
         do i = 1 , lcn
             if (i==1) then         
-                call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+                call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho,cent_rho_q_par,cent_rho_a_par)
             else
-                call gauss_grid(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+                call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho,cent_rho_q_par,cent_rho_a_par)
             end if
         end do
         cent_rho = cent%ewald_p3d%poisson_p3d%rho
+        inquire(file='EXIT',exist=esc)
+        if(esc) exit !to be moved after calling gauess grid
+        write(*,*) "cent_rho" , volinv*sum(cent_rho) , volinv*sum(dft_rho)
         atoms%fat = 0.d0
         cent_fat = 0.d0
         call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
@@ -163,21 +231,35 @@ subroutine best_charge_density_rho(parini)
             cent_fat = atoms%fat
         end if
         call destruct_ewald_bps(cent%ewald_p3d)
+        write(66,'(i4, a)') iter ,"  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-"
         do i = 1 , atoms%nat
+            do j =1 , 3 
+                write(66,'(i4,3es14.6)') i,dft_fat(j,i),abs(dft_fat(j,i)-cent_fat(j,i)),cent_fat(j,i)-dft_fat(j,i)
+            end do
+        end do
+        do i = 1 , typ_at
             do j = 1 , lcn
-                call gauss_grid(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,i),atoms%cellvec,qtemp(i),A(j,i),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
-                cent_rho_1 = cent%ewald_p3d%poisson_p3d%rho
-                qpar(j,i) = 2.d0*volinv*sum(cent_rho_1*(cent_rho-dft_rho))
+                call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,1,rat_t(1:3,i),atoms%cellvec,Qt(j,i),At(j,i),cent%ewald_p3d%rgcut,nx,ny,nz,cent_rho_1, cent_rho_q_par, cent_rho_a_par)
+                cent_rho_1 = 0.d0
+                qpar_t(j,i) = 2.d0*volinv*sum(cent_rho_q_par*(cent_rho-dft_rho))
+                apar_t(j,i) = 2.d0*volinv*sum(cent_rho_a_par*(cent_rho-dft_rho))
+                write(*,'(a,i4,i4,3es14.6)') "par_t typ lcn qpar apar",i,j,qpar_t(j,i),apar_t(j,i)!,qpar_tmp(j,i)
+                write(*,*) "par_t ","___________"
             end do 
-        end do 
-        !rho_err = sum((cent_rho-dft_rho)**2)*invvol
-        !rmse = sqrt(rho_err)
-        !!ener_err_old = ener_err
+            write(*,*) "par_t ------------------------------------------------"
+        end do
+        do i = 1 , lcn
+            ss = 0
+            do j = 1 , typ_at
+                ss = ss + t_num(j-1)
+                qpar(i,1+ss:t_num(j)+ss) = qpar_t(i,j)
+                apar(i,1+ss:t_num(j)+ss) = apar_t(i,j)
+            end do
+        end do
         ener_err = abs(cent_ener-dft_ener)
         force_err = sqrt(sum((cent_fat-dft_fat)**2)/(3*atoms%nat))
         errmax = 0.d0
         rho_err = 0.d0
-        peak = maxval(abs(dft_rho))
         write(*,*) "peak",peak
         do i = 1 , nz
             do j = 1 , ny
@@ -186,41 +268,109 @@ subroutine best_charge_density_rho(parini)
                     d1 = dft_rho(k,j,i)
                     temp1 = (abs(c1)-abs(d1))/(max(abs(d1),(1.d-2*peak)))
                     !write(21,'(a,10es14.5)')"temp ",temp1,abs(c1),abs(d1),(1.d-2*peak),k*hx,j*hy,i*hz,atoms%rat
+                    errmax_old = errmax
                     errmax=max(errmax,temp1)
+                    if(errmax_old /= errmax) then
+                        peakx = k*hx
+                        peaky = j*hy
+                        peakz = i*hz
+                    end if
                     rho_err = rho_err + ((c1-d1)**2)
                 end do
             end do
         end do
+        write(5,'(i8,3es14.6)')iter,peakx,peaky,peakz
         rho_err = sqrt(rho_err*volinv)*w
         !write(40,*)iter,rho_err,volinv,w
         rmse = sqrt(rho_err)
         !stop 'AAAAAAAAAAAA'
-        write(*,'(a,i8,4es14.6)')"SD ",iter,rmse,errmax,ener_err,force_err
+        write(*,'(a,i4,4es14.6)')"SD",iter,rmse,errmax,ener_err,force_err
+        write(1,*)iter,rmse
+        write(2,*)iter,errmax
+        write(3,*)iter,ener_err
+        write(4,*)iter,force_err
+        
         write(*,*)"SD --------------------------------------------------------------------"
-        write(*,'(a,i8,i8,es14.6)')"GTO_val_sum ",iter,i,sum(q(:,1))
-        do i = 1 , lcn
-            write(*,'(a,i8,i8,2es14.6)')"GTO_val ",iter,i,q(i,1),a(i,1)
-            write(*,'(a,i8,i8,es14.4)') "a-q-partial",iter,i,qpar(i,1) 
-        enddo
+        write(*,'(a,i4,i4,es14.6)')"GTO_val_sum ",iter,i,sum(q(:,1))
+        do j = 1 , typ_at
+            do i = 1 , lcn
+                write(*,'(a,i4,i4,i4,2es14.6)')"GTO_val ",iter,i,j,qt(i,j),at(i,j)
+                write(*,'(a,i4,i4,i4,2es14.4)') "a-q-partial",iter,i,j,qpar_t(i,j),apar_t(i,j) 
+            end do
+        end do
         write(*,'(a)')"GTO --------------------------------------------------------------------"
         if (abs(errmax) < err)then
             write(*,*) "max conversion reached"
             exit
         endif
-        !coeff = 2.d0*(sum(cent_rho - dft_rho))*invvol
+        gtot = sum(qpar)
+        qpar = qpar - (gtot+0.d0)/(atoms%nat*lcn+0.d0)
         Q = Q - SD_S*qpar
-        !!A(:,1) = A(:,1) - SD_S*coeff*agrad
-       !!call destruct_ewald_bps(cent%ewald_p3d)
-       !! write(*,*) "coeff , sd_s",coeff,sd_s
-       !! if (ener_err > ener_err_old) then
-       !!     sd_s = 0.95d0*sd_s
-       !! else
-       !!     sd_s = 1.05*sd_s
-       !! endif
+        A = A - SD_S*apar
+        do i = 1 , lcn
+            ss = 0
+            do j = 1 , typ_at
+                ss = ss + t_num(j-1)
+                qt(i,j)=q(i,1+ss)
+                at(i,j)=a(i,1+ss)
+            end do
+        end do
     end Do
-
+    !Specified Atoms charge density part!
+    do i = 1 , lcn
+        if (i==1) then         
+            call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho,cent_rho_q_par,cent_rho_a_par)
+        else
+            call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho,cent_rho_q_par,cent_rho_a_par)
+            
+        end if
+    end do
+    !End of Specified Atom's charge density part!
+    !Linear combination of dft and cent charge density to investigate the force_err!
+    cent%ewald_p3d%poisson_p3d%rho = 0.d0
+    cent%ewald_p3d%poisson_p3d%pot = 0.d0
+    do i = 1 , lcn
+        if (i==1) then         
+            call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho,cent_rho_q_par,cent_rho_a_par)
+        else
+            call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho,cent_rho_q_par,cent_rho_a_par)
+        end if
+    end do
+    cent_rho = cent%ewald_p3d%poisson_p3d%rho
+    do i = 1 , 9
+        cent%ewald_p3d%poisson_p3d%rho = 0.d0
+        cent%ewald_p3d%poisson_p3d%pot = 0.d0
+        t = i*0.1 
+        atoms%fat = 0.d0
+        cent_fat = 0.d0
+        cent%ewald_p3d%poisson_p3d%rho=cent_rho-(t*(cent_rho-dft_rho))
+        call construct_ewald_bps(parini,atoms,cent%ewald_p3d)
+        call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
+        cent_ener = ehartree
+        if(atoms%nat > 1)  then
+            call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
+            cent_fat = atoms%fat
+        end if
+        force_err = sqrt(sum((cent_fat-dft_fat)**2)/(3*atoms%nat))
+        ener_err = abs(cent_ener-dft_ener)
+        call destruct_ewald_bps(cent%ewald_p3d)
+        write(77,'(3es14.6)') t,force_err,ener_err
+    enddo
+    do j = 1 , atoms%nat
+        write(88,*) j ,dft_fat(1:3,j), sqrt(sum(dft_fat(1:3,j)**2))
+    enddo
+    !End Of Linear combination of dft and cent charge density to investigate the force_err!
+    write(*,'(a,es14.6)') "Na_INT",volinv*sum(cent%ewald_p3d%poisson_p3d%rho)
+    do i = 1,nx
+        write(1370,'(4es14.6)') i*hx , cent_rho(i,yg_at,zg_at),dft_rho(i,yg_at,zg_at),cent%ewald_p3d%poisson_p3d%rho(i,yg_at,zg_at)
+    enddo 
   
 end subroutine best_charge_density_rho
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!BEST_CHARGE_DENSITY_FORCE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !!--------------------------------------------------------------------------------------------------
 !///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 subroutine best_charge_density_force(parini)
@@ -482,9 +632,6 @@ subroutine best_charge_density_force(parini)
  end subroutine best_charge_density_force
 ! 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
 subroutine best_charge_density_energy(parini)
      use mod_interface
  !!--------------------------------------------------------------------------------------------------
@@ -612,21 +759,17 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     !work arrays to save the values of one dimensional gaussian function.
     real(8):: pi
     real(8):: facqiat, fac
-    real(8):: cell(3) !dimensions of a smaller orthogonal cell for replication
     real(8):: vol
-    real(8):: cvinv(3) !cell vectors of inverse coordinate, actual one at a time
-    real(8):: htx, hty, htz
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
     real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: cvinv_norm, vol_voxel, ttx, tty, ttz, ttq, tt1, tta
+    real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1, tta
     real(8):: dmsq, gwsq_inv, gw_inv
-    real(8):: xred, yred, zred
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
     integer:: ncellx, ncelly, ncellz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
-    integer:: iii, nlim, nlimsq, iix, iiy, iiz
+    integer:: iii, nlimsq, iix, iiy, iiz
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
     integer:: finalx, igxs, igxf 
     real(8), allocatable:: wa(:,:,:)
@@ -637,49 +780,7 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call rxyz_cart2int_alborz(nat,cv,rxyz,ratred)
-    do iat=1,nat
-        xred=ratred(1,iat)
-        yred=ratred(2,iat)
-        zred=ratred(3,iat)
-        if(xred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(yred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(zred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
-        if(.not. (xred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(.not. (yred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(.not. (zred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
-    enddo
-
-    !reciprocal lattice to be used to determine the distance of corners of
-    !the parallelepiped to its facets. Then those distances are used to
-    !determine the number of grid points in each direction that are within
-    !the cutoff of Gaussian function.
-    call cell_vol(nat,cv,vol)
-    vol=abs(vol)*nat
-    call cross_product_alborz(cv(1,1),cv(1,2),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(3)=vol/cvinv_norm
-    call cross_product_alborz(cv(1,2),cv(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(1)=vol/cvinv_norm
-    call cross_product_alborz(cv(1,1),cv(1,3),cvinv)
-    cvinv_norm=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
-    cell(2)=vol/cvinv_norm
-    if(parini%iverbose>1) then
-        write(*,*) 'cell  ', cell(1),cell(2),cell(3)
-    endif
-    htx=cell(1)/real(ngx,8)
-    hty=cell(2)/real(ngy,8)
-    htz=cell(3)/real(ngz,8)
-    nbgx=int(rgcut/htx)+2
-    nbgy=int(rgcut/hty)+2
-    nbgz=int(rgcut/htz)+2
-    nagx=nbgx+1
-    nagy=nbgy+1
-    nagz=nbgz+1
-    nlim = max(nagx,nagy,nagz)
-    nlimsq = nlim**2
-    !detemining the largest dimension for the pseudogrid.
+    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -803,4 +904,324 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     call f_free(wa)
 end subroutine gauss_gradient_rzx
 !*****************************************************************************************
+!*****************************************************************************************
+subroutine gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
+    !local variables
+    !work arrays to save the values of one dimensional gaussian function.
+    real(8):: pi
+    real(8):: facqiat, fac
+    real(8):: vol
+    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
+    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hrxinv, hryinv, hrzinv
+    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv, gw_inv, gwcub_inv
+    real(8):: ximg, yimg, zimg
+    integer:: imgx, imgy, imgz
+    integer:: ncellx, ncelly, ncellz
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
+    integer:: iii, nlimsq, iix, iiy, iiz
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
+    integer:: finalx, igxs, igxf 
+    real(8), allocatable:: wa(:,:,:),wb(:,:,:),wc(:,:,:)
+    real(8), allocatable:: ratred(:,:)
+    real(8), allocatable:: exponentval(:), expval(:)
+    real(8):: sqpi, tt
+    integer:: istartx, istarty, istartz
 
+    allocate(ratred(3,nat))
+    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
+    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
+    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
+
+    wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
+    wb=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wb')
+    wc=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wc')
+    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
+   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
+
+    hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
+    hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
+    hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
+    !if(trim(bc)=='bulk') then
+    !    iii=0
+    !elseif(trim(bc)=='slab') then
+    !    iii=1
+    !endif
+    !-------------------------------------------------------
+    pi=4.d0*atan(1.d0)
+    sqpi=sqrt(pi)
+    !-------------------------------------------------------
+    do iat=1,nat
+        gw_inv=1.d0/gw(iat)
+        gwsq_inv=gw_inv*gw_inv
+        gwcub_inv=gw_inv*gwsq_inv
+        fac=1.d0/(gw(iat)*sqpi)**3
+        facqiat=fac*qat(iat)
+        imgx=nint(ratred(1,iat)*hrxinv)+1
+        imgy=nint(ratred(2,iat)*hryinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1
+        do igz=-nbgz,nbgz
+            jgz=igz+imgz
+            hzx_g=(jgz-1)*hzx
+            hzy_g=(jgz-1)*hzy
+            hzz_g=(jgz-1)*hzz
+            do igy=-nbgy,nbgy
+                igzysq=igz**2+igy**2
+                if(igzysq>nlimsq) cycle
+                jgy=igy+imgy
+                hyx_g=(jgy-1)*hyx
+                hyy_g=(jgy-1)*hyy
+                hyz_g=(jgy-1)*hyz
+                tt=nlimsq-igzysq
+                iix=min(floor(sqrt(tt)),nbgx)
+                do igx=-iix,iix
+                    jgx=igx+imgx
+                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
+                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
+                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
+                    dmx=ximg-rxyz(1,iat)
+                    dmy=yimg-rxyz(2,iat)
+                    dmz=zimg-rxyz(3,iat)
+                    dmsq=dmx**2+dmy**2+dmz**2
+                    exponentval(igx)=-dmsq*gwsq_inv
+                enddo
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+                wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*expval(-iix:iix)
+                wb(imgx-iix:imgx+iix,jgy,jgz)=wb(imgx-iix:imgx+iix,jgy,jgz)+fac*expval(-iix:iix)
+                wc(imgx-iix:imgx+iix,jgy,jgz)=wc(imgx-iix:imgx+iix,jgy,jgz)+(-2.d0*exponentval(-iix:iix) - 3.d0)*gw_inv*facqiat*expval(-iix:iix)
+
+            enddo
+        enddo
+    enddo
+    !---------------------------------------------------------------------------
+    if(reset) then
+        !if the input array of charge density does not contain any previous value
+        !wanted to be preserved.
+        rho = 0.d0
+        rho_a_par = 0.d0
+        rho_q_par = 0.d0
+    endif
+        !if the input array of charge density already some value that must be preserved.
+    istartx = modulo((1-nagx-1),ngx)+1
+    finalx = modulo((ngx+nagx-1),ngx)+1
+    igxs = 1-nagx+(ngx-istartx+1)
+    igxf = ngx+nagx-finalx+1
+    istarty = modulo((-nagy),ngy)+1
+    istartz = modulo((-nagz),ngz)+1
+    iiz=istartz-1
+
+    do igz=1-nagz,ngz+nagz
+        iiy=istarty-1
+        iiz=iiz+1
+        if (iiz==ngz+1) iiz=1
+        do igy=1-nagy,ngy+nagy
+            iiy=iiy+1
+            if (iiy==ngy+1) iiy=1
+            iix=istartx-1
+            do igx=1-nagx,igxs-1
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
+                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
+            enddo
+            do igx=igxs,igxf-1,ngx
+                do iix=1,ngx
+                    jgx=igx+iix-1
+                    rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(jgx,igy,igz)
+                    rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(jgx,igy,igz)
+                    rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(jgx,igy,igz)
+                enddo
+            enddo
+            iix=0
+            do igx=igxf,ngx+nagx
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
+                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
+            enddo
+        enddo
+    enddo
+    !---------------------------------------------------------------------------
+    deallocate(ratred)
+    deallocate(exponentval,expval)
+    call f_free(wa)
+end subroutine gauss_grid_rzx
+!*****************************************************************************************
+!*****************************************************************************************
+subroutine rp4gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
+    !local variables
+    !work arrays to save the values of one dimensional gaussian function.
+    real(8):: pi
+    real(8):: facqiat, fac
+    real(8):: vol
+    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
+    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hrxinv, hryinv, hrzinv
+    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv, gw_inv, gwcub_inv
+    real(8):: ximg, yimg, zimg
+    integer:: imgx, imgy, imgz
+    integer:: ncellx, ncelly, ncellz
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
+    integer:: iii, nlimsq, iix, iiy, iiz
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
+    integer:: finalx, igxs, igxf 
+    real(8), allocatable:: wa(:,:,:),wb(:,:,:),wc(:,:,:)
+    real(8), allocatable:: ratred(:,:)
+    real(8), allocatable:: exponentval(:), expval(:),rp4(:)
+    real(8):: sqpi, tt
+    integer:: istartx, istarty, istartz
+
+    allocate(ratred(3,nat))
+    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
+    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
+    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
+
+    wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
+    wb=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wb')
+    wc=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wc')
+    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx),rp4(-nbgx:nbgx))
+   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
+
+    hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
+    hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
+    hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
+    !if(trim(bc)=='bulk') then
+    !    iii=0
+    !elseif(trim(bc)=='slab') then
+    !    iii=1
+    !endif
+    !-------------------------------------------------------
+    pi=4.d0*atan(1.d0)
+    sqpi=sqrt(pi)
+    !-------------------------------------------------------
+    do iat=1,nat
+        gw_inv=1.d0/gw(iat)
+        gwsq_inv=gw_inv*gw_inv
+        gwcub_inv=gw_inv*gwsq_inv
+        fac=4.d0/(15.d0*(gw(iat)**7)*(sqpi**3))
+        facqiat=fac*qat(iat)
+        imgx=nint(ratred(1,iat)*hrxinv)+1
+        imgy=nint(ratred(2,iat)*hryinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1
+        do igz=-nbgz,nbgz
+            jgz=igz+imgz
+            hzx_g=(jgz-1)*hzx
+            hzy_g=(jgz-1)*hzy
+            hzz_g=(jgz-1)*hzz
+            do igy=-nbgy,nbgy
+                igzysq=igz**2+igy**2
+                if(igzysq>nlimsq) cycle
+                jgy=igy+imgy
+                hyx_g=(jgy-1)*hyx
+                hyy_g=(jgy-1)*hyy
+                hyz_g=(jgy-1)*hyz
+                tt=nlimsq-igzysq
+                iix=min(floor(sqrt(tt)),nbgx)
+                do igx=-iix,iix
+                    jgx=igx+imgx
+                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
+                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
+                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
+                    dmx=ximg-rxyz(1,iat)
+                    dmy=yimg-rxyz(2,iat)
+                    dmz=zimg-rxyz(3,iat)
+                    dmsq=dmx**2+dmy**2+dmz**2
+                    exponentval(igx)=-dmsq*gwsq_inv
+                    rp4(igx)=dmsq**2
+                enddo
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+                wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*rp4(-iix:iix)*expval(-iix:iix)
+                wb(imgx-iix:imgx+iix,jgy,jgz)=wb(imgx-iix:imgx+iix,jgy,jgz)+fac*rp4(-iix:iix)*expval(-iix:iix)
+                wc(imgx-iix:imgx+iix,jgy,jgz)=wc(imgx-iix:imgx+iix,jgy,jgz)+facqiat*rp4(-iix:iix)*expval(-iix:iix)*(-7.d0 - 2.d0*exponentval(-iix:iix))*gw_inv
+
+            enddo
+        enddo
+    enddo
+    !---------------------------------------------------------------------------
+    if(reset) then
+        !if the input array of charge density does not contain any previous value
+        !wanted to be preserved.
+        rho = 0.d0
+        rho_a_par = 0.d0
+        rho_q_par = 0.d0
+    endif
+        !if the input array of charge density already some value that must be preserved.
+    istartx = modulo((1-nagx-1),ngx)+1
+    finalx = modulo((ngx+nagx-1),ngx)+1
+    igxs = 1-nagx+(ngx-istartx+1)
+    igxf = ngx+nagx-finalx+1
+    istarty = modulo((-nagy),ngy)+1
+    istartz = modulo((-nagz),ngz)+1
+    iiz=istartz-1
+
+    do igz=1-nagz,ngz+nagz
+        iiy=istarty-1
+        iiz=iiz+1
+        if (iiz==ngz+1) iiz=1
+        do igy=1-nagy,ngy+nagy
+            iiy=iiy+1
+            if (iiy==ngy+1) iiy=1
+            iix=istartx-1
+            do igx=1-nagx,igxs-1
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
+                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
+            enddo
+            do igx=igxs,igxf-1,ngx
+                do iix=1,ngx
+                    jgx=igx+iix-1
+                    rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(jgx,igy,igz)
+                    rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(jgx,igy,igz)
+                    rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(jgx,igy,igz)
+                enddo
+            enddo
+            iix=0
+            do igx=igxf,ngx+nagx
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
+                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
+            enddo
+        enddo
+    enddo
+    !---------------------------------------------------------------------------
+    deallocate(ratred)
+    deallocate(exponentval,expval)
+    call f_free(wa)
+end subroutine rp4gauss_grid_rzx
+!*****************************************************************************************
