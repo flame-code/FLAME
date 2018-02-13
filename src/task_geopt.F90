@@ -8,7 +8,8 @@ subroutine geopt(parini)
     use mod_processors, only: iproc, nproc
     use mod_const, only: ang2bohr, bohr2ang, ev2ha
     implicit none
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
+   ! type(typ_parini), intent(in):: parini
     !local variables
     integer:: iat, ierr, i
     real(8):: count_initial
@@ -16,8 +17,14 @@ subroutine geopt(parini)
     type(typ_atoms):: atoms
     type(typ_file_info):: file_info
     real(8):: rat_int(3,1000), fat_int(3,1000)
+    logical:: acf_exists
     !character(5)::sat(natmax)
-    call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    inquire(file='posinp.acf',exist=acf_exists)
+    if(acf_exists) then
+        call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    else
+        call read_poscar_for_single_point(parini,atoms)
+    endif
     call set_ndof(atoms)
     potential=trim(parini%potential_potential)
     call init_geopt(parini,paropt,paropt_prec)

@@ -81,7 +81,7 @@ subroutine calculate_potener_pot(parini,poisson_p3d,cell,hx,hy,hz,epot,beta)
             enddo
         enddo
     enddo
-    if(trim(parini%bias_type)=='fixed_efield') then
+    if((.not. poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
         do igpz=1,poisson_p3d%ngpz
             !igpz=1 is not necessarily z=0, now in this way external potential is not
             !zero at z=0 but since shift the potential, such that external potential
@@ -93,7 +93,7 @@ subroutine calculate_potener_pot(parini,poisson_p3d,cell,hx,hy,hz,epot,beta)
                 enddo
             enddo
         enddo
-    elseif(trim(parini%bias_type)=='fixed_potdiff') then
+    elseif((.not. poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
         efield=0.d0 !to be corrected by Samare
         do igpz=1,poisson_p3d%ngpz
             !igpz=1 is not necessarily z=0, now in this way external potential is not

@@ -129,6 +129,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     ngpz=ewald_p3d%poisson_p3d%ngpz
     ngpy=ewald_p3d%poisson_p3d%ngpy
     ngpx=ewald_p3d%poisson_p3d%ngpx
+    ewald_p3d%poisson_p3d%point_particle= .true.
 
     pi=4.d0*atan(1.d0)
     beta=0.d0
