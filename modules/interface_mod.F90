@@ -236,8 +236,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     type(typ_parini), intent(in):: parini
     type(typ_ann), intent(inout):: ann
     integer, intent(in):: iproc
-    character(50):: fname, method, sat1, sat2
-    real(8)::rcut
+    real(8), intent(out):: rcut
+    character(50):: fname, sat1, sat2
 end subroutine get_symfunc_parameters_yaml
 subroutine write_ann_all_yaml(parini,ann_arr,iter)
     use mod_parini, only: typ_parini
@@ -246,12 +246,13 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
     type(typ_ann_arr), intent(in):: ann_arr
     integer, intent(in):: iter
 end subroutine write_ann_all_yaml
-subroutine write_ann_yaml(parini,filename,ann)
+subroutine write_ann_yaml(parini,filename,ann,rcut)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     type(typ_parini), intent(in):: parini
     character(*):: filename
     type(typ_ann), intent(in):: ann
+    real(8), intent(in):: rcut
 end subroutine write_ann_yaml
 subroutine read_ann_yaml(parini,ann_arr)
     use mod_parini, only: typ_parini
@@ -768,6 +769,14 @@ function cutoff_function_der(r, rc) result(fcd)
     real(8), intent(in):: r, rc
     real(8):: fcd, pi
 end function cutoff_function_der
+subroutine symmetry_functions_g05_atom2(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_linked_lists, only: typ_pia
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_pia), intent(in):: piaij, piaik
+    integer, intent(in):: ibij, ibik, isat, iat, jsat, ksat
+    type(typ_symfunc), intent(inout):: symfunc
+end subroutine symmetry_functions_g05_atom2
 ! ./src/ann_symfunc_atom_stefan.F90 :
 subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     use mod_parini, only: typ_parini
@@ -4893,7 +4902,7 @@ subroutine geopt(parini)
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms, typ_file_info
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
 end subroutine geopt
 subroutine init_geopt(parini,paropt,paropt_prec)
     use mod_parini, only: typ_parini

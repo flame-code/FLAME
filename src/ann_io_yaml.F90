@@ -27,7 +27,8 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
         call get_symfunc_parameters_yaml(parini,iproc,fname,ann_arr%ann(iann),rcut)
         ann_arr%rcut = rcut
         !-------------------------------------------------------
-
+        call dict_free(ann_arr%ann(iann)%dict)
+        nullify(ann_arr%ann(iann)%dict)
     enddo
     !call f_lib_finalize()
 end subroutine read_input_ann_yaml
@@ -40,57 +41,61 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
-    type(dictionary), pointer :: subdict_ann
-    type(dictionary), pointer :: dict_tmp
     type(typ_ann), intent(inout):: ann
     integer, intent(in):: iproc
+    real(8), intent(out):: rcut
     !local variables
     integer:: ig, ios, i0, i, il 
-    character(50):: fname, method, sat1, sat2
+    character(50):: fname, sat1, sat2
     character(250):: tt, str1
     integer :: count1, count2, count3, count4, count5, count6
     character(5):: stypat
-    real(8)::rcut
+    type(dictionary), pointer :: subdict_ann
+    type(dictionary), pointer :: dict_tmp
     call set_dict_ann(ann,fname,stypat)
     call yaml_comment('USER INPUT FILE',hfill='~')
-    call yaml_dict_dump(ann%dict_ann)
+    call yaml_dict_dump(ann%dict)
     call yaml_comment('',hfill='~')
     !logical:: all_read
 
-    ann%nl=dict_len(ann%dict_ann//"main"//"nodes")
+    subdict_ann => ann%dict//"main"
+
+    ann%nl=dict_len(subdict_ann//"nodes")
     do il=0,ann%nl-1
-        ann%nn(il+1)=ann%dict_ann//"main"//"nodes"//il
+        ann%nn(il+1)=subdict_ann//"nodes"//il
     enddo
     ann%nl=ann%nl+1 !adding the output layer to total number of layers
     ann%nn(ann%nl)=1 !setting the output layer
     !if(trim(parini%subtask_ann)=='check_symmetry_function') then
-    !    rcut=ann%dict_ann//"main"//"rcut"
+    !    rcut=subdict_ann//"rcut"
     !endif
     !if(trim(parini%approach_ann)=='atombased') then
-    !    rcut=ann%dict_ann//"main"//"rcut"
+    !    rcut=subdict_ann//"rcut"
     !endif
-    rcut               =  ann%dict_ann//"main"//"rcut"
+    rcut               =  subdict_ann//"rcut"
+    ann%method         =  subdict_ann//"method"
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
-        ann%ampl_chi       =  ann%dict_ann//"main"//"ampl_chi" 
-        ann%prefactor_chi  =  ann%dict_ann//"main"//"prefactor_chi" 
-        ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
-        ann%gausswidth     =  ann%dict_ann//"main"//"gausswidth" 
-        ann%hardness       =  ann%dict_ann//"main"//"hardness" 
-        ann%chi0           =  ann%dict_ann//"main"//"chi0" 
-        ann%qinit          =  ann%dict_ann//"main"//"qinit"
-        ann%method         =  ann%dict_ann//"main"//"method"
+        ann%ampl_chi       =  subdict_ann//"ampl_chi" 
+        ann%prefactor_chi  =  subdict_ann//"prefactor_chi" 
+        ann%ener_ref       =  subdict_ann//"ener_ref" 
+        ann%gausswidth     =  subdict_ann//"gausswidth" 
+        ann%hardness       =  subdict_ann//"hardness" 
+        ann%chi0           =  subdict_ann//"chi0" 
+        ann%qinit          =  subdict_ann//"qinit"
     endif
     if(trim(parini%approach_ann)=='cent2' ) then
-        ann%zion           =  ann%dict_ann//"main"//"zion" 
-        ann%gausswidth_ion =  ann%dict_ann//"main"//"gausswidth_ion" 
-        ann%spring_const   =  ann%dict_ann//"main"//"spring_const"
+        ann%zion           =  subdict_ann//"zion" 
+        ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
+        ann%spring_const   =  subdict_ann//"spring_const"
     endif
     if(trim(parini%approach_ann)=='tb') then
-        ann%ener_ref       =  ann%dict_ann//"main"//"ener_ref" 
+        ann%ener_ref       =  subdict_ann//"ener_ref" 
     endif
-    !ann%rionic    = ann%dict_ann//"main"//"rionic"
+    !ann%rionic    = subdict_ann//"rionic"
+    nullify(subdict_ann)
     !---------------------------------------------
-    dict_tmp=>dict_iter(ann%dict_ann//"symfunc")
+    subdict_ann=>ann%dict//"symfunc"
+    dict_tmp=>dict_iter(subdict_ann)
     ann%ng1 = 0 
     ann%ng2 = 0
     ann%ng3 = 0
@@ -126,7 +131,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     
     count1=0; count2=0; count3=0; count4=0; count5=0; count6=0
 
-    dict_tmp=>dict_iter(ann%dict_ann//"symfunc")
+    dict_tmp=>dict_iter(subdict_ann)
     do while(associated(dict_tmp))
         tt=trim(dict_key(dict_tmp))
 
@@ -136,7 +141,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
             endif
             count1=count1+1
             i0=i0+1
-            str1=ann%dict_ann//"symfunc"//tt
+            str1=subdict_ann//tt
             read(str1,*,iostat=ios)ann%g1eta(count1),ann%g1rs(count1),ann%gbounds(1,i0),ann%gbounds(2,i0)
             if(ios<0) then
                 write(*,'(a)') 'ERROR: 5 columns are required for each of G1 symmetry functions,'
@@ -144,12 +149,12 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
                 stop
             endif
         endif
-        method =  ann%dict_ann//"main"//"method" 
+        !method =  ann%dict//"main"//"method" 
         if (tt(1:3)=="g02") then
             count2=count2+1
             i0=i0+1
-            str1=ann%dict_ann//"symfunc"//tt
-            if (trim(method) == "behler") then
+            str1=subdict_ann//tt
+            if (trim(ann%method) == "behler") then
                 read(str1,*,iostat=ios)ann%g2eta(count2),ann%g2rs(count2),ann%gbounds(1,i0),ann%gbounds(2,i0),sat1
                 call set_radial_atomtype(parini,sat1,ann%g2i(count2))
             else
@@ -167,7 +172,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
             stop 'ERROR: g4 is not ready.'
             count4=count4+1
             i0=i0+1
-            str1=ann%dict_ann//"symfunc"//tt
+            str1=subdict_ann//tt
             read(str1,*,iostat=ios) ann%g4eta(count4),ann%g4zeta(count4), &
                 ann%g4lambda(count4),ann%gbounds(1,i0),ann%gbounds(2,i0)
             call set_radial_atomtype(parini,sat1,ann%g2i(count4))
@@ -181,8 +186,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         if (tt(1:3)=="g05") then
             count5=count5+1
             i0=i0+1
-            str1=ann%dict_ann//"symfunc"//tt
-            if (trim(method) == "behler") then
+            str1=subdict_ann//tt
+            if (trim(ann%method) == "behler") then
                 read(str1,*,iostat=ios) ann%g5eta(count5),ann%g5zeta(count5), &
                     ann%g5lambda(count5),ann%gbounds(1,i0),ann%gbounds(2,i0),sat1,sat2
                 call set_angular_atomtype(parini,sat1,sat2,ann%g5i(1,count5))
@@ -200,6 +205,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         dict_tmp=>dict_next(dict_tmp)
     end do
     nullify(dict_tmp)
+    nullify(subdict_ann)
 
 
 
@@ -231,8 +237,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
 !        endif
 !    enddo
 
-  !  call dict_free(ann%dict_ann)
-  !  nullify(ann%dict_ann)
+  !  call dict_free(ann%dict)
+  !  nullify(ann%dict)
 end subroutine get_symfunc_parameters_yaml
 !*****************************************************************************************
 subroutine write_ann_all_yaml(parini,ann_arr,iter)
@@ -261,81 +267,108 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             write(fn_tt,'(i1)') i
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
-            call write_ann_yaml(parini,filename,ann_arr%ann(i))
+            call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
         trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
         do i=1,ann_arr%n
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
-            call write_ann_yaml(parini,filename,ann_arr%ann(i))
+            call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     else
         stop 'ERROR: writing ANN parameters is only for cent1,cent2,tb'
     endif
 end subroutine write_ann_all_yaml
 !*****************************************************************************************
-subroutine write_ann_yaml(parini,filename,ann)
+subroutine write_ann_yaml(parini,filename,ann,rcut)
     use mod_interface
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
+    use dictionaries
     implicit none
     type(typ_parini), intent(in):: parini
     character(*):: filename
     type(typ_ann), intent(in):: ann
+    real(8), intent(in):: rcut
     !local variables
     !integer:: 
     !real(8):: 
-    integer:: i, j, k, l, ios, ialpha, i0, iline, ierr, iunit
+    integer:: i, j, k, l, ios, ialpha, i0, iline, ierr, iunit, il
     character(5):: sat1, sat2
     character(8):: key1
     character(250):: str1
-    character(50)::  method
-
-    call set(ann%dict_ann//"main"//"ener_ref",ann%ener_ref ) 
+    type(dictionary), pointer :: dict_ann
+    type(dictionary), pointer :: subdict_ann
+    dict_ann=>dict_new()
+    !-------------------------------------------------------
+    call set(dict_ann//"main","nodes")
+    subdict_ann=>dict_ann//"main"
+    !ann%nl-1 is output layer so following loop goes up to ann%nl-2
+    do il=0,ann%nl-2
+        call set(subdict_ann//"nodes"//il,ann%nn(il+1))
+    enddo
+    call set(subdict_ann//"rcut",rcut)
+    call set(subdict_ann//"method",ann%method)
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
-        call set(ann%dict_ann//"main"//"chi0",ann%chi0 ) 
-        call set(ann%dict_ann//"main"//"hardness",ann%hardness ) 
+        call set(subdict_ann//"ampl_chi",ann%ampl_chi)
+        call set(subdict_ann//"prefactor_chi",ann%prefactor_chi)
+        call set(subdict_ann//"ener_ref",ann%ener_ref)
+        call set(subdict_ann//"gausswidth",ann%gausswidth)
+        call set(subdict_ann//"hardness",ann%hardness)
+        call set(subdict_ann//"chi0",ann%chi0)
+        call set(subdict_ann//"qinit",ann%qinit)
     endif
-    method =  ann%dict_ann//"main"//"method"
+    if(trim(parini%approach_ann)=='cent2' ) then
+        call set(subdict_ann//"zion",ann%zion)
+        call set(subdict_ann//"gausswidth_ion",ann%gausswidth_ion)
+        call set(subdict_ann//"spring_const",ann%spring_const)
+    endif
+    if(trim(parini%approach_ann)=='tb') then
+        !ann%ener_ref       =  subdict_ann//"ener_ref" 
+        call set(subdict_ann//"ener_ref",ann%ener_ref)
+    endif
+    nullify(subdict_ann)
+    !-------------------------------------------------------
+    subdict_ann=>dict_ann//"symfunc"
     i0=0
     do i=1,ann%ng1
         write(key1,'(a,i3.3)')"g01_",i 
         i0=i0+1
         write(str1,'(2f8.4,2es24.15)') ann%g1eta(i),ann%g1rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
-        call set(ann%dict_ann//"symfunc"//key1,str1)
+        call set(subdict_ann//key1,str1)
     enddo
     !-------------------------------------------------------
     do i=1,ann%ng2
         write(key1,'(a,i3.3)')"g02_",i 
         i0=i0+1
-        if (trim(method) == "behler") then
+        if (trim(ann%method) == "behler") then
             sat1=parini%stypat(ann%g2i(i))
             write(str1,'(2f8.4,2es24.15,1a5)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0),trim(sat1)
         else
             write(str1,'(2f10.6,2es24.15)') ann%g2eta(i),ann%g2rs(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
         endif
-        call set(ann%dict_ann//"symfunc"//key1,str1)
+        call set(subdict_ann//key1,str1)
     enddo
     !-------------------------------------------------------
     do i=1,ann%ng3
         write(key1,'(a,i3.3)')"g03_",i 
         i0=i0+1
         write(str1,'(1f8.4)') ann%g3kappa(i)
-        call set(ann%dict_ann//"symfunc"//key1,str1)
+        call set(subdict_ann//key1,str1)
     enddo
     do i=1,ann%ng4
         write(key1,'(a,i3.3)')"g04_",i 
         i0=i0+1
         write(str1,'(3f8.4,2es24.15)') ann%g4eta(i),ann%g4zeta(i),ann%g4lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
-        call set(ann%dict_ann//"symfunc"//key1,str1)
+        call set(subdict_ann//key1,str1)
     enddo
     !-------------------------------------------------------
     do i=1,ann%ng5
         write(key1,'(a,i3.3)')"g05_",i 
         i0=i0+1
-        if (trim(method) == "behler") then
+        if (trim(ann%method) == "behler") then
             sat1=parini%stypat(ann%g5i(1,i))
             sat2=parini%stypat(ann%g5i(2,i))
             write(str1,'(3f8.4,2es24.15,2a5)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0), &
@@ -343,49 +376,55 @@ subroutine write_ann_yaml(parini,filename,ann)
         else
             write(str1,'(3f10.6,2es24.15)') ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
         endif
-        call set(ann%dict_ann//"symfunc"//key1,str1)
+        call set(subdict_ann//key1,str1)
     enddo
-!    !-------------------------------------------------------
-!    write(1,'(i6,2x,a)') ann%ng6,'#ng6'
-!    do i=1,ann%ng6/3
-!        i0=i0+1
-!        write(1,'(1f8.4,2es24.15)') ann%g6eta(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
-!        i0=i0+1
-!        write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
-!        i0=i0+1
-!        write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
-!    enddo
+    nullify(subdict_ann)
     !-------------------------------------------------------
+    !write(1,'(i6,2x,a)') ann%ng6,'#ng6'
+    !do i=1,ann%ng6/3
+    !    i0=i0+1
+    !    write(1,'(1f8.4,2es24.15)') ann%g6eta(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !    i0=i0+1
+    !    write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !    i0=i0+1
+    !    write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !enddo
+    !-------------------------------------------------------
+    subdict_ann=>dict_ann//"weights"
     i0=0
     do ialpha=1,ann%nl
         write(str1,'(2(a,i1))') '#main nodes weights connecting layers ',ialpha,' and ',ialpha-1
-        call set(ann%dict_ann//"weights"//i0//"comment",str1)
+        call set(subdict_ann//i0//"comment",str1)
 
         do j=1,ann%nn(ialpha)
             do i=1,ann%nn(ialpha-1)
                 write(str1,'(es24.15)') ann%a(i,j,ialpha)
-                call set(ann%dict_ann//"weights"//i0,str1)
+                call set(subdict_ann//i0,str1)
                 i0=i0+1
             enddo
         enddo
         write(str1,'(a,i1)') '#bias nodes weights for layer ',ialpha
-        call set(ann%dict_ann//"weights"//i0//"comment",str1)
+        call set(subdict_ann//i0//"comment",str1)
         do i=1,ann%nn(ialpha)
             write(str1,'(es24.15)') ann%b(i,ialpha)
-            call set(ann%dict_ann//"weights"//i0,str1)
+            call set(subdict_ann//i0,str1)
             i0=i0+1
         enddo
     enddo
+    nullify(subdict_ann)
+    !-------------------------------------------------------
     iunit=f_get_free_unit(10**5)
     call yaml_set_stream(unit=iunit,filename=trim(filename),&
          record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
     if (ierr==0) then
-        call yaml_dict_dump(ann%dict_ann,unit=iunit)
+        call yaml_dict_dump(dict_ann,unit=iunit)
        call yaml_close_stream(unit=iunit)
     else
        call yaml_warning('Failed to create'//trim(filename)//', error code='//trim(yaml_toa(ierr)))
     end if
     !-------------------------------------------------------
+    call dict_free(dict_ann)
+    nullify(dict_ann)
 end subroutine write_ann_yaml
 !*****************************************************************************************
 subroutine read_ann_yaml(parini,ann_arr)
@@ -436,16 +475,18 @@ subroutine read_ann_yaml(parini,ann_arr)
         do ialpha=1,ann_arr%ann(iann)%nl
             do j=1,ann_arr%ann(iann)%nn(ialpha)
                 do i=1,ann_arr%ann(iann)%nn(ialpha-1)
-                    ann_arr%ann(iann)%a(i,j,ialpha)=ann_arr%ann(iann)%dict_ann//"weights"//i1
+                    ann_arr%ann(iann)%a(i,j,ialpha)=ann_arr%ann(iann)%dict//"weights"//i1
                     i1=i1+1
                 enddo
             enddo
             do i=1,ann_arr%ann(iann)%nn(ialpha)
-                ann_arr%ann(iann)%b(i,ialpha)=ann_arr%ann(iann)%dict_ann//"weights"//i1
+                ann_arr%ann(iann)%b(i,ialpha)=ann_arr%ann(iann)%dict//"weights"//i1
                 i1=i1+1
             enddo
         enddo
         !-------------------------------------------------------
+        call dict_free(ann_arr%ann(iann)%dict)
+        nullify(ann_arr%ann(iann)%dict)
     enddo
 end subroutine read_ann_yaml
 !*****************************************************************************************
@@ -471,7 +512,7 @@ subroutine set_dict_ann(ann,fname,stypat)
     !then parse the user's input file
     call yaml_parse_from_char_array(dict,fbuf)
     call f_free_str(1,fbuf)
-    call dict_copy(ann%dict_ann,dict//0)
+    call dict_copy(ann%dict,dict//0)
 
     call dict_free(dict)
     nullify(dict)
