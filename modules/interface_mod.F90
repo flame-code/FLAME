@@ -215,13 +215,13 @@ subroutine read_ann(parini,ann_arr)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine read_ann
-subroutine read_data(parini,filename_list,atoms_arr)
+subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_all, typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine read_data
+end subroutine read_data_old
 ! ./src/ann_io_yaml.F90 :
 subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     use mod_parini, only: typ_parini
@@ -266,6 +266,13 @@ subroutine set_dict_ann(ann,fname,stypat)
     character(5):: stypat
     character(len=*):: fname 
 end subroutine set_dict_ann
+subroutine read_data_yaml(parini,filename_list,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: filename_list
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine read_data_yaml
 ! ./src/ann_lm.F90 :
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
@@ -2366,6 +2373,13 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     type(typ_poisson), intent(in):: poisson
     character(*), intent(in):: rho_or_pot
 end subroutine cube_write
+! ./src/io_utils.F90 :
+subroutine read_list_files_yaml(fname,nfiles_max,fn_list,nfiles)
+    character(len=*), intent(in):: fname
+    integer, intent(in):: nfiles_max
+    character(len=256), intent(out):: fn_list(nfiles)
+    integer, intent(out):: nfiles
+end subroutine read_list_files_yaml
 ! ./src/io_vasp.F90 :
 subroutine write_poscar(filename,nat,rat,latvec,ntypat,natarr,comment,vasp5,comment2,atom_motion)
     integer:: nat, ntypat, natarr(128)
