@@ -31,7 +31,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1') then
         r0=10.d0
         alpha=100.d-2
-        rf=1.d-5
+        rf=1.d-6
     elseif(trim(parini%approach_ann)=='cent2') then
         r0=10.d0
         alpha=100.d-2
@@ -207,7 +207,7 @@ subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train
                 filename=trim(parini%stypat(i))//trim(fn)
                 write(*,'(a)') trim(filename)
                 if( ann_arr%exists_yaml_file) then
-                    call write_ann_yaml(parini,filename,ann_arr%ann(i))
+                    call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
                 else
                     call write_ann(parini,filename,ann_arr%ann(i))
                 endif
