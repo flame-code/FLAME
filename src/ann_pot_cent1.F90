@@ -49,7 +49,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call cal_electrostatic_cent1(parini,'init',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call init_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -93,7 +93,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_cent1(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
@@ -262,7 +262,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     end associate
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
-subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine init_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -270,7 +270,6 @@ subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type(typ_parini), intent(in):: parini
-    character(*), intent(in):: str_job
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(out):: epot_c
@@ -281,63 +280,74 @@ subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p
     real(8):: vol, c
     real(8):: dx, dy, dz, r, tt1, tt2, pi, beta_iat, beta_jat, gama, ttf
     associate(epot_es=>ann_arr%epot_es)
-    if(trim(str_job)=='init') then
-        pi=4.d0*atan(1.d0)
-        ann_arr%ener_ref=0.d0
-        do iat=1,atoms%nat
-            ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
-        enddo
-        !ann_arr%ener_ref=ann_arr%ener_ref-1.d-2*atoms%nat**(-1.0/3.0)
-        !ann_arr%ener_ref=0.0144273d0*atoms%nat**(-1.0/3.0)+0.081049d0*atoms%nat**(-1.3/2.0)-0.161332d0+0.142238365422159d0  +  atoms%nat*1.d-3/27.2d0
-        if (.not. parini%ewald) then 
-            ewald_p3d%alpha = maxval(ann_arr%ann(:)%gausswidth)
-        else 
-            if (parini%alpha_ewald<0.d0) then
-                call getvol_alborz(atoms%cellvec,vol)
-                c=2.2d0
-                ewald_p3d%alpha = 1.d0/(c*sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
-                write(*,*)"optimized alpha = ", ewald_p3d%alpha
-            else
-                ewald_p3d%alpha=parini%alpha_ewald
-            endif
-        end if
-        if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
-            call construct_ewald_p3d(parini,atoms,ewald_p3d)
+    pi=4.d0*atan(1.d0)
+    ann_arr%ener_ref=0.d0
+    do iat=1,atoms%nat
+        ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
+    enddo
+    if (.not. parini%ewald) then 
+        ewald_p3d%alpha = maxval(ann_arr%ann(:)%gausswidth)
+    else 
+        if (parini%alpha_ewald<0.d0) then
+            call getvol_alborz(atoms%cellvec,vol)
+            c=2.2d0
+            ewald_p3d%alpha = 1.d0/(c*sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
+            write(*,*)"optimized alpha = ", ewald_p3d%alpha
         else
-            do iat=1,atoms%nat
-                a(iat,atoms%nat+1)=1.d0
-                a(atoms%nat+1,iat)=1.d0
-                beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
-                gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
-                a(iat,iat)=gama*2.d0/sqrt(pi)+ann_arr%ann(atoms%itypat(iat))%hardness
-                do jat=iat+1,atoms%nat
-                    dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-                    dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-                    dz=atoms%rat(3,jat)-atoms%rat(3,iat)
-                    r=sqrt(dx*dx+dy*dy+dz*dz)
-                    beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
-                    gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
-                    a(iat,jat)=erf(gama*r)/r
-                    a(jat,iat)=a(iat,jat)
-                enddo
-            enddo
-            a(atoms%nat+1,atoms%nat+1)=0.d0
+            ewald_p3d%alpha=parini%alpha_ewald
         endif
-    elseif(trim(str_job)=='calculate') then
-        tt1=0.d0
-        tt2=0.d0
-        do iat=1,atoms%nat
-            tt1=tt1+ann_arr%chi_o(iat)*atoms%qat(iat)
-            tt2=tt2+atoms%qat(iat)**2*0.5d0*ann_arr%ann(atoms%itypat(iat))%hardness
-        enddo
-        call cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
-        epot_c=epot_es+tt1+tt2+ann_arr%ener_ref
-        if(parini%iverbose>=1) then
-        !write(81,'(i6,4es14.5,3f7.1)') atoms%nat,epot_c,tt1,tt2,epot_es,1.d2*tt1/epot_c,1.d2*tt2/epot_c,1.d2*epot_es/epot_c
-        endif
+    end if
+    if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
+        call construct_ewald_p3d(parini,atoms,ewald_p3d)
     else
-        stop 'ERROR: unknown job in cal_electrostatic_eem1'
+        do iat=1,atoms%nat
+            a(iat,atoms%nat+1)=1.d0
+            a(atoms%nat+1,iat)=1.d0
+            beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
+            gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
+            a(iat,iat)=gama*2.d0/sqrt(pi)+ann_arr%ann(atoms%itypat(iat))%hardness
+            do jat=iat+1,atoms%nat
+                dx=atoms%rat(1,jat)-atoms%rat(1,iat)
+                dy=atoms%rat(2,jat)-atoms%rat(2,iat)
+                dz=atoms%rat(3,jat)-atoms%rat(3,iat)
+                r=sqrt(dx*dx+dy*dy+dz*dz)
+                beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
+                gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
+                a(iat,jat)=erf(gama*r)/r
+                a(jat,iat)=a(iat,jat)
+            enddo
+        enddo
+        a(atoms%nat+1,atoms%nat+1)=0.d0
     endif
+    end associate
+end subroutine init_electrostatic_cent1
+!*****************************************************************************************
+subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr
+    use mod_electrostatics, only: typ_ewald_p3d
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+    real(8), intent(out):: epot_c
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    !local variables
+    integer:: iat, jat
+    real(8):: vol, c
+    real(8):: dx, dy, dz, r, tt1, tt2, pi, beta_iat, beta_jat, gama, ttf
+    associate(epot_es=>ann_arr%epot_es)
+    tt1=0.d0
+    tt2=0.d0
+    do iat=1,atoms%nat
+        tt1=tt1+ann_arr%chi_o(iat)*atoms%qat(iat)
+        tt2=tt2+atoms%qat(iat)**2*0.5d0*ann_arr%ann(atoms%itypat(iat))%hardness
+    enddo
+    call cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
+    epot_c=epot_es+tt1+tt2+ann_arr%ener_ref
     end associate
 end subroutine cal_electrostatic_cent1
 !*****************************************************************************************
