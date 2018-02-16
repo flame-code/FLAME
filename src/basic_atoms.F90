@@ -1805,28 +1805,40 @@ subroutine set_qat(atoms)
     do itypat=1,atoms%ntypat
         if(trim(atoms%stypat(itypat))=='Na') then
             atoms%qtypat(itypat)=1.d0
+        elseif(trim(atoms%stypat(itypat))=='S') then
+            atoms%qtypat(itypat)=-0.9d0
         elseif(trim(atoms%stypat(itypat))=='Cl') then
             atoms%qtypat(itypat)=-1.d0
+        elseif(trim(atoms%stypat(itypat))=='Li') then
+            atoms%qtypat(itypat)=1.0d0
         elseif(trim(atoms%stypat(itypat))=='Zn') then
             atoms%qtypat(itypat)=1.d0
         elseif(trim(atoms%stypat(itypat))=='Ti') then
             atoms%qtypat(itypat)=2.0d0
         elseif(trim(atoms%stypat(itypat))=='Zr') then
-            atoms%qtypat(itypat)=2.0d0
+            atoms%qtypat(itypat)=4.0d0
+        elseif(trim(atoms%stypat(itypat))=='Y') then
+            atoms%qtypat(itypat)=3.0d0
         elseif(trim(atoms%stypat(itypat))=='Sn') then
             atoms%qtypat(itypat)=2.0d0
         elseif(trim(atoms%stypat(itypat))=='O') then
-            atoms%qtypat(itypat)=-0.9d0
+            atoms%qtypat(itypat)=-2.0d0
         elseif(trim(atoms%stypat(itypat))=='Si') then
             atoms%qtypat(itypat)=1.1d0
         elseif(trim(atoms%stypat(itypat))=='Pb') then
             atoms%qtypat(itypat)=0.9d0
         elseif(trim(atoms%stypat(itypat))=='Te') then
             atoms%qtypat(itypat)=-0.9d0
+        elseif(trim(atoms%stypat(itypat))=='Sn') then
+            atoms%qtypat(itypat)=0.9d0
+        elseif(trim(atoms%stypat(itypat))=='Se') then
+            atoms%qtypat(itypat)=-0.9d0
         elseif(trim(atoms%stypat(itypat))=='Ca') then
             atoms%qtypat(itypat)=1.3d0
         elseif(trim(atoms%stypat(itypat))=='F') then
-            atoms%qtypat(itypat)=-0.65d0
+            atoms%qtypat(itypat)=-1.0d0
+        elseif(trim(atoms%stypat(itypat))=='Al') then
+            atoms%qtypat(itypat)=3.0d0
         elseif(trim(atoms%stypat(itypat))=='W') then
             atoms%qtypat(itypat)=0.8d0
         elseif(trim(atoms%stypat(itypat))=='S') then
@@ -1846,26 +1858,36 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Cl') then
             atoms%qat(iat)=-1.d0
+        else if(trim(atoms%sat(iat))=='Li') then
+            atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Zn') then
             atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Ti') then
             atoms%qat(iat)=2.0d0
         else if(trim(atoms%sat(iat))=='Zr') then
-            atoms%qat(iat)=2.0d0
+            atoms%qat(iat)=4.0d0
+        else if(trim(atoms%sat(iat))=='Y') then
+            atoms%qat(iat)=3.0d0
         else if(trim(atoms%sat(iat))=='Sn') then
             atoms%qat(iat)=2.0d0
         else if(trim(atoms%sat(iat))=='Si') then
             atoms%qat(iat)=1.1d0
         else if(trim(atoms%sat(iat))=='O') then
-            atoms%qat(iat)=-0.9d0
+            atoms%qat(iat)=-2.0d0
         else if(trim(atoms%sat(iat))=='Pb') then
             atoms%qat(iat)=0.9d0
         else if(trim(atoms%sat(iat))=='Te') then
             atoms%qat(iat)=-0.9d0
+        else if(trim(atoms%sat(iat))=='Sn') then
+            atoms%qat(iat)=0.9d0
+        else if(trim(atoms%sat(iat))=='Se') then
+            atoms%qat(iat)=-0.9d0
         else if(trim(atoms%sat(iat))=='Ca') then
             atoms%qat(iat)=1.3d0
         else if(trim(atoms%sat(iat))=='F') then
-            atoms%qat(iat)=-0.65d0
+            atoms%qat(iat)=-1.0d0
+        else if(trim(atoms%sat(iat))=='Al') then
+            atoms%qat(iat)=3.0d0
         elseif(trim(atoms%sat(iat))=='W') then
             atoms%qat(itypat)=0.8d0
         elseif(trim(atoms%sat(iat))=='S') then
