@@ -1,0 +1,28 @@
+main:
+    task: geopt
+    verbosity: 2
+    types: F Ca
+
+potential:
+    potential: ann
+    add_repulsive: False
+    ewald:
+        ewald : False
+        hx: 0.6
+        hz: 0.5
+        rgcut: 6.0
+        bias_type: fixed_efield
+        external_field: 0.01
+
+ann:
+    approach: cent1
+    syslinsolver: operator
+
+geopt:
+    method: SQNM
+    fmaxtol: 5.E-5
+    condnum: 100.0
+    alphax: 1.0
+    precaution: normal
+    lprint: True
+
