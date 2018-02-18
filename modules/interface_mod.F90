@@ -1896,9 +1896,11 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     real(8), intent(in):: gausswidth(nat)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine putgaussgrid
-subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
+subroutine longerange_forces(parini,atoms,ewald_p3d,gausswidth)
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(inout):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: gausswidth(atoms%nat)
@@ -2016,6 +2018,15 @@ subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
 end subroutine get_hartree
+subroutine apply_external_field(parini,atoms,ewald_p3d,ehartree,g)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(in):: parini
+    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(inout):: ehartree, g(atoms%nat)
+end subroutine apply_external_field
 subroutine get_g_from_pot(parini,atoms,ewald_p3d,gausswidth,g)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d

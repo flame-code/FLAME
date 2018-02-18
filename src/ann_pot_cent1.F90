@@ -403,7 +403,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
             else
                 gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
             endif
-            call longerange_forces(atoms,ewald_p3d,gausswidth)
+            call longerange_forces(parini,atoms,ewald_p3d,gausswidth)
         endif
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
