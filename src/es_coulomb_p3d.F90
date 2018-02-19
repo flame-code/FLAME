@@ -123,7 +123,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
-    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
+    real(8):: vl, vu, A, d, rl, ru, dipole
     real(8),allocatable :: gausswidth(:)  
     call f_routine(id='calculate_forces_energy')
     ngpz=ewald_p3d%poisson_p3d%ngpz
@@ -514,6 +514,7 @@ subroutine longerange_forces(parini,atoms,ewald_p3d,gausswidth)
     integer:: iat, ivw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz, iyt, izt, iii
     real(8):: fx, fy, fz, dx, dy, dz, derrhoz, derrhoyz, derrhozy
     real(8), allocatable:: wa(:,:,:)
+    real(8):: dipole, beta, dv
     call f_routine(id='longerange_forces')
     associate(nagpx=>ewald_p3d%nagpx,nagpy=>ewald_p3d%nagpy,nagpz=>ewald_p3d%nagpz)
     associate(ngpx=>ewald_p3d%poisson_p3d%ngpx)
@@ -614,6 +615,17 @@ subroutine longerange_forces(parini,atoms,ewald_p3d,gausswidth)
     if((.not. ewald_p3d%poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
         do iat=1,atoms%nat
             atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
+        enddo
+    elseif((.not. ewald_p3d%poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        beta=-dipole*2.d0*pi/(ewald_p3d%cell(1)*ewald_p3d%cell(2))
+        dv=parini%vu_ewald-parini%vl_ewald
+        do iat=1,atoms%nat
+            atoms%fat(3,iat)=atoms%fat(3,iat)-(dv+2.d0*beta)*0.5d0*atoms%qat(iat)/ewald_p3d%cell(3)
+            atoms%fat(3,iat)=atoms%fat(3,iat)-beta*atoms%qat(iat)/ewald_p3d%cell(3)
         enddo
     endif
     call f_free(wa)
