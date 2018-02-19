@@ -315,7 +315,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -323,15 +323,15 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
 end subroutine cal_ann_cent1
-subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
+subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi
 subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
@@ -343,39 +343,39 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi_dir
-subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,ewald_p3d)
+subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
 end subroutine init_electrostatic_cent1
-subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(out):: epot_c
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
 end subroutine cal_electrostatic_cent1
-subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
+subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(in):: a(atoms%nat+1,atoms%nat+1)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
 end subroutine cal_electrostatic_ann
 subroutine charge_analysis(parini,atoms,ann_arr)
     use mod_parini, only: typ_parini
@@ -394,26 +394,26 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi_iter
-subroutine cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
+subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_poisson),intent(inout):: poisson
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: g(atoms%nat), qtot
 end subroutine cal_ugradient
-subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
+subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_poisson),intent(inout):: poisson
 end subroutine get_qat_from_chi_operator
 ! ./src/ann_pot_cent2.F90 :
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
@@ -1544,21 +1544,21 @@ subroutine best_charge_density(parini)
 end subroutine best_charge_density
 subroutine best_charge_density_rho(parini)
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+    use mod_electrostatics, only: typ_poisson, typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density_rho
 subroutine best_charge_density_force(parini)
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+    use mod_electrostatics, only: typ_poisson, typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density_force
 subroutine best_charge_density_energy(parini)
      use mod_parini, only: typ_parini
-     use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+     use mod_electrostatics, only: typ_poisson, typ_poisson
      use mod_atoms, only: typ_atoms
      use mod_ann, only: typ_cent, typ_ann_arr
      type(typ_parini), intent(in):: parini
@@ -1774,37 +1774,37 @@ INTEGER :: n, vertex(n), nvert, iwk(n)
 REAL(8) :: x(n), y(n)
 end subroutine envelope
 ! ./src/es_coulomb_p3d_bias.F90 :
-subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
-    use mod_electrostatics, only: typ_ewald_p3d
+subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
     real(8):: epotlong, epotplane !, epotshort
 end subroutine bias_potener_forces
-subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
-    use mod_electrostatics, only: typ_ewald_p3d
+subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     integer:: nimat !number of image atoms.
     integer:: nlayer, igpx,igpy,igpz,mx,my,mz, mlimnlayer
 end subroutine erfc_surface_zero
-subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
-    use mod_electrostatics, only: typ_poisson_p3d
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+subroutine sollaplaceq(poisson,hz,cell,vl,vu)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
     real(8):: vl, vu , zlmzu , sinhzlmzu, zlmzuinv
     real(8):: cell(3)
     real(8):: hz , vlmvu, vlzumvuzl 
 end subroutine sollaplaceq
- subroutine calculate_force_ener_plane(atoms,ewald_p3d,epot)
-    use mod_electrostatics, only: typ_ewald_p3d
+ subroutine calculate_force_ener_plane(atoms,poisson,epot)
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: fatp(3,atoms%nat) 
@@ -1822,69 +1822,69 @@ subroutine LGW4(n, w, h, x, LGx, DLGx, ix1, nbgp)
     integer:: ix, jx, ix1,ixo ,n ,n2 ,nbgp
     real(8):: w(n), q(n), qinv(n), LGx(n), DLGx(n), h ,x ,diffx,x1,protot
 end subroutine lgw4
-subroutine surface_charge(parini,ewald_p3d,pot_short,vl,vu)
-    use mod_electrostatics, only: typ_ewald_p3d
+subroutine surface_charge(parini,poisson,pot_short,vl,vu)
+    use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-    real(8):: t, tt ,density(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2),vl,vu
-    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,5)
+    type(typ_poisson), intent(inout):: poisson
+    real(8):: t, tt ,density(poisson%ngpx,poisson%ngpy,2),vl,vu
+    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(poisson%ngpx,poisson%ngpy,2,5)
 end subroutine surface_charge
-subroutine determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+subroutine determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
     integer:: ix, iy, iz, mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz), mboundgy(2,-nbgpz:nbgpz)
     integer:: nbgpx, nbgpy, nbgpz
 end subroutine determine_limitsphere
-subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
-    use mod_electrostatics, only: typ_ewald_p3d
+subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
     real(8):: epotlong, epotplane !, epotshort
 end subroutine bias_field_potener_forces
 ! ./src/es_coulomb_p3d.F90 :
-subroutine construct_ewald_p3d(parini,atoms,ewald_p3d)
+subroutine construct_poisson(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine construct_ewald_p3d
-subroutine destruct_ewald_p3d(parini,atoms,ewald_p3d)
+    type(typ_poisson), intent(inout):: poisson
+end subroutine construct_poisson
+subroutine destruct_poisson(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
-end subroutine destruct_ewald_p3d
-subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
-    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
+end subroutine destruct_poisson
+subroutine calculate_forces_energy(parini,poisson,atoms)
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
 end subroutine calculate_forces_energy
-subroutine calparam(parini,atoms,ewald_p3d_rough,ewald_p3d)
+subroutine calparam(parini,atoms,poisson_rough,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(in):: poisson_rough
+    type(typ_poisson), intent(inout):: poisson
 end subroutine calparam
-subroutine determine_glimitsphere(ewald_p3d)
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+subroutine determine_glimitsphere(poisson)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
 end subroutine determine_glimitsphere
-subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
-    use mod_electrostatics, only: typ_ewald_p3d
+subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
+    use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
@@ -1893,15 +1893,15 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     real(8), intent(in):: rxyz(3,nat)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gausswidth(nat)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
 end subroutine putgaussgrid
-subroutine longerange_forces(parini,atoms,ewald_p3d,gausswidth)
+subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     real(8), intent(in):: gausswidth(atoms%nat)
 end subroutine longerange_forces
 ! ./src/es_coulomb_spline.F90 :
@@ -1965,33 +1965,33 @@ subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
     real(16), intent(out):: funcsecder
 end subroutine exp_ar
 ! ./src/es_hartee_bps.F90 :
-subroutine cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
+subroutine cal_hartree_pot_bps(poisson,atoms,ehartree)
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
 end subroutine cal_hartree_pot_bps
-subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
+subroutine construct_ewald_bps(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
 end subroutine construct_ewald_bps
-subroutine destruct_ewald_bps(ewald_p3d)
-    use mod_electrostatics, only: typ_ewald_p3d
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+subroutine destruct_ewald_bps(poisson)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
 end subroutine destruct_ewald_bps
-subroutine set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
+subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(in):: poisson_rough
+    type(typ_poisson), intent(inout):: poisson
 end subroutine set_ngp_bps
 ! ./src/es_hartee_fourier.F90 :
 subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
@@ -2007,31 +2007,31 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine kwald_samare
 ! ./src/es_hartee_main.F90 :
-subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
+subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
 end subroutine get_hartree
-subroutine apply_external_field(parini,atoms,ewald_p3d,ehartree,g)
+subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: ehartree, g(atoms%nat)
 end subroutine apply_external_field
-subroutine get_g_from_pot(parini,atoms,ewald_p3d,gausswidth,g)
+subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_parini), intent(in):: parini
     real(8):: g(atoms%nat) 
     real(8), intent(in):: gausswidth(atoms%nat)
@@ -2048,32 +2048,32 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     real(8)::epotreal,alphatwoinv,ralphasq,rbetasq,rbetainv,alphasq,betainv
 end subroutine real_part
 ! ./src/es_hartee_p3d.F90 :
-subroutine ps2dp1df_construction(poisson_p3d)
-    use mod_electrostatics, only: typ_poisson_p3d
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+subroutine ps2dp1df_construction(poisson)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
 end subroutine ps2dp1df_construction
-subroutine ps2dp1df_destruction(poisson_p3d)
-    use mod_electrostatics, only: typ_poisson_p3d
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+subroutine ps2dp1df_destruction(poisson)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
 end subroutine ps2dp1df_destruction
-subroutine calculate_potener_pot(parini,poisson_p3d,cell,hx,hy,hz,epot,beta)
+subroutine calculate_potener_pot(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+    type(typ_poisson), intent(inout):: poisson
     real(8):: cell(3) !cell array contains size of the simulation box.
     real(8):: hx, hy, hz
     real(8):: epot
     real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
 end subroutine calculate_potener_pot
-subroutine solsyslinequ(poisson_p3d,hz,cell,beta_arg)
-    use mod_electrostatics, only: typ_poisson_p3d
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+subroutine solsyslinequ(poisson,hz,cell,beta_arg)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
     real(8):: hz, cell(3)
     real(8), optional:: beta_arg !beta_arg is proportion to dipole moment as it is in paper.
     integer, parameter:: nem=8 
-    real(8):: d(poisson_p3d%ngpz+2*8) !nem was replaced by 8 to be able to compile interface_mod.F90
-    real(8):: e1(poisson_p3d%ngpz), e2(poisson_p3d%ngpz-1), c(poisson_p3d%ngpz)
+    real(8):: d(poisson%ngpz+2*8) !nem was replaced by 8 to be able to compile interface_mod.F90
+    real(8):: e1(poisson%ngpz), e2(poisson%ngpz-1), c(poisson%ngpz)
 end subroutine solsyslinequ
 subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
     integer::ngpz,ngpzm1
@@ -2228,7 +2228,7 @@ end subroutine sym2rvan
 subroutine forcefield_init(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
 end subroutine forcefield_init
@@ -2379,19 +2379,19 @@ character(2):: char_type(ntypat)
 logical:: fixat(nat),fixlat(7)
 end subroutine write_atomic_file_ascii
 ! ./src/io_cube.F90 :
-subroutine cube_read(filename,atoms,poisson_p3d)
+subroutine cube_read(filename,atoms,poisson)
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_electrostatics, only: typ_poisson
     character(*), intent(in):: filename
     type(typ_atoms), intent(out):: atoms
-    type(typ_poisson_p3d), intent(out):: poisson_p3d
+    type(typ_poisson), intent(out):: poisson
 end subroutine cube_read
-subroutine cube_write(filename,atoms,poisson_p3d,rho_or_pot)
+subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_electrostatics, only: typ_poisson
     character(*), intent(in):: filename
     type(typ_atoms), intent(in):: atoms
-    type(typ_poisson_p3d), intent(in):: poisson_p3d
+    type(typ_poisson), intent(in):: poisson
     character(*), intent(in):: rho_or_pot
 end subroutine cube_write
 ! ./src/io_utils.F90 :
@@ -4855,7 +4855,7 @@ end subroutine cal_shortenergy
 ! ./src/solve_poisson_cube.F90 :
 subroutine solve_poisson(parini)
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     type(typ_parini), intent(in):: parini
 end subroutine solve_poisson
