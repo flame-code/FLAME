@@ -497,7 +497,7 @@ subroutine longerange_forces(parini,atoms,ewald_p3d,gausswidth)
     use mod_electrostatics, only: typ_ewald_p3d
     use dynamic_memory
     implicit none
-    type(typ_parini), intent(inout):: parini
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: gausswidth(atoms%nat)

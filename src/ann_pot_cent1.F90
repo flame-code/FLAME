@@ -49,7 +49,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call init_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,ewald_p3d)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -262,7 +262,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     end associate
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
-subroutine init_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,ewald_p3d)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -272,7 +272,6 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
-    real(8), intent(out):: epot_c
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     !local variables
