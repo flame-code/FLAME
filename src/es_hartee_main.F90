@@ -156,9 +156,6 @@ subroutine apply_external_field(parini,atoms,ewald_p3d,ehartree,g)
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
     real(8):: ext_pot, dipole
-    real(8):: dv, pi, beta
-
-    pi=4.d0*atan(1.d0)
     if((.not. ewald_p3d%poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
         do igpz=1,ewald_p3d%poisson_p3d%ngpz
             !igpz=1 is not necessarily z=0, now in this way external potential is not
@@ -181,20 +178,6 @@ subroutine apply_external_field(parini,atoms,ewald_p3d,ehartree,g)
             g(iat)=g(iat)+parini%efield*0.5d0*atoms%rat(3,iat)
         enddo
     elseif((.not. ewald_p3d%poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
-        dipole=0.d0
-        do iat=1,atoms%nat
-            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
-        enddo
-        beta=-dipole*2.d0*pi/(ewald_p3d%cell(1)*ewald_p3d%cell(2))
-        dv=parini%vu_ewald-parini%vl_ewald
-        write(*,*)'real pot = vu , vl ', parini%vu_ewald+dipole, parini%vl_ewald-dipole 
-
-        ehartree=ehartree+(dv+2*beta)*0.5d0*dipole/ewald_p3d%cell(3)
-        do iat=1,atoms%nat
-            !atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
-            g(iat)=g(iat)+(dv+2*beta)*0.5d0*atoms%rat(3,iat)/ewald_p3d%cell(3)
-            g(iat)=g(iat)+(beta)*atoms%rat(3,iat)/ewald_p3d%cell(3)
-        enddo
         !efield=0.d0 !to be corrected by Samare
         !do igpz=1,ewald_p3d%poisson_p3d%ngpz
         !    !igpz=1 is not necessarily z=0, now in this way external potential is not
