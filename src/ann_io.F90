@@ -455,65 +455,44 @@ subroutine read_ann(parini,ann_arr)
     !endif
 end subroutine read_ann
 !*****************************************************************************************
-subroutine read_data(parini,filename_list,atoms_arr)
+subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_all, typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
-    !integer:: 
     !local variables
-    integer:: i, iat, ios, k, nconftot, iconf
-    character(5):: ttch
-    character(20):: units
+    integer:: i, iat, ios, k, iconf
     character(256):: filename, fn_tmp, filename_force
     type(typ_atoms_arr):: atoms_arr_of !configuration of one file
     type(typ_atoms_arr):: atoms_arr_t
     real(8):: ttx, tty, ttz, fx, fy, fz
     integer:: nconfmax, ind, len_filename
-    call f_routine(id='read_data')
+    call f_routine(id='read_data_old')
     nconfmax=1*10**5
     allocate(atoms_arr_t%atoms(nconfmax))
     allocate(atoms_arr_t%fn(nconfmax))
     allocate(atoms_arr_t%lconf(nconfmax))
     open(unit=1,file=filename_list,status='old',iostat=ios)
     if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning list_posinp';stop;endif
-    nconftot=0
     atoms_arr_t%nconf=0
-    do !ifile=1,nfile
+    over_files: do
         read(1,'(a)',iostat=k) filename
-        !filename='../'//trim(filename)
         if(k<0) exit
         fn_tmp=adjustl(trim(filename))
         if(fn_tmp(1:1)=='#') cycle
-        !write(*,'(3a)',advance='no') 'Reading from ',trim(filename),'. '
-        !call acf_read(parini,filename,10000,atoms_all=atoms_all)
         call acf_read_new(parini,filename,10000,atoms_arr_of)
-        !atoms_all%atoms%cellvec(1:3,1:3)=0.d0
-        !atoms_all%atoms%cellvec(1,1)=60.d0
-        !atoms_all%atoms%cellvec(2,2)=60.d0
-        !atoms_all%atoms%cellvec(3,3)=60.d0
-        !write(*,'(a,i6)') 'nconf=',atoms_all%nconf
-        !write(*,*) index(filename,'/',back=.true.)
-        !write(*,*) scan(filename,'/',back=.true.)
         ind=index(filename,'/',back=.true.)
         len_filename=len(filename)
         filename_force=filename(1:ind)//'force_'//filename(ind+1:len_filename)
-        !write(*,*) trim(filename_force)
-        !stop
         if(parini%read_forces_ann) then
             open(unit=2,file=trim(filename_force),status='old',iostat=ios)
         endif
         if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning force of list_posinp';stop;endif
         over_iconf: do iconf=1,atoms_arr_of%nconf
-            !atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)=0.d0
-            !atoms_arr_of%atoms(iconf)%cellvec(1,1)=60.d0
-            !atoms_arr_of%atoms(iconf)%cellvec(2,2)=60.d0
-            !atoms_arr_of%atoms(iconf)%cellvec(3,3)=60.d0
-
             atoms_arr_t%nconf=atoms_arr_t%nconf+1
             if(atoms_arr_t%nconf>nconfmax) then
                 stop 'ERROR: too many configurations, change parameter nconfmax.'
@@ -525,12 +504,9 @@ subroutine read_data(parini,filename_list,atoms_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             if(parini%read_forces_ann) read(2,*)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
-                ttx=atoms_arr_of%atoms(iconf)%rat(1,iat) !+5.d0
-                tty=atoms_arr_of%atoms(iconf)%rat(2,iat) !+5.d0
-                ttz=atoms_arr_of%atoms(iconf)%rat(3,iat) !+5.d0
-                !ttx=modulo(modulo(ttx,1000.d0),1000.d0)
-                !tty=modulo(modulo(tty,1000.d0),1000.d0)
-                !ttz=modulo(modulo(ttz,1000.d0),1000.d0)
+                ttx=atoms_arr_of%atoms(iconf)%rat(1,iat)
+                tty=atoms_arr_of%atoms(iconf)%rat(2,iat)
+                ttz=atoms_arr_of%atoms(iconf)%rat(3,iat)
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(1,iat)=ttx
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(2,iat)=tty
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(3,iat)=ttz
@@ -551,11 +527,9 @@ subroutine read_data(parini,filename_list,atoms_arr)
             call atom_deallocate(atoms_arr_of%atoms(iconf))
         enddo over_iconf
         deallocate(atoms_arr_of%atoms)
-        !call atom_all_deallocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.,qtotall=.true.)
         if(parini%read_forces_ann) close(2)
-    enddo
+    enddo over_files
     close(1)
-    
     atoms_arr%nconf=atoms_arr_t%nconf
     allocate(atoms_arr%atoms(atoms_arr%nconf))
     allocate(atoms_arr%fn(atoms_arr%nconf))
@@ -565,22 +539,7 @@ subroutine read_data(parini,filename_list,atoms_arr)
             'atoms_arr_t%atoms(iconf)->atoms_arr%atoms(iconf)')
         atoms_arr%fn(iconf)=trim(atoms_arr_t%fn(iconf))
         atoms_arr%lconf(iconf)=atoms_arr_t%lconf(iconf)
-       ! if(trim(atoms_arr%atoms(iconf)%boundcond)=='bulk' .or. &
-       !    trim(atoms_arr%atoms(iconf)%boundcond)=='slab' .or. &
-       !    trim(atoms_arr%atoms(iconf)%boundcond)=='wire') then
-       !     !stop 'WARNING: Is cellvec variable copied?'
-       !     call atom_build_periodic_images(atoms_arr%atoms(iconf),10.d0)
-       ! else
-            !atoms_arr%atoms(iconf)%natim=atoms_arr%atoms(iconf)%nat
-            !call atom_allocate_old(atoms_arr%atoms(iconf),atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%natim,0)
-            !do iat=1,atoms_arr%atoms(iconf)%nat
-            !    atoms_arr%atoms(iconf)%ratim(1,iat)=atoms_arr%atoms(iconf)%rat(1,iat)
-            !    atoms_arr%atoms(iconf)%ratim(2,iat)=atoms_arr%atoms(iconf)%rat(2,iat)
-            !    atoms_arr%atoms(iconf)%ratim(3,iat)=atoms_arr%atoms(iconf)%rat(3,iat)
-            !enddo
-        !endif
     enddo
-
     do iconf=1,atoms_arr_t%nconf
         call atom_deallocate_old(atoms_arr_t%atoms(iconf))
     enddo
@@ -588,5 +547,5 @@ subroutine read_data(parini,filename_list,atoms_arr)
     deallocate(atoms_arr_t%fn)
     deallocate(atoms_arr_t%lconf)
     call f_release_routine()
-end subroutine read_data
+end subroutine read_data_old
 !*****************************************************************************************

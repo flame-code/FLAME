@@ -162,7 +162,7 @@ subroutine calculate_forces_energy(parini,ewald_p3d,atoms)
     enddo
     enddo
     enddo
-    call longerange_forces(atoms,ewald_p3d,gausswidth)
+    call longerange_forces(parini,atoms,ewald_p3d,gausswidth)
     call cpu_time(time(4))
     !call shortenergy(atoms,ewald_p3d%linked_lists,ewald_p3d%spline,ewald_p3d%alpha,ewald_p3d%cell,epotshort)
     call cpu_time(time(5))
@@ -490,12 +490,14 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     call f_release_routine()
 end subroutine putgaussgrid
 !*****************************************************************************************
-subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
+subroutine longerange_forces(parini,atoms,ewald_p3d,gausswidth)
     use mod_interface
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
     use dynamic_memory
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: gausswidth(atoms%nat)
@@ -609,6 +611,11 @@ subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
         atoms%fat(2,iat)=atoms%fat(2,iat)+fy*hgxhgyhgz
         atoms%fat(3,iat)=atoms%fat(3,iat)+fz*hgxhgyhgz
     enddo
+    if((.not. ewald_p3d%poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
+        do iat=1,atoms%nat
+            atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
+        enddo
+    endif
     call f_free(wa)
     call f_free(wx)
     call f_free(wy)

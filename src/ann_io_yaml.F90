@@ -518,3 +518,99 @@ subroutine set_dict_ann(ann,fname,stypat)
     nullify(dict)
 end subroutine set_dict_ann
 !*****************************************************************************************
+subroutine read_data_yaml(parini,filename_list,atoms_arr)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: filename_list
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    !local variables
+    integer:: i, iat, ios, k, iconf
+    character(256):: filename, fn_tmp, filename_force
+    type(typ_atoms_arr):: atoms_arr_of !configuration of one file
+    type(typ_atoms_arr):: atoms_arr_t
+    real(8):: ttx, tty, ttz, fx, fy, fz
+    integer:: nconfmax, ind, len_filename, nfiles, nfiles_max, ifile
+    character(256), allocatable:: fn_list(:)
+    call f_routine(id='read_data_yaml')
+    nconfmax=1*10**5
+    nfiles_max=5*10**4
+    allocate(atoms_arr_t%atoms(nconfmax))
+    allocate(atoms_arr_t%fn(nconfmax))
+    allocate(atoms_arr_t%lconf(nconfmax))
+    atoms_arr_t%nconf=0
+    allocate(fn_list(nfiles_max))
+    call read_list_files_yaml(filename_list,nfiles_max,fn_list,nfiles)
+    over_files: do ifile=1,nfiles
+        filename=trim(fn_list(ifile))
+        fn_tmp=adjustl(trim(filename))
+        if(fn_tmp(1:1)=='#') cycle
+        call acf_read_new(parini,filename,10000,atoms_arr_of)
+        ind=index(filename,'/',back=.true.)
+        len_filename=len(filename)
+        filename_force=filename(1:ind)//'force_'//filename(ind+1:len_filename)
+        if(parini%read_forces_ann) then
+            open(unit=2,file=trim(filename_force),status='old',iostat=ios)
+        endif
+        if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning force of list_posinp';stop;endif
+        over_iconf: do iconf=1,atoms_arr_of%nconf
+            atoms_arr_t%nconf=atoms_arr_t%nconf+1
+            if(atoms_arr_t%nconf>nconfmax) then
+                stop 'ERROR: too many configurations, change parameter nconfmax.'
+            endif
+            call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0)
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%epot=atoms_arr_of%atoms(iconf)%epot
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%qtot=atoms_arr_of%atoms(iconf)%qtot
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
+            if(parini%read_forces_ann) read(2,*)
+            do iat=1,atoms_arr_of%atoms(iconf)%nat
+                ttx=atoms_arr_of%atoms(iconf)%rat(1,iat)
+                tty=atoms_arr_of%atoms(iconf)%rat(2,iat)
+                ttz=atoms_arr_of%atoms(iconf)%rat(3,iat)
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(1,iat)=ttx
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(2,iat)=tty
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(3,iat)=ttz
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)
+                if(parini%read_forces_ann) then
+                    read(2,*) fx,fy,fz
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=fx
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=fy
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(3,iat)=fz
+                else
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=0.d0
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=0.d0
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(3,iat)=0.d0
+                endif
+            enddo
+            atoms_arr_t%fn(atoms_arr_t%nconf)=trim(filename)
+            atoms_arr_t%lconf(atoms_arr_t%nconf)=iconf
+            call atom_deallocate(atoms_arr_of%atoms(iconf))
+        enddo over_iconf
+        deallocate(atoms_arr_of%atoms)
+        if(parini%read_forces_ann) close(2)
+    enddo over_files
+    !close(1)
+    atoms_arr%nconf=atoms_arr_t%nconf
+    allocate(atoms_arr%atoms(atoms_arr%nconf))
+    allocate(atoms_arr%fn(atoms_arr%nconf))
+    allocate(atoms_arr%lconf(atoms_arr%nconf))
+    do iconf=1,atoms_arr%nconf
+        call atom_copy_old(atoms_arr_t%atoms(iconf),atoms_arr%atoms(iconf), &
+            'atoms_arr_t%atoms(iconf)->atoms_arr%atoms(iconf)')
+        atoms_arr%fn(iconf)=trim(atoms_arr_t%fn(iconf))
+        atoms_arr%lconf(iconf)=atoms_arr_t%lconf(iconf)
+    enddo
+    do iconf=1,atoms_arr_t%nconf
+        call atom_deallocate_old(atoms_arr_t%atoms(iconf))
+    enddo
+    deallocate(atoms_arr_t%atoms)
+    deallocate(atoms_arr_t%fn)
+    deallocate(atoms_arr_t%lconf)
+    deallocate(fn_list)
+    call f_release_routine()
+end subroutine read_data_yaml
+!*****************************************************************************************

@@ -215,13 +215,13 @@ subroutine read_ann(parini,ann_arr)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine read_ann
-subroutine read_data(parini,filename_list,atoms_arr)
+subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_all, typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine read_data
+end subroutine read_data_old
 ! ./src/ann_io_yaml.F90 :
 subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     use mod_parini, only: typ_parini
@@ -266,6 +266,13 @@ subroutine set_dict_ann(ann,fname,stypat)
     character(5):: stypat
     character(len=*):: fname 
 end subroutine set_dict_ann
+subroutine read_data_yaml(parini,filename_list,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: filename_list
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine read_data_yaml
 ! ./src/ann_lm.F90 :
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
@@ -336,13 +343,23 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi_dir
-subroutine cal_electrostatic_cent1(parini,str_job,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,ewald_p3d)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_ewald_p3d
     type(typ_parini), intent(in):: parini
-    character(*), intent(in):: str_job
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+end subroutine init_electrostatic_cent1
+subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(out):: epot_c
@@ -1878,9 +1895,11 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,ewald_p3d)
     real(8), intent(in):: gausswidth(nat)
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
 end subroutine putgaussgrid
-subroutine longerange_forces(atoms,ewald_p3d,gausswidth)
+subroutine longerange_forces(parini,atoms,ewald_p3d,gausswidth)
+    use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ewald_p3d), intent(inout):: ewald_p3d
     real(8), intent(in):: gausswidth(atoms%nat)
@@ -1998,6 +2017,15 @@ subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
 end subroutine get_hartree
+subroutine apply_external_field(parini,atoms,ewald_p3d,ehartree,g)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    type(typ_parini), intent(in):: parini
+    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(inout):: ehartree, g(atoms%nat)
+end subroutine apply_external_field
 subroutine get_g_from_pot(parini,atoms,ewald_p3d,gausswidth,g)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_ewald_p3d
@@ -2366,6 +2394,13 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     type(typ_poisson), intent(in):: poisson
     character(*), intent(in):: rho_or_pot
 end subroutine cube_write
+! ./src/io_utils.F90 :
+subroutine read_list_files_yaml(fname,nfiles_max,fn_list,nfiles)
+    character(len=*), intent(in):: fname
+    integer, intent(in):: nfiles_max
+    character(len=256), intent(out):: fn_list(nfiles)
+    integer, intent(out):: nfiles
+end subroutine read_list_files_yaml
 ! ./src/io_vasp.F90 :
 subroutine write_poscar(filename,nat,rat,latvec,ntypat,natarr,comment,vasp5,comment2,atom_motion)
     integer:: nat, ntypat, natarr(128)

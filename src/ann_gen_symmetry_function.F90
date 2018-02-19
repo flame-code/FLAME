@@ -18,6 +18,7 @@ subroutine ann_gen_symmetry_function(parini)
     real(8), allocatable:: diff(:),tt1(:),tt2(:)
     integer:: nconftot, ios, k
     character (50)::fname
+    logical:: file_exists
     
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%n)
@@ -41,7 +42,12 @@ subroutine ann_gen_symmetry_function(parini)
         call read_input_ann(parini,iproc,ann_arr)
     endif
     
-    call read_data(parini,'list_posinp_gen',atoms_gen)
+    inquire(file="list_posinp_gen.yaml",exist=file_exists)
+    if(file_exists) then
+        call read_data_yaml(parini,'list_posinp_gen.yaml',atoms_gen)
+    else
+        call read_data_old(parini,'list_posinp_gen',atoms_gen)
+    endif
     !---------------------------------------------------------- 
     open(unit=1,file='list_posinp_gen',status='old',iostat=ios)
     if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning list_posinp_gen__';stop;endif
