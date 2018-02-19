@@ -1,12 +1,12 @@
 !*****************************************************************************************
-subroutine cube_read(filename,atoms,poisson)
+subroutine cube_read(filename,atoms,poisson_p3d)
     use mod_interface
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
+    use mod_electrostatics, only: typ_poisson_p3d
     implicit none
     character(*), intent(in):: filename
     type(typ_atoms), intent(out):: atoms
-    type(typ_poisson), intent(out):: poisson
+    type(typ_poisson_p3d), intent(out):: poisson_p3d
     !integer, intent(in):: nx, ny, nz
     !real(8), intent(out)::
     !local variables
@@ -23,12 +23,12 @@ subroutine cube_read(filename,atoms,poisson)
     read(1358,*)
     read(1358,*) nat
     call atom_allocate_old(atoms,nat,0,0)
-    read(1358,*) poisson%ngpx,poisson%hx
-    read(1358,*) poisson%ngpy,tt,poisson%hy
-    read(1358,*) poisson%ngpz,tt,tt,poisson%hz
-    atoms%cellvec(1,1) = poisson%ngpx*poisson%hx
-    atoms%cellvec(2,2) = poisson%ngpy*poisson%hy
-    atoms%cellvec(3,3) = poisson%ngpz*poisson%hz
+    read(1358,*) poisson_p3d%ngpx,poisson_p3d%hx
+    read(1358,*) poisson_p3d%ngpy,tt,poisson_p3d%hy
+    read(1358,*) poisson_p3d%ngpz,tt,tt,poisson_p3d%hz
+    atoms%cellvec(1,1) = poisson_p3d%ngpx*poisson_p3d%hx
+    atoms%cellvec(2,2) = poisson_p3d%ngpy*poisson_p3d%hy
+    atoms%cellvec(3,3) = poisson_p3d%ngpz*poisson_p3d%hz
     write(*,'(2a)') 'reading ',trim(filename)
     do iat=1,atoms%nat
         read(1358,*) iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
@@ -38,11 +38,11 @@ subroutine cube_read(filename,atoms,poisson)
         !if(iatom==7) atoms%sat(iat)='N'
         !if(iatom==29) atoms%sat(iat)='Cu'
     enddo
-    allocate(poisson%rho(poisson%ngpx,poisson%ngpy,poisson%ngpz),stat=istat)
+    allocate(poisson_p3d%rho(poisson_p3d%ngpx,poisson_p3d%ngpy,poisson_p3d%ngpz),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of rho failed.'
-    !do igpx=1,poisson%ngpx
-    !    do igpy=1,poisson%ngpy
-    !        do igpz=1,poisson%ngpz
+    !do igpx=1,poisson_p3d%ngpx
+    !    do igpy=1,poisson_p3d%ngpy
+    !        do igpz=1,poisson_p3d%ngpz
 
     !            str=''
     !            read(1358,'(a)') str
@@ -66,15 +66,15 @@ subroutine cube_read(filename,atoms,poisson)
             ind=scan(str,separator)
             if(ios==0) then
                 igpz=igpz+1
-                if(igpz>poisson%ngpz) then
+                if(igpz>poisson_p3d%ngpz) then
                     igpz=1
                     igpy=igpy+1
-                    if(igpy>poisson%ngpy) then
+                    if(igpy>poisson_p3d%ngpy) then
                         igpy=1
                         igpx=igpx+1
                     endif
                 endif
-                poisson%rho(igpx,igpy,igpz)=tt
+                poisson_p3d%rho(igpx,igpy,igpz)=tt
             else
             endif
             !write(*,*) tt,ios,ind
@@ -88,24 +88,24 @@ subroutine cube_read(filename,atoms,poisson)
         enddo
         !write(*,*)
         !if(iline==1) exit
-        if(igpx==poisson%ngpx .and. igpy==poisson%ngpy .and. igpz==poisson%ngpz) then
+        if(igpx==poisson_p3d%ngpx .and. igpy==poisson_p3d%ngpy .and. igpz==poisson_p3d%ngpz) then
             exit
         endif
-        !if(iline==poisson%ngpx*poisson%ngpy*poisson%ngpz) then
+        !if(iline==poisson_p3d%ngpx*poisson_p3d%ngpy*poisson_p3d%ngpz) then
         !endif
     enddo
     !print*, " elec. and ionic charges: " ,  sum(rho)*hx*hy*hz , sum(q)
     close(1358)
 end subroutine cube_read
 !*****************************************************************************************
-subroutine cube_write(filename,atoms,poisson,rho_or_pot)
+subroutine cube_write(filename,atoms,poisson_p3d,rho_or_pot)
     use mod_interface
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
+    use mod_electrostatics, only: typ_poisson_p3d
     implicit none
     character(*), intent(in):: filename
     type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(in):: poisson
+    type(typ_poisson_p3d), intent(in):: poisson_p3d
     character(*), intent(in):: rho_or_pot
     !integer, intent(in):: nx, ny, nz
     !real(8), intent(out)::
@@ -118,9 +118,9 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     write(1358,'(a)') ''
     write(1358,'(a)') ''
     write(1358,'(i5,3f13.6)') atoms%nat,0.d0,0.d0,0.d0
-    write(1358,'(i5,3f13.6)') poisson%ngpx,poisson%hx,0.d0,0.d0
-    write(1358,'(i5,3f13.6)') poisson%ngpy,0.d0,poisson%hy,0.d0
-    write(1358,'(i5,3f13.6)') poisson%ngpz,0.d0,0.d0,poisson%hz
+    write(1358,'(i5,3f13.6)') poisson_p3d%ngpx,poisson_p3d%hx,0.d0,0.d0
+    write(1358,'(i5,3f13.6)') poisson_p3d%ngpy,0.d0,poisson_p3d%hy,0.d0
+    write(1358,'(i5,3f13.6)') poisson_p3d%ngpz,0.d0,0.d0,poisson_p3d%hz
     do iat=1,atoms%nat
         !if(trim(atoms%sat(iat))=='H') iatom=1
         !if(trim(atoms%sat(iat))=='C') iatom=6
@@ -130,20 +130,20 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
         write(1358,'(i5,f13.5,3f13.6)') iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
     enddo
     item=0
-    do igpx=1,poisson%ngpx
-        do igpy=1,poisson%ngpy
-            do igpz=1,poisson%ngpz
+    do igpx=1,poisson_p3d%ngpx
+        do igpy=1,poisson_p3d%ngpy
+            do igpz=1,poisson_p3d%ngpz
                 if(trim(rho_or_pot)=='pot') then
-                    quantity=poisson%pot(igpx,igpy,igpz)
+                    quantity=poisson_p3d%pot(igpx,igpy,igpz)
                 else if(trim(rho_or_pot)=='rho') then
-                    quantity=poisson%rho(igpx,igpy,igpz)
+                    quantity=poisson_p3d%rho(igpx,igpy,igpz)
                 else
                     stop 'ERROR: what should cube_write write into file?'
                 endif
                 write(1358,'(1x,es12.5,1x)',advance='no') quantity
                 !write(1358,'(1x,f13.6,1x)',advance='no') quantity
                 item=item+1
-                if(item==6 .or. (igpx==poisson%ngpx .and. igpy==poisson%ngpy .and. igpz==poisson%ngpz)) then
+                if(item==6 .or. (igpx==poisson_p3d%ngpx .and. igpy==poisson_p3d%ngpy .and. igpz==poisson_p3d%ngpz)) then
                     item=0
                     write(1358,'(a1)') ' '
                 endif

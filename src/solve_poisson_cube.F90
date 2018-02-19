@@ -13,7 +13,7 @@ subroutine solve_poisson(parini)
     real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi
     real(8),allocatable::  gausswidth(:)
     pi=4.d0*atan(1.d0)
-    call cube_read('rho.cube',atoms,poisson_p3d%typ_poisson)
+    call cube_read('rho.cube',atoms,poisson_p3d)
     !write(*,*) poisson_p3d%ngpx,poisson_p3d%ngpy,poisson_p3d%ngpz
     allocate(poisson_p3d%pot(poisson_p3d%ngpx+2,poisson_p3d%ngpy,poisson_p3d%ngpz),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of pot failed.'
@@ -77,7 +77,7 @@ subroutine solve_poisson(parini)
     write(*,*) 't2=',t2
     write(*,*) 't3=',t3
     write(*,*) 't4=',t4
-    call cube_write('total_rho.cube',atoms,poisson_p3d%typ_poisson,'rho')
+    call cube_write('total_rho.cube',atoms,poisson_p3d,'rho')
     deallocate(ewald_p3d%poisson_p3d%rho,stat=istat)
     if(istat/=0) stop 'ERROR: deallocation of rho failed.'
     deallocate(ewald_p3d%poisson_p3d%pot,stat=istat)
@@ -92,7 +92,7 @@ subroutine solve_poisson(parini)
     !t1=t1*(2*pi)/(cell(1)*cell(2))
     write(*,*) 't1=',t1
     call calculate_potener_pot(parini,poisson_p3d,cell,poisson_p3d%hx,poisson_p3d%hy,poisson_p3d%hz,epot)
-    call cube_write('pot_p3d.cube',atoms,poisson_p3d%typ_poisson,'pot')
+    call cube_write('pot_p3d.cube',atoms,poisson_p3d,'pot')
     call ps2dp1df_destruction(poisson_p3d)
     deallocate(poisson_p3d%rho,stat=istat)
     if(istat/=0) stop 'ERROR: deallocation of rho failed.'

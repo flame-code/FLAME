@@ -2379,19 +2379,19 @@ character(2):: char_type(ntypat)
 logical:: fixat(nat),fixlat(7)
 end subroutine write_atomic_file_ascii
 ! ./src/io_cube.F90 :
-subroutine cube_read(filename,atoms,poisson)
+subroutine cube_read(filename,atoms,poisson_p3d)
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
+    use mod_electrostatics, only: typ_poisson_p3d
     character(*), intent(in):: filename
     type(typ_atoms), intent(out):: atoms
-    type(typ_poisson), intent(out):: poisson
+    type(typ_poisson_p3d), intent(out):: poisson_p3d
 end subroutine cube_read
-subroutine cube_write(filename,atoms,poisson,rho_or_pot)
+subroutine cube_write(filename,atoms,poisson_p3d,rho_or_pot)
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
+    use mod_electrostatics, only: typ_poisson_p3d
     character(*), intent(in):: filename
     type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(in):: poisson
+    type(typ_poisson_p3d), intent(in):: poisson_p3d
     character(*), intent(in):: rho_or_pot
 end subroutine cube_write
 ! ./src/io_utils.F90 :

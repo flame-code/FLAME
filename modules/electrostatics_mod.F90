@@ -6,7 +6,7 @@ module mod_electrostatics
     use Poisson_Solver, only: coulomb_operator
 #endif
     implicit none
-    type typ_poisson
+    type:: typ_poisson_p3d
         integer:: ngpx !number of grid points in x direction.
         integer:: ngpy !number of grid points in y direction.
         integer:: ngpz !number of grid points in z direction.
@@ -19,14 +19,12 @@ module mod_electrostatics
         integer:: npl, npu
         real(8):: beta 
         logical:: point_particle= .false.
-#if defined(HAVE_BPS)
-    type(coulomb_operator):: pkernel
-#endif
-    end type typ_poisson
-    type, extends(typ_poisson):: typ_poisson_p3d
         integer(8), allocatable:: plan_f(:) !Plans of forward fftw with size ngpz
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2
+#if defined(HAVE_BPS)
+        type(coulomb_operator):: pkernel
+#endif
     end type typ_poisson_p3d
     !type, extends(typ_ewald):: typ_ewald_p3d
     type:: typ_ewald_p3d

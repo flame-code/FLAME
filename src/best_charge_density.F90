@@ -14,7 +14,7 @@ end subroutine best_charge_density
 subroutine best_charge_density_rho(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
     implicit none
@@ -46,7 +46,7 @@ subroutine best_charge_density_rho(parini)
     open(unit=4,file='forceerr')
     open(unit=5,file='peakloc')
 
-    call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
+    call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d)
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     open(unit=1377,file='params.txt')
     pi=4.d0*atan(1.d0)
@@ -376,7 +376,7 @@ end subroutine best_charge_density_rho
 subroutine best_charge_density_force(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+    use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
     implicit none
@@ -401,7 +401,7 @@ subroutine best_charge_density_force(parini)
     lcn = 1 
    !///////////////////////////1st DFT////////////////////////////////////
 
-    call cube_read('electronic_density_1.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
+    call cube_read('electronic_density_1.cube',atoms,cent%ewald_p3d%poisson_p3d)
     allocate(dft_rho_1(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz))
     cent%ewald_p3d%poisson_p3d%rho=-1.d0*cent%ewald_p3d%poisson_p3d%rho
     dft_rho_1 = -1.d0*cent%ewald_p3d%poisson_p3d%rho
@@ -429,7 +429,7 @@ subroutine best_charge_density_force(parini)
     deallocate(cent%ewald_p3d%poisson_p3d%pot)
    !///////////////////////////2nd DFT////////////////////////////////////
     cent%ewald_p3d%poisson_p3d%rho = 0.d0
-    call cube_read('electronic_density_2.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
+    call cube_read('electronic_density_2.cube',atoms,cent%ewald_p3d%poisson_p3d)
     allocate(dft_rho_2(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz))
     cent%ewald_p3d%poisson_p3d%rho=-1.d0*cent%ewald_p3d%poisson_p3d%rho
     dft_rho_2 = -1.d0*cent%ewald_p3d%poisson_p3d%rho
@@ -636,7 +636,7 @@ subroutine best_charge_density_energy(parini)
      use mod_interface
  !!--------------------------------------------------------------------------------------------------
      use mod_parini, only: typ_parini
-     use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d,typ_poisson
+     use mod_electrostatics, only: typ_poisson_p3d, typ_ewald_p3d
      use mod_atoms, only: typ_atoms
      use mod_ann, only: typ_cent, typ_ann_arr
      implicit none
@@ -653,7 +653,7 @@ subroutine best_charge_density_energy(parini)
      real(8),allocatable::  gausswidth(:) , gwit(:), diff(:,:),bigforce(:,:),agrad(:)
      real(8),allocatable:: dft_rho(:,:,:) , cent_rho(:,:,:)
      pi=4.d0*atan(1.d0)
-     call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d%typ_poisson)
+     call cube_read('electronic_density.cube',atoms,cent%ewald_p3d%poisson_p3d)
      allocate(dft_rho(cent%ewald_p3d%poisson_p3d%ngpx,cent%ewald_p3d%poisson_p3d%ngpy,cent%ewald_p3d%poisson_p3d%ngpz))
      dft_rho = cent%ewald_p3d%poisson_p3d%rho
      call acf_read(parini,'posinp.acf',1,atoms=atoms)
