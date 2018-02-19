@@ -100,7 +100,7 @@ subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
             stop 'ERROR: unknown psolver_ann'
         endif
     elseif(trim(atoms%boundcond)=='slab') then
-        call calculate_potener_pot(ewald_p3d%poisson_p3d,ewald_p3d%cell,ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz,ehartree,dpm)
+        call calculate_potener_pot(parini,ewald_p3d%poisson_p3d,ewald_p3d%cell,ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz,ehartree,dpm)
         ehartree=ehartree+epotreal
         do igpz=1,ewald_p3d%poisson_p3d%ngpz
         do igpy=1,ewald_p3d%poisson_p3d%ngpy
@@ -130,6 +130,7 @@ subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
             call get_g_from_pot(parini,atoms,ewald_p3d,gausswidth,g)
         end if
     endif
+    call apply_external_field(parini,atoms,ewald_p3d,ehartree,g)
     if(parini%ewald) then
         call f_free(gg)
         call f_free(ewaldwidth)
@@ -137,6 +138,60 @@ subroutine get_hartree(parini,ewald_p3d,atoms,gausswidth,ehartree,g)
     call f_timing(TCAT_PSOLVER,'OF')
     call f_release_routine()
 end subroutine get_hartree
+!*****************************************************************************************
+subroutine apply_external_field(parini,atoms,ewald_p3d,ehartree,g)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_ewald_p3d
+    !use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(inout):: ehartree, g(atoms%nat)
+    !local variables
+    !real(8):: dpm, pi, gtot, ecut, epotreal, alphasq
+    integer:: iat, igpx, igpy, igpz
+    !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
+    !real(8), allocatable::  ewaldwidth(:)
+    real(8):: ext_pot, dipole
+    if((.not. ewald_p3d%poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
+        do igpz=1,ewald_p3d%poisson_p3d%ngpz
+            !igpz=1 is not necessarily z=0, now in this way external potential is not
+            !zero at z=0 but since shift the potential, such that external potential
+            !to be zero at z=0, has no effect on energy, we keep it this way.
+            !ext_pot=parini%efield*igpz*ewald_p3d%hgz
+            !do igpy=1,ewald_p3d%poisson_p3d%ngpy
+            !    do igpx=1,ewald_p3d%poisson_p3d%ngpx
+            !        ewald_p3d%poisson_p3d%pot(igpx,igpy,igpz)=ewald_p3d%poisson_p3d%pot(igpx,igpy,igpz)+ext_pot
+            !    enddo
+            !enddo
+        enddo
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        ehartree=ehartree+parini%efield*0.5d0*dipole
+        do iat=1,atoms%nat
+            !atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
+            g(iat)=g(iat)+parini%efield*0.5d0*atoms%rat(3,iat)
+        enddo
+    elseif((.not. ewald_p3d%poisson_p3d%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
+        !efield=0.d0 !to be corrected by Samare
+        !do igpz=1,ewald_p3d%poisson_p3d%ngpz
+        !    !igpz=1 is not necessarily z=0, now in this way external potential is not
+        !    !zero at z=0 but since shift the potential, such that external potential
+        !    !to be zero at z=0, has no effect on energy, we keep it this way.
+        !    ext_pot=efield*igpz*hz
+        !    do igpy=1,ewald_p3d%poisson_p3d%ngpy
+        !        do igpx=1,ewald_p3d%poisson_p3d%ngpx
+        !            ewald_p3d%poisson_p3d%pot(igpx,igpy,igpz)=ewald_p3d%poisson_p3d%pot(igpx,igpy,igpz)+ext_pot
+        !        enddo
+        !    enddo
+        !enddo
+    endif
+end subroutine apply_external_field
 !*****************************************************************************************
 subroutine get_g_from_pot(parini,atoms,ewald_p3d,gausswidth,g)
     use mod_interface

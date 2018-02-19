@@ -546,7 +546,7 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     integer, allocatable:: neighbor(:)
     logical :: yes
     call linkedlists_init(parini,atoms,cell,linked_lists)
-    nmax=300
+    nmax=500
     !if (.not. linked_lists%triplex) then
         !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
         !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)

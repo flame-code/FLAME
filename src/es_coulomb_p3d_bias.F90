@@ -2,7 +2,7 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
     use mod_interface
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: bias, potential 
+    use mod_potential, only: potential 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -24,7 +24,9 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
     pi=4.d0*atan(1.d0)
     epotplane=0.d0
     beta = ewald_p3d%poisson_p3d%beta
-    if (trim(bias)=='yes') then
+    ngpx= ewald_p3d%poisson_p3d%ngpx
+    ngpy= ewald_p3d%poisson_p3d%ngpy
+    if(trim(parini%bias_type)=='p3dbias') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
         d= ewald_p3d%cell(3)
@@ -41,6 +43,8 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
         !write(89,*)vu , beta, charge0
         !!!!!!  why ????
         write(*,*)'dipole = ', dipole/(2*pi)
+        write(*,*)'real pot = ', beta/(ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy)+vl,&
+                                -beta/(ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy)+vu
         dipole_correction = 3/(4*pi)*dipole**2/(ewald_p3d%cell(3)*ewald_p3d%cell(2)*ewald_p3d%cell(1))
 !        write(*,*)'dipole correction ', dipole_correction
 !        write(*,*)'pot correction ', charge0*(vu-vl)
@@ -85,16 +89,27 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
             call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
             deallocate(pots_layer)
         endif
-        !   do iy=1,ewald_p3d%poisson_p3d%ngpy
-        !   do ix=1,ewald_p3d%poisson_p3d%ngpx
-        !   do iz=ewald_p3d%poisson_p3d%npl,ewald_p3d%poisson_p3d%npu
-        !       write(55,*)  (iz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz, ewald_p3d%poisson_p3d%pots(ix,iy,iz)
-        !   enddo 
-        !       write(55,*)   
-        !   enddo 
-        !   enddo 
+           !     open(unit=55, file="pots.txt" )
+           !        do iy=1,min(9,ewald_p3d%poisson_p3d%ngpy)
+           !        do ix=1,min(9,ewald_p3d%poisson_p3d%ngpx)
+           !        do iz=ewald_p3d%poisson_p3d%npl,ewald_p3d%poisson_p3d%npu
+           !            write(55,*)  (iz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz, ewald_p3d%poisson_p3d%pots(ix,iy,iz)
+           !        enddo 
+           !            write(55,*)   
+           !        enddo 
+           !        enddo 
+           !     close(55)
+           !     open(unit=66, file="pot_up.txt" )
+           !        do iy=1,ewald_p3d%poisson_p3d%ngpy
+           !        do ix=1,ewald_p3d%poisson_p3d%ngpx
+           !            iz=ewald_p3d%poisson_p3d%npu
+           !            write(66,*)   ewald_p3d%poisson_p3d%pots(ix,iy,iz)
+           !        enddo 
+           !            write(66,*)   
+           !        enddo 
+           !     close(66)
         epotplane = epotplane+dipole_correction
-   !     deallocate(ewald_p3d%poisson_p3d%pots)
+        deallocate(ewald_p3d%poisson_p3d%pots)
     end if
 end subroutine bias_potener_forces
 !*****************************************************************************************
@@ -646,7 +661,7 @@ end subroutine sollaplaceq
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: tfx,tfy,tfz ,tmp
     real(8):: fatp(3,atoms%nat) 
-    nlgx=9;  nlgy=9; nlgz=8
+    nlgx=9;  nlgy=9; nlgz=9
     ngpx=ewald_p3d%poisson_p3d%ngpx
     ngpy=ewald_p3d%poisson_p3d%ngpy
     ngpz=ewald_p3d%poisson_p3d%ngpz
@@ -912,7 +927,7 @@ subroutine surface_charge(parini,ewald_p3d,pot_short,vl,vu)
   !  enddo
     t=t*ewald_p3d%hgx*ewald_p3d%hgy
     tt=tt*ewald_p3d%hgx*ewald_p3d%hgy
-    if (trim(parini%bias_field)=='yes') then
+    if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
         t =t -E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
         tt=tt+E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
     endif
@@ -978,7 +993,6 @@ subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
     use mod_interface
     use mod_electrostatics, only: typ_ewald_p3d
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: bias 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -996,61 +1010,73 @@ subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
+    real(8):: pot_correction  
 
+    beta = ewald_p3d%poisson_p3d%beta
     pi=4.d0*atan(1.d0)
+    ngpz=ewald_p3d%poisson_p3d%ngpz
+    ngpx= ewald_p3d%poisson_p3d%ngpx
+    ngpy= ewald_p3d%poisson_p3d%ngpy
     epotplane=0.d0
-        vl=parini%vl_ewald
-        vu=parini%vu_ewald
-        d = ewald_p3d%cell(3)
+    d = ewald_p3d%cell(3)
+    if(ewald_p3d%poisson_p3d%point_particle .and. trim(parini%bias_type)=='fixed_efield') then
+        E = parini%efield
+    elseif(ewald_p3d%poisson_p3d%point_particle .and. trim(parini%bias_type)=='fixed_potdiff') then
+        pot_correction= beta/(ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy)
+        vl=parini%vl_ewald+ pot_correction
+        vu=parini%vu_ewald- pot_correction
+        write(*,*)'real pot = vu , vl ',vu,vl 
         E =- (vu-vl)/d
-        write(*,*)'--------------------------------------------------------'
+    endif
+!        write(*,*)'--------------------------------------------------------'
 !        write(*,*)"distance between planes",d
-        A= ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy*ewald_p3d%hgx*ewald_p3d%hgy
-        c= A/(4.d0*pi*d)
+       A= ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy*ewald_p3d%hgx*ewald_p3d%hgy
+       c= A/(4.d0*pi*d)
 !        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
-        dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
-        charge0= -dipole/(2*pi*d)
-        charge = -dipole/(2*pi*d)+c*(vu-vl)
-        !write(88,*)vu , beta, charge
-        !write(89,*)vu , beta, charge0
-        write(*,*)'dipole = ', dipole/(2*pi)
-        write(*,*)'charge on upper  plate  ', charge
-        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
-        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
+       dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
+       charge0= -dipole/(2*pi*d)
+       charge = -dipole/(2*pi*d)+c*(vu-vl)
+!       write(*,*)'dipole = ', dipole/(2*pi)
+!       write(*,*)'charge on upper  plate  ', charge
+!        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
+!        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
 !        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
-        npl=ewald_p3d%poisson_p3d%npl
-        npu=ewald_p3d%poisson_p3d%npu
+!        npl=ewald_p3d%poisson_p3d%npl
+!        npu=ewald_p3d%poisson_p3d%npu
+        dipole_correction = 3/(4*pi)*dipole**2/(ewald_p3d%cell(3)*ewald_p3d%cell(2)*ewald_p3d%cell(1))
+        dipole_correction =dipole_correction +0.5*charge0*(vu-vl)+0.5*c*(vu-vl)**2
         epotplane = 0.d0
         do iat=1,atoms%nat
             epotplane = epotplane - E * atoms%qat(iat)*atoms%rat(3,iat)
             atoms%fat(3,iat)=atoms%fat(3,iat)+ E * atoms%qat(iat)
         enddo
+        epotplane = epotplane+dipole_correction
 
-!*****************************************************************************
-        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
-        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
-        npl=ewald_p3d%poisson_p3d%npl
-        npu=ewald_p3d%poisson_p3d%npu
-
-        allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
-!        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
-        nlayer=1
-        if (parini%cal_charge) then 
-            nlayer=5
-            allocate(pots_layer(1:ewald_p3d%poisson_p3d%ngpx,1:ewald_p3d%poisson_p3d%ngpy,1:2,1:nlayer))
-        endif
-        ewald_p3d%poisson_p3d%pots=0.d0
-        call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
-        if (parini%cal_charge) then
-            pots_layer(1:ngpx,1:ngpy,1,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
-            pots_layer(1:ngpx,1:ngpy,2,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
-        endif
-        ewald_p3d%poisson_p3d%pots=0.d0
-
-        if (parini%cal_charge) then 
-            call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
-            deallocate(pots_layer)
-        endif
-        deallocate(ewald_p3d%poisson_p3d%pots)
-!*****************************************************************************
+!!*****************************************************************************
+!        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
+!        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
+!        npl=ewald_p3d%poisson_p3d%npl
+!        npu=ewald_p3d%poisson_p3d%npu
+!
+!        allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
+!!        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
+!        nlayer=1
+!        if (parini%cal_charge) then 
+!            nlayer=5
+!            allocate(pots_layer(1:ewald_p3d%poisson_p3d%ngpx,1:ewald_p3d%poisson_p3d%ngpy,1:2,1:nlayer))
+!        endif
+!        ewald_p3d%poisson_p3d%pots=0.d0
+!        call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
+!        if (parini%cal_charge) then
+!            pots_layer(1:ngpx,1:ngpy,1,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
+!            pots_layer(1:ngpx,1:ngpy,2,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
+!        endif
+!        ewald_p3d%poisson_p3d%pots=0.d0
+!
+!        if (parini%cal_charge) then 
+!            call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
+!            deallocate(pots_layer)
+!        endif
+!        deallocate(ewald_p3d%poisson_p3d%pots)
+!!*****************************************************************************
 end subroutine bias_field_potener_forces

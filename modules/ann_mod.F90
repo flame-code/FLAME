@@ -5,7 +5,7 @@ module mod_ann
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
     type typ_ann
-        type(dictionary), pointer :: dict_ann
+        type(dictionary), pointer :: dict
         integer:: nl !number of hidden layer plus one
         integer:: nn(0:10)
         !integer:: n0=-1

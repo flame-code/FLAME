@@ -6,7 +6,7 @@ subroutine md_nvt_langevin(parini,atoms)
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
-    use mod_potential, only: bias 
+    !use mod_potential, only: bias 
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables
@@ -175,7 +175,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
-    use mod_potential, only: bias 
+    !use mod_potential, only: bias 
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables
@@ -367,7 +367,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
-    use mod_potential, only: bias 
+    !use mod_potential, only: bias 
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables

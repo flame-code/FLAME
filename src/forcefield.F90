@@ -3,7 +3,7 @@ subroutine forcefield_init(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: ewald_p3d, bias
+    use mod_potential, only: ewald_p3d
     use mod_potential, only: shortrange
     use mod_electrostatics, only: typ_ewald_p3d
     implicit none
@@ -33,7 +33,6 @@ subroutine forcefield_init(parini,atoms)
         if(trim(atoms%boundcond)=='free') then
         elseif(trim(atoms%boundcond)=='slab') then
         call construct_ewald_p3d(parini,atoms,ewald_p3d)
-        bias=trim(parini%bias_potential)
         shortrange%alpha=ewald_p3d%alpha
         ewald_p3d%spline%do_coulomb=.true.
         else

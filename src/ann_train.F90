@@ -17,10 +17,24 @@ subroutine ann_train(parini)
     type(typ_symfunc_arr):: symfunc_valid
     integer:: iconf, ia
     real(8):: time1, time2, time3
+    logical:: file_exists
     call f_routine(id='ann_train')
     call init_ann_train(parini,ann_arr,ekf)
-    call read_data(parini,'list_posinp_train',atoms_train)
-    call read_data(parini,'list_posinp_valid',atoms_valid)
+    !-------------------------------------------------------
+    !Reading configurations and their energies and forces
+    inquire(file="list_posinp_train.yaml",exist=file_exists)
+    if(file_exists) then
+        call read_data_yaml(parini,'list_posinp_train.yaml',atoms_train)
+    else
+        call read_data_old(parini,'list_posinp_train',atoms_train)
+    endif
+    inquire(file="list_posinp_valid.yaml",exist=file_exists)
+    if(file_exists) then
+        call read_data_yaml(parini,'list_posinp_valid.yaml',atoms_valid)
+    else
+        call read_data_old(parini,'list_posinp_valid',atoms_valid)
+    endif
+    !-------------------------------------------------------
     if(iproc==0) then
         write(*,'(a,i)') 'number of ANN wights:             ',ekf%n
         write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
@@ -560,7 +574,7 @@ subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     else

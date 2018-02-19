@@ -33,6 +33,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
 		basic_atoms.F90 basic_utilities.F90 \
 		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
+		io_utils.F90 \
 		bader_neargrid.F90 bader_ongrid.F90 bader_weight.F90 \
 		task_confcomp.F90 \
 		task_bader.F90 \

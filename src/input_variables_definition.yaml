@@ -101,8 +101,6 @@
    ampl: -1.0
  potential:
    potential: unknown
-   bias: no
-   bias_field: no
    cal_charge: False
    potential_sec: unknown
    ann_boundcheck: none
@@ -128,6 +126,8 @@
      gnrmtol: 1.E-7
      ewald: False
      ewald_tol: 1.E-6
+     bias_type: no
+     external_field: 0.0
  ann:
    subtask: unknown
    optimizer: unknown

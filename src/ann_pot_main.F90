@@ -40,7 +40,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         ! E0=atoms%epot
@@ -84,7 +84,8 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha, tt
     real(8), allocatable:: epotall(:), eref_all(:)
     !return
-    ann_arr%event='evalu'
+    ann_arr%event='train'
+    allocate(ekf%g(ekf%n))
     do ia=1,ann_arr%n
         call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
     enddo
@@ -144,6 +145,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     enddo
     call f_free(epotall)
     call f_free(eref_all)
+    deallocate(ekf%g)
     !stop
 end subroutine prefit_cent_ener_ref
 !*****************************************************************************************
