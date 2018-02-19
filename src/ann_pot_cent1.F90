@@ -4,7 +4,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -13,7 +13,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
-    type(typ_ewald_p3d):: ewald_p3d
+    type(typ_poisson):: poisson
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng
@@ -49,7 +49,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,ewald_p3d)
+    call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -87,13 +87,13 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     !This msut be here otherwise it will zero forces which were calculated by kwald.
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,ann_arr%a)
+    call get_qat_from_chi(parini,ann_arr,atoms,poisson,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time5)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,ewald_p3d)
+    call cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,poisson)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
@@ -123,7 +123,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_norm=tt2/tt1
     endif
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        call destruct_ewald_p3d(parini,atoms,ewald_p3d)
+        call destruct_poisson(parini,atoms,poisson)
     endif
     !call repulsive_potential_cent(parini,atoms,ann_arr)
     call getvol_alborz(atoms%cellvec,vol)
@@ -167,17 +167,17 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     call f_release_routine()
 end subroutine cal_ann_cent1
 !*****************************************************************************************
-subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
+subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     !local variables
     integer:: iat
@@ -208,7 +208,7 @@ subroutine get_qat_from_chi(parini,ann_arr,atoms,ewald_p3d,a)
             stop
         endif
     elseif(trim(parini%syslinsolver_ann)=='operator') then
-        call get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
+        call get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     else
         stop 'ERROR: unknown syslinsolver'
     endif
@@ -262,18 +262,18 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     end associate
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
-subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,ewald_p3d)
+subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iat, jat
     real(8):: vol, c
@@ -285,19 +285,19 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,ewald_p3d)
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
     enddo
     if (.not. parini%ewald) then 
-        ewald_p3d%alpha = maxval(ann_arr%ann(:)%gausswidth)
+        poisson%alpha = maxval(ann_arr%ann(:)%gausswidth)
     else 
         if (parini%alpha_ewald<0.d0) then
             call getvol_alborz(atoms%cellvec,vol)
             c=2.2d0
-            ewald_p3d%alpha = 1.d0/(c*sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
-            write(*,*)"optimized alpha = ", ewald_p3d%alpha
+            poisson%alpha = 1.d0/(c*sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
+            write(*,*)"optimized alpha = ", poisson%alpha
         else
-            ewald_p3d%alpha=parini%alpha_ewald
+            poisson%alpha=parini%alpha_ewald
         endif
     end if
     if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
-        call construct_ewald_p3d(parini,atoms,ewald_p3d)
+        call construct_poisson(parini,atoms,poisson)
     else
         do iat=1,atoms%nat
             a(iat,atoms%nat+1)=1.d0
@@ -321,19 +321,19 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,ewald_p3d)
     end associate
 end subroutine init_electrostatic_cent1
 !*****************************************************************************************
-subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
+subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(out):: epot_c
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iat, jat
     real(8):: vol, c
@@ -345,24 +345,24 @@ subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,ewald_p3d)
         tt1=tt1+ann_arr%chi_o(iat)*atoms%qat(iat)
         tt2=tt2+atoms%qat(iat)**2*0.5d0*ann_arr%ann(atoms%itypat(iat))%hardness
     enddo
-    call cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
+    call cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     epot_c=epot_es+tt1+tt2+ann_arr%ener_ref
     end associate
 end subroutine cal_electrostatic_cent1
 !*****************************************************************************************
-subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
+subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(in):: a(atoms%nat+1,atoms%nat+1)
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iat, jat
     real(8):: tt2, tt3, ttf, gama, pi
@@ -398,11 +398,11 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,ewald_p3d)
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)/='kwald') then
             if(parini%ewald) then 
-                gausswidth(:)=ewald_p3d%alpha
+                gausswidth(:)=poisson%alpha
             else
                 gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
             endif
-            call longerange_forces(parini,atoms,ewald_p3d,gausswidth)
+            call longerange_forces(parini,atoms,poisson,gausswidth)
         endif
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
@@ -522,16 +522,16 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     end associate
 end subroutine get_qat_from_chi_iter
 !*****************************************************************************************
-subroutine cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
+subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_poisson),intent(inout):: poisson
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: g(atoms%nat), qtot
@@ -542,7 +542,7 @@ subroutine cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
     pi=4.d0*atan(1.d0)
     allocate(gausswidth(1:atoms%nat))
     gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-    call get_hartree(parini,ewald_p3d,atoms,gausswidth,ann_arr%epot_es,g)
+    call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es,g)
     qtot=0.d0
     gtot=0.d0
     do iat=1,atoms%nat
@@ -556,18 +556,18 @@ subroutine cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
     deallocate(gausswidth)
 end subroutine cal_ugradient
 !*****************************************************************************************
-subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
+subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_poisson),intent(inout):: poisson
     !local variables
     integer:: info , iat , iter, igpx, igpy, igpz, niter_sd
     real(8), allocatable:: qq(:),g(:),h(:),gt(:)
@@ -614,7 +614,7 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
     endif
     alpha=1.d-1*alphax
     do iter=0,1000
-        call cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
+        call cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
         if(parini%iverbose>=2) then
             dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0
             do iat=1,nat
@@ -670,7 +670,7 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
     gnrm2old=0.d0 !it is not supposed to be used for iter=0
     do
         exit !no CG
-        call cal_ugradient(parini,ewald_p3d,ann_arr,atoms,g,qtot)
+        call cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
         gnrm2=DDOT(nat,g,1,g,1)
         gnrm=sqrt(gnrm2)
         dpm=0.d0
@@ -705,7 +705,7 @@ subroutine get_qat_from_chi_operator(parini,ewald_p3d,ann_arr,atoms)
 !            atoms%qat(iat)=atoms%qat(iat)+alpha0*h(iat)
 !        enddo
         epotlong_old=ann_arr%epot_es !This must be here to avoid saving eh of trial point
-!        call cal_ugradient(parini,ewald_p3d,ann_arr,atoms,gt,qtot)
+!        call cal_ugradient(parini,poisson,ann_arr,atoms,gt,qtot)
 !        y0=DDOT(nat,gt,1,h,1)
 !        y1=DDOT(nat,g,1,h,1)
 !        tt=y0/(y0-y1)

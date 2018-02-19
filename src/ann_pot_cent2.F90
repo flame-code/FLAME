@@ -45,7 +45,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call construct_ewald_p3d(parini,atoms,cent%ewald_p3d)
+    call construct_poisson(parini,atoms,cent%poisson)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
@@ -128,7 +128,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_norm=tt2/max(tt1,1.d-3)
     endif
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        call destruct_ewald_p3d(parini,atoms,cent%ewald_p3d)
+        call destruct_poisson(parini,atoms,cent%poisson)
     endif
 
     call getvol_alborz(atoms%cellvec,vol)
@@ -311,9 +311,9 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
         cent%rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
-    cent%ewald_p3d%linked_lists%rcut=parini%rcut_ewald
+    cent%poisson%linked_lists%rcut=parini%rcut_ewald
     !This linked list is used for the short range part of the Ewald.
-    call call_linkedlist(parini,atoms,.false.,cent%ewald_p3d%linked_lists,cent%ewald_p3d%pia_arr)
+    call call_linkedlist(parini,atoms,.false.,cent%poisson%linked_lists,cent%poisson%pia_arr)
 
     do iat=1,atoms%nat
         zion=ann_arr%ann(atoms%itypat(iat))%zion
@@ -334,11 +334,11 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     alpha_elec=maxval(cent%gwe(1:atoms%nat))
     alpha_largest=sqrt(alpha_elec**2+parini%alpha_ewald**2)
     alpha_largest=max(alpha_largest,parini%alpha_ewald*sqrt(2.d0))
-    rcut=cent%ewald_p3d%linked_lists%rcut
+    rcut=cent%poisson%linked_lists%rcut
     error_erfc_over_r=erfc(rcut/alpha_largest)/rcut
     write(*,*) 'short range at cut-off: ',error_erfc_over_r !CORRECT_IT
-    !cent%ewald_p3d%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*ewald_p3d%alpha !CORRECT_IT
-    cent%ewald_p3d%rgcut=sqrt(-log(1.d-8))*alpha_largest
+    !cent%poisson%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*poisson%alpha !CORRECT_IT
+    cent%poisson%rgcut=sqrt(-log(1.d-8))*alpha_largest
 end subroutine init_cent2
 !*****************************************************************************************
 subroutine final_cent2(cent)
@@ -348,10 +348,10 @@ subroutine final_cent2(cent)
     implicit none
     type(typ_cent), intent(inout):: cent
     !local variables
-    deallocate(cent%ewald_p3d%linked_lists%prime_bound)
-    deallocate(cent%ewald_p3d%linked_lists%bound_rad)
-    deallocate(cent%ewald_p3d%linked_lists%bound_ang)
-    deallocate(cent%ewald_p3d%pia_arr%pia)
+    deallocate(cent%poisson%linked_lists%prime_bound)
+    deallocate(cent%poisson%linked_lists%bound_rad)
+    deallocate(cent%poisson%linked_lists%bound_ang)
+    deallocate(cent%poisson%pia_arr%pia)
     deallocate(cent%rgrad)
     deallocate(cent%qgrad)
     deallocate(cent%rel)
@@ -374,11 +374,11 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
     !local variables
     integer:: iat
     real(8):: spring_const, dx, dy, dz
-    associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
-    associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
-    associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
+    associate(nx=>cent%poisson%ngpx)
+    associate(ny=>cent%poisson%ngpy)
+    associate(nz=>cent%poisson%ngpz)
     call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
-        cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,atoms%fat)
+        cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     call cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     do iat=1,atoms%nat !summation over ions/electrons
         dx=cent%rel(1,iat)-atoms%rat(1,iat)
@@ -458,9 +458,9 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     !logical:: ewald
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
-    associate(nx=>cent%ewald_p3d%poisson_p3d%ngpx)
-    associate(ny=>cent%ewald_p3d%poisson_p3d%ngpy)
-    associate(nz=>cent%ewald_p3d%poisson_p3d%ngpz)
+    associate(nx=>cent%poisson%ngpx)
+    associate(ny=>cent%poisson%ngpy)
+    associate(nz=>cent%poisson%ngpz)
     !-------------------------------------------------------
     atoms%stress=0.d0
     !-------------------------------------------------------
@@ -474,14 +474,14 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     call put_gauss_to_grid(parini,atoms,cent)
     call cpu_time(time2)
     ehartree=0.d0
-    call cal_hartree_pot_bps(cent%ewald_p3d,atoms,ehartree)
+    call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
     epot_es=0.d0
     do iat=1,atoms%nat
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/cent%gwit(iat)
     enddo
     epot_es=epot_es+ehartree
     call gauss_gradient(parini,'bulk',atoms%nat,cent%rel,atoms%cellvec,atoms%qat,cent%gwe, &
-        cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%pot,cent%rgrad,cent%qgrad)
+        cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,cent%rgrad,cent%qgrad)
 
     !if(ewald) then
     call cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
@@ -511,14 +511,14 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
     !local variables
     character(10):: bc
     integer:: nx, ny, nz
-    nx=cent%ewald_p3d%poisson_p3d%ngpx
-    ny=cent%ewald_p3d%poisson_p3d%ngpy
-    nz=cent%ewald_p3d%poisson_p3d%ngpz
+    nx=cent%poisson%ngpx
+    ny=cent%poisson%ngpy
+    nz=cent%poisson%ngpz
     bc=trim(atoms%boundcond)
     call gauss_grid(parini,bc,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat, &
-        cent%gwit,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+        cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
     call gauss_grid(parini,bc,.false.,atoms%nat,cent%rel,atoms%cellvec,atoms%qat, &
-        cent%gwe,cent%ewald_p3d%rgcut,nx,ny,nz,cent%ewald_p3d%poisson_p3d%rho)
+        cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 end subroutine put_gauss_to_grid
 !*****************************************************************************************
 subroutine gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
@@ -902,22 +902,22 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
     alpha=parini%alpha_ewald
     epot_short=0.d0
-    do ib=1,cent%ewald_p3d%linked_lists%maxbound_rad
-        iat=cent%ewald_p3d%linked_lists%bound_rad(1,ib)
-        jat=cent%ewald_p3d%linked_lists%bound_rad(2,ib)
+    do ib=1,cent%poisson%linked_lists%maxbound_rad
+        iat=cent%poisson%linked_lists%bound_rad(1,ib)
+        jat=cent%poisson%linked_lists%bound_rad(2,ib)
         !---------------------------------------------------
-        dx=cent%ewald_p3d%pia_arr%pia(ib)%dr(1)
-        dy=cent%ewald_p3d%pia_arr%pia(ib)%dr(2)
-        dz=cent%ewald_p3d%pia_arr%pia(ib)%dr(3)
+        dx=cent%poisson%pia_arr%pia(ib)%dr(1)
+        dy=cent%poisson%pia_arr%pia(ib)%dr(2)
+        dz=cent%poisson%pia_arr%pia(ib)%dr(3)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
         epot_short=epot_short-atoms%zat(iat)*atoms%zat(jat)*erfc(gama*r)/r
         gama=1.d0/(sqrt(2.d0)*alpha)
         epot_short=epot_short+atoms%zat(iat)*atoms%zat(jat)*erfc(gama*r)/r
         !---------------------------------------------------
-        dx=cent%ewald_p3d%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%rat(1,jat)
-        dy=cent%ewald_p3d%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%rat(2,jat)
-        dz=cent%ewald_p3d%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%rat(3,jat)
+        dx=cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%rat(1,jat)
+        dy=cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%rat(2,jat)
+        dz=cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%rat(3,jat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jat)**2)
         epot_short=epot_short+atoms%zat(iat)*atoms%qat(jat)*erf(gama*r)/r
@@ -936,9 +936,9 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
         cent%rgrad(3,jat)=cent%rgrad(3,jat)+(tt21+tt22)*dz
         cent%qgrad(jat)=cent%qgrad(jat)+tt31+tt32
         !---------------------------------------------------
-        dx=-cent%ewald_p3d%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%rat(1,iat)
-        dy=-cent%ewald_p3d%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%rat(2,iat)
-        dz=-cent%ewald_p3d%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%rat(3,iat)
+        dx=-cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%rat(1,iat)
+        dy=-cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%rat(2,iat)
+        dz=-cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(jat)**2+cent%gwe(iat)**2)
         epot_short=epot_short+atoms%zat(jat)*atoms%qat(iat)*erf(gama*r)/r
@@ -1183,13 +1183,13 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
     alpha=parini%alpha_ewald
-    do ib=1,cent%ewald_p3d%linked_lists%maxbound_rad
-        iat=cent%ewald_p3d%linked_lists%bound_rad(1,ib)
-        jat=cent%ewald_p3d%linked_lists%bound_rad(2,ib)
+    do ib=1,cent%poisson%linked_lists%maxbound_rad
+        iat=cent%poisson%linked_lists%bound_rad(1,ib)
+        jat=cent%poisson%linked_lists%bound_rad(2,ib)
         !---------------------------------------------------
-        dx=cent%ewald_p3d%pia_arr%pia(ib)%dr(1)
-        dy=cent%ewald_p3d%pia_arr%pia(ib)%dr(2)
-        dz=cent%ewald_p3d%pia_arr%pia(ib)%dr(3)
+        dx=cent%poisson%pia_arr%pia(ib)%dr(1)
+        dy=cent%poisson%pia_arr%pia(ib)%dr(2)
+        dz=cent%poisson%pia_arr%pia(ib)%dr(3)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
@@ -1206,9 +1206,9 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
         atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
-        dx=cent%ewald_p3d%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%rat(1,jat)
-        dy=cent%ewald_p3d%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%rat(2,jat)
-        dz=cent%ewald_p3d%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%rat(3,jat)
+        dx=cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%rat(1,jat)
+        dy=cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%rat(2,jat)
+        dz=cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%rat(3,jat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
@@ -1222,9 +1222,9 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
         atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
-        dx=-cent%ewald_p3d%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%rat(1,iat)
-        dy=-cent%ewald_p3d%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%rat(2,iat)
-        dz=-cent%ewald_p3d%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%rat(3,iat)
+        dx=-cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%rat(1,iat)
+        dy=-cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%rat(2,iat)
+        dz=-cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%rat(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(jat)**2+cent%gwe(iat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2

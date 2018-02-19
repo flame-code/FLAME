@@ -1,7 +1,7 @@
 !*****************************************************************************************
 module mod_potential
     use mod_ann, only: typ_ann_arr
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_shortrange, only: typ_tosifumi, typ_shortrange
     implicit none
     integer, parameter:: natmax=1000
@@ -47,7 +47,7 @@ module mod_potential
     !real(8):: atmassinv(2)
     integer, allocatable:: kinds(:)
     !coulomb potential
-    type(typ_ewald_p3d):: ewald_p3d
+    type(typ_poisson):: poisson
     !force potentials
     type(typ_shortrange):: shortrange
     !socket

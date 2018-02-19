@@ -6,7 +6,7 @@ module mod_electrostatics
     use Poisson_Solver, only: coulomb_operator
 #endif
     implicit none
-    type typ_poisson
+    type:: typ_poisson
         integer:: ngpx !number of grid points in x direction.
         integer:: ngpy !number of grid points in y direction.
         integer:: ngpz !number of grid points in z direction.
@@ -19,17 +19,9 @@ module mod_electrostatics
         integer:: npl, npu
         real(8):: beta 
         logical:: point_particle= .false.
-#if defined(HAVE_BPS)
-    type(coulomb_operator):: pkernel
-#endif
-    end type typ_poisson
-    type, extends(typ_poisson):: typ_poisson_p3d
         integer(8), allocatable:: plan_f(:) !Plans of forward fftw with size ngpz
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2
-    end type typ_poisson_p3d
-    !type, extends(typ_ewald):: typ_ewald_p3d
-    type:: typ_ewald_p3d
         !bounds to assign charge density to grid points within a shpere.
         integer, allocatable:: mboundg(:,:,:)
         integer:: nbgpx !number of bound grid points in x direction.
@@ -50,13 +42,16 @@ module mod_electrostatics
         !be wrapped around.
         integer:: ngpztot
         real(8):: efield !external electric field
-        real(8):: hgx, hgy, hgz !grid spacing in x,y,z directions.
         real(8):: vu, vl !voltage on upper and lower plane.
         real(8):: cell(3) !cell size in x,y,z direction.
-        type(typ_poisson_p3d):: poisson_p3d
+        !type(typ_poisson_p3d):: poisson_p3d
         type(typ_linked_lists):: linked_lists
         type(typ_pia_arr):: pia_arr
         type(typ_spline):: spline
-    end type typ_ewald_p3d
+#if defined(HAVE_BPS)
+        type(coulomb_operator):: pkernel
+#endif
+    end type typ_poisson
+    !type, extends(typ_ewald):: typ_ewald_p3d
 end module mod_electrostatics
 !*****************************************************************************************
