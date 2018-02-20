@@ -1551,7 +1551,6 @@ subroutine best_charge_density_rho(parini)
 end subroutine best_charge_density_rho
 subroutine best_charge_density_force(parini)
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson, typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
     type(typ_parini), intent(in):: parini
@@ -1964,7 +1963,7 @@ subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
     real(16), intent(out):: funcder
     real(16), intent(out):: funcsecder
 end subroutine exp_ar
-! ./src/es_hartee_bps.F90 :
+! ./src/es_hartree_bps.F90 :
 subroutine cal_hartree_pot_bps(poisson,atoms,ehartree)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1993,7 +1992,7 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     type(typ_poisson), intent(in):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
 end subroutine set_ngp_bps
-! ./src/es_hartee_fourier.F90 :
+! ./src/es_hartree_fourier.F90 :
 subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     integer, intent(in):: iverbose, nat
     real(8), intent(in):: rat(3,nat), qat(nat)
@@ -2006,7 +2005,7 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     real(8), intent(in):: cv(3,3), alphasq, ecut
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine kwald_samare
-! ./src/es_hartee_main.F90 :
+! ./src/es_hartree_main.F90 :
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -2047,7 +2046,7 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     real(8):: cell(3) , vol, stress(3,3)
     real(8)::epotreal,alphatwoinv,ralphasq,rbetasq,rbetainv,alphasq,betainv
 end subroutine real_part
-! ./src/es_hartee_p3d.F90 :
+! ./src/es_hartree_p3d.F90 :
 subroutine ps2dp1df_construction(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
@@ -2056,7 +2055,7 @@ subroutine ps2dp1df_destruction(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
 end subroutine ps2dp1df_destruction
-subroutine calculate_potener_pot(parini,poisson,cell,hx,hy,hz,epot,beta)
+subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
@@ -2065,7 +2064,7 @@ subroutine calculate_potener_pot(parini,poisson,cell,hx,hy,hz,epot,beta)
     real(8):: hx, hy, hz
     real(8):: epot
     real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
-end subroutine calculate_potener_pot
+end subroutine solve_poisson_slab_p3d
 subroutine solsyslinequ(poisson,hz,cell,beta_arg)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson

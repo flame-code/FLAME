@@ -100,7 +100,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
             stop 'ERROR: unknown psolver_ann'
         endif
     elseif(trim(atoms%boundcond)=='slab') then
-        call calculate_potener_pot(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
+        call solve_poisson_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
         ehartree=ehartree+epotreal
         do igpz=1,poisson%ngpz
         do igpy=1,poisson%ngpy

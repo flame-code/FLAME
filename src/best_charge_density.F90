@@ -372,13 +372,11 @@ end subroutine best_charge_density_rho
 subroutine best_charge_density_force(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson, typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
-    type(typ_poisson):: poisson ,poisson_rough
     type(typ_atoms):: atoms
     type(typ_cent):: cent
     type(typ_ann_arr):: ann_arr

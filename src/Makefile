@@ -21,9 +21,9 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
 		md.F90 md_NVT.F90\
 		phonon.F90 \
-		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartee_p3d.F90 \
+		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 \
 		es_coulomb_p3d_bias.F90 \
-		es_hartee_fourier.F90 es_hartee_main.F90 es_hartee_bps.F90 \
+		es_hartree_fourier.F90 es_hartree_main.F90 es_hartree_bps.F90 \
 		cell_linkedlists.F90 \
 		optimizer_sd.F90 optimizer_cg.F90 optimizer_diis.F90 optimizer_fire.F90 \
 		optimizer_gmdfire.F90 optimizer_bfgs.F90 optimizer_dfp.F90 optimizer_nlbfgs.F90 \
