@@ -141,18 +141,16 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
         stop
     endif
 
-    if(trim(parini%psolver_ann)/='kwald') then
-        g(1:atoms%nat)=0.d0
-        if(parini%ewald) then
-            atoms%fat=0.d0
-            call get_g_from_pot(parini,atoms,poisson,ewaldwidth,g)
-            call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
-            ehartree=ehartree+epotreal
-            g=g+gg
-        else
-            call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
-        end if
-    endif
+    g(1:atoms%nat)=0.d0
+    if(parini%ewald) then
+        atoms%fat=0.d0
+        call get_g_from_pot(parini,atoms,poisson,ewaldwidth,g)
+        call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
+        ehartree=ehartree+epotreal
+        g=g+gg
+    else
+        call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
+    end if
 
     call get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     if(parini%ewald) then
