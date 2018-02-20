@@ -23,6 +23,7 @@ subroutine ann_check_symmetry_function(parini)
     integer,allocatable:: F(:)
     integer:: nconftot, ios, k
     character (50)::fname
+    logical:: file_exists
     call f_routine(id='ann_check_symmetry_function')
     associate(etol=>parini%etol_ann,dtol=>parini%dtol_ann)
     !---------------------------------------------------------- 
@@ -44,7 +45,12 @@ subroutine ann_check_symmetry_function(parini)
     else 
         call read_input_ann(parini,iproc,ann_arr) 
     endif
-    call read_data(parini,'list_posinp_check',atoms_check)
+    inquire(file="list_posinp_check.yaml",exist=file_exists)
+    if(file_exists) then
+        call read_data_yaml(parini,'list_posinp_check.yaml',atoms_check)
+    else
+        call read_data_old(parini,'list_posinp_check',atoms_check)
+    endif
     !---------------------------------------------------------- 
     open(unit=1,file='list_posinp_check',status='old',iostat=ios)
     if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning list_posinp_check__';stop;endif

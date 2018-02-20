@@ -62,8 +62,6 @@ module mod_parini
         character(50):: potential_potential='unknown'
         character(50):: potential_potential_sec='unknown'
         character(50):: potential_ann_boundcheck='none'
-        character(50):: bias_potential='no'
-        character(50):: bias_field='no'
         character(256):: component_ff='no'
         logical:: drift_potential=.false.
         logical:: cal_charge= .false.
@@ -161,6 +159,8 @@ module mod_parini
         real(8):: gnrmtol_eem=1.d-7
         logical :: ewald=.false.
         real(8):: tolerance_ewald = 1.d-6
+        real(8):: efield !external electric field
+        character(256):: bias_type='no'
         !-----------------------------------------------------------------------
         !parameters of [misc]
         logical:: avail_misc=.false.

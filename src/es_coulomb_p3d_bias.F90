@@ -1,12 +1,12 @@
-subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
+subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     use mod_interface
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: bias, potential 
+    use mod_potential, only: potential 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
     !local variables
@@ -23,90 +23,105 @@ subroutine bias_potener_forces(parini,ewald_p3d,atoms,epotplane)
 
     pi=4.d0*atan(1.d0)
     epotplane=0.d0
-    beta = ewald_p3d%poisson_p3d%beta
-    if (trim(bias)=='yes') then
+    beta = poisson%beta
+    ngpx= poisson%ngpx
+    ngpy= poisson%ngpy
+    if(trim(parini%bias_type)=='p3dbias') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
-        d= ewald_p3d%cell(3)
+        d= poisson%cell(3)
         write(*,*)'--------------------------------------------------------'
 !        write(*,*)"distance between planes",d
-        A= ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy*ewald_p3d%hgx*ewald_p3d%hgy
+        A= poisson%ngpx*poisson%ngpy*poisson%hx*poisson%hy
 !        write(*,*)"A= ", A
         c= A/(4.d0*pi*d)
 !        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
-        dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
+        dipole = beta*(poisson%hx*poisson%hy)
         charge0= -dipole/(2*pi*d)
         charge = -dipole/(2*pi*d)+c*(vu-vl)
         !write(88,*)vu , beta, charge
         !write(89,*)vu , beta, charge0
         !!!!!!  why ????
         write(*,*)'dipole = ', dipole/(2*pi)
-        dipole_correction = 3/(4*pi)*dipole**2/(ewald_p3d%cell(3)*ewald_p3d%cell(2)*ewald_p3d%cell(1))
+        write(*,*)'real pot = ', beta/(poisson%ngpx*poisson%ngpy)+vl,&
+                                -beta/(poisson%ngpx*poisson%ngpy)+vu
+        dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
 !        write(*,*)'dipole correction ', dipole_correction
 !        write(*,*)'pot correction ', charge0*(vu-vl)
         !dipole_correction =0.d0
         dipole_correction =dipole_correction +0.5*charge0*(vu-vl)+0.5*c*(vu-vl)**2
         write(*,*)'charge on upper  plate  ', charge
-        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
-        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
+        poisson%npu=poisson%ngpz-poisson%nbgpz
+        poisson%npl=1+poisson%nbgpz  
 !        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
-        npl=ewald_p3d%poisson_p3d%npl
-        npu=ewald_p3d%poisson_p3d%npu
+        npl=poisson%npl
+        npu=poisson%npu
 
-        allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
-        ewald_p3d%poisson_p3d%pots=0.d0
-!        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
+        allocate(poisson%pots(1:poisson%ngpx+2,1:poisson%ngpy,npl:npu))
+        poisson%pots=0.d0
+!        write(*,*)"npu,npl",poisson%npu,poisson%npl
         nlayer=1
         if (parini%cal_charge) then 
             nlayer=5
-            allocate(pots_layer(1:ewald_p3d%poisson_p3d%ngpx,1:ewald_p3d%poisson_p3d%ngpy,1:2,1:nlayer))
+            allocate(pots_layer(1:poisson%ngpx,1:poisson%ngpy,1:2,1:nlayer))
         endif
         pots_layer = 0.d0
         if(.not. (trim(potential)=='ann')) then
-            call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
+            call erfc_surface_zero(parini,atoms,poisson,nlayer)
             if (parini%cal_charge) then
-                pots_layer(1:ngpx,1:ngpy,1,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
-                pots_layer(1:ngpx,1:ngpy,2,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
-                ewald_p3d%poisson_p3d%pots(:,:,npl+1:npl+nlayer-1)  =0.d0
-                ewald_p3d%poisson_p3d%pots(:,:,npu-(nlayer-1):npu-1)=0.d0
+                pots_layer(1:ngpx,1:ngpy,1,:)=poisson%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
+                pots_layer(1:ngpx,1:ngpy,2,:)=poisson%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
+                poisson%pots(:,:,npl+1:npl+nlayer-1)  =0.d0
+                poisson%pots(:,:,npu-(nlayer-1):npu-1)=0.d0
             endif
         endif
         !    force repulsion on planes
 !        do iat=1,atoms%nat
 !            rl=abs(atoms%rat(3,iat))
-!            ru=abs( ewald_p3d%cell(3)-atoms%rat(3,iat))
+!            ru=abs( poisson%cell(3)-atoms%rat(3,iat))
 !            atoms%fat(3,iat)=160.d0*exp(-1.6d0*rl)-160.d0*exp(-1.6d0*ru)
 !        enddo
 !
-        call sollaplaceq(ewald_p3d%poisson_p3d,ewald_p3d%hgz,ewald_p3d%cell,vl,vu)
-        call calculate_force_ener_plane(atoms,ewald_p3d,epotplane)
+        call sollaplaceq(poisson,poisson%hz,poisson%cell,vl,vu)
+        call calculate_force_ener_plane(atoms,poisson,epotplane)
 
         if (parini%cal_charge) then 
-            call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
+            call surface_charge(parini,poisson,pots_layer,vl,vu)
             deallocate(pots_layer)
         endif
-        !   do iy=1,ewald_p3d%poisson_p3d%ngpy
-        !   do ix=1,ewald_p3d%poisson_p3d%ngpx
-        !   do iz=ewald_p3d%poisson_p3d%npl,ewald_p3d%poisson_p3d%npu
-        !       write(55,*)  (iz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz, ewald_p3d%poisson_p3d%pots(ix,iy,iz)
-        !   enddo 
-        !       write(55,*)   
-        !   enddo 
-        !   enddo 
+           !     open(unit=55, file="pots.txt" )
+           !        do iy=1,min(9,poisson%ngpy)
+           !        do ix=1,min(9,poisson%ngpx)
+           !        do iz=poisson%npl,poisson%npu
+           !            write(55,*)  (iz-1-poisson%nbgpz)*poisson%hz, poisson%pots(ix,iy,iz)
+           !        enddo 
+           !            write(55,*)   
+           !        enddo 
+           !        enddo 
+           !     close(55)
+           !     open(unit=66, file="pot_up.txt" )
+           !        do iy=1,poisson%ngpy
+           !        do ix=1,poisson%ngpx
+           !            iz=poisson%npu
+           !            write(66,*)   poisson%pots(ix,iy,iz)
+           !        enddo 
+           !            write(66,*)   
+           !        enddo 
+           !     close(66)
         epotplane = epotplane+dipole_correction
-   !     deallocate(ewald_p3d%poisson_p3d%pots)
+        deallocate(poisson%pots)
     end if
 end subroutine bias_potener_forces
 !*****************************************************************************************
-subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
+subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     use mod_interface
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists):: linked_lists
 
@@ -130,27 +145,27 @@ subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
     real(8), allocatable:: ratp(:,:,:),qatp(:,:)
     integer, allocatable::  mboundg(:,:,:),mboundgy(:,:)
 
-    alphainv=1.d0/ewald_p3d%alpha;twosqrtinv=1.d0!/sqrt(2.d0)
-    ewald_p3d%poisson_p3d%pots=0.d0
-    linked_lists%rcut = ewald_p3d%linked_lists%rcut/sqrt(2.d0)
-    rcutsq= ewald_p3d%linked_lists%rcut**2
+    alphainv=1.d0/poisson%alpha;twosqrtinv=1.d0!/sqrt(2.d0)
+    poisson%pots=0.d0
+    linked_lists%rcut = poisson%linked_lists%rcut/sqrt(2.d0)
+    rcutsq= poisson%linked_lists%rcut**2
 
-    npl=ewald_p3d%poisson_p3d%npl
-    npu=ewald_p3d%poisson_p3d%npu
-    zgpl=(npl-1-ewald_p3d%nbgpz)*ewald_p3d%hgz
-    zgpu=(npu-1-ewald_p3d%nbgpz)*ewald_p3d%hgz
+    npl=poisson%npl
+    npu=poisson%npu
+    zgpl=(npl-1-poisson%nbgpz)*poisson%hz
+    zgpu=(npu-1-poisson%nbgpz)*poisson%hz
 
-    ngpx=ewald_p3d%poisson_p3d%ngpx
-    ngpy=ewald_p3d%poisson_p3d%ngpy
-    ngpz=ewald_p3d%poisson_p3d%ngpz
+    ngpx=poisson%ngpx
+    ngpy=poisson%ngpy
+    ngpz=poisson%ngpz
 
-    nbgpx = int(linked_lists%rcut/ewald_p3d%hgx)+1
-    nbgpy = int(linked_lists%rcut/ewald_p3d%hgy)+1
-    nbgpz = int(linked_lists%rcut/ewald_p3d%hgz)+1
+    nbgpx = int(linked_lists%rcut/poisson%hx)+1
+    nbgpy = int(linked_lists%rcut/poisson%hy)+1
+    nbgpz = int(linked_lists%rcut/poisson%hz)+1
     
     allocate(mboundg(1:2,-nbgpy:nbgpy,-nbgpz:nbgpz))
     allocate(mboundgy(1:2,-nbgpz:nbgpz))
-    call determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
+    call determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
 
     call linkedlists_init(parini,atoms,cell,linked_lists)
     mx = linked_lists%mx
@@ -158,11 +173,11 @@ subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
     mz = linked_lists%mz
     hzinv=real(mz,8)/cell(3)
 
-    dnlayer=(nlayer-1)*ewald_p3d%hgz
+    dnlayer=(nlayer-1)*poisson%hz
     mlimnlayer=floor(dnlayer*hzinv)+1
-    hgxinv=1.d0/ewald_p3d%hgx
-    hgyinv=1.d0/ewald_p3d%hgy
-    hgzinv=1.d0/ewald_p3d%hgz
+    hgxinv=1.d0/poisson%hx
+    hgyinv=1.d0/poisson%hy
+    hgzinv=1.d0/poisson%hz
 
     do kz=linked_lists%mz,max(linked_lists%mz-mlimnlayer-linked_lists%mlimnb,1),-1
     do ky=1,linked_lists%my
@@ -173,26 +188,26 @@ subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
         if (zgpu-linked_lists%rat(3,iat)>linked_lists%rcut+dnlayer) cycle
         iatox=nint(linked_lists%rat(1,iat)*hgxinv)+1
         iatoy=nint(linked_lists%rat(2,iat)*hgyinv)+1
-        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+ewald_p3d%nbgpz
-        xat=linked_lists%rat(1,iat)-(iatox-1)*ewald_p3d%hgx
-        yat=linked_lists%rat(2,iat)-(iatoy-1)*ewald_p3d%hgy
-        zat=linked_lists%rat(3,iat)-(iatoz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz
+        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+poisson%nbgpz
+        xat=linked_lists%rat(1,iat)-(iatox-1)*poisson%hx
+        yat=linked_lists%rat(2,iat)-(iatoy-1)*poisson%hy
+        zat=linked_lists%rat(3,iat)-(iatoz-1-poisson%nbgpz)*poisson%hz
         do iz=-nbgpz,nbgpz
             jz=iatoz+iz
             if (.not. (jz<=npu .and. jz>npu-nlayer)) cycle
-            dzsq= (iz*ewald_p3d%hgz-zat)**2
+            dzsq= (iz*poisson%hz-zat)**2
             do iy=mboundgy(1,iz),mboundgy(2,iz)
-                dzysq= (iy*ewald_p3d%hgy-yat)**2+dzsq
+                dzysq= (iy*poisson%hy-yat)**2+dzsq
                 jy=modulo(iatoy+iy-1,ngpy)+1
                 do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
-                    dx= ix*ewald_p3d%hgx-xat
+                    dx= ix*poisson%hx-xat
                     rsq= dx*dx+dzysq
                     if(rsq.lt.rcutsq )then
                         jx=modulo(iatox+ix-1,ngpx)+1
                         r=sqrt(rsq)
                         t=erfc(r*alphainv)
                         tt=linked_lists%qat(iat)*t/r
-                        ewald_p3d%poisson_p3d%pots(jx,jy,jz)=ewald_p3d%poisson_p3d%pots(jx,jy,jz)+tt
+                        poisson%pots(jx,jy,jz)=poisson%pots(jx,jy,jz)+tt
                     endif
                 enddo
             enddo
@@ -211,26 +226,26 @@ subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
         if (-zgpl+linked_lists%rat(3,iat)>linked_lists%rcut+dnlayer) cycle
         iatox=nint(linked_lists%rat(1,iat)*hgxinv)+1
         iatoy=nint(linked_lists%rat(2,iat)*hgyinv)+1
-        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+ewald_p3d%nbgpz
-        xat=linked_lists%rat(1,iat)-(iatox-1)*ewald_p3d%hgx
-        yat=linked_lists%rat(2,iat)-(iatoy-1)*ewald_p3d%hgy
-        zat=linked_lists%rat(3,iat)-(iatoz-1-ewald_p3d%nbgpz)*ewald_p3d%hgz
+        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+poisson%nbgpz
+        xat=linked_lists%rat(1,iat)-(iatox-1)*poisson%hx
+        yat=linked_lists%rat(2,iat)-(iatoy-1)*poisson%hy
+        zat=linked_lists%rat(3,iat)-(iatoz-1-poisson%nbgpz)*poisson%hz
         do iz=-nbgpz,nbgpz
             jz=iatoz+iz
             if (.not. (jz>=npl .and. jz<npl+nlayer .and. jz<=npu-nlayer)) cycle
-            dzsq= (iz*ewald_p3d%hgz-zat)**2
+            dzsq= (iz*poisson%hz-zat)**2
             do iy=mboundgy(1,iz),mboundgy(2,iz)
                 jy=modulo(iatoy+iy-1,ngpy)+1
-                dzysq= (iy*ewald_p3d%hgy-yat)**2+dzsq
+                dzysq= (iy*poisson%hy-yat)**2+dzsq
                 do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
-                    dx= ix*ewald_p3d%hgx-xat
+                    dx= ix*poisson%hx-xat
                     rsq= dx*dx+dzysq
                     if(rsq.lt.rcutsq )then
                         jx=modulo(iatox+ix-1,ngpx)+1
                         r=sqrt(rsq)
                         t=erfc(r*alphainv*twosqrtinv)
                         tt=linked_lists%qat(iat)*t/r
-                        ewald_p3d%poisson_p3d%pots(jx,jy,jz)=ewald_p3d%poisson_p3d%pots(jx,jy,jz)+tt
+                        poisson%pots(jx,jy,jz)=poisson%pots(jx,jy,jz)+tt
                     endif
                 enddo
             enddo
@@ -244,12 +259,12 @@ subroutine erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
     deallocate(mboundgy)
 end subroutine erfc_surface_zero
 !*****************************************************************************************
-subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
+subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     use mod_interface
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
     include 'fftw3.f'
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     real(8):: vl, vu , zlmzu , sinhzlmzu, zlmzuinv
     real(8):: cell(3)
@@ -261,8 +276,8 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
     real(8):: tel,teu,telu 
     integer::ix,iy,iz,ixt,iyt,npu,npl
     integer(8), allocatable:: plan_bs(:),plan_fs(:)
-    npl=poisson_p3d%npl
-    npu=poisson_p3d%npu
+    npl=poisson%npl
+    npu=poisson%npu
     pi=4.d0*atan(1.d0)
     hzsq=hz**2
     fourpi=4.d0*pi 
@@ -272,34 +287,34 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
     allocate(plan_bs(npl:npu))
     allocate(plan_fs(1:2))
     do iz=npl,npu
-        call dfftw_plan_dft_c2r_2d(plan_bs(iz),poisson_p3d%ngpx, &
-            poisson_p3d%ngpy,poisson_p3d%pots(1,1,iz),poisson_p3d%pots(1,1,iz),fftw_estimate)
+        call dfftw_plan_dft_c2r_2d(plan_bs(iz),poisson%ngpx, &
+            poisson%ngpy,poisson%pots(1,1,iz),poisson%pots(1,1,iz),fftw_estimate)
     enddo
-    call dfftw_plan_dft_r2c_2d(plan_fs(1),poisson_p3d%ngpx, &
-            poisson_p3d%ngpy,poisson_p3d%pots(1,1,npl), &
-            poisson_p3d%pots(1,1,npl),fftw_estimate)
-    call dfftw_plan_dft_r2c_2d(plan_fs(2),poisson_p3d%ngpx, &
-            poisson_p3d%ngpy,poisson_p3d%pots(1,1,npu), &
-            poisson_p3d%pots(1,1,npu),fftw_estimate)
+    call dfftw_plan_dft_r2c_2d(plan_fs(1),poisson%ngpx, &
+            poisson%ngpy,poisson%pots(1,1,npl), &
+            poisson%pots(1,1,npl),fftw_estimate)
+    call dfftw_plan_dft_r2c_2d(plan_fs(2),poisson%ngpx, &
+            poisson%ngpy,poisson%pots(1,1,npu), &
+            poisson%pots(1,1,npu),fftw_estimate)
 
-    do iy=1,poisson_p3d%ngpy
-    do ix=1,poisson_p3d%ngpx
-        poisson_p3d%pots(ix,iy,npl)=-(poisson_p3d%pots(ix,iy,npl)+poisson_p3d%rho(ix,iy,npl))+vl
-        poisson_p3d%pots(ix,iy,npu)=-(poisson_p3d%pots(ix,iy,npu)+poisson_p3d%rho(ix,iy,npu))+vu    
+    do iy=1,poisson%ngpy
+    do ix=1,poisson%ngpx
+        poisson%pots(ix,iy,npl)=-(poisson%pots(ix,iy,npl)+poisson%rho(ix,iy,npl))+vl
+        poisson%pots(ix,iy,npu)=-(poisson%pots(ix,iy,npu)+poisson%rho(ix,iy,npu))+vu    
     enddo 
     enddo 
     call dfftw_execute(plan_fs(1))
     call dfftw_execute(plan_fs(2))   
 
    ! k=0 , l=0
-     potl=poisson_p3d%pots(1,1,npl)
-     potu=poisson_p3d%pots(1,1,npu)
+     potl=poisson%pots(1,1,npl)
+     potu=poisson%pots(1,1,npu)
 
     !-----------------------------------------
     ix=1;iy=1
      do iz=npl+1,npu-1
          ciz=((potl-potu)*iz-(potl*npu-potu*npl))/real((npl-npu),8)
-         poisson_p3d%pots(ix,iy,iz)=ciz
+         poisson%pots(ix,iy,iz)=ciz
      enddo 
     !-----------------------------------------
      hzlu=-hz*(npl-npu)
@@ -308,128 +323,128 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
              hzliz=-hz*(npl-iz)
              hzuiz=-hz*(iz-npu)
              !-----------------------------------------
-                 ix=poisson_p3d%ngpx+1;iy=1
+                 ix=poisson%ngpx+1;iy=1
                  gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
                  g=sqrt(gsq)
-                 t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                 tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                 t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                 tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                  ciz=(t+tt)/sinh(g*hzlu)
-                 poisson_p3d%pots(ix,iy,iz)=ciz
+                 poisson%pots(ix,iy,iz)=ciz
              !-----------------------------------------
-                 ix=1;iy=poisson_p3d%ngpy/2+1
+                 ix=1;iy=poisson%ngpy/2+1
                  gsq=fourpisqcellyinvsq*(iy-1)**2
                  g=sqrt(gsq)
-                 t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                 tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                 t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                 tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                  ciz=(t+tt)/sinh(g*hzlu)
-                 poisson_p3d%pots(ix,iy,iz)=ciz
+                 poisson%pots(ix,iy,iz)=ciz
              !-----------------------------------------
-                 ix=poisson_p3d%ngpx+1;iy=poisson_p3d%ngpy/2+1
+                 ix=poisson%ngpx+1;iy=poisson%ngpy/2+1
                  gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
                  g=sqrt(gsq)
-                 t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                 tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                 t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                 tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                  ciz=(t+tt)/sinh(g*hzlu)
-                 poisson_p3d%pots(ix,iy,iz)=ciz
+                 poisson%pots(ix,iy,iz)=ciz
              !-----------------------------------------
                  ix=1
-                 do iy=2,poisson_p3d%ngpy/2
+                 do iy=2,poisson%ngpy/2
                      gsq=fourpisqcellyinvsq*(iy-1)**2
                      g=sqrt(gsq)
-                     t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                     tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                     t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                     tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                      ciz=(t+tt)/sinh(g*hzlu)
-                     poisson_p3d%pots(ix,iy,iz)=ciz
-                     poisson_p3d%pots(ix,poisson_p3d%ngpy-iy+2,iz)=ciz
+                     poisson%pots(ix,iy,iz)=ciz
+                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
 
                      ixt=ix+1
-                     t= poisson_p3d%pots(ixt,iy,npu)*sinh(g*hzliz)
-                     tt=poisson_p3d%pots(ixt,iy,npl)*sinh(g*hzuiz)
+                     t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
+                     tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
                      ciz=(t+tt)/sinh(g*hzlu)
-                     poisson_p3d%pots(ixt,iy,iz)=ciz
-                     poisson_p3d%pots(ixt,poisson_p3d%ngpy-iy+2,iz)=-ciz
+                     poisson%pots(ixt,iy,iz)=ciz
+                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
                  enddo
              !-----------------------------------------
-                 ix=poisson_p3d%ngpx+1
-                 gsqx=fourpisqcellxinvsq*(poisson_p3d%ngpx/2)**2
-                 do iy=2,poisson_p3d%ngpy/2
+                 ix=poisson%ngpx+1
+                 gsqx=fourpisqcellxinvsq*(poisson%ngpx/2)**2
+                 do iy=2,poisson%ngpy/2
                      gsq=gsqx+fourpisqcellyinvsq*(iy-1)**2
                      g=sqrt(gsq)
-                     t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                     tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                     t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                     tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                      ciz=(t+tt)/sinh(g*hzlu)
-                     poisson_p3d%pots(ix,iy,iz)=ciz
-                     poisson_p3d%pots(ix,poisson_p3d%ngpy-iy+2,iz)=ciz
+                     poisson%pots(ix,iy,iz)=ciz
+                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
 
                      ixt=ix+1
-                     t= poisson_p3d%pots(ixt,iy,npu)*sinh(g*hzliz)
-                     tt=poisson_p3d%pots(ixt,iy,npl)*sinh(g*hzuiz)
+                     t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
+                     tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
                      ciz=(t+tt)/sinh(g*hzlu)
-                     poisson_p3d%pots(ixt,iy,iz)=ciz
-                     poisson_p3d%pots(ixt,poisson_p3d%ngpy-iy+2,iz)=-ciz
+                     poisson%pots(ixt,iy,iz)=ciz
+                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
                  enddo
              !-----------------------------------------
                  iy=1
                  gsqy=fourpisqcellyinvsq*(iy-1)**2
-                 do ix=3,poisson_p3d%ngpx,2
+                 do ix=3,poisson%ngpx,2
                      gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
                      g=sqrt(gsq)
-                     t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                     tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                     t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                     tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                      ciz=(t+tt)/sinh(g*hzlu)
-                     poisson_p3d%pots(ix,iy,iz)=ciz
+                     poisson%pots(ix,iy,iz)=ciz
 
                      ixt=ix+1
-                     t= poisson_p3d%pots(ixt,iy,npu)*sinh(g*hzliz)
-                     tt=poisson_p3d%pots(ixt,iy,npl)*sinh(g*hzuiz)
+                     t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
+                     tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
                      ciz=(t+tt)/sinh(g*hzlu)
-                     poisson_p3d%pots(ixt,iy,iz)=ciz
+                     poisson%pots(ixt,iy,iz)=ciz
                 enddo
             !-----------------------------------------
-                iy=poisson_p3d%ngpy/2+1
+                iy=poisson%ngpy/2+1
                 gsqy=fourpisqcellyinvsq*(iy-1)**2
-                do ix=3,poisson_p3d%ngpx,2
+                do ix=3,poisson%ngpx,2
                     gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
                     g=sqrt(gsq)
-                    t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                    tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                    t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                    tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                     ciz=(t+tt)/sinh(g*hzlu)
-                    poisson_p3d%pots(ix,iy,iz)=ciz
+                    poisson%pots(ix,iy,iz)=ciz
 
                     ixt=ix+1
-                    t= poisson_p3d%pots(ixt,iy,npu)*sinh(g*hzliz)
-                    tt=poisson_p3d%pots(ixt,iy,npl)*sinh(g*hzuiz)
+                    t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
+                    tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
                     ciz=(t+tt)/sinh(g*hzlu)
-                    poisson_p3d%pots(ixt,iy,iz)=ciz
+                    poisson%pots(ixt,iy,iz)=ciz
                 enddo
             !-----------------------------------------
-                do iy=2,poisson_p3d%ngpy/2
-                    iyt=poisson_p3d%ngpy-iy+2
+                do iy=2,poisson%ngpy/2
+                    iyt=poisson%ngpy-iy+2
                     gsqy=fourpisqcellyinvsq*(iy-1)**2
-                    do ix=3,poisson_p3d%ngpx,2
+                    do ix=3,poisson%ngpx,2
                         gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
                         g=sqrt(gsq)
-                        t= poisson_p3d%pots(ix,iy,npu)*sinh(g*hzliz)
-                        tt=poisson_p3d%pots(ix,iy,npl)*sinh(g*hzuiz)
+                        t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
+                        tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
                         ciz=(t+tt)/sinh(g*hzlu)
-                        poisson_p3d%pots(ix,iy,iz)=ciz
+                        poisson%pots(ix,iy,iz)=ciz
 
                         ixt=ix+1
-                        t= poisson_p3d%pots(ixt,iy,npu)*sinh(g*hzliz)
-                        tt=poisson_p3d%pots(ixt,iy,npl)*sinh(g*hzuiz)
+                        t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
+                        tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
                         ciz=(t+tt)/sinh(g*hzlu)
-                        poisson_p3d%pots(ixt,iy,iz)=ciz
+                        poisson%pots(ixt,iy,iz)=ciz
 
-                        t= poisson_p3d%pots(ix,iyt,npu)*sinh(g*hzliz)
-                        tt=poisson_p3d%pots(ix,iyt,npl)*sinh(g*hzuiz)
+                        t= poisson%pots(ix,iyt,npu)*sinh(g*hzliz)
+                        tt=poisson%pots(ix,iyt,npl)*sinh(g*hzuiz)
                         ciz=(t+tt)/sinh(g*hzlu)
-                        poisson_p3d%pots(ix,iyt,iz)=ciz
+                        poisson%pots(ix,iyt,iz)=ciz
 
                         ixt=ix+1
-                        t= poisson_p3d%pots(ixt,iyt,npu)*sinh(g*hzliz)
-                        tt=poisson_p3d%pots(ixt,iyt,npl)*sinh(g*hzuiz)
+                        t= poisson%pots(ixt,iyt,npu)*sinh(g*hzliz)
+                        tt=poisson%pots(ixt,iyt,npl)*sinh(g*hzuiz)
                         ciz=(t+tt)/sinh(g*hzlu)
-                        poisson_p3d%pots(ixt,iyt,iz)=ciz
+                        poisson%pots(ixt,iyt,iz)=ciz
                     enddo
                 enddo
         enddo
@@ -441,160 +456,160 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
              hzliz=-hz*(npl-iz)
              hzuiz=-hz*(iz-npu)
              !-----------------------------------------
-                 ix=poisson_p3d%ngpx+1;iy=1
+                 ix=poisson%ngpx+1;iy=1
                  gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
                  g=sqrt(gsq)
                  teu =exp(-g*hzuiz)
                  tel =exp(-g*hzliz)
                  telu=teu*tel!exp(-g*hzlu)
 
-                 t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                 tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                 t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                 tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                  ciz=(t+tt)/(1.d0-telu**2)
-                 poisson_p3d%pots(ix,iy,iz)=ciz
+                 poisson%pots(ix,iy,iz)=ciz
              !-----------------------------------------
-                 ix=1;iy=poisson_p3d%ngpy/2+1
+                 ix=1;iy=poisson%ngpy/2+1
                  gsq=fourpisqcellyinvsq*(iy-1)**2
                  g=sqrt(gsq)
                  teu =exp(-g*hzuiz)
                  tel =exp(-g*hzliz)
                  telu=teu*tel!exp(-g*hzlu)
 
-                 t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                 tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                 t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                 tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                  ciz=(t+tt)/(1.d0-telu**2)
-                 poisson_p3d%pots(ix,iy,iz)=ciz
+                 poisson%pots(ix,iy,iz)=ciz
              !-----------------------------------------
-                 ix=poisson_p3d%ngpx+1;iy=poisson_p3d%ngpy/2+1
+                 ix=poisson%ngpx+1;iy=poisson%ngpy/2+1
                  gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
                  g=sqrt(gsq)
                  teu =exp(-g*hzuiz)
                  tel =exp(-g*hzliz)
                  telu=teu*tel!exp(-g*hzlu)
 
-                 t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                 tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                 t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                 tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                  ciz=(t+tt)/(1.d0-telu**2)
-                 poisson_p3d%pots(ix,iy,iz)=ciz
+                 poisson%pots(ix,iy,iz)=ciz
              !-----------------------------------------
                  ix=1
-                 do iy=2,poisson_p3d%ngpy/2
+                 do iy=2,poisson%ngpy/2
                      gsq=fourpisqcellyinvsq*(iy-1)**2
                      g=sqrt(gsq)
                      teu =exp(-g*hzuiz)
                      tel =exp(-g*hzliz)
                      telu=teu*tel!exp(-g*hzlu)
 
-                     t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                     tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                     t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                     tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                      ciz=(t+tt)/(1.d0-telu**2)
-                     poisson_p3d%pots(ix,iy,iz)=ciz
-                     poisson_p3d%pots(ix,poisson_p3d%ngpy-iy+2,iz)=ciz
+                     poisson%pots(ix,iy,iz)=ciz
+                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
 
                      ixt=ix+1
-                     t= poisson_p3d%pots(ixt,iy,npu)*(teu-tel*telu)
-                     tt=poisson_p3d%pots(ixt,iy,npl)*(tel-teu*telu)
+                     t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
+                     tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
                      ciz=(t+tt)/(1.d0-telu**2)
-                     poisson_p3d%pots(ixt,iy,iz)=ciz
-                     poisson_p3d%pots(ixt,poisson_p3d%ngpy-iy+2,iz)=-ciz
+                     poisson%pots(ixt,iy,iz)=ciz
+                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
                  enddo
              !-----------------------------------------
-                 ix=poisson_p3d%ngpx+1
-                 gsqx=fourpisqcellxinvsq*(poisson_p3d%ngpx/2)**2
-                 do iy=2,poisson_p3d%ngpy/2
+                 ix=poisson%ngpx+1
+                 gsqx=fourpisqcellxinvsq*(poisson%ngpx/2)**2
+                 do iy=2,poisson%ngpy/2
                      gsq=gsqx+fourpisqcellyinvsq*(iy-1)**2
                      g=sqrt(gsq)
                      teu =exp(-g*hzuiz)
                      tel =exp(-g*hzliz)
                      telu=teu*tel!exp(-g*hzlu)
 
-                     t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                     tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                     t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                     tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                      ciz=(t+tt)/(1.d0-telu**2)
-                     poisson_p3d%pots(ix,iy,iz)=ciz
-                     poisson_p3d%pots(ix,poisson_p3d%ngpy-iy+2,iz)=ciz
+                     poisson%pots(ix,iy,iz)=ciz
+                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
 
                      ixt=ix+1
-                     t= poisson_p3d%pots(ixt,iy,npu)*(teu-tel*telu)
-                     tt=poisson_p3d%pots(ixt,iy,npl)*(tel-teu*telu)
+                     t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
+                     tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
                      ciz=(t+tt)/(1.d0-telu**2)
-                     poisson_p3d%pots(ixt,iy,iz)=ciz
-                     poisson_p3d%pots(ixt,poisson_p3d%ngpy-iy+2,iz)=-ciz
+                     poisson%pots(ixt,iy,iz)=ciz
+                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
                  enddo
              !-----------------------------------------
                  iy=1
                  gsqy=fourpisqcellyinvsq*(iy-1)**2
-                 do ix=3,poisson_p3d%ngpx,2
+                 do ix=3,poisson%ngpx,2
                      gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
                      g=sqrt(gsq)
                      teu =exp(-g*hzuiz)
                      tel =exp(-g*hzliz)
                      telu=teu*tel!exp(-g*hzlu)
 
-                     t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                     tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                     t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                     tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                      ciz=(t+tt)/(1.d0-telu**2)
-                     poisson_p3d%pots(ix,iy,iz)=ciz
+                     poisson%pots(ix,iy,iz)=ciz
 
                      ixt=ix+1
-                     t= poisson_p3d%pots(ixt,iy,npu)*(teu-tel*telu)
-                     tt=poisson_p3d%pots(ixt,iy,npl)*(tel-teu*telu)
+                     t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
+                     tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
                      ciz=(t+tt)/(1.d0-telu**2)
-                     poisson_p3d%pots(ixt,iy,iz)=ciz
+                     poisson%pots(ixt,iy,iz)=ciz
                 enddo
             !-----------------------------------------
-                iy=poisson_p3d%ngpy/2+1
+                iy=poisson%ngpy/2+1
                 gsqy=fourpisqcellyinvsq*(iy-1)**2
-                do ix=3,poisson_p3d%ngpx,2
+                do ix=3,poisson%ngpx,2
                     gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
                     g=sqrt(gsq)
                     teu =exp(-g*hzuiz)
                     tel =exp(-g*hzliz)
                     telu=teu*tel!exp(-g*hzlu)
 
-                    t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                    tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                    t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                    tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                     ciz=(t+tt)/(1.d0-telu**2)
-                    poisson_p3d%pots(ix,iy,iz)=ciz
+                    poisson%pots(ix,iy,iz)=ciz
 
                     ixt=ix+1
-                    t= poisson_p3d%pots(ixt,iy,npu)*(teu-tel*telu)
-                    tt=poisson_p3d%pots(ixt,iy,npl)*(tel-teu*telu)
+                    t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
+                    tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
                     ciz=(t+tt)/(1.d0-telu**2)
-                    poisson_p3d%pots(ixt,iy,iz)=ciz
+                    poisson%pots(ixt,iy,iz)=ciz
                 enddo
             !-----------------------------------------
-                do iy=2,poisson_p3d%ngpy/2
-                    iyt=poisson_p3d%ngpy-iy+2
+                do iy=2,poisson%ngpy/2
+                    iyt=poisson%ngpy-iy+2
                     gsqy=fourpisqcellyinvsq*(iy-1)**2
-                    do ix=3,poisson_p3d%ngpx,2
+                    do ix=3,poisson%ngpx,2
                         gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
                         g=sqrt(gsq)
                         teu =exp(-g*hzuiz)
                         tel =exp(-g*hzliz)
                         telu=teu*tel!exp(-g*hzlu)
 
-                        t= poisson_p3d%pots(ix,iy,npu)*(teu-tel*telu)
-                        tt=poisson_p3d%pots(ix,iy,npl)*(tel-teu*telu)
+                        t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
+                        tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
                         ciz=(t+tt)/(1.d0-telu**2)
-                        poisson_p3d%pots(ix,iy,iz)=ciz
+                        poisson%pots(ix,iy,iz)=ciz
 
                         ixt=ix+1
-                        t= poisson_p3d%pots(ixt,iy,npu)*(teu-tel*telu)
-                        tt=poisson_p3d%pots(ixt,iy,npl)*(tel-teu*telu)
+                        t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
+                        tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
                         ciz=(t+tt)/(1.d0-telu**2)
-                        poisson_p3d%pots(ixt,iy,iz)=ciz
+                        poisson%pots(ixt,iy,iz)=ciz
 
-                        t= poisson_p3d%pots(ix,iyt,npu)*(teu-tel*telu)
-                        tt=poisson_p3d%pots(ix,iyt,npl)*(tel-teu*telu)
+                        t= poisson%pots(ix,iyt,npu)*(teu-tel*telu)
+                        tt=poisson%pots(ix,iyt,npl)*(tel-teu*telu)
                         ciz=(t+tt)/(1.d0-telu**2)
-                        poisson_p3d%pots(ix,iyt,iz)=ciz
+                        poisson%pots(ix,iyt,iz)=ciz
 
                         ixt=ix+1
-                        t= poisson_p3d%pots(ixt,iyt,npu)*(teu-tel*telu)
-                        tt=poisson_p3d%pots(ixt,iyt,npl)*(tel-teu*telu)
+                        t= poisson%pots(ixt,iyt,npu)*(teu-tel*telu)
+                        tt=poisson%pots(ixt,iyt,npl)*(tel-teu*telu)
                         ciz=(t+tt)/(1.d0-telu**2)
-                        poisson_p3d%pots(ixt,iyt,iz)=ciz
+                        poisson%pots(ixt,iyt,iz)=ciz
                     enddo
                 enddo
         enddo
@@ -606,11 +621,11 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
         call dfftw_execute(plan_bs(iz))
     enddo
 
-    valuengpxyinv=1.d0/real(poisson_p3d%ngpx*poisson_p3d%ngpy,8)
+    valuengpxyinv=1.d0/real(poisson%ngpx*poisson%ngpy,8)
     do iz=npl,npu
-    do iy=1,poisson_p3d%ngpy
-    do ix=1,poisson_p3d%ngpx
-        poisson_p3d%pots(ix,iy,iz)=poisson_p3d%pots(ix,iy,iz)*valuengpxyinv
+    do iy=1,poisson%ngpy
+    do ix=1,poisson%ngpx
+        poisson%pots(ix,iy,iz)=poisson%pots(ix,iy,iz)*valuengpxyinv
     enddo
     enddo
     enddo
@@ -623,12 +638,12 @@ subroutine sollaplaceq(poisson_p3d,hz,cell,vl,vu)
     deallocate(plan_fs)
 end subroutine sollaplaceq
 !*****************************************************************************************
- subroutine calculate_force_ener_plane(atoms,ewald_p3d,epot)
+ subroutine calculate_force_ener_plane(atoms,poisson,epot)
     use mod_interface
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     implicit none
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
 
     !local variables
@@ -646,22 +661,22 @@ end subroutine sollaplaceq
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: tfx,tfy,tfz ,tmp
     real(8):: fatp(3,atoms%nat) 
-    nlgx=9;  nlgy=9; nlgz=8
-    ngpx=ewald_p3d%poisson_p3d%ngpx
-    ngpy=ewald_p3d%poisson_p3d%ngpy
-    ngpz=ewald_p3d%poisson_p3d%ngpz
-    npl=ewald_p3d%poisson_p3d%npl
-    npu=ewald_p3d%poisson_p3d%npu
+    nlgx=9;  nlgy=9; nlgz=9
+    ngpx=poisson%ngpx
+    ngpy=poisson%ngpy
+    ngpz=poisson%ngpz
+    npl=poisson%npl
+    npu=poisson%npu
     do iat=1,atoms%nat
-        if (atoms%rat(3,iat) < (int((nlgz/2.d0))*ewald_p3d%hgz)) then
-             write(*,*) 'ERROR:atoms are too close to lower plane ',atoms%rat(3,iat),npl,ceiling(nlgz/2.d0)*ewald_p3d%hgz 
+        if (atoms%rat(3,iat) < (int((nlgz/2.d0))*poisson%hz)) then
+             write(*,*) 'ERROR:atoms are too close to lower plane ',atoms%rat(3,iat),npl,ceiling(nlgz/2.d0)*poisson%hz 
              stop
-        else if (ewald_p3d%cell(3)-atoms%rat(3,iat) < (int((nlgz/2.d0))*ewald_p3d%hgz)) then
+        else if (poisson%cell(3)-atoms%rat(3,iat) < (int((nlgz/2.d0))*poisson%hz)) then
              write(*,*) 'ERROR:atoms are too close to upper plane' 
              stop
         endif
     enddo
-    allocate(pots_local(-nlgx+1:ewald_p3d%poisson_p3d%ngpx+nlgx,-nlgy+1:ewald_p3d%poisson_p3d%ngpy+nlgy,npl:npu))
+    allocate(pots_local(-nlgx+1:poisson%ngpx+nlgx,-nlgy+1:poisson%ngpy+nlgy,npl:npu))
     allocate(wx(1:nlgx))
     allocate(wy(1:nlgy))
     allocate(wz(1:nlgz))
@@ -673,14 +688,14 @@ end subroutine sollaplaceq
     allocate(DLGz(1:nlgz))
     allocate(pot_atom(1:atoms%nat))
     do iz=npl,npu
-    do ix=1-nlgx,ewald_p3d%poisson_p3d%ngpx+nlgx
-    do iy=-nlgy+1,ewald_p3d%poisson_p3d%ngpy+nlgy
-        pots_local(ix,iy,iz)=ewald_p3d%poisson_p3d%pots(modulo(ix-1,ngpx)+1,modulo(iy-1,ngpy)+1,iz)
+    do ix=1-nlgx,poisson%ngpx+nlgx
+    do iy=-nlgy+1,poisson%ngpy+nlgy
+        pots_local(ix,iy,iz)=poisson%pots(modulo(ix-1,ngpx)+1,modulo(iy-1,ngpy)+1,iz)
     enddo
     enddo
     enddo
 
-    call LG_weight(nlgx,nlgy,nlgz,ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz,wx,wy,wz)
+    call LG_weight(nlgx,nlgy,nlgz,poisson%hx,poisson%hy,poisson%hz,wx,wy,wz)
     pot_atom=0.d0
     t1=0.d0
     t2=0.d0
@@ -690,13 +705,13 @@ end subroutine sollaplaceq
         x=atoms%rat(1,iat)
         y=atoms%rat(2,iat)
         z=atoms%rat(3,iat)
-        !call LGW(nlgx, wx,ewald_p3d%hgx, x, LGx, DLGx, ix1, 0)
-        !call LGW(nlgy, wy,ewald_p3d%hgy, y, LGy, DLGy, iy1, 0)
-        !call LGW(nlgz, wz,ewald_p3d%hgz, z, LGz, DLGz, iz1, ewald_p3d%nbgpz )
+        !call LGW(nlgx, wx,poisson%hx, x, LGx, DLGx, ix1, 0)
+        !call LGW(nlgy, wy,poisson%hy, y, LGy, DLGy, iy1, 0)
+        !call LGW(nlgz, wz,poisson%hz, z, LGz, DLGz, iz1, poisson%nbgpz )
         
-        call LGW4(nlgx, wx,ewald_p3d%hgx, x, LGx, DLGx, ix1, 0)
-        call LGW4(nlgy, wy,ewald_p3d%hgy, y, LGy, DLGy, iy1, 0)
-        call LGW4(nlgz, wz,ewald_p3d%hgz, z, LGz, DLGz, iz1, ewald_p3d%nbgpz )
+        call LGW4(nlgx, wx,poisson%hx, x, LGx, DLGx, ix1, 0)
+        call LGW4(nlgy, wy,poisson%hy, y, LGy, DLGy, iy1, 0)
+        call LGW4(nlgz, wz,poisson%hz, z, LGz, DLGz, iz1, poisson%nbgpz )
         do iz=1,nlgz 
             jz=iz1+iz-1
             do iy=1,nlgy 
@@ -859,82 +874,82 @@ implicit none
     endif
 end subroutine LGW4
 !*******************************************************************************************
-subroutine surface_charge(parini,ewald_p3d,pot_short,vl,vu)
-    use mod_electrostatics, only: typ_ewald_p3d
+subroutine surface_charge(parini,poisson,pot_short,vl,vu)
+    use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     integer::ix, iy, iz, npl,npu
-    real(8):: t, tt ,density(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2),vl,vu
-    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(ewald_p3d%poisson_p3d%ngpx,ewald_p3d%poisson_p3d%ngpy,2,5)
+    real(8):: t, tt ,density(poisson%ngpx,poisson%ngpy,2),vl,vu
+    real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(poisson%ngpx,poisson%ngpy,2,5)
     real(8)::pot_layerl2,pot_layeru2
     real(8)::pot_layerl3,pot_layeru3
     real(8)::pot_layerl4,pot_layeru4
     real(8)::pot_layerl0,pot_layeru0
     real(8):: E,d
     pi=4*atan(1.d0)
-    npl=ewald_p3d%poisson_p3d%npl
-    npu=ewald_p3d%poisson_p3d%npu
-    hgzinv=1.d0/(ewald_p3d%hgz*4.d0*pi)
+    npl=poisson%npl
+    npu=poisson%npu
+    hgzinv=1.d0/(poisson%hz*4.d0*pi)
     t=0.d0
     tt=0.d0
-    d = ewald_p3d%cell(3)
+    d = poisson%cell(3)
             E =- (vu-vl)/d
 
-    do iy=1,ewald_p3d%poisson_p3d%ngpy
-    do ix=1,ewald_p3d%poisson_p3d%ngpx
-            pot_layerl4=ewald_p3d%poisson_p3d%pots(ix,iy,npl+4)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+4)+pot_short(ix,iy,1,5)
-            pot_layerl3=ewald_p3d%poisson_p3d%pots(ix,iy,npl+3)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+3)+pot_short(ix,iy,1,4)
-            pot_layerl2=ewald_p3d%poisson_p3d%pots(ix,iy,npl+2)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+2)+pot_short(ix,iy,1,3)
-            pot_layerl =ewald_p3d%poisson_p3d%pots(ix,iy,npl+1)+ewald_p3d%poisson_p3d%rho(ix,iy,npl+1)+pot_short(ix,iy,1,2)
-              vl       =ewald_p3d%poisson_p3d%pots(ix,iy,npl  )+ewald_p3d%poisson_p3d%rho(ix,iy,npl  )+pot_short(ix,iy,1,1)
+    do iy=1,poisson%ngpy
+    do ix=1,poisson%ngpx
+            pot_layerl4=poisson%pots(ix,iy,npl+4)+poisson%rho(ix,iy,npl+4)+pot_short(ix,iy,1,5)
+            pot_layerl3=poisson%pots(ix,iy,npl+3)+poisson%rho(ix,iy,npl+3)+pot_short(ix,iy,1,4)
+            pot_layerl2=poisson%pots(ix,iy,npl+2)+poisson%rho(ix,iy,npl+2)+pot_short(ix,iy,1,3)
+            pot_layerl =poisson%pots(ix,iy,npl+1)+poisson%rho(ix,iy,npl+1)+pot_short(ix,iy,1,2)
+              vl       =poisson%pots(ix,iy,npl  )+poisson%rho(ix,iy,npl  )+pot_short(ix,iy,1,1)
             !density(ix,iy,1)=-0.5d0*(-3.d0*vl+4*pot_layerl-pot_layerl2)* hgzinv
             density(ix,iy,1)=-(-25.d0/12.d0*vl+4.d0*pot_layerl-3.d0*pot_layerl2+4.d0/3.d0*pot_layerl3-0.25d0*pot_layerl4)* hgzinv
             t=t+ density(ix,iy,1)
-            pot_layeru4=ewald_p3d%poisson_p3d%pots(ix,iy,npu-4)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-4)+pot_short(ix,iy,2,5)
-            pot_layeru3=ewald_p3d%poisson_p3d%pots(ix,iy,npu-3)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-3)+pot_short(ix,iy,2,4)
-            pot_layeru2=ewald_p3d%poisson_p3d%pots(ix,iy,npu-2)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-2)+pot_short(ix,iy,2,3)
-            pot_layeru =ewald_p3d%poisson_p3d%pots(ix,iy,npu-1)+ewald_p3d%poisson_p3d%rho(ix,iy,npu-1)+pot_short(ix,iy,2,2)
-                    vu =ewald_p3d%poisson_p3d%pots(ix,iy,npu  )+ewald_p3d%poisson_p3d%rho(ix,iy,npu  )+pot_short(ix,iy,2,1)
+            pot_layeru4=poisson%pots(ix,iy,npu-4)+poisson%rho(ix,iy,npu-4)+pot_short(ix,iy,2,5)
+            pot_layeru3=poisson%pots(ix,iy,npu-3)+poisson%rho(ix,iy,npu-3)+pot_short(ix,iy,2,4)
+            pot_layeru2=poisson%pots(ix,iy,npu-2)+poisson%rho(ix,iy,npu-2)+pot_short(ix,iy,2,3)
+            pot_layeru =poisson%pots(ix,iy,npu-1)+poisson%rho(ix,iy,npu-1)+pot_short(ix,iy,2,2)
+                    vu =poisson%pots(ix,iy,npu  )+poisson%rho(ix,iy,npu  )+pot_short(ix,iy,2,1)
             !density(ix,iy,2)=0.5d0*(3.d0*vu-4.d0*pot_layeru+pot_layeru2)* hgzinv
             density(ix,iy,2)=-(-25.d0/12.d0*vu+4.d0*pot_layeru-3.d0*pot_layeru2+4.d0/3.d0*pot_layeru3-0.25d0*pot_layeru4)* hgzinv
             tt=tt+ density(ix,iy,2)
     enddo
     enddo
-  !  do iy=1,ewald_p3d%poisson_p3d%ngpy
-  !  do ix=1,ewald_p3d%poisson_p3d%ngpx
+  !  do iy=1,poisson%ngpy
+  !  do ix=1,poisson%ngpx
   !      write(1000,*)density(ix,iy,1)
   !      write(1001,*)density(ix,iy,2)
   !  enddo
   !  write(1000,*)
   !  write(1001,*)
   !  enddo
-    t=t*ewald_p3d%hgx*ewald_p3d%hgy
-    tt=tt*ewald_p3d%hgx*ewald_p3d%hgy
-    if (trim(parini%bias_field)=='yes') then
-        t =t -E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
-        tt=tt+E/(4*pi)*ewald_p3d%cell(1)*ewald_p3d%cell(2)
+    t=t*poisson%hx*poisson%hy
+    tt=tt*poisson%hx*poisson%hy
+    if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
+        t =t -E/(4*pi)*poisson%cell(1)*poisson%cell(2)
+        tt=tt+E/(4*pi)*poisson%cell(1)*poisson%cell(2)
     endif
     write(*,'(a,es25.13)')'charge on lower plane' ,t
     write(*,'(a,es25.13)')'charge on upper plane',tt
     write(77,'(3es25.13)')vu-vl,t,tt
-    vu=ewald_p3d%vu
-    vl=ewald_p3d%vl
+    vu=poisson%vu
+    vl=poisson%vl
 end subroutine surface_charge
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
-subroutine determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
+subroutine determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
     use mod_interface
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: ix, iy, iz, mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz), mboundgy(2,-nbgpz:nbgpz)
     integer:: nbgpx, nbgpy, nbgpz
 
     real(8):: rgcut, rgcutsq
-    rgcut=max(ewald_p3d%hgx*nbgpx,ewald_p3d%hgy*nbgpy,ewald_p3d%hgz*nbgpz)
+    rgcut=max(poisson%hx*nbgpx,poisson%hy*nbgpy,poisson%hz*nbgpz)
     rgcutsq=rgcut**2
     do iz=-nbgpz,nbgpz
         do iy=-nbgpy,nbgpy
@@ -945,7 +960,7 @@ subroutine determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
     do iz=0,nbgpz
     do iy=-nbgpy,nbgpy
     do ix=0,nbgpx
-        if(ix**2*ewald_p3d%hgx**2+iy**2*ewald_p3d%hgy**2+iz**2*ewald_p3d%hgz**2<=rgcutsq) then
+        if(ix**2*poisson%hx**2+iy**2*poisson%hy**2+iz**2*poisson%hz**2<=rgcutsq) then
             mboundg(1,iy,iz)=-ix
             mboundg(2,iy,iz)=ix
         endif
@@ -974,15 +989,14 @@ subroutine determine_limitsphere(ewald_p3d,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
 
 end subroutine determine_limitsphere
 !***********************************************************************************************************************
-subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
+subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     use mod_interface
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: bias 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
     !local variables
@@ -996,61 +1010,73 @@ subroutine bias_field_potener_forces(parini,ewald_p3d,atoms,epotplane)
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
+    real(8):: pot_correction  
 
+    beta = poisson%beta
     pi=4.d0*atan(1.d0)
+    ngpz=poisson%ngpz
+    ngpx= poisson%ngpx
+    ngpy= poisson%ngpy
     epotplane=0.d0
-        vl=parini%vl_ewald
-        vu=parini%vu_ewald
-        d = ewald_p3d%cell(3)
+    d = poisson%cell(3)
+    if(poisson%point_particle .and. trim(parini%bias_type)=='fixed_efield') then
+        E = parini%efield
+    elseif(poisson%point_particle .and. trim(parini%bias_type)=='fixed_potdiff') then
+        pot_correction= beta/(poisson%ngpx*poisson%ngpy)
+        vl=parini%vl_ewald+ pot_correction
+        vu=parini%vu_ewald- pot_correction
+        write(*,*)'real pot = vu , vl ',vu,vl 
         E =- (vu-vl)/d
-        write(*,*)'--------------------------------------------------------'
+    endif
+!        write(*,*)'--------------------------------------------------------'
 !        write(*,*)"distance between planes",d
-        A= ewald_p3d%poisson_p3d%ngpx*ewald_p3d%poisson_p3d%ngpy*ewald_p3d%hgx*ewald_p3d%hgy
-        c= A/(4.d0*pi*d)
+       A= poisson%ngpx*poisson%ngpy*poisson%hx*poisson%hy
+       c= A/(4.d0*pi*d)
 !        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
-        dipole = beta*(ewald_p3d%hgx*ewald_p3d%hgy)
-        charge0= -dipole/(2*pi*d)
-        charge = -dipole/(2*pi*d)+c*(vu-vl)
-        !write(88,*)vu , beta, charge
-        !write(89,*)vu , beta, charge0
-        write(*,*)'dipole = ', dipole/(2*pi)
-        write(*,*)'charge on upper  plate  ', charge
-        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
-        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
+       dipole = beta*(poisson%hx*poisson%hy)
+       charge0= -dipole/(2*pi*d)
+       charge = -dipole/(2*pi*d)+c*(vu-vl)
+!       write(*,*)'dipole = ', dipole/(2*pi)
+!       write(*,*)'charge on upper  plate  ', charge
+!        poisson%npu=poisson%ngpz-poisson%nbgpz
+!        poisson%npl=1+poisson%nbgpz  
 !        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
-        npl=ewald_p3d%poisson_p3d%npl
-        npu=ewald_p3d%poisson_p3d%npu
+!        npl=poisson%npl
+!        npu=poisson%npu
+        dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
+        dipole_correction =dipole_correction +0.5*charge0*(vu-vl)+0.5*c*(vu-vl)**2
         epotplane = 0.d0
         do iat=1,atoms%nat
             epotplane = epotplane - E * atoms%qat(iat)*atoms%rat(3,iat)
             atoms%fat(3,iat)=atoms%fat(3,iat)+ E * atoms%qat(iat)
         enddo
+        epotplane = epotplane+dipole_correction
 
-!*****************************************************************************
-        ewald_p3d%poisson_p3d%npu=ewald_p3d%poisson_p3d%ngpz-ewald_p3d%nbgpz
-        ewald_p3d%poisson_p3d%npl=1+ewald_p3d%nbgpz  
-        npl=ewald_p3d%poisson_p3d%npl
-        npu=ewald_p3d%poisson_p3d%npu
-
-        allocate(ewald_p3d%poisson_p3d%pots(1:ewald_p3d%poisson_p3d%ngpx+2,1:ewald_p3d%poisson_p3d%ngpy,npl:npu))
-!        write(*,*)"npu,npl",ewald_p3d%poisson_p3d%npu,ewald_p3d%poisson_p3d%npl
-        nlayer=1
-        if (parini%cal_charge) then 
-            nlayer=5
-            allocate(pots_layer(1:ewald_p3d%poisson_p3d%ngpx,1:ewald_p3d%poisson_p3d%ngpy,1:2,1:nlayer))
-        endif
-        ewald_p3d%poisson_p3d%pots=0.d0
-        call erfc_surface_zero(parini,atoms,ewald_p3d,nlayer)
-        if (parini%cal_charge) then
-            pots_layer(1:ngpx,1:ngpy,1,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
-            pots_layer(1:ngpx,1:ngpy,2,:)=ewald_p3d%poisson_p3d%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
-        endif
-        ewald_p3d%poisson_p3d%pots=0.d0
-
-        if (parini%cal_charge) then 
-            call surface_charge(parini,ewald_p3d,pots_layer,vl,vu)
-            deallocate(pots_layer)
-        endif
-        deallocate(ewald_p3d%poisson_p3d%pots)
-!*****************************************************************************
+!!*****************************************************************************
+!        poisson%npu=poisson%ngpz-poisson%nbgpz
+!        poisson%npl=1+poisson%nbgpz  
+!        npl=poisson%npl
+!        npu=poisson%npu
+!
+!        allocate(poisson%pots(1:poisson%ngpx+2,1:poisson%ngpy,npl:npu))
+!!        write(*,*)"npu,npl",poisson%npu,poisson%npl
+!        nlayer=1
+!        if (parini%cal_charge) then 
+!            nlayer=5
+!            allocate(pots_layer(1:poisson%ngpx,1:poisson%ngpy,1:2,1:nlayer))
+!        endif
+!        poisson%pots=0.d0
+!        call erfc_surface_zero(parini,atoms,poisson,nlayer)
+!        if (parini%cal_charge) then
+!            pots_layer(1:ngpx,1:ngpy,1,:)=poisson%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)
+!            pots_layer(1:ngpx,1:ngpy,2,:)=poisson%pots(1:ngpx,1:ngpy,npu:npu-(nlayer-1):-1)
+!        endif
+!        poisson%pots=0.d0
+!
+!        if (parini%cal_charge) then 
+!            call surface_charge(parini,poisson,pots_layer,vl,vu)
+!            deallocate(pots_layer)
+!        endif
+!        deallocate(poisson%pots)
+!!*****************************************************************************
 end subroutine bias_field_potener_forces

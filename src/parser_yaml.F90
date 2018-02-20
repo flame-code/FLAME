@@ -181,8 +181,6 @@ subroutine yaml_get_potential_parameters(parini)
     !local variales
     if(dict_size(parini%subdict)<1) stop 'ERROR: potential block in flame_in.yaml is empty.'
     parini%potential_potential=parini%subdict//"potential"
-    parini%bias_potential=parini%subdict//"bias"
-    parini%bias_field=parini%subdict//"bias_field"
     parini%cal_charge=parini%subdict//"cal_charge"
     parini%potential_potential_sec=parini%subdict//"potential_sec"
     parini%potential_ann_boundcheck=parini%subdict//"ann_boundcheck"
@@ -339,6 +337,8 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%gnrmtol_eem=parini%subsubdict//"gnrmtol"
     parini%ewald=parini%subsubdict//"ewald"
     parini%tolerance_ewald=parini%subsubdict//"ewald_tol"
+    parini%efield=parini%subsubdict//"external_field"
+    parini%bias_type=parini%subsubdict//"bias_type"
 end subroutine yaml_get_ewald_parameters
 !*****************************************************************************************
 subroutine yaml_get_misc_parameters(parini)

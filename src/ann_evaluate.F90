@@ -15,7 +15,7 @@ subroutine ann_evaluate_subtask(parini)
     !real(8), allocatable:: ratall(:,:,:), epotall(:)
     stop 'ERROR: this subtask is NOT ready yet.'
     !-------------------------------------------------------
-    call read_data(parini,'../list_posinp_test',atoms_arr)
+    !call read_data_old(parini,'../list_posinp_test',atoms_arr)
     !call read_ann(parini,'ann.param',ann)
 !HERE    call ann_evaluate(0,ann,symfunc_arr,atoms_arr,6,.true.)
     !-------------------------------------------------------

@@ -1,14 +1,14 @@
 !*****************************************************************************************
-subroutine cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
+subroutine cal_hartree_pot_bps(poisson,atoms,ehartree)
     use mod_interface
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: H_POTENTIAL
 #endif
     use dynamic_memory
     implicit none
-    type(typ_ewald_p3d),intent(inout):: ewald_p3d
+    type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
     !local variables
@@ -22,7 +22,7 @@ subroutine cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
 
 #if defined(HAVE_BPS)
     !stress_t(1:6)=0.d0
-    call H_POTENTIAL('G',ewald_p3d%poisson_p3d%pkernel,ewald_p3d%poisson_p3d%rho, &
+    call H_POTENTIAL('G',poisson%pkernel,poisson%rho, &
         pot_ion,ehartree,0.d0,.false.,stress_tensor=stress_t) !,quiet='yes')
     !write(*,'(a,6es14.5)') 'STRESS ',stress_t(1:6)
     !ordering from BigDFT ---> (11,22,33,23,13,12)
@@ -35,10 +35,10 @@ subroutine cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
     atoms%stress(3,2)=stress_t(4)
     atoms%stress(3,1)=stress_t(5)
     atoms%stress(2,1)=stress_t(6)
-    do igpz=1,ewald_p3d%poisson_p3d%ngpz
-    do igpy=1,ewald_p3d%poisson_p3d%ngpy
-    do igpx=1,ewald_p3d%poisson_p3d%ngpx
-        ewald_p3d%poisson_p3d%pot(igpx,igpy,igpz)=ewald_p3d%poisson_p3d%rho(igpx,igpy,igpz)
+    do igpz=1,poisson%ngpz
+    do igpy=1,poisson%ngpy
+    do igpx=1,poisson%ngpx
+        poisson%pot(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
     enddo
     enddo
     enddo
@@ -49,11 +49,11 @@ subroutine cal_hartree_pot_bps(ewald_p3d,atoms,ehartree)
 #endif
 end subroutine cal_hartree_pot_bps
 !*****************************************************************************************
-subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
+subroutine construct_ewald_bps(parini,atoms,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     use dictionaries, dict_set => set
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
@@ -63,7 +63,7 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     character(len=1):: geocode
     integer:: n01, n02, n03, itype_scf, iproc=0, nproc=1
@@ -91,19 +91,19 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     !nxyz=options//'ndim'
     !geocode=options//'geocode'
     !call dict_free(options)
-    n01=ewald_p3d%poisson_p3d%ngpx !nxyz(1)
-    n02=ewald_p3d%poisson_p3d%ngpy !nxyz(2)
-    n03=ewald_p3d%poisson_p3d%ngpz !nxyz(3)
+    n01=poisson%ngpx !nxyz(1)
+    n02=poisson%ngpy !nxyz(2)
+    n03=poisson%ngpz !nxyz(3)
     !Step size
-    !ewald_p3d%hgx=atoms%cellvec(1,1)/real(n01,kind=8)
-    !ewald_p3d%hgy=atoms%cellvec(2,2)/real(n02,kind=8)
-    !ewald_p3d%hgz=atoms%cellvec(3,3)/real(n03,kind=8)
-    write(*,'(a,3f15.10)') 'hx,hy,hz ',ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz
+    !poisson%hx=atoms%cellvec(1,1)/real(n01,kind=8)
+    !poisson%hy=atoms%cellvec(2,2)/real(n02,kind=8)
+    !poisson%hz=atoms%cellvec(3,3)/real(n03,kind=8)
+    write(*,'(a,3f15.10)') 'hx,hy,hz ',poisson%hx,poisson%hy,poisson%hz
     !order of the scaling functions chosen
     itype_scf=16
     !calculate the kernel in parallel for each processor
     ndims=(/n01,n02,n03/)
-    hgrids=(/ewald_p3d%hgx,ewald_p3d%hgy,ewald_p3d%hgz/)
+    hgrids=(/poisson%hx,poisson%hy,poisson%hz/)
     cv1(1:3)=atoms%cellvec(1:3,1)
     cv2(1:3)=atoms%cellvec(1:3,2)
     cv3(1:3)=atoms%cellvec(1:3,3)
@@ -119,10 +119,10 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
     beta_ac = abs(ang_ac)!+pi/2.d0
     gamma_ab = abs(ang_ab)!+pi/2.d0
     !write(*,*) iproc,nproc,geocode,ndims, hgrids,alpha_bc,beta_ac,gamma_ab
-    ewald_p3d%poisson_p3d%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
+    poisson%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
     call dict_free(dict_input)
     write(*,*) 'REZA-4'
-    call pkernel_set(ewald_p3d%poisson_p3d%pkernel,verbose=.true.)
+    call pkernel_set(poisson%pkernel,verbose=.true.)
     write(*,*) 'REZA-5'
     !write(*,'(a,2es20.12)') 'Hartree ',ehartree,ehartree-ehartree_ref
 #else
@@ -130,36 +130,36 @@ subroutine construct_ewald_bps(parini,atoms,ewald_p3d)
 #endif
 end subroutine construct_ewald_bps
 !*****************************************************************************************
-subroutine destruct_ewald_bps(ewald_p3d)
+subroutine destruct_ewald_bps(poisson)
     use mod_interface
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
     use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
     use Poisson_Solver, only: pkernel_free
 #endif
     implicit none
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(inout):: poisson
 #if defined(HAVE_BPS)
-    call pkernel_free(ewald_p3d%poisson_p3d%pkernel)
+    call pkernel_free(poisson%pkernel)
     !call f_lib_finalize()
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
 end subroutine destruct_ewald_bps
 !*****************************************************************************************
-subroutine set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
+subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
     use module_fft_sg, only: i_data, ndata
 #endif
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_ewald_p3d), intent(in):: ewald_p3d_rough
-    type(typ_ewald_p3d), intent(inout):: ewald_p3d
+    type(typ_poisson), intent(in):: poisson_rough
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     real(8):: dh1, dh2, harr(3), pi
     real(8):: cell(3), vol, cvinv(3), cvinv_norm(3)
@@ -176,22 +176,22 @@ subroutine set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
     cvinv_norm(2)=sqrt(cvinv(1)**2+cvinv(2)**2+cvinv(3)**2)
     cell(2)=vol/cvinv_norm(2)
     !write(*,*) cell(1:3)
-    ewald_p3d%poisson_p3d%ngpx=int(cell(1)/ewald_p3d_rough%hgx)+1
-    ewald_p3d%poisson_p3d%ngpy=int(cell(2)/ewald_p3d_rough%hgy)+1
-    ewald_p3d%poisson_p3d%ngpz=int(cell(3)/ewald_p3d_rough%hgz)+1
+    poisson%ngpx=int(cell(1)/poisson_rough%hx)+1
+    poisson%ngpy=int(cell(2)/poisson_rough%hy)+1
+    poisson%ngpz=int(cell(3)/poisson_rough%hz)+1
 
 #if defined(HAVE_BPS)
     pi=4.d0*atan(1.d0)
-    ewald_p3d%poisson_p3d%ngpx=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(1)*2.d0*pi/vol))
-    ewald_p3d%poisson_p3d%ngpy=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(2)*2.d0*pi/vol))
-    ewald_p3d%poisson_p3d%ngpz=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(3)*2.d0*pi/vol))
+    poisson%ngpx=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(1)*2.d0*pi/vol))
+    poisson%ngpy=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(2)*2.d0*pi/vol))
+    poisson%ngpz=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(3)*2.d0*pi/vol))
 
-    ndim(1)=ewald_p3d%poisson_p3d%ngpx
-    ndim(2)=ewald_p3d%poisson_p3d%ngpy
-    ndim(3)=ewald_p3d%poisson_p3d%ngpz
-    harr(1)=ewald_p3d_rough%hgx
-    harr(2)=ewald_p3d_rough%hgy
-    harr(3)=ewald_p3d_rough%hgz
+    ndim(1)=poisson%ngpx
+    ndim(2)=poisson%ngpy
+    ndim(3)=poisson%ngpz
+    harr(1)=poisson_rough%hx
+    harr(2)=poisson_rough%hy
+    harr(3)=poisson_rough%hz
     do id=1,3
         do i=1,ndata
             if(ndim(id)<i_data(i)) exit
@@ -210,17 +210,17 @@ subroutine set_ngp_bps(parini,atoms,ewald_p3d_rough,ewald_p3d)
             endif
         endif
     enddo
-    ewald_p3d%poisson_p3d%ngpx=max(16,ndim(1))
-    ewald_p3d%poisson_p3d%ngpy=max(16,ndim(2))
-    ewald_p3d%poisson_p3d%ngpz=max(16,ndim(3))
+    poisson%ngpx=max(16,ndim(1))
+    poisson%ngpy=max(16,ndim(2))
+    poisson%ngpz=max(16,ndim(3))
     !write(*,*) ndim(:)
     !stop
-    ewald_p3d%hgx=sqrt(sum(atoms%cellvec(1:3,1)**2))/real(ewald_p3d%poisson_p3d%ngpx,8)
-    ewald_p3d%hgy=sqrt(sum(atoms%cellvec(1:3,2)**2))/real(ewald_p3d%poisson_p3d%ngpy,8)
-    ewald_p3d%hgz=sqrt(sum(atoms%cellvec(1:3,3)**2))/real(ewald_p3d%poisson_p3d%ngpz,8)
-    !ewald_p3d%hgx=cell(1)/real(ewald_p3d%poisson_p3d%ngpx,8)
-    !ewald_p3d%hgy=cell(2)/real(ewald_p3d%poisson_p3d%ngpy,8)
-    !ewald_p3d%hgz=cell(3)/real(ewald_p3d%poisson_p3d%ngpz,8)
+    poisson%hx=sqrt(sum(atoms%cellvec(1:3,1)**2))/real(poisson%ngpx,8)
+    poisson%hy=sqrt(sum(atoms%cellvec(1:3,2)**2))/real(poisson%ngpy,8)
+    poisson%hz=sqrt(sum(atoms%cellvec(1:3,3)**2))/real(poisson%ngpz,8)
+    !poisson%hx=cell(1)/real(poisson%ngpx,8)
+    !poisson%hy=cell(2)/real(poisson%ngpy,8)
+    !poisson%hz=cell(3)/real(poisson%ngpz,8)
 #else
     stop 'ERROR: FLAME is not linked with Poisson solvers in BigDFT.'
 #endif

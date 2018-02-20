@@ -207,7 +207,7 @@ subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train
                 filename=trim(parini%stypat(i))//trim(fn)
                 write(*,'(a)') trim(filename)
                 if( ann_arr%exists_yaml_file) then
-                    call write_ann_yaml(parini,filename,ann_arr%ann(i))
+                    call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
                 else
                     call write_ann(parini,filename,ann_arr%ann(i))
                 endif
