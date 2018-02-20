@@ -19,6 +19,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
     !real(8):: stress(3,3), kmax, c, vol, talpha
+    call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     call apply_external_field(parini,atoms,poisson,ehartree,g)
 end subroutine get_hartree_simple
 !*****************************************************************************************
@@ -61,9 +62,9 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
     !enddo
     epotreal=0.d0
+    ewaldwidth=f_malloc([1.to.atoms%nat],id='ewaldwidth')
     if(parini%ewald) then
         gg=f_malloc([1.to.atoms%nat],id='gg')
-        ewaldwidth=f_malloc([1.to.atoms%nat],id='ewaldwidth')
        ewaldwidth(:)=poisson%alpha
     end if
 
@@ -141,18 +142,19 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
         stop
     endif
 
+    if(.not. parini%ewald) then
+        ewaldwidth=gausswidth
+    endif
+    
     g(1:atoms%nat)=0.d0
+    call get_hartree_simple(parini,poisson,atoms,ewaldwidth,ehartree,g)
     if(parini%ewald) then
         atoms%fat=0.d0
-        call get_g_from_pot(parini,atoms,poisson,ewaldwidth,g)
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
         ehartree=ehartree+epotreal
         g=g+gg
-    else
-        call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     end if
 
-    call get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     if(parini%ewald) then
         call f_free(gg)
         call f_free(ewaldwidth)

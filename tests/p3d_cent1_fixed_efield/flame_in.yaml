@@ -8,8 +8,8 @@ potential:
     add_repulsive: False
     ewald:
         ewald : True
-        hx: 1.4
-        hz: 1.2
+        hx: 0.8
+        hz: 0.7
         rgcut: 6.0
         alpha: 2.0
         bias_type: fixed_efield
