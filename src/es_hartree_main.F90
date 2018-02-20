@@ -14,11 +14,49 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
     !local variables
-    !real(8):: dpm, pi, gtot, ecut, epotreal, alphasq
-    !integer:: iat, igpx, igpy, igpz
+    real(8):: dpm, pi !, gtot, ecut, epotreal, alphasq
+    integer:: iat, igpx, igpy, igpz
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
     !real(8):: stress(3,3), kmax, c, vol, talpha
+    pi=4.d0*atan(1.d0)
+! !   if (parini%ewald .and. parini%alpha_ewald<0.d0) then
+!        call getvol_alborz(atoms%cellvec,vol)
+!        c=2
+!        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
+!         
+! !   end if
+    dpm=0.d0
+    do iat=1,atoms%nat
+        dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
+    enddo
+    dpm=dpm*2.d0*pi*poisson%ngpx*poisson%ngpy/(poisson%cell(1)*poisson%cell(2))
+    !do iat=1,atoms%nat
+    !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
+    !enddo
+    if(trim(atoms%boundcond)=='bulk') then
+        if(trim(parini%psolver_ann)=='bigdft') then
+            call cal_hartree_pot_bps(poisson,atoms,ehartree)
+        else
+            stop 'ERROR: unknown psolver_ann'
+        endif
+    elseif(trim(atoms%boundcond)=='slab') then
+        call solve_poisson_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
+        do igpz=1,poisson%ngpz
+        do igpy=1,poisson%ngpy
+        do igpx=1,poisson%ngpx
+            poisson%rho(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
+        enddo
+        enddo
+        enddo
+    elseif(trim(atoms%boundcond)=='wire') then
+        stop 'ERROR: wire BCs is not complete yet.'
+    elseif(trim(atoms%boundcond)=='free') then
+        stop 'ERROR: free BCs is not complete yet.'
+    else
+        write(*,'(2a)') 'ERROR: unknown BC in calparam ',trim(atoms%boundcond)
+        stop
+    endif
     call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     call apply_external_field(parini,atoms,poisson,ehartree,g)
 end subroutine get_hartree_simple
@@ -45,22 +83,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8):: stress(3,3), kmax, c, vol, talpha
     call f_routine(id='get_hartree')
     call f_timing(TCAT_PSOLVER,'ON')
-    pi=4.d0*atan(1.d0)
-! !   if (parini%ewald .and. parini%alpha_ewald<0.d0) then
-!        call getvol_alborz(atoms%cellvec,vol)
-!        c=2
-!        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
-!         
-! !   end if
 
-    dpm=0.d0
-    do iat=1,atoms%nat
-        dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
-    enddo
-    dpm=dpm*2.d0*pi*poisson%ngpx*poisson%ngpy/(poisson%cell(1)*poisson%cell(2))
-    !do iat=1,atoms%nat
-    !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
-    !enddo
     epotreal=0.d0
     ewaldwidth=f_malloc([1.to.atoms%nat],id='ewaldwidth')
     if(parini%ewald) then
@@ -110,37 +133,12 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
         call f_timing(TCAT_PSOLVER,'OF')
         call f_release_routine()
         return
-    endif
+    endif !end of kwald
     if(parini%ewald) then
         call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,ewaldwidth,poisson)
     else
         call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
     end if
-    if(trim(atoms%boundcond)=='bulk') then
-        if(trim(parini%psolver_ann)=='bigdft') then
-            call cal_hartree_pot_bps(poisson,atoms,ehartree)
-            ehartree=ehartree+epotreal
-        else
-            stop 'ERROR: unknown psolver_ann'
-        endif
-    elseif(trim(atoms%boundcond)=='slab') then
-        call solve_poisson_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
-        ehartree=ehartree+epotreal
-        do igpz=1,poisson%ngpz
-        do igpy=1,poisson%ngpy
-        do igpx=1,poisson%ngpx
-            poisson%rho(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
-        enddo
-        enddo
-        enddo
-    elseif(trim(atoms%boundcond)=='wire') then
-        stop 'ERROR: wire BCs is not complete yet.'
-    elseif(trim(atoms%boundcond)=='free') then
-        stop 'ERROR: free BCs is not complete yet.'
-    else
-        write(*,'(2a)') 'ERROR: unknown BC in calparam ',trim(atoms%boundcond)
-        stop
-    endif
 
     if(.not. parini%ewald) then
         ewaldwidth=gausswidth
