@@ -26,6 +26,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
 !        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
 !         
 ! !   end if
+    if(trim(parini%psolver_ann)/='kwald') then
     dpm=0.d0
     do iat=1,atoms%nat
         dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
@@ -60,6 +61,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     endif
     call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     call apply_external_field(parini,atoms,poisson,ehartree,g)
+endif !end of if not to be kwald
 end subroutine get_hartree_simple
 !*****************************************************************************************
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
@@ -92,6 +94,8 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
        ewaldwidth(:)=poisson%alpha
     end if
 
+    g(1:atoms%nat)=0.d0
+    atoms%fat=0.d0
     if(trim(parini%psolver_ann)=='kwald') then
         if (parini%ewald) then
             !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
@@ -118,33 +122,19 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
             gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
             call kwald(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
         end if
-        if(parini%ewald) then
-            call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
-            atoms%stress=atoms%stress+stress
-            ehartree=ehartree+epotreal
-            g=g+gg
-        end if
         
         call f_free(gwsq)
         call f_free(ratred)
-        if(parini%ewald) then
-            call f_free(gg)
-            call f_free(ewaldwidth)
-        endif
-        call f_timing(TCAT_PSOLVER,'OF')
-        call f_release_routine()
-        return
     endif !end of kwald
 
     if(.not. parini%ewald) then
         ewaldwidth=gausswidth
     endif
     
-    g(1:atoms%nat)=0.d0
     call get_hartree_simple(parini,poisson,atoms,ewaldwidth,ehartree,g)
     if(parini%ewald) then
-        atoms%fat=0.d0
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
+        atoms%stress=atoms%stress+stress
         ehartree=ehartree+epotreal
         g=g+gg
     end if
