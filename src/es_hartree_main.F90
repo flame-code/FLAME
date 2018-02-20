@@ -34,6 +34,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     !do iat=1,atoms%nat
     !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
     !enddo
+    call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
             call cal_hartree_pot_bps(poisson,atoms,ehartree)
@@ -134,11 +135,6 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
         call f_release_routine()
         return
     endif !end of kwald
-    if(parini%ewald) then
-        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,ewaldwidth,poisson)
-    else
-        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-    end if
 
     if(.not. parini%ewald) then
         ewaldwidth=gausswidth
