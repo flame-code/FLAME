@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
+subroutine psolver_bulk_fourier(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
@@ -212,9 +212,9 @@ subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stres
     deallocate(tarr1)
     deallocate(tarr2)
     deallocate(tarr3)
-end subroutine kwald
+end subroutine psolver_bulk_fourier
 !*****************************************************************************************
-subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
+subroutine psolver_bulk_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
@@ -426,5 +426,5 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     !enddo
     deallocate(tarr1)
     deallocate(tarr2)
-end subroutine kwald_samare
+end subroutine psolver_bulk_fourier_identical
 !*****************************************************************************************

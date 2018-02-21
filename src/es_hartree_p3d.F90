@@ -41,7 +41,7 @@ subroutine ps2dp1df_destruction(poisson)
     endif
 end subroutine ps2dp1df_destruction
 !*****************************************************************************************
-subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
+subroutine psolver_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
@@ -84,7 +84,7 @@ subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
         enddo
     enddo
     epot=epot*0.5d0*hx*hy*hz
-end subroutine solve_poisson_slab_p3d
+end subroutine psolver_slab_p3d
 !*****************************************************************************************
 !This subroutine calculates the systems of linear equations using LAPACK routines.
 subroutine solsyslinequ(poisson,hz,cell,beta_arg)

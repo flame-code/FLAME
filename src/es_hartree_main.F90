@@ -32,13 +32,13 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
         ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
         if(poisson%gw_identical) then
      !       gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
-     !       call kwald(atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
+     !       call psolver_bulk_fourier(atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
             alphasq=poisson%alpha**2
-            call kwald_samare(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
+            call psolver_bulk_fourier_identical(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
                 atoms%cellvec,alphasq,poisson%ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
          else
             gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
-            call kwald(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
+            call psolver_bulk_fourier(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
                 gwsq,poisson%ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
         end if
         
@@ -63,12 +63,12 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
-            call cal_hartree_pot_bps(poisson,atoms,ehartree)
+            call psolver_allbc_bps(poisson,atoms,ehartree)
         else
             stop 'ERROR: unknown psolver_ann'
         endif
     elseif(trim(atoms%boundcond)=='slab') then
-        call solve_poisson_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
+        call psolver_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
         do igpz=1,poisson%ngpz
         do igpy=1,poisson%ngpy
         do igpx=1,poisson%ngpx
@@ -156,146 +156,6 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     call f_timing(TCAT_PSOLVER,'OF')
     call f_release_routine()
 end subroutine get_hartree
-!*****************************************************************************************
-subroutine get_hartree_old(parini,poisson,atoms,gausswidth,ehartree,g)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
-    use dynamic_memory
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_poisson),intent(inout):: poisson
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gausswidth(atoms%nat)
-    real(8), intent(out):: ehartree, g(atoms%nat)
-    !local variables
-    real(8):: dpm, pi, gtot, ecut, epotreal, alphasq
-    integer:: iat, igpx, igpy, igpz
-    real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
-    real(8), allocatable::  ewaldwidth(:)
-    real(8):: stress(3,3), kmax, c, vol, talpha
-    call f_routine(id='get_hartree_old')
-    call f_timing(TCAT_PSOLVER,'ON')
-    pi=4.d0*atan(1.d0)
-! !   if (parini%ewald .and. parini%alpha_ewald<0.d0) then
-!        call getvol_alborz(atoms%cellvec,vol)
-!        c=2
-!        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
-!         
-! !   end if
-
-    dpm=0.d0
-    do iat=1,atoms%nat
-        dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
-    enddo
-    dpm=dpm*2.d0*pi*poisson%ngpx*poisson%ngpy/(poisson%cell(1)*poisson%cell(2))
-    !do iat=1,atoms%nat
-    !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
-    !enddo
-    epotreal=0.d0
-    if(parini%ewald) then
-        gg=f_malloc([1.to.atoms%nat],id='gg')
-        ewaldwidth=f_malloc([1.to.atoms%nat],id='ewaldwidth')
-       ewaldwidth(:)=poisson%alpha
-    end if
-
-    if(trim(parini%psolver_ann)=='kwald') then
-        if (parini%ewald) then
-            !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
-            kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
-            ecut=kmax**2/2.d0
-            write(*,*)"ecut", ecut, "alpha",poisson%alpha
-        else
-            ecut=parini%ecut_ewald
-        !!!!!  else
-        !!!!!      talpha=minval(gausswidth)
-        !!!!!      kmax=2.d0/talpha*sqrt(-log(1.d3*parini%tolerance_ewald))
-        !!!!!      !kmax=2.d0/talpha*sqrt(-log(1.d-3))
-        !!!!!      ecut=kmax**2/2.d0*(4.d0*pi**2)
-        !!!!!      write(*,*)"ecut", ecut, "alpha",poisson%alpha
-        endif
-        gwsq=f_malloc([1.to.atoms%nat],id='gwsq')
-        ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
-        if(parini%ewald) then
-     !       gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
-     !       call kwald(atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
-            alphasq=poisson%alpha**2
-            call kwald_samare(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,alphasq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
-         else
-            gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
-            call kwald(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
-        end if
-        if(parini%ewald) then
-            call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
-            atoms%stress=atoms%stress+stress
-            ehartree=ehartree+epotreal
-            g=g+gg
-        end if
-        
-        call f_free(gwsq)
-        call f_free(ratred)
-        if(parini%ewald) then
-            call f_free(gg)
-            call f_free(ewaldwidth)
-        endif
-        call f_timing(TCAT_PSOLVER,'OF')
-        call f_release_routine()
-        return
-    endif
-    if(parini%ewald) then
-        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,ewaldwidth,poisson)
-    else
-        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-    end if
-    if(trim(atoms%boundcond)=='bulk') then
-        if(trim(parini%psolver_ann)=='bigdft') then
-            call cal_hartree_pot_bps(poisson,atoms,ehartree)
-            ehartree=ehartree+epotreal
-        else
-            stop 'ERROR: unknown psolver_ann'
-        endif
-    elseif(trim(atoms%boundcond)=='slab') then
-        call solve_poisson_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
-        ehartree=ehartree+epotreal
-        do igpz=1,poisson%ngpz
-        do igpy=1,poisson%ngpy
-        do igpx=1,poisson%ngpx
-            poisson%rho(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
-        enddo
-        enddo
-        enddo
-    elseif(trim(atoms%boundcond)=='wire') then
-        stop 'ERROR: wire BCs is not complete yet.'
-    elseif(trim(atoms%boundcond)=='free') then
-        stop 'ERROR: free BCs is not complete yet.'
-    else
-        write(*,'(2a)') 'ERROR: unknown BC in calparam ',trim(atoms%boundcond)
-        stop
-    endif
-
-    if(trim(parini%psolver_ann)/='kwald') then
-        g(1:atoms%nat)=0.d0
-        if(parini%ewald) then
-            atoms%fat=0.d0
-            call get_g_from_pot(parini,atoms,poisson,ewaldwidth,g)
-            call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
-            ehartree=ehartree+epotreal
-            g=g+gg
-        else
-            call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
-        end if
-    endif
-    call apply_external_field(parini,atoms,poisson,ehartree,g)
-    if(parini%ewald) then
-        call f_free(gg)
-        call f_free(ewaldwidth)
-    endif
-    call f_timing(TCAT_PSOLVER,'OF')
-    call f_release_routine()
-end subroutine get_hartree_old
 !*****************************************************************************************
 subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     use mod_interface

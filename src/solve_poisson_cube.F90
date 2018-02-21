@@ -91,7 +91,7 @@ subroutine solve_poisson(parini)
     enddo
     !t1=t1*(2*pi)/(cell(1)*cell(2))
     write(*,*) 't1=',t1
-    call solve_poisson_slab_p3d(parini,poisson,cell,poisson%hx,poisson%hy,poisson%hz,epot)
+    call psolver_slab_p3d(parini,poisson,cell,poisson%hx,poisson%hy,poisson%hz,epot)
     call cube_write('pot_p3d.cube',atoms,poisson,'pot')
     call ps2dp1df_destruction(poisson)
     deallocate(poisson%rho,stat=istat)

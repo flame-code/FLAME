@@ -474,7 +474,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     call put_gauss_to_grid(parini,atoms,cent)
     call cpu_time(time2)
     ehartree=0.d0
-    call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+    call psolver_allbc_bps(cent%poisson,atoms,ehartree)
     epot_es=0.d0
     do iat=1,atoms%nat
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/cent%gwit(iat)
