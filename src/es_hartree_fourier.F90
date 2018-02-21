@@ -1,4 +1,41 @@
 !*****************************************************************************************
+subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use time_profiling
+    use mod_timing , only: TCAT_PSOLVER
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree, g(atoms%nat)
+    !local variables
+    real(8):: alphasq
+    !integer:: iat
+    real(8), allocatable:: gwsq(:), ratred(:,:)
+    gwsq=f_malloc([1.to.atoms%nat],id='gwsq')
+    ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
+    if(poisson%gw_identical) then
+         !gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
+         !call psolver_bulk_fourier_various(atoms%nat,atoms%rat,ratred,atoms%qat, &
+         !    atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
+        alphasq=poisson%alpha**2
+        call psolver_bulk_fourier_identical(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
+            atoms%cellvec,alphasq,poisson%ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
+     else
+        gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
+        call psolver_bulk_fourier_various(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
+            gwsq,poisson%ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
+    end if
+    
+    call f_free(gwsq)
+    call f_free(ratred)
+end subroutine psolver_bulk_fourier
+!*****************************************************************************************
 subroutine psolver_bulk_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
