@@ -34,6 +34,8 @@ module mod_electrostatics
         !real(8):: rcut !cutoff radius in real space.
         real(8):: alpha =-1 !splitting ewald parameter.
         real(8):: rgcut
+        real(8):: ecut
+        logical:: gw_identical= .false. !if True, all gaussian width assumed to be identical
         !ngpztot is length of the third subscript of array pot which is bigger 
         !than needed for calculation of potential and this bigger value is used 
         !because pot array is used as a dummy array in two subroutines 

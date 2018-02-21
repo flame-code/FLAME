@@ -14,8 +14,9 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
     !local variables
-    real(8):: dpm, pi !, gtot, ecut, epotreal, alphasq
+    real(8):: dpm, pi, alphasq !, gtot, epotreal
     integer:: iat, igpx, igpy, igpz
+    real(8), allocatable:: gwsq(:), ratred(:,:)
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
     !real(8):: stress(3,3), kmax, c, vol, talpha
@@ -26,6 +27,26 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
 !        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
 !         
 ! !   end if
+    if(trim(parini%psolver_ann)=='kwald') then
+        gwsq=f_malloc([1.to.atoms%nat],id='gwsq')
+        ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
+        if(poisson%gw_identical) then
+     !       gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
+     !       call kwald(atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
+            alphasq=poisson%alpha**2
+            call kwald_samare(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
+                atoms%cellvec,alphasq,poisson%ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
+         else
+            gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
+            call kwald(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
+                gwsq,poisson%ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
+        end if
+        
+        call f_free(gwsq)
+        call f_free(ratred)
+    endif !end of kwald
+
+
     if(trim(parini%psolver_ann)/='kwald') then
     dpm=0.d0
     do iat=1,atoms%nat
@@ -35,6 +56,10 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     !do iat=1,atoms%nat
     !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
     !enddo
+
+
+
+
     call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
@@ -61,7 +86,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     endif
     call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     call apply_external_field(parini,atoms,poisson,ehartree,g)
-endif !end of if not to be kwald
+    endif !end of if not to be kwald
 end subroutine get_hartree_simple
 !*****************************************************************************************
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
@@ -79,9 +104,9 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
     !local variables
-    real(8):: dpm, pi, gtot, ecut, epotreal, alphasq
+    real(8):: dpm, pi, gtot, epotreal
     integer:: iat, igpx, igpy, igpz
-    real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
+    real(8), allocatable:: gg(:) 
     real(8), allocatable::  ewaldwidth(:)
     real(8):: stress(3,3), kmax, c, vol, talpha
     call f_routine(id='get_hartree')
@@ -96,36 +121,21 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
 
     g(1:atoms%nat)=0.d0
     atoms%fat=0.d0
-    if(trim(parini%psolver_ann)=='kwald') then
-        if (parini%ewald) then
-            !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
-            kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
-            ecut=kmax**2/2.d0
-            write(*,*)"ecut", ecut, "alpha",poisson%alpha
-        else
-            ecut=parini%ecut_ewald
-        !!!!!  else
-        !!!!!      talpha=minval(gausswidth)
-        !!!!!      kmax=2.d0/talpha*sqrt(-log(1.d3*parini%tolerance_ewald))
-        !!!!!      !kmax=2.d0/talpha*sqrt(-log(1.d-3))
-        !!!!!      ecut=kmax**2/2.d0*(4.d0*pi**2)
-        !!!!!      write(*,*)"ecut", ecut, "alpha",poisson%alpha
-        endif
-        gwsq=f_malloc([1.to.atoms%nat],id='gwsq')
-        ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
-        if(parini%ewald) then
-     !       gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
-     !       call kwald(atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
-            alphasq=poisson%alpha**2
-            call kwald_samare(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,alphasq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
-         else
-            gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
-            call kwald(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec,gwsq,ecut,ehartree,atoms%fat,g,atoms%stress,atoms%celldv)
-        end if
-        
-        call f_free(gwsq)
-        call f_free(ratred)
-    endif !end of kwald
+    if(parini%ewald) then
+        !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
+        kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
+        poisson%ecut=kmax**2/2.d0
+        poisson%gw_identical=.true.
+        write(*,*)"ecut", poisson%ecut, "alpha",poisson%alpha
+    else
+        poisson%ecut=parini%ecut_ewald
+    !!!!!  else
+    !!!!!      talpha=minval(gausswidth)
+    !!!!!      kmax=2.d0/talpha*sqrt(-log(1.d3*parini%tolerance_ewald))
+    !!!!!      !kmax=2.d0/talpha*sqrt(-log(1.d-3))
+    !!!!!      ecut=kmax**2/2.d0*(4.d0*pi**2)
+    !!!!!      write(*,*)"ecut", ecut, "alpha",poisson%alpha
+    endif
 
     if(.not. parini%ewald) then
         ewaldwidth=gausswidth

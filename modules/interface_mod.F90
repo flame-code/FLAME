@@ -2006,6 +2006,16 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine kwald_samare
 ! ./src/es_hartree_main.F90 :
+subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree, g(atoms%nat)
+end subroutine get_hartree_simple
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -2016,6 +2026,16 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
 end subroutine get_hartree
+subroutine get_hartree_old(parini,poisson,atoms,gausswidth,ehartree,g)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree, g(atoms%nat)
+end subroutine get_hartree_old
 subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
