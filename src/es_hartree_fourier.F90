@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine psolver_bulk_fourier(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
+subroutine psolver_bulk_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
@@ -212,7 +212,7 @@ subroutine psolver_bulk_fourier(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartre
     deallocate(tarr1)
     deallocate(tarr2)
     deallocate(tarr3)
-end subroutine psolver_bulk_fourier
+end subroutine psolver_bulk_fourier_various
 !*****************************************************************************************
 subroutine psolver_bulk_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
