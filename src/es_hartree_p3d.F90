@@ -1,4 +1,32 @@
 !*****************************************************************************************
+subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(inout):: dpm
+    real(8), intent(out):: ehartree
+    !local variables
+    !real(8):: dpm, pi, alphasq !, gtot, epotreal
+    integer:: igpx, igpy, igpz
+    if(trim(atoms%boundcond)/='slab') then
+        write(*,*) 'ERROR: P3D works only for slab BC.'
+        stop
+    endif
+    call psolver_p3d_slab(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
+    do igpz=1,poisson%ngpz
+    do igpy=1,poisson%ngpy
+    do igpx=1,poisson%ngpx
+        poisson%rho(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
+    enddo
+    enddo
+    enddo
+end subroutine psolver_p3d
+!*****************************************************************************************
 subroutine ps2dp1df_construction(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
@@ -41,7 +69,7 @@ subroutine ps2dp1df_destruction(poisson)
     endif
 end subroutine ps2dp1df_destruction
 !*****************************************************************************************
-subroutine psolver_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
+subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
@@ -84,7 +112,7 @@ subroutine psolver_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
         enddo
     enddo
     epot=epot*0.5d0*hx*hy*hz
-end subroutine psolver_slab_p3d
+end subroutine psolver_p3d_slab
 !*****************************************************************************************
 !This subroutine calculates the systems of linear equations using LAPACK routines.
 subroutine solsyslinequ(poisson,hz,cell,beta_arg)

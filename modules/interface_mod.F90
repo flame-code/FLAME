@@ -1964,13 +1964,13 @@ subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
     real(16), intent(out):: funcsecder
 end subroutine exp_ar
 ! ./src/es_hartree_bps.F90 :
-subroutine psolver_allbc_bps(poisson,atoms,ehartree)
+subroutine psolver_bps(poisson,atoms,ehartree)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
-end subroutine psolver_allbc_bps
+end subroutine psolver_bps
 subroutine construct_ewald_bps(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -1993,6 +1993,16 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     type(typ_poisson), intent(inout):: poisson
 end subroutine set_ngp_bps
 ! ./src/es_hartree_fourier.F90 :
+subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree, g(atoms%nat)
+end subroutine psolver_bulk_fourier
 subroutine psolver_bulk_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     integer, intent(in):: iverbose, nat
     real(8), intent(in):: rat(3,nat), qat(nat)
@@ -2006,16 +2016,6 @@ subroutine psolver_bulk_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine psolver_bulk_fourier_identical
 ! ./src/es_hartree_main.F90 :
-subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_poisson),intent(inout):: poisson
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gausswidth(atoms%nat)
-    real(8), intent(out):: ehartree, g(atoms%nat)
-end subroutine psolver_bulk_fourier
 subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -2067,6 +2067,16 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     real(8)::epotreal,alphatwoinv,ralphasq,rbetasq,rbetainv,alphasq,betainv
 end subroutine real_part
 ! ./src/es_hartree_p3d.F90 :
+subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(inout):: dpm
+    real(8), intent(out):: ehartree
+end subroutine psolver_p3d
 subroutine ps2dp1df_construction(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
@@ -2075,7 +2085,7 @@ subroutine ps2dp1df_destruction(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
 end subroutine ps2dp1df_destruction
-subroutine psolver_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
+subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
@@ -2084,7 +2094,7 @@ subroutine psolver_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     real(8):: hx, hy, hz
     real(8):: epot
     real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
-end subroutine psolver_slab_p3d
+end subroutine psolver_p3d_slab
 subroutine solsyslinequ(poisson,hz,cell,beta_arg)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson

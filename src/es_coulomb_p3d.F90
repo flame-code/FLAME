@@ -153,7 +153,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !write(*,*) 'totrho',totrho
     !-----------------------------------------------------------------------
     !pot=0.d0
-    call psolver_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epotlong,beta)
+    call psolver_p3d_slab(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epotlong,beta)
     call cpu_time(time(3))
     do igpz=1,poisson%ngpz
     do igpy=1,poisson%ngpy

@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine psolver_allbc_bps(poisson,atoms,ehartree)
+subroutine psolver_bps(poisson,atoms,ehartree)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -51,7 +51,7 @@ subroutine psolver_allbc_bps(poisson,atoms,ehartree)
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
     ehartree=0.d0 !this is just to be able to compile.
 #endif
-end subroutine psolver_allbc_bps
+end subroutine psolver_bps
 !*****************************************************************************************
 subroutine construct_ewald_bps(parini,atoms,poisson)
     use mod_interface

@@ -18,6 +18,7 @@ potential:
 ann:
     approach: cent1
     syslinsolver: operator
+    psolver: p3d
 
 geopt:
     method: SQNM

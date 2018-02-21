@@ -14,8 +14,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
     !local variables
-    real(8):: dpm, pi, alphasq !, gtot, epotreal
-    integer:: iat, igpx, igpy, igpz
+    real(8):: dpm, pi !, gtot, epotreal
+    integer:: iat
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
     !real(8):: stress(3,3), kmax, c, vol, talpha
@@ -43,35 +43,19 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
         call psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     elseif(trim(parini%psolver_ann)=='bigdft') then
         call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-        call psolver_allbc_bps(poisson,atoms,ehartree)
-    !else
-    endif
-
-    if(trim(parini%psolver_ann)/='kwald') then
-    if(trim(parini%psolver_ann)/='bigdft') then
-    call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-    if(trim(atoms%boundcond)=='bulk') then
-    elseif(trim(atoms%boundcond)=='slab') then
-        call psolver_slab_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
-        do igpz=1,poisson%ngpz
-        do igpy=1,poisson%ngpy
-        do igpx=1,poisson%ngpx
-            poisson%rho(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
-        enddo
-        enddo
-        enddo
-    elseif(trim(atoms%boundcond)=='wire') then
-        stop 'ERROR: wire BCs is not complete yet.'
-    elseif(trim(atoms%boundcond)=='free') then
-        stop 'ERROR: free BCs is not complete yet.'
+        call psolver_bps(poisson,atoms,ehartree)
+        call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
+        call apply_external_field(parini,atoms,poisson,ehartree,g)
+    elseif(trim(parini%psolver_ann)=='p3d') then
+        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
+        call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
+        call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
+        call apply_external_field(parini,atoms,poisson,ehartree,g)
     else
-        write(*,'(2a)') 'ERROR: unknown BC in calparam ',trim(atoms%boundcond)
+        write(*,*) 'ERROR: unknown method for hartree calculation.'
         stop
     endif
-    endif
-    call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
-    call apply_external_field(parini,atoms,poisson,ehartree,g)
-    endif !end of if not to be kwald
+
 end subroutine get_hartree_simple
 !*****************************************************************************************
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
@@ -89,11 +73,11 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
     !local variables
-    real(8):: dpm, pi, gtot, epotreal
-    integer:: iat, igpx, igpy, igpz
-    real(8), allocatable:: gg(:) 
+    real(8):: epotreal !, pi
+    !integer:: iat
+    real(8), allocatable:: gg(:)
     real(8), allocatable::  ewaldwidth(:)
-    real(8):: stress(3,3), kmax, c, vol, talpha
+    real(8):: stress(3,3), kmax !, talpha
     call f_routine(id='get_hartree')
     call f_timing(TCAT_PSOLVER,'ON')
 
@@ -158,7 +142,12 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     integer:: iat, igpx, igpy, igpz
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
-    real(8):: ext_pot, dipole
+    real(8):: dipole !,ext_pot
+    if(trim(parini%psolver_ann)/='p3d') then
+        write(*,*) 'ERROR: currently external electric field is supposed to be'            
+        write(*,*) '       used together with the P3D method.'
+        stop
+    endif
     if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
         do igpz=1,poisson%ngpz
             !igpz=1 is not necessarily z=0, now in this way external potential is not
@@ -215,9 +204,8 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     real(8):: hgxinv, hgyinv, hgzinv, hgxhgyhgz
     real(8):: width_inv, width_inv_xat, width_inv_yat, width_inv_zat
     real(8):: width_inv_hgx, width_inv_hgy, width_inv_hgz,width
-    real(8):: xat, yat, zat, facqiat, fac
+    real(8):: xat, yat, zat, fac
     integer:: iat, iw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz, iyt, izt
-    real(8):: fx, fy, fz, dx, dy, dz
     real(8), intent(in):: gausswidth(atoms%nat)
     integer:: ngpx, ngpy, ngpz, iii
     real(8), allocatable:: wa(:,:,:)
@@ -331,15 +319,15 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists):: linked_lists
-    real(8):: dx, dy, dz, r, rsq, xiat, yiat, ziat, alphainv, twosqrtinv
-    real(8):: t, tt, tt1, tt2, tt3, ttt
-    real(8):: rcutsq, fx, fy, fz, pi, hspinv, rhspinv, rinv, qiat, qiatjat, spf, spfd
+    real(8):: dx, dy, dz, r, rsq, xiat, yiat, ziat
+    real(8):: t, tt1, tt2, tt3, ttt
+    real(8):: rcutsq, fx, fy, fz, pi, qiat, qiatjat
     integer:: ip, jp, jpt, jl, il, iat_maincell, jat_maincell
-    integer:: ix, iy, iz, jy, jz, iat, jat, ipat, isp, maincell, maincell_iat
+    integer:: ix, iy, iz, jy, jz, iat, jat, maincell, maincell_iat
     real(8), intent(in):: gausswidth(atoms%nat),alpha
     real(8):: gg(atoms%nat),rr
     real(8):: cell(3) , vol, stress(3,3)
-    real(8)::epotreal,alphatwoinv,ralphasq,rbetasq,rbetainv,alphasq,betainv
+    real(8)::epotreal, alphatwoinv, rbetainv, alphasq, betainv
     pi = 4.d0 *atan(1.d0)
     call getvol_alborz(atoms%cellvec,vol)
     rr=linked_lists%rcut
