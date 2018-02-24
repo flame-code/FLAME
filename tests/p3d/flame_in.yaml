@@ -15,3 +15,5 @@
  single_point:
    print_force: True
    format: (a5,2x,3f12.8,2x,3l1)
+ ann:
+   psolver: p3d

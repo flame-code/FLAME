@@ -13,43 +13,11 @@ subroutine init_hartree(parini,atoms,poisson)
     type(typ_poisson):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    include 'fftw3.f'
-    real(8):: pi, shortrange_at_rcut
-    real(8):: tt1, tt2
-    integer:: ngptot
     call f_routine(id='init_hartree')
     if(trim(parini%psolver_ann)=='p3d') then
         call init_hartree_p3d(parini,atoms,poisson)
-        return
-    endif
-    if(trim(parini%psolver_ann)=='bigdft') then
+    elseif(trim(parini%psolver_ann)=='bigdft') then
         call init_hartree_bps(parini,atoms,poisson)
-        return
-    endif
-    pi=4.d0*atan(1.d0)
-    poisson_rough%hx=parini%hx_ewald
-    poisson_rough%hy=parini%hy_ewald
-    poisson_rough%hz=parini%hz_ewald
-    if (parini%ewald .and. parini%alpha_ewald>0.d0) then
-        poisson%alpha=parini%alpha_ewald
-    else if (poisson%alpha< 0.d0 .and. parini%alpha_ewald<= 0.d0) then
-            write(*,*) "ERROR : alpha is undefined"
-            stop
-    endif
-    poisson%linked_lists%rcut=parini%rcut_ewald
-    poisson_rough%rgcut=parini%rgcut_ewald*poisson%alpha
-    poisson%spline%nsp=parini%nsp_ewald
-    poisson%cell(1)=atoms%cellvec(1,1)
-    poisson%cell(2)=atoms%cellvec(2,2)
-    poisson%cell(3)=atoms%cellvec(3,3)
-    poisson%vu=parini%vu_ewald
-    poisson%vl=parini%vl_ewald
-    !---------------------------------------------------------------------------
-    !call calparam(parini,atoms,poisson_rough,poisson)
-    if(trim(atoms%boundcond)=='bulk') then
-        if(trim(parini%psolver_ann)=='kwald') then
-            return
-        endif
     endif
     call f_release_routine()
 end subroutine init_hartree

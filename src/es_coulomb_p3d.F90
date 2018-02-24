@@ -18,8 +18,10 @@ subroutine destruct_poisson(parini,atoms,poisson)
     elseif(trim(atoms%boundcond)=='slab') then
         call ps2dp1df_destruction(poisson)
     endif
-    call f_free(poisson%rho)
-    call f_free(poisson%pot)
+    if(trim(parini%psolver_ann)/='kwald') then
+        call f_free(poisson%rho)
+        call f_free(poisson%pot)
+    endif
     if(trim(parini%bias_type)=='p3dbias') then
      !   deallocate(poisson%pots)
     endif
