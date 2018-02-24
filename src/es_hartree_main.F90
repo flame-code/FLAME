@@ -40,6 +40,11 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     real(8):: tt1, tt2
     integer:: ngptot
     call f_routine(id='init_hartree_bps')
+    associate(ngpx=>poisson%ngpx)
+    associate(ngpy=>poisson%ngpy)
+    associate(ngpz=>poisson%ngpz)
+    associate(nbgpy=>poisson%nbgpy)
+    associate(nbgpz=>poisson%nbgpz)
     if(trim(atoms%boundcond)/='bulk') then
         write(*,*) 'ERROR: init_hartree_bps currently assumes BC=bulk'
         stop
@@ -64,9 +69,6 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     poisson%vl=parini%vl_ewald
     !---------------------------------------------------------------------------
     !call calparam(parini,atoms,poisson_rough,poisson)
-    associate(ngpx=>poisson%ngpx)
-    associate(ngpy=>poisson%ngpy)
-    associate(ngpz=>poisson%ngpz)
     call set_ngp_bps(parini,atoms,poisson_rough,poisson)
     poisson%nbgpx=int(poisson_rough%rgcut/poisson%hx)+2
     poisson%nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
@@ -83,15 +85,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
     write(*,'(a50,i)') 'ngpztot',poisson%ngpztot
-    end associate
-    end associate
-    end associate
     !---------------------------------------------------------------------------
-    associate(ngpx=>poisson%ngpx)
-    associate(ngpy=>poisson%ngpy)
-    associate(ngpz=>poisson%ngpz)
-    associate(nbgpy=>poisson%nbgpy)
-    associate(nbgpz=>poisson%nbgpz)
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
     poisson%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
@@ -127,6 +121,11 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     real(8):: tt1, tt2
     integer:: ngptot
     call f_routine(id='init_hartree_p3d')
+    associate(ngpx=>poisson%ngpx)
+    associate(ngpy=>poisson%ngpy)
+    associate(ngpz=>poisson%ngpz)
+    associate(nbgpy=>poisson%nbgpy)
+    associate(nbgpz=>poisson%nbgpz)
     if(trim(atoms%boundcond)/='slab') then
         write(*,*) 'ERROR: init_hartree_p3d currently assumes BC=slab'
         stop
@@ -151,9 +150,6 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     poisson%vl=parini%vl_ewald
     !---------------------------------------------------------------------------
     !call calparam(parini,atoms,poisson_rough,poisson)
-    associate(ngpx=>poisson%ngpx)
-    associate(ngpy=>poisson%ngpy)
-    associate(ngpz=>poisson%ngpz)
     ngpx=int(poisson%cell(1)/poisson_rough%hx)+1
     ngpy=int(poisson%cell(2)/poisson_rough%hx)+1
     ngpz=int(poisson%cell(3)/poisson_rough%hz)+1
@@ -178,15 +174,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
     write(*,'(a50,i)') 'ngpztot',poisson%ngpztot
-    end associate
-    end associate
-    end associate
     !---------------------------------------------------------------------------
-    associate(ngpx=>poisson%ngpx)
-    associate(ngpy=>poisson%ngpy)
-    associate(ngpz=>poisson%ngpz)
-    associate(nbgpy=>poisson%nbgpy)
-    associate(nbgpz=>poisson%nbgpz)
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
     poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.poisson%ngpztot], &
