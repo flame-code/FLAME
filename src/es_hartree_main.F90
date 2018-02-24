@@ -1,6 +1,4 @@
 !*****************************************************************************************
-!CAUTION: Why is this subroutine called in ANN cent1 when system is bulk
-!and kwald is the psolver.
 subroutine init_hartree(parini,atoms,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -18,6 +16,9 @@ subroutine init_hartree(parini,atoms,poisson)
         call init_hartree_p3d(parini,atoms,poisson)
     elseif(trim(parini%psolver_ann)=='bigdft') then
         call init_hartree_bps(parini,atoms,poisson)
+    elseif(trim(parini%psolver_ann)=='kwald') then
+        !It seems that nothing needs to be done for kwald method in the
+        !init_hartree routine.
     endif
     call f_release_routine()
 end subroutine init_hartree
