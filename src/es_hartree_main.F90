@@ -18,6 +18,10 @@ subroutine init_hartree(parini,atoms,poisson)
     real(8):: tt1, tt2
     integer:: ngptot
     call f_routine(id='init_hartree')
+    if(trim(parini%psolver_ann)=='p3d') then
+        call init_hartree_p3d(parini,atoms,poisson)
+        return
+    endif
     pi=4.d0*atan(1.d0)
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
@@ -137,6 +141,97 @@ subroutine init_hartree(parini,atoms,poisson)
     end associate
     call f_release_routine()
 end subroutine init_hartree
+!*****************************************************************************************
+subroutine init_hartree_p3d(parini,atoms,poisson)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson):: poisson_rough
+    type(typ_poisson), intent(inout):: poisson
+    !local variables
+    include 'fftw3.f'
+    real(8):: pi, shortrange_at_rcut
+    real(8):: tt1, tt2
+    integer:: ngptot
+    call f_routine(id='init_hartree_p3d')
+    pi=4.d0*atan(1.d0)
+    poisson_rough%hx=parini%hx_ewald
+    poisson_rough%hy=parini%hy_ewald
+    poisson_rough%hz=parini%hz_ewald
+    if (parini%ewald .and. parini%alpha_ewald>0.d0) then
+        poisson%alpha=parini%alpha_ewald
+    else if (poisson%alpha< 0.d0 .and. parini%alpha_ewald<= 0.d0) then
+            write(*,*) "ERROR : alpha is undefined"
+            stop
+    endif
+    poisson%linked_lists%rcut=parini%rcut_ewald
+    poisson_rough%rgcut=parini%rgcut_ewald*poisson%alpha
+    poisson%spline%nsp=parini%nsp_ewald
+    poisson%cell(1)=atoms%cellvec(1,1)
+    poisson%cell(2)=atoms%cellvec(2,2)
+    poisson%cell(3)=atoms%cellvec(3,3)
+    poisson%vu=parini%vu_ewald
+    poisson%vl=parini%vl_ewald
+    !---------------------------------------------------------------------------
+    !call calparam(parini,atoms,poisson_rough,poisson)
+    associate(ngpx=>poisson%ngpx)
+    associate(ngpy=>poisson%ngpy)
+    associate(ngpz=>poisson%ngpz)
+    ngpx=int(poisson%cell(1)/poisson_rough%hx)+1
+    ngpy=int(poisson%cell(2)/poisson_rough%hx)+1
+    ngpz=int(poisson%cell(3)/poisson_rough%hz)+1
+    if(mod(ngpx,2)/=0) ngpx=ngpx+1
+    if(mod(ngpy,2)/=0) ngpy=ngpy+1
+    poisson%hx=poisson%cell(1)/real(ngpx,8)
+    poisson%hy=poisson%cell(2)/real(ngpy,8)
+    poisson%hz=poisson%cell(3)/real(ngpz-1,8)
+    poisson%nbgpx=int(poisson_rough%rgcut/poisson%hx)+2
+    poisson%nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
+    poisson%nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
+    poisson%nagpx=poisson%nbgpx+1
+    poisson%nagpy=poisson%nbgpy+1
+    poisson%nagpz=0
+    ngpz=ngpz+2*poisson%nbgpz
+    tt1=real((ngpx+2*poisson%nbgpx)*(ngpy+2*poisson%nbgpy),8)
+    tt2=real((ngpx+2)*(ngpy),8)
+    poisson%ngpztot=ngpz*(int(tt1/tt2)+2)
+    ngptot=ngpx*ngpy*ngpz
+    write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
+    write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
+    write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
+    write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
+    write(*,'(a50,i)') 'ngpztot',poisson%ngpztot
+    end associate
+    end associate
+    end associate
+    !---------------------------------------------------------------------------
+    associate(ngpx=>poisson%ngpx)
+    associate(ngpy=>poisson%ngpy)
+    associate(ngpz=>poisson%ngpz)
+    associate(nbgpy=>poisson%nbgpy)
+    associate(nbgpz=>poisson%nbgpz)
+    poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+        id='poisson%rho')
+    poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.poisson%ngpztot], &
+        id='poisson%pot')
+    call ps2dp1df_construction(poisson)
+    poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
+    shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
+    if(parini%iverbose>=2) then
+        write(*,*) 'real part in rcut',shortrange_at_rcut
+    endif
+    end associate
+    end associate
+    end associate
+    end associate
+    end associate
+    call f_release_routine()
+end subroutine init_hartree_p3d
 !*****************************************************************************************
 subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_interface
