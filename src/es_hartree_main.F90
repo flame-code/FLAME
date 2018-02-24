@@ -22,6 +22,59 @@ subroutine init_hartree(parini,atoms,poisson)
         call init_hartree_p3d(parini,atoms,poisson)
         return
     endif
+    if(trim(parini%psolver_ann)=='bigdft') then
+        call init_hartree_bps(parini,atoms,poisson)
+        return
+    endif
+    pi=4.d0*atan(1.d0)
+    poisson_rough%hx=parini%hx_ewald
+    poisson_rough%hy=parini%hy_ewald
+    poisson_rough%hz=parini%hz_ewald
+    if (parini%ewald .and. parini%alpha_ewald>0.d0) then
+        poisson%alpha=parini%alpha_ewald
+    else if (poisson%alpha< 0.d0 .and. parini%alpha_ewald<= 0.d0) then
+            write(*,*) "ERROR : alpha is undefined"
+            stop
+    endif
+    poisson%linked_lists%rcut=parini%rcut_ewald
+    poisson_rough%rgcut=parini%rgcut_ewald*poisson%alpha
+    poisson%spline%nsp=parini%nsp_ewald
+    poisson%cell(1)=atoms%cellvec(1,1)
+    poisson%cell(2)=atoms%cellvec(2,2)
+    poisson%cell(3)=atoms%cellvec(3,3)
+    poisson%vu=parini%vu_ewald
+    poisson%vl=parini%vl_ewald
+    !---------------------------------------------------------------------------
+    !call calparam(parini,atoms,poisson_rough,poisson)
+    if(trim(atoms%boundcond)=='bulk') then
+        if(trim(parini%psolver_ann)=='kwald') then
+            return
+        endif
+    endif
+    call f_release_routine()
+end subroutine init_hartree
+!*****************************************************************************************
+subroutine init_hartree_bps(parini,atoms,poisson)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson):: poisson_rough
+    type(typ_poisson), intent(inout):: poisson
+    !local variables
+    include 'fftw3.f'
+    real(8):: pi, shortrange_at_rcut
+    real(8):: tt1, tt2
+    integer:: ngptot
+    call f_routine(id='init_hartree_bps')
+    if(trim(atoms%boundcond)/='bulk') then
+        write(*,*) 'ERROR: init_hartree_bps currently assumes BC=bulk'
+        stop
+    endif
     pi=4.d0*atan(1.d0)
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
@@ -45,52 +98,13 @@ subroutine init_hartree(parini,atoms,poisson)
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
     associate(ngpz=>poisson%ngpz)
-    if(trim(atoms%boundcond)=='bulk') then
-        if(trim(parini%psolver_ann)=='bigdft') then
-            call set_ngp_bps(parini,atoms,poisson_rough,poisson)
-            !write(*,*) poisson%ngpx,poisson%ngpy, &
-            !    poisson%ngpz
-            !stop 'AFTER CALL TO set_ngp_bps'
-        elseif(trim(parini%psolver_ann)=='kwald') then
-            return
-        endif
-    elseif(trim(atoms%boundcond)=='slab') then
-        ngpx=int(poisson%cell(1)/poisson_rough%hx)+1
-        ngpy=int(poisson%cell(2)/poisson_rough%hx)+1
-        ngpz=int(poisson%cell(3)/poisson_rough%hz)+1
-        if(mod(ngpx,2)/=0) ngpx=ngpx+1
-        if(mod(ngpy,2)/=0) ngpy=ngpy+1
-        poisson%hx=poisson%cell(1)/real(ngpx,8)
-        poisson%hy=poisson%cell(2)/real(ngpy,8)
-        poisson%hz=poisson%cell(3)/real(ngpz-1,8)
-    elseif(trim(atoms%boundcond)=='wire') then
-        stop 'ERROR: wire BCs is not complete yet.'
-    elseif(trim(atoms%boundcond)=='free') then
-        stop 'ERROR: free BCs is not complete yet.'
-    else
-        write(*,'(2a)') 'ERROR: unknown BC in calparam ',trim(atoms%boundcond)
-        stop
-    endif
+    call set_ngp_bps(parini,atoms,poisson_rough,poisson)
     poisson%nbgpx=int(poisson_rough%rgcut/poisson%hx)+2
     poisson%nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
     poisson%nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
-    if(trim(atoms%boundcond)=='bulk') then
-        poisson%nagpx=poisson%nbgpx+1
-        poisson%nagpy=poisson%nbgpy+1
-        poisson%nagpz=poisson%nbgpz+1
-    elseif(trim(atoms%boundcond)=='slab') then
-        poisson%nagpx=poisson%nbgpx+1
-        poisson%nagpy=poisson%nbgpy+1
-        poisson%nagpz=0
-        ngpz=ngpz+2*poisson%nbgpz
-    elseif(trim(atoms%boundcond)=='wire') then
-        stop 'ERROR: wire BCs is not complete yet.'
-    elseif(trim(atoms%boundcond)=='free') then
-        stop 'ERROR: free BCs is not complete yet.'
-    else
-        write(*,'(2a)') 'ERROR: unknown BC in calparam ',trim(atoms%boundcond)
-        stop
-    endif
+    poisson%nagpx=poisson%nbgpx+1
+    poisson%nagpy=poisson%nbgpy+1
+    poisson%nagpz=poisson%nbgpz+1
     tt1=real((ngpx+2*poisson%nbgpx)*(ngpy+2*poisson%nbgpy),8)
     tt2=real((ngpx+2)*(ngpy),8)
     poisson%ngpztot=ngpz*(int(tt1/tt2)+2)
@@ -109,26 +123,11 @@ subroutine init_hartree(parini,atoms,poisson)
     associate(ngpz=>poisson%ngpz)
     associate(nbgpy=>poisson%nbgpy)
     associate(nbgpz=>poisson%nbgpz)
-    if(trim(atoms%boundcond)=='bulk') then
-        poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
-            id='poisson%rho')
-        poisson%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
-            id='poisson%pot')
-    elseif(trim(atoms%boundcond)=='slab') then
-        poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
-            id='poisson%rho')
-        poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.poisson%ngpztot], &
-            id='poisson%pot')
-    else
-        write(*,*) 'ERROR: other BCs are not yet considered.'
-    endif
-    if(trim(atoms%boundcond)=='bulk') then
-        if(trim(parini%psolver_ann)=='bigdft') then
-            call construct_ewald_bps(parini,atoms,poisson)
-        endif
-    elseif(trim(atoms%boundcond)=='slab') then
-        call ps2dp1df_construction(poisson)
-    endif
+    poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+        id='poisson%rho')
+    poisson%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+        id='poisson%pot')
+    call construct_ewald_bps(parini,atoms,poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
     shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
     if(parini%iverbose>=2) then
@@ -140,7 +139,7 @@ subroutine init_hartree(parini,atoms,poisson)
     end associate
     end associate
     call f_release_routine()
-end subroutine init_hartree
+end subroutine init_hartree_bps
 !*****************************************************************************************
 subroutine init_hartree_p3d(parini,atoms,poisson)
     use mod_interface
@@ -159,6 +158,10 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     real(8):: tt1, tt2
     integer:: ngptot
     call f_routine(id='init_hartree_p3d')
+    if(trim(atoms%boundcond)/='slab') then
+        write(*,*) 'ERROR: init_hartree_p3d currently assumes BC=slab'
+        stop
+    endif
     pi=4.d0*atan(1.d0)
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald

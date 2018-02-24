@@ -1861,15 +1861,6 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
 end subroutine calculate_forces_energy
-subroutine calparam(parini,atoms,poisson_rough,poisson)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(in):: poisson_rough
-    type(typ_poisson), intent(inout):: poisson
-end subroutine calparam
 subroutine determine_glimitsphere(poisson,mboundg)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
@@ -2017,6 +2008,22 @@ subroutine init_hartree(parini,atoms,poisson)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
 end subroutine init_hartree
+subroutine init_hartree_bps(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine init_hartree_bps
+subroutine init_hartree_p3d(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine init_hartree_p3d
 subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
