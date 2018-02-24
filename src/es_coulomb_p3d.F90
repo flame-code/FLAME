@@ -53,7 +53,6 @@ subroutine construct_poisson(parini,atoms,poisson)
     else
         write(*,*) 'ERROR: other BCs are not yet considered.'
     endif
-    poisson%mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='poisson%mboundg')
     if(trim(atoms%boundcond)=='bulk') then
         if(trim(parini%psolver_ann)=='bigdft') then
             call construct_ewald_bps(parini,atoms,poisson)
@@ -61,7 +60,6 @@ subroutine construct_poisson(parini,atoms,poisson)
     elseif(trim(atoms%boundcond)=='slab') then
         call ps2dp1df_construction(poisson)
     endif
-    call determine_glimitsphere(poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
     shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
     if(parini%iverbose>=2) then
@@ -99,7 +97,6 @@ subroutine destruct_poisson(parini,atoms,poisson)
     if(trim(parini%bias_type)=='p3dbias') then
      !   deallocate(poisson%pots)
     endif
-    call f_free(poisson%mboundg)
     call f_release_routine()
 end subroutine destruct_poisson
 !*****************************************************************************************
@@ -270,11 +267,12 @@ subroutine calparam(parini,atoms,poisson_rough,poisson)
 end subroutine calparam
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
-subroutine determine_glimitsphere(poisson)
+subroutine determine_glimitsphere(poisson,mboundg)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_poisson), intent(inout):: poisson
+    integer, intent(out):: mboundg(1:2,-poisson%nbgpy:poisson%nbgpy,-poisson%nbgpz:poisson%nbgpz)
     !local variables
     integer:: ix, iy, iz
     real(8):: rgcut, rgcutsq
@@ -282,24 +280,24 @@ subroutine determine_glimitsphere(poisson)
     rgcutsq=rgcut**2
     do iz=-poisson%nbgpz,poisson%nbgpz
         do iy=-poisson%nbgpy,poisson%nbgpy
-            poisson%mboundg(1,iy,iz)=1
-            poisson%mboundg(2,iy,iz)=0
+            mboundg(1,iy,iz)=1
+            mboundg(2,iy,iz)=0
         enddo
     enddo
     do iz=0,poisson%nbgpz
     do iy=-poisson%nbgpy,poisson%nbgpy
     do ix=0,poisson%nbgpx
         if(ix**2*poisson%hx**2+iy**2*poisson%hy**2+iz**2*poisson%hz**2<=rgcutsq) then
-            poisson%mboundg(1,iy,iz)=-ix
-            poisson%mboundg(2,iy,iz)=ix
+            mboundg(1,iy,iz)=-ix
+            mboundg(2,iy,iz)=ix
         endif
     enddo
     enddo
     enddo
     do iz=-poisson%nbgpz,-1
         do iy=-poisson%nbgpy,poisson%nbgpy
-            poisson%mboundg(1,iy,iz)=poisson%mboundg(1,iy,-iz)
-            poisson%mboundg(2,iy,iz)=poisson%mboundg(2,iy,-iz)
+            mboundg(1,iy,iz)=mboundg(1,iy,-iz)
+            mboundg(2,iy,iz)=mboundg(2,iy,-iz)
         enddo
     enddo
 end subroutine determine_glimitsphere
@@ -332,8 +330,11 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     integer:: iat, iw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz
     integer:: ngpx, ngpy, ngpz, iii
     real(8), allocatable:: wa(:,:,:)
+    integer, allocatable:: mboundg(:,:,:)
     call f_routine(id='putgaussgrid')
     associate(nagpx=>poisson%nagpx,nagpy=>poisson%nagpy,nagpz=>poisson%nagpz)
+    mboundg=f_malloc([1.to.2,-poisson%nbgpy.to.poisson%nbgpy,-poisson%nbgpz.to.poisson%nbgpz],id='mboundg')
+    call determine_glimitsphere(poisson,mboundg)
     ngpx=poisson%ngpx
     ngpy=poisson%ngpy
     ngpz=poisson%ngpz
@@ -402,7 +403,7 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
             do iy=-poisson%nbgpy,poisson%nbgpy
                 rhoyz=rhoz*wy(iy)
                 jy=iatoy+iy
-                do ix=poisson%mboundg(1,iy,iz),poisson%mboundg(2,iy,iz)
+                do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
                     jx=iatox+ix
                     !write(*,'(5i5)') iat,iatox,ix,iatoy,iy
                     wa(jx,jy,jz)=wa(jx,jy,jz)+rhoyz*wx(ix)
@@ -487,6 +488,7 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     call f_free(wz)
     call f_free(wa)
     end associate
+    call f_free(mboundg)
     call f_release_routine()
 end subroutine putgaussgrid
 !*****************************************************************************************
@@ -514,11 +516,14 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     integer:: iat, ivw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz, iyt, izt, iii
     real(8):: fx, fy, fz, dx, dy, dz, derrhoz, derrhoyz, derrhozy
     real(8), allocatable:: wa(:,:,:)
+    integer, allocatable:: mboundg(:,:,:)
     call f_routine(id='longerange_forces')
     associate(nagpx=>poisson%nagpx,nagpy=>poisson%nagpy,nagpz=>poisson%nagpz)
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
     associate(ngpz=>poisson%ngpz)
+    mboundg=f_malloc([1.to.2,-poisson%nbgpy.to.poisson%nbgpy,-poisson%nbgpz.to.poisson%nbgpz],id='mboundg')
+    call determine_glimitsphere(poisson,mboundg)
     !wa(1-nagpx:ngpx+nagpx,1-nagpy:ngpy+nagpy,1-nagpz:ngpz+nagpz)=>poisson%pot
     wa=f_malloc([1-nagpx.to.ngpx+nagpx,1-nagpy.to.ngpy+nagpy,1-nagpz.to.ngpz+nagpz],id='wa')
     wx=f_malloc([-poisson%nbgpx.to.poisson%nbgpx],id='wx')
@@ -599,7 +604,7 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
                 derrhozy=rhoz*vy(iy)
                 derrhoyz=derrhoz*wy(iy)
                 jy=iatoy+iy
-                do ix=poisson%mboundg(1,iy,iz),poisson%mboundg(2,iy,iz)
+                do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
                     jx=iatox+ix
                     fx=fx+rhoyz*vx(ix)*wa(jx,jy,jz)
                     fy=fy+derrhozy*wx(ix)*wa(jx,jy,jz)
@@ -627,6 +632,7 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     end associate
     end associate
     end associate
+    call f_free(mboundg)
     call f_release_routine()
 end subroutine longerange_forces
 !*****************************************************************************************

@@ -1878,9 +1878,10 @@ subroutine calparam(parini,atoms,poisson_rough,poisson)
     type(typ_poisson), intent(in):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
 end subroutine calparam
-subroutine determine_glimitsphere(poisson)
+subroutine determine_glimitsphere(poisson,mboundg)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
+    integer, intent(out):: mboundg(1:2,-poisson%nbgpy:poisson%nbgpy,-poisson%nbgpz:poisson%nbgpz)
 end subroutine determine_glimitsphere
 subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     use mod_electrostatics, only: typ_poisson
@@ -2064,7 +2065,7 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     real(8), intent(in):: gausswidth(atoms%nat),alpha
     real(8):: gg(atoms%nat),rr
     real(8):: cell(3) , vol, stress(3,3)
-    real(8)::epotreal,alphatwoinv,ralphasq,rbetasq,rbetainv,alphasq,betainv
+    real(8)::epotreal, alphatwoinv, rbetainv, alphasq, betainv
 end subroutine real_part
 ! ./src/es_hartree_p3d.F90 :
 subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)

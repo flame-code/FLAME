@@ -209,7 +209,10 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     real(8), intent(in):: gausswidth(atoms%nat)
     integer:: ngpx, ngpy, ngpz, iii
     real(8), allocatable:: wa(:,:,:)
+    integer, allocatable:: mboundg(:,:,:)
     associate(nagpx=>poisson%nagpx,nagpy=>poisson%nagpy,nagpz=>poisson%nagpz)
+    mboundg=f_malloc([1.to.2,-poisson%nbgpy.to.poisson%nbgpy,-poisson%nbgpz.to.poisson%nbgpz],id='mboundg')
+    call determine_glimitsphere(poisson,mboundg)
     ngpx=poisson%ngpx
     ngpy=poisson%ngpy
     ngpz=poisson%ngpz
@@ -294,7 +297,7 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
             do iy=-poisson%nbgpy,poisson%nbgpy
                 rhoyz=rhoz*wy(iy)
                 jy=iatoy+iy
-                do ix=poisson%mboundg(1,iy,iz),poisson%mboundg(2,iy,iz)
+                do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
                     jx=iatox+ix
                     g(iat)=g(iat)+rhoyz*wx(ix)*wa(jx,jy,jz)
                 enddo
@@ -307,6 +310,7 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     call f_free(wz)
     call f_free(wa)
     end associate
+    call f_free(mboundg)
     ! call f_release_routine()
 end subroutine get_g_from_pot
 !*****************************************************************************************

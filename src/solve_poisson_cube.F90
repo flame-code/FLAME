@@ -46,10 +46,10 @@ subroutine solve_poisson(parini)
     write(*,'(a,1i5)') 'ngpztot           ',poisson_ion%ngpztot
     allocate(poisson_ion%pot(poisson_ion%ngpx+2,poisson_ion%ngpy,poisson_ion%ngpztot),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of pot failed.'
-    allocate(poisson_ion%mboundg(2,-poisson_ion%nbgpy:poisson_ion%nbgpy,-poisson_ion%nbgpz:poisson_ion%nbgpz),stat=istat)
-    if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'
+    !allocate(poisson_ion%mboundg(2,-poisson_ion%nbgpy:poisson_ion%nbgpy,-poisson_ion%nbgpz:poisson_ion%nbgpz),stat=istat)
+    !if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'
     allocate(gausswidth(atoms%nat))
-    call determine_glimitsphere(poisson_ion)
+    !call determine_glimitsphere(poisson_ion)
     poisson_ion%alpha=0.4d0 !atoms%rcov(iat)
     gausswidth=0.4d0 !atoms%rcov(iat)
     atoms%boundcond='slab'
@@ -82,8 +82,8 @@ subroutine solve_poisson(parini)
     if(istat/=0) stop 'ERROR: deallocation of rho failed.'
     deallocate(poisson_ion%pot,stat=istat)
     if(istat/=0) stop 'ERROR: deallocation of pot failed.'
-    deallocate(poisson_ion%mboundg,stat=istat)
-    if(istat/=0) stop 'Error deallocating array mboundg of module ee2dp1df'
+    !deallocate(poisson_ion%mboundg,stat=istat)
+    !if(istat/=0) stop 'Error deallocating array mboundg of module ee2dp1df'
     !-------------------------------------------------------
     t1=0.d0
     do iat=1,atoms%nat

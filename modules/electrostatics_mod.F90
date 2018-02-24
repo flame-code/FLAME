@@ -23,7 +23,7 @@ module mod_electrostatics
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2
         !bounds to assign charge density to grid points within a shpere.
-        integer, allocatable:: mboundg(:,:,:)
+        !integer, allocatable:: mboundg(:,:,:)
         integer:: nbgpx !number of bound grid points in x direction.
         integer:: nbgpy !number of bound grid points in y direction.
         integer:: nbgpz !number of bound grid points in z direction.
