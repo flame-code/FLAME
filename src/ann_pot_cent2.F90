@@ -45,7 +45,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call construct_poisson(parini,atoms,cent%poisson)
+    call init_hartree(parini,atoms,cent%poisson)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then

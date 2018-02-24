@@ -1845,14 +1845,6 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     real(8):: epotlong, epotplane !, epotshort
 end subroutine bias_field_potener_forces
 ! ./src/es_coulomb_p3d.F90 :
-subroutine construct_poisson(parini,atoms,poisson)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-end subroutine construct_poisson
 subroutine destruct_poisson(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -2017,6 +2009,14 @@ subroutine psolver_bulk_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine psolver_bulk_fourier_identical
 ! ./src/es_hartree_main.F90 :
+subroutine init_hartree(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine init_hartree
 subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms

@@ -32,7 +32,7 @@ subroutine forcefield_init(parini,atoms)
     if(ind>0) then
         if(trim(atoms%boundcond)=='free') then
         elseif(trim(atoms%boundcond)=='slab') then
-        call construct_poisson(parini,atoms,poisson)
+        call init_hartree(parini,atoms,poisson)
         shortrange%alpha=poisson%alpha
         poisson%spline%do_coulomb=.true.
         else

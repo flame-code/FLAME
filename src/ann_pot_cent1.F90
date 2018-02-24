@@ -297,7 +297,7 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
         endif
     end if
     if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
-        call construct_poisson(parini,atoms,poisson)
+        call init_hartree(parini,atoms,poisson)
     else
         do iat=1,atoms%nat
             a(iat,atoms%nat+1)=1.d0
