@@ -119,26 +119,27 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
 end subroutine calculate_forces_energy
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
-subroutine determine_glimitsphere(poisson,mboundg)
+subroutine determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_poisson), intent(inout):: poisson
-    integer, intent(out):: mboundg(1:2,-poisson%nbgpy:poisson%nbgpy,-poisson%nbgpz:poisson%nbgpz)
+    integer, intent(in):: nbgpx, nbgpy, nbgpz
+    integer, intent(out):: mboundg(1:2,-nbgpy:nbgpy,-nbgpz:nbgpz)
     !local variables
     integer:: ix, iy, iz
     real(8):: rgcut, rgcutsq
-    rgcut=max(poisson%hx*poisson%nbgpx,poisson%hy*poisson%nbgpy,poisson%hz*poisson%nbgpz)
+    rgcut=max(poisson%hx*nbgpx,poisson%hy*nbgpy,poisson%hz*nbgpz)
     rgcutsq=rgcut**2
-    do iz=-poisson%nbgpz,poisson%nbgpz
-        do iy=-poisson%nbgpy,poisson%nbgpy
+    do iz=-nbgpz,nbgpz
+        do iy=-nbgpy,nbgpy
             mboundg(1,iy,iz)=1
             mboundg(2,iy,iz)=0
         enddo
     enddo
-    do iz=0,poisson%nbgpz
-    do iy=-poisson%nbgpy,poisson%nbgpy
-    do ix=0,poisson%nbgpx
+    do iz=0,nbgpz
+    do iy=-nbgpy,nbgpy
+    do ix=0,nbgpx
         if(ix**2*poisson%hx**2+iy**2*poisson%hy**2+iz**2*poisson%hz**2<=rgcutsq) then
             mboundg(1,iy,iz)=-ix
             mboundg(2,iy,iz)=ix
@@ -146,8 +147,8 @@ subroutine determine_glimitsphere(poisson,mboundg)
     enddo
     enddo
     enddo
-    do iz=-poisson%nbgpz,-1
-        do iy=-poisson%nbgpy,poisson%nbgpy
+    do iz=-nbgpz,-1
+        do iy=-nbgpy,nbgpy
             mboundg(1,iy,iz)=mboundg(1,iy,-iz)
             mboundg(2,iy,iz)=mboundg(2,iy,-iz)
         enddo
@@ -180,21 +181,27 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     real(8):: width_inv_hgx, width_inv_hgy, width_inv_hgz
     real(8):: xat, yat, zat, facqiat, fac, width
     integer:: iat, iw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz
+    integer:: nbgpx, nbgpy, nbgpz, nagpx, nagpy, nagpz
     integer:: ngpx, ngpy, ngpz, iii
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
     call f_routine(id='putgaussgrid')
-    associate(nagpx=>poisson%nagpx,nagpy=>poisson%nagpy,nagpz=>poisson%nagpz)
-    mboundg=f_malloc([1.to.2,-poisson%nbgpy.to.poisson%nbgpy,-poisson%nbgpz.to.poisson%nbgpz],id='mboundg')
-    call determine_glimitsphere(poisson,mboundg)
+    nbgpx=int(poisson%rgcut/poisson%hx)+2
+    nbgpy=int(poisson%rgcut/poisson%hy)+2
+    nbgpz=int(poisson%rgcut/poisson%hz)+2
+    nagpx=nbgpx+1
+    nagpy=nbgpy+1
+    nagpz=0
+    mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='mboundg')
+    call determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     ngpx=poisson%ngpx
     ngpy=poisson%ngpy
     ngpz=poisson%ngpz
     !wa(1-nagpx:ngpx+nagpx,1-nagpy:ngpy+nagpy,1-nagpz:ngpz+nagpz)=>poisson%pot
     wa=f_malloc([1-nagpx.to.ngpx+nagpx,1-nagpy.to.ngpy+nagpy,1-nagpz.to.ngpz+nagpz],id='wa')
-    wx=f_malloc([-poisson%nbgpx.to.poisson%nbgpx],id='wx')
-    wy=f_malloc([-poisson%nbgpy.to.poisson%nbgpy],id='wy')
-    wz=f_malloc([-poisson%nbgpz.to.poisson%nbgpz],id='wz')
+    wx=f_malloc([-nbgpx.to.nbgpx],id='wx')
+    wy=f_malloc([-nbgpy.to.nbgpy],id='wy')
+    wz=f_malloc([-nbgpz.to.nbgpz],id='wz')
     pi=4.d0*atan(1.d0)
     hgxinv=1.d0/poisson%hx
     hgyinv=1.d0/poisson%hy
@@ -221,10 +228,10 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
         !shift the gaussian centers
         iatox=nint(rxyz(1,iat)*hgxinv)+1
         iatoy=nint(rxyz(2,iat)*hgyinv)+1
-        iatoz=nint(rxyz(3,iat)*hgzinv)+1+poisson%nbgpz*iii
+        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgpz*iii
         xat=rxyz(1,iat)-(iatox-1)*poisson%hx
         yat=rxyz(2,iat)-(iatoy-1)*poisson%hy
-        zat=rxyz(3,iat)-(iatoz-1-poisson%nbgpz*iii)*poisson%hz
+        zat=rxyz(3,iat)-(iatoz-1-nbgpz*iii)*poisson%hz
         !construct the one-dimensional gaussians
 
         if (.not.parini%ewald) then
@@ -239,20 +246,20 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
         width_inv_xat=width_inv*xat
         width_inv_yat=width_inv*yat
         width_inv_zat=width_inv*zat
-        do iw=-poisson%nbgpx,poisson%nbgpx
+        do iw=-nbgpx,nbgpx
             wx(iw)=exp(-(width_inv_hgx*iw-width_inv_xat)**2)
         enddo
-        do iw=-poisson%nbgpy,poisson%nbgpy
+        do iw=-nbgpy,nbgpy
             wy(iw)=exp(-(width_inv_hgy*iw-width_inv_yat)**2)
         enddo
-        do iw=-poisson%nbgpz,poisson%nbgpz
+        do iw=-nbgpz,nbgpz
             wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
         enddo
         facqiat=fac*qat(iat)
-        do iz=-poisson%nbgpz,poisson%nbgpz
+        do iz=-nbgpz,nbgpz
             rhoz=facqiat*wz(iz)
             jz=iatoz+iz
-            do iy=-poisson%nbgpy,poisson%nbgpy
+            do iy=-nbgpy,nbgpy
                 rhoyz=rhoz*wy(iy)
                 jy=iatoy+iy
                 do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
@@ -339,7 +346,6 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     call f_free(wy)
     call f_free(wz)
     call f_free(wa)
-    end associate
     call f_free(mboundg)
     call f_release_routine()
 end subroutine putgaussgrid
@@ -367,23 +373,29 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     real(8):: xat, yat, zat, facqiat, fac
     integer:: iat, ivw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz, iyt, izt, iii
     real(8):: fx, fy, fz, dx, dy, dz, derrhoz, derrhoyz, derrhozy
+    integer:: nbgpx, nbgpy, nbgpz, nagpx, nagpy, nagpz
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
     call f_routine(id='longerange_forces')
-    associate(nagpx=>poisson%nagpx,nagpy=>poisson%nagpy,nagpz=>poisson%nagpz)
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
     associate(ngpz=>poisson%ngpz)
-    mboundg=f_malloc([1.to.2,-poisson%nbgpy.to.poisson%nbgpy,-poisson%nbgpz.to.poisson%nbgpz],id='mboundg')
-    call determine_glimitsphere(poisson,mboundg)
+    nbgpx=int(poisson%rgcut/poisson%hx)+2
+    nbgpy=int(poisson%rgcut/poisson%hy)+2
+    nbgpz=int(poisson%rgcut/poisson%hz)+2
+    nagpx=nbgpx+1
+    nagpy=nbgpy+1
+    nagpz=0
+    mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='mboundg')
+    call determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     !wa(1-nagpx:ngpx+nagpx,1-nagpy:ngpy+nagpy,1-nagpz:ngpz+nagpz)=>poisson%pot
     wa=f_malloc([1-nagpx.to.ngpx+nagpx,1-nagpy.to.ngpy+nagpy,1-nagpz.to.ngpz+nagpz],id='wa')
-    wx=f_malloc([-poisson%nbgpx.to.poisson%nbgpx],id='wx')
-    wy=f_malloc([-poisson%nbgpy.to.poisson%nbgpy],id='wy')
-    wz=f_malloc([-poisson%nbgpz.to.poisson%nbgpz],id='wz')
-    vx=f_malloc([-poisson%nbgpx.to.poisson%nbgpx],id='vx')
-    vy=f_malloc([-poisson%nbgpy.to.poisson%nbgpy],id='vy')
-    vz=f_malloc([-poisson%nbgpz.to.poisson%nbgpz],id='vz')
+    wx=f_malloc([-nbgpx.to.nbgpx],id='wx')
+    wy=f_malloc([-nbgpy.to.nbgpy],id='wy')
+    wz=f_malloc([-nbgpz.to.nbgpz],id='wz')
+    vx=f_malloc([-nbgpx.to.nbgpx],id='vx')
+    vy=f_malloc([-nbgpy.to.nbgpy],id='vy')
+    vz=f_malloc([-nbgpz.to.nbgpz],id='vz')
     pi=4.d0*atan(1.d0)
     hgxhgyhgz=poisson%hx*poisson%hy*poisson%hz
     hgxinv=1.d0/poisson%hx
@@ -392,15 +404,15 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     !---------------------------------------------------------------------------
     do iz=1-nagpz,ngpz+nagpz
         izt=iz+(sign(ngpz,-iz)+sign(ngpz,ngpz-iz))/2
-        do iy=1-poisson%nagpy,ngpy+poisson%nagpy
+        do iy=1-nagpy,ngpy+nagpy
             iyt=iy+(sign(ngpy,-iy)+sign(ngpy,ngpy-iy))/2
-            do ix=1-poisson%nagpx,0
+            do ix=1-nagpx,0
                 wa(ix,iy,iz)=poisson%rho(ix+ngpx,iyt,izt)
             enddo
             do ix=1,ngpx
                 wa(ix,iy,iz)=poisson%rho(ix,iyt,izt)
             enddo
-            do ix=ngpx+1,ngpx+poisson%nagpx
+            do ix=ngpx+1,ngpx+nagpx
                 wa(ix,iy,iz)=poisson%rho(ix-ngpx,iyt,izt)
             enddo
         enddo
@@ -416,10 +428,10 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
         !shift the Gaussian centers
         iatox=nint(atoms%rat(1,iat)*hgxinv)+1
         iatoy=nint(atoms%rat(2,iat)*hgyinv)+1
-        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+poisson%nbgpz*iii
+        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgpz*iii
         xat=atoms%rat(1,iat)-(iatox-1)*poisson%hx
         yat=atoms%rat(2,iat)-(iatoy-1)*poisson%hy
-        zat=atoms%rat(3,iat)-(iatoz-1-poisson%nbgpz*iii)*poisson%hz
+        zat=atoms%rat(3,iat)-(iatoz-1-nbgpz*iii)*poisson%hz
         width=gausswidth(iat)
         width_inv=1.d0/width
         fac=2.d0/(width*(width*sqrt(pi))**3)
@@ -430,28 +442,28 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
         width_inv_yat=width_inv*yat
         width_inv_zat=width_inv*zat
         !construct the one-dimensional gaussians
-        do ivw=-poisson%nbgpx,poisson%nbgpx
+        do ivw=-nbgpx,nbgpx
             dx=width_inv_hgx*ivw-width_inv_xat
             wx(ivw)=exp(-dx*dx)
             vx(ivw)=-wx(ivw)*dx
         enddo
-        do ivw=-poisson%nbgpy,poisson%nbgpy
+        do ivw=-nbgpy,nbgpy
             dy=width_inv_hgy*ivw-width_inv_yat
             wy(ivw)=exp(-dy*dy)
             vy(ivw)=-wy(ivw)*dy
         enddo
-        do ivw=-poisson%nbgpz,poisson%nbgpz
+        do ivw=-nbgpz,nbgpz
             dz=width_inv_hgz*ivw-width_inv_zat
             wz(ivw)=exp(-dz*dz)
             vz(ivw)=-wz(ivw)*dz
         enddo
         fx=0.d0;fy=0.d0;fz=0.d0
         facqiat=fac*atoms%qat(iat)
-        do iz=-poisson%nbgpz,poisson%nbgpz
+        do iz=-nbgpz,nbgpz
             rhoz=facqiat*wz(iz)
             derrhoz=facqiat*vz(iz)
             jz=iatoz+iz
-            do iy=-poisson%nbgpy,poisson%nbgpy
+            do iy=-nbgpy,nbgpy
                 rhoyz=rhoz*wy(iy)
                 derrhozy=rhoz*vy(iy)
                 derrhoyz=derrhoz*wy(iy)
@@ -480,7 +492,6 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     call f_free(vx)
     call f_free(vy)
     call f_free(vz)
-    end associate
     end associate
     end associate
     end associate

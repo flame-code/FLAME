@@ -1800,11 +1800,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     real(8):: cell(3)
     real(8):: hz , vlmvu, vlzumvuzl 
 end subroutine sollaplaceq
- subroutine calculate_force_ener_plane(atoms,poisson,epot)
+ subroutine calculate_force_ener_plane(atoms,poisson,epot,nbgpz)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
+    integer, intent(in):: nbgpz
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: fatp(3,atoms%nat) 
 end subroutine calculate_force_ener_plane
@@ -1861,10 +1862,11 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
 end subroutine calculate_forces_energy
-subroutine determine_glimitsphere(poisson,mboundg)
+subroutine determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-    integer, intent(out):: mboundg(1:2,-poisson%nbgpy:poisson%nbgpy,-poisson%nbgpz:poisson%nbgpz)
+    integer, intent(in):: nbgpx, nbgpy, nbgpz
+    integer, intent(out):: mboundg(1:2,-nbgpy:nbgpy,-nbgpz:nbgpz)
 end subroutine determine_glimitsphere
 subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     use mod_electrostatics, only: typ_poisson

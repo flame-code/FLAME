@@ -24,12 +24,12 @@ module mod_electrostatics
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2
         !bounds to assign charge density to grid points within a shpere.
         !integer, allocatable:: mboundg(:,:,:)
-        integer:: nbgpx !number of bound grid points in x direction.
-        integer:: nbgpy !number of bound grid points in y direction.
-        integer:: nbgpz !number of bound grid points in z direction.
-        integer:: nagpx !number of additional grid points in x direction.
-        integer:: nagpy !number of additional grid points in y direction.
-        integer:: nagpz !number of additional grid points in z direction.
+        !integer:: nbgpx !number of bound grid points in x direction.
+        !integer:: nbgpy !number of bound grid points in y direction.
+        !integer:: nbgpz !number of bound grid points in z direction.
+        !integer:: nagpx !number of additional grid points in x direction.
+        !integer:: nagpy !number of additional grid points in y direction.
+        !integer:: nagpz !number of additional grid points in z direction.
         real(8):: epotfixed !fixed part of electrostatic energt in ewald.
         !real(8):: rcut !cutoff radius in real space.
         real(8):: alpha =-1 !splitting ewald parameter.

@@ -43,8 +43,6 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
     associate(ngpz=>poisson%ngpz)
-    associate(nbgpy=>poisson%nbgpy)
-    associate(nbgpz=>poisson%nbgpz)
     if(trim(atoms%boundcond)/='bulk') then
         write(*,*) 'ERROR: init_hartree_bps currently assumes BC=bulk'
         stop
@@ -61,6 +59,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     endif
     poisson%linked_lists%rcut=parini%rcut_ewald
     poisson_rough%rgcut=parini%rgcut_ewald*poisson%alpha
+    poisson%rgcut=poisson_rough%rgcut
     poisson%spline%nsp=parini%nsp_ewald
     poisson%cell(1)=atoms%cellvec(1,1)
     poisson%cell(2)=atoms%cellvec(2,2)
@@ -70,21 +69,11 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !---------------------------------------------------------------------------
     !call calparam(parini,atoms,poisson_rough,poisson)
     call set_ngp_bps(parini,atoms,poisson_rough,poisson)
-    poisson%nbgpx=int(poisson_rough%rgcut/poisson%hx)+2
-    poisson%nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
-    poisson%nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
-    poisson%nagpx=poisson%nbgpx+1
-    poisson%nagpy=poisson%nbgpy+1
-    poisson%nagpz=poisson%nbgpz+1
-    tt1=real((ngpx+2*poisson%nbgpx)*(ngpy+2*poisson%nbgpy),8)
-    tt2=real((ngpx+2)*(ngpy),8)
-    poisson%ngpztot=ngpz*(int(tt1/tt2)+2)
     ngptot=ngpx*ngpy*ngpz
     write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
-    write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
-    write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
+    !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
+    !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
-    write(*,'(a50,i)') 'ngpztot',poisson%ngpztot
     !---------------------------------------------------------------------------
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
@@ -96,8 +85,6 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     if(parini%iverbose>=2) then
         write(*,*) 'real part in rcut',shortrange_at_rcut
     endif
-    end associate
-    end associate
     end associate
     end associate
     end associate
@@ -120,12 +107,11 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     real(8):: pi, shortrange_at_rcut
     real(8):: tt1, tt2
     integer:: ngptot
+    integer:: nbgpx, nbgpy, nbgpz
     call f_routine(id='init_hartree_p3d')
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
     associate(ngpz=>poisson%ngpz)
-    associate(nbgpy=>poisson%nbgpy)
-    associate(nbgpz=>poisson%nbgpz)
     if(trim(atoms%boundcond)/='slab') then
         write(*,*) 'ERROR: init_hartree_p3d currently assumes BC=slab'
         stop
@@ -142,6 +128,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     endif
     poisson%linked_lists%rcut=parini%rcut_ewald
     poisson_rough%rgcut=parini%rgcut_ewald*poisson%alpha
+    poisson%rgcut=poisson_rough%rgcut
     poisson%spline%nsp=parini%nsp_ewald
     poisson%cell(1)=atoms%cellvec(1,1)
     poisson%cell(2)=atoms%cellvec(2,2)
@@ -158,20 +145,17 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     poisson%hx=poisson%cell(1)/real(ngpx,8)
     poisson%hy=poisson%cell(2)/real(ngpy,8)
     poisson%hz=poisson%cell(3)/real(ngpz-1,8)
-    poisson%nbgpx=int(poisson_rough%rgcut/poisson%hx)+2
-    poisson%nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
-    poisson%nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
-    poisson%nagpx=poisson%nbgpx+1
-    poisson%nagpy=poisson%nbgpy+1
-    poisson%nagpz=0
-    ngpz=ngpz+2*poisson%nbgpz
-    tt1=real((ngpx+2*poisson%nbgpx)*(ngpy+2*poisson%nbgpy),8)
+    nbgpx=int(poisson_rough%rgcut/poisson%hx)+2
+    nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
+    nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
+    ngpz=ngpz+2*nbgpz
+    tt1=real((ngpx+2*nbgpx)*(ngpy+2*nbgpy),8)
     tt2=real((ngpx+2)*(ngpy),8)
     poisson%ngpztot=ngpz*(int(tt1/tt2)+2)
     ngptot=ngpx*ngpy*ngpz
     write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
-    write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
-    write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
+    write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
+    !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
     write(*,'(a50,i)') 'ngpztot',poisson%ngpztot
     !---------------------------------------------------------------------------
@@ -185,8 +169,6 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     if(parini%iverbose>=2) then
         write(*,*) 'real part in rcut',shortrange_at_rcut
     endif
-    end associate
-    end associate
     end associate
     end associate
     end associate
@@ -404,17 +386,23 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     integer:: ngpx, ngpy, ngpz, iii
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
-    associate(nagpx=>poisson%nagpx,nagpy=>poisson%nagpy,nagpz=>poisson%nagpz)
-    mboundg=f_malloc([1.to.2,-poisson%nbgpy.to.poisson%nbgpy,-poisson%nbgpz.to.poisson%nbgpz],id='mboundg')
-    call determine_glimitsphere(poisson,mboundg)
+    integer:: nbgpx, nbgpy, nbgpz, nagpx, nagpy, nagpz
+    nbgpx=int(poisson%rgcut/poisson%hx)+2
+    nbgpy=int(poisson%rgcut/poisson%hy)+2
+    nbgpz=int(poisson%rgcut/poisson%hz)+2
+    nagpx=nbgpx+1
+    nagpy=nbgpy+1
+    nagpz=0
+    mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='mboundg')
+    call determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     ngpx=poisson%ngpx
     ngpy=poisson%ngpy
     ngpz=poisson%ngpz
     !wa(1-nagpx:ngpx+nagpx,1-nagpy:ngpy+nagpy,1-nagpz:ngpz+nagpz)=>poisson%pot
     wa=f_malloc([1-nagpx.to.ngpx+nagpx,1-nagpy.to.ngpy+nagpy,1-nagpz.to.ngpz+nagpz],id='wa')
-    wx=f_malloc([-poisson%nbgpx.to.poisson%nbgpx],id='wx')
-    wy=f_malloc([-poisson%nbgpy.to.poisson%nbgpy],id='wy')
-    wz=f_malloc([-poisson%nbgpz.to.poisson%nbgpz],id='wz')
+    wx=f_malloc([-nbgpx.to.nbgpx],id='wx')
+    wy=f_malloc([-nbgpy.to.nbgpy],id='wy')
+    wz=f_malloc([-nbgpz.to.nbgpz],id='wz')
     pi=4.d0*atan(1.d0)
     hgxhgyhgz=poisson%hx*poisson%hy*poisson%hz
     hgxinv=1.d0/poisson%hx
@@ -423,15 +411,15 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     !---------------------------------------------------------------------------
     do iz=1-nagpz,ngpz+nagpz
         izt=iz+(sign(ngpz,-iz)+sign(ngpz,ngpz-iz))/2
-        do iy=1-poisson%nagpy,ngpy+poisson%nagpy
+        do iy=1-nagpy,ngpy+nagpy
             iyt=iy+(sign(ngpy,-iy)+sign(ngpy,ngpy-iy))/2
-            do ix=1-poisson%nagpx,0
+            do ix=1-nagpx,0
                 wa(ix,iy,iz)=poisson%rho(ix+ngpx,iyt,izt)
             enddo
             do ix=1,ngpx
                 wa(ix,iy,iz)=poisson%rho(ix,iyt,izt)
             enddo
-            do ix=ngpx+1,ngpx+poisson%nagpx
+            do ix=ngpx+1,ngpx+nagpx
                 wa(ix,iy,iz)=poisson%rho(ix-ngpx,iyt,izt)
             enddo
         enddo
@@ -457,10 +445,10 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
         !shift the Gaussian centers
         iatox=nint(atoms%rat(1,iat)*hgxinv)+1
         iatoy=nint(atoms%rat(2,iat)*hgyinv)+1
-        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+poisson%nbgpz*iii
+        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgpz*iii
         xat=atoms%rat(1,iat)-(iatox-1)*poisson%hx
         yat=atoms%rat(2,iat)-(iatoy-1)*poisson%hy
-        zat=atoms%rat(3,iat)-(iatoz-1-poisson%nbgpz*iii)*poisson%hz
+        zat=atoms%rat(3,iat)-(iatoz-1-nbgpz*iii)*poisson%hz
         !construct the one-dimensional gaussians
 
         if(.not.parini%ewald) then
@@ -475,20 +463,20 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
         width_inv_xat=width_inv*xat
         width_inv_yat=width_inv*yat
         width_inv_zat=width_inv*zat
-        do iw=-poisson%nbgpx,poisson%nbgpx
+        do iw=-nbgpx,nbgpx
             wx(iw)=exp(-(width_inv_hgx*iw-width_inv_xat)**2)
         enddo
-        do iw=-poisson%nbgpy,poisson%nbgpy
+        do iw=-nbgpy,nbgpy
             wy(iw)=exp(-(width_inv_hgy*iw-width_inv_yat)**2)
         enddo
-        do iw=-poisson%nbgpz,poisson%nbgpz
+        do iw=-nbgpz,nbgpz
             wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
         enddo
 
-        do iz=-poisson%nbgpz,poisson%nbgpz
+        do iz=-nbgpz,nbgpz
         jz=iatoz+iz
         rhoz=fac*wz(iz)
-            do iy=-poisson%nbgpy,poisson%nbgpy
+            do iy=-nbgpy,nbgpy
                 rhoyz=rhoz*wy(iy)
                 jy=iatoy+iy
                 do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
@@ -503,7 +491,6 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     call f_free(wy)
     call f_free(wz)
     call f_free(wa)
-    end associate
     call f_free(mboundg)
     ! call f_release_routine()
 end subroutine get_g_from_pot

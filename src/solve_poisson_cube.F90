@@ -12,6 +12,7 @@ subroutine solve_poisson(parini)
     integer:: istat, igpx, igpy, igpz, iat
     real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi
     real(8),allocatable::  gausswidth(:)
+    integer:: nbgpx, nbgpy, nbgpz
     pi=4.d0*atan(1.d0)
     call cube_read('rho.cube',atoms,poisson)
     !write(*,*) poisson%ngpx,poisson%ngpy,poisson%ngpz
@@ -32,21 +33,21 @@ subroutine solve_poisson(parini)
         stop 'ERROR: gaussian_width must be set.'
     endif
     rgcut_a=parini%gaussian_width !3.d0
-    poisson_ion%nbgpx=int(rgcut_a/poisson_ion%hx)+2
-    poisson_ion%nbgpy=int(rgcut_a/poisson_ion%hy)+2
-    poisson_ion%nbgpz=int(rgcut_a/poisson_ion%hz)+2
-    poisson_ion%ngpz=poisson_ion%ngpz+2*poisson_ion%nbgpz
-    t1=real((poisson_ion%ngpx+2*poisson_ion%nbgpx)*(poisson_ion%ngpy+2*poisson_ion%nbgpy),8)
+    nbgpx=int(rgcut_a/poisson_ion%hx)+2
+    nbgpy=int(rgcut_a/poisson_ion%hy)+2
+    nbgpz=int(rgcut_a/poisson_ion%hz)+2
+    poisson_ion%ngpz=poisson_ion%ngpz+2*nbgpz
+    t1=real((poisson_ion%ngpx+2*nbgpx)*(poisson_ion%ngpy+2*nbgpy),8)
     t2=real((poisson_ion%ngpx+2)*(poisson_ion%ngpy),8)
     poisson_ion%ngpztot=poisson_ion%ngpz*(int(t1/t2)+2)
     allocate(poisson_ion%rho(poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of rho failed.'
     write(*,'(a,3i5)') 'ngpx, ngpy, ngpz  ',poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz
-    write(*,'(a,3i5)') 'nbgpx,nbgpy,nbgpz ',poisson_ion%nbgpx,poisson_ion%nbgpy,poisson_ion%nbgpz
+    write(*,'(a,3i5)') 'nbgpx,nbgpy,nbgpz ',nbgpx,nbgpy,nbgpz
     write(*,'(a,1i5)') 'ngpztot           ',poisson_ion%ngpztot
     allocate(poisson_ion%pot(poisson_ion%ngpx+2,poisson_ion%ngpy,poisson_ion%ngpztot),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of pot failed.'
-    !allocate(poisson_ion%mboundg(2,-poisson_ion%nbgpy:poisson_ion%nbgpy,-poisson_ion%nbgpz:poisson_ion%nbgpz),stat=istat)
+    !allocate(poisson_ion%mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz),stat=istat)
     !if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'
     allocate(gausswidth(atoms%nat))
     !call determine_glimitsphere(poisson_ion)
@@ -62,8 +63,8 @@ subroutine solve_poisson(parini)
         do igpy=1,poisson%ngpy
             do igpx=1,poisson%ngpx
                 t1=t1+poisson%rho(igpx,igpy,igpz)
-                t2=t2+poisson_ion%rho(igpx,igpy,igpz+poisson_ion%nbgpz)
-                poisson%rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)-poisson_ion%rho(igpx,igpy,igpz+poisson_ion%nbgpz)
+                t2=t2+poisson_ion%rho(igpx,igpy,igpz+nbgpz)
+                poisson%rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)-poisson_ion%rho(igpx,igpy,igpz+nbgpz)
                 t4=t4+(igpz-1)*poisson_ion%hz*poisson%rho(igpx,igpy,igpz)
                 t3=t3+poisson%rho(igpx,igpy,igpz)
             enddo

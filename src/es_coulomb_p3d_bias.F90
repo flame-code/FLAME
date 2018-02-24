@@ -17,7 +17,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     real(8):: beta, pi, charge,c,charge0,E,tmp
     integer:: igpx, igpy, igpz, iat
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
-    integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
+    integer:: npl, npu, nlayer, ngpx, ngpy, ngpz, nbgpz
     real(8),allocatable :: pots_layer(:,:,:,:)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
 
@@ -26,6 +26,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     beta = poisson%beta
     ngpx= poisson%ngpx
     ngpy= poisson%ngpy
+    nbgpz=int(poisson%rgcut/poisson%hz)+2
     if(trim(parini%bias_type)=='p3dbias') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
@@ -51,8 +52,8 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
         !dipole_correction =0.d0
         dipole_correction =dipole_correction +0.5*charge0*(vu-vl)+0.5*c*(vu-vl)**2
         write(*,*)'charge on upper  plate  ', charge
-        poisson%npu=poisson%ngpz-poisson%nbgpz
-        poisson%npl=1+poisson%nbgpz  
+        poisson%npu=poisson%ngpz-nbgpz
+        poisson%npl=1+nbgpz  
 !        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
         npl=poisson%npl
         npu=poisson%npu
@@ -83,7 +84,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
 !        enddo
 !
         call sollaplaceq(poisson,poisson%hz,poisson%cell,vl,vu)
-        call calculate_force_ener_plane(atoms,poisson,epotplane)
+        call calculate_force_ener_plane(atoms,poisson,epotplane,nbgpz)
 
         if (parini%cal_charge) then 
             call surface_charge(parini,poisson,pots_layer,vl,vu)
@@ -141,7 +142,7 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: nsclx,nscly,nx,ny,nz , jat1, jat2, iat, isp
     integer:: ip, il, iatox, iatoy, iatoz
-    integer:: ngpx, ngpy, ngpz, nbgpx, nbgpy, nbgpz 
+    integer:: ngpx, ngpy, ngpz, nbgpx, nbgpy, nbgpz, nbgpz_poisson
     real(8), allocatable:: ratp(:,:,:),qatp(:,:)
     integer, allocatable::  mboundg(:,:,:),mboundgy(:,:)
 
@@ -150,10 +151,11 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     linked_lists%rcut = poisson%linked_lists%rcut/sqrt(2.d0)
     rcutsq= poisson%linked_lists%rcut**2
 
+    nbgpz_poisson=int(poisson%rgcut/poisson%hz)+2
     npl=poisson%npl
     npu=poisson%npu
-    zgpl=(npl-1-poisson%nbgpz)*poisson%hz
-    zgpu=(npu-1-poisson%nbgpz)*poisson%hz
+    zgpl=(npl-1-nbgpz_poisson)*poisson%hz
+    zgpu=(npu-1-nbgpz_poisson)*poisson%hz
 
     ngpx=poisson%ngpx
     ngpy=poisson%ngpy
@@ -188,10 +190,10 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
         if (zgpu-linked_lists%rat(3,iat)>linked_lists%rcut+dnlayer) cycle
         iatox=nint(linked_lists%rat(1,iat)*hgxinv)+1
         iatoy=nint(linked_lists%rat(2,iat)*hgyinv)+1
-        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+poisson%nbgpz
+        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+nbgpz_poisson
         xat=linked_lists%rat(1,iat)-(iatox-1)*poisson%hx
         yat=linked_lists%rat(2,iat)-(iatoy-1)*poisson%hy
-        zat=linked_lists%rat(3,iat)-(iatoz-1-poisson%nbgpz)*poisson%hz
+        zat=linked_lists%rat(3,iat)-(iatoz-1-nbgpz_poisson)*poisson%hz
         do iz=-nbgpz,nbgpz
             jz=iatoz+iz
             if (.not. (jz<=npu .and. jz>npu-nlayer)) cycle
@@ -226,10 +228,10 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
         if (-zgpl+linked_lists%rat(3,iat)>linked_lists%rcut+dnlayer) cycle
         iatox=nint(linked_lists%rat(1,iat)*hgxinv)+1
         iatoy=nint(linked_lists%rat(2,iat)*hgyinv)+1
-        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+poisson%nbgpz
+        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+nbgpz_poisson
         xat=linked_lists%rat(1,iat)-(iatox-1)*poisson%hx
         yat=linked_lists%rat(2,iat)-(iatoy-1)*poisson%hy
-        zat=linked_lists%rat(3,iat)-(iatoz-1-poisson%nbgpz)*poisson%hz
+        zat=linked_lists%rat(3,iat)-(iatoz-1-nbgpz_poisson)*poisson%hz
         do iz=-nbgpz,nbgpz
             jz=iatoz+iz
             if (.not. (jz>=npl .and. jz<npl+nlayer .and. jz<=npu-nlayer)) cycle
@@ -638,14 +640,14 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     deallocate(plan_fs)
 end subroutine sollaplaceq
 !*****************************************************************************************
- subroutine calculate_force_ener_plane(atoms,poisson,epot)
+ subroutine calculate_force_ener_plane(atoms,poisson,epot,nbgpz)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
-
+    integer, intent(in):: nbgpz
     !local variables
     integer:: ix,iy,iz ,jx,jy,jz, kx,ky,kz, iat
     integer:: nlgx,nlgy,nlgz 
@@ -707,11 +709,11 @@ end subroutine sollaplaceq
         z=atoms%rat(3,iat)
         !call LGW(nlgx, wx,poisson%hx, x, LGx, DLGx, ix1, 0)
         !call LGW(nlgy, wy,poisson%hy, y, LGy, DLGy, iy1, 0)
-        !call LGW(nlgz, wz,poisson%hz, z, LGz, DLGz, iz1, poisson%nbgpz )
+        !call LGW(nlgz, wz,poisson%hz, z, LGz, DLGz, iz1, nbgpz )
         
         call LGW4(nlgx, wx,poisson%hx, x, LGx, DLGx, ix1, 0)
         call LGW4(nlgy, wy,poisson%hy, y, LGy, DLGy, iy1, 0)
-        call LGW4(nlgz, wz,poisson%hz, z, LGz, DLGz, iz1, poisson%nbgpz )
+        call LGW4(nlgz, wz,poisson%hz, z, LGz, DLGz, iz1, nbgpz )
         do iz=1,nlgz 
             jz=iz1+iz-1
             do iy=1,nlgy 
