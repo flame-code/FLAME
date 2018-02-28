@@ -20,6 +20,8 @@ subroutine init_hartree(parini,atoms,poisson)
         !It seems that nothing needs to be done for kwald method in the
         !init_hartree routine.
     endif
+    if(allocated(poisson%qgrad)) deallocate(poisson%qgrad)
+    allocate(poisson%qgrad(1:atoms%nat))
     call f_release_routine()
 end subroutine init_hartree
 !*****************************************************************************************
@@ -32,10 +34,10 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    type(typ_poisson):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
     !local variables
     include 'fftw3.f'
+    type(typ_poisson):: poisson_rough
     real(8):: pi, shortrange_at_rcut
     real(8):: tt1, tt2
     integer:: ngptot
@@ -175,7 +177,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     call f_release_routine()
 end subroutine init_hartree_p3d
 !*****************************************************************************************
-subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
+subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -188,7 +190,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
-    real(8), intent(out):: ehartree, g(atoms%nat)
+    real(8), intent(out):: ehartree
+    real(8), optional, intent(out):: qgrad(atoms%nat)
     !local variables
     real(8):: dpm, pi !, gtot, epotreal
     integer:: iat
@@ -216,17 +219,44 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
     endif
 
     if(trim(parini%psolver_ann)=='kwald') then
-        call psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
+        if(.not. present(qgrad)) then
+            write(*,*) 'ERROR: psolver_bulk_fourier requires qgrad to be present.'
+            stop
+        endif
+        call psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,qgrad)
     elseif(trim(parini%psolver_ann)=='bigdft') then
-        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-        call psolver_bps(poisson,atoms,ehartree)
-        call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
-        call apply_external_field(parini,atoms,poisson,ehartree,g)
+        if(poisson%cal_rho) then
+            call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
+        endif
+        if(poisson%cal_poisson) then
+            call psolver_bps(poisson,atoms,ehartree)
+        endif
+        if(poisson%cal_qgrad) then
+            if(.not. present(qgrad)) then
+                write(*,*) 'ERROR: poisson%cal_qgrad is true but qgrad is absent.'
+                stop
+            endif
+            call get_g_from_pot(parini,atoms,poisson,gausswidth,qgrad)
+            call apply_external_field(parini,atoms,poisson,ehartree,qgrad)
+        endif
     elseif(trim(parini%psolver_ann)=='p3d') then
-        call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-        call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
-        call get_g_from_pot(parini,atoms,poisson,gausswidth,g)
-        call apply_external_field(parini,atoms,poisson,ehartree,g)
+        if(poisson%cal_rho) then
+            call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
+        endif
+        if(poisson%cal_poisson) then
+            call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
+        endif
+        if(poisson%cal_qgrad) then
+            if(.not. present(qgrad)) then
+                write(*,*) 'ERROR: poisson%cal_qgrad is true but qgrad is absent.'
+                stop
+            endif
+            call get_g_from_pot(parini,atoms,poisson,gausswidth,qgrad)
+            call apply_external_field(parini,atoms,poisson,ehartree,qgrad)
+        endif
+        if(poisson%cal_force) then
+            call longerange_forces(parini,atoms,poisson,gausswidth)
+        endif
     else
         write(*,*) 'ERROR: unknown method for hartree calculation.'
         stop
@@ -234,7 +264,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,g)
 
 end subroutine get_hartree_simple
 !*****************************************************************************************
-subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
+subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -247,7 +277,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
-    real(8), intent(out):: ehartree, g(atoms%nat)
+    real(8), intent(out):: ehartree
     !local variables
     real(8):: epotreal !, pi
     !integer:: iat
@@ -264,8 +294,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
        ewaldwidth(:)=poisson%alpha
     end if
 
-    g(1:atoms%nat)=0.d0
-    atoms%fat=0.d0
+    poisson%qgrad(1:atoms%nat)=0.d0
     if(parini%ewald) then
         !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
         kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
@@ -286,12 +315,12 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
         ewaldwidth=gausswidth
     endif
     
-    call get_hartree_simple(parini,poisson,atoms,ewaldwidth,ehartree,g)
+    call get_hartree_simple(parini,poisson,atoms,ewaldwidth,ehartree,poisson%qgrad)
     if(parini%ewald) then
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
         atoms%stress=atoms%stress+stress
         ehartree=ehartree+epotreal
-        g=g+gg
+        poisson%qgrad=poisson%qgrad+gg
     end if
 
     if(parini%ewald) then

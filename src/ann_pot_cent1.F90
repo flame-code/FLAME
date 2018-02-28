@@ -83,12 +83,11 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     enddo over_iat
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
-    atoms%stress(1:3,1:3)=0.d0
-    !This msut be here otherwise it will zero forces which were calculated by kwald.
-    atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
     call get_qat_from_chi(parini,ann_arr,atoms,poisson,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time5)
+    atoms%stress(1:3,1:3)=0.d0
+    atoms%fat(1:3,1:atoms%nat)=0.d0
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
@@ -366,7 +365,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     !local variables
     integer:: iat, jat
     real(8):: tt2, tt3, ttf, gama, pi
-    real(8):: dx, dy, dz, r, beta_iat, beta_jat
+    real(8):: dx, dy, dz, r, beta_iat, beta_jat, ehartree_t
     real(8), allocatable:: gausswidth(:)
     allocate(gausswidth(1:atoms%nat))
     if(trim(atoms%boundcond)=='free') then
@@ -396,14 +395,12 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         enddo
         ann_arr%epot_es=tt2+tt3
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        if(trim(parini%psolver_ann)/='kwald') then
-            if(parini%ewald) then 
-                gausswidth(:)=poisson%alpha
-            else
-                gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-            endif
-            call longerange_forces(parini,atoms,poisson,gausswidth)
-        endif
+        gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+        poisson%cal_rho=.false.
+        poisson%cal_poisson=.false.
+        poisson%cal_qgrad=.false.
+        poisson%cal_force=.true.
+        call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
     endif
@@ -542,7 +539,12 @@ subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
     pi=4.d0*atan(1.d0)
     allocate(gausswidth(1:atoms%nat))
     gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-    call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es,g)
+    poisson%cal_rho=.true.
+    poisson%cal_poisson=.true.
+    poisson%cal_qgrad=.true.
+    poisson%cal_force=.false.
+    call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es)
+    g=poisson%qgrad
     qtot=0.d0
     gtot=0.d0
     do iat=1,atoms%nat
