@@ -177,7 +177,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     call f_release_routine()
 end subroutine init_hartree_p3d
 !*****************************************************************************************
-subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
+subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -191,7 +191,6 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
-    real(8), optional, intent(out):: qgrad(atoms%nat)
     !local variables
     real(8):: dpm, pi !, gtot, epotreal
     integer:: iat
@@ -219,11 +218,11 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
     endif
 
     if(trim(parini%psolver_ann)=='kwald') then
-        if(.not. present(qgrad)) then
-            write(*,*) 'ERROR: psolver_bulk_fourier requires qgrad to be present.'
-            stop
-        endif
-        call psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,qgrad)
+        !if(.not. present(qgrad)) then
+        !    write(*,*) 'ERROR: psolver_bulk_fourier requires qgrad to be present.'
+        !    stop
+        !endif
+        call psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,poisson%qgrad)
     elseif(trim(parini%psolver_ann)=='bigdft') then
         if(poisson%cal_rho) then
             call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
@@ -232,12 +231,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
             call psolver_bps(poisson,atoms,ehartree)
         endif
         if(poisson%cal_qgrad) then
-            if(.not. present(qgrad)) then
-                write(*,*) 'ERROR: poisson%cal_qgrad is true but qgrad is absent.'
-                stop
-            endif
-            call get_g_from_pot(parini,atoms,poisson,gausswidth,qgrad)
-            call apply_external_field(parini,atoms,poisson,ehartree,qgrad)
+            call get_g_from_pot(parini,atoms,poisson,gausswidth,poisson%qgrad)
+            call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
         endif
     elseif(trim(parini%psolver_ann)=='p3d') then
         if(poisson%cal_rho) then
@@ -247,12 +242,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
             call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
         endif
         if(poisson%cal_qgrad) then
-            if(.not. present(qgrad)) then
-                write(*,*) 'ERROR: poisson%cal_qgrad is true but qgrad is absent.'
-                stop
-            endif
-            call get_g_from_pot(parini,atoms,poisson,gausswidth,qgrad)
-            call apply_external_field(parini,atoms,poisson,ehartree,qgrad)
+            call get_g_from_pot(parini,atoms,poisson,gausswidth,poisson%qgrad)
+            call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
         endif
         if(poisson%cal_force) then
             call longerange_forces(parini,atoms,poisson,gausswidth)
@@ -315,7 +306,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
         ewaldwidth=gausswidth
     endif
     
-    call get_hartree_simple(parini,poisson,atoms,ewaldwidth,ehartree,poisson%qgrad)
+    call get_hartree_simple(parini,poisson,atoms,ewaldwidth,ehartree)
     if(parini%ewald) then
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
         atoms%stress=atoms%stress+stress

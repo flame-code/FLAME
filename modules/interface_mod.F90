@@ -1906,7 +1906,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
 end subroutine init_hartree_p3d
-subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
+subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1915,7 +1915,6 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree,qgrad)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
-    real(8), optional, intent(out):: qgrad(atoms%nat)
 end subroutine get_hartree_simple
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     use mod_parini, only: typ_parini
