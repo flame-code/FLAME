@@ -242,43 +242,60 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
         !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
         !enddo
     endif
-
-    if(trim(parini%psolver_ann)=='kwald') then
-        !if(.not. present(qgrad)) then
-        !    write(*,*) 'ERROR: psolver_bulk_fourier requires qgrad to be present.'
-        !    stop
-        !endif
-        call psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,poisson%qgrad)
-    elseif(trim(parini%psolver_ann)=='bigdft') then
-        if(poisson%cal_rho) then
-            call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-        endif
-        if(poisson%cal_poisson) then
-            call psolver_bps(poisson,atoms,ehartree)
-        endif
-        if(poisson%cal_qgrad) then
-            call get_g_from_pot(parini,atoms,poisson,gausswidth,poisson%qgrad)
-            call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
-        endif
-    elseif(trim(parini%psolver_ann)=='p3d') then
-        if(poisson%cal_rho) then
-            call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
-        endif
-        if(poisson%cal_poisson) then
-            call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
-        endif
-        if(poisson%cal_qgrad) then
-            call get_g_from_pot(parini,atoms,poisson,gausswidth,poisson%qgrad)
-            call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
-        endif
-        if(poisson%cal_force) then
-            call longerange_forces(parini,atoms,poisson,gausswidth)
-        endif
-    else
-        write(*,*) 'ERROR: unknown method for hartree calculation.'
-        stop
+    !-----------------------------------------------------------------
+    if(poisson%cal_rho) then
+        select case(trim(parini%psolver_ann))
+            case('kwald')
+                !do nothing
+            case('bigdft','p3d')
+                call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat, &
+                    atoms%qat,gausswidth,poisson)
+            case default
+                write(*,*) 'ERROR: unknown method for hartree calculation.'
+                stop
+        end select
     endif
-
+    !-----------------------------------------------------------------
+    if(poisson%cal_poisson) then
+        select case(trim(parini%psolver_ann))
+            case('kwald')
+                call psolver_bulk_fourier(parini,poisson,atoms,gausswidth, &
+                    ehartree,poisson%qgrad)
+            case('bigdft')
+                call psolver_bps(poisson,atoms,ehartree)
+            case('p3d')
+                    call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
+            case default
+                write(*,*) 'ERROR: unknown method for hartree calculation.'
+                stop
+        end select
+    endif
+    !-----------------------------------------------------------------
+    if(poisson%cal_qgrad) then
+        select case(trim(parini%psolver_ann))
+            case('kwald')
+                !do nothing
+            case('bigdft','p3d')
+                call get_g_from_pot(parini,atoms,poisson,gausswidth,poisson%qgrad)
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+            case default
+                write(*,*) 'ERROR: unknown method for hartree calculation.'
+                stop
+        end select
+    endif
+    !-----------------------------------------------------------------
+    if(poisson%cal_force) then
+        select case(trim(parini%psolver_ann))
+            case('kwald')
+                !do nothing
+            case('bigdft','p3d')
+                call longerange_forces(parini,atoms,poisson,gausswidth)
+            case default
+                write(*,*) 'ERROR: unknown method for hartree calculation.'
+                stop
+        end select
+    endif
+    !-----------------------------------------------------------------
 end subroutine get_hartree_simple
 !*****************************************************************************************
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
