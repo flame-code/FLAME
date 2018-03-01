@@ -256,7 +256,9 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
         end select
     endif
     !-----------------------------------------------------------------
-    if(poisson%cal_poisson) then
+    !Even if cal_poisson is false, psolver_bulk_fourier must be called
+    !once more because fat is set to zero after dU/dq=0 in CENT
+    if(poisson%cal_poisson .or. trim(parini%psolver_ann)=='kwald') then
         select case(trim(parini%psolver_ann))
             case('kwald')
                 call psolver_bulk_fourier(parini,poisson,atoms,gausswidth, &
