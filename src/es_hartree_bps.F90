@@ -25,6 +25,10 @@ subroutine psolver_bps(poisson,atoms,ehartree)
 #endif
 
 #if defined(HAVE_BPS)
+    !The reason I call H_POTENTIAL with rho and after that pot=rho,
+    !is because I was worried wether pot is allocated with (ngpx+2,ngpy,ngpz),
+    !however, I can check or make it to be allocated as (ngpx,ngpy,ngpz), if
+    !BPS is used.
     !stress_t(1:6)=0.d0
     call H_POTENTIAL('G',poisson%pkernel,poisson%rho, &
         pot_ion,ehartree,0.d0,.false.,stress_tensor=stress_t) !,quiet='yes')

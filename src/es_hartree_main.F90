@@ -138,7 +138,6 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     !local variables
     include 'fftw3.f'
     real(8):: pi, shortrange_at_rcut
-    real(8):: tt1, tt2
     integer:: ngptot
     integer:: nbgpx, nbgpy, nbgpz
     call f_routine(id='init_hartree_p3d')
@@ -182,19 +181,15 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
     nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
     ngpz=ngpz+2*nbgpz
-    tt1=real((ngpx+2*nbgpx)*(ngpy+2*nbgpy),8)
-    tt2=real((ngpx+2)*(ngpy),8)
-    poisson%ngpztot=ngpz*(int(tt1/tt2)+2)
     ngptot=ngpx*ngpy*ngpz
     write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
     write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
-    write(*,'(a50,i)') 'ngpztot',poisson%ngpztot
     !---------------------------------------------------------------------------
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
-    poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.poisson%ngpztot], &
+    poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ngpz], &
         id='poisson%pot')
     call init_psolver_p3d_slab(poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)

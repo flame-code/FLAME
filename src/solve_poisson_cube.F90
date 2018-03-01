@@ -37,15 +37,11 @@ subroutine solve_poisson(parini)
     nbgpy=int(rgcut_a/poisson_ion%hy)+2
     nbgpz=int(rgcut_a/poisson_ion%hz)+2
     poisson_ion%ngpz=poisson_ion%ngpz+2*nbgpz
-    t1=real((poisson_ion%ngpx+2*nbgpx)*(poisson_ion%ngpy+2*nbgpy),8)
-    t2=real((poisson_ion%ngpx+2)*(poisson_ion%ngpy),8)
-    poisson_ion%ngpztot=poisson_ion%ngpz*(int(t1/t2)+2)
     allocate(poisson_ion%rho(poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of rho failed.'
     write(*,'(a,3i5)') 'ngpx, ngpy, ngpz  ',poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz
     write(*,'(a,3i5)') 'nbgpx,nbgpy,nbgpz ',nbgpx,nbgpy,nbgpz
-    write(*,'(a,1i5)') 'ngpztot           ',poisson_ion%ngpztot
-    allocate(poisson_ion%pot(poisson_ion%ngpx+2,poisson_ion%ngpy,poisson_ion%ngpztot),stat=istat)
+    allocate(poisson_ion%pot(poisson_ion%ngpx+2,poisson_ion%ngpy,poisson_ion%ngpz),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of pot failed.'
     !allocate(poisson_ion%mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz),stat=istat)
     !if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'

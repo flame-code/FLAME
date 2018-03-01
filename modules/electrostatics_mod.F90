@@ -41,13 +41,6 @@ module mod_electrostatics
         real(8):: rgcut
         real(8):: ecut
         logical:: gw_identical= .false. !if True, all gaussian width assumed to be identical
-        !ngpztot is length of the third subscript of array pot which is bigger 
-        !than needed for calculation of potential and this bigger value is used 
-        !because pot array is used as a dummy array in two subroutines 
-        !putgaussgrid and longerange_forces and that is for to avoid 
-        !if or mod for the charges that leaks out the cell and needed to 
-        !be wrapped around.
-        integer:: ngpztot
         real(8):: efield !external electric field
         real(8):: vu, vl !voltage on upper and lower plane.
         real(8):: cell(3) !cell size in x,y,z direction.

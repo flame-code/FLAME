@@ -18,13 +18,6 @@ subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)
         stop
     endif
     call psolver_p3d_slab(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        poisson%rho(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
 end subroutine psolver_p3d
 !*****************************************************************************************
 subroutine init_psolver_p3d_slab(poisson)

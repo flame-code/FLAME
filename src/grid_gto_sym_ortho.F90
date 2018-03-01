@@ -205,8 +205,6 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
     real(8), intent(in):: gausswidth(atoms%nat)
-    !work array that is bigger than rho array, big enough to include of 
-    !grid points that are outside of box.
     !local variables
     real(8), allocatable:: wx(:), wy(:), wz(:) !values of one dimensional Gaussian functions
     real(8), allocatable:: vx(:), vy(:), vz(:) !derivatives of wx,wy,wz arrays
@@ -251,13 +249,13 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
         do iy=1-nagpy,ngpy+nagpy
             iyt=iy+(sign(ngpy,-iy)+sign(ngpy,ngpy-iy))/2
             do ix=1-nagpx,0
-                wa(ix,iy,iz)=poisson%rho(ix+ngpx,iyt,izt)
+                wa(ix,iy,iz)=poisson%pot(ix+ngpx,iyt,izt)
             enddo
             do ix=1,ngpx
-                wa(ix,iy,iz)=poisson%rho(ix,iyt,izt)
+                wa(ix,iy,iz)=poisson%pot(ix,iyt,izt)
             enddo
             do ix=ngpx+1,ngpx+nagpx
-                wa(ix,iy,iz)=poisson%rho(ix-ngpx,iyt,izt)
+                wa(ix,iy,iz)=poisson%pot(ix-ngpx,iyt,izt)
             enddo
         enddo
     enddo
@@ -353,8 +351,6 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
     type(typ_parini), intent(in):: parini
-    !work array that is bigger than rho array, big enough to include of 
-    !grid points that are outside of box.
     !local variables
     real(8), allocatable:: wx(:), wy(:), wz(:) !values of one dimensional Gaussian functions
     real(8):: rhoz, rhoyz, pi
@@ -396,13 +392,13 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
         do iy=1-nagpy,ngpy+nagpy
             iyt=iy+(sign(ngpy,-iy)+sign(ngpy,ngpy-iy))/2
             do ix=1-nagpx,0
-                wa(ix,iy,iz)=poisson%rho(ix+ngpx,iyt,izt)
+                wa(ix,iy,iz)=poisson%pot(ix+ngpx,iyt,izt)
             enddo
             do ix=1,ngpx
-                wa(ix,iy,iz)=poisson%rho(ix,iyt,izt)
+                wa(ix,iy,iz)=poisson%pot(ix,iyt,izt)
             enddo
             do ix=ngpx+1,ngpx+nagpx
-                wa(ix,iy,iz)=poisson%rho(ix-ngpx,iyt,izt)
+                wa(ix,iy,iz)=poisson%pot(ix-ngpx,iyt,izt)
             enddo
         enddo
     enddo

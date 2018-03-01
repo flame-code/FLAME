@@ -51,13 +51,6 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !pot=0.d0
     call psolver_p3d_slab(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epotlong,beta)
     call cpu_time(time(3))
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        poisson%rho(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
     call longerange_forces(parini,atoms,poisson,gausswidth)
     call cpu_time(time(4))
     !call shortenergy(atoms,poisson%linked_lists,poisson%spline,poisson%alpha,poisson%cell,epotshort)

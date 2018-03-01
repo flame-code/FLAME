@@ -301,8 +301,8 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
 
     do iy=1,poisson%ngpy
     do ix=1,poisson%ngpx
-        poisson%pots(ix,iy,npl)=-(poisson%pots(ix,iy,npl)+poisson%rho(ix,iy,npl))+vl
-        poisson%pots(ix,iy,npu)=-(poisson%pots(ix,iy,npu)+poisson%rho(ix,iy,npu))+vu    
+        poisson%pots(ix,iy,npl)=-(poisson%pots(ix,iy,npl)+poisson%pot(ix,iy,npl))+vl
+        poisson%pots(ix,iy,npu)=-(poisson%pots(ix,iy,npu)+poisson%pot(ix,iy,npu))+vu    
     enddo 
     enddo 
     call dfftw_execute(plan_fs(1))
@@ -901,19 +901,19 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
 
     do iy=1,poisson%ngpy
     do ix=1,poisson%ngpx
-            pot_layerl4=poisson%pots(ix,iy,npl+4)+poisson%rho(ix,iy,npl+4)+pot_short(ix,iy,1,5)
-            pot_layerl3=poisson%pots(ix,iy,npl+3)+poisson%rho(ix,iy,npl+3)+pot_short(ix,iy,1,4)
-            pot_layerl2=poisson%pots(ix,iy,npl+2)+poisson%rho(ix,iy,npl+2)+pot_short(ix,iy,1,3)
-            pot_layerl =poisson%pots(ix,iy,npl+1)+poisson%rho(ix,iy,npl+1)+pot_short(ix,iy,1,2)
-              vl       =poisson%pots(ix,iy,npl  )+poisson%rho(ix,iy,npl  )+pot_short(ix,iy,1,1)
+            pot_layerl4=poisson%pots(ix,iy,npl+4)+poisson%pot(ix,iy,npl+4)+pot_short(ix,iy,1,5)
+            pot_layerl3=poisson%pots(ix,iy,npl+3)+poisson%pot(ix,iy,npl+3)+pot_short(ix,iy,1,4)
+            pot_layerl2=poisson%pots(ix,iy,npl+2)+poisson%pot(ix,iy,npl+2)+pot_short(ix,iy,1,3)
+            pot_layerl =poisson%pots(ix,iy,npl+1)+poisson%pot(ix,iy,npl+1)+pot_short(ix,iy,1,2)
+              vl       =poisson%pots(ix,iy,npl  )+poisson%pot(ix,iy,npl  )+pot_short(ix,iy,1,1)
             !density(ix,iy,1)=-0.5d0*(-3.d0*vl+4*pot_layerl-pot_layerl2)* hgzinv
             density(ix,iy,1)=-(-25.d0/12.d0*vl+4.d0*pot_layerl-3.d0*pot_layerl2+4.d0/3.d0*pot_layerl3-0.25d0*pot_layerl4)* hgzinv
             t=t+ density(ix,iy,1)
-            pot_layeru4=poisson%pots(ix,iy,npu-4)+poisson%rho(ix,iy,npu-4)+pot_short(ix,iy,2,5)
-            pot_layeru3=poisson%pots(ix,iy,npu-3)+poisson%rho(ix,iy,npu-3)+pot_short(ix,iy,2,4)
-            pot_layeru2=poisson%pots(ix,iy,npu-2)+poisson%rho(ix,iy,npu-2)+pot_short(ix,iy,2,3)
-            pot_layeru =poisson%pots(ix,iy,npu-1)+poisson%rho(ix,iy,npu-1)+pot_short(ix,iy,2,2)
-                    vu =poisson%pots(ix,iy,npu  )+poisson%rho(ix,iy,npu  )+pot_short(ix,iy,2,1)
+            pot_layeru4=poisson%pots(ix,iy,npu-4)+poisson%pot(ix,iy,npu-4)+pot_short(ix,iy,2,5)
+            pot_layeru3=poisson%pots(ix,iy,npu-3)+poisson%pot(ix,iy,npu-3)+pot_short(ix,iy,2,4)
+            pot_layeru2=poisson%pots(ix,iy,npu-2)+poisson%pot(ix,iy,npu-2)+pot_short(ix,iy,2,3)
+            pot_layeru =poisson%pots(ix,iy,npu-1)+poisson%pot(ix,iy,npu-1)+pot_short(ix,iy,2,2)
+                    vu =poisson%pots(ix,iy,npu  )+poisson%pot(ix,iy,npu  )+pot_short(ix,iy,2,1)
             !density(ix,iy,2)=0.5d0*(3.d0*vu-4.d0*pot_layeru+pot_layeru2)* hgzinv
             density(ix,iy,2)=-(-25.d0/12.d0*vu+4.d0*pot_layeru-3.d0*pot_layeru2+4.d0/3.d0*pot_layeru3-0.25d0*pot_layeru4)* hgzinv
             tt=tt+ density(ix,iy,2)
