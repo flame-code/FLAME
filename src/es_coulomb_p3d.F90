@@ -1,33 +1,4 @@
 !*****************************************************************************************
-subroutine destruct_poisson(parini,atoms,poisson)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    use dynamic_memory
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-    !local variables
-    call f_routine(id='destruct_poisson')
-    if(trim(atoms%boundcond)=='bulk') then
-        if(trim(parini%psolver_ann)=='bigdft') then
-            call destruct_ewald_bps(poisson)
-        endif
-    elseif(trim(atoms%boundcond)=='slab') then
-        call fini_psolver_p3d_slab(poisson)
-    endif
-    if(trim(parini%psolver_ann)/='kwald') then
-        call f_free(poisson%rho)
-        call f_free(poisson%pot)
-    endif
-    if(trim(parini%bias_type)=='p3dbias') then
-     !   deallocate(poisson%pots)
-    endif
-    call f_release_routine()
-end subroutine destruct_poisson
-!*****************************************************************************************
 subroutine calculate_forces_energy(parini,poisson,atoms)
     use mod_interface
     use mod_electrostatics, only: typ_poisson

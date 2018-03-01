@@ -35,7 +35,7 @@ subroutine final_potential_forces_ff(parini,atoms)
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    !call destruct_poisson(poisson)
+    !call fini_hartree(poisson)
     call forcefield_final(parini,atoms)
 end subroutine final_potential_forces_ff
 !*****************************************************************************************

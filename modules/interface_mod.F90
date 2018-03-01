@@ -1761,14 +1761,6 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     real(8):: epotlong, epotplane !, epotshort
 end subroutine bias_field_potener_forces
 ! ./src/es_coulomb_p3d.F90 :
-subroutine destruct_poisson(parini,atoms,poisson)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-end subroutine destruct_poisson
 subroutine calculate_forces_energy(parini,poisson,atoms)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
@@ -1903,7 +1895,7 @@ subroutine fini_hartree(parini,atoms,poisson)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
+    type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
 end subroutine fini_hartree
 subroutine init_hartree_bps(parini,atoms,poisson)

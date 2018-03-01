@@ -128,7 +128,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_norm=tt2/max(tt1,1.d-3)
     endif
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        call destruct_poisson(parini,atoms,cent%poisson)
+        call fini_hartree(parini,atoms,cent%poisson)
     endif
 
     call getvol_alborz(atoms%cellvec,vol)

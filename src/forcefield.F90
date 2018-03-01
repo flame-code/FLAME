@@ -109,7 +109,7 @@ subroutine forcefield_final(parini,atoms)
     if(ind>0) then
         if(trim(atoms%boundcond)=='free') then
         elseif(trim(atoms%boundcond)=='slab') then
-        call destruct_poisson(parini,atoms,poisson)
+        call fini_hartree(parini,atoms,poisson)
         endif
     endif
     if(ind>0 .and. trim(atoms%boundcond)=='slab') then

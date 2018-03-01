@@ -30,14 +30,30 @@ subroutine fini_hartree(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
+    type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
     !local variables
+    call f_routine(id='fini_hartree')
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        call destruct_poisson(parini,atoms,poisson)
+        if(trim(atoms%boundcond)=='bulk') then
+            if(trim(parini%psolver_ann)=='bigdft') then
+                call destruct_ewald_bps(poisson)
+            endif
+        elseif(trim(atoms%boundcond)=='slab') then
+            call fini_psolver_p3d_slab(poisson)
+        endif
+        if(trim(parini%psolver_ann)/='kwald') then
+            call f_free(poisson%rho)
+            call f_free(poisson%pot)
+        endif
+        if(trim(parini%bias_type)=='p3dbias') then
+         !   deallocate(poisson%pots)
+        endif
     endif
+    call f_release_routine()
 end subroutine fini_hartree
 !*****************************************************************************************
 subroutine init_hartree_bps(parini,atoms,poisson)
