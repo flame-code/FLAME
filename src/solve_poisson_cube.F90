@@ -18,7 +18,7 @@ subroutine solve_poisson(parini)
     !write(*,*) poisson%ngpx,poisson%ngpy,poisson%ngpz
     allocate(poisson%pot(poisson%ngpx+2,poisson%ngpy,poisson%ngpz),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of pot failed.'
-    call ps2dp1df_construction(poisson)
+    call init_psolver_p3d_slab(poisson)
     cell(1)=poisson%hx*poisson%ngpx
     cell(2)=poisson%hy*poisson%ngpy
     cell(3)=poisson%hz*poisson%ngpz
@@ -94,7 +94,7 @@ subroutine solve_poisson(parini)
     write(*,*) 't1=',t1
     call psolver_p3d_slab(parini,poisson,cell,poisson%hx,poisson%hy,poisson%hz,epot)
     call cube_write('pot_p3d.cube',atoms,poisson,'pot')
-    call ps2dp1df_destruction(poisson)
+    call fini_psolver_p3d_slab(poisson)
     deallocate(poisson%rho,stat=istat)
     if(istat/=0) stop 'ERROR: deallocation of rho failed.'
     deallocate(poisson%pot,stat=istat)

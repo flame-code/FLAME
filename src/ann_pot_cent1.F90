@@ -92,7 +92,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
     if(parini%iverbose>=2) call cpu_time(time6)
-    call cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,poisson)
+    call get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,poisson)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
@@ -121,9 +121,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_angle=tt3/(tt1*tt2)
         ann_arr%fchi_norm=tt2/tt1
     endif
-    if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        call destruct_poisson(parini,atoms,poisson)
-    endif
+    call fini_electrostatic_cent1(parini,atoms,poisson)
     !call repulsive_potential_cent(parini,atoms,ann_arr)
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)
@@ -320,7 +318,21 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     end associate
 end subroutine init_electrostatic_cent1
 !*****************************************************************************************
-subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
+subroutine fini_electrostatic_cent1(parini,atoms,poisson)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    !use mod_ann, only: typ_ann_arr
+    use mod_electrostatics, only: typ_poisson
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    !local variables
+    call fini_hartree(parini,atoms,poisson)
+end subroutine fini_electrostatic_cent1
+!*****************************************************************************************
+subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -347,7 +359,7 @@ subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     call cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     epot_c=epot_es+tt1+tt2+ann_arr%ener_ref
     end associate
-end subroutine cal_electrostatic_cent1
+end subroutine get_electrostatic_cent1
 !*****************************************************************************************
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     use mod_interface
@@ -519,7 +531,7 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     end associate
 end subroutine get_qat_from_chi_iter
 !*****************************************************************************************
-subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
+subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -556,7 +568,7 @@ subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
         g(iat)=g(iat)-gtot/atoms%nat
     enddo
     deallocate(gausswidth)
-end subroutine cal_ugradient
+end subroutine get_ener_gradient_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_interface
@@ -616,7 +628,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     endif
     alpha=1.d-1*alphax
     do iter=0,1000
-        call cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
+        call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
         if(parini%iverbose>=2) then
             dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0
             do iat=1,nat
@@ -672,7 +684,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     gnrm2old=0.d0 !it is not supposed to be used for iter=0
     do
         exit !no CG
-        call cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
+        call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
         gnrm2=DDOT(nat,g,1,g,1)
         gnrm=sqrt(gnrm2)
         dpm=0.d0
@@ -707,7 +719,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
 !            atoms%qat(iat)=atoms%qat(iat)+alpha0*h(iat)
 !        enddo
         epotlong_old=ann_arr%epot_es !This must be here to avoid saving eh of trial point
-!        call cal_ugradient(parini,poisson,ann_arr,atoms,gt,qtot)
+!        call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,gt,qtot)
 !        y0=DDOT(nat,gt,1,h,1)
 !        y1=DDOT(nat,g,1,h,1)
 !        tt=y0/(y0-y1)

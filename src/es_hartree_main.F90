@@ -25,6 +25,21 @@ subroutine init_hartree(parini,atoms,poisson)
     call f_release_routine()
 end subroutine init_hartree
 !*****************************************************************************************
+subroutine fini_hartree(parini,atoms,poisson)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    !local variables
+    if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
+        call destruct_poisson(parini,atoms,poisson)
+    endif
+end subroutine fini_hartree
+!*****************************************************************************************
 subroutine init_hartree_bps(parini,atoms,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -165,7 +180,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
         id='poisson%rho')
     poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.poisson%ngpztot], &
         id='poisson%pot')
-    call ps2dp1df_construction(poisson)
+    call init_psolver_p3d_slab(poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
     shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
     if(parini%iverbose>=2) then

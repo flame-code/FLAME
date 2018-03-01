@@ -17,26 +17,36 @@ subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     real(8):: alphasq
     integer:: iat
     real(8), allocatable:: gwsq(:), ratred(:,:), fat(:,:)
+    real(8):: stress(3,3)
     gwsq=f_malloc([1.to.atoms%nat],id='gwsq')
     ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
     fat=f_malloc([1.to.3,1.to.atoms%nat],id='fat')
     if(poisson%gw_identical) then
          !gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
          !call psolver_bulk_fourier_various(atoms%nat,atoms%rat,ratred,atoms%qat, &
-         !    atoms%cellvec,gwsq,ecut,ehartree,fat,g,atoms%stress,atoms%celldv)
+         !    atoms%cellvec,gwsq,ecut,ehartree,fat,g,stress,atoms%celldv)
         alphasq=poisson%alpha**2
         call psolver_bulk_fourier_identical(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
-            atoms%cellvec,alphasq,poisson%ecut,ehartree,fat,g,atoms%stress,atoms%celldv)
+            atoms%cellvec,alphasq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
      else
         gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
         call psolver_bulk_fourier_various(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
-            gwsq,poisson%ecut,ehartree,fat,g,atoms%stress,atoms%celldv)
+            gwsq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
     end if
     do iat=1,atoms%nat
         atoms%fat(1,iat)=atoms%fat(1,iat)+fat(1,iat)
         atoms%fat(2,iat)=atoms%fat(2,iat)+fat(2,iat)
         atoms%fat(3,iat)=atoms%fat(3,iat)+fat(3,iat)
     enddo
+    atoms%stress(1,1)=atoms%stress(1,1)+stress(1,1)
+    atoms%stress(2,1)=atoms%stress(2,1)+stress(2,1)
+    atoms%stress(3,1)=atoms%stress(3,1)+stress(3,1)
+    atoms%stress(1,2)=atoms%stress(1,2)+stress(1,2)
+    atoms%stress(2,2)=atoms%stress(2,2)+stress(2,2)
+    atoms%stress(3,2)=atoms%stress(3,2)+stress(3,2)
+    atoms%stress(1,3)=atoms%stress(1,3)+stress(1,3)
+    atoms%stress(2,3)=atoms%stress(2,3)+stress(2,3)
+    atoms%stress(3,3)=atoms%stress(3,3)+stress(3,3)
     call f_free(fat)
     call f_free(gwsq)
     call f_free(ratred)

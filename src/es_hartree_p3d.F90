@@ -27,7 +27,7 @@ subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)
     enddo
 end subroutine psolver_p3d
 !*****************************************************************************************
-subroutine ps2dp1df_construction(poisson)
+subroutine init_psolver_p3d_slab(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
@@ -36,7 +36,7 @@ subroutine ps2dp1df_construction(poisson)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iz
-    call f_routine(id='ps2dp1df_construction')
+    call f_routine(id='init_psolver_p3d_slab')
     poisson%plan_f=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_f')
     poisson%plan_b=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_b')
     do iz=1,poisson%ngpz
@@ -46,9 +46,9 @@ subroutine ps2dp1df_construction(poisson)
             poisson%ngpy,poisson%pot(1,1,iz),poisson%pot(1,1,iz),fftw_estimate)
     enddo
     call f_release_routine()
-end subroutine ps2dp1df_construction
+end subroutine init_psolver_p3d_slab
 !*****************************************************************************************
-subroutine ps2dp1df_destruction(poisson)
+subroutine fini_psolver_p3d_slab(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -67,7 +67,7 @@ subroutine ps2dp1df_destruction(poisson)
     if(istat/=0) then
         stop 'ERROR: failure deallocating plan_b of type typ_poisson'
     endif
-end subroutine ps2dp1df_destruction
+end subroutine fini_psolver_p3d_slab
 !*****************************************************************************************
 subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_interface
@@ -90,11 +90,11 @@ subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
         call dfftw_execute(poisson%plan_f(igpz))
     enddo
     if(present(beta)) then
-        call solsyslinequ(poisson,hz,cell,beta)
+        call solve_syslinequ_p3d(poisson,hz,cell,beta)
         !write(55,'(i4,es14.5)') icall,beta
         write(*,*)"beta = ", beta
     else
-        call solsyslinequ(poisson,hz,cell)
+        call solve_syslinequ_p3d(poisson,hz,cell)
     endif
     do igpz=1,poisson%ngpz
         call dfftw_execute(poisson%plan_b(igpz))
@@ -115,7 +115,7 @@ subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
 end subroutine psolver_p3d_slab
 !*****************************************************************************************
 !This subroutine calculates the systems of linear equations using LAPACK routines.
-subroutine solsyslinequ(poisson,hz,cell,beta_arg)
+subroutine solve_syslinequ_p3d(poisson,hz,cell,beta_arg)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -388,7 +388,7 @@ subroutine solsyslinequ(poisson,hz,cell,beta_arg)
         enddo
     enddo
     !-----------------------------------------
-end subroutine solsyslinequ
+end subroutine solve_syslinequ_p3d
 !*****************************************************************************************
 subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
     use mod_interface

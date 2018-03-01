@@ -354,7 +354,15 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
 end subroutine init_electrostatic_cent1
-subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
+subroutine fini_electrostatic_cent1(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine fini_electrostatic_cent1
+subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -365,7 +373,7 @@ subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     real(8), intent(out):: epot_c
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
-end subroutine cal_electrostatic_cent1
+end subroutine get_electrostatic_cent1
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -394,7 +402,7 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi_iter
-subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
+subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -404,7 +412,7 @@ subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: g(atoms%nat), qtot
-end subroutine cal_ugradient
+end subroutine get_ener_gradient_cent1
 subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -1890,6 +1898,14 @@ subroutine init_hartree(parini,atoms,poisson)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
 end subroutine init_hartree
+subroutine fini_hartree(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine fini_hartree
 subroutine init_hartree_bps(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -1957,14 +1973,14 @@ subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)
     real(8), intent(inout):: dpm
     real(8), intent(out):: ehartree
 end subroutine psolver_p3d
-subroutine ps2dp1df_construction(poisson)
+subroutine init_psolver_p3d_slab(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine ps2dp1df_construction
-subroutine ps2dp1df_destruction(poisson)
+end subroutine init_psolver_p3d_slab
+subroutine fini_psolver_p3d_slab(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine ps2dp1df_destruction
+end subroutine fini_psolver_p3d_slab
 subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
@@ -1975,7 +1991,7 @@ subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
     real(8):: epot
     real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
 end subroutine psolver_p3d_slab
-subroutine solsyslinequ(poisson,hz,cell,beta_arg)
+subroutine solve_syslinequ_p3d(poisson,hz,cell,beta_arg)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
     real(8):: hz, cell(3)
@@ -1983,7 +1999,7 @@ subroutine solsyslinequ(poisson,hz,cell,beta_arg)
     integer, parameter:: nem=8 
     real(8):: d(poisson%ngpz+2*8) !nem was replaced by 8 to be able to compile interface_mod.F90
     real(8):: e1(poisson%ngpz), e2(poisson%ngpz-1), c(poisson%ngpz)
-end subroutine solsyslinequ
+end subroutine solve_syslinequ_p3d
 subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
     integer::ngpz,ngpzm1
     real(8)::e1(ngpz) !Diagonal elements of the matrix

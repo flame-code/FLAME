@@ -16,7 +16,7 @@ subroutine destruct_poisson(parini,atoms,poisson)
             call destruct_ewald_bps(poisson)
         endif
     elseif(trim(atoms%boundcond)=='slab') then
-        call ps2dp1df_destruction(poisson)
+        call fini_psolver_p3d_slab(poisson)
     endif
     if(trim(parini%psolver_ann)/='kwald') then
         call f_free(poisson%rho)
