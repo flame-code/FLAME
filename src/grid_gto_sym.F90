@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -39,7 +39,7 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -141,9 +141,9 @@ subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     deallocate(ratred)
     deallocate(exponentval,expval)
     call f_free(wa)
-end subroutine gauss_grid
+end subroutine put_gto_sym
 !*****************************************************************************************
-subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
+subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -185,7 +185,7 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -297,9 +297,9 @@ subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     deallocate(exponentval,expval)
     deallocate(dmxarr,dmyarr,dmzarr)
     call f_free(wa)
-end subroutine gauss_gradient
+end subroutine rqgrad_gto_sym
 !*****************************************************************************************
-subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
+subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -341,7 +341,7 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -450,9 +450,9 @@ subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     deallocate(exponentval,expval)
     deallocate(dmxarr,dmyarr,dmzarr)
     call f_free(wa)
-end subroutine gauss_force
+end subroutine force_gto_sym
 !*****************************************************************************************
-subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
+subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -494,7 +494,7 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -616,10 +616,9 @@ subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot
     deallocate(exponentval,expval)
     deallocate(dmxarr,dmyarr,dmzarr)
     call f_free(wa)
-end subroutine gauss_gradient_rzx
+end subroutine gwrqgrad_gto_sym
 !*****************************************************************************************
-!*****************************************************************************************
-subroutine gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
+subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -659,7 +658,7 @@ subroutine gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -776,5 +775,5 @@ subroutine gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,r
     deallocate(ratred)
     deallocate(exponentval,expval)
     call f_free(wa)
-end subroutine gauss_grid_rzx
+end subroutine rhograd_gto_sym
 !*****************************************************************************************

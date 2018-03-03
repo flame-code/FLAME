@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
+subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -29,7 +29,7 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     integer:: ngpx, ngpy, ngpz, iii
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
-    call f_routine(id='putgaussgrid')
+    call f_routine(id='put_gto_sym_ortho')
     nbgpx=int(poisson%rgcut/poisson%hx)+2
     nbgpy=int(poisson%rgcut/poisson%hy)+2
     nbgpz=int(poisson%rgcut/poisson%hz)+2
@@ -37,7 +37,7 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     nagpy=nbgpy+1
     nagpz=0
     mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='mboundg')
-    call determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
+    call get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     ngpx=poisson%ngpx
     ngpy=poisson%ngpy
     ngpz=poisson%ngpz
@@ -192,9 +192,9 @@ subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
     call f_free(wa)
     call f_free(mboundg)
     call f_release_routine()
-end subroutine putgaussgrid
+end subroutine put_gto_sym_ortho
 !*****************************************************************************************
-subroutine longerange_forces(parini,atoms,poisson,gausswidth)
+subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -218,7 +218,7 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     integer:: nbgpx, nbgpy, nbgpz, nagpx, nagpy, nagpz
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
-    call f_routine(id='longerange_forces')
+    call f_routine(id='force_gto_sym_ortho')
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
     associate(ngpz=>poisson%ngpz)
@@ -229,7 +229,7 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     nagpy=nbgpy+1
     nagpz=0
     mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='mboundg')
-    call determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
+    call get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     !wa(1-nagpx:ngpx+nagpx,1-nagpy:ngpy+nagpy,1-nagpz:ngpz+nagpz)=>poisson%pot
     wa=f_malloc([1-nagpx.to.ngpx+nagpx,1-nagpy.to.ngpy+nagpy,1-nagpz.to.ngpz+nagpz],id='wa')
     wx=f_malloc([-nbgpx.to.nbgpx],id='wx')
@@ -339,9 +339,9 @@ subroutine longerange_forces(parini,atoms,poisson,gausswidth)
     end associate
     call f_free(mboundg)
     call f_release_routine()
-end subroutine longerange_forces
+end subroutine force_gto_sym_ortho
 !*****************************************************************************************
-subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
+subroutine qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,g)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -372,7 +372,7 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     nagpy=nbgpy+1
     nagpz=0
     mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='mboundg')
-    call determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
+    call get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     ngpx=poisson%ngpx
     ngpy=poisson%ngpy
     ngpz=poisson%ngpz
@@ -471,5 +471,5 @@ subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
     call f_free(wa)
     call f_free(mboundg)
     ! call f_release_routine()
-end subroutine get_g_from_pot
+end subroutine qgrad_gto_sym_ortho
 !*****************************************************************************************

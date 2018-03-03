@@ -46,11 +46,10 @@ subroutine solve_poisson(parini)
     !allocate(poisson_ion%mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz),stat=istat)
     !if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'
     allocate(gausswidth(atoms%nat))
-    !call determine_glimitsphere(poisson_ion)
     poisson_ion%alpha=0.4d0 !atoms%rcov(iat)
     gausswidth=0.4d0 !atoms%rcov(iat)
     atoms%boundcond='slab'
-    call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson_ion)
+    call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson_ion)
     t1=0.d0
     t2=0.d0
     t3=0.d0

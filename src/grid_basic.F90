@@ -1,6 +1,6 @@
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
-subroutine determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
+subroutine get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -34,9 +34,9 @@ subroutine determine_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
             mboundg(2,iy,iz)=mboundg(2,iy,-iz)
         enddo
     enddo
-end subroutine determine_glimitsphere
+end subroutine get_glimitsphere
 !*****************************************************************************************
-subroutine gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+subroutine init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     use mod_interface
     implicit none
     integer, intent(in):: nat
@@ -93,5 +93,5 @@ subroutine gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,
     nagz=nbgz+1
     nlim = max(nagx,nagy,nagz)
     nlimsq = nlim**2
-end subroutine gauss_init
+end subroutine init_grid_param
 !*****************************************************************************************

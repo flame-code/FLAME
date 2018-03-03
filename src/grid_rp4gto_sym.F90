@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine rp4gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
+subroutine put_rp4gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -39,7 +39,7 @@ subroutine rp4gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     integer:: istartx, istarty, istartz
 
     allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
@@ -157,5 +157,5 @@ subroutine rp4gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     deallocate(ratred)
     deallocate(exponentval,expval)
     call f_free(wa)
-end subroutine rp4gauss_grid_rzx
+end subroutine put_rp4gto_sym
 !*****************************************************************************************

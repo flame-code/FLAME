@@ -248,7 +248,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
             case('kwald')
                 !do nothing
             case('bigdft','p3d')
-                call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat, &
+                call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat, &
                     atoms%qat,gausswidth,poisson)
             case default
                 write(*,*) 'ERROR: unknown method for hartree calculation.'
@@ -278,7 +278,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
             case('kwald')
                 !do nothing
             case('bigdft','p3d')
-                call get_g_from_pot(parini,atoms,poisson,gausswidth,poisson%qgrad)
+                call qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,poisson%qgrad)
                 call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
             case default
                 write(*,*) 'ERROR: unknown method for hartree calculation.'
@@ -291,7 +291,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
             case('kwald')
                 !do nothing
             case('bigdft','p3d')
-                call longerange_forces(parini,atoms,poisson,gausswidth)
+                call force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
             case default
                 write(*,*) 'ERROR: unknown method for hartree calculation.'
                 stop

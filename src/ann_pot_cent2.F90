@@ -377,7 +377,7 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
     associate(nx=>cent%poisson%ngpx)
     associate(ny=>cent%poisson%ngpy)
     associate(nz=>cent%poisson%ngpz)
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
+    call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
         cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     call cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     do iat=1,atoms%nat !summation over ions/electrons
@@ -480,7 +480,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/cent%gwit(iat)
     enddo
     epot_es=epot_es+ehartree
-    call gauss_gradient(parini,'bulk',atoms%nat,cent%rel,atoms%cellvec,atoms%qat,cent%gwe, &
+    call rqgrad_gto_sym(parini,'bulk',atoms%nat,cent%rel,atoms%cellvec,atoms%qat,cent%gwe, &
         cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,cent%rgrad,cent%qgrad)
 
     !if(ewald) then
@@ -515,9 +515,9 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
     ny=cent%poisson%ngpy
     nz=cent%poisson%ngpz
     bc=trim(atoms%boundcond)
-    call gauss_grid(parini,bc,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat, &
+    call put_gto_sym(parini,bc,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat, &
         cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
-    call gauss_grid(parini,bc,.false.,atoms%nat,cent%rel,atoms%cellvec,atoms%qat, &
+    call put_gto_sym(parini,bc,.false.,atoms%nat,cent%rel,atoms%cellvec,atoms%qat, &
         cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 end subroutine put_gauss_to_grid
 !*****************************************************************************************

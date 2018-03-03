@@ -39,7 +39,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !write(*,*) 'total momentum z component',beta
     !write(*,*) 'total momentum z component',0.13074051987178871d5/beta
     call cpu_time(time(1))
-    call putgaussgrid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
+    call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
     call cpu_time(time(2))
     !-----------------------------------------------------------------------
     !totrho=0.d0
@@ -51,7 +51,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !pot=0.d0
     call psolver_p3d_slab(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epotlong,beta)
     call cpu_time(time(3))
-    call longerange_forces(parini,atoms,poisson,gausswidth)
+    call force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     call cpu_time(time(4))
     !call shortenergy(atoms,poisson%linked_lists,poisson%spline,poisson%alpha,poisson%cell,epotshort)
     call cpu_time(time(5))
@@ -72,7 +72,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     write(*,'(a50,e32.15)') 'epotplane',epotplane
     write(*,'(a50,e32.15)') 'epottotal',atoms%epot
     !write(*,*) '-----------------------------------------------------------'
-!    write(*,'(a50,f32.15)') 'Time for putgaussgrid ',time(2)-time(1)
+!    write(*,'(a50,f32.15)') 'Time for put_gto_sym_ortho ',time(2)-time(1)
 !    write(*,'(a50,f32.15)') 'Time for long range ', time(3)-time(2)
 !    write(*,'(a50,f32.15)') 'Time for long range forces',time(4)-time(3)
 !    write(*,'(a50,f32.15)') 'Time for short range',time(5)-time(4)

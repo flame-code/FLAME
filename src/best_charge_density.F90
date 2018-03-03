@@ -126,7 +126,7 @@ subroutine best_charge_density_rho(parini)
     call psolver_bps(cent%poisson,atoms,ehartree)
     dft_ener = ehartree 
     if (atoms%nat > 1) then
-        call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+        call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
         dft_fat = atoms%fat
     end if
     write(21,*) atoms%nat 
@@ -160,10 +160,10 @@ subroutine best_charge_density_rho(parini)
   !eig_part!  eig(1:atoms%nat) = 0.d0
   !eig_part!  
   !eig_part!  do i = 1 , atoms%nat
-  !eig_part!      call gauss_grid(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,i),atoms%cellvec,qtemp(i),A(1,i),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+  !eig_part!      call put_gto_sym(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,i),atoms%cellvec,qtemp(i),A(1,i),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
   !eig_part!      cent_rho_1 = cent%poisson%rho
   !eig_part!      do j = i,atoms%nat
-  !eig_part!          call gauss_grid(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,j),atoms%cellvec,qtemp(j),A(1,j),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+  !eig_part!          call put_gto_sym(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,j),atoms%cellvec,qtemp(j),A(1,j),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
   !eig_part!          cent_rho_2 = cent%poisson%rho
   !eig_part!          EE(i,j) = 2.d0*invvol*sum(cent_rho_1*cent_rho_2)
   !eig_part!      end do
@@ -208,9 +208,9 @@ subroutine best_charge_density_rho(parini)
         cent%poisson%pot = 0.d0
         do i = 1 , lcn
             if (i==1) then         
-                call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+                call put_rp4gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
             else
-                call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+                call put_rp4gto_sym(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
             end if
         end do
         cent_rho = cent%poisson%rho
@@ -223,7 +223,7 @@ subroutine best_charge_density_rho(parini)
         call psolver_bps(cent%poisson,atoms,ehartree)
         cent_ener = ehartree
         if(atoms%nat > 1)  then
-            call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+            call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
             cent_fat = atoms%fat
         end if
         call destruct_ewald_bps(cent%poisson)
@@ -235,7 +235,7 @@ subroutine best_charge_density_rho(parini)
         end do
         do i = 1 , typ_at
             do j = 1 , lcn
-                call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,1,rat_t(1:3,i),atoms%cellvec,Qt(j,i),At(j,i),cent%poisson%rgcut,nx,ny,nz,cent_rho_1, cent_rho_q_par, cent_rho_a_par)
+                call put_rp4gto_sym(parini,atoms%boundcond,.true.,1,rat_t(1:3,i),atoms%cellvec,Qt(j,i),At(j,i),cent%poisson%rgcut,nx,ny,nz,cent_rho_1, cent_rho_q_par, cent_rho_a_par)
                 cent_rho_1 = 0.d0
                 qpar_t(j,i) = 2.d0*volinv*sum(cent_rho_q_par*(cent_rho-dft_rho))
                 apar_t(j,i) = 2.d0*volinv*sum(cent_rho_a_par*(cent_rho-dft_rho))
@@ -315,9 +315,9 @@ subroutine best_charge_density_rho(parini)
     !Specified Atoms charge density part!
     do i = 1 , lcn
         if (i==1) then         
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
         else
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.false.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
             
         end if
     end do
@@ -327,9 +327,9 @@ subroutine best_charge_density_rho(parini)
     cent%poisson%pot = 0.d0
     do i = 1 , lcn
         if (i==1) then         
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
         else
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
         end if
     end do
     cent_rho = cent%poisson%rho
@@ -344,7 +344,7 @@ subroutine best_charge_density_rho(parini)
         call psolver_bps(cent%poisson,atoms,ehartree)
         cent_ener = ehartree
         if(atoms%nat > 1)  then
-            call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+            call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
             cent_fat = atoms%fat
         end if
         force_err = sqrt(sum((cent_fat-dft_fat)**2)/(3*atoms%nat))
@@ -413,7 +413,7 @@ subroutine best_charge_density_force(parini)
     cent%gwit = 1.3d0
     atoms%fat = 0.d0
     dft_fat_1 = 0.d0
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+    call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     dft_fat_1 = atoms%fat
     call destruct_ewald_bps(cent%poisson)
     deallocate(cent%poisson%pot)
@@ -437,7 +437,7 @@ subroutine best_charge_density_force(parini)
     cent%gwit = 1.3d0
     atoms%fat = 0.d0
     dft_fat_2 = 0.d0
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+    call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     dft_fat_2 = atoms%fat
     call destruct_ewald_bps(cent%poisson)
     deallocate(cent%poisson%pot)
@@ -481,7 +481,7 @@ subroutine best_charge_density_force(parini)
          cent%poisson%pot = 0.d0
          cent%poisson%rgcut=6.d0*maxval(abs(A))
          call acf_read(parini,'posinp_1.acf',1,atoms=atoms)
-         call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+         call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                 A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
          cent_rho_1 = cent%poisson%rho
          atoms%boundcond='bulk'
@@ -490,7 +490,7 @@ subroutine best_charge_density_force(parini)
          call construct_ewald_bps(parini,atoms,cent%poisson)
          call psolver_bps(cent%poisson,atoms,ehartree)
          atoms%fat = 0.d0
-         call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+         call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
          cent_fat_1 = atoms%fat
          call destruct_ewald_bps(cent%poisson)
          
@@ -498,7 +498,7 @@ subroutine best_charge_density_force(parini)
          cent%poisson%pot = 0.d0
          cent%poisson%rgcut=6.d0*maxval(abs(A))
          call acf_read(parini,'posinp_2.acf',1,atoms=atoms)
-         call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+         call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                 A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
          cent_rho_2 = cent%poisson%rho
          atoms%zat = 1.d0
@@ -507,7 +507,7 @@ subroutine best_charge_density_force(parini)
          call construct_ewald_bps(parini,atoms,cent%poisson)
          call psolver_bps(cent%poisson,atoms,ehartree)
          atoms%fat = 0.d0
-         call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+         call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
          cent_fat_2 = atoms%fat
          call destruct_ewald_bps(cent%poisson)
          rho_err = sqrt(sum((cent_rho_1-dft_rho_1)**2+(cent_rho_2-dft_rho_2)**2)/(nx*ny*nz))
@@ -521,7 +521,7 @@ subroutine best_charge_density_force(parini)
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_1.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_1 = cent%poisson%rho
                  atoms%zat = 1.d0
@@ -530,7 +530,7 @@ subroutine best_charge_density_force(parini)
                  call construct_ewald_bps(parini,atoms,cent%poisson)
                  call psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_1 = atoms%fat
                  call destruct_ewald_bps(cent%poisson)
                  
@@ -538,7 +538,7 @@ subroutine best_charge_density_force(parini)
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_2.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_2 = cent%poisson%rho
                  atoms%zat = 1.d0
@@ -547,7 +547,7 @@ subroutine best_charge_density_force(parini)
                  call construct_ewald_bps(parini,atoms,cent%poisson)
                  call psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_2 = atoms%fat
                  call destruct_ewald_bps(cent%poisson)
                          
@@ -562,7 +562,7 @@ subroutine best_charge_density_force(parini)
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_1.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_1 = cent%poisson%rho
                  atoms%zat = 1.d0
@@ -571,7 +571,7 @@ subroutine best_charge_density_force(parini)
                  call construct_ewald_bps(parini,atoms,cent%poisson)
                  call psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_1 = atoms%fat
                  call destruct_ewald_bps(cent%poisson)
                  
@@ -579,7 +579,7 @@ subroutine best_charge_density_force(parini)
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_2.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_2 = cent%poisson%rho
                  atoms%zat = 1.d0
@@ -588,7 +588,7 @@ subroutine best_charge_density_force(parini)
                  call construct_ewald_bps(parini,atoms,cent%poisson)
                  call psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_2 = atoms%fat
                  call destruct_ewald_bps(cent%poisson)
                          
@@ -663,7 +663,7 @@ subroutine best_charge_density_energy(parini)
      allocate(cent_rho(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz))
      do iter=1,huge(iter_max)
           cent%poisson%rgcut=6.d0*maxval(abs(cent%gwe))
-          call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+          call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
           cent_rho = cent%poisson%rho
           rho_err = sqrt(sum((cent_rho-dft_rho)**2)/(cent%poisson%ngpx**3))
           atoms%boundcond='bulk'
@@ -673,7 +673,9 @@ subroutine best_charge_density_energy(parini)
           ener = ehartree
           write(*,*) "Hartree : " , ener ;
           allocate(cent%rgrad(1:3,atoms%nat),cent%qgrad(atoms%nat),agrad(atoms%nat))
-          call gauss_gradient_rzx(parini,atoms%boundcond,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,cent%rgrad,cent%qgrad,agrad)
+          call gwrqgrad_gto_sym(parini,atoms%boundcond,atoms%nat,atoms%rat, &
+              atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz, &
+              cent%poisson%pot,cent%rgrad,cent%qgrad,agrad)
           
           exit_cond =sqrt( (dft_ener-ener)**2)
           write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,atoms%qat,cent%gwe
@@ -696,7 +698,7 @@ subroutine best_charge_density_energy(parini)
 !!CHECKING AGRAD    atoms%qat = 1.d0
 !!CHECKING AGRAD    gweiat = 8
 !!CHECKING AGRAD    cent%gwe(gweiat) = cent%gwe(gweiat)+h
-!!CHECKING AGRAD    call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+!!CHECKING AGRAD    call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 !!CHECKING AGRAD    allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
 !!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%poisson)
 !!CHECKING AGRAD    call psolver_bps(cent%poisson,atoms,ehartree)
@@ -705,7 +707,7 @@ subroutine best_charge_density_energy(parini)
 !!CHECKING AGRAD    call destruct_ewald_bps(cent%poisson)
 !!CHECKING AGRAD    deallocate(cent%poisson%pot)
 !!CHECKING AGRAD    cent%gwe(gweiat)=cent%gwe(gweiat)-(2.d0*h)
-!!CHECKING AGRAD    call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+!!CHECKING AGRAD    call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 !!CHECKING AGRAD    !-----------------------------------------------------------------------------------
 !!CHECKING AGRAD    allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
 !!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%poisson)
