@@ -125,6 +125,8 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     !call repulsive_potential_cent(parini,atoms,ann_arr)
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)
+    !The following line is inconsistent with the definition of stress tensor
+    atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)*vol
     do i=1,3
     do j=1,3
         atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
