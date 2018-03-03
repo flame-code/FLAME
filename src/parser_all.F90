@@ -280,7 +280,6 @@ subroutine get_ann_parameters(file_ini,parini)
         call get_one_param(file_ini,'ampl_rand',real_var=parini%ampl_rand)
         call get_one_param(file_ini,'symfunc_type',char_var=parini%symfunc_type_ann)
         call get_one_param(file_ini,'syslinsolver',char_var=parini%syslinsolver_ann)
-        call get_one_param(file_ini,'psolver',char_var=parini%psolver_ann)
         call get_one_param(file_ini,'etol',real_var=parini%etol_ann)
         call get_one_param(file_ini,'dtol',real_var=parini%dtol_ann)
         call get_one_param(file_ini,'normalization',log_var=parini%normalization_ann)
@@ -520,6 +519,7 @@ subroutine get_ewald_parameters(file_ini,parini)
         call get_one_param(file_ini,'gnrmtol',real_var=parini%gnrmtol_eem)
         call get_one_param(file_ini,'ewald',log_var=parini%ewald)
         call get_one_param(file_ini,'ewald_tol',real_var=parini%tolerance_ewald)
+        call get_one_param(file_ini,'psolver',char_var=parini%psolver)
     enddo
 end subroutine get_ewald_parameters
 !*****************************************************************************************

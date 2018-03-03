@@ -8,6 +8,7 @@ potential:
     add_repulsive: False
     ewald:
         ewald : True
+        psolver: p3d
         hx: 0.8
         hz: 0.7
         rgcut: 6.0
@@ -18,7 +19,6 @@ potential:
 ann:
     approach: cent1
     syslinsolver: operator
-    psolver: p3d
 
 geopt:
     method: SQNM

@@ -7,6 +7,7 @@ potential:
     component_ff : coulomb
     cal_charge : .true.
     ewald:
+        psolver: p3d
         hx : 0.7
         hz : 0.5
         alpha : 2.26767135342053
@@ -21,5 +22,3 @@ potential:
 single_point:
     print_force : .true.
     format : '(a5,2x,3f12.8,2x,3l1)'
-ann:
-    psolver: p3d

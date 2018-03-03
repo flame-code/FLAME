@@ -5,6 +5,7 @@
    potential: forcefield
    component_ff: coulomb
    ewald:
+     psolver: p3d
      hx: 0.9448630639252209
      hz: 0.5669178383551325
      alpha: 2.26767135342053
@@ -15,5 +16,3 @@
  single_point:
    print_force: True
    format: (a5,2x,3f12.8,2x,3l1)
- ann:
-   psolver: p3d

@@ -12,11 +12,11 @@ subroutine init_hartree(parini,atoms,poisson)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     call f_routine(id='init_hartree')
-    if(trim(parini%psolver_ann)=='p3d') then
+    if(trim(parini%psolver)=='p3d') then
         call init_hartree_p3d(parini,atoms,poisson)
-    elseif(trim(parini%psolver_ann)=='bigdft') then
+    elseif(trim(parini%psolver)=='bigdft') then
         call init_hartree_bps(parini,atoms,poisson)
-    elseif(trim(parini%psolver_ann)=='kwald') then
+    elseif(trim(parini%psolver)=='kwald') then
         !It seems that nothing needs to be done for kwald method in the
         !init_hartree routine.
     endif
@@ -39,13 +39,13 @@ subroutine fini_hartree(parini,atoms,poisson)
     call f_routine(id='fini_hartree')
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         if(trim(atoms%boundcond)=='bulk') then
-            if(trim(parini%psolver_ann)=='bigdft') then
+            if(trim(parini%psolver)=='bigdft') then
                 call destruct_ewald_bps(poisson)
             endif
         elseif(trim(atoms%boundcond)=='slab') then
             call fini_psolver_p3d_slab(poisson)
         endif
-        if(trim(parini%psolver_ann)/='kwald') then
+        if(trim(parini%psolver)/='kwald') then
             call f_free(poisson%rho)
             call f_free(poisson%pot)
         endif
@@ -232,7 +232,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
 ! !   end if
 
 
-    if(trim(parini%psolver_ann)/='kwald') then
+    if(trim(parini%psolver)/='kwald') then
         dpm=0.d0
         do iat=1,atoms%nat
             dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
@@ -244,7 +244,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     endif
     !-----------------------------------------------------------------
     if(poisson%cal_rho) then
-        select case(trim(parini%psolver_ann))
+        select case(trim(parini%psolver))
             case('kwald')
                 !do nothing
             case('bigdft','p3d')
@@ -258,8 +258,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     !-----------------------------------------------------------------
     !Even if cal_poisson is false, psolver_bulk_fourier must be called
     !once more because fat is set to zero after dU/dq=0 in CENT
-    if(poisson%cal_poisson .or. trim(parini%psolver_ann)=='kwald') then
-        select case(trim(parini%psolver_ann))
+    if(poisson%cal_poisson .or. trim(parini%psolver)=='kwald') then
+        select case(trim(parini%psolver))
             case('kwald')
                 call psolver_bulk_fourier(parini,poisson,atoms,gausswidth, &
                     ehartree,poisson%qgrad)
@@ -274,7 +274,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     endif
     !-----------------------------------------------------------------
     if(poisson%cal_qgrad) then
-        select case(trim(parini%psolver_ann))
+        select case(trim(parini%psolver))
             case('kwald')
                 !do nothing
             case('bigdft','p3d')
@@ -287,7 +287,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     endif
     !-----------------------------------------------------------------
     if(poisson%cal_force) then
-        select case(trim(parini%psolver_ann))
+        select case(trim(parini%psolver))
             case('kwald')
                 !do nothing
             case('bigdft','p3d')
@@ -384,7 +384,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
     real(8):: dipole !,ext_pot
-    if(trim(parini%psolver_ann)/='p3d') then
+    if(trim(parini%psolver)/='p3d') then
         write(*,*) 'ERROR: currently external electric field is supposed to be'            
         write(*,*) '       used together with the P3D method.'
         stop

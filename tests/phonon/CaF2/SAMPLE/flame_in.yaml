@@ -8,6 +8,7 @@ potential:
     print_force : True
     ewald:
         ewald: False
+        psolver: kwald 
         ecut: 900.0
         #hx: 1.5
         #hy: 1.5
@@ -22,6 +23,4 @@ ann:
     #optimizer: lm
     syslinsolver : operator
     approach: eem1
-    #psolver: bigdft
-    psolver: kwald 
     #symfunc: write

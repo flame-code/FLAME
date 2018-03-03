@@ -214,7 +214,6 @@ subroutine yaml_get_ann_parameters(parini)
     parini%ampl_rand=parini%subdict//"ampl_rand"
     parini%symfunc_type_ann=parini%subdict//"symfunc_type"
     parini%syslinsolver_ann=parini%subdict//"syslinsolver"
-    parini%psolver_ann=parini%subdict//"psolver"
     parini%rgnrmtol=parini%subdict//"rgnrmtol"
     parini%qgnrmtol=parini%subdict//"qgnrmtol"
     parini%etol_ann=parini%subdict//"etol"
@@ -339,6 +338,7 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%tolerance_ewald=parini%subsubdict//"ewald_tol"
     parini%efield=parini%subsubdict//"external_field"
     parini%bias_type=parini%subsubdict//"bias_type"
+    parini%psolver=parini%subsubdict//"psolver"
 end subroutine yaml_get_ewald_parameters
 !*****************************************************************************************
 subroutine yaml_get_misc_parameters(parini)

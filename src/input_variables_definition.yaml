@@ -124,6 +124,7 @@
      plane_voltageu_ac: 0.0
      frequency: 0.0
      gnrmtol: 1.E-7
+     psolver: unknown
      ewald: False
      ewald_tol: 1.E-6
      bias_type: no
@@ -139,7 +140,6 @@
    ampl_rand: 1.0
    symfunc_type: behler
    syslinsolver: direct
-   psolver: unknown
    rgnrmtol: 5.E-4
    qgnrmtol: 5.E-4
    etol: 1.0

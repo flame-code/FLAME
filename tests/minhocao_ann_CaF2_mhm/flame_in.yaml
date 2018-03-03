@@ -7,9 +7,9 @@ potential:
     potential: ann
     add_repulsive: False
     ewald:
+        psolver: kwald
         ecut: 250.0
 
 ann:
     approach: eem1
     syslinsolver: operator
-    psolver: kwald
