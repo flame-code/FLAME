@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
+subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -23,14 +23,14 @@ subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     fat=f_malloc([1.to.3,1.to.atoms%nat],id='fat')
     if(poisson%gw_identical) then
          !gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
-         !call psolver_bulk_fourier_various(atoms%nat,atoms%rat,ratred,atoms%qat, &
+         !call get_psolver_fourier_various(atoms%nat,atoms%rat,ratred,atoms%qat, &
          !    atoms%cellvec,gwsq,ecut,ehartree,fat,g,stress,atoms%celldv)
         alphasq=poisson%alpha**2
-        call psolver_bulk_fourier_identical(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
+        call get_psolver_fourier_identical(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
             atoms%cellvec,alphasq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
      else
         gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
-        call psolver_bulk_fourier_various(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
+        call get_psolver_fourier_various(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
             gwsq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
     end if
     do iat=1,atoms%nat
@@ -59,9 +59,9 @@ subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     call f_free(fat)
     call f_free(gwsq)
     call f_free(ratred)
-end subroutine psolver_bulk_fourier
+end subroutine get_psolver_fourier
 !*****************************************************************************************
-subroutine psolver_bulk_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
+subroutine get_psolver_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
@@ -274,9 +274,9 @@ subroutine psolver_bulk_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut
     deallocate(tarr1)
     deallocate(tarr2)
     deallocate(tarr3)
-end subroutine psolver_bulk_fourier_various
+end subroutine get_psolver_fourier_various
 !*****************************************************************************************
-subroutine psolver_bulk_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
+subroutine get_psolver_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
@@ -488,5 +488,5 @@ subroutine psolver_bulk_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq
     !enddo
     deallocate(tarr1)
     deallocate(tarr2)
-end subroutine psolver_bulk_fourier_identical
+end subroutine get_psolver_fourier_identical
 !*****************************************************************************************

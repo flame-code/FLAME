@@ -122,8 +122,8 @@ subroutine best_charge_density_rho(parini)
     dft_ener= 0.d0 
     cent%poisson%pot = 0.d0
     atoms%fat = 0.d0 
-    call construct_ewald_bps(parini,atoms,cent%poisson)
-    call psolver_bps(cent%poisson,atoms,ehartree)
+    call init_psolver_bps(parini,atoms,cent%poisson)
+    call get_psolver_bps(cent%poisson,atoms,ehartree)
     dft_ener = ehartree 
     if (atoms%nat > 1) then
         call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
@@ -140,7 +140,7 @@ subroutine best_charge_density_rho(parini)
     write(21,*) ehartree
     write(21,*) cent%poisson%pot(:,ny/2,nz/2) 
     write(21,*) "------------------------------------------------------------"
-    call destruct_ewald_bps(cent%poisson)
+    call fini_psolver_bps(cent%poisson)
     write(*,'(a,es14.6,3es14.6)') "DFT1" , dft_ener , dft_fat
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!cent part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    
@@ -219,14 +219,14 @@ subroutine best_charge_density_rho(parini)
         write(*,*) "cent_rho" , volinv*sum(cent_rho) , volinv*sum(dft_rho)
         atoms%fat = 0.d0
         cent_fat = 0.d0
-        call construct_ewald_bps(parini,atoms,cent%poisson)
-        call psolver_bps(cent%poisson,atoms,ehartree)
+        call init_psolver_bps(parini,atoms,cent%poisson)
+        call get_psolver_bps(cent%poisson,atoms,ehartree)
         cent_ener = ehartree
         if(atoms%nat > 1)  then
             call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
             cent_fat = atoms%fat
         end if
-        call destruct_ewald_bps(cent%poisson)
+        call fini_psolver_bps(cent%poisson)
         write(66,'(i4, a)') iter ,"  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-"
         do i = 1 , atoms%nat
             do j =1 , 3 
@@ -340,8 +340,8 @@ subroutine best_charge_density_rho(parini)
         atoms%fat = 0.d0
         cent_fat = 0.d0
         cent%poisson%rho=cent_rho-(t*(cent_rho-dft_rho))
-        call construct_ewald_bps(parini,atoms,cent%poisson)
-        call psolver_bps(cent%poisson,atoms,ehartree)
+        call init_psolver_bps(parini,atoms,cent%poisson)
+        call get_psolver_bps(cent%poisson,atoms,ehartree)
         cent_ener = ehartree
         if(atoms%nat > 1)  then
             call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
@@ -349,7 +349,7 @@ subroutine best_charge_density_rho(parini)
         end if
         force_err = sqrt(sum((cent_fat-dft_fat)**2)/(3*atoms%nat))
         ener_err = abs(cent_ener-dft_ener)
-        call destruct_ewald_bps(cent%poisson)
+        call fini_psolver_bps(cent%poisson)
         write(77,'(3es14.6)') t,force_err,ener_err
     enddo
     do j = 1 , atoms%nat
@@ -402,8 +402,8 @@ subroutine best_charge_density_force(parini)
 
     atoms%boundcond='bulk'
     allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-    call construct_ewald_bps(parini,atoms,cent%poisson)
-    call psolver_bps(cent%poisson,atoms,ehartree)
+    call init_psolver_bps(parini,atoms,cent%poisson)
+    call get_psolver_bps(cent%poisson,atoms,ehartree)
     atoms%zat(:)=1.d0
     nx=cent%poisson%ngpx
     ny=cent%poisson%ngpy
@@ -415,7 +415,7 @@ subroutine best_charge_density_force(parini)
     dft_fat_1 = 0.d0
     call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     dft_fat_1 = atoms%fat
-    call destruct_ewald_bps(cent%poisson)
+    call fini_psolver_bps(cent%poisson)
     deallocate(cent%poisson%pot)
    !///////////////////////////2nd DFT////////////////////////////////////
     cent%poisson%rho = 0.d0
@@ -427,8 +427,8 @@ subroutine best_charge_density_force(parini)
     
     atoms%boundcond='bulk'
     allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-    call construct_ewald_bps(parini,atoms,cent%poisson)
-    call psolver_bps(cent%poisson,atoms,ehartree)
+    call init_psolver_bps(parini,atoms,cent%poisson)
+    call get_psolver_bps(cent%poisson,atoms,ehartree)
     atoms%zat(:)=1.d0
     nx=cent%poisson%ngpx
     ny=cent%poisson%ngpy
@@ -439,7 +439,7 @@ subroutine best_charge_density_force(parini)
     dft_fat_2 = 0.d0
     call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     dft_fat_2 = atoms%fat
-    call destruct_ewald_bps(cent%poisson)
+    call fini_psolver_bps(cent%poisson)
     deallocate(cent%poisson%pot)
  
     !/////////////////CENT_FORCE////////////////////////! 
@@ -487,12 +487,12 @@ subroutine best_charge_density_force(parini)
          atoms%boundcond='bulk'
          atoms%zat = 1.d0
          cent%gwit = 1.3d0
-         call construct_ewald_bps(parini,atoms,cent%poisson)
-         call psolver_bps(cent%poisson,atoms,ehartree)
+         call init_psolver_bps(parini,atoms,cent%poisson)
+         call get_psolver_bps(cent%poisson,atoms,ehartree)
          atoms%fat = 0.d0
          call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
          cent_fat_1 = atoms%fat
-         call destruct_ewald_bps(cent%poisson)
+         call fini_psolver_bps(cent%poisson)
          
          cent_rho_2=0.d0
          cent%poisson%pot = 0.d0
@@ -504,12 +504,12 @@ subroutine best_charge_density_force(parini)
          atoms%zat = 1.d0
          cent%gwit = 1.3d0
          atoms%boundcond='bulk'
-         call construct_ewald_bps(parini,atoms,cent%poisson)
-         call psolver_bps(cent%poisson,atoms,ehartree)
+         call init_psolver_bps(parini,atoms,cent%poisson)
+         call get_psolver_bps(cent%poisson,atoms,ehartree)
          atoms%fat = 0.d0
          call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
          cent_fat_2 = atoms%fat
-         call destruct_ewald_bps(cent%poisson)
+         call fini_psolver_bps(cent%poisson)
          rho_err = sqrt(sum((cent_rho_1-dft_rho_1)**2+(cent_rho_2-dft_rho_2)**2)/(nx*ny*nz))
          err_cent = dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
                              + dot_product((cent_fat_2(1,:)-dft_fat_2(1,:)),(cent_fat_2(1,:)-dft_fat_2(1,:)))
@@ -527,12 +527,12 @@ subroutine best_charge_density_force(parini)
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call psolver_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
                  call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_1 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                  
                  cent_rho_2=0.d0
                  cent%poisson%pot = 0.d0
@@ -544,12 +544,12 @@ subroutine best_charge_density_force(parini)
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call psolver_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
                  call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_2 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                          
                  err_fdm = 0.d0
                  err_fdm = err_fdm + dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
@@ -568,12 +568,12 @@ subroutine best_charge_density_force(parini)
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call psolver_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
                  call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_1 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                  
                  cent_rho_2=0.d0
                  cent%poisson%pot = 0.d0
@@ -585,12 +585,12 @@ subroutine best_charge_density_force(parini)
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call psolver_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
                  call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_2 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                          
                  err_fdm = 0.d0
                  err_fdm = err_fdm + dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
@@ -645,14 +645,14 @@ subroutine best_charge_density_energy(parini)
      call acf_read(parini,'posinp.acf',1,atoms=atoms)
      atoms%boundcond='bulk'
      allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-     call construct_ewald_bps(parini,atoms,cent%poisson)
-     call psolver_bps(cent%poisson,atoms,ehartree)
+     call init_psolver_bps(parini,atoms,cent%poisson)
+     call get_psolver_bps(cent%poisson,atoms,ehartree)
      dft_ener = ehartree
      write(*,*) "dft_Hartree : " , dft_ener
      nx=cent%poisson%ngpx
      ny=cent%poisson%ngpy
      nz=cent%poisson%ngpz
-     call destruct_ewald_bps(cent%poisson)
+     call fini_psolver_bps(cent%poisson)
      deallocate(cent%poisson%pot)
     !/////////////////CENT_ENERGY////////////////////////! 
      atoms%qat = 2.d0
@@ -668,8 +668,8 @@ subroutine best_charge_density_energy(parini)
           rho_err = sqrt(sum((cent_rho-dft_rho)**2)/(cent%poisson%ngpx**3))
           atoms%boundcond='bulk'
           allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-          call construct_ewald_bps(parini,atoms,cent%poisson)
-          call psolver_bps(cent%poisson,atoms,ehartree)
+          call init_psolver_bps(parini,atoms,cent%poisson)
+          call get_psolver_bps(cent%poisson,atoms,ehartree)
           ener = ehartree
           write(*,*) "Hartree : " , ener ;
           allocate(cent%rgrad(1:3,atoms%nat),cent%qgrad(atoms%nat),agrad(atoms%nat))
@@ -690,7 +690,7 @@ subroutine best_charge_density_energy(parini)
           coeff = 2.d0*(ener - dft_ener)
           atoms%qat = atoms%qat - SDA*coeff*cent%qgrad
           cent%gwe = cent%gwe - SDA*coeff*agrad
-          call destruct_ewald_bps(cent%poisson)
+          call fini_psolver_bps(cent%poisson)
           deallocate(cent%poisson%pot,cent%rgrad,cent%qgrad,agrad)
      enddo
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -700,23 +700,23 @@ subroutine best_charge_density_energy(parini)
 !!CHECKING AGRAD    cent%gwe(gweiat) = cent%gwe(gweiat)+h
 !!CHECKING AGRAD    call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 !!CHECKING AGRAD    allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-!!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%poisson)
-!!CHECKING AGRAD    call psolver_bps(cent%poisson,atoms,ehartree)
+!!CHECKING AGRAD    call init_psolver_bps(parini,atoms,cent%poisson)
+!!CHECKING AGRAD    call get_psolver_bps(cent%poisson,atoms,ehartree)
 !!CHECKING AGRAD    ener = ehartree
 !!CHECKING AGRAD    write(*,*) "ener2" , ener
-!!CHECKING AGRAD    call destruct_ewald_bps(cent%poisson)
+!!CHECKING AGRAD    call fini_psolver_bps(cent%poisson)
 !!CHECKING AGRAD    deallocate(cent%poisson%pot)
 !!CHECKING AGRAD    cent%gwe(gweiat)=cent%gwe(gweiat)-(2.d0*h)
 !!CHECKING AGRAD    call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 !!CHECKING AGRAD    !-----------------------------------------------------------------------------------
 !!CHECKING AGRAD    allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-!!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%poisson)
-!!CHECKING AGRAD    call psolver_bps(cent%poisson,atoms,ehartree)
+!!CHECKING AGRAD    call init_psolver_bps(parini,atoms,cent%poisson)
+!!CHECKING AGRAD    call get_psolver_bps(cent%poisson,atoms,ehartree)
 !!CHECKING AGRAD    write(*,*) "ener3",ehartree
 !!CHECKING AGRAD    ener = ener - ehartree
 !!CHECKING AGRAD    ener = ener/(2.d0*h)
 !!CHECKING AGRAD    write(*,*) "agrad(",gweiat,")",ener ;
-!!CHECKING AGRAD    call destruct_ewald_bps(cent%poisson)
+!!CHECKING AGRAD    call fini_psolver_bps(cent%poisson)
 !!CHECKING AGRAD    deallocate(cent%poisson%pot)
 !!CHECKING AGRAD    
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

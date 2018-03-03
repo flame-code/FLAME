@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine psolver_bps(poisson,atoms,ehartree)
+subroutine get_psolver_bps(poisson,atoms,ehartree)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -55,9 +55,9 @@ subroutine psolver_bps(poisson,atoms,ehartree)
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
     ehartree=0.d0 !this is just to be able to compile.
 #endif
-end subroutine psolver_bps
+end subroutine get_psolver_bps
 !*****************************************************************************************
-subroutine construct_ewald_bps(parini,atoms,poisson)
+subroutine init_psolver_bps(parini,atoms,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -94,7 +94,7 @@ subroutine construct_ewald_bps(parini,atoms,poisson)
     elseif(trim(atoms%boundcond)=='free') then
         geocode='F'
     else
-        write(*,*) 'ERROR: unknown atoms%boundcond in construct_ewald_bps',trim(atoms%boundcond)
+        write(*,*) 'ERROR: unknown atoms%boundcond in init_psolver_bps',trim(atoms%boundcond)
     endif
     !nxyz=options//'ndim'
     !geocode=options//'geocode'
@@ -136,9 +136,9 @@ subroutine construct_ewald_bps(parini,atoms,poisson)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
-end subroutine construct_ewald_bps
+end subroutine init_psolver_bps
 !*****************************************************************************************
-subroutine destruct_ewald_bps(poisson)
+subroutine fini_psolver_bps(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
@@ -153,7 +153,7 @@ subroutine destruct_ewald_bps(poisson)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
-end subroutine destruct_ewald_bps
+end subroutine fini_psolver_bps
 !*****************************************************************************************
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     use mod_interface

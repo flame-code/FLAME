@@ -40,10 +40,10 @@ subroutine fini_hartree(parini,atoms,poisson)
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         if(trim(atoms%boundcond)=='bulk') then
             if(trim(parini%psolver)=='bigdft') then
-                call destruct_ewald_bps(poisson)
+                call fini_psolver_bps(poisson)
             endif
         elseif(trim(atoms%boundcond)=='slab') then
-            call fini_psolver_p3d_slab(poisson)
+            call fini_psolver_p3d(poisson)
         endif
         if(trim(parini%psolver)/='kwald') then
             call f_free(poisson%rho)
@@ -112,7 +112,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
         id='poisson%rho')
     poisson%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%pot')
-    call construct_ewald_bps(parini,atoms,poisson)
+    call init_psolver_bps(parini,atoms,poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
     shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
     if(parini%iverbose>=2) then
@@ -191,7 +191,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
         id='poisson%rho')
     poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ngpz], &
         id='poisson%pot')
-    call init_psolver_p3d_slab(poisson)
+    call init_psolver_p3d(poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
     shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
     if(parini%iverbose>=2) then
@@ -243,6 +243,13 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
         !enddo
     endif
     !-----------------------------------------------------------------
+    if(trim(parini%psolver)=='kwald' .and. trim(atoms%boundcond)/='bulk') then
+        write(*,*) 'ERROR: kwald works only with bulk BC.'
+    endif
+    if(trim(parini%psolver)=='p3d' .and. trim(atoms%boundcond)/='slab') then
+        write(*,*) 'ERROR: P3D works only with slab BC.'
+    endif
+    !-----------------------------------------------------------------
     if(poisson%cal_rho) then
         select case(trim(parini%psolver))
             case('kwald')
@@ -256,17 +263,18 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
         end select
     endif
     !-----------------------------------------------------------------
-    !Even if cal_poisson is false, psolver_bulk_fourier must be called
+    !Even if cal_poisson is false, get_psolver_fourier must be called
     !once more because fat is set to zero after dU/dq=0 in CENT
     if(poisson%cal_poisson .or. trim(parini%psolver)=='kwald') then
         select case(trim(parini%psolver))
             case('kwald')
-                call psolver_bulk_fourier(parini,poisson,atoms,gausswidth, &
+                call get_psolver_fourier(parini,poisson,atoms,gausswidth, &
                     ehartree,poisson%qgrad)
             case('bigdft')
-                call psolver_bps(poisson,atoms,ehartree)
+                call get_psolver_bps(poisson,atoms,ehartree)
             case('p3d')
-                    call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
+                    !call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
+                    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
             case default
                 write(*,*) 'ERROR: unknown method for hartree calculation.'
                 stop

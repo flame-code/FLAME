@@ -1,26 +1,5 @@
 !*****************************************************************************************
-subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_poisson),intent(inout):: poisson
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(inout):: dpm
-    real(8), intent(out):: ehartree
-    !local variables
-    !real(8):: dpm, pi, alphasq !, gtot, epotreal
-    integer:: igpx, igpy, igpz
-    if(trim(atoms%boundcond)/='slab') then
-        write(*,*) 'ERROR: P3D works only for slab BC.'
-        stop
-    endif
-    call psolver_p3d_slab(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
-end subroutine psolver_p3d
-!*****************************************************************************************
-subroutine init_psolver_p3d_slab(poisson)
+subroutine init_psolver_p3d(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
@@ -29,7 +8,7 @@ subroutine init_psolver_p3d_slab(poisson)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iz
-    call f_routine(id='init_psolver_p3d_slab')
+    call f_routine(id='init_psolver_p3d')
     poisson%plan_f=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_f')
     poisson%plan_b=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_b')
     do iz=1,poisson%ngpz
@@ -39,9 +18,9 @@ subroutine init_psolver_p3d_slab(poisson)
             poisson%ngpy,poisson%pot(1,1,iz),poisson%pot(1,1,iz),fftw_estimate)
     enddo
     call f_release_routine()
-end subroutine init_psolver_p3d_slab
+end subroutine init_psolver_p3d
 !*****************************************************************************************
-subroutine fini_psolver_p3d_slab(poisson)
+subroutine fini_psolver_p3d(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -60,9 +39,9 @@ subroutine fini_psolver_p3d_slab(poisson)
     if(istat/=0) then
         stop 'ERROR: failure deallocating plan_b of type typ_poisson'
     endif
-end subroutine fini_psolver_p3d_slab
+end subroutine fini_psolver_p3d
 !*****************************************************************************************
-subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
+subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
@@ -105,7 +84,7 @@ subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
         enddo
     enddo
     epot=epot*0.5d0*hx*hy*hz
-end subroutine psolver_p3d_slab
+end subroutine get_psolver_p3d
 !*****************************************************************************************
 !This subroutine calculates the systems of linear equations using LAPACK routines.
 subroutine solve_syslinequ_p3d(poisson,hz,cell,beta_arg)

@@ -1830,25 +1830,25 @@ subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
     real(16), intent(out):: funcsecder
 end subroutine exp_ar
 ! ./src/es_hartree_bps.F90 :
-subroutine psolver_bps(poisson,atoms,ehartree)
+subroutine get_psolver_bps(poisson,atoms,ehartree)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
-end subroutine psolver_bps
-subroutine construct_ewald_bps(parini,atoms,poisson)
+end subroutine get_psolver_bps
+subroutine init_psolver_bps(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
-end subroutine construct_ewald_bps
-subroutine destruct_ewald_bps(poisson)
+end subroutine init_psolver_bps
+subroutine fini_psolver_bps(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine destruct_ewald_bps
+end subroutine fini_psolver_bps
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -1859,7 +1859,7 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     type(typ_poisson), intent(inout):: poisson
 end subroutine set_ngp_bps
 ! ./src/es_hartree_fourier.F90 :
-subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
+subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1868,19 +1868,19 @@ subroutine psolver_bulk_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
-end subroutine psolver_bulk_fourier
-subroutine psolver_bulk_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
+end subroutine get_psolver_fourier
+subroutine get_psolver_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     integer, intent(in):: iverbose, nat
     real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), gwsq(nat), ecut
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
-end subroutine psolver_bulk_fourier_various
-subroutine psolver_bulk_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
+end subroutine get_psolver_fourier_various
+subroutine get_psolver_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
     integer, intent(in):: iverbose, nat
     real(8), intent(in):: rat(3,nat), qat(nat)
     real(8), intent(in):: cv(3,3), alphasq, ecut
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
-end subroutine psolver_bulk_fourier_identical
+end subroutine get_psolver_fourier_identical
 ! ./src/es_hartree_main.F90 :
 subroutine init_hartree(parini,atoms,poisson)
     use mod_parini, only: typ_parini
@@ -1955,25 +1955,15 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     real(8)::epotreal, alphatwoinv, rbetainv, alphasq, betainv
 end subroutine real_part
 ! ./src/es_hartree_p3d.F90 :
-subroutine psolver_p3d(parini,poisson,atoms,ehartree,dpm)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_poisson),intent(inout):: poisson
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(inout):: dpm
-    real(8), intent(out):: ehartree
-end subroutine psolver_p3d
-subroutine init_psolver_p3d_slab(poisson)
+subroutine init_psolver_p3d(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine init_psolver_p3d_slab
-subroutine fini_psolver_p3d_slab(poisson)
+end subroutine init_psolver_p3d
+subroutine fini_psolver_p3d(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine fini_psolver_p3d_slab
-subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
+end subroutine fini_psolver_p3d
+subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
@@ -1982,7 +1972,7 @@ subroutine psolver_p3d_slab(parini,poisson,cell,hx,hy,hz,epot,beta)
     real(8):: hx, hy, hz
     real(8):: epot
     real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
-end subroutine psolver_p3d_slab
+end subroutine get_psolver_p3d
 subroutine solve_syslinequ_p3d(poisson,hz,cell,beta_arg)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
