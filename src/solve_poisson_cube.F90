@@ -10,7 +10,7 @@ subroutine solve_poisson(parini)
     type(typ_poisson):: poisson_ion
     type(typ_atoms):: atoms
     integer:: istat, igpx, igpy, igpz, iat
-    real(8):: cell(3), epot, rgcut_a, t1, t2, t3, t4, pi
+    real(8):: epot, rgcut_a, t1, t2, t3, t4, pi
     real(8),allocatable::  gausswidth(:)
     integer:: nbgpx, nbgpy, nbgpz
     pi=4.d0*atan(1.d0)
@@ -19,9 +19,9 @@ subroutine solve_poisson(parini)
     allocate(poisson%pot(poisson%ngpx+2,poisson%ngpy,poisson%ngpz),stat=istat)
     if(istat/=0) stop 'ERROR: allocation of pot failed.'
     call init_psolver_p3d(poisson)
-    cell(1)=poisson%hx*poisson%ngpx
-    cell(2)=poisson%hy*poisson%ngpy
-    cell(3)=poisson%hz*poisson%ngpz
+    poisson%cell(1)=poisson%hx*poisson%ngpx
+    poisson%cell(2)=poisson%hy*poisson%ngpy
+    poisson%cell(3)=poisson%hz*poisson%ngpz
     !-------------------------------------------------------
     poisson_ion%ngpx=poisson%ngpx
     poisson_ion%ngpy=poisson%ngpy
@@ -87,7 +87,20 @@ subroutine solve_poisson(parini)
     enddo
     !t1=t1*(2*pi)/(cell(1)*cell(2))
     write(*,*) 't1=',t1
-    call get_psolver_p3d(parini,poisson,cell,poisson%hx,poisson%hy,poisson%hz,epot)
+    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epot)
+!    if(parini%ewald) then
+!        write(*,*) 'ERROR: ewald=True is wrong when reading from cube file.'
+!        stop
+!    endif
+!    if(trim(parini%psolver)=='kwald') then
+!        write(*,*) 'ERROR: psolver=kwald is wrong for grid base charge density.'
+!        stop
+!    endif
+!    poisson%cal_rho=.false.
+!    poisson%cal_poisson=.true.
+!    poisson%cal_qgrad=.false.
+!    poisson%cal_force=.false.
+!    call get_hartree(parini,poisson,atoms,gausswidth,epot)
     call cube_write('pot_p3d.cube',atoms,poisson,'pot')
     call fini_psolver_p3d(poisson)
     deallocate(poisson%rho,stat=istat)

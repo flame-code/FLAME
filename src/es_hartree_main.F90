@@ -338,7 +338,9 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
        ewaldwidth(:)=poisson%alpha
     end if
 
-    poisson%qgrad(1:atoms%nat)=0.d0
+    if(poisson%cal_qgrad) then
+        poisson%qgrad(1:atoms%nat)=0.d0
+    endif
     if(parini%ewald) then
         !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
         kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
