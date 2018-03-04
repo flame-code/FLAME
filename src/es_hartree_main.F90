@@ -225,7 +225,6 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     real(8):: pi !, gtot, epotreal
     integer:: iat
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
-    !real(8), allocatable::  ewaldwidth(:)
     !real(8):: stress(3,3), kmax, c, vol, talpha
 !    pi=4.d0*atan(1.d0)
 ! !   if (parini%ewald .and. parini%alpha_ewald<0.d0) then
@@ -316,22 +315,16 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     !local variables
     real(8):: epotreal !, pi
     !integer:: iat
-    real(8), allocatable:: gg(:)
-    real(8), allocatable::  ewaldwidth(:)
     real(8):: stress(3,3), kmax !, talpha
     call f_routine(id='get_hartree')
     call f_timing(TCAT_PSOLVER,'ON')
 
-    epotreal=0.d0
-    ewaldwidth=f_malloc([1.to.atoms%nat],id='ewaldwidth')
+    poisson%gw_ewald=f_malloc([1.to.atoms%nat],id='poisson%gw_ewald')
     if(parini%ewald) then
-        gg=f_malloc([1.to.atoms%nat],id='gg')
-       ewaldwidth(:)=poisson%alpha
+        poisson%qgrad_real=f_malloc([1.to.atoms%nat],id='poisson%qgrad_real')
+        poisson%gw_ewald(:)=poisson%alpha
     end if
 
-    if(poisson%cal_qgrad) then
-        poisson%qgrad(1:atoms%nat)=0.d0
-    endif
     if(parini%ewald) then
         !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
         kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
@@ -349,21 +342,25 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     endif
 
     if(.not. parini%ewald) then
-        ewaldwidth=gausswidth
+        poisson%gw_ewald=gausswidth
     endif
     
-    call get_hartree_simple(parini,poisson,atoms,ewaldwidth,ehartree)
+    if(poisson%cal_qgrad) then
+        poisson%qgrad(1:atoms%nat)=0.d0
+    endif
+    call get_hartree_simple(parini,poisson,atoms,poisson%gw_ewald,ehartree)
     if(parini%ewald) then
-        call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,gg,stress)
+        epotreal=0.d0
+        call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,poisson%qgrad_real,stress)
         atoms%stress=atoms%stress+stress
         ehartree=ehartree+epotreal
-        poisson%qgrad=poisson%qgrad+gg
+        poisson%qgrad=poisson%qgrad+poisson%qgrad_real
     end if
 
     if(parini%ewald) then
-        call f_free(gg)
-        call f_free(ewaldwidth)
+        call f_free(poisson%qgrad_real)
     endif
+    call f_free(poisson%gw_ewald)
     call f_timing(TCAT_PSOLVER,'OF')
     call f_release_routine()
 end subroutine get_hartree
@@ -383,7 +380,6 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     !real(8):: pi, gtot, ecut, epotreal, alphasq
     integer:: iat, igpx, igpy, igpz
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
-    !real(8), allocatable::  ewaldwidth(:)
     real(8):: dipole !,ext_pot
     if(trim(parini%psolver)/='p3d') then
         write(*,*) 'ERROR: currently external electric field is supposed to be'            
