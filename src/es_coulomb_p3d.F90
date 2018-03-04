@@ -49,7 +49,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !write(*,*) 'totrho',totrho
     !-----------------------------------------------------------------------
     !pot=0.d0
-    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epotlong,beta)
+    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epotlong)
     call cpu_time(time(3))
     call force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     call cpu_time(time(4))

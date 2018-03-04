@@ -230,17 +230,6 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
 !        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
 !         
 ! !   end if
-
-
-    if(trim(parini%psolver)/='kwald') then
-        !poisson%dpm=0.d0
-        !do iat=1,atoms%nat
-        !    poisson%dpm=poisson%dpm+atoms%qat(iat)*atoms%rat(3,iat)
-        !enddo
-        !do iat=1,atoms%nat
-        !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
-        !enddo
-    endif
     !-----------------------------------------------------------------
     if(trim(parini%psolver)=='kwald' .and. trim(atoms%boundcond)/='bulk') then
         write(*,*) 'ERROR: kwald works only with bulk BC.'
@@ -272,8 +261,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
             case('bigdft')
                 call get_psolver_bps(poisson,atoms,ehartree)
             case('p3d')
-                    !call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
-                    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,poisson%dpm(3))
+                    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree)
             case default
                 write(*,*) 'ERROR: unknown method for hartree calculation.'
                 stop
@@ -388,7 +376,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: ehartree, g(atoms%nat)
     !local variables
-    !real(8):: dpm, pi, gtot, ecut, epotreal, alphasq
+    !real(8):: pi, gtot, ecut, epotreal, alphasq
     integer:: iat, igpx, igpy, igpz
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)

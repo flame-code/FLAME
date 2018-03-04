@@ -414,13 +414,6 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         poisson%cal_poisson=.false.
         poisson%cal_qgrad=.false.
         poisson%cal_force=.true.
-        poisson%cal_dpm=.false.
-        poisson%dpm=0.d0
-        do iat=1,atoms%nat
-            poisson%dpm(1)=poisson%dpm(1)+atoms%qat(iat)*atoms%rat(1,iat)
-            poisson%dpm(2)=poisson%dpm(2)+atoms%qat(iat)*atoms%rat(2,iat)
-            poisson%dpm(3)=poisson%dpm(3)+atoms%qat(iat)*atoms%rat(3,iat)
-        enddo
         call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
@@ -554,23 +547,15 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: g(atoms%nat), qtot
     !local variables
-    real(8):: dpm, pi, gtot
+    real(8):: gtot
     integer:: iat, igpx, igpy, igpz
     real(8), allocatable:: gausswidth(:)
-    pi=4.d0*atan(1.d0)
     allocate(gausswidth(1:atoms%nat))
     gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
     poisson%cal_rho=.true.
     poisson%cal_poisson=.true.
     poisson%cal_qgrad=.true.
     poisson%cal_force=.false.
-    poisson%cal_dpm=.false.
-    poisson%dpm=0.d0
-    do iat=1,atoms%nat
-        poisson%dpm(1)=poisson%dpm(1)+atoms%qat(iat)*atoms%rat(1,iat)
-        poisson%dpm(2)=poisson%dpm(2)+atoms%qat(iat)*atoms%rat(2,iat)
-        poisson%dpm(3)=poisson%dpm(3)+atoms%qat(iat)*atoms%rat(3,iat)
-    enddo
     call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es)
     g=poisson%qgrad
     qtot=0.d0
