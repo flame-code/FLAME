@@ -324,7 +324,7 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     enddo
     if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
         do iat=1,atoms%nat
-            atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
+            atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*0.5d0*atoms%qat(iat)
         enddo
     endif
     call f_free(wa)

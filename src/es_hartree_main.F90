@@ -414,10 +414,10 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         do iat=1,atoms%nat
             dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
         enddo
-        ehartree=ehartree+parini%efield*0.5d0*dipole
+        ehartree=ehartree-parini%efield*0.5d0*dipole
         do iat=1,atoms%nat
             !atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
-            g(iat)=g(iat)+parini%efield*0.5d0*atoms%rat(3,iat)
+            g(iat)=g(iat)-parini%efield*0.5d0*atoms%rat(3,iat)
         enddo
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
         !efield=0.d0 !to be corrected by Samare
