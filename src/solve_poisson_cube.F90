@@ -15,10 +15,9 @@ subroutine solve_poisson(parini)
     integer:: nbgpx, nbgpy, nbgpz
     pi=4.d0*atan(1.d0)
     call cube_read('rho.cube',atoms,poisson)
-    !write(*,*) poisson%ngpx,poisson%ngpy,poisson%ngpz
-    allocate(poisson%pot(poisson%ngpx+2,poisson%ngpy,poisson%ngpz),stat=istat)
-    if(istat/=0) stop 'ERROR: allocation of pot failed.'
-    call init_psolver_p3d(poisson)
+    atoms%boundcond='slab'
+    poisson%set_grid=.false.
+    call init_hartree(parini,atoms,poisson)
     poisson%cell(1)=poisson%hx*poisson%ngpx
     poisson%cell(2)=poisson%hy*poisson%ngpy
     poisson%cell(3)=poisson%hz*poisson%ngpz
@@ -48,7 +47,6 @@ subroutine solve_poisson(parini)
     allocate(gausswidth(atoms%nat))
     poisson_ion%alpha=0.4d0 !atoms%rcov(iat)
     gausswidth=0.4d0 !atoms%rcov(iat)
-    atoms%boundcond='slab'
     call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson_ion)
     t1=0.d0
     t2=0.d0
@@ -101,10 +99,6 @@ subroutine solve_poisson(parini)
     poisson%cal_force=.false.
     call get_hartree(parini,poisson,atoms,gausswidth,epot)
     call cube_write('pot_p3d.cube',atoms,poisson,'pot')
-    call fini_psolver_p3d(poisson)
-    deallocate(poisson%rho,stat=istat)
-    if(istat/=0) stop 'ERROR: deallocation of rho failed.'
-    deallocate(poisson%pot,stat=istat)
-    if(istat/=0) stop 'ERROR: deallocation of pot failed.'
+    call fini_hartree(parini,atoms,poisson)
 end subroutine solve_poisson
 !*****************************************************************************************

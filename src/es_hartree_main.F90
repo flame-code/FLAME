@@ -81,6 +81,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
         stop
     endif
     pi=4.d0*atan(1.d0)
+    if(poisson%set_grid) then
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
     poisson_rough%hz=parini%hz_ewald
@@ -110,6 +111,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !---------------------------------------------------------------------------
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
+    endif
     poisson%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%pot')
     call init_psolver_bps(parini,atoms,poisson)
@@ -149,6 +151,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
         stop
     endif
     pi=4.d0*atan(1.d0)
+    if(poisson%set_grid) then
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
     poisson_rough%hz=parini%hz_ewald
@@ -189,6 +192,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     !---------------------------------------------------------------------------
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
+    endif
     poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ngpz], &
         id='poisson%pot')
     call init_psolver_p3d(poisson)
