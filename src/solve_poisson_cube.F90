@@ -87,20 +87,19 @@ subroutine solve_poisson(parini)
     enddo
     !t1=t1*(2*pi)/(cell(1)*cell(2))
     write(*,*) 't1=',t1
-    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epot)
-!    if(parini%ewald) then
-!        write(*,*) 'ERROR: ewald=True is wrong when reading from cube file.'
-!        stop
-!    endif
-!    if(trim(parini%psolver)=='kwald') then
-!        write(*,*) 'ERROR: psolver=kwald is wrong for grid base charge density.'
-!        stop
-!    endif
-!    poisson%cal_rho=.false.
-!    poisson%cal_poisson=.true.
-!    poisson%cal_qgrad=.false.
-!    poisson%cal_force=.false.
-!    call get_hartree(parini,poisson,atoms,gausswidth,epot)
+    if(parini%ewald) then
+        write(*,*) 'ERROR: ewald=True is wrong when reading from cube file.'
+        stop
+    endif
+    if(trim(parini%psolver)=='kwald') then
+        write(*,*) 'ERROR: psolver=kwald is wrong for grid base charge density.'
+        stop
+    endif
+    poisson%cal_rho=.false.
+    poisson%cal_poisson=.true.
+    poisson%cal_qgrad=.false.
+    poisson%cal_force=.false.
+    call get_hartree(parini,poisson,atoms,gausswidth,epot)
     call cube_write('pot_p3d.cube',atoms,poisson,'pot')
     call fini_psolver_p3d(poisson)
     deallocate(poisson%rho,stat=istat)
