@@ -1963,7 +1963,7 @@ subroutine fini_psolver_p3d(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
 end subroutine fini_psolver_p3d
-subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
+subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot,dpm)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
@@ -1971,7 +1971,7 @@ subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     real(8):: cell(3) !cell array contains size of the simulation box.
     real(8):: hx, hy, hz
     real(8):: epot
-    real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
+    real(8), optional:: dpm !dipole moment
 end subroutine get_psolver_p3d
 subroutine solve_syslinequ_p3d(poisson,hz,cell,beta_arg)
     use mod_electrostatics, only: typ_poisson

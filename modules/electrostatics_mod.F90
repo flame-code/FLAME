@@ -18,12 +18,14 @@ module mod_electrostatics
         real(8), allocatable:: pots(:,:,:) !surface potential array.
         real(8), allocatable:: qgrad(:)
         integer:: npl, npu
-        real(8):: beta 
+        real(8):: beta
+        real(8):: dpm(3)=0.d0
         logical:: point_particle= .false.
         logical:: cal_rho= .false.
         logical:: cal_poisson= .false.
         logical:: cal_qgrad= .false.
         logical:: cal_force= .false.
+        logical:: cal_dpm= .true.
         integer(8), allocatable:: plan_f(:) !Plans of forward fftw with size ngpz
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2

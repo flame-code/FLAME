@@ -218,12 +218,12 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
     !local variables
-    real(8):: dpm, pi !, gtot, epotreal
+    real(8):: pi !, gtot, epotreal
     integer:: iat
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8), allocatable::  ewaldwidth(:)
     !real(8):: stress(3,3), kmax, c, vol, talpha
-    pi=4.d0*atan(1.d0)
+!    pi=4.d0*atan(1.d0)
 ! !   if (parini%ewald .and. parini%alpha_ewald<0.d0) then
 !        call getvol_alborz(atoms%cellvec,vol)
 !        c=2
@@ -233,11 +233,10 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
 
 
     if(trim(parini%psolver)/='kwald') then
-        dpm=0.d0
-        do iat=1,atoms%nat
-            dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
-        enddo
-        dpm=dpm*2.d0*pi*poisson%ngpx*poisson%ngpy/(poisson%cell(1)*poisson%cell(2))
+        !poisson%dpm=0.d0
+        !do iat=1,atoms%nat
+        !    poisson%dpm=poisson%dpm+atoms%qat(iat)*atoms%rat(3,iat)
+        !enddo
         !do iat=1,atoms%nat
         !    write(33,'(2i4,3es14.5)') iter,iat,atoms%qat(iat),atoms%rat(3,iat),dpm
         !enddo
@@ -274,7 +273,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
                 call get_psolver_bps(poisson,atoms,ehartree)
             case('p3d')
                     !call psolver_p3d(parini,poisson,atoms,ehartree,dpm)
-                    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,dpm)
+                    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree,poisson%dpm(3))
             case default
                 write(*,*) 'ERROR: unknown method for hartree calculation.'
                 stop
