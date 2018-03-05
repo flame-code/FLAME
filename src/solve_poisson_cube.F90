@@ -93,7 +93,6 @@ subroutine solve_poisson(parini)
         write(*,*) 'ERROR: psolver=kwald is wrong for grid base charge density.'
         stop
     endif
-    poisson%cal_rho=.false.
     poisson%cal_poisson=.true.
     poisson%cal_qgrad=.false.
     poisson%cal_force=.false.

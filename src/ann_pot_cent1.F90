@@ -414,7 +414,6 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         ann_arr%epot_es=tt2+tt3
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-        poisson%cal_rho=.false.
         poisson%cal_poisson=.false.
         poisson%cal_qgrad=.false.
         poisson%cal_force=.true.
@@ -556,7 +555,7 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     real(8), allocatable:: gausswidth(:)
     allocate(gausswidth(1:atoms%nat))
     gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-    poisson%cal_rho=.true.
+    call put_charge_density(parini,poisson,atoms,gausswidth)
     poisson%cal_poisson=.true.
     poisson%cal_qgrad=.true.
     poisson%cal_force=.false.

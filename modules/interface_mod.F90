@@ -1915,6 +1915,15 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
 end subroutine init_hartree_p3d
+subroutine put_charge_density(parini,poisson,atoms,gausswidth)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+end subroutine put_charge_density
 subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms

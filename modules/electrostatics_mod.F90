@@ -22,7 +22,6 @@ module mod_electrostatics
         integer:: npl, npu
         real(8):: beta
         logical:: point_particle= .false.
-        logical:: cal_rho= .false.
         logical:: cal_poisson= .false.
         logical:: cal_qgrad= .false.
         logical:: cal_force= .false.

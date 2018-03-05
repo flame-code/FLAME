@@ -239,6 +239,39 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     call f_release_routine()
 end subroutine init_hartree_p3d
 !*****************************************************************************************
+subroutine put_charge_density(parini,poisson,atoms,gausswidth)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use time_profiling
+    use mod_timing , only: TCAT_PSOLVER
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    !local variables
+    if(trim(parini%psolver)=='kwald' .and. trim(atoms%boundcond)/='bulk') then
+        write(*,*) 'ERROR: kwald works only with bulk BC.'
+    endif
+    if(trim(parini%psolver)=='p3d' .and. trim(atoms%boundcond)/='slab') then
+        write(*,*) 'ERROR: P3D works only with slab BC.'
+    endif
+    !-----------------------------------------------------------------
+    select case(trim(parini%psolver))
+        case('kwald')
+            !do nothing
+        case('bigdft','p3d')
+            call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat, &
+                atoms%qat,gausswidth,poisson)
+        case default
+            write(*,*) 'ERROR: unknown method for hartree calculation.'
+            stop
+    end select
+end subroutine put_charge_density
+!*****************************************************************************************
 subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -271,19 +304,6 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     endif
     if(trim(parini%psolver)=='p3d' .and. trim(atoms%boundcond)/='slab') then
         write(*,*) 'ERROR: P3D works only with slab BC.'
-    endif
-    !-----------------------------------------------------------------
-    if(poisson%cal_rho) then
-        select case(trim(parini%psolver))
-            case('kwald')
-                !do nothing
-            case('bigdft','p3d')
-                call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat, &
-                    atoms%qat,gausswidth,poisson)
-            case default
-                write(*,*) 'ERROR: unknown method for hartree calculation.'
-                stop
-        end select
     endif
     !-----------------------------------------------------------------
     !Even if cal_poisson is false, get_psolver_fourier must be called
