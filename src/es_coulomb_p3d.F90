@@ -50,9 +50,11 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !write(*,*) 'totrho',totrho
     !-----------------------------------------------------------------------
     !pot=0.d0
-    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,epotlong)
     call cpu_time(time(3))
-    call force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
+    poisson%cal_poisson=.true.
+    poisson%cal_qgrad=.false.
+    poisson%cal_force=.true.
+    call get_hartree(parini,poisson,atoms,gausswidth,epotlong)
     call cpu_time(time(4))
     !call shortenergy(atoms,poisson%linked_lists,poisson%spline,poisson%alpha,poisson%cell,epotshort)
     call cpu_time(time(5))
