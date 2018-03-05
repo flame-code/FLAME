@@ -51,9 +51,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !-----------------------------------------------------------------------
     !pot=0.d0
     call cpu_time(time(3))
-    poisson%cal_poisson=.true.
-    poisson%cal_qgrad=.false.
-    poisson%cal_force=.true.
+    poisson%task_get="cal_poisson:cal_force"
     call get_hartree(parini,poisson,atoms,gausswidth,epotlong)
     call cpu_time(time(4))
     !call shortenergy(atoms,poisson%linked_lists,poisson%spline,poisson%alpha,poisson%cell,epotshort)

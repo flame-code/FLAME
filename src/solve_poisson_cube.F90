@@ -16,10 +16,10 @@ subroutine solve_poisson(parini)
     pi=4.d0*atan(1.d0)
     call cube_read('rho.cube',atoms,poisson)
     atoms%boundcond='slab'
-    poisson%set_grid=.false.
     allocate(gausswidth(atoms%nat))
     poisson_ion%alpha=0.4d0 !atoms%rcov(iat)
     gausswidth=0.4d0 !atoms%rcov(iat)
+    poisson%task_finit=""
     call init_hartree(parini,atoms,poisson,gausswidth)
     poisson%cell(1)=poisson%hx*poisson%ngpx
     poisson%cell(2)=poisson%hy*poisson%ngpy
@@ -94,9 +94,7 @@ subroutine solve_poisson(parini)
         write(*,*) 'ERROR: psolver=kwald is wrong for grid base charge density.'
         stop
     endif
-    poisson%cal_poisson=.true.
-    poisson%cal_qgrad=.false.
-    poisson%cal_force=.false.
+    poisson%task_get="cal_poisson"
     call get_hartree(parini,poisson,atoms,gausswidth,epot)
     call cube_write('pot_p3d.cube',atoms,poisson,'pot')
     call fini_hartree(parini,atoms,poisson)

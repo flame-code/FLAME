@@ -48,6 +48,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time1)
     allocate(gausswidth(atoms%nat))
     gausswidth(:)=1.d0 !TO_BE_CORRECTED
+    cent%poisson%task_finit="alloc_rho:set_ngp"
     call init_hartree(parini,atoms,cent%poisson,gausswidth)
     deallocate(gausswidth)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)

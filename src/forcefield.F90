@@ -35,6 +35,7 @@ subroutine forcefield_init(parini,atoms)
         elseif(trim(atoms%boundcond)=='slab') then
         allocate(gausswidth(atoms%nat))
         gausswidth(:)=parini%alpha_ewald !poisson%alpha
+        poisson%task_finit="alloc_rho:set_ngp"
         call init_hartree(parini,atoms,poisson,gausswidth)
         deallocate(gausswidth)
         shortrange%alpha=poisson%alpha

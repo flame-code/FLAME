@@ -299,6 +299,7 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
         allocate(gausswidth(atoms%nat))
         gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+        poisson%task_finit="alloc_rho:set_ngp"
         call init_hartree(parini,atoms,poisson,gausswidth)
         deallocate(gausswidth)
     else
@@ -414,9 +415,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         ann_arr%epot_es=tt2+tt3
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-        poisson%cal_poisson=.false.
-        poisson%cal_qgrad=.false.
-        poisson%cal_force=.true.
+        poisson%task_get="cal_force"
         call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
@@ -557,9 +556,7 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
     poisson%reset_rho=.true.
     call put_charge_density(parini,poisson,atoms,gausswidth)
-    poisson%cal_poisson=.true.
-    poisson%cal_qgrad=.true.
-    poisson%cal_force=.false.
+    poisson%task_get="cal_poisson:cal_qgrad"
     call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es)
     g=poisson%qgrad
     qtot=0.d0

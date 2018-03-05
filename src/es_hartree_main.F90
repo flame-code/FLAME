@@ -103,7 +103,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     type(typ_poisson):: poisson_rough
     real(8):: pi, shortrange_at_rcut
     real(8):: tt1, tt2
-    integer:: ngptot
+    integer:: ngptot, ind
     call f_routine(id='init_hartree_bps')
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
@@ -113,7 +113,8 @@ subroutine init_hartree_bps(parini,atoms,poisson)
         stop
     endif
     pi=4.d0*atan(1.d0)
-    if(poisson%set_grid) then
+    ind=index(poisson%task_finit,'alloc_rho')
+    if(ind>0) then
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
     poisson_rough%hz=parini%hz_ewald
@@ -172,7 +173,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     !local variables
     include 'fftw3.f'
     real(8):: pi, shortrange_at_rcut
-    integer:: ngptot
+    integer:: ngptot, ind
     integer:: nbgpx, nbgpy, nbgpz
     call f_routine(id='init_hartree_p3d')
     associate(ngpx=>poisson%ngpx)
@@ -183,7 +184,8 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
         stop
     endif
     pi=4.d0*atan(1.d0)
-    if(poisson%set_grid) then
+    ind=index(poisson%task_finit,'alloc_rho')
+    if(ind>0) then
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
     poisson_rough%hz=parini%hz_ewald
@@ -288,7 +290,7 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     real(8), intent(out):: ehartree
     !local variables
     real(8):: pi !, gtot, epotreal
-    integer:: iat
+    integer:: ind
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8):: stress(3,3), kmax, c, vol, talpha
 !    pi=4.d0*atan(1.d0)
@@ -308,7 +310,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     !-----------------------------------------------------------------
     !Even if cal_poisson is false, get_psolver_fourier must be called
     !once more because fat is set to zero after dU/dq=0 in CENT
-    if(poisson%cal_poisson .or. trim(parini%psolver)=='kwald') then
+    ind=index(poisson%task_get,'cal_poisson')
+    if(ind>0 .or. trim(parini%psolver)=='kwald') then
         select case(trim(parini%psolver))
             case('kwald')
                 call get_psolver_fourier(parini,poisson,atoms,gausswidth, &
@@ -323,7 +326,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
         end select
     endif
     !-----------------------------------------------------------------
-    if(poisson%cal_qgrad) then
+    ind=index(poisson%task_get,'cal_qgrad')
+    if(ind>0) then
         select case(trim(parini%psolver))
             case('kwald')
                 !do nothing
@@ -336,7 +340,8 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
         end select
     endif
     !-----------------------------------------------------------------
-    if(poisson%cal_force) then
+    ind=index(poisson%task_get,'cal_force')
+    if(ind>0) then
         select case(trim(parini%psolver))
             case('kwald')
                 !do nothing
@@ -366,12 +371,13 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     real(8), intent(out):: ehartree
     !local variables
     real(8):: epotreal !, pi
-    !integer:: iat
+    integer:: ind
     real(8):: stress(3,3) !, talpha
     call f_routine(id='get_hartree')
     call f_timing(TCAT_PSOLVER,'ON')
     
-    if(poisson%cal_qgrad) then
+    ind=index(poisson%task_get,'cal_qgrad')
+    if(ind>0) then
         poisson%qgrad(1:atoms%nat)=0.d0
     endif
     call get_hartree_simple(parini,poisson,atoms,poisson%gw_ewald,ehartree)
