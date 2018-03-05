@@ -264,8 +264,8 @@ subroutine put_charge_density(parini,poisson,atoms,gausswidth)
         case('kwald')
             !do nothing
         case('bigdft','p3d')
-            call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat, &
-                atoms%qat,gausswidth,poisson)
+            call put_gto_sym_ortho(parini,atoms%boundcond,poisson%reset_rho, &
+                atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
         case default
             write(*,*) 'ERROR: unknown method for hartree calculation.'
             stop

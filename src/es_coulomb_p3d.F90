@@ -39,7 +39,8 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !write(*,*) 'total momentum z component',beta
     !write(*,*) 'total momentum z component',0.13074051987178871d5/beta
     call cpu_time(time(1))
-    call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
+    poisson%reset_rho=.true.
+    call put_charge_density(parini,poisson,atoms,gausswidth)
     call cpu_time(time(2))
     !-----------------------------------------------------------------------
     !totrho=0.d0

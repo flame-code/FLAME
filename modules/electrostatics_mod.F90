@@ -26,6 +26,7 @@ module mod_electrostatics
         logical:: cal_qgrad= .false.
         logical:: cal_force= .false.
         logical:: set_grid= .true.
+        logical:: reset_rho= .true.
         integer(8), allocatable:: plan_f(:) !Plans of forward fftw with size ngpz
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2

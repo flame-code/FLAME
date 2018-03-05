@@ -555,6 +555,7 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     real(8), allocatable:: gausswidth(:)
     allocate(gausswidth(1:atoms%nat))
     gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+    poisson%reset_rho=.true.
     call put_charge_density(parini,poisson,atoms,gausswidth)
     poisson%cal_poisson=.true.
     poisson%cal_qgrad=.true.
