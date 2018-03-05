@@ -113,7 +113,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
         stop
     endif
     pi=4.d0*atan(1.d0)
-    ind=index(poisson%task_finit,'alloc_rho')
+    ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
@@ -141,7 +141,10 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
+    endif
     !---------------------------------------------------------------------------
+    ind=index(poisson%task_finit,'alloc_rho')
+    if(ind>0) then
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
     endif
@@ -184,7 +187,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
         stop
     endif
     pi=4.d0*atan(1.d0)
-    ind=index(poisson%task_finit,'alloc_rho')
+    ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
     poisson_rough%hx=parini%hx_ewald
     poisson_rough%hy=parini%hy_ewald
@@ -223,7 +226,10 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
+    endif
     !---------------------------------------------------------------------------
+    ind=index(poisson%task_finit,'alloc_rho')
+    if(ind>0) then
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
     endif
