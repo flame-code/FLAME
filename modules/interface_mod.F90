@@ -1882,13 +1882,14 @@ subroutine get_psolver_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,
     real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
 end subroutine get_psolver_fourier_identical
 ! ./src/es_hartree_main.F90 :
-subroutine init_hartree(parini,atoms,poisson)
+subroutine init_hartree(parini,atoms,poisson,gausswidth)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: gausswidth(atoms%nat)
 end subroutine init_hartree
 subroutine fini_hartree(parini,atoms,poisson)
     use mod_parini, only: typ_parini

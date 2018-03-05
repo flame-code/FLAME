@@ -17,7 +17,10 @@ subroutine solve_poisson(parini)
     call cube_read('rho.cube',atoms,poisson)
     atoms%boundcond='slab'
     poisson%set_grid=.false.
-    call init_hartree(parini,atoms,poisson)
+    allocate(gausswidth(atoms%nat))
+    poisson_ion%alpha=0.4d0 !atoms%rcov(iat)
+    gausswidth=0.4d0 !atoms%rcov(iat)
+    call init_hartree(parini,atoms,poisson,gausswidth)
     poisson%cell(1)=poisson%hx*poisson%ngpx
     poisson%cell(2)=poisson%hy*poisson%ngpy
     poisson%cell(3)=poisson%hz*poisson%ngpz
@@ -44,9 +47,6 @@ subroutine solve_poisson(parini)
     if(istat/=0) stop 'ERROR: allocation of pot failed.'
     !allocate(poisson_ion%mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz),stat=istat)
     !if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'
-    allocate(gausswidth(atoms%nat))
-    poisson_ion%alpha=0.4d0 !atoms%rcov(iat)
-    gausswidth=0.4d0 !atoms%rcov(iat)
     call put_gto_sym_ortho(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson_ion)
     t1=0.d0
     t2=0.d0

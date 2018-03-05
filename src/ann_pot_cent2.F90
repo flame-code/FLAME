@@ -19,6 +19,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
+    real(8),allocatable :: gausswidth(:)
     call f_routine(id='cal_ann_cent2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -45,7 +46,10 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call init_hartree(parini,atoms,cent%poisson)
+    allocate(gausswidth(atoms%nat))
+    gausswidth(:)=1.d0 !TO_BE_CORRECTED
+    call init_hartree(parini,atoms,cent%poisson,gausswidth)
+    deallocate(gausswidth)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then

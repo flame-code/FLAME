@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine init_hartree(parini,atoms,poisson)
+subroutine init_hartree(parini,atoms,poisson,gausswidth)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -10,7 +10,9 @@ subroutine init_hartree(parini,atoms,poisson)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: gausswidth(atoms%nat)
     !local variables
+    real(8):: kmax
     call f_routine(id='init_hartree')
     if(trim(parini%psolver)=='p3d') then
         call init_hartree_p3d(parini,atoms,poisson)
@@ -22,6 +24,32 @@ subroutine init_hartree(parini,atoms,poisson)
     endif
     if(allocated(poisson%qgrad)) deallocate(poisson%qgrad)
     allocate(poisson%qgrad(1:atoms%nat))
+
+    poisson%gw_ewald=f_malloc([1.to.atoms%nat],id='poisson%gw_ewald')
+    if(parini%ewald) then
+        poisson%qgrad_real=f_malloc([1.to.atoms%nat],id='poisson%qgrad_real')
+        poisson%gw_ewald(:)=poisson%alpha
+    end if
+
+    if(parini%ewald) then
+        !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
+        kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
+        poisson%ecut=kmax**2/2.d0
+        poisson%gw_identical=.true.
+        write(*,*)"ecut", poisson%ecut, "alpha",poisson%alpha
+    else
+        poisson%ecut=parini%ecut_ewald
+    !!!!!  else
+    !!!!!      talpha=minval(gausswidth)
+    !!!!!      kmax=2.d0/talpha*sqrt(-log(1.d3*parini%tolerance_ewald))
+    !!!!!      !kmax=2.d0/talpha*sqrt(-log(1.d-3))
+    !!!!!      ecut=kmax**2/2.d0*(4.d0*pi**2)
+    !!!!!      write(*,*)"ecut", ecut, "alpha",poisson%alpha
+    endif
+
+    if(.not. parini%ewald) then
+        poisson%gw_ewald=gausswidth
+    endif
     call f_release_routine()
 end subroutine init_hartree
 !*****************************************************************************************
@@ -37,6 +65,10 @@ subroutine fini_hartree(parini,atoms,poisson)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     call f_routine(id='fini_hartree')
+    if(parini%ewald) then
+        call f_free(poisson%qgrad_real)
+    endif
+    call f_free(poisson%gw_ewald)
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         if(trim(atoms%boundcond)=='bulk') then
             if(trim(parini%psolver)=='bigdft') then
@@ -315,35 +347,9 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     !local variables
     real(8):: epotreal !, pi
     !integer:: iat
-    real(8):: stress(3,3), kmax !, talpha
+    real(8):: stress(3,3) !, talpha
     call f_routine(id='get_hartree')
     call f_timing(TCAT_PSOLVER,'ON')
-
-    poisson%gw_ewald=f_malloc([1.to.atoms%nat],id='poisson%gw_ewald')
-    if(parini%ewald) then
-        poisson%qgrad_real=f_malloc([1.to.atoms%nat],id='poisson%qgrad_real')
-        poisson%gw_ewald(:)=poisson%alpha
-    end if
-
-    if(parini%ewald) then
-        !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
-        kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
-        poisson%ecut=kmax**2/2.d0
-        poisson%gw_identical=.true.
-        write(*,*)"ecut", poisson%ecut, "alpha",poisson%alpha
-    else
-        poisson%ecut=parini%ecut_ewald
-    !!!!!  else
-    !!!!!      talpha=minval(gausswidth)
-    !!!!!      kmax=2.d0/talpha*sqrt(-log(1.d3*parini%tolerance_ewald))
-    !!!!!      !kmax=2.d0/talpha*sqrt(-log(1.d-3))
-    !!!!!      ecut=kmax**2/2.d0*(4.d0*pi**2)
-    !!!!!      write(*,*)"ecut", ecut, "alpha",poisson%alpha
-    endif
-
-    if(.not. parini%ewald) then
-        poisson%gw_ewald=gausswidth
-    endif
     
     if(poisson%cal_qgrad) then
         poisson%qgrad(1:atoms%nat)=0.d0
@@ -357,10 +363,6 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
         poisson%qgrad=poisson%qgrad+poisson%qgrad_real
     end if
 
-    if(parini%ewald) then
-        call f_free(poisson%qgrad_real)
-    endif
-    call f_free(poisson%gw_ewald)
     call f_timing(TCAT_PSOLVER,'OF')
     call f_release_routine()
 end subroutine get_hartree

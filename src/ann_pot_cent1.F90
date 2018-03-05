@@ -273,6 +273,7 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
+    real(8),allocatable :: gausswidth(:)
     !local variables
     integer:: iat, jat
     real(8):: vol, c
@@ -296,7 +297,10 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
         endif
     end if
     if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
-        call init_hartree(parini,atoms,poisson)
+        allocate(gausswidth(atoms%nat))
+        gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+        call init_hartree(parini,atoms,poisson,gausswidth)
+        deallocate(gausswidth)
     else
         do iat=1,atoms%nat
             a(iat,atoms%nat+1)=1.d0
