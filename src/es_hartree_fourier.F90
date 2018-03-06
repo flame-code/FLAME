@@ -120,9 +120,9 @@ subroutine get_psolver_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,
     bnrm1=sqrt(recvec(1,1)**2+recvec(2,1)**2+recvec(3,1)**2)
     bnrm2=sqrt(recvec(1,2)**2+recvec(2,2)**2+recvec(3,2)**2)
     bnrm3=sqrt(recvec(1,3)**2+recvec(2,3)**2+recvec(3,3)**2)
-    m1_max=ceiling(sqrt(2.d0*ecut)/(bnrm1*4.d0*pisq))
-    m2_max=ceiling(sqrt(2.d0*ecut)/(bnrm2*4.d0*pisq))
-    m3_max=ceiling(sqrt(2.d0*ecut)/(bnrm3*4.d0*pisq))
+    m1_max=ceiling(sqrt(2.d0*ecut)/(bnrm1*2.d0*pi))
+    m2_max=ceiling(sqrt(2.d0*ecut)/(bnrm2*2.d0*pi))
+    m3_max=ceiling(sqrt(2.d0*ecut)/(bnrm3*2.d0*pi))
     if(iverbose>=3) then
         write(*,'(a,3i4)') 'm1_max,m2_max,m3_max',m1_max,m2_max,m3_max
     endif

@@ -9,7 +9,8 @@ potential:
     ewald:
         ewald: False
         psolver: kwald 
-        ecut: 900.0
+        #ecut: 10.132118364233778
+        ecut: 22.797266319526
         #hx: 1.5
         #hy: 1.5
         #hz: 1.5

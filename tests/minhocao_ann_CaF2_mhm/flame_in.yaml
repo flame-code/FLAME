@@ -8,7 +8,7 @@ potential:
     add_repulsive: False
     ewald:
         psolver: kwald
-        ecut: 250.0
+        ecut: 6.332573977646111
 
 ann:
     approach: eem1
