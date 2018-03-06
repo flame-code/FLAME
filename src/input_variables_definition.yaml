@@ -115,7 +115,8 @@
      hy: -1.0
      hz: -1.0
      alpha: -1.0
-     ecut: 250.0
+     ecut: -1.0
+     ecutz: -1.0
      rcut: -1.0
      rgcut: -1.0
      nsp: -1

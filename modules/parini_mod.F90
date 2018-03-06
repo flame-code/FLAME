@@ -148,7 +148,8 @@ module mod_parini
         real(8):: hy_ewald=-1.d0
         real(8):: hz_ewald=-1.d0
         real(8):: alpha_ewald=-1.d0
-        real(8):: ecut_ewald=250.d0
+        real(8):: ecut_ewald=-1.d0
+        real(8):: ecutz_ewald=-1.d0
         real(8):: rcut_ewald=-1.d0
         real(8):: rgcut_ewald=-1.d0
         real(8):: vu_ewald=0.d0
