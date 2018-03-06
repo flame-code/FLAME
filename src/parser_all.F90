@@ -518,6 +518,7 @@ subroutine get_ewald_parameters(file_ini,parini)
         call get_one_param(file_ini,'ewald',log_var=parini%ewald)
         call get_one_param(file_ini,'ewald_tol',real_var=parini%tolerance_ewald)
         call get_one_param(file_ini,'psolver',char_var=parini%psolver)
+        call get_one_param(file_ini,'cell_ortho',log_var=parini%cell_ortho)
     enddo
 end subroutine get_ewald_parameters
 !*****************************************************************************************

@@ -519,11 +519,12 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
     nx=cent%poisson%ngpx
     ny=cent%poisson%ngpy
     nz=cent%poisson%ngpz
-    bc=trim(atoms%boundcond)
-    call put_gto_sym(parini,bc,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%zat, &
-        cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
-    call put_gto_sym(parini,bc,.false.,atoms%nat,cent%rel,atoms%cellvec,atoms%qat, &
-        cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+    cent%poisson%reset_rho=.true.
+    call put_charge_density(parini,cent%poisson,atoms%boundcond,atoms%nat,atoms%rat, &
+        atoms%cellvec,atoms%zat,cent%gwit)
+    cent%poisson%reset_rho=.false.
+    call put_charge_density(parini,cent%poisson,atoms%boundcond,atoms%nat,cent%rel, &
+        atoms%cellvec,atoms%qat,cent%gwe)
 end subroutine put_gauss_to_grid
 !*****************************************************************************************
 subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)

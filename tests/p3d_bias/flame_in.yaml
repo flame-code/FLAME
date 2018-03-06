@@ -5,9 +5,10 @@ main:
 potential:
     potential : forcefield
     component_ff : coulomb
-    cal_charge : .true.
+    cal_charge : True
     ewald:
         psolver: p3d
+        cell_ortho: True
         ecut : 10.071024899070775
         ecutz : 19.739208802178716
         alpha : 2.26767135342053
@@ -16,7 +17,7 @@ potential:
         nsp : 10000
         plane_voltageu : 0.036749323858
         plane_voltagel : 0.000000000000
-        ewald : .true.
+        ewald : True
         bias_type: p3dbias
 
 single_point:

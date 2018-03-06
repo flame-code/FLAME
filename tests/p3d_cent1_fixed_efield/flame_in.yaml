@@ -9,6 +9,7 @@ potential:
     ewald:
         ewald : True
         psolver: p3d
+        cell_ortho: True
         #ecut: 2.5177562247676937
         #ecutz: 3.4269459726004716
         ecut: 7.710628438351059

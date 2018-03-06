@@ -247,10 +247,9 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     call f_release_routine()
 end subroutine init_hartree_p3d
 !*****************************************************************************************
-subroutine put_charge_density(parini,poisson,atoms,gausswidth)
+subroutine put_charge_density(parini,poisson,bc,nat,rxyz,cv,q,gausswidth)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use time_profiling
     use mod_timing , only: TCAT_PSOLVER
@@ -258,22 +257,40 @@ subroutine put_charge_density(parini,poisson,atoms,gausswidth)
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_poisson),intent(inout):: poisson
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gausswidth(atoms%nat)
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: q(nat)
+    real(8), intent(in):: gausswidth(nat)
     !local variables
-    if(trim(parini%psolver)=='kwald' .and. trim(atoms%boundcond)/='bulk') then
+    if(trim(parini%psolver)=='kwald' .and. trim(bc)/='bulk') then
         write(*,*) 'ERROR: kwald works only with bulk BC.'
     endif
-    if(trim(parini%psolver)=='p3d' .and. trim(atoms%boundcond)/='slab') then
+    if(trim(parini%psolver)=='p3d' .and. trim(bc)/='slab') then
         write(*,*) 'ERROR: P3D works only with slab BC.'
     endif
     !-----------------------------------------------------------------
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
-        case('bigdft','p3d')
-            call put_gto_sym_ortho(parini,atoms%boundcond,poisson%reset_rho, &
-                atoms%nat,atoms%rat,atoms%qat,gausswidth,poisson)
+        case('bigdft')
+            if(parini%cell_ortho) then
+                call put_gto_sym_ortho(parini,bc,poisson%reset_rho, &
+                    nat,rxyz,q,gausswidth,poisson)
+            else
+                call put_gto_sym(parini,bc,poisson%reset_rho,nat,rxyz,cv,q, &
+                    gausswidth,poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+                    poisson%rho)
+            endif
+        case('p3d')
+            if(parini%cell_ortho) then
+                call put_gto_sym_ortho(parini,bc,poisson%reset_rho, &
+                    nat,rxyz,q,gausswidth,poisson)
+            else
+                write(*,*) 'ERROR: P3D works only with orthogonal cell.'
+                stop
+            endif
         case default
             write(*,*) 'ERROR: unknown method for hartree calculation.'
             stop

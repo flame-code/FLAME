@@ -6,6 +6,7 @@
    component_ff: coulomb
    ewald:
      psolver: p3d
+     cell_ortho: True
      ecut: 5.52754141862141
      ecutz: 15.354281718392803
      alpha: 2.26767135342053

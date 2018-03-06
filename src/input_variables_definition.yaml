@@ -127,6 +127,7 @@
      gnrmtol: 1.E-7
      psolver: unknown
      ewald: False
+     cell_ortho: False
      ewald_tol: 1.E-6
      bias_type: no
      external_field: 0.0

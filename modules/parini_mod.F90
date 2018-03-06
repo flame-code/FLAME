@@ -157,6 +157,7 @@ module mod_parini
         real(8):: tolerance_ewald = 1.d-6
         real(8):: efield !external electric field
         logical :: ewald=.false.
+        logical :: cell_ortho=.false.
         character(256):: bias_type='no'
         character(50):: psolver='unknown'
         !-----------------------------------------------------------------------

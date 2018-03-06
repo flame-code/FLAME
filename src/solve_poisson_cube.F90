@@ -48,7 +48,8 @@ subroutine solve_poisson(parini)
     !allocate(poisson_ion%mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz),stat=istat)
     !if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'
     poisson_ion%reset_rho=.true.
-    call put_charge_density(parini,poisson_ion,atoms,gausswidth)
+    call put_charge_density(parini,poisson_ion,atoms%boundcond,atoms%nat,atoms%rat, &
+        atoms%cellvec,atoms%qat,gausswidth)
     t1=0.d0
     t2=0.d0
     t3=0.d0

@@ -337,6 +337,7 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%efield=parini%subsubdict//"external_field"
     parini%bias_type=parini%subsubdict//"bias_type"
     parini%psolver=parini%subsubdict//"psolver"
+    parini%cell_ortho=parini%subsubdict//"cell_ortho"
 end subroutine yaml_get_ewald_parameters
 !*****************************************************************************************
 subroutine yaml_get_misc_parameters(parini)
