@@ -297,6 +297,86 @@ subroutine put_charge_density(parini,poisson,bc,nat,rxyz,cv,q,gausswidth)
     end select
 end subroutine put_charge_density
 !*****************************************************************************************
+subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use time_profiling
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree
+    !local variables
+    select case(trim(parini%psolver))
+        case('kwald')
+            call get_psolver_fourier(parini,poisson,atoms,gausswidth, &
+                ehartree,poisson%qgrad)
+        case('bigdft')
+            call get_psolver_bps(poisson,atoms,ehartree)
+        case('p3d')
+                call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree)
+        case default
+            write(*,*) 'ERROR: unknown method for hartree calculation.'
+            stop
+    end select
+end subroutine get_psolver
+!*****************************************************************************************
+subroutine get_hartree_grad_rho(parini,poisson,atoms,gausswidth,ehartree)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use time_profiling
+    use mod_timing , only: TCAT_PSOLVER
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree
+    !local variables
+    select case(trim(parini%psolver))
+        case('kwald')
+            !do nothing
+        case('bigdft','p3d')
+            call qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,poisson%qgrad)
+            call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+        case default
+            write(*,*) 'ERROR: unknown method for hartree calculation.'
+            stop
+    end select
+end subroutine get_hartree_grad_rho
+!*****************************************************************************************
+subroutine get_hartree_force(parini,poisson,atoms,gausswidth)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use time_profiling
+    use mod_timing , only: TCAT_PSOLVER
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    !local variables
+    select case(trim(parini%psolver))
+        case('kwald')
+            !do nothing
+        case('bigdft','p3d')
+            call force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
+        case default
+            write(*,*) 'ERROR: unknown method for hartree calculation.'
+            stop
+    end select
+end subroutine get_hartree_force
+!*****************************************************************************************
 subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -335,45 +415,17 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     !once more because fat is set to zero after dU/dq=0 in CENT
     ind=index(poisson%task_get,'cal_poisson')
     if(ind>0 .or. trim(parini%psolver)=='kwald') then
-        select case(trim(parini%psolver))
-            case('kwald')
-                call get_psolver_fourier(parini,poisson,atoms,gausswidth, &
-                    ehartree,poisson%qgrad)
-            case('bigdft')
-                call get_psolver_bps(poisson,atoms,ehartree)
-            case('p3d')
-                    call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree)
-            case default
-                write(*,*) 'ERROR: unknown method for hartree calculation.'
-                stop
-        end select
+        call get_psolver(parini,poisson,atoms,gausswidth,ehartree)
     endif
     !-----------------------------------------------------------------
     ind=index(poisson%task_get,'cal_qgrad')
     if(ind>0) then
-        select case(trim(parini%psolver))
-            case('kwald')
-                !do nothing
-            case('bigdft','p3d')
-                call qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,poisson%qgrad)
-                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
-            case default
-                write(*,*) 'ERROR: unknown method for hartree calculation.'
-                stop
-        end select
+        call get_hartree_grad_rho(parini,poisson,atoms,gausswidth,ehartree)
     endif
     !-----------------------------------------------------------------
     ind=index(poisson%task_get,'cal_force')
     if(ind>0) then
-        select case(trim(parini%psolver))
-            case('kwald')
-                !do nothing
-            case('bigdft','p3d')
-                call force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
-            case default
-                write(*,*) 'ERROR: unknown method for hartree calculation.'
-                stop
-        end select
+        call get_hartree_force(parini,poisson,atoms,gausswidth)
     endif
     !-----------------------------------------------------------------
 end subroutine get_hartree_simple
