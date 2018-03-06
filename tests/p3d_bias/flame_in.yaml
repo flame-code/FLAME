@@ -8,8 +8,8 @@ potential:
     cal_charge : .true.
     ewald:
         psolver: p3d
-        hx : 0.7
-        hz : 0.5
+        ecut : 10.071024899070775
+        ecutz : 19.739208802178716
         alpha : 2.26767135342053
         rcut : 15.684726861158667
         rgcut : 9.0
