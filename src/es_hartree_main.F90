@@ -404,7 +404,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
         poisson%qgrad(1:atoms%nat)=0.d0
     endif
     call get_hartree_simple(parini,poisson,atoms,poisson%gw_ewald,ehartree)
-    if(parini%ewald) then
+    if(parini%ewald .and. trim(parini%approach_ann)/='cent2') then
         epotreal=0.d0
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,poisson%qgrad_real,stress)
         atoms%stress=atoms%stress+stress

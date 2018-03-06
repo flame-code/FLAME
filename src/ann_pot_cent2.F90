@@ -460,6 +460,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8):: sqrt_one_over_twopi
     integer:: iat
+    real(8),allocatable :: gausswidth(:)
     !logical:: ewald
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
@@ -479,7 +480,11 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     call put_gauss_to_grid(parini,atoms,cent)
     call cpu_time(time2)
     ehartree=0.d0
-    call get_psolver_bps(cent%poisson,atoms,ehartree)
+    allocate(gausswidth(atoms%nat))
+    gausswidth(:)=1.d0 !TO_BE_CORRECTED
+    cent%poisson%task_get="cal_poisson"
+    call get_hartree(parini,cent%poisson,atoms,gausswidth,ehartree)
+    deallocate(gausswidth)
     epot_es=0.d0
     do iat=1,atoms%nat
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/cent%gwit(iat)
