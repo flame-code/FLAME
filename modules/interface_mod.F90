@@ -1927,7 +1927,7 @@ subroutine put_charge_density(parini,poisson,bc,nat,rxyz,cv,q,gausswidth)
     real(8), intent(in):: q(nat)
     real(8), intent(in):: gausswidth(nat)
 end subroutine put_charge_density
-subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
+subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1936,7 +1936,26 @@ subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
-end subroutine get_hartree_simple
+end subroutine get_psolver
+subroutine get_hartree_grad_rho(parini,poisson,atoms,gausswidth,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree
+end subroutine get_hartree_grad_rho
+subroutine get_hartree_force(parini,poisson,atoms,gausswidth)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+end subroutine get_hartree_force
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms

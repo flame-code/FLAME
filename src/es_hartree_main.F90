@@ -377,59 +377,6 @@ subroutine get_hartree_force(parini,poisson,atoms,gausswidth)
     end select
 end subroutine get_hartree_force
 !*****************************************************************************************
-subroutine get_hartree_simple(parini,poisson,atoms,gausswidth,ehartree)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
-    use dynamic_memory
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_poisson),intent(inout):: poisson
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gausswidth(atoms%nat)
-    real(8), intent(out):: ehartree
-    !local variables
-    real(8):: pi !, gtot, epotreal
-    integer:: ind
-    !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
-    !real(8):: stress(3,3), kmax, c, vol, talpha
-!    pi=4.d0*atan(1.d0)
-! !   if (parini%ewald .and. parini%alpha_ewald<0.d0) then
-!        call getvol_alborz(atoms%cellvec,vol)
-!        c=2
-!        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
-!         
-! !   end if
-    !-----------------------------------------------------------------
-    if(trim(parini%psolver)=='kwald' .and. trim(atoms%boundcond)/='bulk') then
-        write(*,*) 'ERROR: kwald works only with bulk BC.'
-    endif
-    if(trim(parini%psolver)=='p3d' .and. trim(atoms%boundcond)/='slab') then
-        write(*,*) 'ERROR: P3D works only with slab BC.'
-    endif
-    !-----------------------------------------------------------------
-    !Even if cal_poisson is false, get_psolver_fourier must be called
-    !once more because fat is set to zero after dU/dq=0 in CENT
-    ind=index(poisson%task_get,'cal_poisson')
-    if(ind>0 .or. trim(parini%psolver)=='kwald') then
-        call get_psolver(parini,poisson,atoms,gausswidth,ehartree)
-    endif
-    !-----------------------------------------------------------------
-    ind=index(poisson%task_get,'cal_qgrad')
-    if(ind>0) then
-        call get_hartree_grad_rho(parini,poisson,atoms,gausswidth,ehartree)
-    endif
-    !-----------------------------------------------------------------
-    ind=index(poisson%task_get,'cal_force')
-    if(ind>0) then
-        call get_hartree_force(parini,poisson,atoms,gausswidth)
-    endif
-    !-----------------------------------------------------------------
-end subroutine get_hartree_simple
-!*****************************************************************************************
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -455,7 +402,40 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     if(ind>0) then
         poisson%qgrad(1:atoms%nat)=0.d0
     endif
-    call get_hartree_simple(parini,poisson,atoms,poisson%gw_ewald,ehartree)
+    !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
+    !real(8):: stress(3,3), kmax, c, vol, talpha
+!    pi=4.d0*atan(1.d0)
+! !   if (parini%ewald .and. parini%alpha_ewald<0.d0) then
+!        call getvol_alborz(atoms%cellvec,vol)
+!        c=2
+!        write(*,*)"alpha optimize", 1.d0/(sqrt(pi)*(atoms%nat/vol**2)**(1.d0/6.d0))
+!         
+! !   end if
+    !-----------------------------------------------------------------
+    if(trim(parini%psolver)=='kwald' .and. trim(atoms%boundcond)/='bulk') then
+        write(*,*) 'ERROR: kwald works only with bulk BC.'
+    endif
+    if(trim(parini%psolver)=='p3d' .and. trim(atoms%boundcond)/='slab') then
+        write(*,*) 'ERROR: P3D works only with slab BC.'
+    endif
+    !-----------------------------------------------------------------
+    !Even if cal_poisson is false, get_psolver_fourier must be called
+    !once more because fat is set to zero after dU/dq=0 in CENT
+    ind=index(poisson%task_get,'cal_poisson')
+    if(ind>0 .or. trim(parini%psolver)=='kwald') then
+        call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree)
+    endif
+    !-----------------------------------------------------------------
+    ind=index(poisson%task_get,'cal_qgrad')
+    if(ind>0) then
+        call get_hartree_grad_rho(parini,poisson,atoms,poisson%gw_ewald,ehartree)
+    endif
+    !-----------------------------------------------------------------
+    ind=index(poisson%task_get,'cal_force')
+    if(ind>0) then
+        call get_hartree_force(parini,poisson,atoms,poisson%gw_ewald)
+    endif
+    !-----------------------------------------------------------------
     if(parini%ewald .and. trim(parini%approach_ann)/='cent2') then
         epotreal=0.d0
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,poisson%qgrad_real,stress)
