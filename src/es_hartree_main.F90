@@ -115,9 +115,9 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     pi=4.d0*atan(1.d0)
     ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
-    poisson_rough%hx=parini%hx_ewald
-    poisson_rough%hy=parini%hy_ewald
-    poisson_rough%hz=parini%hz_ewald
+    poisson_rough%hx=pi/sqrt(2.d0*parini%ecut_ewald)
+    poisson_rough%hy=pi/sqrt(2.d0*parini%ecut_ewald)
+    poisson_rough%hz=pi/sqrt(2.d0*parini%ecut_ewald)
     if (parini%ewald .and. parini%alpha_ewald>0.d0) then
         poisson%alpha=parini%alpha_ewald
     else if (poisson%alpha< 0.d0 .and. parini%alpha_ewald<= 0.d0) then
@@ -189,9 +189,9 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     pi=4.d0*atan(1.d0)
     ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
-    poisson_rough%hx=parini%hx_ewald
-    poisson_rough%hy=parini%hy_ewald
-    poisson_rough%hz=parini%hz_ewald
+    poisson_rough%hx=pi/sqrt(2.d0*parini%ecut_ewald)
+    poisson_rough%hy=pi/sqrt(2.d0*parini%ecut_ewald)
+    poisson_rough%hz=pi/sqrt(2.d0*parini%ecutz_ewald)
     if (parini%ewald .and. parini%alpha_ewald>0.d0) then
         poisson%alpha=parini%alpha_ewald
     else if (poisson%alpha< 0.d0 .and. parini%alpha_ewald<= 0.d0) then

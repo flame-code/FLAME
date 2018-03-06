@@ -321,9 +321,6 @@ subroutine yaml_get_ewald_parameters(parini)
     type(typ_parini), intent(inout):: parini
     !local variales
     if(dict_size(parini%subsubdict)<1) stop 'ERROR: ewald block in flame_in.yaml is empty.'
-    parini%hx_ewald=parini%subsubdict//"hx"
-    parini%hy_ewald=parini%subsubdict//"hy"
-    parini%hz_ewald=parini%subsubdict//"hz"
     parini%alpha_ewald=parini%subsubdict//"alpha"
     parini%ecut_ewald=parini%subsubdict//"ecut"
     parini%ecutz_ewald=parini%subsubdict//"ecutz"

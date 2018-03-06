@@ -144,9 +144,6 @@ module mod_parini
         !-----------------------------------------------------------------------
         !parameters of [ewald]
         integer:: nsp_ewald=-1
-        real(8):: hx_ewald=-1.d0
-        real(8):: hy_ewald=-1.d0
-        real(8):: hz_ewald=-1.d0
         real(8):: alpha_ewald=-1.d0
         real(8):: ecut_ewald=-1.d0
         real(8):: ecutz_ewald=-1.d0

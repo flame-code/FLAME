@@ -504,11 +504,9 @@ subroutine get_ewald_parameters(file_ini,parini)
         file_ini%iline=iline
         if(file_ini%stat_line_is_read(file_ini%iline)) cycle
         call split_line(file_ini)
-        call get_one_param(file_ini,'hx',real_var=parini%hx_ewald)
-        call get_one_param(file_ini,'hy',real_var=parini%hy_ewald)
-        call get_one_param(file_ini,'hz',real_var=parini%hz_ewald)
         call get_one_param(file_ini,'alpha',real_var=parini%alpha_ewald)
         call get_one_param(file_ini,'ecut',real_var=parini%ecut_ewald)
+        call get_one_param(file_ini,'ecutz',real_var=parini%ecutz_ewald)
         call get_one_param(file_ini,'rcut',real_var=parini%rcut_ewald)
         call get_one_param(file_ini,'rgcut',real_var=parini%rgcut_ewald)
         call get_one_param(file_ini,'nsp',int_var=parini%nsp_ewald)
