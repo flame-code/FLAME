@@ -169,7 +169,7 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     type(typ_poisson), intent(in):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    real(8):: dh1, dh2, harr(3), pi
+    real(8):: dh1, dh2, harr(3)
     real(8):: cell(3), vol, cvinv(3), cvinv_norm(3)
     integer:: i, ndim(3), id
     call cell_vol(atoms%nat,atoms%cellvec,vol)
@@ -187,12 +187,10 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     poisson%ngpx=int(cell(1)/poisson_rough%hx)+1
     poisson%ngpy=int(cell(2)/poisson_rough%hy)+1
     poisson%ngpz=int(cell(3)/poisson_rough%hz)+1
+    !write(*,*) poisson_rough%hx,poisson_rough%hy,poisson_rough%hz
+    !write(*,*) poisson%ngpx,poisson%ngpy,poisson%ngpz
 
 #if defined(HAVE_BPS)
-    pi=4.d0*atan(1.d0)
-    poisson%ngpx=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(1)*2.d0*pi/vol))
-    poisson%ngpy=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(2)*2.d0*pi/vol))
-    poisson%ngpz=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(3)*2.d0*pi/vol))
 
     ndim(1)=poisson%ngpx
     ndim(2)=poisson%ngpy
