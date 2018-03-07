@@ -375,7 +375,7 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     end select
 end subroutine get_hartree_grad_rho
 !*****************************************************************************************
-subroutine get_hartree_force(parini,poisson,atoms,gausswidth)
+subroutine get_hartree_force(parini,poisson,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -387,13 +387,25 @@ subroutine get_hartree_force(parini,poisson,atoms,gausswidth)
     type(typ_parini), intent(in):: parini
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gausswidth(atoms%nat)
     !local variables
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
-        case('bigdft','p3d')
-            call force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
+        case('bigdft')
+            if(parini%cell_ortho) then
+                call force_gto_sym_ortho(parini,atoms,poisson,poisson%gw)
+            else
+                call force_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart, &
+                    poisson%cv,poisson%q,poisson%gw,poisson%rgcut,poisson%ngpx, &
+                    poisson%ngpy,poisson%ngpz,poisson%pot,atoms%fat)
+            endif
+        case('p3d')
+            if(parini%cell_ortho) then
+                call force_gto_sym_ortho(parini,atoms,poisson,poisson%gw)
+            else
+                write(*,*) 'ERROR: P3D works only with orthogonal cell.'
+                stop
+            endif
         case default
             write(*,*) 'ERROR: unknown method for hartree calculation.'
             stop

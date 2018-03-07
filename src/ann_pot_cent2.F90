@@ -379,11 +379,13 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
     !local variables
     integer:: iat
     real(8):: spring_const, dx, dy, dz
-    associate(nx=>cent%poisson%ngpx)
-    associate(ny=>cent%poisson%ngpy)
-    associate(nz=>cent%poisson%ngpz)
-    call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit, &
-        cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+    cent%poisson%nat=atoms%nat
+    cent%poisson%cv=atoms%cellvec
+    cent%poisson%bc=atoms%boundcond
+    cent%poisson%q(1:cent%poisson%nat)=atoms%zat(1:atoms%nat)
+    cent%poisson%gw(1:cent%poisson%nat)=cent%gwit(1:atoms%nat)
+    cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+    call get_hartree_force(parini,cent%poisson,atoms)
     call cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     do iat=1,atoms%nat !summation over ions/electrons
         dx=cent%rel(1,iat)-atoms%rat(1,iat)
@@ -394,9 +396,6 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
         atoms%fat(2,iat)=atoms%fat(2,iat)+spring_const*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+spring_const*dz
     enddo
-    end associate
-    end associate
-    end associate
 end subroutine cent2_force
 !*****************************************************************************************
 subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
@@ -464,9 +463,6 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     !logical:: ewald
     pi=4.d0*atan(1.d0)
     sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
-    associate(nx=>cent%poisson%ngpx)
-    associate(ny=>cent%poisson%ngpy)
-    associate(nz=>cent%poisson%ngpz)
     !-------------------------------------------------------
     atoms%stress=0.d0
     !-------------------------------------------------------
@@ -514,10 +510,6 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     !    write(61,'(i4,4f10.5)') iat,rgrad(1,iat),rgrad(2,iat),rgrad(3,iat),qgrad(iat)
     !enddo
     !stop 'TESTING EWALD'
-
-    end associate
-    end associate
-    end associate
 end subroutine cal_pot_with_bps
 !*****************************************************************************************
 subroutine put_gauss_to_grid(parini,atoms,cent)

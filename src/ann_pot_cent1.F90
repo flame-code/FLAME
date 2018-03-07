@@ -416,7 +416,8 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
         call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
-        call get_hartree_force(parini,poisson,atoms,poisson%gw_ewald)
+        poisson%gw(1:poisson%nat)=poisson%gw_ewald(1:poisson%nat)
+        call get_hartree_force(parini,poisson,atoms)
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
     endif
