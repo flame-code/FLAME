@@ -9,11 +9,16 @@ potential:
     ewald:
         ewald: False
         psolver: kwald 
+<<<<<<< TREE
         #ecut: 10.132118364233778
         ecut: 22.797266319526
         #hx: 1.5
         #hy: 1.5
         #hz: 1.5
+=======
+        ecut: 10.132118364233778
+        #ecut: 22.797266319526
+>>>>>>> MERGE-SOURCE
 single_point:
     print_force : True
 ann:
