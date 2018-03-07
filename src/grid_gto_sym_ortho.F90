@@ -365,6 +365,7 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,g)
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
     integer:: nbgpx, nbgpy, nbgpz, nagpx, nagpy, nagpz
+    real(8):: ttg
     nbgpx=int(poisson%rgcut/poisson%hx)+2
     nbgpy=int(poisson%rgcut/poisson%hy)+2
     nbgpz=int(poisson%rgcut/poisson%hz)+2
@@ -451,6 +452,7 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,g)
             wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
         enddo
 
+        ttg=0.d0
         do iz=-nbgpz,nbgpz
         jz=iatoz+iz
         rhoz=fac*wz(iz)
@@ -459,11 +461,11 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,g)
                 jy=iatoy+iy
                 do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
                     jx=iatox+ix
-                    g(iat)=g(iat)+rhoyz*wx(ix)*wa(jx,jy,jz)
+                    ttg=ttg+rhoyz*wx(ix)*wa(jx,jy,jz)
                 enddo
             enddo
         enddo
-        g(iat)=g(iat)*hgxhgyhgz
+        g(iat)=g(iat)+ttg*hgxhgyhgz
     enddo
     call f_free(wx)
     call f_free(wy)

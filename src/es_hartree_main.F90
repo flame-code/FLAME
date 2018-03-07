@@ -406,10 +406,6 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     call f_routine(id='get_hartree')
     call f_timing(TCAT_PSOLVER,'ON')
     
-    ind=index(poisson%task_get,'cal_qgrad')
-    if(ind>0) then
-        poisson%qgrad(1:atoms%nat)=0.d0
-    endif
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8):: stress(3,3), kmax, c, vol, talpha
 !    pi=4.d0*atan(1.d0)
@@ -434,10 +430,6 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
         call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree)
     endif
     !-----------------------------------------------------------------
-    ind=index(poisson%task_get,'cal_qgrad')
-    if(ind>0) then
-        call get_hartree_grad_rho(parini,poisson,atoms,poisson%gw_ewald,ehartree)
-    endif
     !-----------------------------------------------------------------
     ind=index(poisson%task_get,'cal_force')
     if(ind>0) then
