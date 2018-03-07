@@ -10,17 +10,10 @@ potential:
         ewald : True
         psolver: p3d
         cell_ortho: True
-<<<<<<< TREE
-        #ecut: 2.5177562247676937
-        #ecutz: 3.4269459726004716
-        ecut: 7.710628438351059
-        ecutz: 10.071024899070775
-=======
         ecut: 2.5177562247676937
         ecutz: 3.4269459726004716
         #ecut: 7.710628438351059
         #ecutz: 10.071024899070775
->>>>>>> MERGE-SOURCE
         rgcut: 6.0
         alpha: 2.0
         bias_type: fixed_efield
