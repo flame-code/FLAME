@@ -122,11 +122,11 @@ subroutine best_charge_density_rho(parini)
     dft_ener= 0.d0 
     cent%poisson%pot = 0.d0
     atoms%fat = 0.d0 
-    call construct_ewald_bps(parini,atoms,cent%poisson)
-    call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+    call init_psolver_bps(parini,atoms,cent%poisson)
+    call get_psolver_bps(cent%poisson,atoms,ehartree)
     dft_ener = ehartree 
     if (atoms%nat > 1) then
-        call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+        call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
         dft_fat = atoms%fat
     end if
     write(21,*) atoms%nat 
@@ -140,7 +140,7 @@ subroutine best_charge_density_rho(parini)
     write(21,*) ehartree
     write(21,*) cent%poisson%pot(:,ny/2,nz/2) 
     write(21,*) "------------------------------------------------------------"
-    call destruct_ewald_bps(cent%poisson)
+    call fini_psolver_bps(cent%poisson)
     write(*,'(a,es14.6,3es14.6)') "DFT1" , dft_ener , dft_fat
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!cent part!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    
@@ -160,10 +160,10 @@ subroutine best_charge_density_rho(parini)
   !eig_part!  eig(1:atoms%nat) = 0.d0
   !eig_part!  
   !eig_part!  do i = 1 , atoms%nat
-  !eig_part!      call gauss_grid(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,i),atoms%cellvec,qtemp(i),A(1,i),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+  !eig_part!      call put_gto_sym(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,i),atoms%cellvec,qtemp(i),A(1,i),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
   !eig_part!      cent_rho_1 = cent%poisson%rho
   !eig_part!      do j = i,atoms%nat
-  !eig_part!          call gauss_grid(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,j),atoms%cellvec,qtemp(j),A(1,j),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+  !eig_part!          call put_gto_sym(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,j),atoms%cellvec,qtemp(j),A(1,j),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
   !eig_part!          cent_rho_2 = cent%poisson%rho
   !eig_part!          EE(i,j) = 2.d0*invvol*sum(cent_rho_1*cent_rho_2)
   !eig_part!      end do
@@ -208,9 +208,9 @@ subroutine best_charge_density_rho(parini)
         cent%poisson%pot = 0.d0
         do i = 1 , lcn
             if (i==1) then         
-                call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+                call put_rp4gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
             else
-                call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+                call put_rp4gto_sym(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
             end if
         end do
         cent_rho = cent%poisson%rho
@@ -219,14 +219,14 @@ subroutine best_charge_density_rho(parini)
         write(*,*) "cent_rho" , volinv*sum(cent_rho) , volinv*sum(dft_rho)
         atoms%fat = 0.d0
         cent_fat = 0.d0
-        call construct_ewald_bps(parini,atoms,cent%poisson)
-        call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+        call init_psolver_bps(parini,atoms,cent%poisson)
+        call get_psolver_bps(cent%poisson,atoms,ehartree)
         cent_ener = ehartree
         if(atoms%nat > 1)  then
-            call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+            call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
             cent_fat = atoms%fat
         end if
-        call destruct_ewald_bps(cent%poisson)
+        call fini_psolver_bps(cent%poisson)
         write(66,'(i4, a)') iter ,"  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-"
         do i = 1 , atoms%nat
             do j =1 , 3 
@@ -235,7 +235,7 @@ subroutine best_charge_density_rho(parini)
         end do
         do i = 1 , typ_at
             do j = 1 , lcn
-                call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,1,rat_t(1:3,i),atoms%cellvec,Qt(j,i),At(j,i),cent%poisson%rgcut,nx,ny,nz,cent_rho_1, cent_rho_q_par, cent_rho_a_par)
+                call put_rp4gto_sym(parini,atoms%boundcond,.true.,1,rat_t(1:3,i),atoms%cellvec,Qt(j,i),At(j,i),cent%poisson%rgcut,nx,ny,nz,cent_rho_1, cent_rho_q_par, cent_rho_a_par)
                 cent_rho_1 = 0.d0
                 qpar_t(j,i) = 2.d0*volinv*sum(cent_rho_q_par*(cent_rho-dft_rho))
                 apar_t(j,i) = 2.d0*volinv*sum(cent_rho_a_par*(cent_rho-dft_rho))
@@ -315,9 +315,9 @@ subroutine best_charge_density_rho(parini)
     !Specified Atoms charge density part!
     do i = 1 , lcn
         if (i==1) then         
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.true.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
         else
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.false.,1,atoms%rat(1:3,n_at),atoms%cellvec,Q(i,n_at),A(i,n_at),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
             
         end if
     end do
@@ -327,9 +327,9 @@ subroutine best_charge_density_rho(parini)
     cent%poisson%pot = 0.d0
     do i = 1 , lcn
         if (i==1) then         
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
         else
-            call rp4gauss_grid_rzx(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
+            call put_rp4gto_sym(parini,atoms%boundcond,.false.,atoms%nat,atoms%rat,atoms%cellvec,Q(i,1:atoms%nat),A(i,1:atoms%nat),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho,cent_rho_q_par,cent_rho_a_par)
         end if
     end do
     cent_rho = cent%poisson%rho
@@ -340,16 +340,16 @@ subroutine best_charge_density_rho(parini)
         atoms%fat = 0.d0
         cent_fat = 0.d0
         cent%poisson%rho=cent_rho-(t*(cent_rho-dft_rho))
-        call construct_ewald_bps(parini,atoms,cent%poisson)
-        call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+        call init_psolver_bps(parini,atoms,cent%poisson)
+        call get_psolver_bps(cent%poisson,atoms,ehartree)
         cent_ener = ehartree
         if(atoms%nat > 1)  then
-            call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+            call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
             cent_fat = atoms%fat
         end if
         force_err = sqrt(sum((cent_fat-dft_fat)**2)/(3*atoms%nat))
         ener_err = abs(cent_ener-dft_ener)
-        call destruct_ewald_bps(cent%poisson)
+        call fini_psolver_bps(cent%poisson)
         write(77,'(3es14.6)') t,force_err,ener_err
     enddo
     do j = 1 , atoms%nat
@@ -402,8 +402,8 @@ subroutine best_charge_density_force(parini)
 
     atoms%boundcond='bulk'
     allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-    call construct_ewald_bps(parini,atoms,cent%poisson)
-    call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+    call init_psolver_bps(parini,atoms,cent%poisson)
+    call get_psolver_bps(cent%poisson,atoms,ehartree)
     atoms%zat(:)=1.d0
     nx=cent%poisson%ngpx
     ny=cent%poisson%ngpy
@@ -413,9 +413,9 @@ subroutine best_charge_density_force(parini)
     cent%gwit = 1.3d0
     atoms%fat = 0.d0
     dft_fat_1 = 0.d0
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+    call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     dft_fat_1 = atoms%fat
-    call destruct_ewald_bps(cent%poisson)
+    call fini_psolver_bps(cent%poisson)
     deallocate(cent%poisson%pot)
    !///////////////////////////2nd DFT////////////////////////////////////
     cent%poisson%rho = 0.d0
@@ -427,8 +427,8 @@ subroutine best_charge_density_force(parini)
     
     atoms%boundcond='bulk'
     allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-    call construct_ewald_bps(parini,atoms,cent%poisson)
-    call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+    call init_psolver_bps(parini,atoms,cent%poisson)
+    call get_psolver_bps(cent%poisson,atoms,ehartree)
     atoms%zat(:)=1.d0
     nx=cent%poisson%ngpx
     ny=cent%poisson%ngpy
@@ -437,9 +437,9 @@ subroutine best_charge_density_force(parini)
     cent%gwit = 1.3d0
     atoms%fat = 0.d0
     dft_fat_2 = 0.d0
-    call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+    call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
     dft_fat_2 = atoms%fat
-    call destruct_ewald_bps(cent%poisson)
+    call fini_psolver_bps(cent%poisson)
     deallocate(cent%poisson%pot)
  
     !/////////////////CENT_FORCE////////////////////////! 
@@ -481,35 +481,35 @@ subroutine best_charge_density_force(parini)
          cent%poisson%pot = 0.d0
          cent%poisson%rgcut=6.d0*maxval(abs(A))
          call acf_read(parini,'posinp_1.acf',1,atoms=atoms)
-         call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+         call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                 A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
          cent_rho_1 = cent%poisson%rho
          atoms%boundcond='bulk'
          atoms%zat = 1.d0
          cent%gwit = 1.3d0
-         call construct_ewald_bps(parini,atoms,cent%poisson)
-         call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+         call init_psolver_bps(parini,atoms,cent%poisson)
+         call get_psolver_bps(cent%poisson,atoms,ehartree)
          atoms%fat = 0.d0
-         call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+         call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
          cent_fat_1 = atoms%fat
-         call destruct_ewald_bps(cent%poisson)
+         call fini_psolver_bps(cent%poisson)
          
          cent_rho_2=0.d0
          cent%poisson%pot = 0.d0
          cent%poisson%rgcut=6.d0*maxval(abs(A))
          call acf_read(parini,'posinp_2.acf',1,atoms=atoms)
-         call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+         call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                 A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
          cent_rho_2 = cent%poisson%rho
          atoms%zat = 1.d0
          cent%gwit = 1.3d0
          atoms%boundcond='bulk'
-         call construct_ewald_bps(parini,atoms,cent%poisson)
-         call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+         call init_psolver_bps(parini,atoms,cent%poisson)
+         call get_psolver_bps(cent%poisson,atoms,ehartree)
          atoms%fat = 0.d0
-         call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+         call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
          cent_fat_2 = atoms%fat
-         call destruct_ewald_bps(cent%poisson)
+         call fini_psolver_bps(cent%poisson)
          rho_err = sqrt(sum((cent_rho_1-dft_rho_1)**2+(cent_rho_2-dft_rho_2)**2)/(nx*ny*nz))
          err_cent = dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
                              + dot_product((cent_fat_2(1,:)-dft_fat_2(1,:)),(cent_fat_2(1,:)-dft_fat_2(1,:)))
@@ -521,35 +521,35 @@ subroutine best_charge_density_force(parini)
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_1.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_1 = cent%poisson%rho
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_1 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                  
                  cent_rho_2=0.d0
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_2.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_2 = cent%poisson%rho
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_2 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                          
                  err_fdm = 0.d0
                  err_fdm = err_fdm + dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
@@ -562,35 +562,35 @@ subroutine best_charge_density_force(parini)
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_1.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_1 = cent%poisson%rho
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_1 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                  
                  cent_rho_2=0.d0
                  cent%poisson%pot = 0.d0
                  cent%poisson%rgcut=6.d0*maxval(abs(A))
                  call acf_read(parini,'posinp_2.acf',1,atoms=atoms)
-                 call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
+                 call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,Q(:,1),&
                         A(:,1),cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
                  cent_rho_2 = cent%poisson%rho
                  atoms%zat = 1.d0
                  cent%gwit = 1.3d0
                  atoms%boundcond='bulk'
-                 call construct_ewald_bps(parini,atoms,cent%poisson)
-                 call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+                 call init_psolver_bps(parini,atoms,cent%poisson)
+                 call get_psolver_bps(cent%poisson,atoms,ehartree)
                  atoms%fat = 0.d0
-                 call gauss_force(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
+                 call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,cent%gwit,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,atoms%fat)
                  cent_fat_2 = atoms%fat
-                 call destruct_ewald_bps(cent%poisson)
+                 call fini_psolver_bps(cent%poisson)
                          
                  err_fdm = 0.d0
                  err_fdm = err_fdm + dot_product((cent_fat_1(1,:)-dft_fat_1(1,:)),(cent_fat_1(1,:)-dft_fat_1(1,:)))&
@@ -645,14 +645,14 @@ subroutine best_charge_density_energy(parini)
      call acf_read(parini,'posinp.acf',1,atoms=atoms)
      atoms%boundcond='bulk'
      allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-     call construct_ewald_bps(parini,atoms,cent%poisson)
-     call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+     call init_psolver_bps(parini,atoms,cent%poisson)
+     call get_psolver_bps(cent%poisson,atoms,ehartree)
      dft_ener = ehartree
      write(*,*) "dft_Hartree : " , dft_ener
      nx=cent%poisson%ngpx
      ny=cent%poisson%ngpy
      nz=cent%poisson%ngpz
-     call destruct_ewald_bps(cent%poisson)
+     call fini_psolver_bps(cent%poisson)
      deallocate(cent%poisson%pot)
     !/////////////////CENT_ENERGY////////////////////////! 
      atoms%qat = 2.d0
@@ -663,17 +663,19 @@ subroutine best_charge_density_energy(parini)
      allocate(cent_rho(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz))
      do iter=1,huge(iter_max)
           cent%poisson%rgcut=6.d0*maxval(abs(cent%gwe))
-          call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+          call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
           cent_rho = cent%poisson%rho
           rho_err = sqrt(sum((cent_rho-dft_rho)**2)/(cent%poisson%ngpx**3))
           atoms%boundcond='bulk'
           allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-          call construct_ewald_bps(parini,atoms,cent%poisson)
-          call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+          call init_psolver_bps(parini,atoms,cent%poisson)
+          call get_psolver_bps(cent%poisson,atoms,ehartree)
           ener = ehartree
           write(*,*) "Hartree : " , ener ;
           allocate(cent%rgrad(1:3,atoms%nat),cent%qgrad(atoms%nat),agrad(atoms%nat))
-          call gauss_gradient_rzx(parini,atoms%boundcond,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,cent%rgrad,cent%qgrad,agrad)
+          call gwrqgrad_gto_sym(parini,atoms%boundcond,atoms%nat,atoms%rat, &
+              atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz, &
+              cent%poisson%pot,cent%rgrad,cent%qgrad,agrad)
           
           exit_cond =sqrt( (dft_ener-ener)**2)
           write(*,'(a,i4,2es14.5,2(2x,8f6.2))')"SD ",iter,exit_cond,rho_err,atoms%qat,cent%gwe
@@ -688,7 +690,7 @@ subroutine best_charge_density_energy(parini)
           coeff = 2.d0*(ener - dft_ener)
           atoms%qat = atoms%qat - SDA*coeff*cent%qgrad
           cent%gwe = cent%gwe - SDA*coeff*agrad
-          call destruct_ewald_bps(cent%poisson)
+          call fini_psolver_bps(cent%poisson)
           deallocate(cent%poisson%pot,cent%rgrad,cent%qgrad,agrad)
      enddo
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -696,515 +698,28 @@ subroutine best_charge_density_energy(parini)
 !!CHECKING AGRAD    atoms%qat = 1.d0
 !!CHECKING AGRAD    gweiat = 8
 !!CHECKING AGRAD    cent%gwe(gweiat) = cent%gwe(gweiat)+h
-!!CHECKING AGRAD    call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+!!CHECKING AGRAD    call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 !!CHECKING AGRAD    allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-!!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%poisson)
-!!CHECKING AGRAD    call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+!!CHECKING AGRAD    call init_psolver_bps(parini,atoms,cent%poisson)
+!!CHECKING AGRAD    call get_psolver_bps(cent%poisson,atoms,ehartree)
 !!CHECKING AGRAD    ener = ehartree
 !!CHECKING AGRAD    write(*,*) "ener2" , ener
-!!CHECKING AGRAD    call destruct_ewald_bps(cent%poisson)
+!!CHECKING AGRAD    call fini_psolver_bps(cent%poisson)
 !!CHECKING AGRAD    deallocate(cent%poisson%pot)
 !!CHECKING AGRAD    cent%gwe(gweiat)=cent%gwe(gweiat)-(2.d0*h)
-!!CHECKING AGRAD    call gauss_grid(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
+!!CHECKING AGRAD    call put_gto_sym(parini,atoms%boundcond,.true.,atoms%nat,atoms%rat,atoms%cellvec,atoms%qat,cent%gwe,cent%poisson%rgcut,nx,ny,nz,cent%poisson%rho)
 !!CHECKING AGRAD    !-----------------------------------------------------------------------------------
 !!CHECKING AGRAD    allocate(cent%poisson%pot(cent%poisson%ngpx,cent%poisson%ngpy,cent%poisson%ngpz),stat=istat)
-!!CHECKING AGRAD    call construct_ewald_bps(parini,atoms,cent%poisson)
-!!CHECKING AGRAD    call cal_hartree_pot_bps(cent%poisson,atoms,ehartree)
+!!CHECKING AGRAD    call init_psolver_bps(parini,atoms,cent%poisson)
+!!CHECKING AGRAD    call get_psolver_bps(cent%poisson,atoms,ehartree)
 !!CHECKING AGRAD    write(*,*) "ener3",ehartree
 !!CHECKING AGRAD    ener = ener - ehartree
 !!CHECKING AGRAD    ener = ener/(2.d0*h)
 !!CHECKING AGRAD    write(*,*) "agrad(",gweiat,")",ener ;
-!!CHECKING AGRAD    call destruct_ewald_bps(cent%poisson)
+!!CHECKING AGRAD    call fini_psolver_bps(cent%poisson)
 !!CHECKING AGRAD    deallocate(cent%poisson%pot)
 !!CHECKING AGRAD    
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end subroutine best_charge_density_energy
 
-!*****************************************************************************************
-subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
-    use mod_parini, only: typ_parini
-    use dynamic_memory
-    implicit none
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat) 
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
-    real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
-    !local variables
-    !work arrays to save the values of one dimensional gaussian function.
-    real(8):: pi
-    real(8):: facqiat, fac
-    real(8):: vol
-    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
-    real(8):: hrxinv, hryinv, hrzinv
-    real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1, tta
-    real(8):: dmsq, gwsq_inv, gw_inv
-    real(8):: ximg, yimg, zimg
-    integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
-    real(8), allocatable:: wa(:,:,:)
-    real(8), allocatable:: ratred(:,:)
-    real(8), allocatable:: exponentval(:), expval(:)
-    real(8), allocatable:: dmxarr(:), dmyarr(:), dmzarr(:)
-    real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
-
-    allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
-    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
-    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
-    wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
-    allocate(dmxarr(-nbgx:nbgx),dmyarr(-nbgx:nbgx),dmzarr(-nbgx:nbgx))
-   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
-
-    hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
-    hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
-    hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
-    !-------------------------------------------------------
-    pi=4.d0*atan(1.d0)
-    !---------------------------------------------------------------------------
-    istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
-    igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
-    istarty = modulo((-nagy),ngy)+1
-    istartz = modulo((-nagz),ngz)+1
-    iiz=istartz-1
-
-    do igz=1-nagz,ngz+nagz
-        iiy=istarty-1
-        iiz=iiz+1
-        if (iiz==ngz+1) iiz=1
-        do igy=1-nagy,ngy+nagy
-            iiy=iiy+1
-            if (iiy==ngy+1) iiy=1
-            iix=istartx-1
-            do igx=1-nagx,igxs-1
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-            do igx=igxs,igxf-1,ngx
-                do iix=1,ngx
-                    jgx=igx+iix-1
-                    wa(jgx,igy,igz)=pot(iix,iiy,iiz)
-                enddo
-            enddo
-            iix=0
-            do igx=igxf,ngx+nagx
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-        enddo
-    enddo
-    !-------------------------------------------------------
-    vol_voxel=vol/(ngx*ngy*ngz)
-    do iat=1,nat
-        gw_inv = 1.d0/gw(iat)
-        gwsq_inv=1.d0/gw(iat)**2
-        fac=1.d0/(gw(iat)*sqrt(pi))**3
-        imgx=nint(ratred(1,iat)*hrxinv)+1
-        imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
-        facqiat=fac*qat(iat)
-        ttq=0.d0
-        ttx=0.d0
-        tty=0.d0
-        ttz=0.d0
-        !------------------------
-        tta=0.d0
-        do igz=-nbgz,nbgz
-            jgz=igz+imgz
-            hzx_g=(jgz-1)*hzx
-            hzy_g=(jgz-1)*hzy
-            hzz_g=(jgz-1)*hzz
-            do igy=-nbgy,nbgy
-                igzysq=igz**2+igy**2
-                if(igzysq>nlimsq) cycle
-                jgy=igy+imgy
-                hyx_g=(jgy-1)*hyx
-                hyy_g=(jgy-1)*hyy
-                hyz_g=(jgy-1)*hyz
-                tt=nlimsq-igzysq
-                iix=min(floor(sqrt(tt)),nbgx)
-                do igx=-iix,iix
-                    jgx=igx+imgx
-                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
-                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
-                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
-                    dmxarr(igx)=ximg-rxyz(1,iat)
-                    dmyarr(igx)=yimg-rxyz(2,iat)
-                    dmzarr(igx)=zimg-rxyz(3,iat)
-                    dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
-                    exponentval(igx)=-dmsq*gwsq_inv
-                enddo
-                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
-                do igx=-iix,iix
-                    ttq=ttq+fac*expval(igx)*wa(igx+imgx,jgy,jgz)
-                    tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
-                    ttx=ttx+tt1*dmxarr(igx)
-                    tty=tty+tt1*dmyarr(igx)
-                    ttz=ttz+tt1*dmzarr(igx)
-                    !-----------------------
-                    tta=tta+(-3.d0 - (2.d0*exponentval(igx)))*facqiat*gw_inv*expval(igx)*wa(igx+imgx,jgy,jgz)
-
-                    !_______________________
-                enddo
-            enddo
-        enddo
-        qgrad(iat)=qgrad(iat)+ttq*vol_voxel
-        rgrad(1,iat)=rgrad(1,iat)+ttx*vol_voxel
-        rgrad(2,iat)=rgrad(2,iat)+tty*vol_voxel
-        rgrad(3,iat)=rgrad(3,iat)+ttz*vol_voxel
-        !-----------------------
-        agrad(iat) = agrad(iat)+tta*vol_voxel
-        !_______________________
-    enddo
-    !---------------------------------------------------------------------------
-    deallocate(ratred)
-    deallocate(exponentval,expval)
-    deallocate(dmxarr,dmyarr,dmzarr)
-    call f_free(wa)
-end subroutine gauss_gradient_rzx
-!*****************************************************************************************
-!*****************************************************************************************
-subroutine gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
-    use mod_parini, only: typ_parini
-    use dynamic_memory
-    implicit none
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
-    !local variables
-    !work arrays to save the values of one dimensional gaussian function.
-    real(8):: pi
-    real(8):: facqiat, fac
-    real(8):: vol
-    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
-    real(8):: hrxinv, hryinv, hrzinv
-    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv, gw_inv, gwcub_inv
-    real(8):: ximg, yimg, zimg
-    integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
-    real(8), allocatable:: wa(:,:,:),wb(:,:,:),wc(:,:,:)
-    real(8), allocatable:: ratred(:,:)
-    real(8), allocatable:: exponentval(:), expval(:)
-    real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
-
-    allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
-    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
-    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
-    wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    wb=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wb')
-    wc=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wc')
-    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
-   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
-
-    hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
-    hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
-    hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
-    !-------------------------------------------------------
-    pi=4.d0*atan(1.d0)
-    sqpi=sqrt(pi)
-    !-------------------------------------------------------
-    do iat=1,nat
-        gw_inv=1.d0/gw(iat)
-        gwsq_inv=gw_inv*gw_inv
-        gwcub_inv=gw_inv*gwsq_inv
-        fac=1.d0/(gw(iat)*sqpi)**3
-        facqiat=fac*qat(iat)
-        imgx=nint(ratred(1,iat)*hrxinv)+1
-        imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
-        do igz=-nbgz,nbgz
-            jgz=igz+imgz
-            hzx_g=(jgz-1)*hzx
-            hzy_g=(jgz-1)*hzy
-            hzz_g=(jgz-1)*hzz
-            do igy=-nbgy,nbgy
-                igzysq=igz**2+igy**2
-                if(igzysq>nlimsq) cycle
-                jgy=igy+imgy
-                hyx_g=(jgy-1)*hyx
-                hyy_g=(jgy-1)*hyy
-                hyz_g=(jgy-1)*hyz
-                tt=nlimsq-igzysq
-                iix=min(floor(sqrt(tt)),nbgx)
-                do igx=-iix,iix
-                    jgx=igx+imgx
-                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
-                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
-                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
-                    dmx=ximg-rxyz(1,iat)
-                    dmy=yimg-rxyz(2,iat)
-                    dmz=zimg-rxyz(3,iat)
-                    dmsq=dmx**2+dmy**2+dmz**2
-                    exponentval(igx)=-dmsq*gwsq_inv
-                enddo
-                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
-                wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*expval(-iix:iix)
-                wb(imgx-iix:imgx+iix,jgy,jgz)=wb(imgx-iix:imgx+iix,jgy,jgz)+fac*expval(-iix:iix)
-                wc(imgx-iix:imgx+iix,jgy,jgz)=wc(imgx-iix:imgx+iix,jgy,jgz)+(-2.d0*exponentval(-iix:iix) - 3.d0)*gw_inv*facqiat*expval(-iix:iix)
-
-            enddo
-        enddo
-    enddo
-    !---------------------------------------------------------------------------
-    if(reset) then
-        !if the input array of charge density does not contain any previous value
-        !wanted to be preserved.
-        rho = 0.d0
-        rho_a_par = 0.d0
-        rho_q_par = 0.d0
-    endif
-        !if the input array of charge density already some value that must be preserved.
-    istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
-    igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
-    istarty = modulo((-nagy),ngy)+1
-    istartz = modulo((-nagz),ngz)+1
-    iiz=istartz-1
-
-    do igz=1-nagz,ngz+nagz
-        iiy=istarty-1
-        iiz=iiz+1
-        if (iiz==ngz+1) iiz=1
-        do igy=1-nagy,ngy+nagy
-            iiy=iiy+1
-            if (iiy==ngy+1) iiy=1
-            iix=istartx-1
-            do igx=1-nagx,igxs-1
-                iix=iix+1
-                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
-                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
-                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
-            enddo
-            do igx=igxs,igxf-1,ngx
-                do iix=1,ngx
-                    jgx=igx+iix-1
-                    rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(jgx,igy,igz)
-                    rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(jgx,igy,igz)
-                    rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(jgx,igy,igz)
-                enddo
-            enddo
-            iix=0
-            do igx=igxf,ngx+nagx
-                iix=iix+1
-                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
-                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
-                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
-            enddo
-        enddo
-    enddo
-    !---------------------------------------------------------------------------
-    deallocate(ratred)
-    deallocate(exponentval,expval)
-    call f_free(wa)
-end subroutine gauss_grid_rzx
-!*****************************************************************************************
-!*****************************************************************************************
-subroutine rp4gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
-    use mod_parini, only: typ_parini
-    use dynamic_memory
-    implicit none
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
-    !local variables
-    !work arrays to save the values of one dimensional gaussian function.
-    real(8):: pi
-    real(8):: facqiat, fac
-    real(8):: vol
-    real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
-    real(8):: hrxinv, hryinv, hrzinv
-    real(8):: dmx, dmy, dmz, dmsq, gwsq_inv, gw_inv, gwcub_inv
-    real(8):: ximg, yimg, zimg
-    integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
-    real(8), allocatable:: wa(:,:,:),wb(:,:,:),wc(:,:,:)
-    real(8), allocatable:: ratred(:,:)
-    real(8), allocatable:: exponentval(:), expval(:),rp4(:)
-    real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
-
-    allocate(ratred(3,nat))
-    call gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
-    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
-    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
-    wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    wb=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wb')
-    wc=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wc')
-    allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx),rp4(-nbgx:nbgx))
-   !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
-
-    hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
-    hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
-    hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
-    !-------------------------------------------------------
-    pi=4.d0*atan(1.d0)
-    sqpi=sqrt(pi)
-    !-------------------------------------------------------
-    do iat=1,nat
-        gw_inv=1.d0/gw(iat)
-        gwsq_inv=gw_inv*gw_inv
-        gwcub_inv=gw_inv*gwsq_inv
-        fac=4.d0/(15.d0*(gw(iat)**7)*(sqpi**3))
-        facqiat=fac*qat(iat)
-        imgx=nint(ratred(1,iat)*hrxinv)+1
-        imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
-        do igz=-nbgz,nbgz
-            jgz=igz+imgz
-            hzx_g=(jgz-1)*hzx
-            hzy_g=(jgz-1)*hzy
-            hzz_g=(jgz-1)*hzz
-            do igy=-nbgy,nbgy
-                igzysq=igz**2+igy**2
-                if(igzysq>nlimsq) cycle
-                jgy=igy+imgy
-                hyx_g=(jgy-1)*hyx
-                hyy_g=(jgy-1)*hyy
-                hyz_g=(jgy-1)*hyz
-                tt=nlimsq-igzysq
-                iix=min(floor(sqrt(tt)),nbgx)
-                do igx=-iix,iix
-                    jgx=igx+imgx
-                    ximg=(jgx-1)*hxx+hyx_g+hzx_g    
-                    yimg=(jgx-1)*hxy+hyy_g+hzy_g
-                    zimg=(jgx-1)*hxz+hyz_g+hzz_g
-                    dmx=ximg-rxyz(1,iat)
-                    dmy=yimg-rxyz(2,iat)
-                    dmz=zimg-rxyz(3,iat)
-                    dmsq=dmx**2+dmy**2+dmz**2
-                    exponentval(igx)=-dmsq*gwsq_inv
-                    rp4(igx)=dmsq**2
-                enddo
-                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
-                wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*rp4(-iix:iix)*expval(-iix:iix)
-                wb(imgx-iix:imgx+iix,jgy,jgz)=wb(imgx-iix:imgx+iix,jgy,jgz)+fac*rp4(-iix:iix)*expval(-iix:iix)
-                wc(imgx-iix:imgx+iix,jgy,jgz)=wc(imgx-iix:imgx+iix,jgy,jgz)+facqiat*rp4(-iix:iix)*expval(-iix:iix)*(-7.d0 - 2.d0*exponentval(-iix:iix))*gw_inv
-
-            enddo
-        enddo
-    enddo
-    !---------------------------------------------------------------------------
-    if(reset) then
-        !if the input array of charge density does not contain any previous value
-        !wanted to be preserved.
-        rho = 0.d0
-        rho_a_par = 0.d0
-        rho_q_par = 0.d0
-    endif
-        !if the input array of charge density already some value that must be preserved.
-    istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
-    igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
-    istarty = modulo((-nagy),ngy)+1
-    istartz = modulo((-nagz),ngz)+1
-    iiz=istartz-1
-
-    do igz=1-nagz,ngz+nagz
-        iiy=istarty-1
-        iiz=iiz+1
-        if (iiz==ngz+1) iiz=1
-        do igy=1-nagy,ngy+nagy
-            iiy=iiy+1
-            if (iiy==ngy+1) iiy=1
-            iix=istartx-1
-            do igx=1-nagx,igxs-1
-                iix=iix+1
-                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
-                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
-                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
-            enddo
-            do igx=igxs,igxf-1,ngx
-                do iix=1,ngx
-                    jgx=igx+iix-1
-                    rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(jgx,igy,igz)
-                    rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(jgx,igy,igz)
-                    rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(jgx,igy,igz)
-                enddo
-            enddo
-            iix=0
-            do igx=igxf,ngx+nagx
-                iix=iix+1
-                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
-                rho_q_par(iix,iiy,iiz)=rho_q_par(iix,iiy,iiz)+wb(igx,igy,igz)
-                rho_a_par(iix,iiy,iiz)=rho_a_par(iix,iiy,iiz)+wc(igx,igy,igz)
-            enddo
-        enddo
-    enddo
-    !---------------------------------------------------------------------------
-    deallocate(ratred)
-    deallocate(exponentval,expval)
-    call f_free(wa)
-end subroutine rp4gauss_grid_rzx
 !*****************************************************************************************

@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine ps2dp1df_construction(poisson)
+subroutine init_psolver_p3d(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
@@ -8,7 +8,7 @@ subroutine ps2dp1df_construction(poisson)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iz
-    call f_routine(id='ps2dp1df_construction')
+    call f_routine(id='init_psolver_p3d')
     poisson%plan_f=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_f')
     poisson%plan_b=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_b')
     do iz=1,poisson%ngpz
@@ -18,9 +18,9 @@ subroutine ps2dp1df_construction(poisson)
             poisson%ngpy,poisson%pot(1,1,iz),poisson%pot(1,1,iz),fftw_estimate)
     enddo
     call f_release_routine()
-end subroutine ps2dp1df_construction
+end subroutine init_psolver_p3d
 !*****************************************************************************************
-subroutine ps2dp1df_destruction(poisson)
+subroutine fini_psolver_p3d(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -39,9 +39,9 @@ subroutine ps2dp1df_destruction(poisson)
     if(istat/=0) then
         stop 'ERROR: failure deallocating plan_b of type typ_poisson'
     endif
-end subroutine ps2dp1df_destruction
+end subroutine fini_psolver_p3d
 !*****************************************************************************************
-subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
+subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
@@ -51,23 +51,13 @@ subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     real(8):: cell(3) !cell array contains size of the simulation box.
     real(8):: hx, hy, hz
     real(8):: epot
-    real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
     !local variables
     real(8):: valuengpxyinv
     integer:: igpx, igpy, igpz
-    !integer, save:: icall=0
-    !icall=icall+1
-    !write(44,'(i4,es14.5)') icall,beta
     do igpz=1,poisson%ngpz
         call dfftw_execute(poisson%plan_f(igpz))
     enddo
-    if(present(beta)) then
-        call solsyslinequ(poisson,hz,cell,beta)
-        !write(55,'(i4,es14.5)') icall,beta
-        write(*,*)"beta = ", beta
-    else
-        call solsyslinequ(poisson,hz,cell)
-    endif
+    call solve_syslinequ_p3d(poisson,hz,cell)
     do igpz=1,poisson%ngpz
         call dfftw_execute(poisson%plan_b(igpz))
     enddo
@@ -84,10 +74,10 @@ subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
         enddo
     enddo
     epot=epot*0.5d0*hx*hy*hz
-end subroutine solve_poisson_slab_p3d
+end subroutine get_psolver_p3d
 !*****************************************************************************************
 !This subroutine calculates the systems of linear equations using LAPACK routines.
-subroutine solsyslinequ(poisson,hz,cell,beta_arg)
+subroutine solve_syslinequ_p3d(poisson,hz,cell)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -96,7 +86,6 @@ subroutine solsyslinequ(poisson,hz,cell,beta_arg)
     !integrals needed to prepare the right-hand side of the systems of 
     !linear equations.
     real(8):: hz, cell(3)
-    real(8), optional:: beta_arg !beta_arg is proportion to dipole moment as it is in paper.
     !local variables
     integer, parameter:: nem=8 
     real(8):: pi, fourpi, fourpisq, gsq, gsqx, gsqy, g, hzsq
@@ -105,7 +94,7 @@ subroutine solsyslinequ(poisson,hz,cell,beta_arg)
     real(8):: e1(poisson%ngpz), e2(poisson%ngpz-1), c(poisson%ngpz)
     integer::ix,iy,iz,info,ixt,iyt
     !local variables
-    real(8):: beta
+    real(8):: beta !beta is proportion to dipole moment as it is in paper.
     pi=4.d0*atan(1.d0)
     hzsq=hz**2
     fourpi=4.d0*pi 
@@ -123,11 +112,8 @@ subroutine solsyslinequ(poisson,hz,cell,beta_arg)
     do iz=1,poisson%ngpz
         d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
     enddo
-  !  if(.not. present(beta_arg)) then
-        call calbeta(hzsq,poisson%ngpz,d(1+nem),beta)
-  !  else
-  !      beta=beta_arg
-  !  endif
+    call calbeta(hzsq,poisson%ngpz,d(1+nem),beta)
+    write(*,*)"beta = ", beta
     poisson%beta = beta
     call prepare00(poisson%ngpz,nem,d,c,hz)
     c(1)=c(1)-beta
@@ -360,7 +346,7 @@ subroutine solsyslinequ(poisson,hz,cell,beta_arg)
         enddo
     enddo
     !-----------------------------------------
-end subroutine solsyslinequ
+end subroutine solve_syslinequ_p3d
 !*****************************************************************************************
 subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
     use mod_interface

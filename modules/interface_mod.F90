@@ -354,7 +354,15 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
 end subroutine init_electrostatic_cent1
-subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
+subroutine fini_electrostatic_cent1(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine fini_electrostatic_cent1
+subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -365,7 +373,7 @@ subroutine cal_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
     real(8), intent(out):: epot_c
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
-end subroutine cal_electrostatic_cent1
+end subroutine get_electrostatic_cent1
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -394,7 +402,7 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_qat_from_chi_iter
-subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
+subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -404,7 +412,7 @@ subroutine cal_ugradient(parini,poisson,ann_arr,atoms,g,qtot)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: g(atoms%nat), qtot
-end subroutine cal_ugradient
+end subroutine get_ener_gradient_cent1
 subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -486,43 +494,6 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
     type(typ_atoms), intent(in):: atoms
     type(typ_cent), intent(inout):: cent
 end subroutine put_gauss_to_grid
-subroutine gauss_init(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(out):: ratred(3,nat), vol
-    integer, intent(out):: nlimsq, nagx, nagy, nagz, nbgx, nbgy, nbgz
-end subroutine gauss_init
-subroutine gauss_grid(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz)
-end subroutine gauss_grid
-subroutine gauss_gradient(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
-    real(8), intent(out):: rgrad(3,nat), qgrad(nat)
-end subroutine gauss_gradient
 subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -534,20 +505,6 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es
 end subroutine cal_shortrange_ewald
-subroutine gauss_force(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
-    real(8), intent(out):: fat(3,nat)
-end subroutine gauss_force
 subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -1562,48 +1519,6 @@ subroutine best_charge_density_energy(parini)
      use mod_ann, only: typ_cent, typ_ann_arr
      type(typ_parini), intent(in):: parini
 end subroutine best_charge_density_energy
-subroutine gauss_gradient_rzx(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat) 
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
-    real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
-end subroutine gauss_gradient_rzx
-subroutine gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
-end subroutine gauss_grid_rzx
-subroutine rp4gauss_grid_rzx(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gw(nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
-end subroutine rp4gauss_grid_rzx
 ! ./src/buckingham.F90 :
 subroutine set_buckingham(atoms,tosifumi)
     use mod_atoms, only: typ_atoms
@@ -1800,11 +1715,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     real(8):: cell(3)
     real(8):: hz , vlmvu, vlzumvuzl 
 end subroutine sollaplaceq
- subroutine calculate_force_ener_plane(atoms,poisson,epot)
+ subroutine calculate_force_ener_plane(atoms,poisson,epot,nbgpz)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
+    integer, intent(in):: nbgpz
     real(8):: x,y,z ,t,tl ,epot ,t1,t2
     real(8):: fatp(3,atoms%nat) 
 end subroutine calculate_force_ener_plane
@@ -1845,22 +1761,6 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     real(8):: epotlong, epotplane !, epotshort
 end subroutine bias_field_potener_forces
 ! ./src/es_coulomb_p3d.F90 :
-subroutine construct_poisson(parini,atoms,poisson)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-end subroutine construct_poisson
-subroutine destruct_poisson(parini,atoms,poisson)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-end subroutine destruct_poisson
 subroutine calculate_forces_energy(parini,poisson,atoms)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
@@ -1869,40 +1769,6 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
 end subroutine calculate_forces_energy
-subroutine calparam(parini,atoms,poisson_rough,poisson)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(in):: poisson_rough
-    type(typ_poisson), intent(inout):: poisson
-end subroutine calparam
-subroutine determine_glimitsphere(poisson)
-    use mod_electrostatics, only: typ_poisson
-    type(typ_poisson), intent(inout):: poisson
-end subroutine determine_glimitsphere
-subroutine putgaussgrid(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
-    use mod_electrostatics, only: typ_poisson
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: bc
-    logical, intent(in):: reset
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gausswidth(nat)
-    type(typ_poisson), intent(inout):: poisson
-end subroutine putgaussgrid
-subroutine longerange_forces(parini,atoms,poisson,gausswidth)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_poisson), intent(inout):: poisson
-    real(8), intent(in):: gausswidth(atoms%nat)
-end subroutine longerange_forces
 ! ./src/es_coulomb_spline.F90 :
 subroutine build_shortrange_spline(shortrange,spline,rcut,a)
     use mod_shortrange, only: typ_shortrange
@@ -1964,25 +1830,25 @@ subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
     real(16), intent(out):: funcsecder
 end subroutine exp_ar
 ! ./src/es_hartree_bps.F90 :
-subroutine cal_hartree_pot_bps(poisson,atoms,ehartree)
+subroutine get_psolver_bps(poisson,atoms,ehartree)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
-end subroutine cal_hartree_pot_bps
-subroutine construct_ewald_bps(parini,atoms,poisson)
+end subroutine get_psolver_bps
+subroutine init_psolver_bps(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
-end subroutine construct_ewald_bps
-subroutine destruct_ewald_bps(poisson)
+end subroutine init_psolver_bps
+subroutine fini_psolver_bps(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine destruct_ewald_bps
+end subroutine fini_psolver_bps
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -1993,20 +1859,7 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     type(typ_poisson), intent(inout):: poisson
 end subroutine set_ngp_bps
 ! ./src/es_hartree_fourier.F90 :
-subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
-    integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), qat(nat)
-    real(8), intent(in):: cv(3,3), gwsq(nat), ecut
-    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
-end subroutine kwald
-subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
-    integer, intent(in):: iverbose, nat
-    real(8), intent(in):: rat(3,nat), qat(nat)
-    real(8), intent(in):: cv(3,3), alphasq, ecut
-    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
-end subroutine kwald_samare
-! ./src/es_hartree_main.F90 :
-subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
+subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -2015,6 +1868,95 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,g)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree, g(atoms%nat)
+end subroutine get_psolver_fourier
+subroutine get_psolver_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
+    integer, intent(in):: iverbose, nat
+    real(8), intent(in):: rat(3,nat), qat(nat)
+    real(8), intent(in):: cv(3,3), gwsq(nat), ecut
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+end subroutine get_psolver_fourier_various
+subroutine get_psolver_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
+    integer, intent(in):: iverbose, nat
+    real(8), intent(in):: rat(3,nat), qat(nat)
+    real(8), intent(in):: cv(3,3), alphasq, ecut
+    real(8), intent(out):: ratred(3,nat), fat(3,nat), eqd(nat), ehartree, stress(3,3), celldv(3,3)
+end subroutine get_psolver_fourier_identical
+! ./src/es_hartree_main.F90 :
+subroutine init_hartree(parini,atoms,poisson,gausswidth)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: gausswidth(atoms%nat)
+end subroutine init_hartree
+subroutine fini_hartree(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine fini_hartree
+subroutine init_hartree_bps(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine init_hartree_bps
+subroutine init_hartree_p3d(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine init_hartree_p3d
+subroutine put_charge_density(parini,poisson)
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+end subroutine put_charge_density
+subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree
+end subroutine get_psolver
+subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(out):: ehartree
+end subroutine get_hartree_grad_rho
+subroutine get_hartree_force(parini,poisson,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+end subroutine get_hartree_force
+subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree
 end subroutine get_hartree
 subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     use mod_parini, only: typ_parini
@@ -2025,16 +1967,6 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: ehartree, g(atoms%nat)
 end subroutine apply_external_field
-subroutine get_g_from_pot(parini,atoms,poisson,gausswidth,g)
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    use mod_parini, only: typ_parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-    type(typ_parini), intent(in):: parini
-    real(8):: g(atoms%nat) 
-    real(8), intent(in):: gausswidth(atoms%nat)
-end subroutine get_g_from_pot
 subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     use mod_parini, only: typ_parini
     use mod_linked_lists, only: typ_linked_lists
@@ -2044,18 +1976,18 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     real(8), intent(in):: gausswidth(atoms%nat),alpha
     real(8):: gg(atoms%nat),rr
     real(8):: cell(3) , vol, stress(3,3)
-    real(8)::epotreal,alphatwoinv,ralphasq,rbetasq,rbetainv,alphasq,betainv
+    real(8)::epotreal, alphatwoinv, rbetainv, alphasq, betainv
 end subroutine real_part
 ! ./src/es_hartree_p3d.F90 :
-subroutine ps2dp1df_construction(poisson)
+subroutine init_psolver_p3d(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine ps2dp1df_construction
-subroutine ps2dp1df_destruction(poisson)
+end subroutine init_psolver_p3d
+subroutine fini_psolver_p3d(poisson)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
-end subroutine ps2dp1df_destruction
-subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
+end subroutine fini_psolver_p3d
+subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
@@ -2063,17 +1995,15 @@ subroutine solve_poisson_slab_p3d(parini,poisson,cell,hx,hy,hz,epot,beta)
     real(8):: cell(3) !cell array contains size of the simulation box.
     real(8):: hx, hy, hz
     real(8):: epot
-    real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
-end subroutine solve_poisson_slab_p3d
-subroutine solsyslinequ(poisson,hz,cell,beta_arg)
+end subroutine get_psolver_p3d
+subroutine solve_syslinequ_p3d(poisson,hz,cell)
     use mod_electrostatics, only: typ_poisson
     type(typ_poisson), intent(inout):: poisson
     real(8):: hz, cell(3)
-    real(8), optional:: beta_arg !beta_arg is proportion to dipole moment as it is in paper.
     integer, parameter:: nem=8 
     real(8):: d(poisson%ngpz+2*8) !nem was replaced by 8 to be able to compile interface_mod.F90
     real(8):: e1(poisson%ngpz), e2(poisson%ngpz-1), c(poisson%ngpz)
-end subroutine solsyslinequ
+end subroutine solve_syslinequ_p3d
 subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
     integer::ngpz,ngpzm1
     real(8)::e1(ngpz) !Diagonal elements of the matrix
@@ -2276,6 +2206,140 @@ subroutine genconf_trimer(parini,genconf)
     type(typ_parini), intent(in):: parini
     type(typ_genconf), intent(in):: genconf
 end subroutine genconf_trimer
+! ./src/grid_basic.F90 :
+subroutine get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
+    use mod_electrostatics, only: typ_poisson
+    type(typ_poisson), intent(inout):: poisson
+    integer, intent(in):: nbgpx, nbgpy, nbgpz
+    integer, intent(out):: mboundg(1:2,-nbgpy:nbgpy,-nbgpz:nbgpz)
+end subroutine get_glimitsphere
+subroutine init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(out):: ratred(3,nat), vol
+    integer, intent(out):: nlimsq, nagx, nagy, nagz, nbgx, nbgy, nbgz
+end subroutine init_grid_param
+! ./src/grid_gto_sym.F90 :
+subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
+end subroutine put_gto_sym
+subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(in):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: rgrad(3,nat), qgrad(nat)
+end subroutine rqgrad_gto_sym
+subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(in):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: fat(3,nat)
+end subroutine force_gto_sym
+subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat) 
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(in):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
+end subroutine gwrqgrad_gto_sym
+subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
+end subroutine rhograd_gto_sym
+! ./src/grid_gto_sym_ortho.F90 :
+subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
+    use mod_electrostatics, only: typ_poisson
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gausswidth(nat)
+    type(typ_poisson), intent(inout):: poisson
+end subroutine put_gto_sym_ortho
+subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: gausswidth(atoms%nat)
+end subroutine force_gto_sym_ortho
+subroutine qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,g)
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use mod_parini, only: typ_parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    type(typ_parini), intent(in):: parini
+    real(8):: g(atoms%nat) 
+    real(8), intent(in):: gausswidth(atoms%nat)
+end subroutine qgrad_gto_sym_ortho
+! ./src/grid_rp4gto_sym.F90 :
+subroutine put_rp4gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
+end subroutine put_rp4gto_sym
 ! ./src/hung.F90 :
 subroutine hung(N,A,F,Z)
       integer:: n
