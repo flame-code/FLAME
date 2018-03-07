@@ -39,9 +39,17 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !write(*,*) 'total momentum z component',beta
     !write(*,*) 'total momentum z component',0.13074051987178871d5/beta
     call cpu_time(time(1))
+    if(.not. poisson%initialized) then
+        stop 'ERROR: calculate_forces_energy: poisson is not initialized!'
+    endif
     poisson%reset_rho=.true.
-    call put_charge_density(parini,poisson,atoms%boundcond,atoms%nat,atoms%rat, &
-        atoms%cellvec,atoms%qat,gausswidth)
+    poisson%nat=atoms%nat
+    poisson%cv=atoms%cellvec
+    poisson%bc=atoms%boundcond
+    poisson%q(1:poisson%nat)=atoms%qat(1:atoms%nat)
+    poisson%gw(1:poisson%nat)=gausswidth(1:atoms%nat)
+    poisson%rcart(1:3,1:poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+    call put_charge_density(parini,poisson)
     call cpu_time(time(2))
     !-----------------------------------------------------------------------
     !totrho=0.d0

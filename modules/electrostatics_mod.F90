@@ -7,6 +7,7 @@ module mod_electrostatics
 #endif
     implicit none
     type:: typ_poisson
+        integer:: nat
         integer:: ngpx !number of grid points in x direction.
         integer:: ngpy !number of grid points in y direction.
         integer:: ngpz !number of grid points in z direction.
@@ -19,16 +20,22 @@ module mod_electrostatics
         real(8), allocatable:: qgrad(:)
         real(8), allocatable:: qgrad_real(:)
         real(8), allocatable:: gw_ewald(:)
+        real(8), allocatable:: q(:)
+        real(8), allocatable:: gw(:)
+        real(8), allocatable:: rcart(:,:)
         integer:: npl, npu
         real(8):: beta
+        real(8):: cv(3,3)
         logical:: point_particle= .false.
         !logical:: cal_poisson= .false.
         !logical:: cal_qgrad= .false.
         !logical:: cal_force= .false.
         !logical:: set_grid= .true.
         logical:: reset_rho= .true.
+        logical:: initialized= .false.
         character(256):: task_finit=""
         character(256):: task_get=""
+        character(20):: bc='unknown'
         integer(8), allocatable:: plan_f(:) !Plans of forward fftw with size ngpz
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2

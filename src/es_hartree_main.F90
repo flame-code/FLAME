@@ -14,6 +14,9 @@ subroutine init_hartree(parini,atoms,poisson,gausswidth)
     !local variables
     real(8):: kmax
     call f_routine(id='init_hartree')
+    if(poisson%initialized) then
+        stop 'ERRRO: poisson is already initialized.'
+    endif
     if(trim(parini%psolver)=='p3d') then
         call init_hartree_p3d(parini,atoms,poisson)
     elseif(trim(parini%psolver)=='bigdft') then
@@ -25,6 +28,9 @@ subroutine init_hartree(parini,atoms,poisson,gausswidth)
     if(allocated(poisson%qgrad)) deallocate(poisson%qgrad)
     allocate(poisson%qgrad(1:atoms%nat))
 
+    poisson%rcart=f_malloc([1.to.3,1.to.atoms%nat],id='poisson%rcart')
+    poisson%q=f_malloc([1.to.atoms%nat],id='poisson%q')
+    poisson%gw=f_malloc([1.to.atoms%nat],id='poisson%gw')
     poisson%gw_ewald=f_malloc([1.to.atoms%nat],id='poisson%gw_ewald')
     if(parini%ewald) then
         poisson%qgrad_real=f_malloc([1.to.atoms%nat],id='poisson%qgrad_real')
@@ -50,6 +56,7 @@ subroutine init_hartree(parini,atoms,poisson,gausswidth)
     if(.not. parini%ewald) then
         poisson%gw_ewald=gausswidth
     endif
+    poisson%initialized=.true.
     call f_release_routine()
 end subroutine init_hartree
 !*****************************************************************************************
@@ -65,9 +72,15 @@ subroutine fini_hartree(parini,atoms,poisson)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     call f_routine(id='fini_hartree')
+    if(.not. poisson%initialized) then
+        stop 'ERRRO: poisson cannot be finalized because it is not initialized.'
+    endif
     if(parini%ewald) then
         call f_free(poisson%qgrad_real)
     endif
+    call f_free(poisson%rcart)
+    call f_free(poisson%q)
+    call f_free(poisson%gw)
     call f_free(poisson%gw_ewald)
     if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         if(trim(atoms%boundcond)=='bulk') then
@@ -85,6 +98,7 @@ subroutine fini_hartree(parini,atoms,poisson)
          !   deallocate(poisson%pots)
         endif
     endif
+    poisson%initialized=.false.
     call f_release_routine()
 end subroutine fini_hartree
 !*****************************************************************************************
@@ -247,7 +261,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     call f_release_routine()
 end subroutine init_hartree_p3d
 !*****************************************************************************************
-subroutine put_charge_density(parini,poisson,bc,nat,rxyz,cv,q,gausswidth)
+subroutine put_charge_density(parini,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
@@ -257,17 +271,11 @@ subroutine put_charge_density(parini,poisson,bc,nat,rxyz,cv,q,gausswidth)
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_poisson),intent(inout):: poisson
-    character(*), intent(in):: bc
-    integer, intent(in):: nat
-    real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
-    real(8), intent(in):: q(nat)
-    real(8), intent(in):: gausswidth(nat)
     !local variables
-    if(trim(parini%psolver)=='kwald' .and. trim(bc)/='bulk') then
+    if(trim(parini%psolver)=='kwald' .and. trim(poisson%bc)/='bulk') then
         write(*,*) 'ERROR: kwald works only with bulk BC.'
     endif
-    if(trim(parini%psolver)=='p3d' .and. trim(bc)/='slab') then
+    if(trim(parini%psolver)=='p3d' .and. trim(poisson%bc)/='slab') then
         write(*,*) 'ERROR: P3D works only with slab BC.'
     endif
     !-----------------------------------------------------------------
@@ -276,17 +284,17 @@ subroutine put_charge_density(parini,poisson,bc,nat,rxyz,cv,q,gausswidth)
             !do nothing
         case('bigdft')
             if(parini%cell_ortho) then
-                call put_gto_sym_ortho(parini,bc,poisson%reset_rho, &
-                    nat,rxyz,q,gausswidth,poisson)
+                call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho, &
+                    poisson%nat,poisson%rcart,poisson%q,poisson%gw,poisson)
             else
-                call put_gto_sym(parini,bc,poisson%reset_rho,nat,rxyz,cv,q, &
-                    gausswidth,poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
-                    poisson%rho)
+                call put_gto_sym(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
+                    poisson%rcart,poisson%cv,poisson%q,poisson%gw,poisson%rgcut, &
+                    poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%rho)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call put_gto_sym_ortho(parini,bc,poisson%reset_rho, &
-                    nat,rxyz,q,gausswidth,poisson)
+                call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho, &
+                    poisson%nat,poisson%rcart,poisson%q,poisson%gw,poisson)
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop

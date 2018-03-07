@@ -524,12 +524,28 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
     nx=cent%poisson%ngpx
     ny=cent%poisson%ngpy
     nz=cent%poisson%ngpz
+    if(.not. cent%poisson%initialized) then
+        stop 'ERROR: put_gauss_to_grid: poisson is not initialized!'
+    endif
     cent%poisson%reset_rho=.true.
-    call put_charge_density(parini,cent%poisson,atoms%boundcond,atoms%nat,atoms%rat, &
-        atoms%cellvec,atoms%zat,cent%gwit)
+    cent%poisson%nat=atoms%nat
+    cent%poisson%cv=atoms%cellvec
+    cent%poisson%bc=atoms%boundcond
+    cent%poisson%q(1:cent%poisson%nat)=atoms%zat(1:atoms%nat)
+    cent%poisson%gw(1:cent%poisson%nat)=cent%gwit(1:atoms%nat)
+    cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+    call put_charge_density(parini,cent%poisson)
+    if(.not. cent%poisson%initialized) then
+        stop 'ERROR: put_gauss_to_grid: poisson is not initialized!'
+    endif
     cent%poisson%reset_rho=.false.
-    call put_charge_density(parini,cent%poisson,atoms%boundcond,atoms%nat,cent%rel, &
-        atoms%cellvec,atoms%qat,cent%gwe)
+    cent%poisson%nat=atoms%nat
+    cent%poisson%cv=atoms%cellvec
+    cent%poisson%bc=atoms%boundcond
+    cent%poisson%q(1:cent%poisson%nat)=atoms%qat(1:atoms%nat)
+    cent%poisson%gw(1:cent%poisson%nat)=cent%gwe(1:atoms%nat)
+    cent%poisson%rcart(1:3,1:cent%poisson%nat)=cent%rel(1:3,1:atoms%nat)
+    call put_charge_density(parini,cent%poisson)
 end subroutine put_gauss_to_grid
 !*****************************************************************************************
 subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)

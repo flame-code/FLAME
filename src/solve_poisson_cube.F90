@@ -39,17 +39,18 @@ subroutine solve_poisson(parini)
     nbgpy=int(rgcut_a/poisson_ion%hy)+2
     nbgpz=int(rgcut_a/poisson_ion%hz)+2
     poisson_ion%ngpz=poisson_ion%ngpz+2*nbgpz
-    allocate(poisson_ion%rho(poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz),stat=istat)
-    if(istat/=0) stop 'ERROR: allocation of rho failed.'
     write(*,'(a,3i5)') 'ngpx, ngpy, ngpz  ',poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz
     write(*,'(a,3i5)') 'nbgpx,nbgpy,nbgpz ',nbgpx,nbgpy,nbgpz
-    allocate(poisson_ion%pot(poisson_ion%ngpx+2,poisson_ion%ngpy,poisson_ion%ngpz),stat=istat)
-    if(istat/=0) stop 'ERROR: allocation of pot failed.'
-    !allocate(poisson_ion%mboundg(2,-nbgpy:nbgpy,-nbgpz:nbgpz),stat=istat)
-    !if(istat/=0) stop 'Error allocating array mboundg of module ee2dp1df'
+    poisson_ion%task_finit="alloc_rho"
+    call init_hartree(parini,atoms,poisson_ion,gausswidth)
     poisson_ion%reset_rho=.true.
-    call put_charge_density(parini,poisson_ion,atoms%boundcond,atoms%nat,atoms%rat, &
-        atoms%cellvec,atoms%qat,gausswidth)
+    poisson_ion%nat=atoms%nat
+    poisson_ion%cv=atoms%cellvec
+    poisson_ion%bc=atoms%boundcond
+    poisson_ion%q(1:poisson_ion%nat)=atoms%qat(1:atoms%nat)
+    poisson_ion%gw(1:poisson_ion%nat)=gausswidth(1:atoms%nat)
+    poisson_ion%rcart(1:3,1:poisson_ion%nat)=atoms%rat(1:3,1:atoms%nat)
+    call put_charge_density(parini,poisson_ion)
     t1=0.d0
     t2=0.d0
     t3=0.d0
@@ -73,13 +74,8 @@ subroutine solve_poisson(parini)
     write(*,*) 't2=',t2
     write(*,*) 't3=',t3
     write(*,*) 't4=',t4
+    call fini_hartree(parini,atoms,poisson_ion)
     call cube_write('total_rho.cube',atoms,poisson,'rho')
-    deallocate(poisson_ion%rho,stat=istat)
-    if(istat/=0) stop 'ERROR: deallocation of rho failed.'
-    deallocate(poisson_ion%pot,stat=istat)
-    if(istat/=0) stop 'ERROR: deallocation of pot failed.'
-    !deallocate(poisson_ion%mboundg,stat=istat)
-    !if(istat/=0) stop 'Error deallocating array mboundg of module ee2dp1df'
     !-------------------------------------------------------
     t1=0.d0
     do iat=1,atoms%nat
