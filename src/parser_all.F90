@@ -295,7 +295,7 @@ subroutine get_dynamics_parameters(file_ini,parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini
-    use mod_dynamics, only: dt, nmd
+    use mod_dynamics, only: dt, nmd,nfreq
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
@@ -316,6 +316,7 @@ subroutine get_dynamics_parameters(file_ini,parini)
         if(file_ini%stat_line_is_read(file_ini%iline)) cycle
         call split_line(file_ini)
         call get_one_param(file_ini,'nmd',int_var=parini%nmd_dynamics)
+        call get_one_param(file_ini,'nfreq',int_var=parini%nfreq_dynamics)
         call get_one_param(file_ini,'dt',real_var=parini%dt_dynamics)
         call get_one_param(file_ini,'temp',real_var=parini%temp_dynamics)
         call get_one_param(file_ini,'init_temp',real_var=parini%init_temp_dynamics)

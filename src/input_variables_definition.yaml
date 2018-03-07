@@ -156,6 +156,7 @@
    weight_hardness: 0.001
  dynamics:
   nmd: 0
+  nfreq: 0
   dt: -1.0
   temp: 0.0
   init_temp: 0.0

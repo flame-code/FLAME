@@ -245,6 +245,7 @@ subroutine yaml_get_dynamics_parameters(parini)
     parini%md_method_dynamics=parini%subdict//"md_method"
     parini%print_force_dynamics=parini%subdict//"print_force"
     parini%restart_dynamics=parini%subdict//"restart"
+    parini%nfreq_dynamics=parini%subdict//"nfreq"
 end subroutine yaml_get_dynamics_parameters
 !*****************************************************************************************
 subroutine yaml_get_bader_parameters(parini)
