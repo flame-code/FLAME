@@ -415,8 +415,8 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         ann_arr%epot_es=tt2+tt3
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
         gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-        poisson%task_get="cal_force"
         call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
+        call get_hartree_force(parini,poisson,atoms,poisson%gw_ewald)
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
     endif
@@ -565,7 +565,6 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     poisson%gw(1:poisson%nat)=gausswidth(1:atoms%nat)
     poisson%rcart(1:3,1:poisson%nat)=atoms%rat(1:3,1:atoms%nat)
     call put_charge_density(parini,poisson)
-    poisson%task_get="cal_poisson"
     poisson%qgrad(1:atoms%nat)=0.d0
     call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es)
     call get_hartree_grad_rho(parini,poisson,atoms,poisson%gw_ewald,ann_arr%epot_es)

@@ -60,8 +60,8 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     !-----------------------------------------------------------------------
     !pot=0.d0
     call cpu_time(time(3))
-    poisson%task_get="cal_poisson:cal_force"
     call get_hartree(parini,poisson,atoms,gausswidth,epotlong)
+    call get_hartree_force(parini,poisson,atoms,poisson%gw_ewald)
     call cpu_time(time(4))
     !call shortenergy(atoms,poisson%linked_lists,poisson%spline,poisson%alpha,poisson%cell,epotshort)
     call cpu_time(time(5))
@@ -75,7 +75,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     endif
     call cpu_time(time(6))
     !atoms%epot=epotlong+epotshort-poisson%epotfixed+epotplane
-    atoms%epot=epotlong+-poisson%epotfixed+epotplane
+    atoms%epot=epotlong-poisson%epotfixed+epotplane
     write(*,*) '-----------------------------------------------------------'
     write(*,'(a50,e32.15)') 'epotfixed',poisson%epotfixed
     write(*,'(a50,e32.15)') 'epotlong',epotlong

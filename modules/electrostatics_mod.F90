@@ -34,7 +34,6 @@ module mod_electrostatics
         logical:: reset_rho= .true.
         logical:: initialized= .false.
         character(256):: task_finit=""
-        character(256):: task_get=""
         character(20):: bc='unknown'
         integer(8), allocatable:: plan_f(:) !Plans of forward fftw with size ngpz
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz

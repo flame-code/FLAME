@@ -425,18 +425,9 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     !-----------------------------------------------------------------
     !Even if cal_poisson is false, get_psolver_fourier must be called
     !once more because fat is set to zero after dU/dq=0 in CENT
-    ind=index(poisson%task_get,'cal_poisson')
-    if(ind>0 .or. trim(parini%psolver)=='kwald') then
-        call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree)
-    endif
+    call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree)
     !-----------------------------------------------------------------
-    !-----------------------------------------------------------------
-    ind=index(poisson%task_get,'cal_force')
-    if(ind>0) then
-        call get_hartree_force(parini,poisson,atoms,poisson%gw_ewald)
-    endif
-    !-----------------------------------------------------------------
-    if(parini%ewald .and. trim(parini%approach_ann)/='cent2') then
+    if(parini%ewald .and. (trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1')) then
         epotreal=0.d0
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,poisson%qgrad_real,stress)
         atoms%stress=atoms%stress+stress

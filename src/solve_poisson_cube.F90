@@ -91,7 +91,6 @@ subroutine solve_poisson(parini)
         write(*,*) 'ERROR: psolver=kwald is wrong for grid base charge density.'
         stop
     endif
-    poisson%task_get="cal_poisson"
     call get_hartree(parini,poisson,atoms,gausswidth,epot)
     call cube_write('pot_p3d.cube',atoms,poisson,'pot')
     call fini_hartree(parini,atoms,poisson)

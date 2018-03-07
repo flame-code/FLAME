@@ -482,7 +482,6 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     ehartree=0.d0
     allocate(gausswidth(atoms%nat))
     gausswidth(:)=1.d0 !TO_BE_CORRECTED
-    cent%poisson%task_get="cal_poisson"
     call get_hartree(parini,cent%poisson,atoms,gausswidth,ehartree)
     deallocate(gausswidth)
     epot_es=0.d0
