@@ -23,6 +23,7 @@ module mod_electrostatics
         real(8), allocatable:: q(:)
         real(8), allocatable:: gw(:)
         real(8), allocatable:: rcart(:,:)
+        real(8), allocatable:: rgrad(:,:)
         integer:: npl, npu
         real(8):: beta
         real(8):: cv(3,3)

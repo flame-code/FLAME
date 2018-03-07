@@ -456,7 +456,7 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es
     !local variables
-    real(8):: ehartree, pi
+    real(8):: ehartree, pi, ehartree_t
     real(8):: time1, time2, time3, time4, time5, time6, time7
     real(8):: sqrt_one_over_twopi
     integer:: iat
@@ -489,8 +489,20 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
         epot_es=epot_es-atoms%zat(iat)**2*sqrt_one_over_twopi/cent%gwit(iat)
     enddo
     epot_es=epot_es+ehartree
-    call rqgrad_gto_sym(parini,'bulk',atoms%nat,cent%rel,atoms%cellvec,atoms%qat,cent%gwe, &
-        cent%poisson%rgcut,nx,ny,nz,cent%poisson%pot,cent%rgrad,cent%qgrad)
+    if(.not. cent%poisson%initialized) then
+        stop 'ERROR: calculate_forces_energy: poisson is not initialized!'
+    endif
+    cent%poisson%nat=atoms%nat
+    cent%poisson%cv=atoms%cellvec
+    cent%poisson%bc=atoms%boundcond
+    cent%poisson%q(1:cent%poisson%nat)=atoms%qat(1:atoms%nat)
+    cent%poisson%gw(1:cent%poisson%nat)=cent%gwe(1:atoms%nat)
+    cent%poisson%rcart(1:3,1:cent%poisson%nat)=cent%rel(1:3,1:atoms%nat)
+    cent%poisson%rgrad(1:3,1:cent%poisson%nat)=0.d0
+    cent%poisson%qgrad(1:cent%poisson%nat)=0.d0
+    call get_hartree_grad_rho(parini,cent%poisson,atoms,ehartree_t)
+    cent%rgrad(1:3,1:cent%poisson%nat)=cent%rgrad(1:3,1:cent%poisson%nat)+cent%poisson%rgrad(1:3,1:cent%poisson%nat)
+    cent%qgrad(1:cent%poisson%nat)=cent%qgrad(1:cent%poisson%nat)+cent%poisson%qgrad(1:cent%poisson%nat)
 
     !if(ewald) then
     call cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)

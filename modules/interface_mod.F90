@@ -1931,14 +1931,13 @@ subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
 end subroutine get_psolver
-subroutine get_hartree_grad_rho(parini,poisson,atoms,gausswidth,ehartree)
+subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
 end subroutine get_hartree_grad_rho
 subroutine get_hartree_force(parini,poisson,atoms,gausswidth)
@@ -2250,7 +2249,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(in):: pot(ngx,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat)
 end subroutine rqgrad_gto_sym
 subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
@@ -2264,7 +2263,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(in):: pot(ngx,ngy,ngz)
     real(8), intent(out):: fat(3,nat)
 end subroutine force_gto_sym
 subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
@@ -2278,7 +2277,7 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(in):: pot(ngx,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
 end subroutine gwrqgrad_gto_sym
 subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)

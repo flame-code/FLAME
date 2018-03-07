@@ -567,7 +567,8 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     call put_charge_density(parini,poisson)
     poisson%qgrad(1:atoms%nat)=0.d0
     call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es)
-    call get_hartree_grad_rho(parini,poisson,atoms,poisson%gw_ewald,ann_arr%epot_es)
+    poisson%gw=poisson%gw_ewald
+    call get_hartree_grad_rho(parini,poisson,atoms,ann_arr%epot_es)
     g=poisson%qgrad
     qtot=0.d0
     gtot=0.d0

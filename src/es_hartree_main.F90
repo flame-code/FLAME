@@ -28,6 +28,7 @@ subroutine init_hartree(parini,atoms,poisson,gausswidth)
     if(allocated(poisson%qgrad)) deallocate(poisson%qgrad)
     allocate(poisson%qgrad(1:atoms%nat))
 
+    poisson%rgrad=f_malloc([1.to.3,1.to.atoms%nat],id='poisson%rgrad')
     poisson%rcart=f_malloc([1.to.3,1.to.atoms%nat],id='poisson%rcart')
     poisson%q=f_malloc([1.to.atoms%nat],id='poisson%q')
     poisson%gw=f_malloc([1.to.atoms%nat],id='poisson%gw')
@@ -78,6 +79,7 @@ subroutine fini_hartree(parini,atoms,poisson)
     if(parini%ewald) then
         call f_free(poisson%qgrad_real)
     endif
+    call f_free(poisson%rgrad)
     call f_free(poisson%rcart)
     call f_free(poisson%q)
     call f_free(poisson%gw)
@@ -333,7 +335,7 @@ subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
     end select
 end subroutine get_psolver
 !*****************************************************************************************
-subroutine get_hartree_grad_rho(parini,poisson,atoms,gausswidth,ehartree)
+subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -345,15 +347,28 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,gausswidth,ehartree)
     type(typ_parini), intent(in):: parini
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
     !local variables
+
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
-        case('bigdft','p3d')
-            call qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,poisson%qgrad)
-            call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+        case('bigdft')
+            if(parini%cell_ortho) then
+                call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+            else
+                call rqgrad_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%cv,poisson%q,poisson%gw, &
+                            poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%pot,poisson%rgrad,poisson%qgrad)
+            endif
+        case('p3d')
+            if(parini%cell_ortho) then
+                call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+            else
+                write(*,*) 'ERROR: P3D works only with orthogonal cell.'
+                stop
+            endif
         case default
             write(*,*) 'ERROR: unknown method for hartree calculation.'
             stop

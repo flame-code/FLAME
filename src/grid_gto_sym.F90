@@ -158,7 +158,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(in):: pot(ngx,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
@@ -314,7 +314,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(in):: pot(ngx,ngy,ngz)
     real(8), intent(out):: fat(3,nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
@@ -467,7 +467,7 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(inout):: pot(ngx,ngy,ngz)
+    real(8), intent(in):: pot(ngx,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
