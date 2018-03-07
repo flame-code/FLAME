@@ -12,6 +12,7 @@ subroutine forcefield_init(parini,atoms)
     !local variables
     type(typ_poisson):: poisson_rough
     integer:: ind
+    real(8),allocatable :: gausswidth(:)
     !integer:: iat
     call set_typat(atoms)
     call set_qat(atoms)
@@ -32,7 +33,11 @@ subroutine forcefield_init(parini,atoms)
     if(ind>0) then
         if(trim(atoms%boundcond)=='free') then
         elseif(trim(atoms%boundcond)=='slab') then
-        call construct_poisson(parini,atoms,poisson)
+        allocate(gausswidth(atoms%nat))
+        gausswidth(:)=parini%alpha_ewald !poisson%alpha
+        poisson%task_finit="alloc_rho:set_ngp"
+        call init_hartree(parini,atoms,poisson,gausswidth)
+        deallocate(gausswidth)
         shortrange%alpha=poisson%alpha
         poisson%spline%do_coulomb=.true.
         else
@@ -109,7 +114,7 @@ subroutine forcefield_final(parini,atoms)
     if(ind>0) then
         if(trim(atoms%boundcond)=='free') then
         elseif(trim(atoms%boundcond)=='slab') then
-        call destruct_poisson(parini,atoms,poisson)
+        call fini_hartree(parini,atoms,poisson)
         endif
     endif
     if(ind>0 .and. trim(atoms%boundcond)=='slab') then

@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine cal_hartree_pot_bps(poisson,atoms,ehartree)
+subroutine get_psolver_bps(poisson,atoms,ehartree)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -17,10 +17,18 @@ subroutine cal_hartree_pot_bps(poisson,atoms,ehartree)
     real(8), allocatable:: pot_ion(:)
     real(8):: stress_t(6)
     !type(coulomb_operator):: pkernel
+    if(trim(atoms%boundcond)/='bulk') then
+        write(*,*) 'ERROR: BPS for BCs other than bulk not implemented yet in FLAME.'
+        stop
+    endif
     pot_ion=f_malloc([1.to.1],id='pot_ion') !an array which must be provided but will not be used.
 #endif
 
 #if defined(HAVE_BPS)
+    !The reason I call H_POTENTIAL with rho and after that pot=rho,
+    !is because I was worried wether pot is allocated with (ngpx+2,ngpy,ngpz),
+    !however, I can check or make it to be allocated as (ngpx,ngpy,ngpz), if
+    !BPS is used.
     !stress_t(1:6)=0.d0
     call H_POTENTIAL('G',poisson%pkernel,poisson%rho, &
         pot_ion,ehartree,0.d0,.false.,stress_tensor=stress_t) !,quiet='yes')
@@ -47,9 +55,9 @@ subroutine cal_hartree_pot_bps(poisson,atoms,ehartree)
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
     ehartree=0.d0 !this is just to be able to compile.
 #endif
-end subroutine cal_hartree_pot_bps
+end subroutine get_psolver_bps
 !*****************************************************************************************
-subroutine construct_ewald_bps(parini,atoms,poisson)
+subroutine init_psolver_bps(parini,atoms,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -86,7 +94,7 @@ subroutine construct_ewald_bps(parini,atoms,poisson)
     elseif(trim(atoms%boundcond)=='free') then
         geocode='F'
     else
-        write(*,*) 'ERROR: unknown atoms%boundcond in construct_ewald_bps',trim(atoms%boundcond)
+        write(*,*) 'ERROR: unknown atoms%boundcond in init_psolver_bps',trim(atoms%boundcond)
     endif
     !nxyz=options//'ndim'
     !geocode=options//'geocode'
@@ -128,9 +136,9 @@ subroutine construct_ewald_bps(parini,atoms,poisson)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
-end subroutine construct_ewald_bps
+end subroutine init_psolver_bps
 !*****************************************************************************************
-subroutine destruct_ewald_bps(poisson)
+subroutine fini_psolver_bps(poisson)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
@@ -145,7 +153,7 @@ subroutine destruct_ewald_bps(poisson)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
-end subroutine destruct_ewald_bps
+end subroutine fini_psolver_bps
 !*****************************************************************************************
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     use mod_interface
@@ -161,7 +169,7 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     type(typ_poisson), intent(in):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    real(8):: dh1, dh2, harr(3), pi
+    real(8):: dh1, dh2, harr(3)
     real(8):: cell(3), vol, cvinv(3), cvinv_norm(3)
     integer:: i, ndim(3), id
     call cell_vol(atoms%nat,atoms%cellvec,vol)
@@ -179,12 +187,10 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     poisson%ngpx=int(cell(1)/poisson_rough%hx)+1
     poisson%ngpy=int(cell(2)/poisson_rough%hy)+1
     poisson%ngpz=int(cell(3)/poisson_rough%hz)+1
+    !write(*,*) poisson_rough%hx,poisson_rough%hy,poisson_rough%hz
+    !write(*,*) poisson%ngpx,poisson%ngpy,poisson%ngpz
 
 #if defined(HAVE_BPS)
-    pi=4.d0*atan(1.d0)
-    poisson%ngpx=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(1)*2.d0*pi/vol))
-    poisson%ngpy=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(2)*2.d0*pi/vol))
-    poisson%ngpz=ceiling(sqrt(2.d0*parini%ecut_ewald)/(cvinv_norm(3)*2.d0*pi/vol))
 
     ndim(1)=poisson%ngpx
     ndim(2)=poisson%ngpy

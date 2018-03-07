@@ -75,10 +75,6 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     !local variables
     real(8):: ttx, tty, ttz, qnet, hinv(3,3), vol
     integer:: ib, i, j, iat, jat
-    call getvol_alborz(atoms%cellvec,vol)
-    if(trim(ann_arr%event)=='potential') then
-    atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)*vol !*atoms%nat !not certain if this is needed!!!
-    endif
     if(trim(ann_arr%event)/='train') then
         do ib=1,symfunc%linked_lists%maxbound_rad
             iat=symfunc%linked_lists%bound_rad(1,ib)
@@ -117,6 +113,10 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
             atoms%fat(2,iat)=atoms%fat(2,iat)+ann_arr%fat_chi(2,iat)
             atoms%fat(3,iat)=atoms%fat(3,iat)+ann_arr%fat_chi(3,iat)
         enddo
+    endif
+    call getvol_alborz(atoms%cellvec,vol)
+    if(trim(ann_arr%event)=='potential') then
+    atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)/vol !*atoms%nat !not certain if this is needed!!!
     endif
 end subroutine cal_force_chi_part2
 !*****************************************************************************************

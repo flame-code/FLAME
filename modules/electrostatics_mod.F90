@@ -7,6 +7,7 @@ module mod_electrostatics
 #endif
     implicit none
     type:: typ_poisson
+        integer:: nat
         integer:: ngpx !number of grid points in x direction.
         integer:: ngpy !number of grid points in y direction.
         integer:: ngpz !number of grid points in z direction.
@@ -16,31 +17,42 @@ module mod_electrostatics
         real(8), allocatable:: rho(:,:,:) !charge density array.
         real(8), allocatable:: pot(:,:,:) !potential array.
         real(8), allocatable:: pots(:,:,:) !surface potential array.
+        real(8), allocatable:: qgrad(:)
+        real(8), allocatable:: qgrad_real(:)
+        real(8), allocatable:: gw_ewald(:)
+        real(8), allocatable:: q(:)
+        real(8), allocatable:: gw(:)
+        real(8), allocatable:: rcart(:,:)
+        real(8), allocatable:: rgrad(:,:)
         integer:: npl, npu
-        real(8):: beta 
+        real(8):: beta
+        real(8):: cv(3,3)
         logical:: point_particle= .false.
+        !logical:: cal_poisson= .false.
+        !logical:: cal_qgrad= .false.
+        !logical:: cal_force= .false.
+        !logical:: set_grid= .true.
+        logical:: reset_rho= .true.
+        logical:: initialized= .false.
+        character(256):: task_finit=""
+        character(20):: bc='unknown'
         integer(8), allocatable:: plan_f(:) !Plans of forward fftw with size ngpz
         integer(8), allocatable:: plan_b(:) !Plans of inverse fftw with size ngpz
         integer(8), allocatable:: plan_fs(:) !Plans of forward fftw with size 2
         !bounds to assign charge density to grid points within a shpere.
-        integer, allocatable:: mboundg(:,:,:)
-        integer:: nbgpx !number of bound grid points in x direction.
-        integer:: nbgpy !number of bound grid points in y direction.
-        integer:: nbgpz !number of bound grid points in z direction.
-        integer:: nagpx !number of additional grid points in x direction.
-        integer:: nagpy !number of additional grid points in y direction.
-        integer:: nagpz !number of additional grid points in z direction.
+        !integer, allocatable:: mboundg(:,:,:)
+        !integer:: nbgpx !number of bound grid points in x direction.
+        !integer:: nbgpy !number of bound grid points in y direction.
+        !integer:: nbgpz !number of bound grid points in z direction.
+        !integer:: nagpx !number of additional grid points in x direction.
+        !integer:: nagpy !number of additional grid points in y direction.
+        !integer:: nagpz !number of additional grid points in z direction.
         real(8):: epotfixed !fixed part of electrostatic energt in ewald.
         !real(8):: rcut !cutoff radius in real space.
         real(8):: alpha =-1 !splitting ewald parameter.
         real(8):: rgcut
-        !ngpztot is length of the third subscript of array pot which is bigger 
-        !than needed for calculation of potential and this bigger value is used 
-        !because pot array is used as a dummy array in two subroutines 
-        !putgaussgrid and longerange_forces and that is for to avoid 
-        !if or mod for the charges that leaks out the cell and needed to 
-        !be wrapped around.
-        integer:: ngpztot
+        real(8):: ecut
+        logical:: gw_identical= .false. !if True, all gaussian width assumed to be identical
         real(8):: efield !external electric field
         real(8):: vu, vl !voltage on upper and lower plane.
         real(8):: cell(3) !cell size in x,y,z direction.
