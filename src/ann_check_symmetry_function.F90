@@ -52,17 +52,17 @@ subroutine ann_check_symmetry_function(parini)
         call read_data_old(parini,'list_posinp_check',atoms_check)
     endif
     !---------------------------------------------------------- 
-    open(unit=1,file='list_posinp_check',status='old',iostat=ios)
-    if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning list_posinp_check__';stop;endif
-    nconftot=0
-    do
-        read(1,'(a)',iostat=k) fn_tmp
-        if(k<0) exit
-        fn_tmp=adjustl(trim(filename))
-        if(fn_tmp(1:1)=='#') cycle
-        nconftot=nconftot+1
-    enddo
-    close(1)
+    !open(unit=1,file='list_posinp_check',status='old',iostat=ios)
+    !if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning list_posinp_check__';stop;endif
+    !nconftot=0
+    !do
+    !    read(1,'(a)',iostat=k) fn_tmp
+    !    if(k<0) exit
+    !    fn_tmp=adjustl(trim(filename))
+    !    if(fn_tmp(1:1)=='#') cycle
+    !    nconftot=nconftot+1
+    !enddo
+    !close(1)
     !----------------------------------------------------------   
     if(iproc==0) then
         write(*,'(a,i)') 'number of checking data points:   ',atoms_check%nconf
