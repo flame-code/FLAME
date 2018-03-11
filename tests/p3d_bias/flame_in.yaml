@@ -5,20 +5,21 @@ main:
 potential:
     potential : forcefield
     component_ff : coulomb
-    cal_charge : .true.
+    cal_charge : True
     ewald:
-        hx : 0.7
-        hz : 0.5
+        psolver: p3d
+        cell_ortho: True
+        ecut : 10.071024899070775
+        ecutz : 19.739208802178716
         alpha : 2.26767135342053
         rcut : 15.684726861158667
         rgcut : 9.0
         nsp : 10000
         plane_voltageu : 0.036749323858
         plane_voltagel : 0.000000000000
-        ewald : .true.
+        ewald : True
         bias_type: p3dbias
 
 single_point:
     print_force : .true.
     format : '(a5,2x,3f12.8,2x,3l1)'
-

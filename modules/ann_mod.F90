@@ -2,7 +2,7 @@
 module mod_ann
     use dictionaries
     use mod_linked_lists, only: typ_linked_lists
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
     type typ_ann
         type(dictionary), pointer :: dict
@@ -141,7 +141,7 @@ module mod_ann
         real(8), allocatable:: rel(:,:)
         real(8), allocatable:: qgrad(:)
         real(8), allocatable:: rgrad(:,:)
-        type(typ_ewald_p3d):: ewald_p3d
+        type(typ_poisson):: poisson
     end type typ_cent
 end module mod_ann
 !*****************************************************************************************

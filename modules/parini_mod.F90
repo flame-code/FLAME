@@ -74,7 +74,6 @@ module mod_parini
         character(50):: optimizer_ann='unknown'
         character(50):: approach_ann='atombased'
         character(50):: syslinsolver_ann='direct'
-        character(50):: psolver_ann='unknown'
         character(50):: symfunc_type_ann='behler'
         character(50):: symfunc='only_calculate'
         integer:: nstep_ekf=100
@@ -145,23 +144,23 @@ module mod_parini
         character(50):: frmt_single_point='unknown'
         !-----------------------------------------------------------------------
         !parameters of [ewald]
-        real(8):: hx_ewald=-1.d0
-        real(8):: hy_ewald=-1.d0
-        real(8):: hz_ewald=-1.d0
+        integer:: nsp_ewald=-1
         real(8):: alpha_ewald=-1.d0
-        real(8):: ecut_ewald=250.d0
+        real(8):: ecut_ewald=-1.d0
+        real(8):: ecutz_ewald=-1.d0
         real(8):: rcut_ewald=-1.d0
         real(8):: rgcut_ewald=-1.d0
-        integer:: nsp_ewald=-1
         real(8):: vu_ewald=0.d0
         real(8):: vl_ewald=0.d0
         real(8):: vu_ac_ewald=0.d0
         real(8):: frequency_ewald=0.d0
         real(8):: gnrmtol_eem=1.d-7
-        logical :: ewald=.false.
         real(8):: tolerance_ewald = 1.d-6
         real(8):: efield !external electric field
+        logical :: ewald=.false.
+        logical :: cell_ortho=.false.
         character(256):: bias_type='no'
+        character(50):: psolver='unknown'
         !-----------------------------------------------------------------------
         !parameters of [misc]
         logical:: avail_misc=.false.
