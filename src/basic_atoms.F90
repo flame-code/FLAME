@@ -1897,7 +1897,7 @@ subroutine set_atomic_mass(atoms)
     if(.not. allocated(atoms%amass)) stop 'ERROR: in set_amass: amass not allocated.'
     do iat=1,atoms%nat
         if(trim(atoms%sat(iat))=='LJ') then
-            atoms%amass(iat)=2.d0**(1.d0/6.d0)/2.d0
+            atoms%amass(iat)=1.d0
         else if(trim(atoms%sat(iat))=='H') then
             atoms%amass(iat)=1.00797d0
         else if(trim(atoms%sat(iat))=='He') then
