@@ -101,8 +101,6 @@
    ampl: -1.0
  potential:
    potential: unknown
-   bias: no
-   bias_field: no
    cal_charge: False
    potential_sec: unknown
    ann_boundcheck: none
@@ -117,7 +115,8 @@
      hy: -1.0
      hz: -1.0
      alpha: -1.0
-     ecut: 250.0
+     ecut: -1.0
+     ecutz: -1.0
      rcut: -1.0
      rgcut: -1.0
      nsp: -1
@@ -126,8 +125,12 @@
      plane_voltageu_ac: 0.0
      frequency: 0.0
      gnrmtol: 1.E-7
+     psolver: unknown
      ewald: False
+     cell_ortho: False
      ewald_tol: 1.E-6
+     bias_type: no
+     external_field: 0.0
  ann:
    subtask: unknown
    optimizer: unknown
@@ -139,7 +142,6 @@
    ampl_rand: 1.0
    symfunc_type: behler
    syslinsolver: direct
-   psolver: unknown
    rgnrmtol: 5.E-4
    qgnrmtol: 5.E-4
    etol: 1.0

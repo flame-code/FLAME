@@ -3,15 +3,16 @@ subroutine forcefield_init(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: ewald_p3d, bias
+    use mod_potential, only: poisson
     use mod_potential, only: shortrange
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     !local variables
-    type(typ_ewald_p3d):: ewald_p3d_rough
+    type(typ_poisson):: poisson_rough
     integer:: ind
+    real(8),allocatable :: gausswidth(:)
     !integer:: iat
     call set_typat(atoms)
     call set_qat(atoms)
@@ -20,7 +21,7 @@ subroutine forcefield_init(parini,atoms)
     ind=index(parini%component_ff,'buck')
     if(ind>0) then
         call set_buckingham(atoms,shortrange%tosifumi)
-        ewald_p3d%spline%do_tosifumi=.true.
+        poisson%spline%do_tosifumi=.true.
 
         deallocate (shortrange%interaction,shortrange%qq)
         allocate (shortrange%interaction(atoms%ntypat,atoms%ntypat),shortrange%qq(shortrange%ntypinter))
@@ -32,17 +33,20 @@ subroutine forcefield_init(parini,atoms)
     if(ind>0) then
         if(trim(atoms%boundcond)=='free') then
         elseif(trim(atoms%boundcond)=='slab') then
-        call construct_ewald_p3d(parini,atoms,ewald_p3d)
-        bias=trim(parini%bias_potential)
-        shortrange%alpha=ewald_p3d%alpha
-        ewald_p3d%spline%do_coulomb=.true.
+        allocate(gausswidth(atoms%nat))
+        gausswidth(:)=parini%alpha_ewald !poisson%alpha
+        poisson%task_finit="alloc_rho:set_ngp"
+        call init_hartree(parini,atoms,poisson,gausswidth)
+        deallocate(gausswidth)
+        shortrange%alpha=poisson%alpha
+        poisson%spline%do_coulomb=.true.
         else
             stop 'ERROR: coulomb interaction not implemented for this type of BC'
         endif
     endif
     !-------------------------------------------------------
     !if(ind>0 .and. trim(atoms%boundcond)=='slab') then
-    !call shortrange_init(atoms,shortrange,ewald_p3d%linked_lists,ewald_p3d%spline)
+    !call shortrange_init(atoms,shortrange,poisson%linked_lists,poisson%spline)
     !endif
     !-------------------------------------------------------
     !do iat=1,atoms%nat
@@ -57,22 +61,22 @@ subroutine forcefield_init(parini,atoms)
     ind=index(parini%component_ff,'tosifumi')
     if(ind>0) then
         call set_tosifumi(atoms,shortrange%tosifumi)
-        ewald_p3d%spline%do_tosifumi=.true.
+        poisson%spline%do_tosifumi=.true.
     endif
     !-------------------------------------------------------
-    if(ewald_p3d%spline%do_coulomb) then
-    call shortrange_init(atoms,shortrange,ewald_p3d%linked_lists,ewald_p3d%spline)
+    if(poisson%spline%do_coulomb) then
+    call shortrange_init(atoms,shortrange,poisson%linked_lists,poisson%spline)
     endif
 end subroutine forcefield_init
 !*****************************************************************************************
 subroutine calculate_forces_energy_ff(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_ewald_p3d
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     !use mod_shortrange, only: typ_tosifumi
     use mod_potential, only: shortrange
-    use mod_potential, only: ewald_p3d
+    use mod_potential, only: poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -84,8 +88,8 @@ subroutine calculate_forces_energy_ff(parini,atoms)
         if(trim(atoms%boundcond)=='free') then
             call coulomb_free_direct(atoms)
         elseif(trim(atoms%boundcond)=='slab') then
-        call calculate_forces_energy(parini,ewald_p3d,atoms)
-        call cal_shortenergy(parini,shortrange,atoms,ewald_p3d%linked_lists,ewald_p3d%spline,ewald_p3d%alpha,ewald_p3d%cell,epotshort)
+        call calculate_forces_energy(parini,poisson,atoms)
+        call cal_shortenergy(parini,shortrange,atoms,poisson%linked_lists,poisson%spline,poisson%alpha,poisson%cell,epotshort)
         write(*,'(a50,e32.15)') 'epotshort',epotshort
         atoms%epot=atoms%epot+epotshort
         endif
@@ -100,7 +104,7 @@ subroutine forcefield_final(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: ewald_p3d
+    use mod_potential, only: poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
@@ -110,11 +114,11 @@ subroutine forcefield_final(parini,atoms)
     if(ind>0) then
         if(trim(atoms%boundcond)=='free') then
         elseif(trim(atoms%boundcond)=='slab') then
-        call destruct_ewald_p3d(parini,atoms,ewald_p3d)
+        call fini_hartree(parini,atoms,poisson)
         endif
     endif
     if(ind>0 .and. trim(atoms%boundcond)=='slab') then
-    call shortrange_final(ewald_p3d%linked_lists,ewald_p3d%spline)
+    call shortrange_final(poisson%linked_lists,poisson%spline)
     endif
     ind=index(parini%component_ff,'tosifumi_old')
     if(ind>0) then

@@ -1,0 +1,33 @@
+main:
+    task: geopt
+    verbosity: 2
+    types: F Ca
+
+potential:
+    potential: ann
+    add_repulsive: False
+    ewald:
+        ewald : True
+        psolver: p3d
+        cell_ortho: True
+        ecut: 2.5177562247676937
+        ecutz: 3.4269459726004716
+        #ecut: 7.710628438351059
+        #ecutz: 10.071024899070775
+        rgcut: 6.0
+        alpha: 2.0
+        bias_type: fixed_efield
+        external_field: -0.01
+
+ann:
+    approach: cent1
+    syslinsolver: operator
+
+geopt:
+    method: SQNM
+    fmaxtol: 5.E-5
+    condnum: 100.0
+    alphax: 1.0
+    precaution: normal
+    lprint: True
+

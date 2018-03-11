@@ -181,8 +181,6 @@ subroutine yaml_get_potential_parameters(parini)
     !local variales
     if(dict_size(parini%subdict)<1) stop 'ERROR: potential block in flame_in.yaml is empty.'
     parini%potential_potential=parini%subdict//"potential"
-    parini%bias_potential=parini%subdict//"bias"
-    parini%bias_field=parini%subdict//"bias_field"
     parini%cal_charge=parini%subdict//"cal_charge"
     parini%potential_potential_sec=parini%subdict//"potential_sec"
     parini%potential_ann_boundcheck=parini%subdict//"ann_boundcheck"
@@ -216,7 +214,6 @@ subroutine yaml_get_ann_parameters(parini)
     parini%ampl_rand=parini%subdict//"ampl_rand"
     parini%symfunc_type_ann=parini%subdict//"symfunc_type"
     parini%syslinsolver_ann=parini%subdict//"syslinsolver"
-    parini%psolver_ann=parini%subdict//"psolver"
     parini%rgnrmtol=parini%subdict//"rgnrmtol"
     parini%qgnrmtol=parini%subdict//"qgnrmtol"
     parini%etol_ann=parini%subdict//"etol"
@@ -324,11 +321,9 @@ subroutine yaml_get_ewald_parameters(parini)
     type(typ_parini), intent(inout):: parini
     !local variales
     if(dict_size(parini%subsubdict)<1) stop 'ERROR: ewald block in flame_in.yaml is empty.'
-    parini%hx_ewald=parini%subsubdict//"hx"
-    parini%hy_ewald=parini%subsubdict//"hy"
-    parini%hz_ewald=parini%subsubdict//"hz"
     parini%alpha_ewald=parini%subsubdict//"alpha"
     parini%ecut_ewald=parini%subsubdict//"ecut"
+    parini%ecutz_ewald=parini%subsubdict//"ecutz"
     parini%rcut_ewald=parini%subsubdict//"rcut"
     parini%rgcut_ewald=parini%subsubdict//"rgcut"
     parini%nsp_ewald=parini%subsubdict//"nsp"
@@ -339,6 +334,10 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%gnrmtol_eem=parini%subsubdict//"gnrmtol"
     parini%ewald=parini%subsubdict//"ewald"
     parini%tolerance_ewald=parini%subsubdict//"ewald_tol"
+    parini%efield=parini%subsubdict//"external_field"
+    parini%bias_type=parini%subsubdict//"bias_type"
+    parini%psolver=parini%subsubdict//"psolver"
+    parini%cell_ortho=parini%subsubdict//"cell_ortho"
 end subroutine yaml_get_ewald_parameters
 !*****************************************************************************************
 subroutine yaml_get_misc_parameters(parini)

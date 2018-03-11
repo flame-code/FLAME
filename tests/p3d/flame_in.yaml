@@ -5,8 +5,10 @@
    potential: forcefield
    component_ff: coulomb
    ewald:
-     hx: 0.9448630639252209
-     hz: 0.5669178383551325
+     psolver: p3d
+     cell_ortho: True
+     ecut: 5.52754141862141
+     ecutz: 15.354281718392803
      alpha: 2.26767135342053
      rcut: 15.684726861158667
      rgcut: 9.0
