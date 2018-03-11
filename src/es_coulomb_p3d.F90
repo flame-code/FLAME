@@ -14,7 +14,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     real(8):: time(10)
     !The following dummy varables definition to be deleted later.
     !real(8):: totrho
-    real(8):: beta, pi, charge,c,charge0,E,tmp
+    real(8):: charge,c,charge0,E,tmp
     integer:: igpx, igpy, igpz, iat
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
@@ -27,17 +27,9 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     ngpx=poisson%ngpx
     poisson%point_particle= .true.
 
-    pi=4.d0*atan(1.d0)
-    beta=0.d0
-    do iat=1,atoms%nat
-        beta=beta+atoms%qat(iat)*atoms%rat(3,iat)
-    enddo
-    beta=beta*2.d0*pi*poisson%ngpx*poisson%ngpy/(poisson%cell(1)*poisson%cell(2))
     gausswidth=f_malloc([1.to.atoms%nat],id='gausswidth')
     gausswidth(:)=poisson%alpha
 
-    !write(*,*) 'total momentum z component',beta
-    !write(*,*) 'total momentum z component',0.13074051987178871d5/beta
     call cpu_time(time(1))
     if(.not. poisson%initialized) then
         stop 'ERROR: calculate_forces_energy: poisson is not initialized!'

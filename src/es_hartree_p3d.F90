@@ -94,7 +94,9 @@ subroutine solve_syslinequ_p3d(poisson,hz,cell)
     real(8):: e1(poisson%ngpz), e2(poisson%ngpz-1), c(poisson%ngpz)
     integer::ix,iy,iz,info,ixt,iyt
     !local variables
-    real(8):: beta !beta is proportion to dipole moment as it is in paper.
+    !beta_grid is proportion to dipole moment and it is related to beta in the
+    !P3D paper (i.e. poisson%beta) but multiplied by factor (-ngpx*ngpy)
+    real(8):: beta_grid 
     pi=4.d0*atan(1.d0)
     hzsq=hz**2
     fourpi=4.d0*pi 
@@ -112,12 +114,11 @@ subroutine solve_syslinequ_p3d(poisson,hz,cell)
     do iz=1,poisson%ngpz
         d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
     enddo
-    call calbeta(hzsq,poisson%ngpz,d(1+nem),beta)
-    write(*,*)"beta = ", beta
-    poisson%beta = beta
+    call get_beta_grid(hzsq,poisson%ngpz,d(1+nem),beta_grid)
+    poisson%beta = beta_grid /(-poisson%ngpx*poisson%ngpy)
     call prepare00(poisson%ngpz,nem,d,c,hz)
-    c(1)=c(1)-beta
-    c(poisson%ngpz)=c(poisson%ngpz)+beta
+    c(1)=c(1)-beta_grid
+    c(poisson%ngpz)=c(poisson%ngpz)+beta_grid
     call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
     if (info/= 0) write(*,*) 'Solution failed',info
     do iz=1,poisson%ngpz
@@ -636,17 +637,20 @@ end subroutine prepcoeff
 !*****************************************************************************************
 !This subroutine calculates the dipole moment which defines the boundary 
 !condition for the single ODE in which gamma=0
-subroutine calbeta(hzsq,ngpz,analc00,beta)
+subroutine get_beta_grid(hzsq,ngpz,analc00,beta_grid)
     use mod_interface
     implicit none
-    integer::ngpz,iz
-    real(8)::analc00(ngpz),hzsq,beta
-    beta=0.d0
+    real(8), intent(in):: hzsq, analc00(ngpz)
+    integer, intent(in):: ngpz
+    real(8), intent(out):: beta_grid
+    !local variables
+    integer:: iz
+    beta_grid=0.d0
     do iz=1,ngpz-1
-        beta=beta+iz*analc00(iz)
+        beta_grid=beta_grid+iz*analc00(iz)
     enddo
-    beta=beta*0.5d0*hzsq
-    write(*,'(a22,e30.17)') 'inside calbeta beta=',beta
-end subroutine calbeta
+    beta_grid=beta_grid*0.5d0*hzsq
+    write(*,'(a22,e30.17)') 'inside get_beta_grid beta_grid=',beta_grid
+end subroutine get_beta_grid
 !*****************************************************************************************
 

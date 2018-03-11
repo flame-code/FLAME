@@ -2021,10 +2021,11 @@ end subroutine prepare
 subroutine prepcoeff(hz,eta,coefftot1,coefftoti,coefftotn)
     real(8)::hz,coeff(16,8),coefftot1(17),coefftoti(17),coefftotn(17),eta(6)
 end subroutine prepcoeff
-subroutine calbeta(hzsq,ngpz,analc00,beta)
-    integer::ngpz,iz
-    real(8)::analc00(ngpz),hzsq,beta
-end subroutine calbeta
+subroutine get_beta_grid(hzsq,ngpz,analc00,beta_grid)
+    real(8), intent(in):: hzsq, analc00(ngpz)
+    integer, intent(in):: ngpz
+    real(8), intent(out):: beta_grid
+end subroutine get_beta_grid
 ! ./src/fingerprint_atorb.F90 :
 subroutine get_fp_malypso(nat,rxyz,rcov,latvec,r_cut_in,kinds,nkinds,fp_dim,nl,fp)
 integer:: nl !Number of l components, here only even ones 
@@ -2461,7 +2462,7 @@ end subroutine cube_write
 subroutine read_list_files_yaml(fname,nfiles_max,fn_list,nfiles)
     character(len=*), intent(in):: fname
     integer, intent(in):: nfiles_max
-    character(len=256), intent(out):: fn_list(nfiles)
+    character(len=256), intent(out):: fn_list(nfiles_max)
     integer, intent(out):: nfiles
 end subroutine read_list_files_yaml
 ! ./src/io_vasp.F90 :
