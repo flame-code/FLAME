@@ -131,6 +131,10 @@
      ewald_tol: 1.E-6
      bias_type: no
      external_field: 0.0
+     dielec_const: 1.0
+     dielec_const1: 1.0
+     dielec_const2: 1.0
+     cal_polar: False
  ann:
    subtask: unknown
    optimizer: unknown
