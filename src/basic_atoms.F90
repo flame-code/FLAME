@@ -1835,6 +1835,8 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=1.d0
         elseif(trim(atoms%stypat(itypat))=='Br') then
             atoms%qtypat(itypat)=-1.d0
+        elseif(trim(atoms%stypat(itypat))=='Al') then
+            atoms%qtypat(itypat)=3.d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%stypat=',trim(atoms%stypat(itypat))
             stop
@@ -1874,6 +1876,8 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Br') then
             atoms%qat(iat)=-1.d0
+        else if(trim(atoms%sat(iat))=='Al') then
+            atoms%qat(iat)=3.d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%sat=',trim(atoms%sat(iat))
             stop
