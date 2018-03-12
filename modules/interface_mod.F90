@@ -1760,6 +1760,16 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     type(typ_parini), intent(in):: parini
     real(8):: epotlong, epotplane !, epotshort
 end subroutine bias_field_potener_forces
+! ./src/es_coulomb_p3d_dielec.F90 :
+subroutine dielec_potener_forces(parini,poisson,atoms,epot_dielec)
+    use mod_electrostatics, only: typ_poisson
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    type(typ_poisson), intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_parini), intent(in):: parini
+    real(8), intent(out):: epot_dielec
+end subroutine dielec_potener_forces
 ! ./src/es_coulomb_p3d.F90 :
 subroutine calculate_forces_energy(parini,poisson,atoms)
     use mod_electrostatics, only: typ_poisson

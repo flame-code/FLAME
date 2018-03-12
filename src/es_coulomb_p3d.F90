@@ -19,7 +19,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
-    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
+    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole, epot_dielec
     real(8),allocatable :: gausswidth(:)  
     call f_routine(id='calculate_forces_energy')
     ngpz=poisson%ngpz
@@ -66,6 +66,9 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
         call bias_field_potener_forces(parini,poisson,atoms,epotplane) 
     endif
+    if(trim(parini%bias_type)=='dielec') then
+        call dielec_potener_forces(parini,poisson,atoms,epot_dielec) 
+    end if
     call cpu_time(time(6))
     !atoms%epot=epotlong+epotshort-poisson%epotfixed+epotplane
     atoms%epot=epotlong-poisson%epotfixed+epotplane

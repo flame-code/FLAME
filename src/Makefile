@@ -23,6 +23,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		phonon.F90 \
 		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 \
 		es_coulomb_p3d_bias.F90 \
+		es_coulomb_p3d_dielec.F90 \
 		grid_rp4gto_sym.F90  grid_gto_sym_ortho.F90 \
 		grid_gto_sym.F90 grid_basic.F90 \
 		es_hartree_fourier.F90 es_hartree_main.F90 es_hartree_bps.F90 \

@@ -156,10 +156,14 @@ module mod_parini
         real(8):: gnrmtol_eem=1.d-7
         real(8):: tolerance_ewald = 1.d-6
         real(8):: efield !external electric field
+        real(8):: dielec_const
+        real(8):: dielec_const1
+        real(8):: dielec_const2
         logical :: ewald=.false.
         logical :: cell_ortho=.false.
         character(256):: bias_type='no'
         character(50):: psolver='unknown'
+        logical:: cal_polar= .false.
         !-----------------------------------------------------------------------
         !parameters of [misc]
         logical:: avail_misc=.false.
