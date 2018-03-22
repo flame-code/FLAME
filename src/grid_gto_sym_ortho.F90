@@ -218,6 +218,8 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     integer:: nbgpx, nbgpy, nbgpz, nagpx, nagpy, nagpz
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
+    real(8):: dipole !,ext_pot
+    real(8):: dv, beta                                           
     call f_routine(id='force_gto_sym_ortho')
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
@@ -325,6 +327,19 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
         do iat=1,atoms%nat
             atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*0.5d0*atoms%qat(iat)
+        enddo
+    elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
+        dv=parini%vu_ewald-parini%vl_ewald 
+
+        do iat=1,atoms%nat
+            atoms%fat(3,iat)=atoms%fat(3,iat)-(dv+2*beta)*0.5d0*atoms%qat(iat)/poisson%cell(3)
+            atoms%fat(3,iat)=atoms%fat(3,iat)-(beta)*atoms%qat(iat)/poisson%cell(3)
+            atoms%fat(3,iat)=atoms%fat(3,iat)+0.5d0*atoms%qat(iat)/poisson%cell(3)*dv
         enddo
     endif
     call f_free(wa)

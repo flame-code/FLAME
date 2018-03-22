@@ -482,6 +482,9 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     integer:: iat, igpx, igpy, igpz
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     real(8):: dipole !,ext_pot
+    real(8):: dv, pi, beta                                           
+    real(8):: c, charge                                         
+    pi=4.d0*atan(1.d0)        
     if(trim(parini%psolver)/='p3d') then
         write(*,*) 'ERROR: currently external electric field is supposed to be'            
         write(*,*) '       used together with the P3D method.'
@@ -509,6 +512,23 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
             g(iat)=g(iat)-parini%efield*0.5d0*atoms%rat(3,iat)
         enddo
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
+        dv=parini%vu_ewald-parini%vl_ewald 
+        write(*,*)'real pot = vu , vl ', parini%vu_ewald+beta, parini%vl_ewald-beta
+        ehartree=ehartree+(dv+2*beta)*0.5d0*dipole/poisson%cell(3)
+        c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
+        charge=-dipole/poisson%cell(3)+c*dv
+        ehartree=ehartree+0.5d0*charge*dv
+
+        do iat=1,atoms%nat
+            g(iat)=g(iat)+(dv+2*beta)*0.5d0*atoms%rat(3,iat)/poisson%cell(3)
+            g(iat)=g(iat)+(beta)*atoms%rat(3,iat)/poisson%cell(3)
+            g(iat)=g(iat)-0.5d0*atoms%rat(3,iat)/poisson%cell(3)*dv
+        enddo
         !efield=0.d0 !to be corrected by Samare
         !do igpz=1,poisson%ngpz
         !    !igpz=1 is not necessarily z=0, now in this way external potential is not
