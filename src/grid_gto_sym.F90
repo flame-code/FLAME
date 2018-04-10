@@ -22,28 +22,43 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     real(8):: facqiat, fac
     real(8):: vol
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
+    integer:: nlimsq, iix
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
     real(8), allocatable:: wa(:,:,:)
     real(8), allocatable:: ratred(:,:)
     real(8), allocatable:: exponentval(:), expval(:)
     real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
+    integer:: ibcz
 
     allocate(ratred(3,nat))
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
+    !-------------------------------------------------------
+    ibcz=0
+    if(trim(bc)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(bc)=='slab') then
+        ibcz=1
+        nagz=0
+        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+            write(*,'(a,2es14.5)') &
+                'ERROR: for slab BC, third cell vector must be along z direction', &
+                cv(1,3),cv(2,3)
+            stop
+        endif
+    else
+        write(*,'(2a)') 'ERROR: using this routine is meaningful only for bulk and slab BCs, bc= ',trim(bc)
+        stop
+    endif
+    !-------------------------------------------------------
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
     allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
    !  allocate(wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz))
@@ -51,11 +66,6 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
     hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
     sqpi=sqrt(pi)
@@ -71,7 +81,7 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
             jgz=igz+imgz
             hzx_g=(jgz-1)*hzx
             hzy_g=(jgz-1)*hzy
-            hzz_g=(jgz-1)*hzz
+            hzz_g=(jgz-1-nbgz*ibcz)*hzz
             do igy=-nbgy,nbgy
                 igzysq=igz**2+igy**2
                 if(igzysq>nlimsq) cycle
@@ -104,39 +114,7 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
         rho = 0.d0
     endif
         !if the input array of charge density already some value that must be preserved.
-    istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
-    igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
-    istarty = modulo((-nagy),ngy)+1
-    istartz = modulo((-nagz),ngz)+1
-    iiz=istartz-1
-
-    do igz=1-nagz,ngz+nagz
-        iiy=istarty-1
-        iiz=iiz+1
-        if (iiz==ngz+1) iiz=1
-        do igy=1-nagy,ngy+nagy
-            iiy=iiy+1
-            if (iiy==ngy+1) iiy=1
-            iix=istartx-1
-            do igx=1-nagx,igxs-1
-                iix=iix+1
-                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
-            enddo
-            do igx=igxs,igxf-1,ngx
-                do iix=1,ngx
-                    jgx=igx+iix-1
-                    rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(jgx,igy,igz)
-                enddo
-            enddo
-            iix=0
-            do igx=igxf,ngx+nagx
-                iix=iix+1
-                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
-            enddo
-        enddo
-    enddo
+    call charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,0,wa,rho)
     !---------------------------------------------------------------------------
     deallocate(ratred)
     deallocate(exponentval,expval)
@@ -166,30 +144,45 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     real(8):: facqiat, fac
     real(8):: vol
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1
     real(8):: dmsq, gwsq_inv
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
+    integer:: nlimsq, iix
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
     real(8), allocatable:: wa(:,:,:)
     real(8), allocatable:: ratred(:,:)
     real(8), allocatable:: exponentval(:), expval(:)
     real(8), allocatable:: dmxarr(:), dmyarr(:), dmzarr(:)
     real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
+    integer:: ibcz
 
     allocate(ratred(3,nat))
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
+    !-------------------------------------------------------
+    ibcz=0
+    if(trim(bc)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(bc)=='slab') then
+        ibcz=1
+        nagz=0
+        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+            write(*,'(a,2es14.5)') &
+                'ERROR: for slab BC, third cell vector must be along z direction', &
+                cv(1,3),cv(2,3)
+            stop
+        endif
+    else
+        write(*,'(2a)') 'ERROR: using this routine is meaningful only for bulk and slab BCs, bc= ',trim(bc)
+        stop
+    endif
+    !-------------------------------------------------------
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
     allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
     allocate(dmxarr(-nbgx:nbgx),dmyarr(-nbgx:nbgx),dmzarr(-nbgx:nbgx))
@@ -198,52 +191,16 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
     hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
+    sqpi=sqrt(pi)
     !---------------------------------------------------------------------------
-    istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
-    igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
-    istarty = modulo((-nagy),ngy)+1
-    istartz = modulo((-nagz),ngz)+1
-    iiz=istartz-1
-
-    do igz=1-nagz,ngz+nagz
-        iiy=istarty-1
-        iiz=iiz+1
-        if (iiz==ngz+1) iiz=1
-        do igy=1-nagy,ngy+nagy
-            iiy=iiy+1
-            if (iiy==ngy+1) iiy=1
-            iix=istartx-1
-            do igx=1-nagx,igxs-1
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-            do igx=igxs,igxf-1,ngx
-                do iix=1,ngx
-                    jgx=igx+iix-1
-                    wa(jgx,igy,igz)=pot(iix,iiy,iiz)
-                enddo
-            enddo
-            iix=0
-            do igx=igxf,ngx+nagx
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-        enddo
-    enddo
+    call potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     do iat=1,nat
         gwsq_inv=1.d0/gw(iat)**2
-        fac=1.d0/(gw(iat)*sqrt(pi))**3
+        fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
         imgz=nint(ratred(3,iat)*hrzinv)+1
@@ -256,7 +213,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
             jgz=igz+imgz
             hzx_g=(jgz-1)*hzx
             hzy_g=(jgz-1)*hzy
-            hzz_g=(jgz-1)*hzz
+            hzz_g=(jgz-1-nbgz*ibcz)*hzz
             do igy=-nbgy,nbgy
                 igzysq=igz**2+igy**2
                 if(igzysq>nlimsq) cycle
@@ -322,30 +279,45 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     real(8):: facqiat, fac
     real(8):: vol
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
-    real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1
+    real(8):: vol_voxel, ttx, tty, ttz, tt1
     real(8):: dmsq, gwsq_inv
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
+    integer:: nlimsq, iix
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
     real(8), allocatable:: wa(:,:,:)
     real(8), allocatable:: ratred(:,:)
     real(8), allocatable:: exponentval(:), expval(:)
     real(8), allocatable:: dmxarr(:), dmyarr(:), dmzarr(:)
     real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
+    integer:: ibcz
 
     allocate(ratred(3,nat))
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
+    !-------------------------------------------------------
+    ibcz=0
+    if(trim(bc)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(bc)=='slab') then
+        ibcz=1
+        nagz=0
+        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+            write(*,'(a,2es14.5)') &
+                'ERROR: for slab BC, third cell vector must be along z direction', &
+                cv(1,3),cv(2,3)
+            stop
+        endif
+    else
+        write(*,'(2a)') 'ERROR: using this routine is meaningful only for bulk and slab BCs, bc= ',trim(bc)
+        stop
+    endif
+    !-------------------------------------------------------
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
     allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
     allocate(dmxarr(-nbgx:nbgx),dmyarr(-nbgx:nbgx),dmzarr(-nbgx:nbgx))
@@ -354,52 +326,16 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
     hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
+    sqpi=sqrt(pi)
     !---------------------------------------------------------------------------
-    istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
-    igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
-    istarty = modulo((-nagy),ngy)+1
-    istartz = modulo((-nagz),ngz)+1
-    iiz=istartz-1
-
-    do igz=1-nagz,ngz+nagz
-        iiy=istarty-1
-        iiz=iiz+1
-        if (iiz==ngz+1) iiz=1
-        do igy=1-nagy,ngy+nagy
-            iiy=iiy+1
-            if (iiy==ngy+1) iiy=1
-            iix=istartx-1
-            do igx=1-nagx,igxs-1
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-            do igx=igxs,igxf-1,ngx
-                do iix=1,ngx
-                    jgx=igx+iix-1
-                    wa(jgx,igy,igz)=pot(iix,iiy,iiz)
-                enddo
-            enddo
-            iix=0
-            do igx=igxf,ngx+nagx
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-        enddo
-    enddo
+    call potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     do iat=1,nat
         gwsq_inv=1.d0/gw(iat)**2
-        fac=1.d0/(gw(iat)*sqrt(pi))**3
+        fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
         imgz=nint(ratred(3,iat)*hrzinv)+1
@@ -411,7 +347,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
             jgz=igz+imgz
             hzx_g=(jgz-1)*hzx
             hzy_g=(jgz-1)*hzy
-            hzz_g=(jgz-1)*hzz
+            hzz_g=(jgz-1-nbgz*ibcz)*hzz
             do igy=-nbgy,nbgy
                 igzysq=igz**2+igy**2
                 if(igzysq>nlimsq) cycle
@@ -475,30 +411,45 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     real(8):: facqiat, fac
     real(8):: vol
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1, tta
     real(8):: dmsq, gwsq_inv, gw_inv
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
-    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igyt, igzt, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
+    integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
+    integer:: nlimsq, iix
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
     real(8), allocatable:: wa(:,:,:)
     real(8), allocatable:: ratred(:,:)
     real(8), allocatable:: exponentval(:), expval(:)
     real(8), allocatable:: dmxarr(:), dmyarr(:), dmzarr(:)
     real(8):: sqpi, tt
-    integer:: istartx, istarty, istartz
+    integer:: ibcz
 
     allocate(ratred(3,nat))
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
+    !-------------------------------------------------------
+    ibcz=0
+    if(trim(bc)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(bc)=='slab') then
+        ibcz=1
+        nagz=0
+        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+            write(*,'(a,2es14.5)') &
+                'ERROR: for slab BC, third cell vector must be along z direction', &
+                cv(1,3),cv(2,3)
+            stop
+        endif
+    else
+        write(*,'(2a)') 'ERROR: using this routine is meaningful only for bulk and slab BCs, bc= ',trim(bc)
+        stop
+    endif
+    !-------------------------------------------------------
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
     allocate(exponentval(-nbgx:nbgx),expval(-nbgx:nbgx))
     allocate(dmxarr(-nbgx:nbgx),dmyarr(-nbgx:nbgx),dmzarr(-nbgx:nbgx))
@@ -507,53 +458,17 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
     hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
+    sqpi=sqrt(pi)
     !---------------------------------------------------------------------------
-    istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
-    igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
-    istarty = modulo((-nagy),ngy)+1
-    istartz = modulo((-nagz),ngz)+1
-    iiz=istartz-1
-
-    do igz=1-nagz,ngz+nagz
-        iiy=istarty-1
-        iiz=iiz+1
-        if (iiz==ngz+1) iiz=1
-        do igy=1-nagy,ngy+nagy
-            iiy=iiy+1
-            if (iiy==ngy+1) iiy=1
-            iix=istartx-1
-            do igx=1-nagx,igxs-1
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-            do igx=igxs,igxf-1,ngx
-                do iix=1,ngx
-                    jgx=igx+iix-1
-                    wa(jgx,igy,igz)=pot(iix,iiy,iiz)
-                enddo
-            enddo
-            iix=0
-            do igx=igxf,ngx+nagx
-                iix=iix+1
-                wa(igx,igy,igz)=pot(iix,iiy,iiz)
-            enddo
-        enddo
-    enddo
+    call potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     do iat=1,nat
         gw_inv = 1.d0/gw(iat)
         gwsq_inv=1.d0/gw(iat)**2
-        fac=1.d0/(gw(iat)*sqrt(pi))**3
+        fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
         imgz=nint(ratred(3,iat)*hrzinv)+1
@@ -568,7 +483,7 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
             jgz=igz+imgz
             hzx_g=(jgz-1)*hzx
             hzy_g=(jgz-1)*hzy
-            hzz_g=(jgz-1)*hzz
+            hzz_g=(jgz-1-nbgz*ibcz)*hzz
             do igy=-nbgy,nbgy
                 igzysq=igz**2+igy**2
                 if(igzysq>nlimsq) cycle
@@ -641,16 +556,15 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
     real(8):: facqiat, fac
     real(8):: vol
     real(8):: hxx, hxy, hxz, hyx, hyy, hyz, hzx, hzy, hzz
-    real(8):: hxx_g, hxy_g, hxz_g, hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
+    real(8):: hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: dmx, dmy, dmz, dmsq, gwsq_inv, gw_inv, gwcub_inv
     real(8):: ximg, yimg, zimg
     integer:: imgx, imgy, imgz
-    integer:: ncellx, ncelly, ncellz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
-    integer:: iii, nlimsq, iix, iiy, iiz
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz, nex, ney, nez
-    integer:: finalx, igxs, igxf 
+    integer:: nlimsq, iix, iiy, iiz
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
+    integer:: ifinalx, igxs, igxf 
     real(8), allocatable:: wa(:,:,:),wb(:,:,:),wc(:,:,:)
     real(8), allocatable:: ratred(:,:)
     real(8), allocatable:: exponentval(:), expval(:)
@@ -662,7 +576,7 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
     hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
     hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
     hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
-
+    if(trim(bc)/='bulk') stop 'ERROR: rhograd_gto_sym works only for bulk BC'
     wa=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
     wb=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wb')
     wc=f_malloc0([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wc')
@@ -672,11 +586,6 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
     hrxinv=real(ngx,8) !inverse of grid spacing in reduced coordinates
     hryinv=real(ngy,8) !inverse of grid spacing in reduced coordinates
     hrzinv=real(ngz,8) !inverse of grid spacing in reduced coordinates
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
     !-------------------------------------------------------
     pi=4.d0*atan(1.d0)
     sqpi=sqrt(pi)
@@ -733,9 +642,9 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
     endif
         !if the input array of charge density already some value that must be preserved.
     istartx = modulo((1-nagx-1),ngx)+1
-    finalx = modulo((ngx+nagx-1),ngx)+1
+    ifinalx = modulo((ngx+nagx-1),ngx)+1
     igxs = 1-nagx+(ngx-istartx+1)
-    igxf = ngx+nagx-finalx+1
+    igxf = ngx+nagx-ifinalx+1
     istarty = modulo((-nagy),ngy)+1
     istartz = modulo((-nagz),ngz)+1
     iiz=istartz-1

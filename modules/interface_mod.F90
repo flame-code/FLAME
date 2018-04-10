@@ -2233,6 +2233,16 @@ subroutine init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,
     real(8), intent(out):: ratred(3,nat), vol
     integer, intent(out):: nlimsq, nagx, nagy, nagz, nbgx, nbgy, nbgz
 end subroutine init_grid_param
+subroutine charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
+    integer, intent(in):: ngx, ngy, ngz, nagx, nagy, nagz, ibcx
+    real(8), intent(in):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
+end subroutine charge_back_to_cell
+subroutine potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
+    integer, intent(in):: ngx, ngy, ngz, nagx, nagy, nagz, ibcx
+    real(8), intent(in):: pot(ngx,ngy,ngz)
+    real(8), intent(out):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
+end subroutine potential_on_extended_grid
 ! ./src/grid_gto_sym.F90 :
 subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     use mod_parini, only: typ_parini
