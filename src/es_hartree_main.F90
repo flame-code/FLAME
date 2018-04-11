@@ -292,7 +292,7 @@ subroutine put_charge_density(parini,poisson)
         case('bigdft')
             if(parini%cell_ortho) then
                 call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
-                    poisson%rcart,poisson%cv,poisson%q,poisson%gw_ewald,poisson%rgcut, &
+                    poisson%rcart,poisson%q,poisson%gw_ewald,poisson%rgcut, &
                     poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
             else
                 call put_gto_sym(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
@@ -302,7 +302,7 @@ subroutine put_charge_density(parini,poisson)
         case('p3d')
             if(parini%cell_ortho) then
                 call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
-                    poisson%rcart,poisson%cv,poisson%q,poisson%gw_ewald,poisson%rgcut, &
+                    poisson%rcart,poisson%q,poisson%gw_ewald,poisson%rgcut, &
                     poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'

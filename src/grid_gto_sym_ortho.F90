@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
+subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -10,7 +10,6 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
@@ -34,6 +33,15 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
     call f_routine(id='put_gto_sym_ortho')
+    if(hgrid(2,1)/=0.d0 .or. hgrid(3,1)/=0.d0 .or. &
+       hgrid(1,2)/=0.d0 .or. hgrid(3,2)/=0.d0 .or. &
+       hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
+        write(*,'(a)') 'ERROR: this routine is only for orthogonal cell:'
+        write(*,'(3es14.5)') hgrid(1,1),hgrid(2,1),hgrid(3,1)
+        write(*,'(3es14.5)') hgrid(1,2),hgrid(2,2),hgrid(3,2)
+        write(*,'(3es14.5)') hgrid(1,3),hgrid(2,3),hgrid(3,3)
+        stop
+    endif
     hx=hgrid(1,1)
     hy=hgrid(2,2)
     hz=hgrid(3,3)
@@ -42,7 +50,33 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     nbgz=int(rgcut/hz)+2
     nagx=nbgx+1
     nagy=nbgy+1
-    nagz=0
+    nagz=nbgz+1
+    !-------------------------------------------------------
+    ibcx=0 !zero means periodic
+    ibcy=0 !zero means periodic
+    ibcz=0 !zero means periodic
+    if(trim(bc)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(bc)=='slab') then
+        ibcz=1
+        nagz=0
+    elseif(trim(bc)=='wire') then
+        ibcy=1
+        ibcz=1
+        nagy=0
+        nagz=0
+    elseif(trim(bc)=='free') then
+        ibcx=1
+        ibcy=1
+        ibcz=1
+        nagx=0
+        nagy=0
+        nagz=0
+    else
+        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(bc)
+        stop
+    endif
+    !-------------------------------------------------------
     mboundg=f_malloc([1.to.2,-nbgy.to.nbgy,-nbgz.to.nbgz],id='mboundg')
     call get_glimitsphere(hx,hy,hz,nbgx,nbgy,nbgz,mboundg)
     wa=f_malloc([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
@@ -57,12 +91,6 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     !assaigning the gaussian charge density on grid points, saving in the 
     !work array which is bigger than rho array.
     !write(*,*) '********************************** ',associated(wa)
-    !if(trim(bc)=='bulk') then
-    !    iii=0
-    !elseif(trim(bc)=='slab') then
-    !    iii=1
-    !endif
-    ibcz=1
     wa=0.d0
     do iat=1,nat
         !shift the gaussian centers
@@ -109,69 +137,12 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
         enddo
     enddo
     !---------------------------------------------------------------------------
-    do iz=1-nagz,ngz+nagz
-        do iy=1-nagy,0
-            do ix=1-nagx,0
-                wa(ix+ngx,iy+ngy,iz)=wa(ix+ngx,iy+ngy,iz)+wa(ix,iy,iz)
-            enddo
-            do ix=1,ngx
-                wa(ix,iy+ngy,iz)=wa(ix,iy+ngy,iz)+wa(ix,iy,iz)
-            enddo
-            do ix=ngx+1,ngx+nagx
-                wa(ix-ngx,iy+ngy,iz)=wa(ix-ngx,iy+ngy,iz)+wa(ix,iy,iz)
-            enddo
-        enddo
-        do iy=1,ngy
-            do ix=1-nagx,0
-                wa(ix+ngx,iy,iz)=wa(ix+ngx,iy,iz)+wa(ix,iy,iz)
-            enddo
-            do ix=ngx+1,ngx+nagx
-                wa(ix-ngx,iy,iz)=wa(ix-ngx,iy,iz)+wa(ix,iy,iz)
-            enddo
-        enddo
-        do iy=ngy+1,ngy+nagy
-            do ix=1-nagx,0
-                wa(ix+ngx,iy-ngy,iz)=wa(ix+ngx,iy-ngy,iz)+wa(ix,iy,iz)
-            enddo
-            do ix=1,ngx
-                wa(ix,iy-ngy,iz)=wa(ix,iy-ngy,iz)+wa(ix,iy,iz)
-            enddo
-            do ix=ngx+1,ngx+nagx
-                wa(ix-ngx,iy-ngy,iz)=wa(ix-ngx,iy-ngy,iz)+wa(ix,iy,iz)
-            enddo
-        enddo
-    enddo
-    do iz=1-nagz,0
-        do iy=1,ngy
-            do ix=1,ngx
-                wa(ix,iy,iz+ngz)=wa(ix,iy,iz+ngz)+wa(ix,iy,iz)
-            enddo
-        enddo
-    enddo
-    do iz=ngz+1,ngz+nagz
-        do iy=1,ngy
-            do ix=1,ngx
-                wa(ix,iy,iz-ngz)=wa(ix,iy,iz-ngz)+wa(ix,iy,iz)
-            enddo
-        enddo
-    enddo
     if(reset) then
-        do iz=1,ngz
-            do iy=1,ngy
-                do ix=1,ngx
-                    rho(ix,iy,iz)=wa(ix,iy,iz)
-                enddo
-            enddo
-        enddo
-    else
-        do iz=1,ngz
-            do iy=1,ngy
-                do ix=1,ngx
-                    rho(ix,iy,iz)=rho(ix,iy,iz)+wa(ix,iy,iz)
-                enddo
-            enddo
-        enddo
+        !if the input array of charge density does not contain any previous value
+        !wanted to be preserved.
+        rho = 0.d0
     endif
+    call charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
     !do iz=1,ngz
     !    do iy=1,ngy
     !        do ix=1,ngx
@@ -187,6 +158,159 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     call f_free(mboundg)
     call f_release_routine()
 end subroutine put_gto_sym_ortho
+!*****************************************************************************************
+subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: gw(atoms%nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
+    real(8), intent(inout):: g(atoms%nat)
+    !local variables
+    real(8), allocatable:: wx(:), wy(:), wz(:) !values of one dimensional Gaussian functions
+    real(8):: rhoz, rhoyz, pi
+    real(8):: hgxinv, hgyinv, hgzinv, hgxhgyhgz
+    real(8):: width_inv, width_inv_xat, width_inv_yat, width_inv_zat
+    real(8):: width_inv_hgx, width_inv_hgy, width_inv_hgz,width
+    real(8):: xat, yat, zat, fac
+    integer:: iat, iw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz, iyt, izt
+    real(8), allocatable:: wa(:,:,:)
+    integer, allocatable:: mboundg(:,:,:)
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
+    integer:: ibcx, ibcy, ibcz
+    real(8):: hx, hy, hz
+    real(8):: ttg
+    if(hgrid(2,1)/=0.d0 .or. hgrid(3,1)/=0.d0 .or. &
+       hgrid(1,2)/=0.d0 .or. hgrid(3,2)/=0.d0 .or. &
+       hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
+        write(*,'(a)') 'ERROR: this routine is only for orthogonal cell:'
+        write(*,'(3es14.5)') hgrid(1,1),hgrid(2,1),hgrid(3,1)
+        write(*,'(3es14.5)') hgrid(1,2),hgrid(2,2),hgrid(3,2)
+        write(*,'(3es14.5)') hgrid(1,3),hgrid(2,3),hgrid(3,3)
+        stop
+    endif
+    hx=hgrid(1,1)
+    hy=hgrid(2,2)
+    hz=hgrid(3,3)
+    nbgx=int(rgcut/hx)+2
+    nbgy=int(rgcut/hy)+2
+    nbgz=int(rgcut/hz)+2
+    nagx=nbgx+1
+    nagy=nbgy+1
+    nagz=nbgz+1
+    !-------------------------------------------------------
+    ibcx=0 !zero means periodic
+    ibcy=0 !zero means periodic
+    ibcz=0 !zero means periodic
+    if(trim(atoms%boundcond)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(atoms%boundcond)=='slab') then
+        ibcz=1
+        nagz=0
+    elseif(trim(atoms%boundcond)=='wire') then
+        ibcy=1
+        ibcz=1
+        nagy=0
+        nagz=0
+    elseif(trim(atoms%boundcond)=='free') then
+        ibcx=1
+        ibcy=1
+        ibcz=1
+        nagx=0
+        nagy=0
+        nagz=0
+    else
+        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(atoms%boundcond)
+        stop
+    endif
+    !-------------------------------------------------------
+    mboundg=f_malloc([1.to.2,-nbgy.to.nbgy,-nbgz.to.nbgz],id='mboundg')
+    call get_glimitsphere(hx,hy,hz,nbgx,nbgy,nbgz,mboundg)
+    wa=f_malloc([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
+    wx=f_malloc([-nbgx.to.nbgx],id='wx')
+    wy=f_malloc([-nbgy.to.nbgy],id='wy')
+    wz=f_malloc([-nbgz.to.nbgz],id='wz')
+    pi=4.d0*atan(1.d0)
+    hgxhgyhgz=hx*hy*hz
+    hgxinv=1.d0/hx
+    hgyinv=1.d0/hy
+    hgzinv=1.d0/hz
+    !---------------------------------------------------------------------------
+    do iz=1-nagz,ngz+nagz
+        izt=iz+(sign(ngz,-iz)+sign(ngz,ngz-iz))/2
+        do iy=1-nagy,ngy+nagy
+            iyt=iy+(sign(ngy,-iy)+sign(ngy,ngy-iy))/2
+            do ix=1-nagx,0
+                wa(ix,iy,iz)=pot(ix+ngx,iyt,izt)
+            enddo
+            do ix=1,ngx
+                wa(ix,iy,iz)=pot(ix,iyt,izt)
+            enddo
+            do ix=ngx+1,ngx+nagx
+                wa(ix,iy,iz)=pot(ix-ngx,iyt,izt)
+            enddo
+        enddo
+    enddo
+    !initialize the density 
+    do iat=1,atoms%nat  
+        !shift the Gaussian centers
+        iatox=nint(atoms%rat(1,iat)*hgxinv)+1
+        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1
+        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgz*ibcz
+        xat=atoms%rat(1,iat)-(iatox-1)*hx
+        yat=atoms%rat(2,iat)-(iatoy-1)*hy
+        zat=atoms%rat(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        !construct the one-dimensional gaussians
+
+        width=gw(iat)
+        width_inv=1.d0/width
+        fac=1.d0/(width*sqrt(pi))**3
+        width_inv_hgx=width_inv*hx
+        width_inv_hgy=width_inv*hy
+        width_inv_hgz=width_inv*hz
+
+        width_inv_xat=width_inv*xat
+        width_inv_yat=width_inv*yat
+        width_inv_zat=width_inv*zat
+        do iw=-nbgx,nbgx
+            wx(iw)=exp(-(width_inv_hgx*iw-width_inv_xat)**2)
+        enddo
+        do iw=-nbgy,nbgy
+            wy(iw)=exp(-(width_inv_hgy*iw-width_inv_yat)**2)
+        enddo
+        do iw=-nbgz,nbgz
+            wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
+        enddo
+
+        ttg=0.d0
+        do iz=-nbgz,nbgz
+        jz=iatoz+iz
+        rhoz=fac*wz(iz)
+            do iy=-nbgy,nbgy
+                rhoyz=rhoz*wy(iy)
+                jy=iatoy+iy
+                do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
+                    jx=iatox+ix
+                    ttg=ttg+rhoyz*wx(ix)*wa(jx,jy,jz)
+                enddo
+            enddo
+        enddo
+        g(iat)=g(iat)+ttg*hgxhgyhgz
+    enddo
+    call f_free(wx)
+    call f_free(wy)
+    call f_free(wz)
+    call f_free(wa)
+    call f_free(mboundg)
+    ! call f_release_routine()
+end subroutine qgrad_gto_sym_ortho
 !*****************************************************************************************
 subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     use mod_interface
@@ -217,6 +341,15 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
     call f_routine(id='force_gto_sym_ortho')
+    if(hgrid(2,1)/=0.d0 .or. hgrid(3,1)/=0.d0 .or. &
+       hgrid(1,2)/=0.d0 .or. hgrid(3,2)/=0.d0 .or. &
+       hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
+        write(*,'(a)') 'ERROR: this routine is only for orthogonal cell:'
+        write(*,'(3es14.5)') hgrid(1,1),hgrid(2,1),hgrid(3,1)
+        write(*,'(3es14.5)') hgrid(1,2),hgrid(2,2),hgrid(3,2)
+        write(*,'(3es14.5)') hgrid(1,3),hgrid(2,3),hgrid(3,3)
+        stop
+    endif
     hx=hgrid(1,1)
     hy=hgrid(2,2)
     hz=hgrid(3,3)
@@ -225,7 +358,33 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     nbgz=int(rgcut/hz)+2
     nagx=nbgx+1
     nagy=nbgy+1
-    nagz=0
+    nagz=nbgz+1
+    !-------------------------------------------------------
+    ibcx=0 !zero means periodic
+    ibcy=0 !zero means periodic
+    ibcz=0 !zero means periodic
+    if(trim(atoms%boundcond)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(atoms%boundcond)=='slab') then
+        ibcz=1
+        nagz=0
+    elseif(trim(atoms%boundcond)=='wire') then
+        ibcy=1
+        ibcz=1
+        nagy=0
+        nagz=0
+    elseif(trim(atoms%boundcond)=='free') then
+        ibcx=1
+        ibcy=1
+        ibcz=1
+        nagx=0
+        nagy=0
+        nagz=0
+    else
+        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(atoms%boundcond)
+        stop
+    endif
+    !-------------------------------------------------------
     mboundg=f_malloc([1.to.2,-nbgy.to.nbgy,-nbgz.to.nbgz],id='mboundg')
     call get_glimitsphere(hx,hy,hz,nbgx,nbgy,nbgz,mboundg)
     wa=f_malloc([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
@@ -256,13 +415,6 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
             enddo
         enddo
     enddo
-    !---------------------------------------------------------------------------
-    !if(trim(atoms%boundcond)=='bulk') then
-    !    iii=0
-    !elseif(trim(atoms%boundcond)=='slab') then
-    !    iii=1
-    !endif
-    ibcz=1
     !initialize the density 
     do iat=1,atoms%nat  
         !shift the Gaussian centers
@@ -330,129 +482,4 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     call f_free(mboundg)
     call f_release_routine()
 end subroutine force_gto_sym_ortho
-!*****************************************************************************************
-subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
-    use mod_parini, only: typ_parini
-    use dynamic_memory
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: gw(atoms%nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: lda, ngx, ngy, ngz
-    real(8), intent(in):: hgrid(3,3)
-    real(8), intent(in):: pot(lda,ngy,ngz)
-    real(8), intent(inout):: g(atoms%nat)
-    !local variables
-    real(8), allocatable:: wx(:), wy(:), wz(:) !values of one dimensional Gaussian functions
-    real(8):: rhoz, rhoyz, pi
-    real(8):: hgxinv, hgyinv, hgzinv, hgxhgyhgz
-    real(8):: width_inv, width_inv_xat, width_inv_yat, width_inv_zat
-    real(8):: width_inv_hgx, width_inv_hgy, width_inv_hgz,width
-    real(8):: xat, yat, zat, fac
-    integer:: iat, iw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz, iyt, izt
-    real(8), allocatable:: wa(:,:,:)
-    integer, allocatable:: mboundg(:,:,:)
-    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
-    integer:: ibcx, ibcy, ibcz
-    real(8):: hx, hy, hz
-    real(8):: ttg
-    hx=hgrid(1,1)
-    hy=hgrid(2,2)
-    hz=hgrid(3,3)
-    nbgx=int(rgcut/hx)+2
-    nbgy=int(rgcut/hy)+2
-    nbgz=int(rgcut/hz)+2
-    nagx=nbgx+1
-    nagy=nbgy+1
-    nagz=0
-    mboundg=f_malloc([1.to.2,-nbgy.to.nbgy,-nbgz.to.nbgz],id='mboundg')
-    call get_glimitsphere(hx,hy,hz,nbgx,nbgy,nbgz,mboundg)
-    wa=f_malloc([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    wx=f_malloc([-nbgx.to.nbgx],id='wx')
-    wy=f_malloc([-nbgy.to.nbgy],id='wy')
-    wz=f_malloc([-nbgz.to.nbgz],id='wz')
-    pi=4.d0*atan(1.d0)
-    hgxhgyhgz=hx*hy*hz
-    hgxinv=1.d0/hx
-    hgyinv=1.d0/hy
-    hgzinv=1.d0/hz
-    !---------------------------------------------------------------------------
-    do iz=1-nagz,ngz+nagz
-        izt=iz+(sign(ngz,-iz)+sign(ngz,ngz-iz))/2
-        do iy=1-nagy,ngy+nagy
-            iyt=iy+(sign(ngy,-iy)+sign(ngy,ngy-iy))/2
-            do ix=1-nagx,0
-                wa(ix,iy,iz)=pot(ix+ngx,iyt,izt)
-            enddo
-            do ix=1,ngx
-                wa(ix,iy,iz)=pot(ix,iyt,izt)
-            enddo
-            do ix=ngx+1,ngx+nagx
-                wa(ix,iy,iz)=pot(ix-ngx,iyt,izt)
-            enddo
-        enddo
-    enddo
-    !---------------------------------------------------------------------------
-    !    if(trim(atoms%boundcond)=='bulk') then
-    !        iii=0
-    !    elseif(trim(atoms%boundcond)=='slab') then
-    !        iii=1
-    !    endif
-    ibcz=1
-    !initialize the density 
-    do iat=1,atoms%nat  
-        !shift the Gaussian centers
-        iatox=nint(atoms%rat(1,iat)*hgxinv)+1
-        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1
-        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=atoms%rat(1,iat)-(iatox-1)*hx
-        yat=atoms%rat(2,iat)-(iatoy-1)*hy
-        zat=atoms%rat(3,iat)-(iatoz-1-nbgz*ibcz)*hz
-        !construct the one-dimensional gaussians
-
-        width=gw(iat)
-        width_inv=1.d0/width
-        fac=1.d0/(width*sqrt(pi))**3
-        width_inv_hgx=width_inv*hx
-        width_inv_hgy=width_inv*hy
-        width_inv_hgz=width_inv*hz
-
-        width_inv_xat=width_inv*xat
-        width_inv_yat=width_inv*yat
-        width_inv_zat=width_inv*zat
-        do iw=-nbgx,nbgx
-            wx(iw)=exp(-(width_inv_hgx*iw-width_inv_xat)**2)
-        enddo
-        do iw=-nbgy,nbgy
-            wy(iw)=exp(-(width_inv_hgy*iw-width_inv_yat)**2)
-        enddo
-        do iw=-nbgz,nbgz
-            wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
-        enddo
-
-        ttg=0.d0
-        do iz=-nbgz,nbgz
-        jz=iatoz+iz
-        rhoz=fac*wz(iz)
-            do iy=-nbgy,nbgy
-                rhoyz=rhoz*wy(iy)
-                jy=iatoy+iy
-                do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
-                    jx=iatox+ix
-                    ttg=ttg+rhoyz*wx(ix)*wa(jx,jy,jz)
-                enddo
-            enddo
-        enddo
-        g(iat)=g(iat)+ttg*hgxhgyhgz
-    enddo
-    call f_free(wx)
-    call f_free(wy)
-    call f_free(wz)
-    call f_free(wa)
-    call f_free(mboundg)
-    ! call f_release_routine()
-end subroutine qgrad_gto_sym_ortho
 !*****************************************************************************************

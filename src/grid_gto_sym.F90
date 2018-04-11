@@ -113,7 +113,6 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
         !wanted to be preserved.
         rho = 0.d0
     endif
-        !if the input array of charge density already some value that must be preserved.
     call charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,0,wa,rho)
     !---------------------------------------------------------------------------
     deallocate(ratred)

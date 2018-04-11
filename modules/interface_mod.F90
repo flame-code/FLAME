@@ -2314,14 +2314,13 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
     real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
 end subroutine rhograd_gto_sym
 ! ./src/grid_gto_sym_ortho.F90 :
-subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
+subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
     logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
@@ -2329,17 +2328,6 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ng
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: rho(ngx,ngy,ngz)
 end subroutine put_gto_sym_ortho
-subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gw(atoms%nat)
-    real(8), intent(in):: rgcut
-    integer, intent(in):: lda, ngx, ngy, ngz
-    real(8), intent(in):: hgrid(3,3)
-    real(8), intent(inout):: pot(lda,ngy,ngz)
-end subroutine force_gto_sym_ortho
 subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -2352,6 +2340,17 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g
     real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(inout):: g(atoms%nat)
 end subroutine qgrad_gto_sym_ortho
+subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gw(atoms%nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(inout):: pot(lda,ngy,ngz)
+end subroutine force_gto_sym_ortho
 ! ./src/grid_rp4gto_sym.F90 :
 subroutine put_rp4gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
     use mod_parini, only: typ_parini
