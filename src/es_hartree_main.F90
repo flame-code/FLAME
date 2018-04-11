@@ -153,6 +153,10 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !call calparam(parini,atoms,poisson_rough,poisson)
     call set_ngp_bps(parini,atoms,poisson_rough,poisson)
     ngptot=ngpx*ngpy*ngpz
+    poisson%lda=ngpx !To be corrected for BCs other than bulk, e.g. +2 for slab+P3D
+    poisson%hgrid(1,1)=atoms%cellvec(1,1)/ngpx ; poisson%hgrid(2,1)=atoms%cellvec(2,1)/ngpx ; poisson%hgrid(3,1)=atoms%cellvec(3,1)/ngpx
+    poisson%hgrid(1,2)=atoms%cellvec(1,2)/ngpy ; poisson%hgrid(2,2)=atoms%cellvec(2,2)/ngpy ; poisson%hgrid(3,2)=atoms%cellvec(3,2)/ngpy
+    poisson%hgrid(1,3)=atoms%cellvec(1,3)/ngpz ; poisson%hgrid(2,3)=atoms%cellvec(2,3)/ngpz ; poisson%hgrid(3,3)=atoms%cellvec(3,3)/ngpz
     write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
     !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
@@ -296,8 +300,8 @@ subroutine put_charge_density(parini,poisson)
                     poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
             else
                 call put_gto_sym(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
-                    poisson%rcart,poisson%cv,poisson%q,poisson%gw,poisson%rgcut, &
-                    poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%rho)
+                    poisson%rcart,poisson%q,poisson%gw,poisson%rgcut, &
+                    poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
             endif
         case('p3d')
             if(parini%cell_ortho) then
@@ -366,8 +370,8 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
                     poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%qgrad)
                 call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
             else
-                call rqgrad_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%cv,poisson%q,poisson%gw, &
-                    poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%pot,poisson%rgrad,poisson%qgrad)
+                call rqgrad_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%q,poisson%gw, &
+                    poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%rgrad,poisson%qgrad)
             endif
         case('p3d')
             if(parini%cell_ortho) then
@@ -413,8 +417,8 @@ subroutine get_hartree_force(parini,poisson,atoms)
                 endif
             else
                 call force_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart, &
-                    poisson%cv,poisson%q,poisson%gw,poisson%rgcut,poisson%ngpx, &
-                    poisson%ngpy,poisson%ngpz,poisson%pot,atoms%fat)
+                    poisson%q,poisson%gw,poisson%rgcut,poisson%lda,poisson%ngpx, &
+                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
             endif
         case('p3d')
             if(parini%cell_ortho) then

@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -10,11 +10,11 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: rho(ngx,ngy,ngz)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
@@ -25,7 +25,7 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     real(8):: hyx_g, hyy_g, hyz_g, hzx_g, hzy_g, hzz_g
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: dmx, dmy, dmz, dmsq, gwsq_inv
-    real(8):: ximg, yimg, zimg
+    real(8):: ximg, yimg, zimg , cv(3,3)
     integer:: imgx, imgy, imgz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
     integer:: nlimsq, iix
@@ -37,10 +37,13 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     integer:: ibcz
 
     allocate(ratred(3,nat))
+    hxx=hgrid(1,1) ; hxy=hgrid(2,1) ; hxz=hgrid(3,1)
+    hyx=hgrid(1,2) ; hyy=hgrid(2,2) ; hyz=hgrid(3,2)
+    hzx=hgrid(1,3) ; hzy=hgrid(2,3) ; hzz=hgrid(3,3)
+    cv(1,1)=hxx*ngx ; cv(2,1)=hxy*ngx ; cv(3,1)=hxz*ngx
+    cv(1,2)=hyx*ngy ; cv(2,2)=hyy*ngy ; cv(3,2)=hyz*ngy
+    cv(1,3)=hzx*ngz ; cv(2,3)=hzy*ngz ; cv(3,3)=hzz*ngz
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
-    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
-    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
     !-------------------------------------------------------
     ibcz=0
     if(trim(bc)=='bulk') then
@@ -48,10 +51,10 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     elseif(trim(bc)=='slab') then
         ibcz=1
         nagz=0
-        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+        if(hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
             write(*,'(a,2es14.5)') &
                 'ERROR: for slab BC, third cell vector must be along z direction', &
-                cv(1,3),cv(2,3)
+                hgrid(1,3),hgrid(2,3)
             stop
         endif
     else
@@ -120,7 +123,7 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
     call f_free(wa)
 end subroutine put_gto_sym
 !*****************************************************************************************
-subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
+subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -130,12 +133,12 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     character(*), intent(in):: bc
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
@@ -147,7 +150,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1
     real(8):: dmsq, gwsq_inv
-    real(8):: ximg, yimg, zimg
+    real(8):: ximg, yimg, zimg, cv(3,3)
     integer:: imgx, imgy, imgz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
     integer:: nlimsq, iix
@@ -160,10 +163,13 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     integer:: ibcz
 
     allocate(ratred(3,nat))
+    hxx=hgrid(1,1) ; hxy=hgrid(2,1) ; hxz=hgrid(3,1)
+    hyx=hgrid(1,2) ; hyy=hgrid(2,2) ; hyz=hgrid(3,2)
+    hzx=hgrid(1,3) ; hzy=hgrid(2,3) ; hzz=hgrid(3,3)
+    cv(1,1)=hxx*ngx ; cv(2,1)=hxy*ngx ; cv(3,1)=hxz*ngx
+    cv(1,2)=hyx*ngy ; cv(2,2)=hyy*ngy ; cv(3,2)=hyz*ngy
+    cv(1,3)=hzx*ngz ; cv(2,3)=hzy*ngz ; cv(3,3)=hzz*ngz
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
-    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
-    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
     !-------------------------------------------------------
     ibcz=0
     if(trim(bc)=='bulk') then
@@ -171,10 +177,10 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     elseif(trim(bc)=='slab') then
         ibcz=1
         nagz=0
-        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+        if(hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
             write(*,'(a,2es14.5)') &
                 'ERROR: for slab BC, third cell vector must be along z direction', &
-                cv(1,3),cv(2,3)
+                hgrid(1,3),hgrid(2,3)
             stop
         endif
     else
@@ -255,7 +261,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgr
     call f_free(wa)
 end subroutine rqgrad_gto_sym
 !*****************************************************************************************
-subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
+subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -265,12 +271,12 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     character(*), intent(in):: bc
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: fat(3,nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
@@ -282,7 +288,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: vol_voxel, ttx, tty, ttz, tt1
     real(8):: dmsq, gwsq_inv
-    real(8):: ximg, yimg, zimg
+    real(8):: ximg, yimg, zimg, cv(3,3)
     integer:: imgx, imgy, imgz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
     integer:: nlimsq, iix
@@ -295,10 +301,13 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     integer:: ibcz
 
     allocate(ratred(3,nat))
+    hxx=hgrid(1,1) ; hxy=hgrid(2,1) ; hxz=hgrid(3,1)
+    hyx=hgrid(1,2) ; hyy=hgrid(2,2) ; hyz=hgrid(3,2)
+    hzx=hgrid(1,3) ; hzy=hgrid(2,3) ; hzz=hgrid(3,3)
+    cv(1,1)=hxx*ngx ; cv(2,1)=hxy*ngx ; cv(3,1)=hxz*ngx
+    cv(1,2)=hyx*ngy ; cv(2,2)=hyy*ngy ; cv(3,2)=hyz*ngy
+    cv(1,3)=hzx*ngz ; cv(2,3)=hzy*ngz ; cv(3,3)=hzz*ngz
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
-    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
-    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
     !-------------------------------------------------------
     ibcz=0
     if(trim(bc)=='bulk') then
@@ -306,10 +315,10 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     elseif(trim(bc)=='slab') then
         ibcz=1
         nagz=0
-        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+        if(hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
             write(*,'(a,2es14.5)') &
                 'ERROR: for slab BC, third cell vector must be along z direction', &
-                cv(1,3),cv(2,3)
+                hgrid(1,3),hgrid(2,3)
             stop
         endif
     else
@@ -387,7 +396,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
     call f_free(wa)
 end subroutine force_gto_sym
 !*****************************************************************************************
-subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
+subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad,agrad)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
@@ -397,12 +406,12 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     character(*), intent(in):: bc
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat) 
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
@@ -414,7 +423,7 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     real(8):: hrxinv, hryinv, hrzinv
     real(8):: vol_voxel, ttx, tty, ttz, ttq, tt1, tta
     real(8):: dmsq, gwsq_inv, gw_inv
-    real(8):: ximg, yimg, zimg
+    real(8):: ximg, yimg, zimg, cv(3,3)
     integer:: imgx, imgy, imgz
     integer:: iat, igx, igy, igz, jgx, jgy, jgz, igzysq
     integer:: nlimsq, iix
@@ -427,10 +436,13 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     integer:: ibcz
 
     allocate(ratred(3,nat))
+    hxx=hgrid(1,1) ; hxy=hgrid(2,1) ; hxz=hgrid(3,1)
+    hyx=hgrid(1,2) ; hyy=hgrid(2,2) ; hyz=hgrid(3,2)
+    hzx=hgrid(1,3) ; hzy=hgrid(2,3) ; hzz=hgrid(3,3)
+    cv(1,1)=hxx*ngx ; cv(2,1)=hxy*ngx ; cv(3,1)=hxz*ngx
+    cv(1,2)=hyx*ngy ; cv(2,2)=hyy*ngy ; cv(3,2)=hyz*ngy
+    cv(1,3)=hzx*ngz ; cv(2,3)=hzy*ngz ; cv(3,3)=hzz*ngz
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    hxx=cv(1,1)/ngx ; hxy=cv(2,1)/ngx ; hxz=cv(3,1)/ngx
-    hyx=cv(1,2)/ngy ; hyy=cv(2,2)/ngy ; hyz=cv(3,2)/ngy
-    hzx=cv(1,3)/ngz ; hzy=cv(2,3)/ngz ; hzz=cv(3,3)/ngz
     !-------------------------------------------------------
     ibcz=0
     if(trim(bc)=='bulk') then
@@ -438,10 +450,10 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,r
     elseif(trim(bc)=='slab') then
         ibcz=1
         nagz=0
-        if(cv(1,3)/=0.d0 .or. cv(2,3)/=0.d0) then
+        if(hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
             write(*,'(a,2es14.5)') &
                 'ERROR: for slab BC, third cell vector must be along z direction', &
-                cv(1,3),cv(2,3)
+                hgrid(1,3),hgrid(2,3)
             stop
         endif
     else

@@ -1501,24 +1501,11 @@ subroutine best_charge_density(parini)
 end subroutine best_charge_density
 subroutine best_charge_density_rho(parini)
     use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson, typ_poisson
+    use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density_rho
-subroutine best_charge_density_force(parini)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_cent, typ_ann_arr
-    type(typ_parini), intent(in):: parini
-end subroutine best_charge_density_force
-subroutine best_charge_density_energy(parini)
-     use mod_parini, only: typ_parini
-     use mod_electrostatics, only: typ_poisson, typ_poisson
-     use mod_atoms, only: typ_atoms
-     use mod_ann, only: typ_cent, typ_ann_arr
-     type(typ_parini), intent(in):: parini
-end subroutine best_charge_density_energy
 ! ./src/buckingham.F90 :
 subroutine set_buckingham(atoms,tosifumi)
     use mod_atoms, only: typ_atoms
@@ -2243,60 +2230,60 @@ subroutine potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
     real(8), intent(out):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
 end subroutine potential_on_extended_grid
 ! ./src/grid_gto_sym.F90 :
-subroutine put_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho)
+subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
     logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: rho(ngx,ngy,ngz)
 end subroutine put_gto_sym
-subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad)
+subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat)
 end subroutine rqgrad_gto_sym
-subroutine force_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,fat)
+subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: fat(3,nat)
 end subroutine force_gto_sym
-subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,pot,rgrad,qgrad,agrad)
+subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad,agrad)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
-    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat) 
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
-    integer, intent(in):: ngx, ngy, ngz
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: rgrad(3,nat), qgrad(nat), agrad(nat)
 end subroutine gwrqgrad_gto_sym
 subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
