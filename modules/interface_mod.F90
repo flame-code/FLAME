@@ -2218,9 +2218,8 @@ subroutine genconf_trimer(parini,genconf)
     type(typ_genconf), intent(in):: genconf
 end subroutine genconf_trimer
 ! ./src/grid_basic.F90 :
-subroutine get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
-    use mod_electrostatics, only: typ_poisson
-    type(typ_poisson), intent(inout):: poisson
+subroutine get_glimitsphere(hx,hy,hz,nbgpx,nbgpy,nbgpz,mboundg)
+    real(8), intent(in):: hx, hy, hz
     integer, intent(in):: nbgpx, nbgpy, nbgpz
     integer, intent(out):: mboundg(1:2,-nbgpy:nbgpy,-nbgpz:nbgpz)
 end subroutine get_glimitsphere
@@ -2315,36 +2314,43 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
     real(8), intent(inout):: rho(ngx,ngy,ngz),rho_a_par(ngx,ngy,ngz),rho_q_par(ngx,ngy,ngz)
 end subroutine rhograd_gto_sym
 ! ./src/grid_gto_sym_ortho.F90 :
-subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gausswidth,poisson)
-    use mod_electrostatics, only: typ_poisson
+subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: bc
     logical, intent(in):: reset
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: cv(3,3)
     real(8), intent(in):: qat(nat)
-    real(8), intent(in):: gausswidth(nat)
-    type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
 end subroutine put_gto_sym_ortho
-subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
+subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
-    type(typ_poisson), intent(inout):: poisson
-    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(in):: gw(atoms%nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(inout):: pot(lda,ngy,ngz)
 end subroutine force_gto_sym_ortho
-subroutine qgrad_gto_sym_ortho(parini,atoms,poisson,gausswidth,g)
+subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
     type(typ_parini), intent(in):: parini
-    real(8):: g(atoms%nat) 
-    real(8), intent(in):: gausswidth(atoms%nat)
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: gw(atoms%nat)
+    real(8), intent(in):: rgcut
+    integer, intent(in):: lda, ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(in):: pot(lda,ngy,ngz)
+    real(8), intent(inout):: g(atoms%nat)
 end subroutine qgrad_gto_sym_ortho
 ! ./src/grid_rp4gto_sym.F90 :
 subroutine put_rp4gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)

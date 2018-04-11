@@ -8,12 +8,14 @@ module mod_electrostatics
     implicit none
     type:: typ_poisson
         integer:: nat
+        integer:: lda=0 !leading dimension of array pot
         integer:: ngpx !number of grid points in x direction.
         integer:: ngpy !number of grid points in y direction.
         integer:: ngpz !number of grid points in z direction.
         real(8):: hx !grid spacing in x direction.
         real(8):: hy !grid spacing in y direction.
         real(8):: hz !grid spacing in z direction.
+        real(8):: hgrid(3,3) !grid spacing in all directions.
         real(8), allocatable:: rho(:,:,:) !charge density array.
         real(8), allocatable:: pot(:,:,:) !potential array.
         real(8), allocatable:: pots(:,:,:) !surface potential array.

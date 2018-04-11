@@ -1,16 +1,16 @@
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
-subroutine get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
+subroutine get_glimitsphere(hx,hy,hz,nbgpx,nbgpy,nbgpz,mboundg)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
-    type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: hx, hy, hz
     integer, intent(in):: nbgpx, nbgpy, nbgpz
     integer, intent(out):: mboundg(1:2,-nbgpy:nbgpy,-nbgpz:nbgpz)
     !local variables
     integer:: ix, iy, iz
     real(8):: rgcut, rgcutsq
-    rgcut=max(poisson%hx*nbgpx,poisson%hy*nbgpy,poisson%hz*nbgpz)
+    rgcut=max(hx*nbgpx,hy*nbgpy,hz*nbgpz)
     rgcutsq=rgcut**2
     do iz=-nbgpz,nbgpz
         do iy=-nbgpy,nbgpy
@@ -21,7 +21,7 @@ subroutine get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     do iz=0,nbgpz
     do iy=-nbgpy,nbgpy
     do ix=0,nbgpx
-        if(ix**2*poisson%hx**2+iy**2*poisson%hy**2+iz**2*poisson%hz**2<=rgcutsq) then
+        if(ix**2*hx**2+iy**2*hy**2+iz**2*hz**2<=rgcutsq) then
             mboundg(1,iy,iz)=-ix
             mboundg(2,iy,iz)=ix
         endif

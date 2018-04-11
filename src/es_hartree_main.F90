@@ -230,9 +230,14 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     ngpz=int(poisson%cell(3)/poisson_rough%hz)+1
     if(mod(ngpx,2)/=0) ngpx=ngpx+1
     if(mod(ngpy,2)/=0) ngpy=ngpy+1
+    poisson%lda=ngpx+2
     poisson%hx=poisson%cell(1)/real(ngpx,8)
     poisson%hy=poisson%cell(2)/real(ngpy,8)
     poisson%hz=poisson%cell(3)/real(ngpz-1,8)
+    poisson%hgrid=0.d0
+    poisson%hgrid(1,1)=poisson%cell(1)/real(ngpx,8)
+    poisson%hgrid(2,2)=poisson%cell(2)/real(ngpy,8)
+    poisson%hgrid(3,3)=poisson%cell(3)/real(ngpz-1,8)
     nbgpx=int(poisson_rough%rgcut/poisson%hx)+2
     nbgpy=int(poisson_rough%rgcut/poisson%hy)+2
     nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
@@ -249,7 +254,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
     endif
-    poisson%pot=f_malloc([1.to.ngpx+2,1.to.ngpy,1.to.ngpz], &
+    poisson%pot=f_malloc([1.to.poisson%lda,1.to.ngpy,1.to.ngpz], &
         id='poisson%pot')
     call init_psolver_p3d(poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
@@ -286,8 +291,9 @@ subroutine put_charge_density(parini,poisson)
             !do nothing
         case('bigdft')
             if(parini%cell_ortho) then
-                call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho, &
-                    poisson%nat,poisson%rcart,poisson%q,poisson%gw,poisson)
+                call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
+                    poisson%rcart,poisson%cv,poisson%q,poisson%gw_ewald,poisson%rgcut, &
+                    poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
             else
                 call put_gto_sym(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
                     poisson%rcart,poisson%cv,poisson%q,poisson%gw,poisson%rgcut, &
@@ -295,8 +301,9 @@ subroutine put_charge_density(parini,poisson)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho, &
-                    poisson%nat,poisson%rcart,poisson%q,poisson%gw,poisson)
+                call put_gto_sym_ortho(parini,poisson%bc,poisson%reset_rho,poisson%nat, &
+                    poisson%rcart,poisson%cv,poisson%q,poisson%gw_ewald,poisson%rgcut, &
+                    poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop
@@ -355,15 +362,17 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
             !do nothing
         case('bigdft')
             if(parini%cell_ortho) then
-                call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
+                call qgrad_gto_sym_ortho(parini,atoms,poisson%gw_ewald, &
+                    poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%qgrad)
                 call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
             else
                 call rqgrad_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%cv,poisson%q,poisson%gw, &
-                            poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%pot,poisson%rgrad,poisson%qgrad)
+                    poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%pot,poisson%rgrad,poisson%qgrad)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
+                call qgrad_gto_sym_ortho(parini,atoms,poisson%gw_ewald, &
+                    poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%qgrad)
                 call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
@@ -388,12 +397,20 @@ subroutine get_hartree_force(parini,poisson,atoms)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     !local variables
+    integer:: iat
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
         case('bigdft')
             if(parini%cell_ortho) then
-                call force_gto_sym_ortho(parini,atoms,poisson,poisson%gw)
+                call force_gto_sym_ortho(parini,atoms,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
+                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot)
+                !The following if statement must be moved to its proper place
+                if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
+                    do iat=1,atoms%nat
+                        atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*0.5d0*atoms%qat(iat)
+                    enddo
+                endif
             else
                 call force_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart, &
                     poisson%cv,poisson%q,poisson%gw,poisson%rgcut,poisson%ngpx, &
@@ -401,7 +418,14 @@ subroutine get_hartree_force(parini,poisson,atoms)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call force_gto_sym_ortho(parini,atoms,poisson,poisson%gw)
+                call force_gto_sym_ortho(parini,atoms,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
+                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot)
+                !The following if statement must be moved to its proper place
+                if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
+                    do iat=1,atoms%nat
+                        atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*0.5d0*atoms%qat(iat)
+                    enddo
+                endif
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop
