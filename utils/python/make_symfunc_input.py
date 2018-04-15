@@ -303,6 +303,12 @@ elif(atom_name=='Zr') :
 elif(atom_name=='O') :
     factor_ion=126/100./0.529
     hardness =  6.08/27.21
+elif(atom_name=='Al') :
+    factor_ion=68/100./0.529
+    hardness =  2.77/27.21
+elif(atom_name=='Ca') :
+    factor_ion=114/100./0.529
+    hardness =  4.0/27.21
 
 for i in range((len(list_new))):
     #list_new[i][1]*= (factorH/factor)
