@@ -214,12 +214,14 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     real(8):: width_inv_hgx, width_inv_hgy, width_inv_hgz
     real(8):: xat, yat, zat, facqiat, fac
     integer:: iat, ivw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz, iyt, izt, iii
+    integer:: igpx , igpy, igpz
     real(8):: fx, fy, fz, dx, dy, dz, derrhoz, derrhoyz, derrhozy
     integer:: nbgpx, nbgpy, nbgpz, nagpx, nagpy, nagpz
     real(8), allocatable:: wa(:,:,:)
+    real(8), allocatable:: potbk(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
     real(8):: dipole !,ext_pot
-    real(8):: dv, beta                                           
+    real(8):: dv, beta, c, charge,efield                                           
     call f_routine(id='force_gto_sym_ortho')
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
@@ -230,6 +232,42 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
     nagpx=nbgpx+1
     nagpy=nbgpy+1
     nagpz=0
+    if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
+        allocate(potbk(1:poisson%ngpx+2,1:poisson%ngpy,1:poisson%ngpz))
+        potbk=poisson%pot
+        poisson%vl= poisson%vl! * 0.5d0
+        poisson%vu= poisson%vu! * 0.5d0
+        poisson%npu=poisson%ngpz-nbgpz
+        poisson%npl=1+nbgpz  
+
+
+        allocate(poisson%pots(1:poisson%ngpx+2,1:poisson%ngpy,poisson%npl:poisson%npu))
+        poisson%pots=0.d0
+        call sollaplaceq(poisson,poisson%hz,poisson%cell,poisson%vl,poisson%vu)
+
+        do igpz=1,poisson%npl-1      
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%vl
+                enddo
+            enddo
+        enddo
+        do igpz=poisson%npl,poisson%npu       
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+poisson%pots(igpx,igpy,igpz)
+                enddo
+            enddo
+        enddo
+        do igpz=poisson%npu+1,poisson%ngpz      
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%vu
+                enddo
+            enddo
+        enddo
+        deallocate(poisson%pots)
+    endif
     mboundg=f_malloc([1.to.2,-nbgpy.to.nbgpy,-nbgpz.to.nbgpz],id='mboundg')
     call get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     !wa(1-nagpx:ngpx+nagpx,1-nagpy:ngpy+nagpy,1-nagpz:ngpz+nagpz)=>poisson%pot
@@ -335,12 +373,29 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
         enddo
         beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
         dv=parini%vu_ewald-parini%vl_ewald 
+        efield =- (dv+2.d0*beta)/ poisson%cell(3)
 
         do iat=1,atoms%nat
-            atoms%fat(3,iat)=atoms%fat(3,iat)-(dv+2*beta)*0.5d0*atoms%qat(iat)/poisson%cell(3)
-            atoms%fat(3,iat)=atoms%fat(3,iat)-(beta)*atoms%qat(iat)/poisson%cell(3)
-            atoms%fat(3,iat)=atoms%fat(3,iat)+0.5d0*atoms%qat(iat)/poisson%cell(3)*dv
+            atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)+atoms%qat(iat)/poisson%cell(3)*(dv)
         enddo
+    elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
+        dv=poisson%vu-poisson%vl
+        c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
+        charge=-dipole/poisson%cell(3)!+c*dv
+        
+        do iat=1,atoms%nat
+            atoms%fat(3,iat)=atoms%fat(3,iat)+atoms%qat(iat)/poisson%cell(3)*(dv)
+            !atoms%fat(3,iat)=atoms%fat(3,iat)!+atoms%qat(iat)/poisson%cell(3)*(-2*beta-0.5*dv)
+        enddo
+        poisson%pot=potbk
+        poisson%vl= poisson%vl !* 2.0d0
+        poisson%vu= poisson%vu !* 2.0d0
+        deallocate(potbk)
     endif
     call f_free(wa)
     call f_free(wx)

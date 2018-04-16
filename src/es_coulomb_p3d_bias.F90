@@ -19,7 +19,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz, nbgpz
     real(8),allocatable :: pots_layer(:,:,:,:)
-    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
+    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole,dv
 
     pi=4.d0*atan(1.d0)
     epotplane=0.d0
@@ -30,28 +30,25 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     if(trim(parini%bias_type)=='p3dbias') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
+        vu=vu !*0.5d0
+        dv= (vu-vl)
         d= poisson%cell(3)
         write(*,*)'--------------------------------------------------------'
 !        write(*,*)"distance between planes",d
         A= poisson%ngpx*poisson%ngpy*poisson%hx*poisson%hy
-!        write(*,*)"A= ", A
         c= A/(4.d0*pi*d)
-!        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
         dipole = beta*(poisson%hx*poisson%hy)
         charge0= -dipole/(2*pi*d)
-        charge = -dipole/(2*pi*d)+c*(vu-vl)
-        !write(88,*)vu , beta, charge
-        !write(89,*)vu , beta, charge0
-        !!!!!!  why ????
+        charge = -dipole/(2*pi*d)+c*(dv)
         write(*,*)'dipole = ', dipole/(2*pi)
         write(*,*)'real pot = ', beta/(poisson%ngpx*poisson%ngpy)+vl,&
                                 -beta/(poisson%ngpx*poisson%ngpy)+vu
-        dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
-!        write(*,*)'dipole correction ', dipole_correction
-!        write(*,*)'pot correction ', charge0*(vu-vl)
-        !dipole_correction =0.d0
-        dipole_correction =dipole_correction +0.5*charge0*(vu-vl)+0.5*c*(vu-vl)**2
         write(*,*)'charge on upper  plate  ', charge
+        !dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
+        !dipole_correction = 0.d0
+        !dipole_correction =dipole_correction +charge0*(vu-vl)!0.5*c*(vu-vl)**2
+        dipole_correction = 0.d0
+        dipole_correction =dipole_correction +0.5*charge0*(-dv)!+0.5*c*(-dv)**2
         poisson%npu=poisson%ngpz-nbgpz
         poisson%npl=1+nbgpz  
 !        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
@@ -60,7 +57,6 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
 
         allocate(poisson%pots(1:poisson%ngpx+2,1:poisson%ngpy,npl:npu))
         poisson%pots=0.d0
-!        write(*,*)"npu,npl",poisson%npu,poisson%npl
         nlayer=1
         if (parini%cal_charge) then 
             nlayer=5
@@ -85,6 +81,11 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
 !
         call sollaplaceq(poisson,poisson%hz,poisson%cell,vl,vu)
         call calculate_force_ener_plane(atoms,poisson,epotplane,nbgpz)
+     !   do iat=1,atoms%nat
+     !       epotplane = epotplane +0.5*(dv)/poisson%cell(3)*atoms%qat(iat)*atoms%rat(3,iat)
+     !       atoms%fat(3,iat)=atoms%fat(3,iat)-(0.5d0*(dv)/poisson%cell(3))*atoms%qat(iat)
+     !   enddo
+        
 
         if (parini%cal_charge) then 
             call surface_charge(parini,poisson,pots_layer,vl,vu)
@@ -94,7 +95,8 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
            !        do iy=1,min(9,poisson%ngpy)
            !        do ix=1,min(9,poisson%ngpx)
            !        do iz=poisson%npl,poisson%npu
-           !            write(55,*)  (iz-1-poisson%nbgpz)*poisson%hz, poisson%pots(ix,iy,iz)
+           !            write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
+           !                         (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
            !        enddo 
            !            write(55,*)   
            !        enddo 
@@ -890,6 +892,7 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     real(8)::pot_layerl4,pot_layeru4
     real(8)::pot_layerl0,pot_layeru0
     real(8):: E,d
+    real(8):: tt1
     pi=4*atan(1.d0)
     npl=poisson%npl
     npu=poisson%npu
@@ -899,6 +902,7 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     d = poisson%cell(3)
             E =- (vu-vl)/d
 
+    tt1= 0.d0
     do iy=1,poisson%ngpy
     do ix=1,poisson%ngpx
             pot_layerl4=poisson%pots(ix,iy,npl+4)+poisson%pot(ix,iy,npl+4)+pot_short(ix,iy,1,5)
@@ -909,6 +913,7 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
             !density(ix,iy,1)=-0.5d0*(-3.d0*vl+4*pot_layerl-pot_layerl2)* hgzinv
             density(ix,iy,1)=-(-25.d0/12.d0*vl+4.d0*pot_layerl-3.d0*pot_layerl2+4.d0/3.d0*pot_layerl3-0.25d0*pot_layerl4)* hgzinv
             t=t+ density(ix,iy,1)
+            tt1=tt1+density(ix,iy,1)*poisson%pot(ix,iy,npl  )
             pot_layeru4=poisson%pots(ix,iy,npu-4)+poisson%pot(ix,iy,npu-4)+pot_short(ix,iy,2,5)
             pot_layeru3=poisson%pots(ix,iy,npu-3)+poisson%pot(ix,iy,npu-3)+pot_short(ix,iy,2,4)
             pot_layeru2=poisson%pots(ix,iy,npu-2)+poisson%pot(ix,iy,npu-2)+pot_short(ix,iy,2,3)
@@ -917,6 +922,7 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
             !density(ix,iy,2)=0.5d0*(3.d0*vu-4.d0*pot_layeru+pot_layeru2)* hgzinv
             density(ix,iy,2)=-(-25.d0/12.d0*vu+4.d0*pot_layeru-3.d0*pot_layeru2+4.d0/3.d0*pot_layeru3-0.25d0*pot_layeru4)* hgzinv
             tt=tt+ density(ix,iy,2)
+            tt1=tt1+density(ix,iy,2)*poisson%pot(ix,iy,npu)
     enddo
     enddo
   !  do iy=1,poisson%ngpy
@@ -927,6 +933,7 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
   !  write(1000,*)
   !  write(1001,*)
   !  enddo
+    tt1=tt1*poisson%hx*poisson%hy
     t=t*poisson%hx*poisson%hy
     tt=tt*poisson%hx*poisson%hy
     if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
@@ -935,9 +942,12 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     endif
     write(*,'(a,es25.13)')'charge on lower plane' ,t
     write(*,'(a,es25.13)')'charge on upper plane',tt
-    write(77,'(3es25.13)')vu-vl,t,tt
-    vu=poisson%vu
     vl=poisson%vl
+    vu=poisson%vu
+    !if((.not. poisson%point_particle)) then
+    !    vl=t*vl+tt*vu
+    !    vu=tt1
+    !endif
 end subroutine surface_charge
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
@@ -1012,7 +1022,7 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
-    real(8):: pot_correction  
+    real(8):: pot_correction ,dp,dv,beta2 
 
     beta = poisson%beta
     pi=4.d0*atan(1.d0)
@@ -1022,37 +1032,32 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     epotplane=0.d0
     d = poisson%cell(3)
     if(poisson%point_particle .and. trim(parini%bias_type)=='fixed_efield') then
-        E = parini%efield
+        !E = parini%efield
     elseif(poisson%point_particle .and. trim(parini%bias_type)=='fixed_potdiff') then
-        pot_correction= beta/(poisson%ngpx*poisson%ngpy)
-        vl=parini%vl_ewald+ pot_correction
-        vu=parini%vu_ewald- pot_correction
-        write(*,*)'real pot = vu , vl ',vu,vl 
-        E =- (vu-vl)/d
+        dp=0.d0
+        do iat=1,atoms%nat
+            dp= dp + atoms%rat(3,iat)*atoms%qat(iat)
+        enddo
+        beta2 = - 2.d0*pi/(poisson%cell(2)*poisson%cell(1))*dp
+        dv = parini%vu_ewald-parini%vl_ewald 
+        write(*,*)'real pot = vu , vl ',parini%vu_ewald+ beta2,parini%vl_ewald- beta2 
+        E =- (dv+2.d0*beta2)/d
     endif
-!        write(*,*)'--------------------------------------------------------'
-!        write(*,*)"distance between planes",d
        A= poisson%ngpx*poisson%ngpy*poisson%hx*poisson%hy
        c= A/(4.d0*pi*d)
-!        write(*,*) "C=A/(4pid) = ", A/(4.d0*pi*d)
        dipole = beta*(poisson%hx*poisson%hy)
-       charge0= -dipole/(2*pi*d)
-       charge = -dipole/(2*pi*d)+c*(vu-vl)
-!       write(*,*)'dipole = ', dipole/(2*pi)
+       charge0= -dp/(d)
+       charge = -dp/(d)+c*(dv)
 !       write(*,*)'charge on upper  plate  ', charge
-!        poisson%npu=poisson%ngpz-poisson%nbgpz
-!        poisson%npl=1+poisson%nbgpz  
-!        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
-!        npl=poisson%npl
-!        npu=poisson%npu
-        dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
-        dipole_correction =dipole_correction +0.5*charge0*(vu-vl)+0.5*c*(vu-vl)**2
+        !dipole_correction = 2.d0*pi*dp**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1)) 
         epotplane = 0.d0
+        epotplane = epotplane !+0.5*c*dv**2
+        !epotplane = epotplane +(dv+beta2)/d*dp + 1.5d0*charge0*dv
+        epotplane = epotplane + (dv+beta2)/d*dp
         do iat=1,atoms%nat
-            epotplane = epotplane - E * atoms%qat(iat)*atoms%rat(3,iat)
-            atoms%fat(3,iat)=atoms%fat(3,iat)+ E * atoms%qat(iat)
+            !atoms%fat(3,iat)=atoms%fat(3,iat)-(0.5d0*(dv+4.d0*beta2)/poisson%cell(3))*atoms%qat(iat)
+            atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta2)/poisson%cell(3))*atoms%qat(iat)
         enddo
-        epotplane = epotplane+dipole_correction
 
 !!*****************************************************************************
 !        poisson%npu=poisson%ngpz-poisson%nbgpz

@@ -348,6 +348,8 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
+    real(8):: qgrad(atoms%nat)
+    integer:: iat
     !local variables
 
     select case(trim(parini%psolver))
@@ -363,8 +365,10 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
             endif
         case('p3d')
             if(parini%cell_ortho) then
+                qgrad=0.d0
+                call apply_external_field(parini,atoms,poisson,ehartree,qgrad)
                 call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
-                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+                poisson%qgrad=poisson%qgrad+qgrad
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop
@@ -480,10 +484,13 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     !local variables
     !real(8):: pi, gtot, ecut, epotreal, alphasq
     integer:: iat, igpx, igpy, igpz
+    integer:: nbgpz,nlayer                                        
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     real(8):: dipole !,ext_pot
-    real(8):: dv, pi, beta                                           
-    real(8):: c, charge                                         
+    real(8):: dv, pi, beta ,vu,vl
+    real(8):: c, charge, epot, ext_pot , efield, charge0
+    real(8):: qv, qv_pp
+    real(8),allocatable :: pots_layer(:,:,:,:)
     pi=4.d0*atan(1.d0)        
     if(trim(parini%psolver)/='p3d') then
         write(*,*) 'ERROR: currently external electric field is supposed to be'            
@@ -512,35 +519,97 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
             g(iat)=g(iat)-parini%efield*0.5d0*atoms%rat(3,iat)
         enddo
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
+        nbgpz=int(poisson%rgcut/poisson%hz)+2
         dipole=0.d0
         do iat=1,atoms%nat
             dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
         enddo
         beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
-        dv=parini%vu_ewald-parini%vl_ewald 
-        write(*,*)'real pot = vu , vl ', parini%vu_ewald+beta, parini%vl_ewald-beta
-        ehartree=ehartree+(dv+2*beta)*0.5d0*dipole/poisson%cell(3)
+        dv=(poisson%vu-poisson%vl) 
+        write(*,*)'real pot = vu , vl ', poisson%vu+beta, poisson%vl-beta
+        efield =- (dv+2.d0*beta)/ poisson%cell(3)
+
         c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
         charge=-dipole/poisson%cell(3)+c*dv
-        ehartree=ehartree+0.5d0*charge*dv
+
+        ehartree = ehartree - 0.5*efield*dipole-0.5*dipole/poisson%cell(3)*dv
+        !ehartree = ehartree - 0.5*efield*dipole+0.5*dipole/poisson%cell(3)*dv
+        !ehartree = ehartree + 0.5*c*dv**2
 
         do iat=1,atoms%nat
-            g(iat)=g(iat)+(dv+2*beta)*0.5d0*atoms%rat(3,iat)/poisson%cell(3)
-            g(iat)=g(iat)+(beta)*atoms%rat(3,iat)/poisson%cell(3)
-            g(iat)=g(iat)-0.5d0*atoms%rat(3,iat)/poisson%cell(3)*dv
+            g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)-atoms%rat(3,iat)/poisson%cell(3)*(dv)
         enddo
-        !efield=0.d0 !to be corrected by Samare
-        !do igpz=1,poisson%ngpz
-        !    !igpz=1 is not necessarily z=0, now in this way external potential is not
-        !    !zero at z=0 but since shift the potential, such that external potential
-        !    !to be zero at z=0, has no effect on energy, we keep it this way.
-        !    ext_pot=efield*igpz*hz
-        !    do igpy=1,poisson%ngpy
-        !        do igpx=1,poisson%ngpx
-        !            poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+ext_pot
-        !        enddo
-        !    enddo
-        !enddo
+
+
+    elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
+        write(*,*) "call potential surface"
+        ehartree=0.d0
+        nbgpz=int(poisson%rgcut/poisson%hz)+2
+        poisson%npu=poisson%ngpz-nbgpz
+        poisson%npl=1+nbgpz  
+
+        allocate(poisson%pots(1:poisson%ngpx+2,1:poisson%ngpy,poisson%npl:poisson%npu))
+        poisson%pots=0.d0
+        !if (parini%cal_charge) then 
+        !    nlayer=5
+        !    allocate(pots_layer(1:poisson%ngpx,1:poisson%ngpy,1:2,1:nlayer))
+        !    pots_layer = 0.d0
+        !endif
+        call sollaplaceq(poisson,poisson%hz,poisson%cell,poisson%vl,poisson%vu)
+        !if (parini%cal_charge) then 
+        !    call surface_charge(parini,poisson,pots_layer,poisson%vl,poisson%vu)
+        !    deallocate(pots_layer)
+        !endif
+
+        do igpz=1,poisson%npl-1      
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%vl
+                enddo
+            enddo
+        enddo
+        do igpz=poisson%npl,poisson%npu       
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+poisson%pots(igpx,igpy,igpz)
+                enddo
+            enddo
+        enddo
+        do igpz=poisson%npu+1,poisson%ngpz      
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%vu
+                enddo
+            enddo
+        enddo
+        epot=0.d0
+        do igpz=1,poisson%ngpz
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    epot=epot+poisson%pot(igpx,igpy,igpz)*poisson%rho(igpx,igpy,igpz)
+                enddo
+            enddo
+        enddo
+        epot=epot*0.5d0*poisson%hx*poisson%hy*poisson%hz
+        ehartree=ehartree+epot
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
+        dv=poisson%vu-poisson%vl
+        c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
+        charge0=-dipole/poisson%cell(3)
+        charge=-dipole/poisson%cell(3)+c*dv
+
+        ehartree=ehartree+0.5d0*charge0*dv!+0.5d0*c*dv**2!
+        !ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
+
+
+        do iat=1,atoms%nat
+            g(iat)=g(iat)-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+        enddo
+        deallocate(poisson%pots)
     endif
 end subroutine apply_external_field
 !*****************************************************************************************
