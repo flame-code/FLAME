@@ -124,10 +124,6 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     associate(ngpx=>poisson%ngpx)
     associate(ngpy=>poisson%ngpy)
     associate(ngpz=>poisson%ngpz)
-    if(trim(atoms%boundcond)/='bulk') then
-        write(*,*) 'ERROR: init_hartree_bps currently assumes BC=bulk'
-        stop
-    endif
     pi=4.d0*atan(1.d0)
     ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
@@ -154,9 +150,28 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     call set_ngp_bps(parini,atoms,poisson_rough,poisson)
     ngptot=ngpx*ngpy*ngpz
     poisson%lda=ngpx !To be corrected for BCs other than bulk, e.g. +2 for slab+P3D
+    if(trim(atoms%boundcond)/='bulk') then
     poisson%hgrid(1,1)=atoms%cellvec(1,1)/ngpx ; poisson%hgrid(2,1)=atoms%cellvec(2,1)/ngpx ; poisson%hgrid(3,1)=atoms%cellvec(3,1)/ngpx
     poisson%hgrid(1,2)=atoms%cellvec(1,2)/ngpy ; poisson%hgrid(2,2)=atoms%cellvec(2,2)/ngpy ; poisson%hgrid(3,2)=atoms%cellvec(3,2)/ngpy
     poisson%hgrid(1,3)=atoms%cellvec(1,3)/ngpz ; poisson%hgrid(2,3)=atoms%cellvec(2,3)/ngpz ; poisson%hgrid(3,3)=atoms%cellvec(3,3)/ngpz
+    elseif(trim(atoms%boundcond)/='free') then
+    if(atoms%cellvec(2,1)/=0.d0 .or. atoms%cellvec(3,1)/=0.d0 .or. &
+       atoms%cellvec(1,2)/=0.d0 .or. atoms%cellvec(3,2)/=0.d0 .or. &
+       atoms%cellvec(1,3)/=0.d0 .or. atoms%cellvec(2,3)/=0.d0) then
+        write(*,'(a)') 'ERROR: this routine is only for orthogonal cell:'
+        write(*,'(3es14.5)') atoms%cellvec(1,1),atoms%cellvec(2,1),atoms%cellvec(3,1)
+        write(*,'(3es14.5)') atoms%cellvec(1,2),atoms%cellvec(2,2),atoms%cellvec(3,2)
+        write(*,'(3es14.5)') atoms%cellvec(1,3),atoms%cellvec(2,3),atoms%cellvec(3,3)
+        stop
+    endif
+    poisson%hgrid=0.d0
+    poisson%hgrid(1,1)=atoms%cellvec(1,1)/(ngpx-1)
+    poisson%hgrid(2,2)=atoms%cellvec(2,2)/(ngpy-1)
+    poisson%hgrid(3,3)=atoms%cellvec(3,3)/(ngpz-1)
+    else
+        write(*,*) 'ERROR: init_hartree_bps currently assumes BC=bulk or free'
+        stop
+    endif
     write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
     !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
