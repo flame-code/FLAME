@@ -366,18 +366,22 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
             !do nothing
         case('bigdft')
             if(parini%cell_ortho) then
-                call qgrad_gto_sym_ortho(parini,atoms,poisson%gw_ewald, &
+                call qgrad_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%q,poisson%gw_ewald, &
                     poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%qgrad)
-                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+                if(trim(parini%bias_type)/='no') then
+                    call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+                endif
             else
                 call rqgrad_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%q,poisson%gw, &
                     poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%rgrad,poisson%qgrad)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call qgrad_gto_sym_ortho(parini,atoms,poisson%gw_ewald, &
+                call qgrad_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%q,poisson%gw_ewald, &
                     poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%qgrad)
-                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+                if(trim(parini%bias_type)/='no') then
+                    call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+                endif
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop
@@ -407,8 +411,9 @@ subroutine get_hartree_force(parini,poisson,atoms)
             !do nothing
         case('bigdft')
             if(parini%cell_ortho) then
-                call force_gto_sym_ortho(parini,atoms,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
-                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot)
+                call force_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart, &
+                    poisson%q,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
+                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
                 !The following if statement must be moved to its proper place
                 if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
                     do iat=1,atoms%nat
@@ -422,8 +427,9 @@ subroutine get_hartree_force(parini,poisson,atoms)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call force_gto_sym_ortho(parini,atoms,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
-                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot)
+                call force_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart, &
+                    poisson%q,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
+                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
                 !The following if statement must be moved to its proper place
                 if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
                     do iat=1,atoms%nat

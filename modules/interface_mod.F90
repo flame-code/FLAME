@@ -2315,28 +2315,33 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: rho(ngx,ngy,ngz)
 end subroutine put_gto_sym_ortho
-subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
-    use mod_atoms, only: typ_atoms
+subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: gw(atoms%nat)
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: lda, ngx, ngy, ngz
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(in):: pot(lda,ngy,ngz)
-    real(8), intent(inout):: g(atoms%nat)
+    real(8), intent(inout):: g(nat)
 end subroutine qgrad_gto_sym_ortho
-subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
+subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
     type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gw(atoms%nat)
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: lda, ngx, ngy, ngz
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: pot(lda,ngy,ngz)
+    real(8), intent(out):: fat(3,nat)
 end subroutine force_gto_sym_ortho
 ! ./src/grid_rp4gto_sym.F90 :
 subroutine put_rp4gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)

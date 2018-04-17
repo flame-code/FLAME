@@ -1,7 +1,6 @@
 !*****************************************************************************************
 subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
     use mod_interface
-    use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -156,20 +155,22 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
     call f_release_routine()
 end subroutine put_gto_sym_ortho
 !*****************************************************************************************
-subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
+subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
     use mod_interface
-    use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(in):: atoms
-    real(8), intent(in):: gw(atoms%nat)
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: lda, ngx, ngy, ngz
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(in):: pot(lda,ngy,ngz)
-    real(8), intent(inout):: g(atoms%nat)
+    real(8), intent(inout):: g(nat)
     !local variables
     real(8), allocatable:: wx(:), wy(:), wz(:) !values of one dimensional Gaussian functions
     real(8):: rhoz, rhoyz, pi
@@ -206,17 +207,17 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g
     ibcx=0 !zero means periodic
     ibcy=0 !zero means periodic
     ibcz=0 !zero means periodic
-    if(trim(atoms%boundcond)=='bulk') then
+    if(trim(bc)=='bulk') then
         !variables already are set to correct value
-    elseif(trim(atoms%boundcond)=='slab') then
+    elseif(trim(bc)=='slab') then
         ibcz=1
         nagz=0
-    elseif(trim(atoms%boundcond)=='wire') then
+    elseif(trim(bc)=='wire') then
         ibcy=1
         ibcz=1
         nagy=0
         nagz=0
-    elseif(trim(atoms%boundcond)=='free') then
+    elseif(trim(bc)=='free') then
         ibcx=1
         ibcy=1
         ibcz=1
@@ -224,7 +225,7 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g
         nagy=0
         nagz=0
     else
-        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(atoms%boundcond)
+        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(bc)
         stop
     endif
     !-------------------------------------------------------
@@ -242,14 +243,14 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g
     !---------------------------------------------------------------------------
     call potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
     !initialize the density 
-    do iat=1,atoms%nat  
+    do iat=1,nat  
         !shift the Gaussian centers
-        iatox=nint(atoms%rat(1,iat)*hgxinv)+1+nbgx*ibcx
-        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1+nbgy*ibcy
-        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=atoms%rat(1,iat)-(iatox-1-nbgx*ibcx)*hx
-        yat=atoms%rat(2,iat)-(iatoy-1-nbgy*ibcy)*hy
-        zat=atoms%rat(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+        zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
         !construct the one-dimensional gaussians
 
         width=gw(iat)
@@ -295,19 +296,22 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g
     ! call f_release_routine()
 end subroutine qgrad_gto_sym_ortho
 !*****************************************************************************************
-subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
+subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: gw(atoms%nat)
+    character(*), intent(in):: bc
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: qat(nat)
+    real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
     integer, intent(in):: lda, ngx, ngy, ngz
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: pot(lda,ngy,ngz)
+    real(8), intent(out):: fat(3,nat)
     !local variables
     real(8), allocatable:: wx(:), wy(:), wz(:) !values of one dimensional Gaussian functions
     real(8), allocatable:: vx(:), vy(:), vz(:) !derivatives of wx,wy,wz arrays
@@ -346,17 +350,17 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     ibcx=0 !zero means periodic
     ibcy=0 !zero means periodic
     ibcz=0 !zero means periodic
-    if(trim(atoms%boundcond)=='bulk') then
+    if(trim(bc)=='bulk') then
         !variables already are set to correct value
-    elseif(trim(atoms%boundcond)=='slab') then
+    elseif(trim(bc)=='slab') then
         ibcz=1
         nagz=0
-    elseif(trim(atoms%boundcond)=='wire') then
+    elseif(trim(bc)=='wire') then
         ibcy=1
         ibcz=1
         nagy=0
         nagz=0
-    elseif(trim(atoms%boundcond)=='free') then
+    elseif(trim(bc)=='free') then
         ibcx=1
         ibcy=1
         ibcz=1
@@ -364,7 +368,7 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
         nagy=0
         nagz=0
     else
-        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(atoms%boundcond)
+        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(bc)
         stop
     endif
     !-------------------------------------------------------
@@ -385,14 +389,14 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     !---------------------------------------------------------------------------
     call potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
     !initialize the density 
-    do iat=1,atoms%nat  
+    do iat=1,nat  
         !shift the Gaussian centers
-        iatox=nint(atoms%rat(1,iat)*hgxinv)+1+nbgx*ibcx
-        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1+nbgy*ibcy
-        iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=atoms%rat(1,iat)-(iatox-1-nbgx*ibcx)*hx
-        yat=atoms%rat(2,iat)-(iatoy-1-nbgy*ibcy)*hy
-        zat=atoms%rat(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+        zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
         width=gw(iat)
         width_inv=1.d0/width
         fac=2.d0/(width*(width*sqrt(pi))**3)
@@ -419,7 +423,7 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
             vz(ivw)=-wz(ivw)*dz
         enddo
         fx=0.d0;fy=0.d0;fz=0.d0
-        facqiat=fac*atoms%qat(iat)
+        facqiat=fac*qat(iat)
         do iz=-nbgz,nbgz
             rhoz=facqiat*wz(iz)
             derrhoz=facqiat*vz(iz)
@@ -437,9 +441,9 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
                 enddo
             enddo
         enddo
-        atoms%fat(1,iat)=atoms%fat(1,iat)+fx*hgxhgyhgz
-        atoms%fat(2,iat)=atoms%fat(2,iat)+fy*hgxhgyhgz
-        atoms%fat(3,iat)=atoms%fat(3,iat)+fz*hgxhgyhgz
+        fat(1,iat)=fat(1,iat)+fx*hgxhgyhgz
+        fat(2,iat)=fat(2,iat)+fy*hgxhgyhgz
+        fat(3,iat)=fat(3,iat)+fz*hgxhgyhgz
     enddo
     call f_free(wa)
     call f_free(wx)
