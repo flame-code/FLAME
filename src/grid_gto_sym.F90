@@ -78,7 +78,7 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,r
         fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1+nbgz*ibcz
         facqiat=fac*qat(iat)
         do igz=-nbgz,nbgz
             jgz=igz+imgz
@@ -200,7 +200,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,
     pi=4.d0*atan(1.d0)
     sqpi=sqrt(pi)
     !---------------------------------------------------------------------------
-    call potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
+    call potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     do iat=1,nat
@@ -208,7 +208,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,
         fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1+nbgz*ibcz
         facqiat=fac*qat(iat)
         ttq=0.d0
         ttx=0.d0
@@ -338,7 +338,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,p
     pi=4.d0*atan(1.d0)
     sqpi=sqrt(pi)
     !---------------------------------------------------------------------------
-    call potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
+    call potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     do iat=1,nat
@@ -346,7 +346,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,p
         fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1+nbgz*ibcz
         facqiat=fac*qat(iat)
         ttx=0.d0
         tty=0.d0
@@ -473,7 +473,7 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgri
     pi=4.d0*atan(1.d0)
     sqpi=sqrt(pi)
     !---------------------------------------------------------------------------
-    call potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
+    call potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,0,pot,wa)
     !-------------------------------------------------------
     vol_voxel=vol/(ngx*ngy*ngz)
     do iat=1,nat
@@ -482,7 +482,7 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgri
         fac=1.d0/(gw(iat)*sqpi)**3
         imgx=nint(ratred(1,iat)*hrxinv)+1
         imgy=nint(ratred(2,iat)*hryinv)+1
-        imgz=nint(ratred(3,iat)*hrzinv)+1
+        imgz=nint(ratred(3,iat)*hrzinv)+1+nbgz*ibcz
         facqiat=fac*qat(iat)
         ttq=0.d0
         ttx=0.d0

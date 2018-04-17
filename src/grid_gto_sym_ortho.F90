@@ -87,18 +87,15 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
     hgxinv=1.d0/hx
     hgyinv=1.d0/hy
     hgzinv=1.d0/hz
-!    write(*,*) hgxinv,hgyinv,hgzinv
-    !assaigning the gaussian charge density on grid points, saving in the 
-    !work array which is bigger than rho array.
-    !write(*,*) '********************************** ',associated(wa)
+    !1+nbg?*ibc? gives the index of grid point whose ? coordinate is zero (?=x,y,z)
     wa=0.d0
     do iat=1,nat
         !shift the gaussian centers
-        iatox=nint(rxyz(1,iat)*hgxinv)+1
-        iatoy=nint(rxyz(2,iat)*hgyinv)+1
+        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
         iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=rxyz(1,iat)-(iatox-1)*hx
-        yat=rxyz(2,iat)-(iatoy-1)*hy
+        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
         zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
         !construct the one-dimensional gaussians
 
@@ -243,29 +240,15 @@ subroutine qgrad_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g
     hgyinv=1.d0/hy
     hgzinv=1.d0/hz
     !---------------------------------------------------------------------------
-    do iz=1-nagz,ngz+nagz
-        izt=iz+(sign(ngz,-iz)+sign(ngz,ngz-iz))/2
-        do iy=1-nagy,ngy+nagy
-            iyt=iy+(sign(ngy,-iy)+sign(ngy,ngy-iy))/2
-            do ix=1-nagx,0
-                wa(ix,iy,iz)=pot(ix+ngx,iyt,izt)
-            enddo
-            do ix=1,ngx
-                wa(ix,iy,iz)=pot(ix,iyt,izt)
-            enddo
-            do ix=ngx+1,ngx+nagx
-                wa(ix,iy,iz)=pot(ix-ngx,iyt,izt)
-            enddo
-        enddo
-    enddo
+    call potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
     !initialize the density 
     do iat=1,atoms%nat  
         !shift the Gaussian centers
-        iatox=nint(atoms%rat(1,iat)*hgxinv)+1
-        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1
+        iatox=nint(atoms%rat(1,iat)*hgxinv)+1+nbgx*ibcx
+        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1+nbgy*ibcy
         iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=atoms%rat(1,iat)-(iatox-1)*hx
-        yat=atoms%rat(2,iat)-(iatoy-1)*hy
+        xat=atoms%rat(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        yat=atoms%rat(2,iat)-(iatoy-1-nbgy*ibcy)*hy
         zat=atoms%rat(3,iat)-(iatoz-1-nbgz*ibcz)*hz
         !construct the one-dimensional gaussians
 
@@ -400,29 +383,15 @@ subroutine force_gto_sym_ortho(parini,atoms,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot)
     hgyinv=1.d0/hy
     hgzinv=1.d0/hz
     !---------------------------------------------------------------------------
-    do iz=1-nagz,ngz+nagz
-        izt=iz+(sign(ngz,-iz)+sign(ngz,ngz-iz))/2
-        do iy=1-nagy,ngy+nagy
-            iyt=iy+(sign(ngy,-iy)+sign(ngy,ngy-iy))/2
-            do ix=1-nagx,0
-                wa(ix,iy,iz)=pot(ix+ngx,iyt,izt)
-            enddo
-            do ix=1,ngx
-                wa(ix,iy,iz)=pot(ix,iyt,izt)
-            enddo
-            do ix=ngx+1,ngx+nagx
-                wa(ix,iy,iz)=pot(ix-ngx,iyt,izt)
-            enddo
-        enddo
-    enddo
+    call potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
     !initialize the density 
     do iat=1,atoms%nat  
         !shift the Gaussian centers
-        iatox=nint(atoms%rat(1,iat)*hgxinv)+1
-        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1
+        iatox=nint(atoms%rat(1,iat)*hgxinv)+1+nbgx*ibcx
+        iatoy=nint(atoms%rat(2,iat)*hgyinv)+1+nbgy*ibcy
         iatoz=nint(atoms%rat(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=atoms%rat(1,iat)-(iatox-1)*hx
-        yat=atoms%rat(2,iat)-(iatoy-1)*hy
+        xat=atoms%rat(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        yat=atoms%rat(2,iat)-(iatoy-1-nbgy*ibcy)*hy
         zat=atoms%rat(3,iat)-(iatoz-1-nbgz*ibcz)*hz
         width=gw(iat)
         width_inv=1.d0/width

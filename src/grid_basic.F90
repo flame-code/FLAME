@@ -145,14 +145,14 @@ subroutine charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
     enddo
 end subroutine charge_back_to_cell
 !*****************************************************************************************
-subroutine potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
+subroutine potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
-    integer, intent(in):: ngx, ngy, ngz, nagx, nagy, nagz, ibcx
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+    integer, intent(in):: lda, ngx, ngy, ngz, nagx, nagy, nagz, ibcx
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
     !local variables
     !work arrays to save the values of one dimensional gaussian function.

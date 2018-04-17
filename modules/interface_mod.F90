@@ -2224,9 +2224,9 @@ subroutine charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
     real(8), intent(in):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
     real(8), intent(inout):: rho(ngx,ngy,ngz)
 end subroutine charge_back_to_cell
-subroutine potential_on_extended_grid(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
-    integer, intent(in):: ngx, ngy, ngz, nagx, nagy, nagz, ibcx
-    real(8), intent(in):: pot(ngx,ngy,ngz)
+subroutine potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
+    integer, intent(in):: lda, ngx, ngy, ngz, nagx, nagy, nagz, ibcx
+    real(8), intent(in):: pot(lda,ngy,ngz)
     real(8), intent(out):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
 end subroutine potential_on_extended_grid
 ! ./src/grid_gto_sym.F90 :
