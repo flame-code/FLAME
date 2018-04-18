@@ -387,18 +387,18 @@ ntypat_atoms=0
 ntypat_lj=0
 nat_lj=0
 do iat=1,parini%nat
-   if(int(znucl(parini%typat_global(iat))).lt.200) then
+   if(int(parini%znucl(parini%typat_global(iat))).lt.200) then
        nat_atoms=nat_atoms+1
        in_atoms=.true.
    endif
-   if(int(znucl(parini%typat_global(iat))).lt.200.and.in_lj) stop "Void system: First the physical atoms, then LJ pseudoparticles"
-   if(int(znucl(parini%typat_global(iat))).gt.200) then 
+   if(int(parini%znucl(parini%typat_global(iat))).lt.200.and.in_lj) stop "Void system: First the physical atoms, then LJ pseudoparticles"
+   if(int(parini%znucl(parini%typat_global(iat))).gt.200) then 
        nat_lj=nat_lj+1 
        in_lj=.true.
    endif
 enddo
 do ityp=1,parini%ntypat_global
- if(int(znucl(ityp)).lt.200) then 
+ if(int(parini%znucl(ityp)).lt.200) then 
    ntypat_atoms=ntypat_atoms+1
  else
    ntypat_lj=ntypat_lj+1

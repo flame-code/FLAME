@@ -1257,9 +1257,9 @@ integer:: iat
 only_c=.true.
 if(.not.allocated(Kinds_tersoff)) allocate(Kinds_tersoff(parini%nat))
 do iat=1,parini%nat
-   if(int(znucl(parini%typat_global(iat)))==6) then
+   if(int(parini%znucl(parini%typat_global(iat)))==6) then
      Kinds_tersoff(iat)=1
-   elseif(int(znucl(parini%typat_global(iat)))==14) then
+   elseif(int(parini%znucl(parini%typat_global(iat)))==14) then
      Kinds_tersoff(iat)=2
      only_c=.false.
    else 

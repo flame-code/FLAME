@@ -372,17 +372,17 @@ n_silicon=0
 n_h=0
 n_lj=0
 do iat=1,parini%nat
-   if(int(znucl(parini%typat_global(iat))).ne.1.and.int(znucl(parini%typat_global(iat))).ne.14.and.&
-     &int(znucl(parini%typat_global(iat))).ne.201) &
+   if(int(parini%znucl(parini%typat_global(iat))).ne.1.and.int(parini%znucl(parini%typat_global(iat))).ne.14.and.&
+     &int(parini%znucl(parini%typat_global(iat))).ne.201) &
      &stop "Lenosky TB and LJ only implemented for Si and H and LJ particles"
-   if(int(znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
-   if(int(znucl(parini%typat_global(iat)))==14.and.(in_h.or.in_lj)) stop "Lenosky TB: First Si, then H, then LJ"
-   if(int(znucl(parini%typat_global(iat)))==1.and.in_lj) stop "Lenosky TB: First H, then LJ"
-   if(int(znucl(parini%typat_global(iat)))==1) then
+   if(int(parini%znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
+   if(int(parini%znucl(parini%typat_global(iat)))==14.and.(in_h.or.in_lj)) stop "Lenosky TB: First Si, then H, then LJ"
+   if(int(parini%znucl(parini%typat_global(iat)))==1.and.in_lj) stop "Lenosky TB: First H, then LJ"
+   if(int(parini%znucl(parini%typat_global(iat)))==1) then
        n_h=n_h+1
        in_h=.true.
    endif
-   if(int(znucl(parini%typat_global(iat))).gt.200) then 
+   if(int(parini%znucl(parini%typat_global(iat))).gt.200) then 
        n_lj=n_lj+1 
        in_h=.true.
        in_lj=.true.

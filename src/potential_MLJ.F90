@@ -186,7 +186,7 @@ end module interface_mlj
      sigmamlj=0.d0;epsmlj=0.d0
 !Get the LJ parameters from a lookup table
          do ityp=1,parini%ntypat_global
-           call mlj_atmdata(parini%amu,sigmamlj(ityp,ityp),epsmlj(ityp,ityp),parini%rcov(ityp),char_type(ityp),znucl(ityp))
+           call mlj_atmdata(parini%amu,sigmamlj(ityp,ityp),epsmlj(ityp,ityp),parini%rcov(ityp),char_type(ityp),parini%znucl(ityp))
            alphamlj(ityp,ityp)=2.5d0
          enddo
 

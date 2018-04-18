@@ -10,7 +10,7 @@ implicit none
 !  integer,allocatable:: fragsize(:)
 !  integer,allocatable:: lhead(:)
 !  integer,allocatable:: llist(:) 
-  real(8),allocatable:: znucl(:)
+!  real(8),allocatable:: znucl(:)
 !  real(8),allocatable:: amu(:)
 !  real(8),allocatable:: rcov(:) 
 !  integer,allocatable:: typat(:)

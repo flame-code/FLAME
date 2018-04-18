@@ -11,7 +11,6 @@
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: znucl
  use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use steepest_descent

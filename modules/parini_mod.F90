@@ -261,6 +261,7 @@ module mod_parini
         !-----------------------------------------------------------------------
         integer:: nat                   !Number of atoms
         integer:: ntypat_global         !Number of atom types
+        real(8),allocatable:: znucl(:)
         logical:: voids                 !If or if not to use void creating LJ particles in the cell
         real(8),allocatable:: amu(:)
         real(8),allocatable:: rcov(:)

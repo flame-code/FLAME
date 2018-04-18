@@ -1,7 +1,7 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use mod_parini, only: typ_parini
- use global, only: znucl, char_type,units
+ use global, only: char_type,units
  use defs_basis
  use interface_code
 implicit none

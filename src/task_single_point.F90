@@ -68,7 +68,7 @@ subroutine read_poscar_for_single_point(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use global, only: znucl, char_type, units
+    use global, only: char_type, units
     implicit none
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
     !so parini can be intent(in) in future.
@@ -110,7 +110,7 @@ subroutine read_poscar_for_single_point(parini,atoms)
     deallocate(xred)
     deallocate(fcart)
     deallocate(fragarr)
-    if(allocated(znucl)) deallocate(znucl)
+    if(allocated(parini%znucl)) deallocate(parini%znucl)
     if(allocated(char_type)) deallocate(char_type)
     if(allocated(parini%amu)) deallocate(parini%amu)
     if(allocated(parini%rcov)) deallocate(parini%rcov)

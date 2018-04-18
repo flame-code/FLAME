@@ -1463,7 +1463,7 @@ implicit none
 type(typ_parini), intent(in):: parini
 integer:: iat
 do iat=1,parini%nat
-   if(int(znucl(parini%typat_global(iat))).ne.14) then
+   if(int(parini%znucl(parini%typat_global(iat))).ne.14) then
      stop "EDIP only allowed with Silicon"
    endif
 enddo

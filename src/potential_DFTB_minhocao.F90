@@ -27,7 +27,7 @@ contains
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   use mod_parini, only: typ_parini
-  use global, only: znucl,char_type
+  use global, only: char_type
   use defs_basis, only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -272,7 +272,7 @@ contains
   
   subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   use mod_parini, only: typ_parini
-  use global, only: znucl,char_type
+  use global, only: char_type
   use defs_basis,only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini

@@ -169,7 +169,6 @@ deallocate(qlm,rxyzexp,transvecall)
 end subroutine
 
 subroutine get_distance_calypso(parini,fp1,fp2,fp_dim,nl,dist)
-use global, only: znucl
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini

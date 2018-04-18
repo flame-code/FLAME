@@ -7,7 +7,7 @@ subroutine ascii_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: znucl,char_type,units
+use global, only: char_type,units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat,jat
@@ -64,7 +64,7 @@ new=.true.
 enddo
 
 !Here we allocate the arrays of types, and the character stuff
-if(.not.allocated(znucl)) allocate(znucl(parini%ntypat_global))
+if(.not.allocated(parini%znucl)) allocate(parini%znucl(parini%ntypat_global))
 if(.not.allocated(char_type)) allocate(char_type(parini%ntypat_global))
 if(.not.allocated(parini%amu)) allocate(parini%amu(parini%ntypat_global))
 if(.not.allocated(parini%rcov)) allocate(parini%rcov(parini%ntypat_global))
@@ -76,7 +76,7 @@ enddo
 
 !Assign Znucl here
 do i=1,parini%ntypat_global
-      call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),znucl(i))
+      call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),parini%znucl(i))
 enddo
 
 99 continue

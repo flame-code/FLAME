@@ -21,11 +21,11 @@ logical:: in_h
 in_h=.false.
 n_silicon=0
 do iat=1,parini%nat
-   if(int(znucl(parini%typat_global(iat))).ne.1.and.int(znucl(parini%typat_global(iat))).ne.14.and.int(znucl(parini%typat_global(iat))).lt.200) stop "Lenosky TB only implemented for Si and H"
-   if(.not.parini%voids.and.int(znucl(parini%typat_global(iat))).ge.200) stop "LJ particles only allowed when using voids"
-   if(int(znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
-   if(int(znucl(parini%typat_global(iat)))==14.and.in_h) stop "Lenosky TB: First Si, then H"
-   if(int(znucl(parini%typat_global(iat)))==1) in_h=.true.
+   if(int(parini%znucl(parini%typat_global(iat))).ne.1.and.int(parini%znucl(parini%typat_global(iat))).ne.14.and.int(parini%znucl(parini%typat_global(iat))).lt.200) stop "Lenosky TB only implemented for Si and H"
+   if(.not.parini%voids.and.int(parini%znucl(parini%typat_global(iat))).ge.200) stop "LJ particles only allowed when using voids"
+   if(int(parini%znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
+   if(int(parini%znucl(parini%typat_global(iat)))==14.and.in_h) stop "Lenosky TB: First Si, then H"
+   if(int(parini%znucl(parini%typat_global(iat)))==1) in_h=.true.
 enddo
 end subroutine
 

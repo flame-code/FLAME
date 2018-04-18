@@ -1342,7 +1342,6 @@ END MODULE bfgs_module
 !----------------------------------------------------------------------------
 !SUBROUTINE move_ions()
 subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: znucl
  use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis

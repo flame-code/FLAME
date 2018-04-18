@@ -289,7 +289,7 @@ end module interface_blj
      file_exists=.false.
      filename="blj_param.in"
      INQUIRE(FILE=trim(filename), EXIST=file_exists)
-     if(minval(znucl(:)).lt.201.or.maxval(znucl(:)).gt.202) stop "BLJ particles must have znucl values of 201 and 202"
+     if(minval(parini%znucl(:)).lt.201.or.maxval(parini%znucl(:)).gt.202) stop "BLJ particles must have znucl values of 201 and 202"
      if(file_exists) then
          open(unit=33,file=trim(filename))
          if(parini%ntypat_global==1) then

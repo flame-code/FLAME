@@ -73,7 +73,7 @@ end subroutine GEOPT_RBFGS_MHM
 !contains
 
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: znucl,char_type
+ use global, only: char_type
  use global, only: units
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -219,7 +219,7 @@ pressure=parini%target_pressure_habohr
 END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: znucl,char_type
+ use global, only: char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1
  use defs_basis
 
@@ -867,7 +867,7 @@ end subroutine bfgs_reza
 !!! This is helpfull when we are looking for the source of problems during BFGS runs
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
- use global, only: znucl,char_type
+ use global, only: char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1
  use defs_basis
 
@@ -1648,7 +1648,6 @@ subroutine init_hessinv(parini,hessin,latvec,omega,b0,lattdeg)
 !This routine will setup an inverse hessian accoprding to Pfrommer et al, J. Comp. Phys 131, 233 1997
 !The hessin is in atomic units, taking omega in THZ and B0 in GPa (phonon frequency and bulk modulus) in
 use mod_parini, only: typ_parini
-use global, only: znucl
 use defs_basis
 use mbfgs_interface
 implicit none
@@ -1662,7 +1661,7 @@ character(2):: tmp_ch
 call unit_matrix(hessin,3*parini%nat+9) !Initialize inverse Hessian to the unit matrix.
 !Get the correct atomic masses and atomic character
  do itype=1,parini%ntypat_global
-   call atmdata(amass_u(itype),rcov,tmp_ch,znucl(itype))
+   call atmdata(amass_u(itype),rcov,tmp_ch,parini%znucl(itype))
  enddo
 !Assign masses to each atom (for MD)
  do iat=1,parini%nat
@@ -1705,7 +1704,7 @@ end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: znucl,char_type
+ use global, only: char_type
  use global, only: units
  use defs_basis
  use minpar
@@ -2115,7 +2114,7 @@ END SUBROUTINE
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: znucl,char_type
+ use global, only: char_type
  use global, only: units
  use defs_basis
  use minpar

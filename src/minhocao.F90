@@ -1318,7 +1318,6 @@ end subroutine task_minhocao
 !**********************************************************************************************
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: znucl
  use global, only: char_type,units
  use defs_basis
  use interface_code
@@ -2558,7 +2557,6 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: znucl
  use global, only: char_type,units
  use defs_basis
  use interface_code
@@ -3045,7 +3043,6 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: znucl
  use global, only: char_type,units
  use defs_basis
  use interface_code
@@ -3487,7 +3484,6 @@ end subroutine
 
 subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: znucl
  use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
@@ -5213,7 +5209,6 @@ end subroutine elim_torque_cell
 
 subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
- use global, only: znucl
  use global, only: char_type
  use defs_basis
  use mod_parini, only: typ_parini
@@ -5282,7 +5277,7 @@ else
              if(trim(parini%potential_potential)=="lenosky_tb_lj") then
                 write(*,'(a)') " Eliminating LJ atom velocities"  
                 do iat=1,parini%nat
-                  if(int(znucl(parini%typat_global(iat))).gt.200) vel(:,iat)=0.d0
+                  if(int(parini%znucl(parini%typat_global(iat))).gt.200) vel(:,iat)=0.d0
                 enddo
              endif
              
@@ -5360,7 +5355,6 @@ end subroutine init_vel
 
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: znucl
  use global, only: char_type,units
  use defs_basis
  use interface_code
@@ -5546,7 +5540,6 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 
         subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: znucl
  use global, only: char_type,units
  use defs_basis
  use interface_code
@@ -6313,7 +6306,7 @@ end subroutine
 
 subroutine pathintegral(parini,parres,latvec,xred)
  use mod_interface
- use global, only: znucl,char_type,units
+ use global, only: char_type,units
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6701,7 +6694,7 @@ end subroutine
 
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
- use global, only: znucl,char_type,units
+ use global, only: char_type,units
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6765,7 +6758,7 @@ end subroutine
 
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
- use global, only: znucl,char_type,units
+ use global, only: char_type,units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6865,7 +6858,7 @@ end subroutine
 
 subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
- use global, only: znucl,char_type,units
+ use global, only: char_type,units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6966,7 +6959,7 @@ end subroutine
 
 subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
- use global, only: znucl,char_type,units
+ use global, only: char_type,units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -7505,7 +7498,7 @@ end subroutine
 subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
 use mod_interface
 use mod_parini, only: typ_parini
-use global, only: znucl,char_type
+use global, only: char_type
 implicit none
 type(typ_parini), intent(in):: parini
 real(8),dimension(3,parini%nat), INTENT(IN) :: xred
@@ -8620,7 +8613,6 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
- use global, only: znucl
  use global, only: char_type,units
  use defs_basis
  use interface_code

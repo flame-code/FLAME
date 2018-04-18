@@ -70,7 +70,7 @@ end subroutine
         do i=1,parini%ntypat_global
           do j=1,parini%ntypat_global
 !Exclude interactions between LJ particles, since they are already LJ... hahaha
-             if(int(znucl(i)).lt.200.and.int(znucl(j)).lt.200) sigma_lj(i,j)=(parini%rcov(i)+parini%rcov(j))*Bohr_Ang*sigma_lj_fact
+             if(int(parini%znucl(i)).lt.200.and.int(parini%znucl(j)).lt.200) sigma_lj(i,j)=(parini%rcov(i)+parini%rcov(j))*Bohr_Ang*sigma_lj_fact
           enddo
         enddo
         xred=xred0

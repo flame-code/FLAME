@@ -49,7 +49,7 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: znucl,char_type
+use global, only: char_type
               
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use fingerprint, only: & 
@@ -145,7 +145,7 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
 endif
 
 !Allocate the arrays
- if(.not.allocated(znucl))       then;   allocate(znucl(parini%ntypat_global))                       ; znucl=0                 ; endif
+ if(.not.allocated(parini%znucl))       then;   allocate(parini%znucl(parini%ntypat_global))                       ; parini%znucl=0                 ; endif
  if(.not.allocated(char_type))   then;   allocate(char_type(parini%ntypat_global))                   ; char_type="  "          ; endif
  if(.not.allocated(parini%amu))         then;   allocate(parini%amu(parini%ntypat_global))                         ; parini%amu=0                   ; endif
  if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(parini%ntypat_global))                        ; parini%rcov=0                  ; endif
@@ -175,7 +175,7 @@ if(.not.read_poscur) then
       read(12,'(a450)',end=98)all_line
       n = len_trim(all_line)
    !Znucl
-      call parsearray_real("ZNUCL",5,all_line(1:n),n,znucl(1:parini%ntypat_global),parini%ntypat_global,found)
+      call parsearray_real("ZNUCL",5,all_line(1:n),n,parini%znucl(1:parini%ntypat_global),parini%ntypat_global,found)
       if(found) exit
    enddo
    98 continue
@@ -187,7 +187,7 @@ endif
 
 !Get the correct atomic masses and atomic character
  do itype=1,parini%ntypat_global
-   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),parini%znucl(itype))
  enddo
 
 !Read the other variables
@@ -566,7 +566,7 @@ if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
   call check_lenosky_tb_lj(parini)
   n_lj=0
   do iat=1,parini%nat
-     if(znucl(parini%typat_global(iat)).gt.200) n_lj=n_lj+1
+     if(parini%znucl(parini%typat_global(iat)).gt.200) n_lj=n_lj+1
   enddo
   call lenosky_tb_lj_init_parameter()
 endif
@@ -630,7 +630,7 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: znucl,char_type
+use global, only: char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -648,7 +648,7 @@ parini%target_pressure_gpa=0.d0
 parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
  do itype=1,parini%ntypat_global
-   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),parini%znucl(itype))
  enddo
 parini%voids=.false.
 parini%core_rep=.false.
@@ -774,7 +774,7 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: znucl,char_type
+use global, only: char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -788,7 +788,7 @@ integer:: i,j
 if(any(parini%typat_global(:).lt.1)) stop "Error in typat"
 if(any(parini%amu(:).le.0.d0)) stop "Error in amu"
 if(any(parini%rcov(:).le.0.d0)) stop "Error in rcov"
-if(any(znucl(:).le.0)) stop "Error in znucl"
+if(any(parini%znucl(:).le.0)) stop "Error in znucl"
 if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
 if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
 if(parini%md_integrator.lt.1.or.parini%md_integrator.gt.3) stop "Error in parini%md_integrator"
@@ -883,7 +883,7 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: znucl,char_type
+use global, only: char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -914,7 +914,7 @@ write(*,'(a)')             " # Atomic parameters *******************************
 write(*,'(a,i5)')          " # NAT           ", parini%nat
 write(*,'(a,i5)')          " # NTYPE         ", parini%ntypat_global
 write(formatting,'(a,i5,a)') '(a,',parini%ntypat_global,'i4)'
-write(*,trim(formatting))  " # ZNUCL         ", int(znucl(:))
+write(*,trim(formatting))  " # ZNUCL         ", int(parini%znucl(:))
 write(formatting,'(a,i5,a)') '(a,',parini%nat,'i3)'
 write(*,trim(formatting))  " # TYPAT         ", parini%typat_global(:)
 write(formatting,'(a,i5,a)') '(a,',parini%ntypat_global,'i4)'

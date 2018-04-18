@@ -87,7 +87,7 @@ contains
     write(87,*) "ntypat"
     write(87,*)  parini%ntypat_global !Number of atom types        
     write(87,*) "znucl"
-    write(87,*)  int(znucl)  !Atom type
+    write(87,*)  int(parini%znucl)  !Atom type
     write(87,*) "typat" 
     write(87,*)  parini%typat_global
     write(87,*) " "

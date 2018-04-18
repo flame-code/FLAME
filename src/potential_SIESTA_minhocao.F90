@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: znucl,char_type
+  use global, only: char_type
   use defs_basis
   !use cell_utils
 
@@ -83,7 +83,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
 
     write(87,'(a)') "%block ChemicalSpeciesLabel"
     do itype = 1, parini%ntypat_global
-      write(87,'(i5,1x,i5,1x,a2)') itype, int(znucl(itype)), trim(char_type(itype)) 
+      write(87,'(i5,1x,i5,1x,a2)') itype, int(parini%znucl(itype)), trim(char_type(itype)) 
     enddo
     write(87,'(a)') "%endblock ChemicalSpeciesLabel"
     write(87,'(a,f7.3,a)') "LatticeConstant  ",1.d0,"  Bohr"
@@ -270,7 +270,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   
   write(87,'(a)') "%block ChemicalSpeciesLabel"
   do itype=1,parini%ntypat_global
-     write(87,'(i5,1x,i5,1x,a2)') itype,int(znucl(itype)),trim(char_type(itype)) 
+     write(87,'(i5,1x,i5,1x,a2)') itype,int(parini%znucl(itype)),trim(char_type(itype)) 
   enddo
   write(87,'(a)') "%endblock ChemicalSpeciesLabel"
   write(87,'(a,f7.3,a)') "LatticeConstant  ",1.d0,"  Bohr"
