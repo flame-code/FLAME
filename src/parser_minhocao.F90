@@ -49,7 +49,6 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: char_type
               
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use fingerprint, only: & 
@@ -146,7 +145,7 @@ endif
 
 !Allocate the arrays
  if(.not.allocated(parini%znucl))       then;   allocate(parini%znucl(parini%ntypat_global))                       ; parini%znucl=0                 ; endif
- if(.not.allocated(char_type))   then;   allocate(char_type(parini%ntypat_global))                   ; char_type="  "          ; endif
+ if(.not.allocated(parini%char_type))   then;   allocate(parini%char_type(parini%ntypat_global))                   ; parini%char_type="  "          ; endif
  if(.not.allocated(parini%amu))         then;   allocate(parini%amu(parini%ntypat_global))                         ; parini%amu=0                   ; endif
  if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(parini%ntypat_global))                        ; parini%rcov=0                  ; endif
  if(.not.allocated(parini%typat_global))       then;   allocate(parini%typat_global(parini%nat))                          ;
@@ -187,7 +186,7 @@ endif
 
 !Get the correct atomic masses and atomic character
  do itype=1,parini%ntypat_global
-   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),parini%znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),parini%char_type(itype),parini%znucl(itype))
  enddo
 
 !Read the other variables
@@ -630,7 +629,6 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -648,7 +646,7 @@ parini%target_pressure_gpa=0.d0
 parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
  do itype=1,parini%ntypat_global
-   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),parini%znucl(itype))
+   call atmdata(parini%amu(itype),parini%rcov(itype),parini%char_type(itype),parini%znucl(itype))
  enddo
 parini%voids=.false.
 parini%core_rep=.false.
@@ -774,7 +772,6 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -883,7 +880,6 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters

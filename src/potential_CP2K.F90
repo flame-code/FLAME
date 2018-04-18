@@ -71,7 +71,7 @@ contains
   do l=1,kb
   do m=1,kc
   do iat=1,parini%nat
-  write(87,'(a2,3(1x,es25.15))') trim(char_type(parini%typat_global(iat))),k_xcart(:,iat,k,l,m)*Bohr_Ang
+  write(87,'(a2,3(1x,es25.15))') trim(parini%char_type(parini%typat_global(iat))),k_xcart(:,iat,k,l,m)*Bohr_Ang
   enddo
   enddo
   enddo

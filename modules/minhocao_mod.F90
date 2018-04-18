@@ -31,7 +31,7 @@ implicit none
 !  integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
 !  integer:: vasp_kpt_mode         !If 1, the kpoint mesh is defined by mesh length, else a monkhorst pack mesh is generated (only vasp)
 !  integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
-  character(2),allocatable:: char_type(:) 
+!  character(2),allocatable:: char_type(:) 
 !  real(8):: dkpt1,dkpt2           !Precisions of the kpt mesh if generated automatically
 !  character(20):: code            !What code should be used: abinit or siesta
 !  logical::  geopt_ext            !At the moment only used for siesta: if true, the external geometry optimizer is used

@@ -1,7 +1,7 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use mod_parini, only: typ_parini
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
 implicit none
@@ -72,7 +72,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
 !*********************************************************************
     e0 = etot_in
@@ -152,7 +152,7 @@ implicit none
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
        if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &

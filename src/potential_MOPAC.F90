@@ -67,10 +67,10 @@ contains
   do m=1,kc
   do iat=1,parini%nat
   if(.not.parini%fixat(iat)) then
-      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
+      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(parini%char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,1,k_xcart(2,iat,k,l,m)*Bohr_Ang,1,k_xcart(3,iat,k,l,m)*Bohr_Ang,1
   else
-      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
+      write(87,'(a2,3(1x,es25.15,1x,i5))') trim(parini%char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,0,k_xcart(2,iat,k,l,m)*Bohr_Ang,0,k_xcart(3,iat,k,l,m)*Bohr_Ang,0
   endif
   enddo

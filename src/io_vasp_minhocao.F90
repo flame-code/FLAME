@@ -7,7 +7,7 @@ subroutine poscar_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: char_type,units
+use global, only: units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat
@@ -48,7 +48,7 @@ enddo
 if(parini%ntypat_global.gt.0) ntypat_found=.true.
 !Here we allocate the arrays of types, and the character stuff
 if(.not.allocated(parini%znucl)) allocate(parini%znucl(parini%ntypat_global))
-if(.not.allocated(char_type)) allocate(char_type(parini%ntypat_global))
+if(.not.allocated(parini%char_type)) allocate(parini%char_type(parini%ntypat_global))
 if(.not.allocated(nitype)) allocate(nitype(parini%ntypat_global))          
 if(.not.allocated(parini%amu)) allocate(parini%amu(parini%ntypat_global))
 if(.not.allocated(parini%rcov)) allocate(parini%rcov(parini%ntypat_global))
@@ -57,14 +57,14 @@ if(.not.allocated(parini%rcov)) allocate(parini%rcov(parini%ntypat_global))
       IF (.NOT.(CHARAC>='0' .AND. CHARAC<='9')) THEN
              !We are deling with vasp5 format
              vasp_5=.true.
-             read(line_vaspversion,*) char_type(:)
+             read(line_vaspversion,*) parini%char_type(:)
              read(46,*) nitype(:)
       else
              !We are dealing with vasp4 format
              vasp_5=.false.
              read(line_vaspversion,*) nitype(:)
              !Get the chemical character from the first line
-             read(firstline,*) char_type(:)
+             read(firstline,*) parini%char_type(:)
      endif
 !Compute total number of atoms and types and shit
 parini%nat=0
@@ -79,7 +79,7 @@ do i=1,parini%ntypat_global
       iat=iat+1
       parini%typat_global(iat)=i
     enddo
-    call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),parini%znucl(i))
+    call symbol2znucl(parini%amu(i),parini%rcov(i),parini%char_type(i),parini%znucl(i))
 enddo
 znucl_found=.true.
 

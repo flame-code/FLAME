@@ -322,11 +322,11 @@ call system_clock(count_max=clock_max)   !Find the time max
      call find_symmetry(parini,parini%nat,pos_red,pos_latvec,parini%typat_global,tolmin,tolmax,ntol,spgtol_pos,spg_pos)
      call spg_cell_refine(parini%nat,sym_nat,4*parini%nat,sym_pos,pos_latvec,sym_type,spgtol_pos,spg_pos)
      filename="sym_poscur.ascii"
-     call write_atomic_file_ascii(parini,filename,sym_nat,units,sym_pos,pos_latvec,sym_fcart,pos_strten,char_type,parini%ntypat_global,sym_type,sym_fixat,parini%fixlat,&
+     call write_atomic_file_ascii(parini,filename,sym_nat,units,sym_pos,pos_latvec,sym_fcart,pos_strten,parini%char_type,parini%ntypat_global,sym_type,sym_fixat,parini%fixlat,&
      &0.d0,parini%target_pressure_habohr,0.d0,0.d0)
      call spg_cell_primitive(sym_nat,sym_nat2,4*parini%nat,sym_pos,pos_latvec,sym_type,spgtol_pos,spg_pos)
      filename="sym_prim_poscur.ascii"
-     call write_atomic_file_ascii(parini,filename,sym_nat2,units,sym_pos,pos_latvec,sym_fcart,pos_strten,char_type,parini%ntypat_global,sym_type,sym_fixat,parini%fixlat,&
+     call write_atomic_file_ascii(parini,filename,sym_nat2,units,sym_pos,pos_latvec,sym_fcart,pos_strten,parini%char_type,parini%ntypat_global,sym_type,sym_fixat,parini%fixlat,&
      &0.d0,parini%target_pressure_habohr,0.d0,0.d0)
        goto 3001 
   endif 
@@ -585,7 +585,7 @@ call system_clock(count_max=clock_max)   !Find the time max
        enddo 
      call winter(parini,parini%nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin_t,npminx,& 
           &ent_arr_t,e_arr_t,ct_arr_t,spg_arr_t,spgtol_arr_t,dos_arr_t,pl_arr_t,lat_arr_t,f_arr_t,str_arr_t,fp_arr_t,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
      write(*,'(a,i5,a)') " # Rebinning completed, new nlmin: ",nlmin_t,". rebin.in will be deteled!"
      call system("rm rebin.in")
      goto 3001 
@@ -650,11 +650,11 @@ write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
   if(parini%verb.gt.0) then
        filename=trim(folder)//"posinit.ascii"
        call write_atomic_file_ascii(parini,filename,parini%nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,e_pos,parini%target_pressure_habohr,ent_pos,e_pos)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,e_pos,parini%target_pressure_habohr,ent_pos,e_pos)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posinit.vasp"
        call write_atomic_file_poscar(parini,filename,parini%nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,e_pos,parini%target_pressure_habohr,ent_pos,e_pos)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,e_pos,parini%target_pressure_habohr,ent_pos,e_pos)
        endif
   endif
   if (parini%paropt_geopt%nit.le.0) goto 3000
@@ -726,7 +726,7 @@ endif
 !  nconjgr=0
   if(parini%verb.gt.0) then
      filename='poslocm_'//fn5//'.ascii'
-     call write_atomic_file_ascii(parini,filename,parini%nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,&
+     call write_atomic_file_ascii(parini,filename,parini%nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,&
      &e_pos,parini%target_pressure_habohr,ent_pos-eref,e_pos-eref)
      call dist_latvec2ang(dist_ang,pos_latvec,pi)
      write(*,'(a,a,a,6(1x,es15.7))') " # Wrote file ",trim(filename),", with a,b,c,alpha,beta,gamma: ",dist_ang
@@ -1003,7 +1003,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
 !Write out the relaxed configuration
   if(parini%verb.gt.0) then
         filename='poslocm_'//fn5//'.ascii'
-        call write_atomic_file_ascii(parini,filename,parini%nat,units,wpos_red,wpos_latvec,wpos_fcart,wpos_strten,char_type,&
+        call write_atomic_file_ascii(parini,filename,parini%nat,units,wpos_red,wpos_latvec,wpos_fcart,wpos_strten,parini%char_type,&
         &parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,e_wpos,parini%target_pressure_habohr,ent_wpos-eref,e_wpos-eref)
   call dist_latvec2ang(dist_ang,wpos_latvec,pi)
   write(*,'(a,a,a,6(1x,es15.7))') " # Wrote file ",trim(filename),", with a,b,c,alpha,beta,gamma: ",dist_ang
@@ -1142,7 +1142,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
      if(modulo(nlmin,nwrite_inter)==0) then 
      call winter(parini,parini%nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
           &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
      endif
      nvisit=1
 !!     npmin=npmin+1
@@ -1234,7 +1234,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
      if(modulo(nlmin,nwrite_inter)==0) then 
      call winter(parini,parini%nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
           &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
      endif
      goto 1000
   else
@@ -1273,7 +1273,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
 !!      typat,fixat,fixlat,target_pressure_habohr)
      call winter(parini,parini%nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
           &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
-          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
+          &eref,ediff,ekinetic,ekinetic_max,dt,parini%nsoften_minhopp,parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,parini%target_pressure_habohr)
 
 
 !Print ratios from all the global counters
@@ -1306,7 +1306,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
 ! tsec(1)=tsec(1)-cpui
 ! tsec(2)=tsec(2)-walli
 
-  deallocate(char_type)
+  deallocate(parini%char_type)
   deallocate(e_arr,ent_arr,ct_arr,pl_arr,lat_arr,dos_arr,spgtol_arr,spg_arr,fp_arr)
 3001 continue
 !Close socket on slave side
@@ -1318,7 +1318,7 @@ end subroutine task_minhocao
 !**********************************************************************************************
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -1620,7 +1620,7 @@ if(parres%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 endif
 !*********************************************************************
 
@@ -1843,7 +1843,7 @@ if(parres%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 endif
 !*********************************************************************
 
@@ -2557,7 +2557,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -2780,7 +2780,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
 
 
@@ -2980,7 +2980,7 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
 
 !        econs_max=max(econs_max,rkin+e_rxyz)
@@ -3043,7 +3043,7 @@ end subroutine
 !**********************************************************************************************
 subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -3284,7 +3284,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,poscur,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
 
         do itime=1,parini%nmd_dynamics
@@ -3447,7 +3447,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
 
 !        econs_max=max(econs_max,rkin+e_rxyz)
@@ -3484,7 +3484,6 @@ end subroutine
 
 subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
@@ -3818,11 +3817,11 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in FIRE:",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
 !*********************************************************************
@@ -4092,11 +4091,11 @@ if(parini%verb.gt.0) then
        units=units
        write(*,*) "# Writing the positions in FIRE: ",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
        call write_atomic_file_poscar(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 
        write(*,'(a,i4,6(1x,es17.8),3(1x,es9.2),1x,i4,1x,i4)') " # GEOPT FIRE    ",&
@@ -5209,7 +5208,6 @@ end subroutine elim_torque_cell
 
 subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
  use mod_interface
- use global, only: char_type
  use defs_basis
  use mod_parini, only: typ_parini
 implicit none
@@ -5355,7 +5353,7 @@ end subroutine init_vel
 
         subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5490,7 +5488,7 @@ if(parini%verb.gt.0) then
         write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
         write(fn4,'(i4.4)') it 
         filename=trim(folder)//'possoft_at'//fn4//'.ascii'
-        call write_atomic_file_ascii(parini,filename,parini%nat,units,pos_red_in,latvec_in,fxyz,strten_in,char_type,&
+        call write_atomic_file_ascii(parini,filename,parini%nat,units,pos_red_in,latvec_in,fxyz,strten_in,parini%char_type,&
              &parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,curv,res)
 endif
         call elim_fixed_at(parini,parini%nat,fxyz)
@@ -5540,7 +5538,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
 
         subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_interface, except_this_one=>norm
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use modsocket, only: sock_extra_string
@@ -5697,7 +5695,7 @@ if(parini%verb.gt.0) then
         write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
         write(fn4,'(i4.4)') it 
         filename=trim(folder)//'possoft_lat'//fn4//'.ascii'
-        call write_atomic_file_ascii(parini,filename,parini%nat,units,rxyz,latvec_in,fcart_in,strten_in,char_type,parini%ntypat_global,&
+        call write_atomic_file_ascii(parini,filename,parini%nat,units,rxyz,latvec_in,fcart_in,strten_in,parini%char_type,parini%ntypat_global,&
         &parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,curv,res)
 endif
 
@@ -6306,7 +6304,7 @@ end subroutine
 
 subroutine pathintegral(parini,parres,latvec,xred)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6408,7 +6406,7 @@ subroutine pathintegral(parini,parres,latvec,xred)
      write(fn4,'(i4.4)') idispl
      filename='pospath_'//fn4//'.ascii'
      call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-          &char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,parini%target_pressure_habohr,etot_in,0.d0)
+          &parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,parini%target_pressure_habohr,etot_in,0.d0)
 
 
 10      continue
@@ -6694,7 +6692,7 @@ end subroutine
 
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
 ! Main program to test potential subroutines
@@ -6742,7 +6740,7 @@ call random_number(angle)
         filename = 'poslow'//fn5
         filenameout=trim(filename)//".rotated.ascii"
         call write_atomic_file_ascii(parini,filenameout,parini%nat,units,xred,latvec,fcart,strten,&
-             &char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parini%target_pressure_habohr,ext_press,enthalpy)
+             &parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parini%target_pressure_habohr,ext_press,enthalpy)
         open(unit=2,file="Enthalpies_rotated",access="append")
         write(2,'(a,5(1x,es25.15),i5)')trim(filename),parres%target_pressure_gpa,&
              &enthalpy*Ha_ev,energy*Ha_ev,ext_press,vol*Bohr_Ang**3,spgint
@@ -6758,7 +6756,7 @@ end subroutine
 
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6835,7 +6833,7 @@ if(file_exists) then
        ext_press=-ext_press/3.d0*HaBohr3_GPa
        filenameout=trim(filename)//"relaxed.ascii"
        call write_atomic_file_ascii(parini,filenameout,parini%nat,units,xred,latvec,fcart,strten,&
-             &char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parini%target_pressure_habohr,ext_press,enthalpy)
+             &parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parini%target_pressure_habohr,ext_press,enthalpy)
        open(unit=2,file="Enthalpies_poslow",access="append")
        write(2,'(a,5(1x,es25.15),i5)')trim(filename),parres%target_pressure_gpa,&
              &enthalpy*Ha_ev,energy*Ha_ev,ext_press,vol*Bohr_Ang**3,spgint
@@ -6858,7 +6856,7 @@ end subroutine
 
 subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -6939,7 +6937,7 @@ call system('rm -f posgeopt.*.ascii')
     write(*,*) fn
     filename="posenth."//fn//".ascii"
     call write_atomic_file_ascii(parini,filename,parini%nat,units,xred,latvec,fcart,strten,&
-          &char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parres%target_pressure_habohr,ext_press,enthalpy)
+          &parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parres%target_pressure_habohr,ext_press,enthalpy)
     open(unit=2,file="Enthalpies",access="append")
     write(2,'(5(1x,es25.15),3x,i5)') parres%target_pressure_gpa,enthalpy*Ha_ev,energy*Ha_ev,ext_press,vol*Bohr_Ang**3,spgint
     close(2)
@@ -6959,7 +6957,7 @@ end subroutine
 
 subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -7047,7 +7045,7 @@ do while (vcur.le.vfinal+1.d-10)
    fn = repeat( '0', 12-len_trim(adjustl(fn))) // adjustl(fn)
    filename="posvol."//fn//".ascii"
    call write_atomic_file_ascii(parini,filename,parini%nat,units,xred,latvec,fcart,strten,&
-         &char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parres%target_pressure_habohr,ext_press,enthalpy)
+         &parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,energy,parres%target_pressure_habohr,ext_press,enthalpy)
    open(unit=2,file="VolEnergies",access="append")
    write(2,'(7(1x,es25.15),1x,es25.8,3x,i5)') parres%target_pressure_gpa,enthalpy*Ha_ev,energy*Ha_ev,energy*Ha_ev/parini%nat,ext_press,vol*Bohr_Ang**3,vol*Bohr_Ang**3/parini%nat,vol/vol0,spgint
    close(2)
@@ -7498,7 +7496,6 @@ end subroutine
 subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
 use mod_interface
 use mod_parini, only: typ_parini
-use global, only: char_type
 implicit none
 type(typ_parini), intent(in):: parini
 real(8),dimension(3,parini%nat), INTENT(IN) :: xred
@@ -7558,7 +7555,7 @@ call latvec2dproj(dproj,latvec,rotmat,pos,parini%nat)
 write(46,*) dproj(1:3)
 write(46,*) dproj(4:6)
 do iat=1,parini%nat
-  write(46,'(3(1x,es25.15),2x,a2,1x,a1,i4)')       pos(:,iat),trim(char_type(parini%typat_global(iat))),"#",fragarr(iat)
+  write(46,'(3(1x,es25.15),2x,a2,1x,a1,i4)')       pos(:,iat),trim(parini%char_type(parini%typat_global(iat))),"#",fragarr(iat)
 enddo
 deallocate(pos)
 close(46)
@@ -7715,7 +7712,7 @@ use mod_interface
 use mod_parini, only: typ_parini
 !This routine will first find the correct partitioning of the system into molecules, then assign
 !rotational and translational velocities to these molecules according to the tempereature temp
-use global, only: char_type,units
+use global, only: units
 use defs_basis, only: Bohr_Ang,pi,kb_HaK
 implicit none
 type(typ_parini), intent(in):: parini
@@ -7803,7 +7800,7 @@ call latvec2dproj(dproj,latvec_tmp,rotmat,xcart,nat)
 write(2,*) dproj(1:3)*angbohr
 write(2,*) dproj(4:6)*angbohr
   do iat=1,nat
-       write(2,'(3(1x,es25.15),2x,a2)') angbohr*xcart(:,iat),trim(char_type(parini%typat_global(iat)))
+       write(2,'(3(1x,es25.15),2x,a2)') angbohr*xcart(:,iat),trim(parini%char_type(parini%typat_global(iat)))
   enddo
 close(2)
 
@@ -8102,7 +8099,7 @@ use mod_parini, only: typ_parini
 !We will also express the center of masses in reduced coordinates (xred_cm), and of
 !course intiallize the orientation vectors quat to 0
 use defs_basis, only: Ha_eV,Bohr_Ang
-use global, only: char_type,units
+use global, only: units
 implicit none
 type(typ_parini), intent(in):: parini
 real(8),intent(in):: latvec(3,3),xred(3,nat)
@@ -8232,7 +8229,7 @@ do imol=1,nmol
    write(22,*)  
    iat=lhead(imol)
    do while (iat.ne.0)
-     write(22,'(a2,2x,3(es25.15))') trim(char_type(parini%typat_global(iat))),xcart_shifted(:,iat)*angbohr
+     write(22,'(a2,2x,3(es25.15))') trim(parini%char_type(parini%typat_global(iat))),xcart_shifted(:,iat)*angbohr
      iat=llist(iat)
    enddo
    close(22)
@@ -8613,7 +8610,7 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
  use mod_interface
- use global, only: char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
@@ -8916,7 +8913,7 @@ endif
        units=units
        write(*,*) "# Writing the positions in MD:",filename
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-       &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+       &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
 
 
@@ -9117,7 +9114,7 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-       &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+       &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
         econs_max=max(econs_max,rkin+enthalpy)
         econs_min=min(econs_min,rkin+enthalpy)
@@ -9279,7 +9276,6 @@ use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim
 use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
 use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
-use global, only: char_type
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
@@ -9325,7 +9321,7 @@ select case(fp_method)
 !This fingerprint wants to have the number of atoms per molecule
      natmol=parini%nat/parini%fp_18_molecules     
      if(natmol*parini%fp_18_molecules.ne.parini%nat) stop "Something wrong with the number of molecules"
-     call findmolecule(parini,rxyz,latvec,finalchar,pos_red,char_type,parini%typat_global,parini%ntypat_global,natmol)
+     call findmolecule(parini,rxyz,latvec,finalchar,pos_red,parini%char_type,parini%typat_global,parini%ntypat_global,natmol)
 !
 ! Assign the Van-der-Waals radii
 !

@@ -75,11 +75,11 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,parini%ntypat_global
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(parini%char_type(itype)),parini%amu(itype),trim(parini%char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,parini%nat
-           write(87,'(a,2x,3(es25.15))') trim(char_type(parini%typat_global(iat))),xred(:,iat)
+           write(87,'(a,2x,3(es25.15))') trim(parini%char_type(parini%typat_global(iat))),xred(:,iat)
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"
            write(87,'(3(es25.15))') latvec(:,1)
@@ -396,14 +396,14 @@ contains
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
         do itype=1,parini%ntypat_global
-           write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
+           write(87,'(a,2x,f10.5,2x,a)') trim(parini%char_type(itype)),parini%amu(itype),trim(parini%char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
         do iat=1,parini%nat
         if(parini%fixat(iat)) then
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 0 0 0 '
+              write(87,'(a,2x,3(es25.15),a)') trim(parini%char_type(parini%typat_global(iat))),xred(:,iat),' 0 0 0 '
         else
-              write(87,'(a,2x,3(es25.15),a)') trim(char_type(parini%typat_global(iat))),xred(:,iat),' 1 1 1 '
+              write(87,'(a,2x,3(es25.15),a)') trim(parini%char_type(parini%typat_global(iat))),xred(:,iat),' 1 1 1 '
         endif
         enddo
         write(87,'(a)') "CELL_PARAMETERS bohr"

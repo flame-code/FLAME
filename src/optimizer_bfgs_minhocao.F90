@@ -73,7 +73,6 @@ end subroutine GEOPT_RBFGS_MHM
 !contains
 
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: char_type
  use global, only: units
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -191,7 +190,7 @@ pressure=parini%target_pressure_habohr
        units=units
        write(*,'(a,a)') " # Writing the positions in BFGS ATOMS  : ",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
         write(*,'(a,i4,2(1x,es17.8))') " # GEOPT ",int(counter),enthalpy, fmax 
         if(iexit==1) then
           write(*,'(a,i4,2(1x,es25.15))') " #GEOPT converged", icall,enthalpy,fmax
@@ -219,7 +218,6 @@ pressure=parini%target_pressure_habohr
 END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1
  use defs_basis
 
@@ -360,7 +358,7 @@ latvec(7:9)=latvec_in(:,3)
        units=units
        write(*,'(a,a)') " # Writing the positions in BFGS2LATTICE: ",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
         write(*,'(a,i4,2(1x,es17.8))') " # GEOPT ",int(counter),enthalpy, fmax 
         if(iexit==1) then
           write(*,'(a,i4,2(1x,es25.15))') " #GEOPT converged", icall,enthalpy,fmax
@@ -867,7 +865,6 @@ end subroutine bfgs_reza
 !!! This is helpfull when we are looking for the source of problems during BFGS runs
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
- use global, only: char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1
  use defs_basis
 
@@ -998,7 +995,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
            units=units
            write(*,'(a,a)') " # Writing the positions in BFGS LATTICE: ",filename
            call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-                &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
+                &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
            write(*,'(a,i4,4(1x,es17.8),1x,i5)') " # GEOPT ",int(counter),enthalpy,fmax,fmax_at,fmax_lat,icall
            write(*,'(a,i5,2x,2x,1es21.14,2x,3(es15.7),es11.3,2x,a8,i3,1x,a6,1x,1pe8.2E1)')  " # GEOPT BFGS LATTICE",&
            int(counter),enthalpy,fmax,fmax_at,fmax_lat,de,"BFGS-it=",parmin_bfgs%finstep,"alpha=",parmin_bfgs%alpha
@@ -1092,7 +1089,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
            units=units
            write(*,'(a,a)') " # Writing the positions in BFGS LATTICE: ",filename
            call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-                &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
+                &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
            write(*,'(a,i4,4(1x,es17.8),1x,i5)') " # GEOPT ",int(counter),enthalpy,fmax,fmax_at,fmax_lat,icall
            write(*,'(a,i5,2x,2x,1es21.14,2x,3(es15.7),es11.3,2x,a8,i3,1x,a6,1x,1pe8.2E1)')  " # GEOPT BFGS LATTICE",&
            int(counter),enthalpy,fmax,fmax_at,fmax_lat,de,"BFGS-it=",parmin_bfgs%finstep,"alpha=",parmin_bfgs%alpha
@@ -1704,7 +1701,6 @@ end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: char_type
  use global, only: units
  use defs_basis
  use minpar
@@ -1827,7 +1823,7 @@ if(counter==0.d0) then
        units=units
        write(*,*) "# Writing the positions in :",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",int(counter),fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
 endif
@@ -1930,7 +1926,7 @@ endif
        units=units
        write(*,*) "# Writing the positions in :",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS LS ",int(counter),tfp,fmax,fmax_lat,fmax_at,lambda,iprec
 !*********************************************************************
  tg=-tg
@@ -1988,7 +1984,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
        units=units
        write(*,*) "# Writing the positions in :",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",int(counter),fp,fmax,fmax_lat,fmax_at,lambda_predict,iprec
 !*********************************************************************
        g=-g       !New gradient 
@@ -2114,7 +2110,6 @@ END SUBROUTINE
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
- use global, only: char_type
  use global, only: units
  use defs_basis
  use minpar
@@ -2191,7 +2186,7 @@ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
        units=units
        write(*,*) "# Writing the positions in :",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",0,fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
    iexit=0
@@ -2261,7 +2256,7 @@ do its=1,ITMAX
        units=units
        write(*,*) "# Writing the positions in :",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS LS ",(its)*2-1,tfp,fmax,fmax_lat,fmax_at,gamma0,iprec
 !*********************************************************************
 ! call rxyz_int2cart(tp(3*nat+1:3*nat+9),tp(1:3*nat),rxyz,nat)
@@ -2339,7 +2334,7 @@ lambda_predict=max(lambda_predict,-1.d0)
        units=units
        write(*,*) "# Writing the positions in :",filename
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",its*2,fp,fmax,fmax_lat,fmax_at,lambda_predict,iprec
 !*********************************************************************
 !   call rxyz_int2cart(p(3*nat+1:3*nat+9),p(1:3*nat),rxyz,nat)
