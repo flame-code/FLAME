@@ -25,6 +25,7 @@
    two_level_geopt: False
    verbosity: 0
    seed: -2
+   nrun_lammps: 0
  minhopp:
    nstep: 0
    nsoften: 7

@@ -5026,6 +5026,13 @@ subroutine init_geopt(parini,paropt,paropt_prec)
     type(typ_parini), intent(in):: parini
     type(typ_paropt), intent(inout):: paropt, paropt_prec
 end subroutine init_geopt
+! ./src/task_lammps.F90 :
+subroutine lammps_task(parini)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int, C_FUNPTR
+    type(typ_parini), intent(in):: parini
+end subroutine lammps_task
 ! ./src/task_linkedlist.F90 :
 subroutine  linkedlist_test(parini)
     use mod_parini, only: typ_parini

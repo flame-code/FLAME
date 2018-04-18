@@ -17,6 +17,7 @@ module mod_parini
         integer:: ntypat=-1
         integer:: ltypat(20)=-1
         integer:: iatomnum(20)=-1
+        integer:: nrun_lammps=0
         character(5):: stypat(20)='unknown'
         !character(50):: stypat_genconf=''
         !-----------------------------------------------------------------------

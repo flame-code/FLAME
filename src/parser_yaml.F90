@@ -78,6 +78,7 @@ subroutine yaml_get_main_parameters(parini)
     parini%two_level_geopt=parini%subdict//"two_level_geopt"
     parini%iverbose=parini%subdict//"verbosity"
     parini%iseed=parini%subdict//"seed"
+    parini%nrun_lammps=parini%subdict//"nrun_lammps"
 end subroutine yaml_get_main_parameters
 !*****************************************************************************************
 subroutine yaml_get_minhopp_parameters(parini)

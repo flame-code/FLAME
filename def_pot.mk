@@ -44,8 +44,9 @@ ifdef LAMMPS
 	LAMMPS_SRC = $(LAMMPS_ROOT)/src
 	OBJ+= lammps_int.o LAMMPS.o LAMMPS-wrapper.o
 	LIBS+= $(LIB_LAMMPS)
+	INCLUDE_C= -I$(MY_MPI_INCLUDE) -I$(LAMMPS_ROOT)/src
 	override INCLUDE+= $(MPI_STUBS)
-	override PRE_PROC+= -DLAMMPS
+	#override PRE_PROC+= -DLAMMPS
 endif
 
 ifdef TINKER
