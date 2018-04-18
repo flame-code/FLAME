@@ -61,7 +61,7 @@ implicit none
   integer:: confine               !0: No confinement, 1: confinement used, but not currently, 2: confinement in action, 3: confinement always on
 !  logical:: use_confine           !if true, confinement is enable, otherwise disabled
 !  logical:: energy_conservation   !Only used in fixed cell MD
-  logical:: voids                 !If or if not to use void creating LJ particles in the cell
+!  logical:: voids                 !If or if not to use void creating LJ particles in the cell
 !  logical:: core_rep              !If or if not to add a purely repulsive force on top of the atoms
 end module global
 

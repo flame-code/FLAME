@@ -49,8 +49,8 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type,&
-                &voids
+use global, only: nat,ntypat,znucl,char_type
+              
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use fingerprint, only: & 
    fp_method,&!All
@@ -224,7 +224,7 @@ open(unit=12,file="params_new.in")
    call parsescalar_real("CELLMASS",8,all_line(1:n),n,parini%bmass,found)
    if(found) cycle
 !VOIDS
-   call parse_logical("VOIDS",5,all_line(1:n),n,voids,found)
+   call parse_logical("VOIDS",5,all_line(1:n),n,parini%voids,found)
    if(found) cycle
 !COREREP
    call parse_logical("COREREP",7,all_line(1:n),n,parini%core_rep,found)
@@ -572,7 +572,7 @@ if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
 endif
 
 !Initiallize voids
-if(voids.and.calls==0) then
+if(parini%voids.and.calls==0) then
   call check_voids(parini) 
   call voids_init_parameter()
 endif
@@ -630,8 +630,7 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type,&
-                &voids
+use global, only: nat,ntypat,znucl,char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -651,7 +650,7 @@ parini%target_pressure_habohr=0.d0
  do itype=1,ntypat
    call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
  enddo
-voids=.false.
+parini%voids=.false.
 parini%core_rep=.false.
 if(.not.read_poscur) parini%typat_global(1:nat)=1
 parini%nmd_dynamics=300
@@ -775,8 +774,7 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type,&
-                &voids
+use global, only: nat,ntypat,znucl,char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -885,8 +883,7 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type,&
-                &voids
+use global, only: nat,ntypat,znucl,char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -904,7 +901,7 @@ write(*,'(a,i5)')          " # VERBOSITY     ", parini%verb
 write(*,'(a)')             " # SYSTEM parameters *************************************************************"
 write(*,'(a,i5)')          " # BOUNDARY      ", parini%bc
 write(*,'(a,es15.7)')      " # PRESS         ", parini%target_pressure_gpa
-write(*,'(a,L3)')          " # VOIDS         ", voids
+write(*,'(a,L3)')          " # VOIDS         ", parini%voids
 write(*,'(a,L3)')          " # COREREP       ", parini%core_rep
 write(*,'(a)')             " # COMPUTE parameters ************************************************************"
 write(*,'(a,a)')           " # CODE          ", trim(parini%potential_potential)

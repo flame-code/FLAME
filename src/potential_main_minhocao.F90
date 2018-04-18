@@ -52,7 +52,7 @@ contains
     real(8), intent(inout):: counter
     integer, intent(in)  :: iprec
     integer:: ka,kb,kc
-    if(voids) then
+    if(parini%voids) then
       stop "Cannot run external geometry optimizer when using voids!"
     endif
     if(trim(parini%potential_potential)=="siesta") then
@@ -136,7 +136,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
        stop "Incompatible kpt-modes"
 
 !Copy global array sizes to handle voids for single point energy evaluation
-    if(voids) then
+    if(parini%voids) then
        !Backup the number of atoms and atom types
        nat_all=nat
        ntypat_all=ntypat
@@ -242,7 +242,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     end if
 
 !Copy back global array sizes and compte/add the LJ forces
-    if(voids) then
+    if(parini%voids) then
        !Put back the number of atoms and atom types
        nat=nat_all
        ntypat=ntypat_all
