@@ -52,12 +52,16 @@ module LAMMPS
       C_NULL_CHAR, C_loc, C_F_pointer, lammps_instance => C_ptr
    implicit none
    private
+   public :: lammps_set_user_virial
+   public :: lammps_set_external_vector_length
+   public :: lammps_set_external_vector
+   public :: lammps_set_user_energy
    public :: lammps_open, lammps_open_no_mpi, lammps_close, lammps_file, &
       lammps_command, lammps_free, lammps_extract_global, &
       lammps_extract_atom, lammps_extract_compute, lammps_extract_fix, &
       lammps_extract_variable, lammps_get_natoms, lammps_gather_atoms, &
-      lammps_scatter_atoms
-   public :: lammps_instance, C_ptr, C_double, C_int
+      lammps_set_callback
+   public :: lammps_scatter_atoms, lammps_instance, C_ptr, C_double, C_int
 
    !! Functions supplemental to the prototypes in library.h. {{{1
    !! The function definitions (in C++) are contained in LAMMPS-wrapper.cpp.
@@ -204,6 +208,41 @@ module LAMMPS
          type (C_ptr), value :: ptr
          integer (C_int) :: natoms
       end function lammps_get_natoms
+ 
+      subroutine lammps_set_callback (ptr) &
+      bind (C, name='lammps_set_callback')
+        import :: C_ptr
+        type (C_ptr), value :: ptr
+      end subroutine lammps_set_callback
+
+      subroutine lammps_set_user_energy (ptr, energy) &
+      bind (C, name='lammps_set_user_energy')
+        import :: C_ptr, C_double 
+        type (C_ptr), value :: ptr
+        real(C_double), value :: energy
+      end subroutine lammps_set_user_energy 
+
+      subroutine lammps_set_user_virial (ptr, virial) &
+      bind (C, name='lammps_set_user_virial')
+        import :: C_ptr, C_double 
+        type (C_ptr), value :: ptr
+        real(C_double) :: virial(6)
+      end subroutine lammps_set_user_virial
+
+      subroutine lammps_set_external_vector_length (ptr, n) &
+      bind (C, name='lammps_set_external_vector_length')
+        import :: C_ptr, C_double, C_int 
+        type(C_ptr), value :: ptr
+        integer (C_int), value ::  n
+      end subroutine lammps_set_external_vector_length
+
+      subroutine lammps_set_external_vector (ptr, n, val) &
+      bind (C, name='lammps_set_external_vector')
+        import :: C_ptr, C_int, C_double 
+        type (C_ptr), value :: ptr
+        integer (C_int), value ::  n
+        real(C_double), value :: val
+      end subroutine lammps_set_external_vector
 
       subroutine lammps_actual_gather_atoms (ptr, name, type, count, data) &
       bind (C, name='lammps_gather_atoms')
@@ -386,7 +425,8 @@ contains !! Wrapper functions local to this module {{{1
       Cptr = lammps_extract_atom_Cptr (ptr, name)
       call C_F_pointer (Cptr, Fptr, (/nelements/))
       if ( name == 'mass' ) then
-         atom(0:) => Fptr
+         !atom(0:) => Fptr
+         atom => Fptr
       else
          atom => Fptr
       end if
@@ -400,7 +440,7 @@ contains !! Wrapper functions local to this module {{{1
       integer (C_int), pointer :: nelements
       if ( name /= 'x' .and. name /= 'v' .and. name /= 'f' .and. &
            name /= 'mu' .and. name /= 'omega' .and. name /= 'tandque' .and. &
-           name /= 'angmom' ) then
+           name /= 'angmom' .and. name /= 'fexternal' ) then
          ! We should not be getting a rank-2 array here!
          call lammps_error_all (ptr, FLERR, 'You cannot extract those atom&
             & data (' // trim(name) // ') into a rank 2 array.')

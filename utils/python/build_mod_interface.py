@@ -133,6 +133,7 @@ def get_files():
                    './src/task_netsock.F90',
                    './modules/constants_minhocao_mod.F90',
                    './modules/minhocao_mod.F90',
+                   './src/lammps_mod.F90',
                    './modules/fsockets.F90',
                    './src/fingerprint_BCM.F90',
                    './src/fingerprint_gaussmol.F90',

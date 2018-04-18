@@ -24,8 +24,10 @@ ifdef LAMMPS
 	ARGS+= LAMMPS=1
 	LAMMPS_SRC = $(LAMMPS_ROOT)/src
 	LIB_MPI_STUBS = $(LAMMPS_SRC)/STUBS/libmpi_stubs.a
-	LIB_LAMMPS = $(LAMMPS_SRC)/liblammps_serial_intel.a  $(LAMMPS_ROOT)/lib/reax/*.o $(LAMMPS_ROOT)/lib/meam/*.o $(LAMMPS_ROOT)/lib/poems/*.o
+	#LIB_LAMMPS = $(LAMMPS_SRC)/liblammps_serial_intel.a  $(LAMMPS_ROOT)/lib/reax/*.o $(LAMMPS_ROOT)/lib/meam/*.o $(LAMMPS_ROOT)/lib/poems/*.o
+	LIB_LAMMPS = $(LAMMPS_SRC)/liblammps_mpi.a
 	LIBS+= $(LIB_MPI_STUBS) $(LIB_LAMMPS)
+	PRE_PROC += -DHAVE_LAMMPS
 endif
 ifdef TINKER
 	LIB_TINKER = $(TINKER_ROOT)/source/libtinker.a

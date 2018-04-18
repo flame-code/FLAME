@@ -78,6 +78,7 @@ subroutine yaml_get_main_parameters(parini)
     parini%two_level_geopt=parini%subdict//"two_level_geopt"
     parini%iverbose=parini%subdict//"verbosity"
     parini%iseed=parini%subdict//"seed"
+    parini%nrun_lammps=parini%subdict//"nrun_lammps"
 end subroutine yaml_get_main_parameters
 !*****************************************************************************************
 subroutine yaml_get_minhopp_parameters(parini)
@@ -339,6 +340,10 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%bias_type=parini%subsubdict//"bias_type"
     parini%psolver=parini%subsubdict//"psolver"
     parini%cell_ortho=parini%subsubdict//"cell_ortho"
+    parini%dielec_const=parini%subsubdict//"dielec_const"
+    parini%dielec_const1=parini%subsubdict//"dielec_const1"
+    parini%dielec_const2=parini%subsubdict//"dielec_const2"
+    parini%cal_polar=parini%subsubdict//"cal_polar"
 end subroutine yaml_get_ewald_parameters
 !*****************************************************************************************
 subroutine yaml_get_misc_parameters(parini)

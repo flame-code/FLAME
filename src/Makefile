@@ -6,7 +6,11 @@ include ../def_opt.mk
 all: libsrc.a ofiles/basic_c_wrappers.o ofiles/input_variables_definition.o
 
 SRC_F= dpmpar.f enorm.f lmder.f lmpar.f qrfac.f qrsolv.f
-SRC_= alborz_init_final.F90 processors.F90 \
+SRC_ =
+ifdef LAMMPS
+    SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90 lammps_mod.F90
+endif
+SRC_ += alborz_init_final.F90 processors.F90 \
 		mpi_utilities.F90 \
 		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		lmder_modified.F90 \
@@ -23,6 +27,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		phonon.F90 \
 		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 \
 		es_coulomb_p3d_bias.F90 \
+		es_coulomb_p3d_dielec.F90 \
 		grid_rp4gto_sym.F90  grid_gto_sym_ortho.F90 \
 		grid_gto_sym.F90 grid_basic.F90 \
 		es_hartree_fourier.F90 es_hartree_main.F90 es_hartree_bps.F90 \
@@ -31,7 +36,7 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		optimizer_gmdfire.F90 optimizer_bfgs.F90 optimizer_dfp.F90 optimizer_nlbfgs.F90 \
 		optimizer_sqnm.F90 \
 		optimizer_drivers.F90 optimizer_drivers_vc.F90 task_geopt.F90 task_single_point.F90 \
-		task_netsock.F90 \
+		task_netsock.F90 task_lammps.F90 \
 		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
 		basic_atoms.F90 basic_utilities.F90 \
 		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
@@ -87,9 +92,6 @@ ifdef SPGLIB
     SRC_ += spglib_int.F90
 endif
 
-ifdef LAMMPS
-    SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90
-endif
 #LAMMPS-wrapper.o : LAMMPS-wrapper.cpp LAMMPS-wrapper.h
 #	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c $< -I$(LAMMPS_SRC)    $(MPI_STUBS)
 
@@ -139,7 +141,7 @@ sockets.o: sockets.c
 
 _SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp 
 ifdef LAMMPS
-    _SOURCES_CPP += potential_LAMMPS_wrapper.cpp
+    _SOURCES_CPP += potential_LAMMPS_wrapper.cpp potential_LAMMPS_wrapper2.cpp
 endif
 
 ifeq ($(findstring SIESTA,$(POTENTIALS)),SIESTA)
@@ -231,7 +233,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(FFLAGS) -c $(INCLUDES_C) $< -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp potential_QSC_parameters.h potential_QSC_class.h
-	$(CC) $(FFLAGS) -DQSC_STANDALONE -c $< -o $@
+	$(CC) $(FFLAGS) $(INCLUDE_C) -DQSC_STANDALONE -c $< -o $@
 
 #print-%  : ; @echo $* = $($*)
 

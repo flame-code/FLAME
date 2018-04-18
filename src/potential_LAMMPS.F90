@@ -1,7 +1,7 @@
 module interface_lammps
   use global
   use defs_basis
-  use MPI
+  use mpi
   use LAMMPS
   use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int
 
@@ -215,7 +215,7 @@ if(use_backtocell) call backtocell(nat,latvec_tilt,xred)
 
 !Extended cell
 call n_rep_dim(latvec_tilt,cut_lammps2,nec1,nec2,nec3)
-if(verb.gt.0) write(*,'(a,i5,i5,i5)') " #Expanding cell with periodic images to: ",nec1,nec2,nec3
+if(parini%verb.gt.0) write(*,'(a,i5,i5,i5)') " #Expanding cell with periodic images to: ",nec1,nec2,nec3
 nat_lammps_new=nec1*nec2*nec3*nat
 allocate(k_xcart(3,nat,nec1,nec2,nec3),k_xred(3,nat,nec1,nec2,nec3))
 call k_expansion(latvec_tilt,xred,nec1,nec2,nec3,k_latvec,k_xcart)

@@ -14,12 +14,12 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     real(8):: time(10)
     !The following dummy varables definition to be deleted later.
     !real(8):: totrho
-    real(8):: beta, pi, charge,c,charge0,E,tmp
+    real(8):: charge,c,charge0,E,tmp
     integer:: igpx, igpy, igpz, iat
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
-    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
+    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole, epot_dielec
     real(8),allocatable :: gausswidth(:)  
     call f_routine(id='calculate_forces_energy')
     ngpz=poisson%ngpz
@@ -27,17 +27,9 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     ngpx=poisson%ngpx
     poisson%point_particle= .true.
 
-    pi=4.d0*atan(1.d0)
-    beta=0.d0
-    do iat=1,atoms%nat
-        beta=beta+atoms%qat(iat)*atoms%rat(3,iat)
-    enddo
-    beta=beta*2.d0*pi*poisson%ngpx*poisson%ngpy/(poisson%cell(1)*poisson%cell(2))
     gausswidth=f_malloc([1.to.atoms%nat],id='gausswidth')
     gausswidth(:)=poisson%alpha
 
-    !write(*,*) 'total momentum z component',beta
-    !write(*,*) 'total momentum z component',0.13074051987178871d5/beta
     call cpu_time(time(1))
     if(.not. poisson%initialized) then
         stop 'ERROR: calculate_forces_energy: poisson is not initialized!'
@@ -74,6 +66,9 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
         call bias_field_potener_forces(parini,poisson,atoms,epotplane) 
     endif
+    if(trim(parini%bias_type)=='dielec') then
+        call dielec_potener_forces(parini,poisson,atoms,epot_dielec) 
+    end if
     call cpu_time(time(6))
     !atoms%epot=epotlong+epotshort-poisson%epotfixed+epotplane
     atoms%epot=epotlong-poisson%epotfixed+epotplane

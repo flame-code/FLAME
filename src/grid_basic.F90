@@ -1,16 +1,16 @@
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
-subroutine get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
+subroutine get_glimitsphere(hx,hy,hz,nbgpx,nbgpy,nbgpz,mboundg)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
-    type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: hx, hy, hz
     integer, intent(in):: nbgpx, nbgpy, nbgpz
     integer, intent(out):: mboundg(1:2,-nbgpy:nbgpy,-nbgpz:nbgpz)
     !local variables
     integer:: ix, iy, iz
     real(8):: rgcut, rgcutsq
-    rgcut=max(poisson%hx*nbgpx,poisson%hy*nbgpy,poisson%hz*nbgpz)
+    rgcut=max(hx*nbgpx,hy*nbgpy,hz*nbgpz)
     rgcutsq=rgcut**2
     do iz=-nbgpz,nbgpz
         do iy=-nbgpy,nbgpy
@@ -21,7 +21,7 @@ subroutine get_glimitsphere(poisson,nbgpx,nbgpy,nbgpz,mboundg)
     do iz=0,nbgpz
     do iy=-nbgpy,nbgpy
     do ix=0,nbgpx
-        if(ix**2*poisson%hx**2+iy**2*poisson%hy**2+iz**2*poisson%hz**2<=rgcutsq) then
+        if(ix**2*hx**2+iy**2*hy**2+iz**2*hz**2<=rgcutsq) then
             mboundg(1,iy,iz)=-ix
             mboundg(2,iy,iz)=ix
         endif
@@ -94,4 +94,104 @@ subroutine init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,
     nlim = max(nagx,nagy,nagz)
     nlimsq = nlim**2
 end subroutine init_grid_param
+!*****************************************************************************************
+subroutine charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    integer, intent(in):: ngx, ngy, ngz, nagx, nagy, nagz, ibcx
+    real(8), intent(in):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
+    !local variables
+    !work arrays to save the values of one dimensional gaussian function.
+    integer:: igx, igy, igz, jgx
+    integer:: iix, iiy, iiz
+    integer:: ifinalx, igxs, igxf
+    integer:: istartx, istarty, istartz
+    istartx = modulo((1-nagx-1),ngx)+1
+    ifinalx = modulo((ngx+nagx-1),ngx)+1
+    igxs = 1-nagx+(ngx-istartx+1)
+    igxf = ngx+nagx-ifinalx+1+ibcx*ngx
+    istarty = modulo((-nagy),ngy)+1
+    istartz = modulo((-nagz),ngz)+1
+    iiz=istartz-1
+
+    do igz=1-nagz,ngz+nagz
+        iiy=istarty-1
+        iiz=iiz+1
+        if (iiz==ngz+1) iiz=1
+        do igy=1-nagy,ngy+nagy
+            iiy=iiy+1
+            if (iiy==ngy+1) iiy=1
+            iix=istartx-1
+            do igx=1-nagx,igxs-1
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+            enddo
+            do igx=igxs,igxf-1,ngx
+                do iix=1,ngx
+                    jgx=igx+iix-1
+                    rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(jgx,igy,igz)
+                enddo
+            enddo
+            iix=0
+            do igx=igxf,ngx+nagx
+                iix=iix+1
+                rho(iix,iiy,iiz)=rho(iix,iiy,iiz)+wa(igx,igy,igz)
+            enddo
+        enddo
+    enddo
+end subroutine charge_back_to_cell
+!*****************************************************************************************
+subroutine potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    integer, intent(in):: lda, ngx, ngy, ngz, nagx, nagy, nagz, ibcx
+    real(8), intent(in):: pot(lda,ngy,ngz)
+    real(8), intent(out):: wa(1-nagx:ngx+nagx,1-nagy:ngy+nagy,1-nagz:ngz+nagz)
+    !local variables
+    !work arrays to save the values of one dimensional gaussian function.
+    integer:: igx, igy, igz, jgx
+    integer:: iix, iiy, iiz
+    integer:: ifinalx, igxs, igxf
+    integer:: istartx, istarty, istartz
+    istartx = modulo((1-nagx-1),ngx)+1
+    ifinalx = modulo((ngx+nagx-1),ngx)+1
+    igxs = 1-nagx+(ngx-istartx+1)
+    igxf = ngx+nagx-ifinalx+1+ibcx*ngx
+    istarty = modulo((-nagy),ngy)+1
+    istartz = modulo((-nagz),ngz)+1
+    iiz=istartz-1
+
+    do igz=1-nagz,ngz+nagz
+        iiy=istarty-1
+        iiz=iiz+1
+        if (iiz==ngz+1) iiz=1
+        do igy=1-nagy,ngy+nagy
+            iiy=iiy+1
+            if (iiy==ngy+1) iiy=1
+            iix=istartx-1
+            do igx=1-nagx,igxs-1
+                iix=iix+1
+                wa(igx,igy,igz)=pot(iix,iiy,iiz)
+            enddo
+            do igx=igxs,igxf-1,ngx
+                do iix=1,ngx
+                    jgx=igx+iix-1
+                    wa(jgx,igy,igz)=pot(iix,iiy,iiz)
+                enddo
+            enddo
+            iix=0
+            do igx=igxf,ngx+nagx
+                iix=iix+1
+                wa(igx,igy,igz)=pot(iix,iiy,iiz)
+            enddo
+        enddo
+    enddo
+end subroutine potential_on_extended_grid
 !*****************************************************************************************
