@@ -259,6 +259,7 @@ module mod_parini
         real(8)::qbfgs_w_1!=0.05D0
         real(8)::qbfgs_w_2!=0.5D0
         !-----------------------------------------------------------------------
+        integer:: nat                   !Number of atoms
         logical:: voids                 !If or if not to use void creating LJ particles in the cell
         real(8),allocatable:: amu(:)
         real(8),allocatable:: rcov(:)

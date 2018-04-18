@@ -1342,7 +1342,7 @@ END MODULE bfgs_module
 !----------------------------------------------------------------------------
 !SUBROUTINE move_ions()
 subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat,ntypat,znucl
+ use global, only: ntypat,znucl
  use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
@@ -1417,7 +1417,7 @@ subroutine GEOPT_qbfgs(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_i
   !
 
 !My inputs
-  real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,xred(3,nat),fcart(3,nat),latvec(3,3)
+  real(8):: latvec_in(3,3),xred_in(3,parini%nat),fcart_in(3,parini%nat),strten_in(6),etot_in,counter,xred(3,parini%nat),fcart(3,parini%nat),latvec(3,3)
   integer:: iprec
   character(40):: folder
   INTEGER :: stdout = 6    ! unit connected to standard output
@@ -1552,7 +1552,7 @@ qe_units=.true.
         !
         ! ... the bfgs procedure is used
         !  
-        ALLOCATE( pos( 3*nat ), grad( 3*nat ), fixion( 3*nat ) )
+        ALLOCATE( pos( 3*parini%nat ), grad( 3*parini%nat ), fixion( 3*parini%nat ) )
         !
 
 !****************************************************************************************************************        
@@ -1581,15 +1581,15 @@ if(parini%verb.gt.0) then
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in QBFGS: ",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !Initial iprec after running the first force call
@@ -1629,25 +1629,25 @@ if(parini%verb.gt.0) then
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in QBFGS: ",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 endif
-call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
        write(*,'(a,i4,2x,i4,4(1x,es17.8),1x,i4)') " # GEOPT QBFGS   ",&
               &itime,sbfgs_iter,enthalpy, fmax, fmax_at,fmax_lat,iprec
 !*************************************************************************************************************        
 
         h = at * alat
-        pos    =   RESHAPE( xred, (/ 3 * nat /) ) !RESHAPE( tau,    (/ 3 * nat /) )
+        pos    =   RESHAPE( xred, (/ 3 * parini%nat /) ) !RESHAPE( tau,    (/ 3 * nat /) )
 !        CALL cryst_to_cart( nat, pos, bg, -1 )
 if(qe_units) then
-        grad   = - RESHAPE( fcart, (/ 3 * nat /) )*2.d0 !- RESHAPE( force,  (/ 3 * nat /) ) * alat
-        CALL cryst_to_cart( nat, grad, at, -1 )
+        grad   = - RESHAPE( fcart, (/ 3 * parini%nat /) )*2.d0 !- RESHAPE( force,  (/ 3 * nat /) ) * alat
+        CALL cryst_to_cart( parini%nat, grad, at, -1 )
 !        call fxyz_cart2int(nat,fcart_in,grad,latvec_in)
 !        grad=-grad
         !
@@ -1664,7 +1664,7 @@ if(qe_units) then
 else
 !        grad   = - RESHAPE( fcart, (/ 3 * nat /) ) !- RESHAPE( force,  (/ 3 * nat /) ) * alat
 !        CALL cryst_to_cart( nat, grad, at, -1 )
-        call fxyz_cart2int(nat,fcart_in,grad,latvec_in)
+        call fxyz_cart2int(parini%nat,fcart_in,grad,latvec_in)
         grad=-grad                                        
 !        IF ( lmovecell ) THEN
            at_old = at
@@ -1694,9 +1694,9 @@ endif
         END IF
         !
 !        CALL cryst_to_cart( nat, pos, at, 1 )
-        xred    =   RESHAPE( pos, (/ 3 , nat /) )
-        CALL cryst_to_cart( nat, grad, bg, 1 )
-        fcart = - RESHAPE( grad, (/ 3, nat /) )
+        xred    =   RESHAPE( pos, (/ 3 , parini%nat /) )
+        CALL cryst_to_cart( parini%nat, grad, bg, 1 )
+        fcart = - RESHAPE( grad, (/ 3, parini%nat /) )
         !
 !!!!!        IF ( conv_ions ) THEN
 !!!!!!!!           !
@@ -1776,7 +1776,7 @@ endif
           &(fmax.lt.1.0d0*tolmxf_switch)) max_kpt=.true.
          if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
-             call correct_latvec(h,pos,nat,parini%correctalg,latvec_io)
+             call correct_latvec(h,pos,parini%nat,parini%correctalg,latvec_io)
              write(*,*) "New cell found", latvec_io
              cellfix_done=.true.
              if(latvec_io.ne.0) then

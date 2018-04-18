@@ -3,7 +3,7 @@ implicit none
 !Set of parms.in
 !  real(8):: target_pressure_gpa !Target pressures
 !  real(8):: target_pressure_habohr  !Target pressures
-  integer:: nat                   !Number of atoms
+!  integer:: nat                   !Number of atoms
   integer:: nmol                  !Number of molecules
   integer:: ntypat                !Number of atom types
 !  integer,allocatable:: fragarr(:)

@@ -169,7 +169,7 @@ deallocate(qlm,rxyzexp,transvecall)
 end subroutine
 
 subroutine get_distance_calypso(fp1,fp2,fp_dim,nl,dist)
-use global, only: znucl,ntypat,nat
+use global, only: znucl,ntypat
 implicit none
 integer:: fp_dim,nl,yll,i,j
 real(8):: fp1(fp_dim*nl),fp2(fp_dim*nl),dist

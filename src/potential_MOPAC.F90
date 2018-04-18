@@ -24,7 +24,7 @@ contains
   use mod_parini, only: typ_parini
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat)
+  real(8):: xred(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,k_latvec(3,3)
   real(8), allocatable:: k_xcart(:,:,:,:,:)
   integer:: iat,iprec,ka,kb,kc,k,l,m
@@ -60,12 +60,12 @@ contains
   
   
   !The atomic positions and the unit cell is defined here
-  allocate(k_xcart(3,nat,ka,kb,kc))
-  call k_expansion(latvec,xred,ka,kb,kc,k_latvec,k_xcart)
+  allocate(k_xcart(3,parini%nat,ka,kb,kc))
+  call k_expansion(parini,latvec,xred,ka,kb,kc,k_latvec,k_xcart)
   do k=1,ka
   do l=1,kb
   do m=1,kc
-  do iat=1,nat
+  do iat=1,parini%nat
   if(.not.parini%fixat(iat)) then
       write(87,'(a2,3(1x,es25.15,1x,i5))') trim(char_type(parini%typat_global(iat))),k_xcart(1,iat,k,l,m)*&
       &Bohr_Ang,1,k_xcart(2,iat,k,l,m)*Bohr_Ang,1,k_xcart(3,iat,k,l,m)*Bohr_Ang,1
@@ -84,13 +84,14 @@ contains
   deallocate(k_xcart)
   end subroutine
   
-  subroutine get_output_mopac(fcart,energy,strten)
-  use global, only: nat
+  subroutine get_output_mopac(parini,fcart,energy,strten)
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,nat_cell
-  real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling,transmat(3,3)
+  real(8):: fcart(3,parini%nat),energy,strten(6),value,latvec(3,3),xred(3,parini%nat),str_matrix(3,3),vol,a(3,3),scaling,transmat(3,3)
   real(8),allocatable:: fcart_tmp(:,:),tmp_grad(:)
   character(11):: ch_tmp
   character(250)::all_line,formatting
@@ -146,7 +147,7 @@ contains
        str_matrix(:,:)=-reshape(tmp_grad(3*nat_cell+1:3*nat_cell+9),(/3,3/))
        write(*,*) fcart_tmp(:,:),str_matrix(:,1),str_matrix(:,2),str_matrix(:,3)
 
-       fcart=fcart_tmp(:,1:nat)
+       fcart=fcart_tmp(:,1:parini%nat)
        deallocate(fcart_tmp)
        str_matrix=-matmul(str_matrix,transpose(latvec)/Bohr_ang)/vol
        write(*,*) "Trans Vects" 
@@ -177,7 +178,7 @@ contains
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10.or.nat_cell==0) stop&
    & "Could not find all requested variables"
   !Transform all to bohr
-  energy=energy/real(nat_cell,8)*real(nat,8)/Ha_kcalmol
+  energy=energy/real(nat_cell,8)*real(parini%nat,8)/Ha_kcalmol
   end subroutine
   end module interface_mopac
   

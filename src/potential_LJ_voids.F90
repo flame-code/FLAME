@@ -112,7 +112,7 @@ end subroutine
 !*********************************************************************************
 
 
-        subroutine lj_void_addon(latvec,xred0,fxyz,strten,etot)
+        subroutine lj_void_addon(parini,latvec,xred0,fxyz,strten,etot)
 !This routine will simply compute the lennard-jones interaction between the
 !lj particles, and also with the other particles in the system.
 !The lj particles are identified with znucl larger than 200,
@@ -139,9 +139,11 @@ end subroutine
 !
 !        before calling this routine be sure to initialize the variables by calling the subroutine init_parameter(nat)
 
+        use mod_parini, only: typ_parini
         implicit none
+        type(typ_parini), intent(in):: parini
         integer:: iat, jat, kk, ll, l, nec(3), i, j, k, m
-        real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3),rcut2(nat_lj)
+        real(8):: xred(3,parini%nat),fxyz(3,parini%nat),xred0(3,parini%nat),dxyz(3),r1red(3),r2red(3),rcut2(nat_lj)
         real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol,strten(6)
         real(8), allocatable:: rel(:,:)
         real(8):: latvec(3,3),latvec_ang(3,3),latvecinv(3,3),celldv(3,3),pressure,gradvol(3,3),stress(3,3),tmplat(3,3)
@@ -166,7 +168,7 @@ sigma_lj_lj_fact=1.5d0
         rcut2_lj=sigmavoidlj*2.d0**(1.d0/6.d0)*sigma_lj_lj_fact !This cutoff is due to the truncation at the minimum of the well, since only repulsion is used!!!
         cutmax=max(maxval(rcutvoidlj),maxval(rcut2_lj))
         rcut2_lj=rcut2_lj*rcut2_lj
-        call backtocell(nat,latvec_ang,xred) 
+        call backtocell(parini%nat,latvec_ang,xred) 
         trans=latvec_ang
 
          call invertmat(trans,transinv,3) 
@@ -180,7 +182,7 @@ sigma_lj_lj_fact=1.5d0
       rec_nec(i)=1.d0/real(nec(i),8)
     enddo
 !Interactions of LJ particles with all other particles
-         do iat=nat_atoms+1,nat !iat are the LJ particles
+         do iat=nat_atoms+1,parini%nat !iat are the LJ particles
             r1red(:)=xred(:,iat)*rec_nec
             do i=0,nec(1)-1
             do j=0,nec(2)-1
@@ -257,12 +259,12 @@ sigma_lj_lj_fact=1.5d0
         enddo
 
 !Only the repulsive interactions between the LJ particles: Here we increse the interaction between the LJ particles by a factor of 10!!!
-         do iat=nat_atoms+1,nat !iat are th LJ particles 
+         do iat=nat_atoms+1,parini%nat !iat are th LJ particles 
             r1red(:)=xred(:,iat)*rec_nec
             do i=0,nec(1)-1
             do j=0,nec(2)-1
             do k=0,nec(3)-1
-               do jat=nat_atoms+1,nat !jat are the other LJ particles
+               do jat=nat_atoms+1,parini%nat !jat are the other LJ particles
                 r2red(:)=xred(:,jat)*rec_nec
                 r2red(1)=r2red(1)+real(i,8)*rec_nec(1)
                 r2red(2)=r2red(2)+real(j,8)*rec_nec(2)
@@ -384,7 +386,7 @@ nat_atoms=0
 ntypat_atoms=0
 ntypat_lj=0
 nat_lj=0
-do iat=1,nat
+do iat=1,parini%nat
    if(int(znucl(parini%typat_global(iat))).lt.200) then
        nat_atoms=nat_atoms+1
        in_atoms=.true.

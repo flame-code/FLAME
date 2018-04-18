@@ -7,7 +7,7 @@ subroutine ascii_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: nat,ntypat,znucl,char_type,units
+use global, only: ntypat,znucl,char_type,units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat,jat
@@ -22,15 +22,15 @@ character(2),allocatable:: char_type_tmp(:)
 units="angstroem"
 !Get nat and allocate some arrays
 open(unit=46,file=trim(filename))
-read(46,*) nat !The first line contains the number of atoms
+read(46,*) parini%nat !The first line contains the number of atoms
 read(46,*) dproj_tmp(1:3)
 read(46,*) dproj_tmp(4:6)
 !Here we allocate a temporary array for the atomic character 
-if(.not.allocated(char_type_tmp)) allocate(char_type_tmp(nat))
-if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))
+if(.not.allocated(char_type_tmp)) allocate(char_type_tmp(parini%nat))
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(parini%nat))
 !There are some comment lines possible, reduced and/or fixlat
 k=0
-do iat=1,nat
+do iat=1,parini%nat
 1010 continue 
     read(46,'(a250)') all_line
     n = len_trim(all_line)
@@ -46,10 +46,10 @@ do iat=1,nat
 enddo
 
 !Count how many different atom kinds there are
-if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))          
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(parini%nat))          
 parini%typat_global(1)=1
 ntypat=1
-do iat=2,nat
+do iat=2,parini%nat
 new=.true.
  do jat=1,iat-1
  if(trim(char_type_tmp(iat))==trim(char_type_tmp(jat))) then
@@ -70,7 +70,7 @@ if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
 if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
 
 !Now get the sole atomic characters
-do iat=1,nat
+do iat=1,parini%nat
   char_type(parini%typat_global(iat))=char_type_tmp(iat)
 enddo
 

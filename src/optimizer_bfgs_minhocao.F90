@@ -34,14 +34,13 @@ END SUBROUTINE geopt_init
 !!    For the list of contributors, see ~/AUTHORS
 
 subroutine GEOPT_RBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use global, only: nat
  use minpar
  use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 integer:: iprec,iat,i,istr
-real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),counter,flat(9)
+real(8):: latvec_in(3,3),xred_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),counter,flat(9)
 real(8):: fmax_tol,fmax_at,fmax_lat,fmax,pressure,strtarget(6),dstr(6),enthalpy
 logical:: fail,getwfk
 character(40):: folder
@@ -74,7 +73,7 @@ end subroutine GEOPT_RBFGS_MHM
 !contains
 
 subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: nat,ntypat,znucl,char_type
+ use global, only: ntypat,znucl,char_type
  use global, only: units
  use defs_basis
 !subroutine bfgsdriver(nat,nproc,iproc,rxyz,fxyz,epot,ncount_bigdft)!nproc,iproc,rxyz,fxyz,epot,at,rst,in,ncount_bigdft)
@@ -86,14 +85,14 @@ subroutine bfgs_driver_atoms(parini,parres,latvec_in,xred_in,fcart_in,strten_in,
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
-    real(8) :: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy
+    real(8) :: latvec_in(3,3),xred_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),enthalpy
     real(8), intent(inout) :: counter
 !    type(atoms_data), intent(inout) :: at
 !    type(input_variables), intent(inout) :: in
 !    type(restart_objects), intent(inout) :: rst
     real(8) :: epot,tmplat(3,3),str_matrix(3,3),flat(3,3),pressure_mat(3,3),sigma(3,3),dstr(6),pressure,ent_pos_0,strtarget(6)
-    real(8), dimension(3*nat) :: rxyz
-    real(8), dimension(3*nat) :: fxyz
+    real(8), dimension(3*parini%nat) :: rxyz
+    real(8), dimension(3*parini%nat) :: fxyz
     real(8) :: fmax,fmax_at,fmax_lat,fmax_tol,en0000,betax
     integer :: infocode,i,ixyz,iat,istat,icall,icheck,istr,iexit
     character(len=4) :: fn4
@@ -109,11 +108,11 @@ coord="atoms"
 !counter=0.d0
 pressure=parini%target_pressure_habohr
 !Generate a set of variables containing all degrees of freedome
-    call rxyz_int2cart(latvec_in,xred_in,rxyz,nat)
+    call rxyz_int2cart(latvec_in,xred_in,rxyz,parini%nat)
 !    counter=counter+1
 !Here is the real driver of BFGS from reza
     icheck=0
-    nr=3*nat
+    nr=3*parini%nat
     parmin_bfgs%iflag=0
     nwork=nr*nr+3*nr+3*nr*nr+3*nr
     allocate(work(nwork),stat=istat)
@@ -136,7 +135,7 @@ pressure=parini%target_pressure_habohr
                            &xred_in,etot_in,fcart_in,strten_in)
        if(icall.ne.0) counter=counter+1
        if(icall==0)   then
-         do iat=1,nat
+         do iat=1,parini%nat
            fxyz((iat-1)*3+1:iat*3)=fcart_in(:,iat)
          enddo
        endif
@@ -146,8 +145,8 @@ pressure=parini%target_pressure_habohr
 !      call call_bigdft()!nproc,iproc,at,rxyz,in,epot,fxyz,fnoise,rst,infocode)
 
         !endif
-        call atomic_copymoving_forward(nat,3*nat,fxyz,nr,f)
-        call atomic_copymoving_forward(nat,3*nat,rxyz,nr,x)
+        call atomic_copymoving_forward(parini%nat,3*parini%nat,fxyz,nr,f)
+        call atomic_copymoving_forward(parini%nat,3*parini%nat,rxyz,nr,x)
 !FIRE: check for convergence
 !!Compute maximal component of forces, EXCLUDING any fixed components
  call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
@@ -170,7 +169,7 @@ pressure=parini%target_pressure_habohr
 !           call  write_atomic_file()!trim(in%dir_output)//'posout_'//fn4,epot,rxyz,at,trim(comment),forces=fxyz)
 !        endif
 
-        call bfgs_reza(nat,nr,x,epot,f,nwork,work,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,fmax_at,fmax_lat,int(counter),coord)
+        call bfgs_reza(parini%nat,nr,x,epot,f,nwork,work,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,fmax_at,fmax_lat,int(counter),coord)
 !        call sd_minhocao(nat,nr,x,epot,f,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,int(counter))
 
 
@@ -180,7 +179,7 @@ pressure=parini%target_pressure_habohr
 
 
         !x(1:nr)=x(1:nr)+1.d-2*f(1:nr)
-        call atomic_copymoving_backward(nat,nr,x,3*nat,rxyz)
+        call atomic_copymoving_backward(parini%nat,nr,x,3*parini%nat,rxyz)
 !        if(iexit==1) then !if(parmin_bfgs%converged) then
 !        write(*,'(a,i0,a)') " #  BFGS converged in ",icall," iterations"
 !MHM: Write output to file in every step***********************************
@@ -191,7 +190,7 @@ pressure=parini%target_pressure_habohr
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,'(a,a)') " # Writing the positions in BFGS ATOMS  : ",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
         write(*,'(a,i4,2(1x,es17.8))') " # GEOPT ",int(counter),enthalpy, fmax 
         if(iexit==1) then
@@ -220,7 +219,7 @@ pressure=parini%target_pressure_habohr
 END SUBROUTINE
 
 subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol,folder)
- use global, only: nat,ntypat,znucl,char_type
+ use global, only: ntypat,znucl,char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1
  use defs_basis
 
@@ -233,7 +232,7 @@ subroutine bfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_i
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
-    real(8) :: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy,latvec(9)
+    real(8) :: latvec_in(3,3),xred_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),enthalpy,latvec(9)
     real(8), intent(inout) :: counter
 !    type(atoms_data), intent(inout) :: at
 !    type(input_variables), intent(inout) :: in
@@ -340,7 +339,7 @@ latvec(7:9)=latvec_in(:,3)
 !           call  write_atomic_file()!trim(in%dir_output)//'posout_'//fn4,epot,rxyz,at,trim(comment),forces=fxyz)
 !        endif
 
-        call bfgs_reza(nat,nr,x,epot,f,nwork,work,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,fmax_at,fmax_lat,int(counter),coord)
+        call bfgs_reza(parini%nat,nr,x,epot,f,nwork,work,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,fmax_at,fmax_lat,int(counter),coord)
 !        call sd_minhocao(nat,nr,x,epot,f,parmin_bfgs%betax,parmin_bfgs%betax_lat,fmax,int(counter))
 
 
@@ -360,7 +359,7 @@ latvec(7:9)=latvec_in(:,3)
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,'(a,a)') " # Writing the positions in BFGS2LATTICE: ",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
         write(*,'(a,i4,2(1x,es17.8))') " # GEOPT ",int(counter),enthalpy, fmax 
         if(iexit==1) then
@@ -868,7 +867,7 @@ end subroutine bfgs_reza
 !!! This is helpfull when we are looking for the source of problems during BFGS runs
 subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fail,fmax_tol,folder)
 !This routine expects to receive "good" forces and energies initially
- use global, only: nat,ntypat,znucl,char_type
+ use global, only: ntypat,znucl,char_type
  use global, only: units,reuse_kpt,ka1,kb1,kc1
  use defs_basis
 
@@ -878,7 +877,7 @@ subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_
  implicit none
   type(typ_parini), intent(in):: parini
   type(typ_parini), intent(inout):: parres
-  real(8) :: latvec_in(3*3),xred_in(3,nat),fcart_in(3,nat),etot_in,strten_in(6),enthalpy,enthalpyprev
+  real(8) :: latvec_in(3*3),xred_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),enthalpy,enthalpyprev
   real(8), intent(inout) :: counter
 !  real(8), dimension(3*at%nat), intent(inout) :: rxyz
   logical, intent(out) :: fail
@@ -887,7 +886,7 @@ subroutine lbfgs_driver_lattice(parini,parres,latvec_in,xred_in,fcart_in,strten_
 !  real(8) :: fluct,fnrm, fnoise
   real(8) :: fmax,fmax_lat,fmax_at,fmax_tol,latvec_write(3*3),pressure,strtarget(6),dstr(6),de,str_matrix(3,3),vol
   real(8) :: flat(3,3),transformed(3,3),transformed_inv(3,3),stressvol(3,3)
-  real(8) :: strten_write(6),fcart_write(3,nat),etot_write
+  real(8) :: strten_write(6),fcart_write(3,parini%nat),etot_write
 !  logical :: check
   integer :: check,istr,iexit,iprec
   integer :: ixyz,iat,i,iproc
@@ -998,7 +997,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
            filename=trim(folder)//"posgeopt."//fn4//".ascii"
            units=units
            write(*,'(a,a)') " # Writing the positions in BFGS LATTICE: ",filename
-           call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+           call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
                 &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
            write(*,'(a,i4,4(1x,es17.8),1x,i5)') " # GEOPT ",int(counter),enthalpy,fmax,fmax_at,fmax_lat,icall
            write(*,'(a,i5,2x,2x,1es21.14,2x,3(es15.7),es11.3,2x,a8,i3,1x,a6,1x,1pe8.2E1)')  " # GEOPT BFGS LATTICE",&
@@ -1092,7 +1091,7 @@ write(*,'(a,i5)') " # MAX_LAT_ITER: ", parmin_bfgs%maxiter_lat
            filename=trim(folder)//"posgeopt."//fn4//".ascii"
            units=units
            write(*,'(a,a)') " # Writing the positions in BFGS LATTICE: ",filename
-           call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+           call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
                 &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,real(icall,8))
            write(*,'(a,i4,4(1x,es17.8),1x,i5)') " # GEOPT ",int(counter),enthalpy,fmax,fmax_at,fmax_lat,icall
            write(*,'(a,i5,2x,2x,1es21.14,2x,3(es15.7),es11.3,2x,a8,i3,1x,a6,1x,1pe8.2E1)')  " # GEOPT BFGS LATTICE",&
@@ -1149,17 +1148,16 @@ END SUBROUTINE atomic_copymoving_backward
 subroutine get_BFGS_forces_PR(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: nat
 use interface_code
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
-real(8):: pos_all(3*nat+9)
-real(8):: force_all(3*nat+9)
+real(8):: pos_all(3*parini%nat+9)
+real(8):: force_all(3*parini%nat+9)
 real(8):: enthalpy,pressure
-real(8):: xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,latvec_in(3,3)
+real(8):: xred_in(3,parini%nat),fcart_in(3,parini%nat),strten_in(6),etot_in,latvec_in(3,3)
 real(8):: str_matrix(3,3),flat(3,3),pressure_mat(3,3),tmplat(3,3),sigma(3,3),crossp(3)
 logical:: getwfk
 
@@ -1168,18 +1166,18 @@ logical:: getwfk
 !****************************************************************************************************************        
 !Get the current acell_in and rprim_in, and also the atomic positions
 !Generate a set of variables containing all degrees of freedome
-    do iat=1,nat
+    do iat=1,parini%nat
       xred_in(:,iat)=pos_all((iat-1)*3+1:iat*3)
     enddo
     do iat=1,3
-      latvec_in(:,iat)=pos_all(3*nat+(iat-1)*3+1:3*nat+iat*3)
+      latvec_in(:,iat)=pos_all(3*parini%nat+(iat-1)*3+1:3*parini%nat+iat*3)
     enddo
        call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 !Conversion of forces is more complicate: 
 !start with atomic forces
         call invertmat(latvec_in,tmplat,3)
-        do iat=1,nat
+        do iat=1,parini%nat
           force_all((iat-1)*3+1:iat*3)=matmul(tmplat,fcart_in(:,iat))
         enddo
 !now the stresses   
@@ -1210,7 +1208,7 @@ pressure_mat=pressure_mat*pressure  !Here the pressure is not passed to the ener
            flat=matmul(flat(:,:),sigma(:,:))
 !Finally, write those values into fxyz
         do iat=1,3
-          force_all(3*nat+(iat-1)*3+1:3*nat+iat*3)=flat(:,iat)
+          force_all(3*parini%nat+(iat-1)*3+1:3*parini%nat+iat*3)=flat(:,iat)
         enddo
 !Get the enthalpy
         call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
@@ -1233,7 +1231,6 @@ subroutine  get_BFGS_forces_strainlatt(parini,parres,pos_all,force_all,enthalpy,
            &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: nat
 use interface_code
 
 use mod_parini, only: typ_parini
@@ -1241,10 +1238,10 @@ implicit none
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 integer:: iprec,iat,lattdeg
-real(8):: pos_all(3*nat+9)
-real(8):: force_all(3*nat+9)
+real(8):: pos_all(3*parini%nat+9)
+real(8):: force_all(3*parini%nat+9)
 real(8):: enthalpy,pressure,vol,unitmat(3,3)
-real(8):: xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+real(8):: xred_in(3,parini%nat),fcart_in(3,parini%nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
 real(8):: str_matrix(3,3),flat(3,3),pressure_mat(3,3),tmplat(3,3),sigma(3,3),crossp(3),stressvol(3,3),latvec0(3,3)
 real(8):: g(3,3),lattrans(3,3),strainall(3,3),strainalltrans(3,3)
 logical:: getwfk
@@ -1253,9 +1250,9 @@ unitmat=0.d0
 unitmat(1,1)=1.d0
 unitmat(2,2)=1.d0
 unitmat(3,3)=1.d0
-transformed(:,1)=pos_all(3*nat+(1-1)*3+1:3*nat+1*3) !!latvec_in(1,:)
-transformed(:,2)=pos_all(3*nat+(2-1)*3+1:3*nat+2*3) !!latvec_in(2,:)
-transformed(:,3)=pos_all(3*nat+(3-1)*3+1:3*nat+3*3) !!latvec_in(3,:)
+transformed(:,1)=pos_all(3*parini%nat+(1-1)*3+1:3*parini%nat+1*3) !!latvec_in(1,:)
+transformed(:,2)=pos_all(3*parini%nat+(2-1)*3+1:3*parini%nat+2*3) !!latvec_in(2,:)
+transformed(:,3)=pos_all(3*parini%nat+(3-1)*3+1:3*parini%nat+3*3) !!latvec_in(3,:)
 transformed=transpose(transformed)
 if(enthalpy==-1.d10) goto 1000
 !Here we perform the force call
@@ -1263,16 +1260,16 @@ if(enthalpy==-1.d10) goto 1000
 !****************************************************************************************************************        
 !Get the current acell_in and rprim_in, and also the atomic positions
 !Generate a set of variables containing all degrees of freedome
-    do iat=1,nat
+    do iat=1,parini%nat
       xred_in(:,iat)=pos_all((iat-1)*3+1:iat*3)
     enddo
 if(lattdeg==1) then
     do iat=1,3
-      latvec_in(:,iat)=pos_all(3*nat+(iat-1)*3+1:3*nat+iat*3)
+      latvec_in(:,iat)=pos_all(3*parini%nat+(iat-1)*3+1:3*parini%nat+iat*3)
     enddo
 elseif(lattdeg==2) then 
     do iat=1,3
-      strainall(:,iat)=pos_all(3*nat+(iat-1)*3+1:3*nat+iat*3)
+      strainall(:,iat)=pos_all(3*parini%nat+(iat-1)*3+1:3*parini%nat+iat*3)
     enddo
     latvec_in=matmul(unitmat+strainall,latvec0) 
 endif
@@ -1282,7 +1279,7 @@ endif
 !Conversion of forces is more complicate: 
 !start with atomic forces
 !     if(lattdeg==1) then
-       call fxyz_cart2int(nat,fcart_in,force_all(1:3*nat),latvec_in)
+       call fxyz_cart2int(parini%nat,fcart_in,force_all(1:3*parini%nat),latvec_in)
 !     elseif(lattdeg==2) then
 !       do iat=1,nat
 !           force_all((iat-1)*3+1:iat*3)=matmul(matmul(transformed,latvec_in),fcart_in(:,iat))
@@ -1317,14 +1314,13 @@ elseif(lattdeg==2) then
 endif
 !Finally, write those values into fxyz
         do iat=1,3
-          force_all(3*nat+(iat-1)*3+1:3*nat+iat*3)=flat(:,iat)
+          force_all(3*parini%nat+(iat-1)*3+1:3*parini%nat+iat*3)=flat(:,iat)
         enddo
 !Get the enthalpy
         call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
 end subroutine
 
 subroutine correct_hessin(hess,hessin,latvec,ndim,hessupdate,lattdeg)
-use global, only: nat
 use minpar
 !Depending on hessupdate, hessin will be updated or additionally hess
 implicit none
@@ -1411,7 +1407,6 @@ END SUBROUTINE unit_matrix
 subroutine get_BFGS_forces_max(parini,parres,pos_all,force_all,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: nat
 use interface_code
 
 use mod_parini, only: typ_parini
@@ -1419,10 +1414,10 @@ implicit none
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
-real(8):: pos_all(3*nat+9)
-real(8):: force_all(3*nat+9)
+real(8):: pos_all(3*parini%nat+9)
+real(8):: force_all(3*parini%nat+9)
 real(8):: enthalpy,pressure,vol
-real(8):: xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+real(8):: xred_in(3,parini%nat),fcart_in(3,parini%nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
 real(8):: str_matrix(3,3),flat(3,3),pressure_mat(3,3),tmplat(3,3),sigma(3,3),crossp(3),stressvol(3,3)
 logical:: getwfk
 
@@ -1431,17 +1426,17 @@ logical:: getwfk
 !****************************************************************************************************************        
 !Get the current acell_in and rprim_in, and also the atomic positions
 !Generate a set of variables containing all degrees of freedome
-    do iat=1,nat
+    do iat=1,parini%nat
       xred_in(:,iat)=pos_all((iat-1)*3+1:iat*3)
     enddo
     do iat=1,3
-      latvec_in(:,iat)=pos_all(3*nat+(iat-1)*3+1:3*nat+iat*3)
+      latvec_in(:,iat)=pos_all(3*parini%nat+(iat-1)*3+1:3*parini%nat+iat*3)
     enddo
        call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
 !Conversion of forces is more complicate: 
 !start with atomic forces
-        call fxyz_cart2int(nat,fcart_in,force_all(1:3*nat),latvec_in)
+        call fxyz_cart2int(parini%nat,fcart_in,force_all(1:3*parini%nat),latvec_in)
 !now the stresses   
 !Convert strten into "stress", which is actually the forces on the cell vectors
        str_matrix(1,1)=strten_in(1)
@@ -1464,7 +1459,7 @@ logical:: getwfk
        flat=flat+stressvol
 !Finally, write those values into fxyz
         do iat=1,3
-          force_all(3*nat+(iat-1)*3+1:3*nat+iat*3)=flat(:,iat)
+          force_all(3*parini%nat+(iat-1)*3+1:3*parini%nat+iat*3)=flat(:,iat)
         enddo
 !Get the enthalpy
         call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
@@ -1473,7 +1468,6 @@ end subroutine
 subroutine get_BFGS_forces_atom(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: nat
 use interface_code
 
 use mod_parini, only: typ_parini
@@ -1481,10 +1475,10 @@ implicit none
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
-real(8):: pos(3*nat),latvec(3,3)
-real(8):: force(3*nat)
+real(8):: pos(3*parini%nat),latvec(3,3)
+real(8):: force(3*parini%nat)
 real(8):: enthalpy,pressure,vol
-real(8):: xred_in(3,nat),fcart_in(3*nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+real(8):: xred_in(3,parini%nat),fcart_in(3*parini%nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
 real(8):: str_matrix(3,3),flat(3,3),pressure_mat(3,3),tmplat(3,3),sigma(3,3),crossp(3),stressvol(3,3)
 logical:: getwfk
 
@@ -1493,7 +1487,7 @@ logical:: getwfk
 !****************************************************************************************************************        
 !Get the current acell_in and rprim_in, and also the atomic positions
 !Generate a set of variables containing all degrees of freedome
-    call rxyz_cart2int(latvec,xred_in,pos,nat)
+    call rxyz_cart2int(latvec,xred_in,pos,parini%nat)
     latvec_in=latvec
        call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
 !****************************************************************************************************************   
@@ -1507,7 +1501,6 @@ end subroutine
 subroutine get_BFGS_forces_lattice(parini,parres,pos,force,latvec,enthalpy,getwfk,iprec,latvec_in,xred_in,etot_in,fcart_in,strten_in)
 !This routine hides away all cumbersome conversion of arrays in lattice and positions and forces and stresses
 !such that they can be directly passed on to bfgs. It also outputs the enthalpy instead of the energy
-use global, only: nat
  use interface_code
 
  use mod_parini, only: typ_parini
@@ -1515,10 +1508,10 @@ implicit none
 type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 integer:: iprec,iat
-real(8):: pos(3,nat),latvec(3,3)
+real(8):: pos(3,parini%nat),latvec(3,3)
 real(8):: force(9)
 real(8):: enthalpy,pressure,vol
-real(8):: xred_in(3,nat),fcart_in(3*nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
+real(8):: xred_in(3,parini%nat),fcart_in(3*parini%nat),strten_in(6),etot_in,latvec_in(3,3),transformed(3,3),transformed_inv(3,3)
 real(8):: str_matrix(3,3),flat(3,3),pressure_mat(3,3),tmplat(3,3),sigma(3,3),crossp(3),stressvol(3,3)
 logical:: getwfk
 
@@ -1596,18 +1589,17 @@ end subroutine
 
 subroutine get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 use mod_parini, only: typ_parini
-use global, only: nat
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: iat,i,istr
-real(8):: fcart_in(3,nat),strten_in(6),fmax,fmax_at,fmax_lat
+real(8):: fcart_in(3,parini%nat),strten_in(6),fmax,fmax_at,fmax_lat
 real(8):: dstr(6), strtarget(6)
 
 !!Compute maximal component of forces, EXCLUDING any fixed components
  fmax=0.d0
  fmax_at=0.d0
  fmax_lat=0.d0
- do iat=1,nat
+ do iat=1,parini%nat
    do i=1,3
 !     if (dtsets(1)%iatfix(i,iat) /= 1) then
        if( abs(fcart_in(i,iat)) >= fmax_at ) fmax_at=abs(fcart_in(i,iat))
@@ -1656,35 +1648,35 @@ subroutine init_hessinv(parini,hessin,latvec,omega,b0,lattdeg)
 !This routine will setup an inverse hessian accoprding to Pfrommer et al, J. Comp. Phys 131, 233 1997
 !The hessin is in atomic units, taking omega in THZ and B0 in GPa (phonon frequency and bulk modulus) in
 use mod_parini, only: typ_parini
-use global, only: nat,ntypat,znucl
+use global, only: ntypat,znucl
 use defs_basis
 use mbfgs_interface
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: itype,iat,i,j,k,lattdeg
-real(8):: omega,b0,hessin(3*nat+9,3*nat+9),diagat,avmass,diaglat
-real(8):: amass(nat),rcov,amass_u(ntypat),vol
+real(8):: omega,b0,hessin(3*parini%nat+9,3*parini%nat+9),diagat,avmass,diaglat
+real(8):: amass(parini%nat),rcov,amass_u(ntypat),vol
 real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
 character(2):: tmp_ch
  write(*,'(a)') " # BFGS: initiallizing hessian"
-call unit_matrix(hessin,3*nat+9) !Initialize inverse Hessian to the unit matrix.
+call unit_matrix(hessin,3*parini%nat+9) !Initialize inverse Hessian to the unit matrix.
 !Get the correct atomic masses and atomic character
  do itype=1,ntypat
    call atmdata(amass_u(itype),rcov,tmp_ch,znucl(itype))
  enddo
 !Assign masses to each atom (for MD)
- do iat=1,nat
+ do iat=1,parini%nat
    amass(iat)=amu_emass*amass_u(parini%typat_global(iat))
    write(*,'(a,i5,2(1x,es15.7))') " # BFGS: iat, AMU, EM: ", iat, amass_u(parini%typat_global(iat)),amass(iat)
  enddo
 !Average mass
- avmass=sum(amass)/real(nat,8)
+ avmass=sum(amass)/real(parini%nat,8)
  write(*,'(a,(1x,es15.7))') " # BFGS: average atomic mass: ",avmass
 !Initialize Hessian diagonal elements of the cell part
  call getvol(latvec,vol)
 if(lattdeg==1) diaglat=1.d0/(b0)*HaBohr3_GPa/vol**(1.d0/3.d0)  !Appropriate if one operates on lattice vectors
 if(lattdeg==2) diaglat=1.d0/(3.d0*vol*b0)*HaBohr3_GPa          !Appropriate if one operates on strain
- do i=3*nat+1,3*nat+9
+ do i=3*parini%nat+1,3*parini%nat+9
     hessin(i,i)=diaglat
  enddo 
 !Intiallize the atomic part of the hessian
@@ -1695,7 +1687,7 @@ if(lattdeg==2) diaglat=1.d0/(3.d0*vol*b0)*HaBohr3_GPa          !Appropriate if o
  diagat_lat=matmul(latvectrans,latvec)
  call invertmat(diagat_lat,diagat_lat_inv,3)
  diagat_lat=diagat_lat_inv*diagat
- do i=0,3*nat-1,3
+ do i=0,3*parini%nat-1,3
    do j=1,3
    do k=1,3
     hessin(i+j,i+k)=diagat_lat(j,k)
@@ -1714,7 +1706,7 @@ subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,et
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: ntypat,znucl,char_type
- use global, only: units,nat
+ use global, only: units
  use defs_basis
  use minpar
  use mod_fire,   only:dtmin, dtmax
@@ -1726,7 +1718,7 @@ type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 !REAL(8), INTENT(IN) :: fnrmtol!gtol 
 REAL(8) :: fret, counter
-REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
+REAL(8), INTENT(INOUT) :: xred_in(3*parini%nat),latvec_in(9),fcart_in(3*parini%nat),strten_in(6),etot_in
 INTEGER, PARAMETER :: ITMAX=4000
 REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 !   Given a starting point p that is a vector of length N , the Broyden-Fletcher-Goldfarb-Shanno
@@ -1741,17 +1733,17 @@ REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 INTEGER :: its,i,j,info,LWORK
 LOGICAL :: check
 REAL(8) :: den,fac,fad,fae,fp,stpmax,sumdg,sumxi
-REAL(8):: dg(3*nat+9),g(3*nat+9),hdg(3*nat+9),pnew(3*nat+9),xi(3*nat+9),p(3*nat+9)
+REAL(8):: dg(3*parini%nat+9),g(3*parini%nat+9),hdg(3*parini%nat+9),pnew(3*parini%nat+9),xi(3*parini%nat+9),p(3*parini%nat+9)
 REAL(8):: latvec0(9)
-REAL(8):: tp(3*nat+9),tg(3*nat+9),dvin(3*nat+9),vout(3*nat+9),vout_prev(3*nat+9)
-REAL(8):: vin_min(3*nat+9),vin(3*nat+9),vel_in(3*nat),vel_lat_in(9)
-REAL(8):: vout_min(3*nat+9),dedv_min(3*nat+9)
-REAL(8), DIMENSION(3*nat+9,3*nat+9) :: hessin,hessin0,hess_tmp,hess,hessin_dsyev
-REAL(8) :: alpha_pl,dlatvec(9),dxred(3*nat)
+REAL(8):: tp(3*parini%nat+9),tg(3*parini%nat+9),dvin(3*parini%nat+9),vout(3*parini%nat+9),vout_prev(3*parini%nat+9)
+REAL(8):: vin_min(3*parini%nat+9),vin(3*parini%nat+9),vel_in(3*parini%nat),vel_lat_in(9)
+REAL(8):: vout_min(3*parini%nat+9),dedv_min(3*parini%nat+9)
+REAL(8), DIMENSION(3*parini%nat+9,3*parini%nat+9) :: hessin,hessin0,hess_tmp,hess,hessin_dsyev
+REAL(8) :: alpha_pl,dlatvec(9),dxred(3*parini%nat)
 REAL(8) :: gamma0,gammax,lambda_1,lambda_2,tfp,dedv_1,dedv_2,etotal_1,etotal_2,dedv_predict
 REAL(8) :: d2edv2_1,d2edv2_2,d2edv2_predict,etotal_predict,lambda_predict,lambda_predict_prev
 INTEGER :: choice,status,sumstatus,iprec,iexit,lattdeg,hessupdate
-REAL(8) :: rxyz0(3*nat),eval(3*nat+9),fmax,fmax_at,fmax_lat,pressure
+REAL(8) :: rxyz0(3*parini%nat),eval(3*parini%nat+9),fmax,fmax_at,fmax_lat,pressure
 LOGICAL :: getwfk
 REAL(8) :: ent_pos_0,enthalpy,en0000,vvol_in
 character(40)::filename,folder
@@ -1799,19 +1791,19 @@ gammax=1.d0
 fret=0.d0
 check=.true.
 !call rxyz_cart2int(latvec,p(1:3*nat),rxyz,nat)
-p(1:3*nat)=xred_in(:)
+p(1:3*parini%nat)=xred_in(:)
 if(lattdeg==1) then 
-p(3*nat+1:3*nat+9)=latvec_in(:)
+p(3*parini%nat+1:3*parini%nat+9)=latvec_in(:)
 elseif(lattdeg==2) then
 if(any(parini%fixlat)) stop "Fixed cell parameters for BFGS with lattdeg=2 not yet implemented"
-p(3*nat+1:3*nat+9)=0.d0
+p(3*parini%nat+1:3*parini%nat+9)=0.d0
 endif
 
 !Setup initial inverse hessian 
 !Assume that that betax is the average optical phonon frequency in THz, and betax_lat is the expected Bulk modulus in GPa
    call init_hessinv(parini,hessin,latvec_in,parmin_bfgs%betax,parmin_bfgs%betax_lat,lattdeg) 
 if(hessupdate==2) then
-   call invertmat(hessin,hess,3*nat+9)
+   call invertmat(hessin,hess,3*parini%nat+9)
 endif
 
 !!Calculate starting function value and gradient.
@@ -1820,10 +1812,10 @@ getwfk=.false.
 !This call is only to map all variables correctly
 fp=-1.d10
 call  get_BFGS_forces_strainlatt(parini,parres,p,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
-   if(any(parini%fixlat)) call elim_fixed_lat(parini,p(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
-   if(any(parini%fixat))  call elim_fixed_at(parini,nat,g(1:3*nat))
+   if(any(parini%fixlat)) call elim_fixed_lat(parini,p(3*parini%nat+1:3*parini%nat+9),g(3*parini%nat+1:3*parini%nat+9))
+   if(any(parini%fixat))  call elim_fixed_at(parini,parini%nat,g(1:3*parini%nat))
 !call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 if(counter==0.d0) then
 !MHM: Write output to file in every step***********************************
@@ -1835,7 +1827,7 @@ if(counter==0.d0) then
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",int(counter),fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
@@ -1856,14 +1848,14 @@ endif
 write(16,*) "Initial energy",fp
 !call wtpos_inter(nat,rxyz,latvec,500)
 !call fxyz_cart2int(nat,fxyz,g(1:3*nat),latvec)
-g(3*nat+1:3*nat+9)=g(3*nat+1:3*nat+9)*alpha_pl
+g(3*parini%nat+1:3*parini%nat+9)=g(3*parini%nat+1:3*parini%nat+9)*alpha_pl
 g=-g
 xi=-matmul(hessin,g)
 
 !Main loop over the iterations.
 ! call wtpos_inter(nat,rxyz,latvec,500)
  sumstatus=0
-LWORK=100*(3*nat+9)
+LWORK=100*(3*parini%nat+9)
 allocate(WORK(LWORK))
 hessin0=hessin
 do its=1,ITMAX
@@ -1891,7 +1883,7 @@ do its=1,ITMAX
 
  lambda=1.0d0
  1001 continue
- do i=1,3*nat+9
+ do i=1,3*parini%nat+9
     tp(i)=p(i)+lambda*xi(i)
  enddo
 !write(*,*) "tp",tp
@@ -1901,14 +1893,14 @@ do its=1,ITMAX
  !Check if displacement was too violent
   
 if(lattdeg==1) then
- call getvol(p(3*nat+1:3*nat+9),vol1)
- call getvol(tp(3*nat+1:3*nat+9),vol2)
+ call getvol(p(3*parini%nat+1:3*parini%nat+9),vol1)
+ call getvol(tp(3*parini%nat+1:3*parini%nat+9),vol2)
 elseif(lattdeg==2) then
- call getvol_strain(p(3*nat+1:3*nat+9),latvec0,vol1)
- call getvol_strain(tp(3*nat+1:3*nat+9),latvec0,vol2)
+ call getvol_strain(p(3*parini%nat+1:3*parini%nat+9),latvec0,vol1)
+ call getvol_strain(tp(3*parini%nat+1:3*parini%nat+9),latvec0,vol2)
 endif
 
- if(vabs(lambda*xi(1:3*nat))*vabs(latvec_in)/real(nat,8).gt.0.1d0.or.&
+ if(vabs(lambda*xi(1:3*parini%nat))*vabs(latvec_in)/real(parini%nat,8).gt.0.1d0.or.&
    &abs(vol1-vol2)/vol1.gt.0.1d0) then
    lambda=lambda*0.5d0
    goto 1001
@@ -1925,10 +1917,10 @@ endif
  endif
  counter=counter+1.d0
  call  get_BFGS_forces_strainlatt(parini,parres,tp,tg,tfp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
- call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+ call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
    !Eliminate components not to be changed
-   if(any(parini%fixlat)) call elim_fixed_lat(parini,tp(3*nat+1:3*nat+9),tg(3*nat+1:3*nat+9))
-   if(any(parini%fixat))  call elim_fixed_at(parini,nat,tg(1:3*nat))
+   if(any(parini%fixlat)) call elim_fixed_lat(parini,tp(3*parini%nat+1:3*parini%nat+9),tg(3*parini%nat+1:3*parini%nat+9))
+   if(any(parini%fixat))  call elim_fixed_at(parini,parini%nat,tg(1:3*parini%nat))
 ! call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -1938,7 +1930,7 @@ endif
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS LS ",int(counter),tfp,fmax,fmax_lat,fmax_at,lambda,iprec
 !*********************************************************************
@@ -1972,9 +1964,9 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    if(lambda_predict.lt.0.d0) lambda_predict=lambda*0.5d0
    lambda_predict=max(1.d-6,min(min(lambda_predict,5.d0),0.5d0*(lambda_predict+lambda_predict_prev)))
 !   pnew(:)=p(:)+lambda_predict*xi(:)
-   dlatvec=lambda_predict*xi(3*nat+1:3*nat+9)
-   dxred=lambda_predict*xi(1:3*nat)
-   call propagate(parini,nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
+   dlatvec=lambda_predict*xi(3*parini%nat+1:3*parini%nat+9)
+   dxred=lambda_predict*xi(1:3*parini%nat)
+   call propagate(parini,parini%nat,p(1:3*parini%nat),p(3*parini%nat+1:3*parini%nat+9),dxred,dlatvec,pnew(1:3*parini%nat),pnew(3*parini%nat+1:3*parini%nat+9))
    if(parini%usewf_geopt) then
        getwfk=.true.
    else
@@ -1983,10 +1975,10 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    counter=counter+1.d0
    dg=g       !Save the old gradient,
    call  get_BFGS_forces_strainlatt(parini,parres,pnew,g,fp,getwfk,iprec,latvec0,lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
-   call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       !Eliminate components not to be changed
-      if(any(parini%fixlat)) call elim_fixed_lat(parini,pnew(3*nat+1:3*nat+9),g(3*nat+1:3*nat+9))
-      if(any(parini%fixat))  call elim_fixed_at(parini,nat,g(1:3*nat))
+      if(any(parini%fixlat)) call elim_fixed_lat(parini,pnew(3*parini%nat+1:3*parini%nat+9),g(3*parini%nat+1:3*parini%nat+9))
+      if(any(parini%fixat))  call elim_fixed_at(parini,parini%nat,g(1:3*parini%nat))
 !   call get_fmax(fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 !MHM: Write output to file in every step***********************************
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -1996,7 +1988,7 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",int(counter),fp,fmax,fmax_lat,fmax_at,lambda_predict,iprec
 !*********************************************************************
@@ -2004,9 +1996,9 @@ if(lambda_predict.lt.0.5d0*lambda.or.lambda_predict.gt.1.5d0*lambda) then
    else
       lambda_predict=lambda
    !   pnew=p+lambda_predict*xi
-      dlatvec=lambda_predict*xi(3*nat+1:3*nat+9)
-      dxred=lambda_predict*xi(1:3*nat)
-      call propagate(parini,nat,p(1:3*nat),p(3*nat+1:3*nat+9),dxred,dlatvec,pnew(1:3*nat),pnew(3*nat+1:3*nat+9))
+      dlatvec=lambda_predict*xi(3*parini%nat+1:3*parini%nat+9)
+      dxred=lambda_predict*xi(1:3*parini%nat)
+      call propagate(parini,parini%nat,p(1:3*parini%nat),p(3*parini%nat+1:3*parini%nat+9),dxred,dlatvec,pnew(1:3*parini%nat),pnew(3*parini%nat+1:3*parini%nat+9))
       if(tp(5).ne.pnew(5)) stop "Womething srong!!!"
       fp=tfp
       dg=g       !Save the old gradient,
@@ -2095,7 +2087,7 @@ elseif(hessupdate==2) then
    sumdg=dot_product(dg,dg)
    sumxi=dot_product(xi,xi)
    if (fac > sqrt(EPS*sumdg*sumxi)) then !Skip update if fac not sufficiently positive.
-   call invertmat(hess,hessin,3*nat+9)
+   call invertmat(hess,hessin,3*parini%nat+9)
    else
    write(*,'(a,4(1x,es15.7))') "WARNING!!!",eps,fac,sumdg,sumxi
    call init_hessinv(parini,hessin,latvec_in,parmin_bfgs%betax,parmin_bfgs%betax_lat,lattdeg) 
@@ -2107,10 +2099,10 @@ endif
 !call init_hessinv(hessin,latvec_in,parmin_bfgs%betax,parmin_bfgs%betax_lat,lattdeg) 
 !call invertmat(hessin,hess,3*nat+9)
 !endif
-call correct_hessin(hess,hessin,latvec_in,3*nat+9,hessupdate,lattdeg)
+call correct_hessin(hess,hessin,latvec_in,3*parini%nat+9,hessupdate,lattdeg)
 !Now calculate the next direction to go
    xi=-matmul(hessin,g)
-   write(*,'(a,9(1x,es10.3))') "strain ",p(3*nat+1:3*nat+9)
+   write(*,'(a,9(1x,es10.3))') "strain ",p(3*parini%nat+1:3*parini%nat+9)
 !and go back for another iteration.
 end do
 write(*,*) "Too many iterations"
@@ -2124,7 +2116,7 @@ subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_i
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
  use mod_interface
  use global, only: ntypat,znucl,char_type
- use global, only: units,nat
+ use global, only: units
  use defs_basis
  use minpar
 
@@ -2136,7 +2128,7 @@ type(typ_parini), intent(in):: parini
 type(typ_parini), intent(inout):: parres
 !REAL(8), INTENT(IN) :: fnrmtol!gtol 
 REAL(8) :: fret, counter
-REAL(8), INTENT(INOUT) :: xred_in(3*nat),latvec_in(9),fcart_in(3*nat),strten_in(6),etot_in
+REAL(8), INTENT(INOUT) :: xred_in(3*parini%nat),latvec_in(9),fcart_in(3*parini%nat),strten_in(6),etot_in
 INTEGER, PARAMETER :: ITMAX=4000
 REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 !   Given a starting point p that is a vector of length N , the Broyden-Fletcher-Goldfarb-Shanno
@@ -2151,16 +2143,16 @@ REAL(8), PARAMETER :: STPMX=1.0d0,EPS=epsilon(xred_in),TOLX=4.0d0*EPS
 INTEGER :: its,i
 LOGICAL :: check
 REAL(8) :: den,fac,fad,fae,fp,stpmax,sumdg,sumxi
-REAL(8):: dg(3*nat+9),g(3*nat+9),hdg(3*nat+9),pnew(3*nat+9),xi(3*nat+9),p(3*nat+9)
-REAL(8):: tp(3*nat+9),tg(3*nat+9),dvin(3*nat+9),vout(3*nat+9),vout_prev(3*nat+9)
-REAL(8):: vin_min(3*nat+9),vin(3*nat+9)
-REAL(8):: vout_min(3*nat+9),dedv_min(3*nat+9)
-REAL(8), DIMENSION(3*nat+9,3*nat+9) :: hessin,hessin0
+REAL(8):: dg(3*parini%nat+9),g(3*parini%nat+9),hdg(3*parini%nat+9),pnew(3*parini%nat+9),xi(3*parini%nat+9),p(3*parini%nat+9)
+REAL(8):: tp(3*parini%nat+9),tg(3*parini%nat+9),dvin(3*parini%nat+9),vout(3*parini%nat+9),vout_prev(3*parini%nat+9)
+REAL(8):: vin_min(3*parini%nat+9),vin(3*parini%nat+9)
+REAL(8):: vout_min(3*parini%nat+9),dedv_min(3*parini%nat+9)
+REAL(8), DIMENSION(3*parini%nat+9,3*parini%nat+9) :: hessin,hessin0
 REAL(8) :: alpha_pl
 REAL(8) :: gamma0,gammax,lambda_1,lambda_2,tfp,dedv_1,dedv_2,etotal_1,etotal_2,dedv_predict
 REAL(8) :: d2edv2_1,d2edv2_2,d2edv2_predict,etotal_predict,lambda_predict,lambda_predict_prev
 INTEGER :: choice,status,sumstatus,iprec,iexit
-REAL(8) :: latvec0(9),rxyz0(3*nat),eval(3*nat+9),fmax,fmax_at,fmax_lat,pressure
+REAL(8) :: latvec0(9),rxyz0(3*parini%nat),eval(3*parini%nat+9),fmax,fmax_at,fmax_lat,pressure
 LOGICAL :: getwfk
 REAL(8) :: ent_pos_0,enthalpy,en0000
 character(40)::filename,folder
@@ -2183,8 +2175,8 @@ gammax=1.d0
 fret=0.d0
 check=.true.
 !call rxyz_cart2int(latvec,p(1:3*nat),rxyz,nat)
-p(1:3*nat)=xred_in(:)
-p(3*nat+1:3*nat+9)=latvec_in(:)
+p(1:3*parini%nat)=xred_in(:)
+p(3*parini%nat+1:3*parini%nat+9)=latvec_in(:)
 !Calculate starting function value and gradient.
 getwfk=.false.
 iprec=1
@@ -2199,7 +2191,7 @@ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",0,fp,fmax,fmax_lat,fmax_at,0.d0,iprec
 !*********************************************************************
@@ -2218,14 +2210,14 @@ call get_fmax(parini,fcart_in,strten_in,fmax,fmax_at,fmax_lat)
 write(16,*) "Initial energy",fp
 !call wtpos_inter(nat,rxyz,latvec,500)
 !call fxyz_cart2int(nat,fxyz,g(1:3*nat),latvec)
-g(3*nat+1:3*nat+9)=g(3*nat+1:3*nat+9)*alpha_pl
+g(3*parini%nat+1:3*parini%nat+9)=g(3*parini%nat+1:3*parini%nat+9)*alpha_pl
 g=-g
-call unit_matrix(hessin,3*nat+9) !Initialize inverse Hessian to the unit matrix.
+call unit_matrix(hessin,3*parini%nat+9) !Initialize inverse Hessian to the unit matrix.
 
 !Initialize Hessian diagonal elements
 hessin=hessin*parmin_bfgs%betax
 !Initialize Hessian diagonal elements for the cell variables
-do i=3*nat+1,3*nat+9
+do i=3*parini%nat+1,3*parini%nat+9
 hessin(i,i)=parmin_bfgs%betax_lat
 enddo
 
@@ -2240,7 +2232,7 @@ do its=1,ITMAX
 
  gamma0=1.d0*gammax
 1001 continue
- do i=1,3*nat+9
+ do i=1,3*parini%nat+9
     tp(i)=p(i)+gamma0*xi(i)
  enddo
  write(16,*) "Length of movement along xi", vabs(gamma0*xi)
@@ -2269,7 +2261,7 @@ do its=1,ITMAX
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS LS ",(its)*2-1,tfp,fmax,fmax_lat,fmax_at,gamma0,iprec
 !*********************************************************************
@@ -2347,7 +2339,7 @@ lambda_predict=max(lambda_predict,-1.d0)
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in :",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,fp,en0000)
        write(*,'(a,i4,4(1x,es17.8),1x,es9.2,1x,i4)') " # GEOPT BFGS AC ",its*2,fp,fmax,fmax_lat,fmax_at,lambda_predict,iprec
 !*********************************************************************

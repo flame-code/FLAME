@@ -31,7 +31,7 @@ contains
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
-    real(8), intent(in) :: xred(3,nat)
+    real(8), intent(in) :: xred(3,parini%nat)
     integer, intent(inout) :: ka, kb, kc
     logical, intent(in) :: getwfk
     logical, intent(in), optional :: dos
@@ -101,7 +101,7 @@ contains
     ! a specific type must be given
     nat_type=0
     do itype=1,ntypat
-      do iat=1,nat
+      do iat=1,parini%nat
         if(parini%typat_global(iat)==itype) nat_type(itype) = nat_type(itype) + 1
       enddo
     enddo
@@ -114,7 +114,7 @@ contains
     write(87,*) latvec(:,3)*Bohr_Ang
     write(87,*) nat_type(:)
     write(87,'(a)') "Direct"
-    do iat=1,nat
+    do iat=1,parini%nat
       write(87,'(3(1x,es25.15),i5)') xred(:,iat)
     enddo
     close(87)
@@ -161,14 +161,14 @@ contains
   implicit none
   type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,i_tmp
-  real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
+  real(8):: fcart(3,parini%nat),energy,strten(6),value,latvec(3,3),xred(3,parini%nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
 character(40):: filename,units_tmp
 real(8):: printval1,printval2
 logical:: readfix,readfrag
-logical:: fixat_tmp(nat),fixlat_tmp(7)
+logical:: fixat_tmp(parini%nat),fixlat_tmp(7)
   !Set to true uf you are using vasp version 5.x
   vasp_5=.true.
   
@@ -232,7 +232,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
    k = index(all_line(1:n),"forces")
     if(k.ne.0) then
     !write(*,*) "Forces found"
-      do iat=1,nat
+      do iat=1,parini%nat
       read(32,'(a150)',end=99)all_line
       m = len_trim(all_line)
       l = scan(all_line(1:m),"/",.true.)
@@ -284,7 +284,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   units_tmp="angstrom"
   readfix=.false.
   readfrag=.false.  
-  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+  call read_atomic_file_poscar(filename,parini%nat,units_tmp,xred,latvec,fcart,strten,&
            &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
   latvec=latvec*Bohr_Ang !Internally already converted
 !  open(unit=32,file="CONTCAR")
@@ -316,7 +316,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   use mod_parini, only: typ_parini
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
+  real(8):: xred(3,parini%nat),fcart(3,parini%nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
   logical:: getwfk
@@ -367,7 +367,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   use mod_parini, only: typ_parini
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat)
+  real(8):: xred(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
   integer:: iat,iprec,ka,kb,kc,itype,nat_type(ntypat)
@@ -478,7 +478,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   !a specific type must be given
   nat_type=0
   do itype=1,ntypat
-  do iat=1,nat
+  do iat=1,parini%nat
   if(parini%typat_global(iat)==itype) nat_type(itype)=nat_type(itype)+1
   enddo
   enddo
@@ -493,7 +493,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   write(87,*) nat_type(:) 
   if(any(parini%fixat(:))) write(87,'(a)') "Selective dynamics"
   write(87,'(a)') "Direct"
-  do iat=1,nat
+  do iat=1,parini%nat
   if(any(parini%fixat(:))) then
     if(parini%fixat(iat)) then
          write(87,'(3(1x,es25.15),a)') xred(:,iat), " F F F "  
@@ -515,14 +515,14 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   implicit none
   type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m
-  real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
+  real(8):: fcart(3,parini%nat),energy,strten(6),value,latvec(3,3),xred(3,parini%nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
   character(150)::all_line
   logical:: vasp_5
 character(40):: filename,units_tmp
 real(8):: printval1,printval2
 logical:: readfix,readfrag
-logical:: fixat_tmp(nat),fixlat_tmp(7)
+logical:: fixat_tmp(parini%nat),fixlat_tmp(7)
   !if vasp is version 5.x, use vasp_5=.true.
   
   vasp_5=.true.
@@ -592,7 +592,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
    k = index(all_line(1:n),"forces")
     if(k.ne.0) then
     !write(*,*) "Forces found"
-      do iat=1,nat
+      do iat=1,parini%nat
       read(32,'(a150)',end=99)all_line
       m = len_trim(all_line)
       l = scan(all_line(1:m),"/",.true.)
@@ -644,7 +644,7 @@ logical:: fixat_tmp(nat),fixlat_tmp(7)
   units_tmp="angstrom"
   readfix=.false.
   readfrag=.false.  
-  call read_atomic_file_poscar(filename,nat,units_tmp,xred,latvec,fcart,strten,&
+  call read_atomic_file_poscar(filename,parini%nat,units_tmp,xred,latvec,fcart,strten,&
            &fixat_tmp,fixlat_tmp,readfix,parini%fragarr,readfrag,printval1,printval2)
   latvec=latvec*Bohr_Ang !Internally already converted
 !  open(unit=32,file="CONTCAR")

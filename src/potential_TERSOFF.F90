@@ -55,12 +55,14 @@ contains
 
 
 !        subroutine energyandforces_per(nat,latvec,rxyz,fxyz,stress,pressure,etot,count)
-subroutine tersoff(latvec_bohr,xred0,fxyz,strten,etot)
+subroutine tersoff(parini,latvec_bohr,xred0,fxyz,strten,etot)
 !        use kindat
+        use mod_parini, only: typ_parini
         implicit none
+        type(typ_parini), intent(in):: parini
         integer   :: iat
 	real(8)   :: etot
-	real(8)                                   ::rxyz(3,nat),fxyz(3,nat), alat(3),xred0(3,nat),xred(3,nat)
+	real(8)                                   ::rxyz(3,parini%nat),fxyz(3,parini%nat), alat(3),xred0(3,parini%nat),xred(3,parini%nat)
 	real(8),              dimension(1:2,1:2)  :: R1, R2
 	real(8),              dimension(1:2,1:2)  :: Cr, Ca, alr, ala, X
         real(8),              dimension(1:2)      :: Pmass
@@ -130,7 +132,7 @@ subroutine tersoff(latvec_bohr,xred0,fxyz,strten,etot)
       real(8), parameter :: Si_R2 = 3.3d0 !3.0d0
       real(8), parameter :: Si_mass = 28.0855d0
 !Periodic part
-      real(8):: latvec_bohr(3,3),latvec(3,3),stress(3,3),strten(6),cut,F(3*nat),R(3*nat),transinv(3,3),trans(3,3),vol
+      real(8):: latvec_bohr(3,3),latvec(3,3),stress(3,3),strten(6),cut,F(3*parini%nat),R(3*parini%nat),transinv(3,3),trans(3,3),vol
       real(8):: tmplat(3,3)
       real(8), ALLOCATABLE, DIMENSION(:,:) :: rel
       integer:: alpha, beta, a
@@ -139,16 +141,16 @@ subroutine tersoff(latvec_bohr,xred0,fxyz,strten,etot)
         
         latvec=latvec_bohr*Bohr_Ang
         xred=xred0
-        call backtocell(nat,latvec,xred)
-        call rxyz_int2cart(latvec,xred,rxyz,nat)
+        call backtocell(parini%nat,latvec,xred)
+        call rxyz_int2cart(latvec,xred,rxyz,parini%nat)
 
 
         nnbrx=64
         nnbrxt=3*nnbrx/2
-        nnmax=nnbrxt*nat
-        npmax=nnbrxt*nat
+        nnmax=nnbrxt*parini%nat
+        npmax=nnbrxt*parini%nat
         allocate(XYZRrefdf(1:6*Npmax), UadUrdf(1:3*Npmax), dkEij(1:3*NNmax))
-        allocate(lsta(2,nat),lstb(nnbrx*nat),rel(5,nnbrx*nat))
+        allocate(lsta(2,parini%nat),lstb(nnbrx*parini%nat),rel(5,nnbrx*parini%nat))
 !        do i=1,nat
 !          kinds(i)=2
 !        enddo
@@ -158,12 +160,12 @@ subroutine tersoff(latvec_bohr,xred0,fxyz,strten,etot)
         if(only_c) cut=R2(1,1)-1.d-3
         trans=latvec
         call invertmat(trans,transinv,3)
-        call makepairlist(lsta,lstb,rel,nat,rxyz,latvec,cut,nnbrx)
+        call makepairlist(lsta,lstb,rel,parini%nat,rxyz,latvec,cut,nnbrx)
 !end of creating pairlist part---------------------------------------------------------
 
 !start calculating forces and energy
-      call convert(rxyz,R,nat)
-      Nmol=nat
+      call convert(rxyz,R,parini%nat)
+      Nmol=parini%nat
       Urtot=0.0d0
       Nptot=0
 
@@ -190,7 +192,7 @@ subroutine tersoff(latvec_bohr,xred0,fxyz,strten,etot)
       etot=Urtot+Uatot
 !------------------------------------------
 
-        call convert(F,fxyz,nat)
+        call convert(F,fxyz,parini%nat)
         etot=etot/Ha_eV
         fxyz=fxyz/Ha_eV*Bohr_Ang
 !Stress
@@ -730,7 +732,8 @@ end subroutine
  !This subroutine will construct the pairlist lsta and lstb of the atomic positions rxyz in the cell latvec
  !The cutoff is given with cut, all relative coordinates are stored in rel
  implicit none
- integer, intent(inout) :: lsta(2,nat),nat,lstb(nat*nmax),nmax
+ integer, intent(in) :: nat
+ integer, intent(inout) :: lsta(2,nat),lstb(nat*nmax),nmax
  real*8, intent(inout)  :: rel(5,nat*nmax)
  real*8, intent(in)     :: cut, rxyz(3,nat), latvec(3,3)
  real*8                 :: rxyzexp(3,nat,3,3,3),relinteriat(5,nmax),transvecall(3,3,3,3)
@@ -1252,8 +1255,8 @@ implicit none
 type(typ_parini), intent(in):: parini
 integer:: iat
 only_c=.true.
-if(.not.allocated(Kinds_tersoff)) allocate(Kinds_tersoff(nat))
-do iat=1,nat
+if(.not.allocated(Kinds_tersoff)) allocate(Kinds_tersoff(parini%nat))
+do iat=1,parini%nat
    if(int(znucl(parini%typat_global(iat)))==6) then
      Kinds_tersoff(iat)=1
    elseif(int(znucl(parini%typat_global(iat)))==14) then

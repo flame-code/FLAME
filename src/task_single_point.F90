@@ -68,7 +68,7 @@ subroutine read_poscar_for_single_point(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use global, only: nat, ntypat, znucl, char_type, units
+    use global, only: ntypat, znucl, char_type, units
     implicit none
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
     !so parini can be intent(in) in future.
@@ -93,17 +93,17 @@ subroutine read_poscar_for_single_point(parini,atoms)
     write (*,*) "Reading structure from ",trim(filename)
 
     call poscar_getsystem(parini,trim(filename))
-    allocate(xred(3,nat),source=0.d0)
-    allocate(fcart(3,nat),source=0.d0)
-    if(.not.allocated(fixat)) allocate(fixat(nat),source=.false.)
-    if(.not.allocated(fragarr)) allocate(fragarr(nat),source=0)
-    atoms%nat=nat
+    allocate(xred(3,parini%nat),source=0.d0)
+    allocate(fcart(3,parini%nat),source=0.d0)
+    if(.not.allocated(fixat)) allocate(fixat(parini%nat),source=.false.)
+    if(.not.allocated(fragarr)) allocate(fragarr(parini%nat),source=0)
+    atoms%nat=parini%nat
     atoms%boundcond='bulk'
-    call atom_allocate_old(atoms,nat,0,0)
+    call atom_allocate_old(atoms,parini%nat,0,0)
     call read_atomic_file_poscar(filename,atoms%nat,units,xred,atoms%cellvec,fcart,strten, &
         fixat,fixlat,readfix,fragarr,readfrag,printval1,printval2)
     call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,xred,atoms%rat)
-    do iat=1,nat
+    do iat=1,parini%nat
         atoms%sat(iat)=trim(char_type(parini%typat_global(iat)))
     enddo
     deallocate(fixat)

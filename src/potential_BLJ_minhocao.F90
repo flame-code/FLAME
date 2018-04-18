@@ -83,7 +83,7 @@ contains
         implicit none
         type(typ_parini), intent(in):: parini
         integer:: iat, jat, kk, ll, l, nec(3), i, j, k, m
-        real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3),rcut2(2,2)
+        real(8):: xred(3,parini%nat),fxyz(3,parini%nat),xred0(3,parini%nat),dxyz(3),r1red(3),r2red(3),rcut2(2,2)
         real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol,strten(6)
         real(8), allocatable:: rel(:,:)
         real(8):: latvec(3,3),latvec_ang(3,3),latvecinv(3,3),celldv(3,3),pressure,gradvol(3,3),stress(3,3),tmplat(3,3)
@@ -102,7 +102,7 @@ contains
         celldv(:,:)=0.d0
         rcut2=rcut*rcut
         cutmax=maxval(rcut)
-        call backtocell(nat,latvec_ang,xred) 
+        call backtocell(parini%nat,latvec_ang,xred) 
         trans=latvec_ang
 
          call invertmat(trans,transinv,3) 
@@ -117,12 +117,12 @@ contains
     enddo
 
 !Get the rest
-         do iat=1,nat
+         do iat=1,parini%nat
             r1red(:)=xred(:,iat)*rec_nec
             do i=0,nec(1)-1
             do j=0,nec(2)-1
             do k=0,nec(3)-1
-               do jat=1,nat
+               do jat=1,parini%nat
                 r2red(:)=xred(:,jat)*rec_nec
                 r2red(1)=r2red(1)+real(i,8)*rec_nec(1)
                 r2red(2)=r2red(2)+real(j,8)*rec_nec(2)

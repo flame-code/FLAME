@@ -218,7 +218,7 @@ call n_rep_dim(latvec_tilt,cut_lammps2,nec1,nec2,nec3)
 if(parini%verb.gt.0) write(*,'(a,i5,i5,i5)') " #Expanding cell with periodic images to: ",nec1,nec2,nec3
 nat_lammps_new=nec1*nec2*nec3*nat
 allocate(k_xcart(3,nat,nec1,nec2,nec3),k_xred(3,nat,nec1,nec2,nec3))
-call k_expansion(latvec_tilt,xred,nec1,nec2,nec3,k_latvec,k_xcart)
+call k_expansion(parini,latvec_tilt,xred,nec1,nec2,nec3,k_latvec,k_xcart)
 
 tilts(1)=k_latvec(1,1)
 tilts(2)=k_latvec(2,2)

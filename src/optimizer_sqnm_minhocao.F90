@@ -11,7 +11,7 @@
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl
+ use global, only: ntypat,znucl
  use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
@@ -121,14 +121,14 @@ subroutine GEOPT_sqnm(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in
    logical:: biomode,fail,getwfk
    real(8):: energy,forcemax,fmax_at,fmax_lat,enthalpy
    integer:: ncount_cluster_x,iexit,iprec
-   real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,pressure
+   real(8):: latvec_in(3,3),xred_in(3,parini%nat),fcart_in(3,parini%nat),strten_in(6),etot_in,counter,pressure
    character(40)::filename,folder
    logical:: multiprec,cellfix_done
    real(8)::tolmxf_switch,cellfix_switch
    real(8),allocatable:: hessinv(:,:),metric(:,:)
 !For running on cartesian forces
    logical:: cart_forces
-   real(8):: pos_tmp(3,nat),latvec_old(3,3)
+   real(8):: pos_tmp(3,parini%nat),latvec_old(3,3)
 !Latvec correction io
    integer:: latvec_io
 latvec_io=0
@@ -200,7 +200,7 @@ latvec_io=0
 
    ! allocate arrays
 !   lwork=1000+10*nat**2
-   lwork=1000+10*(nat+3)**2
+   lwork=1000+10*(parini%nat+3)**2
 !   rxyz = f_malloc((/ 1.to.3, 1.to.nat, 0.to.nhistx /),id='rxyz')
 !   rxyzraw = f_malloc((/ 1.to.3, 1.to.nat, 0.to.nhistx /),id='rxyzraw')
 !   fxyz = f_malloc((/ 1.to.3, 1.to.nat, 0.to.nhistx /),id='fxyz')
@@ -221,25 +221,25 @@ latvec_io=0
 !   scpr = f_malloc(nhistx,id='scpr')
 !   rcov     = f_malloc((/ 1.to.nat/),id='rcov')
 !   iconnect = f_malloc((/ 1.to.2, 1.to.1000/),id='iconnect')
-   allocate(rxyz(1:3,1:nat+3,0:nhistx))
-   allocate(rxyzraw(1:3,1:nat+3,0:nhistx))
-   allocate(fxyz(1:3,1:nat+3,0:nhistx)) 
-   allocate(fxyzraw(1:3,1:nat+3,0:nhistx)) 
-   allocate(fstretch(1:3,1:nat+3,0:nhistx)) 
-   allocate(rxyzOld(1:3,1:nat+3)) 
-   allocate(delta(1:3,1:nat+3)) 
+   allocate(rxyz(1:3,1:parini%nat+3,0:nhistx))
+   allocate(rxyzraw(1:3,1:parini%nat+3,0:nhistx))
+   allocate(fxyz(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(fxyzraw(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(fstretch(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(rxyzOld(1:3,1:parini%nat+3)) 
+   allocate(delta(1:3,1:parini%nat+3)) 
    allocate(aa(nhistx,nhistx)) 
    allocate(eval(nhistx)) 
    allocate(res(nhistx)) 
    allocate(rnorm(nhistx)) 
    allocate(work(lwork)) 
-   allocate(ff(1:3,1:nat+3,0:nhistx)) 
-   allocate(rr(1:3,1:nat+3,0:nhistx)) 
-   allocate(dd(3,nat+3)) 
-   allocate(fff(1:3,1:nat+3,0:nhistx)) 
-   allocate(rrr(1:3,1:nat+3,0:nhistx)) 
+   allocate(ff(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(rr(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(dd(3,parini%nat+3)) 
+   allocate(fff(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(rrr(1:3,1:parini%nat+3,0:nhistx)) 
    allocate(scpr(nhistx)) 
-   allocate(hessinv(3*(nat+3),3*(nat+3)),metric(3*(nat+3),3*(nat+3)))
+   allocate(hessinv(3*(parini%nat+3),3*(parini%nat+3)),metric(3*(parini%nat+3),3*(parini%nat+3)))
 !   allocate(rcov(1:nat))     
 !   allocate(iconnect(1:2,1:1000)) 
 !   if(runObj%inputs%biomode)then
@@ -266,13 +266,13 @@ latvec_io=0
 
 !! copy to internal variables
 if(cart_forces) then
-   call rxyz_int2cart(latvec_in,xred_in,rxyz(:,1:nat,0),nat);rxyz(:,nat+1:nat+3,0)=latvec_in(:,:)
-   call rxyz_int2cart(latvec_in,xred_in,rxyzOld(:,1:nat),nat);rxyzOld(:,nat+1:nat+3)=latvec_in(:,:)
+   call rxyz_int2cart(latvec_in,xred_in,rxyz(:,1:parini%nat,0),parini%nat);rxyz(:,parini%nat+1:parini%nat+3,0)=latvec_in(:,:)
+   call rxyz_int2cart(latvec_in,xred_in,rxyzOld(:,1:parini%nat),parini%nat);rxyzOld(:,parini%nat+1:parini%nat+3)=latvec_in(:,:)
 else
 !   call vcopy(3*runObj%nat, runObj%rxyz(1,1), 1,rxyz(1,1,0), 1)
-   rxyz(:,1:nat,0)=xred_in(:,:);rxyz(:,nat+1:nat+3,0)=latvec_in(:,:)
+   rxyz(:,1:parini%nat,0)=xred_in(:,:);rxyz(:,parini%nat+1:parini%nat+3,0)=latvec_in(:,:)
 !   call vcopy(3*runObj%nat, runObj%rxyz(1,1), 1,rxyzOld(1,1), 1)
-   rxyzOld(:,1:nat)=xred_in(:,:);rxyzOld(:,nat+1:nat+3)=latvec_in(:,:)
+   rxyzOld(:,1:parini%nat)=xred_in(:,:);rxyzOld(:,parini%nat+1:parini%nat+3)=latvec_in(:,:)
 endif
 !   call vcopy(3*outs%fdim, outs%fxyz(1,1), 1, fxyz(1,1,0), 1)
 !   fxyz(:,1:3*nat,0)=_in(:,:);rxyz(:,3*nat+1:3*nat+3,0)=latvec_in(:,:)
@@ -280,7 +280,7 @@ endif
 !   etot=outs%energy
 !   etot=energy
    
-call sqnm_invhess(nat,latvec_in,metric,hessinv)
+call sqnm_invhess(parini%nat,latvec_in,metric,hessinv)
 
 
 !   call minenergyandforces(parini,parres,iproc,nproc,.false.,imode,runObj,outs,nat,rxyz(1,1,0),&
@@ -292,21 +292,21 @@ call sqnm_invhess(nat,latvec_in,metric,hessinv)
    write(fn4,'(i4.4)') 0
    sock_extra_string="SQNM"//trim(fn4)
    if(cart_forces) then
-          call rxyz_cart2int(rxyz(:,nat+1:nat+3,0),pos_tmp,rxyz(:,1:nat,0),nat)
-          rxyz(:,1:nat,0)=pos_tmp(:,:)
+          call rxyz_cart2int(rxyz(:,parini%nat+1:parini%nat+3,0),pos_tmp,rxyz(:,1:parini%nat,0),parini%nat)
+          rxyz(:,1:parini%nat,0)=pos_tmp(:,:)
    endif
-   call minenergyandforces(parini,parres,.true.,imode,nat,rxyz(1,1,0),&
+   call minenergyandforces(parini,parres,.true.,imode,parini%nat,rxyz(1,1,0),&
        rxyzraw(1,1,0),fxyz(1,1,0),fstretch(1,1,0),fxyzraw(1,1,0),&
        etot,beta_stretchx,beta_stretch,&
        latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
    if(cart_forces) then
-       call rxyz_int2cart(rxyz(:,nat+1:nat+3,0),xred_in,rxyz(:,1:nat,0),nat) 
-       fxyz(:,1:nat,0)=fcart_in(:,:)
+       call rxyz_int2cart(rxyz(:,parini%nat+1:parini%nat+3,0),xred_in,rxyz(:,1:parini%nat,0),parini%nat) 
+       fxyz(:,1:parini%nat,0)=fcart_in(:,:)
    endif
    if(imode==2)rxyz(:,:,0)=rxyz(:,:,0)+beta_stretch*fstretch(:,:,0)
 
 !   call fnrmandforcemax(fxyzraw(1,1,0),fnrm,fmax,nat)
-   call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+   call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !   fnrm=sqrt(fnrm)
 !   if (fmax < 3.d-1) call updatefluctsum(outs%fnoise,fluct)
 
@@ -341,11 +341,11 @@ if(parini%verb>0) then
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
@@ -385,7 +385,7 @@ endif
          nhist=nhistx
          do ihist=0,nhist-1
 !            do iat=1,nat
-            do iat=1,nat+3
+            do iat=1,parini%nat+3
                do l=1,3
                   rxyz(l,iat,ihist)=rxyz(l,iat,ihist+1)
                   rxyzraw(l,iat,ihist)=rxyzraw(l,iat,ihist+1)
@@ -399,18 +399,18 @@ endif
    
       ! decompose gradient
 500 continue
-    call modify_gradient_minhocao(nat,ndim,rrr(1,1,1),eval(1),res(1),fxyz(1,1,nhist-1),beta,betalat_scale,dd(1,1))
+    call modify_gradient_minhocao(parini%nat,ndim,rrr(1,1,1),eval(1),res(1),fxyz(1,1,nhist-1),beta,betalat_scale,dd(1,1))
    
       tt=0.0d0
       dt=0.0d0
       maxd=-huge(1.0d0)
-      do iat=1,nat
+      do iat=1,parini%nat
          dt=dd(1,iat)**2+dd(2,iat)**2+dd(3,iat)**2
          tt=tt+dt
          maxd=max(maxd,dt)
       enddo
 !Take care of the lattice maximal displacement
-      do iat=nat+1,nat+3
+      do iat=parini%nat+1,parini%nat+3
          dt=(dd(1,iat)**2+dd(2,iat)**2+dd(3,iat)**2)/betalat_scale**2
          tt=tt+dt
          maxd=max(maxd,dt)
@@ -438,15 +438,15 @@ endif
       !update positions
 !      dd(:,nat+1:nat+3)=0.d0
       if(cart_forces) then
-        latvec_old(:,:)=rxyz(:,nat+1:nat+3,nhist-1)
-        do iat=1,nat+3
+        latvec_old(:,:)=rxyz(:,parini%nat+1:parini%nat+3,nhist-1)
+        do iat=1,parini%nat+3
            rxyz(1,iat,nhist)=rxyz(1,iat,nhist-1)-dd(1,iat)
            rxyz(2,iat,nhist)=rxyz(2,iat,nhist-1)-dd(2,iat)
            rxyz(3,iat,nhist)=rxyz(3,iat,nhist-1)-dd(3,iat)
         enddo
-        call updaterxyz(latvec_old,rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat)
+        call updaterxyz(latvec_old,rxyz(:,parini%nat+1:parini%nat+3,nhist),rxyz(:,1:parini%nat,nhist),parini%nat)
       else
-        do iat=1,nat+3
+        do iat=1,parini%nat+3
            rxyz(1,iat,nhist)=rxyz(1,iat,nhist-1)-dd(1,iat)
            rxyz(2,iat,nhist)=rxyz(2,iat,nhist-1)-dd(2,iat)
            rxyz(3,iat,nhist)=rxyz(3,iat,nhist-1)-dd(3,iat)
@@ -463,7 +463,7 @@ endif
 !      detot=etotp-etotold
 
       delta=rxyz(:,:,nhist)-rxyzOld
-      displr=displr+dnrm2(3*nat+9,delta(1,1),1)
+      displr=displr+dnrm2(3*parini%nat+9,delta(1,1),1)
 !      runObj%inputs%inputPsiId=1
 !      call minenergyandforces(parini,parres,iproc,nproc,.true.,imode,runObj,outs,nat,rxyz(1,1,nhist),rxyzraw(1,1,nhist),&
 !                             fxyz(1,1,nhist),fstretch(1,1,nhist),fxyzraw(1,1,nhist),&
@@ -471,16 +471,16 @@ endif
        write(fn4,'(i4.4)') it
        sock_extra_string="SQNM"//trim(fn4)
    if(cart_forces) then
-          call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
-          rxyz(:,1:nat,nhist)=pos_tmp(:,:)
+          call rxyz_cart2int(rxyz(:,parini%nat+1:parini%nat+3,nhist),pos_tmp,rxyz(:,1:parini%nat,nhist),parini%nat)
+          rxyz(:,1:parini%nat,nhist)=pos_tmp(:,:)
    endif
-       call minenergyandforces(parini,parres,.true.,imode,nat,rxyz(1,1,nhist),&
+       call minenergyandforces(parini,parres,.true.,imode,parini%nat,rxyz(1,1,nhist),&
            rxyzraw(1,1,nhist),fxyz(1,1,nhist),fstretch(1,1,nhist),fxyzraw(1,1,nhist),&
            etotp,beta_stretchx,beta_stretch,&
            latvec_in,xred_in,etot_in,fcart_in,strten_in,iprec)
    if(cart_forces) then
-       call rxyz_int2cart(rxyz(:,nat+1:nat+3,nhist),xred_in,rxyz(:,1:nat,nhist),nat) 
-       fxyz(:,1:nat,nhist)=fcart_in(:,:)
+       call rxyz_int2cart(rxyz(:,parini%nat+1:parini%nat+3,nhist),xred_in,rxyz(:,1:parini%nat,nhist),parini%nat) 
+       fxyz(:,1:parini%nat,nhist)=fcart_in(:,:)
    endif
       detot=etotp-etotold
 !      ncount_bigdft=ncount_bigdft+1
@@ -488,7 +488,7 @@ endif
 
 
 !      call fnrmandforcemax(fxyzraw(1,1,nhist),fnrm,fmax,nat)
-      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !MHM: Write output to file in every step***********************************
        counter=real(it,8)
        write(*,*) "Pressure, Energy",pressure,etot_in
@@ -498,11 +498,11 @@ if(parini%verb.gt.0) then
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in SQNM:",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        if(parini%verb.ge.3) then
        filename=trim(folder)//"posgeopt."//fn4//".vasp"
-       call write_atomic_file_poscar(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+       call write_atomic_file_poscar(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,etotp)
        endif
 endif
@@ -551,12 +551,12 @@ endif
 !      cosangle=-dot_product(reshape(fxyz(:,:,nhist),(/3*nat+9/)),reshape(dd(:,:),(/3*nat+9/)))/&
 !              sqrt(dot_product(reshape(fxyz(:,:,nhist),(/3*nat+9/)),reshape(fxyz(:,:,nhist),(/3*nat+9/))*&
 !              dot_product(reshape(dd(:,:),(/3*nat+9/)),reshape(dd(:,:),(/3*nat+9/)))))
-      cosangle=-dot_product(reshape(fxyz(:,1:nat,nhist),(/3*nat/)),reshape(dd(:,1:nat),(/3*nat/)))/&
-              sqrt(dot_product(reshape(fxyz(:,1:nat,nhist),(/3*nat/)),reshape(fxyz(:,1:nat,nhist),(/3*nat/))*&
-              dot_product(reshape(dd(:,1:nat),(/3*nat/)),reshape(dd(:,1:nat),(/3*nat/)))))
-      cosangle_lat=-dot_product(reshape(fxyz(:,nat+1:nat+3,nhist),(/9/)),reshape(dd(:,nat+1:nat+3),(/9/)))/&
-              sqrt(dot_product(reshape(fxyz(:,nat+1:nat+3,nhist),(/9/)),reshape(fxyz(:,nat+1:nat+3,nhist),(/9/))*&
-              dot_product(reshape(dd(:,nat+1:nat+3),(/9/)),reshape(dd(:,nat+1:nat+3),(/9/)))))
+      cosangle=-dot_product(reshape(fxyz(:,1:parini%nat,nhist),(/3*parini%nat/)),reshape(dd(:,1:parini%nat),(/3*parini%nat/)))/&
+              sqrt(dot_product(reshape(fxyz(:,1:parini%nat,nhist),(/3*parini%nat/)),reshape(fxyz(:,1:parini%nat,nhist),(/3*parini%nat/))*&
+              dot_product(reshape(dd(:,1:parini%nat),(/3*parini%nat/)),reshape(dd(:,1:parini%nat),(/3*parini%nat/)))))
+      cosangle_lat=-dot_product(reshape(fxyz(:,parini%nat+1:parini%nat+3,nhist),(/9/)),reshape(dd(:,parini%nat+1:parini%nat+3),(/9/)))/&
+              sqrt(dot_product(reshape(fxyz(:,parini%nat+1:parini%nat+3,nhist),(/9/)),reshape(fxyz(:,parini%nat+1:parini%nat+3,nhist),(/9/))*&
+              dot_product(reshape(dd(:,parini%nat+1:parini%nat+3),(/9/)),reshape(dd(:,parini%nat+1:parini%nat+3),(/9/)))))
 
       if (detot.gt.maxrise .and. beta > 1.d-1*betax .and. betalat > 1.d-1*betax) then !
 !         if (debug.and.iproc==0) write(100,'(a,i0,1x,e9.2)') "WARN: it,detot", it,detot
@@ -618,7 +618,7 @@ endif
          ndim=0
 !         wold=0.0d0
          if(.not.steep)then
-            do iat=1,nat+3
+            do iat=1,parini%nat+3
                rxyz(1,iat,0)=rxyz(1,iat,nhist-1)
                rxyz(2,iat,0)=rxyz(2,iat,nhist-1)
                rxyz(3,iat,0)=rxyz(3,iat,nhist-1)
@@ -646,7 +646,7 @@ endif
 !      endif
 
       delta=rxyz(:,:,nhist)-rxyzOld
-      displp=displp+dnrm2(3*nat+9,delta(1,1),1)
+      displp=displp+dnrm2(3*parini%nat+9,delta(1,1),1)
       rxyzOld=rxyz(:,:,nhist)
 !      displp=displp+tt
 !      if (iproc==0.and.verbosity > 0) then
@@ -695,7 +695,7 @@ endif
 
 !      if (fnrm.le.fnrmtol) goto 1000
 !      call convcheck(parini,fmax,fluct*runObj%inputs%frac_fluct,runObj%inputs%forcemax,icheck)
-      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 !      if(icheck>5)then
       if(iexit==1)then
          goto 1000
@@ -727,7 +727,7 @@ endif
 
 !      call getSubSpaceEvecEval_minhocao('(SQNM)',iproc,verbosity,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
 !                   &fxyz,aa,rr,ff,rrr,fff,eval,res,success)
-      call getSubSpaceEvecEval_minhocao('(SQNM)',parini%verb,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
+      call getSubSpaceEvecEval_minhocao('(SQNM)',parini%verb,parini%nat,nhist,nhistx,ndim,cutoffratio,lwork,work,rxyz,&
                    &fxyz,aa,rr,ff,rrr,fff,eval,res,success)
       if(.not.success)stop 'subroutine minimizer_sqnm: no success in getSubSpaceEvecEval_minhocao.'
 
@@ -748,11 +748,11 @@ endif
          if(fmax.lt.cellfix_switch.and..not.cellfix_done.and.(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1))) then
 !Only perform the cell correction once, presumably close to the end of the optimization run
              if(cart_forces) then
-                    call rxyz_cart2int(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),pos_tmp(:,:),nat,parini%correctalg,latvec_io)
-                    call rxyz_int2cart(rxyz(:,nat+1:nat+3,nhist),pos_tmp,rxyz(:,1:nat,nhist),nat)
+                    call rxyz_cart2int(rxyz(:,parini%nat+1:parini%nat+3,nhist),pos_tmp,rxyz(:,1:parini%nat,nhist),parini%nat)
+             call correct_latvec(rxyz(:,parini%nat+1:parini%nat+3,nhist),pos_tmp(:,:),parini%nat,parini%correctalg,latvec_io)
+                    call rxyz_int2cart(rxyz(:,parini%nat+1:parini%nat+3,nhist),pos_tmp,rxyz(:,1:parini%nat,nhist),parini%nat)
              else
-             call correct_latvec(rxyz(:,nat+1:nat+3,nhist),rxyz(:,1:nat,nhist),nat,parini%correctalg,latvec_io)
+             call correct_latvec(rxyz(:,parini%nat+1:parini%nat+3,nhist),rxyz(:,1:parini%nat,nhist),parini%nat,parini%correctalg,latvec_io)
              endif
              cellfix_done=.true.
              if(latvec_io.ne.0) then

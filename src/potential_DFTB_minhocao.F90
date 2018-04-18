@@ -27,12 +27,12 @@ contains
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,char_type
+  use global, only: ntypat,znucl,char_type
   use defs_basis, only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
   logical, intent(in), optional :: dos
-  real(8):: xred(3,nat),xcart(3,nat),xred0(3,nat)
+  real(8):: xred(3,parini%nat),xcart(3,parini%nat),xred0(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   integer:: iat,iprec,ka,kb,kc,itype
   integer:: nat_type(ntypat)
@@ -41,7 +41,7 @@ contains
   character(150):: command,all_atoms
   angbohr=1.d0/Bohr_Ang
   xred=xred0
-  call backtocell(nat,latvec,xred)
+  call backtocell(parini%nat,latvec,xred)
   !getwfk=.false.
   
   if(iprec==1) then
@@ -78,18 +78,18 @@ contains
   !write(87,'(a)') "#Geometry section: lattice and atoms"
   open(unit=87,file="input_geometry.gen")
     if(parini%bc==2) then
-      write(87,'(i5,a)') nat, " C"
+      write(87,'(i5,a)') parini%nat, " C"
     else
-      write(87,'(i5,a)') nat, " F"
+      write(87,'(i5,a)') parini%nat, " F"
     endif
       write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
     if(parini%bc==2) then
-      call rxyz_int2cart(latvec,xred,xcart,nat)
-      do iat = 1, nat
+      call rxyz_int2cart(latvec,xred,xcart,parini%nat)
+      do iat = 1, parini%nat
         write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xcart(:, iat)*Bohr_Ang
       end do
     else
-      do iat = 1, nat
+      do iat = 1, parini%nat
         write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xred(:, iat)
       end do
       write(87,'(3(1x,es25.15))') 0.d0,0.d0,0.d0
@@ -102,13 +102,12 @@ contains
   
   subroutine get_output_dftb(parini,fcart,energy,strten)
   use mod_parini, only: typ_parini
-  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
   type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,nat_cell
-  real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
+  real(8):: fcart(3,parini%nat),energy,strten(6),value,latvec(3,3),xred(3,parini%nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
   character(250)::all_line
   
@@ -133,7 +132,7 @@ contains
     endif
    k = index(all_line(1:n),"Total Forces")
     if(k.ne.0) then
-      do iat=1,nat
+      do iat=1,parini%nat
       read(32,*) fcart(:,iat) 
       enddo
       cycle
@@ -215,10 +214,9 @@ contains
   !This routine will setup the input file for a vasp geometry optimization
   !It will also call the run script and harvest the output
   use mod_parini, only: typ_parini
-  use global, only: nat
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter,tmp
+  real(8):: xred(3,parini%nat),fcart(3,parini%nat),strten(6),energy,counter,tmp
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),fmax
   integer:: iat,iprec,ka,kb,kc,itype
   logical:: getwfk
@@ -274,11 +272,11 @@ contains
   
   subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   use mod_parini, only: typ_parini
-  use global, only: nat,ntypat,znucl,char_type
+  use global, only: ntypat,znucl,char_type
   use defs_basis,only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat),xcart(3,nat)
+  real(8):: xred(3,parini%nat),xcart(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   integer:: iat,iprec,ka,kb,kc,itype,nat_type(ntypat)
   logical:: getwfk
@@ -330,18 +328,18 @@ contains
   !The Geometry section
   open(unit=87,file="input_geometry.gen")
     if(parini%bc==2) then
-      write(87,'(i5,a)') nat, " C"
+      write(87,'(i5,a)') parini%nat, " C"
     else
-      write(87,'(i5,a)') nat, " F"
+      write(87,'(i5,a)') parini%nat, " F"
     endif
       write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
     if(parini%bc==2) then
-      call rxyz_int2cart(latvec,xred,xcart,nat)
-      do iat = 1, nat
+      call rxyz_int2cart(latvec,xred,xcart,parini%nat)
+      do iat = 1, parini%nat
         write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xcart(:, iat)*Bohr_Ang
       end do
     else
-      do iat = 1, nat
+      do iat = 1, parini%nat
         write(87,'(i5,1x,i5,3(1x,es25.15))') iat, parini%typat_global(iat), xred(:, iat)
       end do
       write(87,'(3(1x,es25.15))') 0.d0,0.d0,0.d0
@@ -383,7 +381,7 @@ contains
   if(parini%bc==1) write(87,'(a,es25.15)') " Pressure = ", parini%target_pressure_habohr
   if(any(parini%fixat(:))) then
      write(87,'(a)') "Constraints = {"
-     do iat=1,nat
+     do iat=1,parini%nat
        if(parini%fixat(iat)) then
           write(87,'(i5,1x,a)') iat, " 1.0, 0.0, 0.0 "
           write(87,'(i5,1x,a)') iat, " 0.0, 1.0, 0.0 "
@@ -401,14 +399,13 @@ contains
   
   subroutine get_output_dftb_geopt(parini,latvec,xred,fcart,energy,strten,fmax)
   use mod_parini, only: typ_parini
-  use global, only: nat
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
   implicit none
   type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,istr
-  real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling,r_tmp
-  real(8):: fmax,strtarget(6),dstr(6),xtmp(3,nat)
+  real(8):: fcart(3,parini%nat),energy,strten(6),value,latvec(3,3),xred(3,parini%nat),str_matrix(3,3),vol,a(3,3),scaling,r_tmp
+  real(8):: fmax,strtarget(6),dstr(6),xtmp(3,parini%nat)
   character(11):: ch_tmp
   character(150)::all_line
   logical:: cartesian
@@ -421,12 +418,12 @@ contains
     cartesian=.false.
   endif
   read(87,*) ch_tmp
-  do iat=1,nat
+  do iat=1,parini%nat
     read(87,*) int_tmp,int_tmp,xtmp(:,iat)
   enddo
   if(cartesian) then
      xtmp=xtmp/Bohr_Ang
-     call rxyz_cart2int(latvec,xred,xtmp,nat)
+     call rxyz_cart2int(latvec,xred,xtmp,parini%nat)
   else
      xred=xtmp     
      read(87,*) r_tmp
@@ -439,7 +436,7 @@ contains
   close(87)
   !!Compute maximal component of forces, EXCLUDING any fixed components
    fmax=0.0d0
-   do iat=1,nat
+   do iat=1,parini%nat
      do i=1,3
   !     if (dtsets(1)%iatfix(i,iat) /= 1) then
          if( abs(fcart(i,iat)) >= fmax ) fmax=abs(fcart(i,iat))

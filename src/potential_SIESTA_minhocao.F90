@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: nat,ntypat,znucl,char_type
+  use global, only: ntypat,znucl,char_type
   use defs_basis
   !use cell_utils
 
@@ -25,7 +25,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
-    real(8), intent(in) :: xred(3,nat)
+    real(8), intent(in) :: xred(3,parini%nat)
     integer, intent(inout) :: ka, kb, kc
     logical, intent(in) :: getwfk
     logical, intent(in), optional :: dos
@@ -79,7 +79,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     !This particular part is made for Silicon and Hydrogen cells
     write(87,'(a)') "# Definition of the unit cell"
     write(87,*) "NumberOfSpecies", ntypat !Number of atom types
-    write(87,*) "NumberOfAtoms",      nat !Number of atoms
+    write(87,*) "NumberOfAtoms",      parini%nat !Number of atoms
 
     write(87,'(a)') "%block ChemicalSpeciesLabel"
     do itype = 1, ntypat
@@ -96,7 +96,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     write(87,*) " "
     write(87,*) "AtomicCoordinatesFormat Fractional" 
     write(87,*) "%block AtomicCoordinatesAndAtomicSpecies"
-    do iat=1,nat
+    do iat=1,parini%nat
       write(87,'(3(1x,es25.15),i5)') xred(:,iat),parini%typat_global(iat)
     enddo
     write(87,*) "%endblock AtomicCoordinatesAndAtomicSpecies"
@@ -104,8 +104,10 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   end subroutine make_input_siesta
 
 
-  subroutine get_output_siesta(fcart,energy,strten)
-    real(8), intent(out) ::  fcart(3, nat), energy, strten(6)
+  subroutine get_output_siesta(parini,fcart,energy,strten)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    real(8), intent(out) ::  fcart(3, parini%nat), energy, strten(6)
 
     integer:: io,i,iat
     real(8):: value, str_matrix(3,3)
@@ -130,7 +132,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     read(32,*) value !Temporary
 
     !Now get atomic forces
-    do iat=1,nat
+    do iat=1,parini%nat
       read(32,*) value, value, fcart(:,iat)
     enddo
     !Convert back to Ha/Bohr instead of Ry/Bohr
@@ -143,10 +145,9 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   use mod_parini, only: typ_parini
   !This routine will setup the input file for a siesta geometry optimization
   !It will also call the run script and harvest the output
-  use global, only: nat
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat),fcart(3,nat),strten(6),energy,counter
+  real(8):: xred(3,parini%nat),fcart(3,parini%nat),strten(6),energy,counter
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3)
   integer:: iat,iprec,ka,kb,kc,itype
   logical:: getwfk
@@ -159,7 +160,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
    call system("./runjob.sh")
   ! call system("sleep 1")
   !Now harvest the structure, energy, forces, etc
-   call get_output_siesta_geopt(latvec,xred,fcart,energy,strten)
+   call get_output_siesta_geopt(parini,latvec,xred,fcart,energy,strten)
   !Check how many iterations have been needed
    call system("grep Begin siestarun.out|tail -1>tmp_count")
   ! call system("sleep 1")
@@ -182,7 +183,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   !use global, only: nat,ntypat,znucl,typat,dkpt1,dkpt2,char_type,ntime_geopt,tolmxf,target_pressure_gpa,siesta_kpt_mode
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat)
+  real(8):: xred(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt
   integer:: iat,iprec,ka,kb,kc,itype
   logical:: getwfk
@@ -265,7 +266,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   !This particular part is made for Silicon and Hydrogen cells
   write(87,'(a)') "# Definition of the unit cell"
   write(87,*) "NumberOfSpecies", ntypat !Number of atom types
-  write(87,*) "NumberOfAtoms",      nat !Number of atoms
+  write(87,*) "NumberOfAtoms",      parini%nat !Number of atoms
   
   write(87,'(a)') "%block ChemicalSpeciesLabel"
   do itype=1,ntypat
@@ -282,19 +283,21 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   write(87,*) " "
   write(87,*) "AtomicCoordinatesFormat Fractional" 
   write(87,*) "%block AtomicCoordinatesAndAtomicSpecies"
-  do iat=1,nat
+  do iat=1,parini%nat
   write(87,'(3(1x,es25.15),i5)') xred(:,iat),parini%typat_global(iat)
   enddo 
   write(87,*) "%endblock AtomicCoordinatesAndAtomicSpecies"
   close(87)
   end  subroutine
   
-  subroutine get_output_siesta_geopt(latvec,xred,fcart,energy,strten)
+  subroutine get_output_siesta_geopt(parini,latvec,xred,fcart,energy,strten)
   !use global, only: nat
   !use defs_basis
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,itmp1,itmp2
-  real(8):: fcart(3,nat),energy,strten(6),value,str_matrix(3,3),latvec(3,3),xred(3,nat)
+  real(8):: fcart(3,parini%nat),energy,strten(6),value,str_matrix(3,3),latvec(3,3),xred(3,parini%nat)
   character(11):: ch_tmp
   open(unit=32,file="FORCE_STRESS")
   !First value is energy in Ry
@@ -313,7 +316,7 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   strten=strten*5.d0  !Convert to Hartree
   read(32,*) value !Temporary
   !Now get atomic forces
-  do iat=1,nat
+  do iat=1,parini%nat
   read(32,*) value,value,fcart(:,iat)
   enddo
   !Convert back to Ha/Bohr instead of Ry/Bohr
@@ -329,8 +332,8 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   read(32,*) latvec(:,3)
   latvec=latvec/Bohr_Ang
   read(32,*) iat
-  if(iat.ne.nat) stop "Something wrong with atomic number!"
-  do iat=1,nat
+  if(iat.ne.parini%nat) stop "Something wrong with atomic number!"
+  do iat=1,parini%nat
   read(32,*) itmp1,itmp2,xred(:,iat)
   enddo
   close(32)

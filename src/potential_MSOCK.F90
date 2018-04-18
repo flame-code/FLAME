@@ -18,11 +18,11 @@ contains
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
-    real(8), intent(in) :: xred(3,nat)
+    real(8), intent(in) :: xred(3,parini%nat)
     integer, intent(inout) :: ka, kb, kc
     integer, intent(in) :: iprec
-    real(8), intent(out):: fcart(3,nat),energy,strten(6)
-    real(8):: dist_ang(6), latvec_ang(3,3), latvec_rot(3,3), rxyz(3,nat), rotmat(3,3), vol
+    real(8), intent(out):: fcart(3,parini%nat),energy,strten(6)
+    real(8):: dist_ang(6), latvec_ang(3,3), latvec_rot(3,3), rxyz(3,parini%nat), rotmat(3,3), vol
     integer:: i,iat,itype
     integer:: nat_type(ntypat)
     character(1):: fn
@@ -64,8 +64,8 @@ if(iprec/=iprec_msock) then
 endif
     msg=trim(sock_extra_string)
     nmsg=60
-    call send_data(xred,latvec,nat,nat,msg,nmsg,latvec_rot)
-    call get_data(energy,fcart,strten,latvec,latvec_rot,nat)
+    call send_data(xred,latvec,parini%nat,parini%nat,msg,nmsg,latvec_rot)
+    call get_data(energy,fcart,strten,latvec,latvec_rot,parini%nat)
 
   end subroutine
 

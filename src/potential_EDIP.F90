@@ -12,7 +12,7 @@ module interface_edip
 contains
 
 
-subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
+subroutine edip(parini,latvec_bohr,xred0,fxyz,strten,etot)
 !      subroutine energyandforces(nat,latvec,rxyz0,fxyz,stress,pressure,etot,count1)
  
 
@@ -126,16 +126,18 @@ subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
 
 !        subroutine compute_forces_EDIP(N_own, pos, L_x, L_y, L_z, 
 !     &	    E_potential, f)
+          use mod_parini, only: typ_parini
           implicit none
+          type(typ_parini), intent(in):: parini
           
 !  ------------------------- VARIABLE DECLARATIONS -------------------------
 !          integer N_own, max_nbrs
           integer:: max_nbrs
 !          double precision pos(3,N_own)
-          real(8):: pos(3,nat)
+          real(8):: pos(3,parini%nat)
           real(8):: E_potential
 !          double precision f(3,N_own)
-          real(8):: f(3,nat)
+          real(8):: f(3,parini%nat)
           real(8):: L_x, L_y, L_z
 
           integer i,j,k,l,n
@@ -237,7 +239,7 @@ subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
           integer, allocatable:: lsta(:,:), lstb(:)
           real(8), allocatable:: rel(:,:)
           real(8):: etot,cut2,coord_iat,ener_iat,xarg,coord,coord2,ener,ener2
-          real(8):: latvec(3,3),latvec_bohr(3,3),latvecinv(3,3),stress(3,3),gradvol(3,3),vol,rxyz(3,nat),fxyz(3,nat),trans(3,3),transinv(3,3),a(3,3),stressvol(3,3),xred0(3,nat),xred(3,nat),tmplat(3,3)
+          real(8):: latvec(3,3),latvec_bohr(3,3),latvecinv(3,3),stress(3,3),gradvol(3,3),vol,rxyz(3,parini%nat),fxyz(3,parini%nat),trans(3,3),transinv(3,3),a(3,3),stressvol(3,3),xred0(3,parini%nat),xred(3,parini%nat),tmplat(3,3)
           integer:: nnbrx,istop,kk,ll
           real(8):: sil_sjl,si1_sj1,si2_sj2,si3_sj3,tkmsum,tt,strten(6)
           xred=xred0
@@ -274,14 +276,14 @@ subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
 !Do some preparation including the construction of the pair list 
           nnbrx=50 !number of geighbors
           max_nbrs=nnbrx
-          allocate(lsta(2,nat),lstb(nnbrx*nat),rel(5,nnbrx*nat))
+          allocate(lsta(2,parini%nat),lstb(nnbrx*parini%nat),rel(5,nnbrx*parini%nat))
           latvec=latvec_bohr*Bohr_Ang
           trans=latvec
           cut2=par_a!-1.d-8
-          call backtocell(nat,latvec,xred)
-          call rxyz_int2cart(latvec,xred,rxyz,nat)
+          call backtocell(parini%nat,latvec,xred)
+          call rxyz_int2cart(latvec,xred,rxyz,parini%nat)
           call invertmat(trans,transinv,3)
-          call makepairlist(lsta,lstb,rel,nat,rxyz,latvec,cut2,nnbrx)
+          call makepairlist(lsta,lstb,rel,parini%nat,rxyz,latvec,cut2,nnbrx)
 
 
 !Allocation of temporary arrays
@@ -316,7 +318,7 @@ subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
 !          L_z_div_2 = L_z/2.0D0
         
 !          do i=1, N_own
-          do i=1, nat
+          do i=1, parini%nat
             f(1,i) = 0.0d0
             f(2,i) = 0.0d0
             f(3,i) = 0.0d0
@@ -349,7 +351,7 @@ subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
           
 !  --- LEVEL 1: OUTER LOOP OVER ATOMS ---
         
-          do i=1, nat 
+          do i=1, parini%nat 
             
 !   RESET COORDINATION AND NEIGHBOR NUMBERS
             coord_iat=0.d0
@@ -840,11 +842,11 @@ subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
 
         call getvol(latvec,vol)
           if(vol.lt.0.d0) then
-            write(77,*) nat
+            write(77,*) parini%nat
             write(77,*) latvec(:,1)
             write(77,*) latvec(:,2)
             write(77,*) latvec(:,3)
-            do i=1,nat
+            do i=1,parini%nat
               write(77,*)  rxyz(:,i),"Si"
             enddo
 
@@ -1383,7 +1385,8 @@ subroutine edip(latvec_bohr,xred0,fxyz,strten,etot)
  !This subroutine will construct the pairlist lsta and lstb of the atomic positions rxyz in the cell latvec
  !The cutoff is given with cut, all relative coordinates are stored in rel
  implicit none
- integer, intent(inout) :: lsta(2,nat),nat,lstb(nat*nmax),nmax
+ integer, intent(in) :: nat
+ integer, intent(inout) :: lsta(2,nat),lstb(nat*nmax),nmax
  real*8, intent(inout)  :: rel(5,nat*nmax)
  real*8, intent(in)     :: cut, rxyz(3,nat), latvec(3,3)
  real*8                 :: rxyzexp(3,nat,3,3,3),relinteriat(5,nmax),transvecall(3,3,3,3)
@@ -1459,7 +1462,7 @@ use global
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: iat
-do iat=1,nat
+do iat=1,parini%nat
    if(int(znucl(parini%typat_global(iat))).ne.14) then
      stop "EDIP only allowed with Silicon"
    endif

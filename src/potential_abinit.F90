@@ -22,7 +22,7 @@ contains
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
     real(8), intent(in) :: latvec(3,3)
-    real(8), intent(in) :: xred(3,nat)
+    real(8), intent(in) :: xred(3,parini%nat)
     integer, intent(inout) :: ka, kb, kc
     logical, intent(in) :: getwfk
     logical, intent(in), optional :: dos
@@ -83,7 +83,7 @@ contains
     write(87,'(a)') "# Definition of the unit cell"
     call latvec2acell_rprim(latvec, acell, rprim)
     write(87,*) "natom"
-    write(87,*)  nat
+    write(87,*)  parini%nat
     write(87,*) "ntypat"
     write(87,*)  ntypat !Number of atom types        
     write(87,*) "znucl"
@@ -99,15 +99,17 @@ contains
     write(87,'(3(1x,es25.15))')  rprim(:,2)
     write(87,'(3(1x,es25.15))')  rprim(:,3)
     write(87,*) "xred"
-    do iat=1,nat
+    do iat=1,parini%nat
       write(87,'(3(1x,es25.15))') xred(:,iat)
     enddo
     close(87)
   end subroutine make_input_abinit
 
 
-  subroutine get_output_abinit(fcart, energy, strten)
-    real(8), intent(out) ::  fcart(3, nat), energy, strten(6)
+  subroutine get_output_abinit(parini,fcart, energy, strten)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    real(8), intent(out) ::  fcart(3, parini%nat), energy, strten(6)
     
     integer :: io, iat
     real(8) :: value
@@ -130,8 +132,8 @@ contains
       elseif (trim(ch_tmp).eq."fcart") then
         write(*,*) "fcart found"
         read(all_line,*,iostat=io)ch_tmp, fcart(:,1)
-        if(nat.gt.1) then
-          do iat = 2, nat
+        if(parini%nat.gt.1) then
+          do iat = 2, parini%nat
             read(32,*) fcart(:,iat)
           enddo
         endif

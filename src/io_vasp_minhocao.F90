@@ -7,7 +7,7 @@ subroutine poscar_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: nat,ntypat,znucl,char_type,units
+use global, only: ntypat,znucl,char_type,units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat
@@ -67,12 +67,12 @@ if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
              read(firstline,*) char_type(:)
      endif
 !Compute total number of atoms and types and shit
-nat=0
+parini%nat=0
 do i=1,ntypat
-      nat=nat+nitype(i)
+      parini%nat=parini%nat+nitype(i)
 enddo
-if(nat.gt.0) nat_found=.true.
-if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))          
+if(parini%nat.gt.0) nat_found=.true.
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(parini%nat))          
 iat=0
 do i=1,ntypat
     do j=1,nitype(i)
