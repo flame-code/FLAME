@@ -2753,6 +2753,8 @@ subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,v
  real(8),dimension(3,parini%nat):: vposcur
  real(8),dimension(3,parini%nat):: pospred
  real(8),dimension(3,parini%nat):: dxred
+ real(8),dimension(parres%nmd_dynamics):: ensave   !zl
+ real(8),dimension(parres%nmd_dynamics):: ensmoth  !zl
  real(8):: counter
  integer:: iprec 
  character(40)::filename,folder
@@ -3332,10 +3334,9 @@ end subroutine init_fp
 subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
 use mod_parini, only: typ_parini
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
-use global, only: ntypat,char_type
 type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
-real(8):: fp(fp_len),pos_red(3,parini%nat),latvec(3,3),rxyz(3,parini%nat),vol,rcov_arr(parini%nat),fp_coganov_atomic(3,fp_15_fp_size,ntypat,parini%nat)
+real(8):: fp(fp_len),pos_red(3,parini%nat),latvec(3,3),rxyz(3,parini%nat),vol,rcov_arr(parini%nat),fp_coganov_atomic(3,fp_15_fp_size,parini%ntypat_global,parini%nat)
 real(8):: rvan(parini%nat) !nat*molecules)
 character(len=2):: finalchar(parini%nat) ! dimension(nat*molecules)
 end subroutine get_fp
@@ -3751,11 +3752,10 @@ real(8):: fcart_in(3,parini%nat),strten_in(6),fmax,fmax_at,fmax_lat
 end subroutine get_fmax
 subroutine init_hessinv(parini,hessin,latvec,omega,b0,lattdeg) 
 use mod_parini, only: typ_parini
-use global, only: ntypat,znucl
 type(typ_parini), intent(in):: parini
 integer:: itype,iat,i,j,k,lattdeg
 real(8):: omega,b0,hessin(3*parini%nat+9,3*parini%nat+9),diagat,avmass,diaglat
-real(8):: amass(parini%nat),rcov,amass_u(ntypat),vol
+real(8):: amass(parini%nat),rcov,amass_u(parini%ntypat_global),vol
 real(8),dimension(3,3):: diagat_lat,diagat_lat_inv,latvec,latvectrans
 end subroutine init_hessinv
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)

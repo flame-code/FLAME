@@ -141,10 +141,10 @@ if(parini_t%verb.gt.0.and.trim(parini_t%potential_potential).ne."lammps") write(
     if(parini_t%voids) then
        !Backup the number of atoms and atom types
        nat_all=parini_t%nat
-       ntypat_all=ntypat
+       ntypat_all=parini_t%ntypat_global
        !Replace those numbers with the ones used to get the atomic forces
        parini_t%nat=nat_atoms
-       ntypat=ntypat_atoms
+       parini_t%ntypat_global=ntypat_atoms
     endif  
     
     if(trim(parini_t%potential_potential)=="abinit") then
@@ -247,7 +247,7 @@ if(parini_t%verb.gt.0.and.trim(parini_t%potential_potential).ne."lammps") write(
     if(parini_t%voids) then
        !Put back the number of atoms and atom types
        parini_t%nat=nat_all
-       ntypat=ntypat_all
+       parini_t%ntypat_global=ntypat_all
        !Compute the LJ forces and stresses
        call lj_void_addon(parini_t,latvec,xred,fcart_voidlj,strten_voidlj,energy_voidlj)
        energy=energy+energy_voidlj

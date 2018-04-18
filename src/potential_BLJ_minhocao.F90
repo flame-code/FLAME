@@ -273,9 +273,12 @@ end module interface_blj
 !!!********************************************************
 !!
 
-     subroutine blj_init_parameter()
+     subroutine blj_init_parameter(parini)
+     use mod_parini, only: typ_parini
      use global
      use blj_params
+     implicit none
+     type(typ_parini), intent(in):: parini
      !We consider particle 1 as A- and particle 2 as B-particles     
      !In general the parmeters are symmetric, i.e. sigma(A,B)=sigma(B,A)
      !In the end the array "Kinds" is allocated, if it has not already been done
@@ -289,11 +292,11 @@ end module interface_blj
      if(minval(znucl(:)).lt.201.or.maxval(znucl(:)).gt.202) stop "BLJ particles must have znucl values of 201 and 202"
      if(file_exists) then
          open(unit=33,file=trim(filename))
-         if(ntypat==1) then
+         if(parini%ntypat_global==1) then
            read(33,*) sigmalj(1,1)
            read(33,*) epslj(1,1)
            read(33,*) alpha_lj
-         elseif(ntypat==2) then
+         elseif(parini%ntypat_global==2) then
            read(33,*) sigmalj(1,1),sigmalj(1,2),sigmalj(2,2)
                       sigmalj(2,1)=sigmalj(1,2)
            write(*,'(a,3(es15.7))') " # BLJ parameters: sigma(1,1), sigma(1,2)=sigma(2,1), sigma(2,2)   ",&

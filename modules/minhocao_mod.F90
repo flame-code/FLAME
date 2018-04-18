@@ -5,7 +5,7 @@ implicit none
 !  real(8):: target_pressure_habohr  !Target pressures
 !  integer:: nat                   !Number of atoms
   integer:: nmol                  !Number of molecules
-  integer:: ntypat                !Number of atom types
+!  integer:: ntypat                !Number of atom types
 !  integer,allocatable:: fragarr(:)
 !  integer,allocatable:: fragsize(:)
 !  integer,allocatable:: lhead(:)

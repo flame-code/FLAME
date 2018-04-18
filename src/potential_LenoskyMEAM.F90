@@ -21,7 +21,7 @@ real(8), parameter:: cut=9.d0
 real(8):: xred(3,parini%nat),rxyz(3,parini%nat),xred0(3,parini%nat),fcart(3,parini%nat),latvec(3,3),latvec_ang(3,3),strten(6),stress(3,3),energy,count
 real(8):: vol
 !Only one type of atoms allowed for MEAM
-if(ntypat.gt.1) stop "Only one type of atoms allowed in MEAM"
+if(parini%ntypat_global.gt.1) stop "Only one type of atoms allowed in MEAM"
 
 !Number of kpoints
 n_in(1)=1

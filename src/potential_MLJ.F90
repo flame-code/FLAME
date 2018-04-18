@@ -39,7 +39,7 @@ contains
         implicit none
         type(typ_parini), intent(in):: parini
         integer:: iat, jat, kk, ll, l, nec(3), i, j, k, m
-        real(8):: xred(3,parini%nat),fxyz(3,parini%nat),xred0(3,parini%nat),dxyz(3),r1red(3),r2red(3),rcut2(ntypat,ntypat)
+        real(8):: xred(3,parini%nat),fxyz(3,parini%nat),xred0(3,parini%nat),dxyz(3),r1red(3),r2red(3),rcut2(parini%ntypat_global,parini%ntypat_global)
         real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol,strten(6)
         real(8), allocatable:: rel(:,:)
         real(8):: latvec(3,3),latvec_ang(3,3),latvecinv(3,3),celldv(3,3),pressure,gradvol(3,3),stress(3,3),tmplat(3,3)
@@ -178,14 +178,14 @@ end module interface_mlj
      logical:: file_exists
      character(40):: filename
 !Allocate the interaction parameters     
-     if(.not.allocated(sigmamlj)) allocate(sigmamlj(ntypat,ntypat)) !sigma(i,j) is the sigma between particle i and particle j
-     if(.not.allocated(epsmlj  )) allocate(epsmlj  (ntypat,ntypat)) !eps(i,j) is the epsilon between particle i and particle j
-     if(.not.allocated(rcutmlj )) allocate(rcutmlj (ntypat,ntypat)) !rcut(i,j) is the cutoff distance between particle i and j
-     if(.not.allocated(alphamlj)) allocate(alphamlj(ntypat,ntypat)) !cutoff discatnce
+     if(.not.allocated(sigmamlj)) allocate(sigmamlj(parini%ntypat_global,parini%ntypat_global)) !sigma(i,j) is the sigma between particle i and particle j
+     if(.not.allocated(epsmlj  )) allocate(epsmlj  (parini%ntypat_global,parini%ntypat_global)) !eps(i,j) is the epsilon between particle i and particle j
+     if(.not.allocated(rcutmlj )) allocate(rcutmlj (parini%ntypat_global,parini%ntypat_global)) !rcut(i,j) is the cutoff distance between particle i and j
+     if(.not.allocated(alphamlj)) allocate(alphamlj(parini%ntypat_global,parini%ntypat_global)) !cutoff discatnce
 
      sigmamlj=0.d0;epsmlj=0.d0
 !Get the LJ parameters from a lookup table
-         do ityp=1,ntypat
+         do ityp=1,parini%ntypat_global
            call mlj_atmdata(parini%amu,sigmamlj(ityp,ityp),epsmlj(ityp,ityp),parini%rcov(ityp),char_type(ityp),znucl(ityp))
            alphamlj(ityp,ityp)=2.5d0
          enddo
@@ -193,7 +193,7 @@ end module interface_mlj
 !We can setup simple rules for mixed LJ parameters
 
 !SIGMA:
-     do ityp=1,ntypat
+     do ityp=1,parini%ntypat_global
        do jtyp=1,ityp-1
 !Geometric average
          sigmamlj(ityp,jtyp)=sqrt(sigmamlj(ityp,ityp)*sigmamlj(jtyp,jtyp))
@@ -204,7 +204,7 @@ end module interface_mlj
      enddo
 
 !EPSILON:
-     do ityp=1,ntypat
+     do ityp=1,parini%ntypat_global
        do jtyp=1,ityp-1
 !Geometric average
          epsmlj(ityp,jtyp)=sqrt(epsmlj(ityp,ityp)*epsmlj(jtyp,jtyp))
@@ -217,15 +217,15 @@ end module interface_mlj
      rcutmlj(:,:)=sigmamlj(:,:)*2.5d0
 
 write(*,*) "Epsilon"
-do ityp=1,ntypat
+do ityp=1,parini%ntypat_global
  write(*,*) epsmlj(:,ityp)
 enddo
 write(*,*) "Sigma"
-do ityp=1,ntypat
+do ityp=1,parini%ntypat_global
  write(*,*) sigmamlj(:,ityp)
 enddo
 write(*,*) "Rcut"
-do ityp=1,ntypat
+do ityp=1,parini%ntypat_global
  write(*,*) rcutmlj(:,ityp)
 enddo
      end subroutine mlj_init_parameter

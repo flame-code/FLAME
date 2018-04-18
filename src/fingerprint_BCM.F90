@@ -168,15 +168,17 @@ enddo
 deallocate(qlm,rxyzexp,transvecall)
 end subroutine
 
-subroutine get_distance_calypso(fp1,fp2,fp_dim,nl,dist)
-use global, only: znucl,ntypat
+subroutine get_distance_calypso(parini,fp1,fp2,fp_dim,nl,dist)
+use global, only: znucl
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: fp_dim,nl,yll,i,j
 real(8):: fp1(fp_dim*nl),fp2(fp_dim*nl),dist
 !This sunroutine will compute the cosine distance between two fingerprints fp1 and fp2 and 
 !store the output distance.  All conventions and 
 !methods are from J.Chem.Phys, 130, 104504 (2009) and IEEE Symposium, Okt 21-23. (2008) (M.Valle and A.Oganov)
-integer :: nkinds_sum(ntypat), fp_size
+integer :: nkinds_sum(parini%ntypat_global), fp_size
 real(8) :: fp1_1(nl*fp_dim),fp2_1(nl*fp_dim)
 real(8) :: distance
 integer             :: i_kind,j_kind,i_fp,k,imin,imax,iat

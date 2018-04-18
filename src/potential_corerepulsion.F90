@@ -55,8 +55,8 @@ end subroutine
         real(8):: trans(3,3), transinv(3,3)
         real(8):: crossp(3),d,dd,dd2,dd6,dd12,dx,dy,dz,s,s2,s6,s12,rc,rc2,rc6,rc12,tt,t1,t2,t3
         real(8):: sil_sjl1,sil_sjl2,sil_sjl3, si1_sj1, si2_sj2, si3_sj3, tkmsum1,tkmsum2,tkmsum3, cutmax,epscur
-        real(8):: rcut2_lj(ntypat,ntypat),eps_lj,sigma_lj_fact,double_count
-        real(8):: sigma_lj(ntypat,ntypat)
+        real(8):: rcut2_lj(parini%ntypat_global,parini%ntypat_global),eps_lj,sigma_lj_fact,double_count
+        real(8):: sigma_lj(parini%ntypat_global,parini%ntypat_global)
         logical:: truncated
 !Set up epsilon and sigma parameters
         eps_lj=1.d0
@@ -67,8 +67,8 @@ end subroutine
         latvec_ang=latvec*Bohr_Ang
 !Set up sigma matrix
         sigma_lj=0.d0
-        do i=1,ntypat
-          do j=1,ntypat
+        do i=1,parini%ntypat_global
+          do j=1,parini%ntypat_global
 !Exclude interactions between LJ particles, since they are already LJ... hahaha
              if(int(znucl(i)).lt.200.and.int(znucl(j)).lt.200) sigma_lj(i,j)=(parini%rcov(i)+parini%rcov(j))*Bohr_Ang*sigma_lj_fact
           enddo

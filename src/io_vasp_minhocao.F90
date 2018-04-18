@@ -7,7 +7,7 @@ subroutine poscar_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: ntypat,znucl,char_type,units
+use global, only: znucl,char_type,units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat
@@ -39,19 +39,19 @@ read(46,'(a250)') line_vaspversion
 !line are characters or numbers, so if vasp version 4 or 5
 all_line=" "//trim(line_vaspversion)
 !write(*,*) all_line
-ntypat=0
+parini%ntypat_global=0
 do i=1,250-1!we cannot have more than 250 characters per line, sorry...
 if(all_line(i:i)==" ".and.all_line(i+1:i+1).ne." ") then
-ntypat=ntypat+1
+parini%ntypat_global=parini%ntypat_global+1
 endif
 enddo
-if(ntypat.gt.0) ntypat_found=.true.
+if(parini%ntypat_global.gt.0) ntypat_found=.true.
 !Here we allocate the arrays of types, and the character stuff
-if(.not.allocated(znucl)) allocate(znucl(ntypat))
-if(.not.allocated(char_type)) allocate(char_type(ntypat))
-if(.not.allocated(nitype)) allocate(nitype(ntypat))          
-if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
-if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
+if(.not.allocated(znucl)) allocate(znucl(parini%ntypat_global))
+if(.not.allocated(char_type)) allocate(char_type(parini%ntypat_global))
+if(.not.allocated(nitype)) allocate(nitype(parini%ntypat_global))          
+if(.not.allocated(parini%amu)) allocate(parini%amu(parini%ntypat_global))
+if(.not.allocated(parini%rcov)) allocate(parini%rcov(parini%ntypat_global))
 !Check if the character is a number or a real character
       READ(line_vaspversion,*,ERR=99,END=99) CHARAC
       IF (.NOT.(CHARAC>='0' .AND. CHARAC<='9')) THEN
@@ -68,13 +68,13 @@ if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
      endif
 !Compute total number of atoms and types and shit
 parini%nat=0
-do i=1,ntypat
+do i=1,parini%ntypat_global
       parini%nat=parini%nat+nitype(i)
 enddo
 if(parini%nat.gt.0) nat_found=.true.
 if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(parini%nat))          
 iat=0
-do i=1,ntypat
+do i=1,parini%ntypat_global
     do j=1,nitype(i)
       iat=iat+1
       parini%typat_global(iat)=i

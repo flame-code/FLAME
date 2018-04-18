@@ -27,7 +27,7 @@ contains
   !accuracy is given by the integer length of dkpt for vasp_kpt_mode==1 (10 for insulators, 100 for metals)
   !accuracy is 2pi/bohr*dkpt for vasp_kpt_mode==2 
   use mod_parini, only: typ_parini
-  use global, only: ntypat,znucl,char_type
+  use global, only: znucl,char_type
   use defs_basis, only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
@@ -35,7 +35,7 @@ contains
   real(8):: xred(3,parini%nat),xcart(3,parini%nat),xred0(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   integer:: iat,iprec,ka,kb,kc,itype
-  integer:: nat_type(ntypat)
+  integer:: nat_type(parini%ntypat_global)
   logical:: getwfk
   character(1):: fn
   character(150):: command,all_atoms
@@ -82,7 +82,7 @@ contains
     else
       write(87,'(i5,a)') parini%nat, " F"
     endif
-      write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
+      write(87,*) (char_type(iat)(1:2)//" ", iat=1,parini%ntypat_global)
     if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,parini%nat)
       do iat = 1, parini%nat
@@ -272,13 +272,13 @@ contains
   
   subroutine make_input_dftb_geopt(parini,latvec,xred,iprec,ka,kb,kc,getwfk)
   use mod_parini, only: typ_parini
-  use global, only: ntypat,znucl,char_type
+  use global, only: znucl,char_type
   use defs_basis,only: Bohr_Ang
   implicit none
   type(typ_parini), intent(in):: parini
   real(8):: xred(3,parini%nat),xcart(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
-  integer:: iat,iprec,ka,kb,kc,itype,nat_type(ntypat)
+  integer:: iat,iprec,ka,kb,kc,itype,nat_type(parini%ntypat_global)
   logical:: getwfk
   character(1):: fn
   character(150):: command,all_atoms
@@ -332,7 +332,7 @@ contains
     else
       write(87,'(i5,a)') parini%nat, " F"
     endif
-      write(87,*) (char_type(iat)(1:2)//" ", iat=1,ntypat)
+      write(87,*) (char_type(iat)(1:2)//" ", iat=1,parini%ntypat_global)
     if(parini%bc==2) then
       call rxyz_int2cart(latvec,xred,xcart,parini%nat)
       do iat = 1, parini%nat

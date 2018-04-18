@@ -1,5 +1,5 @@
 module interface_siesta
-  use global, only: ntypat,znucl,char_type
+  use global, only: znucl,char_type
   use defs_basis
   !use cell_utils
 
@@ -78,11 +78,11 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
     !The units are expected to be in angstroem
     !This particular part is made for Silicon and Hydrogen cells
     write(87,'(a)') "# Definition of the unit cell"
-    write(87,*) "NumberOfSpecies", ntypat !Number of atom types
+    write(87,*) "NumberOfSpecies", parini%ntypat_global !Number of atom types
     write(87,*) "NumberOfAtoms",      parini%nat !Number of atoms
 
     write(87,'(a)') "%block ChemicalSpeciesLabel"
-    do itype = 1, ntypat
+    do itype = 1, parini%ntypat_global
       write(87,'(i5,1x,i5,1x,a2)') itype, int(znucl(itype)), trim(char_type(itype)) 
     enddo
     write(87,'(a)') "%endblock ChemicalSpeciesLabel"
@@ -265,11 +265,11 @@ subroutine make_input_siesta(parini,latvec, xred, iprec, ka, kb, kc, getwfk, dos
   !The units are expected to be in angstroem
   !This particular part is made for Silicon and Hydrogen cells
   write(87,'(a)') "# Definition of the unit cell"
-  write(87,*) "NumberOfSpecies", ntypat !Number of atom types
+  write(87,*) "NumberOfSpecies", parini%ntypat_global !Number of atom types
   write(87,*) "NumberOfAtoms",      parini%nat !Number of atoms
   
   write(87,'(a)') "%block ChemicalSpeciesLabel"
-  do itype=1,ntypat
+  do itype=1,parini%ntypat_global
      write(87,'(i5,1x,i5,1x,a2)') itype,int(znucl(itype)),trim(char_type(itype)) 
   enddo
   write(87,'(a)') "%endblock ChemicalSpeciesLabel"

@@ -39,7 +39,7 @@ contains
 
     real(8):: dproj(6), acell(3), rprim(3,3), angbohr, dkpt
     integer:: iat, iprec, itype
-    integer:: nat_type(ntypat)
+    integer:: nat_type(parini%ntypat_global)
     character(1):: fn
 
     if(iprec == 1) then
@@ -100,7 +100,7 @@ contains
     ! In VASP, the atomic types need to follow in groups, and each number of
     ! a specific type must be given
     nat_type=0
-    do itype=1,ntypat
+    do itype=1,parini%ntypat_global
       do iat=1,parini%nat
         if(parini%typat_global(iat)==itype) nat_type(itype) = nat_type(itype) + 1
       enddo
@@ -370,7 +370,7 @@ logical:: fixat_tmp(parini%nat),fixlat_tmp(7)
   real(8):: xred(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
-  integer:: iat,iprec,ka,kb,kc,itype,nat_type(ntypat)
+  integer:: iat,iprec,ka,kb,kc,itype,nat_type(parini%ntypat_global)
   logical:: getwfk
   character(1):: fn
   character(150):: command
@@ -477,7 +477,7 @@ logical:: fixat_tmp(parini%nat),fixlat_tmp(7)
   !In VASP, the atomic types need to follow in groups, and each number of
   !a specific type must be given
   nat_type=0
-  do itype=1,ntypat
+  do itype=1,parini%ntypat_global
   do iat=1,parini%nat
   if(parini%typat_global(iat)==itype) nat_type(itype)=nat_type(itype)+1
   enddo

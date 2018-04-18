@@ -24,7 +24,7 @@ contains
     real(8), intent(out):: fcart(3,parini%nat),energy,strten(6)
     real(8):: dist_ang(6), latvec_ang(3,3), latvec_rot(3,3), rxyz(3,parini%nat), rotmat(3,3), vol
     integer:: i,iat,itype
-    integer:: nat_type(ntypat)
+    integer:: nat_type(parini%ntypat_global)
     character(1):: fn
 !Socket buffers
     integer:: nmsg

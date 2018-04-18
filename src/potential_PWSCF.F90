@@ -38,7 +38,7 @@ contains
 
     real(8):: dproj(6), acell(3), rprim(3,3), angbohr, dkpt
     integer:: iat, iprec, itype
-    integer:: nat_type(ntypat)
+    integer:: nat_type(parini%ntypat_global)
     character(1):: fn
 
     if(iprec == 1) then
@@ -61,7 +61,7 @@ contains
     close(87)
     open(unit=87, file="espresso.SYSTEM", ACCESS="APPEND")
         write(87,'(a,i5,a)') 'nat =  ',parini%nat,' ,'
-        write(87,'(a,i5,a)') 'ntyp =  ',ntypat,' ,'
+        write(87,'(a,i5,a)') 'ntyp =  ',parini%ntypat_global,' ,'
         write(87,'(a)')      'nosym = .true. ,'
 
 !Close block    
@@ -74,7 +74,7 @@ contains
 !Create Block with atoms, structure, etc.
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
-        do itype=1,ntypat
+        do itype=1,parini%ntypat_global
            write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"
@@ -242,7 +242,7 @@ contains
   real(8):: xred(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,angbohr
   real(8):: HaBohr_eVAng
-  integer:: iat,iprec,ka,kb,kc,itype,nat_type(ntypat)
+  integer:: iat,iprec,ka,kb,kc,itype,nat_type(parini%ntypat_global)
   logical:: getwfk
   character(1):: fn
   character(150):: command
@@ -286,7 +286,7 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_a.SYSTEM", ACCESS="APPEND")
         write(87,'(a,i5,a)') 'nat =  ',parini%nat,' ,'
-        write(87,'(a,i5,a)') 'ntyp = ',ntypat,' ,'
+        write(87,'(a,i5,a)') 'ntyp = ',parini%ntypat_global,' ,'
         write(87,'(a)')      'nosym = .true. ,'
 !Close block    
         write(87,'(a)') "/"
@@ -332,7 +332,7 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_b.SYSTEM", ACCESS="APPEND")
         write(87,'(a,i5,a)') 'nat =  ',parini%nat,' ,'
-        write(87,'(a,i5,a)') 'ntyp = ',ntypat,' ,'
+        write(87,'(a,i5,a)') 'ntyp = ',parini%ntypat_global,' ,'
         write(87,'(a)')      'nosym = .true. ,'
 !Close block    
         write(87,'(a)') "/"
@@ -372,7 +372,7 @@ contains
     close(87)
     open(unit=87, file="espresso_geo_c.SYSTEM", ACCESS="APPEND")
         write(87,'(a,i5,a)') 'nat =  ',parini%nat,' ,'
-        write(87,'(a,i5,a)') 'ntyp = ',ntypat,' ,'
+        write(87,'(a,i5,a)') 'ntyp = ',parini%ntypat_global,' ,'
         write(87,'(a)')      'nosym = .true. ,'
 !Close block    
         write(87,'(a)') "/"
@@ -395,7 +395,7 @@ contains
 !Create Block with atoms, structure, etc.
     open(unit=87,file="espresso.STRUCT")
         write(87,'(a)') "ATOMIC_SPECIES"
-        do itype=1,ntypat
+        do itype=1,parini%ntypat_global
            write(87,'(a,2x,f10.5,2x,a)') trim(char_type(itype)),parini%amu(itype),trim(char_type(itype))//".PSP"
         enddo
         write(87,'(a)') "ATOMIC_POSITIONS crystal"

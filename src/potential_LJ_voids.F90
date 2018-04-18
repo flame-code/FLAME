@@ -397,7 +397,7 @@ do iat=1,parini%nat
        in_lj=.true.
    endif
 enddo
-do ityp=1,ntypat
+do ityp=1,parini%ntypat_global
  if(int(znucl(ityp)).lt.200) then 
    ntypat_atoms=ntypat_atoms+1
  else
