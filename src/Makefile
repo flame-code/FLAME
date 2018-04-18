@@ -6,7 +6,11 @@ include ../def_opt.mk
 all: libsrc.a ofiles/basic_c_wrappers.o ofiles/input_variables_definition.o
 
 SRC_F= dpmpar.f enorm.f lmder.f lmpar.f qrfac.f qrsolv.f
-SRC_= alborz_init_final.F90 processors.F90 \
+SRC_ =
+ifdef LAMMPS
+    SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90 lammps_mod.F90
+endif
+SRC_ += alborz_init_final.F90 processors.F90 \
 		mpi_utilities.F90 \
 		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		lmder_modified.F90 \
@@ -17,28 +21,32 @@ SRC_= alborz_init_final.F90 processors.F90 \
 		ann_ekf_rivals.F90 ann_ekf_behler.F90 ann_lm.F90 \
 		ann_pot_main.F90 ann_pot_atom.F90 ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_cent_common.F90 \
 		ann_pot_tb.F90 \
-		shortrange.F90 tosifumi.F90 forcefield.F90 \
+		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
 		md.F90 md_NVT.F90\
 		phonon.F90 \
-		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartee_p3d.F90 \
+		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 \
 		es_coulomb_p3d_bias.F90 \
-		es_hartee_fourier.F90 es_hartee_main.F90 es_hartee_bps.F90 \
+		es_coulomb_p3d_dielec.F90 \
+		grid_rp4gto_sym.F90  grid_gto_sym_ortho.F90 \
+		grid_gto_sym.F90 grid_basic.F90 \
+		es_hartree_fourier.F90 es_hartree_main.F90 es_hartree_bps.F90 \
 		cell_linkedlists.F90 \
 		optimizer_sd.F90 optimizer_cg.F90 optimizer_diis.F90 optimizer_fire.F90 \
 		optimizer_gmdfire.F90 optimizer_bfgs.F90 optimizer_dfp.F90 optimizer_nlbfgs.F90 \
 		optimizer_sqnm.F90 \
 		optimizer_drivers.F90 optimizer_drivers_vc.F90 task_geopt.F90 task_single_point.F90 \
-		task_netsock.F90 \
+		task_netsock.F90 task_lammps.F90 \
 		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
 		basic_atoms.F90 basic_utilities.F90 \
 		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
+		io_utils.F90 \
 		bader_neargrid.F90 bader_ongrid.F90 bader_weight.F90 \
 		task_confcomp.F90 \
 		task_bader.F90 \
 		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
 		task_testforces.F90 \
-		task_miscellaneous.F90 solve_poisson_cube.F90 \
+		task_miscellaneous.F90 solve_poisson_cube.F90 best_charge_density.F90 \
 		best_charge_density.F90 \
 		tightbinding.F90 lenosky_tightbinding.F90 \
 		task_linkedlist.F90 \
@@ -84,9 +92,6 @@ ifdef SPGLIB
     SRC_ += spglib_int.F90
 endif
 
-ifdef LAMMPS
-    SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90
-endif
 #LAMMPS-wrapper.o : LAMMPS-wrapper.cpp LAMMPS-wrapper.h
 #	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c $< -I$(LAMMPS_SRC)    $(MPI_STUBS)
 
@@ -136,7 +141,7 @@ sockets.o: sockets.c
 
 _SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp 
 ifdef LAMMPS
-    _SOURCES_CPP += potential_LAMMPS_wrapper.cpp
+    _SOURCES_CPP += potential_LAMMPS_wrapper.cpp potential_LAMMPS_wrapper2.cpp
 endif
 
 ifeq ($(findstring SIESTA,$(POTENTIALS)),SIESTA)
@@ -228,7 +233,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(FFLAGS) -c $(INCLUDES_C) $< -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp potential_QSC_parameters.h potential_QSC_class.h
-	$(CC) $(FFLAGS) -DQSC_STANDALONE -c $< -o $@
+	$(CC) $(FFLAGS) $(INCLUDE_C) -DQSC_STANDALONE -c $< -o $@
 
 #print-%  : ; @echo $* = $($*)
 

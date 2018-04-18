@@ -25,6 +25,7 @@
    two_level_geopt: False
    verbosity: 0
    seed: -2
+   nrun_lammps: 0
  minhopp:
    nstep: 0
    nsoften: 7
@@ -101,8 +102,6 @@
    ampl: -1.0
  potential:
    potential: unknown
-   bias: no
-   bias_field: no
    cal_charge: False
    potential_sec: unknown
    ann_boundcheck: none
@@ -117,7 +116,8 @@
      hy: -1.0
      hz: -1.0
      alpha: -1.0
-     ecut: 250.0
+     ecut: -1.0
+     ecutz: -1.0
      rcut: -1.0
      rgcut: -1.0
      nsp: -1
@@ -126,8 +126,16 @@
      plane_voltageu_ac: 0.0
      frequency: 0.0
      gnrmtol: 1.E-7
+     psolver: unknown
      ewald: False
+     cell_ortho: False
      ewald_tol: 1.E-6
+     bias_type: no
+     external_field: 0.0
+     dielec_const: 1.0
+     dielec_const1: 1.0
+     dielec_const2: 1.0
+     cal_polar: False
  ann:
    subtask: unknown
    optimizer: unknown
@@ -135,11 +143,10 @@
    symfunc: only_calculate
    nstep_ekf: 100
    nstep_cep: 200
-   nat_force: 0
+   nconf_rmse: 0
    ampl_rand: 1.0
    symfunc_type: behler
    syslinsolver: direct
-   psolver: unknown
    rgnrmtol: 5.E-4
    qgnrmtol: 5.E-4
    etol: 1.0
@@ -152,6 +159,7 @@
    restart_iter : 0
    print_energy : False
    fit_hoppint: False
+   save_symfunc_force: False
    weight_hardness: 0.001
  dynamics:
   nmd: 0

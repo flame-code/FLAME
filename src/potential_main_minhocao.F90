@@ -15,7 +15,7 @@ module interface_code
   use interface_blj
   use interface_mlj
   use interface_espresso  
-#if defined(LAMMPS)
+#if defined(HAVE_LAMMPS)
   use interface_lammps
 #endif
   use interface_lenosky_tb_lj
@@ -175,7 +175,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
     elseif(trim(parini%potential_potential)=="edip") then
     elseif(trim(parini%potential_potential)=="ipi") then
     elseif(trim(parini%potential_potential)=="msock") then
-#if defined(LAMMPS)
+#if defined(HAVE_LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
           if(count_lammps==0) call init_lammps(parini,nat)
           count_lammps=count_lammps+1
@@ -211,7 +211,7 @@ if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(
       call evaluate_ipi(parini,nat,latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
     elseif(trim(parini%potential_potential)=="msock") then
       call evaluate_msock(parini,latvec, xred, fcart, strten, energy, parres%ka, parres%kb, parres%kc, iprec)
-#if defined(LAMMPS)
+#if defined(HAVE_LAMMPS)
     elseif(trim(parini%potential_potential)=="lammps") then
       call call_lammps(parini,latvec,xred,fcart,energy,strten)
 #endif

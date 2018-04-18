@@ -8,10 +8,9 @@ potential:
     print_force : True
     ewald:
         ewald: False
-        ecut: 400.0
-        #hx: 1.5
-        #hy: 1.5
-        #hz: 1.5
+        psolver: kwald 
+        ecut: 10.132118364233778
+        #ecut: 22.797266319526
 single_point:
     print_force : True
 ann:
@@ -22,6 +21,4 @@ ann:
     #optimizer: lm
     syslinsolver : operator
     approach: eem1
-    #psolver: bigdft
-    psolver: kwald 
     #symfunc: write

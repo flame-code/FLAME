@@ -546,7 +546,7 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     integer, allocatable:: neighbor(:)
     logical :: yes
     call linkedlists_init(parini,atoms,cell,linked_lists)
-    nmax=150
+    nmax=500
     !if (.not. linked_lists%triplex) then
         !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
         !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)
@@ -593,6 +593,10 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
 
                     neighbor(iat_maincell)=neighbor(iat_maincell)+1
                     bound_rad(neighbor(iat_maincell),iat_maincell)=jat_maincell
+                    if (neighbor(iat_maincell) > nmax  ) then
+                        write(*,*) " neighbours are more that expected  " 
+                        stop
+                    endif
                     bound_dist(1,neighbor(iat_maincell),iat_maincell)=rij
                     bound_dist(2,neighbor(iat_maincell),iat_maincell)=drij(1)
                     bound_dist(3,neighbor(iat_maincell),iat_maincell)=drij(2)
@@ -600,6 +604,10 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
                     ! if (iat_maincell==jat_maincell) cycle
                     if(dbl_count) then
                         neighbor(jat_maincell)=neighbor(jat_maincell)+1
+                        if (neighbor(jat_maincell) > nmax ) then
+                            write(*,*)" neighbours are more that expected  "
+                            stop
+                        endif
                         bound_rad(neighbor(jat_maincell),jat_maincell)=iat_maincell
                         bound_dist(1,neighbor(jat_maincell),jat_maincell)=rij
                         bound_dist(2,neighbor(jat_maincell),jat_maincell)=-drij(1)

@@ -1835,8 +1835,10 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=1.d0
         elseif(trim(atoms%stypat(itypat))=='Br') then
             atoms%qtypat(itypat)=-1.d0
+        elseif(trim(atoms%stypat(itypat))=='Sr') then
+            atoms%qtypat(itypat)=2.d0
         else
-            write(*,*) 'ERROR: no atomic charge stored for atomtype=',trim(atoms%stypat(itypat))
+            write(*,*) 'ERROR: no atomic charge stored for atoms%stypat=',trim(atoms%stypat(itypat))
             stop
         endif
     enddo
@@ -1866,16 +1868,18 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=1.3d0
         else if(trim(atoms%sat(iat))=='F') then
             atoms%qat(iat)=-0.65d0
-        elseif(trim(atoms%sat(itypat))=='W') then
+        elseif(trim(atoms%sat(iat))=='W') then
             atoms%qat(itypat)=0.8d0
-        elseif(trim(atoms%sat(itypat))=='S') then
+        elseif(trim(atoms%sat(iat))=='S') then
             atoms%qat(itypat)=-0.4d0
         else if(trim(atoms%sat(iat))=='K') then
             atoms%qat(iat)=1.d0
         else if(trim(atoms%sat(iat))=='Br') then
             atoms%qat(iat)=-1.d0
+        else if(trim(atoms%sat(iat))=='Sr') then
+            atoms%qat(iat)=2.d0
         else
-            write(*,*) 'ERROR: no atomic charge stored for atomtype=',trim(atoms%sat(iat))
+            write(*,*) 'ERROR: no atomic charge stored for atoms%sat=',trim(atoms%sat(iat))
             stop
         endif
         !if(iproc==0) then
@@ -2140,6 +2144,14 @@ subroutine iatom_to_sat(iatom,sat)
         sat='Cl'
     else if(iatom==29) then
         sat='Cu'
+    else if(iatom==52) then
+        sat='Te'
+    else if(iatom==82) then
+        sat='Pb'
+    else if(iatom==22) then
+        sat='Ti'
+    else if(iatom==38) then
+        sat='Sr'
     else
         write(*,*) 'ERROR: no symbol stored for atomic number=',iatom
         stop

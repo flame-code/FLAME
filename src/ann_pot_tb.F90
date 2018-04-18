@@ -145,13 +145,15 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         deallocate(ann_arr%g_per_bond)
         deallocate(partb%dedh)
     endif
-    if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    !if(trim(ann_arr%event)=='potential' .or. trim(parini%symfunc)=='do_not_save') then
+    if(trim(ann_arr%event)=='potential') then
         deallocate(symfunc%y)
         deallocate(symfunc%y0d_bond)
         deallocate(symfunc%y0dr)
     endif
-    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. \
-        trim(parini%symfunc)/='do_not_save')) then
+    !if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train' .and. \
+    !    trim(parini%symfunc)/='do_not_save')) then
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         deallocate(symfunc%linked_lists%prime_bound)
         deallocate(symfunc%linked_lists%bound_rad)
         deallocate(symfunc%linked_lists%bound_ang)

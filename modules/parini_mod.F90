@@ -17,6 +17,7 @@ module mod_parini
         integer:: ntypat=-1
         integer:: ltypat(20)=-1
         integer:: iatomnum(20)=-1
+        integer:: nrun_lammps=0
         character(5):: stypat(20)='unknown'
         !character(50):: stypat_genconf=''
         !-----------------------------------------------------------------------
@@ -62,8 +63,6 @@ module mod_parini
         character(50):: potential_potential='unknown'
         character(50):: potential_potential_sec='unknown'
         character(50):: potential_ann_boundcheck='none'
-        character(50):: bias_potential='no'
-        character(50):: bias_field='no'
         character(256):: component_ff='no'
         logical:: drift_potential=.false.
         logical:: cal_charge= .false.
@@ -76,12 +75,11 @@ module mod_parini
         character(50):: optimizer_ann='unknown'
         character(50):: approach_ann='atombased'
         character(50):: syslinsolver_ann='direct'
-        character(50):: psolver_ann='unknown'
         character(50):: symfunc_type_ann='behler'
         character(50):: symfunc='only_calculate'
         integer:: nstep_ekf=100
         integer:: nstep_cep=200
-        integer:: nat_force=0
+        integer:: nconf_rmse=0
         real(8):: ampl_rand=1.d0
         real(8):: rgnrmtol=-1.d0
         real(8):: qgnrmtol=-1.d0
@@ -95,6 +93,7 @@ module mod_parini
         integer:: restart_iter=0  
         logical:: print_energy=.false. 
         logical:: fit_hoppint=.false. 
+        logical:: save_symfunc_force_ann=.false.
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.
@@ -111,6 +110,9 @@ module mod_parini
         character(20):: md_method_dynamics='unknown'
         logical:: print_force_dynamics=.false.
         logical:: restart_dynamics=.false.
+        logical:: fix_cm_dynamics=.false.
+        logical:: vflip_dynamics=.false.
+        logical:: wall_repulsion_dynamics=.false.
         real(8):: time_dynamics = 0.d0
         !-----------------------------------------------------------------------
         !parameters of [genconf]
@@ -142,21 +144,27 @@ module mod_parini
         character(50):: frmt_single_point='unknown'
         !-----------------------------------------------------------------------
         !parameters of [ewald]
-        real(8):: hx_ewald=-1.d0
-        real(8):: hy_ewald=-1.d0
-        real(8):: hz_ewald=-1.d0
+        integer:: nsp_ewald=-1
         real(8):: alpha_ewald=-1.d0
-        real(8):: ecut_ewald=250.d0
+        real(8):: ecut_ewald=-1.d0
+        real(8):: ecutz_ewald=-1.d0
         real(8):: rcut_ewald=-1.d0
         real(8):: rgcut_ewald=-1.d0
-        integer:: nsp_ewald=-1
         real(8):: vu_ewald=0.d0
         real(8):: vl_ewald=0.d0
         real(8):: vu_ac_ewald=0.d0
         real(8):: frequency_ewald=0.d0
         real(8):: gnrmtol_eem=1.d-7
-        logical :: ewald=.false.
         real(8):: tolerance_ewald = 1.d-6
+        real(8):: efield !external electric field
+        real(8):: dielec_const
+        real(8):: dielec_const1
+        real(8):: dielec_const2
+        logical :: ewald=.false.
+        logical :: cell_ortho=.false.
+        character(256):: bias_type='no'
+        character(50):: psolver='unknown'
+        logical:: cal_polar= .false.
         !-----------------------------------------------------------------------
         !parameters of [misc]
         logical:: avail_misc=.false.

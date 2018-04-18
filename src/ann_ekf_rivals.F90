@@ -29,13 +29,13 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         p(i,i)=1.d-2
     enddo
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1') then
-        r0=100000.d0
-        alpha=120.d-2
+        r0=10.d0
+        alpha=100.d-2
         rf=1.d-6
     elseif(trim(parini%approach_ann)=='cent2') then
-        r0=1.d0
-        alpha=30.d-2
-        rf=1.d-2
+        r0=10.d0
+        alpha=100.d-2
+        rf=1.d-6
     elseif(trim(parini%approach_ann)=='tb') then
         r0=100.d0
         alpha=100.d-2
@@ -77,11 +77,11 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         dtime4=0.d0 !time to convert derivative of ANN in typ_ann to 1D array
         dtime5=0.d0 !time to matrix-vector multiplication in Kalman filter
         dtime6=0.d0 !time of the rest of Kalman filter algorithm
-        if (.not. parini%restart_param) then
-            r=(r0-rf)*exp(-alpha*(iter))+rf
-        else
+       ! if (.not. parini%restart_param) then
+       !     r=(r0-rf)*exp(-alpha*(iter))+rf
+       ! else
             r=(r0-rf)*exp(-alpha*(iter+parini%restart_iter))+rf
-        endif
+       ! endif
         rinv=1.d0/r
         write(31,'(i6,es14.5)') iter,r
         do iconf=1,atoms_train%nconf
@@ -207,7 +207,7 @@ subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train
                 filename=trim(parini%stypat(i))//trim(fn)
                 write(*,'(a)') trim(filename)
                 if( ann_arr%exists_yaml_file) then
-                    call write_ann_yaml(parini,filename,ann_arr%ann(i))
+                    call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
                 else
                     call write_ann(parini,filename,ann_arr%ann(i))
                 endif

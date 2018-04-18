@@ -1,5 +1,67 @@
 !*****************************************************************************************
-subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
+subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use time_profiling
+    use mod_timing , only: TCAT_PSOLVER
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson),intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gausswidth(atoms%nat)
+    real(8), intent(out):: ehartree, g(atoms%nat)
+    !local variables
+    real(8):: alphasq
+    integer:: iat
+    real(8), allocatable:: gwsq(:), ratred(:,:), fat(:,:)
+    real(8):: stress(3,3), celldv(3,3)
+    gwsq=f_malloc([1.to.atoms%nat],id='gwsq')
+    ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
+    fat=f_malloc([1.to.3,1.to.atoms%nat],id='fat')
+    if(poisson%gw_identical) then
+         !gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
+         !call get_psolver_fourier_various(atoms%nat,atoms%rat,ratred,atoms%qat, &
+         !    atoms%cellvec,gwsq,ecut,ehartree,fat,g,stress,atoms%celldv)
+        alphasq=poisson%alpha**2
+        call get_psolver_fourier_identical(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
+            atoms%cellvec,alphasq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
+     else
+        gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
+        call get_psolver_fourier_various(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
+            gwsq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
+    end if
+    do iat=1,atoms%nat
+        atoms%fat(1,iat)=atoms%fat(1,iat)+fat(1,iat)
+        atoms%fat(2,iat)=atoms%fat(2,iat)+fat(2,iat)
+        atoms%fat(3,iat)=atoms%fat(3,iat)+fat(3,iat)
+    enddo
+    atoms%stress(1,1)=atoms%stress(1,1)+stress(1,1)
+    atoms%stress(2,1)=atoms%stress(2,1)+stress(2,1)
+    atoms%stress(3,1)=atoms%stress(3,1)+stress(3,1)
+    atoms%stress(1,2)=atoms%stress(1,2)+stress(1,2)
+    atoms%stress(2,2)=atoms%stress(2,2)+stress(2,2)
+    atoms%stress(3,2)=atoms%stress(3,2)+stress(3,2)
+    atoms%stress(1,3)=atoms%stress(1,3)+stress(1,3)
+    atoms%stress(2,3)=atoms%stress(2,3)+stress(2,3)
+    atoms%stress(3,3)=atoms%stress(3,3)+stress(3,3)
+    atoms%celldv(1,1)=atoms%celldv(1,1)+celldv(1,1)
+    atoms%celldv(2,1)=atoms%celldv(2,1)+celldv(2,1)
+    atoms%celldv(3,1)=atoms%celldv(3,1)+celldv(3,1)
+    atoms%celldv(1,2)=atoms%celldv(1,2)+celldv(1,2)
+    atoms%celldv(2,2)=atoms%celldv(2,2)+celldv(2,2)
+    atoms%celldv(3,2)=atoms%celldv(3,2)+celldv(3,2)
+    atoms%celldv(1,3)=atoms%celldv(1,3)+celldv(1,3)
+    atoms%celldv(2,3)=atoms%celldv(2,3)+celldv(2,3)
+    atoms%celldv(3,3)=atoms%celldv(3,3)+celldv(3,3)
+    call f_free(fat)
+    call f_free(gwsq)
+    call f_free(ratred)
+end subroutine get_psolver_fourier
+!*****************************************************************************************
+subroutine get_psolver_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
@@ -58,9 +120,9 @@ subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stres
     bnrm1=sqrt(recvec(1,1)**2+recvec(2,1)**2+recvec(3,1)**2)
     bnrm2=sqrt(recvec(1,2)**2+recvec(2,2)**2+recvec(3,2)**2)
     bnrm3=sqrt(recvec(1,3)**2+recvec(2,3)**2+recvec(3,3)**2)
-    m1_max=ceiling(sqrt(2.d0*ecut)/(bnrm1*4.d0*pisq))
-    m2_max=ceiling(sqrt(2.d0*ecut)/(bnrm2*4.d0*pisq))
-    m3_max=ceiling(sqrt(2.d0*ecut)/(bnrm3*4.d0*pisq))
+    m1_max=ceiling(sqrt(2.d0*ecut)/(bnrm1*2.d0*pi))
+    m2_max=ceiling(sqrt(2.d0*ecut)/(bnrm2*2.d0*pi))
+    m3_max=ceiling(sqrt(2.d0*ecut)/(bnrm3*2.d0*pi))
     if(iverbose>=3) then
         write(*,'(a,3i4)') 'm1_max,m2_max,m3_max',m1_max,m2_max,m3_max
     endif
@@ -212,9 +274,9 @@ subroutine kwald(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stres
     deallocate(tarr1)
     deallocate(tarr2)
     deallocate(tarr3)
-end subroutine kwald
+end subroutine get_psolver_fourier_various
 !*****************************************************************************************
-subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
+subroutine get_psolver_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
     use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
@@ -426,5 +488,5 @@ subroutine kwald_samare(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat
     !enddo
     deallocate(tarr1)
     deallocate(tarr2)
-end subroutine kwald_samare
+end subroutine get_psolver_fourier_identical
 !*****************************************************************************************

@@ -11,6 +11,8 @@ ANN/fit
 ./docs/_build/doctrees
 ./docs/_build/html
 ./docs/_build/latex
+./docs/doxygen/html
+./docs/doxygen/latex
 ./futile/INSTALL
 ./futile/Makefile.in
 ./futile/aclocal.m4

@@ -14,10 +14,16 @@ subroutine ann_best_symfunc(parini)
     integer:: n_tot, i_rc, i_eta, i_zeta, i_lambda
     real(8), allocatable:: his(:,:)
     real(8):: disparity
+    logical:: file_exists
     stop 'ERROR: routine not ready since ann -> ann_arr, take care of lines with HERE'
     !---------------------------------------------
     !call read_input_ann(parini,iproc,ann)
-    call read_data(parini,'list_posinp_train',atoms_train)
+    inquire(file="list_posinp_train.yaml",exist=file_exists)
+    if(file_exists) then
+        call read_data_yaml(parini,'list_posinp_train.yaml',atoms_train)
+    else
+        call read_data_old(parini,'list_posinp_train',atoms_train)
+    endif
     if(iproc==0) then
         write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
     endif

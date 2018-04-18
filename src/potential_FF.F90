@@ -17,7 +17,7 @@ subroutine cal_potential_forces_ff(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    !use mod_potential, only: ewald_p3d
+    !use mod_potential, only: poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -31,11 +31,11 @@ subroutine final_potential_forces_ff(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    !use mod_potential, only: ewald_p3d
+    !use mod_potential, only: poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
-    !call destruct_ewald_p3d(ewald_p3d)
+    !call fini_hartree(poisson)
     call forcefield_final(parini,atoms)
 end subroutine final_potential_forces_ff
 !*****************************************************************************************

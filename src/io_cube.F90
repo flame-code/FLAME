@@ -3,6 +3,7 @@ subroutine cube_read(filename,atoms,poisson)
     use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
     implicit none
     character(*), intent(in):: filename
     type(typ_atoms), intent(out):: atoms
@@ -26,6 +27,9 @@ subroutine cube_read(filename,atoms,poisson)
     read(1358,*) poisson%ngpx,poisson%hx
     read(1358,*) poisson%ngpy,tt,poisson%hy
     read(1358,*) poisson%ngpz,tt,tt,poisson%hz
+    atoms%cellvec(1,1) = poisson%ngpx*poisson%hx
+    atoms%cellvec(2,2) = poisson%ngpy*poisson%hy
+    atoms%cellvec(3,3) = poisson%ngpz*poisson%hz
     write(*,'(2a)') 'reading ',trim(filename)
     do iat=1,atoms%nat
         read(1358,*) iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
@@ -35,8 +39,10 @@ subroutine cube_read(filename,atoms,poisson)
         !if(iatom==7) atoms%sat(iat)='N'
         !if(iatom==29) atoms%sat(iat)='Cu'
     enddo
-    allocate(poisson%rho(poisson%ngpx,poisson%ngpy,poisson%ngpz),stat=istat)
-    if(istat/=0) stop 'ERROR: allocation of rho failed.'
+    poisson%rho=f_malloc([1.to.poisson%ngpx,1.to.poisson%ngpy,1.to.poisson%ngpz], &
+        id='poisson%rho')
+    !allocate(poisson%rho(poisson%ngpx,poisson%ngpy,poisson%ngpz),stat=istat)
+    !if(istat/=0) stop 'ERROR: allocation of rho failed.'
     !do igpx=1,poisson%ngpx
     !    do igpy=1,poisson%ngpy
     !        do igpz=1,poisson%ngpz

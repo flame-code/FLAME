@@ -1,109 +1,102 @@
 !*****************************************************************************************
-subroutine ps2dp1df_construction(poisson_p3d)
+subroutine init_psolver_p3d(poisson)
     use mod_interface
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
     include 'fftw3.f'
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iz
-    call f_routine(id='ps2dp1df_construction')
-    poisson_p3d%plan_f=f_malloc((/1.to.poisson_p3d%ngpz/),id='poisson_p3d%plan_f')
-    poisson_p3d%plan_b=f_malloc((/1.to.poisson_p3d%ngpz/),id='poisson_p3d%plan_b')
-    do iz=1,poisson_p3d%ngpz
-        call dfftw_plan_dft_r2c_2d(poisson_p3d%plan_f(iz),poisson_p3d%ngpx, &
-            poisson_p3d%ngpy,poisson_p3d%rho(1,1,iz),poisson_p3d%pot(1,1,iz),fftw_estimate)
-        call dfftw_plan_dft_c2r_2d(poisson_p3d%plan_b(iz),poisson_p3d%ngpx, &
-            poisson_p3d%ngpy,poisson_p3d%pot(1,1,iz),poisson_p3d%pot(1,1,iz),fftw_estimate)
+    call f_routine(id='init_psolver_p3d')
+    poisson%plan_f=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_f')
+    poisson%plan_b=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_b')
+    do iz=1,poisson%ngpz
+        call dfftw_plan_dft_r2c_2d(poisson%plan_f(iz),poisson%ngpx, &
+            poisson%ngpy,poisson%rho(1,1,iz),poisson%pot(1,1,iz),fftw_estimate)
+        call dfftw_plan_dft_c2r_2d(poisson%plan_b(iz),poisson%ngpx, &
+            poisson%ngpy,poisson%pot(1,1,iz),poisson%pot(1,1,iz),fftw_estimate)
     enddo
     call f_release_routine()
-end subroutine ps2dp1df_construction
+end subroutine init_psolver_p3d
 !*****************************************************************************************
-subroutine ps2dp1df_destruction(poisson_p3d)
+subroutine fini_psolver_p3d(poisson)
     use mod_interface
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+    type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: istat, iz
-    do iz=1,poisson_p3d%ngpz
-        call dfftw_destroy_plan(poisson_p3d%plan_f(iz))
-        call dfftw_destroy_plan(poisson_p3d%plan_b(iz))
+    do iz=1,poisson%ngpz
+        call dfftw_destroy_plan(poisson%plan_f(iz))
+        call dfftw_destroy_plan(poisson%plan_b(iz))
     enddo
-    deallocate(poisson_p3d%plan_f,stat=istat)
+    deallocate(poisson%plan_f,stat=istat)
     if(istat/=0) then
-        stop 'ERROR: failure deallocating plan_f of type typ_poisson_p3d'
+        stop 'ERROR: failure deallocating plan_f of type typ_poisson'
     endif
-    deallocate(poisson_p3d%plan_b,stat=istat)
+    deallocate(poisson%plan_b,stat=istat)
     if(istat/=0) then
-        stop 'ERROR: failure deallocating plan_b of type typ_poisson_p3d'
+        stop 'ERROR: failure deallocating plan_b of type typ_poisson'
     endif
-end subroutine ps2dp1df_destruction
+end subroutine fini_psolver_p3d
 !*****************************************************************************************
-subroutine calculate_potener_pot(poisson_p3d,cell,hx,hy,hz,epot,beta)
+subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot)
     use mod_interface
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson
     implicit none
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson), intent(inout):: poisson
     real(8):: cell(3) !cell array contains size of the simulation box.
     real(8):: hx, hy, hz
     real(8):: epot
-    real(8), optional:: beta !beta is proportion to dipole moment as it is in paper.
     !local variables
     real(8):: valuengpxyinv
     integer:: igpx, igpy, igpz
-    !integer, save:: icall=0
-    !icall=icall+1
-    !write(44,'(i4,es14.5)') icall,beta
-    do igpz=1,poisson_p3d%ngpz
-        call dfftw_execute(poisson_p3d%plan_f(igpz))
+    do igpz=1,poisson%ngpz
+        call dfftw_execute(poisson%plan_f(igpz))
     enddo
-    if(present(beta)) then
-        call solsyslinequ(poisson_p3d,hz,cell,beta)
-        !write(55,'(i4,es14.5)') icall,beta
-        write(*,*)"beta = ", beta
-    else
-        call solsyslinequ(poisson_p3d,hz,cell)
-    endif
-    do igpz=1,poisson_p3d%ngpz
-        call dfftw_execute(poisson_p3d%plan_b(igpz))
+    call solve_syslinequ_p3d(poisson,hz,cell)
+    do igpz=1,poisson%ngpz
+        call dfftw_execute(poisson%plan_b(igpz))
     enddo
-    valuengpxyinv=1.d0/real(poisson_p3d%ngpx*poisson_p3d%ngpy,8)
+    valuengpxyinv=1.d0/real(poisson%ngpx*poisson%ngpy,8)
     !DSCAL cannot be used due the first dimension of pot which is ngpx+2 NOT ngpx
-    !call DSCAL(poisson_p3d%ngpx*poisson_p3d%ngpy*poisson_p3d%ngpz,valuengpxyinv,poisson_p3d%pot,1)
+    !call DSCAL(poisson%ngpx*poisson%ngpy*poisson%ngpz,valuengpxyinv,poisson%pot,1)
     epot=0.d0
-    do igpz=1,poisson_p3d%ngpz
-        do igpy=1,poisson_p3d%ngpy
-            do igpx=1,poisson_p3d%ngpx
-                poisson_p3d%pot(igpx,igpy,igpz)=poisson_p3d%pot(igpx,igpy,igpz)*valuengpxyinv
-                epot=epot+poisson_p3d%pot(igpx,igpy,igpz)*poisson_p3d%rho(igpx,igpy,igpz)
+    do igpz=1,poisson%ngpz
+        do igpy=1,poisson%ngpy
+            do igpx=1,poisson%ngpx
+                poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)*valuengpxyinv
+                epot=epot+poisson%pot(igpx,igpy,igpz)*poisson%rho(igpx,igpy,igpz)
             enddo
         enddo
     enddo
     epot=epot*0.5d0*hx*hy*hz
-end subroutine calculate_potener_pot
+end subroutine get_psolver_p3d
 !*****************************************************************************************
 !This subroutine calculates the systems of linear equations using LAPACK routines.
-subroutine solsyslinequ(poisson_p3d,hz,cell,beta_arg)
+subroutine solve_syslinequ_p3d(poisson,hz,cell)
     use mod_interface
-    use mod_electrostatics, only: typ_poisson_p3d
+    use mod_electrostatics, only: typ_poisson
     implicit none
-    type(typ_poisson_p3d), intent(inout):: poisson_p3d
+    type(typ_poisson), intent(inout):: poisson
     !nem-1 is the degree of the polynomial used to calculate the 
     !integrals needed to prepare the right-hand side of the systems of 
     !linear equations.
     real(8):: hz, cell(3)
-    real(8), optional:: beta_arg !beta_arg is proportion to dipole moment as it is in paper.
     !local variables
     integer, parameter:: nem=8 
     real(8):: pi, fourpi, fourpisq, gsq, gsqx, gsqy, g, hzsq
     real(8):: fourpisqcellxinvsq, fourpisqcellyinvsq, ciz
-    real(8):: d(poisson_p3d%ngpz+2*8) !nem was replaced by 8 to be able to compile interface_mod.F90
-    real(8):: e1(poisson_p3d%ngpz), e2(poisson_p3d%ngpz-1), c(poisson_p3d%ngpz)
+    real(8):: d(poisson%ngpz+2*8) !nem was replaced by 8 to be able to compile interface_mod.F90
+    real(8):: e1(poisson%ngpz), e2(poisson%ngpz-1), c(poisson%ngpz)
     integer::ix,iy,iz,info,ixt,iyt
     !local variables
-    real(8):: beta
+    !beta_grid is proportion to dipole moment and it is related to beta in the
+    !P3D paper (i.e. poisson%beta) but multiplied by factor (-ngpx*ngpy)
+    real(8):: beta_grid 
     pi=4.d0*atan(1.d0)
     hzsq=hz**2
     fourpi=4.d0*pi 
@@ -116,249 +109,245 @@ subroutine solsyslinequ(poisson_p3d,hz,cell,beta_arg)
     gsq=0.d0
     g=0.d0
     e1=2.d0;e2=-1.d0
-    call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+    call dpttrf(poisson%ngpz,e1,e2,info)
     if(info/= 0) write(*,*) 'Factorization failed',info
-    do iz=1,poisson_p3d%ngpz
-        d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+    do iz=1,poisson%ngpz
+        d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
     enddo
-    !write(*,*) 'beta_arg=',beta_arg
-    if(.not. present(beta_arg)) then
-        call calbeta(hzsq,poisson_p3d%ngpz,d(1+nem),beta)
-    else
-        beta=beta_arg
-    endif
-    call prepare00(poisson_p3d%ngpz,nem,d,c,hz)
-    c(1)=c(1)-beta
-    c(poisson_p3d%ngpz)=c(poisson_p3d%ngpz)+beta
-    call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+    call get_beta_grid(hzsq,poisson%ngpz,d(1+nem),beta_grid)
+    poisson%beta = beta_grid /(-poisson%ngpx*poisson%ngpy)
+    call prepare00(poisson%ngpz,nem,d,c,hz)
+    c(1)=c(1)-beta_grid
+    c(poisson%ngpz)=c(poisson%ngpz)+beta_grid
+    call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
     if (info/= 0) write(*,*) 'Solution failed',info
-    do iz=1,poisson_p3d%ngpz
-        poisson_p3d%pot(ix,iy,iz)=c(iz)
+    do iz=1,poisson%ngpz
+        poisson%pot(ix,iy,iz)=c(iz)
     enddo
     !-----------------------------------------
-    ix=poisson_p3d%ngpx+1;iy=1
+    ix=poisson%ngpx+1;iy=1
     gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
     g=sqrt(gsq)
-    call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-    call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+    call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+    call dpttrf(poisson%ngpz,e1,e2,info)
     if(info/= 0) write(*,*) 'Factorization failed',info
-    do iz=1,poisson_p3d%ngpz
-        d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+    do iz=1,poisson%ngpz
+        d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
     enddo
-    call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-    call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+    call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+    call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
     if (info/= 0) write(*,*) 'Solution failed',info
-    do iz=1,poisson_p3d%ngpz
-        poisson_p3d%pot(ix,iy,iz)=c(iz)
+    do iz=1,poisson%ngpz
+        poisson%pot(ix,iy,iz)=c(iz)
     enddo
     !-----------------------------------------
-    ix=1;iy=poisson_p3d%ngpy/2+1
+    ix=1;iy=poisson%ngpy/2+1
     gsq=fourpisqcellyinvsq*(iy-1)**2
     g=sqrt(gsq)
-    call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-    call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+    call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+    call dpttrf(poisson%ngpz,e1,e2,info)
     if(info/= 0) write(*,*) 'Factorization failed',info
-    do iz=1,poisson_p3d%ngpz
-        d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+    do iz=1,poisson%ngpz
+        d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
     enddo
 
-    call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-    call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+    call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+    call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
     if (info/= 0) write(*,*) 'Solution failed',info
-    do iz=1,poisson_p3d%ngpz
-        poisson_p3d%pot(ix,iy,iz)=c(iz)
+    do iz=1,poisson%ngpz
+        poisson%pot(ix,iy,iz)=c(iz)
     enddo
     !-----------------------------------------
-    ix=poisson_p3d%ngpx+1;iy=poisson_p3d%ngpy/2+1
+    ix=poisson%ngpx+1;iy=poisson%ngpy/2+1
     gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
     g=sqrt(gsq)
-    call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-    call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+    call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+    call dpttrf(poisson%ngpz,e1,e2,info)
     if(info/= 0) write(*,*) 'Factorization failed',info
-    do iz=1,poisson_p3d%ngpz
-        d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+    do iz=1,poisson%ngpz
+        d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
     enddo
-    call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-    call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+    call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+    call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
     if (info/= 0) write(*,*) 'Solution failed',info
-    do iz=1,poisson_p3d%ngpz
-        poisson_p3d%pot(ix,iy,iz)=c(iz)
+    do iz=1,poisson%ngpz
+        poisson%pot(ix,iy,iz)=c(iz)
     enddo
     !-----------------------------------------
     ix=1
-    do iy=2,poisson_p3d%ngpy/2
+    do iy=2,poisson%ngpy/2
         gsq=fourpisqcellyinvsq*(iy-1)**2
         g=sqrt(gsq)
-        call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-        call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+        call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+        call dpttrf(poisson%ngpz,e1,e2,info)
         if(info/= 0) write(*,*) 'Factorization failed',info
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
+        do iz=1,poisson%ngpz
             ciz=c(iz)
-            poisson_p3d%pot(ix,iy,iz)=ciz
-            poisson_p3d%pot(ix,poisson_p3d%ngpy-iy+2,iz)=ciz
+            poisson%pot(ix,iy,iz)=ciz
+            poisson%pot(ix,poisson%ngpy-iy+2,iz)=ciz
         enddo
         ixt=ix+1
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ixt,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ixt,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
+        do iz=1,poisson%ngpz
             ciz=c(iz)
-            poisson_p3d%pot(ixt,iy,iz)=ciz
-            poisson_p3d%pot(ixt,poisson_p3d%ngpy-iy+2,iz)=-ciz
+            poisson%pot(ixt,iy,iz)=ciz
+            poisson%pot(ixt,poisson%ngpy-iy+2,iz)=-ciz
         enddo
     enddo
     !-----------------------------------------
-    ix=poisson_p3d%ngpx+1
-    gsqx=fourpisqcellxinvsq*(poisson_p3d%ngpx/2)**2
-    do iy=2,poisson_p3d%ngpy/2
+    ix=poisson%ngpx+1
+    gsqx=fourpisqcellxinvsq*(poisson%ngpx/2)**2
+    do iy=2,poisson%ngpy/2
         gsq=gsqx+fourpisqcellyinvsq*(iy-1)**2
         g=sqrt(gsq)
-        call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-        call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+        call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+        call dpttrf(poisson%ngpz,e1,e2,info)
         if(info/= 0) write(*,*) 'Factorization failed',info
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
+        do iz=1,poisson%ngpz
             ciz=c(iz)
-            poisson_p3d%pot(ix,iy,iz)=ciz
-            poisson_p3d%pot(ix,poisson_p3d%ngpy-iy+2,iz)=ciz
+            poisson%pot(ix,iy,iz)=ciz
+            poisson%pot(ix,poisson%ngpy-iy+2,iz)=ciz
         enddo
         ixt=ix+1
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ixt,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ixt,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
+        do iz=1,poisson%ngpz
             ciz=c(iz)
-            poisson_p3d%pot(ixt,iy,iz)=ciz
-            poisson_p3d%pot(ixt,poisson_p3d%ngpy-iy+2,iz)=-ciz
+            poisson%pot(ixt,iy,iz)=ciz
+            poisson%pot(ixt,poisson%ngpy-iy+2,iz)=-ciz
         enddo
     enddo
     !-----------------------------------------
     iy=1
     gsqy=fourpisqcellyinvsq*(iy-1)**2
-    do ix=3,poisson_p3d%ngpx,2
+    do ix=3,poisson%ngpx,2
         gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
         g=sqrt(gsq)
-        call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-        call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+        call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+        call dpttrf(poisson%ngpz,e1,e2,info)
         if(info/= 0) write(*,*) 'Factorization failed',info
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
-            poisson_p3d%pot(ix,iy,iz)=c(iz)
+        do iz=1,poisson%ngpz
+            poisson%pot(ix,iy,iz)=c(iz)
         enddo
         ixt=ix+1
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ixt,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ixt,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
-            poisson_p3d%pot(ixt,iy,iz)=c(iz)
+        do iz=1,poisson%ngpz
+            poisson%pot(ixt,iy,iz)=c(iz)
         enddo
     enddo
     !-----------------------------------------
-    iy=poisson_p3d%ngpy/2+1
+    iy=poisson%ngpy/2+1
     gsqy=fourpisqcellyinvsq*(iy-1)**2
-    do ix=3,poisson_p3d%ngpx,2
+    do ix=3,poisson%ngpx,2
         gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
         g=sqrt(gsq)
-        call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-        call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+        call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+        call dpttrf(poisson%ngpz,e1,e2,info)
         if(info/= 0) write(*,*) 'Factorization failed',info
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
-            poisson_p3d%pot(ix,iy,iz)=c(iz)
+        do iz=1,poisson%ngpz
+            poisson%pot(ix,iy,iz)=c(iz)
         enddo
         ixt=ix+1
-        do iz=1,poisson_p3d%ngpz
-            d(nem+iz)=fourpi*poisson_p3d%pot(ixt,iy,iz)
+        do iz=1,poisson%ngpz
+            d(nem+iz)=fourpi*poisson%pot(ixt,iy,iz)
         enddo
-        call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-        call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+        call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+        call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
         if (info/= 0) write(*,*) 'Solution failed',info
-        do iz=1,poisson_p3d%ngpz
-            poisson_p3d%pot(ixt,iy,iz)=c(iz)
+        do iz=1,poisson%ngpz
+            poisson%pot(ixt,iy,iz)=c(iz)
         enddo
     enddo
     !-----------------------------------------
-    do iy=2,poisson_p3d%ngpy/2
-        iyt=poisson_p3d%ngpy-iy+2
+    do iy=2,poisson%ngpy/2
+        iyt=poisson%ngpy-iy+2
         gsqy=fourpisqcellyinvsq*(iy-1)**2
-        do ix=3,poisson_p3d%ngpx,2
+        do ix=3,poisson%ngpx,2
             gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
             g=sqrt(gsq)
-            call fdcoeff(poisson_p3d%ngpz,e1,e2,g,gsq,hz,hzsq)
-            call dpttrf(poisson_p3d%ngpz,e1,e2,info)
+            call fdcoeff(poisson%ngpz,e1,e2,g,gsq,hz,hzsq)
+            call dpttrf(poisson%ngpz,e1,e2,info)
             if(info/= 0) write(*,*) 'Factorization failed',info
-            do iz=1,poisson_p3d%ngpz
-                d(nem+iz)=fourpi*poisson_p3d%pot(ix,iy,iz)
+            do iz=1,poisson%ngpz
+                d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
             enddo
-            call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-            call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+            call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+            call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
             if (info/= 0) write(*,*) 'Solution failed',info
-            do iz=1,poisson_p3d%ngpz
-                poisson_p3d%pot(ix,iy,iz)=c(iz)
+            do iz=1,poisson%ngpz
+                poisson%pot(ix,iy,iz)=c(iz)
             enddo
             ixt=ix+1
-            do iz=1,poisson_p3d%ngpz
-                d(nem+iz)=fourpi*poisson_p3d%pot(ixt,iy,iz)
+            do iz=1,poisson%ngpz
+                d(nem+iz)=fourpi*poisson%pot(ixt,iy,iz)
             enddo
-            call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-            call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+            call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+            call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
             if (info/= 0) write(*,*) 'Solution failed',info
-            do iz=1,poisson_p3d%ngpz
-                poisson_p3d%pot(ixt,iy,iz)=c(iz)
+            do iz=1,poisson%ngpz
+                poisson%pot(ixt,iy,iz)=c(iz)
             enddo
-            do iz=1,poisson_p3d%ngpz
-                d(nem+iz)=fourpi*poisson_p3d%pot(ix,iyt,iz)
+            do iz=1,poisson%ngpz
+                d(nem+iz)=fourpi*poisson%pot(ix,iyt,iz)
             enddo
-            call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-            call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+            call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+            call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
             if (info/= 0) write(*,*) 'Solution failed',info
-            do iz=1,poisson_p3d%ngpz
-                poisson_p3d%pot(ix,iyt,iz)=c(iz)
+            do iz=1,poisson%ngpz
+                poisson%pot(ix,iyt,iz)=c(iz)
             enddo
             ixt=ix+1
-            do iz=1,poisson_p3d%ngpz
-                d(nem+iz)=fourpi*poisson_p3d%pot(ixt,iyt,iz)
+            do iz=1,poisson%ngpz
+                d(nem+iz)=fourpi*poisson%pot(ixt,iyt,iz)
             enddo
-            call prepare(poisson_p3d%ngpz,nem,d,c,gsq,hz,hzsq)
-            call dpttrs(poisson_p3d%ngpz,1,e1,e2,c,poisson_p3d%ngpz,info)
+            call prepare(poisson%ngpz,nem,d,c,gsq,hz,hzsq)
+            call dpttrs(poisson%ngpz,1,e1,e2,c,poisson%ngpz,info)
             if (info/= 0) write(*,*) 'Solution failed',info
-            do iz=1,poisson_p3d%ngpz
-                poisson_p3d%pot(ixt,iyt,iz)=c(iz)
+            do iz=1,poisson%ngpz
+                poisson%pot(ixt,iyt,iz)=c(iz)
             enddo
         enddo
     enddo
     !-----------------------------------------
-end subroutine solsyslinequ
+end subroutine solve_syslinequ_p3d
 !*****************************************************************************************
 subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
     use mod_interface
@@ -648,17 +637,20 @@ end subroutine prepcoeff
 !*****************************************************************************************
 !This subroutine calculates the dipole moment which defines the boundary 
 !condition for the single ODE in which gamma=0
-subroutine calbeta(hzsq,ngpz,analc00,beta)
+subroutine get_beta_grid(hzsq,ngpz,analc00,beta_grid)
     use mod_interface
     implicit none
-    integer::ngpz,iz
-    real(8)::analc00(ngpz),hzsq,beta
-    beta=0.d0
+    real(8), intent(in):: hzsq, analc00(ngpz)
+    integer, intent(in):: ngpz
+    real(8), intent(out):: beta_grid
+    !local variables
+    integer:: iz
+    beta_grid=0.d0
     do iz=1,ngpz-1
-        beta=beta+iz*analc00(iz)
+        beta_grid=beta_grid+iz*analc00(iz)
     enddo
-    beta=beta*0.5d0*hzsq
-    write(*,'(a22,e30.17)') 'inside calbeta beta=',beta
-end subroutine calbeta
+    beta_grid=beta_grid*0.5d0*hzsq
+    write(*,'(a22,e30.17)') 'inside get_beta_grid beta_grid=',beta_grid
+end subroutine get_beta_grid
 !*****************************************************************************************
 

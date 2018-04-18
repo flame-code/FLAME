@@ -59,7 +59,11 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         isat=atoms%itypat(iat)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ibij))
         ksat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ibik))
-        call symmetry_functions_g05_atom(ann_arr,pia_arr%pia(ibij),pia_arr%pia(ibik),ibij,ibik,iat,isat,jsat,ksat,symfunc)
+        if (trim(ann_arr%ann(isat)%method)=="angle1") then
+            call symmetry_functions_g05_atom2(ann_arr,pia_arr%pia(ibij),pia_arr%pia(ibik),ibij,ibik,iat,isat,jsat,ksat,symfunc)
+        else
+            call symmetry_functions_g05_atom(ann_arr,pia_arr%pia(ibij),pia_arr%pia(ibik),ibij,ibik,iat,isat,jsat,ksat,symfunc)
+        endif
     enddo
     !-------------------------------------------------------------------------------------
     if(parini%iverbose>2) then
@@ -99,15 +103,24 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     !local variables
     integer:: i0, ig
     real(8):: ttei,ttej, ttix,ttiy,ttiz,ttjx,ttjy,ttjz,tt1i,tt1j
-    real(8):: etai,etaj, rs, vi,vj
+    real(8):: etai,etaj, rs, vi,vj,sign_chi0
+    real(8):: factor
     i0=ann_arr%ann(isat)%ng1
+    sign_chi0=sign(1.d0,ann_arr%ann(jsat)%chi0)
+    if (trim(ann_arr%ann(isat)%method)=="sign" .or. trim(ann_arr%ann(isat)%method)=="angle1" .or. trim(ann_arr%ann(isat)%method)=="angle2") then
+        factor= sign_chi0
+    else
+        factor= 1.d0
+    endif
     do ig=1,ann_arr%ann(isat)%ng2
         i0=i0+1
         if((ann_arr%ann(isat)%g2i(ig)/=0).and.(.not.(jsat==ann_arr%ann(isat)%g2i(ig)))) cycle
         rs=ann_arr%ann(jsat)%g2rs(ig)
         !The central atom is i:
         etaj=ann_arr%ann(jsat)%g2eta(ig)
-        vi=exp(-etaj*(pia%r-rs)**2)
+
+        vi=exp(-etaj*(pia%r-rs)**2) * factor
+
         ttei=vi*pia%fc
         tt1i=(-2.d0*etaj*(pia%r-rs)*pia%fc+pia%fcd)*vi/pia%r
         ttjx=tt1i*pia%dr(1)
@@ -213,33 +226,55 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
     real(8):: ss1, ss2, ss3, ss4
     real(8):: cos_theta_i, cos_theta_k, cos_theta_j, ui, uk, uj, vi, vk, vj
     real(8):: zeta, alam, etai, etaj, etak, zzz
+    real(8):: sign_chi0j, sign_chi0k, sign_chi0i 
+    real(8):: factor, fcj_fck, one_rij, one_rik, one_rijk, rijsq, riksq
+    real(8):: cos_one_rijsq, cos_one_riksq, fcd_one_rij, fcd_one_rik 
+    logical:: cal_stress 
     i0=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4
+    sign_chi0i=sign(1.d0,ann_arr%ann(isat)%chi0)
+    sign_chi0j=sign(1.d0,ann_arr%ann(jsat)%chi0)
+    sign_chi0k=sign(1.d0,ann_arr%ann(ksat)%chi0)
+
+    if (trim(ann_arr%ann(isat)%method)=="angle2") then
+        factor=(sign_chi0i*(sign_chi0k+sign_chi0j)-1)
+    else
+        factor=1.d0
+    endif
+    cos_theta_i=(piaij%dr(1)*piaik%dr(1)+piaij%dr(2)*piaik%dr(2)+piaij%dr(3)*piaik%dr(3))/(piaij%r*piaik%r)
+    fcj_fck=piaij%fc*piaik%fc
+    one_rij=1.d0/piaij%r
+    one_rik=1.d0/piaik%r
+    one_rijk=one_rij*one_rik
+    cos_one_rijsq=cos_theta_i/piaij%r**2
+    cos_one_riksq=cos_theta_i/piaik%r**2
+    fcd_one_rij=piaij%fcd/piaij%r
+    fcd_one_rik=piaik%fcd/piaik%r
+    rijsq=piaij%r**2
+    riksq=piaik%r**2
     do ig=1,ann_arr%ann(isat)%ng5
         i0=i0+1
         ii1=ann_arr%ann(isat)%g5i(1,ig)+ann_arr%ann(isat)%g5i(2,ig)
         ii2=abs(ann_arr%ann(isat)%g5i(1,ig)-ann_arr%ann(isat)%g5i(2,ig))
         if((ann_arr%ann(isat)%g5i(1,ig)/=0).and. (.not.((jsat+ksat)==ii1 .and. abs(jsat-ksat)==ii2))) cycle
-        zeta=ann_arr%ann(ksat)%g5zeta(ig)
-        alam=ann_arr%ann(ksat)%g5lambda(ig)
+        zeta=ann_arr%ann(isat)%g5zeta(ig)
+        alam=ann_arr%ann(isat)%g5lambda(ig)
         etai=ann_arr%ann(isat)%g5eta(ig)
         etaj=ann_arr%ann(jsat)%g5eta(ig)
         etak=ann_arr%ann(ksat)%g5eta(ig)
         zzz=2.d0**(1.d0-zeta)
-
-        cos_theta_i=(piaij%dr(1)*piaik%dr(1)+piaij%dr(2)*piaik%dr(2)+piaij%dr(3)*piaik%dr(3))/(piaij%r*piaik%r)
         ui=(1.d0+alam*cos_theta_i)**zeta
-        vi=exp(-(etaj*piaij%r**2+etak*piaik%r**2))
-        ttei=zzz*ui*vi*piaij%fc*piaik%fc
-        ss1=vi*piaij%fc*piaik%fc
-        ss2=ui*piaij%fc*piaik%fc
+        vi=exp(-(etaj*rijsq+etak*riksq))*factor
+        ttei=zzz*ui*vi*fcj_fck
+        ss1=vi*fcj_fck
+        ss2=ui*fcj_fck
         ss3=ui*vi*piaik%fc
         ss4=ui*vi*piaij%fc
         tt1=zeta*alam*(1.d0+alam*cos_theta_i)**(zeta-1)*ss1
-        tt2=tt1/(piaij%r*piaik%r)
+        tt2=tt1*one_rijk
         ttj=2.d0*etaj*vi*ss2 !HERE etaj must be checked
         ttk=2.d0*etak*vi*ss2 !HERE etaj must be checked
-        tt4=-tt1*cos_theta_i/piaij%r**2-ttj+ss3*piaij%fcd/piaij%r
-        tt5=-tt1*cos_theta_i/piaik%r**2-ttk+ss4*piaik%fcd/piaik%r
+        tt4=-tt1*cos_one_rijsq-ttj+ss3*fcd_one_rij
+        tt5=-tt1*cos_one_riksq-ttk+ss4*fcd_one_rik
         ttjx=zzz*(tt2*piaik%dr(1)+tt4*piaij%dr(1))
         ttjy=zzz*(tt2*piaik%dr(2)+tt4*piaij%dr(2))
         ttjz=zzz*(tt2*piaik%dr(3)+tt4*piaij%dr(3))
@@ -582,4 +617,106 @@ function cutoff_function_der(r, rc) result(fcd)
         fcd=0.d0
     endif
 end function cutoff_function_der
+!*****************************************************************************************
+subroutine symmetry_functions_g05_atom2(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
+    use mod_interface
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_linked_lists, only: typ_pia
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_pia), intent(in):: piaij, piaik
+    integer, intent(in):: ibij, ibik, isat, iat, jsat, ksat
+    type(typ_symfunc), intent(inout):: symfunc
+    !local variables
+    integer:: i0, ig, ii1, ii2
+    real(8):: ttei, ttek, ttix, ttiy, ttiz, ttej, ttjx, ttjy, ttjz, ttkx, ttky, ttkz, tt1, tt2, tti, ttj, ttk, tt4, tt5
+    real(8):: ss1, ss2, ss3, ss4
+    real(8):: cos_theta_i, cos_theta_k, cos_theta_j, ui, uk, uj, vi, vk, vj
+    real(8):: zeta, alam, etai, etaj, etak, zzz
+    real(8):: sign_chi0j, sign_chi0k, sign_chi0i 
+    real(8):: factor, fcj_fck, one_rij, one_rik, one_rijk, rijsq, riksq
+    real(8):: cos_one_rijsq, cos_one_riksq, fcd_one_rij, fcd_one_rik 
+    logical:: cal_stress 
+    i0=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4
+    sign_chi0i=sign(1.d0,ann_arr%ann(isat)%chi0)
+    sign_chi0j=sign(1.d0,ann_arr%ann(jsat)%chi0)
+    sign_chi0k=sign(1.d0,ann_arr%ann(ksat)%chi0)
+
+    cos_theta_i=(piaij%dr(1)*piaik%dr(1)+piaij%dr(2)*piaik%dr(2)+piaij%dr(3)*piaik%dr(3))/(piaij%r*piaik%r)
+    fcj_fck=piaij%fc*piaik%fc
+    one_rij=1.d0/piaij%r
+    one_rik=1.d0/piaik%r
+    one_rijk=one_rij*one_rik
+    cos_one_rijsq=cos_theta_i/piaij%r**2
+    cos_one_riksq=cos_theta_i/piaik%r**2
+    fcd_one_rij=piaij%fcd/piaij%r
+    fcd_one_rik=piaik%fcd/piaik%r
+    rijsq=piaij%r**2
+    riksq=piaik%r**2
+    do ig=1,ann_arr%ann(isat)%ng5
+        i0=i0+1
+        ii1=ann_arr%ann(isat)%g5i(1,ig)+ann_arr%ann(isat)%g5i(2,ig)
+        ii2=abs(ann_arr%ann(isat)%g5i(1,ig)-ann_arr%ann(isat)%g5i(2,ig))
+        if((ann_arr%ann(isat)%g5i(1,ig)/=0).and. (.not.((jsat+ksat)==ii1 .and. abs(jsat-ksat)==ii2))) cycle
+        zeta=ann_arr%ann(isat)%g5zeta(ig)
+        alam=ann_arr%ann(isat)%g5lambda(ig)
+        etai=ann_arr%ann(isat)%g5eta(ig)
+        etaj=ann_arr%ann(jsat)%g5eta(ig)
+        etak=ann_arr%ann(ksat)%g5eta(ig)
+        zzz=2.d0**(1.d0-zeta)                                    
+        ui=(1.d0+alam*cos_theta_i)**zeta                        
+        vj=sign_chi0j*exp(-(etaj*rijsq))                       
+        vk=sign_chi0k*exp(-(etak*riksq))
+        vi=vj+vk
+        ttei=zzz*ui*vi*fcj_fck                        
+        ss1=vi*fcj_fck       
+        ss2=ui*fcj_fck                                                         
+        ss3=ui*vi*piaik%fc                                     
+        ss4=ui*vi*piaij%fc                                     
+        tt1=zeta*alam*(1.d0+alam*cos_theta_i)**(zeta-1)*ss1    
+        tt2=tt1*one_rijk                                       
+        ttj=2.d0*etaj*vj*ss2                                                                                    
+        ttk=2.d0*etak*vk*ss2 
+        tt4=-tt1*cos_one_rijsq-ttj+ss3*fcd_one_rij      
+        tt5=-tt1*cos_one_riksq-ttk+ss4*fcd_one_rik      
+        ttjx=zzz*(tt2*piaik%dr(1)+tt4*piaij%dr(1))      
+        ttjy=zzz*(tt2*piaik%dr(2)+tt4*piaij%dr(2))      
+        ttjz=zzz*(tt2*piaik%dr(3)+tt4*piaij%dr(3))      
+        ttkx=zzz*(tt2*piaij%dr(1)+tt5*piaik%dr(1))      
+        ttky=zzz*(tt2*piaij%dr(2)+tt5*piaik%dr(2))      
+        ttkz=zzz*(tt2*piaij%dr(3)+tt5*piaik%dr(3))      
+        symfunc%y0d(i0,1,ibij)=symfunc%y0d(i0,1,ibij)+ttjx
+        symfunc%y0d(i0,2,ibij)=symfunc%y0d(i0,2,ibij)+ttjy
+        symfunc%y0d(i0,3,ibij)=symfunc%y0d(i0,3,ibij)+ttjz
+        symfunc%y0d(i0,1,ibik)=symfunc%y0d(i0,1,ibik)+ttkx
+        symfunc%y0d(i0,2,ibik)=symfunc%y0d(i0,2,ibik)+ttky
+        symfunc%y0d(i0,3,ibik)=symfunc%y0d(i0,3,ibik)+ttkz
+        symfunc%y(i0,iat)=symfunc%y(i0,iat)+ttei
+
+        !The lines we need to calculate the angular part of the stress tensor(without volume):
+        symfunc%y0dr(i0,1,ibij)=symfunc%y0dr(i0,1,ibij)+(1.d0*ttjx*piaij%dr(1))  !sigma(1,1)
+        symfunc%y0dr(i0,2,ibij)=symfunc%y0dr(i0,2,ibij)+(1.d0*ttjx*piaij%dr(2))  !sigma(1,2)
+        symfunc%y0dr(i0,3,ibij)=symfunc%y0dr(i0,3,ibij)+(1.d0*ttjx*piaij%dr(3))  !sigma(1,3)
+        
+        symfunc%y0dr(i0,4,ibij)=symfunc%y0dr(i0,4,ibij)+(1.d0*ttjy*piaij%dr(1))  !sigma(2,1)
+        symfunc%y0dr(i0,5,ibij)=symfunc%y0dr(i0,5,ibij)+(1.d0*ttjy*piaij%dr(2))  !sigma(2,2)
+        symfunc%y0dr(i0,6,ibij)=symfunc%y0dr(i0,6,ibij)+(1.d0*ttjy*piaij%dr(3))  !sigma(2,3)
+        
+        symfunc%y0dr(i0,7,ibij)=symfunc%y0dr(i0,7,ibij)+(1.d0*ttjz*piaij%dr(1))  !sigma(3,1)
+        symfunc%y0dr(i0,8,ibij)=symfunc%y0dr(i0,8,ibij)+(1.d0*ttjz*piaij%dr(2))  !sigma(3,2)
+        symfunc%y0dr(i0,9,ibij)=symfunc%y0dr(i0,9,ibij)+(1.d0*ttjz*piaij%dr(3))  !sigma(3,3)
+        
+        symfunc%y0dr(i0,1,ibik)=symfunc%y0dr(i0,1,ibik)+(1.d0*ttkx*piaik%dr(1))  !sigma(1,1)
+        symfunc%y0dr(i0,2,ibik)=symfunc%y0dr(i0,2,ibik)+(1.d0*ttkx*piaik%dr(2))  !sigma(1,2)
+        symfunc%y0dr(i0,3,ibik)=symfunc%y0dr(i0,3,ibik)+(1.d0*ttkx*piaik%dr(3))  !sigma(1,3)
+        
+        symfunc%y0dr(i0,4,ibik)=symfunc%y0dr(i0,4,ibik)+(1.d0*ttky*piaik%dr(1))  !sigma(2,1)
+        symfunc%y0dr(i0,5,ibik)=symfunc%y0dr(i0,5,ibik)+(1.d0*ttky*piaik%dr(2))  !sigma(2,2)
+        symfunc%y0dr(i0,6,ibik)=symfunc%y0dr(i0,6,ibik)+(1.d0*ttky*piaik%dr(3))  !sigma(2,3)
+        
+        symfunc%y0dr(i0,7,ibik)=symfunc%y0dr(i0,7,ibik)+(1.d0*ttkz*piaik%dr(1))  !sigma(3,1)
+        symfunc%y0dr(i0,8,ibik)=symfunc%y0dr(i0,8,ibik)+(1.d0*ttkz*piaik%dr(2))  !sigma(3,2)
+        symfunc%y0dr(i0,9,ibik)=symfunc%y0dr(i0,9,ibik)+(1.d0*ttkz*piaik%dr(3))  !sigma(3,3)
+    enddo
+end subroutine symmetry_functions_g05_atom2
 !*****************************************************************************************

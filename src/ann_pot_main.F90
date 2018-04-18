@@ -40,7 +40,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_eem2(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
         ! E0=atoms%epot
@@ -65,7 +65,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     endif
 end subroutine cal_ann_main
 !*****************************************************************************************
-subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
@@ -84,7 +84,8 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha, tt
     real(8), allocatable:: epotall(:), eref_all(:)
     !return
-    ann_arr%event='evalu'
+    ann_arr%event='train'
+    allocate(ekf%g(ekf%n))
     do ia=1,ann_arr%n
         call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
     enddo
@@ -144,6 +145,86 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     enddo
     call f_free(epotall)
     call f_free(eref_all)
+    deallocate(ekf%g)
     !stop
+end subroutine prefit_cent_ener_ref
+!*****************************************************************************************
+subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
+    type(typ_atoms_arr), intent(inout):: atoms_train
+    type(typ_atoms_arr), intent(inout):: atoms_valid
+    type(typ_ekf), intent(inout):: ekf
+    !local variables
+    type(typ_atoms):: atoms
+    integer:: iconf, istep, iat, ia, isatur, nsatur
+    real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
+    real(8):: anat2(100), g2(100), qnet
+    ann_arr%event='train'
+    allocate(ekf%g(ekf%n))
+    do ia=1,ann_arr%n
+        call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+    enddo
+    nsatur=3
+    isatur=0
+    alpha1=0.2d0/real(atoms_train%nconf,8)
+    alpha2=0.02d0/real(atoms_train%nconf,8)
+    do istep=0,50
+        rmse=0.d0
+        g1=0.d0
+        g2=0.d0
+        do iconf=1,atoms_train%nconf
+            call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
+            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+            rmse=rmse+((symfunc_train%symfunc(iconf)%epot-atoms%epot)/atoms%nat)**2
+            anat1=0.d0
+            anat2=0.d0
+            do iat=1,atoms%nat
+                if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
+                    qnet=atoms%qat(iat)
+                elseif(trim(ann_arr%approach)=='cent2') then
+                    qnet=atoms%zat(iat)+atoms%qat(iat)
+                else
+                    write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
+                    stop
+                endif
+                anat1(atoms%itypat(iat))=anat1(atoms%itypat(iat))+qnet
+                anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*qnet**2
+            enddo
+            do ia=1,ann_arr%n
+                g1(ia)=g1(ia)+2.d0*anat1(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
+                g2(ia)=g2(ia)+2.d0*anat2(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
+            enddo
+        enddo
+        rmse=sqrt(rmse/atoms_train%nconf)
+        if(istep==0) rmse_old=rmse
+        if(istep>0 .and. rmse<rmse_old .and. abs(rmse_old-rmse)<1.d-4) then
+            isatur=isatur+1
+        else
+            isatur=0
+        endif
+        write(*,'(a,i4,5es19.10,i3)') 'prefit: ',istep,rmse*1.d3, &
+            ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0, &
+            ann_arr%ann(1)%hardness,ann_arr%ann(2)%hardness,isatur
+        if(rmse*1.d3<1.d0) exit
+        if(isatur>nsatur) exit
+        do ia=1,ann_arr%n
+            dchi0=alpha1*g1(ia)
+            dchi0=sign(min(abs(dchi0),1.d-1),dchi0)
+            ann_arr%ann(ia)%chi0=ann_arr%ann(ia)%chi0-dchi0
+            dhardness=alpha2*g2(ia)
+            dhardness=sign(min(abs(dhardness),1.d-1),dhardness)
+            ann_arr%ann(ia)%hardness=ann_arr%ann(ia)%hardness-dhardness
+        enddo
+        rmse_old=rmse
+    enddo
+    deallocate(ekf%g)
 end subroutine prefit_cent
 !*****************************************************************************************
