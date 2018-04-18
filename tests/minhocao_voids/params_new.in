@@ -1,0 +1,35 @@
+PRESS 0
+VOIDS .TRUE.
+VERBOSE 1
+NAT  16
+NTYPE 2                      !Number of atom types
+ZNUCL 14 201                 !Nuclei charge 
+AMU 2 4                    !Atomic mass used for MD and Fire
+TYPAT 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2
+MDNIT 300 1 3                !Maximum number of iterations during MD, options for algorithm and integrator
+GEONIT 1900                    !Maximum number of iterations during GEOPT
+CELLMASS 2                     !Cell mass during MD 
+AUTO_MDMIN T
+MDMINMIN 2
+MDMINMAX 6
+AUTO_SOFT T
+SOFTNIT 20
+SOFTAT 1.d0
+SOFTLAT 1.d0
+AUTO_MDDT T Auto 10 50             !(Auto), init timestep, target number of samples per minimum crossed during MD
+MDDTINIT 20
+MDDTIPM 30
+CODE lenosky_tb
+GEOALGO fire 
+GEOFIREDTINIT 5 
+GEOFIREDTMIN  1
+GEOFIREDTMAX  140
+GEOTOLMXF  3.d-4                  !Force tolerance for GEOPT convergance 
+STRFACT 100                    !Factor to multiply stress 
+USEWFGEO  T   !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
+USEWFMD  F   !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
+USEWFSOFT  T   !Determines if the previous wavefunction should be read for GEOPT, SOFTENING and MD
+FINDSYM T .true. .false.          !Determines if symmetry (isotropy)/FDOS calculation should be used
+FINDDOS F .true. .false.          !Determines if symmetry (isotropy)/FDOS calculation should be used
+AUTO_KPT T
+KPTDEN 0.03 0.05  

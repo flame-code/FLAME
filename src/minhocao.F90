@@ -1386,8 +1386,8 @@ implicit none
  real(8),dimension(3,3):: vlatpred
  real(8),dimension(3,3):: velmatpred
  real(8),dimension(3,3):: str_matrix
- real(8),dimension(1000):: ensave   !zl
- real(8),dimension(1000):: ensmoth  !zl
+ real(8),dimension(parres%nmd_dynamics):: ensave   !zl
+ real(8),dimension(parres%nmd_dynamics):: ensmoth  !zl
  real(8):: accvolcur
  real(8):: accvolpred
  real(8):: accvolprev
