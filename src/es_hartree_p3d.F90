@@ -113,7 +113,6 @@ subroutine solve_syslinequ_p3d(poisson,hz,cell)
         d(nem+iz)=fourpi*poisson%pot(ix,iy,iz)
     enddo
     call calbeta(hzsq,poisson%ngpz,d(1+nem),beta)
-    write(*,*)"beta = ", beta
     poisson%beta = beta
     call prepare00(poisson%ngpz,nem,d,c,hz)
     c(1)=c(1)-beta

@@ -532,17 +532,16 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
         charge=-dipole/poisson%cell(3)+c*dv
 
-        ehartree = ehartree - 0.5*efield*dipole-0.5*dipole/poisson%cell(3)*dv
-        !ehartree = ehartree - 0.5*efield*dipole+0.5*dipole/poisson%cell(3)*dv
+        !ehartree = ehartree - 0.5*efield*dipole-0.5*dipole/poisson%cell(3)*dv
+        ehartree = ehartree - 0.5*efield*dipole+0.5*dipole/poisson%cell(3)*dv
         !ehartree = ehartree + 0.5*c*dv**2
 
         do iat=1,atoms%nat
-            g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+            g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
         enddo
 
 
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
-        write(*,*) "call potential surface"
         ehartree=0.d0
         nbgpz=int(poisson%rgcut/poisson%hz)+2
         poisson%npu=poisson%ngpz-nbgpz
@@ -601,13 +600,14 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
         charge0=-dipole/poisson%cell(3)
         charge=-dipole/poisson%cell(3)+c*dv
+        write(*,*)"charge = ",charge
 
-        ehartree=ehartree+0.5d0*charge0*dv!+0.5d0*c*dv**2!
+        ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
         !ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
 
 
         do iat=1,atoms%nat
-            g(iat)=g(iat)-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+            g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
         enddo
         deallocate(poisson%pots)
     endif

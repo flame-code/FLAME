@@ -376,7 +376,7 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
         efield =- (dv+2.d0*beta)/ poisson%cell(3)
 
         do iat=1,atoms%nat
-            atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)+atoms%qat(iat)/poisson%cell(3)*(dv)
+            atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
         enddo
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
         dipole=0.d0
@@ -389,7 +389,7 @@ subroutine force_gto_sym_ortho(parini,atoms,poisson,gausswidth)
         charge=-dipole/poisson%cell(3)!+c*dv
         
         do iat=1,atoms%nat
-            atoms%fat(3,iat)=atoms%fat(3,iat)+atoms%qat(iat)/poisson%cell(3)*(dv)
+            atoms%fat(3,iat)=atoms%fat(3,iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
             !atoms%fat(3,iat)=atoms%fat(3,iat)!+atoms%qat(iat)/poisson%cell(3)*(-2*beta-0.5*dv)
         enddo
         poisson%pot=potbk
