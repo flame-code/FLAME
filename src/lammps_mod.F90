@@ -96,12 +96,12 @@
        write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(2,3),boxyz
        write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(3,3),boxzhi
        !stop 'STOPPED AT CELLVEC'
-       if(abs(atoms%cellvec(1,1)-boxxhi)>1.d-15) stop 'ERROR: inconsistency in boxxhi'
-       if(abs(atoms%cellvec(1,2)-boxxy )>1.d-15) stop 'ERROR: inconsistency in boxxy '
-       if(abs(atoms%cellvec(2,2)-boxyhi)>1.d-15) stop 'ERROR: inconsistency in boxyhi'
-       if(abs(atoms%cellvec(1,3)-boxxz )>1.d-15) stop 'ERROR: inconsistency in boxxz '
-       if(abs(atoms%cellvec(2,3)-boxyz )>1.d-15) stop 'ERROR: inconsistency in boxyz '
-       if(abs(atoms%cellvec(3,3)-boxzhi)>1.d-15) stop 'ERROR: inconsistency in boxzhi'
+       if(abs(atoms%cellvec(1,1)-boxxhi)>1.d-15*boxxhi) stop 'ERROR: inconsistency in boxxhi'
+       if(abs(atoms%cellvec(1,2)-boxxy )>1.d-12       ) stop 'ERROR: inconsistency in boxxy '
+       if(abs(atoms%cellvec(2,2)-boxyhi)>1.d-15*boxyhi) stop 'ERROR: inconsistency in boxyhi'
+       if(abs(atoms%cellvec(1,3)-boxxz )>1.d-12       ) stop 'ERROR: inconsistency in boxxz '
+       if(abs(atoms%cellvec(2,3)-boxyz )>1.d-12       ) stop 'ERROR: inconsistency in boxyz '
+       if(abs(atoms%cellvec(3,3)-boxzhi)>1.d-15*boxzhi) stop 'ERROR: inconsistency in boxzhi'
        do iat=1,atoms%nat
            atoms%rat(1,iat)=pos(1,iat)
            atoms%rat(2,iat)=pos(2,iat)
