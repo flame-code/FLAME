@@ -107,6 +107,7 @@ module mod_parini
         real(8):: temp_dynamics
         real(8):: init_temp_dynamics =0.d0
         integer:: nmd_dynamics=0
+        integer:: nfreq_dynamics=0
         character(20):: md_method_dynamics='unknown'
         logical:: print_force_dynamics=.false.
         logical:: restart_dynamics=.false.

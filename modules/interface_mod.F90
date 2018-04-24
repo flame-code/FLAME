@@ -1314,6 +1314,10 @@ subroutine set_rcov(atoms)
     use mod_atoms, only: typ_atoms
     type(typ_atoms), intent(inout) :: atoms
 end subroutine set_rcov
+subroutine set_atomic_mass(atoms)
+    use mod_atoms, only: typ_atoms
+    type(typ_atoms), intent(inout) :: atoms
+end subroutine set_atomic_mass
 subroutine set_qat(atoms)
     use mod_atoms, only: typ_atoms
     type(typ_atoms), intent(inout) :: atoms

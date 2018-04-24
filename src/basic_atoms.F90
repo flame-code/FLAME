@@ -1837,6 +1837,8 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=-1.d0
         elseif(trim(atoms%stypat(itypat))=='Sr') then
             atoms%qtypat(itypat)=2.d0
+        elseif(trim(atoms%stypat(itypat))=='Al') then
+            atoms%qtypat(itypat)=3.d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%stypat=',trim(atoms%stypat(itypat))
             stop
@@ -1878,6 +1880,8 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=-1.d0
         else if(trim(atoms%sat(iat))=='Sr') then
             atoms%qat(iat)=2.d0
+        else if(trim(atoms%sat(iat))=='Al') then
+            atoms%qat(iat)=3.d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%sat=',trim(atoms%sat(iat))
             stop
@@ -1887,6 +1891,223 @@ subroutine set_qat(atoms)
         !endif
     enddo
 end subroutine set_qat
+!*****************************************************************************************
+subroutine set_atomic_mass(atoms)
+    use mod_interface
+    use mod_atoms, only: typ_atoms
+    use mod_processors, only: iproc
+    use mod_const, only: bohr2ang
+    implicit none
+    type(typ_atoms), intent(inout) :: atoms
+    !local variables
+    integer:: iat
+    if(.not. allocated(atoms%sat)) stop 'ERROR: in set_amass:sat not allocated.'
+    if(.not. allocated(atoms%amass)) stop 'ERROR: in set_amass: amass not allocated.'
+    do iat=1,atoms%nat
+        if(trim(atoms%sat(iat))=='LJ') then
+            atoms%amass(iat)=1.d0
+        else if(trim(atoms%sat(iat))=='H') then
+            atoms%amass(iat)=1.00797d0
+        else if(trim(atoms%sat(iat))=='He') then
+            atoms%amass(iat)=4.00260d0
+        else if(trim(atoms%sat(iat))=='Li') then
+            atoms%amass(iat)=6.941d0
+        else if(trim(atoms%sat(iat))=='Be') then
+            atoms%amass(iat)=9.012180
+        else if(trim(atoms%sat(iat))=='B') then
+            atoms%amass(iat)=10.81d0
+        else if(trim(atoms%sat(iat))=='C') then
+            atoms%amass(iat)=12.011d0
+        else if(trim(atoms%sat(iat))=='N') then
+            atoms%amass(iat)=14.0067d0
+        else if(trim(atoms%sat(iat))=='O') then
+            atoms%amass(iat)=15.9994d0
+        else if(trim(atoms%sat(iat))=='F') then
+            atoms%amass(iat)=18.998403d0
+        else if(trim(atoms%sat(iat))=='Ne') then
+            atoms%amass(iat)=20.179d0
+        else if(trim(atoms%sat(iat))=='Na') then
+            atoms%amass(iat)=22.98977d0
+        else if(trim(atoms%sat(iat))=='Mg') then
+            atoms%amass(iat)=24.305d0
+        else if(trim(atoms%sat(iat))=='Al') then
+            atoms%amass(iat)=26.98154d0
+        else if(trim(atoms%sat(iat))=='Si') then
+            atoms%amass(iat)=28.0855d0
+        else if(trim(atoms%sat(iat))=='P') then
+            atoms%amass(iat)=30.97376d0
+        else if(trim(atoms%sat(iat))=='S') then
+            atoms%amass(iat)=32.06d0
+        else if(trim(atoms%sat(iat))=='Cl') then
+            atoms%amass(iat)=35.453d0
+        else if(trim(atoms%sat(iat))=='Ar') then
+            atoms%amass(iat)=39.948d0
+        else if(trim(atoms%sat(iat))=='K') then
+            atoms%amass(iat)=39.0983d0
+        else if(trim(atoms%sat(iat))=='Ca') then
+            atoms%amass(iat)=40.08d0
+        else if(trim(atoms%sat(iat))=='Sc') then
+            atoms%amass(iat)=44.9559d0
+        else if(trim(atoms%sat(iat))=='Ti') then
+            atoms%amass(iat)=47.90d0
+        else if(trim(atoms%sat(iat))=='V') then
+            atoms%amass(iat)=50.9415d0
+        else if(trim(atoms%sat(iat))=='Cr') then
+            atoms%amass(iat)=51.996d0
+        else if(trim(atoms%sat(iat))=='Mn') then
+            atoms%amass(iat)=54.9380d0
+        else if(trim(atoms%sat(iat))=='Fe') then
+            atoms%amass(iat)=55.847d0
+        else if(trim(atoms%sat(iat))=='Co') then
+            atoms%amass(iat)=58.9332d0
+        else if(trim(atoms%sat(iat))=='Ni') then
+            atoms%amass(iat)=58.70d0
+        else if(trim(atoms%sat(iat))=='Cu') then
+            atoms%amass(iat)=63.546d0
+        else if(trim(atoms%sat(iat))=='Zn') then
+            atoms%amass(iat)=65.38d0
+        else if(trim(atoms%sat(iat))=='Ga') then
+            atoms%amass(iat)=69.72d0
+        else if(trim(atoms%sat(iat))=='Ge') then
+            atoms%amass(iat)=72.59d0
+        else if(trim(atoms%sat(iat))=='As') then
+            atoms%amass(iat)=74.9216d0
+        else if(trim(atoms%sat(iat))=='Se') then
+            atoms%amass(iat)=78.96d0
+        else if(trim(atoms%sat(iat))=='Br') then
+            atoms%amass(iat)=79.904d0
+        else if(trim(atoms%sat(iat))=='Kr') then
+            atoms%amass(iat)=83.80d0
+        else if(trim(atoms%sat(iat))=='Rb') then
+            atoms%amass(iat)=85.4678d0
+        else if(trim(atoms%sat(iat))=='Sr') then
+            atoms%amass(iat)=87.62d0
+        else if(trim(atoms%sat(iat))=='Y') then
+            atoms%amass(iat)=88.9059d0
+        else if(trim(atoms%sat(iat))=='Zr') then
+            atoms%amass(iat)=91.22d0
+        else if(trim(atoms%sat(iat))=='Nb') then
+            atoms%amass(iat)=92.9064d0
+        else if(trim(atoms%sat(iat))=='Mo') then
+            atoms%amass(iat)=95.94d0
+        else if(trim(atoms%sat(iat))=='Tc') then
+            atoms%amass(iat)=98d0
+        else if(trim(atoms%sat(iat))=='Ru') then
+            atoms%amass(iat)=101.07d0
+        else if(trim(atoms%sat(iat))=='Rh') then
+            atoms%amass(iat)=102.9055d0
+        else if(trim(atoms%sat(iat))=='Pd') then
+            atoms%amass(iat)=106.4d0
+        else if(trim(atoms%sat(iat))=='Ag') then
+            atoms%amass(iat)=107.868d0
+        else if(trim(atoms%sat(iat))=='Cd') then
+            atoms%amass(iat)=112.41d0
+        else if(trim(atoms%sat(iat))=='In') then
+            atoms%amass(iat)=114.82d0
+        else if(trim(atoms%sat(iat))=='Sn') then
+            atoms%amass(iat)=118.69d0
+        else if(trim(atoms%sat(iat))=='Sb') then
+            atoms%amass(iat)=121.75d0
+        else if(trim(atoms%sat(iat))=='Te') then
+            atoms%amass(iat)=127.60d0
+        else if(trim(atoms%sat(iat))=='I') then
+            atoms%amass(iat)=126.9045d0
+        else if(trim(atoms%sat(iat))=='Xe') then
+            atoms%amass(iat)=131.30d0
+        else if(trim(atoms%sat(iat))=='Cs') then
+            atoms%amass(iat)=132.9054d0
+        else if(trim(atoms%sat(iat))=='Ba') then
+            atoms%amass(iat)=137.33d0
+        else if(trim(atoms%sat(iat))=='La') then
+            atoms%amass(iat)=138.9055d0
+        else if(trim(atoms%sat(iat))=='Ce') then
+            atoms%amass(iat)=140.12d0
+        else if(trim(atoms%sat(iat))=='Pr') then
+            atoms%amass(iat)=140.9077d0
+        else if(trim(atoms%sat(iat))=='Nd') then
+            atoms%amass(iat)=144.24d0
+        else if(trim(atoms%sat(iat))=='Pm') then
+            atoms%amass(iat)=145d0
+        else if(trim(atoms%sat(iat))=='Sm') then
+            atoms%amass(iat)=150.4d0
+        else if(trim(atoms%sat(iat))=='Eu') then
+            atoms%amass(iat)=151.96d0
+        else if(trim(atoms%sat(iat))=='Gd') then
+            atoms%amass(iat)=157.25d0
+        else if(trim(atoms%sat(iat))=='Tb') then
+            atoms%amass(iat)=158.9254d0
+        else if(trim(atoms%sat(iat))=='Dy') then
+            atoms%amass(iat)=162.50d0
+        else if(trim(atoms%sat(iat))=='Ho') then
+            atoms%amass(iat)=164.9304d0
+        else if(trim(atoms%sat(iat))=='Er') then
+            atoms%amass(iat)=167.26d0
+        else if(trim(atoms%sat(iat))=='Tm') then
+            atoms%amass(iat)=168.9342d0
+        else if(trim(atoms%sat(iat))=='Yb') then
+            atoms%amass(iat)=173.04d0
+        else if(trim(atoms%sat(iat))=='Lu') then
+            atoms%amass(iat)=174.967d0
+        else if(trim(atoms%sat(iat))=='Hf') then
+            atoms%amass(iat)=178.49d0
+        else if(trim(atoms%sat(iat))=='Ta') then
+            atoms%amass(iat)=180.9479d0
+        else if(trim(atoms%sat(iat))=='W') then
+            atoms%amass(iat)=183.85d0
+        else if(trim(atoms%sat(iat))=='Re') then
+            atoms%amass(iat)=186.207d0
+        else if(trim(atoms%sat(iat))=='Os') then
+            atoms%amass(iat)=190.2d0
+        else if(trim(atoms%sat(iat))=='Ir') then
+            atoms%amass(iat)=192.22d0
+        else if(trim(atoms%sat(iat))=='Pt') then
+            atoms%amass(iat)=195.09d0
+        else if(trim(atoms%sat(iat))=='Au') then
+            atoms%amass(iat)=196.9665d0
+        else if(trim(atoms%sat(iat))=='Hg') then
+            atoms%amass(iat)=200.59d0
+        else if(trim(atoms%sat(iat))=='Tl') then
+            atoms%amass(iat)=204.37d0
+        else if(trim(atoms%sat(iat))=='Pb') then
+            atoms%amass(iat)=207.2d0
+        else if(trim(atoms%sat(iat))=='Bi') then
+            atoms%amass(iat)=208.9804d0
+        else if(trim(atoms%sat(iat))=='Po') then
+            atoms%amass(iat)=209d0
+        else if(trim(atoms%sat(iat))=='At') then
+            atoms%amass(iat)=210d0
+        else if(trim(atoms%sat(iat))=='Rn') then
+            atoms%amass(iat)=222d0
+        else if(trim(atoms%sat(iat))=='Fr') then
+            atoms%amass(iat)=223d0
+        else if(trim(atoms%sat(iat))=='Ra') then
+            atoms%amass(iat)=226.0254d0
+        else if(trim(atoms%sat(iat))=='Ac') then
+            atoms%amass(iat)=227.0278d0
+        else if(trim(atoms%sat(iat))=='Th') then
+            atoms%amass(iat)=232.0381d0
+        else if(trim(atoms%sat(iat))=='Pa') then
+            atoms%amass(iat)=231.0359d0
+        else if(trim(atoms%sat(iat))=='U') then
+            atoms%amass(iat)=238.029d0
+        else if(trim(atoms%sat(iat))=='Np') then
+            atoms%amass(iat)=237.0482d0
+        else if(trim(atoms%sat(iat))=='Pu') then
+            atoms%amass(iat)=242d0
+        else if(trim(atoms%sat(iat))=='Am') then
+            atoms%amass(iat)=243d0
+        else if(trim(atoms%sat(iat))=='Cm') then
+            atoms%amass(iat)=247d0
+        else
+            write(*,*) 'ERROR: no atomic mass stored for atomtype=',trim(atoms%sat(iat))
+            stop
+        endif
+        !if(iproc==0) then
+        !    write(*,'(a,a5,f10.5)') 'RCOV:',trim(atoms%sat(iat)),atoms%amass(iat)
+        !endif
+        atoms%amass(iat)=atoms%amass(iat)/0.00054858d0
+    enddo
+end subroutine set_atomic_mass
 !*****************************************************************************************
 subroutine sat_to_iatom(sat,iatom)
     use mod_interface
