@@ -5097,6 +5097,12 @@ subroutine lammps_task(parini)
     use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int, C_FUNPTR
     type(typ_parini), intent(in):: parini
 end subroutine lammps_task
+subroutine lammps_write(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms):: atoms
+end subroutine lammps_write
 ! ./src/task_linkedlist.F90 :
 subroutine  linkedlist_test(parini)
     use mod_parini, only: typ_parini

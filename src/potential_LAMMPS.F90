@@ -1,9 +1,11 @@
 module interface_lammps
   use global
   use defs_basis
+#if defined(HAVE_LAMMPS)
   use mpi
   use LAMMPS
   use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int
+#endif
 
   implicit none
   private
@@ -102,7 +104,7 @@ if(file_exists) then
 endif  
 
 
-if(any(znucl(:)==201).or.any(znucl(:)==202)) then
+if(any(parini%znucl(:)==201).or.any(parini%znucl(:)==202)) then
 !we are dealing with a LJ system
    call lammps_command (lmp, 'units lj')
 else
@@ -124,16 +126,16 @@ call lammps_command (lmp, 'atom_modify map array')
 call lammps_command (lmp, 'lattice none 1.')
 call lammps_command (lmp, 'region simbox prism 0 1 0 1 0 1 0 0 0 side in units box')
 !Set up atom types
-write(command_line,'(a,i5,a)') "create_box ",ntypat," simbox"
+write(command_line,'(a,i5,a)') "create_box ",parini%ntypat," simbox"
 call lammps_command (lmp, trim(command_line))
-do iat=1,ntypat
+do iat=1,parini%ntypat
 write(command_line,'(a,i5,es25.15)') "mass ",iat,amu_emass*parini%amu(iat)
 call lammps_command (lmp, trim(command_line))
 enddo
 !Setup all atoms
 nat_lammps=nnat
 do iat=1,nnat
-write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",parini%typat_global(modulo(iat-1,nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
+write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",parini%typat_global(modulo(iat-1,parini%nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
 write(*,*) trim(command_line)
 call lammps_command (lmp, trim(command_line))
 enddo
@@ -180,9 +182,9 @@ implicit none
 type(typ_parini), intent(in):: parini
 integer:: i,n_in(3),offset_in(3),do_kpt_in,cellsearch,tb_or_meam,n_silicon,iprec,iat,nat_lammps_new
 integer:: nec1,nec2,nec3,nec1t,nec2t,nec3t,jat,k,l,m
-real(8):: xred(3,nat),xred0(3,nat),fcart(3,nat),strten(6),stress(3,3),energy,count
-real(8):: vol,alpha,beta,gamma,a,b,c,rotmat(3,3),fcartblj(3,nat),strtenblj(6),energyblj,strtenvir(6)
-real(8):: tilts(6),tiltsm(6),ftot(3),randmov(3,nat)
+real(8):: xred(3,parini%nat),xred0(3,parini%nat),fcart(3,parini%nat),strten(6),stress(3,3),energy,count
+real(8):: vol,alpha,beta,gamma,a,b,c,rotmat(3,3),fcartblj(3,parini%nat),strtenblj(6),energyblj,strtenvir(6)
+real(8):: tilts(6),tiltsm(6),ftot(3),randmov(3,parini%nat)
 real(8):: latvec(3,3),latvec_ang(3,3),latvec_tilt(3,3),latvec_tilt_inv(3,3),k_latvec(3,3)
 real(8),allocatable:: k_xcart(:,:,:,:,:),k_xred(:,:,:,:,:)
 character(5)::dnat1,dnat2
@@ -211,13 +213,13 @@ latvec_tilt(3,3)=tilts(3)
 latvec_tilt(1,2)=tilts(4)
 latvec_tilt(1,3)=tilts(5)
 latvec_tilt(2,3)=tilts(6)
-if(use_backtocell) call backtocell(nat,latvec_tilt,xred)
+if(use_backtocell) call backtocell(parini%nat,latvec_tilt,xred)
 
 !Extended cell
 call n_rep_dim(latvec_tilt,cut_lammps2,nec1,nec2,nec3)
 if(parini%verb.gt.0) write(*,'(a,i5,i5,i5)') " #Expanding cell with periodic images to: ",nec1,nec2,nec3
-nat_lammps_new=nec1*nec2*nec3*nat
-allocate(k_xcart(3,nat,nec1,nec2,nec3),k_xred(3,nat,nec1,nec2,nec3))
+nat_lammps_new=nec1*nec2*nec3*parini%nat
+allocate(k_xcart(3,parini%nat,nec1,nec2,nec3),k_xred(3,parini%nat,nec1,nec2,nec3))
 call k_expansion(parini,latvec_tilt,xred,nec1,nec2,nec3,k_latvec,k_xcart)
 
 tilts(1)=k_latvec(1,1)
@@ -306,7 +308,7 @@ if(nat_lammps_new-nat_lammps.lt.0) then
 ! write(*,*) trim("now delete_atoms group delat compress no")
 elseif(nat_lammps_new-nat_lammps.gt.0) then
  do iat=nat_lammps+1,nat_lammps_new
- write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",parini%typat_global(modulo(iat-1,nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
+ write(command_line,'(a,i5,a,3(es25.15),a)') "create_atoms ",parini%typat_global(modulo(iat-1,parini%nat)+1), " single " , 0.d0,0.d0,0.d0," units box"
  call lammps_command (lmp, trim(command_line))
  enddo
 !Get set commands
@@ -363,7 +365,7 @@ call lammps_command (lmp, trim(command_line))
   do k=1,nec1
   do l=1,nec2
   do m=1,nec3
-  do iat=1,nat
+  do iat=1,parini%nat
 !   write(*,'(a,3es25.15,a)') "create_atoms 1 single   ",k_xcart(:,iat,k,l,m),"     units box"
    r(jat)=k_xcart(1,iat,k,l,m);jat=jat+1
    r(jat)=k_xcart(2,iat,k,l,m);jat=jat+1
@@ -392,7 +394,7 @@ call lammps_command (lmp, trim(command_line))
    strten(6)=-compute_v(4)
 !write(*,*) "strten", strten
 !This is not very clear yet...
-if((any(znucl(:)==201).or.any(znucl(:)==202))) then
+if((any(parini%znucl(:)==201).or.any(parini%znucl(:)==202))) then
    strten=strten/Ha_eV*Bohr_Ang**3  !From ev/ang^3 to Ha/Bohr^3
 !   strtenvir=strtenvir/Ha_eV*Bohr_Ang**3
 else
@@ -428,7 +430,7 @@ endif
 !!   call invertmat(latvec_tilt,latvec_tilt_inv,3)
 !!   rotmat=matmul(latvec_ang,latvec_tilt_inv)
    ftot=0.d0
-   do iat=1,nat
+   do iat=1,parini%nat
 !Transform forces back to original cell
      fcart(:,iat)=matmul(rotmat,r((iat-1)*3+1:(iat-1)*3+3))/Ha_eV*Bohr_Ang
      ftot=ftot+fcart(:,iat)
