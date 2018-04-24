@@ -49,7 +49,6 @@ use interface_ipi
 use interface_msock
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type
               
 use steepest_descent, only: sd_beta_lat,sd_beta_at
 use fingerprint, only: & 
@@ -96,13 +95,13 @@ endif
    n = len_trim(all_line)
 !NAT
    if(.not.nat_found) then
-   call parsescalar_int("NAT",3,all_line(1:n),n,nat,found)
+   call parsescalar_int("NAT",3,all_line(1:n),n,parini%nat,found)
    if(found) nat_found=.true.
    if(found) cycle
    endif
 !NTYPE
    if(.not.ntypat_found) then
-   call parsescalar_int("NTYPE",5,all_line(1:n),n,ntypat,found)
+   call parsescalar_int("NTYPE",5,all_line(1:n),n,parini%ntypat_global,found)
    if(found) ntypat_found=.true.
    if(found) cycle
    endif
@@ -145,21 +144,21 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
 endif
 
 !Allocate the arrays
- if(.not.allocated(znucl))       then;   allocate(znucl(ntypat))                       ; znucl=0                 ; endif
- if(.not.allocated(char_type))   then;   allocate(char_type(ntypat))                   ; char_type="  "          ; endif
- if(.not.allocated(parini%amu))         then;   allocate(parini%amu(ntypat))                         ; parini%amu=0                   ; endif
- if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(ntypat))                        ; parini%rcov=0                  ; endif
- if(.not.allocated(parini%typat_global))       then;   allocate(parini%typat_global(nat))                          ;
+ if(.not.allocated(parini%znucl))       then;   allocate(parini%znucl(parini%ntypat_global))                       ; parini%znucl=0                 ; endif
+ if(.not.allocated(parini%char_type))   then;   allocate(parini%char_type(parini%ntypat_global))                   ; parini%char_type="  "          ; endif
+ if(.not.allocated(parini%amu))         then;   allocate(parini%amu(parini%ntypat_global))                         ; parini%amu=0                   ; endif
+ if(.not.allocated(parini%rcov))        then;   allocate(parini%rcov(parini%ntypat_global))                        ; parini%rcov=0                  ; endif
+ if(.not.allocated(parini%typat_global))       then;   allocate(parini%typat_global(parini%nat))                          ;
      parini%typat_global=0                 ; endif
- if(.not.allocated(parini%fixat))       then;   allocate(parini%fixat(nat))                          ; parini%fixat=.false.           ; endif
- if(.not.allocated(parini%fragarr))     then;   allocate(parini%fragarr(nat))                        ; parini%fragarr=0               ; endif
+ if(.not.allocated(parini%fixat))       then;   allocate(parini%fixat(parini%nat))                          ; parini%fixat=.false.           ; endif
+ if(.not.allocated(parini%fragarr))     then;   allocate(parini%fragarr(parini%nat))                        ; parini%fragarr=0               ; endif
  if(.not.allocated(parini%conf_dim))    then;   allocate(parini%conf_dim     (parini%nconfine))             ; parini%conf_dim=0              ; endif
  if(.not.allocated(parini%conf_av))     then;   allocate(parini%conf_av      (parini%nconfine))             ; parini%conf_av=0               ; endif
  if(.not.allocated(parini%conf_exp))    then;   allocate(parini%conf_exp     (parini%nconfine))             ; parini%conf_exp=0              ; endif
  if(.not.allocated(parini%conf_prefac)) then;   allocate(parini%conf_prefac  (parini%nconfine))             ; parini%conf_prefac=0           ; endif
  if(.not.allocated(parini%conf_cut))    then;   allocate(parini%conf_cut     (parini%nconfine))             ; parini%conf_cut=0              ; endif
  if(.not.allocated(parini%conf_eq))     then;   allocate(parini%conf_eq      (parini%nconfine))             ; parini%conf_eq=0               ; endif
- if(.not.allocated(parini%conf_list))   then;   allocate(parini%conf_list    (nat,parini%nconfine))         ; parini%conf_list=0             ; endif
+ if(.not.allocated(parini%conf_list))   then;   allocate(parini%conf_list    (parini%nat,parini%nconfine))         ; parini%conf_list=0             ; endif
  if(.not.allocated(parini%conf_nat))    then;   allocate(parini%conf_nat     (parini%nconfine))             ; parini%conf_nat=0              ; endif
  if(.not.allocated(parini%conf_cartred))then;   allocate(parini%conf_cartred (parini%nconfine))             ; parini%conf_cartred="C"        ; endif
 
@@ -175,7 +174,7 @@ if(.not.read_poscur) then
       read(12,'(a450)',end=98)all_line
       n = len_trim(all_line)
    !Znucl
-      call parsearray_real("ZNUCL",5,all_line(1:n),n,znucl(1:ntypat),ntypat,found)
+      call parsearray_real("ZNUCL",5,all_line(1:n),n,parini%znucl(1:parini%ntypat_global),parini%ntypat_global,found)
       if(found) exit
    enddo
    98 continue
@@ -186,8 +185,8 @@ if(.not.read_poscur) then
 endif
 
 !Get the correct atomic masses and atomic character
- do itype=1,ntypat
-   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
+ do itype=1,parini%ntypat_global
+   call atmdata(parini%amu(itype),parini%rcov(itype),parini%char_type(itype),parini%znucl(itype))
  enddo
 
 !Read the other variables
@@ -200,10 +199,10 @@ open(unit=12,file="params_new.in")
    if(found) parini%target_pressure_habohr=parini%target_pressure_gpa/HaBohr3_GPA
    if(found) cycle
 !Amu
-   call parsearray_real("AMU",3,all_line(1:n),n,parini%amu(1:ntypat),ntypat,found)
+   call parsearray_real("AMU",3,all_line(1:n),n,parini%amu(1:parini%ntypat_global),parini%ntypat_global,found)
    if(found) cycle
 !TYPAT
-   call parsearray_int("TYPAT",5,all_line(1:n),n,parini%typat_global(1:nat),nat,found)
+   call parsearray_int("TYPAT",5,all_line(1:n),n,parini%typat_global(1:parini%nat),parini%nat,found)
    if(found) cycle
 !MDNIT
    call parsescalar_int("MDNIT",5,all_line(1:n),n,parini%nmd_dynamics,found)
@@ -471,8 +470,8 @@ open(unit=12,file="params_new.in")
         write(fn1,'(i1.1)') i
         write(find_string,'(a,a)') "CONFLIST"//fn1 
         call exist_string(trim(find_string),9,all_line(1:n),n,found)
-        if(found.and.parini%conf_nat(i)==nat) then
-          do j=1,nat
+        if(found.and.parini%conf_nat(i)==parini%nat) then
+          do j=1,parini%nat
             parini%conf_list(j,i)=j
           enddo
         else
@@ -556,7 +555,7 @@ close(12)
 if(parini%use_confine) call  init_confinement_parser(parini)
 
 !Initiallize LJ parameter if required
-if(trim(parini%potential_potential)=="blj".and.calls==0) call blj_init_parameter()
+if(trim(parini%potential_potential)=="blj".and.calls==0) call blj_init_parameter(parini)
 
 !Initiallize LJ parameter if required
 if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter(parini)
@@ -565,8 +564,8 @@ if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter(parini)
 if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
   call check_lenosky_tb_lj(parini)
   n_lj=0
-  do iat=1,nat
-     if(znucl(parini%typat_global(iat)).gt.200) n_lj=n_lj+1
+  do iat=1,parini%nat
+     if(parini%znucl(parini%typat_global(iat)).gt.200) n_lj=n_lj+1
   enddo
   call lenosky_tb_lj_init_parameter()
 endif
@@ -589,7 +588,7 @@ endif
 
 !Initiallize ipi
 if(trim(parini%potential_potential)=="ipi".and.calls==0) then
-  call init_ipi(parini,nat)
+  call init_ipi(parini,parini%nat)
 endif
 
 !Initiallize msock
@@ -630,7 +629,6 @@ use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -647,12 +645,12 @@ logical:: read_poscur
 parini%target_pressure_gpa=0.d0
 parini%target_pressure_habohr=0.d0
 !Get the correct atomic masses and atomic character
- do itype=1,ntypat
-   call atmdata(parini%amu(itype),parini%rcov(itype),char_type(itype),znucl(itype))
+ do itype=1,parini%ntypat_global
+   call atmdata(parini%amu(itype),parini%rcov(itype),parini%char_type(itype),parini%znucl(itype))
  enddo
 parini%voids=.false.
 parini%core_rep=.false.
-if(.not.read_poscur) parini%typat_global(1:nat)=1
+if(.not.read_poscur) parini%typat_global(1:parini%nat)=1
 parini%nmd_dynamics=300
 parini%md_algo=1
 parini%md_integrator=3
@@ -749,9 +747,9 @@ parini%conf_prefac=1.d-2
 parini%conf_cut=1.d0
 parini%conf_av=2
 parini%conf_eq=0
-parini%conf_nat=nat
+parini%conf_nat=parini%nat
    do i=1,parini%nconfine
-          do j=1,nat
+          do j=1,parini%nat
             parini%conf_list(j,i)=j
           enddo
    enddo
@@ -774,7 +772,6 @@ subroutine params_check(parini)
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -788,7 +785,7 @@ integer:: i,j
 if(any(parini%typat_global(:).lt.1)) stop "Error in typat"
 if(any(parini%amu(:).le.0.d0)) stop "Error in amu"
 if(any(parini%rcov(:).le.0.d0)) stop "Error in rcov"
-if(any(znucl(:).le.0)) stop "Error in znucl"
+if(any(parini%znucl(:).le.0)) stop "Error in znucl"
 if(parini%nmd_dynamics.lt.1) stop "Error in parini%nmd_dynamics"
 if(parini%md_algo.lt.1.or.parini%md_algo.gt.4) stop "Error in parini%md_algo"
 if(parini%md_integrator.lt.1.or.parini%md_integrator.gt.3) stop "Error in parini%md_integrator"
@@ -851,8 +848,8 @@ do i=1,parini%nconfine
   if(parini%conf_exp(i).lt.1) stop "Error in conf_exp"
   if(parini%conf_prefac(i).lt.0.d0) stop "Error in conf_prefac"
   if(parini%conf_av(i).lt.1.or.parini%conf_av(i).gt.2) stop "Error in parini%conf_av"
-          do j=1,nat
-            if(parini%conf_list(j,i).lt.1.or.parini%conf_list(j,i).gt.nat) stop "Error in conf_list"
+          do j=1,parini%nat
+            if(parini%conf_list(j,i).lt.1.or.parini%conf_list(j,i).gt.parini%nat) stop "Error in conf_list"
           enddo
 enddo
 !if(ipi_inet.lt.0 .or. ipi_inet.gt.1) stop "Error in ipi_inet: must be 0 for unix socket, 1 for tcp"
@@ -883,7 +880,6 @@ use defs_basis
 use String_Utility 
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs
-use global, only: nat,ntypat,znucl,char_type
 use fingerprint, only: & 
    fp_method,&!All
    fp_12_nl,&                            !CALYPSO parameters
@@ -911,13 +907,13 @@ write(*,'(a,L3)')          " # USEWFGEO      ", parini%usewf_geopt
 write(*,'(a,L3)')          " # USEWFMD       ", parini%usewf_md
 write(*,'(a,L3)')          " # USEWFSOFT     ", parini%usewf_soften
 write(*,'(a)')             " # Atomic parameters *************************************************************"
-write(*,'(a,i5)')          " # NAT           ", nat
-write(*,'(a,i5)')          " # NTYPE         ", ntypat
-write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
-write(*,trim(formatting))  " # ZNUCL         ", int(znucl(:))
-write(formatting,'(a,i5,a)') '(a,',nat,'i3)'
+write(*,'(a,i5)')          " # NAT           ", parini%nat
+write(*,'(a,i5)')          " # NTYPE         ", parini%ntypat_global
+write(formatting,'(a,i5,a)') '(a,',parini%ntypat_global,'i4)'
+write(*,trim(formatting))  " # ZNUCL         ", int(parini%znucl(:))
+write(formatting,'(a,i5,a)') '(a,',parini%nat,'i3)'
 write(*,trim(formatting))  " # TYPAT         ", parini%typat_global(:)
-write(formatting,'(a,i5,a)') '(a,',ntypat,'i4)'
+write(formatting,'(a,i5,a)') '(a,',parini%ntypat_global,'i4)'
 write(*,trim(formatting))  " # AMU           ", int(parini%amu(:))
 write(*,'(a)')             " # MD parameters *****************************************************************"
 write(*,'(a,i5)')          " # MDALGO        ", parini%md_algo

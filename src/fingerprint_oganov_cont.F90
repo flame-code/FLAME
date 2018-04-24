@@ -263,7 +263,6 @@ end subroutine
 
 
 subroutine get_cosinedistance_coganov_atomic(fp1,fp2,nat,fp_size,fp_dim,kinds,nkinds,nkinds_sum,r_cut,pi,distance)
-use global, only: znucl
 !This sunroutine will compute the cosine distance between two fingerprints fp1 and fp2 and 
 !store the output distance.  All conventions and 
 !methods are from J.Chem.Phys, 130, 104504 (2009) and IEEE Symposium, Okt 21-23. (2008) (M.Valle and A.Oganov)
@@ -328,7 +327,6 @@ end subroutine
 
 
 subroutine get_cosinedistance_coganov(fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum,r_cut,pi,distance)
-use global, only: znucl
 !This sunroutine will compute the cosine distance between two fingerprints fp1 and fp2 and 
 !store the output distance.  All conventions and 
 !methods are from J.Chem.Phys, 130, 104504 (2009) and IEEE Symposium, Okt 21-23. (2008) (M.Valle and A.Oganov)

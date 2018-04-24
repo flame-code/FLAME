@@ -14,13 +14,15 @@ module interface_lenosky_tb_lj
 contains
 
 !********************************************************************************
-subroutine lenosky_tb_lj(latvec,xred0,iprec,ka,kb,kc,fcart,energy,strten)
+subroutine lenosky_tb_lj(parini,latvec,xred0,iprec,ka,kb,kc,fcart,energy,strten)
 !All H-Atoms have to be at the end of the rxyz-array
+use mod_parini, only: typ_parini
 implicit none
+type(typ_parini), intent(in):: parini
 integer:: i,n_in(3),offset_in(3),do_kpt_in,cellsearch,tb_or_meam,nec1,nec2,nec3,iprec,ka,kb,kc,iat
 real(8), parameter:: cut=5.24d0
-real(8):: xred(3,nat),rxyz(3,nat),xred0(3,nat),fcart(3,nat),latvec(3,3),latvec_ang(3,3),strten(6),stress_tb(3,3),energy,count
-real(8):: vol,fcart_tb(3,nat),fcart_lj(3,nat),strten_tb(6),strten_lj(6),energy_tb,energy_lj
+real(8):: xred(3,parini%nat),rxyz(3,parini%nat),xred0(3,parini%nat),fcart(3,parini%nat),latvec(3,3),latvec_ang(3,3),strten(6),stress_tb(3,3),energy,count
+real(8):: vol,fcart_tb(3,parini%nat),fcart_lj(3,parini%nat),strten_tb(6),strten_lj(6),energy_tb,energy_lj
 
 !Check if the atomic types are allright
 !call check_lenosky_tb_lj()
@@ -49,8 +51,8 @@ xred=xred0
 call n_rep_dim(latvec_ang,cut,nec1,nec2,nec3)
 cellsearch=max(nec1,max(nec2,nec3))
 
-call backtocell(nat,latvec_ang,xred)
-call rxyz_int2cart(latvec_ang,xred,rxyz,nat)
+call backtocell(parini%nat,latvec_ang,xred)
+call rxyz_int2cart(latvec_ang,xred,rxyz,parini%nat)
 
 fcart_tb=0.d0
 call  lenoskytb(n_tb,rxyz(:,1:n_tb),fcart_tb(:,1:n_tb),energy_tb,count,n_silicon,latvec_ang(:,1),&
@@ -77,7 +79,7 @@ stress_tb=matmul(stress_tb,transpose(latvec_ang))/vol
 
 
 !Get the LJ stuff
-call lenosky_lj(latvec,xred0,fcart_lj,strten_lj,energy_lj)
+call lenosky_lj(parini,latvec,xred0,fcart_lj,strten_lj,energy_lj)
 
 !Combine everything
 energy=energy_tb+energy_lj
@@ -114,7 +116,7 @@ end subroutine
 !*********************************************************************************
 
 
-        subroutine lenosky_lj(latvec,xred0,fxyz,strten,etot)
+        subroutine lenosky_lj(parini,latvec,xred0,fxyz,strten,etot)
 !The binary parameters are defined as follows in this scheme:
 !The parameter set 1 are for the LJ-Si interactions
 !The parameter set 2 are for the LJ-H interactions
@@ -131,10 +133,11 @@ end subroutine
 !        fxyz: forces (negative derivative of energy with respect to positions
 !
 !        before calling this routine be sure to initialize the variables by calling the subroutine init_parameter(nat)
-
+        use mod_parini, only: typ_parini
         implicit none
+        type(typ_parini), intent(in):: parini
         integer:: iat, jat, kk, ll, l, nec(3), i, j, k, m
-        real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3),rcut2(n_lj)
+        real(8):: xred(3,parini%nat),fxyz(3,parini%nat),xred0(3,parini%nat),dxyz(3),r1red(3),r2red(3),rcut2(n_lj)
         real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol,strten(6)
         real(8), allocatable:: rel(:,:)
         real(8):: latvec(3,3),latvec_ang(3,3),latvecinv(3,3),celldv(3,3),pressure,gradvol(3,3),stress(3,3),tmplat(3,3)
@@ -159,7 +162,7 @@ sigma_lj_lj_fact=1.5d0
         rcut2_lj=sigmatblj*2.d0**(1.d0/6.d0)*sigma_lj_lj_fact
         cutmax=max(maxval(rcuttblj),maxval(rcut2_lj))
         rcut2_lj=rcut2_lj*rcut2_lj
-        call backtocell(nat,latvec_ang,xred) 
+        call backtocell(parini%nat,latvec_ang,xred) 
         trans=latvec_ang
 
          call invertmat(trans,transinv,3) 
@@ -173,7 +176,7 @@ sigma_lj_lj_fact=1.5d0
       rec_nec(i)=1.d0/real(nec(i),8)
     enddo
 !Interactions of LJ particles with Si and H
-         do iat=n_silicon+n_h+1,nat
+         do iat=n_silicon+n_h+1,parini%nat
             r1red(:)=xred(:,iat)*rec_nec
             do i=0,nec(1)-1
             do j=0,nec(2)-1
@@ -246,12 +249,12 @@ sigma_lj_lj_fact=1.5d0
         enddo
 
 !Only the repulsive interactions between the LJ particles: Here we increse the interaction between the LJ particles by a factor of 10!!!
-         do iat=n_silicon+n_h+1,nat
+         do iat=n_silicon+n_h+1,parini%nat
             r1red(:)=xred(:,iat)*rec_nec
             do i=0,nec(1)-1
             do j=0,nec(2)-1
             do k=0,nec(3)-1
-               do jat=n_silicon+n_h+1,nat
+               do jat=n_silicon+n_h+1,parini%nat
                 r2red(:)=xred(:,jat)*rec_nec
                 r2red(1)=r2red(1)+real(i,8)*rec_nec(1)
                 r2red(2)=r2red(2)+real(j,8)*rec_nec(2)
@@ -368,18 +371,18 @@ in_lj=.false.
 n_silicon=0
 n_h=0
 n_lj=0
-do iat=1,nat
-   if(int(znucl(parini%typat_global(iat))).ne.1.and.int(znucl(parini%typat_global(iat))).ne.14.and.&
-     &int(znucl(parini%typat_global(iat))).ne.201) &
+do iat=1,parini%nat
+   if(int(parini%znucl(parini%typat_global(iat))).ne.1.and.int(parini%znucl(parini%typat_global(iat))).ne.14.and.&
+     &int(parini%znucl(parini%typat_global(iat))).ne.201) &
      &stop "Lenosky TB and LJ only implemented for Si and H and LJ particles"
-   if(int(znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
-   if(int(znucl(parini%typat_global(iat)))==14.and.(in_h.or.in_lj)) stop "Lenosky TB: First Si, then H, then LJ"
-   if(int(znucl(parini%typat_global(iat)))==1.and.in_lj) stop "Lenosky TB: First H, then LJ"
-   if(int(znucl(parini%typat_global(iat)))==1) then
+   if(int(parini%znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
+   if(int(parini%znucl(parini%typat_global(iat)))==14.and.(in_h.or.in_lj)) stop "Lenosky TB: First Si, then H, then LJ"
+   if(int(parini%znucl(parini%typat_global(iat)))==1.and.in_lj) stop "Lenosky TB: First H, then LJ"
+   if(int(parini%znucl(parini%typat_global(iat)))==1) then
        n_h=n_h+1
        in_h=.true.
    endif
-   if(int(znucl(parini%typat_global(iat))).gt.200) then 
+   if(int(parini%znucl(parini%typat_global(iat))).gt.200) then 
        n_lj=n_lj+1 
        in_h=.true.
        in_lj=.true.

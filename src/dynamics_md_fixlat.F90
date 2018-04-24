@@ -1,15 +1,15 @@
 !**********************************************************************************************
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use mod_parini, only: typ_parini
- use global, only: nat,ntypat,znucl, char_type,units
+ use global, only: units
  use defs_basis
  use interface_code
 implicit none
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
     integer:: iat,iprec,istep
-    real(8):: latvec_in(3,3), xred_in(3,nat),fcart_in(3,nat),vel_in(3,nat), strten_in(6), etot_in, counter
-    real(8):: rxyz(3,nat),fxyz(3,nat),fxyz_old(3,nat),vxyz(3,nat),amass(nat)
+    real(8):: latvec_in(3,3), xred_in(3,parini%nat),fcart_in(3,parini%nat),vel_in(3,parini%nat), strten_in(6), etot_in, counter
+    real(8):: rxyz(3,parini%nat),fxyz(3,parini%nat),fxyz_old(3,parini%nat),vxyz(3,parini%nat),amass(parini%nat)
     character(len=4) :: fn4
     real(8) :: e0,at1,at2,at3
     character(40):: filename,folder
@@ -27,7 +27,7 @@ implicit none
     dt=parres%dtion_md
 
     !C initialize positions,velocities, forces
-    call rxyz_int2cart(latvec_in,xred_in,rxyz,nat)
+    call rxyz_int2cart(latvec_in,xred_in,rxyz,parini%nat)
 
 
     !C inner (escape) loop
@@ -40,7 +40,7 @@ implicit none
     istepnext=5
 
 !Assign masses to each atom (for MD)
-    do iat=1,nat
+    do iat=1,parini%nat
       amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
       write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
     enddo
@@ -54,11 +54,11 @@ implicit none
        fxyz=fcart_in
        fxyz_old=fcart_in
        vxyz=vel_in
-       call elim_fixed_at(parini,nat,vxyz)
-       call elim_fixed_at(parini,nat,fxyz)
-       call elim_fixed_at(parini,nat,fxyz_old)
+       call elim_fixed_at(parini,parini%nat,vxyz)
+       call elim_fixed_at(parini,parini%nat,fxyz)
+       call elim_fixed_at(parini,parini%nat,fxyz_old)
        rkin=0.d0
-       do iat=1,nat
+       do iat=1,parini%nat
           rkin=rkin+amass(iat)*(vxyz(1,iat)**2+vxyz(2,iat)**2+vxyz(3,iat)**2)
        enddo
        rkin=rkin*.5d0
@@ -71,8 +71,8 @@ implicit none
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in MD:",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
 !*********************************************************************
     e0 = etot_in
@@ -80,7 +80,7 @@ implicit none
     md_loop: do istep=1,parini%nmd_dynamics
 
 !C      Evolution of the system according to 'VELOCITY VERLET' algorithm
-       do iat=1,nat
+       do iat=1,parini%nat
           rxyz(:,iat)=rxyz(:,iat)+dt*vxyz(:,iat)
           rxyz(:,iat)=rxyz(:,iat)+0.5d0*dt*dt/amass(iat)*fxyz(:,iat)
          ! call daxpy(3*nat,dt,vxyz(1,1),1,rxyz(1,1),1)
@@ -95,7 +95,7 @@ implicit none
        else
            getwfk=.false.
        endif
-       call rxyz_cart2int(latvec_in,xred_in,rxyz,nat)
+       call rxyz_cart2int(latvec_in,xred_in,rxyz,parini%nat)
        call get_energyandforces_single(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,getwfk)
        fxyz=fcart_in
        energy=etot_in
@@ -103,7 +103,7 @@ implicit none
        en0000=energy-e0
        if (istep >= 3 .and. enmin1 > enmin2 .and. enmin1 > en0000)  nummax=nummax+1
        if (istep >= 3 .and. enmin1 < enmin2 .and. enmin1 < en0000)  nummin=nummin+1
-       do iat=1,nat
+       do iat=1,parini%nat
           at1=fxyz(1,iat)
           at2=fxyz(2,iat)
           at3=fxyz(3,iat)
@@ -118,11 +118,11 @@ implicit none
           fxyz_old(2,iat) = at2
           fxyz_old(3,iat) = at3
        end do
-       call elim_fixed_at(parini,nat,vxyz)
-       call elim_fixed_at(parini,nat,fxyz)
-       call elim_fixed_at(parini,nat,fxyz_old)
+       call elim_fixed_at(parini,parini%nat,vxyz)
+       call elim_fixed_at(parini,parini%nat,fxyz)
+       call elim_fixed_at(parini,parini%nat,fxyz_old)
        rkin=0.d0
-       do iat=1,nat
+       do iat=1,parini%nat
           rkin=rkin+amass(iat)*(vxyz(1,iat)**2+vxyz(2,iat)**2+vxyz(3,iat)**2)
        enddo
        rkin=rkin*.5d0
@@ -151,8 +151,8 @@ implicit none
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
        write(*,*) "# Writing the positions in MD: ",filename
-       call write_atomic_file_ascii(parini,filename,nat,units,xred_in,latvec_in,fcart_in,strten_in,&
-            &char_type(1:ntypat),ntypat,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
+       call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
+            &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,etot_in,etot_in)
        endif
        if (nummin.ge.parres%mdmin) then
           if (nummax.ne.nummin) &
@@ -170,7 +170,7 @@ implicit none
 !Minimum number of steps per crossed minimum is 15, average should be parini%nit_per_min
  if(parini%auto_dtion_md) then
     if(parini%energy_conservation) then
-        devcon=devcon/(3*nat-3)
+        devcon=devcon/(3*parini%nat-3)
         if (devcon/rkin_0.lt.1.d-2) then
            parres%dtion_md=parres%dtion_md*1.05d0
         else

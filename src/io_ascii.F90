@@ -7,7 +7,7 @@ subroutine ascii_getsystem(parini,filename)
 !Allocations are done on:
 !znucl,char_type,amu,rcov,typat,
 use mod_parini, only: typ_parini
-use global, only: nat,ntypat,znucl,char_type,units
+use global, only: units
 implicit none
 type(typ_parini), intent(inout):: parini
 integer:: i,j,k,n,iat,jat
@@ -22,15 +22,15 @@ character(2),allocatable:: char_type_tmp(:)
 units="angstroem"
 !Get nat and allocate some arrays
 open(unit=46,file=trim(filename))
-read(46,*) nat !The first line contains the number of atoms
+read(46,*) parini%nat !The first line contains the number of atoms
 read(46,*) dproj_tmp(1:3)
 read(46,*) dproj_tmp(4:6)
 !Here we allocate a temporary array for the atomic character 
-if(.not.allocated(char_type_tmp)) allocate(char_type_tmp(nat))
-if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))
+if(.not.allocated(char_type_tmp)) allocate(char_type_tmp(parini%nat))
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(parini%nat))
 !There are some comment lines possible, reduced and/or fixlat
 k=0
-do iat=1,nat
+do iat=1,parini%nat
 1010 continue 
     read(46,'(a250)') all_line
     n = len_trim(all_line)
@@ -46,10 +46,10 @@ do iat=1,nat
 enddo
 
 !Count how many different atom kinds there are
-if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(nat))          
+if(.not.allocated(parini%typat_global)) allocate(parini%typat_global(parini%nat))          
 parini%typat_global(1)=1
-ntypat=1
-do iat=2,nat
+parini%ntypat_global=1
+do iat=2,parini%nat
 new=.true.
  do jat=1,iat-1
  if(trim(char_type_tmp(iat))==trim(char_type_tmp(jat))) then
@@ -58,25 +58,25 @@ new=.true.
  endif
  enddo
  if(new) then
- ntypat=ntypat+1
- parini%typat_global(iat)=ntypat
+ parini%ntypat_global=parini%ntypat_global+1
+ parini%typat_global(iat)=parini%ntypat_global
  endif
 enddo
 
 !Here we allocate the arrays of types, and the character stuff
-if(.not.allocated(znucl)) allocate(znucl(ntypat))
-if(.not.allocated(char_type)) allocate(char_type(ntypat))
-if(.not.allocated(parini%amu)) allocate(parini%amu(ntypat))
-if(.not.allocated(parini%rcov)) allocate(parini%rcov(ntypat))
+if(.not.allocated(parini%znucl)) allocate(parini%znucl(parini%ntypat_global))
+if(.not.allocated(parini%char_type)) allocate(parini%char_type(parini%ntypat_global))
+if(.not.allocated(parini%amu)) allocate(parini%amu(parini%ntypat_global))
+if(.not.allocated(parini%rcov)) allocate(parini%rcov(parini%ntypat_global))
 
 !Now get the sole atomic characters
-do iat=1,nat
-  char_type(parini%typat_global(iat))=char_type_tmp(iat)
+do iat=1,parini%nat
+  parini%char_type(parini%typat_global(iat))=char_type_tmp(iat)
 enddo
 
 !Assign Znucl here
-do i=1,ntypat
-      call symbol2znucl(parini%amu(i),parini%rcov(i),char_type(i),znucl(i))
+do i=1,parini%ntypat_global
+      call symbol2znucl(parini%amu(i),parini%rcov(i),parini%char_type(i),parini%znucl(i))
 enddo
 
 99 continue

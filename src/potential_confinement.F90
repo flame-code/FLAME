@@ -119,7 +119,7 @@
 subroutine init_confinement_parser(parini)
 use mod_interface
 use mod_parini, only: typ_parini
-use global, only: units,nat
+use global, only: units
 use defs_basis, only: Bohr_Ang, Ha_eV
 implicit none
 type(typ_parini), intent(inout):: parini

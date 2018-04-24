@@ -74,7 +74,7 @@ contains
     real(8), intent(out):: fcart(3,nat),energy,strten(6)
     real(8):: dist_ang(6), latvec_ang(3,3), latvec_rot(3,3), rxyz(3,nat), rotmat(3,3), vol, xred(3,nat)
     integer:: i,iat,itype
-    integer:: nat_type(ntypat)
+    integer:: nat_type(parini%ntypat_global)
     character(1):: fn
     logical:: isinit=.true.
 !Ipi stuff
@@ -116,7 +116,7 @@ endif
 xred=xred0
 call backtocell(nat,latvec,xred)
 !Convert everything from "internal atomic" units to the real "angstrom-ev" units
-if(any(znucl(:).gt.200)) then   !When calling the driver software of Ceriotti
+if(any(parini%znucl(:).gt.200)) then   !When calling the driver software of Ceriotti
 latvec_ang=latvec*Bohr_Ang !Only for lennard jones
 else
 latvec_ang=latvec
@@ -179,10 +179,10 @@ call rxyz_int2cart(latvec_rot,xred,rxyz,nat)
     enddo
 write(*,*) virial
 write(*,*) fcart
-if(any(znucl(:).gt.200)) fcart=fcart/Ha_eV*Bohr_Ang
+if(any(parini%znucl(:).gt.200)) fcart=fcart/Ha_eV*Bohr_Ang
 energy=virial(1,3)
 write(*,*) energy
-if(any(znucl(:).gt.200)) energy=energy/Ha_eV
+if(any(parini%znucl(:).gt.200)) energy=energy/Ha_eV
 strten(1) = -virial(1,1)
 strten(2) = -virial(2,2)
 strten(3) = -virial(3,3)
@@ -191,7 +191,7 @@ strten(5) = -virial(3,1)
 strten(4) = -virial(3,2)
 call getvol(latvec_rot,vol)
 strten=strten/vol
-if(any(znucl(:).gt.200)) strten=strten/Ha_eV*Bohr_Ang**3
+if(any(parini%znucl(:).gt.200)) strten=strten/Ha_eV*Bohr_Ang**3
 call rotate_stresstensor(strten,rotmat)
 last_reset=last_reset+1
   end subroutine evaluate_ipi
