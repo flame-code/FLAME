@@ -6,20 +6,18 @@ end module interface_alborz
 subroutine call_to_alborz_init(parini,nat)
     !use mod_interface
     use mod_parini, only: typ_parini
-    use global, only: char_type
     use interface_alborz
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: nat
     integer:: iat
     do iat=1,nat
-        sat(iat)=trim(adjustl(char_type(parini%typat_global(iat))))
+        sat(iat)=trim(adjustl(parini%char_type(parini%typat_global(iat))))
     enddo
     call alborz_as_potential_init(nat,sat)
 end subroutine call_to_alborz_init
 subroutine call_to_alborz_get(boundcond,nat,latvec,xred,fcart,energy,strten)
     !use mod_interface
-    use global, only: char_type
     use interface_alborz
     implicit none
     character(*), intent(in):: boundcond

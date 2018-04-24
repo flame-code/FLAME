@@ -1,0 +1,2 @@
+     0     5          # No. of minima already found, no. of minima to be found in consecutive run
+  0.800000E-02  0.100000E-01  # delta_enthalpy, delta_fingerprint

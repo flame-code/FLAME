@@ -34,6 +34,7 @@
        real (C_double), pointer :: boxxlo, boxxhi
        real (C_double), pointer :: boxylo, boxyhi
        real (C_double), pointer :: boxzlo, boxzhi
+       real (C_double), pointer :: boxxy, boxxz, boxyz
        !double precision, parameter :: nktv2p = 68568.4149999999935972
        double precision :: volume
        type (C_ptr) :: Cptr
@@ -49,6 +50,12 @@
        call lammps_extract_global(boxyhi, lmp, 'boxyhi')
        call lammps_extract_global(boxzlo, lmp, 'boxzlo')
        call lammps_extract_global(boxzhi, lmp, 'boxzhi')
+       call lammps_extract_global(boxxy, lmp, 'xy')
+       call lammps_extract_global(boxxz, lmp, 'xz')
+       call lammps_extract_global(boxyz, lmp, 'yz')
+       if(boxxlo/=0.d0) stop 'ERROR: boxxlo/=0.d0'
+       if(boxylo/=0.d0) stop 'ERROR: boxylo/=0.d0'
+       if(boxzlo/=0.d0) stop 'ERROR: boxzlo/=0.d0'
        lx = boxxhi - boxxlo
        ly = boxyhi - boxylo
        lz = boxzhi - boxzlo
@@ -82,23 +89,27 @@
        !call lammps_set_external_vector(lmp,1,ts_dftb*econv)
        !call LJ(pos,fext,nlocal,etot)
        if(atoms%nat/=nlocal) stop 'ERROR: atoms%nat/=nlocal'
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,1),boxxlo
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,2),boxxhi
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(2,2),boxylo
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,3),boxyhi
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(2,3),boxzlo
+       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,1),boxxhi
+       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,2),boxxy
+       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(2,2),boxyhi
+       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,3),boxxz
+       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(2,3),boxyz
        write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(3,3),boxzhi
-       stop 'STOPPED AT CELLVEC'
-       if(abs(atoms%cellvec(1,1)-boxxlo)>1.d-15) stop 'ERROR: '
-       if(abs(atoms%cellvec(1,2)-boxxhi)>1.d-15) stop 'ERROR: '
-       if(abs(atoms%cellvec(2,2)-boxylo)>1.d-15) stop 'ERROR: '
-       if(abs(atoms%cellvec(1,3)-boxyhi)>1.d-15) stop 'ERROR: '
-       if(abs(atoms%cellvec(2,3)-boxzlo)>1.d-15) stop 'ERROR: '
-       if(abs(atoms%cellvec(3,3)-boxzhi)>1.d-15) stop 'ERROR: '
+       !stop 'STOPPED AT CELLVEC'
+       if(abs(atoms%cellvec(1,1)-boxxhi)>1.d-15*boxxhi) stop 'ERROR: inconsistency in boxxhi'
+       if(abs(atoms%cellvec(1,2)-boxxy )>1.d-12       ) stop 'ERROR: inconsistency in boxxy '
+       if(abs(atoms%cellvec(2,2)-boxyhi)>1.d-15*boxyhi) stop 'ERROR: inconsistency in boxyhi'
+       if(abs(atoms%cellvec(1,3)-boxxz )>1.d-12       ) stop 'ERROR: inconsistency in boxxz '
+       if(abs(atoms%cellvec(2,3)-boxyz )>1.d-12       ) stop 'ERROR: inconsistency in boxyz '
+       if(abs(atoms%cellvec(3,3)-boxzhi)>1.d-15*boxzhi) stop 'ERROR: inconsistency in boxzhi'
        do iat=1,atoms%nat
            atoms%rat(1,iat)=pos(1,iat)
            atoms%rat(2,iat)=pos(2,iat)
            atoms%rat(3,iat)=pos(3,iat)
+           !write(31,*) pos(1,iat),pos(2,iat),pos(3,iat)
+           !atoms%rat(1,iat)=pos(0,iat-1)
+           !atoms%rat(2,iat)=pos(1,iat-1)
+           !atoms%rat(3,iat)=pos(2,iat-1)
        enddo
        call cal_potential_forces(parini_lammps,atoms)
        etot=atoms%epot
@@ -106,6 +117,10 @@
            fext(1,iat)=atoms%fat(1,iat)
            fext(2,iat)=atoms%fat(2,iat)
            fext(3,iat)=atoms%fat(3,iat)
+           !write(41,'(3f20.14)') fext(1,iat),fext(2,iat),fext(3,iat)
+           !fext(0,iat-1)=atoms%fat(1,iat)
+           !fext(1,iat-1)=atoms%fat(2,iat)
+           !fext(2,iat-1)=atoms%fat(3,iat)
        enddo
        !do i = 1, nlocal
          !read(10,*)fext(:,ids(i))

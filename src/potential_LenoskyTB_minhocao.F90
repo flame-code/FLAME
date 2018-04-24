@@ -20,12 +20,12 @@ logical:: in_h
 !Check typat for consistentcy and provide n_silicon
 in_h=.false.
 n_silicon=0
-do iat=1,nat
-   if(int(znucl(parini%typat_global(iat))).ne.1.and.int(znucl(parini%typat_global(iat))).ne.14.and.int(znucl(parini%typat_global(iat))).lt.200) stop "Lenosky TB only implemented for Si and H"
-   if(.not.parini%voids.and.int(znucl(parini%typat_global(iat))).ge.200) stop "LJ particles only allowed when using voids"
-   if(int(znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
-   if(int(znucl(parini%typat_global(iat)))==14.and.in_h) stop "Lenosky TB: First Si, then H"
-   if(int(znucl(parini%typat_global(iat)))==1) in_h=.true.
+do iat=1,parini%nat
+   if(int(parini%znucl(parini%typat_global(iat))).ne.1.and.int(parini%znucl(parini%typat_global(iat))).ne.14.and.int(parini%znucl(parini%typat_global(iat))).lt.200) stop "Lenosky TB only implemented for Si and H"
+   if(.not.parini%voids.and.int(parini%znucl(parini%typat_global(iat))).ge.200) stop "LJ particles only allowed when using voids"
+   if(int(parini%znucl(parini%typat_global(iat)))==14) n_silicon=n_silicon+1
+   if(int(parini%znucl(parini%typat_global(iat)))==14.and.in_h) stop "Lenosky TB: First Si, then H"
+   if(int(parini%znucl(parini%typat_global(iat)))==1) in_h=.true.
 enddo
 end subroutine
 
@@ -37,7 +37,7 @@ implicit none
 type(typ_parini), intent(in):: parini
 integer:: i,n_in(3),offset_in(3),do_kpt_in,cellsearch,tb_or_meam,n_silicon,nec1,nec2,nec3,iprec,ka,kb,kc,iat
 real(8), parameter:: cut=5.24d0
-real(8):: xred(3,nat),rxyz(3,nat),xred0(3,nat),fcart(3,nat),latvec(3,3),latvec_ang(3,3),strten(6),stress(3,3),energy,count
+real(8):: xred(3,parini%nat),rxyz(3,parini%nat),xred0(3,parini%nat),fcart(3,parini%nat),latvec(3,3),latvec_ang(3,3),strten(6),stress(3,3),energy,count
 real(8):: vol
 
 !Check if the atomic types are allright
@@ -69,10 +69,10 @@ xred=xred0
 call n_rep_dim(latvec_ang,cut,nec1,nec2,nec3)
 cellsearch=max(nec1,max(nec2,nec3))
 
-call backtocell(nat,latvec_ang,xred)
-call rxyz_int2cart(latvec_ang,xred,rxyz,nat)
+call backtocell(parini%nat,latvec_ang,xred)
+call rxyz_int2cart(latvec_ang,xred,rxyz,parini%nat)
 
-call  lenoskytb(nat,rxyz,fcart,energy,count,n_silicon,latvec_ang(:,1),&
+call  lenoskytb(parini%nat,rxyz,fcart,energy,count,n_silicon,latvec_ang(:,1),&
       &latvec_ang(:,2),latvec_ang(:,3),stress(:,1),stress(:,2),stress(:,3),&
       &tb_or_meam,cellsearch,n_in(1),n_in(2),n_in(3),offset_in(1),offset_in(2),offset_in(3),do_kpt_in)
 !  stress=-stress
