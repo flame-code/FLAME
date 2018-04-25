@@ -47,7 +47,7 @@ SRC_ += alborz_init_final.F90 processors.F90 \
 		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
 		task_testforces.F90 \
 		task_miscellaneous.F90 solve_poisson_cube.F90 best_charge_density.F90 \
-		best_charge_density.F90 \
+		test_free_bps.F90 \
 		tightbinding.F90 lenosky_tightbinding.F90 \
 		task_linkedlist.F90 \
 		task_potential.F90 \
@@ -128,7 +128,7 @@ OBJ_MINHOCAO =$(patsubst %,$(OBJDIR)/%,$(OBJ_MINHOCAO_))
 #endif
 
 _SOURCES_C = sockets.c lenosky_tb/clsfunc.c lenosky_tb/nrutil.c\
-	lenosky_tb/tblink.c lenosky_tb/minimize.c lenosky_tb/tbnorth.c
+	lenosky_tb/tblink.c lenosky_tb/minimize.c lenosky_tb/tbnorth.c $(DATABASE_SOURCES)
 
 SED = /bin/sed
 
@@ -256,7 +256,7 @@ libminhocao.a: $(OBJ_MINHOCAO) $(_OBJECTS_C)
 clean:
 	rm -f $(OBJ_ALL) libsrc.a $(OBJDIR)/basic_c_wrappers.o \
 	$(OBJDIR)/alborz.o ofiles/spglib_int.o ofiles/spglib_f08.o \
-	$(OBJDIR)/input_variables_definition.c $(OBJDIR)/input_variables_definition.o
+	./input_variables_definition.c $(OBJDIR)/input_variables_definition.o
 	rm -rf libminhocao.a vasp_recompute_kpt.o *.mod *~
 
 #*****************************************************************************************

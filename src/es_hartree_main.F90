@@ -119,6 +119,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     type(typ_poisson):: poisson_rough
     real(8):: pi, shortrange_at_rcut
     real(8):: tt1, tt2
+    integer:: nbgpx, nbgpy, nbgpz
     integer:: ngptot, ind
     call f_routine(id='init_hartree_bps')
     associate(ngpx=>poisson%ngpx)
@@ -148,13 +149,11 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !---------------------------------------------------------------------------
     !call calparam(parini,atoms,poisson_rough,poisson)
     call set_ngp_bps(parini,atoms,poisson_rough,poisson)
-    ngptot=ngpx*ngpy*ngpz
-    poisson%lda=ngpx !To be corrected for BCs other than bulk, e.g. +2 for slab+P3D
-    if(trim(atoms%boundcond)/='bulk') then
+    if(trim(atoms%boundcond)=='bulk') then
     poisson%hgrid(1,1)=atoms%cellvec(1,1)/ngpx ; poisson%hgrid(2,1)=atoms%cellvec(2,1)/ngpx ; poisson%hgrid(3,1)=atoms%cellvec(3,1)/ngpx
     poisson%hgrid(1,2)=atoms%cellvec(1,2)/ngpy ; poisson%hgrid(2,2)=atoms%cellvec(2,2)/ngpy ; poisson%hgrid(3,2)=atoms%cellvec(3,2)/ngpy
     poisson%hgrid(1,3)=atoms%cellvec(1,3)/ngpz ; poisson%hgrid(2,3)=atoms%cellvec(2,3)/ngpz ; poisson%hgrid(3,3)=atoms%cellvec(3,3)/ngpz
-    elseif(trim(atoms%boundcond)/='free') then
+    elseif(trim(atoms%boundcond)=='free') then
     if(atoms%cellvec(2,1)/=0.d0 .or. atoms%cellvec(3,1)/=0.d0 .or. &
        atoms%cellvec(1,2)/=0.d0 .or. atoms%cellvec(3,2)/=0.d0 .or. &
        atoms%cellvec(1,3)/=0.d0 .or. atoms%cellvec(2,3)/=0.d0) then
@@ -168,12 +167,23 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     poisson%hgrid(1,1)=atoms%cellvec(1,1)/(ngpx-1)
     poisson%hgrid(2,2)=atoms%cellvec(2,2)/(ngpy-1)
     poisson%hgrid(3,3)=atoms%cellvec(3,3)/(ngpz-1)
+    poisson%hx=poisson%hgrid(1,1)
+    poisson%hy=poisson%hgrid(2,2)
+    poisson%hz=poisson%hgrid(3,3)
+    nbgpx=int(poisson_rough%rgcut/poisson%hgrid(1,1))+2
+    nbgpy=int(poisson_rough%rgcut/poisson%hgrid(2,2))+2
+    nbgpz=int(poisson_rough%rgcut/poisson%hgrid(3,3))+2
+    ngpx=ngpx+2*nbgpx
+    ngpy=ngpy+2*nbgpy
+    ngpz=ngpz+2*nbgpz
     else
         write(*,*) 'ERROR: init_hartree_bps currently assumes BC=bulk or free'
         stop
     endif
+    poisson%lda=ngpx !To be corrected for BCs other than bulk, e.g. +2 for slab+P3D
+    ngptot=ngpx*ngpy*ngpz
     write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
-    !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',poisson%nbgpx,poisson%nbgpy,poisson%nbgpz
+    !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
     endif

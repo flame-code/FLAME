@@ -5195,6 +5195,13 @@ subroutine teststress_fd_cellvec(parini)
     integer, parameter:: m=3
     real(8), parameter:: h=5.d-5
 end subroutine teststress_fd_cellvec
+! ./src/test_free_bps.F90 :
+subroutine test_free_bps(parini)
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+end subroutine test_free_bps
 ! ./src/tightbinding.F90 :
 subroutine set_indorb(partb,atoms)
     use mod_atoms, only: typ_atoms
