@@ -405,7 +405,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   write(*,'(a,2(1x,1pe11.4))') ' # alpha1,alpha2',alpha1,alpha2
   write(*,'(a,2(1x,1pe10.3))') ' # predicted fraction accepted, rejected', &
   & ratio/(1.d0+ratio), 1.d0/(1.d0+ratio)
-  write(*,*) '# parres%mdmin',parres%mdmin
+  write(*,*) '# mdmin',parres%mdmin
   
 
 !Read earr.dat. In this version, earr contains the enthalpies, not the energies, since they are compared during MinHopp
@@ -1894,7 +1894,7 @@ endif
        endif
      parres%dtion_md=min(parres%dtion_md,dt*dt_ratio/15.d0)
      write(*,'(3(a,es10.2))') " # MD: steps per minium: ",dt_ratio,&
-           &", parres%dtion_md set to: ",parres%dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
+           &", dtion_md set to: ",parres%dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
      endif
    
 
@@ -3277,7 +3277,7 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        en0000=enthalpy-ent_pos_0
 !       write(67,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
 !             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
-       write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,parres%mdmin ',&
+       write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
              &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
