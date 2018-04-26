@@ -1,0 +1,22 @@
+main:
+    task: geopt
+    two_level_geopt: True
+    types: LJ
+
+potential:
+    potential: lj
+
+geopt:
+    method: BFGS 
+    fmaxtol: 1.E-3
+    condnum: 10.0
+    alphax: 3.E-3
+    precaution: normal
+    lprint: True
+    trajectory: True
+
+geopt_prec:
+    method: SD
+    fmaxtol: 5.E-2
+    alphax: 2.E-3
+    trajectory: True
