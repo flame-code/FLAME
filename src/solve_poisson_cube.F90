@@ -21,23 +21,23 @@ subroutine solve_poisson(parini)
     gausswidth=0.4d0 !atoms%rcov(iat)
     poisson%task_finit=""
     call init_hartree(parini,atoms,poisson,gausswidth)
-    poisson%cell(1)=poisson%hx*poisson%ngpx
-    poisson%cell(2)=poisson%hy*poisson%ngpy
-    poisson%cell(3)=poisson%hz*poisson%ngpz
+    poisson%cell(1)=poisson%hgrid(1,1)*poisson%ngpx
+    poisson%cell(2)=poisson%hgrid(2,2)*poisson%ngpy
+    poisson%cell(3)=poisson%hgrid(3,3)*poisson%ngpz
     !-------------------------------------------------------
     poisson_ion%ngpx=poisson%ngpx
     poisson_ion%ngpy=poisson%ngpy
     poisson_ion%ngpz=poisson%ngpz
-    poisson_ion%hx=poisson%hx
-    poisson_ion%hy=poisson%hy
-    poisson_ion%hz=poisson%hz
+    poisson_ion%hgrid(1,1)=poisson%hgrid(1,1)
+    poisson_ion%hgrid(2,2)=poisson%hgrid(2,2)
+    poisson_ion%hgrid(3,3)=poisson%hgrid(3,3)
     if(.not. parini%gaussian_width>0.d0) then
         stop 'ERROR: gaussian_width must be set.'
     endif
     rgcut_a=parini%gaussian_width !3.d0
-    nbgpx=int(rgcut_a/poisson_ion%hx)+2
-    nbgpy=int(rgcut_a/poisson_ion%hy)+2
-    nbgpz=int(rgcut_a/poisson_ion%hz)+2
+    nbgpx=int(rgcut_a/poisson_ion%hgrid(1,1))+2
+    nbgpy=int(rgcut_a/poisson_ion%hgrid(2,2))+2
+    nbgpz=int(rgcut_a/poisson_ion%hgrid(3,3))+2
     poisson_ion%ngpz=poisson_ion%ngpz+2*nbgpz
     write(*,'(a,3i5)') 'ngpx, ngpy, ngpz  ',poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz
     write(*,'(a,3i5)') 'nbgpx,nbgpy,nbgpz ',nbgpx,nbgpy,nbgpz
@@ -61,15 +61,15 @@ subroutine solve_poisson(parini)
                 t1=t1+poisson%rho(igpx,igpy,igpz)
                 t2=t2+poisson_ion%rho(igpx,igpy,igpz+nbgpz)
                 poisson%rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)-poisson_ion%rho(igpx,igpy,igpz+nbgpz)
-                t4=t4+(igpz-1)*poisson_ion%hz*poisson%rho(igpx,igpy,igpz)
+                t4=t4+(igpz-1)*poisson_ion%hgrid(3,3)*poisson%rho(igpx,igpy,igpz)
                 t3=t3+poisson%rho(igpx,igpy,igpz)
             enddo
         enddo
     enddo
-    t1=t1*poisson_ion%hx*poisson_ion%hy*poisson_ion%hz
-    t2=t2*poisson_ion%hx*poisson_ion%hy*poisson_ion%hz
-    t3=t3*poisson_ion%hx*poisson_ion%hy*poisson_ion%hz
-    t4=t4*poisson_ion%hx*poisson_ion%hy*poisson_ion%hz
+    t1=t1*poisson_ion%hgrid(1,1)*poisson_ion%hgrid(2,2)*poisson_ion%hgrid(3,3)
+    t2=t2*poisson_ion%hgrid(1,1)*poisson_ion%hgrid(2,2)*poisson_ion%hgrid(3,3)
+    t3=t3*poisson_ion%hgrid(1,1)*poisson_ion%hgrid(2,2)*poisson_ion%hgrid(3,3)
+    t4=t4*poisson_ion%hgrid(1,1)*poisson_ion%hgrid(2,2)*poisson_ion%hgrid(3,3)
     write(*,*) 't1=',t1
     write(*,*) 't2=',t2
     write(*,*) 't3=',t3

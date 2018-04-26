@@ -259,7 +259,6 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     ngpz=int(poisson%cell(3)/poisson_rough%hz)+1
     if(mod(ngpx,2)/=0) ngpx=ngpx+1
     if(mod(ngpy,2)/=0) ngpy=ngpy+1
-    poisson%lda=ngpx+2
     poisson%hx=poisson%cell(1)/real(ngpx,8)
     poisson%hy=poisson%cell(2)/real(ngpy,8)
     poisson%hz=poisson%cell(3)/real(ngpz-1,8)
@@ -277,6 +276,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
     endif
+    poisson%lda=ngpx+2
     !---------------------------------------------------------------------------
     ind=index(poisson%task_finit,'alloc_rho')
     if(ind>0) then
@@ -364,7 +364,7 @@ subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
         case('bigdft')
             call get_psolver_bps(poisson,atoms,ehartree)
         case('p3d')
-                call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hx,poisson%hy,poisson%hz,ehartree)
+                call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hgrid(1,1),poisson%hgrid(2,2),poisson%hgrid(3,3),ehartree)
         case default
             write(*,*) 'ERROR: unknown method for hartree calculation.'
             stop
