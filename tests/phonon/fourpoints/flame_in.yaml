@@ -1,0 +1,7 @@
+main:
+    task: phonon
+    types: Si
+
+potential:
+    potential: ltb
+

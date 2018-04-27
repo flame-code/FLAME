@@ -1,0 +1,9 @@
+main:
+    task: testforces
+    types: Si
+
+testforces:
+    method: finite_difference
+
+potential:
+    potential: ltb

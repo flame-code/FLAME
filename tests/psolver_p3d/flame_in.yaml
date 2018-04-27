@@ -1,0 +1,12 @@
+main:
+    task: misc
+    types: Si
+
+misc:
+    subtask: solve_poisson
+    gaussian_width: 0.05
+
+potential:
+    ewald:
+        psolver: p3d
+        cell_ortho: True
