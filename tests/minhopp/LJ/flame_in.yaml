@@ -1,0 +1,33 @@
+main:
+    task: minhopp
+    two_level_geopt: True
+    types: LJ
+
+potential:
+    potential: lj
+
+geopt:
+    method: BFGS 
+    fmaxtol: 1.E-3
+    condnum: 20.0
+    alphax: 3.E-3
+    precaution: normal
+    lprint: True
+    #funits: 50.0
+
+geopt_prec:
+    method: SD
+    fmaxtol: 1.0
+    alphax: 1.E-3
+    lprint: True
+
+minhopp:
+    nstep: 100
+    nsoften: 20
+    mdmin: 3
+    etoler: 1.E-3
+    nrandoff: 5
+    eref: -44.325801
+    npminx: 5000
+    trajectory: True
+    print_force: True
