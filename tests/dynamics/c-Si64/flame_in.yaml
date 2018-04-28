@@ -1,0 +1,12 @@
+main:
+    task: dynamics
+    types: Si
+
+potential:
+    potential: ltb
+
+
+dynamics:
+    md_method: nve
+    dt: 2.E-2
+    nmd: 100

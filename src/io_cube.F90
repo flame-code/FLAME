@@ -24,12 +24,18 @@ subroutine cube_read(filename,atoms,poisson)
     read(1358,*)
     read(1358,*) nat
     call atom_allocate_old(atoms,nat,0,0)
-    read(1358,*) poisson%ngpx,poisson%hx
-    read(1358,*) poisson%ngpy,tt,poisson%hy
-    read(1358,*) poisson%ngpz,tt,tt,poisson%hz
-    atoms%cellvec(1,1) = poisson%ngpx*poisson%hx
-    atoms%cellvec(2,2) = poisson%ngpy*poisson%hy
-    atoms%cellvec(3,3) = poisson%ngpz*poisson%hz
+    read(1358,*) poisson%ngpx,poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
+    read(1358,*) poisson%ngpy,poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
+    read(1358,*) poisson%ngpz,poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
+    atoms%cellvec(1,1)=poisson%ngpx*poisson%hgrid(1,1)
+    atoms%cellvec(2,1)=poisson%ngpx*poisson%hgrid(2,1)
+    atoms%cellvec(3,1)=poisson%ngpx*poisson%hgrid(3,1)
+    atoms%cellvec(1,2)=poisson%ngpy*poisson%hgrid(1,2)
+    atoms%cellvec(2,2)=poisson%ngpy*poisson%hgrid(2,2)
+    atoms%cellvec(3,2)=poisson%ngpy*poisson%hgrid(3,2)
+    atoms%cellvec(1,3)=poisson%ngpz*poisson%hgrid(1,3)
+    atoms%cellvec(2,3)=poisson%ngpz*poisson%hgrid(2,3)
+    atoms%cellvec(3,3)=poisson%ngpz*poisson%hgrid(3,3)
     write(*,'(2a)') 'reading ',trim(filename)
     do iat=1,atoms%nat
         read(1358,*) iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
@@ -121,9 +127,9 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     write(1358,'(a)') ''
     write(1358,'(a)') ''
     write(1358,'(i5,3f13.6)') atoms%nat,0.d0,0.d0,0.d0
-    write(1358,'(i5,3f13.6)') poisson%ngpx,poisson%hx,0.d0,0.d0
-    write(1358,'(i5,3f13.6)') poisson%ngpy,0.d0,poisson%hy,0.d0
-    write(1358,'(i5,3f13.6)') poisson%ngpz,0.d0,0.d0,poisson%hz
+    write(1358,'(i5,3f13.6)') poisson%ngpx,poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
+    write(1358,'(i5,3f13.6)') poisson%ngpy,poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
+    write(1358,'(i5,3f13.6)') poisson%ngpz,poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
     do iat=1,atoms%nat
         !if(trim(atoms%sat(iat))=='H') iatom=1
         !if(trim(atoms%sat(iat))=='C') iatom=6

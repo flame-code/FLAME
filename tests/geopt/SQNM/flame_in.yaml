@@ -1,0 +1,15 @@
+main:
+    task: geopt
+    verbosity: 1
+    types: Au
+
+potential:
+    potential: qsc
+
+geopt:
+    method: SQNM
+    fmaxtol: 2.E-4
+    alphax: 4.0
+    lprint: True
+    #print_force: .true.
+

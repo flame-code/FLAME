@@ -25,7 +25,7 @@ contains
   use mod_parini, only: typ_parini
   implicit none
   type(typ_parini), intent(in):: parini
-  real(8):: xred(3,nat)
+  real(8):: xred(3,parini%nat)
   real(8):: dproj(6),acell(3),rprim(3,3),latvec(3,3),dkpt,k_latvec(3,3)
   real(8), allocatable:: k_xcart(:,:,:,:,:)
   integer:: iat,iprec,ka,kb,kc,k,l,m
@@ -58,8 +58,8 @@ contains
   
   
   !The atomic positions and the unit cell is defined here
-  allocate(k_xcart(3,nat,ka,kb,kc))
-  call k_expansion(latvec,xred,ka,kb,kc,k_latvec,k_xcart)
+  allocate(k_xcart(3,parini%nat,ka,kb,kc))
+  call k_expansion(parini,latvec,xred,ka,kb,kc,k_latvec,k_xcart)
   write(87,'(a)') "# Definition of the unit cell"
   write(87,'(a)') "  &CELL"
   write(87,'(a,3(1x,es25.15))') "      A ",k_latvec(:,1)*Bohr_Ang
@@ -70,8 +70,8 @@ contains
   do k=1,ka
   do l=1,kb
   do m=1,kc
-  do iat=1,nat
-  write(87,'(a2,3(1x,es25.15))') trim(char_type(parini%typat_global(iat))),k_xcart(:,iat,k,l,m)*Bohr_Ang
+  do iat=1,parini%nat
+  write(87,'(a2,3(1x,es25.15))') trim(parini%char_type(parini%typat_global(iat))),k_xcart(:,iat,k,l,m)*Bohr_Ang
   enddo
   enddo
   enddo
@@ -81,13 +81,14 @@ contains
   deallocate(k_xcart)
   end subroutine
   
-  subroutine get_output_cp2k(fcart,energy,strten)
-  use global, only: nat
+  subroutine get_output_cp2k(parini,fcart,energy,strten)
   use defs_basis
   !Since its a single call, we only have forces and stresses from one configuration!
+  use mod_parini, only: typ_parini
   implicit none
+  type(typ_parini), intent(in):: parini
   integer:: io,i,iat,n,k,l,m,int_tmp,nat_cell
-  real(8):: fcart(3,nat),energy,strten(6),value,latvec(3,3),xred(3,nat),str_matrix(3,3),vol,a(3,3),scaling
+  real(8):: fcart(3,parini%nat),energy,strten(6),value,latvec(3,3),xred(3,parini%nat),str_matrix(3,3),vol,a(3,3),scaling
   character(11):: ch_tmp
   character(250)::all_line
   
@@ -119,7 +120,7 @@ contains
     endif
    k = index(all_line(1:n),"Atom   Kind   Element")
     if(k.ne.0) then
-      do iat=1,nat
+      do iat=1,parini%nat
       read(32,*) int_tmp,int_tmp,ch_tmp,fcart(:,iat) 
       enddo
       cycle
@@ -145,7 +146,7 @@ contains
   close(32)
   if(energy==1.d10.or.strten(1)==1.d10.or.fcart(1,1)==1.d10.or.nat_cell==0) stop "Could not find all requested variables"
   !Transform all to bohr
-  energy=energy/real(nat_cell,8)*real(nat,8)/Ha_eV
+  energy=energy/real(nat_cell,8)*real(parini%nat,8)/Ha_eV
   strten=strten/HaBohr3_GPa
   !strten=0.d0
   fcart=fcart!/Ha_eV*Bohr_Ang

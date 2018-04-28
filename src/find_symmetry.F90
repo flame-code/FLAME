@@ -1,7 +1,6 @@
 subroutine find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,tolcur,spgcur)
 use mod_parini, only: typ_parini
 use mod_interface
-use global, only: znucl,voids
 use tb_lj_params
 use void_lj_params, only: nat_atoms
 implicit none
@@ -21,7 +20,7 @@ tolfact=(tolmax/tolmin)**(1.d0/real(ntol,8))
 
 if(trim(parini%potential_potential)=="lenosky_tb_lj") then
   nat_sym=n_silicon+n_h
-elseif(voids) then
+elseif(parini%voids) then
   nat_sym=nat_atoms
 else
   nat_sym=nat
@@ -57,7 +56,6 @@ end subroutine
 
 subroutine check_symmetry(parini,nat,xred,latvec,typat,spg,tol)
 use mod_parini, only: typ_parini
-use global, only: znucl
 use tb_lj_params
 implicit none
 type(typ_parini), intent(in):: parini

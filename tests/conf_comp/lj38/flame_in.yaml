@@ -1,0 +1,5 @@
+main:
+    task: conf_comp
+
+conf_comp:
+    tol: 1.E-2

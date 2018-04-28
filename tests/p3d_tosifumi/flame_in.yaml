@@ -1,0 +1,21 @@
+main:
+    task: single_point
+    types: Na Cl
+
+potential:
+    potential: forcefield
+    component_ff: coulomb:tosifumi
+
+single_point:
+    print_force: True
+    format: '(a5,2x,3f12.8,2x,3l1)'
+
+ewald:
+    ewald: True
+    #hx: 0.9448630639252209
+    #hz: 0.5669178383551325
+    ecut: 10.0
+    alpha: 2.26767135342053
+    rcut: 15.684726861158667
+    rgcut: 9.0
+    nsp: 10000

@@ -1,0 +1,9 @@
+main:
+    task: single_point
+    types: Au
+
+potential:
+    potential: qsc
+
+single_point:
+    print_force: True

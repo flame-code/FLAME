@@ -1,0 +1,21 @@
+main:
+    task: single_point
+    #verbosity: 1
+    types: Na Cl
+
+single_point:
+    print_force: True
+    format: '(a5,2x,3f10.6,2x,3l1)'
+
+potential:
+    potential: ann
+    ewald:
+        #hx: 0.95
+        #hz: 0.75
+        ecut: 7.0
+        alpha: 1.0
+        rgcut: 6.0
+
+ann:
+    approach: cent1
+    syslinsolver: operator

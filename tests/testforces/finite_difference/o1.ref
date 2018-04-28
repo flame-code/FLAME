@@ -1,75 +1,143 @@
+ntypat  1
+type  1   Si
 mpi started: iproc_world,nproc_world    0   1
 mpi started: iproc,nproc    0   1
 iproc,seed    0  2147483562  2147483398
 Number of configurations read from posinp.acf is    1
- epot=  -2.60028501435394     
- fnrm=  4.813083886286260E-002
-F_x error of atom            1 is   3.53E-11     1.5375526017E-02
-F_y error of atom            1 is  -1.49E-10    -5.4903524905E-03
-F_z error of atom            1 is   1.64E-11     6.9545955053E-03
-F_x error of atom            2 is   1.43E-10     7.1073185022E-03
-F_y error of atom            2 is  -7.22E-11     1.9715855005E-03
-F_z error of atom            2 is  -1.46E-10    -2.8143062421E-03
-F_x error of atom            3 is   1.17E-12     3.1335812156E-03
-F_y error of atom            3 is   2.75E-10     2.5420977018E-03
-F_z error of atom            3 is   1.24E-10    -6.4882524815E-03
-F_x error of atom            4 is   1.52E-11    -1.0307977909E-02
-F_y error of atom            4 is  -1.45E-10    -1.8622872240E-03
-F_z error of atom            4 is  -4.58E-11     3.4410538211E-03
-F_x error of atom            5 is   9.17E-11    -1.6675103790E-02
-F_y error of atom            5 is   4.06E-11     1.1785308767E-03
-F_z error of atom            5 is  -1.98E-10     1.5700764227E-03
-F_x error of atom            6 is  -1.19E-10    -6.4753938797E-03
-F_y error of atom            6 is   6.31E-11    -2.3552777158E-04
-F_z error of atom            6 is   1.07E-10     1.6637575355E-03
-F_x error of atom            7 is  -5.56E-11     1.1831000735E-03
-F_y error of atom            7 is  -1.64E-10     1.2290108798E-03
-F_z error of atom            7 is  -5.61E-11     3.0092344067E-03
-F_x error of atom            8 is  -1.59E-10    -7.5713936948E-04
-F_y error of atom            8 is  -3.52E-10    -1.8675808709E-03
-F_z error of atom            8 is   1.30E-10    -9.2494204264E-03
-F_x error of atom            9 is   8.18E-11    -1.4445639725E-03
-F_y error of atom            9 is  -5.72E-11     1.4934080545E-03
-F_z error of atom            9 is   1.21E-10    -4.9323228752E-04
-F_x error of atom           10 is  -1.47E-10     3.0711270775E-03
-F_y error of atom           10 is  -2.03E-10    -4.0799636656E-04
-F_z error of atom           10 is  -5.82E-10    -1.1775751662E-03
-F_x error of atom           11 is  -6.75E-11     2.1194870756E-03
-F_y error of atom           11 is  -3.25E-11    -1.9254596037E-03
-F_z error of atom           11 is  -3.45E-10    -3.1426721767E-03
-F_x error of atom           12 is  -8.39E-11    -5.4259980336E-03
-F_y error of atom           12 is  -1.71E-10    -5.2885410022E-04
-F_z error of atom           12 is   1.39E-10     1.7676794641E-03
-F_x error of atom           13 is   2.18E-10    -3.6323835678E-03
-F_y error of atom           13 is   4.05E-10    -2.9168394927E-04
-F_z error of atom           13 is  -9.23E-11    -1.2990254837E-03
-F_x error of atom           14 is   3.62E-10    -8.0136827465E-03
-F_y error of atom           14 is  -2.33E-11     9.6055041804E-04
-F_z error of atom           14 is   5.94E-11     1.4634281192E-03
-F_x error of atom           15 is  -9.84E-12    -6.6303015868E-03
-F_y error of atom           15 is   8.11E-11     1.4286447033E-02
-F_z error of atom           15 is   7.58E-11     1.5955167761E-03
-F_x error of atom           16 is  -1.21E-11     1.3471668124E-03
-F_y error of atom           16 is   1.12E-10    -1.8374345836E-03
-F_z error of atom           16 is  -1.58E-10     1.5396386410E-03
-F_x error of atom           17 is  -1.17E-10     2.8342853759E-02
-F_y error of atom           17 is  -2.07E-10    -1.5313258585E-03
-F_z error of atom           17 is   1.49E-10    -2.9987876783E-03
-F_x error of atom           18 is   3.35E-10    -5.1355326451E-03
-F_y error of atom           18 is   1.57E-10    -7.0577157247E-03
-F_z error of atom           18 is   3.02E-10     4.9975695672E-03
-F_x error of atom           19 is  -3.55E-10     2.8179169666E-03
-F_y error of atom           19 is  -1.57E-10    -6.2541192074E-04
-F_z error of atom           19 is   4.42E-11    -3.3927831636E-04
-fsum=  -6.46184E-17  -9.54098E-17  -1.80682E-16
-CPU time: iproc,time(hrs)    0      0.136E-03
-CPU time: iproc,time(min)    0      0.816E-02
-CPU time: iproc,time(sec)    0      0.490E+00
-mpi finalized: iproc_world,nproc_world    0   1
 GAMMA POINT only tight binding code
 Reading spline potential coeff.cls
-gusetb_tbnorth == 1
-gtbcut_tbnorth == 5.240000
-gusenorth == 0
-gusextal == 0
-gstride == 4
+paircut=        9.9021649099363156
+ epot=  -2.60028501435394     
+ fnrm=  4.813083886286172E-002
+finite difference step size:    1.88973E-05
+EPOTs:   -2.600284723773519E+00  -2.600285304884186E+00  -5.81111E-07
+F_x error of atom            1 is   6.00E-11     1.5375526017E-02
+EPOTs:   -2.600285118093705E+00  -2.600284910588453E+00   2.07505E-07
+F_y error of atom            1 is  -1.59E-11    -5.4903524905E-03
+EPOTs:   -2.600284882919087E+00  -2.600285145764703E+00  -2.62846E-07
+F_z error of atom            1 is  -2.01E-11     6.9545955053E-03
+EPOTs:   -2.600284880013344E+00  -2.600285148631055E+00  -2.68618E-07
+F_x error of atom            2 is   3.41E-11     7.1073185022E-03
+EPOTs:   -2.600284977083741E+00  -2.600285051598873E+00  -7.45151E-08
+F_y error of atom            2 is  -2.19E-11     1.9715855005E-03
+EPOTs:   -2.600285067528842E+00  -2.600284961163479E+00   1.06365E-07
+F_z error of atom            2 is  -5.27E-11    -2.8143062421E-03
+EPOTs:   -2.600284955119148E+00  -2.600285073551353E+00  -1.18432E-07
+F_x error of atom            3 is  -2.66E-11     3.1335812156E-03
+EPOTs:   -2.600284966305925E+00  -2.600285062383294E+00  -9.60774E-08
+F_y error of atom            3 is  -1.71E-11     2.5420977018E-03
+EPOTs:   -2.600285136953065E+00  -2.600284891732660E+00   2.45220E-07
+F_z error of atom            3 is  -2.62E-11    -6.4882524815E-03
+EPOTs:   -2.600285209139677E+00  -2.600284819554572E+00   3.89585E-07
+F_x error of atom            4 is  -2.74E-11    -1.0307977909E-02
+EPOTs:   -2.600285049537388E+00  -2.600284979153132E+00   7.03843E-08
+F_y error of atom            4 is   7.79E-12    -1.8622872240E-03
+EPOTs:   -2.600284949312239E+00  -2.600285079365227E+00  -1.30053E-07
+F_z error of atom            4 is   4.43E-11     3.4410538211E-03
+EPOTs:   -2.600285329445159E+00  -2.600284699217571E+00   6.30228E-07
+F_x error of atom            5 is  -5.35E-11    -1.6675103790E-02
+EPOTs:   -2.600284992073052E+00  -2.600285036615063E+00  -4.45420E-08
+F_y error of atom            5 is  -1.03E-11     1.1785308767E-03
+EPOTs:   -2.600284984674855E+00  -2.600285044015143E+00  -5.93403E-08
+F_z error of atom            5 is  -3.77E-11     1.5700764227E-03
+EPOTs:   -2.600285136711841E+00  -2.600284891977420E+00   2.44734E-07
+F_x error of atom            6 is  -4.14E-11    -6.4753938797E-03
+EPOTs:   -2.600285018788456E+00  -2.600285009886795E+00   8.90166E-09
+F_y error of atom            6 is  -1.65E-11    -2.3552777158E-04
+EPOTs:   -2.600284982903418E+00  -2.600285045784341E+00  -6.28809E-08
+F_z error of atom            6 is   2.61E-11     1.6637575355E-03
+EPOTs:   -2.600284991986441E+00  -2.600285036701143E+00  -4.47147E-08
+F_x error of atom            7 is  -6.69E-12     1.1831000735E-03
+EPOTs:   -2.600284991111606E+00  -2.600285037561484E+00  -4.64499E-08
+F_y error of atom            7 is  -4.49E-11     1.2290108798E-03
+EPOTs:   -2.600284957479648E+00  -2.600285071212228E+00  -1.13733E-07
+F_z error of atom            7 is   5.65E-11     3.0092344067E-03
+EPOTs:   -2.600285028652042E+00  -2.600285000036321E+00   2.86157E-08
+F_x error of atom            8 is   1.98E-12    -7.5713936948E-04
+EPOTs:   -2.600285049630806E+00  -2.600284979046477E+00   7.05843E-08
+F_y error of atom            8 is  -3.31E-11    -1.8675808709E-03
+EPOTs:   -2.600285189131796E+00  -2.600284839554368E+00   3.49577E-07
+F_z error of atom            8 is   1.61E-11    -9.2494204264E-03
+EPOTs:   -2.600285041634796E+00  -2.600284987038189E+00   5.45966E-08
+F_x error of atom            9 is  -4.21E-11    -1.4445639725E-03
+EPOTs:   -2.600284986117012E+00  -2.600285042559655E+00  -5.64426E-08
+F_y error of atom            9 is  -3.70E-11     1.4934080545E-03
+EPOTs:   -2.600285023669620E+00  -2.600285005028141E+00   1.86415E-08
+F_z error of atom            9 is  -1.73E-11    -4.9323228752E-04
+EPOTs:   -2.600284956310440E+00  -2.600285072382222E+00  -1.16072E-07
+F_x error of atom           10 is   9.49E-12     3.0711270775E-03
+EPOTs:   -2.600285022056598E+00  -2.600285006636570E+00   1.54200E-08
+F_y error of atom           10 is  -1.12E-12    -4.0799636656E-04
+EPOTs:   -2.600285036596092E+00  -2.600284992090201E+00   4.45059E-08
+F_z error of atom           10 is   5.49E-12    -1.1775751662E-03
+EPOTs:   -2.600284974292224E+00  -2.600285054397228E+00  -8.01050E-08
+F_x error of atom           11 is   3.78E-11     2.1194870756E-03
+EPOTs:   -2.600285050730271E+00  -2.600284977958444E+00   7.27718E-08
+F_y error of atom           11 is  -9.56E-12    -1.9254596037E-03
+EPOTs:   -2.600285073723660E+00  -2.600284954947868E+00   1.18776E-07
+F_z error of atom           11 is   8.06E-11    -3.1426721767E-03
+EPOTs:   -2.600285116885497E+00  -2.600284911812492E+00   2.05073E-07
+F_x error of atom           12 is   7.29E-12    -5.4259980336E-03
+EPOTs:   -2.600285024336133E+00  -2.600285004348344E+00   1.99878E-08
+F_y error of atom           12 is  -2.60E-11    -5.2885410022E-04
+EPOTs:   -2.600284980938321E+00  -2.600285047746920E+00  -6.68086E-08
+F_z error of atom           12 is  -8.39E-11     1.7676794641E-03
+EPOTs:   -2.600285082986430E+00  -2.600284945702225E+00   1.37284E-07
+F_x error of atom           13 is  -5.84E-11    -3.6323835678E-03
+EPOTs:   -2.600285019854482E+00  -2.600285008830424E+00   1.10241E-08
+F_y error of atom           13 is  -4.29E-11    -2.9168394927E-04
+EPOTs:   -2.600285038891669E+00  -2.600284989795624E+00   4.90960E-08
+F_z error of atom           13 is   5.43E-11    -1.2990254837E-03
+EPOTs:   -2.600285165764910E+00  -2.600284862891595E+00   3.02873E-07
+F_x error of atom           14 is  -4.09E-11    -8.0136827465E-03
+EPOTs:   -2.600284996196489E+00  -2.600285032500040E+00  -3.63036E-08
+F_y error of atom           14 is   1.57E-10     9.6055041804E-04
+EPOTs:   -2.600284986686301E+00  -2.600285041995870E+00  -5.53096E-08
+F_z error of atom           14 is   4.93E-11     1.4634281192E-03
+EPOTs:   -2.600285139635847E+00  -2.600284889046766E+00   2.50589E-07
+F_x error of atom           15 is   4.87E-11    -6.6303015868E-03
+EPOTs:   -2.600284744357974E+00  -2.600285284307419E+00  -5.39949E-07
+F_y error of atom           15 is   1.59E-12     1.4286447033E-02
+EPOTs:   -2.600284984196996E+00  -2.600285044498792E+00  -6.03018E-08
+F_z error of atom           15 is   3.22E-11     1.5955167761E-03
+EPOTs:   -2.600284988886302E+00  -2.600285039801825E+00  -5.09155E-08
+F_x error of atom           16 is  -9.45E-11     1.3471668124E-03
+EPOTs:   -2.600285049062386E+00  -2.600284979617423E+00   6.94450E-08
+F_y error of atom           16 is  -1.96E-11    -1.8374345836E-03
+EPOTs:   -2.600284985246451E+00  -2.600285043436356E+00  -5.81899E-08
+F_z error of atom           16 is  -6.49E-11     1.5396386410E-03
+EPOTs:   -2.600284478739532E+00  -2.600285549944159E+00  -1.07120E-06
+F_x error of atom           17 is   3.94E-11     2.8342853759E-02
+EPOTs:   -2.600285043268601E+00  -2.600284985392870E+00   5.78757E-08
+F_y error of atom           17 is  -1.93E-11    -1.5313258585E-03
+EPOTs:   -2.600285071011934E+00  -2.600284957674185E+00   1.13338E-07
+F_z error of atom           17 is  -1.10E-11    -2.9987876783E-03
+EPOTs:   -2.600285111393076E+00  -2.600284917298072E+00   1.94095E-07
+F_x error of atom           18 is  -3.03E-12    -5.1355326451E-03
+EPOTs:   -2.600285147709584E+00  -2.600284880966586E+00   2.66743E-07
+F_y error of atom           18 is  -3.47E-11    -7.0577157247E-03
+EPOTs:   -2.600284919904662E+00  -2.600285108785418E+00  -1.88881E-07
+F_z error of atom           18 is   4.99E-12     4.9975695672E-03
+EPOTs:   -2.600284961095212E+00  -2.600285067597038E+00  -1.06502E-07
+F_x error of atom           19 is  -8.82E-12     2.8179169666E-03
+EPOTs:   -2.600285026163734E+00  -2.600285002526591E+00   2.36371E-08
+F_y error of atom           19 is   5.39E-11    -6.2541192074E-04
+EPOTs:   -2.600285020755331E+00  -2.600285007932467E+00   1.28229E-08
+F_z error of atom           19 is  -6.79E-11    -3.3927831636E-04
+fsum=  -1.76074E-16  -1.25767E-17  -7.02563E-17
+CPU time: iproc,time(hrs)    0      0.136E-03
+CPU time: iproc,time(min)    0      0.813E-02
+CPU time: iproc,time(sec)    0      0.488E+00
+mpi finalized: iproc_world,nproc_world    0   1
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  3
+   Tot. No. of Deallocations           :  3
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.000
+     for the array                     : group_names
+     in the routine                    : timing_dump_results
+     Memory Peak of process            : 25.908 MB
+ Walltime since initialization         :  00:00:00.522951202
+ Max No. of dictionaries used          :  236 #( 184 still in use)
+ Number of dictionary folders allocated:  1

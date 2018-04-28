@@ -1,0 +1,11 @@
+main:
+    task: genconf
+    seed: 2147483562
+    types: Si
+
+genconf:
+    subtask: genrandom
+    nat_add: 8
+    amargin: 3.0
+    #variable_cell: True
+    #nonorthogonal: True

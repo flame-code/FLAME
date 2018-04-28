@@ -11,6 +11,8 @@ subroutine miscellaneous_task(parini)
         call linkedlist_test(parini)
     elseif(trim(parini%subtask_misc)=='best_charge_density') then
         call best_charge_density(parini)
+    elseif(trim(parini%subtask_misc)=='test_free_bps') then
+        call test_free_BPS(parini)
     else
         write(*,'(2a)') 'ERROR: unknown parini%subtask_misc ',trim(parini%subtask_misc)
         stop

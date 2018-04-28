@@ -17,8 +17,8 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
     real(8), allocatable:: pot_ion(:)
     real(8):: stress_t(6)
     !type(coulomb_operator):: pkernel
-    if(trim(atoms%boundcond)/='bulk') then
-        write(*,*) 'ERROR: BPS for BCs other than bulk not implemented yet in FLAME.'
+    if(trim(atoms%boundcond)/='bulk' .and. trim(atoms%boundcond)/='free') then
+        write(*,*) 'ERROR: BPS for BCs other than bulk or free not implemented yet in FLAME.'
         stop
     endif
     pot_ion=f_malloc([1.to.1],id='pot_ion') !an array which must be provided but will not be used.

@@ -413,7 +413,6 @@ end subroutine
 
 subroutine get_cosinedistance(parini,fp1,fp2,fp_size,fp_dim,nkinds,nkinds_sum,distance)
 use mod_parini, only: typ_parini
-use global, only: znucl
 !This sunroutine will compute the cosine distance between two fingerprints fp1 and fp2 and 
 !store the output distance.  All conventions and 
 !methods are from J.Chem.Phys, 130, 104504 (2009) and IEEE Symposium, Okt 21-23. (2008) (M.Valle and A.Oganov)
@@ -501,7 +500,7 @@ else
 !Stephan's formula to identify the LJ indexes...
        i=ceiling(-0.5d0+0.5d0*sqrt(1.d0+8.d0*real(k,8)))
        j=(i*(1-i))/2+k
-       if(.not.(znucl(i).ge.200.or.znucl(j).ge.200)) then 
+       if(.not.(parini%znucl(i).ge.200.or.parini%znucl(j).ge.200)) then 
          imin=(k-1)*fp_size+1
          imax=k*fp_size
          num=num+dot_product(fp1(imin:imax),fp2(imin:imax))*w_ab(k)**2

@@ -4,7 +4,7 @@ subroutine dynamics(parini)
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info
-    use mod_dynamics, only: dt, nmd,md_method
+    use mod_dynamics, only: dt, nmd,nfreq,md_method
     use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(inout):: parini
@@ -16,6 +16,7 @@ subroutine dynamics(parini)
     md_method=trim(parini%md_method_dynamics)
     dt=parini%dt_dynamics
     nmd=parini%nmd_dynamics
+    nfreq=parini%nfreq_dynamics
     
         write(*,'(a,es15.5)') 'ERROR: dt must be set in input file and dt>0, dt= ',dt 
     if(.not. dt>0.d0) then
@@ -52,7 +53,7 @@ subroutine md_nve(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info
-    use mod_dynamics, only: dt, nmd
+    use mod_dynamics, only: dt, nmd,nfreq
     use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(in):: parini
@@ -62,19 +63,22 @@ subroutine md_nve(parini,atoms)
     integer:: iat, i
     integer:: imd
     real(8):: etot, epotold, etotold, ekin_target
-    real(8):: DNRM2, fnrm, t1, aboltzmann, totmass, temp, etotavg
+    real(8):: DNRM2, fnrm, t1, aboltzmann, totmass, temp, etotavg,mass_conv
     real(8):: rcm(3), vcm(3)
     character(56):: comment
-    aboltzmann=8.6173324d-5
+    !aboltzmann=8.6173324d-5 !eV/K
+    aboltzmann=8.6173324d-5/27.211385d0 !a.u./K
     
     call atom_copy_old(atoms,atoms_old,'atoms->atoms_old')
     call init_potential_forces(parini,atoms)
-    atoms%amass(1:atoms%nat)=1.d0
+    
+    call set_atomic_mass(atoms)
     totmass=0.d0
     do iat=1,atoms%nat
         totmass=totmass+atoms%amass(iat)
     enddo
-    ekin_target=1.5d0*atoms%nat*aboltzmann*parini%init_temp_dynamics
+    ! temp in K and ekin_target in a.u
+    ekin_target=1.5d0*atoms%nat*aboltzmann*parini%init_temp_dynamics 
     call set_velocities(atoms,ekin_target)
     epotold=atoms%epot
     call cal_potential_forces(parini,atoms)
@@ -131,8 +135,10 @@ subroutine md_nve(parini,atoms)
             write(21,'(i9,5es25.15)') imd,atoms%epot,atoms%ekin,etot,etot-etotold,temp
             write(22,'(i9,6es20.10)') imd,rcm(1:3),vcm(1:3)
         endif
-        if(mod(imd,10)==0) then
+        #if(mod(imd,10)==0) then
+        if(mod(imd,nfreq)==0) then
             file_info%file_position='append'
+            write(23,'(i9,5es25.15)') imd,atoms%epot,atoms%ekin,etot,etot-etotold,temp
             call acf_write(file_info,atoms=atoms,strkey='posout')
         endif
         etotold=etot

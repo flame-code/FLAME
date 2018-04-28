@@ -396,7 +396,8 @@ write(*,*) "END OF CENT CALCULATIONS"
         call get_psolver(parini,poisson_cent,atoms,Q(1,:),ehartree)
         cent_ener = ehartree
         if(atoms%nat > 1)  then
-            call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gwit,poisson_cent%rgcut,nx,ny,nz,poisson_cent%pot,atoms%fat)
+            call get_hartree_force(parini,poisson_cent,atoms)
+            !call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gwit,poisson_cent%rgcut,nx,ny,nz,poisson_cent%pot,atoms%fat)
             cent_fat = atoms%fat
         end if
         force_err = sqrt(sum((cent_fat-dft_fat)**2)/(3*atoms%nat))
