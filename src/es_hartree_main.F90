@@ -358,17 +358,14 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
         case('bigdft')
             if(parini%cell_ortho) then
                 call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
-                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
             else
                 call rqgrad_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%cv,poisson%q,poisson%gw, &
                             poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%pot,poisson%rgrad,poisson%qgrad)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                qgrad=0.d0
-                call apply_external_field(parini,atoms,poisson,ehartree,qgrad)
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
                 call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
-                poisson%qgrad=poisson%qgrad+qgrad
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop
@@ -391,6 +388,7 @@ subroutine get_hartree_force(parini,poisson,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
+    real(8):: ehartree
     !local variables
     select case(trim(parini%psolver))
         case('kwald')
@@ -405,6 +403,7 @@ subroutine get_hartree_force(parini,poisson,atoms)
             endif
         case('p3d')
             if(parini%cell_ortho) then
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
                 call force_gto_sym_ortho(parini,atoms,poisson,poisson%gw)
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
@@ -482,10 +481,8 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: ehartree, g(atoms%nat)
     !local variables
-    !real(8):: pi, gtot, ecut, epotreal, alphasq
     integer:: iat, igpx, igpy, igpz
     integer:: nbgpz,nlayer                                        
-    !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     real(8):: dipole !,ext_pot
     real(8):: dv, pi, beta ,vu,vl
     real(8):: c, charge, epot, ext_pot , efield, charge0
@@ -515,7 +512,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         enddo
         ehartree=ehartree-parini%efield*0.5d0*dipole
         do iat=1,atoms%nat
-            !atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
+            atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*0.5d0*atoms%qat(iat)
             g(iat)=g(iat)-parini%efield*0.5d0*atoms%rat(3,iat)
         enddo
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
@@ -538,6 +535,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
 
         do iat=1,atoms%nat
             g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+            atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
         enddo
 
 
@@ -606,9 +604,10 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         !ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
 
 
-        do iat=1,atoms%nat
-            g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
-        enddo
+        !do iat=1,atoms%nat
+        !    g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+        !    atoms%fat(3,iat)=atoms%fat(3,iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
+        !enddo
         deallocate(poisson%pots)
     endif
 end subroutine apply_external_field

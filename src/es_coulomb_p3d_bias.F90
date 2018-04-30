@@ -91,17 +91,21 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
             call surface_charge(parini,poisson,pots_layer,vl,vu)
             deallocate(pots_layer)
         endif
-           !     open(unit=55, file="pots.txt" )
-           !        do iy=1,min(9,poisson%ngpy)
-           !        do ix=1,min(9,poisson%ngpx)
-           !        do iz=poisson%npl,poisson%npu
-           !            write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
-           !                         (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
-           !        enddo 
-           !            write(55,*)   
-           !        enddo 
-           !        enddo 
-           !     close(55)
+        !        open(unit=55, file="pots.txt" )
+        !           do iy=1,min(9,poisson%ngpy)
+        !           do ix=1,min(9,poisson%ngpx)
+        !           do iz=poisson%npl,poisson%npu
+        !               !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
+        !               !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+        !               write(55,'(4es20.8)')  (iz-1-nbgpz)*poisson%hz, poisson%pots(ix,iy,iz),&
+        !                            (vu-vl)/d*(iz-1-nbgpz)*poisson%hz+vl,&
+        !                            (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+
+        !           enddo 
+        !               write(55,*)   
+        !           enddo 
+        !           enddo 
+        !        close(55)
            !     open(unit=66, file="pot_up.txt" )
            !        do iy=1,poisson%ngpy
            !        do ix=1,poisson%ngpx
