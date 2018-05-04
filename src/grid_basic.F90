@@ -167,7 +167,6 @@ subroutine potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa
     istarty = modulo((-nagy),ngy)+1
     istartz = modulo((-nagz),ngz)+1
     iiz=istartz-1
-
     do igz=1-nagz,ngz+nagz
         iiy=istarty-1
         iiz=iiz+1

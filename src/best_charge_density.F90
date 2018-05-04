@@ -78,10 +78,16 @@ subroutine best_charge_density_rho(parini)
     read(1377,*) !to be ploted atom's number
     read(1377,*) n_at
 !/////////////////////////////////E.O. READING INPUT PARAMETERS///////////////////////////
+    poisson_dft%hx=sqrt(poisson_dft%hgrid(1,1)**2+poisson_dft%hgrid(2,1)**2+poisson_dft%hgrid(3,1)**2)
+    poisson_dft%hy=sqrt(poisson_dft%hgrid(1,2)**2+poisson_dft%hgrid(2,2)**2+poisson_dft%hgrid(3,2)**2)
+    poisson_dft%hz=sqrt(poisson_dft%hgrid(1,3)**2+poisson_dft%hgrid(2,3)**2+poisson_dft%hgrid(3,3)**2)
+    write(*,*) poisson_dft%hx , poisson_dft%hy , poisson_dft%hz
     associate(nx=>poisson_dft%ngpx,ny=>poisson_dft%ngpy,nz=>poisson_dft%ngpz)
     associate(cv1=>atoms%cellvec(1,1),cv2=>atoms%cellvec(2,2),cv3=>atoms%cellvec(3,3))
     associate(hx=>poisson_dft%hx,hy=>poisson_dft%hy,hz=>poisson_dft%hz)
     associate(x_at=>atoms%rat(1,n_at),y_at=>atoms%rat(2,n_at),z_at=>atoms%rat(3,n_at))
+    poisson_dft%lda = nx
+    poisson_cent%lda = nx
     allocate(dft_rho(nx,ny,nz),dft_fat(1:3,1:atoms%nat),gwit(1:atoms%nat))
     ss=0
     do j = 1 , atoms_type
@@ -120,9 +126,9 @@ subroutine best_charge_density_rho(parini)
     dft_ener= 0.d0 
     atoms%fat = 0.d0 
     poisson_dft%task_finit=''
-    call init_hartree(parini,atoms,poisson_dft,Q(1,:))
+    call init_hartree(parini,atoms,poisson_dft,Q(1,1:atoms%nat))
     !call init_psolver_bps(parini,atoms,cent%poisson)
-    call get_hartree(parini,poisson_dft,atoms,Q(1,:),ehartree)
+    call get_hartree(parini,poisson_dft,atoms,Q(1,1:atoms%nat),ehartree)
     !call get_psolver_bps(poisson_dft,atoms,ehartree)
     dft_ener = ehartree 
     if (atoms%nat > 1) then
@@ -131,9 +137,10 @@ subroutine best_charge_density_rho(parini)
         poisson_dft%rcart=atoms%rat
         poisson_dft%cv=atoms%cellvec
         poisson_dft%q=atoms%zat
+        !poisson_dft%gw_ewald=gwit
         poisson_dft%gw=gwit
         !call force_gto_sym(parini,poisson_dft%bc,poisson_dft%nat,poisson_dft%rcart, &
-        !    poisson_dft%cv,poisson_dft%q,poisson_dft%gw,poisson_dft%rgcut,poisson_dft%ngpx, &
+        !    poisson_dft%cv,poisson_dft%q,poisson_dft%gw_ewald,poisson_dft%rgcut,poisson_dft%ngpx, &
         !    poisson_dft%ngpy,poisson_dft%ngpz,poisson_dft%pot,atoms%fat)
         call get_hartree_force(parini,poisson_dft,atoms)
         !call force_gto_sym(parini,'bulk',atoms%nat,atoms%rat,atoms%cellvec,atoms%zat,gwit,poisson_dft%rgcut,nx,ny,nz,poisson_dft%pot,atoms%fat)
@@ -161,6 +168,9 @@ subroutine best_charge_density_rho(parini)
     poisson_cent%ngpz = nz
     poisson_cent%bc='bulk'   
     poisson_cent%nat=atoms%nat
+    poisson_cent%task_finit='alloc_rho'
+    call init_hartree(parini,atoms,poisson_cent,Q(1,:))
+    poisson_cent = poisson_dft
     poisson_cent%rcart=atoms%rat
     poisson_cent%cv=atoms%cellvec
     allocate(cent_rho(nx,ny,nz))
@@ -211,9 +221,6 @@ subroutine best_charge_density_rho(parini)
     qnrm = (dft_q+0.d0)/(sum(Q(1:lcn,1:atoms%nat)))
     Q(1:lcn,1:atoms%nat) = Q(1:lcn,1:atoms%nat)*qnrm
     
-    poisson_cent%task_finit='alloc_rho'
-    call init_hartree(parini,atoms,poisson_cent,Q(1,:))
-    poisson_cent = poisson_dft
     do i = 1 , lcn
         ss = 0
         do j = 1 , atoms_type

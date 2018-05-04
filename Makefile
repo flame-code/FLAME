@@ -52,7 +52,8 @@ all: build/install/lib/libfutile-1.a $(DIRS) liball.a flame\
 	@echo "Pre-processing: $(PRE_PROC)"
 
 #MKL = '--with-ext-linalg=-L$(MKLPATH) -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm'
-MKL = '--with-ext-linalg=-L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_blacs_openmpi_lp64 -lpthread -lm -ldl'
+#MKL = '--with-ext-linalg=-L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_blacs_openmpi_lp64 -lpthread -lm -ldl'
+MKL = '--with-ext-linalg=-L${MKLROOT}/lib/intel64/libmkl_scalapack_lp64.a -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_sequential.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_blacs_openmpi_lp64.a -Wl,--end-group -lpthread -lm -ldl'
 COMPILERS = 'CXX=$(MY_CXX)' 'FC=$(F90)' 'F77=$(F90)' 'FCLIBS= '
 build/install/lib/libfutile-1.a:
 	cd build ; ../Installer.py build futile -v -c 'FCFLAGS=-O2' $(MKL) $(COMPILERS)
