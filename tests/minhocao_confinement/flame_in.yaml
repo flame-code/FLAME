@@ -1,3 +1,4 @@
 main:
     task: minhocao
     types: LJ
+    nat: 32

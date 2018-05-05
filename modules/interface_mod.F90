@@ -4519,6 +4519,14 @@ subroutine yaml_get_misc_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
 end subroutine yaml_get_misc_parameters
+subroutine yaml_get_confinement_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_confinement_parameters
+subroutine yaml_get_fingerprint_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_fingerprint_parameters
 subroutine set_dict_parini_default(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini

@@ -143,6 +143,11 @@ if(.not.nat_found.or..not.ntypat_found.or..not.znucl_found) then
    endif
 endif
 
+deallocate(parini%znucl)
+deallocate(parini%char_type)
+deallocate(parini%amu)
+deallocate(parini%rcov)
+deallocate(parini%typat_global)
 !Allocate the arrays
  if(.not.allocated(parini%znucl))       then;   allocate(parini%znucl(parini%ntypat_global))                       ; parini%znucl=0                 ; endif
  if(.not.allocated(parini%char_type))   then;   allocate(parini%char_type(parini%ntypat_global))                   ; parini%char_type="  "          ; endif
