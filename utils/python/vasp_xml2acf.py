@@ -87,7 +87,7 @@ for line in f.readlines():
     if iline_positions>-1:
         if iline_positions==0:
             atoms.nat=nat
-            atoms.boundcond="free"
+            atoms.boundcond="bulk"
         atoms.sat.append(sat[iline_positions])
         #print atoms.sat[-1]
         atoms.rat.append([])
