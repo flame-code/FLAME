@@ -1,0 +1,11 @@
+main:
+    task: genconf
+    seed: 2147483562
+    types: Na Cl
+
+genconf:
+    subtask: genrandom
+    nat_add: 15
+    amargin: 0.0
+    variable_cell: True
+    nonorthogonal: True

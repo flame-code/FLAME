@@ -35,6 +35,8 @@ program alborz
         call netsock_task(parini)
     elseif(trim(parini%task)=='bader') then
         call task_bader(parini)
+    elseif(trim(parini%task)=='lammps') then
+        call lammps_task(parini)
     elseif(trim(parini%task)=='phonon') then
         call cal_hessian_4p(parini)
     elseif(trim(parini%task)=='misc') then

@@ -2,6 +2,7 @@ main:
     task: minhocao
     verbosity: 0
     types: F Ca
+    nat: 12
 
 potential:
     potential: ann

@@ -23,7 +23,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
 
     pi=4.d0*atan(1.d0)
     epotplane=0.d0
-    beta = poisson%beta
+    beta = poisson%beta*(-poisson%ngpx*poisson%ngpy)
     ngpx= poisson%ngpx
     ngpy= poisson%ngpy
     nbgpz=int(poisson%rgcut/poisson%hz)+2
@@ -1014,7 +1014,7 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
     real(8):: pot_correction  
 
-    beta = poisson%beta
+    beta = poisson%beta*(-poisson%ngpx*poisson%ngpy)
     pi=4.d0*atan(1.d0)
     ngpz=poisson%ngpz
     ngpx= poisson%ngpx

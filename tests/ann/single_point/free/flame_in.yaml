@@ -1,0 +1,14 @@
+main:
+    task: single_point
+    #verbosity: 1
+    types: Na Cl
+
+single_point:
+    print_force: False
+    format: '(a5,2x,3f16.12,2x,3l1)'
+
+potential:
+    potential: ann
+
+ann:
+    approach: cent1

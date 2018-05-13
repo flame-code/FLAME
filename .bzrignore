@@ -4,9 +4,7 @@
 a.out
 *~
 ./machines/thismachine.make
-ANN/fit
-./ANN/evaluate_fit
-./GenConf/genrandom
+./src/input_variables_definition.c
 ./flame
 ./docs/_build/doctrees
 ./docs/_build/html

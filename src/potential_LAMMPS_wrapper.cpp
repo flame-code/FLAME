@@ -22,7 +22,7 @@
    including this as a separate file. See the README for instructions. */
 
 #include <mpi.h>
-#include "LAMMPS-wrapper.h"
+#include "potential_LAMMPS_wrapper.h"
 #include <library.h>
 #include <lammps.h>
 #include <atom.h>

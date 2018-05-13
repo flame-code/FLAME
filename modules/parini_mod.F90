@@ -17,6 +17,7 @@ module mod_parini
         integer:: ntypat=-1
         integer:: ltypat(20)=-1
         integer:: iatomnum(20)=-1
+        integer:: nrun_lammps=0
         character(5):: stypat(20)='unknown'
         !character(50):: stypat_genconf=''
         !-----------------------------------------------------------------------
@@ -106,6 +107,7 @@ module mod_parini
         real(8):: temp_dynamics
         real(8):: init_temp_dynamics =0.d0
         integer:: nmd_dynamics=0
+        integer:: nfreq_dynamics=0
         character(20):: md_method_dynamics='unknown'
         logical:: print_force_dynamics=.false.
         logical:: restart_dynamics=.false.
@@ -156,10 +158,14 @@ module mod_parini
         real(8):: gnrmtol_eem=1.d-7
         real(8):: tolerance_ewald = 1.d-6
         real(8):: efield !external electric field
+        real(8):: dielec_const
+        real(8):: dielec_const1
+        real(8):: dielec_const2
         logical :: ewald=.false.
         logical :: cell_ortho=.false.
         character(256):: bias_type='no'
         character(50):: psolver='unknown'
+        logical:: cal_polar= .false.
         !-----------------------------------------------------------------------
         !parameters of [misc]
         logical:: avail_misc=.false.
@@ -254,6 +260,11 @@ module mod_parini
         real(8)::qbfgs_w_1!=0.05D0
         real(8)::qbfgs_w_2!=0.5D0
         !-----------------------------------------------------------------------
+        integer:: nat                   !Number of atoms
+        integer:: ntypat_global         !Number of atom types
+        real(8),allocatable:: znucl(:)
+        character(2),allocatable:: char_type(:) 
+        logical:: voids                 !If or if not to use void creating LJ particles in the cell
         real(8),allocatable:: amu(:)
         real(8),allocatable:: rcov(:)
         logical,allocatable:: fixat(:)

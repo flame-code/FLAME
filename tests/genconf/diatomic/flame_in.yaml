@@ -1,0 +1,13 @@
+main:
+    task: genconf
+    types: Au
+
+genconf:
+    subtask: diatomic 
+    cal_pot: yes
+    npoint: 101
+    dmin: 2.14316685
+    dmax: 9.28705635
+
+potential:
+    potential: qsc

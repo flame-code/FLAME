@@ -48,15 +48,15 @@ end subroutine
         implicit none
         type(typ_parini), intent(in):: parini
         integer:: iat, jat, kk, ll, l, nec(3), i, j, k, m
-        real(8):: xred(3,nat),fxyz(3,nat),xred0(3,nat),dxyz(3),r1red(3),r2red(3)
+        real(8):: xred(3,parini%nat),fxyz(3,parini%nat),xred0(3,parini%nat),dxyz(3),r1red(3),r2red(3)
         real(8):: etot,latvec_x(3,3),rec_nec(3),enth,stressvol(3,3),vol,strten(6)
         real(8), allocatable:: rel(:,:)
         real(8):: latvec(3,3),latvec_ang(3,3),latvecinv(3,3),celldv(3,3),pressure,gradvol(3,3),stress(3,3),tmplat(3,3)
         real(8):: trans(3,3), transinv(3,3)
         real(8):: crossp(3),d,dd,dd2,dd6,dd12,dx,dy,dz,s,s2,s6,s12,rc,rc2,rc6,rc12,tt,t1,t2,t3
         real(8):: sil_sjl1,sil_sjl2,sil_sjl3, si1_sj1, si2_sj2, si3_sj3, tkmsum1,tkmsum2,tkmsum3, cutmax,epscur
-        real(8):: rcut2_lj(ntypat,ntypat),eps_lj,sigma_lj_fact,double_count
-        real(8):: sigma_lj(ntypat,ntypat)
+        real(8):: rcut2_lj(parini%ntypat_global,parini%ntypat_global),eps_lj,sigma_lj_fact,double_count
+        real(8):: sigma_lj(parini%ntypat_global,parini%ntypat_global)
         logical:: truncated
 !Set up epsilon and sigma parameters
         eps_lj=1.d0
@@ -67,10 +67,10 @@ end subroutine
         latvec_ang=latvec*Bohr_Ang
 !Set up sigma matrix
         sigma_lj=0.d0
-        do i=1,ntypat
-          do j=1,ntypat
+        do i=1,parini%ntypat_global
+          do j=1,parini%ntypat_global
 !Exclude interactions between LJ particles, since they are already LJ... hahaha
-             if(int(znucl(i)).lt.200.and.int(znucl(j)).lt.200) sigma_lj(i,j)=(parini%rcov(i)+parini%rcov(j))*Bohr_Ang*sigma_lj_fact
+             if(int(parini%znucl(i)).lt.200.and.int(parini%znucl(j)).lt.200) sigma_lj(i,j)=(parini%rcov(i)+parini%rcov(j))*Bohr_Ang*sigma_lj_fact
           enddo
         enddo
         xred=xred0
@@ -80,7 +80,7 @@ end subroutine
         rcut2_lj=sigma_lj*2.d0**(1.d0/6.d0) !This cutoff is due to the truncation at the minimum of the well, since only repulsion is used!!!
         cutmax=maxval(rcut2_lj)
         rcut2_lj=rcut2_lj*rcut2_lj
-        call backtocell(nat,latvec_ang,xred) 
+        call backtocell(parini%nat,latvec_ang,xred) 
         trans=latvec_ang
 
          call invertmat(trans,transinv,3) 
@@ -95,12 +95,12 @@ end subroutine
     enddo
 
 !Only the repulsive interactions between the pseudo LJ particles
-         do iat=1,nat !iat are th LJ particles 
+         do iat=1,parini%nat !iat are th LJ particles 
             r1red(:)=xred(:,iat)*rec_nec
             do i=0,nec(1)-1
             do j=0,nec(2)-1
             do k=0,nec(3)-1
-               do jat=1,nat !jat are the other LJ particles
+               do jat=1,parini%nat !jat are the other LJ particles
                 r2red(:)=xred(:,jat)*rec_nec
                 r2red(1)=r2red(1)+real(i,8)*rec_nec(1)
                 r2red(2)=r2red(2)+real(j,8)*rec_nec(2)

@@ -1,0 +1,23 @@
+main:
+    task: netsock
+    types: Zn O
+
+potential:
+    potential: ann
+
+single_point:
+    print_force: True
+    usesocket: True
+    sockinet: 1
+    sockport: 9995
+    sockhost: 127.0.0.1
+
+potential:
+    potential: ann
+
+ann:
+    approach: eem1
+    syslinsolver: operator
+
+ewald:
+    psolver: kwald

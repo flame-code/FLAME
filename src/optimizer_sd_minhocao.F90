@@ -11,8 +11,6 @@
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
  use mod_interface
- use global, only: nat,ntypat,znucl
- use global, only: char_type
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use steepest_descent
  use defs_basis
@@ -118,7 +116,7 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
    logical:: biomode,fail,getwfk
    real(8):: energy,forcemax,frac_fluct,fmax_at,fmax_lat,enthalpy,beta_scale
    integer:: ncount_cluster_x,iexit,iprec,lattdeg
-   real(8):: latvec_in(3,3),xred_in(3,nat),fcart_in(3,nat),strten_in(6),etot_in,counter,pressure,latvec0(3,3),enthalpy_old
+   real(8):: latvec_in(3,3),xred_in(3,parini%nat),fcart_in(3,parini%nat),strten_in(6),etot_in,counter,pressure,latvec0(3,3),enthalpy_old
    character(40)::filename,folder
    frac_fluct=0.d0
    fluct=0.d0
@@ -183,7 +181,7 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
 
    ! allocate arrays
 !   lwork=1000+10*nat**2
-   lwork=1000+10*(nat+3)**2
+   lwork=1000+10*(parini%nat+3)**2
 !   rxyz = f_malloc((/ 1.to.3, 1.to.nat, 0.to.nhistx /),id='rxyz')
 !   rxyzraw = f_malloc((/ 1.to.3, 1.to.nat, 0.to.nhistx /),id='rxyzraw')
 !   fxyz = f_malloc((/ 1.to.3, 1.to.nat, 0.to.nhistx /),id='fxyz')
@@ -204,23 +202,23 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
 !   scpr = f_malloc(nhistx,id='scpr')
 !   rcov     = f_malloc((/ 1.to.nat/),id='rcov')
 !   iconnect = f_malloc((/ 1.to.2, 1.to.1000/),id='iconnect')
-   allocate(rxyz(1:3,1:nat+3,0:nhistx))
-   allocate(rxyzraw(1:3,1:nat+3,0:nhistx))
-   allocate(fxyz(1:3,1:nat+3,0:nhistx)) 
-   allocate(fxyzraw(1:3,1:nat+3,0:nhistx)) 
-   allocate(fstretch(1:3,1:nat+3,0:nhistx)) 
-   allocate(rxyzOld(1:3,1:nat+3)) 
-   allocate(delta(1:3,1:nat+3)) 
+   allocate(rxyz(1:3,1:parini%nat+3,0:nhistx))
+   allocate(rxyzraw(1:3,1:parini%nat+3,0:nhistx))
+   allocate(fxyz(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(fxyzraw(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(fstretch(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(rxyzOld(1:3,1:parini%nat+3)) 
+   allocate(delta(1:3,1:parini%nat+3)) 
    allocate(aa(nhistx,nhistx)) 
    allocate(eval(nhistx)) 
    allocate(res(nhistx)) 
    allocate(rnorm(nhistx)) 
    allocate(work(lwork)) 
-   allocate(ff(1:3,1:nat+3,0:nhistx)) 
-   allocate(rr(1:3,1:nat+3,0:nhistx)) 
-   allocate(dd(3,nat+3)) 
-   allocate(fff(1:3,1:nat+3,0:nhistx)) 
-   allocate(rrr(1:3,1:nat+3,0:nhistx)) 
+   allocate(ff(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(rr(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(dd(3,parini%nat+3)) 
+   allocate(fff(1:3,1:parini%nat+3,0:nhistx)) 
+   allocate(rrr(1:3,1:parini%nat+3,0:nhistx)) 
    allocate(scpr(nhistx)) 
 !   allocate(rcov(1:nat))     
 !   allocate(iconnect(1:2,1:1000)) 
@@ -248,7 +246,7 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
 
 !! copy to internal variables
 !   call vcopy(3*runObj%nat, runObj%rxyz(1,1), 1,rxyz(1,1,0), 1)
-   rxyz(:,1:nat,0)=xred_in(:,:);rxyz(:,nat+1:nat+3,0)=latvec_in(:,:)
+   rxyz(:,1:parini%nat,0)=xred_in(:,:);rxyz(:,parini%nat+1:parini%nat+3,0)=latvec_in(:,:)
 !   call vcopy(3*runObj%nat, runObj%rxyz(1,1), 1,rxyzOld(1,1), 1)
 !   call vcopy(3*outs%fdim, outs%fxyz(1,1), 1, fxyz(1,1,0), 1)
 !   fxyz(:,1:3*nat,0)=_in(:,:);rxyz(:,3*nat+1:3*nat+3,0)=latvec_in(:,:)
@@ -264,7 +262,7 @@ do it=1,nit
       call get_BFGS_forces_strainlatt(parini,parres,rxyz(:,:,0),fxyz(:,:,0),enthalpy,getwfk,iprec,latvec0,&
              &lattdeg,latvec_in,xred_in,etot_in,fcart_in,strten_in)
       call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
-      call convcheck(parini,nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
+      call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       counter=real(it,8)
       write(*,'(i,a,5es15.7)') it," GEOPT_SD ",enthalpy,fmax,fmax_at,fmax_lat,beta
       if(iexit==1) then
@@ -285,8 +283,8 @@ do it=1,nit
          enthalpy_old=enthalpy
          endif
       endif
-      rxyz(:,nat+1:nat+3,0)=rxyz(:,nat+1:nat+3,0)+beta*beta_scale*fxyz(:,nat+1:nat+3,0)
-      rxyz(:,1:nat,0)=rxyz(:,1:nat,0)+beta*fxyz(:,1:nat,0)
+      rxyz(:,parini%nat+1:parini%nat+3,0)=rxyz(:,parini%nat+1:parini%nat+3,0)+beta*beta_scale*fxyz(:,parini%nat+1:parini%nat+3,0)
+      rxyz(:,1:parini%nat,0)=rxyz(:,1:parini%nat,0)+beta*fxyz(:,1:parini%nat,0)
 enddo
 
 deallocate(rxyz)

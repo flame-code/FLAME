@@ -24,7 +24,6 @@ subroutine yaml_get_parameters(parini)
         select case(trim(dict_key(parini%subdict)))
         case("main")
             call yaml_get_main_parameters(parini)
-            call set_atomc_types_info(parini)
         case("minhopp")
             call yaml_get_minhopp_parameters(parini)
         case("geopt")
@@ -51,6 +50,8 @@ subroutine yaml_get_parameters(parini)
             call yaml_get_testforces_parameters(parini)
         case("single_point")
             call yaml_get_single_point_parameters(parini)
+        case("fingerprint")
+            call yaml_get_fingerprint_parameters(parini)
         case("misc")
             call yaml_get_misc_parameters(parini)
         end select
@@ -72,12 +73,45 @@ subroutine yaml_get_main_parameters(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
+    integer:: itype
     if(dict_size(parini%subdict)<1) stop 'ERROR: main block in flame_in.yaml is empty.'
     parini%task=parini%subdict//"task"
     parini%types_main=parini%subdict//"types"
+    call set_atomc_types_info(parini)
     parini%two_level_geopt=parini%subdict//"two_level_geopt"
     parini%iverbose=parini%subdict//"verbosity"
     parini%iseed=parini%subdict//"seed"
+    parini%nrun_lammps=parini%subdict//"nrun_lammps"
+    parini%nat=parini%subdict//"nat"
+    if(trim(parini%task)=='minhocao' .and. parini%nat<1) then
+        write(*,*) 'ERROR: task=minhocao, did you set nat in input file?'
+    endif
+    parini%target_pressure_gpa=parini%subdict//"pressure"
+    parini%ntypat_global=parini%ntypat
+    if(trim(parini%task)=='minhocao') then
+    if(.not.allocated(parini%znucl)) then ; allocate(parini%znucl(parini%ntypat_global),source=0.d0) ; endif
+    if(.not.allocated(parini%amu)  ) then ; allocate(parini%amu(parini%ntypat_global),source=0.d0) ; endif
+    if(.not.allocated(parini%rcov)  ) then ; allocate(parini%rcov(parini%ntypat_global),source=0.d0) ; endif
+    if(.not.allocated(parini%char_type)) then; allocate(parini%char_type(parini%ntypat_global),source="  ") ; endif
+    if(.not.allocated(parini%typat_global)) then; allocate(parini%typat_global(parini%nat),source=0) ; endif
+    !Get the correct atomic masses and atomic character
+    do itype=1,parini%ntypat_global
+        parini%typat_global(itype)=parini%ltypat(itype)
+        parini%char_type(itype)=trim(parini%stypat(itype))
+        call symbol2znucl(parini%amu(itype),parini%rcov(itype),parini%char_type(itype),parini%znucl(itype))
+    enddo
+    if(has_key(parini%subdict,"znucl")) then
+        parini%znucl=parini%subdict//"znucl"
+    endif
+    if(has_key(parini%subdict,"amass")) then
+        parini%amu=parini%subdict//"amass"
+    endif
+    if(has_key(parini%subdict,"rcov")) then
+        parini%rcov=parini%subdict//"rcov"
+    endif
+    parini%findsym=parini%subdict//"findsym"
+    parini%finddos=parini%subdict//"finddos"
+    endif !end of if on trim(parini%task)=='minhocao'
 end subroutine yaml_get_main_parameters
 !*****************************************************************************************
 subroutine yaml_get_minhopp_parameters(parini)
@@ -86,6 +120,7 @@ subroutine yaml_get_minhopp_parameters(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
+    !real(8):: alpha_lat_in, alpha_at_in
     if(dict_size(parini%subdict)<1) stop 'ERROR: minhopp block in flame_in.yaml is empty.'
     parini%nstep_minhopp=parini%subdict//"nstep"
     parini%nsoften_minhopp=parini%subdict//"nsoften"
@@ -103,6 +138,14 @@ subroutine yaml_get_minhopp_parameters(parini)
     parini%beta3_minhopp=parini%subdict//"beta3"
     parini%trajectory_minhopp=parini%subdict//"trajectory"
     parini%print_force_minhopp=parini%subdict//"print_force"
+    parini%auto_soft=parini%subdict//"auto_soft"
+    if(.not.parini%auto_soft) then
+        parini%alpha_lat=parini%subdict//"alpha_lat"
+    endif
+    if(.not.parini%auto_soft) then
+        parini%alpha_at=parini%subdict//"alpha_at"
+    endif
+    parini%mol_soften=parini%subdict//"mol_soften"
 end subroutine yaml_get_minhopp_parameters
 !*****************************************************************************************
 subroutine yaml_get_opt_parameters(parini,paropt)
@@ -129,6 +172,9 @@ subroutine yaml_get_opt_parameters(parini,paropt)
     paropt%print_force=parini%subdict//"print_force"
     paropt%trajectory=parini%subdict//"trajectory"
     paropt%nhist=parini%subdict//"nhist"
+    paropt%dtmin=parini%subdict//"dt_min"
+    paropt%dtmax=parini%subdict//"dt_max"
+    paropt%strfact=parini%subdict//"strfact"
 end subroutine yaml_get_opt_parameters
 !*****************************************************************************************
 subroutine yaml_get_geopt_parameters(parini)
@@ -138,6 +184,15 @@ subroutine yaml_get_geopt_parameters(parini)
     type(typ_parini), intent(inout):: parini
     !local variales
     if(dict_size(parini%subdict)<1) stop 'ERROR: geopt block in flame_in.yaml is empty.'
+    parini%alphax_lat=parini%subdict//"hesslat"
+    parini%alphax_at=parini%subdict//"hessat"
+    parini%geopt_ext=parini%subdict//"geoext"
+    parini%qbfgs_bfgs_ndim=parini%subdict//"qbfgsndim"
+    parini%qbfgs_trust_radius_ini=parini%subdict//"qbfgstri"
+    parini%qbfgs_trust_radius_min=parini%subdict//"qbfgstrmin"
+    parini%qbfgs_trust_radius_max=parini%subdict//"qbfgstrmax"
+    parini%qbfgs_w_1=parini%subdict//"qbfgsw1"
+    parini%qbfgs_w_2=parini%subdict//"qbfgsw2"
     call yaml_get_opt_parameters(parini,parini%paropt_geopt)
 end subroutine yaml_get_geopt_parameters
 !*****************************************************************************************
@@ -179,6 +234,8 @@ subroutine yaml_get_potential_parameters(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
+    integer:: kpt_abc(3)
+    real(8):: dkpt_12(2)
     if(dict_size(parini%subdict)<1) stop 'ERROR: potential block in flame_in.yaml is empty.'
     parini%potential_potential=parini%subdict//"potential"
     parini%cal_charge=parini%subdict//"cal_charge"
@@ -190,9 +247,31 @@ subroutine yaml_get_potential_parameters(parini)
     parini%inisock_host=parini%subdict//"sockhost"
     parini%drift_potential=parini%subdict//"drift"
     parini%add_repulsive=parini%subdict//"add_repulsive"
+    parini%voids=parini%subdict//"voids"
+    parini%core_rep=parini%subdict//"core_rep"
+    parini%usewf_geopt=parini%subdict//"usewfgeo"
+    parini%usewf_soften=parini%subdict//"usewfsoft"
+    parini%usewf_md=parini%subdict//"usewfmd"
+    parini%auto_kpt=parini%subdict//"auto_kpt"
+    kpt_abc=parini%subdict//"kptmesh"
+    if(has_key(parini%subdict,"kptmesh")) then
+        parini%ka=kpt_abc(1)
+        parini%kb=kpt_abc(2)
+        parini%kc=kpt_abc(3)
+    endif
+    dkpt_12=parini%subdict//"kptden"
+    if(has_key(parini%subdict,"kptden")) then
+        parini%dkpt1=dkpt_12(1)
+        parini%dkpt2=dkpt_12(2)
+    endif
     if(has_key(parini%subdict,"ewald")) then
         parini%subsubdict => parini%subdict//"ewald"
         call yaml_get_ewald_parameters(parini)
+        nullify(parini%subsubdict)
+    endif
+    if(has_key(parini%subdict,"confine")) then
+        parini%subsubdict => parini%subdict//"confine"
+        call yaml_get_confinement_parameters(parini)
         nullify(parini%subsubdict)
     endif
 end subroutine yaml_get_potential_parameters
@@ -236,6 +315,7 @@ subroutine yaml_get_dynamics_parameters(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
+    integer:: mdmin_in
     if(dict_size(parini%subdict)<1) stop 'ERROR: dynamics block in flame_in.yaml is empty.'
     parini%nmd_dynamics=parini%subdict//"nmd"
     parini%dt_dynamics=parini%subdict//"dt"
@@ -244,6 +324,26 @@ subroutine yaml_get_dynamics_parameters(parini)
     parini%md_method_dynamics=parini%subdict//"md_method"
     parini%print_force_dynamics=parini%subdict//"print_force"
     parini%restart_dynamics=parini%subdict//"restart"
+    parini%nfreq_dynamics=parini%subdict//"nfreq"
+    parini%md_algo=parini%subdict//"algo"
+    parini%md_integrator=parini%subdict//"integrator"
+    parini%md_presscomp=parini%subdict//"presscomp"
+    parini%bmass=parini%subdict//"cellmass"
+    parini%auto_mdmin=parini%subdict//"auto_mdmin"
+    parini%mdmin_min=parini%subdict//"mdmin_min"
+    parini%mdmin_max=parini%subdict//"mdmin_max"
+    mdmin_in=parini%subdict//"mdmin_init"
+    if(.not.parini%auto_mdmin) then
+        parini%mdmin=mdmin_in
+    else
+        parini%mdmin=max(mdmin_in,parini%mdmin_min)
+    endif
+    parini%auto_dtion_md=parini%subdict//"auto_mddt"
+    if(.not.parini%auto_dtion_md) then
+        parini%dtion_md=parini%subdict//"dt_init"
+    endif
+    parini%nit_per_min=parini%subdict//"nit_per_min"
+    parini%energy_conservation=parini%subdict//"encon"
 end subroutine yaml_get_dynamics_parameters
 !*****************************************************************************************
 subroutine yaml_get_bader_parameters(parini)
@@ -338,6 +438,10 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%bias_type=parini%subsubdict//"bias_type"
     parini%psolver=parini%subsubdict//"psolver"
     parini%cell_ortho=parini%subsubdict//"cell_ortho"
+    parini%dielec_const=parini%subsubdict//"dielec_const"
+    parini%dielec_const1=parini%subsubdict//"dielec_const1"
+    parini%dielec_const2=parini%subsubdict//"dielec_const2"
+    parini%cal_polar=parini%subsubdict//"cal_polar"
 end subroutine yaml_get_ewald_parameters
 !*****************************************************************************************
 subroutine yaml_get_misc_parameters(parini)
@@ -352,6 +456,45 @@ subroutine yaml_get_misc_parameters(parini)
     parini%boundcond_misc=parini%subdict//"boundcond"
     parini%posinp_misc=parini%subdict//"posinp"
 end subroutine yaml_get_misc_parameters
+!*****************************************************************************************
+subroutine yaml_get_confinement_parameters(parini)
+    use mod_parini, only: typ_parini
+    use dictionaries
+    implicit none
+    type(typ_parini), intent(inout):: parini
+    !local variales
+    if(dict_size(parini%subsubdict)<1) stop 'ERROR: confinement block in flame_in.yaml is empty.'
+    parini%nconfine=parini%subsubdict//"nconfine"
+end subroutine yaml_get_confinement_parameters
+!*****************************************************************************************
+subroutine yaml_get_fingerprint_parameters(parini)
+    use mod_parini, only: typ_parini
+    use dictionaries
+    implicit none
+    type(typ_parini), intent(inout):: parini
+    !local variales
+    if(dict_size(parini%subdict)<1) stop 'ERROR: fingerprint block in flame_in.yaml is empty.'
+    parini%fp_method_ch=parini%subdict//"method"
+    parini%fp_rcut=parini%subdict//"rcut"
+    parini%fp_dbin=parini%subdict//"dbin"
+    parini%fp_sigma=parini%subdict//"sigma"
+    parini%fp_nl=parini%subdict//"nl"
+    parini%fp_14_m=parini%subdict//"power"
+    parini%fp_14_w1=parini%subdict//"gaussfac1"
+    parini%fp_14_w2=parini%subdict//"gaussfac2"
+    parini%fp_at_nmax=parini%subdict//"atnmax"
+    parini%fp_17_natx_sphere=parini%subdict//"natx"
+    parini%fp_17_orbital=parini%subdict//"orbital"
+    parini%fp_18_orbital=parini%fp_17_orbital
+    parini%fp_17_nex_cutoff=parini%subdict//"nexcut"
+    parini%fp_18_nex_cutoff=int(parini%fp_17_nex_cutoff)
+    parini%fp_18_principleev=parini%subdict//"principleev"
+    parini%fp_18_molecules=parini%subdict//"molecules"
+    parini%fp_18_expaparameter=parini%subdict//"expa"
+    parini%fp_18_molecules_sphere=parini%subdict//"molsphere"
+    parini%fp_18_width_cutoff=parini%subdict//"widthcut"
+    parini%fp_18_width_overlap=parini%subdict//"widthover"
+end subroutine yaml_get_fingerprint_parameters
 !*****************************************************************************************
 subroutine set_dict_parini_default(parini)
     use mod_parini, only: typ_parini

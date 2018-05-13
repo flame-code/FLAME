@@ -6,7 +6,7 @@ subroutine read_list_files_yaml(fname,nfiles_max,fn_list,nfiles)
     implicit none
     character(len=*), intent(in):: fname
     integer, intent(in):: nfiles_max
-    character(len=256), intent(out):: fn_list(nfiles)
+    character(len=256), intent(out):: fn_list(nfiles_max)
     integer, intent(out):: nfiles
     !local variales
     type(dictionary), pointer :: dict, subdict, subsubdict

@@ -1,0 +1,9 @@
+main:
+    task: misc
+    types: Si
+
+misc:
+    subtask: linkedlist_test 
+    boundcond: free
+    posinp: random
+    #posinp: known
