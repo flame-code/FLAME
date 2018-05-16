@@ -540,6 +540,8 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
 
 
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
+        vu=parini%vu_ewald+parini%vu_ac_ewald*sin(2*pi*parini%frequency_ewald*parini%time_dynamics)
+        vl=parini%vl_ewald
         ehartree=0.d0
         nbgpz=int(poisson%rgcut/poisson%hz)+2
         poisson%npu=poisson%ngpz-nbgpz
@@ -552,16 +554,16 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         !    allocate(pots_layer(1:poisson%ngpx,1:poisson%ngpy,1:2,1:nlayer))
         !    pots_layer = 0.d0
         !endif
-        call sollaplaceq(poisson,poisson%hz,poisson%cell,poisson%vl,poisson%vu)
+        call sollaplaceq(poisson,poisson%hz,poisson%cell,vl,vu)
         !if (parini%cal_charge) then 
-        !    call surface_charge(parini,poisson,pots_layer,poisson%vl,poisson%vu)
+        !    call surface_charge(parini,poisson,pots_layer,vl,vu)
         !    deallocate(pots_layer)
         !endif
 
         do igpz=1,poisson%npl-1      
             do igpy=1,poisson%ngpy
                 do igpx=1,poisson%ngpx
-                    poisson%pot(igpx,igpy,igpz)=poisson%vl
+                    poisson%pot(igpx,igpy,igpz)=vl
                 enddo
             enddo
         enddo
@@ -575,7 +577,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         do igpz=poisson%npu+1,poisson%ngpz      
             do igpy=1,poisson%ngpy
                 do igpx=1,poisson%ngpx
-                    poisson%pot(igpx,igpy,igpz)=poisson%vu
+                    poisson%pot(igpx,igpy,igpz)=vu
                 enddo
             enddo
         enddo
@@ -593,8 +595,9 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         do iat=1,atoms%nat
             dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
         enddo
+        write(*,*)"dipole  =  " , dipole
         beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
-        dv=poisson%vu-poisson%vl
+        dv=vu-vl
         c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
         charge0=-dipole/poisson%cell(3)
         charge=-dipole/poisson%cell(3)+c*dv

@@ -44,11 +44,15 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
         write(*,*)'real pot = ', beta/(poisson%ngpx*poisson%ngpy)+vl,&
                                 -beta/(poisson%ngpx*poisson%ngpy)+vu
         write(*,*)'charge on upper  plate  ', charge
+        !********************************************************************
+        ! Esperesso energy 
         !dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
+        write(*,*)'dipole_correction  ', 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
         !dipole_correction = 0.d0
         !dipole_correction =dipole_correction +charge0*(vu-vl)!0.5*c*(vu-vl)**2
+        !********************************************************************
         dipole_correction = 0.d0
-        dipole_correction =dipole_correction +0.5*charge0*(-dv)!+0.5*c*(-dv)**2
+        dipole_correction =dipole_correction -0.5*charge0*(dv)!+0.5*c*(-dv)**2
         poisson%npu=poisson%ngpz-nbgpz
         poisson%npl=1+nbgpz  
 !        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
