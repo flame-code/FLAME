@@ -1528,6 +1528,12 @@ subroutine put_pot_sym_rzx(rat,hx,hy,hz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,c
     real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat)
     real(8) :: cent_pot_a_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_q_par(1:ng(1),1:ng(2),1:ng(3))
 end subroutine put_pot_sym_rzx
+subroutine stdval_rzx(f,f_len,mean,std,var)
+    integer, intent(in) :: f_len
+    real(8), intent(in) :: f(f_len)
+    real(8), intent(out) :: mean, std, var
+    real(8) :: g(f_len)
+end subroutine stdval_rzx
 ! ./src/buckingham.F90 :
 subroutine set_buckingham(atoms,tosifumi)
     use mod_atoms, only: typ_atoms

@@ -441,12 +441,12 @@ subroutine best_charge_density_pot(parini)
     integer:: atoms_type, iter, iter_max, cel_vol ,cel_vol_inv, ix, iy, iz, l, nclx, ncrx,ncly, ncry, nclz, ncrz
     integer:: at_range ,xg_at , yg_at , zg_at , n_at, i, j, k, lcn, ss, Ne, istat, nstat, ng(3)! lcn = linear combinarion number
     integer, allocatable :: t_num(:)
-    real(8):: rmse_old , total_charge, start, finish, total_time
+    real(8):: rmse_old , total_charge, start, finish, total_time, mean, std, var
     real(8):: rclx, rcrx, rcly, rcry, rclz, rcrz, rminx, rmaxx, rminy, rmaxy, rminz, rmaxz, pi,pot_err  
     real(8):: ehartree, rmse, cent_ener, dft_ener, w, exc, volinv_integration, sd_s, volinv,err, a_max,qnrm, dft_q,gtot, peak, c1, d1, err_max, temp, at_zat
     real(8),allocatable::  dft_rho(:,:,:), weight(:,:,:), dft_pot(:,:,:), cent_pot(:,:,:)
     real(8),allocatable:: A(:,:), Q(:,:), At(:,:), Qt(:,:), qpar(:,:), apar(:,:), qpar_t(:,:), rat_t(:,:)
-    real(8),allocatable:: dft_fat(:,:), cent_fat(:,:), gwit(:), at_rat(:,:),cent_rho(:,:,:),cv_temp(:,:), atom_charge(:)
+    real(8),allocatable:: dft_fat(:,:), cent_fat(:,:), gwit(:), at_rat(:,:),cent_rho(:,:,:),cv_temp(:,:), atom_charge(:),atom_charge_type(:)
     !////////////////////////E.O. TEMP for charge on grid/////////////////////////////////
     pi=4.d0*atan(1.d0)
     nstat = 5 
@@ -600,11 +600,16 @@ subroutine best_charge_density_pot(parini)
         write(2,*) 'Cutoff : whole cell is considered'
     end if
     volinv_integration = (cv1*cv2*cv3+0.d0)/(nx*ny*nz-exc+0.d0)
-    allocate(atom_charge(1:atoms_type))
+    allocate(atom_charge_type(1:atoms_type),atom_charge(1:atoms%nat))
     read(1377,*) ! atoms initial charge
     do i = 1 , atoms_type
-        read(1377,*) atom_charge(i)
+        read(1377,*) atom_charge_type(i)
     enddo
+    ss=0
+    do j = 1 , atoms_type
+        ss = ss + t_num(j-1)
+        atom_charge(ss+1:t_num(j)+ss) = atom_charge_type(j)
+    end do
     ng(1) = nx ; ng(2) = ny ; ng(3) = nz
     total_time = 0.d0
     do iter=1,huge(iter_max)
@@ -683,6 +688,16 @@ subroutine best_charge_density_pot(parini)
         endif
     end Do
     write(2,'(a36,f10.3,f6.3)') 'Total SD time, average per iter : ' , total_time , (total_time+0.d0)/(iter+0.d0)
+    ss = 0
+    do j = 1 , atoms_type
+        ss = ss+t_num(j-1)
+        do i = 1 , lcn    
+            call stdval_rzx(Q(i,ss+1:ss+t_num(j)),t_num(j),mean,std,var)
+            write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD Q of :',atoms%sat(ss+1), i,mean,var,std
+            call stdval_rzx(A(i,ss+1:ss+t_num(j)),t_num(j),mean,std,var)
+            write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD A of :',atoms%sat(ss+1), i,mean,var,std
+        enddo
+    enddo
     do ix = 1 , nx
         write(3,*) ix*hx , dft_pot(ix,ny/2,nz/2) ,cent_pot(ix,ny/2,nz/2)
     end do 
@@ -910,4 +925,20 @@ subroutine put_pot_sym_rzx(rat,hx,hy,hz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,c
                 apar(l,iat)=2.d0*hx*hy*hz*sum(cent_pot_a_par*weight*(cent_pot-dft_pot))
             enddo ! of iat
         enddo !of lcn
-    end subroutine put_pot_sym_rzx
+end subroutine put_pot_sym_rzx
+!/////////////////////////////////////////////////////////////////////////////////////////
+subroutine stdval_rzx(f,f_len,mean,std,var)
+    implicit none
+    integer, intent(in) :: f_len
+    real(8), intent(in) :: f(f_len)
+    real(8), intent(out) :: mean, std, var
+    ! local variables
+    integer :: i
+    real(8) :: g(f_len)
+    mean = sum(f(1:f_len))/(f_len+0.d0)
+    do i = 1, f_len
+        g(i) = (f(i)-mean)**2
+    end do
+    var = sum(g(1:f_len))/(f_len+0.d0)
+    std = sqrt(var)
+end subroutine stdval_rzx
