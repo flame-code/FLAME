@@ -24,6 +24,7 @@
    types: unknown
    two_level_geopt: False
    verbosity: 0
+   verbose: 3
    seed: -2
    nrun_lammps: 0
    nat: 0
@@ -130,11 +131,20 @@
    potential: unknown
    cal_charge: False
    potential_sec: unknown
+   boundary: 1
    ann_boundcheck: none
    component_ff: no
    sockinet: 0
    sockport: 0
    sockhost: unknown
+   ipiinet: 0
+   ipiport: 3141
+   ipihost: mh-driver
+   ipiecutwf: [1.0,1.0]
+   sockinet: 0
+   sockport: 3141
+   sockhost: mh-driver
+   sockecutwf: [1.0,1.0]
    drift: False
    add_repulsive: True
    voids: False
@@ -170,6 +180,18 @@
      dielec_const1: 1.0
      dielec_const2: 1.0
      cal_polar: False
+   confine:
+     confinement: False
+     nconfine: 0
+     cartred: C
+     dim: 1
+     exp: 4
+     prefac: 0.01
+     cut: 1.0
+     av: 2
+     eq: 0
+     nat: 0
+     atoms: all
  ann:
    subtask: unknown
    optimizer: unknown
@@ -249,8 +271,6 @@
    gaussian_width: -1.0
    boundcond: unknown
    posinp: unknown
- confine:
-   nconfine: 0
  fingerprint:
    method: OGANOV
    rcut: 15.0
