@@ -19,6 +19,7 @@ module mod_parini
         integer:: iatomnum(20)=-1
         integer:: nrun_lammps=0
         character(5):: stypat(20)='unknown'
+        logical:: params_new=.false.
         !character(50):: stypat_genconf=''
         !-----------------------------------------------------------------------
         !parameters of [minhopp]

@@ -4449,6 +4449,10 @@ subroutine params_read(parini)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(inout):: parini
 end subroutine params_read
+subroutine params_read_for_yaml(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine params_read_for_yaml
 subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(inout):: parini

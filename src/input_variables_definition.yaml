@@ -31,6 +31,7 @@
    pressure: 0.0
    findsym: False
    finddos: False
+   params_new: False
  minhopp:
    nstep: 0
    nsoften: 7

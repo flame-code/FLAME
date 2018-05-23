@@ -206,7 +206,12 @@ call system_clock(count_max=clock_max)   !Find the time max
 !  call read_params()
 !Echo the parameters
 !  call params_echo()
-  call params_read(parini)
+    !write(*,*) parini%params_new
+    if(parini%params_new) then
+        call params_read(parini)
+    else
+        call params_read_for_yaml(parini)
+    endif
   parres=parini
 !  call params_echo()
 

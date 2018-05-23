@@ -83,6 +83,7 @@ subroutine yaml_get_main_parameters(parini)
     parini%iseed=parini%subdict//"seed"
     parini%nrun_lammps=parini%subdict//"nrun_lammps"
     parini%verb=parini%subdict//"verbose"
+    parini%params_new=parini%subdict//"params_new"
     parini%nat=parini%subdict//"nat"
     if(trim(parini%task)=='minhocao' .and. parini%nat<1) then
         write(*,*) 'ERROR: task=minhocao, did you set nat in input file?'
@@ -95,6 +96,7 @@ subroutine yaml_get_main_parameters(parini)
     if(.not.allocated(parini%rcov)  ) then ; allocate(parini%rcov(parini%ntypat_global),source=0.d0) ; endif
     if(.not.allocated(parini%char_type)) then; allocate(parini%char_type(parini%ntypat_global),source="  ") ; endif
     if(.not.allocated(parini%typat_global)) then; allocate(parini%typat_global(parini%nat),source=0) ; endif
+    if(.not.allocated(parini%fixat)) then; allocate(parini%fixat(parini%nat),source=.false.) ; endif
     !Get the correct atomic masses and atomic character
     do itype=1,parini%ntypat_global
         parini%typat_global(itype)=parini%ltypat(itype)

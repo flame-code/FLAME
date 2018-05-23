@@ -627,7 +627,99 @@ call params_check(parini)
     sd_beta_lat=parini%alphax_lat
     sd_beta_at=parini%alphax_at
 end subroutine
+!************************************************************************************
+subroutine params_read_for_yaml(parini)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_fire,   only: dtmin, dtmax
+    use minpar, only: parmin_bfgs
+    use steepest_descent, only: sd_beta_lat,sd_beta_at
+    use interface_ipi
+    use interface_msock
+    implicit none
+    type(typ_parini), intent(inout):: parini
+    integer, save:: calls=0
+    integer:: iat, n_lj
+!Post Processing
+!KPT
+  if(parini%auto_kpt) then
+    parini%ka=0;parini%kb=0;parini%kc=0
+  else
+    parini%dkpt1=0.d0
+    parini%dkpt2=0.d0
+  endif
 
+!Initiallize confinement
+if(parini%use_confine) call  init_confinement_parser(parini)
+
+!Initiallize LJ parameter if required
+if(trim(parini%potential_potential)=="blj".and.calls==0) call blj_init_parameter(parini)
+
+!Initiallize LJ parameter if required
+if(trim(parini%potential_potential)=="mlj") call mlj_init_parameter(parini)
+
+!Initiallize TB-LJ parameter if required
+if(trim(parini%potential_potential)=="lenosky_tb_lj".and.calls==0) then
+  call check_lenosky_tb_lj(parini)
+  n_lj=0
+  do iat=1,parini%nat
+     if(parini%znucl(parini%typat_global(iat)).gt.200) n_lj=n_lj+1
+  enddo
+  call lenosky_tb_lj_init_parameter()
+endif
+
+!Initiallize voids
+if(parini%voids.and.calls==0) then
+  call check_voids(parini) 
+  call voids_init_parameter()
+endif
+
+!Initiallize tersoff
+if(trim(parini%potential_potential)=="tersoff".and.calls==0) then
+  call init_tersoff(parini)
+endif
+
+!Initiallize edip
+if(trim(parini%potential_potential)=="edip".and.calls==0) then
+  call init_edip(parini)
+endif
+
+!Initiallize ipi
+if(trim(parini%potential_potential)=="ipi".and.calls==0) then
+  call init_ipi(parini,parini%nat)
+endif
+
+!Initiallize msock
+if(trim(parini%potential_potential)=="msock".and.calls==0) then
+  call init_msock(parini)
+endif
+
+
+
+!Assign correct parameters for fingerprint, not allocating any arrays!
+call fp_assign(parini)
+
+!Increase calls to the routine
+if(calls==0) call params_echo(parini)
+if(calls==0) call params_check(parini)
+calls=calls+1
+
+!Check range of parameters
+call params_check(parini)
+
+!Copy parameters of fire to the fire module
+    dtmin=parini%paropt_geopt%dtmin
+    dtmax=parini%paropt_geopt%dtmax
+!Copy parameters of bfgs to the bfgs module
+    parmin_bfgs%betax=parini%alphax_at
+    parmin_bfgs%betax_lat=parini%alphax_lat
+!Copy parameters to sqnm module
+    parini%paropt_geopt%beta_lat=parini%alphax_lat
+    parini%paropt_geopt%beta_at=parini%alphax_at
+!Copy parameters to sd module
+    sd_beta_lat=parini%alphax_lat
+    sd_beta_at=parini%alphax_at
+end subroutine params_read_for_yaml
 !************************************************************************************
 subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
 use mod_interface
