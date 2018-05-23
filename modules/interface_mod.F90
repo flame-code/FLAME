@@ -1507,9 +1507,33 @@ subroutine best_charge_density_rho(parini)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_cent, typ_ann_arr
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density_rho
+subroutine best_charge_density_pot(parini)
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+end subroutine best_charge_density_pot
+subroutine put_gto_sym_ortho_rzx(rat,hgrid,nat,qat,gw,ng,lcn,reset,cent_rho)
+    logical :: reset
+    integer :: nat, lcn,ng(3)
+    real(8) :: rat(3,nat), qat(lcn,nat), gw(lcn,nat),cent_rho(1:ng(1),1:ng(2),1:ng(3)),hgrid(1:3,1:3)
+end subroutine put_gto_sym_ortho_rzx
+subroutine put_pot_sym_rzx(rat,hx,hy,hz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar)
+    logical :: reset
+    integer , intent(in):: nat, ng(1:3), lcn
+    real(8) , intent(in):: rat(1:3,1:nat), hx, hy, hz, qat(1:lcn,1:nat),gw(1:lcn,1:nat),weight(1:ng(1),1:ng(2),1:ng(3))
+    real(8) , intent(in):: dft_pot(1:ng(1),1:ng(2),1:ng(3))
+    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat)
+    real(8) :: cent_pot_a_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_q_par(1:ng(1),1:ng(2),1:ng(3))
+end subroutine put_pot_sym_rzx
+subroutine stdval_rzx(f,f_len,mean,std,var)
+    integer, intent(in) :: f_len
+    real(8), intent(in) :: f(f_len)
+    real(8), intent(out) :: mean, std, var
+    real(8) :: g(f_len)
+end subroutine stdval_rzx
 ! ./src/buckingham.F90 :
 subroutine set_buckingham(atoms,tosifumi)
     use mod_atoms, only: typ_atoms
