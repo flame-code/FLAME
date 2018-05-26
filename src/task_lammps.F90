@@ -1,4 +1,10 @@
 !*****************************************************************************************
+! IMPORTANT NOTE: 
+! The structure written by the subroutine "lammps_write" needs the rotated structure. 
+! At the moment, it supposes that the structure sent to this subroutine is
+! already rotated. In case of changing the format of posinp.acf, the
+! lammps_write should be changed in a way it does the rotation iteself.
+!-----------------------------------------------------------------------------------------
 subroutine lammps_task(parini)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -31,12 +37,13 @@ subroutine lammps_task(parini)
     call lammps_file (lmp, 'in.lammps')
     call lammps_set_callback(lmp)
     call lammps_set_external_vector_length(lmp,2)
+    ! nrun in flame_in.yaml cannot have a smaller value than 1
     if(parini%nrun_lammps<1) then
         stop 'ERROR: parini%nrun_lammps<1 in lammps_task'
     endif
     write(str_run,'(a,1x,i)') 'run',parini%nrun_lammps
     !lammps_command is the LAMMPS function that does the
-    !task we have asked. e.g. molecular dynamics,
+    !task we have asked, e.g. molecular dynamics,
     !therefore, lammps_command will not be left until
     !the required task is completed.
     call lammps_command (lmp,str_run)
