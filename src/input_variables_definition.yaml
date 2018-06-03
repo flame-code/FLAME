@@ -84,6 +84,10 @@
    qbfgstrmax: 0.5
    qbfgsw1: 0.01
    qbfgsw2: 0.5
+   maxrise: 1.E-6
+   sqnmcutoff: 1.E-4
+   sqnmsteep: 1.0
+   sqnmtrustr: 0.1
  geopt_prec:
    method: unknown
    fmaxtol: -1.0
@@ -219,7 +223,7 @@
    save_symfunc_force: False
    weight_hardness: 0.001
  dynamics:
-  nmd: 0
+  nmd: 300
   nfreq: 0
   dt: -1.0
   temp: 0.0

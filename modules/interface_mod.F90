@@ -1498,6 +1498,10 @@ end subroutine hunt2
 subroutine hpsort(n,ra)
     real*8 ::ra(n)
 end subroutine hpsort
+function flm_index(str1,str2) result(ind)
+    character(*), intent(in):: str1, str2
+    integer:: ind, indp, len_str
+end function flm_index
 ! ./src/best_charge_density.F90 :
 subroutine best_charge_density(parini)
     use mod_parini, only: typ_parini

@@ -70,6 +70,7 @@ end subroutine yaml_get_parameters
 subroutine yaml_get_main_parameters(parini)
     use mod_parini, only: typ_parini
     use dictionaries
+    use defs_basis, only: HaBohr3_GPA
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -89,6 +90,7 @@ subroutine yaml_get_main_parameters(parini)
         write(*,*) 'ERROR: task=minhocao, did you set nat in input file?'
     endif
     parini%target_pressure_gpa=parini%subdict//"pressure"
+    parini%target_pressure_habohr=parini%target_pressure_gpa/HaBohr3_GPA
     parini%ntypat_global=parini%ntypat
     if(trim(parini%task)=='minhocao') then
     if(.not.allocated(parini%znucl)) then ; allocate(parini%znucl(parini%ntypat_global),source=0.d0) ; endif
@@ -97,9 +99,11 @@ subroutine yaml_get_main_parameters(parini)
     if(.not.allocated(parini%char_type)) then; allocate(parini%char_type(parini%ntypat_global),source="  ") ; endif
     if(.not.allocated(parini%typat_global)) then; allocate(parini%typat_global(parini%nat),source=0) ; endif
     if(.not.allocated(parini%fixat)) then; allocate(parini%fixat(parini%nat),source=.false.) ; endif
+    if(.not.allocated(parini%fragarr)) then; allocate(parini%fragarr(parini%nat),source=0) ; endif
+    parini%str_typat_global=parini%subdict//"typat"
+    read(parini%str_typat_global,*) parini%typat_global(:)
     !Get the correct atomic masses and atomic character
     do itype=1,parini%ntypat_global
-        parini%typat_global(itype)=parini%ltypat(itype)
         parini%char_type(itype)=trim(parini%stypat(itype))
         call symbol2znucl(parini%amu(itype),parini%rcov(itype),parini%char_type(itype),parini%znucl(itype))
     enddo
@@ -142,12 +146,12 @@ subroutine yaml_get_minhopp_parameters(parini)
     parini%trajectory_minhopp=parini%subdict//"trajectory"
     parini%print_force_minhopp=parini%subdict//"print_force"
     parini%auto_soft=parini%subdict//"auto_soft"
-    if(.not.parini%auto_soft) then
+    !if(.not.parini%auto_soft) then
         parini%alpha_lat=parini%subdict//"alpha_lat"
-    endif
-    if(.not.parini%auto_soft) then
+    !endif
+    !if(.not.parini%auto_soft) then
         parini%alpha_at=parini%subdict//"alpha_at"
-    endif
+    !endif
     parini%mol_soften=parini%subdict//"mol_soften"
 end subroutine yaml_get_minhopp_parameters
 !*****************************************************************************************
@@ -196,6 +200,10 @@ subroutine yaml_get_geopt_parameters(parini)
     parini%qbfgs_trust_radius_max=parini%subdict//"qbfgstrmax"
     parini%qbfgs_w_1=parini%subdict//"qbfgsw1"
     parini%qbfgs_w_2=parini%subdict//"qbfgsw2"
+    parini%paropt_geopt%maxrise=parini%subdict//"maxrise"
+    parini%paropt_geopt%cutoffRatio=parini%subdict//"sqnmcutoff"
+    parini%paropt_geopt%steepthresh=parini%subdict//"sqnmsteep"
+    parini%paropt_geopt%trustr=parini%subdict//"sqnmtrustr"
     call yaml_get_opt_parameters(parini,parini%paropt_geopt)
 end subroutine yaml_get_geopt_parameters
 !*****************************************************************************************
@@ -351,9 +359,9 @@ subroutine yaml_get_dynamics_parameters(parini)
         parini%mdmin=max(mdmin_in,parini%mdmin_min)
     endif
     parini%auto_dtion_md=parini%subdict//"auto_mddt"
-    if(.not.parini%auto_dtion_md) then
+    !if(.not.parini%auto_dtion_md) then
         parini%dtion_md=parini%subdict//"dt_init"
-    endif
+    !endif
     parini%nit_per_min=parini%subdict//"nit_per_min"
     parini%energy_conservation=parini%subdict//"encon"
 end subroutine yaml_get_dynamics_parameters

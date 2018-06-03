@@ -700,12 +700,9 @@ endif
 call fp_assign(parini)
 
 !Increase calls to the routine
-if(calls==0) call params_echo(parini)
-if(calls==0) call params_check(parini)
+!if(calls==0) call params_echo(parini)
+!if(calls==0) call params_check(parini)
 calls=calls+1
-
-!Check range of parameters
-call params_check(parini)
 
 !Copy parameters of fire to the fire module
     dtmin=parini%paropt_geopt%dtmin
@@ -719,6 +716,10 @@ call params_check(parini)
 !Copy parameters to sd module
     sd_beta_lat=parini%alphax_lat
     sd_beta_at=parini%alphax_at
+
+    call params_echo(parini)
+    !Check range of parameters
+    call params_check(parini)
 end subroutine params_read_for_yaml
 !************************************************************************************
 subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)

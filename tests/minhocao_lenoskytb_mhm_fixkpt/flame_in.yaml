@@ -2,3 +2,49 @@ main:
     task: minhocao
     types: Si
     nat: 8
+    typat: 8*1
+    pressure: 10.0
+    verbose: 1
+    nat: 8
+    znucl: 14.0
+    amass: 2.0
+    findsym: True
+
+potential:
+    potential: lenosky_tb
+    boundary: 1
+    auto_kpt: False
+    kptmesh: [5,5,5]
+
+geopt:
+    nit: 800
+    geoext: False
+    method: FIRE
+    fmaxtol: 5.E-5
+    strfact: 100.0
+    dt_start: 20.0
+    dt_min: 1.0
+    dt_max: 100.0
+
+dynamics:
+    nmd: 300
+    cellmass: 1.0
+    dt_init: 10.0
+    auto_mdmin: True
+    auto_mddt: True
+    nit_per_min: 25
+    mdmin_min: 2
+    mdmin_max: 4
+
+minhopp:
+    auto_soft: True
+    nsoften: 10
+    alpha_at: 0.5
+    alpha_lat: 1.0
+
+fingerprint:
+    method: OGANOV
+    rcut: 15.0
+    dbin: 0.06
+    sigma: 0.04
+

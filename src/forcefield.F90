@@ -53,12 +53,12 @@ subroutine forcefield_init(parini,atoms)
     !    write(*,'(2i4,f6.1)') iat,atoms%itypat(iat),atoms%qat(iat)
     !enddo
     !stop
-    ind=index(parini%component_ff,'tosifumi_old')
+    ind=flm_index(parini%component_ff,'tosifumi_old')
     if(ind>0) then
         call set_tosifumi(atoms,shortrange%tosifumi)
     endif
     !-------------------------------------------------------
-    ind=index(parini%component_ff,'tosifumi')
+    ind=flm_index(parini%component_ff,'tosifumi')
     if(ind>0) then
         call set_tosifumi(atoms,shortrange%tosifumi)
         poisson%spline%do_tosifumi=.true.
