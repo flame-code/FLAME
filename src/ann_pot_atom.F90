@@ -4,6 +4,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -12,6 +13,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_ekf), intent(inout):: ekf
     !local variables
+    type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng, jat, ib
     real(8):: epoti, tt,vol
     real(8):: ttx, tty, ttz
@@ -19,6 +21,10 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     call f_routine(id='cal_ann_atombased')
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+    else
+        symfunc%linked_lists%rcut=ann_arr%rcut
+        symfunc%linked_lists%triplex=.true.
+        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
     endif
     i=1
     atoms%epot=0.d0
@@ -86,6 +92,11 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     deallocate(symfunc%linked_lists%prime_bound)
     deallocate(symfunc%linked_lists%bound_rad)
     deallocate(symfunc%linked_lists%bound_ang)
+    if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
+        call f_free(symfunc%y)
+        call f_free(symfunc%y0d)
+        call f_free(symfunc%y0dr)
+    endif
     !call ann_deallocate(ann_arr)
     call f_release_routine()
 end subroutine cal_ann_atombased
