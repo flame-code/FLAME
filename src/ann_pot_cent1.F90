@@ -296,13 +296,10 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
             poisson%alpha=parini%alpha_ewald
         endif
     end if
-    if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
-        allocate(gausswidth(atoms%nat))
-        gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-        poisson%task_finit="alloc_rho:set_ngp"
-        call init_hartree(parini,atoms,poisson,gausswidth)
-        deallocate(gausswidth)
-    else
+    if(trim(parini%syslinsolver_ann)=='direct' .or. trim(parini%syslinsolver_ann)=='apply_matrix') then
+        if(trim(atoms%boundcond)/='free') then
+            write(*,*) 'ERROR: syslinsolver=direct can be used only for free BC.'
+        endif
         do iat=1,atoms%nat
             a(iat,atoms%nat+1)=1.d0
             a(atoms%nat+1,iat)=1.d0
@@ -321,6 +318,20 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
             enddo
         enddo
         a(atoms%nat+1,atoms%nat+1)=0.d0
+    elseif(trim(parini%syslinsolver_ann)=='operator') then
+        if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
+            allocate(gausswidth(atoms%nat))
+            gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+            poisson%task_finit="alloc_rho:set_ngp"
+            call init_hartree(parini,atoms,poisson,gausswidth)
+            deallocate(gausswidth)
+        else
+            write(*,*) 'ERROR: currently syslinsolver=operator only for BC=bulk/slab.'
+            stop
+        endif
+    else
+        write(*,*) 'ERROR: unknown value for syslinsolver',trim(parini%syslinsolver_ann)
+        stop
     endif
     end associate
 end subroutine init_electrostatic_cent1
@@ -336,7 +347,9 @@ subroutine fini_electrostatic_cent1(parini,atoms,poisson)
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    call fini_hartree(parini,atoms,poisson)
+    if(trim(parini%syslinsolver_ann)=='operator') then
+        call fini_hartree(parini,atoms,poisson)
+    endif
 end subroutine fini_electrostatic_cent1
 !*****************************************************************************************
 subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)

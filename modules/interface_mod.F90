@@ -1498,6 +1498,10 @@ end subroutine hunt2
 subroutine hpsort(n,ra)
     real*8 ::ra(n)
 end subroutine hpsort
+function flm_index(str1,str2) result(ind)
+    character(*), intent(in):: str1, str2
+    integer:: ind, indp, len_str
+end function flm_index
 ! ./src/best_charge_density.F90 :
 subroutine best_charge_density(parini)
     use mod_parini, only: typ_parini
@@ -4449,6 +4453,10 @@ subroutine params_read(parini)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(inout):: parini
 end subroutine params_read
+subroutine params_read_for_yaml(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine params_read_for_yaml
 subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(inout):: parini
@@ -4543,6 +4551,14 @@ subroutine yaml_get_misc_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
 end subroutine yaml_get_misc_parameters
+subroutine yaml_get_confinement_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_confinement_parameters
+subroutine yaml_get_fingerprint_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_fingerprint_parameters
 subroutine set_dict_parini_default(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini

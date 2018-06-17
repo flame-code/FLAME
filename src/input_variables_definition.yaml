@@ -24,8 +24,14 @@
    types: unknown
    two_level_geopt: False
    verbosity: 0
+   verbose: 3
    seed: -2
    nrun_lammps: 0
+   nat: 0
+   pressure: 0.0
+   findsym: False
+   finddos: False
+   params_new: False
  minhopp:
    nstep: 0
    nsoften: 7
@@ -45,6 +51,10 @@
    beta3: 0.9523809523809523
    trajectory: False
    print_force: False
+   auto_soft: False
+   alpha_lat: 1.0
+   alpha_at: 1.0
+   mol_soften: False
  geopt:
    method: unknown
    fmaxtol: -1.0
@@ -62,6 +72,22 @@
    print_force: False
    trajectory: False
    nhist: 10
+   dt_min: 1.0
+   dt_max: 80.0
+   strfact: 100.0
+   hesslat: 1.0
+   hessat: 1.0
+   geoext: False
+   qbfgsndim: 1
+   qbfgstri: 0.5
+   qbfgstrmin: 1.E-3
+   qbfgstrmax: 0.5
+   qbfgsw1: 0.01
+   qbfgsw2: 0.5
+   maxrise: 1.E-6
+   sqnmcutoff: 1.E-4
+   sqnmsteep: 1.0
+   sqnmtrustr: 0.1
  geopt_prec:
    method: unknown
    fmaxtol: -1.0
@@ -79,6 +105,9 @@
    print_force: False
    trajectory: False
    nhist: 10
+   dt_min: 1.0
+   dt_max: 80.0
+   strfact: 100.0
  saddle_1s_opt:
    method: unknown
    fmaxtol: -1.0
@@ -96,6 +125,9 @@
    print_force: False
    trajectory: False
    nhist: 10
+   dt_min: 1.0
+   dt_max: 80.0
+   strfact: 100.0
  saddle_1s:
    list_random_displace: None
    dimsep: -1.0
@@ -104,13 +136,30 @@
    potential: unknown
    cal_charge: False
    potential_sec: unknown
+   boundary: 1
    ann_boundcheck: none
    component_ff: no
    sockinet: 0
    sockport: 0
    sockhost: unknown
+   ipiinet: 0
+   ipiport: 3141
+   ipihost: mh-driver
+   ipiecutwf: [1.0,1.0]
+   sockinet: 0
+   sockport: 3141
+   sockhost: mh-driver
+   sockecutwf: [1.0,1.0]
    drift: False
    add_repulsive: True
+   voids: False
+   core_rep: False
+   usewfgeo: False
+   usewfsoft: False
+   usewfmd: False
+   auto_kpt: True
+   kptmesh: [1,1,1]
+   kptden: [0.04,0.06]
    ewald:
      hx: -1.0
      hy: -1.0
@@ -136,6 +185,18 @@
      dielec_const1: 1.0
      dielec_const2: 1.0
      cal_polar: False
+   confine:
+     confinement: False
+     nconfine: 0
+     cartred: C
+     dim: 1
+     exp: 4
+     prefac: 0.01
+     cut: 1.0
+     av: 2
+     eq: 0
+     nat: 0
+     atoms: all
  ann:
    subtask: unknown
    optimizer: unknown
@@ -162,7 +223,7 @@
    save_symfunc_force: False
    weight_hardness: 0.001
  dynamics:
-  nmd: 0
+  nmd: 300
   nfreq: 0
   dt: -1.0
   temp: 0.0
@@ -170,6 +231,18 @@
   md_method: unknown
   print_force: False
   restart: False
+  algo: 1
+  integrator: 3
+  presscomp: 0.0
+  cellmass: 1.0
+  auto_mdmin: False
+  mdmin_init: 2
+  mdmin_min: 2
+  mdmin_max: 2
+  auto_mddt: False
+  dt_init: 20.0
+  nit_per_min: 25
+  encon: False
  bader:
    method: unknown
    filename: total_density.cube
@@ -203,3 +276,22 @@
    gaussian_width: -1.0
    boundcond: unknown
    posinp: unknown
+ fingerprint:
+   method: OGANOV
+   rcut: 15.0
+   dbin: 0.05
+   sigma: 0.02
+   nl: 6
+   power: 3
+   gaussfac1: 1.0
+   gaussfac2: 1.5
+   atnmax: 10000
+   natx: 75
+   orbital: S
+   nexcut: 3
+   principleev: 6
+   molecules: 1
+   expa: 4
+   molsphere: 50
+   widthcut: 1.0
+   widthover: 1.0

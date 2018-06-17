@@ -39,6 +39,7 @@ subroutine cube_read(filename,atoms,poisson)
     write(*,'(2a)') 'reading ',trim(filename)
     do iat=1,atoms%nat
         read(1358,*) iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
+        atoms%zat(iat) = iatom
         call iatom_to_sat(iatom,atoms%sat(iat))
         !if(iatom==1) atoms%sat(iat)='H'
         !if(iatom==6) atoms%sat(iat)='C'

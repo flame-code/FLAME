@@ -167,9 +167,6 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     poisson%hgrid(1,1)=atoms%cellvec(1,1)/(ngpx-1)
     poisson%hgrid(2,2)=atoms%cellvec(2,2)/(ngpy-1)
     poisson%hgrid(3,3)=atoms%cellvec(3,3)/(ngpz-1)
-    poisson%hx=poisson%hgrid(1,1)
-    poisson%hy=poisson%hgrid(2,2)
-    poisson%hz=poisson%hgrid(3,3)
     nbgpx=int(poisson_rough%rgcut/poisson%hgrid(1,1))+2
     nbgpy=int(poisson_rough%rgcut/poisson%hgrid(2,2))+2
     nbgpz=int(poisson_rough%rgcut/poisson%hgrid(3,3))+2
@@ -185,7 +182,9 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
     !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
-    write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
+    write(*,'(a,3f20.10)') 'hxx,hyx,hzx ',poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
+    write(*,'(a,3f20.10)') 'hxy,hyy,hzy ',poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
+    write(*,'(a,3f20.10)') 'hxz,hyz,hzz ',poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
     endif
     !---------------------------------------------------------------------------
     ind=index(poisson%task_finit,'alloc_rho')
@@ -275,6 +274,9 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
     write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
+    write(*,'(a,3f20.10)') 'hxx,hyx,hzx ',poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
+    write(*,'(a,3f20.10)') 'hxy,hyy,hzy ',poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
+    write(*,'(a,3f20.10)') 'hxz,hyz,hzz ',poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
     endif
     poisson%lda=ngpx+2
     !---------------------------------------------------------------------------

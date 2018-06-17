@@ -76,7 +76,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     character(len=1):: geocode
     integer:: n01, n02, n03, itype_scf, iproc=0, nproc=1
     integer:: nxyz(3), ndims(3)
-    real(kind=8):: hgrids(3)
+    real(kind=8):: hgrids(3), hx, hy, hz
     real(kind=8):: cv1(3), cv2(3), cv3(3), ang_bc, ang_ac, ang_ab
     real(kind=8):: alpha_bc,beta_ac, gamma_ab ,pi=4.d0*atan(1.d0)
     type(dictionary), pointer :: dict_input
@@ -103,15 +103,15 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     n02=poisson%ngpy !nxyz(2)
     n03=poisson%ngpz !nxyz(3)
     !Step size
-    !poisson%hx=atoms%cellvec(1,1)/real(n01,kind=8)
-    !poisson%hy=atoms%cellvec(2,2)/real(n02,kind=8)
-    !poisson%hz=atoms%cellvec(3,3)/real(n03,kind=8)
-    write(*,'(a,3f15.10)') 'hx,hy,hz ',poisson%hx,poisson%hy,poisson%hz
     !order of the scaling functions chosen
     itype_scf=16
     !calculate the kernel in parallel for each processor
     ndims=(/n01,n02,n03/)
-    hgrids=(/poisson%hx,poisson%hy,poisson%hz/)
+    hx=sqrt(sum(poisson%hgrid(1:3,1)**2))
+    hy=sqrt(sum(poisson%hgrid(1:3,2)**2))
+    hz=sqrt(sum(poisson%hgrid(1:3,3)**2))
+    write(*,'(a,3f20.10)') 'norm: hx,hy,hz ',hx,hy,hz
+    hgrids=(/hx,hy,hz/)
     cv1(1:3)=atoms%cellvec(1:3,1)
     cv2(1:3)=atoms%cellvec(1:3,2)
     cv3(1:3)=atoms%cellvec(1:3,3)
@@ -221,12 +221,6 @@ subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
     poisson%ngpz=max(16,ndim(3))
     !write(*,*) ndim(:)
     !stop
-    poisson%hx=sqrt(sum(atoms%cellvec(1:3,1)**2))/real(poisson%ngpx,8)
-    poisson%hy=sqrt(sum(atoms%cellvec(1:3,2)**2))/real(poisson%ngpy,8)
-    poisson%hz=sqrt(sum(atoms%cellvec(1:3,3)**2))/real(poisson%ngpz,8)
-    !poisson%hx=cell(1)/real(poisson%ngpx,8)
-    !poisson%hy=cell(2)/real(poisson%ngpy,8)
-    !poisson%hz=cell(3)/real(poisson%ngpz,8)
 #else
     stop 'ERROR: FLAME is not linked with Poisson solvers in BigDFT.'
 #endif

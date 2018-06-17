@@ -2385,6 +2385,18 @@ subroutine iatom_to_sat(iatom,sat)
         sat='He'
     else if(iatom==12) then
         sat='Mg'
+    else if(iatom==3) then
+        sat='Li'
+    else if(iatom==4) then
+        sat='Be'
+    else if(iatom==5) then
+        sat='B'
+    else if(iatom==9) then
+        sat='F'
+    else if(iatom==10) then
+        sat='Ne'
+    else if(iatom==14) then
+        sat='Si'
     else
         write(*,*) 'ERROR: no symbol stored for atomic number=',iatom
         stop

@@ -152,21 +152,21 @@ call system_clock(count_rate=clock_rate) !Find the time rate
 call system_clock(count_max=clock_max)   !Find the time max
 
 
-!Define the boundary condition: 1: periodic, 2:free, 3:surface/slab
-  parini%bc=1
-
-!Verbosity
-  parini%verb=1
+!!  !Define the boundary condition: 1: periodic, 2:free, 3:surface/slab
+!!    parini%bc=1
+!!  
+!!  !Verbosity
+!!    parini%verb=1
 
 !Define current directory
   folder=""
 
-!Initialize auto logicals to false, otherwise it will read the params file and reset alpha_lat, alpha_at, mdmin_max, etc
-  parini%auto_soft=.false.
-  parini%auto_mdmin=.false.
-  parini%auto_dtion_md=.false.
-  parini%alpha_at=-1.d10
-  parini%alpha_lat=-1.d10 
+!!  !Initialize auto logicals to false, otherwise it will read the params file and reset alpha_lat, alpha_at, mdmin_max, etc
+!!    parini%auto_soft=.false.
+!!    parini%auto_mdmin=.false.
+!!    parini%auto_dtion_md=.false.
+!!    !parini%alpha_at=-1.d10
+!!    !parini%alpha_lat=-1.d10 
 
 !Initialize old kpt in history
   ka1=0;kb1=0;kc1=0;max_kpt=.false.;reuse_kpt=.false.
@@ -182,7 +182,7 @@ call system_clock(count_max=clock_max)   !Find the time max
 !vasp
 !siesta
 !dftb
-  parini%geopt_ext=.false.
+!!    parini%geopt_ext=.false.
 
 
 !Unset fixed cell variables
@@ -206,7 +206,12 @@ call system_clock(count_max=clock_max)   !Find the time max
 !  call read_params()
 !Echo the parameters
 !  call params_echo()
-  call params_read(parini)
+    !write(*,*) parini%params_new
+    if(parini%params_new) then
+        call params_read(parini)
+    else
+        call params_read_for_yaml(parini)
+    endif
   parres=parini
 !  call params_echo()
 
