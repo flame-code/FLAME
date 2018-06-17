@@ -38,8 +38,7 @@ subroutine cube_read(filename,atoms,poisson)
     atoms%cellvec(3,3)=poisson%ngpz*poisson%hgrid(3,3)
     write(*,'(2a)') 'reading ',trim(filename)
     do iat=1,atoms%nat
-        read(1358,*) iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
-        atoms%zat(iat) = iatom
+        read(1358,*) iatom,atoms%zat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
         call iatom_to_sat(iatom,atoms%sat(iat))
         !if(iatom==1) atoms%sat(iat)='H'
         !if(iatom==6) atoms%sat(iat)='C'
@@ -137,7 +136,7 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
         !if(trim(atoms%sat(iat))=='N') iatom=7
         !if(trim(atoms%sat(iat))=='Cu') iatom=29
         call sat_to_iatom(atoms%sat(iat),iatom)
-        write(1358,'(i5,f13.5,3f13.6)') iatom,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
+        write(1358,'(i5,f13.5,3f13.6)') iatom,atoms%zat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
     enddo
     item=0
     do igpx=1,poisson%ngpx

@@ -1,26 +1,20 @@
 #*****************************************************************************************
 def get_atomic_symbol(iatom):
-    if iatom==1:
-        sat='H'
-    elif iatom==2:
-        sat='He'
-    elif iatom==6:
-        sat='C'
-    elif iatom==7:
-        sat='N'
-    elif iatom==8:
-        sat='O'
-    elif iatom==11:
-        sat='Na'
-    elif iatom==17:
-        sat='Cl'
-    elif iatom==22:
-        sat='Ti'
-    elif iatom==29:
-        sat='Cu'
-    else:
+    elemens=['H','He','Li','Be','B','C','N','O','F','Ne','Na',
+          'Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti',
+          'V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As',
+          'Se','Br','Kr','Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru',
+          'Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe','Cs',
+          'Ba','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy',
+          'Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re','Os','Ir',
+          'Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn','Fr','Ra',
+          'Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es',
+          'Fm','Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt']
+    if iatom<1 or iatom>109:
         print "ERROR: unknown atomic number in get_atomic_symbol %5d" % iatom
-    return sat
+        exit()
+    else:
+        return elemens[iatom-1]
 #*****************************************************************************************
 def get_atomic_number(sat):
     if sat=='H':
