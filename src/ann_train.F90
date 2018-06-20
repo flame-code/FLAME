@@ -645,6 +645,9 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             call write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
         elseif(trim(parini%symfunc)=='read') then
             call read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_rad)
+            deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
         !elseif(trim(parini%symfunc)=='do_not_save') then
         !    call f_free(symfunc_arr%symfunc(iconf)%y0d)
         !    call f_free(symfunc_arr%symfunc(iconf)%y0dr)
@@ -778,8 +781,8 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
                     enddo
                 enddo
             enddo
-        else
-            call f_free(symfunc_arr%symfunc(iconf)%y0d)
+        !else
+        !    call f_free(symfunc_arr%symfunc(iconf)%y0d)
         endif
     endif bondbased
     end associate
