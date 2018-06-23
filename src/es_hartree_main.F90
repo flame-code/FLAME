@@ -364,7 +364,7 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad,"qgrad")
                 call qgrad_gto_sym_ortho(parini,atoms,poisson,poisson%gw,poisson%qgrad)
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
@@ -403,7 +403,7 @@ subroutine get_hartree_force(parini,poisson,atoms)
             endif
         case('p3d')
             if(parini%cell_ortho) then
-                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad,"force")
                 call force_gto_sym_ortho(parini,atoms,poisson,poisson%gw)
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
@@ -469,7 +469,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     call f_release_routine()
 end subroutine get_hartree
 !*****************************************************************************************
-subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
+subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -488,6 +488,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     real(8):: c, charge, epot, ext_pot , efield, charge0
     real(8):: qv, qv_pp
     real(8),allocatable :: pots_layer(:,:,:,:)
+    character(5)::flag
     pi=4.d0*atan(1.d0)        
     if(trim(parini%psolver)/='p3d') then
         write(*,*) 'ERROR: currently external electric field is supposed to be'            
@@ -595,7 +596,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         do iat=1,atoms%nat
             dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
         enddo
-        write(*,*)"dipole  =  " , dipole
+        !write(*,*)"dipole  =  " , dipole
         beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
         dv=vu-vl
         c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
@@ -606,6 +607,25 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
         !ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
 
+        if (flag=="force") then
+            write(*,*)"dipole ,beta =  " , dipole,beta
+                open(unit=55, file="pots.txt" ,status='unknown',position='append')
+                   do igpy=1,min(10,poisson%ngpy)
+                   do igpx=1,min(10,poisson%ngpx)
+                   do igpz=poisson%npl,poisson%npu
+                       !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
+                       !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+                       write(55,'(4es20.8)')  (igpz-1-nbgpz)*poisson%hz, poisson%pots(igpx,igpy,igpz),&
+                                    (vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)*poisson%hz+vl,&
+                                    (2*beta+vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)&
+                                    *poisson%hz-beta+vl
+
+                   enddo 
+                       write(55,*)   
+                   enddo 
+                   enddo 
+                close(55)
+        endif
 
         !do iat=1,atoms%nat
         !    g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)

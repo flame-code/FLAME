@@ -9,8 +9,10 @@ subroutine init_psolver_p3d(poisson)
     !local variables
     integer:: iz
     call f_routine(id='init_psolver_p3d')
-    poisson%plan_f=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_f')
-    poisson%plan_b=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_b')
+    !poisson%plan_f=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_f')
+    !poisson%plan_b=f_malloc((/1.to.poisson%ngpz/),id='poisson%plan_b')
+    allocate(poisson%plan_f(1:poisson%ngpz))
+    allocate(poisson%plan_b(1:poisson%ngpz))
     do iz=1,poisson%ngpz
         call dfftw_plan_dft_r2c_2d(poisson%plan_f(iz),poisson%ngpx, &
             poisson%ngpy,poisson%rho(1,1,iz),poisson%pot(1,1,iz),fftw_estimate)

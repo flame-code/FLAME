@@ -34,15 +34,29 @@ for atoms in atoms_all:
     for iat in range(int(atoms_all[nconf].nat)):
         if (test<1) :
             break
-        for jat in range(iat+1,int(atoms_all[nconf].nat)):
-            ttx=atoms.rat[iat][0]-atoms.rat[jat][0]
-            tty=atoms.rat[iat][1]-atoms.rat[jat][1]
-            ttz=atoms.rat[iat][2]-atoms.rat[jat][2]
-            distance=math.sqrt(ttx*ttx+tty*tty+ttz*ttz)
-            if distance<dmin:
-                print "too close atoms: iconf,iat,jat,distance:  " ,nconf+1,iat+1,jat+1,distance
-                test=0
-                break
+        if atoms_all[nconf].boundcond=='free':
+            for jat in range(iat+1,int(atoms_all[nconf].nat)):
+                ttx=atoms.rat[iat][0]-atoms.rat[jat][0]
+                tty=atoms.rat[iat][1]-atoms.rat[jat][1]
+                ttz=atoms.rat[iat][2]-atoms.rat[jat][2]
+                distance=math.sqrt(ttx*ttx+tty*tty+ttz*ttz)
+                if distance<dmin:
+                    print "too close atoms: iconf,iat,jat,distance:  " ,nconf+1,iat+1,jat+1,distance
+                    test=0
+                    break
+        if atoms_all[nconf].boundcond=='bulk':
+            for n1 in range(-1,2):
+                for n2 in range(-1,2):
+                    for n3 in range(-1,2):
+                        for jat in range(iat+1,int(atoms_all[nconf].nat)):
+                            ttx=atoms.rat[iat][0]-(atoms.rat[jat][0]+n1*atoms.cellvec[0][0]+n2*atoms.cellvec[1][0]+n3*atoms.cellvec[2][0])
+                            tty=atoms.rat[iat][1]-(atoms.rat[jat][1]+n2*atoms.cellvec[1][1]+n3*atoms.cellvec[2][1])
+                            ttz=atoms.rat[iat][2]-(atoms.rat[jat][2]+n3*atoms.cellvec[2][2])
+                            distance=math.sqrt(ttx*ttx+tty*tty+ttz*ttz)
+                            if distance<dmin:
+                                print "too close atoms: iconf,iat,jat,distance:  " ,nconf+1,iat+1,jat+1,distance,n1,n2,n3
+                                test=0
+                                break
 
     if atoms_all[nconf].boundcond=='free':
         for iat in range(int(atoms_all[nconf].nat)):

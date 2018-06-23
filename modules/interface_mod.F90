@@ -1939,6 +1939,7 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
+    real(8):: qgrad(atoms%nat)
 end subroutine get_hartree_grad_rho
 subroutine get_hartree_force(parini,poisson,atoms)
     use mod_parini, only: typ_parini
@@ -1958,7 +1959,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
 end subroutine get_hartree
-subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
+subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1966,6 +1967,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: ehartree, g(atoms%nat)
+    character(5)::flag
 end subroutine apply_external_field
 subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     use mod_parini, only: typ_parini
