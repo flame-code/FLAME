@@ -22,20 +22,14 @@
        type(c_ptr) :: c_pos, c_fext, c_ids
        double precision, pointer :: fext(:,:), pos(:,:)
        integer, intent(in) :: ids(nlocal)
-       !real(C_double) :: virial(6)
+       real(C_double) :: virial(6)
        real (C_double) :: etot
-       real(C_double), pointer :: ts_lmp
-       double precision :: stress(3,3), ts_dftb
        integer :: natom , i, iat
-       !real (C_double), parameter :: econv = 627.4947284155114 ! converts from Ha to
-       !double precision, parameter :: fconv = 1185.793095983065 ! converts from Ha/bohr to
-       !double precision, parameter :: autoatm = 2.9037166638E8
        double precision lx, ly, lz
        real (C_double), pointer :: boxxlo, boxxhi
        real (C_double), pointer :: boxylo, boxyhi
        real (C_double), pointer :: boxzlo, boxzhi
        real (C_double), pointer :: boxxy, boxxz, boxyz
-       !double precision, parameter :: nktv2p = 68568.4149999999935972
        double precision :: volume
        type (C_ptr) :: Cptr
        type (C_ptr), pointer, dimension(:) :: Catom
@@ -60,56 +54,33 @@
        ly = boxyhi - boxylo
        lz = boxzhi - boxzlo
        volume = lx*ly*lz
-       !open (unit = 10, status = 'replace', action = 'write', file='lammps.gen')
-       !write(10,*)nlocal,"S"
-       !write(10,*) "C"
-       !do i = 1, nlocal
-       !  write(10,'(2I,3F15.6)')i,1,pos(:,ids(i))
-       !enddo
-       !write(10,*)"0.0 0.0 0.0"
-       !write(10,*)lx,0,0
-       !write(10,*)0,ly,0
-       !write(10,*)0,0,lz
-       !close(10)
-       !call system("./dftb+ > dftb.out")
-       !open (unit = 10, status = 'old', file = 'results.out')
-       !read(10,*)etot
-       !read(10,*)ts_dftb
-       !do i = 1, 3
-       !  read(10,*)stress(i,:)
-       !enddo
-       !stress (:,:) = stress(:,:)*autoatm
-       !virial(1) = stress(1,1)/(nktv2p/volume)
-       !virial(2) = stress(2,2)/(nktv2p/volume)
-       !virial(3) = stress(3,3)/(nktv2p/volume)
-       !virial(4) = stress(1,2)/(nktv2p/volume)
-       !virial(5) = stress(1,3)/(nktv2p/volume)
-       !virial(6) = stress(2,3)/(nktv2p/volume)
-       !etot = etot*econv
-       !call lammps_set_external_vector(lmp,1,ts_dftb*econv)
        !call LJ(pos,fext,nlocal,etot)
        if(atoms%nat/=nlocal) stop 'ERROR: atoms%nat/=nlocal'
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,1),boxxhi
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,2),boxxy
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(2,2),boxyhi
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(1,3),boxxz
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(2,3),boxyz
-       write(*,'(a,6es24.15)') 'CELLVEC ',atoms%cellvec(3,3),boxzhi
-       !stop 'STOPPED AT CELLVEC'
-       if(abs(atoms%cellvec(1,1)-boxxhi)>1.d-15*boxxhi) stop 'ERROR: inconsistency in boxxhi'
-       if(abs(atoms%cellvec(1,2)-boxxy )>1.d-12       ) stop 'ERROR: inconsistency in boxxy '
-       if(abs(atoms%cellvec(2,2)-boxyhi)>1.d-15*boxyhi) stop 'ERROR: inconsistency in boxyhi'
-       if(abs(atoms%cellvec(1,3)-boxxz )>1.d-12       ) stop 'ERROR: inconsistency in boxxz '
-       if(abs(atoms%cellvec(2,3)-boxyz )>1.d-12       ) stop 'ERROR: inconsistency in boxyz '
-       if(abs(atoms%cellvec(3,3)-boxzhi)>1.d-15*boxzhi) stop 'ERROR: inconsistency in boxzhi'
+       !back origin of box to (0,0,0)
+       !atoms%cellvec(1,1)= boxxhi-boxxlo   !ax
+       !atoms%cellvec(2,1)=-boxylo          !ay
+       !atoms%cellvec(3,1)=-boxzlo          !az
+       !atoms%cellvec(1,2)=-boxxlo          !bx
+       !atoms%cellvec(2,2)= boxyhi-boxylo   !by
+       !atoms%cellvec(3,2)=-boxzlo          !bz
+       !atoms%cellvec(1,3)=-boxxlo          !cx
+       !atoms%cellvec(2,3)=-boxylo          !cy
+       !atoms%cellvec(3,3)= boxzhi-boxzlo   !cz
+       !do iat=1,atoms%nat
+       !    atoms%rat(1,iat)=pos(1,iat)-boxxlo
+       !    atoms%rat(2,iat)=pos(2,iat)-boxylo
+       !    atoms%rat(3,iat)=pos(3,iat)-boxzlo
+       !enddo
+       atoms%cellvec(1,1) = boxxhi
+       atoms%cellvec(1,2) = boxxy 
+       atoms%cellvec(2,2) = boxyhi
+       atoms%cellvec(1,3) = boxxz 
+       atoms%cellvec(2,3) = boxyz 
+       atoms%cellvec(3,3) = boxzhi
        do iat=1,atoms%nat
            atoms%rat(1,iat)=pos(1,iat)
            atoms%rat(2,iat)=pos(2,iat)
            atoms%rat(3,iat)=pos(3,iat)
-           !write(31,*) pos(1,iat),pos(2,iat),pos(3,iat)
-           !atoms%rat(1,iat)=pos(0,iat-1)
-           !atoms%rat(2,iat)=pos(1,iat-1)
-           !atoms%rat(3,iat)=pos(2,iat-1)
        enddo
        call cal_potential_forces(parini_lammps,atoms)
        etot=atoms%epot
@@ -117,20 +88,21 @@
            fext(1,iat)=atoms%fat(1,iat)
            fext(2,iat)=atoms%fat(2,iat)
            fext(3,iat)=atoms%fat(3,iat)
-           !write(41,'(3f20.14)') fext(1,iat),fext(2,iat),fext(3,iat)
-           !fext(0,iat-1)=atoms%fat(1,iat)
-           !fext(1,iat-1)=atoms%fat(2,iat)
-           !fext(2,iat-1)=atoms%fat(3,iat)
        enddo
-       !do i = 1, nlocal
-         !read(10,*)fext(:,ids(i))
-       !  fext(:,ids(i)) = fext(:,ids(i))*fconv
-       !enddo
-       !close(10)
+       !The unit of stress in FLAME is Ha/bohr^3
+       ! 1Ha/bohr^3 = 29421.02648438959 GPa 
+       ! virial_LAMMPS = -stress_FLAME*convert_to_Pascals
+       virial(1) = atoms%stress(1,1)*-1.d0*29421.02648438959d9
+       virial(2) = atoms%stress(2,2)*-1.d0*29421.02648438959d9
+       virial(3) = atoms%stress(3,3)*-1.d0*29421.02648438959d9
+       virial(4) = atoms%stress(1,2)*-1.d0*29421.02648438959d9
+       virial(5) = atoms%stress(1,3)*-1.d0*29421.02648438959d9
+       virial(6) = atoms%stress(2,3)*-1.d0*29421.02648438959d9
+       !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,1),atoms%stress(2,1),atoms%stress(3,1)
+       !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,2),atoms%stress(2,2),atoms%stress(3,2)
+       !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,3),atoms%stress(2,3),atoms%stress(3,3)
        call lammps_set_user_energy (lmp, etot)
-       !call lammps_set_user_virial (lmp, virial)
-
+       call lammps_set_user_virial (lmp, virial)
        end  subroutine
 #endif
     end module callback
-
