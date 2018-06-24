@@ -56,7 +56,7 @@ makedirs:
 	mkdir -p docs/_build
 	mkdir -p docs/_static
 	mkdir -p modules/ofiles
-	mkdir -p src/ofiles
+	mkdir -p src/ofiles/lenosky_tb
 
 #MKL = '--with-ext-linalg=-L$(MKLPATH) -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm'
 MKL = '--with-ext-linalg=-L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_blacs_openmpi_lp64 -lpthread -lm -ldl'

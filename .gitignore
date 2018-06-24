@@ -4,6 +4,9 @@
 a.out
 *~
 *.pyc
+*.pyo
+yaml/win32/*
+yaml/doc/*
 machines/thismachine.make
 src/input_variables_definition.c
 flame

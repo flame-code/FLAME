@@ -11646,7 +11646,7 @@ fi
 
 
 # Define Makefiles.
-ac_config_files="$ac_config_files yaml-0.1.pc include/Makefile src/Makefile Makefile tests/Makefile"
+ac_config_files="$ac_config_files yaml-0.1.pc include/Makefile src/Makefile Makefile tests/Makefile win32/Makefile"
 
 
 # Generate the "configure" script.
