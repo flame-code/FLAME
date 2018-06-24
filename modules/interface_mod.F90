@@ -476,8 +476,26 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
 end subroutine cal_potential_cent2
+subroutine cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    real(8), intent(inout):: epot_es
+end subroutine cal_pot_with_pairsum
+subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine cal_cent2_pairsum_force
 subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
-    use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
