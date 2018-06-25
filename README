@@ -1,0 +1,6 @@
+# FLAME
+Fully loaded atomistic modeling environment
+
+INSTALLATION:
+First, you need to set the file machines/thismachine.make which is not versioned. There is an example in
+the directory machines for intel compiler, intel2013_openmpi.make.
