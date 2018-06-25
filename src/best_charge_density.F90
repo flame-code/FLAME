@@ -440,9 +440,9 @@ subroutine best_charge_density_pot(parini)
     integer, allocatable :: t_num(:),zat_temp(:)
     real(8):: rmse_old , total_charge, start, finish, total_time, mean, std, var, hgx, hgy, hgz, total_force_cent, total_force_dft, force_err
     real(8):: rclx, rcrx, rcly, rcry, rclz, rcrz, rminx, rmaxx, rminy, rmaxy, rminz, rmaxz, pi,pot_err , temp1 
-    real(8):: ehartree, rmse, cent_ener, dft_ener, w, exc, volinv_integration, sd_s, volinv,err, a_max,qnrm, dft_q,gtot, peak, c1, d1, err_max, temp, at_zat
+    real(8):: ehartree, rmse, cent_ener, dft_ener, w, exc, volinv_integration, SD_S_Q, SD_S_R, SD_S_A, volinv,err, a_max,qnrm, dft_q,gtot, peak, c1, d1, err_max, temp, at_zat
     real(8),allocatable::  dft_rho(:,:,:), weight(:,:,:),weighted_rho(:,:,:), dft_pot(:,:,:), cent_pot(:,:,:)
-    real(8),allocatable:: A(:,:), Q(:,:), At(:,:), Qt(:,:), qpar(:,:), apar(:,:), qpar_t(:,:), rat_t(:,:)
+    real(8),allocatable:: A(:,:), Q(:,:), At(:,:), Qt(:,:), qpar(:,:), apar(:,:),rpar(:,:), qpar_t(:,:), rat_t(:,:),rat(:,:)
     real(8),allocatable:: dft_fat(:,:), cent_fat(:,:), gwit(:), at_rat(:,:),cent_rho(:,:,:),cv_temp(:,:), atom_charge(:),atom_charge_type(:)
     real(8) :: B1, B2, h , Be1 , Be2, Beta1, Beta2
     integer :: iter2, iter3
@@ -457,7 +457,7 @@ subroutine best_charge_density_pot(parini)
     open(unit=1377,file='params.txt')
 !//////////////////////////////////////READING INPUT PARAMETERS///////////////////////////
     call cube_read('electronic_density.cube',atoms,poisson_dft)
-    allocate(at_rat(3,atoms%nat),cv_temp(3,3),zat_temp(1:atoms%nat))
+    allocate(at_rat(3,atoms%nat),rat(3,atoms%nat),cv_temp(3,3),zat_temp(1:atoms%nat))
     zat_temp=atoms%zat
     at_rat = atoms%rat ! because acf_read corrupts atoms%rat
     hgx = poisson_dft%hgrid(1,1)
@@ -467,6 +467,9 @@ subroutine best_charge_density_pot(parini)
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     atoms%zat=zat_temp
     atoms%rat = at_rat
+    rat(1,:) = atoms%rat(1,:)
+    rat(2,:) = atoms%rat(2,:)
+    rat(3,:) = atoms%rat(3,:)
     atoms%cellvec=cv_temp
     read(1377,*) !Number of STO-NG's N
     read(1377,*) lcn
@@ -485,7 +488,7 @@ subroutine best_charge_density_pot(parini)
         end do
     end do
     read(1377,*) !Steepest descent step
-    read(1377,*) sd_s
+    read(1377,*) SD_S_Q, SD_S_A, SD_S_R
     read(1377,*) !Minimum error to be reached
     read(1377,*) err
     read(1377,*) !Number of Electrons for Single Atoms
@@ -495,7 +498,7 @@ subroutine best_charge_density_pot(parini)
 !/////////////////////////////////E.O. READING INPUT PARAMETERS///////////////////////////
     associate(nx=>poisson_dft%ngpx,ny=>poisson_dft%ngpy,nz=>poisson_dft%ngpz)
     associate(cv1=>cv_temp(1,1),cv2=>cv_temp(2,2),cv3=>cv_temp(3,3))
-    associate(x_at=>atoms%rat(1,n_at),y_at=>atoms%rat(2,n_at),z_at=>atoms%rat(3,n_at))
+    associate(x_at=>rat(1,n_at),y_at=>rat(2,n_at),z_at=>rat(3,n_at))
     write(2,*) "Number of grids : " , nx , ny , nz
     write(2,'(a,3es14.6)') 'Grid spacing : ' , hgx , hgy , hgz
     cel_vol = nx*ny*nz
@@ -504,7 +507,7 @@ subroutine best_charge_density_pot(parini)
     ss=0
     do j = 1 , atoms_type
         ss = ss + t_num(j-1)
-        rat_t(1:3,j) = atoms%rat(1:3,ss+1)
+        rat_t(1:3,j) = rat(1:3,ss+1)
     end do
     volinv = (cv1*cv2*cv3)*cel_vol_inv
     poisson_dft%rho=-1.d0*poisson_dft%rho
@@ -523,7 +526,7 @@ subroutine best_charge_density_pot(parini)
     write(2,*)'Total charge density of DFT : ',dft_q
 !//////////////////////////////////////////CENT PART//////////////////////////////////////
     allocate(cent_pot(nx,ny,nz))
-    allocate(qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat),qpar_t(1:lcn,1:atoms_type))
+    allocate(qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat),rpar(1:3,1:atoms%nat),qpar_t(1:lcn,1:atoms_type))
     allocate(cent_fat(1:3,1:atoms%nat))
     do i = 1 , lcn
         ss=0
@@ -571,9 +574,9 @@ subroutine best_charge_density_pot(parini)
     weight = 1.d0
     call set_rcov(atoms)
     if(rclx>=0 .and. rcrx>=0 .and. rcly>=0 .and. rcry>=0 .and. rclz>=0 .and. rcrz>=0) then
-        !write(2,*) 'Cutoff : 2 times of covalent radius is considered for cutoff'
+        write(2,*) 'Cutoff : 2 times of covalent radius is considered for cutoff'
         do i = 1 , atoms%nat
-        write(2,*) 'rcov :',atoms%rcov(i), atoms%rat(:,i)
+        write(2,*) 'rcov of ',atoms%sat(i),'is :',atoms%rcov(i)
             do iz = 1 , nz
                 dz = (hgz*(iz-1)-atoms%rat(3,i))**2
                 do iy = 1 , ny
@@ -619,8 +622,8 @@ subroutine best_charge_density_pot(parini)
         a_max = maxval(at)
         poisson_cent%rgcut=6.d0*a_max !ask Dr. Ghasemi if it's OK !
 !-------------------------------------calculating potential and its derivatives--------------------
-        call put_pot_sym_rzx(atoms%rat,hgx,hgy,hgz,atoms%nat,Q(1:lcn,1:atoms%nat),A(1:lcn,1:atoms%nat),ng(1:3),lcn,.true. &
-            ,weight(1:nx,1:ny,1:nz),poisson_dft%pot(1:nx,1:ny,1:nz),cent_pot(1:nx,1:ny,1:nz),qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat))
+        call put_pot_sym_rzx(rat,hgx,hgy,hgz,atoms%nat,Q(1:lcn,1:atoms%nat),A(1:lcn,1:atoms%nat),ng(1:3),lcn,.true.,&
+            weight(1:nx,1:ny,1:nz),poisson_dft%pot(1:nx,1:ny,1:nz),cent_pot(1:nx,1:ny,1:nz),qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat),rpar(1:3,1:atoms%nat))
         gtot = sum(qpar)
         qpar = qpar - (gtot+0.d0)/(atoms%nat*lcn+0.d0)
         do i = 1 , atoms%nat
@@ -631,10 +634,29 @@ subroutine best_charge_density_pot(parini)
                 write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, APAR : ',atoms%sat(i),i,iter,l,apar(l,i)
             end do
         end do
-        Q = Q - SD_S*qpar
-        A = A - SD_S*apar
+        Q = Q - SD_S_Q*qpar
+        A = A - SD_S_A*apar
+        rat(1:3,1:atoms%nat) = rat(1:3,1:atoms%nat) - SD_S_R*rpar(1:3,1:atoms%nat)
+        write(2,*) ' Total charge of cell: ',sum(Q)
+        do i = 1 , lcn
+            ss = 0
+            do j = 1 , atoms_type
+                ss = ss + t_num(j-1)
+                qt(i,j)=q(i,1+ss)
+                at(i,j)=a(i,1+ss)
+            end do
+        end do
+        do i = 1 , lcn
+            do j = 1 , atoms_type
+                a(i,1+t_num(j-1):t_num(j-1)+t_num(j))=at(i,j)
+            end do
+        end do
         do i = 1 , atoms%nat
             total_charge = 0.d0
+            write(2,'(a39,a3,i3,i5,3es16.7)') 'Atom, Atom_Num, ITER, RAT_[X,Y,Z] : ',atoms%sat(i),i,iter,rat(1,i),rat(2,i),rat(3,i)
+            write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_X, dx :',atoms%sat(i),i,iter,rpar(1,i),atoms%rat(1,i)-rat(1,i)
+            write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Y, dy :',atoms%sat(i),i,iter,rpar(2,i),atoms%rat(2,i)-rat(2,i)
+            write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Z, dz :',atoms%sat(i),i,iter,rpar(3,i),atoms%rat(3,i)-rat(3,i)
             do l = 1 , lcn
                 total_charge = total_charge+Q(l,i)
                 write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, Q : ',atoms%sat(i),i,iter,l,Q(l,i)
@@ -644,15 +666,6 @@ subroutine best_charge_density_pot(parini)
                 write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, A : ',atoms%sat(i),i,iter,l,A(l,i)
             end do
             write(2,*) '---------------------------'
-        end do
-        write(2,*) ' Total charge of cell: ',sum(Q)
-        do i = 1 , lcn
-            ss = 0
-            do j = 1 , atoms_type
-                ss = ss + t_num(j-1)
-                qt(i,j)=q(i,1+ss)
-                at(i,j)=a(i,1+ss)
-            end do
         end do
         err_max = 0.d0
         pot_err = 0.d0
@@ -720,12 +733,12 @@ subroutine best_charge_density_pot(parini)
     poisson_dft%cv  = atoms%cellvec
     poisson_cent%task_finit='alloc_rho'
     call init_hartree(parini,atoms,poisson_cent,Q(1,1:atoms%nat))
-    poisson_cent%rcart(1,1:atoms%nat) = atoms%rat(1,1:atoms%nat) - nbgx*hgx     
-    poisson_cent%rcart(2,1:atoms%nat) = atoms%rat(2,1:atoms%nat) - nbgy*hgy     
-    poisson_cent%rcart(3,1:atoms%nat) = atoms%rat(3,1:atoms%nat) - nbgz*hgz     
-    poisson_dft%rcart(1,1:atoms%nat) = atoms%rat(1,1:atoms%nat)  - nbgx*hgx     
-    poisson_dft%rcart(2,1:atoms%nat) = atoms%rat(2,1:atoms%nat)  - nbgy*hgy     
-    poisson_dft%rcart(3,1:atoms%nat) = atoms%rat(3,1:atoms%nat)  - nbgz*hgz     
+    poisson_cent%rcart(1,1:atoms%nat) = rat(1,1:atoms%nat) - nbgx*hgx     
+    poisson_cent%rcart(2,1:atoms%nat) = rat(2,1:atoms%nat) - nbgy*hgy     
+    poisson_cent%rcart(3,1:atoms%nat) = rat(3,1:atoms%nat) - nbgz*hgz     
+    poisson_dft%rcart(1,1:atoms%nat) = rat(1,1:atoms%nat)  - nbgx*hgx     
+    poisson_dft%rcart(2,1:atoms%nat) = rat(2,1:atoms%nat)  - nbgy*hgy     
+    poisson_dft%rcart(3,1:atoms%nat) = rat(3,1:atoms%nat)  - nbgz*hgz     
     poisson_dft%rho = dft_rho
     poisson_cent%reset_rho = .True.
     poisson_cent%q = Q(1,1:atoms%nat)
@@ -751,48 +764,49 @@ subroutine best_charge_density_pot(parini)
     write(2,'(a,4es14.6)') 'CENT energy , DFT energy , Energy difference , Err Percentage : ' , cent_ener , dft_ener , cent_ener-dft_ener,(cent_ener-dft_ener)*100.d0/dft_ener
     poisson_dft%q=atoms%zat
     poisson_cent%q=atoms%zat
-    if (atoms_type > 2) stop('atoms type is more than 2')
-    read(1377,*) !"h , B1 , B2 , iter2 , iter3"
-    read(1377,*) h , Be1 , Be2 , iter2 , iter3
-    B1 = Be1 
-    B2 = Be2
-    temp1 = 100.d0
-    do j = 1 , iter2
-        B1 = B1 + h
-        B2 = Be2 - h
-        do k = 1 , iter3
-            B2 = B2 + h 
-            atoms%fat = 0.d0
-            poisson_dft%gw_ewald(1:t_num(1)) = B1
-            poisson_dft%gw_ewald(t_num(1)+1:t_num(1)+t_num(2)) = B2
-            call get_hartree_force(parini,poisson_dft,atoms)
-            dft_fat = atoms%fat
-            if (total_force_dft < temp1) then
-                temp1 = total_force_dft
-                Beta1 = B1
-                Beta2 = B2
-            endif
-            write(77,'(5es14.6)') B1 , B2 , abs(sum(dft_fat(1,:))), abs(sum(dft_fat(2,:))), abs(sum(dft_fat(3,:)))
-        enddo
-    enddo
-   B1 = Be1
-   B2 = Be2
-    do j = 1 , iter2
-        B1 = B1 + h
-        B2 = Be2 - h
-        do k = 1 , iter3
-            B2 = B2 + h 
-            atoms%fat = 0.d0
-            poisson_cent%gw_ewald(1:t_num(1)) = B1
-            poisson_cent%gw_ewald(t_num(1)+1:t_num(1)+t_num(2)) = B2
-            call get_hartree_force(parini,poisson_cent,atoms)
-            cent_fat = atoms%fat
-            write(88,'(5es14.6)') B1 , B2 , abs(sum(cent_fat(1,:))), abs(sum(cent_fat(2,:))), abs(sum(cent_fat(3,:)))
-        enddo
-    enddo
-    atoms%fat = 0.d0
-    poisson_dft%gw_ewald(1:t_num(1)) = Beta1
-    poisson_dft%gw_ewald(t_num(1)+1:t_num(1)+t_num(2)) = Beta2
+    !if (atoms_type > 2) stop('atoms type is more than 2')
+    !read(1377,*) !"h , B1 , B2 , iter2 , iter3"
+    !read(1377,*) h , Be1 , Be2 , iter2 , iter3
+    !B1 = Be1 
+    !B2 = Be2
+    !temp1 = 100.d0
+    !do j = 1 , iter2
+    !    B1 = B1 + h
+    !    B2 = Be2 - h
+    !    do k = 1 , iter3
+    !        B2 = B2 + h 
+    !        atoms%fat = 0.d0
+    !        poisson_dft%gw_ewald(1:t_num(1)) = B1
+    !        poisson_dft%gw_ewald(t_num(1)+1:t_num(1)+t_num(2)) = B2
+    !        call get_hartree_force(parini,poisson_dft,atoms)
+    !        dft_fat = atoms%fat
+    !        if (total_force_dft < temp1) then
+    !            temp1 = total_force_dft
+    !            Beta1 = B1
+    !            Beta2 = B2
+    !        endif
+    !        write(77,'(5es14.6)') B1 , B2 , abs(sum(dft_fat(1,:))), abs(sum(dft_fat(2,:))), abs(sum(dft_fat(3,:)))
+    !    enddo
+    !enddo
+    !B1 = Be1
+    !B2 = Be2
+    !do j = 1 , iter2
+    !    B1 = B1 + h
+    !    B2 = Be2 - h
+    !    do k = 1 , iter3
+    !        B2 = B2 + h 
+    !        atoms%fat = 0.d0
+    !        poisson_cent%gw_ewald(1:t_num(1)) = B1
+    !        poisson_cent%gw_ewald(t_num(1)+1:t_num(1)+t_num(2)) = B2
+    !        call get_hartree_force(parini,poisson_cent,atoms)
+    !        cent_fat = atoms%fat
+    !        write(88,'(5es14.6)') B1 , B2 , abs(sum(cent_fat(1,:))), abs(sum(cent_fat(2,:))), abs(sum(cent_fat(3,:)))
+    !    enddo
+    !enddo
+    !atoms%fat = 0.d0
+    !poisson_dft%gw_ewald(1:t_num(1)) = Beta1
+    !poisson_dft%gw_ewald(t_num(1)+1:t_num(1)+t_num(2)) = Beta2
+    poisson_dft%gw_ewald = 0.5d0
     poisson_cent%gw_ewald=poisson_dft%gw_ewald
     call get_hartree_force(parini,poisson_dft,atoms)
     dft_fat = atoms%fat
@@ -813,17 +827,20 @@ subroutine best_charge_density_pot(parini)
     call fini_hartree(parini,atoms,poisson_dft)
 end subroutine best_charge_density_pot
 !*****************************************************************************************
-subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar)
+subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar,rpar)
     implicit none
     logical :: reset
     integer , intent(in):: nat, ng(1:3), lcn
     real(8) , intent(in):: rat(1:3,1:nat), hgx, hgy, hgz, qat(1:lcn,1:nat),gw(1:lcn,1:nat),weight(1:ng(1),1:ng(2),1:ng(3))
     real(8) , intent(in):: dft_pot(1:ng(1),1:ng(2),1:ng(3))
-    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat)
+    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat), rpar(1:3,1:nat)
     ! local variables 
     integer :: l, iat, iz, iy, ix, nx, ny, nz
     real(8) :: asqinv, pisqrtinv, pi, r, dx, dy, dz
     real(8) :: cent_pot_a_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_q_par(1:ng(1),1:ng(2),1:ng(3))
+    real(8) :: cent_pot_x_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_y_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_z_par(1:ng(1),1:ng(2),1:ng(3))
+    !-- FDM params ----
+!    real(8) :: cent_pot_t(1:ng(1),1:ng(2),1:ng(3)), ttx(1:nat), tty(1:nat), ttz(1:nat) , h
     nx=ng(1); ny=ng(2); nz=ng(3)
     pi = 4.d0*atan(1.d0)
     if (reset) cent_pot = 0.d0
@@ -848,31 +865,127 @@ subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_po
                 enddo ! of izi
             enddo ! of iat
         enddo !of lcn
+        rpar(1:3,1:nat) = 0.d0
         do l = 1,lcn
             do iat=1,nat
                 asqinv=1.d0/(gw(l,iat)**2)
                 pisqrtinv = 1.d0/sqrt(pi)
                 do iz=1,nz
-                    dz=(iz-1)*hgz - rat(3,iat)
+                    dz= rat(3,iat)- (iz-1)*hgz
                     do iy=1,ny
-                        dy=(iy-1)*hgy - rat(2,iat)
+                        dy=rat(2,iat) - (iy-1)*hgy 
                         do ix=1,nx
-                            dx=(ix-1)*hgx - rat(1,iat)
+                            dx=rat(1,iat)-(ix-1)*hgx
                             r=sqrt(dx**2+dy**2+dz**2)
                             if (r <= 1.d-6) then 
                                 cent_pot_a_par(ix,iy,iz) =-2.d0*qat(l,iat)*asqinv*pisqrtinv
                                 cent_pot_q_par(ix,iy,iz) =2.d0*pisqrtinv/gw(l,iat)
+                                cent_pot_x_par(ix,iy,iz) = 0.d0
+                                cent_pot_y_par(ix,iy,iz) = 0.d0
+                                cent_pot_z_par(ix,iy,iz) = 0.d0
                             else
                                 cent_pot_a_par(ix,iy,iz)=-2.d0*qat(l,iat)*exp(-r**2*asqinv)*asqinv*pisqrtinv
                                 cent_pot_q_par(ix,iy,iz) =erf(r/gw(l,iat))/r
+                                cent_pot_x_par(ix,iy,iz) =(2*qat(l,iat)*dx)/(gw(l,iat)*exp((r/gw(l,iat))**2)*Sqrt(Pi)*(r**2))&
+                                    -(qat(l,iat)*dx*Erf(Sqrt(r**2)/gw(l,iat)))/(r**2)**1.5
+                                cent_pot_y_par(ix,iy,iz) =(2*qat(l,iat)*dy)/(gw(l,iat)*exp((r/gw(l,iat))**2)*Sqrt(Pi)*(r**2))&
+                                    -(qat(l,iat)*dy*Erf(Sqrt(r**2)/gw(l,iat)))/(r**2)**1.5
+                                cent_pot_z_par(ix,iy,iz) =(2*qat(l,iat)*dz)/(gw(l,iat)*exp((r/gw(l,iat))**2)*Sqrt(Pi)*(r**2))&
+                                    -(qat(l,iat)*dz*Erf(Sqrt(r**2)/gw(l,iat)))/(r**2)**1.5
+                                
                             endif
                         enddo ! of ix
                     enddo ! of iy
-                enddo ! of izi
+                enddo ! of iz
                 qpar(l,iat)=2.d0*hgx*hgy*hgz*sum(cent_pot_q_par*weight*(cent_pot-dft_pot))
                 apar(l,iat)=2.d0*hgx*hgy*hgz*sum(cent_pot_a_par*weight*(cent_pot-dft_pot))
+                rpar(1,iat)=rpar(1,iat)+2.d0*hgx*hgy*hgz*sum(cent_pot_x_par*weight*(cent_pot-dft_pot))
+                rpar(2,iat)=rpar(2,iat)+2.d0*hgx*hgy*hgz*sum(cent_pot_y_par*weight*(cent_pot-dft_pot))
+                rpar(3,iat)=rpar(3,iat)+2.d0*hgx*hgy*hgz*sum(cent_pot_z_par*weight*(cent_pot-dft_pot))
             enddo ! of iat
         enddo !of lcn
+!        !----------------------------FDM PART------------------------------
+!        h = 1.d-7
+!        do iat = 1 , nat
+!            write(99,'(a14,i3,3es16.7)') 'rpar_ana : ', iat, rpar(:,iat) 
+!        end do
+!        cent_pot_t = 0.d0
+!        do iat=1,nat
+!            pisqrtinv = 1.d0/sqrt(pi)
+!            do iz=1,nz
+!                dz=(iz-1)*hgz - rat(3,iat)
+!                do iy=1,ny
+!                    dy=(iy-1)*hgy - rat(2,iat)
+!                    do ix=1,nx
+!                        dx=(ix-1)*hgx - rat(1,iat)
+!                        r=sqrt(dx**2+dy**2+dz**2)
+!                        if (r <= 1.d-6) then 
+!                            cent_pot_t(ix,iy,iz)=cent_pot_t(ix,iy,iz)+2.d0*qat(1,iat)*pisqrtinv/gw(1,iat)
+!                        else
+!                            cent_pot_t(ix,iy,iz)=cent_pot_t(ix,iy,iz)+qat(1,iat)*erf(r/gw(1,iat))/r
+!                        endif
+!                    enddo ! of ix
+!                enddo ! of iy
+!            enddo ! of izi
+!            ttx(iat)=hgx*hgy*hgz*sum((weight*cent_pot_t-dft_pot)**2)
+!            tty(iat)=hgx*hgy*hgz*sum((weight*cent_pot_t-dft_pot)**2)
+!            ttz(iat)=hgx*hgy*hgz*sum((weight*cent_pot_t-dft_pot)**2)
+!        end do
+!        do iat = 1, nat
+!            do iz=1,nz
+!                dz=rat(3,iat)- (iz-1)*hgz
+!                do iy=1,ny
+!                    dy=rat(2,iat)- (iy-1)*hgy
+!                    do ix=1,nx
+!                        dx=rat(1,iat) - (ix-1)*hgx + h
+!                        r=sqrt(dx**2+dy**2+dz**2)
+!                        if (r <= 1.d-6) then 
+!                            cent_pot_t(ix,iy,iz)=2.d0*qat(1,iat)*pisqrtinv/gw(1,iat)
+!                        else
+!                            cent_pot_t(ix,iy,iz)=qat(1,iat)*erf(r/gw(1,iat))/r
+!                        endif
+!                    enddo ! of ix
+!                enddo ! of iy
+!            enddo ! of izi
+!            ttx(iat)=(-1.d0*ttx(iat)+(hgx*hgy*hgz*sum((weight*cent_pot_t-dft_pot)**2)))/h
+!            do iz=1,nz
+!                dz=rat(3,iat)- (iz-1)*hgz
+!                do iy=1,ny
+!                    dy=rat(2,iat) - (iy-1)*hgy + h
+!                    do ix=1,nx
+!                        dx=rat(1,iat)- (ix-1)*hgx
+!                        r=sqrt(dx**2+dy**2+dz**2)
+!                        if (r <= 1.d-6) then 
+!                            cent_pot_t(ix,iy,iz)=2.d0*qat(1,iat)*pisqrtinv/gw(1,iat)
+!                        else
+!                            cent_pot_t(ix,iy,iz)=qat(1,iat)*erf(r/gw(1,iat))/r
+!                        endif
+!                    enddo ! of ix
+!                enddo ! of iy
+!            enddo ! of izi
+!            tty(iat)=(-1.d0*tty(iat)+(hgx*hgy*hgz*sum((weight*cent_pot_t-dft_pot)**2)))/h
+!            do iz=1,nz
+!                dz=rat(3,iat)- (iz-1)*hgz +h
+!                do iy=1,ny
+!                    dy=rat(2,iat)- (iy-1)*hgy
+!                    do ix=1,nx
+!                        dx=rat(1,iat) - (ix-1)*hgx
+!                        r=sqrt(dx**2+dy**2+dz**2)
+!                        if (r <= 1.d-6) then 
+!                            cent_pot_t(ix,iy,iz)=2.d0*qat(1,iat)*pisqrtinv/gw(1,iat)
+!                        else
+!                            cent_pot_t(ix,iy,iz)=qat(1,iat)*erf(r/gw(1,iat))/r
+!                        endif
+!                    enddo ! of ix
+!                enddo ! of iy
+!            enddo ! of izi
+!            ttz(iat)=(-1.d0*ttz(iat)+(hgx*hgy*hgz*sum((weight*cent_pot_t-dft_pot)**2)))/h
+!        enddo ! of iat
+!        do iat = 1 , nat
+!            write(99,'(a14,i3,3es16.7)') 'rpar_fdm : ', iat, ttx(iat),tty(iat),ttz(iat) 
+!            write(99,'(a65)') '-----------------------------------------------------------------' 
+!        end do
+!        !---------------------------- E.O. FDM PART---------------------------------------------------------------------------
 end subroutine put_pot_sym_rzx
 !*****************************************************************************************
 subroutine stdval_rzx(f,f_len,mean,std,var)
