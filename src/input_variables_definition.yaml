@@ -222,6 +222,7 @@
    fit_hoppint: False
    save_symfunc_force: False
    weight_hardness: 0.001
+   save_symfunc_behnam: False
  dynamics:
   nmd: 300
   nfreq: 0

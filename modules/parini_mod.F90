@@ -96,6 +96,7 @@ module mod_parini
         logical:: print_energy=.false. 
         logical:: fit_hoppint=.false. 
         logical:: save_symfunc_force_ann=.false.
+        logical:: save_symfunc_behnam=.false.
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.

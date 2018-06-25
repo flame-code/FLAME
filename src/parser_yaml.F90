@@ -327,6 +327,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%fit_hoppint=parini%subdict//"fit_hoppint"
     parini%save_symfunc_force_ann=parini%subdict//"save_symfunc_force"
     parini%weight_hardness=parini%subdict//"weight_hardness"
+    parini%save_symfunc_behnam=parini%subdict//"save_symfunc_behnam"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)

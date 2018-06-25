@@ -26,6 +26,9 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
         symfunc%linked_lists%triplex=.true.
         call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
     endif
+    if(parini%save_symfunc_behnam) then
+        ann_arr%cal_force=.false.
+    endif
     i=1
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
@@ -38,6 +41,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
         !endif
         if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
             call cal_architecture(ann_arr%ann(i),epoti)
+            if(ann_arr%cal_force) then
             do ib=symfunc%linked_lists%prime_bound(iat),symfunc%linked_lists%prime_bound(iat+1)-1
                 jat=symfunc%linked_lists%bound_rad(2,ib)
                 ttx=0.d0 ; tty=0.d0 ; ttz=0.d0
@@ -74,6 +78,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
                 atoms%stress(2,3)=atoms%stress(2,3)-syz
                 atoms%stress(3,3)=atoms%stress(3,3)-szz
             enddo !over jat
+            endif
         elseif(trim(ann_arr%event)=='train') then
             call cal_architecture_der(ann_arr%ann(i),epoti)
             call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ekf%gs(1,iat))
@@ -93,9 +98,11 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     deallocate(symfunc%linked_lists%bound_rad)
     deallocate(symfunc%linked_lists%bound_ang)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
+        if(ann_arr%cal_force) then
         call f_free(symfunc%y)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)
+        endif
     endif
     !call ann_deallocate(ann_arr)
     call f_release_routine()

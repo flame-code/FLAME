@@ -432,7 +432,11 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     ilarge2=0
     ilarge3=0
     ann_arr%event='evalu'
-    ann_arr%compute_symfunc=.true.
+    if(parini%save_symfunc_behnam) then
+        ann_arr%compute_symfunc=.false.
+    else
+        ann_arr%compute_symfunc=.true.
+    endif
     if(parini%print_energy) then
         write(filename,'(a12,i3.3)') 'detailed_err',iter
         iunit=f_get_free_unit(10**5)
@@ -457,7 +461,11 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     configuration: do iconf=1,atoms_arr%nconf
         if(.not. atoms_arr%conf_inc(iconf)) cycle
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
-        call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+        if(parini%save_symfunc_behnam) then
+            call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
+        else
+            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+        endif
         !if(ifile==11) then
         !    write(71,'(2es24.15)') (atoms%rat(1,2)-atoms%rat(1,1))*0.529177210d0,atoms%epot*27.211385d0
         !endif

@@ -75,6 +75,7 @@ module mod_ann
         integer:: n=-1
         integer:: natmax=1000
         logical:: compute_symfunc=.true.
+        logical:: cal_force=.true.
         character(30):: event='unknown'
         character(50):: approach='unknown'
         real(8):: rcut=-1.d0
