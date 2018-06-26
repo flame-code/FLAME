@@ -46,4 +46,4 @@ for i in range(0,3):
             if d_test>=dkpt:
                 kpt[i]=kpt[i]+j
                 d_test=float(g[i]/(kpt[i]*2.0*pi))
-print "%6d %6d %6d" % (kpt[0],kpt[1],kpt[2]) 
+print "%s %6d %6d %6d" % (filename,kpt[0],kpt[1],kpt[2]) 

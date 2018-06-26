@@ -135,7 +135,7 @@ subroutine md_nve(parini,atoms)
             write(21,'(i9,5es25.15)') imd,atoms%epot,atoms%ekin,etot,etot-etotold,temp
             write(22,'(i9,6es20.10)') imd,rcm(1:3),vcm(1:3)
         endif
-        #if(mod(imd,10)==0) then
+        !if(mod(imd,10)==0) then
         if(mod(imd,nfreq)==0) then
             file_info%file_position='append'
             write(23,'(i9,5es25.15)') imd,atoms%epot,atoms%ekin,etot,etot-etotold,temp

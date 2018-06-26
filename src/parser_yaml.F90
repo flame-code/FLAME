@@ -70,6 +70,7 @@ end subroutine yaml_get_parameters
 subroutine yaml_get_main_parameters(parini)
     use mod_parini, only: typ_parini
     use dictionaries
+    use defs_basis, only: HaBohr3_GPA
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -82,11 +83,14 @@ subroutine yaml_get_main_parameters(parini)
     parini%iverbose=parini%subdict//"verbosity"
     parini%iseed=parini%subdict//"seed"
     parini%nrun_lammps=parini%subdict//"nrun_lammps"
+    parini%verb=parini%subdict//"verbose"
+    parini%params_new=parini%subdict//"params_new"
     parini%nat=parini%subdict//"nat"
     if(trim(parini%task)=='minhocao' .and. parini%nat<1) then
         write(*,*) 'ERROR: task=minhocao, did you set nat in input file?'
     endif
     parini%target_pressure_gpa=parini%subdict//"pressure"
+    parini%target_pressure_habohr=parini%target_pressure_gpa/HaBohr3_GPA
     parini%ntypat_global=parini%ntypat
     if(trim(parini%task)=='minhocao') then
     if(.not.allocated(parini%znucl)) then ; allocate(parini%znucl(parini%ntypat_global),source=0.d0) ; endif
@@ -94,9 +98,12 @@ subroutine yaml_get_main_parameters(parini)
     if(.not.allocated(parini%rcov)  ) then ; allocate(parini%rcov(parini%ntypat_global),source=0.d0) ; endif
     if(.not.allocated(parini%char_type)) then; allocate(parini%char_type(parini%ntypat_global),source="  ") ; endif
     if(.not.allocated(parini%typat_global)) then; allocate(parini%typat_global(parini%nat),source=0) ; endif
+    if(.not.allocated(parini%fixat)) then; allocate(parini%fixat(parini%nat),source=.false.) ; endif
+    if(.not.allocated(parini%fragarr)) then; allocate(parini%fragarr(parini%nat),source=0) ; endif
+    parini%str_typat_global=parini%subdict//"typat"
+    read(parini%str_typat_global,*) parini%typat_global(:)
     !Get the correct atomic masses and atomic character
     do itype=1,parini%ntypat_global
-        parini%typat_global(itype)=parini%ltypat(itype)
         parini%char_type(itype)=trim(parini%stypat(itype))
         call symbol2znucl(parini%amu(itype),parini%rcov(itype),parini%char_type(itype),parini%znucl(itype))
     enddo
@@ -139,12 +146,12 @@ subroutine yaml_get_minhopp_parameters(parini)
     parini%trajectory_minhopp=parini%subdict//"trajectory"
     parini%print_force_minhopp=parini%subdict//"print_force"
     parini%auto_soft=parini%subdict//"auto_soft"
-    if(.not.parini%auto_soft) then
+    !if(.not.parini%auto_soft) then
         parini%alpha_lat=parini%subdict//"alpha_lat"
-    endif
-    if(.not.parini%auto_soft) then
+    !endif
+    !if(.not.parini%auto_soft) then
         parini%alpha_at=parini%subdict//"alpha_at"
-    endif
+    !endif
     parini%mol_soften=parini%subdict//"mol_soften"
 end subroutine yaml_get_minhopp_parameters
 !*****************************************************************************************
@@ -193,6 +200,10 @@ subroutine yaml_get_geopt_parameters(parini)
     parini%qbfgs_trust_radius_max=parini%subdict//"qbfgstrmax"
     parini%qbfgs_w_1=parini%subdict//"qbfgsw1"
     parini%qbfgs_w_2=parini%subdict//"qbfgsw2"
+    parini%paropt_geopt%maxrise=parini%subdict//"maxrise"
+    parini%paropt_geopt%cutoffRatio=parini%subdict//"sqnmcutoff"
+    parini%paropt_geopt%steepthresh=parini%subdict//"sqnmsteep"
+    parini%paropt_geopt%trustr=parini%subdict//"sqnmtrustr"
     call yaml_get_opt_parameters(parini,parini%paropt_geopt)
 end subroutine yaml_get_geopt_parameters
 !*****************************************************************************************
@@ -245,6 +256,15 @@ subroutine yaml_get_potential_parameters(parini)
     parini%inisock_inet=parini%subdict//"sockinet"
     parini%inisock_port=parini%subdict//"sockport"
     parini%inisock_host=parini%subdict//"sockhost"
+    parini%sock_inet=parini%subdict//"ipiinet"
+    parini%sock_port=parini%subdict//"ipiport"
+    parini%sock_host=parini%subdict//"ipihost"
+    parini%sock_ecutwf=parini%subdict//"ipiecutwf"
+    parini%sock_inet=parini%subdict//"sockinet"
+    parini%sock_port=parini%subdict//"sockport"
+    parini%sock_host=parini%subdict//"sockhost"
+    parini%sock_ecutwf=parini%subdict//"sockecutwf"
+    parini%bc=parini%subdict//"boundary"
     parini%drift_potential=parini%subdict//"drift"
     parini%add_repulsive=parini%subdict//"add_repulsive"
     parini%voids=parini%subdict//"voids"
@@ -307,6 +327,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%fit_hoppint=parini%subdict//"fit_hoppint"
     parini%save_symfunc_force_ann=parini%subdict//"save_symfunc_force"
     parini%weight_hardness=parini%subdict//"weight_hardness"
+    parini%save_symfunc_behnam=parini%subdict//"save_symfunc_behnam"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)
@@ -339,9 +360,9 @@ subroutine yaml_get_dynamics_parameters(parini)
         parini%mdmin=max(mdmin_in,parini%mdmin_min)
     endif
     parini%auto_dtion_md=parini%subdict//"auto_mddt"
-    if(.not.parini%auto_dtion_md) then
+    !if(.not.parini%auto_dtion_md) then
         parini%dtion_md=parini%subdict//"dt_init"
-    endif
+    !endif
     parini%nit_per_min=parini%subdict//"nit_per_min"
     parini%energy_conservation=parini%subdict//"encon"
 end subroutine yaml_get_dynamics_parameters
@@ -463,8 +484,104 @@ subroutine yaml_get_confinement_parameters(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
+    integer:: iat, iconfine, nat_max, llen
+    character(20):: strkey
+    character(120):: strmess
+    return !TO_BE_CORRECTED
     if(dict_size(parini%subsubdict)<1) stop 'ERROR: confinement block in flame_in.yaml is empty.'
     parini%nconfine=parini%subsubdict//"nconfine"
+    if(.not.allocated(parini%conf_dim))    then; allocate(parini%conf_dim    (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_av))     then; allocate(parini%conf_av     (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_exp))    then; allocate(parini%conf_exp    (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_prefac)) then; allocate(parini%conf_prefac (parini%nconfine),source=0.d0)         ; endif
+    if(.not.allocated(parini%conf_cut))    then; allocate(parini%conf_cut    (parini%nconfine),source=0.d0)         ; endif
+    if(.not.allocated(parini%conf_eq))     then; allocate(parini%conf_eq     (parini%nconfine),source=0.d0)         ; endif
+    if(.not.allocated(parini%conf_nat))    then; allocate(parini%conf_nat    (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_cartred))then; allocate(parini%conf_cartred(parini%nconfine),source="C")          ; endif
+    parini%use_confine=parini%subsubdict//"confinement"
+    strmess='ERROR: Provide confinement parameters either as a scalar ' &
+        //'or an array of length nconfine: erroneous key= '
+    strkey='cartred'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_cartred=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    strkey='dim'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_dim=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    strkey='exp'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_exp=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    strkey='prefac'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_prefac=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    strkey='cut'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_cut=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    strkey='av'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_av=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    strkey='eq'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_eq=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    strkey='nat'
+    llen=dict_len(parini%subsubdict//strkey)
+    if(llen==0 .or. llen==parini%nconfine) then
+        parini%conf_nat=parini%subsubdict//strkey
+    else
+        write(*,'(a,1x,a)') trim(strmess),trim(strkey)
+        stop
+    endif
+    nat_max=maxval(parini%conf_nat(1:parini%nconfine))
+    if(.not.allocated(parini%conf_list))   then; allocate(parini%conf_list   (nat_max,parini%nconfine),source=0) ; endif
+    if(trim(dict_value(parini%subsubdict//"atoms"))=='all') then
+        !write(*,*) 'AAA ',dict_value(parini%subsubdict//"atoms")
+        do iconfine=1,parini%nconfine
+            do iat=1,parini%conf_nat(iconfine)
+                parini%conf_list(iat,iconfine)=iat
+            enddo
+        enddo
+    else
+        do iconfine=1,parini%nconfine
+            do iat=1,parini%conf_nat(iconfine)
+                parini%conf_list(iat,iconfine)=parini%subsubdict//"atoms"//(iconfine-1)//(iat-1)
+                !write(*,*) parini%conf_list(iat,iconfine)
+            enddo
+        enddo
+    endif
 end subroutine yaml_get_confinement_parameters
 !*****************************************************************************************
 subroutine yaml_get_fingerprint_parameters(parini)

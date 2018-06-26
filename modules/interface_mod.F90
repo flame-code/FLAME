@@ -304,6 +304,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -475,8 +476,26 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
 end subroutine cal_potential_cent2
+subroutine cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    real(8), intent(inout):: epot_es
+end subroutine cal_pot_with_pairsum
+subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine cal_cent2_pairsum_force
 subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
-    use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -1498,6 +1517,10 @@ end subroutine hunt2
 subroutine hpsort(n,ra)
     real*8 ::ra(n)
 end subroutine hpsort
+function flm_index(str1,str2) result(ind)
+    character(*), intent(in):: str1, str2
+    integer:: ind, indp, len_str
+end function flm_index
 ! ./src/best_charge_density.F90 :
 subroutine best_charge_density(parini)
     use mod_parini, only: typ_parini
@@ -1507,9 +1530,28 @@ subroutine best_charge_density_rho(parini)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_cent, typ_ann_arr
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density_rho
+subroutine best_charge_density_pot(parini)
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+end subroutine best_charge_density_pot
+subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar)
+    logical :: reset
+    integer , intent(in):: nat, ng(1:3), lcn
+    real(8) , intent(in):: rat(1:3,1:nat), hgx, hgy, hgz, qat(1:lcn,1:nat),gw(1:lcn,1:nat),weight(1:ng(1),1:ng(2),1:ng(3))
+    real(8) , intent(in):: dft_pot(1:ng(1),1:ng(2),1:ng(3))
+    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat)
+    real(8) :: cent_pot_a_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_q_par(1:ng(1),1:ng(2),1:ng(3))
+end subroutine put_pot_sym_rzx
+subroutine stdval_rzx(f,f_len,mean,std,var)
+    integer, intent(in) :: f_len
+    real(8), intent(in) :: f(f_len)
+    real(8), intent(out) :: mean, std, var
+    real(8) :: g(f_len)
+end subroutine stdval_rzx
 ! ./src/buckingham.F90 :
 subroutine set_buckingham(atoms,tosifumi)
     use mod_atoms, only: typ_atoms
@@ -4425,6 +4467,10 @@ subroutine params_read(parini)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(inout):: parini
 end subroutine params_read
+subroutine params_read_for_yaml(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine params_read_for_yaml
 subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
 use mod_parini, only: typ_parini
 type(typ_parini), intent(inout):: parini

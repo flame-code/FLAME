@@ -2,6 +2,7 @@
 all: run
 
 run:
+	mkdir -p monminhopp
 	cp -f input.minhopp.bak input.minhopp
 	../../../flame >o1
 

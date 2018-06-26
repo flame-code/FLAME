@@ -43,9 +43,12 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         !alpha=20.d-2
         !rf=1.d-10
     else
-        r0=1.d0
-        alpha=5.d-1
-        rf=1.d-8
+        !r0=1.d0
+        !alpha=5.d-1
+        !rf=1.d-8
+        r0=10.d0
+        alpha=100.d-2
+        rf=1.d-10
     endif
     if(parini%fit_hoppint) then
         call fit_hgen(parini,atoms_valid,ann_arr,ekf)

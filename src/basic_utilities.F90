@@ -485,6 +485,39 @@ subroutine hpsort(n,ra)
     enddo
 end subroutine hpsort
 !*****************************************************************************************
+function flm_index(str1,str2) result(ind)
+    implicit none
+    character(*), intent(in):: str1, str2
+    !local variables
+    integer:: ind, indp, len_str
+    character(1000):: str
+    len_str=len(str1)
+    if(len_str>999) then
+        write(*,*) 'ERROR: flm_index works only for string whose lengths'
+        write(*,*) '       are less than 256 character'
+        stop
+    endif
+    str=trim(str1)//','
+    ind=0
+    do
+        indp=index(str,str2)
+        ind=ind+indp
+        if(indp<1) then
+            ind=0
+            return
+        endif
+        str=str(indp:)
+        indp=scan(str,',')-1
+        if(indp<1) then
+            ind=0
+            return
+        endif
+        !write(*,*) 'BBB ',str(1:indp),'   ',trim(str2)
+        if(str(1:indp)==trim(str2)) return
+        str(1:indp+1)=''
+    enddo
+end function flm_index
+!*****************************************************************************************
 !subroutine projtransout(n,v)
 !    implicit none
 !    integer::n,istat,i

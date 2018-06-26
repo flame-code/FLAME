@@ -209,20 +209,29 @@ subroutine set_atomc_types_info(parini)
     do i=1,ntypat
         call sat_to_iatom(stypat(i),iatomnum(i))
     enddo
+    !-------------------------------------------------------
+    !The following commented lines were used in the past
+    !when type of atoms were sorted according to atom number.
+    !do i=1,ntypat
+    !    ind_tmp(1:1)=minloc(iatomnum)
+    !    ind=ind_tmp(1)
+    !    do j=1,i-1
+    !        if(stypat(ind)==parini%stypat(j)) then
+    !            write(*,'(a,2a5)') 'ERROR: repeated types in types of block [main]:', &
+    !                stypat(ind),parini%stypat(j)
+    !            stop
+    !        endif
+    !    enddo
+    !    parini%ltypat(i)=i
+    !    parini%iatomnum(i)=iatomnum(ind)
+    !    parini%stypat(i)=stypat(ind)
+    !    iatomnum(ind)=1000
+    !enddo
+    !-------------------------------------------------------
     do i=1,ntypat
-        ind_tmp(1:1)=minloc(iatomnum)
-        ind=ind_tmp(1)
-        do j=1,i-1
-            if(stypat(ind)==parini%stypat(j)) then
-                write(*,'(a,2a5)') 'ERROR: repeated types in types of block [main]:', &
-                    stypat(ind),parini%stypat(j)
-                stop
-            endif
-        enddo
         parini%ltypat(i)=i
-        parini%iatomnum(i)=iatomnum(ind)
-        parini%stypat(i)=stypat(ind)
-        iatomnum(ind)=1000
+        parini%iatomnum(i)=iatomnum(i)
+        parini%stypat(i)=stypat(i)
     enddo
     do i=1,ntypat
         if(parini%iatomnum(i)==-1) stop 'ERROR: atomic number not set properly.'

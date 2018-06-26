@@ -47,7 +47,7 @@ subroutine solve_poisson(parini)
     poisson_ion%nat=atoms%nat
     poisson_ion%cv=atoms%cellvec
     poisson_ion%bc=atoms%boundcond
-    poisson_ion%q(1:poisson_ion%nat)=atoms%qat(1:atoms%nat)
+    poisson_ion%q(1:poisson_ion%nat)=atoms%zat(1:atoms%nat)
     poisson_ion%gw(1:poisson_ion%nat)=gausswidth(1:atoms%nat)
     poisson_ion%rcart(1:3,1:poisson_ion%nat)=atoms%rat(1:3,1:atoms%nat)
     call put_charge_density(parini,poisson_ion)
@@ -79,7 +79,7 @@ subroutine solve_poisson(parini)
     !-------------------------------------------------------
     t1=0.d0
     do iat=1,atoms%nat
-        t1=t1+atoms%qat(iat)*atoms%rat(3,iat)
+        t1=t1+atoms%zat(iat)*atoms%rat(3,iat)
     enddo
     !t1=t1*(2*pi)/(cell(1)*cell(2))
     write(*,*) 't1=',t1

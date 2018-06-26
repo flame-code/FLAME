@@ -1839,6 +1839,10 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=2.d0
         elseif(trim(atoms%stypat(itypat))=='Al') then
             atoms%qtypat(itypat)=3.d0
+        elseif(trim(atoms%stypat(itypat))=='He') then
+            atoms%qtypat(itypat)=0.d0
+        elseif(trim(atoms%stypat(itypat))=='Mg') then
+            atoms%qtypat(itypat)=2.d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%stypat=',trim(atoms%stypat(itypat))
             stop
@@ -1882,6 +1886,10 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=2.d0
         else if(trim(atoms%sat(iat))=='Al') then
             atoms%qat(iat)=3.d0
+        else if(trim(atoms%sat(iat))=='He') then
+            atoms%qat(iat)=0.d0
+        else if(trim(atoms%sat(iat))=='Mg') then
+            atoms%qat(iat)=2.d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%sat=',trim(atoms%sat(iat))
             stop
@@ -2351,31 +2359,23 @@ subroutine iatom_to_sat(iatom,sat)
     integer, intent(in) :: iatom
     character(*), intent(out) :: sat
     !local variables
-    if(iatom==1) then
-        sat='H'
-    else if(iatom==6) then
-        sat='C'
-    else if(iatom==7) then
-        sat='N'
-    else if(iatom==8) then
-        sat='O'
-    else if(iatom==11) then
-        sat='Na'
-    else if(iatom==17) then
-        sat='Cl'
-    else if(iatom==29) then
-        sat='Cu'
-    else if(iatom==52) then
-        sat='Te'
-    else if(iatom==82) then
-        sat='Pb'
-    else if(iatom==22) then
-        sat='Ti'
-    else if(iatom==38) then
-        sat='Sr'
-    else
+    character(5):: elements(1:109)=(/ &
+      'H','He','Li','Be','B','C','N','O','F','Ne','Na',       &
+      'Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti',    &
+      'V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As',  &
+      'Se','Br','Kr','Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru',  &
+      'Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe','Cs',  &
+      'Ba','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy', &
+      'Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re','Os','Ir',  &
+      'Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn','Fr','Ra', &
+      'Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es',  &
+      'Fm','Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt'      /)
+
+    if(iatom<1 .or. iatom>109) then
         write(*,*) 'ERROR: no symbol stored for atomic number=',iatom
         stop
+    else
+        sat=trim(elements(iatom))
     endif
 end subroutine iatom_to_sat
 !*****************************************************************************************

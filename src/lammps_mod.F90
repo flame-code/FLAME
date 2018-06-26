@@ -92,12 +92,12 @@
        !The unit of stress in FLAME is Ha/bohr^3
        ! 1Ha/bohr^3 = 29421.02648438959 GPa 
        ! virial_LAMMPS = -stress_FLAME*convert_to_Pascals
-       virial(1) = atoms%stress(1,1)*-1.d0*29421.02648438959E+09
-       virial(2) = atoms%stress(2,2)*-1.d0*29421.02648438959E+09
-       virial(3) = atoms%stress(3,3)*-1.d0*29421.02648438959E+09
-       virial(4) = atoms%stress(1,2)*-1.d0*29421.02648438959E+09
-       virial(5) = atoms%stress(1,3)*-1.d0*29421.02648438959E+09
-       virial(6) = atoms%stress(2,3)*-1.d0*29421.02648438959E+09
+       virial(1) = atoms%stress(1,1)*-1.d0*29421.02648438959d9
+       virial(2) = atoms%stress(2,2)*-1.d0*29421.02648438959d9
+       virial(3) = atoms%stress(3,3)*-1.d0*29421.02648438959d9
+       virial(4) = atoms%stress(1,2)*-1.d0*29421.02648438959d9
+       virial(5) = atoms%stress(1,3)*-1.d0*29421.02648438959d9
+       virial(6) = atoms%stress(2,3)*-1.d0*29421.02648438959d9
        !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,1),atoms%stress(2,1),atoms%stress(3,1)
        !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,2),atoms%stress(2,2),atoms%stress(3,2)
        !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,3),atoms%stress(2,3),atoms%stress(3,3)

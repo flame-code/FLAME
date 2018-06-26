@@ -19,6 +19,8 @@ module mod_parini
         integer:: iatomnum(20)=-1
         integer:: nrun_lammps=0
         character(5):: stypat(20)='unknown'
+        logical:: params_new=.false.
+        character(100):: str_typat_global
         !character(50):: stypat_genconf=''
         !-----------------------------------------------------------------------
         !parameters of [minhopp]
@@ -94,6 +96,7 @@ module mod_parini
         logical:: print_energy=.false. 
         logical:: fit_hoppint=.false. 
         logical:: save_symfunc_force_ann=.false.
+        logical:: save_symfunc_behnam=.false.
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.

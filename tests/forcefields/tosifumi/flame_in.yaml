@@ -4,7 +4,7 @@ main:
 
 potential:
     potential: forcefield
-    component_ff: coulomb:tosifumi_old
+    component_ff: coulomb,tosifumi_old
 
 single_point:
     print_force: True

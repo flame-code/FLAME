@@ -43,13 +43,20 @@ DIRS += modules
 DIRS += src
 #DIRS += minhocao
 
-all: build/install/lib/libfutile-1.a $(DIRS) liball.a flame\
+all: makedirs build/install/lib/libfutile-1.a $(DIRS) liball.a flame\
 	vasp_recompute_kpt.x\
 	vasp_recompute_kpt_odd.x vasp_recompute_cell.x expand_poslows.x \
 	convex_hull.x binaries.x ascii2POSCAR.x POSCAR2ascii.x recompute_kpt.x\
 	espresso_restruct.x ternaries.x
 	@echo "POTENTIALS: $(POTENTIALS)"
 	@echo "Pre-processing: $(PRE_PROC)"
+
+makedirs:
+	mkdir -p build
+	mkdir -p docs/_build
+	mkdir -p docs/_static
+	mkdir -p modules/ofiles
+	mkdir -p src/ofiles/lenosky_tb
 
 #MKL = '--with-ext-linalg=-L$(MKLPATH) -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm'
 MKL = '--with-ext-linalg=-L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_blacs_openmpi_lp64 -lpthread -lm -ldl'

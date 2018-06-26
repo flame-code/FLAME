@@ -48,8 +48,10 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     if(parini%iverbose>=2) call cpu_time(time1)
     allocate(gausswidth(atoms%nat))
     gausswidth(:)=1.d0 !TO_BE_CORRECTED
-    cent%poisson%task_finit="alloc_rho:set_ngp"
-    call init_hartree(parini,atoms,cent%poisson,gausswidth)
+    if(trim(parini%psolver)/='pairsum') then
+        cent%poisson%task_finit="alloc_rho:set_ngp"
+        call init_hartree(parini,atoms,cent%poisson,gausswidth)
+    endif
     deallocate(gausswidth)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
@@ -132,7 +134,8 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%fchi_angle=tt3/(tt1*tt2)
         ann_arr%fchi_norm=tt2/max(tt1,1.d-3)
     endif
-    if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
+    !if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
+    if(trim(parini%psolver)/='pairsum') then
         call fini_hartree(parini,atoms,cent%poisson)
     endif
 
@@ -229,7 +232,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         if(parini%iverbose>=2) then
             write(*,'(a,i5,es24.15,3es11.2,4f8.3)') 'cep: ', &
                 istep,atoms%epot,de,gnrm,gnrm2,q1,qtot,alpha_r,alpha_q
-            write(51,'(i5,2f8.3)') istep,cent%rel(1,1)-atoms%rat(1,1),cent%rel(1,2)-atoms%rat(1,2)
+            write(51,'(i5,2f8.3)') istep,cent%rel(3,1)-atoms%rat(3,1),cent%rel(3,2)-atoms%rat(3,2)
         endif
         if(gnrm<parini%rgnrmtol .and. gnrm2<parini%qgnrmtol) then
             write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
@@ -379,14 +382,18 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
     !local variables
     integer:: iat
     real(8):: spring_const, dx, dy, dz
-    cent%poisson%nat=atoms%nat
-    cent%poisson%cv=atoms%cellvec
-    cent%poisson%bc=atoms%boundcond
-    cent%poisson%q(1:cent%poisson%nat)=atoms%zat(1:atoms%nat)
-    cent%poisson%gw(1:cent%poisson%nat)=cent%gwit(1:atoms%nat)
-    cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%rat(1:3,1:atoms%nat)
-    call get_hartree_force(parini,cent%poisson,atoms)
-    call cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
+    if(trim(parini%psolver)/='pairsum') then
+        cent%poisson%nat=atoms%nat
+        cent%poisson%cv=atoms%cellvec
+        cent%poisson%bc=atoms%boundcond
+        cent%poisson%q(1:cent%poisson%nat)=atoms%zat(1:atoms%nat)
+        cent%poisson%gw(1:cent%poisson%nat)=cent%gwit(1:atoms%nat)
+        cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+        call get_hartree_force(parini,cent%poisson,atoms)
+        call cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
+    else
+        call cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
+    endif
     do iat=1,atoms%nat !summation over ions/electrons
         dx=cent%rel(1,iat)-atoms%rat(1,iat)
         dy=cent%rel(2,iat)-atoms%rat(2,iat)
@@ -412,10 +419,10 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     integer:: iat
     real(8):: epot_es, dx, dy, dz
     real(8):: hardness, spring_const
-    if(trim(atoms%boundcond)/='bulk') then
-        write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
-        stop
-    endif
+    !if(trim(atoms%boundcond)/='bulk') then
+    !    write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
+    !    stop
+    !endif
     ann_arr%ener_ref=0.d0
     do iat=1,atoms%nat
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
@@ -437,14 +444,190 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
         cent%rgrad(2,iat)=cent%rgrad(2,iat)+spring_const*dy
         cent%rgrad(3,iat)=cent%rgrad(3,iat)+spring_const*dz
     enddo
-    call cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
+    if(trim(parini%psolver)=='pairsum') then
+        call cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
+    else
+        call cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
+    endif
     atoms%epot=atoms%epot+epot_es
     atoms%epot=atoms%epot+ann_arr%ener_ref !CORRECT_IT
 end subroutine cal_potential_cent2
 !*****************************************************************************************
+!subroutine cal_pot_with_bps       (parini,ann_arr,atoms,cent,epot_es)
+subroutine cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    real(8), intent(inout):: epot_es
+    !local variables
+    integer:: iat, jat, iel, jel
+    real(8):: dx, dy, dz, r !, tt1, tt2, tt3, tt4, tt5, tt6 ,tt7, ttf
+    real(8):: pi, gama
+    real(8):: sqrt_one_over_twopi, tt1, tt2, ttg, ee1, tt3
+    pi=4.d0*atan(1.d0)
+    sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
+    !fat=0.d0
+    !write(*,*) cent%gwi(:)
+    !write(*,*) cent%gwe(:)
+    !stop 'BBB'
+    epot_es=0.d0
+    !-------------------------------------------------------
+    !electronic self-interaction
+    do iat=1,atoms%nat !summation over electrons
+        epot_es=epot_es              +atoms%qat(iat)**2*sqrt_one_over_twopi/cent%gwe(iat)
+        cent%qgrad(iat)=cent%qgrad(iat)+2.d0*atoms%qat(iat)*sqrt_one_over_twopi/cent%gwe(iat)
+    enddo
+    !-------------------------------------------------------
+    !electron-electron interaction
+    do iel=1,atoms%nat !summation over electrons
+        do jel=iel+1,atoms%nat !summation over electrons
+            dx=cent%rel(1,jel)-cent%rel(1,iel)
+            dy=cent%rel(2,jel)-cent%rel(2,iel)
+            dz=cent%rel(3,jel)-cent%rel(3,iel)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            gama=1.d0/sqrt(cent%gwe(iel)**2+cent%gwe(jel)**2)
+            epot_es=epot_es              +atoms%qat(iel)*atoms%qat(jel)*erf(gama*r)/r
+            ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+            tt2=atoms%qat(iel)*atoms%qat(jel)*ee1
+            cent%rgrad(1,iel)=cent%rgrad(1,iel)-tt2*dx
+            cent%rgrad(2,iel)=cent%rgrad(2,iel)-tt2*dy
+            cent%rgrad(3,iel)=cent%rgrad(3,iel)-tt2*dz
+            cent%rgrad(1,jel)=cent%rgrad(1,jel)+tt2*dx
+            cent%rgrad(2,jel)=cent%rgrad(2,jel)+tt2*dy
+            cent%rgrad(3,jel)=cent%rgrad(3,jel)+tt2*dz
+            !write(*,'(a,2i5,4f10.5)') 'EE',iel,jel,tt2,dx,dy,dz
+            !write(*,'(a,2i5,6f10.5)') 'EE',iel,jel,tt2,dx,dy,dz,atoms%qat(1),atoms%qat(2)
+            !write(*,'(a,2i5,2f10.5)') 'EE',iel,jel,cent%rgrad(3,1),cent%rgrad(3,2)
+            cent%qgrad(iel)=cent%qgrad(iel)+atoms%qat(jel)*erf(gama*r)/r
+            cent%qgrad(jel)=cent%qgrad(jel)+atoms%qat(iel)*erf(gama*r)/r
+        enddo
+    enddo
+    !-------------------------------------------------------
+    !nuclei-nuclei interaction
+    do iat=1,atoms%nat !summation over ions
+        do jat=iat+1,atoms%nat !summation over ions
+            dx=atoms%rat(1,jat)-atoms%rat(1,iat)
+            dy=atoms%rat(2,jat)-atoms%rat(2,iat)
+            dz=atoms%rat(3,jat)-atoms%rat(3,iat)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
+            epot_es=epot_es              +atoms%zat(iat)*atoms%zat(jat)*erf(gama*r)/r
+        enddo
+    enddo
+    !-------------------------------------------------------
+    !electron-nuclei interaction
+    do iat=1,atoms%nat !summation over ions
+        do jel=1,atoms%nat !summation over electrons
+            dx=cent%rel(1,jel)-atoms%rat(1,iat)
+            dy=cent%rel(2,jel)-atoms%rat(2,iat)
+            dz=cent%rel(3,jel)-atoms%rat(3,iat)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jel)**2)
+            if(r<0.1d0) then
+                call erf_over_r_taylor(gama*r,tt1,ttg)
+                epot_es=epot_es              +atoms%zat(iat)*atoms%qat(jel)*(tt1*gama)
+                tt2=atoms%zat(iat)*atoms%qat(jel)*gama**3*ttg
+                tt3=atoms%zat(iat)*(tt1*gama)
+            else
+                epot_es=epot_es              +atoms%zat(iat)*atoms%qat(jel)*erf(gama*r)/r
+                ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+                tt2=atoms%zat(iat)*atoms%qat(jel)*ee1
+                tt3=atoms%zat(iat)*erf(gama*r)/r
+            endif
+            cent%qgrad(jel)=cent%qgrad(jel)+tt3
+            cent%rgrad(1,jel)=cent%rgrad(1,jel)+tt2*dx
+            cent%rgrad(2,jel)=cent%rgrad(2,jel)+tt2*dy
+            cent%rgrad(3,jel)=cent%rgrad(3,jel)+tt2*dz
+            !write(*,'(a,2i5,4f10.5)') 'EN',iat,jel,tt2,dx,dy,dz
+            !write(*,'(a,2i5,2f10.5)') 'EN',iat,jel,cent%rgrad(3,1),cent%rgrad(3,2)
+        enddo
+    enddo
+    !-------------------------------------------------------
+    !epot=epot+ener_ref
+end subroutine cal_pot_with_pairsum
+!*****************************************************************************************
+subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    !local variables
+    integer:: iat, jat, iel, jel
+    real(8):: dx, dy, dz, r !, tt1, tt2, tt3, tt4, tt5, tt6 ,tt7, ttf
+    real(8):: pi, gama
+    real(8):: sqrt_one_over_twopi, tt1, tt2, ttg, ee1, tt3
+    pi=4.d0*atan(1.d0)
+    sqrt_one_over_twopi=1.d0/sqrt(2.d0*pi)
+    !fat=0.d0
+    !write(*,*) cent%gwi(:)
+    !write(*,*) cent%gwe(:)
+    !stop 'BBB'
+    !-------------------------------------------------------
+    !nuclei-nuclei interaction
+    do iat=1,atoms%nat !summation over ions
+        do jat=iat+1,atoms%nat !summation over ions
+            dx=atoms%rat(1,jat)-atoms%rat(1,iat)
+            dy=atoms%rat(2,jat)-atoms%rat(2,iat)
+            dz=atoms%rat(3,jat)-atoms%rat(3,iat)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            !gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
+            !epot_es=epot_es              +atoms%zat(iat)*atoms%zat(jat)*erf(gama*r)/r
+            gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
+            ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+            tt2=atoms%zat(iat)*atoms%zat(jat)*ee1
+            !---------------------------------------------------
+            atoms%fat(1,jat)=atoms%fat(1,jat)-tt2*dx
+            atoms%fat(2,jat)=atoms%fat(2,jat)-tt2*dy
+            atoms%fat(3,jat)=atoms%fat(3,jat)-tt2*dz
+            atoms%fat(1,iat)=atoms%fat(1,iat)+tt2*dx
+            atoms%fat(2,iat)=atoms%fat(2,iat)+tt2*dy
+            atoms%fat(3,iat)=atoms%fat(3,iat)+tt2*dz
+        enddo
+    enddo
+    !-------------------------------------------------------
+    !electron-nuclei interaction
+    do iat=1,atoms%nat !summation over ions
+        do jel=1,atoms%nat !summation over electrons
+            dx=cent%rel(1,jel)-atoms%rat(1,iat)
+            dy=cent%rel(2,jel)-atoms%rat(2,iat)
+            dz=cent%rel(3,jel)-atoms%rat(3,iat)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            if((iat==jel) .and. r>0.3d0) then
+                write(*,'(a,es14.5,i6,1x,a)') 'ERROR: Center of electron far from atom: r= ', &
+                    r,iat,trim(atoms%sat(iat))
+                stop
+            endif
+            gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jel)**2)
+            if(r<0.1d0) then
+                call erf_over_r_taylor(gama*r,tt1,ttg)
+                tt2=atoms%zat(iat)*atoms%qat(jel)*gama**3*ttg
+            else
+                ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
+                tt2=atoms%zat(iat)*atoms%qat(jel)*ee1
+            endif
+            !-------------------------------------------
+            atoms%fat(1,iat)=atoms%fat(1,iat)+tt2*dx
+            atoms%fat(2,iat)=atoms%fat(2,iat)+tt2*dy
+            atoms%fat(3,iat)=atoms%fat(3,iat)+tt2*dz
+        enddo
+    enddo
+    !-------------------------------------------------------
+    !epot=epot+ener_ref
+end subroutine cal_cent2_pairsum_force
+!*****************************************************************************************
 subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     use mod_interface
-    use mod_ann, only: typ_ann_arr
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
