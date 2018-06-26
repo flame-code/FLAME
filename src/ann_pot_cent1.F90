@@ -636,12 +636,12 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         write(*,'(a,es14.5)') 'cep begin ',qtot_tmp
     endif
     if(trim(atoms%boundcond)=='slab') then
-        alphax=4.d-1
+        alphax=1.d0
     else
         alphax=1.d0
     endif
     alpha=1.d-1*alphax
-    do iter=0,1000
+    do iter=0,4000
         call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
         if(parini%iverbose>=2) then
             dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0

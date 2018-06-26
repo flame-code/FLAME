@@ -508,7 +508,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         enhc=atoms%epot+atoms%ekin+0.5*sum(dzeta**2*mass_q)+nof*kt*zeta(1)+sum(zeta*kt)
 
         write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
-        write(21,'(i9,5es25.15)') imd,etot,atoms%epot,atoms%ekin,temp,enhc
+        write(21,'(i9,5es25.15)') imd,etot-atoms%ebattery,atoms%epot-atoms%ebattery,atoms%ekin,temp,enhc
         write(22,'(i9,6es20.10)') imd,rcm(1:3),vcm(1:3)
 
     !___________________  some steps temperature rescaling for pre_equilibrium  __________________
@@ -598,7 +598,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         enddo
         dzeta(ntherm) =dzeta(ntherm) + azeta(ntherm) *dt4;
 
-        if(mod(imd,100)==0) then
+        if(mod(imd-1,100)==0) then
             call write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
         endif
         etotold=etot

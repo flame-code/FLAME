@@ -53,6 +53,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
         !********************************************************************
         dipole_correction = 0.d0
         dipole_correction =dipole_correction -0.5*charge0*(dv)!+0.5*c*(-dv)**2
+        atoms%ebattery=-charge0*dv
         poisson%npu=poisson%ngpz-nbgpz
         poisson%npl=1+nbgpz  
 !        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))

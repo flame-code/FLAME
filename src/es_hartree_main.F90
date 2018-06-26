@@ -486,7 +486,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     real(8):: dipole !,ext_pot
     real(8):: dv, pi, beta ,vu,vl
     real(8):: c, charge, epot, ext_pot , efield, charge0
-    real(8):: qv, qv_pp
+    real(8):: qv, qv_pp, Ef
     real(8),allocatable :: pots_layer(:,:,:,:)
     character(5)::flag
     pi=4.d0*atan(1.d0)        
@@ -532,6 +532,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
 
         !ehartree = ehartree - 0.5*efield*dipole-0.5*dipole/poisson%cell(3)*dv
         ehartree = ehartree - 0.5*efield*dipole+0.5*dipole/poisson%cell(3)*dv
+        atoms%ebattery=dipole/poisson%cell(3)*dv
         !ehartree = ehartree + 0.5*c*dv**2
 
         do iat=1,atoms%nat
@@ -605,26 +606,42 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         write(*,*)"charge = ",charge
 
         ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
-        !ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
+        atoms%ebattery=-charge0*dv
 
         if (flag=="force") then
             write(*,*)"dipole ,beta =  " , dipole,beta
-                open(unit=55, file="pots.txt" ,status='unknown',position='append')
-                   do igpy=1,min(10,poisson%ngpy)
-                   do igpx=1,min(10,poisson%ngpx)
-                   do igpz=poisson%npl,poisson%npu
-                       !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
-                       !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
-                       write(55,'(4es20.8)')  (igpz-1-nbgpz)*poisson%hz, poisson%pots(igpx,igpy,igpz),&
-                                    (vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)*poisson%hz+vl,&
-                                    (2*beta+vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)&
-                                    *poisson%hz-beta+vl
+            write(*,*)"externalwork = ",atoms%ebattery
+                !open(unit=55, file="pots.txt" ,status='unknown',position='append')
+                !   do igpy=1,min(10,poisson%ngpy),2
+                !   do igpx=1,min(10,poisson%ngpx),2
+                !   do igpz=poisson%npl,poisson%npu
+                !       !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
+                !       !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+                !       write(55,'(4es20.8)')  (igpz-1-nbgpz)*poisson%hz, poisson%pots(igpx,igpy,igpz),&
+                !                    (vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)*poisson%hz+vl,&
+                !                    (2*beta+vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)&
+                !                    *poisson%hz-beta+vl
 
-                   enddo 
-                       write(55,*)   
-                   enddo 
-                   enddo 
-                close(55)
+                !   enddo 
+                !       write(55,*)   
+                !   enddo 
+                !   enddo 
+                !close(55)
+                open(unit=56, file="field.txt" ,status='unknown',position='append')
+                !   do igpy=1,min(10,poisson%ngpy),2
+                !   do igpx=1,min(10,poisson%ngpx),2
+                !   do igpz=poisson%npl+1,poisson%npu-1
+                !       Ef = (poisson%pots(igpx,igpy,igpz+1)-poisson%pots(igpx,igpy,igpz-1))/(2.d0*poisson%hz)
+                !       write(56,'(4es20.8)')  (igpz-1-nbgpz)*poisson%hz, Ef ,&
+                !                    (vu-vl)/poisson%cell(3),&
+                !                    (2*beta+vu-vl)/poisson%cell(3)
+
+                !   enddo 
+                !       write(56,*)   
+                !   enddo 
+                !   enddo 
+                       write(56,'(4es20.8)')  (vu-vl)/poisson%cell(3), (2*beta+vu-vl)/poisson%cell(3)
+                close(56)
         endif
 
         !do iat=1,atoms%nat
