@@ -18,12 +18,12 @@ module mod_ann
         integer:: ng4=-1
         integer:: ng5=-1
         integer:: ng6=-1
-        real(8):: a(140,140,10), b(140,10), x(140,10), y(140,0:10), yd(140,10), ad(140*140,10), bd(140,10)
-        real(8):: d(140)
-        real(8):: gbounds(2,140)
-        real(8):: two_over_gdiff(140)
+        real(8):: a(350,350,10), b(350,10), x(350,10), y(350,0:10), yd(350,10), ad(350*350,10), bd(350,10)
+        real(8):: d(350)
+        real(8):: gbounds(2,350)
+        real(8):: two_over_gdiff(350)
         real(8):: ebounds(2)=(/-1.d0,1.d0/)
-        !real(8):: rc1(140)
+        !real(8):: rc1(350)
         real(8):: gausswidth
         real(8):: gausswidth_ion
         real(8):: chi0
@@ -38,34 +38,34 @@ module mod_ann
         character(20):: method
 
         !The 1st type of symmetry functions introduced by Behler
-        real(8):: g1eta(140)
-        real(8):: g1rs(140)
+        real(8):: g1eta(350)
+        real(8):: g1rs(350)
 
         !The 2nd type of symmetry functions introduced by Behler
-        real(8):: g2eta(140)
-        real(8):: g2rs(140)
-        integer:: g2i(140)
+        real(8):: g2eta(350)
+        real(8):: g2rs(350)
+        integer:: g2i(350)
 
         !The 3rd type of symmetry functions introduced by Behler
-        real(8):: g3kappa(140)
+        real(8):: g3kappa(350)
 
         !The 4th type of symmetry functions introduced by Behler
-        real(8):: g4eta(140)
-        real(8):: g4zeta(140)
-        real(8):: g4lambda(140)
+        real(8):: g4eta(350)
+        real(8):: g4zeta(350)
+        real(8):: g4lambda(350)
 
         !The 5th type of symmetry functions introduced by Behler
-        real(8):: g5eta(140)
-        real(8):: g5zeta(140)
-        real(8):: g5lambda(140)
-        integer:: g5i(2,140)
+        real(8):: g5eta(350)
+        real(8):: g5zeta(350)
+        real(8):: g5lambda(350)
+        integer:: g5i(2,350)
 
         !The 6th type of symmetry functions introduced by Ghasemi
-        real(8):: g6eta(140)
+        real(8):: g6eta(350)
         real(8):: teneria(3,3,30)
 
         !some other variables
-        real(8):: his(1000,140)
+        real(8):: his(1000,350)
 
         character(256):: hlines(10)
         

@@ -875,9 +875,17 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     nat_t=nint(wa(1))
     ng_t=nint(wa(2))
     nb_t=nint(wa(3))
+    if(parini%save_symfunc_behnam) then
+    eps=eps*1.d4
+    if(nat_t/=nat .or. ng_t/=ng) then
+        write(*,'(a,7i6)') 'ERROR: inconsistent nat or ng ',iconf,nat_t,nat,ng_t,ng,nb_t,nb
+        stop
+    endif
+    else
     if(nat_t/=nat .or. ng_t/=ng .or. nb_t/=nb) then
         write(*,'(a,7i6)') 'ERROR: inconsistent nat or ng ',iconf,nat_t,nat,ng_t,ng,nb_t,nb
         stop
+    endif
     endif
     do iat=1,nat
         ttx=abs(wa(3+iat*3-2)-atoms_arr%atoms(iconf)%rat(1,iat))
@@ -885,6 +893,9 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
         ttz=abs(wa(3+iat*3-0)-atoms_arr%atoms(iconf)%rat(3,iat))
         if(ttx>eps .or. tty>eps .or. ttz>eps) then
             smsg='ERROR: inconsistency of configuration in symmetry functions file. '
+            !write(*,*) wa(3+iat*3-2),wa(3+iat*3-1),wa(3+iat*3-0)
+            !write(*,*) atoms_arr%atoms(iconf)%rat(1,iat),atoms_arr%atoms(iconf)%rat(2,iat),atoms_arr%atoms(iconf)%rat(3,iat)
+            !write(*,*) 'IAT',iat
             write(*,'(a,3es14.5,i7,a,i5)') trim(smsg),ttx,tty,ttz,iconf,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf)
             stop
         endif
@@ -932,6 +943,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     !enddo
     close(311)
     call f_free(wa)
+    write(*,*) "Reading symmetry functions done."
 end subroutine read_symfunc
 !*****************************************************************************************
 subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
@@ -951,9 +963,9 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     integer:: iconf, ib, ig, i, iat, jat, i0
     real(8), allocatable:: gminarr(:,:), gmaxarr(:,:) !, poll_period
     integer, allocatable:: iatmin(:,:), iatmax(:,:), iconfmin(:,:), iconfmax(:,:)
-    integer:: ibmin(100), ibmax(100)
+    integer:: ibmin(350), ibmax(350)
     integer:: ngmax
-    ngmax=200
+    ngmax=350
     allocate(gminarr(1:ngmax,1:parini%ntypat))
     gminarr=huge(1.d20)
     allocate(gmaxarr(1:ngmax,1:parini%ntypat))
@@ -966,7 +978,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     iconfmin=0.d0
     allocate(iconfmax(1:ngmax,1:parini%ntypat))
     iconfmax=0.d0
-    ibmin(1:100)=0 ; ibmax(1:100)=0
+    ibmin(1:350)=0 ; ibmax(1:350)=0
     do iconf=1,atoms_arr%nconf
         !if(mod(iconf-1,nproc)==iproc) cycle
         !write(41,'(i6,i3)',advance='no') mod(iconf-1,nproc),iproc
@@ -1023,6 +1035,11 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,1))),atoms_arr%lconf(iconfmin(ig,1)), &
                 trim(atoms_arr%fn(iconfmax(ig,1))),atoms_arr%lconf(iconfmax(ig,1))
         else
+            !write(*,*) &
+            !    iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
+            !    iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)
+            !write(*,*) trim(atoms_arr%fn(iconfmin(ig,i))),atoms_arr%lconf(iconfmin(ig,i)), &
+            !    trim(atoms_arr%fn(iconfmax(ig,i))),atoms_arr%lconf(iconfmax(ig,i))
             write(*,'(2(i7,2i4,es20.10),1x,a)') &
                 iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
                 iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)

@@ -1538,13 +1538,14 @@ subroutine best_charge_density_pot(parini)
     use mod_atoms, only: typ_atoms
     type(typ_parini), intent(in):: parini
 end subroutine best_charge_density_pot
-subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar)
+subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar,rpar)
     logical :: reset
     integer , intent(in):: nat, ng(1:3), lcn
     real(8) , intent(in):: rat(1:3,1:nat), hgx, hgy, hgz, qat(1:lcn,1:nat),gw(1:lcn,1:nat),weight(1:ng(1),1:ng(2),1:ng(3))
     real(8) , intent(in):: dft_pot(1:ng(1),1:ng(2),1:ng(3))
-    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat)
+    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat), rpar(1:3,1:nat)
     real(8) :: cent_pot_a_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_q_par(1:ng(1),1:ng(2),1:ng(3))
+    real(8) :: cent_pot_x_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_y_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_z_par(1:ng(1),1:ng(2),1:ng(3))
 end subroutine put_pot_sym_rzx
 subroutine stdval_rzx(f,f_len,mean,std,var)
     integer, intent(in) :: f_len
