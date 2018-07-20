@@ -2,21 +2,23 @@
 subroutine ann_train(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
+    use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
+    type(typ_symfunc):: symfunc
     type(typ_ann_arr):: ann_arr
     type(typ_ekf):: ekf
+    type(typ_atoms):: atoms
     type(typ_atoms_arr):: atoms_train
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
-    integer:: iconf, ia
-    real(8):: time1, time2, time3
+    integer:: iconf, ia, ityp
+    real(8):: time1, time2, time3, t_ener_ref
     logical:: file_exists
     call f_routine(id='ann_train')
     call init_ann_train(parini,ann_arr,ekf)
@@ -78,6 +80,34 @@ subroutine ann_train(parini)
     else
         do ia=1,ann_arr%n
             call convert_ann_x(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+        enddo
+    endif
+    if(trim(parini%approach_ann)=='cent2') then
+        do ia=1,ann_arr%n
+            call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+        enddo
+        !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
+        call atom_allocate_old(atoms,1,0,0)
+        write(*,*) atoms%nat
+        write(*,*) atoms%sat(:)
+        write(*,*) atoms%itypat(:)
+        atoms%rat(1,1)=1.d0 ; atoms%rat(2,1)=1.d0 ; atoms%rat(3,1)=1.d0
+        atoms%cellvec(1:3,1:3)=0.d0
+        atoms%cellvec(1,1)=10.d0
+        atoms%cellvec(2,2)=10.d0
+        atoms%cellvec(3,3)=10.d0
+        atoms%boundcond='free'
+        ann_arr%event='potential'
+        ann_arr%compute_symfunc=.true.
+        do ityp=1,parini%ntypat
+            atoms%sat(1)=parini%stypat(ityp)
+            atoms%itypat(1)=parini%ltypat(ityp)
+            t_ener_ref=ann_arr%ann(atoms%itypat(1))%ener_ref
+            ann_arr%ann(atoms%itypat(1))%ener_ref=0.d0
+            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+            ann_arr%ann(atoms%itypat(1))%ener_ref=t_ener_ref-atoms%epot
+            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+            write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
         enddo
     endif
 

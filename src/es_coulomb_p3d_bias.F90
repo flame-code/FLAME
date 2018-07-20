@@ -635,7 +635,8 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     do iz=npl,npu
         call dfftw_destroy_plan(plan_bs(iz))
     enddo
-    call dfftw_destroy_plan(plan_fs)
+    call dfftw_destroy_plan(plan_fs(1))
+    call dfftw_destroy_plan(plan_fs(2))
     deallocate(plan_bs)
     deallocate(plan_fs)
 end subroutine sollaplaceq
