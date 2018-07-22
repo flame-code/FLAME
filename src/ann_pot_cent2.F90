@@ -322,12 +322,16 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     cent%poisson%linked_lists%rcut=parini%rcut_ewald
     !This linked list is used for the short range part of the Ewald.
     call call_linkedlist(parini,atoms,.false.,cent%poisson%linked_lists,cent%poisson%pia_arr)
-
+    qtot=0.d0
     do iat=1,atoms%nat
         zion=ann_arr%ann(atoms%itypat(iat))%zion
         atoms%zat(iat)=zion
         atoms%qat(iat)=ann_arr%ann(atoms%itypat(iat))%qinit-zion
+        qtot=qtot+atoms%qat(iat)+zion
         !write(*,'(i,3f8.2)') iat,atoms%zat(iat),atoms%qat(iat),atoms%zat(iat)+atoms%qat(iat)
+    enddo
+    do iat=1,atoms%nat
+        atoms%qat(iat)=atoms%qat(iat)+(atoms%qtot-qtot)/real(atoms%nat,8)
     enddo
     qtot_ion=sum(atoms%zat(1:atoms%nat))
     qtot_ele=sum(atoms%qat(1:atoms%nat))

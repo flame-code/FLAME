@@ -2,21 +2,23 @@
 subroutine ann_train(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
+    use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
+    type(typ_symfunc):: symfunc
     type(typ_ann_arr):: ann_arr
     type(typ_ekf):: ekf
+    type(typ_atoms):: atoms
     type(typ_atoms_arr):: atoms_train
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
-    integer:: iconf, ia
-    real(8):: time1, time2, time3
+    integer:: iconf, ia, ityp
+    real(8):: time1, time2, time3, t_ener_ref
     logical:: file_exists
     call f_routine(id='ann_train')
     call init_ann_train(parini,ann_arr,ekf)
@@ -78,6 +80,34 @@ subroutine ann_train(parini)
     else
         do ia=1,ann_arr%n
             call convert_ann_x(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+        enddo
+    endif
+    if(trim(parini%approach_ann)=='cent2') then
+        do ia=1,ann_arr%n
+            call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+        enddo
+        !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
+        call atom_allocate_old(atoms,1,0,0)
+        write(*,*) atoms%nat
+        write(*,*) atoms%sat(:)
+        write(*,*) atoms%itypat(:)
+        atoms%rat(1,1)=1.d0 ; atoms%rat(2,1)=1.d0 ; atoms%rat(3,1)=1.d0
+        atoms%cellvec(1:3,1:3)=0.d0
+        atoms%cellvec(1,1)=10.d0
+        atoms%cellvec(2,2)=10.d0
+        atoms%cellvec(3,3)=10.d0
+        atoms%boundcond='free'
+        ann_arr%event='potential'
+        ann_arr%compute_symfunc=.true.
+        do ityp=1,parini%ntypat
+            atoms%sat(1)=parini%stypat(ityp)
+            atoms%itypat(1)=parini%ltypat(ityp)
+            t_ener_ref=ann_arr%ann(atoms%itypat(1))%ener_ref
+            ann_arr%ann(atoms%itypat(1))%ener_ref=0.d0
+            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+            ann_arr%ann(atoms%itypat(1))%ener_ref=t_ener_ref-atoms%epot
+            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+            write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
         enddo
     endif
 
@@ -875,9 +905,17 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     nat_t=nint(wa(1))
     ng_t=nint(wa(2))
     nb_t=nint(wa(3))
+    if(parini%save_symfunc_behnam) then
+    eps=eps*1.d4
+    if(nat_t/=nat .or. ng_t/=ng) then
+        write(*,'(a,7i6)') 'ERROR: inconsistent nat or ng ',iconf,nat_t,nat,ng_t,ng,nb_t,nb
+        stop
+    endif
+    else
     if(nat_t/=nat .or. ng_t/=ng .or. nb_t/=nb) then
         write(*,'(a,7i6)') 'ERROR: inconsistent nat or ng ',iconf,nat_t,nat,ng_t,ng,nb_t,nb
         stop
+    endif
     endif
     do iat=1,nat
         ttx=abs(wa(3+iat*3-2)-atoms_arr%atoms(iconf)%rat(1,iat))
@@ -885,6 +923,9 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
         ttz=abs(wa(3+iat*3-0)-atoms_arr%atoms(iconf)%rat(3,iat))
         if(ttx>eps .or. tty>eps .or. ttz>eps) then
             smsg='ERROR: inconsistency of configuration in symmetry functions file. '
+            !write(*,*) wa(3+iat*3-2),wa(3+iat*3-1),wa(3+iat*3-0)
+            !write(*,*) atoms_arr%atoms(iconf)%rat(1,iat),atoms_arr%atoms(iconf)%rat(2,iat),atoms_arr%atoms(iconf)%rat(3,iat)
+            !write(*,*) 'IAT',iat
             write(*,'(a,3es14.5,i7,a,i5)') trim(smsg),ttx,tty,ttz,iconf,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf)
             stop
         endif
@@ -932,6 +973,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     !enddo
     close(311)
     call f_free(wa)
+    write(*,*) "Reading symmetry functions done."
 end subroutine read_symfunc
 !*****************************************************************************************
 subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
@@ -951,9 +993,9 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     integer:: iconf, ib, ig, i, iat, jat, i0
     real(8), allocatable:: gminarr(:,:), gmaxarr(:,:) !, poll_period
     integer, allocatable:: iatmin(:,:), iatmax(:,:), iconfmin(:,:), iconfmax(:,:)
-    integer:: ibmin(100), ibmax(100)
+    integer:: ibmin(350), ibmax(350)
     integer:: ngmax
-    ngmax=200
+    ngmax=350
     allocate(gminarr(1:ngmax,1:parini%ntypat))
     gminarr=huge(1.d20)
     allocate(gmaxarr(1:ngmax,1:parini%ntypat))
@@ -966,7 +1008,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     iconfmin=0.d0
     allocate(iconfmax(1:ngmax,1:parini%ntypat))
     iconfmax=0.d0
-    ibmin(1:100)=0 ; ibmax(1:100)=0
+    ibmin(1:350)=0 ; ibmax(1:350)=0
     do iconf=1,atoms_arr%nconf
         !if(mod(iconf-1,nproc)==iproc) cycle
         !write(41,'(i6,i3)',advance='no') mod(iconf-1,nproc),iproc
@@ -1023,6 +1065,11 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,1))),atoms_arr%lconf(iconfmin(ig,1)), &
                 trim(atoms_arr%fn(iconfmax(ig,1))),atoms_arr%lconf(iconfmax(ig,1))
         else
+            !write(*,*) &
+            !    iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
+            !    iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)
+            !write(*,*) trim(atoms_arr%fn(iconfmin(ig,i))),atoms_arr%lconf(iconfmin(ig,i)), &
+            !    trim(atoms_arr%fn(iconfmax(ig,i))),atoms_arr%lconf(iconfmax(ig,i))
             write(*,'(2(i7,2i4,es20.10),1x,a)') &
                 iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
                 iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)
