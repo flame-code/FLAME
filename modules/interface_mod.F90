@@ -861,10 +861,26 @@ end subroutine symmetry_functions_g04_bond
 ! ./src/ann_train.F90 :
 subroutine ann_train(parini)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
+    use mod_atoms, only: typ_atoms_arr, typ_atoms
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in), target:: parini
+    type(typ_ann_arr), intent(inout), target:: ann_arr
+    type(typ_ekf), intent(inout), target:: ekf
+    type(typ_atoms_arr), intent(inout), target:: atoms_smplx
+end subroutine cent2_simplex
+subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_symfunc
+    integer, intent(in) :: ndim
+    real(8), intent(in) :: vertex(ndim)
+    real(8), intent(out) :: rmse_force_cent2
+end subroutine cal_rmse_force_cent2
 subroutine init_ann_train(parini,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_ekf
@@ -4206,6 +4222,22 @@ subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,i
    real(8):: latvec_in(3,3),xred_in(3,parini%nat),fcart_in(3,parini%nat),strten_in(6),etot_in,counter,pressure,latvec0(3,3),enthalpy_old
    character(40)::filename,folder
 end subroutine geopt_sd
+! ./src/optimizer_simplex.F90 :
+subroutine simplex(vertices,fval,step,ndim,ftol,functn,iter)
+    integer, intent(in):: ndim
+    real(8), intent(in):: ftol, step
+    real(8), intent(inout):: vertices(ndim,ndim+1), fval(ndim+1)
+    integer, intent(out):: iter
+    real(8), parameter:: alpha=1.d0 !reflection coefficient, a positive value
+    real(8), parameter:: beta=0.5d0 !contraction coefficient, greater than one
+    real(8), parameter:: gama=2.d0 !expansion coefficient, lies between zero and one
+    integer, parameter:: nmax=20, itmax=500
+end subroutine simplex
+    subroutine functn(n,p,func)
+        integer, intent(in)  :: n
+        real(8), intent(in)  :: p(n)
+        real(8), intent(out) :: func
+end subroutine functn
 ! ./src/optimizer_sqnm.F90 :
 subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    use mod_parini, only: typ_parini

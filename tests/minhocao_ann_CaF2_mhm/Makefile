@@ -11,6 +11,6 @@ clean:
 	rm -f posgeopt.????.ascii posmd.????.ascii possoft_lat????.ascii \
 		possoft_at????.ascii fcart.bin fp.bin latvec.bin poslow.bin strten.bin \
 		earr.dat ioput poscur.ascii o1 poslocm_?????.ascii poslow?????.ascii \
-		time.yaml posinit.ascii global.mon
+		time.yaml posinit.ascii global.mon flame_log.yaml fort.??
 
 .PHONY: run clean

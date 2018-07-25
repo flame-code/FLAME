@@ -85,8 +85,8 @@ SRC_ += alborz_init_final.F90 processors.F90 \
 		POSCAR2ascii.F90 \
 		recompute_kpt.F90 \
 		PWSCF_restruct.F90 \
-		ternaries.F90
-
+		ternaries.F90 \
+		optimizer_simplex.F90
 
 ifdef SPGLIB
     SRC_ += spglib_int.F90

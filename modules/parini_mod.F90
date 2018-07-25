@@ -90,6 +90,7 @@ module mod_parini
         real(8):: weight_hardness
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
+        logical:: prefit_cent2_ann=.false.
         logical:: read_forces_ann
         logical:: restart_param=.false. 
         integer:: restart_iter=0  
