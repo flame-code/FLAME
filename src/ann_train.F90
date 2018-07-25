@@ -15,6 +15,7 @@ subroutine ann_train(parini)
     type(typ_atoms):: atoms
     type(typ_atoms_arr):: atoms_train
     type(typ_atoms_arr):: atoms_valid
+    type(typ_atoms_arr):: atoms_smplx
     type(typ_symfunc_arr):: symfunc_train
     type(typ_symfunc_arr):: symfunc_valid
     integer:: iconf, ia, ityp
@@ -36,6 +37,9 @@ subroutine ann_train(parini)
     else
         call read_data_old(parini,'list_posinp_valid',atoms_valid)
     endif
+    if(trim(parini%approach_ann)=='cent2') then
+        call read_data_yaml(parini,'list_posinp_smplx.yaml',atoms_smplx)
+    endif
     !-------------------------------------------------------
     if(iproc==0) then
         write(*,'(a,i)') 'number of ANN wights:             ',ekf%n
@@ -46,6 +50,7 @@ subroutine ann_train(parini)
     call set_conf_inc_random(parini,atoms_valid)
     call prepare_atoms_arr(parini,ann_arr,atoms_train)
     call prepare_atoms_arr(parini,ann_arr,atoms_valid)
+    call prepare_atoms_arr(parini,ann_arr,atoms_smplx)
     !allocate(atoms_train%inclusion(atoms_train%nconf),source=0)
     !-------------------------------------------------------
     call cpu_time(time1)
@@ -117,6 +122,10 @@ subroutine ann_train(parini)
         !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
         call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     endif
+
+    if(trim(parini%approach_ann)=='cent2' .and. parini%prefit_cent2_ann) then
+        call cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
+    endif
     if(trim(parini%optimizer_ann)=='behler') then
         call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     else if(trim(parini%optimizer_ann)=='rivals') then
@@ -140,6 +149,84 @@ subroutine ann_train(parini)
     call final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     call f_release_routine()
 end subroutine ann_train
+!*****************************************************************************************
+module mod_callback
+    use mod_atoms, only: typ_atoms_arr
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf
+    type(typ_parini), pointer:: parini_t
+    type(typ_atoms_arr), pointer:: atoms_smplx_t
+    type(typ_ann_arr), pointer:: ann_arr_t
+    type(typ_ekf), pointer:: ekf_t
+end module mod_callback
+!*****************************************************************************************
+subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
+    !use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms_arr
+    use mod_callback
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in), target:: parini
+    type(typ_ann_arr), intent(inout), target:: ann_arr
+    type(typ_ekf), intent(inout), target:: ekf
+    type(typ_atoms_arr), intent(inout), target:: atoms_smplx
+    !local variables
+    real(8):: vertices(2,3), fval(3)
+    real(8):: step, ftol
+    integer:: ndim, iter
+    external:: cal_rmse_force_cent2
+    vertices(1,1)=ann_arr%ann(1)%chi0
+    vertices(2,1)=ann_arr%ann(2)%chi0
+    vertices(1,2)=vertices(1,1)+1.d-3
+    vertices(2,2)=vertices(2,1)
+    vertices(1,3)=vertices(1,1)
+    vertices(2,3)=vertices(2,1)+1.d-3
+    ndim=2
+    ftol=1.d-6
+    step=0.d0
+    atoms_smplx_t=>atoms_smplx
+    parini_t=>parini
+    ann_arr_t=>ann_arr
+    ekf_t=>ekf
+    call simplex(vertices,fval,step,ndim,ftol,cal_rmse_force_cent2,iter)
+end subroutine cent2_simplex
+!*****************************************************************************************
+subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
+    use mod_interface
+    use mod_callback, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
+    use mod_callback, only: ann_arr=>ann_arr_t, ekf=>ekf_t
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_symfunc
+    implicit none
+    integer, intent(in) :: ndim
+    real(8), intent(in) :: vertex(ndim)
+    real(8), intent(out) :: rmse_force_cent2
+    !local variables
+    type(typ_atoms):: atoms
+    type(typ_symfunc):: symfunc
+    real(8):: rmse
+    integer:: iat, iconf, nat_tot
+    ann_arr%ann(1)%chi0=vertex(1)
+    ann_arr%ann(2)%chi0=vertex(2)
+    write(*,'(a,2f10.4)') 'CHI ',ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0
+    nat_tot=0
+    rmse=0.d0
+    ann_arr%event='potential'
+    ann_arr%compute_symfunc=.true.
+    do iconf=1,atoms_smplx%nconf
+        call atom_copy_old(atoms_smplx%atoms(iconf),atoms,'atoms_smplx%atoms(iconf)->atoms')
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+        do iat=1,atoms%nat
+            rmse=rmse+(atoms%fat(1,iat)-atoms_smplx%atoms(iconf)%fat(1,iat))**2 &
+                     +(atoms%fat(2,iat)-atoms_smplx%atoms(iconf)%fat(2,iat))**2 &
+                     +(atoms%fat(3,iat)-atoms_smplx%atoms(iconf)%fat(3,iat))**2
+        enddo
+        nat_tot=nat_tot+atoms%nat
+    enddo
+    rmse_force_cent2=sqrt(rmse/real(3*nat_tot,8))
+end subroutine cal_rmse_force_cent2
 !*****************************************************************************************
 subroutine init_ann_train(parini,ann_arr,ekf)
     use mod_interface
