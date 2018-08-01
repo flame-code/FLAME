@@ -603,13 +603,13 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
         charge0=-dipole/poisson%cell(3)
         charge=-dipole/poisson%cell(3)+c*dv
-        write(*,*)"charge = ",charge
 
         ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
         atoms%ebattery=-charge0*dv
 
         if (flag=="force") then
             write(*,*)"dipole ,beta =  " , dipole,beta
+            write(*,*)"charge = ",charge
             write(*,*)"externalwork = ",atoms%ebattery
                 !open(unit=55, file="pots.txt" ,status='unknown',position='append')
                 !   do igpy=1,min(10,poisson%ngpy),2

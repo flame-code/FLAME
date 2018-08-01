@@ -30,7 +30,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     if(trim(parini%bias_type)=='p3dbias') then
         vl=parini%vl_ewald
         vu=parini%vu_ewald+parini%vu_ac_ewald*sin(parini%frequency_ewald*parini%time_dynamics)
-        vu=vu !*0.5d0
+        vu=vu 
         dv= (vu-vl)
         d= poisson%cell(3)
         write(*,*)'--------------------------------------------------------'
@@ -47,7 +47,6 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
         !********************************************************************
         ! Esperesso energy 
         !dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
-        write(*,*)'dipole_correction  ', 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
         !dipole_correction = 0.d0
         !dipole_correction =dipole_correction +charge0*(vu-vl)!0.5*c*(vu-vl)**2
         !********************************************************************
@@ -56,7 +55,6 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
         atoms%ebattery=-charge0*dv
         poisson%npu=poisson%ngpz-nbgpz
         poisson%npl=1+nbgpz  
-!        write(*,*) "min rat_z " ,minval(atoms%rat(3,:)),"max rat_z ",maxval(atoms%rat(3,:))
         npl=poisson%npl
         npu=poisson%npu
 
@@ -77,19 +75,8 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
                 poisson%pots(:,:,npu-(nlayer-1):npu-1)=0.d0
             endif
         endif
-        !    force repulsion on planes
-!        do iat=1,atoms%nat
-!            rl=abs(atoms%rat(3,iat))
-!            ru=abs( poisson%cell(3)-atoms%rat(3,iat))
-!            atoms%fat(3,iat)=160.d0*exp(-1.6d0*rl)-160.d0*exp(-1.6d0*ru)
-!        enddo
-!
         call sollaplaceq(poisson,poisson%hz,poisson%cell,vl,vu)
         call calculate_force_ener_plane(atoms,poisson,epotplane,nbgpz)
-     !   do iat=1,atoms%nat
-     !       epotplane = epotplane +0.5*(dv)/poisson%cell(3)*atoms%qat(iat)*atoms%rat(3,iat)
-     !       atoms%fat(3,iat)=atoms%fat(3,iat)-(0.5d0*(dv)/poisson%cell(3))*atoms%qat(iat)
-     !   enddo
         
 
         if (parini%cal_charge) then 
@@ -285,9 +272,10 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     real(8):: t,tt,ttt, ghz,ciz,potl,potu
     real(8):: pi, fourpi, fourpisq, gsq, gsqx, gsqy, g, hzsq
     real(8):: fourpisqcellxinvsq, fourpisqcellyinvsq,valuengpxyinv
-    real(8):: hzlu,hzliz,hzuiz 
-    real(8):: tel,teu,telu 
-    integer::ix,iy,iz,ixt,iyt,npu,npl
+    real(8):: hzlu,hzliz,hzuiz, zz 
+    real(8):: tel,teu,telu
+    real(8) :: temp_exp_2  , temp_exp_zl1, temp_exp_zl2, temp_exp_z  , temp_exp_zl  
+    integer::ix,iy,iz,ixt,iyt,npu,npl,izz
     integer(8), allocatable:: plan_bs(:),plan_fs(:)
     npl=poisson%npl
     npu=poisson%npu
@@ -325,310 +313,191 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
 
     !-----------------------------------------
     ix=1;iy=1
-     do iz=npl+1,npu-1
-         ciz=((potl-potu)*iz-(potl*npu-potu*npl))/real((npl-npu),8)
-         poisson%pots(ix,iy,iz)=ciz
-     enddo 
+    do iz=npl+1,npu-1
+        ciz=((potl-potu)*iz-(potl*npu-potu*npl))/real((npl-npu),8)
+        poisson%pots(ix,iy,iz)=ciz
+    enddo 
     !-----------------------------------------
-     hzlu=-hz*(npl-npu)
-     if (hzlu<=30.d0) then
-         do iz=npl+1,npu-1
-             hzliz=-hz*(npl-iz)
-             hzuiz=-hz*(iz-npu)
-             !-----------------------------------------
-                 ix=poisson%ngpx+1;iy=1
-                 gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
-                 g=sqrt(gsq)
-                 t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                 tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                 ciz=(t+tt)/sinh(g*hzlu)
-                 poisson%pots(ix,iy,iz)=ciz
-             !-----------------------------------------
-                 ix=1;iy=poisson%ngpy/2+1
-                 gsq=fourpisqcellyinvsq*(iy-1)**2
-                 g=sqrt(gsq)
-                 t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                 tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                 ciz=(t+tt)/sinh(g*hzlu)
-                 poisson%pots(ix,iy,iz)=ciz
-             !-----------------------------------------
-                 ix=poisson%ngpx+1;iy=poisson%ngpy/2+1
-                 gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
-                 g=sqrt(gsq)
-                 t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                 tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                 ciz=(t+tt)/sinh(g*hzlu)
-                 poisson%pots(ix,iy,iz)=ciz
-             !-----------------------------------------
-                 ix=1
-                 do iy=2,poisson%ngpy/2
-                     gsq=fourpisqcellyinvsq*(iy-1)**2
-                     g=sqrt(gsq)
-                     t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                     tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                     ciz=(t+tt)/sinh(g*hzlu)
-                     poisson%pots(ix,iy,iz)=ciz
-                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
+    do iz=npl+1,npu-1
+        izz = iz - npl
+        zz = izz*hz
+        !-----------------------------------------
+        ix=poisson%ngpx+1;iy=1
+        gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
+        g=sqrt(gsq)
+        !****************************************************  
+        temp_exp_2  = exp(-2*g*cell(3))
+        temp_exp_zl1= exp(g*(zz-cell(3)))
+        temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+        temp_exp_z  = exp(-g*(zz))
+        temp_exp_zl = exp(-g*(zz+cell(3)))
+        t = temp_exp_zl1 - temp_exp_zl
+        tt= temp_exp_z - temp_exp_zl2
+        ttt = 1.d0/(1.d0-temp_exp_2)
 
-                     ixt=ix+1
-                     t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
-                     tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
-                     ciz=(t+tt)/sinh(g*hzlu)
-                     poisson%pots(ixt,iy,iz)=ciz
-                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
-                 enddo
-             !-----------------------------------------
-                 ix=poisson%ngpx+1
-                 gsqx=fourpisqcellxinvsq*(poisson%ngpx/2)**2
-                 do iy=2,poisson%ngpy/2
-                     gsq=gsqx+fourpisqcellyinvsq*(iy-1)**2
-                     g=sqrt(gsq)
-                     t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                     tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                     ciz=(t+tt)/sinh(g*hzlu)
-                     poisson%pots(ix,iy,iz)=ciz
-                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
+        ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+        poisson%pots(ix,iy,iz)=ciz
+        !-----------------------------------------
+        ix=1;iy=poisson%ngpy/2+1
+        gsq=fourpisqcellyinvsq*(iy-1)**2
+        g=sqrt(gsq)
+        !****************************************************  
+        temp_exp_2  = exp(-2*g*cell(3))
+        temp_exp_zl1= exp(g*(zz-cell(3)))
+        temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+        temp_exp_z  = exp(-g*(zz))
+        temp_exp_zl = exp(-g*(zz+cell(3)))
+        t = temp_exp_zl1 - temp_exp_zl
+        tt= temp_exp_z - temp_exp_zl2
+        ttt = 1.d0/(1.d0-temp_exp_2)
 
-                     ixt=ix+1
-                     t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
-                     tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
-                     ciz=(t+tt)/sinh(g*hzlu)
-                     poisson%pots(ixt,iy,iz)=ciz
-                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
-                 enddo
-             !-----------------------------------------
-                 iy=1
-                 gsqy=fourpisqcellyinvsq*(iy-1)**2
-                 do ix=3,poisson%ngpx,2
-                     gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
-                     g=sqrt(gsq)
-                     t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                     tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                     ciz=(t+tt)/sinh(g*hzlu)
-                     poisson%pots(ix,iy,iz)=ciz
+        ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+        poisson%pots(ix,iy,iz)=ciz
+        !-----------------------------------------
+        ix=poisson%ngpx+1;iy=poisson%ngpy/2+1
+        gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
+        g=sqrt(gsq)
+        !****************************************************  
+        temp_exp_2  = exp(-2*g*cell(3))
+        temp_exp_zl1= exp(g*(zz-cell(3)))
+        temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+        temp_exp_z  = exp(-g*(zz))
+        temp_exp_zl = exp(-g*(zz+cell(3)))
+        t = temp_exp_zl1 - temp_exp_zl
+        tt= temp_exp_z - temp_exp_zl2
+        ttt = 1.d0/(1.d0-temp_exp_2)
 
-                     ixt=ix+1
-                     t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
-                     tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
-                     ciz=(t+tt)/sinh(g*hzlu)
-                     poisson%pots(ixt,iy,iz)=ciz
-                enddo
-            !-----------------------------------------
-                iy=poisson%ngpy/2+1
-                gsqy=fourpisqcellyinvsq*(iy-1)**2
-                do ix=3,poisson%ngpx,2
-                    gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
-                    g=sqrt(gsq)
-                    t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                    tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                    ciz=(t+tt)/sinh(g*hzlu)
-                    poisson%pots(ix,iy,iz)=ciz
+        ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+        !****************************************************  
+        poisson%pots(ix,iy,iz)=ciz
+        !-----------------------------------------
+        ix=1
+        do iy=2,poisson%ngpy/2
+            gsq=fourpisqcellyinvsq*(iy-1)**2
+            g=sqrt(gsq)
+            !****************************************************  
+            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_zl1= exp(g*(zz-cell(3)))
+            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+            temp_exp_z  = exp(-g*(zz))
+            temp_exp_zl = exp(-g*(zz+cell(3)))
+            t = temp_exp_zl1 - temp_exp_zl
+            tt= temp_exp_z - temp_exp_zl2
+            ttt = 1.d0/(1.d0-temp_exp_2)
 
-                    ixt=ix+1
-                    t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
-                    tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
-                    ciz=(t+tt)/sinh(g*hzlu)
-                    poisson%pots(ixt,iy,iz)=ciz
-                enddo
-            !-----------------------------------------
-                do iy=2,poisson%ngpy/2
-                    iyt=poisson%ngpy-iy+2
-                    gsqy=fourpisqcellyinvsq*(iy-1)**2
-                    do ix=3,poisson%ngpx,2
-                        gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
-                        g=sqrt(gsq)
-                        t= poisson%pots(ix,iy,npu)*sinh(g*hzliz)
-                        tt=poisson%pots(ix,iy,npl)*sinh(g*hzuiz)
-                        ciz=(t+tt)/sinh(g*hzlu)
-                        poisson%pots(ix,iy,iz)=ciz
+            ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+            poisson%pots(ix,iy,iz)=ciz
+            poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
 
-                        ixt=ix+1
-                        t= poisson%pots(ixt,iy,npu)*sinh(g*hzliz)
-                        tt=poisson%pots(ixt,iy,npl)*sinh(g*hzuiz)
-                        ciz=(t+tt)/sinh(g*hzlu)
-                        poisson%pots(ixt,iy,iz)=ciz
-
-                        t= poisson%pots(ix,iyt,npu)*sinh(g*hzliz)
-                        tt=poisson%pots(ix,iyt,npl)*sinh(g*hzuiz)
-                        ciz=(t+tt)/sinh(g*hzlu)
-                        poisson%pots(ix,iyt,iz)=ciz
-
-                        ixt=ix+1
-                        t= poisson%pots(ixt,iyt,npu)*sinh(g*hzliz)
-                        tt=poisson%pots(ixt,iyt,npl)*sinh(g*hzuiz)
-                        ciz=(t+tt)/sinh(g*hzlu)
-                        poisson%pots(ixt,iyt,iz)=ciz
-                    enddo
-                enddo
+            ixt=ix+1
+            ciz= (poisson%pots(ixt,iy,npu)*t+poisson%pots(ixt,iy,npl)*tt)*ttt
+            poisson%pots(ixt,iy,iz)=ciz
+            poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
         enddo
-            !-----------------------------------------
- !           write(*,*)"part sinh finished"
+        !-----------------------------------------
+        ix=poisson%ngpx+1
+        gsqx=fourpisqcellxinvsq*(poisson%ngpx/2)**2
+        do iy=2,poisson%ngpy/2
+            gsq=gsqx+fourpisqcellyinvsq*(iy-1)**2
+            g=sqrt(gsq)
+            !****************************************************  
+            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_zl1= exp(g*(zz-cell(3)))
+            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+            temp_exp_z  = exp(-g*(zz))
+            temp_exp_zl = exp(-g*(zz+cell(3)))
+            t = temp_exp_zl1 - temp_exp_zl
+            tt= temp_exp_z - temp_exp_zl2
+            ttt = 1.d0/(1.d0-temp_exp_2)
 
-    else
-         do iz=npl+1,npu-1
-             hzliz=-hz*(npl-iz)
-             hzuiz=-hz*(iz-npu)
-             !-----------------------------------------
-                 ix=poisson%ngpx+1;iy=1
-                 gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
-                 g=sqrt(gsq)
-                 teu =exp(-g*hzuiz)
-                 tel =exp(-g*hzliz)
-                 telu=teu*tel!exp(-g*hzlu)
+            ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+            poisson%pots(ix,iy,iz)=ciz
+            poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
 
-                 t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                 tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                 ciz=(t+tt)/(1.d0-telu**2)
-                 poisson%pots(ix,iy,iz)=ciz
-             !-----------------------------------------
-                 ix=1;iy=poisson%ngpy/2+1
-                 gsq=fourpisqcellyinvsq*(iy-1)**2
-                 g=sqrt(gsq)
-                 teu =exp(-g*hzuiz)
-                 tel =exp(-g*hzliz)
-                 telu=teu*tel!exp(-g*hzlu)
-
-                 t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                 tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                 ciz=(t+tt)/(1.d0-telu**2)
-                 poisson%pots(ix,iy,iz)=ciz
-             !-----------------------------------------
-                 ix=poisson%ngpx+1;iy=poisson%ngpy/2+1
-                 gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
-                 g=sqrt(gsq)
-                 teu =exp(-g*hzuiz)
-                 tel =exp(-g*hzliz)
-                 telu=teu*tel!exp(-g*hzlu)
-
-                 t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                 tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                 ciz=(t+tt)/(1.d0-telu**2)
-                 poisson%pots(ix,iy,iz)=ciz
-             !-----------------------------------------
-                 ix=1
-                 do iy=2,poisson%ngpy/2
-                     gsq=fourpisqcellyinvsq*(iy-1)**2
-                     g=sqrt(gsq)
-                     teu =exp(-g*hzuiz)
-                     tel =exp(-g*hzliz)
-                     telu=teu*tel!exp(-g*hzlu)
-
-                     t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                     tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                     ciz=(t+tt)/(1.d0-telu**2)
-                     poisson%pots(ix,iy,iz)=ciz
-                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
-
-                     ixt=ix+1
-                     t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
-                     tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
-                     ciz=(t+tt)/(1.d0-telu**2)
-                     poisson%pots(ixt,iy,iz)=ciz
-                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
-                 enddo
-             !-----------------------------------------
-                 ix=poisson%ngpx+1
-                 gsqx=fourpisqcellxinvsq*(poisson%ngpx/2)**2
-                 do iy=2,poisson%ngpy/2
-                     gsq=gsqx+fourpisqcellyinvsq*(iy-1)**2
-                     g=sqrt(gsq)
-                     teu =exp(-g*hzuiz)
-                     tel =exp(-g*hzliz)
-                     telu=teu*tel!exp(-g*hzlu)
-
-                     t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                     tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                     ciz=(t+tt)/(1.d0-telu**2)
-                     poisson%pots(ix,iy,iz)=ciz
-                     poisson%pots(ix,poisson%ngpy-iy+2,iz)=ciz
-
-                     ixt=ix+1
-                     t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
-                     tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
-                     ciz=(t+tt)/(1.d0-telu**2)
-                     poisson%pots(ixt,iy,iz)=ciz
-                     poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
-                 enddo
-             !-----------------------------------------
-                 iy=1
-                 gsqy=fourpisqcellyinvsq*(iy-1)**2
-                 do ix=3,poisson%ngpx,2
-                     gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
-                     g=sqrt(gsq)
-                     teu =exp(-g*hzuiz)
-                     tel =exp(-g*hzliz)
-                     telu=teu*tel!exp(-g*hzlu)
-
-                     t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                     tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                     ciz=(t+tt)/(1.d0-telu**2)
-                     poisson%pots(ix,iy,iz)=ciz
-
-                     ixt=ix+1
-                     t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
-                     tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
-                     ciz=(t+tt)/(1.d0-telu**2)
-                     poisson%pots(ixt,iy,iz)=ciz
-                enddo
-            !-----------------------------------------
-                iy=poisson%ngpy/2+1
-                gsqy=fourpisqcellyinvsq*(iy-1)**2
-                do ix=3,poisson%ngpx,2
-                    gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
-                    g=sqrt(gsq)
-                    teu =exp(-g*hzuiz)
-                    tel =exp(-g*hzliz)
-                    telu=teu*tel!exp(-g*hzlu)
-
-                    t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                    tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                    ciz=(t+tt)/(1.d0-telu**2)
-                    poisson%pots(ix,iy,iz)=ciz
-
-                    ixt=ix+1
-                    t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
-                    tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
-                    ciz=(t+tt)/(1.d0-telu**2)
-                    poisson%pots(ixt,iy,iz)=ciz
-                enddo
-            !-----------------------------------------
-                do iy=2,poisson%ngpy/2
-                    iyt=poisson%ngpy-iy+2
-                    gsqy=fourpisqcellyinvsq*(iy-1)**2
-                    do ix=3,poisson%ngpx,2
-                        gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
-                        g=sqrt(gsq)
-                        teu =exp(-g*hzuiz)
-                        tel =exp(-g*hzliz)
-                        telu=teu*tel!exp(-g*hzlu)
-
-                        t= poisson%pots(ix,iy,npu)*(teu-tel*telu)
-                        tt=poisson%pots(ix,iy,npl)*(tel-teu*telu)
-                        ciz=(t+tt)/(1.d0-telu**2)
-                        poisson%pots(ix,iy,iz)=ciz
-
-                        ixt=ix+1
-                        t= poisson%pots(ixt,iy,npu)*(teu-tel*telu)
-                        tt=poisson%pots(ixt,iy,npl)*(tel-teu*telu)
-                        ciz=(t+tt)/(1.d0-telu**2)
-                        poisson%pots(ixt,iy,iz)=ciz
-
-                        t= poisson%pots(ix,iyt,npu)*(teu-tel*telu)
-                        tt=poisson%pots(ix,iyt,npl)*(tel-teu*telu)
-                        ciz=(t+tt)/(1.d0-telu**2)
-                        poisson%pots(ix,iyt,iz)=ciz
-
-                        ixt=ix+1
-                        t= poisson%pots(ixt,iyt,npu)*(teu-tel*telu)
-                        tt=poisson%pots(ixt,iyt,npl)*(tel-teu*telu)
-                        ciz=(t+tt)/(1.d0-telu**2)
-                        poisson%pots(ixt,iyt,iz)=ciz
-                    enddo
-                enddo
+            ixt=ix+1
+            ciz= (poisson%pots(ixt,iy,npu)*t+poisson%pots(ixt,iy,npl)*tt)*ttt
+            poisson%pots(ixt,iy,iz)=ciz
+            poisson%pots(ixt,poisson%ngpy-iy+2,iz)=-ciz
         enddo
-            !-----------------------------------------
-!            write(*,*)"part exp finished"
-    endif
+        !-----------------------------------------
+        iy=1
+        gsqy=fourpisqcellyinvsq*(iy-1)**2
+        do ix=3,poisson%ngpx,2
+            gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
+            g=sqrt(gsq)
+            !****************************************************  
+            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_zl1= exp(g*(zz-cell(3)))
+            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+            temp_exp_z  = exp(-g*(zz))
+            temp_exp_zl = exp(-g*(zz+cell(3)))
+            t = temp_exp_zl1 - temp_exp_zl
+            tt= temp_exp_z - temp_exp_zl2
+            ttt = 1.d0/(1.d0-temp_exp_2)
+
+            ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+            poisson%pots(ix,iy,iz)=ciz
+
+            ixt=ix+1
+            ciz= (poisson%pots(ixt,iy,npu)*t+poisson%pots(ixt,iy,npl)*tt)*ttt
+            poisson%pots(ixt,iy,iz)=ciz
+        enddo
+        !-----------------------------------------
+        iy=poisson%ngpy/2+1
+        gsqy=fourpisqcellyinvsq*(iy-1)**2
+        do ix=3,poisson%ngpx,2
+            gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
+            g=sqrt(gsq)
+            !****************************************************  
+            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_zl1= exp(g*(zz-cell(3)))
+            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+            temp_exp_z  = exp(-g*(zz))
+            temp_exp_zl = exp(-g*(zz+cell(3)))
+            t = temp_exp_zl1 - temp_exp_zl
+            tt= temp_exp_z - temp_exp_zl2
+            ttt = 1.d0/(1.d0-temp_exp_2)
+
+            ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+            poisson%pots(ix,iy,iz)=ciz
+
+            ixt=ix+1
+            ciz= (poisson%pots(ixt,iy,npu)*t+poisson%pots(ixt,iy,npl)*tt)*ttt
+            poisson%pots(ixt,iy,iz)=ciz
+        enddo
+        !-----------------------------------------
+        do iy=2,poisson%ngpy/2
+            iyt=poisson%ngpy-iy+2
+            gsqy=fourpisqcellyinvsq*(iy-1)**2
+            do ix=3,poisson%ngpx,2
+                gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
+                g=sqrt(gsq)
+                !****************************************************  
+                temp_exp_2  = exp(-2*g*cell(3))
+                temp_exp_zl1= exp(g*(zz-cell(3)))
+                temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
+                temp_exp_z  = exp(-g*(zz))
+                temp_exp_zl = exp(-g*(zz+cell(3)))
+                t = temp_exp_zl1 - temp_exp_zl
+                tt= temp_exp_z - temp_exp_zl2
+                ttt = 1.d0/(1.d0-temp_exp_2)
+
+                ciz= (poisson%pots(ix,iy,npu)*t+poisson%pots(ix,iy,npl)*tt)*ttt
+                poisson%pots(ix,iy,iz)=ciz
+
+                ixt=ix+1
+                ciz= (poisson%pots(ixt,iy,npu)*t+poisson%pots(ixt,iy,npl)*tt)*ttt
+                poisson%pots(ixt,iy,iz)=ciz
+
+                ciz= (poisson%pots(ix,iyt,npu)*t+poisson%pots(ix,iyt,npl)*tt)*ttt
+                poisson%pots(ix,iyt,iz)=ciz
+
+                ixt=ix+1
+                ciz= (poisson%pots(ixt,iyt,npu)*t+poisson%pots(ixt,iyt,npl)*tt)*ttt
+                poisson%pots(ixt,iyt,iz)=ciz
+            enddo
+        enddo
+    enddo
   
     do iz=npl,npu
         call dfftw_execute(plan_bs(iz))
@@ -897,12 +766,8 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     integer::ix, iy, iz, npl,npu
     real(8):: t, tt ,density(poisson%ngpx,poisson%ngpy,2),vl,vu
     real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(poisson%ngpx,poisson%ngpy,2,5)
-    real(8)::pot_layerl2,pot_layeru2
-    real(8)::pot_layerl3,pot_layeru3
-    real(8)::pot_layerl4,pot_layeru4
-    real(8)::pot_layerl0,pot_layeru0
     real(8):: E,d
-    real(8):: tt1
+    real(8), parameter, dimension(5) :: cf5 = [-25.d0/12.d0,4.d0,-3.d0,+4.d0/3.d0,-0.25d0]
     pi=4*atan(1.d0)
     npl=poisson%npl
     npu=poisson%npu
@@ -910,40 +775,17 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     t=0.d0
     tt=0.d0
     d = poisson%cell(3)
-            E =- (vu-vl)/d
+    E =- (vu-vl)/d
 
-    tt1= 0.d0
     do iy=1,poisson%ngpy
     do ix=1,poisson%ngpx
-            pot_layerl4=poisson%pots(ix,iy,npl+4)+poisson%pot(ix,iy,npl+4)+pot_short(ix,iy,1,5)
-            pot_layerl3=poisson%pots(ix,iy,npl+3)+poisson%pot(ix,iy,npl+3)+pot_short(ix,iy,1,4)
-            pot_layerl2=poisson%pots(ix,iy,npl+2)+poisson%pot(ix,iy,npl+2)+pot_short(ix,iy,1,3)
-            pot_layerl =poisson%pots(ix,iy,npl+1)+poisson%pot(ix,iy,npl+1)+pot_short(ix,iy,1,2)
-              vl       =poisson%pots(ix,iy,npl  )+poisson%pot(ix,iy,npl  )+pot_short(ix,iy,1,1)
-            !density(ix,iy,1)=-0.5d0*(-3.d0*vl+4*pot_layerl-pot_layerl2)* hgzinv
-            density(ix,iy,1)=-(-25.d0/12.d0*vl+4.d0*pot_layerl-3.d0*pot_layerl2+4.d0/3.d0*pot_layerl3-0.25d0*pot_layerl4)* hgzinv
-            t=t+ density(ix,iy,1)
-            tt1=tt1+density(ix,iy,1)*poisson%pot(ix,iy,npl  )
-            pot_layeru4=poisson%pots(ix,iy,npu-4)+poisson%pot(ix,iy,npu-4)+pot_short(ix,iy,2,5)
-            pot_layeru3=poisson%pots(ix,iy,npu-3)+poisson%pot(ix,iy,npu-3)+pot_short(ix,iy,2,4)
-            pot_layeru2=poisson%pots(ix,iy,npu-2)+poisson%pot(ix,iy,npu-2)+pot_short(ix,iy,2,3)
-            pot_layeru =poisson%pots(ix,iy,npu-1)+poisson%pot(ix,iy,npu-1)+pot_short(ix,iy,2,2)
-                    vu =poisson%pots(ix,iy,npu  )+poisson%pot(ix,iy,npu  )+pot_short(ix,iy,2,1)
-            !density(ix,iy,2)=0.5d0*(3.d0*vu-4.d0*pot_layeru+pot_layeru2)* hgzinv
-            density(ix,iy,2)=-(-25.d0/12.d0*vu+4.d0*pot_layeru-3.d0*pot_layeru2+4.d0/3.d0*pot_layeru3-0.25d0*pot_layeru4)* hgzinv
-            tt=tt+ density(ix,iy,2)
-            tt1=tt1+density(ix,iy,2)*poisson%pot(ix,iy,npu)
+        density(ix,iy,1) =-dot_product(poisson%pots(ix,iy,npl:npl+4)+poisson%pot(ix,iy,npl:npl+4)+pot_short(ix,iy,1,1:5),cf5) * hgzinv
+        t=t+ density(ix,iy,1)
+        density(ix,iy,2) =-dot_product(poisson%pots(ix,iy,npu:npu-4:-1)+poisson%pot(ix,iy,npu:npu-4:-1)+pot_short(ix,iy,2,1:5),cf5) * hgzinv
+        tt=tt+ density(ix,iy,2)
     enddo
     enddo
-  !  do iy=1,poisson%ngpy
-  !  do ix=1,poisson%ngpx
-  !      write(1000,*)density(ix,iy,1)
-  !      write(1001,*)density(ix,iy,2)
-  !  enddo
-  !  write(1000,*)
-  !  write(1001,*)
-  !  enddo
-    tt1=tt1*poisson%hx*poisson%hy
+
     t=t*poisson%hx*poisson%hy
     tt=tt*poisson%hx*poisson%hy
     if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
@@ -954,10 +796,6 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     write(*,'(a,es25.13)')'charge on upper plane',tt
     vl=poisson%vl
     vu=poisson%vu
-    !if((.not. poisson%point_particle)) then
-    !    vl=t*vl+tt*vu
-    !    vu=tt1
-    !endif
 end subroutine surface_charge
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
