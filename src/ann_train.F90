@@ -173,19 +173,32 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     type(typ_ekf), intent(inout), target:: ekf
     type(typ_atoms_arr), intent(inout), target:: atoms_smplx
     !local variables
-    real(8):: vertices(2,3), fval(3)
+    real(8):: vertices(9,10), fval(10)
     real(8):: step, ftol
-    integer:: ndim, iter
+    integer:: ndim, iter, i
     external:: cal_rmse_force_cent2
-    vertices(1,1)=ann_arr%ann(1)%chi0
-    vertices(2,1)=ann_arr%ann(2)%chi0
-    vertices(1,2)=vertices(1,1)+1.d-3
-    vertices(2,2)=vertices(2,1)
-    vertices(1,3)=vertices(1,1)
-    vertices(2,3)=vertices(2,1)+1.d-3
-    ndim=2
+    ndim=9
     ftol=1.d-6
     step=0.d0
+    vertices(1,1)=ann_arr%ann(2)%chi0-ann_arr%ann(1)%chi0
+
+    vertices(2,1)=ann_arr%ann(1)%zion
+    vertices(3,1)=ann_arr%ann(2)%zion
+
+    vertices(4,1)=ann_arr%ann(1)%hardness
+    vertices(5,1)=ann_arr%ann(2)%hardness
+
+    vertices(6,1)=ann_arr%ann(1)%spring_const
+    vertices(7,1)=ann_arr%ann(2)%spring_const
+
+    vertices(8,1)=ann_arr%ann(1)%gausswidth_ion
+    vertices(9,1)=ann_arr%ann(2)%gausswidth_ion
+
+    do i=2,ndim+1
+        vertices(1:ndim,i)=vertices(1:ndim,1)
+        vertices(i-1,i)=vertices(i-1,i)+1.d-3
+    enddo
+
     atoms_smplx_t=>atoms_smplx
     parini_t=>parini
     ann_arr_t=>ann_arr
@@ -208,9 +221,28 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     type(typ_symfunc):: symfunc
     real(8):: rmse
     integer:: iat, iconf, nat_tot
-    ann_arr%ann(1)%chi0=vertex(1)
-    ann_arr%ann(2)%chi0=vertex(2)
-    write(*,'(a,2f10.4)') 'CHI ',ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0
+    ann_arr%ann(1)%chi0=-vertex(1)/2.d0
+    ann_arr%ann(2)%chi0= vertex(1)/2.d0
+
+    ann_arr%ann(1)%zion=vertex(2)
+    ann_arr%ann(2)%zion=vertex(3)
+
+    ann_arr%ann(1)%hardness=vertex(4)
+    ann_arr%ann(2)%hardness=vertex(5)
+
+    ann_arr%ann(1)%spring_const=vertex(6)
+    ann_arr%ann(2)%spring_const=vertex(7)
+
+    ann_arr%ann(1)%gausswidth_ion=vertex(8)
+    ann_arr%ann(2)%gausswidth_ion=vertex(9)
+
+    write(*,'(5(a,2f7.4,4x))') &
+        'CHI= ',ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0, &
+        'ZION= ',ann_arr%ann(1)%zion,ann_arr%ann(2)%zion, &
+        'HARD= ',ann_arr%ann(1)%hardness,ann_arr%ann(2)%hardness, &
+        'K= ',ann_arr%ann(1)%spring_const,ann_arr%ann(2)%spring_const, &
+        'BETA= ',ann_arr%ann(1)%gausswidth_ion,ann_arr%ann(2)%gausswidth_ion
+
     nat_tot=0
     rmse=0.d0
     ann_arr%event='potential'
@@ -226,6 +258,7 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
         nat_tot=nat_tot+atoms%nat
     enddo
     rmse_force_cent2=sqrt(rmse/real(3*nat_tot,8))
+    write(*,*) 'rmse_force_cent2 ',rmse_force_cent2
 end subroutine cal_rmse_force_cent2
 !*****************************************************************************************
 subroutine init_ann_train(parini,ann_arr,ekf)

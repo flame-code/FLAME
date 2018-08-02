@@ -16,7 +16,7 @@ subroutine simplex(vertices,fval,step,ndim,ftol,functn,iter)
     real(8), parameter:: alpha=1.d0 !reflection coefficient, a positive value
     real(8), parameter:: beta=0.5d0 !contraction coefficient, greater than one
     real(8), parameter:: gama=2.d0 !expansion coefficient, lies between zero and one
-    integer, parameter:: nmax=20, itmax=500
+    integer, parameter:: nmax=20, itmax=50000
     !Expected maximum number of dimensions, three parameters which define
     !the expansions and contractions, and maximum allowed number of
     !iterations.
