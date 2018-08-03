@@ -865,6 +865,15 @@ subroutine ann_train(parini)
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
+subroutine set_single_atom_energy(parini,ann_arr,ekf)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_symfunc
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(in):: ekf
+end subroutine set_single_atom_energy
 subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
@@ -881,6 +890,13 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     real(8), intent(in) :: vertex(ndim)
     real(8), intent(out) :: rmse_force_cent2
 end subroutine cal_rmse_force_cent2
+subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_symfunc
+    integer, intent(in) :: ndim
+    real(8), intent(in) :: vertex(ndim)
+    real(8), intent(out) :: rmse_energy_cent2
+end subroutine cal_rmse_energy_cent2
 subroutine init_ann_train(parini,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_ekf
@@ -4231,7 +4247,7 @@ subroutine simplex(vertices,fval,step,ndim,ftol,functn,iter)
     real(8), parameter:: alpha=1.d0 !reflection coefficient, a positive value
     real(8), parameter:: beta=0.5d0 !contraction coefficient, greater than one
     real(8), parameter:: gama=2.d0 !expansion coefficient, lies between zero and one
-    integer, parameter:: nmax=20, itmax=500
+    integer, parameter:: nmax=20, itmax=50000
 end subroutine simplex
     subroutine functn(n,p,func)
         integer, intent(in)  :: n
