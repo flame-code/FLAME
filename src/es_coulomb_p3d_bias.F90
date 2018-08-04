@@ -10,7 +10,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
     !local variables
-    real(8):: epotlong, epotplane !, epotshort
+    real(8):: epotlong, epotplane 
     real(8):: time(10)
     !The following dummy varables definition to be deleted later.
     !real(8):: totrho
@@ -44,6 +44,9 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
         write(*,*)'real pot = ', beta/(poisson%ngpx*poisson%ngpy)+vl,&
                                 -beta/(poisson%ngpx*poisson%ngpy)+vu
         write(*,*)'charge on upper  plate  ', charge
+        write(*,*)"C_0 = ",c, " K =" , charge/dv/c
+
+
         !********************************************************************
         ! Esperesso energy 
         !dipole_correction = 3/(4*pi)*dipole**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1))
@@ -274,7 +277,7 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     real(8):: fourpisqcellxinvsq, fourpisqcellyinvsq,valuengpxyinv
     real(8):: hzlu,hzliz,hzuiz, zz 
     real(8):: tel,teu,telu
-    real(8) :: temp_exp_2  , temp_exp_zl1, temp_exp_zl2, temp_exp_z  , temp_exp_zl  
+    real(8) :: temp_exp_2 ,temp_exp_l , temp_exp_zl1, temp_exp_zl2, temp_exp_z  , temp_exp_zl  
     integer::ix,iy,iz,ixt,iyt,npu,npl,izz
     integer(8), allocatable:: plan_bs(:),plan_fs(:)
     npl=poisson%npl
@@ -326,11 +329,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
         gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
         g=sqrt(gsq)
         !****************************************************  
-        temp_exp_2  = exp(-2*g*cell(3))
+        temp_exp_l  = exp(-g*cell(3))
         temp_exp_zl1= exp(g*(zz-cell(3)))
-        temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
         temp_exp_z  = exp(-g*(zz))
-        temp_exp_zl = exp(-g*(zz+cell(3)))
+        temp_exp_2  = temp_exp_l**2 
+        temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+        temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
         t = temp_exp_zl1 - temp_exp_zl
         tt= temp_exp_z - temp_exp_zl2
         ttt = 1.d0/(1.d0-temp_exp_2)
@@ -342,11 +346,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
         gsq=fourpisqcellyinvsq*(iy-1)**2
         g=sqrt(gsq)
         !****************************************************  
-        temp_exp_2  = exp(-2*g*cell(3))
+        temp_exp_l  = exp(-g*cell(3))
         temp_exp_zl1= exp(g*(zz-cell(3)))
-        temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
         temp_exp_z  = exp(-g*(zz))
-        temp_exp_zl = exp(-g*(zz+cell(3)))
+        temp_exp_2  = temp_exp_l**2 
+        temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+        temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
         t = temp_exp_zl1 - temp_exp_zl
         tt= temp_exp_z - temp_exp_zl2
         ttt = 1.d0/(1.d0-temp_exp_2)
@@ -358,11 +363,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
         gsq=fourpisqcellxinvsq*((ix-1)/2)**2 + fourpisqcellyinvsq*(iy-1)**2
         g=sqrt(gsq)
         !****************************************************  
-        temp_exp_2  = exp(-2*g*cell(3))
+        temp_exp_l  = exp(-g*cell(3))
         temp_exp_zl1= exp(g*(zz-cell(3)))
-        temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
         temp_exp_z  = exp(-g*(zz))
-        temp_exp_zl = exp(-g*(zz+cell(3)))
+        temp_exp_2  = temp_exp_l**2 
+        temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+        temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
         t = temp_exp_zl1 - temp_exp_zl
         tt= temp_exp_z - temp_exp_zl2
         ttt = 1.d0/(1.d0-temp_exp_2)
@@ -376,11 +382,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
             gsq=fourpisqcellyinvsq*(iy-1)**2
             g=sqrt(gsq)
             !****************************************************  
-            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_l  = exp(-g*cell(3))
             temp_exp_zl1= exp(g*(zz-cell(3)))
-            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
             temp_exp_z  = exp(-g*(zz))
-            temp_exp_zl = exp(-g*(zz+cell(3)))
+            temp_exp_2  = temp_exp_l**2 
+            temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+            temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
             t = temp_exp_zl1 - temp_exp_zl
             tt= temp_exp_z - temp_exp_zl2
             ttt = 1.d0/(1.d0-temp_exp_2)
@@ -401,11 +408,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
             gsq=gsqx+fourpisqcellyinvsq*(iy-1)**2
             g=sqrt(gsq)
             !****************************************************  
-            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_l  = exp(-g*cell(3))
             temp_exp_zl1= exp(g*(zz-cell(3)))
-            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
             temp_exp_z  = exp(-g*(zz))
-            temp_exp_zl = exp(-g*(zz+cell(3)))
+            temp_exp_2  = temp_exp_l**2 
+            temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+            temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
             t = temp_exp_zl1 - temp_exp_zl
             tt= temp_exp_z - temp_exp_zl2
             ttt = 1.d0/(1.d0-temp_exp_2)
@@ -426,11 +434,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
             gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
             g=sqrt(gsq)
             !****************************************************  
-            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_l  = exp(-g*cell(3))
             temp_exp_zl1= exp(g*(zz-cell(3)))
-            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
             temp_exp_z  = exp(-g*(zz))
-            temp_exp_zl = exp(-g*(zz+cell(3)))
+            temp_exp_2  = temp_exp_l**2 
+            temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+            temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
             t = temp_exp_zl1 - temp_exp_zl
             tt= temp_exp_z - temp_exp_zl2
             ttt = 1.d0/(1.d0-temp_exp_2)
@@ -449,11 +458,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
             gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
             g=sqrt(gsq)
             !****************************************************  
-            temp_exp_2  = exp(-2*g*cell(3))
+            temp_exp_l  = exp(-g*cell(3))
             temp_exp_zl1= exp(g*(zz-cell(3)))
-            temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
             temp_exp_z  = exp(-g*(zz))
-            temp_exp_zl = exp(-g*(zz+cell(3)))
+            temp_exp_2  = temp_exp_l**2 
+            temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+            temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
             t = temp_exp_zl1 - temp_exp_zl
             tt= temp_exp_z - temp_exp_zl2
             ttt = 1.d0/(1.d0-temp_exp_2)
@@ -473,11 +483,12 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
                 gsq=gsqy+fourpisqcellxinvsq*((ix-1)/2)**2
                 g=sqrt(gsq)
                 !****************************************************  
-                temp_exp_2  = exp(-2*g*cell(3))
+                temp_exp_l  = exp(-g*cell(3))
                 temp_exp_zl1= exp(g*(zz-cell(3)))
-                temp_exp_zl2= exp(g*(zz-2.d0*cell(3)))
                 temp_exp_z  = exp(-g*(zz))
-                temp_exp_zl = exp(-g*(zz+cell(3)))
+                temp_exp_2  = temp_exp_l**2 
+                temp_exp_zl2= temp_exp_zl1*temp_exp_l     !exp(g*(zz-2.d0*cell(3)))
+                temp_exp_zl = temp_exp_z  *temp_exp_l     ! exp(-g*(zz+cell(3)))
                 t = temp_exp_zl1 - temp_exp_zl
                 tt= temp_exp_z - temp_exp_zl2
                 ttt = 1.d0/(1.d0-temp_exp_2)
@@ -788,10 +799,10 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
 
     t=t*poisson%hx*poisson%hy
     tt=tt*poisson%hx*poisson%hy
-    if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
-        t =t -E/(4*pi)*poisson%cell(1)*poisson%cell(2)
-        tt=tt+E/(4*pi)*poisson%cell(1)*poisson%cell(2)
-    endif
+    !if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
+    !    t =t -E/(4*pi)*poisson%cell(1)*poisson%cell(2)
+    !    tt=tt+E/(4*pi)*poisson%cell(1)*poisson%cell(2)
+    !endif
     write(*,'(a,es25.13)')'charge on lower plane' ,t
     write(*,'(a,es25.13)')'charge on upper plane',tt
     vl=poisson%vl

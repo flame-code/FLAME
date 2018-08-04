@@ -487,7 +487,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     real(8):: dv, pi, beta ,vu,vl
     real(8):: c, charge, epot, ext_pot , efield, charge0
     real(8):: qv, qv_pp, Ef
-    real(8),allocatable :: pots_layer(:,:,:,:)
+    real(8),allocatable :: pot_short(:,:,:,:)
     character(5)::flag
     pi=4.d0*atan(1.d0)        
     if(trim(parini%psolver)/='p3d') then
@@ -516,6 +516,9 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
             atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*0.5d0*atoms%qat(iat)
             g(iat)=g(iat)-parini%efield*0.5d0*atoms%rat(3,iat)
         enddo
+        if (flag=="force") then
+            write(*,*)"dipole ,beta =  " , dipole
+        endif
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
         nbgpz=int(poisson%rgcut/poisson%hz)+2
         dipole=0.d0
@@ -609,8 +612,14 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
 
         if (flag=="force") then
             write(*,*)"dipole ,beta =  " , dipole,beta
-            write(*,*)"charge = ",charge
+            write(*,*)"charge =                ",charge, charge0
             write(*,*)"externalwork = ",atoms%ebattery
+           ! allocate(pot_short(poisson%ngpx,poisson%ngpy,2,5))
+           ! pot_short=0.d0
+           ! poisson%pots=0.d0
+           ! call surface_charge(parini,poisson,pot_short,vl,vu)
+            write(*,*)"C_0 = ",c, " K =" , charge/dv/c
+           ! deallocate(pot_short)
                 !open(unit=55, file="pots.txt" ,status='unknown',position='append')
                 !   do igpy=1,min(10,poisson%ngpy),2
                 !   do igpx=1,min(10,poisson%ngpx),2
@@ -644,10 +653,10 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
                 close(56)
         endif
 
-        !do iat=1,atoms%nat
-        !    g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+        do iat=1,atoms%nat
+            g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
         !    atoms%fat(3,iat)=atoms%fat(3,iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
-        !enddo
+        enddo
         deallocate(poisson%pots)
     endif
 end subroutine apply_external_field
