@@ -20,7 +20,7 @@ libmodules_a_SOURCES =  task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 
 		constants_minhocao_mod.F90
 
 #temporary compiling line for gfortran
-AM_FCFLAGS = -I. -O
+AM_FCFLAGS = -I.
 AM_CFLAGS=-I$(top_builddir)
 
 if HAVE_BPS
