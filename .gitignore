@@ -55,3 +55,16 @@ ternaries.x
 vasp_recompute_cell.x
 vasp_recompute_kpt.x
 vasp_recompute_kpt_odd.x
+Makefile.in
+aclocal.m4
+autom4te.cache/*
+compile
+config.guess
+config.sub
+configure
+depcomp
+install-sh
+missing
+modules/Makefile.in
+src/Makefile.in
+src/lenosky_tb/Makefile.in
