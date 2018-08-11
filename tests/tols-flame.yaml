@@ -1,0 +1,36 @@
+---
+Default tolerances:
+ Epsilon: 1.e-3
+
+Keys to ignore:
+ - Code logo
+ - Timestamp of this run
+
+Patterns to ignore:
+ - Timestamp
+ - memory
+ - FLAGS
+ - input_guess
+
+testforces_FD:
+ Keys to ignore:
+  - epot_diff_x
+  - epot_diff_y
+  - epot_diff_z
+  - fnrm
+  - fsum_x
+  - fsum_y
+  - fsum_z
+ epot: 1.e-14
+ epot_l_x: 1.e-14
+ epot_l_y: 1.e-14
+ epot_l_z: 1.e-14
+ epot_r_x: 1.e-14
+ epot_r_y: 1.e-14
+ epot_r_z: 1.e-14
+ F_x: 1.e-14
+ F_y: 1.e-14
+ F_z: 1.e-14
+ err_x: 1.e-9
+ err_y: 1.e-9
+ err_z: 1.e-9

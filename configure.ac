@@ -45,6 +45,7 @@ Makefile
 modules/Makefile
 src/Makefile
 src/lenosky_tb/Makefile
+tests/Makefile
 ])
 
 AC_OUTPUT
