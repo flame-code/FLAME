@@ -1,5 +1,6 @@
 # Give here the list of existing tests
-SHORT_TESTDIRS = testforces_FD
+SHORT_TESTDIRS = testforces_FD \
+				 single_point
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 

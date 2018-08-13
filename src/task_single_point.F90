@@ -6,6 +6,7 @@ subroutine single_point_task(parini)
     use mod_potential, only: fcalls, perfstatus, potential
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr
+    use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
     !so parini can be intent(in) in future.
@@ -33,7 +34,9 @@ subroutine single_point_task(parini)
     if(trim(parini%frmt_single_point)/='unknown') then
         file_info%frmt=trim(parini%frmt_single_point)
     endif
+    call yaml_sequence_open('epot of all configurations')
     do iconf=1,atoms_arr%nconf
+        call yaml_sequence(advance='no')
         if(trim(potential)/='netsock' .or. iconf==1) then 
             call init_potential_forces(parini,atoms_arr%atoms(iconf))
         endif
@@ -46,7 +49,11 @@ subroutine single_point_task(parini)
             tt1=atoms_arr%atoms(iconf)%epot-atoms_arr%atoms(1)%epot
             tt2=atoms_arr%atoms(iconf)%epot-atoms_arr%atoms(iconf-1)%epot
         endif
-        write(*,'(a,i7,e24.15,2f10.5)') 'EPOT',iconf,atoms_arr%atoms(iconf)%epot,tt1,tt2
+        call yaml_map('conf. number',iconf,fmt='(i6.6)')
+        call yaml_map('epot',atoms_arr%atoms(iconf)%epot,fmt='(e24.15)')
+        call yaml_map('diff w.r.t. first conf',tt1,fmt='(f12.7)')
+        call yaml_map('diff w.r.t. prev. conf',tt2,fmt='(f12.7)')
+        !write(*,'(a,i7,e24.15,2f10.5)') 'EPOT',iconf,atoms_arr%atoms(iconf)%epot,tt1,tt2
         !if(parini%print_force_single_point) then
         !    do iat=1,atoms_all%atoms%nat
         !        fxyz(1)=atoms_all%atoms%fat(1,iat)
@@ -61,6 +68,7 @@ subroutine single_point_task(parini)
         if (iconf==2)  file_info%file_position='append'
         call acf_write(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout') !to be fixed later by atoms_arr
     enddo
+    call yaml_sequence_close()
     !call atom_all_deallocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.)
 end subroutine single_point_task
 !*****************************************************************************************

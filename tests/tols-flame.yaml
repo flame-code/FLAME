@@ -34,3 +34,10 @@ testforces_FD:
  err_x: 1.e-9
  err_y: 1.e-9
  err_z: 1.e-9
+
+single_point:
+ Keys to ignore:
+  - conf. number
+ epot: 1.e-14
+ diff w.r.t. first conf: 1.e-6
+ diff w.r.t. prev. conf: 1.e-6
