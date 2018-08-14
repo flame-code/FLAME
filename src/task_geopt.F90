@@ -7,6 +7,7 @@ subroutine geopt(parini)
     use mod_potential, only: fcalls, perfstatus, potential
     use mod_processors, only: iproc, nproc
     use mod_const, only: ang2bohr, bohr2ang, ev2ha
+    use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
    ! type(typ_parini), intent(in):: parini
@@ -105,7 +106,11 @@ subroutine geopt(parini)
     endif
     call finalminimize(paropt)
     if(iproc==0) then
-        write(*,'(a,l,i7)') 'converged ',paropt%converged,int(fcalls-count_initial)
+        !write(*,'(a,l,i7)') 'converged ',paropt%converged,int(fcalls-count_initial)
+        call yaml_mapping_open('task geopt')
+        call yaml_map('converged',.true.)
+        call yaml_map('total energy and force evaluations',int(fcalls-count_initial),fmt='(i5)')
+        call yaml_mapping_close()
     endif
     call final_potential_forces(parini,atoms)
     call atom_deallocate_old(atoms)

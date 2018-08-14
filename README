@@ -4,7 +4,7 @@ Fully loaded atomistic modeling environment
 INSTALLATION:
 FLAME requires autoconf and automake to be installed.
 
-It is recommended to installed in a directory different from
+It is recommended to install FLAME in a directory different from
 the source.
 
 Steps to install FLAME:
@@ -14,7 +14,7 @@ a set of utilities from the BigDFT project.
 Preferably, use the tar file given inside the
 FLAME to avoid inconsistency of versions.
 You do NOT need different installation of futile
-for multiple installation of FLAME.
+for multiple installations of FLAME.
 Untar the futile inside the FLAME, then
 in order to build futile, make a directory somewhere
 and from there run the following
@@ -24,10 +24,10 @@ path_to_futile_source/Installer.py build futile -c "FCFLAGS=-C -g -traceback" \
 -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm" \
 "CC=mpicc" "CXX=mpicxx" "FC=mpif90" "F77=mpif90" "FCLIBS= "
 
-Of course the setting is given for a particular version and
+Of course, the setting is given for a particular version and
 installation of MKL, you may need to modify it.
 
-After installation you may need to find out how to link with
+After installation, you may need to find out how to link with
 the build futile, however, in the subsequent steps you see an
 example. In case, you want to know how to link you can run:
 
@@ -36,7 +36,7 @@ path_to_futile_source/Installer.py link futile
 2) in FLAME source directory run:
 autoreconf -fi
 
-3) make a director to build flame and then
+3) make a directory to build flame and then
 replace $FUTILE by the full path of futile built
 directory or define it as an environment variable:
 export FUTILE=path_to_built_futile_install_subdirectory

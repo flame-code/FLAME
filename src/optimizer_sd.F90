@@ -3,6 +3,7 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt, frmt_base
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, nr, nwork
@@ -11,7 +12,7 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
     type(typ_paropt), intent(inout):: paropt
     !local variables
     character(52), parameter:: frmt='('//frmt_base//',e12.4,i5,l2,a)'
-    real(8):: fmax, fnrm, de1, de2, df1, df2, dx
+    real(8):: fmax, fnrm, de1, de2, df1, df2, dx, tt1
     logical:: feedbackcondition
     integer:: i
     if(paropt%iflag==0) call init_sdminimum(paropt,nr,x,nwork,work)
@@ -38,9 +39,22 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
     !if(care .and. paropt%itsd>5 .and. alpha==alphax .and. fnrm/fnrmitm1>0.8d0 &
     call test_saturation(paropt,de1,de2,df2,fnrm)
     if(paropt%lprint .and. parini%iverbose>=0) then
+        tt1=0.5d0*(sign(1.d0,real(paropt%itsd-1,8))+1.d0)*paropt%alpha/paropt%alphax
         !write(*,'(a4,i3.3,1x,i5,es23.15,e11.3,2e12.5,e12.4,i5,l2,a)') 'MIN:',iproc,paropt%itsd,epot,de1, &
-        write(*,frmt) 'MIN:',iproc,paropt%itsd,epot,de1, &
-        fnrm,fmax,0.5d0*(sign(1.d0,real(paropt%itsd-1,8))+1.d0)*paropt%alpha/paropt%alphax,paropt%isatur,paropt%xmoved,' SD'
+        !a4,i3.3,1x,i5,es20.12,es11.3,2es12.5 //,e12.4,i5,l2,a
+        call yaml_sequence(advance='no')
+        call yaml_map('iproc',iproc,fmt='(i3.3)')
+        call yaml_map('iter',paropt%itsd,fmt='(i5)')
+        call yaml_map('epot',epot,fmt='(es20.12)')
+        call yaml_map('de',de1,fmt='(es11.3)')
+        call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+        call yaml_map('fmax',fmax,fmt='(es12.5)')
+        call yaml_map('alpha/alphax',tt1,fmt='(e12.4)')
+        call yaml_map('isatur',paropt%isatur,fmt='(i5)')
+        call yaml_map('xmoved',paropt%xmoved,fmt='(l2)')
+        !call yaml_map('method','SD',fmt='(a)')
+        !write(*,frmt) 'MIN:',iproc,paropt%itsd,epot,de1, &
+        !fnrm,fmax,tt1,paropt%isatur,paropt%xmoved,' SD'
     endif
     !if(paropt%itsd==126) then
     !close(74)
@@ -54,8 +68,16 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
     if(paropt%converged) then
         !paropt%iflag=0
         !paropt%alpha=-1.d0
-        write(*,'(a,i6,e23.15,2e12.5)') &
-            'SD FINISHED: itsd,epot,fnrm,fmax',paropt%itsd,epot,fnrm,fmax
+        !write(*,'(a,i6,e23.15,2e12.5)') &
+        !    'SD FINISHED: itsd,epot,fnrm,fmax',paropt%itsd,epot,fnrm,fmax
+        call yaml_sequence(advance='no')
+        call yaml_mapping_open('SD FINISHED') !,label='id001')
+        call yaml_map('success',.true.)
+        call yaml_map('iter',paropt%itsd,fmt='(i5)')
+        call yaml_map('epot',epot,fmt='(es20.12)')
+        call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+        call yaml_map('fmax',fmax,fmt='(es12.5)')
+        call yaml_mapping_close()
         call final_sdminimum(paropt)
         return
     endif
@@ -108,6 +130,7 @@ end subroutine sdminimum
 subroutine init_sdminimum(paropt,nr,x,nwork,work)
     use mod_interface
     use mod_opt, only: typ_paropt
+    use yaml_output
     implicit none
     type(typ_paropt), intent(inout):: paropt
     integer, intent(in):: nr, nwork
@@ -151,6 +174,7 @@ subroutine init_sdminimum(paropt,nr,x,nwork,work)
     !write(*,'(a,i4,2es15.7)') 'nsatur,fnrmtolsatur,alphax ', &
     !    paropt%nsatur,paropt%fnrmtolsatur,paropt%alphax
     if(paropt%lprint .and. .not. paropt%param_reported) call report_param(paropt)
+    call yaml_sequence_open('SD optimization iterations')
 end subroutine init_sdminimum
 !*****************************************************************************************
 subroutine what_is_condition_of_feedback(paropt,de1,df1,feedbackcondition)

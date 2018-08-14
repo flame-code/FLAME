@@ -1,6 +1,7 @@
 # Give here the list of existing tests
 SHORT_TESTDIRS = testforces_FD \
-				 single_point
+				 single_point \
+				 geopt_LTB
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
