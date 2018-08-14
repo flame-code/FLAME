@@ -294,6 +294,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
         call sqnm(parini,atoms,paropt,count_sqnm,fail)
         call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
         call test_convergence(nr,fr,paropt)
+        call yaml_sequence_close()
     endif
     !-------------------------------------------------------------------------------------
     if(trim(paropt%approach)=='GMDFIRE') then

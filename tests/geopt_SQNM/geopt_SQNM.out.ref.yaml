@@ -1,0 +1,922 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2018-08-14 20:54:21.272
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : geopt
+   types                               : Au
+   two_level_geopt                     : False
+   verbosity                           : 1
+   verbose                             : 3
+   seed                                : -2
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : SQNM
+   fmaxtol                             : 2.E-4
+   alphax                              : 4.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : True
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s:
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+ potential:
+   potential                           : qsc
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : atombased
+   symfunc                             : only_calculate
+   nstep_ekf                           : 100
+   nstep_cep                           : 200
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_cent2                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ SQNM optimization iterations:
+ - iproc                               :  000
+   iter                                :  1
+   epot                                : -1.653328384903E+00
+   de                                  : -2.158E-01
+   fnrm                                :  7.95881E-01
+   fmax                                :  2.06336E-01
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  2
+   epot                                : -1.916016871082E+00
+   de                                  : -2.627E-01
+   fnrm                                :  5.92177E-01
+   fmax                                :  1.03100E-01
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  3
+   epot                                : -2.014163029104E+00
+   de                                  : -9.815E-02
+   fnrm                                :  4.84521E-01
+   fmax                                :  6.95700E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  4
+   epot                                : -2.064174717337E+00
+   de                                  : -5.001E-02
+   fnrm                                :  4.09856E-01
+   fmax                                :  4.79615E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  5
+   epot                                : -2.092828634471E+00
+   de                                  : -2.865E-02
+   fnrm                                :  3.53216E-01
+   fmax                                :  3.41163E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  6
+   epot                                : -2.110423700642E+00
+   de                                  : -1.760E-02
+   fnrm                                :  3.08507E-01
+   fmax                                :  2.46113E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  7
+   epot                                : -2.121805187636E+00
+   de                                  : -1.138E-02
+   fnrm                                :  2.72682E-01
+   fmax                                :  1.93858E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  8
+   epot                                : -2.129527190964E+00
+   de                                  : -7.722E-03
+   fnrm                                :  2.43936E-01
+   fmax                                :  1.62401E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  9
+   epot                                : -2.135029315469E+00
+   de                                  : -5.502E-03
+   fnrm                                :  2.21015E-01
+   fmax                                :  1.39492E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  10
+   epot                                : -2.139156787876E+00
+   de                                  : -4.127E-03
+   fnrm                                :  2.02849E-01
+   fmax                                :  1.27567E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  11
+   epot                                : -2.142415655348E+00
+   de                                  : -3.259E-03
+   fnrm                                :  1.88416E-01
+   fmax                                :  1.17694E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  12
+   epot                                : -2.147225327605E+00
+   de                                  : -4.810E-03
+   fnrm                                :  1.71892E-01
+   fmax                                :  1.04405E-02
+   ndim                                :  5
+ - iproc                               :  000
+   iter                                :  13
+   epot                                : -2.153534013400E+00
+   de                                  : -6.309E-03
+   fnrm                                :  1.71440E-01
+   fmax                                :  9.84453E-03
+   ndim                                :  5
+ - iproc                               :  000
+   iter                                :  14
+   epot                                : -2.156374150562E+00
+   de                                  : -2.840E-03
+   fnrm                                :  1.77811E-01
+   fmax                                :  1.19923E-02
+   ndim                                :  4
+ - iproc                               :  000
+   iter                                :  15
+   epot                                : -2.159441577939E+00
+   de                                  : -3.067E-03
+   fnrm                                :  1.40882E-01
+   fmax                                :  5.81535E-03
+   ndim                                :  5
+ - iproc                               :  000
+   iter                                :  16
+   epot                                : -2.161650411637E+00
+   de                                  : -2.209E-03
+   fnrm                                :  1.44347E-01
+   fmax                                :  6.34233E-03
+   ndim                                :  5
+ - iproc                               :  000
+   iter                                :  17
+   epot                                : -2.163665563526E+00
+   de                                  : -2.015E-03
+   fnrm                                :  1.16311E-01
+   fmax                                :  4.41322E-03
+   ndim                                :  5
+ - iproc                               :  000
+   iter                                :  18
+   epot                                : -2.164422362316E+00
+   de                                  : -7.568E-04
+   fnrm                                :  1.01113E-01
+   fmax                                :  4.15364E-03
+   ndim                                :  6
+ - iproc                               :  000
+   iter                                :  19
+   epot                                : -2.166293854605E+00
+   de                                  : -1.871E-03
+   fnrm                                :  1.12955E-01
+   fmax                                :  5.44439E-03
+   ndim                                :  6
+ - iproc                               :  000
+   iter                                :  20
+   epot                                : -2.166814562635E+00
+   de                                  : -5.207E-04
+   fnrm                                :  9.03620E-02
+   fmax                                :  2.97714E-03
+   ndim                                :  7
+ - iproc                               :  000
+   iter                                :  21
+   epot                                : -2.167605997981E+00
+   de                                  : -7.914E-04
+   fnrm                                :  9.60164E-02
+   fmax                                :  3.66552E-03
+   ndim                                :  7
+ - iproc                               :  000
+   iter                                :  22
+   epot                                : -2.167951354743E+00
+   de                                  : -3.454E-04
+   fnrm                                :  8.05014E-02
+   fmax                                :  1.74092E-03
+   ndim                                :  8
+ - iproc                               :  000
+   iter                                :  23
+   epot                                : -2.168407190552E+00
+   de                                  : -4.558E-04
+   fnrm                                :  8.16908E-02
+   fmax                                :  2.45584E-03
+   ndim                                :  8
+ - iproc                               :  000
+   iter                                :  24
+   epot                                : -2.168667583569E+00
+   de                                  : -2.604E-04
+   fnrm                                :  7.10632E-02
+   fmax                                :  1.29729E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  25
+   epot                                : -2.169140303483E+00
+   de                                  : -4.727E-04
+   fnrm                                :  7.00198E-02
+   fmax                                :  1.33879E-03
+   ndim                                :  8
+ - iproc                               :  000
+   iter                                :  26
+   epot                                : -2.169400325755E+00
+   de                                  : -2.600E-04
+   fnrm                                :  6.40130E-02
+   fmax                                :  1.38280E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  27
+   epot                                : -2.169610059656E+00
+   de                                  : -2.097E-04
+   fnrm                                :  6.15832E-02
+   fmax                                :  1.33708E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  28
+   epot                                : -2.169859836636E+00
+   de                                  : -2.498E-04
+   fnrm                                :  6.15218E-02
+   fmax                                :  1.15980E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  29
+   epot                                : -2.170051822618E+00
+   de                                  : -1.920E-04
+   fnrm                                :  5.44978E-02
+   fmax                                :  1.23251E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  30
+   epot                                : -2.170306394389E+00
+   de                                  : -2.546E-04
+   fnrm                                :  5.49772E-02
+   fmax                                :  1.24717E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  31
+   epot                                : -2.170588235717E+00
+   de                                  : -2.818E-04
+   fnrm                                :  5.60806E-02
+   fmax                                :  1.18732E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  32
+   epot                                : -2.170785886446E+00
+   de                                  : -1.977E-04
+   fnrm                                :  5.43218E-02
+   fmax                                :  1.21715E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  33
+   epot                                : -2.171053083435E+00
+   de                                  : -2.672E-04
+   fnrm                                :  5.58460E-02
+   fmax                                :  1.10783E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  34
+   epot                                : -2.171352414972E+00
+   de                                  : -2.993E-04
+   fnrm                                :  5.60287E-02
+   fmax                                :  1.30394E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  35
+   epot                                : -2.171656782967E+00
+   de                                  : -3.044E-04
+   fnrm                                :  6.11923E-02
+   fmax                                :  1.28335E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  36
+   epot                                : -2.172047359277E+00
+   de                                  : -3.906E-04
+   fnrm                                :  6.64328E-02
+   fmax                                :  1.19690E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  37
+   epot                                : -2.172633491483E+00
+   de                                  : -5.861E-04
+   fnrm                                :  7.12113E-02
+   fmax                                :  1.71557E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  38
+   epot                                : -2.173729870430E+00
+   de                                  : -1.096E-03
+   fnrm                                :  8.39646E-02
+   fmax                                :  2.30811E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  39
+   epot                                : -2.175999450349E+00
+   de                                  : -2.270E-03
+   fnrm                                :  1.07066E-01
+   fmax                                :  3.83281E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  40
+   epot                                : -2.180011069717E+00
+   de                                  : -4.012E-03
+   fnrm                                :  1.35359E-01
+   fmax                                :  6.37431E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  41
+   epot                                : -2.180249499630E+00
+   de                                  : -2.384E-04
+   fnrm                                :  1.58184E-01
+   fmax                                :  1.14862E-02
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  42
+   epot                                : -2.178351384767E+00
+   de                                  :  1.898E-03
+   fnrm                                :  1.95615E-01
+   fmax                                :  1.50915E-02
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  42
+   epot                                : -2.180762026988E+00
+   de                                  : -5.125E-04
+   fnrm                                :  1.46276E-01
+   fmax                                :  1.07453E-02
+   ndim                                :  0
+ - iproc                               :  000
+   iter                                :  43
+   epot                                : -2.181875698714E+00
+   de                                  : -1.114E-03
+   fnrm                                :  7.27159E-02
+   fmax                                :  1.90109E-03
+   ndim                                :  1
+ - iproc                               :  000
+   iter                                :  44
+   epot                                : -2.181999190041E+00
+   de                                  : -1.235E-04
+   fnrm                                :  6.03288E-02
+   fmax                                :  1.54719E-03
+   ndim                                :  2
+ - iproc                               :  000
+   iter                                :  45
+   epot                                : -2.182207557659E+00
+   de                                  : -2.084E-04
+   fnrm                                :  6.33040E-02
+   fmax                                :  1.57991E-03
+   ndim                                :  3
+ - iproc                               :  000
+   iter                                :  46
+   epot                                : -2.182514265443E+00
+   de                                  : -3.067E-04
+   fnrm                                :  6.66853E-02
+   fmax                                :  1.93634E-03
+   ndim                                :  4
+ - iproc                               :  000
+   iter                                :  47
+   epot                                : -2.182784583144E+00
+   de                                  : -2.703E-04
+   fnrm                                :  5.64681E-02
+   fmax                                :  1.41284E-03
+   ndim                                :  4
+ - iproc                               :  000
+   iter                                :  48
+   epot                                : -2.183042213763E+00
+   de                                  : -2.576E-04
+   fnrm                                :  5.47043E-02
+   fmax                                :  1.25776E-03
+   ndim                                :  5
+ - iproc                               :  000
+   iter                                :  49
+   epot                                : -2.183216799335E+00
+   de                                  : -1.746E-04
+   fnrm                                :  5.01581E-02
+   fmax                                :  1.12629E-03
+   ndim                                :  6
+ - iproc                               :  000
+   iter                                :  50
+   epot                                : -2.183373696445E+00
+   de                                  : -1.569E-04
+   fnrm                                :  4.99275E-02
+   fmax                                :  9.78258E-04
+   ndim                                :  7
+ - iproc                               :  000
+   iter                                :  51
+   epot                                : -2.183518692819E+00
+   de                                  : -1.450E-04
+   fnrm                                :  4.87709E-02
+   fmax                                :  1.02791E-03
+   ndim                                :  8
+ - iproc                               :  000
+   iter                                :  52
+   epot                                : -2.183633903207E+00
+   de                                  : -1.152E-04
+   fnrm                                :  4.87436E-02
+   fmax                                :  8.81697E-04
+   ndim                                :  8
+ - iproc                               :  000
+   iter                                :  53
+   epot                                : -2.183786590407E+00
+   de                                  : -1.527E-04
+   fnrm                                :  4.91803E-02
+   fmax                                :  7.57212E-04
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  54
+   epot                                : -2.184006527549E+00
+   de                                  : -2.199E-04
+   fnrm                                :  5.14702E-02
+   fmax                                :  9.31990E-04
+   ndim                                :  8
+ - iproc                               :  000
+   iter                                :  55
+   epot                                : -2.184410624298E+00
+   de                                  : -4.041E-04
+   fnrm                                :  5.70805E-02
+   fmax                                :  1.17639E-03
+   ndim                                :  8
+ - iproc                               :  000
+   iter                                :  56
+   epot                                : -2.185142081806E+00
+   de                                  : -7.315E-04
+   fnrm                                :  6.08775E-02
+   fmax                                :  1.61928E-03
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  57
+   epot                                : -2.186104541407E+00
+   de                                  : -9.625E-04
+   fnrm                                :  6.75331E-02
+   fmax                                :  1.99531E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  58
+   epot                                : -2.187851275218E+00
+   de                                  : -1.747E-03
+   fnrm                                :  9.09563E-02
+   fmax                                :  2.74226E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  59
+   epot                                : -2.189057780529E+00
+   de                                  : -1.207E-03
+   fnrm                                :  1.34986E-01
+   fmax                                :  8.76490E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  60
+   epot                                : -2.189176527542E+00
+   de                                  : -1.187E-04
+   fnrm                                :  1.50257E-01
+   fmax                                :  9.10513E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  61
+   epot                                : -2.189552758065E+00
+   de                                  : -3.762E-04
+   fnrm                                :  1.62393E-01
+   fmax                                :  9.88920E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  62
+   epot                                : -2.190358821691E+00
+   de                                  : -8.061E-04
+   fnrm                                :  1.51247E-01
+   fmax                                :  7.85225E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  63
+   epot                                : -2.192278564581E+00
+   de                                  : -1.920E-03
+   fnrm                                :  1.21844E-01
+   fmax                                :  5.19660E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  64
+   epot                                : -2.193710369651E+00
+   de                                  : -1.432E-03
+   fnrm                                :  1.15064E-01
+   fmax                                :  5.14842E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  65
+   epot                                : -2.194855797490E+00
+   de                                  : -1.145E-03
+   fnrm                                :  9.88202E-02
+   fmax                                :  3.66409E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  66
+   epot                                : -2.195643799306E+00
+   de                                  : -7.880E-04
+   fnrm                                :  8.18719E-02
+   fmax                                :  3.36333E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  67
+   epot                                : -2.196737158835E+00
+   de                                  : -1.093E-03
+   fnrm                                :  8.44974E-02
+   fmax                                :  3.46493E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  68
+   epot                                : -2.197988776519E+00
+   de                                  : -1.252E-03
+   fnrm                                :  8.47964E-02
+   fmax                                :  3.19141E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  69
+   epot                                : -2.199108392454E+00
+   de                                  : -1.120E-03
+   fnrm                                :  8.20418E-02
+   fmax                                :  3.44879E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  70
+   epot                                : -2.200549479006E+00
+   de                                  : -1.441E-03
+   fnrm                                :  8.83868E-02
+   fmax                                :  4.29689E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  71
+   epot                                : -2.202124467259E+00
+   de                                  : -1.575E-03
+   fnrm                                :  8.80505E-02
+   fmax                                :  4.07584E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  72
+   epot                                : -2.203887423902E+00
+   de                                  : -1.763E-03
+   fnrm                                :  8.41878E-02
+   fmax                                :  4.40327E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  73
+   epot                                : -2.205194248683E+00
+   de                                  : -1.307E-03
+   fnrm                                :  9.50694E-02
+   fmax                                :  2.92041E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  74
+   epot                                : -2.205488713093E+00
+   de                                  : -2.945E-04
+   fnrm                                :  8.63872E-02
+   fmax                                :  3.02876E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  75
+   epot                                : -2.205510469214E+00
+   de                                  : -2.176E-05
+   fnrm                                :  9.65479E-02
+   fmax                                :  4.38386E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  76
+   epot                                : -2.205690223304E+00
+   de                                  : -1.798E-04
+   fnrm                                :  7.70680E-02
+   fmax                                :  1.99548E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  77
+   epot                                : -2.205843154767E+00
+   de                                  : -1.529E-04
+   fnrm                                :  5.75284E-02
+   fmax                                :  1.20495E-03
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  78
+   epot                                : -2.205939082622E+00
+   de                                  : -9.593E-05
+   fnrm                                :  4.76324E-02
+   fmax                                :  8.08726E-04
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  79
+   epot                                : -2.206048952780E+00
+   de                                  : -1.099E-04
+   fnrm                                :  4.48710E-02
+   fmax                                :  7.42756E-04
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  80
+   epot                                : -2.206121093946E+00
+   de                                  : -7.214E-05
+   fnrm                                :  4.14323E-02
+   fmax                                :  5.58444E-04
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  81
+   epot                                : -2.206252082141E+00
+   de                                  : -1.310E-04
+   fnrm                                :  4.04639E-02
+   fmax                                :  4.90669E-04
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  82
+   epot                                : -2.206333881091E+00
+   de                                  : -8.180E-05
+   fnrm                                :  3.80704E-02
+   fmax                                :  5.31027E-04
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  83
+   epot                                : -2.206379626277E+00
+   de                                  : -4.575E-05
+   fnrm                                :  3.67942E-02
+   fmax                                :  4.49358E-04
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  84
+   epot                                : -2.206397829317E+00
+   de                                  : -1.820E-05
+   fnrm                                :  3.53883E-02
+   fmax                                :  4.87402E-04
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  85
+   epot                                : -2.206405784619E+00
+   de                                  : -7.955E-06
+   fnrm                                :  3.12949E-02
+   fmax                                :  3.16773E-04
+   ndim                                :  9
+ - iproc                               :  000
+   iter                                :  86
+   epot                                : -2.206414779560E+00
+   de                                  : -8.995E-06
+   fnrm                                :  2.35750E-02
+   fmax                                :  1.94856E-04
+   ndim                                :  10
+ - iproc                               :  000
+   iter                                :  87
+   epot                                : -2.206418031847E+00
+   de                                  : -3.252E-06
+   fnrm                                :  1.85413E-02
+   fmax                                :  1.25015E-04
+   ndim                                :  9
+ - SQNM FINISHED:
+     success                           :  Yes
+     iter                              :  87
+     epot                              : -2.206418031847E+00
+     fnrm                              :  1.85413E-02
+     fmax                              :  1.25015E-04
+ task geopt:
+   converged                           :  Yes
+   total energy and force evaluations  :  89

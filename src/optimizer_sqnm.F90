@@ -18,6 +18,7 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    use mod_opt, only: typ_paropt, frmt_base
    use mod_processors, only: iproc, nproc
    use dynamic_memory
+   use yaml_output
    implicit none
    !parameter
    !integer, intent(in)                    :: nproc
@@ -116,6 +117,7 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    real(8) :: tt1, tt2, tt3
    !type(f_tree) :: f_info
    call f_routine(id='sqnm')
+   call yaml_sequence_open('SQNM optimization iterations')
    associate(nat=>atoms%nat)
     call cal_potential_forces(parini,atoms)
 
@@ -397,7 +399,15 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
             !call f_tree_push(f_info//'beta'        ,yaml_toa(beta,fmt='(1pe21.14)'))
             !call f_tree_push(f_info//'beta_stretch',yaml_toa(beta_stretch,fmt='(1pe21.14)'))
             !call geometry_output('GEOPT_SQNM',nint(count_sqnm),it,fmax,fnrm,fluct,f_info)
-            write(*,frmt) 'MIN: ',iproc,it,etotp,detot,fnrm,fmax,ndim
+            !write(*,frmt) 'MIN: ',iproc,it,etotp,detot,fnrm,fmax,ndim
+            call yaml_sequence(advance='no')
+            call yaml_map('iproc',iproc,fmt='(i3.3)')
+            call yaml_map('iter',it,fmt='(i5)')
+            call yaml_map('epot',etotp,fmt='(es20.12)')
+            call yaml_map('de',detot,fmt='(es11.3)')
+            call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+            call yaml_map('fmax',fmax,fmt='(es12.5)')
+            call yaml_map('ndim',ndim,fmt='(i4)')
 
          end if
     
@@ -460,7 +470,15 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
          !call f_tree_push(f_info//'beta'        ,yaml_toa(beta,fmt='(1pe21.14)'))
          !call f_tree_push(f_info//'beta_stretch',yaml_toa(beta_stretch,fmt='(1pe21.14)'))
          !call geometry_output('GEOPT_SQNM',nint(count_sqnm),it,fmax,fnrm,fluct,f_info)
-            write(*,frmt) 'MIN: ',iproc,it,etotp,detot,fnrm,fmax,ndim
+            !write(*,frmt) 'MIN: ',iproc,it,etotp,detot,fnrm,fmax,ndim
+            call yaml_sequence(advance='no')
+            call yaml_map('iproc',iproc,fmt='(i3.3)')
+            call yaml_map('iter',it,fmt='(i5)')
+            call yaml_map('epot',etotp,fmt='(es20.12)')
+            call yaml_map('de',detot,fmt='(es11.3)')
+            call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+            call yaml_map('fmax',fmax,fmt='(es12.5)')
+            call yaml_map('ndim',ndim,fmt='(i4)')
 
 !!$         call yaml_mapping_open('Geometry')
 !!$            call yaml_map('Ncount_BigDFT',ncount_bigdft)
@@ -543,7 +561,17 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
          write(16,'(2(a,1x,i0))') "SQNM converged at iteration ",it,". Needed bigdft calls: ",nint(count_sqnm)
          !call f_utils_flush(16)
    endif
-   if(iproc==0)  write(*,'(a,i6,es24.15,es14.5)') 'Iterations when SQNM converged',it,etotp,fmax
+   !if(iproc==0)  write(*,'(a,i6,es24.15,es14.5)') 'Iterations when SQNM converged',it,etotp,fmax
+   if(iproc==0) then
+        call yaml_sequence(advance='no')
+        call yaml_mapping_open('SQNM FINISHED') !,label='id001')
+        call yaml_map('success',.true.)
+        call yaml_map('iter',it,fmt='(i5)')
+        call yaml_map('epot',etotp,fmt='(es20.12)')
+        call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+        call yaml_map('fmax',fmax,fmt='(es12.5)')
+        call yaml_mapping_close()
+   endif
    fail=.false.
    
 2000 continue

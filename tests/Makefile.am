@@ -2,7 +2,8 @@
 SHORT_TESTDIRS = testforces_FD \
 				 single_point \
 				 geopt_LTB \
-				 geopt_LJ
+				 geopt_LJ \
+				 geopt_SQNM
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
