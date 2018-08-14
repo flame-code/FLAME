@@ -52,3 +52,14 @@ geopt_LTB:
  epot: 1.e-11
  fnrm: 1.e-7
  fmax: 1.e-7
+
+geopt_LJ:
+ alphax: 1.e-5
+ fmaxtol: 1.e-5
+ dxmax: 1.e-5
+ condnum: 1.e-5
+ fnrmtolsatur: 1.e-5
+ dt_start: 1.e-5
+ epot: 1.e-11
+ fnrm: 1.e-7
+ fmax: 1.e-7

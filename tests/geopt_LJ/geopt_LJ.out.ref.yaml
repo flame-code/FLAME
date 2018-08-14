@@ -1,0 +1,667 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2018-08-14 19:27:17.407
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : geopt
+   types                               : LJ
+   two_level_geopt                     : True
+   verbosity                           : 0
+   verbose                             : 3
+   seed                                : -2
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : BFGS
+   fmaxtol                             : 1.E-3
+   alphax                              : 3.E-3
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : True
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : True
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : SD
+   fmaxtol                             : 5.E-2
+   alphax                              : 2.E-3
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : True
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s:
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+ potential:
+   potential                           : lj
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : atombased
+   symfunc                             : only_calculate
+   nstep_ekf                           : 100
+   nstep_cep                           : 200
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_cent2                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ optimization parameters:
+   method                              : SD
+   precaution                          : high
+   alphax                              :  0.002000
+   fmaxtol                             :  0.050000
+   dxmax                               :  0.100000
+   condnum                             :  10.000000
+   fnrmtolsatur                        :  0.240000
+   dt_start                            : -1.000000
+   nsatur                              :  5
+   nit                                 :  1000
+   lprint                              :  T
+ SD optimization iterations:
+ - iproc                               :  000
+   iter                                :  0
+   epot                                : -1.735816185488E+02
+   de                                  :  0.000E+00
+   fnrm                                :  1.38907E+01
+   fmax                                :  3.12261E+00
+   alpha/alphax                        :  0.0000E+00
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  1
+   epot                                : -1.737610894932E+02
+   de                                  : -1.795E-01
+   fnrm                                :  8.12452E+00
+   fmax                                :  1.58881E+00
+   alpha/alphax                        :  0.6000E+00
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  2
+   epot                                : -1.738382736416E+02
+   de                                  : -7.718E-02
+   fnrm                                :  5.33592E+00
+   fmax                                :  9.13413E-01
+   alpha/alphax                        :  0.7200E+00
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  3
+   epot                                : -1.738796373729E+02
+   de                                  : -4.136E-02
+   fnrm                                :  3.72774E+00
+   fmax                                :  6.64217E-01
+   alpha/alphax                        :  0.8640E+00
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  4
+   epot                                : -1.739038785843E+02
+   de                                  : -2.424E-02
+   fnrm                                :  2.57042E+00
+   fmax                                :  5.13636E-01
+   alpha/alphax                        :  0.1037E+01
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  5
+   epot                                : -1.739174223163E+02
+   de                                  : -1.354E-02
+   fnrm                                :  1.67528E+00
+   fmax                                :  3.63458E-01
+   alpha/alphax                        :  0.1244E+01
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  6
+   epot                                : -1.739241152377E+02
+   de                                  : -6.693E-03
+   fnrm                                :  1.00874E+00
+   fmax                                :  2.36046E-01
+   alpha/alphax                        :  0.1493E+01
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  7
+   epot                                : -1.739269265291E+02
+   de                                  : -2.811E-03
+   fnrm                                :  5.55381E-01
+   fmax                                :  1.39598E-01
+   alpha/alphax                        :  0.1792E+01
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  8
+   epot                                : -1.739278707901E+02
+   de                                  : -9.443E-04
+   fnrm                                :  3.02736E-01
+   fmax                                :  7.90999E-02
+   alpha/alphax                        :  0.2000E+01
+   isatur                              :  0
+   xmoved                              :  T
+ - iproc                               :  000
+   iter                                :  9
+   epot                                : -1.739281627278E+02
+   de                                  : -2.919E-04
+   fnrm                                :  1.84389E-01
+   fmax                                :  4.73870E-02
+   alpha/alphax                        :  0.2000E+01
+   isatur                              :  0
+   xmoved                              :  T
+ - SD FINISHED:
+     success                           :  Yes
+     iter                              :  9
+     epot                              : -1.739281627278E+02
+     fnrm                              :  1.84389E-01
+     fmax                              :  4.73870E-02
+ BFGS optimization iterations:
+ - iproc                               :  000
+   iter                                :  0
+   epot                                : -1.739281627278E+02
+   de                                  :  0.000E+00
+   fnrm                                :  1.84389E-01
+   fmax                                :  4.73870E-02
+   alpha                               :  8.0000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  0
+ - iproc                               :  000
+   iter                                :  1
+   epot                                : -1.739282423671E+02
+   de                                  : -7.964E-05
+   fnrm                                :  1.43823E-01
+   fmax                                :  3.58651E-02
+   alpha                               :  8.8000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  0
+ - iproc                               :  000
+   iter                                :  2
+   epot                                : -1.739282869797E+02
+   de                                  : -4.461E-05
+   fnrm                                :  1.18098E-01
+   fmax                                :  2.84604E-02
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  0
+ - iproc                               :  000
+   iter                                :  3
+   epot                                : -1.739283187354E+02
+   de                                  : -3.176E-05
+   fnrm                                :  9.76629E-02
+   fmax                                :  2.25349E-02
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  0
+ - iproc                               :  000
+   iter                                :  4
+   epot                                : -1.739283411951E+02
+   de                                  : -2.246E-05
+   fnrm                                :  8.17092E-02
+   fmax                                :  1.79002E-02
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  0
+ - iproc                               :  000
+   iter                                :  5
+   epot                                : -1.739283572851E+02
+   de                                  : -1.609E-05
+   fnrm                                :  6.92679E-02
+   fmax                                :  1.43010E-02
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  0
+ - iproc                               :  000
+   iter                                :  6
+   epot                                : -1.739283690497E+02
+   de                                  : -1.176E-05
+   fnrm                                :  5.95160E-02
+   fmax                                :  1.24358E-02
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  2
+ - iproc                               :  000
+   iter                                :  7
+   epot                                : -1.739283778539E+02
+   de                                  : -8.804E-06
+   fnrm                                :  5.18158E-02
+   fmax                                :  1.14664E-02
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  4
+ - iproc                               :  000
+   iter                                :  8
+   epot                                : -1.739283846029E+02
+   de                                  : -6.749E-06
+   fnrm                                :  4.56861E-02
+   fmax                                :  1.06156E-02
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  6
+ - iproc                               :  000
+   iter                                :  9
+   epot                                : -1.739283924445E+02
+   de                                  : -7.842E-06
+   fnrm                                :  3.81992E-02
+   fmax                                :  9.44294E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  8
+ - iproc                               :  000
+   iter                                :  10
+   epot                                : -1.739283980483E+02
+   de                                  : -5.604E-06
+   fnrm                                :  3.28405E-02
+   fmax                                :  8.42352E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  10
+ - iproc                               :  000
+   iter                                :  11
+   epot                                : -1.739284022585E+02
+   de                                  : -4.210E-06
+   fnrm                                :  2.89115E-02
+   fmax                                :  7.54294E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  12
+ - iproc                               :  000
+   iter                                :  12
+   epot                                : -1.739284064545E+02
+   de                                  : -4.196E-06
+   fnrm                                :  2.50896E-02
+   fmax                                :  6.54917E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  14
+ - iproc                               :  000
+   iter                                :  13
+   epot                                : -1.739284096675E+02
+   de                                  : -3.213E-06
+   fnrm                                :  2.23093E-02
+   fmax                                :  5.72034E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  16
+ - iproc                               :  000
+   iter                                :  14
+   epot                                : -1.739284122507E+02
+   de                                  : -2.583E-06
+   fnrm                                :  2.01113E-02
+   fmax                                :  5.08686E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  18
+ - iproc                               :  000
+   iter                                :  15
+   epot                                : -1.739284147985E+02
+   de                                  : -2.548E-06
+   fnrm                                :  1.79098E-02
+   fmax                                :  4.75328E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  20
+ - iproc                               :  000
+   iter                                :  16
+   epot                                : -1.739284168570E+02
+   de                                  : -2.058E-06
+   fnrm                                :  1.60121E-02
+   fmax                                :  4.32262E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  22
+ - iproc                               :  000
+   iter                                :  17
+   epot                                : -1.739284185371E+02
+   de                                  : -1.680E-06
+   fnrm                                :  1.43109E-02
+   fmax                                :  3.85257E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  24
+ - iproc                               :  000
+   iter                                :  18
+   epot                                : -1.739284201172E+02
+   de                                  : -1.580E-06
+   fnrm                                :  1.25702E-02
+   fmax                                :  3.33551E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  26
+ - iproc                               :  000
+   iter                                :  19
+   epot                                : -1.739284213529E+02
+   de                                  : -1.236E-06
+   fnrm                                :  1.10523E-02
+   fmax                                :  2.84294E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  28
+ - iproc                               :  000
+   iter                                :  20
+   epot                                : -1.739284223175E+02
+   de                                  : -9.646E-07
+   fnrm                                :  9.75677E-03
+   fmax                                :  2.39957E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  30
+ - iproc                               :  000
+   iter                                :  21
+   epot                                : -1.739284231681E+02
+   de                                  : -8.506E-07
+   fnrm                                :  8.54620E-03
+   fmax                                :  1.96866E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  32
+ - iproc                               :  000
+   iter                                :  22
+   epot                                : -1.739284238132E+02
+   de                                  : -6.451E-07
+   fnrm                                :  7.57672E-03
+   fmax                                :  1.60578E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  34
+ - iproc                               :  000
+   iter                                :  23
+   epot                                : -1.739284243112E+02
+   de                                  : -4.980E-07
+   fnrm                                :  6.80471E-03
+   fmax                                :  1.30723E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  36
+ - iproc                               :  000
+   iter                                :  24
+   epot                                : -1.739284247457E+02
+   de                                  : -4.344E-07
+   fnrm                                :  6.12131E-03
+   fmax                                :  1.19181E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  38
+ - iproc                               :  000
+   iter                                :  25
+   epot                                : -1.739284250867E+02
+   de                                  : -3.411E-07
+   fnrm                                :  5.56917E-03
+   fmax                                :  1.08727E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  40
+ - iproc                               :  000
+   iter                                :  26
+   epot                                : -1.739284253640E+02
+   de                                  : -2.773E-07
+   fnrm                                :  5.09425E-03
+   fmax                                :  1.00107E-03
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  42
+ - iproc                               :  000
+   iter                                :  27
+   epot                                : -1.739284256152E+02
+   de                                  : -2.512E-07
+   fnrm                                :  4.62627E-03
+   fmax                                :  9.45151E-04
+   alpha                               :  9.5000E-01
+   zeta                                :  1.0000E+00
+   isatur                              :  44
+ - BFGS FINISHED:
+     success                           :  Yes
+     iter                              :  27
+     epot                              : -1.739284256152E+02
+     fnrm                              :  4.62627E-03
+     fmax                              :  9.45151E-04
+ task geopt:
+   converged                           :  Yes
+   total energy and force evaluations  :  38
