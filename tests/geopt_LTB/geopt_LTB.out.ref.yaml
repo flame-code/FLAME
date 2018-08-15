@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-08-14 15:50:42.619
+ Timestamp of this run                 : 2018-08-15 14:38:00.235
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -307,42 +307,14 @@
    nit                                 :  1000
    lprint                              :  T
  SD optimization iterations:
- - iproc                               :  000
-   iter                                :  0
-   epot                                : -2.608940674380E+00
-   de                                  :  0.000E+00
-   fnrm                                :  3.93529E-03
-   fmax                                :  1.45639E-03
-   alpha/alphax                        :  0.0000E+00
-   isatur                              :  0
-   xmoved                              :  T
- - iproc                               :  000
-   iter                                :  1
-   epot                                : -2.608957883731E+00
-   de                                  : -1.721E-05
-   fnrm                                :  3.36027E-03
-   fmax                                :  1.28874E-03
-   alpha/alphax                        :  0.6000E+00
-   isatur                              :  0
-   xmoved                              :  T
- - iproc                               :  000
-   iter                                :  2
-   epot                                : -2.608972769921E+00
-   de                                  : -1.489E-05
-   fnrm                                :  2.80133E-03
-   fmax                                :  1.11402E-03
-   alpha/alphax                        :  0.7200E+00
-   isatur                              :  0
-   xmoved                              :  T
- - iproc                               :  000
-   iter                                :  3
-   epot                                : -2.608985039034E+00
-   de                                  : -1.227E-05
-   fnrm                                :  2.27804E-03
-   fmax                                :  9.36875E-04
-   alpha/alphax                        :  0.8640E+00
-   isatur                              :  0
-   xmoved                              :  T
+ -  {iter:  0, epot: -2.608940674380E+00, de:  0.0E+00, fnrm:  3.935E-03, fmax:  1.456E-03, 
+       alpha/alphax:  0.0000E+00,     isatur:  0,     xmoved:  T}
+ -  {iter:  1, epot: -2.608957883731E+00, de: -1.7E-05, fnrm:  3.360E-03, fmax:  1.289E-03, 
+       alpha/alphax:  0.6000E+00,     isatur:  0,     xmoved:  T}
+ -  {iter:  2, epot: -2.608972769921E+00, de: -1.5E-05, fnrm:  2.801E-03, fmax:  1.114E-03, 
+       alpha/alphax:  0.7200E+00,     isatur:  0,     xmoved:  T}
+ -  {iter:  3, epot: -2.608985039034E+00, de: -1.2E-05, fnrm:  2.278E-03, fmax:  9.369E-04, 
+       alpha/alphax:  0.8640E+00,     isatur:  0,     xmoved:  T}
  - SD FINISHED:
      success                           :  Yes
      iter                              :  3
@@ -350,393 +322,92 @@
      fnrm                              :  2.27804E-03
      fmax                              :  9.36875E-04
  BFGS optimization iterations:
- - iproc                               :  000
-   iter                                :  0
-   epot                                : -2.608985039034E+00
-   de                                  :  0.000E+00
-   fnrm                                :  2.27804E-03
-   fmax                                :  9.36875E-04
-   alpha                               :  8.0000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  0
- - iproc                               :  000
-   iter                                :  1
-   epot                                : -2.608996894590E+00
-   de                                  : -1.186E-05
-   fnrm                                :  1.68406E-03
-   fmax                                :  7.15647E-04
-   alpha                               :  8.8000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  0
- - iproc                               :  000
-   iter                                :  2
-   epot                                : -2.609002854021E+00
-   de                                  : -5.959E-06
-   fnrm                                :  1.33944E-03
-   fmax                                :  5.72846E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  0
- - iproc                               :  000
-   iter                                :  3
-   epot                                : -2.609006832986E+00
-   de                                  : -3.979E-06
-   fnrm                                :  1.07770E-03
-   fmax                                :  4.57865E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  0
- - iproc                               :  000
-   iter                                :  4
-   epot                                : -2.609009502980E+00
-   de                                  : -2.670E-06
-   fnrm                                :  8.81187E-04
-   fmax                                :  3.92275E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  0
- - iproc                               :  000
-   iter                                :  5
-   epot                                : -2.609011336010E+00
-   de                                  : -1.833E-06
-   fnrm                                :  7.33739E-04
-   fmax                                :  3.45573E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  0
- - iproc                               :  000
-   iter                                :  6
-   epot                                : -2.609012634043E+00
-   de                                  : -1.298E-06
-   fnrm                                :  6.22596E-04
-   fmax                                :  3.04324E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  2
- - iproc                               :  000
-   iter                                :  7
-   epot                                : -2.609013585143E+00
-   de                                  : -9.511E-07
-   fnrm                                :  5.38097E-04
-   fmax                                :  2.68136E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  4
- - iproc                               :  000
-   iter                                :  8
-   epot                                : -2.609014306222E+00
-   de                                  : -7.211E-07
-   fnrm                                :  4.73043E-04
-   fmax                                :  2.36499E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  6
- - iproc                               :  000
-   iter                                :  9
-   epot                                : -2.609015135433E+00
-   de                                  : -8.292E-07
-   fnrm                                :  3.96447E-04
-   fmax                                :  1.94370E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  8
- - iproc                               :  000
-   iter                                :  10
-   epot                                : -2.609015734274E+00
-   de                                  : -5.988E-07
-   fnrm                                :  3.42673E-04
-   fmax                                :  1.59780E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  10
- - iproc                               :  000
-   iter                                :  11
-   epot                                : -2.609016190826E+00
-   de                                  : -4.566E-07
-   fnrm                                :  3.02871E-04
-   fmax                                :  1.31506E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  12
- - iproc                               :  000
-   iter                                :  12
-   epot                                : -2.609016650467E+00
-   de                                  : -4.596E-07
-   fnrm                                :  2.63095E-04
-   fmax                                :  1.00746E-04
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  14
- - iproc                               :  000
-   iter                                :  13
-   epot                                : -2.609017004184E+00
-   de                                  : -3.537E-07
-   fnrm                                :  2.32424E-04
-   fmax                                :  7.69917E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  16
- - iproc                               :  000
-   iter                                :  14
-   epot                                : -2.609017285336E+00
-   de                                  : -2.812E-07
-   fnrm                                :  2.07141E-04
-   fmax                                :  6.27622E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  18
- - iproc                               :  000
-   iter                                :  15
-   epot                                : -2.609017556507E+00
-   de                                  : -2.712E-07
-   fnrm                                :  1.81730E-04
-   fmax                                :  5.66995E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  20
- - iproc                               :  000
-   iter                                :  16
-   epot                                : -2.609017768407E+00
-   de                                  : -2.119E-07
-   fnrm                                :  1.60679E-04
-   fmax                                :  5.14164E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  22
- - iproc                               :  000
-   iter                                :  17
-   epot                                : -2.609017936410E+00
-   de                                  : -1.680E-07
-   fnrm                                :  1.43286E-04
-   fmax                                :  4.66596E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  24
- - iproc                               :  000
-   iter                                :  18
-   epot                                : -2.609018091895E+00
-   de                                  : -1.555E-07
-   fnrm                                :  1.27138E-04
-   fmax                                :  4.14510E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  26
- - iproc                               :  000
-   iter                                :  19
-   epot                                : -2.609018214215E+00
-   de                                  : -1.223E-07
-   fnrm                                :  1.14666E-04
-   fmax                                :  3.67495E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  28
- - iproc                               :  000
-   iter                                :  20
-   epot                                : -2.609018313356E+00
-   de                                  : -9.914E-08
-   fnrm                                :  1.05145E-04
-   fmax                                :  3.50076E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  30
- - iproc                               :  000
-   iter                                :  21
-   epot                                : -2.609018406490E+00
-   de                                  : -9.313E-08
-   fnrm                                :  9.70772E-05
-   fmax                                :  3.34531E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  32
- - iproc                               :  000
-   iter                                :  22
-   epot                                : -2.609018484999E+00
-   de                                  : -7.851E-08
-   fnrm                                :  9.10912E-05
-   fmax                                :  3.20439E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  34
- - iproc                               :  000
-   iter                                :  23
-   epot                                : -2.609018554142E+00
-   de                                  : -6.914E-08
-   fnrm                                :  8.64291E-05
-   fmax                                :  3.07699E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  36
- - iproc                               :  000
-   iter                                :  24
-   epot                                : -2.609018623611E+00
-   de                                  : -6.947E-08
-   fnrm                                :  8.22911E-05
-   fmax                                :  2.94765E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  38
- - iproc                               :  000
-   iter                                :  25
-   epot                                : -2.609018687663E+00
-   de                                  : -6.405E-08
-   fnrm                                :  7.87079E-05
-   fmax                                :  2.83206E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  40
- - iproc                               :  000
-   iter                                :  26
-   epot                                : -2.609018747971E+00
-   de                                  : -6.031E-08
-   fnrm                                :  7.53666E-05
-   fmax                                :  2.72893E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  42
- - iproc                               :  000
-   iter                                :  27
-   epot                                : -2.609018810381E+00
-   de                                  : -6.241E-08
-   fnrm                                :  7.20345E-05
-   fmax                                :  2.62463E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  44
- - iproc                               :  000
-   iter                                :  28
-   epot                                : -2.609018868874E+00
-   de                                  : -5.849E-08
-   fnrm                                :  6.88701E-05
-   fmax                                :  2.53196E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  46
- - iproc                               :  000
-   iter                                :  29
-   epot                                : -2.609018923479E+00
-   de                                  : -5.460E-08
-   fnrm                                :  6.59277E-05
-   fmax                                :  2.51106E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  48
- - iproc                               :  000
-   iter                                :  30
-   epot                                : -2.609018978683E+00
-   de                                  : -5.520E-08
-   fnrm                                :  6.31932E-05
-   fmax                                :  2.52969E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  50
- - iproc                               :  000
-   iter                                :  31
-   epot                                : -2.609019029385E+00
-   de                                  : -5.070E-08
-   fnrm                                :  6.08449E-05
-   fmax                                :  2.53110E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  52
- - iproc                               :  000
-   iter                                :  32
-   epot                                : -2.609019076064E+00
-   de                                  : -4.668E-08
-   fnrm                                :  5.88911E-05
-   fmax                                :  2.51701E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  54
- - iproc                               :  000
-   iter                                :  33
-   epot                                : -2.609019122846E+00
-   de                                  : -4.678E-08
-   fnrm                                :  5.72679E-05
-   fmax                                :  2.49200E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  56
- - iproc                               :  000
-   iter                                :  34
-   epot                                : -2.609019166142E+00
-   de                                  : -4.330E-08
-   fnrm                                :  5.59971E-05
-   fmax                                :  2.45539E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  58
- - iproc                               :  000
-   iter                                :  35
-   epot                                : -2.609019206729E+00
-   de                                  : -4.059E-08
-   fnrm                                :  5.49974E-05
-   fmax                                :  2.40957E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  60
- - iproc                               :  000
-   iter                                :  36
-   epot                                : -2.609019248145E+00
-   de                                  : -4.142E-08
-   fnrm                                :  5.42034E-05
-   fmax                                :  2.35659E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  62
- - iproc                               :  000
-   iter                                :  37
-   epot                                : -2.609019287751E+00
-   de                                  : -3.961E-08
-   fnrm                                :  5.35405E-05
-   fmax                                :  2.29746E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  64
- - iproc                               :  000
-   iter                                :  38
-   epot                                : -2.609019326230E+00
-   de                                  : -3.848E-08
-   fnrm                                :  5.29202E-05
-   fmax                                :  2.23384E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  66
- - iproc                               :  000
-   iter                                :  39
-   epot                                : -2.609019366581E+00
-   de                                  : -4.035E-08
-   fnrm                                :  5.23112E-05
-   fmax                                :  2.16575E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  68
- - iproc                               :  000
-   iter                                :  40
-   epot                                : -2.609019406472E+00
-   de                                  : -3.989E-08
-   fnrm                                :  5.16191E-05
-   fmax                                :  2.09612E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  70
- - iproc                               :  000
-   iter                                :  41
-   epot                                : -2.609019446198E+00
-   de                                  : -3.973E-08
-   fnrm                                :  5.07966E-05
-   fmax                                :  2.02704E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  72
- - iproc                               :  000
-   iter                                :  42
-   epot                                : -2.609019488190E+00
-   de                                  : -4.199E-08
-   fnrm                                :  4.98640E-05
-   fmax                                :  1.95787E-05
-   alpha                               :  9.5000E-01
-   zeta                                :  1.0000E+00
-   isatur                              :  74
+ -  {iter:  0, epot: -2.608985039034E+00, de:  0.0E+00, fnrm:  2.278E-03, fmax:  9.369E-04, 
+    alpha:  8.0000E-01,                 zeta:  1.0000E+00, isatur:  0}
+ -  {iter:  1, epot: -2.608996894590E+00, de: -1.2E-05, fnrm:  1.684E-03, fmax:  7.156E-04, 
+    alpha:  8.8000E-01,                 zeta:  1.0000E+00, isatur:  0}
+ -  {iter:  2, epot: -2.609002854021E+00, de: -6.0E-06, fnrm:  1.339E-03, fmax:  5.728E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  0}
+ -  {iter:  3, epot: -2.609006832986E+00, de: -4.0E-06, fnrm:  1.078E-03, fmax:  4.579E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  0}
+ -  {iter:  4, epot: -2.609009502980E+00, de: -2.7E-06, fnrm:  8.812E-04, fmax:  3.923E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  0}
+ -  {iter:  5, epot: -2.609011336010E+00, de: -1.8E-06, fnrm:  7.337E-04, fmax:  3.456E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  0}
+ -  {iter:  6, epot: -2.609012634043E+00, de: -1.3E-06, fnrm:  6.226E-04, fmax:  3.043E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  2}
+ -  {iter:  7, epot: -2.609013585143E+00, de: -9.5E-07, fnrm:  5.381E-04, fmax:  2.681E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  4}
+ -  {iter:  8, epot: -2.609014306222E+00, de: -7.2E-07, fnrm:  4.730E-04, fmax:  2.365E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  6}
+ -  {iter:  9, epot: -2.609015135433E+00, de: -8.3E-07, fnrm:  3.964E-04, fmax:  1.944E-04, 
+    alpha:  9.5000E-01,                 zeta:  1.0000E+00, isatur:  8}
+ -  {iter:  10, epot: -2.609015734274E+00, de: -6.0E-07, fnrm:  3.427E-04, fmax:  1.598E-04, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  10}
+ -  {iter:  11, epot: -2.609016190826E+00, de: -4.6E-07, fnrm:  3.029E-04, fmax:  1.315E-04, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  12}
+ -  {iter:  12, epot: -2.609016650467E+00, de: -4.6E-07, fnrm:  2.631E-04, fmax:  1.007E-04, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  14}
+ -  {iter:  13, epot: -2.609017004184E+00, de: -3.5E-07, fnrm:  2.324E-04, fmax:  7.699E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  16}
+ -  {iter:  14, epot: -2.609017285336E+00, de: -2.8E-07, fnrm:  2.071E-04, fmax:  6.276E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  18}
+ -  {iter:  15, epot: -2.609017556507E+00, de: -2.7E-07, fnrm:  1.817E-04, fmax:  5.670E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  20}
+ -  {iter:  16, epot: -2.609017768407E+00, de: -2.1E-07, fnrm:  1.607E-04, fmax:  5.142E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  22}
+ -  {iter:  17, epot: -2.609017936410E+00, de: -1.7E-07, fnrm:  1.433E-04, fmax:  4.666E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  24}
+ -  {iter:  18, epot: -2.609018091895E+00, de: -1.6E-07, fnrm:  1.271E-04, fmax:  4.145E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  26}
+ -  {iter:  19, epot: -2.609018214215E+00, de: -1.2E-07, fnrm:  1.147E-04, fmax:  3.675E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  28}
+ -  {iter:  20, epot: -2.609018313356E+00, de: -9.9E-08, fnrm:  1.051E-04, fmax:  3.501E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  30}
+ -  {iter:  21, epot: -2.609018406490E+00, de: -9.3E-08, fnrm:  9.708E-05, fmax:  3.345E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  32}
+ -  {iter:  22, epot: -2.609018484999E+00, de: -7.9E-08, fnrm:  9.109E-05, fmax:  3.204E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  34}
+ -  {iter:  23, epot: -2.609018554142E+00, de: -6.9E-08, fnrm:  8.643E-05, fmax:  3.077E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  36}
+ -  {iter:  24, epot: -2.609018623611E+00, de: -6.9E-08, fnrm:  8.229E-05, fmax:  2.948E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  38}
+ -  {iter:  25, epot: -2.609018687663E+00, de: -6.4E-08, fnrm:  7.871E-05, fmax:  2.832E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  40}
+ -  {iter:  26, epot: -2.609018747971E+00, de: -6.0E-08, fnrm:  7.537E-05, fmax:  2.729E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  42}
+ -  {iter:  27, epot: -2.609018810381E+00, de: -6.2E-08, fnrm:  7.203E-05, fmax:  2.625E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  44}
+ -  {iter:  28, epot: -2.609018868874E+00, de: -5.8E-08, fnrm:  6.887E-05, fmax:  2.532E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  46}
+ -  {iter:  29, epot: -2.609018923479E+00, de: -5.5E-08, fnrm:  6.593E-05, fmax:  2.511E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  48}
+ -  {iter:  30, epot: -2.609018978683E+00, de: -5.5E-08, fnrm:  6.319E-05, fmax:  2.530E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  50}
+ -  {iter:  31, epot: -2.609019029385E+00, de: -5.1E-08, fnrm:  6.084E-05, fmax:  2.531E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  52}
+ -  {iter:  32, epot: -2.609019076064E+00, de: -4.7E-08, fnrm:  5.889E-05, fmax:  2.517E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  54}
+ -  {iter:  33, epot: -2.609019122846E+00, de: -4.7E-08, fnrm:  5.727E-05, fmax:  2.492E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  56}
+ -  {iter:  34, epot: -2.609019166142E+00, de: -4.3E-08, fnrm:  5.600E-05, fmax:  2.455E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  58}
+ -  {iter:  35, epot: -2.609019206729E+00, de: -4.1E-08, fnrm:  5.500E-05, fmax:  2.410E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  60}
+ -  {iter:  36, epot: -2.609019248145E+00, de: -4.1E-08, fnrm:  5.420E-05, fmax:  2.357E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  62}
+ -  {iter:  37, epot: -2.609019287751E+00, de: -4.0E-08, fnrm:  5.354E-05, fmax:  2.297E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  64}
+ -  {iter:  38, epot: -2.609019326230E+00, de: -3.8E-08, fnrm:  5.292E-05, fmax:  2.234E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  66}
+ -  {iter:  39, epot: -2.609019366581E+00, de: -4.0E-08, fnrm:  5.231E-05, fmax:  2.166E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  68}
+ -  {iter:  40, epot: -2.609019406472E+00, de: -4.0E-08, fnrm:  5.162E-05, fmax:  2.096E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  70}
+ -  {iter:  41, epot: -2.609019446198E+00, de: -4.0E-08, fnrm:  5.080E-05, fmax:  2.027E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  72}
+ -  {iter:  42, epot: -2.609019488190E+00, de: -4.2E-08, fnrm:  4.986E-05, fmax:  1.958E-05, 
+    alpha:  9.5000E-01,                  zeta:  1.0000E+00, isatur:  74}
  - BFGS FINISHED:
      success                           :  Yes
      iter                              :  42

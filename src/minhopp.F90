@@ -8,6 +8,7 @@ subroutine minimahopping(parini)
     use mod_processors, only: parallel, nproc, iproc, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_opt, only: typ_paropt
+    use yaml_output
     !minima hopping program with restart option.
     implicit none
     type(typ_parini), intent(in):: parini
@@ -25,6 +26,8 @@ subroutine minimahopping(parini)
 #endif
     call init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
     !if(iproc==0) call sleep(20)
+    call yaml_sequence_open('MH steps')
+    call yaml_sequence(advance='no')
     call relax_minhopp(parini,atoms_curr,paropt_prec,paropt)
     !stop
     write(*,'(a,i4,e24.15)') 'input(relaxed): iproc,atoms_curr%epot',iproc,atoms_curr%epot
@@ -48,6 +51,7 @@ subroutine minimahopping(parini)
     call request_receive(atoms_allproc)
     escaped=.true.
     do istep=1,nstep+1 !outer loop for hopping
+        call yaml_sequence(advance='no')
         !collecting local minima data if send check by other processes.
         call collect_data_from_all_processors(5,atoms_curr,atoms_allproc,atoms_locmin)
         write(*,'(a,i4,3i7,e24.15)') 'iproc,istep,ihopp,nlmin,erat ',iproc,istep-1,ihopp,nlmin,atoms_curr%epot
@@ -99,6 +103,7 @@ subroutine minimahopping(parini)
             call local_minimum_rejected(atoms_hopp)
         endif
     enddo !end of outer loop for hopping
+    call yaml_sequence_close()
     call send_minhopp_parameters_to_all(atoms_curr)
 #if defined(MPI)
     if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
@@ -211,6 +216,8 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
         endif
         call read_poslow(atoms_locmin)
     endif
+    !call execute_command_line("mkdir -p monminhopp")
+    call system("mkdir -p monminhopp")
     write(fn,'(i3.3)') iproc;filename='monminhopp/monitoring.'//fn
     open(unit=2,file=filename,status='replace',iostat=ios)
     if(ios/=0) then;write(*,'(a,1x,a)') 'ERROR: failure openning',filename;stop;endif
@@ -785,6 +792,7 @@ subroutine mdescape(parini,atoms_hopp)
     use mod_processors, only: iproc, nproc
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_potential, only: fcalls
+    use yaml_output
     !Does a MD run with the atomic positions in atoms_hopp
     implicit none
     type(typ_parini), intent(in):: parini
@@ -821,6 +829,7 @@ subroutine mdescape(parini,atoms_hopp)
     endif
     call cal_potential_forces(parini,atoms_hopp)
     epot0=atoms_hopp%epot
+    call yaml_sequence_open('MD escape')
     do imd=1,10000
         !Evolution of the system according to 'VELOCITY VERLET' algorithm
         rkin=0.d0
@@ -846,8 +855,17 @@ subroutine mdescape(parini,atoms_hopp)
         econs_max=max(econs_max,rkin+atoms_hopp%epot)
         econs_min=min(econs_min,rkin+atoms_hopp%epot)
         if(parini%iverbose>=0) then
-            write(*,'(a3,i3.3,a,i10,2e15.6,2i3)') 'MD:',iproc,' imd,en0000,rkin,nummax,nummin', &
-                imd,en0000,rkin,nummax,nummin
+            !write(*,'(a3,i3.3,a,i10,2e15.6,2i3)') 'MD:',iproc,' imd,en0000,rkin,nummax,nummin', &
+            !    imd,en0000,rkin,nummax,nummin
+            call yaml_sequence(advance='no')
+            call yaml_mapping_open(flow=.true.)
+            !call yaml_map('iproc',iproc,fmt='(i3.3)')
+            call yaml_map('iter',imd,fmt='(i3.3)')
+            call yaml_map('en0000',en0000,fmt='(e14.5)')
+            call yaml_map('rkin',rkin,fmt='(e14.5)')
+            call yaml_map('nmax',nummax,fmt='(i3)')
+            call yaml_map('nmin',nummin,fmt='(i3)')
+            call yaml_mapping_close()
         endif
         if(nummin>=mdmin) then
             if(nummax/=nummin) write(*,'(a,3i4)') 'WARNING: iproc,nummin,nummax',iproc,nummin,nummax
@@ -867,6 +885,7 @@ subroutine mdescape(parini,atoms_hopp)
             fatwa(3,iat)=at3
         enddo
     enddo !end of loop over imd
+    call yaml_sequence_close()
     devcon=econs_max-econs_min
     !adjust time step to meet precision criterion
     imd_ideal=30+(mdmin-1)*30
@@ -1245,6 +1264,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     use mod_potential, only: fcalls
     use mod_minhopp, only: lprint, alpha_soften, istep
     use mod_atoms, only: typ_atoms, typ_file_info
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: nstep
@@ -1292,6 +1312,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     !eps_vxyz_init=10.d-2 !used for SIESTA
     eps_vxyz=eps_vxyz_init
     atoms0%vat(1:3,1:atoms0%nat)=atoms0%vat(1:3,1:atoms0%nat)/sqrt(svxyz)*eps_vxyz
+    call yaml_sequence_open('SOFTEN')
     do iter=1,nstep
         do i=1,3*atoms0%nat
             iat=(i-1)/3+1
@@ -1325,8 +1346,18 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
         enddo
         res=sqrt(res)
         if(parini%iverbose>=0) then
-            write(*,'(a,i3.3,a,i3,5(f12.5))') 'SOFTEN:',iproc,' iter,curv,fd2,de,res,eps_vxyz: ', &
-                iter,curv,fd2,atoms%epot-etot0,res,eps_vxyz
+            !write(*,'(a,i3.3,a,i3,5(f12.5))') 'SOFTEN:',iproc,' iter,curv,fd2,de,res,eps_vxyz: ', &
+            !    iter,curv,fd2,atoms%epot-etot0,res,eps_vxyz
+            call yaml_sequence(advance='no')
+            call yaml_mapping_open(flow=.true.)
+            !call yaml_map('iproc',iproc,fmt='(i3.3)')
+            call yaml_map('iter',iter,fmt='(i3)')
+            call yaml_map('curv',curv,fmt='(f10.3)')
+            call yaml_map('fd2',fd2,fmt='(f10.3)')
+            call yaml_map('de',atoms%epot-etot0,fmt='(f10.3)')
+            call yaml_map('res',res,fmt='(f10.3)')
+            call yaml_map('eps_v',eps_vxyz,fmt='(f10.3)')
+            call yaml_mapping_close()
         endif
         if(curv<0.d0 .or. fd2<0.d0) then
             if(lprint) write(*,'(a,i3)') 'WARNING: negative curvature. iproc=',iproc
@@ -1362,6 +1393,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
             atoms0%vat(ixyz,iat)=atoms0%vat(ixyz,iat)*svxyz
         enddo
     enddo !end of loop over iter
+    call yaml_sequence_close()
     count_soften=fcalls-count_tt
     count_soften_tot=count_soften_tot+count_soften
     call atom_deallocate(atoms)

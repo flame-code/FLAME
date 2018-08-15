@@ -61,15 +61,17 @@ subroutine mybfgs(iproc,nr,x,epot,f,nwork,work,paropt)
     !if(paropt%lprint) write(*,'(a4,i3.3,1x,i5,es23.12,es11.3,2es12.5,2es12.4,i3,a)') &
     !if(paropt%lprint) write(*,'(a4,i3.3,1x,i5,es23.15,es11.3,2es12.5,2es12.4,i3,a)') &
     if(paropt%lprint) call yaml_sequence(advance='no')
-    if(paropt%lprint) call yaml_map('iproc',iproc,fmt='(i3.3)')
+    if(paropt%lprint) call yaml_mapping_open(flow=.true.)
+    !if(paropt%lprint) call yaml_map('iproc',iproc,fmt='(i3.3)')
     if(paropt%lprint) call yaml_map('iter',paropt%iter,fmt='(i5)')
     if(paropt%lprint) call yaml_map('epot',epot,fmt='(es20.12)')
-    if(paropt%lprint) call yaml_map('de',de,fmt='(es11.3)')
-    if(paropt%lprint) call yaml_map('fnrm',fnrm,fmt='(es12.5)')
-    if(paropt%lprint) call yaml_map('fmax',fmax,fmt='(es12.5)')
+    if(paropt%lprint) call yaml_map('de',de,fmt='(es9.1)')
+    if(paropt%lprint) call yaml_map('fnrm',fnrm,fmt='(es10.3)')
+    if(paropt%lprint) call yaml_map('fmax',fmax,fmt='(es10.3)')
     if(paropt%lprint) call yaml_map('alpha',paropt%alpha,fmt='(es12.4)')
     if(paropt%lprint) call yaml_map('zeta',paropt%zeta,fmt='(es12.4)')
     if(paropt%lprint) call yaml_map('isatur',paropt%isatur,fmt='(i5)')
+    if(paropt%lprint) call yaml_mapping_close()
     !if(paropt%lprint) write(*,frmt) 'MIN:',iproc,paropt%iter,epot,de,fnrm,fmax,paropt%zeta,paropt%alpha,paropt%isatur,' BFGS'
     !if(fmax<paropt%fmaxtol) then
     if(paropt%converged) then

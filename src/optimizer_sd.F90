@@ -43,16 +43,18 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
         !write(*,'(a4,i3.3,1x,i5,es23.15,e11.3,2e12.5,e12.4,i5,l2,a)') 'MIN:',iproc,paropt%itsd,epot,de1, &
         !a4,i3.3,1x,i5,es20.12,es11.3,2es12.5 //,e12.4,i5,l2,a
         call yaml_sequence(advance='no')
-        call yaml_map('iproc',iproc,fmt='(i3.3)')
+        call yaml_mapping_open(flow=.true.)
+        !call yaml_map('iproc',iproc,fmt='(i3.3)')
         call yaml_map('iter',paropt%itsd,fmt='(i5)')
         call yaml_map('epot',epot,fmt='(es20.12)')
-        call yaml_map('de',de1,fmt='(es11.3)')
-        call yaml_map('fnrm',fnrm,fmt='(es12.5)')
-        call yaml_map('fmax',fmax,fmt='(es12.5)')
+        call yaml_map('de',de1,fmt='(es9.1)')
+        call yaml_map('fnrm',fnrm,fmt='(es10.3)')
+        call yaml_map('fmax',fmax,fmt='(es10.3)')
         call yaml_map('alpha/alphax',tt1,fmt='(e12.4)')
         call yaml_map('isatur',paropt%isatur,fmt='(i5)')
         call yaml_map('xmoved',paropt%xmoved,fmt='(l2)')
         !call yaml_map('method','SD',fmt='(a)')
+        call yaml_mapping_close()
         !write(*,frmt) 'MIN:',iproc,paropt%itsd,epot,de1, &
         !fnrm,fmax,tt1,paropt%isatur,paropt%xmoved,' SD'
     endif
