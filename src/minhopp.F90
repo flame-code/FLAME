@@ -858,7 +858,7 @@ subroutine mdescape(parini,atoms_hopp)
             !write(*,'(a3,i3.3,a,i10,2e15.6,2i3)') 'MD:',iproc,' imd,en0000,rkin,nummax,nummin', &
             !    imd,en0000,rkin,nummax,nummin
             call yaml_sequence(advance='no')
-            call yaml_mapping_open(flow=.true.)
+            call yaml_mapping_open('MDEs',flow=.true.)
             !call yaml_map('iproc',iproc,fmt='(i3.3)')
             call yaml_map('iter',imd,fmt='(i3.3)')
             call yaml_map('en0000',en0000,fmt='(e14.5)')
@@ -1349,7 +1349,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
             !write(*,'(a,i3.3,a,i3,5(f12.5))') 'SOFTEN:',iproc,' iter,curv,fd2,de,res,eps_vxyz: ', &
             !    iter,curv,fd2,atoms%epot-etot0,res,eps_vxyz
             call yaml_sequence(advance='no')
-            call yaml_mapping_open(flow=.true.)
+            call yaml_mapping_open('SOFT',flow=.true.)
             !call yaml_map('iproc',iproc,fmt='(i3.3)')
             call yaml_map('iter',iter,fmt='(i3)')
             call yaml_map('curv',curv,fmt='(f10.3)')
