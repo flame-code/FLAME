@@ -1,0 +1,915 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2018-08-17 18:25:39.146
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : saddle_1s
+   types                               : Si
+   two_level_geopt                     : True
+   verbosity                           : 0
+   verbose                             : 3
+   seed                                : 3
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : BFGS
+   fmaxtol                             : 2.E-5
+   alphax                              : 3.0
+   condnum                             : 40.0
+   precaution                          : normal
+   lprint                              : True
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : SD
+   fmaxtol                             : 1.E-3
+   alphax                              : 3.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : True
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s_opt:
+   method                              : SDCG
+   fmaxtol                             : 2.E-4
+   alphax                              : 3.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : True
+   dt_start                            : -1.0
+   nit                                 : 200
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s:
+   list_random_displace                : 1 57
+   dimsep                              : 1.E-3
+   ampl                                : 6.E-1
+ potential:
+   potential                           : ltb
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : atombased
+   symfunc                             : only_calculate
+   nstep_ekf                           : 100
+   nstep_cep                           : 200
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_cent2                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ ENERGY_m0: {epot: -1.068109624012961E+01, fmax:  3.708E-16}
+ Dimer lowest-mode optimization iterations:
+ - dimer: {itlc:  1, curv0:  1.367284E-01, curv:  2.878270E-02, cosangle:  0.000000E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.336688E-03}
+ - dimer: {itlc:  2, curv0:  2.878259E-02, curv:  5.934824E-03, cosangle:  0.969163E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.174882E-02}
+ - dimer: {itlc:  3, curv0:  5.941932E-03, curv: -2.022834E-02, cosangle:  0.984518E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.243263E-02}
+ - dimer: {itlc:  4, curv0: -2.024575E-02, curv: -5.009353E-02, cosangle:  0.965151E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.178933E-02}
+ - dimer: {itlc:  5, curv0: -5.006642E-02, curv: -7.960837E-02, cosangle:  0.983978E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.239344E-02}
+ - dimer: {itlc:  6, curv0: -7.964649E-02, curv: -1.038832E-01, cosangle:  0.975888E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.175877E-02}
+ - dimer: {itlc:  7, curv0: -1.038381E-01, curv: -1.215355E-01, cosangle:  0.990977E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.247433E-02}
+ - dimer: {itlc:  8, curv0: -1.215796E-01, curv: -1.331498E-01, cosangle:  0.989373E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.178098E-02}
+ - dimer: {itlc:  9, curv0: -1.331106E-01, curv: -1.402776E-01, cosangle:  0.996443E+00, 
+    cosangletol:  0.999848E+00,            fnrm:  0.258909E-02}
+ - dimer: {itlc:  10, curv0: -1.403106E-01, curv: -1.445708E-01, cosangle:  0.996197E+00, 
+    cosangletol:  0.999848E+00,             fnrm:  0.182048E-02}
+ - dimer: {itlc:  11, curv0: -1.445455E-01, curv: -1.470308E-01, cosangle:  0.998778E+00, 
+    cosangletol:  0.999848E+00,             fnrm:  0.267242E-02}
+ - dimer: {itlc:  12, curv0: -1.470514E-01, curv: -1.484865E-01, cosangle:  0.998729E+00, 
+    cosangletol:  0.999848E+00,             fnrm:  0.185036E-02}
+ - dimer: {itlc:  13, curv0: -1.484718E-01, curv: -1.492962E-01, cosangle:  0.999595E+00, 
+    cosangletol:  0.999848E+00,             fnrm:  0.272226E-02}
+ - dimer: {itlc:  14, curv0: -1.493083E-01, curv: -1.497827E-01, cosangle:  0.999580E+00, 
+    cosangletol:  0.999848E+00,             fnrm:  0.186872E-02}
+ - dimer: {itlc:  15, curv0: -1.497743E-01, curv: -1.500473E-01, cosangle:  0.999866E+00, 
+    cosangletol:  0.999848E+00,             fnrm:  0.275043E-02}
+ Dimer lowest-mode optimization iterations:
+ - dimer: {itlc:  1, curv0: -1.500542E-01, curv: -1.502125E-01, cosangle:  0.999859E+00, 
+    cosangletol:  0.999391E+00,            fnrm:  0.187957E-02}
+ optimization parameters:
+   method                              : SDCG
+   precaution                          : normal
+   alphax                              :  3.000000
+   fmaxtol                             :  0.000200
+   dxmax                               :  0.100000
+   condnum                             :  10.000000
+   fnrmtolsatur                        :  1.000000
+   dt_start                            : -1.000000
+   nsatur                              :  1
+   nit                                 :  200
+   lprint                              :  T
+ SD optimization iterations:
+ - SD: {iter:  0, epot: -1.051580454883E+01, de:  0.0E+00, fmax:  6.888E-01, fnrm:  1.012E+00, 
+          alpha/alphax:  0.0000E+00,     isatur:  0,     xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -1.539112E-01, curv: -1.657038E-01, cosangle:  0.995741E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.293247E-02}
+   - dimer: {itlc:  2, curv0: -1.656537E-01, curv: -1.665332E-01, cosangle:  0.998621E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.646660E-03}
+   - dimer: {itlc:  3, curv0: -1.665331E-01, curv: -1.666252E-01, cosangle:  0.999962E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.299922E-02}
+ - SD: {iter:  1, epot: -1.050916512201E+01, de:  6.6E-03, fmax:  6.291E-01, fnrm:  1.013E+00, 
+          alpha/alphax:  0.2400E+00,     isatur:  0,     xmoved:  F}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -1.542433E-01, curv: -1.545032E-01, cosangle:  0.999900E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.311556E-02}
+ - SD: {iter:  2, epot: -1.051638102637E+01, de: -5.8E-04, fmax:  6.212E-01, fnrm:  9.999E-01, 
+          alpha/alphax:  0.1200E+00,     isatur:  0,     xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -1.519631E-01, curv: -1.642877E-01, cosangle:  0.995339E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.277285E-02}
+   - dimer: {itlc:  2, curv0: -1.642419E-01, curv: -1.653436E-01, cosangle:  0.998092E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.612907E-03}
+   - dimer: {itlc:  3, curv0: -1.653452E-01, curv: -1.654808E-01, cosangle:  0.999942E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.287101E-02}
+ - SD: {iter:  3, epot: -1.051580542697E+01, de:  5.8E-04, fmax:  5.183E-01, fnrm:  9.589E-01, 
+          alpha/alphax:  0.1440E+00,     isatur:  0,     xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -1.555828E-01, curv: -1.650818E-01, cosangle:  0.996057E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.255857E-02}
+   - dimer: {itlc:  2, curv0: -1.650397E-01, curv: -1.666292E-01, cosangle:  0.997344E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.755267E-03}
+   - dimer: {itlc:  3, curv0: -1.666305E-01, curv: -1.669508E-01, cosangle:  0.999857E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.268691E-02}
+ - SD: {iter:  4, epot: -1.052240253434E+01, de: -6.6E-03, fmax:  3.638E-01, fnrm:  7.666E-01, 
+          alpha/alphax:  0.1728E+00,     isatur:  0,     xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -1.289493E-01, curv: -1.352407E-01, cosangle:  0.996901E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.221904E-02}
+   - dimer: {itlc:  2, curv0: -1.352095E-01, curv: -1.364835E-01, cosangle:  0.997731E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.764243E-03}
+   - dimer: {itlc:  3, curv0: -1.364860E-01, curv: -1.368069E-01, cosangle:  0.999829E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.227817E-02}
+ - SD: {iter:  5, epot: -1.053346292658E+01, de: -1.1E-02, fmax:  2.207E-01, fnrm:  4.754E-01, 
+          alpha/alphax:  0.2074E+00,     isatur:  0,     xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -7.523455E-02, curv: -8.006560E-02, cosangle:  0.996560E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.163408E-02}
+   - dimer: {itlc:  2, curv0: -8.003791E-02, curv: -8.167076E-02, cosangle:  0.996799E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.803441E-03}
+   - dimer: {itlc:  3, curv0: -8.167385E-02, curv: -8.232437E-02, cosangle:  0.999508E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.167980E-02}
+ - SD: {iter:  6, epot: -1.054524607809E+01, de: -1.2E-02, fmax:  1.207E-01, fnrm:  2.556E-01, 
+          alpha/alphax:  0.2488E+00,     isatur:  0,     xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -4.170603E-02, curv: -4.579306E-02, cosangle:  0.992077E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.696352E-03}
+   - dimer: {itlc:  2, curv0: -4.576943E-02, curv: -4.755954E-02, cosangle:  0.997260E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.874862E-03}
+   - dimer: {itlc:  3, curv0: -4.756764E-02, curv: -4.848847E-02, cosangle:  0.998187E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.751994E-03}
+   - dimer: {itlc:  4, curv0: -4.847997E-02, curv: -4.896473E-02, cosangle:  0.999256E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.903744E-03}
+   - dimer: {itlc:  5, curv0: -4.896805E-02, curv: -4.923315E-02, cosangle:  0.999469E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.762270E-03}
+ - SD: {iter:  7, epot: -1.055464054379E+01, de: -9.4E-03, fmax:  6.251E-02, fnrm:  1.225E-01, 
+          alpha/alphax:  0.2986E+00,     isatur:  0,     xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -3.711803E-02, curv: -3.853501E-02, cosangle:  0.994739E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.349005E-03}
+   - dimer: {itlc:  2, curv0: -3.852667E-02, curv: -3.890840E-02, cosangle:  0.999337E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.750331E-03}
+   - dimer: {itlc:  3, curv0: -3.891107E-02, curv: -3.906072E-02, cosangle:  0.999616E+00, 
+      cosangletol:  0.999391E+00,            fnrm:  0.609377E-03}
+ - SD: {iter:  8, epot: -1.055935051436E+01, de: -4.7E-03, fmax:  3.684E-02, fnrm:  6.456E-02, 
+          alpha/alphax:  0.3583E+00,     isatur:  0,     xmoved:  T}
+ - SD: {iter:  9, epot: -1.056254636422E+01, de: -3.2E-03, fmax:  2.526E-02, fnrm:  4.194E-02, 
+          alpha/alphax:  0.4300E+00,     isatur:  0,     xmoved:  T}
+ - SD: {iter:  10, epot: -1.056482461272E+01, de: -2.3E-03, fmax:  1.704E-02, 
+        fnrm:  3.209E-02,           alpha/alphax:  0.5160E+00, isatur:  0, xmoved:  T}
+ - SD: {iter:  11, epot: -1.056653300779E+01, de: -1.7E-03, fmax:  1.132E-02, 
+        fnrm:  2.590E-02,           alpha/alphax:  0.6192E+00, isatur:  0, xmoved:  T}
+ - SD: {iter:  12, epot: -1.056788509258E+01, de: -1.4E-03, fmax:  7.431E-03, 
+        fnrm:  2.163E-02,           alpha/alphax:  0.7430E+00, isatur:  0, xmoved:  T}
+ - SD: {iter:  13, epot: -1.056901017643E+01, de: -1.1E-03, fmax:  4.862E-03, 
+        fnrm:  1.850E-02,           alpha/alphax:  0.8916E+00, isatur:  0, xmoved:  T}
+ - SD: {iter:  14, epot: -1.056998930811E+01, de: -9.8E-04, fmax:  4.169E-03, 
+        fnrm:  1.600E-02,           alpha/alphax:  0.1070E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  15, epot: -1.057086954547E+01, de: -8.8E-04, fmax:  3.571E-03, 
+        fnrm:  1.389E-02,           alpha/alphax:  0.1284E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  16, epot: -1.057167096978E+01, de: -8.0E-04, fmax:  3.034E-03, 
+        fnrm:  1.204E-02,           alpha/alphax:  0.1541E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  17, epot: -1.057239430068E+01, de: -7.2E-04, fmax:  2.566E-03, 
+        fnrm:  1.033E-02,           alpha/alphax:  0.1849E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  18, epot: -1.057297262964E+01, de: -5.8E-04, fmax:  2.161E-03, 
+        fnrm:  8.861E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  19, epot: -1.057340156621E+01, de: -4.3E-04, fmax:  1.846E-03, 
+        fnrm:  7.681E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  20, epot: -1.057372486984E+01, de: -3.2E-04, fmax:  1.585E-03, 
+        fnrm:  6.684E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  21, epot: -1.057397136964E+01, de: -2.5E-04, fmax:  1.383E-03, 
+        fnrm:  5.867E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  22, epot: -1.057416094232E+01, de: -1.9E-04, fmax:  1.198E-03, 
+        fnrm:  5.135E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  23, epot: -1.057430771128E+01, de: -1.5E-04, fmax:  1.068E-03, 
+        fnrm:  4.559E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  24, epot: -1.057442194233E+01, de: -1.1E-04, fmax:  9.186E-04, 
+        fnrm:  3.983E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  25, epot: -1.057451122841E+01, de: -8.9E-05, fmax:  8.526E-04, 
+        fnrm:  3.614E-03,           alpha/alphax:  0.2000E+01, isatur:  1, xmoved:  T}
+ - SD: {iter:  26, epot: -1.057458126940E+01, de: -7.0E-05, fmax:  6.947E-04, 
+        fnrm:  3.125E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  27, epot: -1.057463639443E+01, de: -5.5E-05, fmax:  8.918E-04, 
+        fnrm:  3.081E-03,           alpha/alphax:  0.2000E+01, isatur:  1, xmoved:  T}
+ - SD: {iter:  28, epot: -1.057467995243E+01, de: -4.4E-05, fmax:  9.569E-04, 
+        fnrm:  2.817E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  29, epot: -1.057471462303E+01, de: -3.5E-05, fmax:  1.831E-03, 
+        fnrm:  3.784E-03,           alpha/alphax:  0.2000E+01, isatur:  1, xmoved:  F}
+ - SD: {iter:  30, epot: -1.057469745619E+01, de: -1.8E-05, fmax:  6.813E-04, 
+        fnrm:  2.476E-03,           alpha/alphax:  0.1000E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  31, epot: -1.057471626283E+01, de: -1.9E-05, fmax:  4.961E-04, 
+        fnrm:  2.172E-03,           alpha/alphax:  0.1200E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  32, epot: -1.057473583274E+01, de: -2.0E-05, fmax:  5.493E-04, 
+        fnrm:  2.079E-03,           alpha/alphax:  0.1440E+01, isatur:  1, xmoved:  T}
+ - SD: {iter:  33, epot: -1.057475560890E+01, de: -2.0E-05, fmax:  4.082E-04, 
+        fnrm:  1.826E-03,           alpha/alphax:  0.1728E+01, isatur:  0, xmoved:  T}
+ - SD: {iter:  34, epot: -1.057477427453E+01, de: -1.9E-05, fmax:  6.001E-04, 
+        fnrm:  1.872E-03,           alpha/alphax:  0.2000E+01, isatur:  1, xmoved:  F}
+ - SD: {iter:  35, epot: -1.057476518538E+01, de: -9.6E-06, fmax:  4.446E-04, 
+        fnrm:  1.751E-03,           alpha/alphax:  0.1000E+01, isatur:  2, xmoved:  T}
+   Dimer lowest-mode optimization iterations:
+   - dimer: {itlc:  1, curv0: -3.345953E-02, curv: -3.518906E-02, cosangle:  0.996177E+00, 
+      cosangletol:  0.999962E+00,            fnrm:  0.535699E-03}
+   - dimer: {itlc:  2, curv0: -3.519393E-02, curv: -3.564284E-02, cosangle:  0.998830E+00, 
+      cosangletol:  0.999962E+00,            fnrm:  0.522456E-03}
+   - dimer: {itlc:  3, curv0: -3.564093E-02, curv: -3.582705E-02, cosangle:  0.999559E+00, 
+      cosangletol:  0.999962E+00,            fnrm:  0.578799E-03}
+   - dimer: {itlc:  4, curv0: -3.582792E-02, curv: -3.591443E-02, cosangle:  0.999770E+00, 
+      cosangletol:  0.999962E+00,            fnrm:  0.539242E-03}
+   - dimer: {itlc:  5, curv0: -3.591342E-02, curv: -3.595499E-02, cosangle:  0.999901E+00, 
+      cosangletol:  0.999962E+00,            fnrm:  0.587689E-03}
+   - dimer: {itlc:  6, curv0: -3.595532E-02, curv: -3.597582E-02, cosangle:  0.999945E+00, 
+      cosangletol:  0.999962E+00,            fnrm:  0.543772E-03}
+   - dimer: {itlc:  7, curv0: -3.597532E-02, curv: -3.598557E-02, cosangle:  0.999975E+00, 
+      cosangletol:  0.999962E+00,            fnrm:  0.591756E-03}
+   ENERGY_s: {epot: -1.057484829858585E+01, fmax:  1.134E-04}
+   optimization parameters:
+     method                            : SD
+     precaution                        : normal
+     alphax                            :  3.000000
+     fmaxtol                           :  0.001000
+     dxmax                             :  0.100000
+     condnum                           :  10.000000
+     fnrmtolsatur                      :  0.040000
+     dt_start                          : -1.000000
+     nsatur                            :  5
+     nit                               :  1000
+     lprint                            :  T
+   SD optimization iterations:
+   - SD: {iter:  0, epot: -1.057560503081E+01, de:  0.0E+00, fmax:  4.238E-03, 
+          fnrm:  7.873E-03,          alpha/alphax:  0.0000E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  1, epot: -1.057572051201E+01, de: -1.2E-04, fmax:  4.593E-03, 
+          fnrm:  8.438E-03,          alpha/alphax:  0.6000E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  2, epot: -1.057588129051E+01, de: -1.6E-04, fmax:  5.034E-03, 
+          fnrm:  9.213E-03,          alpha/alphax:  0.7200E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  3, epot: -1.057611392319E+01, de: -2.3E-04, fmax:  5.603E-03, 
+          fnrm:  1.028E-02,          alpha/alphax:  0.8640E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  4, epot: -1.057646608993E+01, de: -3.5E-04, fmax:  6.370E-03, 
+          fnrm:  1.177E-02,          alpha/alphax:  0.1037E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  5, epot: -1.057703031207E+01, de: -5.6E-04, fmax:  7.445E-03, 
+          fnrm:  1.395E-02,          alpha/alphax:  0.1244E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  6, epot: -1.057800498928E+01, de: -9.7E-04, fmax:  9.030E-03, 
+          fnrm:  1.732E-02,          alpha/alphax:  0.1493E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  7, epot: -1.057987301012E+01, de: -1.9E-03, fmax:  1.147E-02, 
+          fnrm:  2.294E-02,          alpha/alphax:  0.1792E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  8, epot: -1.058364092257E+01, de: -3.8E-03, fmax:  1.492E-02, 
+          fnrm:  3.189E-02,          alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  9, epot: -1.059079533497E+01, de: -7.2E-03, fmax:  1.907E-02, 
+          fnrm:  4.230E-02,          alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  10, epot: -1.060152535218E+01, de: -1.1E-02, fmax:  2.495E-02, 
+          fnrm:  4.867E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  11, epot: -1.061321893747E+01, de: -1.2E-02, fmax:  2.903E-02, 
+          fnrm:  5.130E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  12, epot: -1.062483553938E+01, de: -1.2E-02, fmax:  3.198E-02, 
+          fnrm:  5.402E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  13, epot: -1.063642022200E+01, de: -1.2E-02, fmax:  3.351E-02, 
+          fnrm:  5.549E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  14, epot: -1.064760272631E+01, de: -1.1E-02, fmax:  3.265E-02, 
+          fnrm:  5.340E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  15, epot: -1.065754546338E+01, de: -9.9E-03, fmax:  2.875E-02, 
+          fnrm:  4.654E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  16, epot: -1.066539465403E+01, de: -7.8E-03, fmax:  2.186E-02, 
+          fnrm:  3.592E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  17, epot: -1.067078563300E+01, de: -5.4E-03, fmax:  1.279E-02, 
+          fnrm:  2.529E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  18, epot: -1.067409672456E+01, de: -3.3E-03, fmax:  7.074E-03, 
+          fnrm:  1.927E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  19, epot: -1.067611198363E+01, de: -2.0E-03, fmax:  5.777E-03, 
+          fnrm:  1.574E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  20, epot: -1.067747229805E+01, de: -1.4E-03, fmax:  4.329E-03, 
+          fnrm:  1.313E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  21, epot: -1.067842467310E+01, de: -9.5E-04, fmax:  3.589E-03, 
+          fnrm:  1.108E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  22, epot: -1.067910592852E+01, de: -6.8E-04, fmax:  2.869E-03, 
+          fnrm:  9.431E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  23, epot: -1.067960097133E+01, de: -5.0E-04, fmax:  2.396E-03, 
+          fnrm:  8.077E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  24, epot: -1.067996490645E+01, de: -3.6E-04, fmax:  1.973E-03, 
+          fnrm:  6.950E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  25, epot: -1.068023483043E+01, de: -2.7E-04, fmax:  1.663E-03, 
+          fnrm:  6.002E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  26, epot: -1.068043639161E+01, de: -2.0E-04, fmax:  1.393E-03, 
+          fnrm:  5.197E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  27, epot: -1.068058770793E+01, de: -1.5E-04, fmax:  1.184E-03, 
+          fnrm:  4.511E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  28, epot: -1.068070178913E+01, de: -1.1E-04, fmax:  1.004E-03, 
+          fnrm:  3.922E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  29, epot: -1.068078810054E+01, de: -8.6E-05, fmax:  8.599E-04, 
+          fnrm:  3.415E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD FINISHED:
+       success                         :  Yes
+       iter                            :  29
+       epot                            : -1.068078810054E+01
+       fnrm                            :  3.41532E-03
+       fmax                            :  8.59859E-04
+   BFGS optimization iterations:
+   - BFGS: {iter:  0, epot: -1.068078810054E+01, de:  0.0E+00, fmax:  8.599E-04, 
+            fnrm:  3.415E-03,                 alpha:  8.0000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  1, epot: -1.068081802567E+01, de: -3.0E-05, fmax:  8.052E-04, 
+            fnrm:  3.223E-03,                 alpha:  8.8000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  2, epot: -1.068084311854E+01, de: -2.5E-05, fmax:  7.580E-04, 
+            fnrm:  3.053E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  3, epot: -1.068086697023E+01, de: -2.4E-05, fmax:  7.112E-04, 
+            fnrm:  2.882E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  4, epot: -1.068088880672E+01, de: -2.2E-05, fmax:  6.663E-04, 
+            fnrm:  2.717E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  5, epot: -1.068090848973E+01, de: -2.0E-05, fmax:  6.239E-04, 
+            fnrm:  2.560E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  6, epot: -1.068092610482E+01, de: -1.8E-05, fmax:  5.842E-04, 
+            fnrm:  2.411E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  2}
+   - BFGS: {iter:  7, epot: -1.068094181225E+01, de: -1.6E-05, fmax:  5.469E-04, 
+            fnrm:  2.270E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  4}
+   - BFGS: {iter:  8, epot: -1.068095579157E+01, de: -1.4E-05, fmax:  5.122E-04, 
+            fnrm:  2.138E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  6}
+   - BFGS: {iter:  9, epot: -1.068099158356E+01, de: -3.6E-05, fmax:  4.101E-04, 
+            fnrm:  1.756E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  8}
+   - BFGS: {iter:  10, epot: -1.068101686139E+01, de: -2.5E-05, fmax:  3.243E-04, 
+            fnrm:  1.430E-03,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  10}
+   - BFGS: {iter:  11, epot: -1.068103394843E+01, de: -1.7E-05, fmax:  2.549E-04, 
+            fnrm:  1.163E-03,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  12}
+   - BFGS: {iter:  12, epot: -1.068104987121E+01, de: -1.6E-05, fmax:  1.715E-04, 
+            fnrm:  8.486E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  14}
+   - BFGS: {iter:  13, epot: -1.068105832910E+01, de: -8.5E-06, fmax:  1.129E-04, 
+            fnrm:  6.299E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  16}
+   - BFGS: {iter:  14, epot: -1.068106276743E+01, de: -4.4E-06, fmax:  7.993E-05, 
+            fnrm:  4.866E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  18}
+   - BFGS: {iter:  15, epot: -1.068106558866E+01, de: -2.8E-06, fmax:  6.486E-05, 
+            fnrm:  3.793E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  20}
+   - BFGS: {iter:  16, epot: -1.068106699355E+01, de: -1.4E-06, fmax:  5.294E-05, 
+            fnrm:  3.244E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  22}
+   - BFGS: {iter:  17, epot: -1.068106783241E+01, de: -8.4E-07, fmax:  4.316E-05, 
+            fnrm:  2.958E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  24}
+   - BFGS: {iter:  18, epot: -1.068106852050E+01, de: -6.9E-07, fmax:  3.967E-05, 
+            fnrm:  2.777E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  26}
+   - BFGS: {iter:  19, epot: -1.068106916293E+01, de: -6.4E-07, fmax:  3.702E-05, 
+            fnrm:  2.645E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  28}
+   - BFGS: {iter:  20, epot: -1.068106988080E+01, de: -7.2E-07, fmax:  3.652E-05, 
+            fnrm:  2.519E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  30}
+   - BFGS: {iter:  21, epot: -1.068107075760E+01, de: -8.8E-07, fmax:  3.657E-05, 
+            fnrm:  2.403E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  32}
+   - BFGS: {iter:  22, epot: -1.068107172310E+01, de: -9.7E-07, fmax:  3.504E-05, 
+            fnrm:  2.333E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  34}
+   - BFGS: {iter:  23, epot: -1.068107268350E+01, de: -9.6E-07, fmax:  3.660E-05, 
+            fnrm:  2.346E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  36}
+   - BFGS: {iter:  24, epot: -1.068107365130E+01, de: -9.7E-07, fmax:  4.414E-05, 
+            fnrm:  2.454E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  38}
+   - BFGS: {iter:  25, epot: -1.068107454424E+01, de: -8.9E-07, fmax:  4.963E-05, 
+            fnrm:  2.590E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  38}
+   - BFGS: {iter:  26, epot: -1.068107541295E+01, de: -8.7E-07, fmax:  5.304E-05, 
+            fnrm:  2.704E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  40}
+   - BFGS: {iter:  27, epot: -1.068107631929E+01, de: -9.1E-07, fmax:  5.440E-05, 
+            fnrm:  2.766E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  42}
+   - BFGS: {iter:  28, epot: -1.068107739662E+01, de: -1.1E-06, fmax:  5.434E-05, 
+            fnrm:  2.790E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  44}
+   - BFGS: {iter:  29, epot: -1.068107859651E+01, de: -1.2E-06, fmax:  5.185E-05, 
+            fnrm:  2.732E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  46}
+   - BFGS: {iter:  30, epot: -1.068107991844E+01, de: -1.3E-06, fmax:  4.703E-05, 
+            fnrm:  2.601E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  48}
+   - BFGS: {iter:  31, epot: -1.068108142417E+01, de: -1.5E-06, fmax:  4.074E-05, 
+            fnrm:  2.445E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  50}
+   - BFGS: {iter:  32, epot: -1.068108292220E+01, de: -1.5E-06, fmax:  3.514E-05, 
+            fnrm:  2.282E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  52}
+   - BFGS: {iter:  33, epot: -1.068108433697E+01, de: -1.4E-06, fmax:  3.320E-05, 
+            fnrm:  2.143E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  54}
+   - BFGS: {iter:  34, epot: -1.068108574508E+01, de: -1.4E-06, fmax:  3.464E-05, 
+            fnrm:  2.043E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  56}
+   - BFGS: {iter:  35, epot: -1.068108700567E+01, de: -1.3E-06, fmax:  3.496E-05, 
+            fnrm:  1.957E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  58}
+   - BFGS: {iter:  36, epot: -1.068108812902E+01, de: -1.1E-06, fmax:  3.433E-05, 
+            fnrm:  1.872E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  60}
+   - BFGS: {iter:  37, epot: -1.068108921762E+01, de: -1.1E-06, fmax:  3.305E-05, 
+            fnrm:  1.781E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  62}
+   - BFGS: {iter:  38, epot: -1.068109017595E+01, de: -9.6E-07, fmax:  3.119E-05, 
+            fnrm:  1.676E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  64}
+   - BFGS: {iter:  39, epot: -1.068109101795E+01, de: -8.4E-07, fmax:  2.951E-05, 
+            fnrm:  1.560E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  66}
+   - BFGS: {iter:  40, epot: -1.068109181492E+01, de: -8.0E-07, fmax:  2.726E-05, 
+            fnrm:  1.437E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  68}
+   - BFGS: {iter:  41, epot: -1.068109250108E+01, de: -6.9E-07, fmax:  2.453E-05, 
+            fnrm:  1.309E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  70}
+   - BFGS: {iter:  42, epot: -1.068109308899E+01, de: -5.9E-07, fmax:  2.154E-05, 
+            fnrm:  1.181E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  72}
+   - BFGS: {iter:  43, epot: -1.068109362750E+01, de: -5.4E-07, fmax:  1.851E-05, 
+            fnrm:  1.056E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  74}
+   - BFGS FINISHED:
+       success                         :  Yes
+       iter                            :  43
+       epot                            : -1.068109362750E+01
+       fnrm                            :  1.05643E-04
+       fmax                            :  1.85141E-05
+   ENERGY_m1: {epot: -1.068109362750142E+01, fmax:  1.851E-05}
+   SD optimization iterations:
+   - SD: {iter:  0, epot: -1.057551177944E+01, de:  0.0E+00, fmax:  4.042E-03, 
+          fnrm:  6.665E-03,          alpha/alphax:  0.0000E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  1, epot: -1.057559329808E+01, de: -8.2E-05, fmax:  4.236E-03, 
+          fnrm:  6.946E-03,          alpha/alphax:  0.6000E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  2, epot: -1.057570053371E+01, de: -1.1E-04, fmax:  4.495E-03, 
+          fnrm:  7.357E-03,          alpha/alphax:  0.7200E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  3, epot: -1.057584591384E+01, de: -1.5E-04, fmax:  4.829E-03, 
+          fnrm:  7.893E-03,          alpha/alphax:  0.8640E+00, isatur:  0, xmoved:  T}
+   - SD: {iter:  4, epot: -1.057604803873E+01, de: -2.0E-04, fmax:  5.251E-03, 
+          fnrm:  8.571E-03,          alpha/alphax:  0.1037E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  5, epot: -1.057633566348E+01, de: -2.9E-04, fmax:  5.739E-03, 
+          fnrm:  9.367E-03,          alpha/alphax:  0.1244E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  6, epot: -1.057674573869E+01, de: -4.1E-04, fmax:  6.212E-03, 
+          fnrm:  1.017E-02,          alpha/alphax:  0.1493E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  7, epot: -1.057732738561E+01, de: -5.8E-04, fmax:  6.759E-03, 
+          fnrm:  1.108E-02,          alpha/alphax:  0.1792E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  8, epot: -1.057809479557E+01, de: -7.7E-04, fmax:  7.270E-03, 
+          fnrm:  1.195E-02,          alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  9, epot: -1.057897595544E+01, de: -8.8E-04, fmax:  7.608E-03, 
+          fnrm:  1.256E-02,          alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  10, epot: -1.057993445010E+01, de: -9.6E-04, fmax:  7.695E-03, 
+          fnrm:  1.280E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  11, epot: -1.058091166687E+01, de: -9.8E-04, fmax:  7.478E-03, 
+          fnrm:  1.257E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  12, epot: -1.058183679575E+01, de: -9.3E-04, fmax:  6.947E-03, 
+          fnrm:  1.187E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  13, epot: -1.058264592777E+01, de: -8.1E-04, fmax:  6.169E-03, 
+          fnrm:  1.080E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  14, epot: -1.058330631152E+01, de: -6.6E-04, fmax:  5.303E-03, 
+          fnrm:  9.578E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  15, epot: -1.058382245572E+01, de: -5.2E-04, fmax:  4.455E-03, 
+          fnrm:  8.387E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  16, epot: -1.058421772055E+01, de: -4.0E-04, fmax:  3.733E-03, 
+          fnrm:  7.355E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  17, epot: -1.058452324842E+01, de: -3.1E-04, fmax:  3.156E-03, 
+          fnrm:  6.503E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  18, epot: -1.058476254575E+01, de: -2.4E-04, fmax:  2.668E-03, 
+          fnrm:  5.774E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  19, epot: -1.058495162886E+01, de: -1.9E-04, fmax:  2.269E-03, 
+          fnrm:  5.151E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  20, epot: -1.058510250777E+01, de: -1.5E-04, fmax:  1.945E-03, 
+          fnrm:  4.617E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  21, epot: -1.058522394539E+01, de: -1.2E-04, fmax:  1.682E-03, 
+          fnrm:  4.154E-03,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
+   - SD: {iter:  22, epot: -1.058532236480E+01, de: -9.8E-05, fmax:  1.465E-03, 
+          fnrm:  3.747E-03,           alpha/alphax:  0.2000E+01, isatur:  1, xmoved:  T}
+   - SD: {iter:  23, epot: -1.058540255739E+01, de: -8.0E-05, fmax:  1.286E-03, 
+          fnrm:  3.388E-03,           alpha/alphax:  0.2000E+01, isatur:  2, xmoved:  T}
+   - SD: {iter:  24, epot: -1.058546816985E+01, de: -6.6E-05, fmax:  1.135E-03, 
+          fnrm:  3.069E-03,           alpha/alphax:  0.2000E+01, isatur:  3, xmoved:  T}
+   - SD: {iter:  25, epot: -1.058552202477E+01, de: -5.4E-05, fmax:  1.007E-03, 
+          fnrm:  2.783E-03,           alpha/alphax:  0.2000E+01, isatur:  4, xmoved:  T}
+   - SD: {iter:  26, epot: -1.058556633616E+01, de: -4.4E-05, fmax:  8.971E-04, 
+          fnrm:  2.526E-03,           alpha/alphax:  0.2000E+01, isatur:  5, xmoved:  T}
+   - SD FINISHED:
+       success                         :  Yes
+       iter                            :  26
+       epot                            : -1.058556633616E+01
+       fnrm                            :  2.52604E-03
+       fmax                            :  8.97059E-04
+   BFGS optimization iterations:
+   - BFGS: {iter:  0, epot: -1.058556633616E+01, de:  0.0E+00, fmax:  8.971E-04, 
+            fnrm:  2.526E-03,                 alpha:  8.0000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  1, epot: -1.058558284232E+01, de: -1.7E-05, fmax:  8.555E-04, 
+            fnrm:  2.424E-03,                 alpha:  8.8000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  2, epot: -1.058559720917E+01, de: -1.4E-05, fmax:  8.184E-04, 
+            fnrm:  2.332E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  3, epot: -1.058561130312E+01, de: -1.4E-05, fmax:  7.808E-04, 
+            fnrm:  2.237E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  4, epot: -1.058562462346E+01, de: -1.3E-05, fmax:  7.442E-04, 
+            fnrm:  2.144E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  5, epot: -1.058563702591E+01, de: -1.2E-05, fmax:  7.089E-04, 
+            fnrm:  2.053E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  0}
+   - BFGS: {iter:  6, epot: -1.058564849518E+01, de: -1.1E-05, fmax:  6.752E-04, 
+            fnrm:  1.966E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  2}
+   - BFGS: {iter:  7, epot: -1.058565906498E+01, de: -1.1E-05, fmax:  6.431E-04, 
+            fnrm:  1.883E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  4}
+   - BFGS: {iter:  8, epot: -1.058566878759E+01, de: -9.7E-06, fmax:  6.125E-04, 
+            fnrm:  1.802E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  6}
+   - BFGS: {iter:  9, epot: -1.058569572574E+01, de: -2.7E-05, fmax:  5.167E-04, 
+            fnrm:  1.560E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  8}
+   - BFGS: {iter:  10, epot: -1.058571682152E+01, de: -2.1E-05, fmax:  4.380E-04, 
+            fnrm:  1.341E-03,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  10}
+   - BFGS: {iter:  11, epot: -1.058573272691E+01, de: -1.6E-05, fmax:  3.717E-04, 
+            fnrm:  1.152E-03,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  12}
+   - BFGS: {iter:  12, epot: -1.058575007049E+01, de: -1.7E-05, fmax:  2.836E-04, 
+            fnrm:  9.045E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  14}
+   - BFGS: {iter:  13, epot: -1.058576083605E+01, de: -1.1E-05, fmax:  2.140E-04, 
+            fnrm:  7.146E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  16}
+   - BFGS: {iter:  14, epot: -1.058576738467E+01, de: -6.5E-06, fmax:  1.603E-04, 
+            fnrm:  5.740E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  18}
+   - BFGS: {iter:  15, epot: -1.058577228507E+01, de: -4.9E-06, fmax:  1.074E-04, 
+            fnrm:  4.472E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  20}
+   - BFGS: {iter:  16, epot: -1.058577489784E+01, de: -2.6E-06, fmax:  7.248E-05, 
+            fnrm:  3.684E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  22}
+   - BFGS: {iter:  17, epot: -1.058577637791E+01, de: -1.5E-06, fmax:  7.000E-05, 
+            fnrm:  3.202E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  24}
+   - BFGS: {iter:  18, epot: -1.058577741693E+01, de: -1.0E-06, fmax:  6.614E-05, 
+            fnrm:  2.866E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  26}
+   - BFGS: {iter:  19, epot: -1.058577811925E+01, de: -7.0E-07, fmax:  6.099E-05, 
+            fnrm:  2.655E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  28}
+   - BFGS: {iter:  20, epot: -1.058577871143E+01, de: -5.9E-07, fmax:  5.447E-05, 
+            fnrm:  2.493E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  30}
+   - BFGS: {iter:  21, epot: -1.058577933600E+01, de: -6.2E-07, fmax:  4.598E-05, 
+            fnrm:  2.349E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  32}
+   - BFGS: {iter:  22, epot: -1.058578001473E+01, de: -6.8E-07, fmax:  3.557E-05, 
+            fnrm:  2.229E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  34}
+   - BFGS: {iter:  23, epot: -1.058578075980E+01, de: -7.5E-07, fmax:  2.764E-05, 
+            fnrm:  2.160E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  36}
+   - BFGS: {iter:  24, epot: -1.058578157155E+01, de: -8.1E-07, fmax:  3.216E-05, 
+            fnrm:  2.184E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  38}
+   - BFGS: {iter:  25, epot: -1.058578235912E+01, de: -7.9E-07, fmax:  3.748E-05, 
+            fnrm:  2.293E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  40}
+   - BFGS: {iter:  26, epot: -1.058578311233E+01, de: -7.5E-07, fmax:  4.325E-05, 
+            fnrm:  2.434E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  40}
+   - BFGS: {iter:  27, epot: -1.058578386552E+01, de: -7.5E-07, fmax:  4.832E-05, 
+            fnrm:  2.553E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  42}
+   - BFGS: {iter:  28, epot: -1.058578472935E+01, de: -8.6E-07, fmax:  5.172E-05, 
+            fnrm:  2.651E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  44}
+   - BFGS: {iter:  29, epot: -1.058578568864E+01, de: -9.6E-07, fmax:  5.245E-05, 
+            fnrm:  2.670E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  46}
+   - BFGS: {iter:  30, epot: -1.058578677388E+01, de: -1.1E-06, fmax:  5.074E-05, 
+            fnrm:  2.601E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  48}
+   - BFGS: {iter:  31, epot: -1.058578806305E+01, de: -1.3E-06, fmax:  5.274E-05, 
+            fnrm:  2.477E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  50}
+   - BFGS: {iter:  32, epot: -1.058578941532E+01, de: -1.4E-06, fmax:  5.190E-05, 
+            fnrm:  2.299E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  52}
+   - BFGS: {iter:  33, epot: -1.058579074661E+01, de: -1.3E-06, fmax:  4.869E-05, 
+            fnrm:  2.116E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  54}
+   - BFGS: {iter:  34, epot: -1.058579209445E+01, de: -1.3E-06, fmax:  4.435E-05, 
+            fnrm:  1.974E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  56}
+   - BFGS: {iter:  35, epot: -1.058579330868E+01, de: -1.2E-06, fmax:  3.933E-05, 
+            fnrm:  1.868E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  58}
+   - BFGS: {iter:  36, epot: -1.058579438822E+01, de: -1.1E-06, fmax:  3.746E-05, 
+            fnrm:  1.788E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  60}
+   - BFGS: {iter:  37, epot: -1.058579543036E+01, de: -1.0E-06, fmax:  3.702E-05, 
+            fnrm:  1.721E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  62}
+   - BFGS: {iter:  38, epot: -1.058579634762E+01, de: -9.2E-07, fmax:  3.593E-05, 
+            fnrm:  1.652E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  64}
+   - BFGS: {iter:  39, epot: -1.058579715645E+01, de: -8.1E-07, fmax:  3.432E-05, 
+            fnrm:  1.575E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  66}
+   - BFGS: {iter:  40, epot: -1.058579792766E+01, de: -7.7E-07, fmax:  3.235E-05, 
+            fnrm:  1.492E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  68}
+   - BFGS: {iter:  41, epot: -1.058579859965E+01, de: -6.7E-07, fmax:  3.004E-05, 
+            fnrm:  1.401E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  70}
+   - BFGS: {iter:  42, epot: -1.058579918456E+01, de: -5.8E-07, fmax:  2.748E-05, 
+            fnrm:  1.305E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  72}
+   - BFGS: {iter:  43, epot: -1.058579972941E+01, de: -5.4E-07, fmax:  2.476E-05, 
+            fnrm:  1.205E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  74}
+   - BFGS: {iter:  44, epot: -1.058580019501E+01, de: -4.7E-07, fmax:  2.196E-05, 
+            fnrm:  1.104E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  76}
+   - BFGS: {iter:  45, epot: -1.058580059145E+01, de: -4.0E-07, fmax:  1.917E-05, 
+            fnrm:  1.005E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
+          isatur:  78}
+   - BFGS FINISHED:
+       success                         :  Yes
+       iter                            :  45
+       epot                            : -1.058580059145E+01
+       fnrm                            :  1.00534E-04
+       fmax                            :  1.91749E-05
+   ENERGY_m2: {epot: -1.058580059145339E+01, fmax:  1.134E-04}
+   barriers: {bh0:  0.106, curv: -0.036, bh1:  0.106, bh2:  0.011}

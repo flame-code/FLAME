@@ -94,3 +94,22 @@ minhopp_LJ:
  fmax: 1.e-11
  en0000: 1.e-5
 
+saddle_1s_Si64Bulk:
+ Keys to ignore:
+  - iproc
+ alphax: 1.e-5
+ fmaxtol: 1.e-5
+ dxmax: 1.e-5
+ condnum: 1.e-5
+ fnrmtolsatur: 1.e-5
+ epot: 1.e-11
+ fnrm: 1.e-11
+ fmax: 1.e-11
+ ndim: 1.e-14
+ curv0: 1.e-11
+ curv: 1.e-11
+ cosangle: 1.e-11
+ cosangletol: 1.e-11
+ bh0: 1.e-11
+ bh1: 1.e-11
+ bh2: 1.e-11

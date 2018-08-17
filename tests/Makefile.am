@@ -4,7 +4,8 @@ SHORT_TESTDIRS = testforces_FD \
 				 geopt_LTB \
 				 geopt_LJ \
 				 geopt_SQNM \
-				 minhopp_LJ
+				 minhopp_LJ \
+				 saddle_1s_Si64Bulk
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
