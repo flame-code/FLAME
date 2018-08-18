@@ -35,7 +35,7 @@ testforces_FD:
  err_y: 1.e-9
  err_z: 1.e-9
 
-single_point:
+SP_QSC:
  Keys to ignore:
   - conf. number
  epot: 1.e-14
@@ -113,3 +113,15 @@ saddle_1s_Si64Bulk:
  bh0: 1.e-11
  bh1: 1.e-11
  bh2: 1.e-11
+
+SP_CENT1_bulk:
+ Keys to ignore:
+  - conf. number
+ epot: 1.e-14
+ diff w.r.t. first conf: 1.e-6
+ diff w.r.t. prev. conf: 1.e-6
+ epot_es: 1.e-11
+ de: 1.e-11
+ gnrm: 1.e-11
+ stepsize: 1.e-11
+ epot: 1.e-12
