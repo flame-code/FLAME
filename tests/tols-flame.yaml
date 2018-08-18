@@ -131,3 +131,15 @@ SP_CENT1_free:
  epot: 1.e-14
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
+
+SP_CENT1_slab:
+ Keys to ignore:
+  - conf. number
+ epot: 1.e-14
+ diff w.r.t. first conf: 1.e-6
+ diff w.r.t. prev. conf: 1.e-6
+ epot_es: 1.e-11
+ de: 1.e-11
+ gnrm: 1.e-11
+ stepsize: 1.e-11
+

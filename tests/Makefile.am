@@ -7,7 +7,8 @@ SHORT_TESTDIRS = testforces_FD \
 				 minhopp_LJ \
 				 saddle_1s_Si64Bulk \
 				 SP_CENT1_bulk \
-				 SP_CENT1_free
+				 SP_CENT1_free \
+				 SP_CENT1_slab
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 

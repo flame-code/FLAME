@@ -1,0 +1,22 @@
+main:
+    task: single_point
+    verbosity: 2
+    types: Ca F
+
+potential:
+    potential: ann
+    print_force : True
+    ewald:
+        ewald: False
+        psolver: p3d
+        cell_ortho: True
+        ecut: 10.0
+        ecutz: 12.0
+        rgcut: 6.0
+
+single_point:
+    print_force : True
+
+ann:
+    syslinsolver : operator
+    approach: cent1
