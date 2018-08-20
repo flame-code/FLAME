@@ -6,6 +6,7 @@ subroutine task_minhocao(parini,parres)
  use interface_code
  use fingerprint
  use mod_parini, only: typ_parini
+ use yaml_output
  implicit none
  type(typ_parini), intent(inout):: parini
  type(typ_parini), intent(inout):: parres
@@ -779,7 +780,8 @@ endif
      enddo
 !!     latlocmin(:,:,1)=pos_latvec(:,:)
      lat_arr(:,:,1)=pos_latvec(:,:)
-     write(*,*) '#first configuration saved'
+     !write(*,*) '#first configuration saved'
+     call yaml_comment('first configuration saved',hfill='~')
   else
 !           check whether new minimum
             call identical(parini,nlminx,nlmin,fp_method,fp_len,ent_pos,fp_pos,ent_arr,fp_arr,&
@@ -837,11 +839,13 @@ endif
 !  CPUcheck=.false.
 
 !Outer (hopping) loop
+call yaml_sequence_open('Hopping steps')
 !Hopping_loop: do
 1000 continue
      if (nlmin >= nlminx) then
         goto 3000
      endif
+     call yaml_sequence(advance='no')
 !Energy has reached target eref and global minimum is presumably found
 !!!     if (re_sm <= 1.d-3) then
 !!!        write(*,*)'# success: relative energy < 0.001'
@@ -1265,14 +1269,18 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
 
 !end do hopping_loop
 3000 continue   !This is the really end. Collect data
+call yaml_sequence_close()
 
 !Print some informations and rewrite restart information
      !write(67,*) 'writing final results'
-     write(*,*) ' # writing final results'
+     !write(*,*) ' # writing final results'
+     call yaml_comment('writing final results',hfill='~')
      !write(67,*) ' found in total ',nlmin,' minima'
      !write(67,*) ' Accepeted ',int(accepted),' minima'
-     write(*,*) ' # found in total ',nlmin,' minima'
-     write(*,*) ' # Accepeted ',int(accepted),' minima'
+     !write(*,*) ' # found in total ',nlmin,' minima'
+     call yaml_map('total minima found',nlmin)
+     call yaml_map('minima accepeted',int(accepted))
+     !write(*,*) ' # Accepeted ',int(accepted),' minima'
 !!     call winter(parini,nat,units,re_pos,rent_pos,e_pos,pos_red,pos_latvec,npminx,nlminx,nlmin,npmin,accur, & 
 !!      earr,elocmin,poslocmin,latlocmin,eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,&
 !!      typat,fixat,fixlat,target_pressure_habohr)
@@ -1328,6 +1336,7 @@ subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,v
  use interface_code
  use modsocket, only: sock_extra_string
  use mod_parini, only: typ_parini
+ use yaml_output
 implicit none
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -1448,11 +1457,21 @@ implicit none
  write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
 
 
+call yaml_sequence_open('atoms info in MD')
 !Assign masses to each atom (for MD)
  do iat=1,parini%nat
    amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
-if(parres%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
+!if(parres%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
+if(parres%verb.gt.0) then
+    call yaml_sequence(advance='no')
+    call yaml_mapping_open('atom',flow=.true.)
+    call yaml_map('iat',iat,fmt='(i5)')
+    call yaml_map('AMU',parini%amu(parini%typat_global(iat)),fmt='(es15.7)')
+    call yaml_map('EM',amass(iat),fmt='(es15.7)')
+    call yaml_mapping_close()
+endif
  enddo
+call yaml_sequence_close()
 !******************************************************************
 !NEW VERISON OF MD: Directly implemented, simplest Parrinello-Rahman and other MD
 
@@ -1617,13 +1636,25 @@ endif
        ent_pos_0=enthalpy
        en0000=enthalpy-ent_pos_0
 if(parres%verb.gt.0) then
-       write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,(pressure_md(1,1)+pressure_md(2,2)+pressure_md(3,3))/3.d0*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
+        call yaml_sequence_open('MD iterations')
+        call yaml_mapping_open('MD',flow=.true.)
+        call yaml_map('iter',itime,fmt='(i5)')
+        call yaml_map('enth',enthalpy,fmt='(es20.12)')
+        call yaml_map('pV',(pressure_md(1,1)+pressure_md(2,2)+pressure_md(3,3))/3.d0*vol,fmt='(es10.3)')
+        call yaml_map('ekinatom',ekinatom,fmt='(es10.3)')
+        call yaml_map('ekinlat',ekinlat,fmt='(es10.3)')
+        call yaml_map('nummax',nummax,fmt='(i2)')
+        call yaml_map('nummin',nummin,fmt='(i2)')
+        call yaml_map('parres%mdmin',parres%mdmin,fmt='(i2)')
+        call yaml_mapping_close()
+       !write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
+       !      &itime,enthalpy,(pressure_md(1,1)+pressure_md(2,2)+pressure_md(3,3))/3.d0*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
 !             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD:",filename
+       !write(*,*) "# Writing the positions in MD:",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 endif
@@ -1733,7 +1764,8 @@ endif
 
 !Kinetic energy of atoms
           ekinatom=0.5d0*rkin
-          if(parres%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          !if(parres%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          if(parres%verb.gt.0) call yaml_map('Velocity of CM',sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2),fmt='(es15.7)')
 !Kinetic energy according to Parrinello Rahman
           rkin=0.d0
 if(md_type==4) then
@@ -1746,7 +1778,14 @@ else
           ekinlat=0.5d0*rkin
 endif
           rkin=ekinlat+ekinatom
-if(parres%verb.gt.0) write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+!if(parres%verb.gt.0) write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+if(parres%verb.gt.0) then
+    call yaml_mapping_open('Torquenrm info',flow=.true.)
+    call yaml_map('Torquenrm',torquenrm,fmt='(es15.7)')
+    call yaml_map('Ekin',rkin,fmt='(es15.7)')
+    call yaml_map('Enthalpy',enthalpy,fmt='(es15.7)')
+    call yaml_mapping_close()
+endif
 !Update counter
           enmin2=enmin1
           enmin1=en0000
@@ -1841,12 +1880,23 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
        !write(67,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
        !      &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
 if(parres%verb.gt.0) then
-       write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
-             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
+       !write(*,'(a,i5,1x,4(1x,1pe17.10),3(1x,i2))') ' # MD: it,enthalpy,pV,ekinat,ekinlat,nmax,nmin,mdmin ',&
+       !     &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
+        call yaml_mapping_open('MD',flow=.true.)
+        call yaml_map('iter',itime,fmt='(i5)')
+        call yaml_map('enth',enthalpy,fmt='(es20.12)')
+        call yaml_map('pV',pressure*vol,fmt='(es10.3)')
+        call yaml_map('ekinatom',ekinatom,fmt='(es10.3)')
+        call yaml_map('ekinlat',ekinlat,fmt='(es10.3)')
+        call yaml_map('nummax',nummax,fmt='(i2)')
+        call yaml_map('nummin',nummin,fmt='(i2)')
+        call yaml_map('parres%mdmin',parres%mdmin,fmt='(i2)')
+        call yaml_mapping_close()
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD: ",filename
+       !write(*,*) "# Writing the positions in MD: ",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 endif
@@ -1888,6 +1938,9 @@ endif
      enddo 
 !Adjust MD stepsize
 !Minimum number of steps per crossed minimum is 15, average should be parres%nit_per_min
+if(parres%verb.gt.0) then
+    call yaml_sequence_close()
+endif
      
      if(parres%auto_dtion_md) then
 !       dt_ratio=real(itime,8)/real(parres%mdmin,8) !old version version
@@ -1906,7 +1959,7 @@ endif
 !MD stopped, now do relaxation
      write(*,'(a,i5,es15.7,es15.7)') ' # EXIT MD ',itime,enthalpy,etot_in
 
-end subroutine
+end subroutine MD_MHM
 !**********************************************************************************************
 
 subroutine acceleration_fire(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
@@ -2566,6 +2619,7 @@ subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
+ use yaml_output
 !Implements constant cell shape MD from Andersen,
 !I havent checked the equations of motion myself, taken at the moment from
 !http://www.grs-sim.de/cms/upload/Carloni/Presentations/Strodel4.pdf
@@ -2688,11 +2742,19 @@ implicit none
   md_type=parres%md_algo
 
 
+call yaml_sequence_open('atoms info in MD')
 !Assign masses to each atom (for MD)
  do iat=1,parini%nat
    amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
-   write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
+   !write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
+    call yaml_sequence(advance='no')
+    call yaml_mapping_open('atom',flow=.true.)
+    call yaml_map('iat',iat,fmt='(i5)')
+    call yaml_map('AMU',parini%amu(parini%typat_global(iat)),fmt='(es15.7)')
+    call yaml_map('EM',amass(iat),fmt='(es15.7)')
+    call yaml_mapping_close()
  enddo
+call yaml_sequence_close()
 !******************************************************************
 !Here we split the routine in the Abinit native part and my new implentation
  write(*,'(a)') ' # Entering standalone ANDERSEN MD  '
@@ -2783,7 +2845,8 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD:",filename
+       !write(*,*) "# Writing the positions in MD:",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
@@ -2889,7 +2952,8 @@ endif
 
 !Kinetic energy of atoms
           ekinatom=0.5d0*rkin
-          if(parini%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          !if(parini%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          if(parres%verb.gt.0) call yaml_map('Velocity of CM',sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2),fmt='(es15.7)')
 !Kinetic energy according to Parrinello Rahman
           rkin=0.d0
 if(md_type==4) then
@@ -2902,7 +2966,14 @@ else
           ekinlat=0.5d0*rkin
 endif
           rkin=ekinlat+ekinatom
-if(parini%verb.gt.0) write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+!if(parini%verb.gt.0) write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+if(parini%verb.gt.0) then
+    call yaml_mapping_open('Torquenrm info',flow=.true.)
+    call yaml_map('Torquenrm',torquenrm,fmt='(es15.7)')
+    call yaml_map('Ekin',rkin,fmt='(es15.7)')
+    call yaml_map('Enthalpy',enthalpy,fmt='(es15.7)')
+    call yaml_mapping_close()
+endif
 !Update counter
           enmin2=enmin1
           enmin1=en0000
@@ -2983,7 +3054,8 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD: ",filename
+       !write(*,*) "# Writing the positions in MD: ",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
@@ -3052,6 +3124,7 @@ subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
+ use yaml_output
 implicit none
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -3141,11 +3214,19 @@ implicit none
  write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
 
 
+call yaml_sequence_open('atoms info in MD')
 !Assign masses to each atom (for MD)
  do iat=1,parini%nat
    amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
-   write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
+   !write(*,'(a,i5,2(1x,es15.7))') " # MD: iat, AMU, EM: ", iat, parini%amu(parini%typat_global(iat)),amass(iat)
+    call yaml_sequence(advance='no')
+    call yaml_mapping_open('atom',flow=.true.)
+    call yaml_map('iat',iat,fmt='(i5)')
+    call yaml_map('AMU',parini%amu(parini%typat_global(iat)),fmt='(es15.7)')
+    call yaml_map('EM',amass(iat),fmt='(es15.7)')
+    call yaml_mapping_close()
  enddo
+call yaml_sequence_close()
 !******************************************************************
 !NEW VERISON OF MD: Directly implemented, simplest Parrinello-Rahman MD
 
@@ -3287,7 +3368,8 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD:",filename
+       !write(*,*) "# Writing the positions in MD:",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parini,filename,parini%nat,units,poscur,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
@@ -3323,7 +3405,8 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
              velcm=velcm+vposcurtmp*amass(iat)
           enddo
           ekinatom=0.5d0*rkin
-          if(parini%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          !if(parini%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          if(parres%verb.gt.0) call yaml_map('Velocity of CM',sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2),fmt='(es15.7)')
 
 !Now calculate steps for the lattice according to the velocity verlet algorithm
 !For simplicity, just use the stress tensor at the moment for the force on the lattice
@@ -3352,7 +3435,12 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
           enddo
           ekinlat=0.5d0*rkin
           rkin=ekinlat+ekinatom
-          write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+          !write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+          call yaml_mapping_open('Torquenrm info',flow=.true.)
+          call yaml_map('Torquenrm',torquenrm,fmt='(es15.7)')
+          call yaml_map('Ekin',rkin,fmt='(es15.7)')
+          call yaml_map('Enthalpy',enthalpy,fmt='(es15.7)')
+          call yaml_mapping_close()
 !Update counter
           enmin2=enmin1
           enmin1=en0000
@@ -3450,7 +3538,8 @@ pressure_ener=0.d0;pressure_md=pressure_md*pressure  !Here the pressure is not p
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD: ",filename
+       !write(*,*) "# Writing the positions in MD: ",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
@@ -3495,6 +3584,7 @@ subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel
  use interface_code
  use modsocket, only: sock_extra_string
  use mod_parini, only: typ_parini
+ use yaml_output
 implicit none
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -3635,12 +3725,22 @@ latvec_io=0
 !Lattice alpha
 alpha_lat=20.d0
 
+call yaml_sequence_open('atoms info in FIRE')
 !Assign masses to each atom (for FIRE, all atoms have the same mass)
  do iat=1,parini%nat
 !   amass(iat)=amu_emass*1.d0
    amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
-   if(parini%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # FIRE: iat, AMU, EM: ", iat, amass(iat)/amu_emass,amass(iat)
+   !if(parini%verb.gt.0) write(*,'(a,i5,2(1x,es15.7))') " # FIRE: iat, AMU, EM: ", iat, amass(iat)/amu_emass,amass(iat)
+   if(parini%verb.gt.0) then
+    call yaml_sequence(advance='no')
+    call yaml_mapping_open('atom',flow=.true.)
+    call yaml_map('iat',iat,fmt='(i5)')
+    call yaml_map('AMU',amass(iat)/amu_emass,fmt='(es15.7)')
+    call yaml_map('EM',amass(iat),fmt='(es15.7)')
+    call yaml_mapping_close()
+   endif
  enddo
+call yaml_sequence_close()
 
 !Set FIRE parameters
 alpha=alphastart
@@ -3669,7 +3769,8 @@ P_lat=0.d0
 !Can be accessed if the ionmov of idtset2 is equal to -13
 
 !Here we split the routine in the Abinit native part and my new implentation
-write(*,'(a)') ' # Entering FIRE based on standalone PR MD '
+!write(*,'(a)') ' # Entering FIRE based on standalone PR MD '
+call yaml_comment('Entering FIRE based on standalone PR MD',hfill='~')
 !Set temporary variables, initially
   vxyz(:,:)=vel_in(:,:)
   pressure=parini%target_pressure_habohr
@@ -3820,7 +3921,8 @@ if(parini%verb.gt.0) then
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in FIRE:",filename
+       !write(*,*) "# Writing the positions in FIRE:",filename
+       call yaml_map('Writing the positions in FIRE',trim(filename))
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
@@ -3852,8 +3954,10 @@ call elim_fixed_at(parini,parini%nat,vposcur)
 if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatcur)
 
 
+    call yaml_sequence_open('FIRE optimization iterations')
 !FIRE cycles
         do itime=1,parini%paropt_geopt%nit
+            call yaml_sequence(advance='no')
 !          if(itime.ne.1) e_rxyz=enthalpy  !e_rxyz=e_rxyz+pressure_md(1,1)*vol   
 !Check the torque on the cell for rotation
           call torque_cell(latcur,vlatcur,torquenrm)
@@ -3969,7 +4073,8 @@ endif
 
 !Kinetic energy of atoms
           ekinatom=0.5d0*rkin
-          if(parini%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          !if(parini%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          if(parres%verb.gt.0) call yaml_map('Velocity of CM',sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2),fmt='(es15.7)')
 !Kinetic energy according to Parrinello Rahman
           rkin=0.d0
 if(md_type==4) then
@@ -3984,7 +4089,15 @@ else
 endif
 !          call ekin_at_lat(amass,latmass,latcur,vposcur,vlatcur,ekinatom,ekinlat,f0,md_type,nat)
           rkin=ekinlat+ekinatom
-if(parini%verb.gt.0) write(*,'(a,4(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, ekinlat,ekinatom,enthalpy
+!if(parini%verb.gt.0) write(*,'(a,4(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, ekinlat,ekinatom,enthalpy
+if(parini%verb.gt.0) then
+    call yaml_mapping_open('Torquenrm info',flow=.true.)
+    call yaml_map('Torquenrm',torquenrm,fmt='(es15.7)')
+    call yaml_map('Ekin',ekinatom,fmt='(es15.7)')
+    call yaml_map('Enthalpy',enthalpy,fmt='(es15.7)')
+    call yaml_map('ekinlat',ekinlat,fmt='(es15.7)')
+    call yaml_mapping_close()
+endif
 !Update counter
           enmin2=enmin1
           enmin1=en0000
@@ -4094,7 +4207,8 @@ if(parini%verb.gt.0) then
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posgeopt."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in FIRE: ",filename
+       !write(*,*) "# Writing the positions in FIRE: ",filename
+       call yaml_map('Writing the positions in FIRE',trim(filename))
        call write_atomic_file_ascii(parini,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        if(parini%verb.ge.3) then
@@ -4103,8 +4217,22 @@ if(parini%verb.gt.0) then
             &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
        endif
 
-       write(*,'(a,i4,6(1x,es17.8),3(1x,es9.2),1x,i4,1x,i4)') " # GEOPT FIRE    ",&
-              &itime,enthalpy, fmax, fmax_at,fmax_lat,rkin,P,P_at,P_lat,dt,nstep,iprec
+        call yaml_mapping_open('FIRE',flow=.true.)
+        call yaml_map('iter',itime,fmt='(i4)')
+        call yaml_map('enth',enthalpy,fmt='(es20.12)')
+        call yaml_map('fmax',fmax,fmt='(es10.3)')
+        call yaml_map('nstep',nstep,fmt='(i4)')
+        call yaml_map('iprec',iprec,fmt='(i2)')
+        call yaml_map('dt',dt,fmt='(es9.2)')
+        call yaml_map('fmax_at',fmax_at,fmt='(es10.3)')
+        call yaml_map('fmax_lat',fmax_lat,fmt='(es10.3)')
+        call yaml_map('rkin',rkin,fmt='(es9.2)')
+        call yaml_map('P',P,fmt='(es9.1)')
+        call yaml_map('P_at',P_at,fmt='(es9.1)')
+        call yaml_map('P_lat',P_lat,fmt='(es9.1)')
+        call yaml_mapping_close()
+       !write(*,'(a,i4,6(1x,es17.8),3(1x,es9.2),1x,i4,1x,i4)') " # GEOPT FIRE    ",&
+       !       &itime,enthalpy, fmax, fmax_at,fmax_lat,rkin,P,P_at,P_lat,dt,nstep,iprec
 endif
         if(iexit==1) then
           write(*,'(a,i4,2(1x,es25.15))') " # FIRE converged", itime,enthalpy,fmax
@@ -4246,6 +4374,7 @@ if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatcur)
      enthalpy_min=min(enthalpy,enthalpy_min)
      enddo 
 !FIRE
+    call yaml_sequence_close()
      write(*,'(a,i5,es15.7,es15.7)') ' # EXIT FIRE ',itime,enthalpy,etot_in
      max_kpt=.false.
 
@@ -4871,6 +5000,7 @@ subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,po
    &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,pressure)
   use mod_interface
   use mod_parini, only: typ_parini
+  use yaml_output
   implicit none
   type(typ_parini), intent(in):: parini
   integer, intent(in) :: nlminx,nlmin,nsoften,nat,npminx,fp_len
@@ -4929,11 +5059,13 @@ subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,po
         endif
      enddo
      write(*,*) ' wrote poslow files',nlmin
-     write(*,*) ' wrote earr.dat for  RESTART'
+     !write(*,*) ' wrote earr.dat for  RESTART'
+     call yaml_comment('wrote earr.dat for  RESTART',hfill='~')
      close(12)
      
      call wtioput(ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp)
-     write(*,*) ' wrote ioput for  RESTART'
+     !write(*,*) ' wrote ioput for  RESTART'
+     call yaml_comment('wrote ioput for  RESTART',hfill='~')
 
 !Write binaries
      n_arr=3*nat*mm
@@ -5215,6 +5347,7 @@ subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,tem
  use mod_interface
  use defs_basis
  use mod_parini, only: typ_parini
+ use yaml_output
 implicit none
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -5238,11 +5371,21 @@ implicit none
   write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
   write(*,*) "# Temp",temp
 
+call yaml_sequence_open('atoms info in init_vel')
 !Assign masses to each atom (for MD)
  do iat=1,parini%nat
  amass(iat)=amu_emass*parini%amu(parini%typat_global(iat))
-  if(parini%verb.gt.0) write(*,'(a,i5,1x,es15.7,1x,es15.7)') " # iat, AMU, EM: ",iat,parini%amu(parini%typat_global(iat)),amass(iat)
+  !if(parini%verb.gt.0) write(*,'(a,i5,1x,es15.7,1x,es15.7)') " # iat, AMU, EM: ",iat,parini%amu(parini%typat_global(iat)),amass(iat)
+   if(parini%verb.gt.0) then
+    call yaml_sequence(advance='no')
+    call yaml_mapping_open('atom',flow=.true.)
+    call yaml_map('iat',iat,fmt='(i5)')
+    call yaml_map('AMU',parini%amu(parini%typat_global(iat)),fmt='(es15.7)')
+    call yaml_map('EM',amass(iat),fmt='(es15.7)')
+    call yaml_mapping_close()
+   endif
  end do
+call yaml_sequence_close()
 
 
 pressure=parini%target_pressure_habohr
@@ -5363,6 +5506,7 @@ end subroutine init_vel
  use interface_code
  use modsocket, only: sock_extra_string
  use mod_parini, only: typ_parini
+ use yaml_output
 implicit none
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -5395,7 +5539,8 @@ implicit none
         real(8):: pos_prev(3*parini%nat),dir_prev(3*parini%nat),dir(3*parini%nat),angle,norm
         logical:: decrease
         write(*,'(a,i5)')" # Entering SOFTENING routine for ATOMS, nsoft= ",nsoft 
-        if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated" 
+        !if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated" 
+        if(parini%auto_soft) call yaml_comment('Automatic softening activated',hfill='~')
         decrease=.false.
 !        rxyzcart=rxyz        
 !First transform the atomic positions from internal to external coordinates
@@ -5488,9 +5633,28 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot)
 if(parini%verb.gt.0) write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
         res=sqrt(res)
         tt=sqrt(tt)
-if(it==1) write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: init atomic  it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+!if(it==1) write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: init atomic  it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+if(it==1) then
+    call yaml_mapping_open('SOFTEN init atomic',flow=.true.)
+    call yaml_map('it',it,fmt='(i5)')
+    call yaml_map('fnrm',tt,fmt='(e13.5)')
+    call yaml_map('res',res,fmt='(e13.5)')
+    call yaml_map('curv',curv,fmt='(e13.5)')
+    call yaml_map('fd2',fd2,fmt='(e13.5)')
+    call yaml_map('de',etot-etot0,fmt='(e18.10)')
+    call yaml_mapping_close()
+    if(parini%verb.gt.0) call yaml_sequence_open('SOFTEN atomic iterations')
+endif
 if(parini%verb.gt.0) then
-        write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+        !write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+        call yaml_mapping_open('SOFTEN',flow=.true.)
+        call yaml_map('it',it,fmt='(i5)')
+        call yaml_map('fnrm',tt,fmt='(e13.5)')
+        call yaml_map('res',res,fmt='(e13.5)')
+        call yaml_map('curv',curv,fmt='(e13.5)')
+        call yaml_map('fd2',fd2,fmt='(e13.5)')
+        call yaml_map('de',etot-etot0,fmt='(e18.10)')
+        call yaml_mapping_close()
         write(fn4,'(i4.4)') it 
         filename=trim(folder)//'possoft_at'//fn4//'.ascii'
         call write_atomic_file_ascii(parini,filename,parini%nat,units,pos_red_in,latvec_in,fxyz,strten_in,parini%char_type,&
@@ -5523,7 +5687,16 @@ endif
 !       write(*,*) '# No convergence in low_cur_dir',res
 1000   continue
       
-write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+!write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+if(parini%verb.gt.0) call yaml_sequence_close()
+call yaml_mapping_open('SOFTEN final atomic',flow=.true.)
+call yaml_map('it',it,fmt='(i5)')
+call yaml_map('fnrm',tt,fmt='(e13.5)')
+call yaml_map('res',res,fmt='(e13.5)')
+call yaml_map('curv',curv,fmt='(e13.5)')
+call yaml_map('fd2',fd2,fmt='(e13.5)')
+call yaml_map('de',etot-etot0,fmt='(e18.10)')
+call yaml_mapping_close()
 !Decrease the stepsize if necessary
        if(parini%auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
        if(parini%auto_soft.and.nsoft.ge.3) then
@@ -5548,6 +5721,7 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
  use interface_code
  use modsocket, only: sock_extra_string
  use mod_parini, only: typ_parini
+ use yaml_output
  implicit none
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -5585,7 +5759,8 @@ write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final atomic it,fnrm,res,curv,fd2,e
         decrease=.false.
 
         write(*,'(a,i5)')" # Entering SOFTENING routine for LATTICE, nsoft= ",nsoft
-        if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated"
+        !if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated"
+        if(parini%auto_soft) call yaml_comment('Automatic softening activated',hfill='~')
 
 !        ddcart=dd
         rxyz=pos_red0
@@ -5695,9 +5870,28 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot)
 if(parini%verb.gt.0) write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
         res=sqrt(res)
         tt=sqrt(tt)
-if(it==1) write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: init lattice  it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+!if(it==1) write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: init lattice  it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+if(it==1) then
+    call yaml_mapping_open('SOFTEN init lattice',flow=.true.)
+    call yaml_map('it',it,fmt='(i5)')
+    call yaml_map('fnrm',tt,fmt='(e13.5)')
+    call yaml_map('res',res,fmt='(e13.5)')
+    call yaml_map('curv',curv,fmt='(e13.5)')
+    call yaml_map('fd2',fd2,fmt='(e13.5)')
+    call yaml_map('de',etot-etot0,fmt='(e18.10)')
+    call yaml_mapping_close()
+    if(parini%verb.gt.0) call yaml_sequence_open('SOFTEN lattice iterations')
+endif
 if(parini%verb.gt.0) then
-        write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+        !write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+        call yaml_mapping_open('SOFTEN',flow=.true.)
+        call yaml_map('it',it,fmt='(i5)')
+        call yaml_map('fnrm',tt,fmt='(e13.5)')
+        call yaml_map('res',res,fmt='(e13.5)')
+        call yaml_map('curv',curv,fmt='(e13.5)')
+        call yaml_map('fd2',fd2,fmt='(e13.5)')
+        call yaml_map('de',etot-etot0,fmt='(e18.10)')
+        call yaml_mapping_close()
         write(fn4,'(i4.4)') it 
         filename=trim(folder)//'possoft_lat'//fn4//'.ascii'
         call write_atomic_file_ascii(parini,filename,parini%nat,units,rxyz,latvec_in,fcart_in,strten_in,parini%char_type,parini%ntypat_global,&
@@ -5731,7 +5925,16 @@ endif
 !       write(*,*) '# No convergence in low_cur_dir',res
 1000   continue
 
-write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+!write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: final lattice it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
+if(parini%verb.gt.0) call yaml_sequence_close()
+call yaml_mapping_open('SOFTEN final lattice',flow=.true.)
+call yaml_map('it',it,fmt='(i5)')
+call yaml_map('fnrm',tt,fmt='(e13.5)')
+call yaml_map('res',res,fmt='(e13.5)')
+call yaml_map('curv',curv,fmt='(e13.5)')
+call yaml_map('fd2',fd2,fmt='(e13.5)')
+call yaml_map('de',etot-etot0,fmt='(e18.10)')
+call yaml_mapping_close()
 !Decrease the stepsize if necessary
        if(parini%auto_soft.and.nsoft.lt.3) write(*,'(a,e18.10)') ' # SOFTEN: increase nsoft for auto adjustment'
        if(parini%auto_soft.and.nsoft.ge.3) then
@@ -8619,6 +8822,7 @@ subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_
  use defs_basis
  use interface_code
  use mod_parini, only: typ_parini
+ use yaml_output
 implicit none
  type(typ_parini), intent(in):: parini
  type(typ_parini), intent(inout):: parres
@@ -8916,7 +9120,8 @@ endif
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD:",filename
+       !write(*,*) "# Writing the positions in MD:",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
        &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************
@@ -9019,7 +9224,8 @@ endif
 
 !Kinetic energy of atoms
           ekinatom=0.5d0*rkin
-          if(parres%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          !if(parres%verb.gt.0) write(*,'(a,es15.7)')"Velocity of CM: ", sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2)
+          if(parres%verb.gt.0) call yaml_map('Velocity of CM',sqrt(velcm(1)**2+velcm(2)**2+velcm(3)**2),fmt='(es15.7)')
 !Kinetic energy according to Parrinello Rahman
           rkin=0.d0
 if(md_type==4) then
@@ -9032,7 +9238,14 @@ else
           ekinlat=0.5d0*rkin
 endif
           rkin=ekinlat+ekinatom
-if(parres%verb.gt.0) write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+!if(parres%verb.gt.0) write(*,'(a,3(1x,es15.7))') " # Torquenrm, Ekin, Enthalpy: ",torquenrm, rkin,enthalpy
+if(parres%verb.gt.0) then
+    call yaml_mapping_open('Torquenrm info',flow=.true.)
+    call yaml_map('Torquenrm',torquenrm,fmt='(es15.7)')
+    call yaml_map('Ekin',rkin,fmt='(es15.7)')
+    call yaml_map('Enthalpy',enthalpy,fmt='(es15.7)')
+    call yaml_mapping_close()
+endif
 !Update counter
           enmin2=enmin1
           enmin1=en0000
@@ -9117,7 +9330,8 @@ call ekin_at_lat_andersen(amass,latmass,latpred,vpospred,vlatpred,vvolpred,ekina
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
        units=units
-       write(*,*) "# Writing the positions in MD: ",filename
+       !write(*,*) "# Writing the positions in MD: ",filename
+       call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
        &parini%char_type(1:parini%ntypat_global),parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,etot_in,pressure,enthalpy,en0000)
 !*********************************************************************

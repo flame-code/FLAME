@@ -3,6 +3,7 @@ use mod_parini, only: typ_parini
 use mod_interface
 use tb_lj_params
 use void_lj_params, only: nat_atoms
+use yaml_output
 implicit none
 type(typ_parini), intent(in):: parini
 real(8):: xred(3,nat)
@@ -27,6 +28,7 @@ else
 endif
 
 #if defined(SPGLIB)
+call yaml_sequence_open('SPGLIB space group iterations')
 do itol=0,ntol
 tol=tolmin*tolfact**itol
 !call check_symmetry(nat,xred,latvec,typat,spg,tol)
@@ -44,13 +46,14 @@ if(spg2.gt.spgcur2) then
 endif
 !write(*,'(a,i5,es15.7)') " # SPGLIB  SPG, TOL      : ",spg2,tol
 enddo
+call yaml_sequence_close()
 #endif
 
 !write(*,'(a,i5,es15.7)') " # FINAL FINDSYM SPG, TOL: ",spgcur,tolcur
 write(*,'(a,i5,es15.7)') " # FINAL SPGLIB  SPG, TOL: ",spgcur2,tolcur2
 spgcur=spgcur2
 tolcur=tolcur2
-end subroutine
+end subroutine find_symmetry
 
 
 

@@ -19,7 +19,7 @@ Untar the futile inside the FLAME, then
 in order to build futile, make a directory somewhere
 and from there run the following
 
-path_to_futile_source/Installer.py build futile -c "FCFLAGS=-C -g -traceback" \
+path_to_futile_source/Installer.py build futile -c "FCFLAGS=-O2" \
 "--with-ext-linalg=-L/opt/intel/composer_xe_2013.2.146/mkl/lib/intel64 \
 -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm" \
 "CC=mpicc" "CXX=mpicxx" "FC=mpif90" "F77=mpif90" "FCLIBS= "

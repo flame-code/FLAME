@@ -96,6 +96,7 @@
 !
 subroutine get_spg(num_atom,positions,lattice,atom_types,symprec,spg)
   use spglib_f08
+  use yaml_output
 implicit none
 integer:: nat, typat(num_atom), spg
   ! Arguments ------------------------------------
@@ -135,7 +136,8 @@ integer:: nat, typat(num_atom), spg
      space_group = spg_get_schoenflies( schoenflies, & 
           & lattrans, positions, atom_types, num_atom, symprec );
 
-     write(*,'(a,i5)') " # SPGLIB: space_group ", dset % spacegroup_number
+     !write(*,'(a,i5)') " # SPGLIB: space_group ", dset % spacegroup_number
+     call yaml_map('space_group',dset%spacegroup_number,fmt='(i5)')
   !   write(*,'(a, a)') " # SPGLIB: international ", trim(dset % international_symbol)
   !   write(*,'(a, a)') " # SPGLIB: schoenflies ", trim(schoenflies)
   else
