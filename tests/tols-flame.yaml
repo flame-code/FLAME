@@ -150,3 +150,6 @@ minhocao_CENT1:
 minhocao_LTB:
  Epsilon: 1.e-11
 
+minhocao_LTB_fixkpt:
+ Epsilon: 1.e-11
+
