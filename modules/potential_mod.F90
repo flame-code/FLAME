@@ -35,10 +35,6 @@ module mod_potential
     logical:: single_point_calculation=.true.
     logical:: vasp_restart=.false.
     logical:: atom_motion(3,natmax)
-    !PLATO and SIESTA potentials
-    character(6):: path1
-    character(2):: path2
-    integer:: icount
     !VCBLJ potential
     real(8):: sigmalj(2,2) !sigma(i,j) is the sigma between particle i and particle j
     real(8):: epslj(2,2) !eps(i,j) is the epsilon between particle i and particle j

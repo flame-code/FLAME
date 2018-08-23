@@ -861,7 +861,7 @@ end subroutine symmetry_functions_g04_bond
 ! ./src/ann_train.F90 :
 subroutine ann_train(parini)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     type(typ_parini), intent(in):: parini
 end subroutine ann_train
@@ -4883,17 +4883,6 @@ end subroutine rotate_stresstensor_other
   subroutine final_netsock()
   character*1024:: host
 end subroutine final_netsock
-! ./src/potential_PLATO.F90 :
-subroutine init_potential_forces_plato(atoms_t)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms_t
-end subroutine init_potential_forces_plato
-subroutine cal_potential_forces_plato(iproc,n,rat,fat,epot)
-    integer, intent(in):: iproc, n
-    real(8), intent(inout):: rat(3,n/3), fat(3,n/3), epot
-end subroutine cal_potential_forces_plato
-subroutine final_potential_forces_plato
-end subroutine final_potential_forces_plato
 ! ./src/potential_QSC.F90 :
 subroutine init_potential_forces_qsc(atoms_t)
     use mod_atoms, only: typ_atoms

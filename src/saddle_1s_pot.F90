@@ -21,9 +21,6 @@ subroutine pot_initialize(parini,atoms,paropt,paropt_m)
     elseif(trim(potential)=='vasp') then
         stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
         !two_level_geopt=.true.
-    elseif(trim(potential)=='plato') then
-        stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
-        !two_level_geopt=.true.
     elseif(trim(potential)=='siesta') then
         stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
         !two_level_geopt=.true.
@@ -35,8 +32,6 @@ subroutine pot_initialize(parini,atoms,paropt,paropt_m)
 !    use potential_forces, only: init_potential_forces, fcalls, perfstatus, single_point_calculation
 !#elif defined(HAVE_BigDFT)
 !    use potential_forces, only: init_potential_forces, fcalls, perfstatus, final_potential_forces
-!#elif defined(HAVE_PLATO)
-!    use potential_forces, only: init_potential_forces, fcalls, perfstatus
 !#elif defined(HAVE_LTB) || defined(HAVE_LJ)
 !    use potential_forces, only: init_potential_forces, fcalls !, cal_potential_forces
 !#elif defined(HAVE_QSC) || defined(HAVE_SIESTA)
@@ -54,8 +49,6 @@ subroutine pot_initialize(parini,atoms,paropt,paropt_m)
 !    call init_potential_forces(atoms%cellvec,atoms%nat,atoms%sat)
 !#elif defined(HAVE_LTB) || defined(HAVE_QSC)
 !    call init_potential_forces(atoms%cellvec,atoms%nat,atoms%sat)
-!#elif defined(HAVE_PLATO)
-!    call init_potential_forces(atoms%nat,rat,atoms%sat,atoms%cellvec,iproc)
 !#elif defined(HAVE_LJ)
 !    call init_potential_forces
 !    !paropt%funits=4.d0

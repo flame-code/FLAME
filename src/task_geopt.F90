@@ -12,14 +12,12 @@ subroutine geopt(parini)
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
    ! type(typ_parini), intent(in):: parini
     !local variables
-    integer:: iat, ierr, i
+    integer:: iat
     real(8):: count_initial
     type(typ_paropt):: paropt, paropt_prec
     type(typ_atoms):: atoms
     type(typ_file_info):: file_info
-    real(8):: rat_int(3,1000), fat_int(3,1000)
     logical:: acf_exists
-    !character(5)::sat(natmax)
     inquire(file='posinp.acf',exist=acf_exists)
     if(acf_exists) then
         call acf_read(parini,'posinp.acf',1,atoms=atoms)
@@ -32,44 +30,11 @@ subroutine geopt(parini)
     paropt%trajectory=parini%paropt_geopt%trajectory
     paropt%filename='traj_mgo.acf'
     paropt%eps=1.d-8
-    !write(*,*) 'POTENTIAL ',trim(potential)
-    !stop
-    !paropt%cellrelax=.true.
-    if(paropt%cellrelax) then
-        call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
-        !call vc_init_potential_forces(atoms)
-        call init_potential_forces(parini,atoms)
-        paropt%funits=250.d0
-        call vc_minimize(parini,iproc,atoms,paropt)
-        !do i=1,1
-        !call cal_potential_forces_vc(iproc,atoms%nat,rat_int,atoms%cellvec,atoms%pressure,atoms%fat,atoms%celldv,atoms%stress,atoms%epot,atoms%enth)
-        !call fxyz_cart2int(atoms%nat,atoms%fat,atoms%cellvec,fat_int)
-        !write(*,'(a,f20.10)') 'EPOT ',atoms%epot
-        !!write(*,'(a,3f20.10)') 'STRESS ',atoms%stress(1:3,1)
-        !!write(*,'(a,3f20.10)') 'STRESS ',atoms%stress(1:3,2)
-        !!write(*,'(a,3f20.10)') 'STRESS ',atoms%stress(1:3,3)
-        !write(*,'(a,3f20.10)') 'STRESS ',atoms%celldv(1:3,1)
-        !write(*,'(a,3f20.10)') 'STRESS ',atoms%celldv(1:3,2)
-        !write(*,'(a,3f20.10)') 'STRESS ',atoms%celldv(1:3,3)
-        !rat_int=rat_int+2.d-5*fat_int
-        !atoms%cellvec=atoms%cellvec+1.d-5*atoms%celldv
-        !enddo
-        file_info%filename_positions='posout.acf'
-        file_info%file_position='new'
-        file_info%print_force=.true.
-        call acf_write(file_info,atoms=atoms,strkey='posout')
-        stop
-    endif
     call init_potential_forces(parini,atoms)
-    if(trim(potential)=='plato') then
-        perfstatus='normal'
-    endif
-    !stop
     paropt%funits=5.d0
     if(parini%two_level_geopt) then
         paropt_prec%trajectory=parini%paropt_geopt_prec%trajectory
         paropt_prec%filename='traj_pgo.acf'
-        !paropt_prec%nit=100
         paropt_prec%lprint=.true.
         !alphax not given in [geopt_prec] so we use the one in [geopt]
         if(paropt_prec%alphax<0.d0) then
@@ -83,20 +48,11 @@ subroutine geopt(parini)
         call initminimize(paropt_prec)
     endif
     call initminimize(paropt)
-    !if(iproc==0) write(*,*) 'RAT ',rat(1,2),rat(2,2),rat(3,2)
-    !call cal_potential_forces(iproc,3*nat,rat,fat,epot)
-    !rat(1,1)=rat(1,1)+1.d-2
-    !call cal_potential_forces(iproc,3*nat,rat,fat,epot)
     count_initial=fcalls
     if(parini%two_level_geopt) then
         call minimize(parini,iproc,atoms,paropt_prec)
         call finalminimize(paropt_prec)
     endif
-    !write(71,'(i5)') atoms%nat
-    !do iat=1,atoms%nat
-    !    write(71,'(3es23.13)') atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
-    !enddo
-    !call cal_potential_forces(iproc,3*atoms%nat,atoms%rat,atoms%fat,atoms%epot)
     call minimize(parini,iproc,atoms,paropt)
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'

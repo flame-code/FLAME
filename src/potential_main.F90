@@ -34,12 +34,6 @@ subroutine init_potential_forces(parini,atoms)
             call init_lennardjones_vc(atoms%nat,atoms%sat)
         case('dftb')
             call init_potential_forces_dftb(atoms)
-        case('plato')
-#if defined(HAVE_PLATO)
-            call init_potential_forces_plato(atoms)
-#else
-            stop 'ERROR: Alborz is not linked with plato during compilation.'
-#endif
         case('siesta')
 #if defined(HAVE_SIESTA)
             call init_potential_forces_siesta(atoms)
@@ -116,12 +110,6 @@ subroutine cal_potential_forces(parini,atoms)
             deallocate(ratred)
         case('dftb')
             call cal_potential_forces_dftb(atoms)
-        case('plato')
-#if defined(HAVE_PLATO)
-            call cal_potential_forces_plato(atoms)
-#else
-            stop 'ERROR: Alborz is not linked with plato during compilation.'
-#endif
         case('siesta')
 #if defined(HAVE_SIESTA)
             call cal_potential_forces_siesta(atoms)
@@ -174,12 +162,6 @@ subroutine final_potential_forces(parini,atoms)
             call final_potential_forces_ff(parini,atoms)
         case('dftb')
             call final_potential_forces_dftb
-        case('plato')
-#if defined(HAVE_PLATO)
-            call final_potential_forces_plato
-#else
-            stop 'ERROR: Alborz is not linked with plato during compilation.'
-#endif
         case('siesta')
 #if defined(HAVE_SIESTA)
             call final_potential_forces_siesta
