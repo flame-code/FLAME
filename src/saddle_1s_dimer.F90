@@ -96,6 +96,7 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
     use mod_saddle, only:nit,do_elim_trans,do_elim_rot
     use mod_atoms, only: typ_atoms
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, nat, ndof, maxitlc, nw
@@ -120,6 +121,7 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
     !call normalizevector(nat,uvnold)
     pi=4.d0*atan(1.d0)
     cosangletol=cos(angletol*pi/180.d0)
+    call yaml_sequence_open('Dimer lowest-mode optimization iterations')
     do iw=1,nw
     do itlc=1,maxitlc
         !call elim_moment_alborz(nat,uvn)
@@ -136,13 +138,25 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
         call rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm)
         !cosangle=DDOT(3*nat,uvn,1,uvnold,1)
         cosangle=atom_ddot(nat,uvn,uvnold,atoms_s%bemoved)
-        write(*,'(a,i5,2es15.6,3e15.6)') 'DMROT,curv0,curv,cosangle,cosangletol,fnrm ',itlc,curv0,curv,cosangle,cosangletol,fnrm
+        !write(*,'(a,i5,2es15.6,3e15.6)') &
+        !    'DMROT,curv0,curv,cosangle,cosangletol,fnrm ', &
+        !    itlc,curv0,curv,cosangle,cosangletol,fnrm
+        call yaml_sequence(advance='no')
+        call yaml_mapping_open('dimer',flow=.true.)
+        call yaml_map('itlc',itlc,fmt='(i5)')
+        call yaml_map('curv0',curv0,fmt='(es15.6)')
+        call yaml_map('curv',curv,fmt='(es15.6)')
+        call yaml_map('cosangle',cosangle,fmt='(e15.6)')
+        call yaml_map('cosangletol',cosangletol,fmt='(e15.6)')
+        call yaml_map('fnrm',fnrm,fmt='(e15.6)')
+        call yaml_mapping_close()
         !cosangle=dot_product(uvn,uvnold)
         if(cosangle>cosangletol) exit
         uvnold(1:3,1:nat)=uvn(1:3,1:nat)
     enddo
     uvnt(1:3,1:nat,iw)=uvn(1:3,1:nat)
     enddo
+    call yaml_sequence_close()
     call f_free(uvnold)
     call f_free(uvnt)
     nit=nit+1

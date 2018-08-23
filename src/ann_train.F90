@@ -2,17 +2,15 @@
 subroutine ann_train(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
-    type(typ_symfunc):: symfunc
     type(typ_ann_arr):: ann_arr
     type(typ_ekf):: ekf
-    type(typ_atoms):: atoms
     type(typ_atoms_arr):: atoms_train
     type(typ_atoms_arr):: atoms_valid
     type(typ_atoms_arr):: atoms_smplx
@@ -88,32 +86,7 @@ subroutine ann_train(parini)
         enddo
     endif
     if(trim(parini%approach_ann)=='cent2') then
-        do ia=1,ann_arr%n
-            call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
-        enddo
-        !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
-        call atom_allocate_old(atoms,1,0,0)
-        write(*,*) atoms%nat
-        write(*,*) atoms%sat(:)
-        write(*,*) atoms%itypat(:)
-        atoms%rat(1,1)=1.d0 ; atoms%rat(2,1)=1.d0 ; atoms%rat(3,1)=1.d0
-        atoms%cellvec(1:3,1:3)=0.d0
-        atoms%cellvec(1,1)=10.d0
-        atoms%cellvec(2,2)=10.d0
-        atoms%cellvec(3,3)=10.d0
-        atoms%boundcond='free'
-        ann_arr%event='potential'
-        ann_arr%compute_symfunc=.true.
-        do ityp=1,parini%ntypat
-            atoms%sat(1)=parini%stypat(ityp)
-            atoms%itypat(1)=parini%ltypat(ityp)
-            t_ener_ref=ann_arr%ann(atoms%itypat(1))%ener_ref
-            ann_arr%ann(atoms%itypat(1))%ener_ref=0.d0
-            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
-            ann_arr%ann(atoms%itypat(1))%ener_ref=t_ener_ref-atoms%epot
-            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
-            write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
-        enddo
+        call set_single_atom_energy(parini,ann_arr,ekf)
     endif
 
     ann_arr%compute_symfunc=.false.
@@ -150,6 +123,51 @@ subroutine ann_train(parini)
     call f_release_routine()
 end subroutine ann_train
 !*****************************************************************************************
+subroutine set_single_atom_energy(parini,ann_arr,ekf)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_symfunc
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ekf), intent(in):: ekf
+    !local variables
+    type(typ_atoms):: atoms
+    type(typ_symfunc):: symfunc
+    integer:: ia, ityp
+    real(8):: t_ener_ref
+    do ia=1,ann_arr%n
+        call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+    enddo
+    !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
+    call atom_allocate_old(atoms,1,0,0)
+    write(*,*) atoms%nat
+    write(*,*) atoms%sat(:)
+    write(*,*) atoms%itypat(:)
+    atoms%rat(1,1)=1.d0 ; atoms%rat(2,1)=1.d0 ; atoms%rat(3,1)=1.d0
+    atoms%cellvec(1:3,1:3)=0.d0
+    atoms%cellvec(1,1)=10.d0
+    atoms%cellvec(2,2)=10.d0
+    atoms%cellvec(3,3)=10.d0
+    atoms%boundcond='free'
+    ann_arr%event='potential'
+    ann_arr%compute_symfunc=.true.
+    do ityp=1,parini%ntypat
+        atoms%sat(1)=parini%stypat(ityp)
+        atoms%itypat(1)=parini%ltypat(ityp)
+        t_ener_ref=ann_arr%ann(atoms%itypat(1))%ener_ref
+        ann_arr%ann(atoms%itypat(1))%ener_ref=0.d0
+        call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+        ann_arr%ann(atoms%itypat(1))%ener_ref=t_ener_ref-atoms%epot
+        call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+        write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
+    enddo
+    call atom_deallocate_old(atoms)
+end subroutine set_single_atom_energy
+!*****************************************************************************************
 module mod_callback
     use mod_atoms, only: typ_atoms_arr
     use mod_parini, only: typ_parini
@@ -173,24 +191,42 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     type(typ_ekf), intent(inout), target:: ekf
     type(typ_atoms_arr), intent(inout), target:: atoms_smplx
     !local variables
-    real(8):: vertices(2,3), fval(3)
+    real(8):: vertices(11,12), fval(12)
     real(8):: step, ftol
-    integer:: ndim, iter
+    integer:: ndim, iter, i
     external:: cal_rmse_force_cent2
-    vertices(1,1)=ann_arr%ann(1)%chi0
-    vertices(2,1)=ann_arr%ann(2)%chi0
-    vertices(1,2)=vertices(1,1)+1.d-3
-    vertices(2,2)=vertices(2,1)
-    vertices(1,3)=vertices(1,1)
-    vertices(2,3)=vertices(2,1)+1.d-3
-    ndim=2
-    ftol=1.d-6
+    external:: cal_rmse_energy_cent2
+    ndim=11
+    ftol=1.d-4
     step=0.d0
+    vertices(1,1)=ann_arr%ann(2)%chi0-ann_arr%ann(1)%chi0
+
+    vertices(2,1)=ann_arr%ann(1)%zion
+    vertices(3,1)=ann_arr%ann(2)%zion
+
+    vertices(4,1)=ann_arr%ann(1)%hardness
+    vertices(5,1)=ann_arr%ann(2)%hardness
+
+    vertices(6,1)=ann_arr%ann(1)%spring_const
+    vertices(7,1)=ann_arr%ann(2)%spring_const
+
+    vertices(8,1)=ann_arr%ann(1)%gausswidth_ion
+    vertices(9,1)=ann_arr%ann(2)%gausswidth_ion
+
+    vertices(10,1)=ann_arr%ann(1)%ener_ref
+    vertices(11,1)=ann_arr%ann(2)%ener_ref
+
+    do i=2,ndim+1
+        vertices(1:ndim,i)=vertices(1:ndim,1)
+        vertices(i-1,i)=vertices(i-1,i)+1.d-3
+    enddo
+
     atoms_smplx_t=>atoms_smplx
     parini_t=>parini
     ann_arr_t=>ann_arr
     ekf_t=>ekf
-    call simplex(vertices,fval,step,ndim,ftol,cal_rmse_force_cent2,iter)
+    !call simplex(vertices,fval,step,ndim,ftol,cal_rmse_force_cent2,iter)
+    call simplex(vertices,fval,step,ndim,ftol,cal_rmse_energy_cent2,iter)
 end subroutine cent2_simplex
 !*****************************************************************************************
 subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
@@ -208,9 +244,28 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     type(typ_symfunc):: symfunc
     real(8):: rmse
     integer:: iat, iconf, nat_tot
-    ann_arr%ann(1)%chi0=vertex(1)
-    ann_arr%ann(2)%chi0=vertex(2)
-    write(*,'(a,2f10.4)') 'CHI ',ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0
+    ann_arr%ann(1)%chi0=-vertex(1)/2.d0
+    ann_arr%ann(2)%chi0= vertex(1)/2.d0
+
+    ann_arr%ann(1)%zion=vertex(2)
+    ann_arr%ann(2)%zion=vertex(3)
+
+    ann_arr%ann(1)%hardness=vertex(4)
+    ann_arr%ann(2)%hardness=vertex(5)
+
+    ann_arr%ann(1)%spring_const=vertex(6)
+    ann_arr%ann(2)%spring_const=vertex(7)
+
+    ann_arr%ann(1)%gausswidth_ion=vertex(8)
+    ann_arr%ann(2)%gausswidth_ion=vertex(9)
+
+    write(*,'(5(a,2f7.4,4x))') &
+        'CHI= ',ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0, &
+        'ZION= ',ann_arr%ann(1)%zion,ann_arr%ann(2)%zion, &
+        'HARD= ',ann_arr%ann(1)%hardness,ann_arr%ann(2)%hardness, &
+        'K= ',ann_arr%ann(1)%spring_const,ann_arr%ann(2)%spring_const, &
+        'BETA= ',ann_arr%ann(1)%gausswidth_ion,ann_arr%ann(2)%gausswidth_ion
+
     nat_tot=0
     rmse=0.d0
     ann_arr%event='potential'
@@ -226,7 +281,64 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
         nat_tot=nat_tot+atoms%nat
     enddo
     rmse_force_cent2=sqrt(rmse/real(3*nat_tot,8))
+    write(*,*) 'rmse_force_cent2 ',rmse_force_cent2
 end subroutine cal_rmse_force_cent2
+!*****************************************************************************************
+subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
+    use mod_interface
+    use mod_callback, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
+    use mod_callback, only: ann_arr=>ann_arr_t, ekf=>ekf_t
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_symfunc
+    implicit none
+    integer, intent(in) :: ndim
+    real(8), intent(in) :: vertex(ndim)
+    real(8), intent(out) :: rmse_energy_cent2
+    !local variables
+    type(typ_atoms):: atoms
+    type(typ_symfunc):: symfunc
+    real(8):: rmse
+    integer:: iat, iconf
+    ann_arr%ann(1)%chi0=-vertex(1)/2.d0
+    ann_arr%ann(2)%chi0= vertex(1)/2.d0
+
+    ann_arr%ann(1)%zion=vertex(2)
+    ann_arr%ann(2)%zion=vertex(3)
+
+    ann_arr%ann(1)%hardness=vertex(4)
+    ann_arr%ann(2)%hardness=vertex(5)
+
+    ann_arr%ann(1)%spring_const=vertex(6)
+    ann_arr%ann(2)%spring_const=vertex(7)
+
+    ann_arr%ann(1)%gausswidth_ion=vertex(8)
+    ann_arr%ann(2)%gausswidth_ion=vertex(9)
+
+    ann_arr%ann(1)%ener_ref=vertex(10)
+    ann_arr%ann(2)%ener_ref=vertex(11)
+
+    write(*,'(5(a,2f7.4,4x),a,2f10.4)') &
+        'CHI= ',ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0, &
+        'ZION= ',ann_arr%ann(1)%zion,ann_arr%ann(2)%zion, &
+        'HARD= ',ann_arr%ann(1)%hardness,ann_arr%ann(2)%hardness, &
+        'K= ',ann_arr%ann(1)%spring_const,ann_arr%ann(2)%spring_const, &
+        'BETA= ',ann_arr%ann(1)%gausswidth_ion,ann_arr%ann(2)%gausswidth_ion, &
+        'E0= ',ann_arr%ann(1)%ener_ref,ann_arr%ann(2)%ener_ref
+
+    !call set_single_atom_energy(parini,ann_arr,ekf)
+    rmse=0.d0
+    ann_arr%event='potential'
+    ann_arr%compute_symfunc=.true.
+    do iconf=1,atoms_smplx%nconf
+        call atom_copy_old(atoms_smplx%atoms(iconf),atoms,'atoms_smplx%atoms(iconf)->atoms')
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+        do iat=1,atoms%nat
+            rmse=rmse+(atoms%epot-atoms_smplx%atoms(iconf)%epot)**2
+        enddo
+    enddo
+    rmse_energy_cent2=sqrt(rmse/real(atoms_smplx%nconf,8))
+    write(*,*) 'rmse_energy_cent2 ',rmse_energy_cent2
+end subroutine cal_rmse_energy_cent2
 !*****************************************************************************************
 subroutine init_ann_train(parini,ann_arr,ekf)
     use mod_interface

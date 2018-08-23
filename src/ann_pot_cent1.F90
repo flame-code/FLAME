@@ -604,6 +604,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -653,6 +654,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     else
         alphax=1.d0
     endif
+    call yaml_sequence_open('Charge equilibration process')
     alpha=1.d-1*alphax
     do iter=0,1000
         call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
@@ -671,10 +673,27 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         if(iter==0) epotlong_old=ann_arr%epot_es
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
-            write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            !write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            call yaml_sequence(advance='no')
+            call yaml_mapping_open('cep',flow=.true.)
+            call yaml_map('iter',iter,fmt='(i5)')
+            call yaml_map('epot_es',ann_arr%epot_es,fmt='(es22.13)')
+            call yaml_map('de',de,fmt='(es11.2)')
+            call yaml_map('gnrm',gnrm,fmt='(es12.3)')
+            call yaml_map('stepsize',alpha/alphax,fmt='(es12.3)')
+            call yaml_mapping_close()
         endif
         if(gnrm<1.d-7) then
-            write(*,'(a,i5,es24.15,3es14.5)') 'CEP converged: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            !write(*,'(a,i5,es24.15,3es14.5)') 'CEP converged: ', &
+            !    iter,ann_arr%epot_es,de,gnrm,alpha/alphax
+            call yaml_sequence_close()
+            call yaml_mapping_open('CEP',flow=.true.)
+            call yaml_map('iter',iter,fmt='(i5)')
+            call yaml_map('epot_es',ann_arr%epot_es,fmt='(es22.13)')
+            call yaml_map('de',de,fmt='(es11.2)')
+            call yaml_map('gnrm',gnrm,fmt='(es12.3)')
+            call yaml_map('stepsize',alpha/alphax,fmt='(es12.3)')
+            call yaml_mapping_close()
             exit
         endif
         if(iter==0) then

@@ -20,7 +20,7 @@ subroutine alborz_init(parini,parres,file_ini)
     call f_lib_initialize()
     inquire(file="NO_FLIB_PROFILING",exist=flib_profiling)
     if(flib_profiling) then
-        call f_malloc_set_status(profiling_depth=0)
+        call f_malloc_set_status()!profiling_depth=0)
     endif
     call f_routine(id='alborz_init')
     !-----------------------------------------------------------------

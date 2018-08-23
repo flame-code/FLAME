@@ -1,0 +1,482 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2018-08-17 12:48:35.217
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : geopt
+   types                               : Au
+   two_level_geopt                     : False
+   verbosity                           : 1
+   verbose                             : 3
+   seed                                : -2
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : SQNM
+   fmaxtol                             : 2.E-4
+   alphax                              : 4.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : True
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s:
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+ potential:
+   potential                           : qsc
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : atombased
+   symfunc                             : only_calculate
+   nstep_ekf                           : 100
+   nstep_cep                           : 200
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_cent2                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ SQNM optimization iterations:
+ - SQNM: {iter:  1, epot: -1.653328384903E+00, de: -2.2E-01, fmax:  2.063E-01, 
+          fnrm:  7.959E-01,                  ndim:  0}
+ - SQNM: {iter:  2, epot: -1.916016871082E+00, de: -2.6E-01, fmax:  1.031E-01, 
+          fnrm:  5.922E-01,                  ndim:  0}
+ - SQNM: {iter:  3, epot: -2.014163029104E+00, de: -9.8E-02, fmax:  6.957E-02, 
+          fnrm:  4.845E-01,                  ndim:  0}
+ - SQNM: {iter:  4, epot: -2.064174717337E+00, de: -5.0E-02, fmax:  4.796E-02, 
+          fnrm:  4.099E-01,                  ndim:  0}
+ - SQNM: {iter:  5, epot: -2.092828634471E+00, de: -2.9E-02, fmax:  3.412E-02, 
+          fnrm:  3.532E-01,                  ndim:  0}
+ - SQNM: {iter:  6, epot: -2.110423700642E+00, de: -1.8E-02, fmax:  2.461E-02, 
+          fnrm:  3.085E-01,                  ndim:  0}
+ - SQNM: {iter:  7, epot: -2.121805187636E+00, de: -1.1E-02, fmax:  1.939E-02, 
+          fnrm:  2.727E-01,                  ndim:  0}
+ - SQNM: {iter:  8, epot: -2.129527190964E+00, de: -7.7E-03, fmax:  1.624E-02, 
+          fnrm:  2.439E-01,                  ndim:  0}
+ - SQNM: {iter:  9, epot: -2.135029315469E+00, de: -5.5E-03, fmax:  1.395E-02, 
+          fnrm:  2.210E-01,                  ndim:  0}
+ - SQNM: {iter:  10, epot: -2.139156787876E+00, de: -4.1E-03, fmax:  1.276E-02, 
+          fnrm:  2.028E-01,                   ndim:  0}
+ - SQNM: {iter:  11, epot: -2.142415655348E+00, de: -3.3E-03, fmax:  1.177E-02, 
+          fnrm:  1.884E-01,                   ndim:  0}
+ - SQNM: {iter:  12, epot: -2.147225327605E+00, de: -4.8E-03, fmax:  1.044E-02, 
+          fnrm:  1.719E-01,                   ndim:  5}
+ - SQNM: {iter:  13, epot: -2.153534013400E+00, de: -6.3E-03, fmax:  9.845E-03, 
+          fnrm:  1.714E-01,                   ndim:  5}
+ - SQNM: {iter:  14, epot: -2.156374150562E+00, de: -2.8E-03, fmax:  1.199E-02, 
+          fnrm:  1.778E-01,                   ndim:  4}
+ - SQNM: {iter:  15, epot: -2.159441577939E+00, de: -3.1E-03, fmax:  5.815E-03, 
+          fnrm:  1.409E-01,                   ndim:  5}
+ - SQNM: {iter:  16, epot: -2.161650411637E+00, de: -2.2E-03, fmax:  6.342E-03, 
+          fnrm:  1.443E-01,                   ndim:  5}
+ - SQNM: {iter:  17, epot: -2.163665563526E+00, de: -2.0E-03, fmax:  4.413E-03, 
+          fnrm:  1.163E-01,                   ndim:  5}
+ - SQNM: {iter:  18, epot: -2.164422362316E+00, de: -7.6E-04, fmax:  4.154E-03, 
+          fnrm:  1.011E-01,                   ndim:  6}
+ - SQNM: {iter:  19, epot: -2.166293854605E+00, de: -1.9E-03, fmax:  5.444E-03, 
+          fnrm:  1.130E-01,                   ndim:  6}
+ - SQNM: {iter:  20, epot: -2.166814562635E+00, de: -5.2E-04, fmax:  2.977E-03, 
+          fnrm:  9.036E-02,                   ndim:  7}
+ - SQNM: {iter:  21, epot: -2.167605997981E+00, de: -7.9E-04, fmax:  3.666E-03, 
+          fnrm:  9.602E-02,                   ndim:  7}
+ - SQNM: {iter:  22, epot: -2.167951354743E+00, de: -3.5E-04, fmax:  1.741E-03, 
+          fnrm:  8.050E-02,                   ndim:  8}
+ - SQNM: {iter:  23, epot: -2.168407190552E+00, de: -4.6E-04, fmax:  2.456E-03, 
+          fnrm:  8.169E-02,                   ndim:  8}
+ - SQNM: {iter:  24, epot: -2.168667583569E+00, de: -2.6E-04, fmax:  1.297E-03, 
+          fnrm:  7.106E-02,                   ndim:  9}
+ - SQNM: {iter:  25, epot: -2.169140303483E+00, de: -4.7E-04, fmax:  1.339E-03, 
+          fnrm:  7.002E-02,                   ndim:  8}
+ - SQNM: {iter:  26, epot: -2.169400325755E+00, de: -2.6E-04, fmax:  1.383E-03, 
+          fnrm:  6.401E-02,                   ndim:  9}
+ - SQNM: {iter:  27, epot: -2.169610059656E+00, de: -2.1E-04, fmax:  1.337E-03, 
+          fnrm:  6.158E-02,                   ndim:  9}
+ - SQNM: {iter:  28, epot: -2.169859836636E+00, de: -2.5E-04, fmax:  1.160E-03, 
+          fnrm:  6.152E-02,                   ndim:  9}
+ - SQNM: {iter:  29, epot: -2.170051822618E+00, de: -1.9E-04, fmax:  1.233E-03, 
+          fnrm:  5.450E-02,                   ndim:  10}
+ - SQNM: {iter:  30, epot: -2.170306394389E+00, de: -2.5E-04, fmax:  1.247E-03, 
+          fnrm:  5.498E-02,                   ndim:  9}
+ - SQNM: {iter:  31, epot: -2.170588235717E+00, de: -2.8E-04, fmax:  1.187E-03, 
+          fnrm:  5.608E-02,                   ndim:  10}
+ - SQNM: {iter:  32, epot: -2.170785886446E+00, de: -2.0E-04, fmax:  1.217E-03, 
+          fnrm:  5.432E-02,                   ndim:  9}
+ - SQNM: {iter:  33, epot: -2.171053083435E+00, de: -2.7E-04, fmax:  1.108E-03, 
+          fnrm:  5.585E-02,                   ndim:  9}
+ - SQNM: {iter:  34, epot: -2.171352414972E+00, de: -3.0E-04, fmax:  1.304E-03, 
+          fnrm:  5.603E-02,                   ndim:  9}
+ - SQNM: {iter:  35, epot: -2.171656782967E+00, de: -3.0E-04, fmax:  1.283E-03, 
+          fnrm:  6.119E-02,                   ndim:  9}
+ - SQNM: {iter:  36, epot: -2.172047359277E+00, de: -3.9E-04, fmax:  1.197E-03, 
+          fnrm:  6.643E-02,                   ndim:  9}
+ - SQNM: {iter:  37, epot: -2.172633491483E+00, de: -5.9E-04, fmax:  1.716E-03, 
+          fnrm:  7.121E-02,                   ndim:  9}
+ - SQNM: {iter:  38, epot: -2.173729870430E+00, de: -1.1E-03, fmax:  2.308E-03, 
+          fnrm:  8.396E-02,                   ndim:  10}
+ - SQNM: {iter:  39, epot: -2.175999450349E+00, de: -2.3E-03, fmax:  3.833E-03, 
+          fnrm:  1.071E-01,                   ndim:  10}
+ - SQNM: {iter:  40, epot: -2.180011069717E+00, de: -4.0E-03, fmax:  6.374E-03, 
+          fnrm:  1.354E-01,                   ndim:  10}
+ - SQNM: {iter:  41, epot: -2.180249499630E+00, de: -2.4E-04, fmax:  1.149E-02, 
+          fnrm:  1.582E-01,                   ndim:  10}
+ - SQNM: {iproc:  000, iter:  42, epot: -2.178351384767E+00, de:  1.898E-03, 
+           fmax:  1.50915E-02,    fnrm:  1.95615E-01, ndim:  10}
+ - SQNM: {iter:  42, epot: -2.180762026988E+00, de: -5.1E-04, fmax:  1.075E-02, 
+          fnrm:  1.463E-01,                   ndim:  0}
+ - SQNM: {iter:  43, epot: -2.181875698714E+00, de: -1.1E-03, fmax:  1.901E-03, 
+          fnrm:  7.272E-02,                   ndim:  1}
+ - SQNM: {iter:  44, epot: -2.181999190041E+00, de: -1.2E-04, fmax:  1.547E-03, 
+          fnrm:  6.033E-02,                   ndim:  2}
+ - SQNM: {iter:  45, epot: -2.182207557659E+00, de: -2.1E-04, fmax:  1.580E-03, 
+          fnrm:  6.330E-02,                   ndim:  3}
+ - SQNM: {iter:  46, epot: -2.182514265443E+00, de: -3.1E-04, fmax:  1.936E-03, 
+          fnrm:  6.669E-02,                   ndim:  4}
+ - SQNM: {iter:  47, epot: -2.182784583144E+00, de: -2.7E-04, fmax:  1.413E-03, 
+          fnrm:  5.647E-02,                   ndim:  4}
+ - SQNM: {iter:  48, epot: -2.183042213763E+00, de: -2.6E-04, fmax:  1.258E-03, 
+          fnrm:  5.470E-02,                   ndim:  5}
+ - SQNM: {iter:  49, epot: -2.183216799335E+00, de: -1.7E-04, fmax:  1.126E-03, 
+          fnrm:  5.016E-02,                   ndim:  6}
+ - SQNM: {iter:  50, epot: -2.183373696445E+00, de: -1.6E-04, fmax:  9.783E-04, 
+          fnrm:  4.993E-02,                   ndim:  7}
+ - SQNM: {iter:  51, epot: -2.183518692819E+00, de: -1.4E-04, fmax:  1.028E-03, 
+          fnrm:  4.877E-02,                   ndim:  8}
+ - SQNM: {iter:  52, epot: -2.183633903207E+00, de: -1.2E-04, fmax:  8.817E-04, 
+          fnrm:  4.874E-02,                   ndim:  8}
+ - SQNM: {iter:  53, epot: -2.183786590407E+00, de: -1.5E-04, fmax:  7.572E-04, 
+          fnrm:  4.918E-02,                   ndim:  9}
+ - SQNM: {iter:  54, epot: -2.184006527549E+00, de: -2.2E-04, fmax:  9.320E-04, 
+          fnrm:  5.147E-02,                   ndim:  8}
+ - SQNM: {iter:  55, epot: -2.184410624298E+00, de: -4.0E-04, fmax:  1.176E-03, 
+          fnrm:  5.708E-02,                   ndim:  8}
+ - SQNM: {iter:  56, epot: -2.185142081806E+00, de: -7.3E-04, fmax:  1.619E-03, 
+          fnrm:  6.088E-02,                   ndim:  9}
+ - SQNM: {iter:  57, epot: -2.186104541407E+00, de: -9.6E-04, fmax:  1.995E-03, 
+          fnrm:  6.753E-02,                   ndim:  10}
+ - SQNM: {iter:  58, epot: -2.187851275218E+00, de: -1.7E-03, fmax:  2.742E-03, 
+          fnrm:  9.096E-02,                   ndim:  10}
+ - SQNM: {iter:  59, epot: -2.189057780529E+00, de: -1.2E-03, fmax:  8.765E-03, 
+          fnrm:  1.350E-01,                   ndim:  10}
+ - SQNM: {iter:  60, epot: -2.189176527542E+00, de: -1.2E-04, fmax:  9.105E-03, 
+          fnrm:  1.503E-01,                   ndim:  10}
+ - SQNM: {iter:  61, epot: -2.189552758065E+00, de: -3.8E-04, fmax:  9.889E-03, 
+          fnrm:  1.624E-01,                   ndim:  10}
+ - SQNM: {iter:  62, epot: -2.190358821691E+00, de: -8.1E-04, fmax:  7.852E-03, 
+          fnrm:  1.512E-01,                   ndim:  10}
+ - SQNM: {iter:  63, epot: -2.192278564581E+00, de: -1.9E-03, fmax:  5.197E-03, 
+          fnrm:  1.218E-01,                   ndim:  10}
+ - SQNM: {iter:  64, epot: -2.193710369651E+00, de: -1.4E-03, fmax:  5.148E-03, 
+          fnrm:  1.151E-01,                   ndim:  10}
+ - SQNM: {iter:  65, epot: -2.194855797490E+00, de: -1.1E-03, fmax:  3.664E-03, 
+          fnrm:  9.882E-02,                   ndim:  10}
+ - SQNM: {iter:  66, epot: -2.195643799306E+00, de: -7.9E-04, fmax:  3.363E-03, 
+          fnrm:  8.187E-02,                   ndim:  10}
+ - SQNM: {iter:  67, epot: -2.196737158835E+00, de: -1.1E-03, fmax:  3.465E-03, 
+          fnrm:  8.450E-02,                   ndim:  10}
+ - SQNM: {iter:  68, epot: -2.197988776519E+00, de: -1.3E-03, fmax:  3.191E-03, 
+          fnrm:  8.480E-02,                   ndim:  10}
+ - SQNM: {iter:  69, epot: -2.199108392454E+00, de: -1.1E-03, fmax:  3.449E-03, 
+          fnrm:  8.204E-02,                   ndim:  10}
+ - SQNM: {iter:  70, epot: -2.200549479006E+00, de: -1.4E-03, fmax:  4.297E-03, 
+          fnrm:  8.839E-02,                   ndim:  10}
+ - SQNM: {iter:  71, epot: -2.202124467259E+00, de: -1.6E-03, fmax:  4.076E-03, 
+          fnrm:  8.805E-02,                   ndim:  10}
+ - SQNM: {iter:  72, epot: -2.203887423902E+00, de: -1.8E-03, fmax:  4.403E-03, 
+          fnrm:  8.419E-02,                   ndim:  10}
+ - SQNM: {iter:  73, epot: -2.205194248683E+00, de: -1.3E-03, fmax:  2.920E-03, 
+          fnrm:  9.507E-02,                   ndim:  10}
+ - SQNM: {iter:  74, epot: -2.205488713093E+00, de: -2.9E-04, fmax:  3.029E-03, 
+          fnrm:  8.639E-02,                   ndim:  10}
+ - SQNM: {iter:  75, epot: -2.205510469214E+00, de: -2.2E-05, fmax:  4.384E-03, 
+          fnrm:  9.655E-02,                   ndim:  10}
+ - SQNM: {iter:  76, epot: -2.205690223304E+00, de: -1.8E-04, fmax:  1.995E-03, 
+          fnrm:  7.707E-02,                   ndim:  10}
+ - SQNM: {iter:  77, epot: -2.205843154767E+00, de: -1.5E-04, fmax:  1.205E-03, 
+          fnrm:  5.753E-02,                   ndim:  10}
+ - SQNM: {iter:  78, epot: -2.205939082622E+00, de: -9.6E-05, fmax:  8.087E-04, 
+          fnrm:  4.763E-02,                   ndim:  10}
+ - SQNM: {iter:  79, epot: -2.206048952780E+00, de: -1.1E-04, fmax:  7.428E-04, 
+          fnrm:  4.487E-02,                   ndim:  10}
+ - SQNM: {iter:  80, epot: -2.206121093946E+00, de: -7.2E-05, fmax:  5.584E-04, 
+          fnrm:  4.143E-02,                   ndim:  10}
+ - SQNM: {iter:  81, epot: -2.206252082141E+00, de: -1.3E-04, fmax:  4.907E-04, 
+          fnrm:  4.046E-02,                   ndim:  10}
+ - SQNM: {iter:  82, epot: -2.206333881091E+00, de: -8.2E-05, fmax:  5.310E-04, 
+          fnrm:  3.807E-02,                   ndim:  10}
+ - SQNM: {iter:  83, epot: -2.206379626277E+00, de: -4.6E-05, fmax:  4.494E-04, 
+          fnrm:  3.679E-02,                   ndim:  9}
+ - SQNM: {iter:  84, epot: -2.206397829317E+00, de: -1.8E-05, fmax:  4.874E-04, 
+          fnrm:  3.539E-02,                   ndim:  9}
+ - SQNM: {iter:  85, epot: -2.206405784619E+00, de: -8.0E-06, fmax:  3.168E-04, 
+          fnrm:  3.129E-02,                   ndim:  9}
+ - SQNM: {iter:  86, epot: -2.206414779560E+00, de: -9.0E-06, fmax:  1.949E-04, 
+          fnrm:  2.358E-02,                   ndim:  10}
+ - SQNM: {iter:  87, epot: -2.206418031847E+00, de: -3.3E-06, fmax:  1.250E-04, 
+          fnrm:  1.854E-02,                   ndim:  9}
+ - SQNM FINISHED:
+     success                           :  Yes
+     iter                              :  87
+     epot                              : -2.206418031847E+00
+     fnrm                              :  1.85413E-02
+     fmax                              :  1.25015E-04
+ task geopt:
+   converged                           :  Yes
+   total energy and force evaluations  :  89

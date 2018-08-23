@@ -1,0 +1,16 @@
+main:
+    task: single_point
+    verbosity: 2
+    types: Ca F
+
+potential:
+    potential: ann
+    print_force : True
+    ewald:
+        ewald: False
+
+single_point:
+    print_force : True
+
+ann:
+    approach: cent1

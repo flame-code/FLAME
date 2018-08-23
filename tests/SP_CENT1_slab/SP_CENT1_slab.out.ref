@@ -1,0 +1,277 @@
+ntypat  2
+type  1   Ca
+type  2    F
+mpi started: iproc_world,nproc_world    0   1
+mpi started: iproc,nproc    0   1
+iproc,seed    0  2147483562  2147483398
+Number of configurations read from posinp.acf is    1
+ parini         cent1                                             
+ ann_arr%n=            2
+ann%(0)=  70
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0  16   0   0  54   0
+ann%(0)=  70
+ann%(1)=   3
+ann%(2)=   3
+ann%(3)=   1
+ng1,ng2,ng3,ng4,ng5,ng6    0  16   0   0  54   0
+                             ngpx,ngpy,ngpz,ngptot          42          38          35       55860
+                                 nbgpx,nbgpy,nbgpz          10          10          10
+                                       hgx,hgy,hgz     0.6973383     0.6677119     0.6749022
+hxx,hyx,hzx         0.6973382769        0.0000000000        0.0000000000
+hxy,hyy,hzy         0.0000000000        0.6677119014        0.0000000000
+hxz,hyz,hzz         0.0000000000        0.0000000000        0.6749021885
+ real part in rcut  -1.68268949213709     
+ nat,scl,mlimnb          48   6.00000000000000                2
+ cell     29.2882076308615        25.3730522521935        9.44863063925221     
+ mx,my,mz,total number of cells           4           4           1          16
+cep begin    0.00000E+00
+inside get_beta_grid b       0.22714004981034179E+02
+qtot,dipole      0.000     0.000   -65.970     1.683
+inside get_beta_grid b       0.22403535818322201E+02
+qtot,dipole     -0.000     0.000   -66.048     1.660
+inside get_beta_grid b       0.21815629391969296E+02
+qtot,dipole      0.000     0.000   -66.197     1.617
+inside get_beta_grid b       0.20764909797035660E+02
+qtot,dipole      0.000     0.000   -66.472     1.539
+inside get_beta_grid b       0.19730945285069488E+02
+qtot,dipole     -0.000     0.000   -66.761     1.462
+inside get_beta_grid b       0.18971897557602539E+02
+qtot,dipole      0.000     0.000   -66.993     1.406
+inside get_beta_grid b       0.18414603709168393E+02
+qtot,dipole      0.000     0.000   -67.179     1.365
+inside get_beta_grid b       0.18005383683195223E+02
+qtot,dipole      0.000     0.000   -67.329     1.334
+inside get_beta_grid b       0.17704849866982450E+02
+qtot,dipole     -0.000     0.000   -67.449     1.312
+inside get_beta_grid b       0.17484099867414880E+02
+qtot,dipole      0.000     0.000   -67.547     1.296
+inside get_beta_grid b       0.17321923791059394E+02
+qtot,dipole     -0.000     0.000   -67.626     1.284
+inside get_beta_grid b       0.17202755633981944E+02
+qtot,dipole      0.000     0.000   -67.689     1.275
+inside get_beta_grid b       0.17115170465853502E+02
+qtot,dipole      0.000     0.000   -67.741     1.268
+inside get_beta_grid b       0.17050781955909184E+02
+qtot,dipole     -0.000     0.000   -67.782     1.264
+inside get_beta_grid b       0.17003433558423652E+02
+qtot,dipole     -0.000     0.000   -67.816     1.260
+inside get_beta_grid b       0.16968605110037537E+02
+qtot,dipole     -0.000     0.000   -67.844     1.257
+inside get_beta_grid b       0.16942977445897103E+02
+qtot,dipole     -0.000     0.000   -67.866     1.256
+inside get_beta_grid b       0.16924112937153403E+02
+qtot,dipole      0.000     0.000   -67.884     1.254
+inside get_beta_grid b       0.16910221070755103E+02
+qtot,dipole      0.000     0.000   -67.899     1.253
+inside get_beta_grid b       0.16899986420789094E+02
+qtot,dipole     -0.000     0.000   -67.911     1.252
+inside get_beta_grid b       0.16892442395781458E+02
+qtot,dipole      0.000     0.000   -67.920     1.252
+inside get_beta_grid b       0.16886878573113311E+02
+qtot,dipole      0.000     0.000   -67.928     1.251
+inside get_beta_grid b       0.16882772678742914E+02
+qtot,dipole      0.000     0.000   -67.935     1.251
+inside get_beta_grid b       0.16879740652191561E+02
+qtot,dipole     -0.000     0.000   -67.940     1.251
+inside get_beta_grid b       0.16877499983871424E+02
+qtot,dipole     -0.000     0.000   -67.944     1.251
+inside get_beta_grid b       0.16875842793490829E+02
+qtot,dipole      0.000     0.000   -67.948     1.251
+inside get_beta_grid b       0.16874616058448908E+02
+qtot,dipole     -0.000     0.000   -67.950     1.251
+inside get_beta_grid b       0.16873707090900847E+02
+qtot,dipole     -0.000     0.000   -67.953     1.250
+inside get_beta_grid b       0.16873032868209453E+02
+qtot,dipole     -0.000     0.000   -67.955     1.250
+inside get_beta_grid b       0.16872532192767640E+02
+qtot,dipole     -0.000     0.000   -67.956     1.250
+inside get_beta_grid b       0.16872159929602969E+02
+qtot,dipole     -0.000     0.000   -67.957     1.250
+inside get_beta_grid b       0.16871882770058985E+02
+qtot,dipole      0.000     0.000   -67.958     1.250
+inside get_beta_grid b       0.16871676116537298E+02
+qtot,dipole     -0.000     0.000   -67.959     1.250
+inside get_beta_grid b       0.16871521790928426E+02
+qtot,dipole     -0.000     0.000   -67.960     1.250
+inside get_beta_grid b       0.16871406348383360E+02
+qtot,dipole     -0.000     0.000   -67.961     1.250
+inside get_beta_grid b       0.16871319836038236E+02
+qtot,dipole      0.000     0.000   -67.961     1.250
+inside get_beta_grid b       0.16871254878916879E+02
+qtot,dipole      0.000     0.000   -67.961     1.250
+inside get_beta_grid b       0.16871206006461048E+02
+qtot,dipole      0.000     0.000   -67.962     1.250
+inside get_beta_grid b       0.16871169156085450E+02
+qtot,dipole      0.000     0.000   -67.962     1.250
+inside get_beta_grid b       0.16871141307037291E+02
+qtot,dipole     -0.000     0.000   -67.962     1.250
+inside get_beta_grid b       0.16871120210178240E+02
+qtot,dipole      0.000     0.000   -67.962     1.250
+inside get_beta_grid b       0.16871104188439631E+02
+qtot,dipole     -0.000     0.000   -67.962     1.250
+inside get_beta_grid b       0.16871091989341508E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871082675917577E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871075545962171E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871070072195000E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871065857871983E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871062603819894E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871060083926942E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871058126889519E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871056602601179E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871055411989133E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871054479408851E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871053746945584E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871053170132324E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871052714729444E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871052354298545E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871052068360630E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051841012861E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051659865806E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051515241923E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051399559921E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051306865663E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051232468428E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051172665705E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051124525479E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051085724087E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051054411506E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051029113168E+02
+qtot,dipole      0.000     0.000   -67.963     1.250
+inside get_beta_grid b       0.16871051008654749E+02
+qtot,dipole     -0.000     0.000   -67.963     1.250
+ charge on atom            1   1.33267559940410     
+ charge on atom            2   1.33266749194246     
+ charge on atom            3   1.33265536257882     
+ charge on atom            4   1.33265931028029     
+ charge on atom            5   1.33267657257682     
+ charge on atom            6   1.33265596478367     
+ charge on atom            7   1.33266733838644     
+ charge on atom            8   1.33265975998308     
+ charge on atom            9   1.33267538468161     
+ charge on atom           10   1.33266655279907     
+ charge on atom           11   1.33265442344933     
+ charge on atom           12   1.33265908569667     
+ charge on atom           13   1.33267635785259     
+ charge on atom           14   1.33265502565395     
+ charge on atom           15   1.33266639924268     
+ charge on atom           16   1.33265953539808     
+ charge on atom           17 -0.676260756902374     
+ charge on atom           18 -0.676251852978608     
+ charge on atom           19 -0.676260645914475     
+ charge on atom           20 -0.676254423811387     
+ charge on atom           21 -0.676260825484357     
+ charge on atom           22 -0.676254529416037     
+ charge on atom           23 -0.676260854120859     
+ charge on atom           24 -0.676252012788929     
+ charge on atom           25 -0.676260863712956     
+ charge on atom           26 -0.676251240524597     
+ charge on atom           27 -0.676260027317619     
+ charge on atom           28 -0.676254530630472     
+ charge on atom           29 -0.676260206885731     
+ charge on atom           30 -0.676254636236032     
+ charge on atom           31 -0.676260960932031     
+ charge on atom           32 -0.676251400333431     
+ charge on atom           33 -0.656412475534511     
+ charge on atom           34 -0.656409902184926     
+ charge on atom           35 -0.656401389950656     
+ charge on atom           36 -0.656406345211351     
+ charge on atom           37 -0.656410065407433     
+ charge on atom           38 -0.656406441242546     
+ charge on atom           39 -0.656412562426722     
+ charge on atom           40 -0.656401534298026     
+ charge on atom           41 -0.656411838164731     
+ charge on atom           42 -0.656410274625375     
+ charge on atom           43 -0.656401774346789     
+ charge on atom           44 -0.656405707848048     
+ charge on atom           45 -0.656410437849054     
+ charge on atom           46 -0.656405803878436     
+ charge on atom           47 -0.656411925056317     
+ charge on atom           48 -0.656401918694857     
+inside get_beta_grid b       0.16871051008654749E+02
+Timing:cent1: initialize matrix             0.004
+Timing:cent1: calculation of symfunc        0.068
+Timing:cent1: neural network process        0.000
+Timing:cent1: linear equations solver       0.212
+Timing:cent1: force (SR term)               0.000
+Timing:cent1: energy (SR+LR), force (LR)    0.004
+Timing:cent1: total time                    0.288
+ nat,scl,mlimnb          48   3.32591798501678                2
+ cell     29.2882076308615        25.3730522521935        9.44863063925221     
+ mx,my,mz,total number of cells           8           7           2         112
+CPU time: iproc,time(hrs)    0      0.989E-04
+CPU time: iproc,time(min)    0      0.593E-02
+CPU time: iproc,time(sec)    0      0.356E+00
+mpi finalized: iproc_world,nproc_world    0   1
+  #WARNING: Heap memory has not been completely freed! See status at finalization to find 
+  #where.
+ Size of the global database           :  14
+ Status of the memory at finalization:
+   3012550288:
+     [ poisson%plan_f, init_psolver_p3d,  280,  1 ]
+   3012550576:
+     [ poisson%plan_b, init_psolver_p3d,  280,  1 ]
+   3012561824:
+     [ at_out%sat, Main_program,  48,  1 ]
+   3012562080:
+     [ at_out%rat, Main_program,  1152,  2 ]
+   3012563248:
+     [ at_out%vat, Main_program,  1152,  2 ]
+   3012564416:
+     [ at_out%amass, Main_program,  384,  1 ]
+   3012564816:
+     [ at_out%fat, Main_program,  1152,  2 ]
+   3012565984:
+     [ at_out%bemoved, Main_program,  576,  2 ]
+   3012566576:
+     [ at_out%qat, Main_program,  384,  1 ]
+   3012566976:
+     [ at_out%zat, Main_program,  384,  1 ]
+   3012567376:
+     [ at_out%rcov, Main_program,  384,  1 ]
+   3012567776:
+     [ at_out%itypat, Main_program,  192,  1 ]
+   Timestamp of Profile initialization:
+     2018-08-18 21:16:54.545
+   Process Id:
+     0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  746
+   Tot. No. of Deallocations           :  734
+   Remaining Memory (B)                :  6368
+   Memory occupation:
+     Peak Value (MB)                   :  11.166
+     for the array                     : vz
+     in the routine                    : force_gto_sym_ortho
+     Memory Peak of process            : 126.016 MB
+ Walltime since initialization         :  00:00:00.369177398
+ Max No. of dictionaries used          :  841 #( 184 still in use)
+ Number of dictionary folders allocated:  1

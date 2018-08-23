@@ -9,6 +9,7 @@ subroutine surface_walking(parini)
     use mod_processors, only: iproc
     use mod_const, only: ang2bohr
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -58,7 +59,11 @@ subroutine surface_walking(parini)
     call cal_potential_forces(parini,atoms_s)
     epot_m0=atoms_s%epot
     call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_s%fat,fmax_m0)
-    write(*,'(a,es24.15,es13.3)') 'ENERGY: epot_m0,fmax_m0 ',epot_m0,fmax_m0
+    !write(*,'(a,es24.15,es13.3)') 'ENERGY: epot_m0,fmax_m0 ',epot_m0,fmax_m0
+    call yaml_mapping_open('ENERGY_m0',flow=.true.)
+    call yaml_map('epot',epot_m0,fmt='(es24.15)')
+    call yaml_map('fmax',fmax_m0,fmt='(es12.3)')
+    call yaml_mapping_close()
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     call acf_write(file_info,atoms=atoms_s,strkey='posout')
@@ -86,7 +91,11 @@ subroutine surface_walking(parini)
         write(*,'(a,f10.3)') 'energy difference between saddle point and intial minimum ', &
             atoms_s%epot-epot_m0
         call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_s%fat,fmax_s)
-        write(*,'(a,es24.15,es13.3)') 'ENERGY: epot_s,fmax_s   ',atoms_s%epot,fmax_s
+        !write(*,'(a,es24.15,es13.3)') 'ENERGY: epot_s,fmax_s   ',atoms_s%epot,fmax_s
+        call yaml_mapping_open('ENERGY_s',flow=.true.)
+        call yaml_map('epot',atoms_s%epot,fmt='(es24.15)')
+        call yaml_map('fmax',fmax_s,fmt='(es12.3)')
+        call yaml_mapping_close()
         !paropt_m%alphax=paropt%alphax
         !paropt_m%fmaxtol=paropt%fmaxtol
         !paropt_m%nit=1000
@@ -207,6 +216,7 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_opt, only: typ_paropt
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc !, nat, ndof
@@ -240,7 +250,13 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
     endif
     call minimize(parini,iproc,atoms_m1,paropt_m)
     call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_m1%fat,fmax1)
-    if(paropt_m%converged) write(*,'(a,es24.15,es13.3)') 'ENERGY: epot1,fmax1     ',atoms_m1%epot,fmax1
+    !if(paropt_m%converged) write(*,'(a,es24.15,es13.3)') 'ENERGY: epot1,fmax1     ',atoms_m1%epot,fmax1
+    if(paropt_m%converged) then
+        call yaml_mapping_open('ENERGY_m1',flow=.true.)
+        call yaml_map('epot',atoms_m1%epot,fmt='(es24.15)')
+        call yaml_map('fmax',fmax1,fmt='(es12.3)')
+        call yaml_mapping_close()
+    endif
     file_info%filename_positions='posmin1.acf'
     file_info%file_position='new'
     call acf_write(file_info,atoms=atoms_m1,strkey='minimum1')
@@ -254,11 +270,25 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
         call minimize(parini,iproc,atoms_m2,paropt_m_prec)
     endif
     call minimize(parini,iproc,atoms_m2,paropt_m)
-    if(paropt_m%converged) write(*,'(a,es24.15,es13.3)') 'ENERGY: epot2,fmax2     ',atoms_m2%epot,fmax2
+    !if(paropt_m%converged) write(*,'(a,es24.15,es13.3)') 'ENERGY: epot2,fmax2     ',atoms_m2%epot,fmax2
+    if(paropt_m%converged) then
+        call yaml_mapping_open('ENERGY_m2',flow=.true.)
+        call yaml_map('epot',atoms_m2%epot,fmt='(es24.15)')
+        call yaml_map('fmax',fmax2,fmt='(es12.3)')
+        call yaml_mapping_close()
+    endif
     file_info%filename_positions='posmin2.acf'
     file_info%file_position='new'
     call acf_write(file_info,atoms=atoms_m2,strkey='minimum2')
-    write(*,'(a,4f13.3)') 'bh0,curv,bh1,bh2 ',atoms_s%epot-epot_m0,curv,atoms_s%epot-atoms_m1%epot,atoms_s%epot-atoms_m2%epot
+    !write(*,'(a,4f13.3)') 'bh0,curv,bh1,bh2 ', &
+    !    atoms_s%epot-epot_m0,curv,atoms_s%epot-atoms_m1%epot,atoms_s%epot-atoms_m2%epot
+    call yaml_mapping_open('barriers',flow=.true.)
+    call yaml_map('bh0',atoms_s%epot-epot_m0,fmt='(f13.3)')
+    call yaml_map('curv',curv,fmt='(f13.3)')
+    call yaml_map('bh1',atoms_s%epot-atoms_m1%epot,fmt='(f13.3)')
+    call yaml_map('bh2',atoms_s%epot-atoms_m2%epot,fmt='(f13.3)')
+    call yaml_mapping_close()
+
     call atom_deallocate_old(atoms_m1,sat=.true.,rat=.true.,fat=.true.,bemoved=.true.)
     call atom_deallocate_old(atoms_m2,sat=.true.,rat=.true.,fat=.true.,bemoved=.true.)
     !deallocate(rat1,rat2)

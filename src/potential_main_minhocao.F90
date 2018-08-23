@@ -70,6 +70,7 @@ contains
 
   subroutine get_energyandforces_single(parini,parres,latvec, xred, fcart, strten, energy, iprec, getwfk)
     use mod_parini, only: typ_parini
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -129,7 +130,10 @@ contains
         ka1 = parres%ka
         kb1 = parres%kb
         kc1 = parres%kc
-if(parini_t%verb.gt.0.and.trim(parini_t%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
+!if(parini_t%verb.gt.0.and.trim(parini_t%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
+if(parini_t%verb.gt.0.and.trim(parini_t%potential_potential).ne."lammps") then
+    call yaml_map('KPT mesh set up as follows',(/parres%ka,parres%kb,parres%kc/))
+endif
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(parini_t%potential_potential)=="siesta".and.reuse_kpt.and.parini_t%siesta_kpt_mode==1).or.&
@@ -279,6 +283,7 @@ if(parini_t%verb.gt.0.and.trim(parini_t%potential_potential).ne."lammps") write(
   !************************************************************************************
   subroutine get_dos(parini,parres, latvec, xred, efermi, fdos, iprec, getwfk)
     use mod_parini, only: typ_parini
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_parini), intent(inout):: parres
@@ -320,7 +325,10 @@ if(parini_t%verb.gt.0.and.trim(parini_t%potential_potential).ne."lammps") write(
         ka1 = parres%ka
         kb1 = parres%kb
         kc1 = parres%kc
-if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
+!if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") write(*,'(a,3(1x,i5))') " # KPT mesh set up as follows: ", parres%ka, parres%kb, parres%kc
+if(parini%verb.gt.0.and.trim(parini%potential_potential).ne."lammps") then
+    call yaml_map('KPT mesh set up as follows',(/parres%ka,parres%kb,parres%kc/))
+endif
     endif
 !Trigger exit if reuse and wrong kpt_options are used
     if((trim(parini%potential_potential)=="siesta".and.reuse_kpt.and.parini%siesta_kpt_mode==1).or.&

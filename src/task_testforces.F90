@@ -24,6 +24,7 @@ subroutine testforces_fd(parini)
     use mod_potential, only: potential
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -36,12 +37,28 @@ subroutine testforces_fd(parini)
     call init_potential_forces(parini,atoms)
     call cal_potential_forces(parini,atoms)
     call calnorm(3*atoms%nat,atoms%fat,fnrm)
-    write(*,*) 'epot=',atoms%epot
-    write(*,*) 'fnrm=',fnrm
+    call yaml_map('finite difference step size',h)
+    call yaml_mapping_open('input structure info',label='id001')
+    call yaml_map('epot',atoms%epot)
+    call yaml_map('fnrm',fnrm)
+    !write(*,*) 'epot=',atoms%epot
+    !write(*,*) 'fnrm=',fnrm
     call atom_copy_old(atoms,atoms_center,'atoms->atoms_center')
     fsum(1)=0.d0 ; fsum(2)=0.d0 ; fsum(3)=0.d0
-    write(*,'(a,es14.5)') 'finite difference step size: ',h
     do iat=1,atoms%nat
+        fsum(1)=fsum(1)+atoms_center%fat(1,iat)
+        fsum(2)=fsum(2)+atoms_center%fat(2,iat)
+        fsum(3)=fsum(3)+atoms_center%fat(3,iat)
+    enddo
+    !write(*,'(a,3es14.5)') 'fsum=',fsum(1),fsum(2),fsum(3)
+    call yaml_map('fsum_x',fsum(1))
+    call yaml_map('fsum_y',fsum(2))
+    call yaml_map('fsum_z',fsum(3))
+    !write(*,'(a,es14.5)') 'finite difference step size: ',h
+    call yaml_mapping_close()
+    call yaml_sequence_open('force_error')
+    do iat=1,atoms%nat
+        call yaml_sequence(advance='no')
         !testing x-component of the force
         atoms%rat(1,iat)=atoms%rat(1,iat)-h
         call cal_potential_forces(parini,atoms)
@@ -50,9 +67,15 @@ subroutine testforces_fd(parini)
         call cal_potential_forces(parini,atoms)
         epot_r=atoms%epot
         fd=-(epot_r-epot_l)/(2.d0*h)
-        write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
-        write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_x error of atom ',iat,' is', &
-            fd-atoms_center%fat(1,iat),atoms_center%fat(1,iat)
+        call yaml_map('epot_l_x',epot_l)
+        call yaml_map('epot_r_x',epot_r)
+        call yaml_map('epot_diff_x',epot_r-epot_l)
+        !write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
+        call yaml_map('iat',iat)
+        call yaml_map('F_x',atoms_center%fat(1,iat))
+        call yaml_map('err_x',fd-atoms_center%fat(1,iat),fmt='(f20.12)')
+        !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_x error of atom ',iat,' is', &
+        !    fd-atoms_center%fat(1,iat),atoms_center%fat(1,iat)
         atoms%rat(1,iat)=atoms%rat(1,iat)-h
 
         !testing y-component of the force
@@ -63,9 +86,14 @@ subroutine testforces_fd(parini)
         call cal_potential_forces(parini,atoms)
         epot_r=atoms%epot
         fd=-(epot_r-epot_l)/(2.d0*h)
-        write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
-        write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_y error of atom ',iat,' is', &
-            fd-atoms_center%fat(2,iat),atoms_center%fat(2,iat)
+        call yaml_map('epot_l_y',epot_l)
+        call yaml_map('epot_r_y',epot_r)
+        call yaml_map('epot_diff_y',epot_r-epot_l)
+        !write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
+        call yaml_map('F_y',atoms_center%fat(2,iat))
+        call yaml_map('err_y',fd-atoms_center%fat(2,iat),fmt='(f20.12)')
+        !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_y error of atom ',iat,' is', &
+        !    fd-atoms_center%fat(2,iat),atoms_center%fat(2,iat)
         atoms%rat(2,iat)=atoms%rat(2,iat)-h
 
         !testing z-component of the force
@@ -76,16 +104,17 @@ subroutine testforces_fd(parini)
         call cal_potential_forces(parini,atoms)
         epot_r=atoms%epot
         fd=-(epot_r-epot_l)/(2.d0*h)
-        write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
-        write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_z error of atom ',iat,' is', &
-            fd-atoms_center%fat(3,iat),atoms_center%fat(3,iat)
+        call yaml_map('epot_l_z',epot_l)
+        call yaml_map('epot_r_z',epot_r)
+        call yaml_map('epot_diff_z',epot_r-epot_l)
+        !write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
+        call yaml_map('F_z',atoms_center%fat(3,iat))
+        call yaml_map('err_z',fd-atoms_center%fat(3,iat),fmt='(f20.12)')
+        !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_z error of atom ',iat,' is', &
+        !    fd-atoms_center%fat(3,iat),atoms_center%fat(3,iat)
         atoms%rat(3,iat)=atoms%rat(3,iat)-h
-
-        fsum(1)=fsum(1)+atoms_center%fat(1,iat)
-        fsum(2)=fsum(2)+atoms_center%fat(2,iat)
-        fsum(3)=fsum(3)+atoms_center%fat(3,iat)
     enddo
-    write(*,'(a,3es14.5)') 'fsum=',fsum(1),fsum(2),fsum(3)
+    call yaml_sequence_close()
     call final_potential_forces(parini,atoms)
 end subroutine testforces_fd
 !*****************************************************************************************

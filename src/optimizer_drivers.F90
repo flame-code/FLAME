@@ -4,6 +4,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_opt, only: typ_paropt
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc
@@ -57,6 +58,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
             call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
             if(paropt%iflag<=0) exit
         enddo
+        call yaml_sequence_close()
     !write(72,'(i5)') atoms%nat
     !do iat=1,atoms%nat
     !    write(72,'(3es23.13)') atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
@@ -250,6 +252,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
             !if(paropt%iflag<0 .or. paropt%converged) exit
         enddo
         deallocate(work,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating work.'
+        call yaml_sequence_close()
     endif
     !-------------------------------------------------------------------------------------
     if(trim(paropt%approach)=='DFP') then
@@ -291,6 +294,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
         call sqnm(parini,atoms,paropt,count_sqnm,fail)
         call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
         call test_convergence(nr,fr,paropt)
+        call yaml_sequence_close()
     endif
     !-------------------------------------------------------------------------------------
     if(trim(paropt%approach)=='GMDFIRE') then
@@ -386,21 +390,35 @@ end subroutine xr_to_x
 subroutine report_param(paropt)
     use mod_interface
     use mod_opt, only: typ_paropt
+    use yaml_output
     implicit none
     type(typ_paropt), intent(inout):: paropt
     !local variables
-    write(*,'(a,2x,a)'  ) 'optimization parameters:       method ',trim(paropt%approach)
-    write(*,'(a,2x,a)'  ) 'optimization parameters:   precaution ',trim(paropt%precaution)
-    write(*,'(a,es10.2)') 'optimization parameters:       alphax ',paropt%alphax
-    write(*,'(a,es10.2)') 'optimization parameters:      fmaxtol ',paropt%fmaxtol
-    write(*,'(a,es10.2)') 'optimization parameters:        dxmax ',paropt%dxmax
-    write(*,'(a,es10.2)') 'optimization parameters:      condnum ',paropt%condnum
-    write(*,'(a,es10.2)') 'optimization parameters: fnrmtolsatur ',paropt%fnrmtolsatur
-    write(*,'(a,es10.2)') 'optimization parameters:     dt_start ',paropt%dt_start
-    write(*,'(a,1x,i3)' ) 'optimization parameters:       nsatur ',paropt%nsatur
-    write(*,'(a,1x,i5)' ) 'optimization parameters:          nit ',paropt%nit
-    write(*,'(a,1x,l)'  ) 'optimization parameters:       lprint ',paropt%lprint
+    call yaml_mapping_open('optimization parameters') !,label='id001')
+    call yaml_map('method',trim(paropt%approach))
+    call yaml_map('precaution',trim(paropt%precaution))
+    call yaml_map('alphax',paropt%alphax,fmt='(f10.6)')
+    call yaml_map('fmaxtol',paropt%fmaxtol,fmt='(f10.6)')
+    call yaml_map('dxmax',paropt%dxmax,fmt='(f10.6)')
+    call yaml_map('condnum',paropt%condnum,fmt='(f10.6)')
+    call yaml_map('fnrmtolsatur',paropt%fnrmtolsatur,fmt='(f10.6)')
+    call yaml_map('dt_start',paropt%dt_start,fmt='(f10.6)')
+    call yaml_map('nsatur',paropt%nsatur,fmt='(i3)')
+    call yaml_map('nit',paropt%nit,fmt='(i5)')
+    call yaml_map('lprint',paropt%lprint,fmt='(l)')
+    !write(*,'(a,2x,a)'  ) 'optimization parameters:       method ',trim(paropt%approach)
+    !write(*,'(a,2x,a)'  ) 'optimization parameters:   precaution ',trim(paropt%precaution)
+    !write(*,'(a,es10.2)') 'optimization parameters:       alphax ',paropt%alphax
+    !write(*,'(a,es10.2)') 'optimization parameters:      fmaxtol ',paropt%fmaxtol
+    !write(*,'(a,es10.2)') 'optimization parameters:        dxmax ',paropt%dxmax
+    !write(*,'(a,es10.2)') 'optimization parameters:      condnum ',paropt%condnum
+    !write(*,'(a,es10.2)') 'optimization parameters: fnrmtolsatur ',paropt%fnrmtolsatur
+    !write(*,'(a,es10.2)') 'optimization parameters:     dt_start ',paropt%dt_start
+    !write(*,'(a,1x,i3)' ) 'optimization parameters:       nsatur ',paropt%nsatur
+    !write(*,'(a,1x,i5)' ) 'optimization parameters:          nit ',paropt%nit
+    !write(*,'(a,1x,l)'  ) 'optimization parameters:       lprint ',paropt%lprint
     paropt%param_reported=.true.
+    call yaml_mapping_close()
 end subroutine report_param
 !*****************************************************************************************
 subroutine initminimize(paropt)
