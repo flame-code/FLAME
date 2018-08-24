@@ -511,13 +511,13 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         do iat=1,atoms%nat
             dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
         enddo
-        ehartree=ehartree-parini%efield*0.5d0*dipole
+        ehartree=ehartree-parini%efield*dipole
         do iat=1,atoms%nat
-            atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*0.5d0*atoms%qat(iat)
-            g(iat)=g(iat)-parini%efield*0.5d0*atoms%rat(3,iat)
+            atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*atoms%qat(iat)
+            g(iat)=g(iat)-parini%efield*atoms%rat(3,iat)
         enddo
         if (flag=="force") then
-            write(*,*)"dipole ,beta =  " , dipole
+            write(*,*)"dipole ,K =  " , dipole , 4*pi*dipole/(parini%efield*(poisson%cell(1)*poisson%cell(2)*(poisson%cell(3))))+1
         endif
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
         nbgpz=int(poisson%rgcut/poisson%hz)+2
@@ -533,8 +533,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
         charge=-dipole/poisson%cell(3)+c*dv
 
-        !ehartree = ehartree - 0.5*efield*dipole-0.5*dipole/poisson%cell(3)*dv
-        ehartree = ehartree - 0.5*efield*dipole+0.5*dipole/poisson%cell(3)*dv
+        ehartree = ehartree +(dv+beta)*dipole/poisson%cell(3)
         atoms%ebattery=dipole/poisson%cell(3)*dv
         !ehartree = ehartree + 0.5*c*dv**2
 
@@ -542,6 +541,9 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
             g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
             atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
         enddo
+        if (flag=="force") then
+            write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/(dv*(poisson%cell(1)*poisson%cell(2)))+1
+        endif
 
 
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
@@ -568,7 +570,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         do igpz=1,poisson%npl-1      
             do igpy=1,poisson%ngpy
                 do igpx=1,poisson%ngpx
-                    poisson%pot(igpx,igpy,igpz)=vl
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
                 enddo
             enddo
         enddo
@@ -582,7 +584,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         do igpz=poisson%npu+1,poisson%ngpz      
             do igpy=1,poisson%ngpy
                 do igpx=1,poisson%ngpx
-                    poisson%pot(igpx,igpy,igpz)=vu
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
                 enddo
             enddo
         enddo
@@ -614,11 +616,12 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
             write(*,*)"dipole ,beta =  " , dipole,beta
             write(*,*)"charge =                ",charge, charge0
             write(*,*)"externalwork = ",atoms%ebattery
+            write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/((dv)*(poisson%cell(1)*poisson%cell(2)))+1
            ! allocate(pot_short(poisson%ngpx,poisson%ngpy,2,5))
            ! pot_short=0.d0
            ! poisson%pots=0.d0
            ! call surface_charge(parini,poisson,pot_short,vl,vu)
-            write(*,*)"C_0 = ",c, " K =" , charge/dv/c
+            !write(*,*)"C_0 = ",c, " K =" , charge/dv/c
            ! deallocate(pot_short)
                 !open(unit=55, file="pots.txt" ,status='unknown',position='append')
                 !   do igpy=1,min(10,poisson%ngpy),2
@@ -655,6 +658,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
 
         do iat=1,atoms%nat
             g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+         !   g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
         !    atoms%fat(3,iat)=atoms%fat(3,iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
         enddo
         deallocate(poisson%pots)

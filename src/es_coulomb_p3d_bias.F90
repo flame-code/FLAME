@@ -20,6 +20,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz, nbgpz
     real(8),allocatable :: pots_layer(:,:,:,:)
     real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole,dv
+    real(8):: tt, tt1, tt2
 
     pi=4.d0*atan(1.d0)
     epotplane=0.d0
@@ -86,30 +87,45 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
             call surface_charge(parini,poisson,pots_layer,vl,vu)
             deallocate(pots_layer)
         endif
-        !        open(unit=55, file="pots.txt" )
-        !           do iy=1,min(9,poisson%ngpy)
-        !           do ix=1,min(9,poisson%ngpx)
-        !           do iz=poisson%npl,poisson%npu
-        !               !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
-        !               !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
-        !               write(55,'(4es20.8)')  (iz-1-nbgpz)*poisson%hz, poisson%pots(ix,iy,iz),&
-        !                            (vu-vl)/d*(iz-1-nbgpz)*poisson%hz+vl,&
-        !                            (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+     !           open(unit=55, file="pots.txt" )
+     !              do iy=1,poisson%ngpy!min(9,poisson%ngpy)
+     !              do ix=1,poisson%ngpx!min(9,poisson%ngpx)
+     !              do iz=poisson%npl,poisson%npu
+     !                  !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
+     !                  !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+     !                  write(55,'(4es20.8)')  (iz-1-nbgpz)*poisson%hz, poisson%pots(ix,iy,iz),&
+     !                               (vu-vl)/d*(iz-1-nbgpz)*poisson%hz+vl,&
+     !                               (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
 
-        !           enddo 
-        !               write(55,*)   
-        !           enddo 
-        !           enddo 
-        !        close(55)
-           !     open(unit=66, file="pot_up.txt" )
-           !        do iy=1,poisson%ngpy
-           !        do ix=1,poisson%ngpx
-           !            iz=poisson%npu
-           !            write(66,*)   poisson%pots(ix,iy,iz)
-           !        enddo 
-           !            write(66,*)   
-           !        enddo 
-           !     close(66)
+     !              enddo 
+     !                  write(55,*)   
+     !              enddo 
+     !              enddo 
+     !           close(55)
+     !           open(unit=56, file="efield.txt" )
+     !              do iy=1,poisson%ngpy,10!min(9,poisson%ngpy)
+     !              do ix=1,poisson%ngpx,10!min(9,poisson%ngpx)
+     !              do iz=poisson%npl+1,poisson%npu-1,2
+     !                  !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
+     !                  !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+     !                  tt= -(poisson%pots(ix,iy,iz-1)-poisson%pots(ix,iy,iz+1))/(2*poisson%hz)/0.529177210d0*27.211385d0
+     !                  tt1= (vu-vl)/d/0.529177210d0*27.211385d0
+     !                  tt2= (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d/0.529177210d0*27.211385d0
+     !                  write(56,'(4es20.8)')  (iz-1-nbgpz)*poisson%hz*0.529177210d0, tt,tt1,tt2
+     !              enddo 
+     !                  write(56,*)   
+     !              enddo 
+     !              enddo 
+     !           close(56)
+     !           open(unit=66, file="pot_up.txt" )
+     !              do iy=1,poisson%ngpy
+     !              do ix=1,poisson%ngpx
+     !                  iz=poisson%npu
+     !                  write(66,*)  ix*poisson%hx , iy*poisson%hy, poisson%pots(ix,iy,iz)-(-beta/(poisson%ngpx*poisson%ngpy)+vu)
+     !              enddo 
+     !                  write(66,*)  
+     !              enddo 
+     !           close(66)
         epotplane = epotplane+dipole_correction
         deallocate(poisson%pots)
     end if
@@ -880,41 +896,36 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     integer:: ix, iy, iz, jx, jy, jz, kx, ky, kz
     integer:: npl, npu, nlayer, ngpx, ngpy, ngpz
     real(8),allocatable :: pots_layer(:,:,:,:)
-    real(8):: vl, vu, A, d, rl, ru, dipole_correction, dipole
-    real(8):: pot_correction ,dp,dv,beta2 
+    real(8):: vl, vu, A, d, rl, ru, dipole_correction
+    real(8):: pot_correction ,dipole,dv,beta2 
 
     beta = poisson%beta
     pi=4.d0*atan(1.d0)
-    ngpz=poisson%ngpz
-    ngpx= poisson%ngpx
-    ngpy= poisson%ngpy
+    ngpz = poisson%ngpz
+    ngpx = poisson%ngpx
+    ngpy = poisson%ngpy
     epotplane=0.d0
     d = poisson%cell(3)
     if(poisson%point_particle .and. trim(parini%bias_type)=='fixed_efield') then
         !E = parini%efield
     elseif(poisson%point_particle .and. trim(parini%bias_type)=='fixed_potdiff') then
-        dp=0.d0
+        dipole=0.d0
         do iat=1,atoms%nat
-            dp= dp + atoms%rat(3,iat)*atoms%qat(iat)
+            dipole= dipole + atoms%rat(3,iat)*atoms%qat(iat)
         enddo
-        beta2 = - 2.d0*pi/(poisson%cell(2)*poisson%cell(1))*dp
+        beta2 = - 2.d0*pi/(poisson%cell(2)*poisson%cell(1))*dipole
         dv = parini%vu_ewald-parini%vl_ewald 
         write(*,*)'real pot = vu , vl ',parini%vu_ewald+ beta2,parini%vl_ewald- beta2 
         E =- (dv+2.d0*beta2)/d
     endif
        A= poisson%ngpx*poisson%ngpy*poisson%hx*poisson%hy
        c= A/(4.d0*pi*d)
-       dipole = beta*(poisson%hx*poisson%hy)
-       charge0= -dp/(d)
-       charge = -dp/(d)+c*(dv)
-!       write(*,*)'charge on upper  plate  ', charge
-        !dipole_correction = 2.d0*pi*dp**2/(poisson%cell(3)*poisson%cell(2)*poisson%cell(1)) 
+       charge0= -dipole/(d)
+       charge = -dipole/(d)+c*(dv)
         epotplane = 0.d0
         epotplane = epotplane !+0.5*c*dv**2
-        !epotplane = epotplane +(dv+beta2)/d*dp + 1.5d0*charge0*dv
-        epotplane = epotplane + (dv+beta2)/d*dp
+        epotplane = epotplane + (dv+beta2)/d*dipole
         do iat=1,atoms%nat
-            !atoms%fat(3,iat)=atoms%fat(3,iat)-(0.5d0*(dv+4.d0*beta2)/poisson%cell(3))*atoms%qat(iat)
             atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta2)/poisson%cell(3))*atoms%qat(iat)
         enddo
 
