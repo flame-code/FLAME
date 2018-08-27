@@ -1761,7 +1761,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
-    real(8):: epotlong, epotplane !, epotshort
+    real(8):: epotlong, epotplane 
 end subroutine bias_potener_forces
 subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     use mod_electrostatics, only: typ_poisson
@@ -1810,6 +1810,7 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     type(typ_poisson), intent(inout):: poisson
     real(8):: t, tt ,density(poisson%ngpx,poisson%ngpy,2),vl,vu
     real(8)::hgzinv,pi,pot_layerl,pot_layeru,pot_short(poisson%ngpx,poisson%ngpy,2,5)
+    real(8), parameter, dimension(5) :: cf5 = [-25.d0/12.d0,4.d0,-3.d0,+4.d0/3.d0,-0.25d0]
 end subroutine surface_charge
 subroutine determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
     use mod_electrostatics, only: typ_poisson
@@ -2015,6 +2016,7 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
+    real(8):: qgrad(atoms%nat)
 end subroutine get_hartree_grad_rho
 subroutine get_hartree_force(parini,poisson,atoms)
     use mod_parini, only: typ_parini
@@ -2034,7 +2036,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
 end subroutine get_hartree
-subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
+subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -2042,6 +2044,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: ehartree, g(atoms%nat)
+    character(5)::flag
 end subroutine apply_external_field
 subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     use mod_parini, only: typ_parini

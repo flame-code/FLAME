@@ -12,6 +12,7 @@ module mod_atoms
         real(8):: ekin=0.d0 !kinetic energy
         real(8):: etot=0.d0 !total energy
         real(8):: enth=0.d0 !enthalpy
+        real(8):: ebattery=0.d0 !energy of external work of battery in p3d_bias
         real(8):: qtot=0.d0 !total charge of the configuration
         real(8):: ztot=0.d0 !total ionic charge of the configuration
         real(8):: pressure=0.d0 !external pressure

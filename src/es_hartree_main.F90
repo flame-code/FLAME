@@ -395,20 +395,17 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
             if(parini%cell_ortho) then
                 call qgrad_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%q,poisson%gw_ewald, &
                     poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%qgrad)
-                if(trim(parini%bias_type)/='no') then
-                    call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
-                endif
             else
                 call rqgrad_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%q,poisson%gw, &
                     poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%rgrad,poisson%qgrad)
             endif
         case('p3d')
             if(parini%cell_ortho) then
+                if(trim(parini%bias_type)/='no') then
+                    call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad,"qgrad")
+                endif
                 call qgrad_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart,poisson%q,poisson%gw_ewald, &
                     poisson%rgcut,poisson%lda,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,poisson%qgrad)
-                if(trim(parini%bias_type)/='no') then
-                    call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad)
-                endif
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop
@@ -431,6 +428,7 @@ subroutine get_hartree_force(parini,poisson,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
+    real(8):: ehartree
     !local variables
     integer:: iat
     select case(trim(parini%psolver))
@@ -441,12 +439,6 @@ subroutine get_hartree_force(parini,poisson,atoms)
                 call force_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart, &
                     poisson%q,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
                     poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
-                !The following if statement must be moved to its proper place
-                if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
-                    do iat=1,atoms%nat
-                        atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*atoms%qat(iat)
-                    enddo
-                endif
             else
                 call force_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart, &
                     poisson%q,poisson%gw,poisson%rgcut,poisson%lda,poisson%ngpx, &
@@ -454,15 +446,10 @@ subroutine get_hartree_force(parini,poisson,atoms)
             endif
         case('p3d')
             if(parini%cell_ortho) then
+                call apply_external_field(parini,atoms,poisson,ehartree,poisson%qgrad,"force")
                 call force_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart, &
                     poisson%q,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
                     poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
-                !The following if statement must be moved to its proper place
-                if((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_efield') then
-                    do iat=1,atoms%nat
-                        atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*atoms%qat(iat)
-                    enddo
-                endif
             else
                 write(*,*) 'ERROR: P3D works only with orthogonal cell.'
                 stop
@@ -527,7 +514,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     call f_release_routine()
 end subroutine get_hartree
 !*****************************************************************************************
-subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
+subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -539,10 +526,15 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: ehartree, g(atoms%nat)
     !local variables
-    !real(8):: pi, gtot, ecut, epotreal, alphasq
     integer:: iat, igpx, igpy, igpz
-    !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
+    integer:: nbgpz,nlayer                                        
     real(8):: dipole !,ext_pot
+    real(8):: dv, pi, beta ,vu,vl
+    real(8):: c, charge, epot, ext_pot , efield, charge0
+    real(8):: qv, qv_pp, Ef
+    real(8),allocatable :: pot_short(:,:,:,:)
+    character(5)::flag
+    pi=4.d0*atan(1.d0)        
     if(trim(parini%psolver)/='p3d') then
         write(*,*) 'ERROR: currently external electric field is supposed to be'            
         write(*,*) '       used together with the P3D method.'
@@ -566,22 +558,155 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g)
         enddo
         ehartree=ehartree-parini%efield*dipole
         do iat=1,atoms%nat
-            !atoms%fat(3,iat)=atoms%fat(3,iat)-parini%efield*0.5d0*atoms%qat(iat)
+            atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*atoms%qat(iat)
             g(iat)=g(iat)-parini%efield*atoms%rat(3,iat)
         enddo
+        if (flag=="force") then
+            write(*,*)"dipole ,K =  " , dipole , 4*pi*dipole/(parini%efield*(poisson%cell(1)*poisson%cell(2)*(poisson%cell(3))))+1
+        endif
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
-        !efield=0.d0 !to be corrected by Samare
-        !do igpz=1,poisson%ngpz
-        !    !igpz=1 is not necessarily z=0, now in this way external potential is not
-        !    !zero at z=0 but since shift the potential, such that external potential
-        !    !to be zero at z=0, has no effect on energy, we keep it this way.
-        !    ext_pot=efield*igpz*hz
-        !    do igpy=1,poisson%ngpy
-        !        do igpx=1,poisson%ngpx
-        !            poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+ext_pot
-        !        enddo
-        !    enddo
-        !enddo
+        nbgpz=int(poisson%rgcut/poisson%hz)+2
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
+        dv=(poisson%vu-poisson%vl) 
+        write(*,*)'real pot = vu , vl ', poisson%vu+beta, poisson%vl-beta
+        efield =- (dv+2.d0*beta)/ poisson%cell(3)
+
+        c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
+        charge=-dipole/poisson%cell(3)+c*dv
+
+        ehartree = ehartree +(dv+beta)*dipole/poisson%cell(3)
+        atoms%ebattery=dipole/poisson%cell(3)*dv
+        !ehartree = ehartree + 0.5*c*dv**2
+
+        do iat=1,atoms%nat
+            g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+            atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
+        enddo
+        if (flag=="force") then
+            write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/(dv*(poisson%cell(1)*poisson%cell(2)))+1
+        endif
+
+
+    elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff2') then
+        vu=parini%vu_ewald+parini%vu_ac_ewald*sin(2*pi*parini%frequency_ewald*parini%time_dynamics)
+        vl=parini%vl_ewald
+        ehartree=0.d0
+        nbgpz=int(poisson%rgcut/poisson%hz)+2
+        poisson%npu=poisson%ngpz-nbgpz
+        poisson%npl=1+nbgpz  
+
+        allocate(poisson%pots(1:poisson%ngpx+2,1:poisson%ngpy,poisson%npl:poisson%npu))
+        poisson%pots=0.d0
+        !if (parini%cal_charge) then 
+        !    nlayer=5
+        !    allocate(pots_layer(1:poisson%ngpx,1:poisson%ngpy,1:2,1:nlayer))
+        !    pots_layer = 0.d0
+        !endif
+        call sollaplaceq(poisson,poisson%hz,poisson%cell,vl,vu)
+        !if (parini%cal_charge) then 
+        !    call surface_charge(parini,poisson,pots_layer,vl,vu)
+        !    deallocate(pots_layer)
+        !endif
+
+        do igpz=1,poisson%npl-1      
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+vl
+                enddo
+            enddo
+        enddo
+        do igpz=poisson%npl,poisson%npu       
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+poisson%pots(igpx,igpy,igpz)
+                enddo
+            enddo
+        enddo
+        do igpz=poisson%npu+1,poisson%ngpz      
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+vu
+                enddo
+            enddo
+        enddo
+        epot=0.d0
+        do igpz=1,poisson%ngpz
+            do igpy=1,poisson%ngpy
+                do igpx=1,poisson%ngpx
+                    epot=epot+poisson%pot(igpx,igpy,igpz)*poisson%rho(igpx,igpy,igpz)
+                enddo
+            enddo
+        enddo
+        epot=epot*0.5d0*poisson%hx*poisson%hy*poisson%hz
+        ehartree=ehartree+epot
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        !write(*,*)"dipole  =  " , dipole
+        beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
+        dv=vu-vl
+        c=poisson%cell(1)*poisson%cell(2)/(4.d0*pi*poisson%cell(3))
+        charge0=-dipole/poisson%cell(3)
+        charge=-dipole/poisson%cell(3)+c*dv
+
+        ehartree=ehartree-0.5d0*charge0*dv!+0.5d0*c*dv**2!
+        atoms%ebattery=-charge0*dv
+
+        if (flag=="force") then
+            write(*,*)"dipole ,beta =  " , dipole,beta
+            write(*,*)"charge =                ",charge, charge0
+            write(*,*)"externalwork = ",atoms%ebattery
+            write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/((dv)*(poisson%cell(1)*poisson%cell(2)))+1
+           ! allocate(pot_short(poisson%ngpx,poisson%ngpy,2,5))
+           ! pot_short=0.d0
+           ! poisson%pots=0.d0
+           ! call surface_charge(parini,poisson,pot_short,vl,vu)
+            !write(*,*)"C_0 = ",c, " K =" , charge/dv/c
+           ! deallocate(pot_short)
+                !open(unit=55, file="pots.txt" ,status='unknown',position='append')
+                !   do igpy=1,min(10,poisson%ngpy),2
+                !   do igpx=1,min(10,poisson%ngpx),2
+                !   do igpz=poisson%npl,poisson%npu
+                !       !write(55,*)  (iz-1-nbgpz)*poisson%hz, -poisson%pots(ix,iy,iz)+&
+                !       !             (-2*beta/(poisson%ngpx*poisson%ngpy)+vu-vl)/d*(iz-1-nbgpz)*poisson%hz+beta/(poisson%ngpx*poisson%ngpy)+vl
+                !       write(55,'(4es20.8)')  (igpz-1-nbgpz)*poisson%hz, poisson%pots(igpx,igpy,igpz),&
+                !                    (vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)*poisson%hz+vl,&
+                !                    (2*beta+vu-vl)/poisson%cell(3)*(igpz-1-nbgpz)&
+                !                    *poisson%hz-beta+vl
+
+                !   enddo 
+                !       write(55,*)   
+                !   enddo 
+                !   enddo 
+                !close(55)
+                open(unit=56, file="field.txt" ,status='unknown',position='append')
+                !   do igpy=1,min(10,poisson%ngpy),2
+                !   do igpx=1,min(10,poisson%ngpx),2
+                !   do igpz=poisson%npl+1,poisson%npu-1
+                !       Ef = (poisson%pots(igpx,igpy,igpz+1)-poisson%pots(igpx,igpy,igpz-1))/(2.d0*poisson%hz)
+                !       write(56,'(4es20.8)')  (igpz-1-nbgpz)*poisson%hz, Ef ,&
+                !                    (vu-vl)/poisson%cell(3),&
+                !                    (2*beta+vu-vl)/poisson%cell(3)
+
+                !   enddo 
+                !       write(56,*)   
+                !   enddo 
+                !   enddo 
+                       write(56,'(4es20.8)')  (vu-vl)/poisson%cell(3), (2*beta+vu-vl)/poisson%cell(3)
+                close(56)
+        endif
+
+        do iat=1,atoms%nat
+            g(iat)=g(iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+         !   g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+        !    atoms%fat(3,iat)=atoms%fat(3,iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
+        enddo
+        deallocate(poisson%pots)
     endif
 end subroutine apply_external_field
 !*****************************************************************************************
