@@ -570,7 +570,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         do igpz=1,poisson%npl-1      
             do igpy=1,poisson%ngpy
                 do igpx=1,poisson%ngpx
-                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+vl
                 enddo
             enddo
         enddo
@@ -584,7 +584,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         do igpz=poisson%npu+1,poisson%ngpz      
             do igpy=1,poisson%ngpy
                 do igpx=1,poisson%ngpx
-                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
+                    poisson%pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)+vu
                 enddo
             enddo
         enddo
