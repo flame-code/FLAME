@@ -16,7 +16,7 @@ subroutine md_nvt_langevin(parini,atoms)
     integer:: imd, ff
     real(8):: etot, epotold, etotold
     real(8):: DNRM2, fnrm, t1, aboltzmann, totmass, temp, etotavg
-    real(8):: t2,t3,t4 
+    real(8):: t2,t3,t4 ,tt
     real(8):: rl, ru 
     real(8):: rcm(3), vcm(3)
     real(8):: scale_vat, temp_trget, ekin_target
@@ -28,7 +28,8 @@ subroutine md_nvt_langevin(parini,atoms)
     real(8):: langev(atoms%nat), forces_langevin(3,atoms%nat)
     real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
     real(8):: rat_init(3,atoms%nat)
-    real(8):: r, dx(3) , rsq, msd1, msd2, msd3
+    real(8):: r, dx(3) , rsq, msd1, msd2, msd3,pi,dipole
+    pi=4.d0*atan(1.d0)
 
     call random_seed() 
     rat_init=atoms%rat
@@ -97,6 +98,12 @@ subroutine md_nvt_langevin(parini,atoms)
     !_____________________________________________________________________
     do imd=2,nmd
         parini%time_dynamics = (imd-1)*dt
+
+        dipole=0.d0
+        do iat=1,atoms%nat
+            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+        enddo
+        write(31,*) "dtime",parini%time_dynamics,parini%vu_ac_ewald*sin(2*pi*parini%frequency_ewald*parini%time_dynamics),dipole
 
         vat_old =atoms%vat
         parini%cal_charge = .false.
@@ -464,6 +471,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     rcm_init = rcm 
     !____________________________________________________________________
     do imd=1,nmd
+        parini%time_dynamics = (imd-1)*dt
         epotold=atoms%epot
 
         if(parini%vflip_dynamics) then
@@ -500,7 +508,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         enhc=atoms%epot+atoms%ekin+0.5*sum(dzeta**2*mass_q)+nof*kt*zeta(1)+sum(zeta*kt)
 
         write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
-        write(21,'(i9,5es25.15)') imd,etot,atoms%epot,atoms%ekin,temp,enhc
+        write(21,'(i9,5es25.15)') imd,etot-atoms%ebattery,atoms%epot-atoms%ebattery,atoms%ekin,temp,enhc
         write(22,'(i9,6es20.10)') imd,rcm(1:3),vcm(1:3)
 
     !___________________  some steps temperature rescaling for pre_equilibrium  __________________
@@ -590,7 +598,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         enddo
         dzeta(ntherm) =dzeta(ntherm) + azeta(ntherm) *dt4;
 
-        if(mod(imd,100)==0) then
+        if(mod(imd-1,100)==0) then
             call write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
         endif
         etotold=etot

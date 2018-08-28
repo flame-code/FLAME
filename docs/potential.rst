@@ -31,8 +31,6 @@ List available potentials:
 
         ``coulomb``: EXPLAIN
 
-        ``plato``: EXPLAIN
-
         ``siesta``: EXPLAIN
 
 **potential_sec**:

@@ -2,9 +2,9 @@ unfinished but the following two sections may be useful for future:
 
 ----------------------------------------------------------------------
 silicon:~/tmp/qqq >cat cdepend.sh
-gcc -MM -DQSC_STANDALONE `find . -iname '*.c' |grep -v PLATO ; find . -iname '*.cpp'` >cfiles.dep
+gcc -MM -DQSC_STANDALONE `find . -iname '*.c' ; find . -iname '*.cpp'` >cfiles.dep
 silicon:~/tmp/qqq >cat depend.sh
-makedepf90 -b ofiles -o client `find . -iname '*.f90' |grep -v wrappers |grep -v SIESTA |grep -v PLATO |grep -v modules |grep -v ANN |grep -v potentials/QSC/test.f90 |grep -v GenConf` >ffiles.dep
+makedepf90 -b ofiles -o client `find . -iname '*.f90' |grep -v wrappers |grep -v SIESTA |grep -v modules |grep -v ANN |grep -v potentials/QSC/test.f90 |grep -v GenConf` >ffiles.dep
 
 ----------------------------------------------------------------------
 

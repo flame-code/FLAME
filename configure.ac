@@ -32,9 +32,9 @@ AC_PROG_CC()
 AC_PROG_CXX()
 
 dnl Check for existence of other options
-AX_EXTRA([LAMMPS])
-AX_EXTRA([SPGLIB])
-AX_EXTRA([BPS])
+AX_LAMMPS()
+AX_SPGLIB()
+AX_BPS()
 
 dnl Check for sed and put it in the SED variable
 AC_PROG_SED()

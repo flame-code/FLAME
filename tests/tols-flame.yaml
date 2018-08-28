@@ -146,3 +146,10 @@ SP_CENT1_slab:
 minhocao_CENT1:
  Epsilon: 1.e-10
  Velocity of CM: 2.e-8
+
+minhocao_LTB:
+ Epsilon: 1.e-11
+
+minhocao_LTB_fixkpt:
+ Epsilon: 1.e-11
+

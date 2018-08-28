@@ -191,30 +191,32 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     type(typ_ekf), intent(inout), target:: ekf
     type(typ_atoms_arr), intent(inout), target:: atoms_smplx
     !local variables
-    real(8):: vertices(11,12), fval(12)
+    real(8):: vertices(10,11), fval(11)
     real(8):: step, ftol
     integer:: ndim, iter, i
     external:: cal_rmse_force_cent2
     external:: cal_rmse_energy_cent2
-    ndim=11
+    ndim=10
     ftol=1.d-4
     step=0.d0
-    vertices(1,1)=ann_arr%ann(2)%chi0-ann_arr%ann(1)%chi0
+    !vertices(1,1)=ann_arr%ann(2)%chi0-ann_arr%ann(1)%chi0
+    vertices(1,1)=ann_arr%ann(1)%chi0
+    vertices(2,1)=ann_arr%ann(2)%chi0
 
-    vertices(2,1)=ann_arr%ann(1)%zion
-    vertices(3,1)=ann_arr%ann(2)%zion
+    !vertices(2,1)=ann_arr%ann(1)%zion
+    !vertices(3,1)=ann_arr%ann(2)%zion
 
-    vertices(4,1)=ann_arr%ann(1)%hardness
-    vertices(5,1)=ann_arr%ann(2)%hardness
+    vertices(3,1)=ann_arr%ann(1)%hardness
+    vertices(4,1)=ann_arr%ann(2)%hardness
 
-    vertices(6,1)=ann_arr%ann(1)%spring_const
-    vertices(7,1)=ann_arr%ann(2)%spring_const
+    vertices(5,1)=ann_arr%ann(1)%spring_const
+    vertices(6,1)=ann_arr%ann(2)%spring_const
 
-    vertices(8,1)=ann_arr%ann(1)%gausswidth_ion
-    vertices(9,1)=ann_arr%ann(2)%gausswidth_ion
+    vertices(7,1)=ann_arr%ann(1)%gausswidth_ion
+    vertices(8,1)=ann_arr%ann(2)%gausswidth_ion
 
-    vertices(10,1)=ann_arr%ann(1)%ener_ref
-    vertices(11,1)=ann_arr%ann(2)%ener_ref
+    vertices(9,1)=ann_arr%ann(1)%ener_ref
+    vertices(10,1)=ann_arr%ann(2)%ener_ref
 
     do i=2,ndim+1
         vertices(1:ndim,i)=vertices(1:ndim,1)
@@ -299,23 +301,25 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
     type(typ_symfunc):: symfunc
     real(8):: rmse
     integer:: iat, iconf
-    ann_arr%ann(1)%chi0=-vertex(1)/2.d0
-    ann_arr%ann(2)%chi0= vertex(1)/2.d0
+    !ann_arr%ann(1)%chi0=-vertex(1)/2.d0
+    !ann_arr%ann(2)%chi0= vertex(1)/2.d0
+    ann_arr%ann(1)%chi0=vertex(1)
+    ann_arr%ann(2)%chi0=vertex(2)
 
-    ann_arr%ann(1)%zion=vertex(2)
-    ann_arr%ann(2)%zion=vertex(3)
+    !ann_arr%ann(1)%zion=vertex(2)
+    !ann_arr%ann(2)%zion=vertex(3)
 
-    ann_arr%ann(1)%hardness=vertex(4)
-    ann_arr%ann(2)%hardness=vertex(5)
+    ann_arr%ann(1)%hardness=vertex(3)
+    ann_arr%ann(2)%hardness=vertex(4)
 
-    ann_arr%ann(1)%spring_const=vertex(6)
-    ann_arr%ann(2)%spring_const=vertex(7)
+    ann_arr%ann(1)%spring_const=vertex(5)
+    ann_arr%ann(2)%spring_const=vertex(6)
 
-    ann_arr%ann(1)%gausswidth_ion=vertex(8)
-    ann_arr%ann(2)%gausswidth_ion=vertex(9)
+    ann_arr%ann(1)%gausswidth_ion=vertex(7)
+    ann_arr%ann(2)%gausswidth_ion=vertex(8)
 
-    ann_arr%ann(1)%ener_ref=vertex(10)
-    ann_arr%ann(2)%ener_ref=vertex(11)
+    ann_arr%ann(1)%ener_ref=vertex(9)
+    ann_arr%ann(2)%ener_ref=vertex(10)
 
     write(*,'(5(a,2f7.4,4x),a,2f10.4)') &
         'CHI= ',ann_arr%ann(1)%chi0,ann_arr%ann(2)%chi0, &

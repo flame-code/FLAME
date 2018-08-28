@@ -9,7 +9,9 @@ SHORT_TESTDIRS = testforces_FD \
 				 SP_CENT1_bulk \
 				 SP_CENT1_free \
 				 SP_CENT1_slab \
-				 minhocao_CENT1
+				 minhocao_CENT1 \
+				 minhocao_LTB \
+				 minhocao_LTB_fixkpt
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 

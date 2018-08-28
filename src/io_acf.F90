@@ -13,7 +13,7 @@ subroutine acf_write(file_info,atoms,atoms_all,strkey)
     character(*), optional, intent(in):: strkey
     !local variables
     integer:: iat, ios, nconf, iconf
-    real(8):: x, y, z, epot, xt, yt, zt, hinv(3,3)
+    real(8):: x, y, z, epot,epot2, xt, yt, zt, hinv(3,3)
     real(8):: anrm, bnrm, tt1, tt2, tt3, dproj(6), cv(3,3), rotmat(3,3)
     logical:: l1, l2, l3
     type(typ_atoms):: atoms_t
@@ -111,6 +111,7 @@ subroutine acf_write(file_info,atoms,atoms_all,strkey)
         write(1358,'(a)') trim(str_line6)
         if(present(atoms)) then
             epot=atoms%epot
+            epot2=epot-atoms%ebattery
             tch2=trim(strkey)
         else if(present(atoms_all)) then 
             epot=atoms_all%epotall(iconf)
@@ -125,8 +126,14 @@ subroutine acf_write(file_info,atoms,atoms_all,strkey)
         endif
         if(trim(units)=='angstrom') then
             epot=epot*ha2ev
+            epot2=epot2*ha2ev
         endif
-        write(1358,'(a,e24.15)') 'epot=',epot
+            write(*,*)"externalwork2", atoms%ebattery
+        if(atoms%ebattery > 0.d0 .or. atoms%ebattery < 0.d0 ) then
+            write(1358,'(a,e24.15,a10,e24.15)') 'epot=',epot ,'epot2=',epot2
+        else
+            write(1358,'(a,e24.15)') 'epot=',epot
+        endif
         file_info%nconf=file_info%nconf+1
         write(1358,'(i7,2x,a,2x,i7)') atoms_t%nat,trim(atoms_t%boundcond),file_info%nconf
         if(present(atoms)) then

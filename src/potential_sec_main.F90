@@ -23,12 +23,6 @@ subroutine init_potential_forces_sec(parini,atoms)
         call init_cal_potential_forces_bigdft(atoms)
     elseif(trim(potential_sec)=='vasp') then
         call init_cal_potential_forces_vasp(atoms)
-    elseif(trim(potential_sec)=='plato') then
-#if defined(HAVE_PLATO)
-        call init_cal_potential_forces_plato(atoms)
-#else
-        stop 'ERROR: Alborz is not linked with plato during compilation.'
-#endif
     elseif(trim(potential_sec)=='siesta') then
 #if defined(HAVE_SIESTA)
         call init_cal_potential_forces_siesta(atoms)
@@ -63,12 +57,6 @@ subroutine cal_potential_forces_sec(parini,atoms)
         call cal_potential_forces_bigdft(atoms)
     elseif(trim(potential_sec)=='vasp') then
         call cal_potential_forces_vasp(atoms)
-    elseif(trim(potential_sec)=='plato') then
-#if defined(HAVE_PLATO)
-        call cal_potential_forces_plato(atoms)
-#else
-        stop 'ERROR: Alborz is not linked with plato during compilation.'
-#endif
     elseif(trim(potential_sec)=='siesta') then
 #if defined(HAVE_SIESTA)
         call cal_potential_forces_siesta(atoms)
@@ -100,12 +88,6 @@ subroutine final_potential_forces_sec(atoms)
         call final_potential_forces_bigdft
     elseif(trim(potential_sec)=='vasp') then
         call final_potential_forces_vasp
-    elseif(trim(potential_sec)=='plato') then
-#if defined(HAVE_PLATO)
-        call final_potential_forces_plato
-#else
-        stop 'ERROR: Alborz is not linked with plato during compilation.'
-#endif
     elseif(trim(potential_sec)=='siesta') then
 #if defined(HAVE_SIESTA)
         call final_potential_forces_siesta

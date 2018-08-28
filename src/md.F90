@@ -26,9 +26,6 @@ subroutine dynamics(parini)
     !dt=4.d-3 !good for LJ
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     call set_ndof(atoms)
-    if(trim(potential)=='plato') then
-        perfstatus='normal'
-    endif
     
     if(trim(md_method)=='nve') then
         call md_nve(parini,atoms)

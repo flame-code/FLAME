@@ -21,9 +21,6 @@ subroutine setpot_init(parini,atoms_curr,paropt,paropt_prec)
     elseif(trim(potential)=='vasp') then
         stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
         !parini%two_level_geopt=.true.
-    elseif(trim(potential)=='plato') then
-        stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
-        !parini%two_level_geopt=.true.
     elseif(trim(potential)=='siesta') then
         stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
         !parini%two_level_geopt=.true.
@@ -52,8 +49,6 @@ subroutine setpot_mdescape
     elseif(trim(potential)=='vasp') then
         perfstatus='fast'
         single_point_calculation=.true.
-    elseif(trim(potential)=='plato') then
-        perfstatus='fast'
     elseif(trim(potential)=='siesta') then
         !call final_potential_forces
         perfstatus='fast'
@@ -84,8 +79,6 @@ subroutine setpot_geopt_prec
     elseif(trim(potential)=='vasp') then
         perfstatus='normal'
         single_point_calculation=.false.
-    elseif(trim(potential)=='plato') then
-        perfstatus='normal'
     elseif(trim(potential)=='siesta') then
         !call final_potential_forces
         perfstatus='normal'
@@ -102,8 +95,6 @@ subroutine setpot_geopt
         perfstatus='accurate'
     elseif(trim(potential)=='vasp') then
         single_point_calculation=.false.
-        perfstatus='accurate'
-    elseif(trim(potential)=='plato') then
         perfstatus='accurate'
     elseif(trim(potential)=='siesta') then
         !call final_potential_forces
