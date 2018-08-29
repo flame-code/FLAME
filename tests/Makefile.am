@@ -12,7 +12,8 @@ SHORT_TESTDIRS = testforces_FD \
 				 minhocao_CENT1 \
 				 minhocao_LTB \
 				 minhocao_LTB_fixkpt \
-				 SP_PP_p3d
+				 SP_PP_p3d \
+				 SP_PP_p3dbias
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 

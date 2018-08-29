@@ -159,3 +159,9 @@ SP_PP_p3d:
  Epsilon: 1.e-11
  epot: 1.e-13
 
+SP_PP_p3dbias:
+ Keys to ignore:
+  - conf. number
+ Epsilon: 1.e-11
+ epot: 1.e-13
+
