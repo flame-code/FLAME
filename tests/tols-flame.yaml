@@ -1,6 +1,6 @@
 ---
 Default tolerances:
- Epsilon: 1.e-14
+ Epsilon: 1.e-13
 
 Keys to ignore:
  - Code logo
@@ -21,16 +21,16 @@ testforces_FD:
   - fsum_x
   - fsum_y
   - fsum_z
- epot: 1.e-14
- epot_l_x: 1.e-14
- epot_l_y: 1.e-14
- epot_l_z: 1.e-14
- epot_r_x: 1.e-14
- epot_r_y: 1.e-14
- epot_r_z: 1.e-14
- F_x: 1.e-14
- F_y: 1.e-14
- F_z: 1.e-14
+ epot: 1.e-13
+ epot_l_x: 1.e-13
+ epot_l_y: 1.e-13
+ epot_l_z: 1.e-13
+ epot_r_x: 1.e-13
+ epot_r_y: 1.e-13
+ epot_r_z: 1.e-13
+ F_x: 1.e-13
+ F_y: 1.e-13
+ F_z: 1.e-13
  err_x: 1.e-9
  err_y: 1.e-9
  err_z: 1.e-9
@@ -38,7 +38,7 @@ testforces_FD:
 SP_QSC:
  Keys to ignore:
   - conf. number
- epot: 1.e-14
+ epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
 
@@ -78,7 +78,7 @@ geopt_SQNM:
  epot: 1.e-10
  fnrm: 1.e-11
  fmax: 1.e-11
- ndim: 1.e-14
+ ndim: 1.e-13
 
 minhopp_LJ:
  Keys to ignore:
@@ -105,7 +105,7 @@ saddle_1s_Si64Bulk:
  epot: 1.e-11
  fnrm: 1.e-11
  fmax: 1.e-11
- ndim: 1.e-14
+ ndim: 1.e-13
  curv0: 1.e-11
  curv: 1.e-11
  cosangle: 1.e-11
@@ -117,7 +117,7 @@ saddle_1s_Si64Bulk:
 SP_CENT1_bulk:
  Keys to ignore:
   - conf. number
- epot: 1.e-14
+ epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
  epot_es: 1.e-11
@@ -128,14 +128,14 @@ SP_CENT1_bulk:
 SP_CENT1_free:
  Keys to ignore:
   - conf. number
- epot: 1.e-14
+ epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
 
 SP_CENT1_slab:
  Keys to ignore:
   - conf. number
- epot: 1.e-14
+ epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
  epot_es: 1.e-11
