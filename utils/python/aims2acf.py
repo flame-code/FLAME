@@ -150,6 +150,12 @@ for iline,line in enumerate(lines):
         atoms.epot=epot_uncorrected
         continue
     #-------------------------------------------------------
+    if 'Charged system requested' in str_line:
+        qtot = float(line.split()[5].rstrip('.'))
+    elif 'Charge =' in str_line:
+        qtot = float(line.split()[2].rstrip(':'))
+        continue
+    #-------------------------------------------------------
     if 'Total atomic forces' in str_line:
         #print atoms.sat[-1]
         for iat in range(nat):
@@ -162,6 +168,7 @@ for iline,line in enumerate(lines):
     #-------------------------------------------------------
     if conf_complete:
         atoms_all.append(Atoms())
+        atoms.qtot = qtot
         atoms_all[-1]=copy.copy(atoms)
         conf_complete=False
         del atoms
