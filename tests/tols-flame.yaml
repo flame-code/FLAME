@@ -153,3 +153,9 @@ minhocao_LTB:
 minhocao_LTB_fixkpt:
  Epsilon: 1.e-11
 
+SP_PP_p3d:
+ Keys to ignore:
+  - conf. number
+ Epsilon: 1.e-11
+ epot: 1.e-13
+
