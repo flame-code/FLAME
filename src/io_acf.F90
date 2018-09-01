@@ -128,7 +128,7 @@ subroutine acf_write(file_info,atoms,atoms_all,strkey)
             epot=epot*ha2ev
             epot2=epot2*ha2ev
         endif
-            write(*,*)"externalwork2", atoms%ebattery
+            !write(*,*)"externalwork2", atoms%ebattery
         if(atoms%ebattery > 0.d0 .or. atoms%ebattery < 0.d0 ) then
             write(1358,'(a,e24.15,a10,e24.15)') 'epot=',epot ,'epot2=',epot2
         else
@@ -640,6 +640,7 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_const, only: bohr2ang, ha2ev
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
@@ -739,7 +740,11 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
     enddo !end of loop over iconf
     atoms_arr%nconf=iconf
     call atom_deallocate(atoms_t)
-    write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
+    call yaml_mapping_open('Number of configurations read',flow=.true.)
+    call yaml_map('filename',trim(filename))
+    call yaml_map('nconf',iconf)
+    call yaml_mapping_close()
+    !write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
     close(1358)
 end subroutine acf_read_new
 !*****************************************************************************************

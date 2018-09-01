@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-08-21 07:55:08.606
+ Timestamp of this run                 : 2018-09-01 22:40:22.500
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : minhocao
@@ -166,6 +166,7 @@
      alpha                             : -1.0
      ecut                              : -1.0
      ecutz                             : -1.0
+     ecut_auto                         : False
      rcut                              : -1.0
      rgcut                             : -1.0
      nsp                               : -1
@@ -297,6 +298,8 @@
    widthcut                            : 1.0
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  1, Si:  1}
+ random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
  KPT mesh set up as follows            :  [  5,  5,  5 ]
  atoms info in FIRE:
  - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -4383,3 +4386,4 @@
  minima accepeted                      :  3
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
+ CPU time: {iproc:  0, hrs:  0.826E-02, min:  0.496E+00, sec:  0.298E+02}

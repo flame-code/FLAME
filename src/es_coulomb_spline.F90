@@ -75,6 +75,7 @@ subroutine build_shortrange_spline(shortrange,spline,rcut,a)
     use mod_interface
     use mod_shortrange, only: typ_shortrange
     use mod_spline, only: typ_spline
+    use yaml_output
     implicit none
     type(typ_shortrange), intent(in):: shortrange
     type(typ_spline), intent(inout):: spline
@@ -133,7 +134,8 @@ subroutine build_shortrange_spline(shortrange,spline,rcut,a)
         !enddo
     enddo
     spline%hsp=real(hspq,8)
-    write(*,*)'hsp=',spline%hsp
+    call yaml_map('hsp',spline%hsp,fmt='(es22.14)')
+    !write(*,*)'hsp=',spline%hsp
     end associate
 end subroutine build_shortrange_spline 
             !fdspq(0:3,0:nsp)=fdspq(0:3,0:nsp)-a3*fdspq_3(0:3,0:nsp)
@@ -144,6 +146,7 @@ end subroutine build_shortrange_spline
 subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
     use mod_interface
     use mod_spline, only: typ_spline
+    use yaml_output
     implicit none
     external:: cal_f_fd_fdd
     real(16), intent(in):: rcutq !first and second cutoff for the function
@@ -155,7 +158,9 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
     !local variables
     !following variables are quadruple precisions in order 
     !to have better accuracy.
-    real(16):: pi, onethird, fsp_int, del
+    real(16):: pi, onethird, fsp_int
+    real(16):: del !shift to make short range part to zero, it is not the difference
+    !between spline and the value with original function
     real(16):: r, fd0, fsd0, fd1, fsd1
     real(16):: f_tmp, fd_tmp, fsd_tmp, f_rcut
     integer:: isp
@@ -191,7 +196,8 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
     !the value of the potential at rcut should be correct
     call cal_f_fd_fdd(rcutq,aq,hspq,f_rcut,fd_tmp,fsd_tmp)
     del=f_rcut-fsp_int
-    write(*,*)'delta=',del
+    call yaml_map('delta in build_spline',real(del,kind=8),fmt='(es22.14)')
+    !write(*,*)'delta=',del
     do isp=0,nsp-1
         fspq(0,isp)=fspq(0,isp)+del
     enddo

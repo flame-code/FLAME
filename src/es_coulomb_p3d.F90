@@ -5,6 +5,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
@@ -72,11 +73,15 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     call cpu_time(time(6))
     !atoms%epot=epotlong+epotshort-poisson%epotfixed+epotplane
     atoms%epot=epotlong-poisson%epotfixed+epotplane
-    write(*,*) '-----------------------------------------------------------'
-    write(*,'(a50,e32.15)') 'epotfixed',poisson%epotfixed
-    write(*,'(a50,e32.15)') 'epotlong',epotlong
-    write(*,'(a50,e32.15)') 'epotplane',epotplane
-    write(*,'(a50,e32.15)') 'epottotal',atoms%epot
+    call yaml_map('epotfixed',poisson%epotfixed,fmt='(es23.15))')
+    call yaml_map('epotlong',epotlong,fmt='(es23.15))')
+    call yaml_map('epotplane',epotplane,fmt='(es23.15))')
+    call yaml_map('epottotal',atoms%epot,fmt='(es23.15))')
+    !write(*,*) '-----------------------------------------------------------'
+    !write(*,'(a50,e32.15)') 'epotfixed',poisson%epotfixed
+    !write(*,'(a50,e32.15)') 'epotlong',epotlong
+    !write(*,'(a50,e32.15)') 'epotplane',epotplane
+    !write(*,'(a50,e32.15)') 'epottotal',atoms%epot
     !write(*,*) '-----------------------------------------------------------'
 !    write(*,'(a50,f32.15)') 'Time for put_gto_sym_ortho ',time(2)-time(1)
 !    write(*,'(a50,f32.15)') 'Time for long range ', time(3)-time(2)

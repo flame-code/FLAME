@@ -5,6 +5,7 @@ Default tolerances:
 Keys to ignore:
  - Code logo
  - Timestamp of this run
+ - CPU time
 
 Patterns to ignore:
  - Timestamp
@@ -135,6 +136,7 @@ SP_CENT1_free:
 SP_CENT1_slab:
  Keys to ignore:
   - conf. number
+ Epsilon: 1.e-13
  epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
@@ -142,6 +144,7 @@ SP_CENT1_slab:
  de: 1.e-11
  gnrm: 1.e-11
  stepsize: 1.e-11
+ inside get_beta_grid: 1.e-10
 
 minhocao_CENT1:
  Epsilon: 1.e-10
@@ -156,8 +159,11 @@ minhocao_LTB_fixkpt:
 SP_PP_p3d:
  Keys to ignore:
   - conf. number
+  - Status of the memory at finalization
+  - Memory Consumption Report
+  - Remaining Memory (B)
  Epsilon: 1.e-11
- epot: 1.e-13
+ epot: 1.e-11
 
 SP_PP_p3dbias:
  Keys to ignore:
@@ -177,5 +183,6 @@ geopt_CENT1_slab_fixed_efield:
  fnrm: 1.e-11
  fmax: 1.e-11
  ndim: 1.e-13
+ inside get_beta_grid: 1.e-10
  epot_es: 1.e-11
 

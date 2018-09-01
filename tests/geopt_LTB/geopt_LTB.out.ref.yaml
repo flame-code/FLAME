@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-08-17 13:19:15.529
+ Timestamp of this run                 : 2018-09-01 22:38:43.544
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -163,6 +163,7 @@
      alpha                             : -1.0
      ecut                              : -1.0
      ecutz                             : -1.0
+     ecut_auto                         : False
      rcut                              : -1.0
      rgcut                             : -1.0
      nsp                               : -1
@@ -294,6 +295,9 @@
    widthcut                            : 1.0
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  1, Si:  1}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
  optimization parameters:
    method                              : SD
    precaution                          : high
@@ -450,3 +454,5 @@
  task geopt:
    converged                           :  Yes
    total energy and force evaluations  :  47
+ CPU time: {iproc:  0, hrs:  0.544E-04, min:  0.327E-02, sec:  0.196E+00}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}

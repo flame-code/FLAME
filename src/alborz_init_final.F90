@@ -125,9 +125,15 @@ subroutine alborz_final(parini,file_ini)
         deallocate(file_ini%file_lines,file_ini%stat_line_is_read) !,comment_line)
     endif
     call cpu_time(time_end)
-    write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(hrs)',iproc,(time_end-time_start)/3600.d0
-    write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(min)',iproc,(time_end-time_start)/60.d0
-    write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(sec)',iproc,(time_end-time_start)
+    call yaml_mapping_open('CPU time',flow=.true.)
+    call yaml_map('iproc',iproc,fmt='(i4)')
+    call yaml_map('hrs',(time_end-time_start)/3600.d0,fmt='(e15.3)')
+    call yaml_map('min',(time_end-time_start)/60.d0,fmt='(e15.3)')
+    call yaml_map('sec',(time_end-time_start),fmt='(e15.3)')
+    call yaml_mapping_close()
+    !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(hrs)',iproc,(time_end-time_start)/3600.d0
+    !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(min)',iproc,(time_end-time_start)/60.d0
+    !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(sec)',iproc,(time_end-time_start)
     if(trim(parini%task)/='minhocao') then
         call finalizeprocessors
     endif
@@ -145,6 +151,7 @@ subroutine init_random_seed(parini)
     use mod_interface
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_parini, only: typ_parini
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -178,21 +185,33 @@ subroutine init_random_seed(parini)
 #endif
     iseed(1:nseed)=iseed(1:nseed)+iproc*11
     call random_seed(put=iseed)
+    call yaml_mapping_open('random number generator',flow=.true.)
     if(nseed==1) then
-        write(*,'(a,i4,i12)') 'iproc,seed ',iproc,iseed(1)
+        call yaml_map('iproc',iproc,fmt='(i4)')
+        call yaml_map('seed1',iseed(1),fmt='(i12)')
+        !write(*,'(a,i4,i12)') 'iproc,seed ',iproc,iseed(1)
     else if(nseed==2) then
-        write(*,'(a,i4,2i12)') 'iproc,seed ',iproc,iseed(1),iseed(2)
+        call yaml_map('iproc',iproc,fmt='(i4)')
+        call yaml_map('seed1',iseed(1),fmt='(i12)')
+        call yaml_map('seed2',iseed(2),fmt='(i12)')
+        !write(*,'(a,i4,2i12)') 'iproc,seed ',iproc,iseed(1),iseed(2)
     else if(nseed==3) then
-        write(*,'(a,i4,3i12)') 'iproc,seed ',iproc,iseed(1),iseed(2),iseed(3)
+        call yaml_map('iproc',iproc,fmt='(i4)')
+        call yaml_map('seed1',iseed(1),fmt='(i12)')
+        call yaml_map('seed2',iseed(2),fmt='(i12)')
+        call yaml_map('seed3',iseed(3),fmt='(i12)')
+        !write(*,'(a,i4,3i12)') 'iproc,seed ',iproc,iseed(1),iseed(2),iseed(3)
     else
         stop 'ERROR: seed size greater than 3 not considered in Alborz.'
     endif
+    call yaml_mapping_close()
     deallocate(iseed)
 end subroutine init_random_seed
 !*****************************************************************************************
 subroutine set_atomc_types_info(parini)
     use mod_interface
     use mod_parini, only: typ_parini
+    use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables
@@ -237,10 +256,16 @@ subroutine set_atomc_types_info(parini)
         if(parini%iatomnum(i)==-1) stop 'ERROR: atomic number not set properly.'
     enddo
     parini%ntypat=ntypat
-    write(*,'(a,i2)') 'ntypat ',parini%ntypat
+    call yaml_mapping_open('system info',flow=.true.)
+    call yaml_map('ntypat',parini%ntypat,fmt='(i2)')
     do i=1,ntypat
-        write(*,'(a5,i2,a5)') 'type ',parini%ltypat(i),trim(parini%stypat(i))
+        call yaml_map(trim(parini%stypat(i)),parini%ltypat(i),fmt='(i2)')
     enddo
+    call yaml_mapping_close()
+    !write(*,'(a,i2)') 'ntypat ',parini%ntypat
+    !do i=1,ntypat
+    !    write(*,'(a5,i2,a5)') 'type ',parini%ltypat(i),trim(parini%stypat(i))
+    !enddo
 end subroutine set_atomc_types_info
 !*****************************************************************************************
 subroutine flm_print_logo(parini)

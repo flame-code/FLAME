@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-08-30 00:01:11.443
+ Timestamp of this run                 : 2018-09-01 22:15:16.913
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -163,6 +163,7 @@
      alpha                             : 2.26767135342053
      ecut                              : 10.071024899070775
      ecutz                             : 19.739208802178716
+     ecut_auto                         : False
      rcut                              : 15.684726861158667
      rgcut                             : 9.0
      nsp                               : 10000
@@ -294,8 +295,27 @@
    widthcut                            : 1.0
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  2, Na:  1, Cl:  2}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ Number of configurations read: {filename: posinp.acf, nconf:  1}
+ grid info: {ngpx:  46, ngpy:  46, ngpz:  121, ngptot:  256036, nbgpx:  31, nbgpy:  31, 
+            nbgpz:  42,  hxx:  0.6901608467,      hyx:  0.0000000000, hzx:  0.0000000000, 
+              hxy:  0.0000000000,   hyy:  0.6901608467,           hzy:  0.0000000000, 
+              hxz:  0.0000000000,   hyz:  0.0000000000,           hzz:  0.5038923482}
+ delta in build_spline                 : -6.48148061843554E-01
+ hsp                                   :  1.56847268611587E-03
  epot of all configurations:
- - conf. number                        :  000001
+ - inside get_beta_grid                :  0.25742190731632512E+02
+   epotfixed                           :  1.266666977363207E+01
+   epotlong                            :  2.077387299641451E+00
+   epotplane                           : -1.260813575967193E-02
+   epottotal                           : -1.060189060975029E+01
+   hsp in shortenergy                  :  6.37562903614458E+02
+   epotshort                           : -7.28556569600351E-01
+   conf. number                        :  000001
    epot                                : -0.113304471793506E+02
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
+ CPU time: {iproc:  0, hrs:  0.711E-04, min:  0.427E-02, sec:  0.256E+00}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}

@@ -94,6 +94,7 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     use mod_linked_lists, only: typ_linked_lists
     use mod_spline, only: typ_spline
     use mod_atoms, only: typ_atoms
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_shortrange), intent(in):: shortrange
@@ -112,7 +113,8 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     integer::itypinter
     pi=4.d0*atan(1.d0)
     hspinv=1.d0/spline%hsp
-    write(*,*) 'inside shortenergy  hsp=',spline%hsp
+    call yaml_map('hsp in shortenergy',hspinv,fmt='(es22.14)')
+    !write(*,*) 'inside shortenergy  hsp=',spline%hsp
     call linkedlists_init(parini,atoms,cell,linked_lists)
     !-------------------------------------------------------
     epot_short=0.d0

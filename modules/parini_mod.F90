@@ -170,6 +170,7 @@ module mod_parini
         character(256):: bias_type='no'
         character(50):: psolver='unknown'
         logical:: cal_polar= .false.
+        logical:: ecut_auto=.false.
         !-----------------------------------------------------------------------
         !parameters of [misc]
         logical:: avail_misc=.false.

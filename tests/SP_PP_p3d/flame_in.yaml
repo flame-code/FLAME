@@ -7,11 +7,11 @@
    ewald:
      psolver: p3d
      cell_ortho: True
-     ecut: 5.52754141862141
-     ecutz: 15.354281718392803
-     alpha: 2.26767135342053
-     rcut: 15.684726861158667
-     rgcut: 9.0
+     ecut: 10.0
+     ecutz: 12.0
+     alpha: 2.0
+     rcut: 15.0
+     rgcut: 6.0
      nsp: 10000
      ewald: True
  single_point:

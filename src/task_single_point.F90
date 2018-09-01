@@ -34,12 +34,14 @@ subroutine single_point_task(parini)
     if(trim(parini%frmt_single_point)/='unknown') then
         file_info%frmt=trim(parini%frmt_single_point)
     endif
-    call yaml_sequence_open('epot of all configurations')
     do iconf=1,atoms_arr%nconf
-        call yaml_sequence(advance='no')
         if(trim(potential)/='netsock' .or. iconf==1) then 
             call init_potential_forces(parini,atoms_arr%atoms(iconf))
         endif
+        if(iconf==1) then 
+            call yaml_sequence_open('epot of all configurations')
+        endif
+        call yaml_sequence(advance='no')
         call cal_potential_forces(parini,atoms_arr%atoms(iconf))
         !call atoms_all%fatall(1:3,1:atoms_all%atoms%nat,iconf)=atoms_all%atoms%fat(1:3,1:atoms_all%atoms%nat)
         if(iconf==1) then
@@ -67,6 +69,9 @@ subroutine single_point_task(parini)
         endif
         if (iconf==2)  file_info%file_position='append'
         call acf_write(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout') !to be fixed later by atoms_arr
+    enddo
+    do iconf=1,atoms_arr%nconf
+        call atom_deallocate(atoms_arr%atoms(iconf))
     enddo
     call yaml_sequence_close()
     !call atom_all_deallocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.)

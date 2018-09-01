@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 12:14:35.981
+ Timestamp of this run                 : 2018-09-01 22:20:39.872
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -163,6 +163,7 @@
      alpha                             : 2.0
      ecut                              : 2.5177562247676937
      ecutz                             : 3.4269459726004716
+     ecut_auto                         : False
      rcut                              : -1.0
      rgcut                             : 6.0
      nsp                               : -1
@@ -294,6 +295,9 @@
    widthcut                            : 1.0
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  2, F:  1, Ca:  2}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ USER INPUT FILE
  main:
    nodes: [3, 3]
@@ -1069,1009 +1073,1530 @@
  - -7.957833452837898E-02
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  SQNM optimization iterations:
- - Charge equilibration process:
-   - cep: {iter:  0, epot_es:  9.0306284724401E+00, de:  0.00E+00, gnrm:  1.063E-01, 
+ - grid info: {ngpx:  22, ngpy:  20, ngpz:  28, ngptot:  12320, nbgpx:  11, nbgpy:  11, 
+              nbgpz:  10,  hxx:  1.3312821650,     hyx:  0.0000000000, hzx:  0.0000000000, 
+                hxy:  0.0000000000,   hyy:  1.2686526126,         hzy:  0.0000000000, 
+                hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  1.3498043770}
+   Charge equilibration process:
+   - inside get_beta_grid              :  0.62620060569070590E+01
+     cep: {iter:  0, epot_es:  9.0306284724401E+00, de:  0.00E+00, gnrm:  1.063E-01, 
        stepsize:  1.000E-01}
-   - cep: {iter:  1, epot_es:  9.0463214220246E+00, de:  1.57E-02, gnrm:  1.015E-01, 
+   - inside get_beta_grid              :  0.60696591722236777E+01
+     cep: {iter:  1, epot_es:  9.0463214220246E+00, de:  1.57E-02, gnrm:  1.015E-01, 
        stepsize:  2.000E-01}
-   - cep: {iter:  2, epot_es:  9.0767048922861E+00, de:  3.04E-02, gnrm:  9.236E-02, 
+   - inside get_beta_grid              :  0.57054589346439109E+01
+     cep: {iter:  2, epot_es:  9.0767048922861E+00, de:  3.04E-02, gnrm:  9.236E-02, 
        stepsize:  4.000E-01}
-   - cep: {iter:  3, epot_es:  9.1335250733442E+00, de:  5.68E-02, gnrm:  7.590E-02, 
+   - inside get_beta_grid              :  0.50546640863839931E+01
+     cep: {iter:  3, epot_es:  9.1335250733442E+00, de:  5.68E-02, gnrm:  7.590E-02, 
        stepsize:  8.000E-01}
-   - cep: {iter:  4, epot_es:  9.1949205224480E+00, de:  6.14E-02, gnrm:  5.927E-02, 
+   - inside get_beta_grid              :  0.44145063892017156E+01
+     cep: {iter:  4, epot_es:  9.1949205224480E+00, de:  6.14E-02, gnrm:  5.927E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  5, epot_es:  9.2456706512500E+00, de:  5.08E-02, gnrm:  4.654E-02, 
+   - inside get_beta_grid              :  0.39448341346675715E+01
+     cep: {iter:  5, epot_es:  9.2456706512500E+00, de:  5.08E-02, gnrm:  4.654E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  6, epot_es:  9.2875070527772E+00, de:  4.18E-02, gnrm:  3.673E-02, 
+   - inside get_beta_grid              :  0.36002255827266785E+01
+     cep: {iter:  6, epot_es:  9.2875070527772E+00, de:  4.18E-02, gnrm:  3.673E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  7, epot_es:  9.3219277850449E+00, de:  3.44E-02, gnrm:  2.913E-02, 
+   - inside get_beta_grid              :  0.33473639002373852E+01
+     cep: {iter:  7, epot_es:  9.3219277850449E+00, de:  3.44E-02, gnrm:  2.913E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  8, epot_es:  9.3502065766547E+00, de:  2.83E-02, gnrm:  2.321E-02, 
+   - inside get_beta_grid              :  0.31618105803659473E+01
+     cep: {iter:  8, epot_es:  9.3502065766547E+00, de:  2.83E-02, gnrm:  2.321E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  9, epot_es:  9.3734143454023E+00, de:  2.32E-02, gnrm:  1.856E-02, 
+   - inside get_beta_grid              :  0.30256390252865404E+01
+     cep: {iter:  9, epot_es:  9.3734143454023E+00, de:  2.32E-02, gnrm:  1.856E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  10, epot_es:  9.3924447619995E+00, de:  1.90E-02, gnrm:  1.489E-02, 
+   - inside get_beta_grid              :  0.29256989633253223E+01
+     cep: {iter:  10, epot_es:  9.3924447619995E+00, de:  1.90E-02, gnrm:  1.489E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  11, epot_es:  9.4080397446274E+00, de:  1.56E-02, gnrm:  1.199E-02, 
+   - inside get_beta_grid              :  0.28523435170655635E+01
+     cep: {iter:  11, epot_es:  9.4080397446274E+00, de:  1.56E-02, gnrm:  1.199E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  12, epot_es:  9.4208129861609E+00, de:  1.28E-02, gnrm:  9.671E-03, 
+   - inside get_beta_grid              :  0.27984955805621237E+01
+     cep: {iter:  12, epot_es:  9.4208129861609E+00, de:  1.28E-02, gnrm:  9.671E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  13, epot_es:  9.4312707798296E+00, de:  1.05E-02, gnrm:  7.820E-03, 
+   - inside get_beta_grid              :  0.27589630490616490E+01
+     cep: {iter:  13, epot_es:  9.4312707798296E+00, de:  1.05E-02, gnrm:  7.820E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  14, epot_es:  9.4398300030155E+00, de:  8.56E-03, gnrm:  6.335E-03, 
+   - inside get_beta_grid              :  0.27299365615710607E+01
+     cep: {iter:  14, epot_es:  9.4398300030155E+00, de:  8.56E-03, gnrm:  6.335E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  15, epot_es:  9.4468334058214E+00, de:  7.00E-03, gnrm:  5.139E-03, 
+   - inside get_beta_grid              :  0.27086211032942420E+01
+     cep: {iter:  15, epot_es:  9.4468334058214E+00, de:  7.00E-03, gnrm:  5.139E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  16, epot_es:  9.4525624744671E+00, de:  5.73E-03, gnrm:  4.175E-03, 
+   - inside get_beta_grid              :  0.26929657859047573E+01
+     cep: {iter:  16, epot_es:  9.4525624744671E+00, de:  5.73E-03, gnrm:  4.175E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  17, epot_es:  9.4572481777172E+00, de:  4.69E-03, gnrm:  3.395E-03, 
+   - inside get_beta_grid              :  0.26814656362486304E+01
+     cep: {iter:  17, epot_es:  9.4572481777172E+00, de:  4.69E-03, gnrm:  3.395E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  18, epot_es:  9.4610798999292E+00, de:  3.83E-03, gnrm:  2.763E-03, 
+   - inside get_beta_grid              :  0.26730162004818303E+01
+     cep: {iter:  18, epot_es:  9.4610798999292E+00, de:  3.83E-03, gnrm:  2.763E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  19, epot_es:  9.4642128398698E+00, de:  3.13E-03, gnrm:  2.250E-03, 
+   - inside get_beta_grid              :  0.26668068870636144E+01
+     cep: {iter:  19, epot_es:  9.4642128398698E+00, de:  3.13E-03, gnrm:  2.250E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  20, epot_es:  9.4667741223748E+00, de:  2.56E-03, gnrm:  1.833E-03, 
+   - inside get_beta_grid              :  0.26622427243898548E+01
+     cep: {iter:  20, epot_es:  9.4667741223748E+00, de:  2.56E-03, gnrm:  1.833E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  21, epot_es:  9.4688678365254E+00, de:  2.09E-03, gnrm:  1.495E-03, 
+   - inside get_beta_grid              :  0.26588869608434988E+01
+     cep: {iter:  21, epot_es:  9.4688678365254E+00, de:  2.09E-03, gnrm:  1.495E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  22, epot_es:  9.4705791823809E+00, de:  1.71E-03, gnrm:  1.219E-03, 
+   - inside get_beta_grid              :  0.26564189533684437E+01
+     cep: {iter:  22, epot_es:  9.4705791823809E+00, de:  1.71E-03, gnrm:  1.219E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  23, epot_es:  9.4719778797868E+00, de:  1.40E-03, gnrm:  9.944E-04, 
+   - inside get_beta_grid              :  0.26546032709621814E+01
+     cep: {iter:  23, epot_es:  9.4719778797868E+00, de:  1.40E-03, gnrm:  9.944E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  24, epot_es:  9.4731209678144E+00, de:  1.14E-03, gnrm:  8.114E-04, 
+   - inside get_beta_grid              :  0.26532670251633843E+01
+     cep: {iter:  24, epot_es:  9.4731209678144E+00, de:  1.14E-03, gnrm:  8.114E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  25, epot_es:  9.4740551019260E+00, de:  9.34E-04, gnrm:  6.622E-04, 
+   - inside get_beta_grid              :  0.26522832358839832E+01
+     cep: {iter:  25, epot_es:  9.4740551019260E+00, de:  9.34E-04, gnrm:  6.622E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  26, epot_es:  9.4748184377502E+00, de:  7.63E-04, gnrm:  5.405E-04, 
+   - inside get_beta_grid              :  0.26515586249767664E+01
+     cep: {iter:  26, epot_es:  9.4748184377502E+00, de:  7.63E-04, gnrm:  5.405E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  27, epot_es:  9.4754421750167E+00, de:  6.24E-04, gnrm:  4.413E-04, 
+   - inside get_beta_grid              :  0.26510246582812194E+01
+     cep: {iter:  27, epot_es:  9.4754421750167E+00, de:  6.24E-04, gnrm:  4.413E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  28, epot_es:  9.4759518223847E+00, de:  5.10E-04, gnrm:  3.603E-04, 
+   - inside get_beta_grid              :  0.26506309710953921E+01
+     cep: {iter:  28, epot_es:  9.4759518223847E+00, de:  5.10E-04, gnrm:  3.603E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  29, epot_es:  9.4763682332220E+00, de:  4.16E-04, gnrm:  2.942E-04, 
+   - inside get_beta_grid              :  0.26503405424791961E+01
+     cep: {iter:  29, epot_es:  9.4763682332220E+00, de:  4.16E-04, gnrm:  2.942E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  30, epot_es:  9.4767084535352E+00, de:  3.40E-04, gnrm:  2.402E-04, 
+   - inside get_beta_grid              :  0.26501261528323607E+01
+     cep: {iter:  30, epot_es:  9.4767084535352E+00, de:  3.40E-04, gnrm:  2.402E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  31, epot_es:  9.4769864159269E+00, de:  2.78E-04, gnrm:  1.962E-04, 
+   - inside get_beta_grid              :  0.26499677832030364E+01
+     cep: {iter:  31, epot_es:  9.4769864159269E+00, de:  2.78E-04, gnrm:  1.962E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  32, epot_es:  9.4772135074020E+00, de:  2.27E-04, gnrm:  1.602E-04, 
+   - inside get_beta_grid              :  0.26498507057290843E+01
+     cep: {iter:  32, epot_es:  9.4772135074020E+00, de:  2.27E-04, gnrm:  1.602E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  33, epot_es:  9.4773990338596E+00, de:  1.86E-04, gnrm:  1.308E-04, 
+   - inside get_beta_grid              :  0.26497640813489292E+01
+     cep: {iter:  33, epot_es:  9.4773990338596E+00, de:  1.86E-04, gnrm:  1.308E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  34, epot_es:  9.4775506000006E+00, de:  1.52E-04, gnrm:  1.069E-04, 
+   - inside get_beta_grid              :  0.26496999298679795E+01
+     cep: {iter:  34, epot_es:  9.4775506000006E+00, de:  1.52E-04, gnrm:  1.069E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  35, epot_es:  9.4776744200049E+00, de:  1.24E-04, gnrm:  8.728E-05, 
+   - inside get_beta_grid              :  0.26496523733759405E+01
+     cep: {iter:  35, epot_es:  9.4776744200049E+00, de:  1.24E-04, gnrm:  8.728E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  36, epot_es:  9.4777755715608E+00, de:  1.01E-04, gnrm:  7.128E-05, 
+   - inside get_beta_grid              :  0.26496170803592052E+01
+     cep: {iter:  36, epot_es:  9.4777755715608E+00, de:  1.01E-04, gnrm:  7.128E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  37, epot_es:  9.4778582035487E+00, de:  8.26E-05, gnrm:  5.822E-05, 
+   - inside get_beta_grid              :  0.26495908571851938E+01
+     cep: {iter:  37, epot_es:  9.4778582035487E+00, de:  8.26E-05, gnrm:  5.822E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  38, epot_es:  9.4779257058195E+00, de:  6.75E-05, gnrm:  4.755E-05, 
+   - inside get_beta_grid              :  0.26495713478172824E+01
+     cep: {iter:  38, epot_es:  9.4779257058195E+00, de:  6.75E-05, gnrm:  4.755E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  39, epot_es:  9.4779808479702E+00, de:  5.51E-05, gnrm:  3.884E-05, 
+   - inside get_beta_grid              :  0.26495568130281795E+01
+     cep: {iter:  39, epot_es:  9.4779808479702E+00, de:  5.51E-05, gnrm:  3.884E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  40, epot_es:  9.4780258927719E+00, de:  4.50E-05, gnrm:  3.173E-05, 
+   - inside get_beta_grid              :  0.26495459680185633E+01
+     cep: {iter:  40, epot_es:  9.4780258927719E+00, de:  4.50E-05, gnrm:  3.173E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  41, epot_es:  9.4780626888713E+00, de:  3.68E-05, gnrm:  2.591E-05, 
+   - inside get_beta_grid              :  0.26495378629523749E+01
+     cep: {iter:  41, epot_es:  9.4780626888713E+00, de:  3.68E-05, gnrm:  2.591E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  42, epot_es:  9.4780927465493E+00, de:  3.01E-05, gnrm:  2.117E-05, 
+   - inside get_beta_grid              :  0.26495317950350454E+01
+     cep: {iter:  42, epot_es:  9.4780927465493E+00, de:  3.01E-05, gnrm:  2.117E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  43, epot_es:  9.4781172996294E+00, de:  2.46E-05, gnrm:  1.729E-05, 
+   - inside get_beta_grid              :  0.26495272437801036E+01
+     cep: {iter:  43, epot_es:  9.4781172996294E+00, de:  2.46E-05, gnrm:  1.729E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  44, epot_es:  9.4781373560655E+00, de:  2.01E-05, gnrm:  1.412E-05, 
+   - inside get_beta_grid              :  0.26495238233295537E+01
+     cep: {iter:  44, epot_es:  9.4781373560655E+00, de:  2.01E-05, gnrm:  1.412E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  45, epot_es:  9.4781537392786E+00, de:  1.64E-05, gnrm:  1.153E-05, 
+   - inside get_beta_grid              :  0.26495212473152687E+01
+     cep: {iter:  45, epot_es:  9.4781537392786E+00, de:  1.64E-05, gnrm:  1.153E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  46, epot_es:  9.4781671219306E+00, de:  1.34E-05, gnrm:  9.421E-06, 
+   - inside get_beta_grid              :  0.26495193029536153E+01
+     cep: {iter:  46, epot_es:  9.4781671219306E+00, de:  1.34E-05, gnrm:  9.421E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  47, epot_es:  9.4781780535198E+00, de:  1.09E-05, gnrm:  7.695E-06, 
+   - inside get_beta_grid              :  0.26495178319315502E+01
+     cep: {iter:  47, epot_es:  9.4781780535198E+00, de:  1.09E-05, gnrm:  7.695E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  48, epot_es:  9.4781869829276E+00, de:  8.93E-06, gnrm:  6.286E-06, 
+   - inside get_beta_grid              :  0.26495167162976268E+01
+     cep: {iter:  48, epot_es:  9.4781869829276E+00, de:  8.93E-06, gnrm:  6.286E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  49, epot_es:  9.4781942768379E+00, de:  7.29E-06, gnrm:  5.134E-06, 
+   - inside get_beta_grid              :  0.26495158680384514E+01
+     cep: {iter:  49, epot_es:  9.4781942768379E+00, de:  7.29E-06, gnrm:  5.134E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  50, epot_es:  9.4782002347866E+00, de:  5.96E-06, gnrm:  4.194E-06, 
+   - inside get_beta_grid              :  0.26495152213732927E+01
+     cep: {iter:  50, epot_es:  9.4782002347866E+00, de:  5.96E-06, gnrm:  4.194E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  51, epot_es:  9.4782051014559E+00, de:  4.87E-06, gnrm:  3.425E-06, 
+   - inside get_beta_grid              :  0.26495147270517556E+01
+     cep: {iter:  51, epot_es:  9.4782051014559E+00, de:  4.87E-06, gnrm:  3.425E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  52, epot_es:  9.4782090767179E+00, de:  3.98E-06, gnrm:  2.798E-06, 
+   - inside get_beta_grid              :  0.26495143481308698E+01
+     cep: {iter:  52, epot_es:  9.4782090767179E+00, de:  3.98E-06, gnrm:  2.798E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  53, epot_es:  9.4782123238404E+00, de:  3.25E-06, gnrm:  2.285E-06, 
+   - inside get_beta_grid              :  0.26495140568450104E+01
+     cep: {iter:  53, epot_es:  9.4782123238404E+00, de:  3.25E-06, gnrm:  2.285E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  54, epot_es:  9.4782149761893E+00, de:  2.65E-06, gnrm:  1.867E-06, 
+   - inside get_beta_grid              :  0.26495138322812868E+01
+     cep: {iter:  54, epot_es:  9.4782149761893E+00, de:  2.65E-06, gnrm:  1.867E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  55, epot_es:  9.4782171427050E+00, de:  2.17E-06, gnrm:  1.525E-06, 
+   - inside get_beta_grid              :  0.26495136586539156E+01
+     cep: {iter:  55, epot_es:  9.4782171427050E+00, de:  2.17E-06, gnrm:  1.525E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  56, epot_es:  9.4782189123749E+00, de:  1.77E-06, gnrm:  1.245E-06, 
+   - inside get_beta_grid              :  0.26495135240189529E+01
+     cep: {iter:  56, epot_es:  9.4782189123749E+00, de:  1.77E-06, gnrm:  1.245E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  57, epot_es:  9.4782203578880E+00, de:  1.45E-06, gnrm:  1.017E-06, 
+   - inside get_beta_grid              :  0.26495134193170973E+01
+     cep: {iter:  57, epot_es:  9.4782203578880E+00, de:  1.45E-06, gnrm:  1.017E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  58, epot_es:  9.4782215386197E+00, de:  1.18E-06, gnrm:  8.310E-07, 
+   - inside get_beta_grid              :  0.26495133376598163E+01
+     cep: {iter:  58, epot_es:  9.4782215386197E+00, de:  1.18E-06, gnrm:  8.310E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  59, epot_es:  9.4782225030700E+00, de:  9.64E-07, gnrm:  6.787E-07, 
+   - inside get_beta_grid              :  0.26495132737950149E+01
+     cep: {iter:  59, epot_es:  9.4782225030700E+00, de:  9.64E-07, gnrm:  6.787E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  60, epot_es:  9.4782232908556E+00, de:  7.88E-07, gnrm:  5.544E-07, 
+   - inside get_beta_grid              :  0.26495132237076051E+01
+     cep: {iter:  60, epot_es:  9.4782232908556E+00, de:  7.88E-07, gnrm:  5.544E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  61, epot_es:  9.4782239343367E+00, de:  6.43E-07, gnrm:  4.528E-07, 
+   - inside get_beta_grid              :  0.26495131843194288E+01
+     cep: {iter:  61, epot_es:  9.4782239343367E+00, de:  6.43E-07, gnrm:  4.528E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  62, epot_es:  9.4782244599461E+00, de:  5.26E-07, gnrm:  3.699E-07, 
+   - inside get_beta_grid              :  0.26495131532645591E+01
+     cep: {iter:  62, epot_es:  9.4782244599461E+00, de:  5.26E-07, gnrm:  3.699E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  63, epot_es:  9.4782248892751E+00, de:  4.29E-07, gnrm:  3.021E-07, 
+   - inside get_beta_grid              :  0.26495131287179894E+01
+     cep: {iter:  63, epot_es:  9.4782248892751E+00, de:  4.29E-07, gnrm:  3.021E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  64, epot_es:  9.4782252399598E+00, de:  3.51E-07, gnrm:  2.468E-07, 
+   - inside get_beta_grid              :  0.26495131092691753E+01
+     cep: {iter:  64, epot_es:  9.4782252399598E+00, de:  3.51E-07, gnrm:  2.468E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  65, epot_es:  9.4782255264062E+00, de:  2.86E-07, gnrm:  2.016E-07, 
+   - inside get_beta_grid              :  0.26495130938238658E+01
+     cep: {iter:  65, epot_es:  9.4782255264062E+00, de:  2.86E-07, gnrm:  2.016E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  66, epot_es:  9.4782257603812E+00, de:  2.34E-07, gnrm:  1.647E-07, 
+   - inside get_beta_grid              :  0.26495130815310719E+01
+     cep: {iter:  66, epot_es:  9.4782257603812E+00, de:  2.34E-07, gnrm:  1.647E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  67, epot_es:  9.4782259514965E+00, de:  1.91E-07, gnrm:  1.345E-07, 
+   - inside get_beta_grid              :  0.26495130717270494E+01
+     cep: {iter:  67, epot_es:  9.4782259514965E+00, de:  1.91E-07, gnrm:  1.345E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  68, epot_es:  9.4782261076031E+00, de:  1.56E-07, gnrm:  1.099E-07, 
+   - inside get_beta_grid              :  0.26495130638929818E+01
+     cep: {iter:  68, epot_es:  9.4782261076031E+00, de:  1.56E-07, gnrm:  1.099E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  69, epot_es:  9.4782262351139E+00, de:  1.28E-07, gnrm:  8.973E-08, 
+   - inside get_beta_grid              :  0.26495130576213990E+01
+     cep: {iter:  69, epot_es:  9.4782262351139E+00, de:  1.28E-07, gnrm:  8.973E-08, 
        stepsize:  1.000E+00}
    CEP: {iter:  69, epot_es:  9.4782262351139E+00, de:  1.28E-07, gnrm:  8.973E-08, 
      stepsize:  1.000E+00}
+   inside get_beta_grid                :  0.26495130576213990E+01
+   grid info: {ngpx:  22, ngpy:  20, ngpz:  28, ngptot:  12320, nbgpx:  11, nbgpy:  11, 
+              nbgpz:  10,  hxx:  1.3312821650,     hyx:  0.0000000000, hzx:  0.0000000000, 
+                hxy:  0.0000000000,   hyy:  1.2686526126,         hzy:  0.0000000000, 
+                hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  1.3498043770}
    Charge equilibration process:
-   - cep: {iter:  0, epot_es:  9.0305384719439E+00, de:  0.00E+00, gnrm:  1.053E-01, 
+   - inside get_beta_grid              :  0.60028964113332055E+01
+     cep: {iter:  0, epot_es:  9.0305384719439E+00, de:  0.00E+00, gnrm:  1.053E-01, 
        stepsize:  1.000E-01}
-   - cep: {iter:  1, epot_es:  9.0462769555358E+00, de:  1.57E-02, gnrm:  1.006E-01, 
+   - inside get_beta_grid              :  0.58138298527120282E+01
+     cep: {iter:  1, epot_es:  9.0462769555358E+00, de:  1.57E-02, gnrm:  1.006E-01, 
        stepsize:  2.000E-01}
-   - cep: {iter:  2, epot_es:  9.0767439256335E+00, de:  3.05E-02, gnrm:  9.154E-02, 
+   - inside get_beta_grid              :  0.54558482466189027E+01
+     cep: {iter:  2, epot_es:  9.0767439256335E+00, de:  3.05E-02, gnrm:  9.154E-02, 
        stepsize:  4.000E-01}
-   - cep: {iter:  3, epot_es:  9.1337041834517E+00, de:  5.70E-02, gnrm:  7.527E-02, 
+   - inside get_beta_grid              :  0.48161939238780880E+01
+     cep: {iter:  3, epot_es:  9.1337041834517E+00, de:  5.70E-02, gnrm:  7.527E-02, 
        stepsize:  8.000E-01}
-   - cep: {iter:  4, epot_es:  9.1952242267469E+00, de:  6.15E-02, gnrm:  5.883E-02, 
+   - inside get_beta_grid              :  0.41870581606232200E+01
+     cep: {iter:  4, epot_es:  9.1952242267469E+00, de:  6.15E-02, gnrm:  5.883E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  5, epot_es:  9.2460556631860E+00, de:  5.08E-02, gnrm:  4.623E-02, 
+   - inside get_beta_grid              :  0.37255353150052288E+01
+     cep: {iter:  5, epot_es:  9.2460556631860E+00, de:  5.08E-02, gnrm:  4.623E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  6, epot_es:  9.2879449953940E+00, de:  4.19E-02, gnrm:  3.651E-02, 
+   - inside get_beta_grid              :  0.33869526167983737E+01
+     cep: {iter:  6, epot_es:  9.2879449953940E+00, de:  4.19E-02, gnrm:  3.651E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  7, epot_es:  9.3223998783245E+00, de:  3.45E-02, gnrm:  2.898E-02, 
+   - inside get_beta_grid              :  0.31385468859406895E+01
+     cep: {iter:  7, epot_es:  9.3223998783245E+00, de:  3.45E-02, gnrm:  2.898E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  8, epot_es:  9.3507003205493E+00, de:  2.83E-02, gnrm:  2.310E-02, 
+   - inside get_beta_grid              :  0.29562888852912339E+01
+     cep: {iter:  8, epot_es:  9.3507003205493E+00, de:  2.83E-02, gnrm:  2.310E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  9, epot_es:  9.3739214064271E+00, de:  2.32E-02, gnrm:  1.848E-02, 
+   - inside get_beta_grid              :  0.28225545569704025E+01
+     cep: {iter:  9, epot_es:  9.3739214064271E+00, de:  2.32E-02, gnrm:  1.848E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  10, epot_es:  9.3929596007752E+00, de:  1.90E-02, gnrm:  1.484E-02, 
+   - inside get_beta_grid              :  0.27244172748216733E+01
+     cep: {iter:  10, epot_es:  9.3929596007752E+00, de:  1.90E-02, gnrm:  1.484E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  11, epot_es:  9.4085587093271E+00, de:  1.56E-02, gnrm:  1.195E-02, 
+   - inside get_beta_grid              :  0.26523954890173811E+01
+     cep: {iter:  11, epot_es:  9.4085587093271E+00, de:  1.56E-02, gnrm:  1.195E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  12, epot_es:  9.4213337050560E+00, de:  1.28E-02, gnrm:  9.644E-03, 
+   - inside get_beta_grid              :  0.25995343134692925E+01
+     cep: {iter:  12, epot_es:  9.4213337050560E+00, de:  1.28E-02, gnrm:  9.644E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  13, epot_es:  9.4317917496042E+00, de:  1.05E-02, gnrm:  7.801E-03, 
+   - inside get_beta_grid              :  0.25607319986908967E+01
+     cep: {iter:  13, epot_es:  9.4317917496042E+00, de:  1.05E-02, gnrm:  7.801E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  14, epot_es:  9.4403503074416E+00, de:  8.56E-03, gnrm:  6.321E-03, 
+   - inside get_beta_grid              :  0.25322459849707268E+01
+     cep: {iter:  14, epot_es:  9.4403503074416E+00, de:  8.56E-03, gnrm:  6.321E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  15, epot_es:  9.4473525225154E+00, de:  7.00E-03, gnrm:  5.129E-03, 
+   - inside get_beta_grid              :  0.25113306476776458E+01
+     cep: {iter:  15, epot_es:  9.4473525225154E+00, de:  7.00E-03, gnrm:  5.129E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  16, epot_es:  9.4530801418570E+00, de:  5.73E-03, gnrm:  4.167E-03, 
+   - inside get_beta_grid              :  0.24959716180606697E+01
+     cep: {iter:  16, epot_es:  9.4530801418570E+00, de:  5.73E-03, gnrm:  4.167E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  17, epot_es:  9.4577643035322E+00, de:  4.68E-03, gnrm:  3.389E-03, 
+   - inside get_beta_grid              :  0.24846909280938063E+01
+     cep: {iter:  17, epot_es:  9.4577643035322E+00, de:  4.68E-03, gnrm:  3.389E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  18, epot_es:  9.4615944984918E+00, de:  3.83E-03, gnrm:  2.758E-03, 
+   - inside get_beta_grid              :  0.24764040953206941E+01
+     cep: {iter:  18, epot_es:  9.4615944984918E+00, de:  3.83E-03, gnrm:  2.758E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  19, epot_es:  9.4647259894366E+00, de:  3.13E-03, gnrm:  2.247E-03, 
+   - inside get_beta_grid              :  0.24703152994960575E+01
+     cep: {iter:  19, epot_es:  9.4647259894366E+00, de:  3.13E-03, gnrm:  2.247E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  20, epot_es:  9.4672859364405E+00, de:  2.56E-03, gnrm:  1.831E-03, 
+   - inside get_beta_grid              :  0.24658404956088327E+01
+     cep: {iter:  20, epot_es:  9.4672859364405E+00, de:  2.56E-03, gnrm:  1.831E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  21, epot_es:  9.4693784448397E+00, de:  2.09E-03, gnrm:  1.493E-03, 
+   - inside get_beta_grid              :  0.24625510158308903E+01
+     cep: {iter:  21, epot_es:  9.4693784448397E+00, de:  2.09E-03, gnrm:  1.493E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  22, epot_es:  9.4710887186915E+00, de:  1.71E-03, gnrm:  1.217E-03, 
+   - inside get_beta_grid              :  0.24601321987179250E+01
+     cep: {iter:  22, epot_es:  9.4710887186915E+00, de:  1.71E-03, gnrm:  1.217E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  23, epot_es:  9.4724864742114E+00, de:  1.40E-03, gnrm:  9.931E-04, 
+   - inside get_beta_grid              :  0.24583530402141820E+01
+     cep: {iter:  23, epot_es:  9.4724864742114E+00, de:  1.40E-03, gnrm:  9.931E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  24, epot_es:  9.4736287423645E+00, de:  1.14E-03, gnrm:  8.104E-04, 
+   - inside get_beta_grid              :  0.24570439289158070E+01
+     cep: {iter:  24, epot_es:  9.4736287423645E+00, de:  1.14E-03, gnrm:  8.104E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  25, epot_es:  9.4745621681496E+00, de:  9.33E-04, gnrm:  6.614E-04, 
+   - inside get_beta_grid              :  0.24560803111727236E+01
+     cep: {iter:  25, epot_es:  9.4745621681496E+00, de:  9.33E-04, gnrm:  6.614E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  26, epot_es:  9.4753248957679E+00, de:  7.63E-04, gnrm:  5.399E-04, 
+   - inside get_beta_grid              :  0.24553707059393730E+01
+     cep: {iter:  26, epot_es:  9.4753248957679E+00, de:  7.63E-04, gnrm:  5.399E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  27, epot_es:  9.4759481134512E+00, de:  6.23E-04, gnrm:  4.407E-04, 
+   - inside get_beta_grid              :  0.24548479104543319E+01
+     cep: {iter:  27, epot_es:  9.4759481134512E+00, de:  6.23E-04, gnrm:  4.407E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  28, epot_es:  9.4764573188370E+00, de:  5.09E-04, gnrm:  3.598E-04, 
+   - inside get_beta_grid              :  0.24544625467314956E+01
+     cep: {iter:  28, epot_es:  9.4764573188370E+00, de:  5.09E-04, gnrm:  3.598E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  29, epot_es:  9.4768733550592E+00, de:  4.16E-04, gnrm:  2.938E-04, 
+   - inside get_beta_grid              :  0.24541783253725211E+01
+     cep: {iter:  29, epot_es:  9.4768733550592E+00, de:  4.16E-04, gnrm:  2.938E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  30, epot_es:  9.4772132588335E+00, de:  3.40E-04, gnrm:  2.399E-04, 
+   - inside get_beta_grid              :  0.24539685693653408E+01
+     cep: {iter:  30, epot_es:  9.4772132588335E+00, de:  3.40E-04, gnrm:  2.399E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  31, epot_es:  9.4774909544662E+00, de:  2.78E-04, gnrm:  1.959E-04, 
+   - inside get_beta_grid              :  0.24538136623841571E+01
+     cep: {iter:  31, epot_es:  9.4774909544662E+00, de:  2.78E-04, gnrm:  1.959E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  32, epot_es:  9.4777178216479E+00, de:  2.27E-04, gnrm:  1.600E-04, 
+   - inside get_beta_grid              :  0.24536991754889241E+01
+     cep: {iter:  32, epot_es:  9.4777178216479E+00, de:  2.27E-04, gnrm:  1.600E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  33, epot_es:  9.4779031598923E+00, de:  1.85E-04, gnrm:  1.307E-04, 
+   - inside get_beta_grid              :  0.24536144916732194E+01
+     cep: {iter:  33, epot_es:  9.4779031598923E+00, de:  1.85E-04, gnrm:  1.307E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  34, epot_es:  9.4780545683705E+00, de:  1.51E-04, gnrm:  1.067E-04, 
+   - inside get_beta_grid              :  0.24535517958000672E+01
+     cep: {iter:  34, epot_es:  9.4780545683705E+00, de:  1.51E-04, gnrm:  1.067E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  35, epot_es:  9.4781782565051E+00, de:  1.24E-04, gnrm:  8.717E-05, 
+   - inside get_beta_grid              :  0.24535053327327949E+01
+     cep: {iter:  35, epot_es:  9.4781782565051E+00, de:  1.24E-04, gnrm:  8.717E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  36, epot_es:  9.4782792979128E+00, de:  1.01E-04, gnrm:  7.119E-05, 
+   - inside get_beta_grid              :  0.24534708623500641E+01
+     cep: {iter:  36, epot_es:  9.4782792979128E+00, de:  1.01E-04, gnrm:  7.119E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  37, epot_es:  9.4783618380055E+00, de:  8.25E-05, gnrm:  5.815E-05, 
+   - inside get_beta_grid              :  0.24534452591059912E+01
+     cep: {iter:  37, epot_es:  9.4783618380055E+00, de:  8.25E-05, gnrm:  5.815E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  38, epot_es:  9.4784292636901E+00, de:  6.74E-05, gnrm:  4.749E-05, 
+   - inside get_beta_grid              :  0.24534262177346275E+01
+     cep: {iter:  38, epot_es:  9.4784292636901E+00, de:  6.74E-05, gnrm:  4.749E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  39, epot_es:  9.4784843420734E+00, de:  5.51E-05, gnrm:  3.879E-05, 
+   - inside get_beta_grid              :  0.24534120369039503E+01
+     cep: {iter:  39, epot_es:  9.4784843420734E+00, de:  5.51E-05, gnrm:  3.879E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  40, epot_es:  9.4785293338256E+00, de:  4.50E-05, gnrm:  3.168E-05, 
+   - inside get_beta_grid              :  0.24534014601297844E+01
+     cep: {iter:  40, epot_es:  9.4785293338256E+00, de:  4.50E-05, gnrm:  3.168E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  41, epot_es:  9.4785660858253E+00, de:  3.68E-05, gnrm:  2.588E-05, 
+   - inside get_beta_grid              :  0.24533935587578415E+01
+     cep: {iter:  41, epot_es:  9.4785660858253E+00, de:  3.68E-05, gnrm:  2.588E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  42, epot_es:  9.4785961068684E+00, de:  3.00E-05, gnrm:  2.114E-05, 
+   - inside get_beta_grid              :  0.24533876458580917E+01
+     cep: {iter:  42, epot_es:  9.4785961068684E+00, de:  3.00E-05, gnrm:  2.114E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  43, epot_es:  9.4786206295333E+00, de:  2.45E-05, gnrm:  1.726E-05, 
+   - inside get_beta_grid              :  0.24533832128427817E+01
+     cep: {iter:  43, epot_es:  9.4786206295333E+00, de:  2.45E-05, gnrm:  1.726E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  44, epot_es:  9.4786406607323E+00, de:  2.00E-05, gnrm:  1.410E-05, 
+   - inside get_beta_grid              :  0.24533798827905260E+01
+     cep: {iter:  44, epot_es:  9.4786406607323E+00, de:  2.00E-05, gnrm:  1.410E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  45, epot_es:  9.4786570230152E+00, de:  1.64E-05, gnrm:  1.152E-05, 
+   - inside get_beta_grid              :  0.24533773760563005E+01
+     cep: {iter:  45, epot_es:  9.4786570230152E+00, de:  1.64E-05, gnrm:  1.152E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  46, epot_es:  9.4786703883168E+00, de:  1.34E-05, gnrm:  9.408E-06, 
+   - inside get_beta_grid              :  0.24533754849219189E+01
+     cep: {iter:  46, epot_es:  9.4786703883168E+00, de:  1.34E-05, gnrm:  9.408E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  47, epot_es:  9.4786813055294E+00, de:  1.09E-05, gnrm:  7.684E-06, 
+   - inside get_beta_grid              :  0.24533740548973904E+01
+     cep: {iter:  47, epot_es:  9.4786813055294E+00, de:  1.09E-05, gnrm:  7.684E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  48, epot_es:  9.4786902230291E+00, de:  8.92E-06, gnrm:  6.276E-06, 
+   - inside get_beta_grid              :  0.24533729709229486E+01
+     cep: {iter:  48, epot_es:  9.4786902230291E+00, de:  8.92E-06, gnrm:  6.276E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  49, epot_es:  9.4786975070795E+00, de:  7.28E-06, gnrm:  5.127E-06, 
+   - inside get_beta_grid              :  0.24533721471758185E+01
+     cep: {iter:  49, epot_es:  9.4786975070795E+00, de:  7.28E-06, gnrm:  5.127E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  50, epot_es:  9.4787034568669E+00, de:  5.95E-06, gnrm:  4.187E-06, 
+   - inside get_beta_grid              :  0.24533715195385657E+01
+     cep: {iter:  50, epot_es:  9.4787034568669E+00, de:  5.95E-06, gnrm:  4.187E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  51, epot_es:  9.4787083167828E+00, de:  4.86E-06, gnrm:  3.420E-06, 
+   - inside get_beta_grid              :  0.24533710400267497E+01
+     cep: {iter:  51, epot_es:  9.4787083167828E+00, de:  4.86E-06, gnrm:  3.420E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  52, epot_es:  9.4787122864581E+00, de:  3.97E-06, gnrm:  2.794E-06, 
+   - inside get_beta_grid              :  0.24533706726628424E+01
+     cep: {iter:  52, epot_es:  9.4787122864581E+00, de:  3.97E-06, gnrm:  2.794E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  53, epot_es:  9.4787155289602E+00, de:  3.24E-06, gnrm:  2.282E-06, 
+   - inside get_beta_grid              :  0.24533703904186592E+01
+     cep: {iter:  53, epot_es:  9.4787155289602E+00, de:  3.24E-06, gnrm:  2.282E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  54, epot_es:  9.4787181774888E+00, de:  2.65E-06, gnrm:  1.864E-06, 
+   - inside get_beta_grid              :  0.24533701729470780E+01
+     cep: {iter:  54, epot_es:  9.4787181774888E+00, de:  2.65E-06, gnrm:  1.864E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  55, epot_es:  9.4787203408464E+00, de:  2.16E-06, gnrm:  1.522E-06, 
+   - inside get_beta_grid              :  0.24533700048964802E+01
+     cep: {iter:  55, epot_es:  9.4787203408464E+00, de:  2.16E-06, gnrm:  1.522E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  56, epot_es:  9.4787221079062E+00, de:  1.77E-06, gnrm:  1.243E-06, 
+   - inside get_beta_grid              :  0.24533698746572803E+01
+     cep: {iter:  56, epot_es:  9.4787221079062E+00, de:  1.77E-06, gnrm:  1.243E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  57, epot_es:  9.4787235512627E+00, de:  1.44E-06, gnrm:  1.016E-06, 
+   - inside get_beta_grid              :  0.24533697734286233E+01
+     cep: {iter:  57, epot_es:  9.4787235512627E+00, de:  1.44E-06, gnrm:  1.016E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  58, epot_es:  9.4787247302126E+00, de:  1.18E-06, gnrm:  8.296E-07, 
+   - inside get_beta_grid              :  0.24533696945216605E+01
+     cep: {iter:  58, epot_es:  9.4787247302126E+00, de:  1.18E-06, gnrm:  8.296E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  59, epot_es:  9.4787256931912E+00, de:  9.63E-07, gnrm:  6.776E-07, 
+   - inside get_beta_grid              :  0.24533696328397481E+01
+     cep: {iter:  59, epot_es:  9.4787256931912E+00, de:  9.63E-07, gnrm:  6.776E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  60, epot_es:  9.4787264797613E+00, de:  7.87E-07, gnrm:  5.535E-07, 
+   - inside get_beta_grid              :  0.24533695844883519E+01
+     cep: {iter:  60, epot_es:  9.4787264797613E+00, de:  7.87E-07, gnrm:  5.535E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  61, epot_es:  9.4787271222387E+00, de:  6.42E-07, gnrm:  4.521E-07, 
+   - inside get_beta_grid              :  0.24533695464839149E+01
+     cep: {iter:  61, epot_es:  9.4787271222387E+00, de:  6.42E-07, gnrm:  4.521E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  62, epot_es:  9.4787276470195E+00, de:  5.25E-07, gnrm:  3.693E-07, 
+   - inside get_beta_grid              :  0.24533695165334888E+01
+     cep: {iter:  62, epot_es:  9.4787276470195E+00, de:  5.25E-07, gnrm:  3.693E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  63, epot_es:  9.4787280756645E+00, de:  4.29E-07, gnrm:  3.016E-07, 
+   - inside get_beta_grid              :  0.24533694928706167E+01
+     cep: {iter:  63, epot_es:  9.4787280756645E+00, de:  4.29E-07, gnrm:  3.016E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  64, epot_es:  9.4787284257846E+00, de:  3.50E-07, gnrm:  2.464E-07, 
+   - inside get_beta_grid              :  0.24533694741295609E+01
+     cep: {iter:  64, epot_es:  9.4787284257846E+00, de:  3.50E-07, gnrm:  2.464E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  65, epot_es:  9.4787287117651E+00, de:  2.86E-07, gnrm:  2.012E-07, 
+   - inside get_beta_grid              :  0.24533694592522441E+01
+     cep: {iter:  65, epot_es:  9.4787287117651E+00, de:  2.86E-07, gnrm:  2.012E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  66, epot_es:  9.4787289453556E+00, de:  2.34E-07, gnrm:  1.644E-07, 
+   - inside get_beta_grid              :  0.24533694474159993E+01
+     cep: {iter:  66, epot_es:  9.4787289453556E+00, de:  2.34E-07, gnrm:  1.644E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  67, epot_es:  9.4787291361537E+00, de:  1.91E-07, gnrm:  1.343E-07, 
+   - inside get_beta_grid              :  0.24533694379795628E+01
+     cep: {iter:  67, epot_es:  9.4787291361537E+00, de:  1.91E-07, gnrm:  1.343E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  68, epot_es:  9.4787292919986E+00, de:  1.56E-07, gnrm:  1.097E-07, 
+   - inside get_beta_grid              :  0.24533694304415952E+01
+     cep: {iter:  68, epot_es:  9.4787292919986E+00, de:  1.56E-07, gnrm:  1.097E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  69, epot_es:  9.4787294192935E+00, de:  1.27E-07, gnrm:  8.957E-08, 
+   - inside get_beta_grid              :  0.24533694244089896E+01
+     cep: {iter:  69, epot_es:  9.4787294192935E+00, de:  1.27E-07, gnrm:  8.957E-08, 
        stepsize:  1.000E+00}
    CEP: {iter:  69, epot_es:  9.4787294192935E+00, de:  1.27E-07, gnrm:  8.957E-08, 
      stepsize:  1.000E+00}
+   inside get_beta_grid                :  0.24533694244089896E+01
    SQNM: {iter:  1, epot: -1.403615100043E+04, de: -7.7E-04, fmax:  1.090E-02, 
           fnrm:  2.472E-01,                  ndim:  0}
+   grid info: {ngpx:  22, ngpy:  20, ngpz:  28, ngptot:  12320, nbgpx:  11, nbgpy:  11, 
+              nbgpz:  10,  hxx:  1.3312821650,     hyx:  0.0000000000, hzx:  0.0000000000, 
+                hxy:  0.0000000000,   hyy:  1.2686526126,         hzy:  0.0000000000, 
+                hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  1.3498043770}
    Charge equilibration process:
-   - cep: {iter:  0, epot_es:  9.0402593106496E+00, de:  0.00E+00, gnrm:  7.178E-02, 
+   - inside get_beta_grid              : -0.58283807574052986E+01
+     cep: {iter:  0, epot_es:  9.0402593106496E+00, de:  0.00E+00, gnrm:  7.178E-02, 
        stepsize:  1.000E-01}
-   - cep: {iter:  1, epot_es:  9.0564499903454E+00, de:  1.62E-02, gnrm:  6.911E-02, 
+   - inside get_beta_grid              : -0.58568684284517545E+01
+     cep: {iter:  1, epot_es:  9.0564499903454E+00, de:  1.62E-02, gnrm:  6.911E-02, 
        stepsize:  2.000E-01}
-   - cep: {iter:  2, epot_es:  9.0876806424921E+00, de:  3.12E-02, gnrm:  6.398E-02, 
+   - inside get_beta_grid              : -0.59107280566813083E+01
+     cep: {iter:  2, epot_es:  9.0876806424921E+00, de:  3.12E-02, gnrm:  6.398E-02, 
        stepsize:  4.000E-01}
-   - cep: {iter:  3, epot_es:  9.1456866380251E+00, de:  5.80E-02, gnrm:  5.448E-02, 
+   - inside get_beta_grid              : -0.60066643074651305E+01
+     cep: {iter:  3, epot_es:  9.1456866380251E+00, de:  5.80E-02, gnrm:  5.448E-02, 
        stepsize:  8.000E-01}
-   - cep: {iter:  4, epot_es:  9.2077204894064E+00, de:  6.20E-02, gnrm:  4.439E-02, 
+   - inside get_beta_grid              : -0.61003412336058629E+01
+     cep: {iter:  4, epot_es:  9.2077204894064E+00, de:  6.20E-02, gnrm:  4.439E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  5, epot_es:  9.2584912464895E+00, de:  5.08E-02, gnrm:  3.618E-02, 
+   - inside get_beta_grid              : -0.61683739847740808E+01
+     cep: {iter:  5, epot_es:  9.2584912464895E+00, de:  5.08E-02, gnrm:  3.618E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  6, epot_es:  9.3000212915929E+00, de:  4.15E-02, gnrm:  2.950E-02, 
+   - inside get_beta_grid              : -0.62177625662991041E+01
+     cep: {iter:  6, epot_es:  9.3000212915929E+00, de:  4.15E-02, gnrm:  2.950E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  7, epot_es:  9.3339778528634E+00, de:  3.40E-02, gnrm:  2.406E-02, 
+   - inside get_beta_grid              : -0.62535998791947049E+01
+     cep: {iter:  7, epot_es:  9.3339778528634E+00, de:  3.40E-02, gnrm:  2.406E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  8, epot_es:  9.3617325085764E+00, de:  2.78E-02, gnrm:  1.962E-02, 
+   - inside get_beta_grid              : -0.62795906287446721E+01
+     cep: {iter:  8, epot_es:  9.3617325085764E+00, de:  2.78E-02, gnrm:  1.962E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  9, epot_es:  9.3844117814044E+00, de:  2.27E-02, gnrm:  1.601E-02, 
+   - inside get_beta_grid              : -0.62984291644480503E+01
+     cep: {iter:  9, epot_es:  9.3844117814044E+00, de:  2.27E-02, gnrm:  1.601E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  10, epot_es:  9.4029397417917E+00, de:  1.85E-02, gnrm:  1.306E-02, 
+   - inside get_beta_grid              : -0.63120745793097752E+01
+     cep: {iter:  10, epot_es:  9.4029397417917E+00, de:  1.85E-02, gnrm:  1.306E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  11, epot_es:  9.4180736287144E+00, de:  1.51E-02, gnrm:  1.066E-02, 
+   - inside get_beta_grid              : -0.63219509869593704E+01
+     cep: {iter:  11, epot_es:  9.4180736287144E+00, de:  1.51E-02, gnrm:  1.066E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  12, epot_es:  9.4304334745787E+00, de:  1.24E-02, gnrm:  8.697E-03, 
+   - inside get_beta_grid              : -0.63290933119446677E+01
+     cep: {iter:  12, epot_es:  9.4304334745787E+00, de:  1.24E-02, gnrm:  8.697E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  13, epot_es:  9.4405266443244E+00, de:  1.01E-02, gnrm:  7.097E-03, 
+   - inside get_beta_grid              : -0.63342534045013172E+01
+     cep: {iter:  13, epot_es:  9.4405266443244E+00, de:  1.01E-02, gnrm:  7.097E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  14, epot_es:  9.4487680988334E+00, de:  8.24E-03, gnrm:  5.792E-03, 
+   - inside get_beta_grid              : -0.63379772671456873E+01
+     cep: {iter:  14, epot_es:  9.4487680988334E+00, de:  8.24E-03, gnrm:  5.792E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  15, epot_es:  9.4554970873209E+00, de:  6.73E-03, gnrm:  4.728E-03, 
+   - inside get_beta_grid              : -0.63406612493027588E+01
+     cep: {iter:  15, epot_es:  9.4554970873209E+00, de:  6.73E-03, gnrm:  4.728E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  16, epot_es:  9.4609908720714E+00, de:  5.49E-03, gnrm:  3.859E-03, 
+   - inside get_beta_grid              : -0.63425929311621108E+01
+     cep: {iter:  16, epot_es:  9.4609908720714E+00, de:  5.49E-03, gnrm:  3.859E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  17, epot_es:  9.4654759963305E+00, de:  4.49E-03, gnrm:  3.149E-03, 
+   - inside get_beta_grid              : -0.63439808628762773E+01
+     cep: {iter:  17, epot_es:  9.4654759963305E+00, de:  4.49E-03, gnrm:  3.149E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  18, epot_es:  9.4691375242502E+00, de:  3.66E-03, gnrm:  2.571E-03, 
+   - inside get_beta_grid              : -0.63449761925980104E+01
+     cep: {iter:  18, epot_es:  9.4691375242502E+00, de:  3.66E-03, gnrm:  2.571E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  19, epot_es:  9.4721266107728E+00, de:  2.99E-03, gnrm:  2.098E-03, 
+   - inside get_beta_grid              : -0.63456883919740852E+01
+     cep: {iter:  19, epot_es:  9.4721266107728E+00, de:  2.99E-03, gnrm:  2.098E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  20, epot_es:  9.4745666986819E+00, de:  2.44E-03, gnrm:  1.713E-03, 
+   - inside get_beta_grid              : -0.63461966869856035E+01
+     cep: {iter:  20, epot_es:  9.4745666986819E+00, de:  2.44E-03, gnrm:  1.713E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  21, epot_es:  9.4765585887699E+00, de:  1.99E-03, gnrm:  1.398E-03, 
+   - inside get_beta_grid              : -0.63465583645732453E+01
+     cep: {iter:  21, epot_es:  9.4765585887699E+00, de:  1.99E-03, gnrm:  1.398E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  22, epot_es:  9.4781845860638E+00, de:  1.63E-03, gnrm:  1.141E-03, 
+   - inside get_beta_grid              : -0.63468148069409649E+01
+     cep: {iter:  22, epot_es:  9.4781845860638E+00, de:  1.63E-03, gnrm:  1.141E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  23, epot_es:  9.4795118891913E+00, de:  1.33E-03, gnrm:  9.315E-04, 
+   - inside get_beta_grid              : -0.63469958735149543E+01
+     cep: {iter:  23, epot_es:  9.4795118891913E+00, de:  1.33E-03, gnrm:  9.315E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  24, epot_es:  9.4805953602057E+00, de:  1.08E-03, gnrm:  7.603E-04, 
+   - inside get_beta_grid              : -0.63471230816691575E+01
+     cep: {iter:  24, epot_es:  9.4805953602057E+00, de:  1.08E-03, gnrm:  7.603E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  25, epot_es:  9.4814797875633E+00, de:  8.84E-04, gnrm:  6.207E-04, 
+   - inside get_beta_grid              : -0.63472119144220205E+01
+     cep: {iter:  25, epot_es:  9.4814797875633E+00, de:  8.84E-04, gnrm:  6.207E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  26, epot_es:  9.4822017346460E+00, de:  7.22E-04, gnrm:  5.066E-04, 
+   - inside get_beta_grid              : -0.63472734938281521E+01
+     cep: {iter:  26, epot_es:  9.4822017346460E+00, de:  7.22E-04, gnrm:  5.066E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  27, epot_es:  9.4827910494987E+00, de:  5.89E-04, gnrm:  4.136E-04, 
+   - inside get_beta_grid              : -0.63473157936783817E+01
+     cep: {iter:  27, epot_es:  9.4827910494987E+00, de:  5.89E-04, gnrm:  4.136E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  28, epot_es:  9.4832720977232E+00, de:  4.81E-04, gnrm:  3.376E-04, 
+   - inside get_beta_grid              : -0.63473445177354400E+01
+     cep: {iter:  28, epot_es:  9.4832720977232E+00, de:  4.81E-04, gnrm:  3.376E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  29, epot_es:  9.4836647691939E+00, de:  3.93E-04, gnrm:  2.756E-04, 
+   - inside get_beta_grid              : -0.63473637352538983E+01
+     cep: {iter:  29, epot_es:  9.4836647691939E+00, de:  3.93E-04, gnrm:  2.756E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  30, epot_es:  9.4839853000261E+00, de:  3.21E-04, gnrm:  2.249E-04, 
+   - inside get_beta_grid              : -0.63473763404583172E+01
+     cep: {iter:  30, epot_es:  9.4839853000261E+00, de:  3.21E-04, gnrm:  2.249E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  31, epot_es:  9.4842469436597E+00, de:  2.62E-04, gnrm:  1.836E-04, 
+   - inside get_beta_grid              : -0.63473843844076416E+01
+     cep: {iter:  31, epot_es:  9.4842469436597E+00, de:  2.62E-04, gnrm:  1.836E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  32, epot_es:  9.4844605187294E+00, de:  2.14E-04, gnrm:  1.499E-04, 
+   - inside get_beta_grid              : -0.63473893144149693E+01
+     cep: {iter:  32, epot_es:  9.4844605187294E+00, de:  2.14E-04, gnrm:  1.499E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  33, epot_es:  9.4846348563268E+00, de:  1.74E-04, gnrm:  1.223E-04, 
+   - inside get_beta_grid              : -0.63473921465469640E+01
+     cep: {iter:  33, epot_es:  9.4846348563268E+00, de:  1.74E-04, gnrm:  1.223E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  34, epot_es:  9.4847771651198E+00, de:  1.42E-04, gnrm:  9.987E-05, 
+   - inside get_beta_grid              : -0.63473935897211344E+01
+     cep: {iter:  34, epot_es:  9.4847771651198E+00, de:  1.42E-04, gnrm:  9.987E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  35, epot_es:  9.4848933294081E+00, de:  1.16E-04, gnrm:  8.152E-05, 
+   - inside get_beta_grid              : -0.63473941348285985E+01
+     cep: {iter:  35, epot_es:  9.4848933294081E+00, de:  1.16E-04, gnrm:  8.152E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  36, epot_es:  9.4849881524288E+00, de:  9.48E-05, gnrm:  6.655E-05, 
+   - inside get_beta_grid              : -0.63473941186110290E+01
+     cep: {iter:  36, epot_es:  9.4849881524288E+00, de:  9.48E-05, gnrm:  6.655E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  37, epot_es:  9.4850655549665E+00, de:  7.74E-05, gnrm:  5.432E-05, 
+   - inside get_beta_grid              : -0.63473937693384190E+01
+     cep: {iter:  37, epot_es:  9.4850655549665E+00, de:  7.74E-05, gnrm:  5.432E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  38, epot_es:  9.4851287374777E+00, de:  6.32E-05, gnrm:  4.434E-05, 
+   - inside get_beta_grid              : -0.63473932393837087E+01
+     cep: {iter:  38, epot_es:  9.4851287374777E+00, de:  6.32E-05, gnrm:  4.434E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  39, epot_es:  9.4851803124299E+00, de:  5.16E-05, gnrm:  3.620E-05, 
+   - inside get_beta_grid              : -0.63473926283832309E+01
+     cep: {iter:  39, epot_es:  9.4851803124299E+00, de:  5.16E-05, gnrm:  3.620E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  40, epot_es:  9.4852224123282E+00, de:  4.21E-05, gnrm:  2.955E-05, 
+   - inside get_beta_grid              : -0.63473919996378960E+01
+     cep: {iter:  40, epot_es:  9.4852224123282E+00, de:  4.21E-05, gnrm:  2.955E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  41, epot_es:  9.4852567778952E+00, de:  3.44E-05, gnrm:  2.412E-05, 
+   - inside get_beta_grid              : -0.63473913916827556E+01
+     cep: {iter:  41, epot_es:  9.4852567778952E+00, de:  3.44E-05, gnrm:  2.412E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  42, epot_es:  9.4852848300494E+00, de:  2.81E-05, gnrm:  1.969E-05, 
+   - inside get_beta_grid              : -0.63473908264009644E+01
+     cep: {iter:  42, epot_es:  9.4852848300494E+00, de:  2.81E-05, gnrm:  1.969E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  43, epot_es:  9.4853077286610E+00, de:  2.29E-05, gnrm:  1.607E-05, 
+   - inside get_beta_grid              : -0.63473903146810366E+01
+     cep: {iter:  43, epot_es:  9.4853077286610E+00, de:  2.29E-05, gnrm:  1.607E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  44, epot_es:  9.4853264205114E+00, de:  1.87E-05, gnrm:  1.312E-05, 
+   - inside get_beta_grid              : -0.63473898603288434E+01
+     cep: {iter:  44, epot_es:  9.4853264205114E+00, de:  1.87E-05, gnrm:  1.312E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  45, epot_es:  9.4853416784421E+00, de:  1.53E-05, gnrm:  1.071E-05, 
+   - inside get_beta_grid              : -0.63473894627481675E+01
+     cep: {iter:  45, epot_es:  9.4853416784421E+00, de:  1.53E-05, gnrm:  1.071E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  46, epot_es:  9.4853541333110E+00, de:  1.25E-05, gnrm:  8.741E-06, 
+   - inside get_beta_grid              : -0.63473891187540961E+01
+     cep: {iter:  46, epot_es:  9.4853541333110E+00, de:  1.25E-05, gnrm:  8.741E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  47, epot_es:  9.4853643000778E+00, de:  1.02E-05, gnrm:  7.135E-06, 
+   - inside get_beta_grid              : -0.63473888237811638E+01
+     cep: {iter:  47, epot_es:  9.4853643000778E+00, de:  1.02E-05, gnrm:  7.135E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  48, epot_es:  9.4853725990958E+00, de:  8.30E-06, gnrm:  5.825E-06, 
+   - inside get_beta_grid              : -0.63473885726699883E+01
+     cep: {iter:  48, epot_es:  9.4853725990958E+00, de:  8.30E-06, gnrm:  5.825E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  49, epot_es:  9.4853793734936E+00, de:  6.77E-06, gnrm:  4.755E-06, 
+   - inside get_beta_grid              : -0.63473883601651062E+01
+     cep: {iter:  49, epot_es:  9.4853793734936E+00, de:  6.77E-06, gnrm:  4.755E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  50, epot_es:  9.4853849033624E+00, de:  5.53E-06, gnrm:  3.881E-06, 
+   - inside get_beta_grid              : -0.63473881812163766E+01
+     cep: {iter:  50, epot_es:  9.4853849033624E+00, de:  5.53E-06, gnrm:  3.881E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  51, epot_es:  9.4853894173364E+00, de:  4.51E-06, gnrm:  3.168E-06, 
+   - inside get_beta_grid              : -0.63473880311469895E+01
+     cep: {iter:  51, epot_es:  9.4853894173364E+00, de:  4.51E-06, gnrm:  3.168E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  52, epot_es:  9.4853931020473E+00, de:  3.68E-06, gnrm:  2.586E-06, 
+   - inside get_beta_grid              : -0.63473879057357525E+01
+     cep: {iter:  52, epot_es:  9.4853931020473E+00, de:  3.68E-06, gnrm:  2.586E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  53, epot_es:  9.4853961098397E+00, de:  3.01E-06, gnrm:  2.111E-06, 
+   - inside get_beta_grid              : -0.63473878012425757E+01
+     cep: {iter:  53, epot_es:  9.4853961098397E+00, de:  3.01E-06, gnrm:  2.111E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  54, epot_es:  9.4853985650708E+00, de:  2.46E-06, gnrm:  1.723E-06, 
+   - inside get_beta_grid              : -0.63473877144002158E+01
+     cep: {iter:  54, epot_es:  9.4853985650708E+00, de:  2.46E-06, gnrm:  1.723E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  55, epot_es:  9.4854005692521E+00, de:  2.00E-06, gnrm:  1.407E-06, 
+   - inside get_beta_grid              : -0.63473876423858160E+01
+     cep: {iter:  55, epot_es:  9.4854005692521E+00, de:  2.00E-06, gnrm:  1.407E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  56, epot_es:  9.4854022052461E+00, de:  1.64E-06, gnrm:  1.148E-06, 
+   - inside get_beta_grid              : -0.63473875827802191E+01
+     cep: {iter:  56, epot_es:  9.4854022052461E+00, de:  1.64E-06, gnrm:  1.148E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  57, epot_es:  9.4854035406924E+00, de:  1.34E-06, gnrm:  9.373E-07, 
+   - inside get_beta_grid              : -0.63473875335270940E+01
+     cep: {iter:  57, epot_es:  9.4854035406924E+00, de:  1.34E-06, gnrm:  9.373E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  58, epot_es:  9.4854046308047E+00, de:  1.09E-06, gnrm:  7.651E-07, 
+   - inside get_beta_grid              : -0.63473874928864618E+01
+     cep: {iter:  58, epot_es:  9.4854046308047E+00, de:  1.09E-06, gnrm:  7.651E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  59, epot_es:  9.4854055206533E+00, de:  8.90E-07, gnrm:  6.245E-07, 
+   - inside get_beta_grid              : -0.63473874593945308E+01
+     cep: {iter:  59, epot_es:  9.4854055206533E+00, de:  8.90E-07, gnrm:  6.245E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  60, epot_es:  9.4854062470286E+00, de:  7.26E-07, gnrm:  5.098E-07, 
+   - inside get_beta_grid              : -0.63473874318240036E+01
+     cep: {iter:  60, epot_es:  9.4854062470286E+00, de:  7.26E-07, gnrm:  5.098E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  61, epot_es:  9.4854068399621E+00, de:  5.93E-07, gnrm:  4.162E-07, 
+   - inside get_beta_grid              : -0.63473874091500901E+01
+     cep: {iter:  61, epot_es:  9.4854068399621E+00, de:  5.93E-07, gnrm:  4.162E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  62, epot_es:  9.4854073239683E+00, de:  4.84E-07, gnrm:  3.397E-07, 
+   - inside get_beta_grid              : -0.63473873905186142E+01
+     cep: {iter:  62, epot_es:  9.4854073239683E+00, de:  4.84E-07, gnrm:  3.397E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  63, epot_es:  9.4854077190583E+00, de:  3.95E-07, gnrm:  2.773E-07, 
+   - inside get_beta_grid              : -0.63473873752204337E+01
+     cep: {iter:  63, epot_es:  9.4854077190583E+00, de:  3.95E-07, gnrm:  2.773E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  64, epot_es:  9.4854080415667E+00, de:  3.23E-07, gnrm:  2.264E-07, 
+   - inside get_beta_grid              : -0.63473873626675266E+01
+     cep: {iter:  64, epot_es:  9.4854080415667E+00, de:  3.23E-07, gnrm:  2.264E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  65, epot_es:  9.4854083048275E+00, de:  2.63E-07, gnrm:  1.848E-07, 
+   - inside get_beta_grid              : -0.63473873523732545E+01
+     cep: {iter:  65, epot_es:  9.4854083048275E+00, de:  2.63E-07, gnrm:  1.848E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  66, epot_es:  9.4854085197249E+00, de:  2.15E-07, gnrm:  1.508E-07, 
+   - inside get_beta_grid              : -0.63473873439354254E+01
+     cep: {iter:  66, epot_es:  9.4854085197249E+00, de:  2.15E-07, gnrm:  1.508E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  67, epot_es:  9.4854086951439E+00, de:  1.75E-07, gnrm:  1.231E-07, 
+   - inside get_beta_grid              : -0.63473873370224849E+01
+     cep: {iter:  67, epot_es:  9.4854086951439E+00, de:  1.75E-07, gnrm:  1.231E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  68, epot_es:  9.4854088383368E+00, de:  1.43E-07, gnrm:  1.005E-07, 
+   - inside get_beta_grid              : -0.63473873313613032E+01
+     cep: {iter:  68, epot_es:  9.4854088383368E+00, de:  1.43E-07, gnrm:  1.005E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  69, epot_es:  9.4854089552239E+00, de:  1.17E-07, gnrm:  8.204E-08, 
+   - inside get_beta_grid              : -0.63473873267265377E+01
+     cep: {iter:  69, epot_es:  9.4854089552239E+00, de:  1.17E-07, gnrm:  8.204E-08, 
        stepsize:  1.000E+00}
    CEP: {iter:  69, epot_es:  9.4854089552239E+00, de:  1.17E-07, gnrm:  8.204E-08, 
      stepsize:  1.000E+00}
+   inside get_beta_grid                : -0.63473873267265377E+01
  - SQNM: {iter:  2, epot: -1.403616907684E+04, de: -1.8E-02, fmax:  3.190E-03, 
           fnrm:  1.260E-01,                  ndim:  1}
+   grid info: {ngpx:  22, ngpy:  20, ngpz:  28, ngptot:  12320, nbgpx:  11, nbgpy:  11, 
+              nbgpz:  10,  hxx:  1.3312821650,     hyx:  0.0000000000, hzx:  0.0000000000, 
+                hxy:  0.0000000000,   hyy:  1.2686526126,         hzy:  0.0000000000, 
+                hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  1.3498043770}
    Charge equilibration process:
-   - cep: {iter:  0, epot_es:  9.0426089490222E+00, de:  0.00E+00, gnrm:  7.120E-02, 
+   - inside get_beta_grid              : -0.61395371195845874E+01
+     cep: {iter:  0, epot_es:  9.0426089490222E+00, de:  0.00E+00, gnrm:  7.120E-02, 
        stepsize:  1.000E-01}
-   - cep: {iter:  1, epot_es:  9.0587193340470E+00, de:  1.61E-02, gnrm:  6.856E-02, 
+   - inside get_beta_grid              : -0.61635605694700333E+01
+     cep: {iter:  1, epot_es:  9.0587193340470E+00, de:  1.61E-02, gnrm:  6.856E-02, 
        stepsize:  2.000E-01}
-   - cep: {iter:  2, epot_es:  9.0897944705692E+00, de:  3.11E-02, gnrm:  6.348E-02, 
+   - inside get_beta_grid              : -0.62089707638478568E+01
+     cep: {iter:  2, epot_es:  9.0897944705692E+00, de:  3.11E-02, gnrm:  6.348E-02, 
        stepsize:  4.000E-01}
-   - cep: {iter:  3, epot_es:  9.1475094982044E+00, de:  5.77E-02, gnrm:  5.408E-02, 
+   - inside get_beta_grid              : -0.62898213130992460E+01
+     cep: {iter:  3, epot_es:  9.1475094982044E+00, de:  5.77E-02, gnrm:  5.408E-02, 
        stepsize:  8.000E-01}
-   - cep: {iter:  4, epot_es:  9.2092292235592E+00, de:  6.17E-02, gnrm:  4.408E-02, 
+   - inside get_beta_grid              : -0.63686873155571666E+01
+     cep: {iter:  4, epot_es:  9.2092292235592E+00, de:  6.17E-02, gnrm:  4.408E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  5, epot_es:  9.2597406652077E+00, de:  5.05E-02, gnrm:  3.594E-02, 
+   - inside get_beta_grid              : -0.64258808268719863E+01
+     cep: {iter:  5, epot_es:  9.2597406652077E+00, de:  5.05E-02, gnrm:  3.594E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  6, epot_es:  9.3010570551310E+00, de:  4.13E-02, gnrm:  2.931E-02, 
+   - inside get_beta_grid              : -0.64673359269142878E+01
+     cep: {iter:  6, epot_es:  9.3010570551310E+00, de:  4.13E-02, gnrm:  2.931E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  7, epot_es:  9.3348377839284E+00, de:  3.38E-02, gnrm:  2.391E-02, 
+   - inside get_beta_grid              : -0.64973658199083362E+01
+     cep: {iter:  7, epot_es:  9.3348377839284E+00, de:  3.38E-02, gnrm:  2.391E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  8, epot_es:  9.3624478281536E+00, de:  2.76E-02, gnrm:  1.951E-02, 
+   - inside get_beta_grid              : -0.65191048571411550E+01
+     cep: {iter:  8, epot_es:  9.3624478281536E+00, de:  2.76E-02, gnrm:  1.951E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  9, epot_es:  9.3850082060926E+00, de:  2.26E-02, gnrm:  1.592E-02, 
+   - inside get_beta_grid              : -0.65348301480143860E+01
+     cep: {iter:  9, epot_es:  9.3850082060926E+00, de:  2.26E-02, gnrm:  1.592E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  10, epot_es:  9.4034384275151E+00, de:  1.84E-02, gnrm:  1.299E-02, 
+   - inside get_beta_grid              : -0.65461955369221805E+01
+     cep: {iter:  10, epot_es:  9.4034384275151E+00, de:  1.84E-02, gnrm:  1.299E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  11, epot_es:  9.4184919672757E+00, de:  1.51E-02, gnrm:  1.060E-02, 
+   - inside get_beta_grid              : -0.65544018054016577E+01
+     cep: {iter:  11, epot_es:  9.4184919672757E+00, de:  1.51E-02, gnrm:  1.060E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  12, epot_es:  9.4307857584157E+00, de:  1.23E-02, gnrm:  8.648E-03, 
+   - inside get_beta_grid              : -0.65603204665698707E+01
+     cep: {iter:  12, epot_es:  9.4307857584157E+00, de:  1.23E-02, gnrm:  8.648E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  13, epot_es:  9.4408246174145E+00, de:  1.00E-02, gnrm:  7.057E-03, 
+   - inside get_beta_grid              : -0.65645837924329653E+01
+     cep: {iter:  13, epot_es:  9.4408246174145E+00, de:  1.00E-02, gnrm:  7.057E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  14, epot_es:  9.4490214112829E+00, de:  8.20E-03, gnrm:  5.760E-03, 
+   - inside get_beta_grid              : -0.65676502739873417E+01
+     cep: {iter:  14, epot_es:  9.4490214112829E+00, de:  8.20E-03, gnrm:  5.760E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  15, epot_es:  9.4557136694981E+00, de:  6.69E-03, gnrm:  4.701E-03, 
+   - inside get_beta_grid              : -0.65698522094475198E+01
+     cep: {iter:  15, epot_es:  9.4557136694981E+00, de:  6.69E-03, gnrm:  4.701E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  16, epot_es:  9.4611772420496E+00, de:  5.46E-03, gnrm:  3.837E-03, 
+   - inside get_beta_grid              : -0.65714302928444512E+01
+     cep: {iter:  16, epot_es:  9.4611772420496E+00, de:  5.46E-03, gnrm:  3.837E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  17, epot_es:  9.4656375123184E+00, de:  4.46E-03, gnrm:  3.132E-03, 
+   - inside get_beta_grid              : -0.65725587482631020E+01
+     cep: {iter:  17, epot_es:  9.4656375123184E+00, de:  4.46E-03, gnrm:  3.132E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  18, epot_es:  9.4692785917706E+00, de:  3.64E-03, gnrm:  2.556E-03, 
+   - inside get_beta_grid              : -0.65733635891893902E+01
+     cep: {iter:  18, epot_es:  9.4692785917706E+00, de:  3.64E-03, gnrm:  2.556E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  19, epot_es:  9.4722508526844E+00, de:  2.97E-03, gnrm:  2.086E-03, 
+   - inside get_beta_grid              : -0.65739358795335141E+01
+     cep: {iter:  19, epot_es:  9.4722508526844E+00, de:  2.97E-03, gnrm:  2.086E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  20, epot_es:  9.4746770947183E+00, de:  2.43E-03, gnrm:  1.703E-03, 
+   - inside get_beta_grid              : -0.65743413613902488E+01
+     cep: {iter:  20, epot_es:  9.4746770947183E+00, de:  2.43E-03, gnrm:  1.703E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  21, epot_es:  9.4766575900808E+00, de:  1.98E-03, gnrm:  1.390E-03, 
+   - inside get_beta_grid              : -0.65746274423655438E+01
+     cep: {iter:  21, epot_es:  9.4766575900808E+00, de:  1.98E-03, gnrm:  1.390E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  22, epot_es:  9.4782742092605E+00, de:  1.62E-03, gnrm:  1.134E-03, 
+   - inside get_beta_grid              : -0.65748282644810985E+01
+     cep: {iter:  22, epot_es:  9.4782742092605E+00, de:  1.62E-03, gnrm:  1.134E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  23, epot_es:  9.4795937935843E+00, de:  1.32E-03, gnrm:  9.260E-04, 
+   - inside get_beta_grid              : -0.65749683796228773E+01
+     cep: {iter:  23, epot_es:  9.4795937935843E+00, de:  1.32E-03, gnrm:  9.260E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  24, epot_es:  9.4806709112557E+00, de:  1.08E-03, gnrm:  7.558E-04, 
+   - inside get_beta_grid              : -0.65750654131644577E+01
+     cep: {iter:  24, epot_es:  9.4806709112557E+00, de:  1.08E-03, gnrm:  7.558E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  25, epot_es:  9.4815501090219E+00, de:  8.79E-04, gnrm:  6.169E-04, 
+   - inside get_beta_grid              : -0.65751319931405492E+01
+     cep: {iter:  25, epot_es:  9.4815501090219E+00, de:  8.79E-04, gnrm:  6.169E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  26, epot_es:  9.4822677514122E+00, de:  7.18E-04, gnrm:  5.036E-04, 
+   - inside get_beta_grid              : -0.65751771465163769E+01
+     cep: {iter:  26, epot_es:  9.4822677514122E+00, de:  7.18E-04, gnrm:  5.036E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  27, epot_es:  9.4828535228544E+00, de:  5.86E-04, gnrm:  4.110E-04, 
+   - inside get_beta_grid              : -0.65752073089706373E+01
+     cep: {iter:  27, epot_es:  9.4828535228544E+00, de:  5.86E-04, gnrm:  4.110E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  28, epot_es:  9.4833316543082E+00, de:  4.78E-04, gnrm:  3.355E-04, 
+   - inside get_beta_grid              : -0.65752270545205338E+01
+     cep: {iter:  28, epot_es:  9.4833316543082E+00, de:  4.78E-04, gnrm:  3.355E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  29, epot_es:  9.4837219248382E+00, de:  3.90E-04, gnrm:  2.738E-04, 
+   - inside get_beta_grid              : -0.65752396221833642E+01
+     cep: {iter:  29, epot_es:  9.4837219248382E+00, de:  3.90E-04, gnrm:  2.738E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  30, epot_es:  9.4840404793562E+00, de:  3.19E-04, gnrm:  2.235E-04, 
+   - inside get_beta_grid              : -0.65752472956947949E+01
+     cep: {iter:  30, epot_es:  9.4840404793562E+00, de:  3.19E-04, gnrm:  2.235E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  31, epot_es:  9.4843004962297E+00, de:  2.60E-04, gnrm:  1.824E-04, 
+   - inside get_beta_grid              : -0.65752516769206535E+01
+     cep: {iter:  31, epot_es:  9.4843004962297E+00, de:  2.60E-04, gnrm:  1.824E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  32, epot_es:  9.4845127322959E+00, de:  2.12E-04, gnrm:  1.489E-04, 
+   - inside get_beta_grid              : -0.65752538824253657E+01
+     cep: {iter:  32, epot_es:  9.4845127322959E+00, de:  2.12E-04, gnrm:  1.489E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  33, epot_es:  9.4846859677741E+00, de:  1.73E-04, gnrm:  1.216E-04, 
+   - inside get_beta_grid              : -0.65752546845495736E+01
+     cep: {iter:  33, epot_es:  9.4846859677741E+00, de:  1.73E-04, gnrm:  1.216E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  34, epot_es:  9.4848273694522E+00, de:  1.41E-04, gnrm:  9.922E-05, 
+   - inside get_beta_grid              : -0.65752546124557947E+01
+     cep: {iter:  34, epot_es:  9.4848273694522E+00, de:  1.41E-04, gnrm:  9.922E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  35, epot_es:  9.4849427871516E+00, de:  1.15E-04, gnrm:  8.099E-05, 
+   - inside get_beta_grid              : -0.65752540243355719E+01
+     cep: {iter:  35, epot_es:  9.4849427871516E+00, de:  1.15E-04, gnrm:  8.099E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  36, epot_es:  9.4850369957247E+00, de:  9.42E-05, gnrm:  6.611E-05, 
+   - inside get_beta_grid              : -0.65752531588671745E+01
+     cep: {iter:  36, epot_es:  9.4850369957247E+00, de:  9.42E-05, gnrm:  6.611E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  37, epot_es:  9.4851138925880E+00, de:  7.69E-05, gnrm:  5.396E-05, 
+   - inside get_beta_grid              : -0.65752521717704688E+01
+     cep: {iter:  37, epot_es:  9.4851138925880E+00, de:  7.69E-05, gnrm:  5.396E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  38, epot_es:  9.4851766589596E+00, de:  6.28E-05, gnrm:  4.404E-05, 
+   - inside get_beta_grid              : -0.65752511616790841E+01
+     cep: {iter:  38, epot_es:  9.4851766589596E+00, de:  6.28E-05, gnrm:  4.404E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  39, epot_es:  9.4852278914689E+00, de:  5.12E-05, gnrm:  3.595E-05, 
+   - inside get_beta_grid              : -0.65752501883677139E+01
+     cep: {iter:  39, epot_es:  9.4852278914689E+00, de:  5.12E-05, gnrm:  3.595E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  40, epot_es:  9.4852697095823E+00, de:  4.18E-05, gnrm:  2.934E-05, 
+   - inside get_beta_grid              : -0.65752492855293365E+01
+     cep: {iter:  40, epot_es:  9.4852697095823E+00, de:  4.18E-05, gnrm:  2.934E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  41, epot_es:  9.4853038432886E+00, de:  3.41E-05, gnrm:  2.395E-05, 
+   - inside get_beta_grid              : -0.65752484696711342E+01
+     cep: {iter:  41, epot_es:  9.4853038432886E+00, de:  3.41E-05, gnrm:  2.395E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  42, epot_es:  9.4853317046705E+00, de:  2.79E-05, gnrm:  1.955E-05, 
+   - inside get_beta_grid              : -0.65752477462602190E+01
+     cep: {iter:  42, epot_es:  9.4853317046705E+00, de:  2.79E-05, gnrm:  1.955E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  43, epot_es:  9.4853544463243E+00, de:  2.27E-05, gnrm:  1.596E-05, 
+   - inside get_beta_grid              : -0.65752471139296302E+01
+     cep: {iter:  43, epot_es:  9.4853544463243E+00, de:  2.27E-05, gnrm:  1.596E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  44, epot_es:  9.4853730090442E+00, de:  1.86E-05, gnrm:  1.303E-05, 
+   - inside get_beta_grid              : -0.65752465673172553E+01
+     cep: {iter:  44, epot_es:  9.4853730090442E+00, de:  1.86E-05, gnrm:  1.303E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  45, epot_es:  9.4853881607435E+00, de:  1.52E-05, gnrm:  1.063E-05, 
+   - inside get_beta_grid              : -0.65752460989552137E+01
+     cep: {iter:  45, epot_es:  9.4853881607435E+00, de:  1.52E-05, gnrm:  1.063E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  46, epot_es:  9.4854005282239E+00, de:  1.24E-05, gnrm:  8.679E-06, 
+   - inside get_beta_grid              : -0.65752457004962874E+01
+     cep: {iter:  46, epot_es:  9.4854005282239E+00, de:  1.24E-05, gnrm:  8.679E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  47, epot_es:  9.4854106231061E+00, de:  1.01E-05, gnrm:  7.084E-06, 
+   - inside get_beta_grid              : -0.65752453634880306E+01
+     cep: {iter:  47, epot_es:  9.4854106231061E+00, de:  1.01E-05, gnrm:  7.084E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  48, epot_es:  9.4854188629961E+00, de:  8.24E-06, gnrm:  5.782E-06, 
+   - inside get_beta_grid              : -0.65752450798369519E+01
+     cep: {iter:  48, epot_es:  9.4854188629961E+00, de:  8.24E-06, gnrm:  5.782E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  49, epot_es:  9.4854255887612E+00, de:  6.73E-06, gnrm:  4.720E-06, 
+   - inside get_beta_grid              : -0.65752448420675691E+01
+     cep: {iter:  49, epot_es:  9.4854255887612E+00, de:  6.73E-06, gnrm:  4.720E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  50, epot_es:  9.4854310786316E+00, de:  5.49E-06, gnrm:  3.852E-06, 
+   - inside get_beta_grid              : -0.65752446434452345E+01
+     cep: {iter:  50, epot_es:  9.4854310786316E+00, de:  5.49E-06, gnrm:  3.852E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  51, epot_es:  9.4854355597103E+00, de:  4.48E-06, gnrm:  3.145E-06, 
+   - inside get_beta_grid              : -0.65752444780113759E+01
+     cep: {iter:  51, epot_es:  9.4854355597103E+00, de:  4.48E-06, gnrm:  3.145E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  52, epot_es:  9.4854392173689E+00, de:  3.66E-06, gnrm:  2.567E-06, 
+   - inside get_beta_grid              : -0.65752443405668224E+01
+     cep: {iter:  52, epot_es:  9.4854392173689E+00, de:  3.66E-06, gnrm:  2.567E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  53, epot_es:  9.4854422029154E+00, de:  2.99E-06, gnrm:  2.095E-06, 
+   - inside get_beta_grid              : -0.65752442266236866E+01
+     cep: {iter:  53, epot_es:  9.4854422029154E+00, de:  2.99E-06, gnrm:  2.095E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  54, epot_es:  9.4854446398539E+00, de:  2.44E-06, gnrm:  1.710E-06, 
+   - inside get_beta_grid              : -0.65752441323402184E+01
+     cep: {iter:  54, epot_es:  9.4854446398539E+00, de:  2.44E-06, gnrm:  1.710E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  55, epot_es:  9.4854466289941E+00, de:  1.99E-06, gnrm:  1.396E-06, 
+   - inside get_beta_grid              : -0.65752440544511801E+01
+     cep: {iter:  55, epot_es:  9.4854466289941E+00, de:  1.99E-06, gnrm:  1.396E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  56, epot_es:  9.4854482526211E+00, de:  1.62E-06, gnrm:  1.139E-06, 
+   - inside get_beta_grid              : -0.65752439901969630E+01
+     cep: {iter:  56, epot_es:  9.4854482526211E+00, de:  1.62E-06, gnrm:  1.139E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  57, epot_es:  9.4854495778997E+00, de:  1.33E-06, gnrm:  9.300E-07, 
+   - inside get_beta_grid              : -0.65752439372561922E+01
+     cep: {iter:  57, epot_es:  9.4854495778997E+00, de:  1.33E-06, gnrm:  9.300E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  58, epot_es:  9.4854506596529E+00, de:  1.08E-06, gnrm:  7.591E-07, 
+   - inside get_beta_grid              : -0.65752438936842594E+01
+     cep: {iter:  58, epot_es:  9.4854506596529E+00, de:  1.08E-06, gnrm:  7.591E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  59, epot_es:  9.4854515426296E+00, de:  8.83E-07, gnrm:  6.196E-07, 
+   - inside get_beta_grid              : -0.65752438578570747E+01
+     cep: {iter:  59, epot_es:  9.4854515426296E+00, de:  8.83E-07, gnrm:  6.196E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  60, epot_es:  9.4854522633557E+00, de:  7.21E-07, gnrm:  5.058E-07, 
+   - inside get_beta_grid              : -0.65752438284228498E+01
+     cep: {iter:  60, epot_es:  9.4854522633557E+00, de:  7.21E-07, gnrm:  5.058E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  61, epot_es:  9.4854528516456E+00, de:  5.88E-07, gnrm:  4.128E-07, 
+   - inside get_beta_grid              : -0.65752438042584735E+01
+     cep: {iter:  61, epot_es:  9.4854528516456E+00, de:  5.88E-07, gnrm:  4.128E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  62, epot_es:  9.4854533318349E+00, de:  4.80E-07, gnrm:  3.370E-07, 
+   - inside get_beta_grid              : -0.65752437844333222E+01
+     cep: {iter:  62, epot_es:  9.4854533318349E+00, de:  4.80E-07, gnrm:  3.370E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  63, epot_es:  9.4854537237877E+00, de:  3.92E-07, gnrm:  2.751E-07, 
+   - inside get_beta_grid              : -0.65752437681774909E+01
+     cep: {iter:  63, epot_es:  9.4854537237877E+00, de:  3.92E-07, gnrm:  2.751E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  64, epot_es:  9.4854540437176E+00, de:  3.20E-07, gnrm:  2.245E-07, 
+   - inside get_beta_grid              : -0.65752437548552054E+01
+     cep: {iter:  64, epot_es:  9.4854540437176E+00, de:  3.20E-07, gnrm:  2.245E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  65, epot_es:  9.4854543048593E+00, de:  2.61E-07, gnrm:  1.833E-07, 
+   - inside get_beta_grid              : -0.65752437439419813E+01
+     cep: {iter:  65, epot_es:  9.4854543048593E+00, de:  2.61E-07, gnrm:  1.833E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  66, epot_es:  9.4854545180152E+00, de:  2.13E-07, gnrm:  1.496E-07, 
+   - inside get_beta_grid              : -0.65752437350055324E+01
+     cep: {iter:  66, epot_es:  9.4854545180152E+00, de:  2.13E-07, gnrm:  1.496E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  67, epot_es:  9.4854546920029E+00, de:  1.74E-07, gnrm:  1.221E-07, 
+   - inside get_beta_grid              : -0.65752437276906575E+01
+     cep: {iter:  67, epot_es:  9.4854546920029E+00, de:  1.74E-07, gnrm:  1.221E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  68, epot_es:  9.4854548340198E+00, de:  1.42E-07, gnrm:  9.966E-08, 
+   - inside get_beta_grid              : -0.65752437217045898E+01
+     cep: {iter:  68, epot_es:  9.4854548340198E+00, de:  1.42E-07, gnrm:  9.966E-08, 
        stepsize:  1.000E+00}
    CEP: {iter:  68, epot_es:  9.4854548340198E+00, de:  1.42E-07, gnrm:  9.966E-08, 
      stepsize:  1.000E+00}
+   inside get_beta_grid                : -0.65752437217045898E+01
  - SQNM: {iter:  3, epot: -1.403616935595E+04, de: -2.8E-04, fmax:  3.116E-03, 
           fnrm:  1.236E-01,                  ndim:  1}
+   grid info: {ngpx:  22, ngpy:  20, ngpz:  28, ngptot:  12320, nbgpx:  11, nbgpy:  11, 
+              nbgpz:  10,  hxx:  1.3312821650,     hyx:  0.0000000000, hzx:  0.0000000000, 
+                hxy:  0.0000000000,   hyy:  1.2686526126,         hzy:  0.0000000000, 
+                hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  1.3498043770}
    Charge equilibration process:
-   - cep: {iter:  0, epot_es:  9.0701359064490E+00, de:  0.00E+00, gnrm:  6.907E-02, 
+   - inside get_beta_grid              : -0.47456280635683612E+01
+     cep: {iter:  0, epot_es:  9.0701359064490E+00, de:  0.00E+00, gnrm:  6.907E-02, 
        stepsize:  1.000E-01}
-   - cep: {iter:  1, epot_es:  9.0854494376029E+00, de:  1.53E-02, gnrm:  6.644E-02, 
+   - inside get_beta_grid              : -0.47926295514769466E+01
+     cep: {iter:  1, epot_es:  9.0854494376029E+00, de:  1.53E-02, gnrm:  6.644E-02, 
        stepsize:  2.000E-01}
-   - cep: {iter:  2, epot_es:  9.1149839033053E+00, de:  2.95E-02, gnrm:  6.139E-02, 
+   - inside get_beta_grid              : -0.48814168812200078E+01
+     cep: {iter:  2, epot_es:  9.1149839033053E+00, de:  2.95E-02, gnrm:  6.139E-02, 
        stepsize:  4.000E-01}
-   - cep: {iter:  3, epot_es:  9.1698224375220E+00, de:  5.48E-02, gnrm:  5.209E-02, 
+   - inside get_beta_grid              : -0.50392849728008615E+01
+     cep: {iter:  3, epot_es:  9.1698224375220E+00, de:  5.48E-02, gnrm:  5.209E-02, 
        stepsize:  8.000E-01}
-   - cep: {iter:  4, epot_es:  9.2284277298281E+00, de:  5.86E-02, gnrm:  4.226E-02, 
+   - inside get_beta_grid              : -0.51928137484437311E+01
+     cep: {iter:  4, epot_es:  9.2284277298281E+00, de:  5.86E-02, gnrm:  4.226E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  5, epot_es:  9.2763475598102E+00, de:  4.79E-02, gnrm:  3.433E-02, 
+   - inside get_beta_grid              : -0.53037233270690853E+01
+     cep: {iter:  5, epot_es:  9.2763475598102E+00, de:  4.79E-02, gnrm:  3.433E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  6, epot_es:  9.3155087616467E+00, de:  3.92E-02, gnrm:  2.791E-02, 
+   - inside get_beta_grid              : -0.53838265915278249E+01
+     cep: {iter:  6, epot_es:  9.3155087616467E+00, de:  3.92E-02, gnrm:  2.791E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  7, epot_es:  9.3474987100011E+00, de:  3.20E-02, gnrm:  2.271E-02, 
+   - inside get_beta_grid              : -0.54416655348633194E+01
+     cep: {iter:  7, epot_es:  9.3474987100011E+00, de:  3.20E-02, gnrm:  2.271E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  8, epot_es:  9.3736220700361E+00, de:  2.61E-02, gnrm:  1.848E-02, 
+   - inside get_beta_grid              : -0.54834163326589094E+01
+     cep: {iter:  8, epot_es:  9.3736220700361E+00, de:  2.61E-02, gnrm:  1.848E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  9, epot_es:  9.3949492759641E+00, de:  2.13E-02, gnrm:  1.505E-02, 
+   - inside get_beta_grid              : -0.55135440893307122E+01
+     cep: {iter:  9, epot_es:  9.3949492759641E+00, de:  2.13E-02, gnrm:  1.505E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  10, epot_es:  9.4123574234576E+00, de:  1.74E-02, gnrm:  1.226E-02, 
+   - inside get_beta_grid              : -0.55352764732113142E+01
+     cep: {iter:  10, epot_es:  9.4123574234576E+00, de:  1.74E-02, gnrm:  1.226E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  11, epot_es:  9.4265644643926E+00, de:  1.42E-02, gnrm:  9.992E-03, 
+   - inside get_beta_grid              : -0.55509463212514527E+01
+     cep: {iter:  11, epot_es:  9.4265644643926E+00, de:  1.42E-02, gnrm:  9.992E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  12, epot_es:  9.4381576253314E+00, de:  1.16E-02, gnrm:  8.144E-03, 
+   - inside get_beta_grid              : -0.55622394489346592E+01
+     cep: {iter:  12, epot_es:  9.4381576253314E+00, de:  1.16E-02, gnrm:  8.144E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  13, epot_es:  9.4476169202182E+00, de:  9.46E-03, gnrm:  6.639E-03, 
+   - inside get_beta_grid              : -0.55703738828102889E+01
+     cep: {iter:  13, epot_es:  9.4476169202182E+00, de:  9.46E-03, gnrm:  6.639E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  14, epot_es:  9.4553345400345E+00, de:  7.72E-03, gnrm:  5.412E-03, 
+   - inside get_beta_grid              : -0.55762294841689322E+01
+     cep: {iter:  14, epot_es:  9.4553345400345E+00, de:  7.72E-03, gnrm:  5.412E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  15, epot_es:  9.4616308028244E+00, de:  6.30E-03, gnrm:  4.413E-03, 
+   - inside get_beta_grid              : -0.55804416873656280E+01
+     cep: {iter:  15, epot_es:  9.4616308028244E+00, de:  6.30E-03, gnrm:  4.413E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  16, epot_es:  9.4667672495664E+00, de:  5.14E-03, gnrm:  3.599E-03, 
+   - inside get_beta_grid              : -0.55834692812876554E+01
+     cep: {iter:  16, epot_es:  9.4667672495664E+00, de:  5.14E-03, gnrm:  3.599E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  17, epot_es:  9.4709573810792E+00, de:  4.19E-03, gnrm:  2.935E-03, 
+   - inside get_beta_grid              : -0.55856434166340545E+01
+     cep: {iter:  17, epot_es:  9.4709573810792E+00, de:  4.19E-03, gnrm:  2.935E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  18, epot_es:  9.4743754510293E+00, de:  3.42E-03, gnrm:  2.393E-03, 
+   - inside get_beta_grid              : -0.55872030350402415E+01
+     cep: {iter:  18, epot_es:  9.4743754510293E+00, de:  3.42E-03, gnrm:  2.393E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  19, epot_es:  9.4771636606996E+00, de:  2.79E-03, gnrm:  1.952E-03, 
+   - inside get_beta_grid              : -0.55883204787463461E+01
+     cep: {iter:  19, epot_es:  9.4771636606996E+00, de:  2.79E-03, gnrm:  1.952E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  20, epot_es:  9.4794380420018E+00, de:  2.27E-03, gnrm:  1.592E-03, 
+   - inside get_beta_grid              : -0.55891199996376564E+01
+     cep: {iter:  20, epot_es:  9.4794380420018E+00, de:  2.27E-03, gnrm:  1.592E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  21, epot_es:  9.4812932653140E+00, de:  1.86E-03, gnrm:  1.299E-03, 
+   - inside get_beta_grid              : -0.55896911341896258E+01
+     cep: {iter:  21, epot_es:  9.4812932653140E+00, de:  1.86E-03, gnrm:  1.299E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  22, epot_es:  9.4828065669836E+00, de:  1.51E-03, gnrm:  1.059E-03, 
+   - inside get_beta_grid              : -0.55900983666209925E+01
+     cep: {iter:  22, epot_es:  9.4828065669836E+00, de:  1.51E-03, gnrm:  1.059E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  23, epot_es:  9.4840409566238E+00, de:  1.23E-03, gnrm:  8.639E-04, 
+   - inside get_beta_grid              : -0.55903881088699823E+01
+     cep: {iter:  23, epot_es:  9.4840409566238E+00, de:  1.23E-03, gnrm:  8.639E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  24, epot_es:  9.4850478355835E+00, de:  1.01E-03, gnrm:  7.046E-04, 
+   - inside get_beta_grid              : -0.55905937412244455E+01
+     cep: {iter:  24, epot_es:  9.4850478355835E+00, de:  1.01E-03, gnrm:  7.046E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  25, epot_es:  9.4858691342540E+00, de:  8.21E-04, gnrm:  5.748E-04, 
+   - inside get_beta_grid              : -0.55907392514599392E+01
+     cep: {iter:  25, epot_es:  9.4858691342540E+00, de:  8.21E-04, gnrm:  5.748E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  26, epot_es:  9.4865390563454E+00, de:  6.70E-04, gnrm:  4.688E-04, 
+   - inside get_beta_grid              : -0.55908418613467354E+01
+     cep: {iter:  26, epot_es:  9.4865390563454E+00, de:  6.70E-04, gnrm:  4.688E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  27, epot_es:  9.4870855022272E+00, de:  5.46E-04, gnrm:  3.824E-04, 
+   - inside get_beta_grid              : -0.55909139216434447E+01
+     cep: {iter:  27, epot_es:  9.4870855022272E+00, de:  5.46E-04, gnrm:  3.824E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  28, epot_es:  9.4875312302672E+00, de:  4.46E-04, gnrm:  3.119E-04, 
+   - inside get_beta_grid              : -0.55909642787743854E+01
+     cep: {iter:  28, epot_es:  9.4875312302672E+00, de:  4.46E-04, gnrm:  3.119E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  29, epot_es:  9.4878948043230E+00, de:  3.64E-04, gnrm:  2.544E-04, 
+   - inside get_beta_grid              : -0.55909992600406762E+01
+     cep: {iter:  29, epot_es:  9.4878948043230E+00, de:  3.64E-04, gnrm:  2.544E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  30, epot_es:  9.4881913667180E+00, de:  2.97E-04, gnrm:  2.075E-04, 
+   - inside get_beta_grid              : -0.55910233834806746E+01
+     cep: {iter:  30, epot_es:  9.4881913667180E+00, de:  2.97E-04, gnrm:  2.075E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  31, epot_es:  9.4884332688155E+00, de:  2.42E-04, gnrm:  1.693E-04, 
+   - inside get_beta_grid              : -0.55910398690383758E+01
+     cep: {iter:  31, epot_es:  9.4884332688155E+00, de:  2.42E-04, gnrm:  1.693E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  32, epot_es:  9.4886305854071E+00, de:  1.97E-04, gnrm:  1.381E-04, 
+   - inside get_beta_grid              : -0.55910510064137782E+01
+     cep: {iter:  32, epot_es:  9.4886305854071E+00, de:  1.97E-04, gnrm:  1.381E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  33, epot_es:  9.4887915343126E+00, de:  1.61E-04, gnrm:  1.126E-04, 
+   - inside get_beta_grid              : -0.55910584195779380E+01
+     cep: {iter:  33, epot_es:  9.4887915343126E+00, de:  1.61E-04, gnrm:  1.126E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  34, epot_es:  9.4889228186502E+00, de:  1.31E-04, gnrm:  9.188E-05, 
+   - inside get_beta_grid              : -0.55910632568201741E+01
+     cep: {iter:  34, epot_es:  9.4889228186502E+00, de:  1.31E-04, gnrm:  9.188E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  35, epot_es:  9.4890299060258E+00, de:  1.07E-04, gnrm:  7.495E-05, 
+   - inside get_beta_grid              : -0.55910663271568248E+01
+     cep: {iter:  35, epot_es:  9.4890299060258E+00, de:  1.07E-04, gnrm:  7.495E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  36, epot_es:  9.4891172562638E+00, de:  8.74E-05, gnrm:  6.113E-05, 
+   - inside get_beta_grid              : -0.55910681981312162E+01
+     cep: {iter:  36, epot_es:  9.4891172562638E+00, de:  8.74E-05, gnrm:  6.113E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  37, epot_es:  9.4891885071637E+00, de:  7.13E-05, gnrm:  4.987E-05, 
+   - inside get_beta_grid              : -0.55910692658427781E+01
+     cep: {iter:  37, epot_es:  9.4891885071637E+00, de:  7.13E-05, gnrm:  4.987E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  38, epot_es:  9.4892466260171E+00, de:  5.81E-05, gnrm:  4.068E-05, 
+   - inside get_beta_grid              : -0.55910698050157581E+01
+     cep: {iter:  38, epot_es:  9.4892466260171E+00, de:  5.81E-05, gnrm:  4.068E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  39, epot_es:  9.4892940331969E+00, de:  4.74E-05, gnrm:  3.318E-05, 
+   - inside get_beta_grid              : -0.55910700047357125E+01
+     cep: {iter:  39, epot_es:  9.4892940331969E+00, de:  4.74E-05, gnrm:  3.318E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  40, epot_es:  9.4893327029659E+00, de:  3.87E-05, gnrm:  2.706E-05, 
+   - inside get_beta_grid              : -0.55910699939068724E+01
+     cep: {iter:  40, epot_es:  9.4893327029659E+00, de:  3.87E-05, gnrm:  2.706E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  41, epot_es:  9.4893642457034E+00, de:  3.15E-05, gnrm:  2.208E-05, 
+   - inside get_beta_grid              : -0.55910698593435670E+01
+     cep: {iter:  41, epot_es:  9.4893642457034E+00, de:  3.15E-05, gnrm:  2.208E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  42, epot_es:  9.4893899749759E+00, de:  2.57E-05, gnrm:  1.801E-05, 
+   - inside get_beta_grid              : -0.55910696585936464E+01
+     cep: {iter:  42, epot_es:  9.4893899749759E+00, de:  2.57E-05, gnrm:  1.801E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  43, epot_es:  9.4894109622449E+00, de:  2.10E-05, gnrm:  1.469E-05, 
+   - inside get_beta_grid              : -0.55910694289974456E+01
+     cep: {iter:  43, epot_es:  9.4894109622449E+00, de:  2.10E-05, gnrm:  1.469E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  44, epot_es:  9.4894280814903E+00, de:  1.71E-05, gnrm:  1.198E-05, 
+   - inside get_beta_grid              : -0.55910691940665167E+01
+     cep: {iter:  44, epot_es:  9.4894280814903E+00, de:  1.71E-05, gnrm:  1.198E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  45, epot_es:  9.4894420456099E+00, de:  1.40E-05, gnrm:  9.774E-06, 
+   - inside get_beta_grid              : -0.55910689679511645E+01
+     cep: {iter:  45, epot_es:  9.4894420456099E+00, de:  1.40E-05, gnrm:  9.774E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  46, epot_es:  9.4894534361081E+00, de:  1.14E-05, gnrm:  7.972E-06, 
+   - inside get_beta_grid              : -0.55910687585551129E+01
+     cep: {iter:  46, epot_es:  9.4894534361081E+00, de:  1.14E-05, gnrm:  7.972E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  47, epot_es:  9.4894627273141E+00, de:  9.29E-06, gnrm:  6.503E-06, 
+   - inside get_beta_grid              : -0.55910685696925126E+01
+     cep: {iter:  47, epot_es:  9.4894627273141E+00, de:  9.29E-06, gnrm:  6.503E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  48, epot_es:  9.4894703061350E+00, de:  7.58E-06, gnrm:  5.304E-06, 
+   - inside get_beta_grid              : -0.55910684025690323E+01
+     cep: {iter:  48, epot_es:  9.4894703061350E+00, de:  7.58E-06, gnrm:  5.304E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  49, epot_es:  9.4894764881687E+00, de:  6.18E-06, gnrm:  4.327E-06, 
+   - inside get_beta_grid              : -0.55910682567894199E+01
+     cep: {iter:  49, epot_es:  9.4894764881687E+00, de:  6.18E-06, gnrm:  4.327E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  50, epot_es:  9.4894815308467E+00, de:  5.04E-06, gnrm:  3.529E-06, 
+   - inside get_beta_grid              : -0.55910681310333095E+01
+     cep: {iter:  50, epot_es:  9.4894815308467E+00, de:  5.04E-06, gnrm:  3.529E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  51, epot_es:  9.4894856441548E+00, de:  4.11E-06, gnrm:  2.879E-06, 
+   - inside get_beta_grid              : -0.55910680235014301E+01
+     cep: {iter:  51, epot_es:  9.4894856441548E+00, de:  4.11E-06, gnrm:  2.879E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  52, epot_es:  9.4894889993777E+00, de:  3.36E-06, gnrm:  2.348E-06, 
+   - inside get_beta_grid              : -0.55910679322034822E+01
+     cep: {iter:  52, epot_es:  9.4894889993777E+00, de:  3.36E-06, gnrm:  2.348E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  53, epot_es:  9.4894917362316E+00, de:  2.74E-06, gnrm:  1.916E-06, 
+   - inside get_beta_grid              : -0.55910678551380917E+01
+     cep: {iter:  53, epot_es:  9.4894917362316E+00, de:  2.74E-06, gnrm:  1.916E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  54, epot_es:  9.4894939686827E+00, de:  2.23E-06, gnrm:  1.563E-06, 
+   - inside get_beta_grid              : -0.55910677903988661E+01
+     cep: {iter:  54, epot_es:  9.4894939686827E+00, de:  2.23E-06, gnrm:  1.563E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  55, epot_es:  9.4894957896929E+00, de:  1.82E-06, gnrm:  1.275E-06, 
+   - inside get_beta_grid              : -0.55910677362327510E+01
+     cep: {iter:  55, epot_es:  9.4894957896929E+00, de:  1.82E-06, gnrm:  1.275E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  56, epot_es:  9.4894972750911E+00, de:  1.49E-06, gnrm:  1.040E-06, 
+   - inside get_beta_grid              : -0.55910676910665691E+01
+     cep: {iter:  56, epot_es:  9.4894972750911E+00, de:  1.49E-06, gnrm:  1.040E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  57, epot_es:  9.4894984867307E+00, de:  1.21E-06, gnrm:  8.481E-07, 
+   - inside get_beta_grid              : -0.55910676535130452E+01
+     cep: {iter:  57, epot_es:  9.4894984867307E+00, de:  1.21E-06, gnrm:  8.481E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  58, epot_es:  9.4894994750655E+00, de:  9.88E-07, gnrm:  6.918E-07, 
+   - inside get_beta_grid              : -0.55910676223657649E+01
+     cep: {iter:  58, epot_es:  9.4894994750655E+00, de:  9.88E-07, gnrm:  6.918E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  59, epot_es:  9.4895002812507E+00, de:  8.06E-07, gnrm:  5.643E-07, 
+   - inside get_beta_grid              : -0.55910675965865391E+01
+     cep: {iter:  59, epot_es:  9.4895002812507E+00, de:  8.06E-07, gnrm:  5.643E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  60, epot_es:  9.4895009388564E+00, de:  6.58E-07, gnrm:  4.603E-07, 
+   - inside get_beta_grid              : -0.55910675752888075E+01
+     cep: {iter:  60, epot_es:  9.4895009388564E+00, de:  6.58E-07, gnrm:  4.603E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  61, epot_es:  9.4895014752658E+00, de:  5.36E-07, gnrm:  3.754E-07, 
+   - inside get_beta_grid              : -0.55910675577211686E+01
+     cep: {iter:  61, epot_es:  9.4895014752658E+00, de:  5.36E-07, gnrm:  3.754E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  62, epot_es:  9.4895019128152E+00, de:  4.38E-07, gnrm:  3.063E-07, 
+   - inside get_beta_grid              : -0.55910675432501291E+01
+     cep: {iter:  62, epot_es:  9.4895019128152E+00, de:  4.38E-07, gnrm:  3.063E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  63, epot_es:  9.4895022697247E+00, de:  3.57E-07, gnrm:  2.498E-07, 
+   - inside get_beta_grid              : -0.55910675313437448E+01
+     cep: {iter:  63, epot_es:  9.4895022697247E+00, de:  3.57E-07, gnrm:  2.498E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  64, epot_es:  9.4895025608560E+00, de:  2.91E-07, gnrm:  2.038E-07, 
+   - inside get_beta_grid              : -0.55910675215578118E+01
+     cep: {iter:  64, epot_es:  9.4895025608560E+00, de:  2.91E-07, gnrm:  2.038E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  65, epot_es:  9.4895027983321E+00, de:  2.37E-07, gnrm:  1.662E-07, 
+   - inside get_beta_grid              : -0.55910675135219927E+01
+     cep: {iter:  65, epot_es:  9.4895027983321E+00, de:  2.37E-07, gnrm:  1.662E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  66, epot_es:  9.4895029920416E+00, de:  1.94E-07, gnrm:  1.356E-07, 
+   - inside get_beta_grid              : -0.55910675069283773E+01
+     cep: {iter:  66, epot_es:  9.4895029920416E+00, de:  1.94E-07, gnrm:  1.356E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  67, epot_es:  9.4895031500506E+00, de:  1.58E-07, gnrm:  1.106E-07, 
+   - inside get_beta_grid              : -0.55910675015219455E+01
+     cep: {iter:  67, epot_es:  9.4895031500506E+00, de:  1.58E-07, gnrm:  1.106E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  68, epot_es:  9.4895032789387E+00, de:  1.29E-07, gnrm:  9.021E-08, 
+   - inside get_beta_grid              : -0.55910674970915908E+01
+     cep: {iter:  68, epot_es:  9.4895032789387E+00, de:  1.29E-07, gnrm:  9.021E-08, 
        stepsize:  1.000E+00}
    CEP: {iter:  68, epot_es:  9.4895032789387E+00, de:  1.29E-07, gnrm:  9.021E-08, 
      stepsize:  1.000E+00}
+   inside get_beta_grid                : -0.55910674970915908E+01
  - SQNM: {iter:  4, epot: -1.403617134900E+04, de: -2.0E-03, fmax:  9.462E-05, 
           fnrm:  2.161E-02,                  ndim:  2}
+   grid info: {ngpx:  22, ngpy:  20, ngpz:  28, ngptot:  12320, nbgpx:  11, nbgpy:  11, 
+              nbgpz:  10,  hxx:  1.3312821650,     hyx:  0.0000000000, hzx:  0.0000000000, 
+                hxy:  0.0000000000,   hyy:  1.2686526126,         hzy:  0.0000000000, 
+                hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  1.3498043770}
    Charge equilibration process:
-   - cep: {iter:  0, epot_es:  9.0693016109256E+00, de:  0.00E+00, gnrm:  6.924E-02, 
+   - inside get_beta_grid              : -0.47113858779257738E+01
+     cep: {iter:  0, epot_es:  9.0693016109256E+00, de:  0.00E+00, gnrm:  6.924E-02, 
        stepsize:  1.000E-01}
-   - cep: {iter:  1, epot_es:  9.0846439743643E+00, de:  1.53E-02, gnrm:  6.661E-02, 
+   - inside get_beta_grid              : -0.47588499282800516E+01
+     cep: {iter:  1, epot_es:  9.0846439743643E+00, de:  1.53E-02, gnrm:  6.661E-02, 
        stepsize:  2.000E-01}
-   - cep: {iter:  2, epot_es:  9.1142343037840E+00, de:  2.96E-02, gnrm:  6.154E-02, 
+   - inside get_beta_grid              : -0.48485141251707740E+01
+     cep: {iter:  2, epot_es:  9.1142343037840E+00, de:  2.96E-02, gnrm:  6.154E-02, 
        stepsize:  4.000E-01}
-   - cep: {iter:  3, epot_es:  9.1691774775903E+00, de:  5.49E-02, gnrm:  5.221E-02, 
+   - inside get_beta_grid              : -0.50079529641792613E+01
+     cep: {iter:  3, epot_es:  9.1691774775903E+00, de:  5.49E-02, gnrm:  5.221E-02, 
        stepsize:  8.000E-01}
-   - cep: {iter:  4, epot_es:  9.2278962284917E+00, de:  5.87E-02, gnrm:  4.236E-02, 
+   - inside get_beta_grid              : -0.51630353224007512E+01
+     cep: {iter:  4, epot_es:  9.2278962284917E+00, de:  5.87E-02, gnrm:  4.236E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  5, epot_es:  9.2759103059943E+00, de:  4.80E-02, gnrm:  3.441E-02, 
+   - inside get_beta_grid              : -0.52750928554246279E+01
+     cep: {iter:  5, epot_es:  9.2759103059943E+00, de:  4.80E-02, gnrm:  3.441E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  6, epot_es:  9.3151496211325E+00, de:  3.92E-02, gnrm:  2.797E-02, 
+   - inside get_beta_grid              : -0.53560441162114696E+01
+     cep: {iter:  6, epot_es:  9.3151496211325E+00, de:  3.92E-02, gnrm:  2.797E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  7, epot_es:  9.3472042044910E+00, de:  3.21E-02, gnrm:  2.276E-02, 
+   - inside get_beta_grid              : -0.54145093178216328E+01
+     cep: {iter:  7, epot_es:  9.3472042044910E+00, de:  3.21E-02, gnrm:  2.276E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  8, epot_es:  9.3733809818538E+00, de:  2.62E-02, gnrm:  1.852E-02, 
+   - inside get_beta_grid              : -0.54567225120073868E+01
+     cep: {iter:  8, epot_es:  9.3733809818538E+00, de:  2.62E-02, gnrm:  1.852E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  9, epot_es:  9.3947522937892E+00, de:  2.14E-02, gnrm:  1.509E-02, 
+   - inside get_beta_grid              : -0.54871916096027364E+01
+     cep: {iter:  9, epot_es:  9.3947522937892E+00, de:  2.14E-02, gnrm:  1.509E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  10, epot_es:  9.4121968334020E+00, de:  1.74E-02, gnrm:  1.229E-02, 
+   - inside get_beta_grid              : -0.55091759276521683E+01
+     cep: {iter:  10, epot_es:  9.4121968334020E+00, de:  1.74E-02, gnrm:  1.229E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  11, epot_es:  9.4264338851946E+00, de:  1.42E-02, gnrm:  1.001E-02, 
+   - inside get_beta_grid              : -0.55250316942730073E+01
+     cep: {iter:  11, epot_es:  9.4264338851946E+00, de:  1.42E-02, gnrm:  1.001E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  12, epot_es:  9.4380517839068E+00, de:  1.16E-02, gnrm:  8.162E-03, 
+   - inside get_beta_grid              : -0.55364620074594395E+01
+     cep: {iter:  12, epot_es:  9.4380517839068E+00, de:  1.16E-02, gnrm:  8.162E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  13, epot_es:  9.4475314628693E+00, de:  9.48E-03, gnrm:  6.654E-03, 
+   - inside get_beta_grid              : -0.55446976590698984E+01
+     cep: {iter:  13, epot_es:  9.4475314628693E+00, de:  9.48E-03, gnrm:  6.654E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  14, epot_es:  9.4552658745010E+00, de:  7.73E-03, gnrm:  5.425E-03, 
+   - inside get_beta_grid              : -0.55506279365746982E+01
+     cep: {iter:  14, epot_es:  9.4552658745010E+00, de:  7.73E-03, gnrm:  5.425E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  15, epot_es:  9.4615759666427E+00, de:  6.31E-03, gnrm:  4.423E-03, 
+   - inside get_beta_grid              : -0.55548952330675565E+01
+     cep: {iter:  15, epot_es:  9.4615759666427E+00, de:  6.31E-03, gnrm:  4.423E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  16, epot_es:  9.4667238006642E+00, de:  5.15E-03, gnrm:  3.607E-03, 
+   - inside get_beta_grid              : -0.55579634734501520E+01
+     cep: {iter:  16, epot_es:  9.4667238006642E+00, de:  5.15E-03, gnrm:  3.607E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  17, epot_es:  9.4709233070387E+00, de:  4.20E-03, gnrm:  2.942E-03, 
+   - inside get_beta_grid              : -0.55601675983734680E+01
+     cep: {iter:  17, epot_es:  9.4709233070387E+00, de:  4.20E-03, gnrm:  2.942E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  18, epot_es:  9.4743490939521E+00, de:  3.43E-03, gnrm:  2.399E-03, 
+   - inside get_beta_grid              : -0.55617493456456550E+01
+     cep: {iter:  18, epot_es:  9.4743490939521E+00, de:  3.43E-03, gnrm:  2.399E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  19, epot_es:  9.4771436550666E+00, de:  2.79E-03, gnrm:  1.957E-03, 
+   - inside get_beta_grid              : -0.55628831201707358E+01
+     cep: {iter:  19, epot_es:  9.4771436550666E+00, de:  2.79E-03, gnrm:  1.957E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  20, epot_es:  9.4794232633295E+00, de:  2.28E-03, gnrm:  1.596E-03, 
+   - inside get_beta_grid              : -0.55636946952191133E+01
+     cep: {iter:  20, epot_es:  9.4794232633295E+00, de:  2.28E-03, gnrm:  1.596E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  21, epot_es:  9.4812827877612E+00, de:  1.86E-03, gnrm:  1.302E-03, 
+   - inside get_beta_grid              : -0.55642747293058727E+01
+     cep: {iter:  21, epot_es:  9.4812827877612E+00, de:  1.86E-03, gnrm:  1.302E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  22, epot_es:  9.4827996283713E+00, de:  1.52E-03, gnrm:  1.062E-03, 
+   - inside get_beta_grid              : -0.55646885341135270E+01
+     cep: {iter:  22, epot_es:  9.4827996283713E+00, de:  1.52E-03, gnrm:  1.062E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  23, epot_es:  9.4840369295838E+00, de:  1.24E-03, gnrm:  8.660E-04, 
+   - inside get_beta_grid              : -0.55649831317835048E+01
+     cep: {iter:  23, epot_es:  9.4840369295838E+00, de:  1.24E-03, gnrm:  8.660E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  24, epot_es:  9.4850462037719E+00, de:  1.01E-03, gnrm:  7.064E-04, 
+   - inside get_beta_grid              : -0.55651923525907288E+01
+     cep: {iter:  24, epot_es:  9.4850462037719E+00, de:  1.01E-03, gnrm:  7.064E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  25, epot_es:  9.4858694727470E+00, de:  8.23E-04, gnrm:  5.762E-04, 
+   - inside get_beta_grid              : -0.55653405161597105E+01
+     cep: {iter:  25, epot_es:  9.4858694727470E+00, de:  8.23E-04, gnrm:  5.762E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  26, epot_es:  9.4865410154857E+00, de:  6.72E-04, gnrm:  4.700E-04, 
+   - inside get_beta_grid              : -0.55654450890048084E+01
+     cep: {iter:  26, epot_es:  9.4865410154857E+00, de:  6.72E-04, gnrm:  4.700E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  27, epot_es:  9.4870887943168E+00, de:  5.48E-04, gnrm:  3.834E-04, 
+   - inside get_beta_grid              : -0.55655186024082397E+01
+     cep: {iter:  27, epot_es:  9.4870887943168E+00, de:  5.48E-04, gnrm:  3.834E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  28, epot_es:  9.4875356186076E+00, de:  4.47E-04, gnrm:  3.127E-04, 
+   - inside get_beta_grid              : -0.55655700359688591E+01
+     cep: {iter:  28, epot_es:  9.4875356186076E+00, de:  4.47E-04, gnrm:  3.127E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  29, epot_es:  9.4879000941891E+00, de:  3.64E-04, gnrm:  2.551E-04, 
+   - inside get_beta_grid              : -0.55656058152526917E+01
+     cep: {iter:  29, epot_es:  9.4879000941891E+00, de:  3.64E-04, gnrm:  2.551E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  30, epot_es:  9.4881973979269E+00, de:  2.97E-04, gnrm:  2.081E-04, 
+   - inside get_beta_grid              : -0.55656305308224070E+01
+     cep: {iter:  30, epot_es:  9.4881973979269E+00, de:  2.97E-04, gnrm:  2.081E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  31, epot_es:  9.4884399096082E+00, de:  2.43E-04, gnrm:  1.697E-04, 
+   - inside get_beta_grid              : -0.55656474561649194E+01
+     cep: {iter:  31, epot_es:  9.4884399096082E+00, de:  2.43E-04, gnrm:  1.697E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  32, epot_es:  9.4886377274120E+00, de:  1.98E-04, gnrm:  1.384E-04, 
+   - inside get_beta_grid              : -0.55656589205234592E+01
+     cep: {iter:  32, epot_es:  9.4886377274120E+00, de:  1.98E-04, gnrm:  1.384E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  33, epot_es:  9.4887990884001E+00, de:  1.61E-04, gnrm:  1.129E-04, 
+   - inside get_beta_grid              : -0.55656665770867217E+01
+     cep: {iter:  33, epot_es:  9.4887990884001E+00, de:  1.61E-04, gnrm:  1.129E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  34, epot_es:  9.4889307115208E+00, de:  1.32E-04, gnrm:  9.212E-05, 
+   - inside get_beta_grid              : -0.55656715957416152E+01
+     cep: {iter:  34, epot_es:  9.4889307115208E+00, de:  1.32E-04, gnrm:  9.212E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  35, epot_es:  9.4890380774022E+00, de:  1.07E-04, gnrm:  7.514E-05, 
+   - inside get_beta_grid              : -0.55656748014784956E+01
+     cep: {iter:  35, epot_es:  9.4890380774022E+00, de:  1.07E-04, gnrm:  7.514E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  36, epot_es:  9.4891256565806E+00, de:  8.76E-05, gnrm:  6.130E-05, 
+   - inside get_beta_grid              : -0.55656767736635446E+01
+     cep: {iter:  36, epot_es:  9.4891256565806E+00, de:  8.76E-05, gnrm:  6.130E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  37, epot_es:  9.4891970956660E+00, de:  7.14E-05, gnrm:  5.000E-05, 
+   - inside get_beta_grid              : -0.55656779171522306E+01
+     cep: {iter:  37, epot_es:  9.4891970956660E+00, de:  7.14E-05, gnrm:  5.000E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  38, epot_es:  9.4892553691966E+00, de:  5.83E-05, gnrm:  4.079E-05, 
+   - inside get_beta_grid              : -0.55656785131589794E+01
+     cep: {iter:  38, epot_es:  9.4892553691966E+00, de:  5.83E-05, gnrm:  4.079E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  39, epot_es:  9.4893029035048E+00, de:  4.75E-05, gnrm:  3.327E-05, 
+   - inside get_beta_grid              : -0.55656787555846980E+01
+     cep: {iter:  39, epot_es:  9.4893029035048E+00, de:  4.75E-05, gnrm:  3.327E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  40, epot_es:  9.4893416777544E+00, de:  3.88E-05, gnrm:  2.714E-05, 
+   - inside get_beta_grid              : -0.55656787769092562E+01
+     cep: {iter:  40, epot_es:  9.4893416777544E+00, de:  3.88E-05, gnrm:  2.714E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  41, epot_es:  9.4893733063548E+00, de:  3.16E-05, gnrm:  2.214E-05, 
+   - inside get_beta_grid              : -0.55656786666049998E+01
+     cep: {iter:  41, epot_es:  9.4893733063548E+00, de:  3.16E-05, gnrm:  2.214E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  42, epot_es:  9.4893991061864E+00, de:  2.58E-05, gnrm:  1.806E-05, 
+   - inside get_beta_grid              : -0.55656784841984202E+01
+     cep: {iter:  42, epot_es:  9.4893991061864E+00, de:  2.58E-05, gnrm:  1.806E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  43, epot_es:  9.4894201514352E+00, de:  2.10E-05, gnrm:  1.473E-05, 
+   - inside get_beta_grid              : -0.55656782685048602E+01
+     cep: {iter:  43, epot_es:  9.4894201514352E+00, de:  2.10E-05, gnrm:  1.473E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  44, epot_es:  9.4894373183215E+00, de:  1.72E-05, gnrm:  1.202E-05, 
+   - inside get_beta_grid              : -0.55656780441361269E+01
+     cep: {iter:  44, epot_es:  9.4894373183215E+00, de:  1.72E-05, gnrm:  1.202E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  45, epot_es:  9.4894513215846E+00, de:  1.40E-05, gnrm:  9.802E-06, 
+   - inside get_beta_grid              : -0.55656778260652180E+01
+     cep: {iter:  45, epot_es:  9.4894513215846E+00, de:  1.40E-05, gnrm:  9.802E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  46, epot_es:  9.4894627442430E+00, de:  1.14E-05, gnrm:  7.995E-06, 
+   - inside get_beta_grid              : -0.55656776228118403E+01
+     cep: {iter:  46, epot_es:  9.4894627442430E+00, de:  1.14E-05, gnrm:  7.995E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  47, epot_es:  9.4894720618703E+00, de:  9.32E-06, gnrm:  6.522E-06, 
+   - inside get_beta_grid              : -0.55656774386519388E+01
+     cep: {iter:  47, epot_es:  9.4894720618703E+00, de:  9.32E-06, gnrm:  6.522E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  48, epot_es:  9.4894796623967E+00, de:  7.60E-06, gnrm:  5.320E-06, 
+   - inside get_beta_grid              : -0.55656772751387740E+01
+     cep: {iter:  48, epot_es:  9.4894796623967E+00, de:  7.60E-06, gnrm:  5.320E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  49, epot_es:  9.4894858622609E+00, de:  6.20E-06, gnrm:  4.340E-06, 
+   - inside get_beta_grid              : -0.55656771321381528E+01
+     cep: {iter:  49, epot_es:  9.4894858622609E+00, de:  6.20E-06, gnrm:  4.340E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  50, epot_es:  9.4894909195856E+00, de:  5.06E-06, gnrm:  3.540E-06, 
+   - inside get_beta_grid              : -0.55656770085268867E+01
+     cep: {iter:  50, epot_es:  9.4894909195856E+00, de:  5.06E-06, gnrm:  3.540E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  51, epot_es:  9.4894950449244E+00, de:  4.13E-06, gnrm:  2.888E-06, 
+   - inside get_beta_grid              : -0.55656769026551283E+01
+     cep: {iter:  51, epot_es:  9.4894950449244E+00, de:  4.13E-06, gnrm:  2.888E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  52, epot_es:  9.4894984100288E+00, de:  3.37E-06, gnrm:  2.355E-06, 
+   - inside get_beta_grid              : -0.55656768126458092E+01
+     cep: {iter:  52, epot_es:  9.4894984100288E+00, de:  3.37E-06, gnrm:  2.355E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  53, epot_es:  9.4895011549986E+00, de:  2.74E-06, gnrm:  1.921E-06, 
+   - inside get_beta_grid              : -0.55656767365831437E+01
+     cep: {iter:  53, epot_es:  9.4895011549986E+00, de:  2.74E-06, gnrm:  1.921E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  54, epot_es:  9.4895033941151E+00, de:  2.24E-06, gnrm:  1.567E-06, 
+   - inside get_beta_grid              : -0.55656766726262470E+01
+     cep: {iter:  54, epot_es:  9.4895033941151E+00, de:  2.24E-06, gnrm:  1.567E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  55, epot_es:  9.4895052205993E+00, de:  1.83E-06, gnrm:  1.278E-06, 
+   - inside get_beta_grid              : -0.55656766190723399E+01
+     cep: {iter:  55, epot_es:  9.4895052205993E+00, de:  1.83E-06, gnrm:  1.278E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  56, epot_es:  9.4895067104927E+00, de:  1.49E-06, gnrm:  1.043E-06, 
+   - inside get_beta_grid              : -0.55656765743860719E+01
+     cep: {iter:  56, epot_es:  9.4895067104927E+00, de:  1.49E-06, gnrm:  1.043E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  57, epot_es:  9.4895079258237E+00, de:  1.22E-06, gnrm:  8.507E-07, 
+   - inside get_beta_grid              : -0.55656765372101473E+01
+     cep: {iter:  57, epot_es:  9.4895079258237E+00, de:  1.22E-06, gnrm:  8.507E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  58, epot_es:  9.4895089171897E+00, de:  9.91E-07, gnrm:  6.939E-07, 
+   - inside get_beta_grid              : -0.55656765063604068E+01
+     cep: {iter:  58, epot_es:  9.4895089171897E+00, de:  9.91E-07, gnrm:  6.939E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  59, epot_es:  9.4895097258637E+00, de:  8.09E-07, gnrm:  5.660E-07, 
+   - inside get_beta_grid              : -0.55656764808160242E+01
+     cep: {iter:  59, epot_es:  9.4895097258637E+00, de:  8.09E-07, gnrm:  5.660E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  60, epot_es:  9.4895103855129E+00, de:  6.60E-07, gnrm:  4.617E-07, 
+   - inside get_beta_grid              : -0.55656764597042718E+01
+     cep: {iter:  60, epot_es:  9.4895103855129E+00, de:  6.60E-07, gnrm:  4.617E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  61, epot_es:  9.4895109236001E+00, de:  5.38E-07, gnrm:  3.766E-07, 
+   - inside get_beta_grid              : -0.55656764422840750E+01
+     cep: {iter:  61, epot_es:  9.4895109236001E+00, de:  5.38E-07, gnrm:  3.766E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  62, epot_es:  9.4895113625270E+00, de:  4.39E-07, gnrm:  3.072E-07, 
+   - inside get_beta_grid              : -0.55656764279302351E+01
+     cep: {iter:  62, epot_es:  9.4895113625270E+00, de:  4.39E-07, gnrm:  3.072E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  63, epot_es:  9.4895117205673E+00, de:  3.58E-07, gnrm:  2.506E-07, 
+   - inside get_beta_grid              : -0.55656764161172561E+01
+     cep: {iter:  63, epot_es:  9.4895117205673E+00, de:  3.58E-07, gnrm:  2.506E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  64, epot_es:  9.4895120126270E+00, de:  2.92E-07, gnrm:  2.044E-07, 
+   - inside get_beta_grid              : -0.55656764064057134E+01
+     cep: {iter:  64, epot_es:  9.4895120126270E+00, de:  2.92E-07, gnrm:  2.044E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  65, epot_es:  9.4895122508652E+00, de:  2.38E-07, gnrm:  1.668E-07, 
+   - inside get_beta_grid              : -0.55656763984295026E+01
+     cep: {iter:  65, epot_es:  9.4895122508652E+00, de:  2.38E-07, gnrm:  1.668E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  66, epot_es:  9.4895124452002E+00, de:  1.94E-07, gnrm:  1.360E-07, 
+   - inside get_beta_grid              : -0.55656763918834873E+01
+     cep: {iter:  66, epot_es:  9.4895124452002E+00, de:  1.94E-07, gnrm:  1.360E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  67, epot_es:  9.4895126037227E+00, de:  1.59E-07, gnrm:  1.110E-07, 
+   - inside get_beta_grid              : -0.55656763865150927E+01
+     cep: {iter:  67, epot_es:  9.4895126037227E+00, de:  1.59E-07, gnrm:  1.110E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  68, epot_es:  9.4895127330322E+00, de:  1.29E-07, gnrm:  9.051E-08, 
+   - inside get_beta_grid              : -0.55656763821154316E+01
+     cep: {iter:  68, epot_es:  9.4895127330322E+00, de:  1.29E-07, gnrm:  9.051E-08, 
        stepsize:  1.000E+00}
    CEP: {iter:  68, epot_es:  9.4895127330322E+00, de:  1.29E-07, gnrm:  9.051E-08, 
      stepsize:  1.000E+00}
+   inside get_beta_grid                : -0.55656763821154316E+01
  - SQNM: {iter:  5, epot: -1.403617135089E+04, de: -1.9E-06, fmax:  4.942E-06, 
           fnrm:  5.010E-03,                  ndim:  2}
+   grid info: {ngpx:  22, ngpy:  20, ngpz:  28, ngptot:  12320, nbgpx:  11, nbgpy:  11, 
+              nbgpz:  10,  hxx:  1.3312821650,     hyx:  0.0000000000, hzx:  0.0000000000, 
+                hxy:  0.0000000000,   hyy:  1.2686526126,         hzy:  0.0000000000, 
+                hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  1.3498043770}
    Charge equilibration process:
-   - cep: {iter:  0, epot_es:  9.0693133816889E+00, de:  0.00E+00, gnrm:  6.925E-02, 
+   - inside get_beta_grid              : -0.47098333055055290E+01
+     cep: {iter:  0, epot_es:  9.0693133816889E+00, de:  0.00E+00, gnrm:  6.925E-02, 
        stepsize:  1.000E-01}
-   - cep: {iter:  1, epot_es:  9.0846553947598E+00, de:  1.53E-02, gnrm:  6.661E-02, 
+   - inside get_beta_grid              : -0.47573227169632650E+01
+     cep: {iter:  1, epot_es:  9.0846553947598E+00, de:  1.53E-02, gnrm:  6.661E-02, 
        stepsize:  2.000E-01}
-   - cep: {iter:  2, epot_es:  9.1142450501545E+00, de:  2.96E-02, gnrm:  6.155E-02, 
+   - inside get_beta_grid              : -0.48470348067336220E+01
+     cep: {iter:  2, epot_es:  9.1142450501545E+00, de:  2.96E-02, gnrm:  6.155E-02, 
        stepsize:  4.000E-01}
-   - cep: {iter:  3, epot_es:  9.1691869765905E+00, de:  5.49E-02, gnrm:  5.221E-02, 
+   - inside get_beta_grid              : -0.50065587459134315E+01
+     cep: {iter:  3, epot_es:  9.1691869765905E+00, de:  5.49E-02, gnrm:  5.221E-02, 
        stepsize:  8.000E-01}
-   - cep: {iter:  4, epot_es:  9.2279043916315E+00, de:  5.87E-02, gnrm:  4.236E-02, 
+   - inside get_beta_grid              : -0.51617237476046540E+01
+     cep: {iter:  4, epot_es:  9.2279043916315E+00, de:  5.87E-02, gnrm:  4.236E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  5, epot_es:  9.2759173667465E+00, de:  4.80E-02, gnrm:  3.441E-02, 
+   - inside get_beta_grid              : -0.52738408823290150E+01
+     cep: {iter:  5, epot_es:  9.2759173667465E+00, de:  4.80E-02, gnrm:  3.441E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  6, epot_es:  9.3151557698096E+00, de:  3.92E-02, gnrm:  2.797E-02, 
+   - inside get_beta_grid              : -0.53548351325949808E+01
+     cep: {iter:  6, epot_es:  9.3151557698096E+00, de:  3.92E-02, gnrm:  2.797E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  7, epot_es:  9.3472095976744E+00, de:  3.21E-02, gnrm:  2.276E-02, 
+   - inside get_beta_grid              : -0.54133313460288379E+01
+     cep: {iter:  7, epot_es:  9.3472095976744E+00, de:  3.21E-02, gnrm:  2.276E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  8, epot_es:  9.3733857490382E+00, de:  2.62E-02, gnrm:  1.852E-02, 
+   - inside get_beta_grid              : -0.54555669152253818E+01
+     cep: {iter:  8, epot_es:  9.3733857490382E+00, de:  2.62E-02, gnrm:  1.852E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  9, epot_es:  9.3947565423431E+00, de:  2.14E-02, gnrm:  1.509E-02, 
+   - inside get_beta_grid              : -0.54860521593960199E+01
+     cep: {iter:  9, epot_es:  9.3947565423431E+00, de:  2.14E-02, gnrm:  1.509E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  10, epot_es:  9.4122006524407E+00, de:  1.74E-02, gnrm:  1.229E-02, 
+   - inside get_beta_grid              : -0.55080481318631644E+01
+     cep: {iter:  10, epot_es:  9.4122006524407E+00, de:  1.74E-02, gnrm:  1.229E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  11, epot_es:  9.4264373486942E+00, de:  1.42E-02, gnrm:  1.001E-02, 
+   - inside get_beta_grid              : -0.55239123125694878E+01
+     cep: {iter:  11, epot_es:  9.4264373486942E+00, de:  1.42E-02, gnrm:  1.001E-02, 
        stepsize:  1.000E+00}
-   - cep: {iter:  12, epot_es:  9.4380549532558E+00, de:  1.16E-02, gnrm:  8.162E-03, 
+   - inside get_beta_grid              : -0.55353487021277346E+01
+     cep: {iter:  12, epot_es:  9.4380549532558E+00, de:  1.16E-02, gnrm:  8.162E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  13, epot_es:  9.4475343889822E+00, de:  9.48E-03, gnrm:  6.654E-03, 
+   - inside get_beta_grid              : -0.55435887432832045E+01
+     cep: {iter:  13, epot_es:  9.4475343889822E+00, de:  9.48E-03, gnrm:  6.654E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  14, epot_es:  9.4552685995773E+00, de:  7.73E-03, gnrm:  5.425E-03, 
+   - inside get_beta_grid              : -0.55495221929198761E+01
+     cep: {iter:  14, epot_es:  9.4552685995773E+00, de:  7.73E-03, gnrm:  5.425E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  15, epot_es:  9.4615785256353E+00, de:  6.31E-03, gnrm:  4.423E-03, 
+   - inside get_beta_grid              : -0.55537917827108219E+01
+     cep: {iter:  15, epot_es:  9.4615785256353E+00, de:  6.31E-03, gnrm:  4.423E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  16, epot_es:  9.4667262225052E+00, de:  5.15E-03, gnrm:  3.607E-03, 
+   - inside get_beta_grid              : -0.55568616818046515E+01
+     cep: {iter:  16, epot_es:  9.4667262225052E+00, de:  5.15E-03, gnrm:  3.607E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  17, epot_es:  9.4709256156617E+00, de:  4.20E-03, gnrm:  2.941E-03, 
+   - inside get_beta_grid              : -0.55590670070790988E+01
+     cep: {iter:  17, epot_es:  9.4709256156617E+00, de:  4.20E-03, gnrm:  2.941E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  18, epot_es:  9.4743513091451E+00, de:  3.43E-03, gnrm:  2.399E-03, 
+   - inside get_beta_grid              : -0.55606496235165253E+01
+     cep: {iter:  18, epot_es:  9.4743513091451E+00, de:  3.43E-03, gnrm:  2.399E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  19, epot_es:  9.4771457931823E+00, de:  2.79E-03, gnrm:  1.957E-03, 
+   - inside get_beta_grid              : -0.55617840278163895E+01
+     cep: {iter:  19, epot_es:  9.4771457931823E+00, de:  2.79E-03, gnrm:  1.957E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  20, epot_es:  9.4794253378753E+00, de:  2.28E-03, gnrm:  1.596E-03, 
+   - inside get_beta_grid              : -0.55625960595250934E+01
+     cep: {iter:  20, epot_es:  9.4794253378753E+00, de:  2.28E-03, gnrm:  1.596E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  21, epot_es:  9.4812848098903E+00, de:  1.86E-03, gnrm:  1.302E-03, 
+   - inside get_beta_grid              : -0.55631764250220135E+01
+     cep: {iter:  21, epot_es:  9.4812848098903E+00, de:  1.86E-03, gnrm:  1.302E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  22, epot_es:  9.4828016072894E+00, de:  1.52E-03, gnrm:  1.062E-03, 
+   - inside get_beta_grid              : -0.55635904705687338E+01
+     cep: {iter:  22, epot_es:  9.4828016072894E+00, de:  1.52E-03, gnrm:  1.062E-03, 
        stepsize:  1.000E+00}
-   - cep: {iter:  23, epot_es:  9.4840388728869E+00, de:  1.24E-03, gnrm:  8.660E-04, 
+   - inside get_beta_grid              : -0.55638852432975092E+01
+     cep: {iter:  23, epot_es:  9.4840388728869E+00, de:  1.24E-03, gnrm:  8.660E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  24, epot_es:  9.4850481177263E+00, de:  1.01E-03, gnrm:  7.063E-04, 
+   - inside get_beta_grid              : -0.55640945915519513E+01
+     cep: {iter:  24, epot_es:  9.4850481177263E+00, de:  1.01E-03, gnrm:  7.063E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  25, epot_es:  9.4858713625203E+00, de:  8.23E-04, gnrm:  5.762E-04, 
+   - inside get_beta_grid              : -0.55642428480266268E+01
+     cep: {iter:  25, epot_es:  9.4858713625203E+00, de:  8.23E-04, gnrm:  5.762E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  26, epot_es:  9.4865428853387E+00, de:  6.72E-04, gnrm:  4.700E-04, 
+   - inside get_beta_grid              : -0.55643474886955264E+01
+     cep: {iter:  26, epot_es:  9.4865428853387E+00, de:  6.72E-04, gnrm:  4.700E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  27, epot_es:  9.4870906477620E+00, de:  5.48E-04, gnrm:  3.834E-04, 
+   - inside get_beta_grid              : -0.55644210516911912E+01
+     cep: {iter:  27, epot_es:  9.4870906477620E+00, de:  5.48E-04, gnrm:  3.834E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  28, epot_es:  9.4875374585398E+00, de:  4.47E-04, gnrm:  3.127E-04, 
+   - inside get_beta_grid              : -0.55644725215769961E+01
+     cep: {iter:  28, epot_es:  9.4875374585398E+00, de:  4.47E-04, gnrm:  3.127E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  29, epot_es:  9.4879019229939E+00, de:  3.64E-04, gnrm:  2.551E-04, 
+   - inside get_beta_grid              : -0.55645083275198530E+01
+     cep: {iter:  29, epot_es:  9.4879019229939E+00, de:  3.64E-04, gnrm:  2.551E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  30, epot_es:  9.4881992175698E+00, de:  2.97E-04, gnrm:  2.081E-04, 
+   - inside get_beta_grid              : -0.55645330626956593E+01
+     cep: {iter:  30, epot_es:  9.4881992175698E+00, de:  2.97E-04, gnrm:  2.081E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  31, epot_es:  9.4884417217082E+00, de:  2.43E-04, gnrm:  1.697E-04, 
+   - inside get_beta_grid              : -0.55645500024904253E+01
+     cep: {iter:  31, epot_es:  9.4884417217082E+00, de:  2.43E-04, gnrm:  1.697E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  32, epot_es:  9.4886395333029E+00, de:  1.98E-04, gnrm:  1.384E-04, 
+   - inside get_beta_grid              : -0.55645614775289323E+01
+     cep: {iter:  32, epot_es:  9.4886395333029E+00, de:  1.98E-04, gnrm:  1.384E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  33, epot_es:  9.4888008891802E+00, de:  1.61E-04, gnrm:  1.129E-04, 
+   - inside get_beta_grid              : -0.55645691420054106E+01
+     cep: {iter:  33, epot_es:  9.4888008891802E+00, de:  1.61E-04, gnrm:  1.129E-04, 
        stepsize:  1.000E+00}
-   - cep: {iter:  34, epot_es:  9.4889325080946E+00, de:  1.32E-04, gnrm:  9.212E-05, 
+   - inside get_beta_grid              : -0.55645741665402504E+01
+     cep: {iter:  34, epot_es:  9.4889325080946E+00, de:  1.32E-04, gnrm:  9.212E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  35, epot_es:  9.4890398705144E+00, de:  1.07E-04, gnrm:  7.514E-05, 
+   - inside get_beta_grid              : -0.55645773766598881E+01
+     cep: {iter:  35, epot_es:  9.4890398705144E+00, de:  1.07E-04, gnrm:  7.514E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  36, epot_es:  9.4891274468443E+00, de:  8.76E-05, gnrm:  6.129E-05, 
+   - inside get_beta_grid              : -0.55645793521221449E+01
+     cep: {iter:  36, epot_es:  9.4891274468443E+00, de:  8.76E-05, gnrm:  6.129E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  37, epot_es:  9.4891988835860E+00, de:  7.14E-05, gnrm:  5.000E-05, 
+   - inside get_beta_grid              : -0.55645804980697147E+01
+     cep: {iter:  37, epot_es:  9.4891988835860E+00, de:  7.14E-05, gnrm:  5.000E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  38, epot_es:  9.4892571551883E+00, de:  5.83E-05, gnrm:  4.079E-05, 
+   - inside get_beta_grid              : -0.55645810959281876E+01
+     cep: {iter:  38, epot_es:  9.4892571551883E+00, de:  5.83E-05, gnrm:  4.079E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  39, epot_es:  9.4893046879102E+00, de:  4.75E-05, gnrm:  3.327E-05, 
+   - inside get_beta_grid              : -0.55645813397533042E+01
+     cep: {iter:  39, epot_es:  9.4893046879102E+00, de:  4.75E-05, gnrm:  3.327E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  40, epot_es:  9.4893434608548E+00, de:  3.88E-05, gnrm:  2.714E-05, 
+   - inside get_beta_grid              : -0.55645813621394007E+01
+     cep: {iter:  40, epot_es:  9.4893434608548E+00, de:  3.88E-05, gnrm:  2.714E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  41, epot_es:  9.4893750883818E+00, de:  3.16E-05, gnrm:  2.214E-05, 
+   - inside get_beta_grid              : -0.55645812526438858E+01
+     cep: {iter:  41, epot_es:  9.4893750883818E+00, de:  3.16E-05, gnrm:  2.214E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  42, epot_es:  9.4894008873305E+00, de:  2.58E-05, gnrm:  1.806E-05, 
+   - inside get_beta_grid              : -0.55645810708554349E+01
+     cep: {iter:  42, epot_es:  9.4894008873305E+00, de:  2.58E-05, gnrm:  1.806E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  43, epot_es:  9.4894219318533E+00, de:  2.10E-05, gnrm:  1.473E-05, 
+   - inside get_beta_grid              : -0.55645808556364544E+01
+     cep: {iter:  43, epot_es:  9.4894219318533E+00, de:  2.10E-05, gnrm:  1.473E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  44, epot_es:  9.4894390981425E+00, de:  1.72E-05, gnrm:  1.202E-05, 
+   - inside get_beta_grid              : -0.55645806316334676E+01
+     cep: {iter:  44, epot_es:  9.4894390981425E+00, de:  1.72E-05, gnrm:  1.202E-05, 
        stepsize:  1.000E+00}
-   - cep: {iter:  45, epot_es:  9.4894531009145E+00, de:  1.40E-05, gnrm:  9.801E-06, 
+   - inside get_beta_grid              : -0.55645804138455661E+01
+     cep: {iter:  45, epot_es:  9.4894531009145E+00, de:  1.40E-05, gnrm:  9.801E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  46, epot_es:  9.4894645231692E+00, de:  1.14E-05, gnrm:  7.995E-06, 
+   - inside get_beta_grid              : -0.55645802108118527E+01
+     cep: {iter:  46, epot_es:  9.4894645231692E+00, de:  1.14E-05, gnrm:  7.995E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  47, epot_es:  9.4894738404646E+00, de:  9.32E-06, gnrm:  6.522E-06, 
+   - inside get_beta_grid              : -0.55645800268234868E+01
+     cep: {iter:  47, epot_es:  9.4894738404646E+00, de:  9.32E-06, gnrm:  6.522E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  48, epot_es:  9.4894814407181E+00, de:  7.60E-06, gnrm:  5.320E-06, 
+   - inside get_beta_grid              : -0.55645798634441981E+01
+     cep: {iter:  48, epot_es:  9.4894814407181E+00, de:  7.60E-06, gnrm:  5.320E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  49, epot_es:  9.4894876403579E+00, de:  6.20E-06, gnrm:  4.339E-06, 
+   - inside get_beta_grid              : -0.55645797205488332E+01
+     cep: {iter:  49, epot_es:  9.4894876403579E+00, de:  6.20E-06, gnrm:  4.339E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  50, epot_es:  9.4894926974981E+00, de:  5.06E-06, gnrm:  3.540E-06, 
+   - inside get_beta_grid              : -0.55645795970204226E+01
+     cep: {iter:  50, epot_es:  9.4894926974981E+00, de:  5.06E-06, gnrm:  3.540E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  51, epot_es:  9.4894968226853E+00, de:  4.13E-06, gnrm:  2.887E-06, 
+   - inside get_beta_grid              : -0.55645794912142508E+01
+     cep: {iter:  51, epot_es:  9.4894968226853E+00, de:  4.13E-06, gnrm:  2.887E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  52, epot_es:  9.4895001876651E+00, de:  3.36E-06, gnrm:  2.355E-06, 
+   - inside get_beta_grid              : -0.55645794012568182E+01
+     cep: {iter:  52, epot_es:  9.4895001876651E+00, de:  3.36E-06, gnrm:  2.355E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  53, epot_es:  9.4895029325325E+00, de:  2.74E-06, gnrm:  1.921E-06, 
+   - inside get_beta_grid              : -0.55645793252355515E+01
+     cep: {iter:  53, epot_es:  9.4895029325325E+00, de:  2.74E-06, gnrm:  1.921E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  54, epot_es:  9.4895051715648E+00, de:  2.24E-06, gnrm:  1.567E-06, 
+   - inside get_beta_grid              : -0.55645792613115539E+01
+     cep: {iter:  54, epot_es:  9.4895051715648E+00, de:  2.24E-06, gnrm:  1.567E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  55, epot_es:  9.4895069979798E+00, de:  1.83E-06, gnrm:  1.278E-06, 
+   - inside get_beta_grid              : -0.55645792077838712E+01
+     cep: {iter:  55, epot_es:  9.4895069979798E+00, de:  1.83E-06, gnrm:  1.278E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  56, epot_es:  9.4895084878164E+00, de:  1.49E-06, gnrm:  1.043E-06, 
+   - inside get_beta_grid              : -0.55645791631186654E+01
+     cep: {iter:  56, epot_es:  9.4895084878164E+00, de:  1.49E-06, gnrm:  1.043E-06, 
        stepsize:  1.000E+00}
-   - cep: {iter:  57, epot_es:  9.4895097031007E+00, de:  1.22E-06, gnrm:  8.507E-07, 
+   - inside get_beta_grid              : -0.55645791259595860E+01
+     cep: {iter:  57, epot_es:  9.4895097031007E+00, de:  1.22E-06, gnrm:  8.507E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  58, epot_es:  9.4895106944283E+00, de:  9.91E-07, gnrm:  6.939E-07, 
+   - inside get_beta_grid              : -0.55645790951233653E+01
+     cep: {iter:  58, epot_es:  9.4895106944283E+00, de:  9.91E-07, gnrm:  6.939E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  59, epot_es:  9.4895115030708E+00, de:  8.09E-07, gnrm:  5.660E-07, 
+   - inside get_beta_grid              : -0.55645790695899358E+01
+     cep: {iter:  59, epot_es:  9.4895115030708E+00, de:  8.09E-07, gnrm:  5.660E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  60, epot_es:  9.4895121626940E+00, de:  6.60E-07, gnrm:  4.617E-07, 
+   - inside get_beta_grid              : -0.55645790484870625E+01
+     cep: {iter:  60, epot_es:  9.4895121626940E+00, de:  6.60E-07, gnrm:  4.617E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  61, epot_es:  9.4895127007599E+00, de:  5.38E-07, gnrm:  3.766E-07, 
+   - inside get_beta_grid              : -0.55645790310740200E+01
+     cep: {iter:  61, epot_es:  9.4895127007599E+00, de:  5.38E-07, gnrm:  3.766E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  62, epot_es:  9.4895131396694E+00, de:  4.39E-07, gnrm:  3.072E-07, 
+   - inside get_beta_grid              : -0.55645790167257871E+01
+     cep: {iter:  62, epot_es:  9.4895131396694E+00, de:  4.39E-07, gnrm:  3.072E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  63, epot_es:  9.4895134976953E+00, de:  3.58E-07, gnrm:  2.506E-07, 
+   - inside get_beta_grid              : -0.55645790049175243E+01
+     cep: {iter:  63, epot_es:  9.4895134976953E+00, de:  3.58E-07, gnrm:  2.506E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  64, epot_es:  9.4895137897432E+00, de:  2.92E-07, gnrm:  2.044E-07, 
+   - inside get_beta_grid              : -0.55645789952099376E+01
+     cep: {iter:  64, epot_es:  9.4895137897432E+00, de:  2.92E-07, gnrm:  2.044E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  65, epot_es:  9.4895140279717E+00, de:  2.38E-07, gnrm:  1.668E-07, 
+   - inside get_beta_grid              : -0.55645789872366196E+01
+     cep: {iter:  65, epot_es:  9.4895140279717E+00, de:  2.38E-07, gnrm:  1.668E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  66, epot_es:  9.4895142222987E+00, de:  1.94E-07, gnrm:  1.360E-07, 
+   - inside get_beta_grid              : -0.55645789806931569E+01
+     cep: {iter:  66, epot_es:  9.4895142222987E+00, de:  1.94E-07, gnrm:  1.360E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  67, epot_es:  9.4895143808147E+00, de:  1.59E-07, gnrm:  1.110E-07, 
+   - inside get_beta_grid              : -0.55645789753267927E+01
+     cep: {iter:  67, epot_es:  9.4895143808147E+00, de:  1.59E-07, gnrm:  1.110E-07, 
        stepsize:  1.000E+00}
-   - cep: {iter:  68, epot_es:  9.4895145101188E+00, de:  1.29E-07, gnrm:  9.051E-08, 
+   - inside get_beta_grid              : -0.55645789709286264E+01
+     cep: {iter:  68, epot_es:  9.4895145101188E+00, de:  1.29E-07, gnrm:  9.051E-08, 
        stepsize:  1.000E+00}
    CEP: {iter:  68, epot_es:  9.4895145101188E+00, de:  1.29E-07, gnrm:  9.051E-08, 
      stepsize:  1.000E+00}
+   inside get_beta_grid                : -0.55645789709286264E+01
  - SQNM: {iter:  6, epot: -1.403617135090E+04, de: -1.1E-09, fmax:  4.767E-06, 
           fnrm:  4.736E-03,                  ndim:  2}
  - SQNM FINISHED:
@@ -2083,3 +2608,5 @@
  task geopt:
    converged                           :  Yes
    total energy and force evaluations  :  7
+ CPU time: {iproc:  0, hrs:  0.392E-03, min:  0.235E-01, sec:  0.141E+01}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}

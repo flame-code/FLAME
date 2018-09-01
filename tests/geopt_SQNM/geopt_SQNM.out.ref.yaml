@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-08-17 12:48:35.217
+ Timestamp of this run                 : 2018-09-01 22:38:44.180
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -163,6 +163,7 @@
      alpha                             : -1.0
      ecut                              : -1.0
      ecutz                             : -1.0
+     ecut_auto                         : False
      rcut                              : -1.0
      rgcut                             : -1.0
      nsp                               : -1
@@ -294,6 +295,9 @@
    widthcut                            : 1.0
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  1, Au:  1}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
  SQNM optimization iterations:
  - SQNM: {iter:  1, epot: -1.653328384903E+00, de: -2.2E-01, fmax:  2.063E-01, 
           fnrm:  7.959E-01,                  ndim:  0}
@@ -411,9 +415,9 @@
           fnrm:  6.088E-02,                   ndim:  9}
  - SQNM: {iter:  57, epot: -2.186104541407E+00, de: -9.6E-04, fmax:  1.995E-03, 
           fnrm:  6.753E-02,                   ndim:  10}
- - SQNM: {iter:  58, epot: -2.187851275218E+00, de: -1.7E-03, fmax:  2.742E-03, 
+ - SQNM: {iter:  58, epot: -2.187851275219E+00, de: -1.7E-03, fmax:  2.742E-03, 
           fnrm:  9.096E-02,                   ndim:  10}
- - SQNM: {iter:  59, epot: -2.189057780529E+00, de: -1.2E-03, fmax:  8.765E-03, 
+ - SQNM: {iter:  59, epot: -2.189057780530E+00, de: -1.2E-03, fmax:  8.765E-03, 
           fnrm:  1.350E-01,                   ndim:  10}
  - SQNM: {iter:  60, epot: -2.189176527542E+00, de: -1.2E-04, fmax:  9.105E-03, 
           fnrm:  1.503E-01,                   ndim:  10}
@@ -437,29 +441,29 @@
           fnrm:  8.204E-02,                   ndim:  10}
  - SQNM: {iter:  70, epot: -2.200549479006E+00, de: -1.4E-03, fmax:  4.297E-03, 
           fnrm:  8.839E-02,                   ndim:  10}
- - SQNM: {iter:  71, epot: -2.202124467259E+00, de: -1.6E-03, fmax:  4.076E-03, 
+ - SQNM: {iter:  71, epot: -2.202124467256E+00, de: -1.6E-03, fmax:  4.076E-03, 
           fnrm:  8.805E-02,                   ndim:  10}
- - SQNM: {iter:  72, epot: -2.203887423902E+00, de: -1.8E-03, fmax:  4.403E-03, 
+ - SQNM: {iter:  72, epot: -2.203887423894E+00, de: -1.8E-03, fmax:  4.403E-03, 
           fnrm:  8.419E-02,                   ndim:  10}
- - SQNM: {iter:  73, epot: -2.205194248683E+00, de: -1.3E-03, fmax:  2.920E-03, 
+ - SQNM: {iter:  73, epot: -2.205194248680E+00, de: -1.3E-03, fmax:  2.920E-03, 
           fnrm:  9.507E-02,                   ndim:  10}
- - SQNM: {iter:  74, epot: -2.205488713093E+00, de: -2.9E-04, fmax:  3.029E-03, 
+ - SQNM: {iter:  74, epot: -2.205488713092E+00, de: -2.9E-04, fmax:  3.029E-03, 
           fnrm:  8.639E-02,                   ndim:  10}
- - SQNM: {iter:  75, epot: -2.205510469214E+00, de: -2.2E-05, fmax:  4.384E-03, 
+ - SQNM: {iter:  75, epot: -2.205510469211E+00, de: -2.2E-05, fmax:  4.384E-03, 
           fnrm:  9.655E-02,                   ndim:  10}
- - SQNM: {iter:  76, epot: -2.205690223304E+00, de: -1.8E-04, fmax:  1.995E-03, 
+ - SQNM: {iter:  76, epot: -2.205690223305E+00, de: -1.8E-04, fmax:  1.995E-03, 
           fnrm:  7.707E-02,                   ndim:  10}
- - SQNM: {iter:  77, epot: -2.205843154767E+00, de: -1.5E-04, fmax:  1.205E-03, 
+ - SQNM: {iter:  77, epot: -2.205843154766E+00, de: -1.5E-04, fmax:  1.205E-03, 
           fnrm:  5.753E-02,                   ndim:  10}
- - SQNM: {iter:  78, epot: -2.205939082622E+00, de: -9.6E-05, fmax:  8.087E-04, 
+ - SQNM: {iter:  78, epot: -2.205939082621E+00, de: -9.6E-05, fmax:  8.087E-04, 
           fnrm:  4.763E-02,                   ndim:  10}
  - SQNM: {iter:  79, epot: -2.206048952780E+00, de: -1.1E-04, fmax:  7.428E-04, 
           fnrm:  4.487E-02,                   ndim:  10}
  - SQNM: {iter:  80, epot: -2.206121093946E+00, de: -7.2E-05, fmax:  5.584E-04, 
           fnrm:  4.143E-02,                   ndim:  10}
- - SQNM: {iter:  81, epot: -2.206252082141E+00, de: -1.3E-04, fmax:  4.907E-04, 
+ - SQNM: {iter:  81, epot: -2.206252082139E+00, de: -1.3E-04, fmax:  4.907E-04, 
           fnrm:  4.046E-02,                   ndim:  10}
- - SQNM: {iter:  82, epot: -2.206333881091E+00, de: -8.2E-05, fmax:  5.310E-04, 
+ - SQNM: {iter:  82, epot: -2.206333881092E+00, de: -8.2E-05, fmax:  5.310E-04, 
           fnrm:  3.807E-02,                   ndim:  10}
  - SQNM: {iter:  83, epot: -2.206379626277E+00, de: -4.6E-05, fmax:  4.494E-04, 
           fnrm:  3.679E-02,                   ndim:  9}
@@ -469,14 +473,16 @@
           fnrm:  3.129E-02,                   ndim:  9}
  - SQNM: {iter:  86, epot: -2.206414779560E+00, de: -9.0E-06, fmax:  1.949E-04, 
           fnrm:  2.358E-02,                   ndim:  10}
- - SQNM: {iter:  87, epot: -2.206418031847E+00, de: -3.3E-06, fmax:  1.250E-04, 
+ - SQNM: {iter:  87, epot: -2.206418031846E+00, de: -3.3E-06, fmax:  1.250E-04, 
           fnrm:  1.854E-02,                   ndim:  9}
  - SQNM FINISHED:
      success                           :  Yes
      iter                              :  87
-     epot                              : -2.206418031847E+00
+     epot                              : -2.206418031846E+00
      fnrm                              :  1.85413E-02
      fmax                              :  1.25015E-04
  task geopt:
    converged                           :  Yes
    total energy and force evaluations  :  89
+ CPU time: {iproc:  0, hrs:  0.122E-04, min:  0.733E-03, sec:  0.440E-01}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}

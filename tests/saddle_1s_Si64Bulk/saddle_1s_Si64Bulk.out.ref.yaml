@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-08-17 18:25:39.146
+ Timestamp of this run                 : 2018-09-01 22:38:45.698
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : saddle_1s
@@ -163,6 +163,7 @@
      alpha                             : -1.0
      ecut                              : -1.0
      ecutz                             : -1.0
+     ecut_auto                         : False
      rcut                              : -1.0
      rgcut                             : -1.0
      nsp                               : -1
@@ -294,6 +295,9 @@
    widthcut                            : 1.0
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  1, Si:  1}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  3, seed2:  10}
  ENERGY_m0: {epot: -1.068109624012961E+01, fmax:  3.708E-16}
  Dimer lowest-mode optimization iterations:
  - dimer: {itlc:  1, curv0:  1.367284E-01, curv:  2.878270E-02, cosangle:  0.000000E+00, 
@@ -911,5 +915,7 @@
        epot                            : -1.058580059145E+01
        fnrm                            :  1.00534E-04
        fmax                            :  1.91749E-05
-   ENERGY_m2: {epot: -1.058580059145339E+01, fmax:  1.134E-04}
+   ENERGY_m2: {epot: -1.058580059145340E+01, fmax:  1.134E-04}
    barriers: {bh0:  0.106, curv: -0.036, bh1:  0.106, bh2:  0.011}
+   CPU time: {iproc:  0, hrs:  0.278E-02, min:  0.167E+00, sec:  0.100E+02}
+   mpi finalized: {iproc_world:  0, nproc_world:  1}

@@ -657,6 +657,9 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     call yaml_sequence_open('Charge equilibration process')
     alpha=1.d-1*alphax
     do iter=0,18000
+        if(parini%iverbose>=2) then
+            call yaml_sequence(advance='no')
+        endif
         call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
         if(parini%iverbose>=2) then
             dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0
@@ -674,7 +677,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
             !write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
-            call yaml_sequence(advance='no')
+            !call yaml_sequence(advance='no')
             call yaml_mapping_open('cep',flow=.true.)
             call yaml_map('iter',iter,fmt='(i5)')
             call yaml_map('epot_es',ann_arr%epot_es,fmt='(es22.13)')

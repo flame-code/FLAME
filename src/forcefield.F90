@@ -77,6 +77,7 @@ subroutine calculate_forces_energy_ff(parini,atoms)
     !use mod_shortrange, only: typ_tosifumi
     use mod_potential, only: shortrange
     use mod_potential, only: poisson
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -90,7 +91,8 @@ subroutine calculate_forces_energy_ff(parini,atoms)
         elseif(trim(atoms%boundcond)=='slab') then
         call calculate_forces_energy(parini,poisson,atoms)
         call cal_shortenergy(parini,shortrange,atoms,poisson%linked_lists,poisson%spline,poisson%alpha,poisson%cell,epotshort)
-        write(*,'(a50,e32.15)') 'epotshort',epotshort
+        call yaml_map('epotshort',epotshort,fmt='(es22.14)')
+        !write(*,'(a50,e32.15)') 'epotshort',epotshort
         atoms%epot=atoms%epot+epotshort
         endif
     endif

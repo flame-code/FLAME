@@ -38,7 +38,7 @@ subroutine init_hartree(parini,atoms,poisson,gausswidth)
         poisson%gw_ewald(:)=poisson%alpha
     end if
 
-    if(parini%ewald) then
+    if(parini%ewald .and. parini%ecut_auto) then
         !kmax=2.d0/poisson%alpha*sqrt(-log(1.d-3))
         kmax=2.d0/poisson%alpha*sqrt(-log(1.d3*parini%tolerance_ewald))
         poisson%ecut=kmax**2/2.d0
@@ -110,6 +110,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
@@ -179,12 +180,27 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     endif
     poisson%lda=ngpx !To be corrected for BCs other than bulk, e.g. +2 for slab+P3D
     ngptot=ngpx*ngpy*ngpz
-    write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
+    call yaml_mapping_open('grid info',flow=.true.)
+    call yaml_map('ngpx',ngpx,fmt='(4i)')
+    call yaml_map('ngpy',ngpy,fmt='(4i)')
+    call yaml_map('ngpz',ngpz,fmt='(4i)')
+    call yaml_map('ngptot',ngptot,fmt='(4i)')
+    call yaml_map('hxx',poisson%hgrid(1,1),fmt='(f20.10)')
+    call yaml_map('hyx',poisson%hgrid(2,1),fmt='(f20.10)')
+    call yaml_map('hzx',poisson%hgrid(3,1),fmt='(f20.10)')
+    call yaml_map('hxy',poisson%hgrid(1,2),fmt='(f20.10)')
+    call yaml_map('hyy',poisson%hgrid(2,2),fmt='(f20.10)')
+    call yaml_map('hzy',poisson%hgrid(3,2),fmt='(f20.10)')
+    call yaml_map('hxz',poisson%hgrid(1,3),fmt='(f20.10)')
+    call yaml_map('hyz',poisson%hgrid(2,3),fmt='(f20.10)')
+    call yaml_map('hzz',poisson%hgrid(3,3),fmt='(f20.10)')
+    !write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
     !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
-    write(*,'(a,3f20.10)') 'hxx,hyx,hzx ',poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
-    write(*,'(a,3f20.10)') 'hxy,hyy,hzy ',poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
-    write(*,'(a,3f20.10)') 'hxz,hyz,hzz ',poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
+    !write(*,'(a,3f20.10)') 'hxx,hyx,hzx ',poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
+    !write(*,'(a,3f20.10)') 'hxy,hyy,hzy ',poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
+    !write(*,'(a,3f20.10)') 'hxz,hyz,hzz ',poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
+    call yaml_mapping_close()
     endif
     !---------------------------------------------------------------------------
     ind=index(poisson%task_finit,'alloc_rho')
@@ -212,6 +228,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
@@ -270,13 +287,31 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     nbgpz=int(poisson_rough%rgcut/poisson%hz)+2
     ngpz=ngpz+2*nbgpz
     ngptot=ngpx*ngpy*ngpz
-    write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
-    write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
+    call yaml_mapping_open('grid info',flow=.true.)
+    call yaml_map('ngpx',ngpx,fmt='(4i)')
+    call yaml_map('ngpy',ngpy,fmt='(4i)')
+    call yaml_map('ngpz',ngpz,fmt='(4i)')
+    call yaml_map('ngptot',ngptot,fmt='(4i)')
+    call yaml_map('nbgpx',nbgpx,fmt='(4i)')
+    call yaml_map('nbgpy',nbgpy,fmt='(4i)')
+    call yaml_map('nbgpz',nbgpz,fmt='(4i)')
+    call yaml_map('hxx',poisson%hgrid(1,1),fmt='(f20.10)')
+    call yaml_map('hyx',poisson%hgrid(2,1),fmt='(f20.10)')
+    call yaml_map('hzx',poisson%hgrid(3,1),fmt='(f20.10)')
+    call yaml_map('hxy',poisson%hgrid(1,2),fmt='(f20.10)')
+    call yaml_map('hyy',poisson%hgrid(2,2),fmt='(f20.10)')
+    call yaml_map('hzy',poisson%hgrid(3,2),fmt='(f20.10)')
+    call yaml_map('hxz',poisson%hgrid(1,3),fmt='(f20.10)')
+    call yaml_map('hyz',poisson%hgrid(2,3),fmt='(f20.10)')
+    call yaml_map('hzz',poisson%hgrid(3,3),fmt='(f20.10)')
+    !write(*,'(a50,4i)') 'ngpx,ngpy,ngpz,ngptot',ngpx,ngpy,ngpz,ngptot
+    !write(*,'(a50,3i)') 'nbgpx,nbgpy,nbgpz',nbgpx,nbgpy,nbgpz
     !write(*,'(a50,3i)') 'nagpx,nagpy,nagpz',poisson%nagpx,poisson%nagpy,poisson%nagpz
-    write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
-    write(*,'(a,3f20.10)') 'hxx,hyx,hzx ',poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
-    write(*,'(a,3f20.10)') 'hxy,hyy,hzy ',poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
-    write(*,'(a,3f20.10)') 'hxz,hyz,hzz ',poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
+    !write(*,'(a50,3f14.7)') 'hgx,hgy,hgz',poisson%hx,poisson%hy,poisson%hz
+    !write(*,'(a,3f20.10)') 'hxx,hyx,hzx ',poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
+    !write(*,'(a,3f20.10)') 'hxy,hyy,hzy ',poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
+    !write(*,'(a,3f20.10)') 'hxz,hyz,hzz ',poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
+    call yaml_mapping_close()
     endif
     poisson%lda=ngpx+2
     !---------------------------------------------------------------------------

@@ -446,6 +446,7 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%alpha_ewald=parini%subsubdict//"alpha"
     parini%ecut_ewald=parini%subsubdict//"ecut"
     parini%ecutz_ewald=parini%subsubdict//"ecutz"
+    parini%ecut_auto=parini%subsubdict//"ecut_auto"
     parini%rcut_ewald=parini%subsubdict//"rcut"
     parini%rgcut_ewald=parini%subsubdict//"rgcut"
     parini%nsp_ewald=parini%subsubdict//"nsp"

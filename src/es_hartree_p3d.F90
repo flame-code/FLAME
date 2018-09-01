@@ -641,6 +641,7 @@ end subroutine prepcoeff
 !condition for the single ODE in which gamma=0
 subroutine get_beta_grid(hzsq,ngpz,analc00,beta_grid)
     use mod_interface
+    use yaml_output
     implicit none
     real(8), intent(in):: hzsq, analc00(ngpz)
     integer, intent(in):: ngpz
@@ -652,7 +653,8 @@ subroutine get_beta_grid(hzsq,ngpz,analc00,beta_grid)
         beta_grid=beta_grid+iz*analc00(iz)
     enddo
     beta_grid=beta_grid*0.5d0*hzsq
-    write(*,'(a22,e30.17)') 'inside get_beta_grid beta_grid=',beta_grid
+    call yaml_map('inside get_beta_grid',beta_grid,fmt='(e30.17)')
+    !write(*,'(a22,e30.17)') 'inside get_beta_grid beta_grid=',beta_grid
 end subroutine get_beta_grid
 !*****************************************************************************************
 
