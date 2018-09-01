@@ -165,3 +165,17 @@ SP_PP_p3dbias:
  Epsilon: 1.e-11
  epot: 1.e-13
 
+geopt_CENT1_slab_fixed_efield:
+ Keys to ignore:
+  - iproc
+ alphax: 1.e-5
+ fmaxtol: 1.e-5
+ dxmax: 1.e-5
+ condnum: 1.e-5
+ fnrmtolsatur: 1.e-5
+ epot: 1.e-10
+ fnrm: 1.e-11
+ fmax: 1.e-11
+ ndim: 1.e-13
+ epot_es: 1.e-11
+

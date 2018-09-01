@@ -118,6 +118,7 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    !type(f_tree) :: f_info
    call f_routine(id='sqnm')
    call yaml_sequence_open('SQNM optimization iterations')
+   call yaml_sequence(advance='no')
    associate(nat=>atoms%nat)
     call cal_potential_forces(parini,atoms)
 
@@ -400,7 +401,9 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
             !call f_tree_push(f_info//'beta_stretch',yaml_toa(beta_stretch,fmt='(1pe21.14)'))
             !call geometry_output('GEOPT_SQNM',nint(count_sqnm),it,fmax,fnrm,fluct,f_info)
             !write(*,frmt) 'MIN: ',iproc,it,etotp,detot,fnrm,fmax,ndim
-            call yaml_sequence(advance='no')
+            if(it>1) then
+                call yaml_sequence(advance='no')
+            endif
             call yaml_mapping_open('SQNM',flow=.true.)
             call yaml_map('iproc',iproc,fmt='(i3.3)')
             call yaml_map('iter',it,fmt='(i5)')
@@ -473,7 +476,9 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
          !call f_tree_push(f_info//'beta_stretch',yaml_toa(beta_stretch,fmt='(1pe21.14)'))
          !call geometry_output('GEOPT_SQNM',nint(count_sqnm),it,fmax,fnrm,fluct,f_info)
             !write(*,frmt) 'MIN: ',iproc,it,etotp,detot,fnrm,fmax,ndim
-            call yaml_sequence(advance='no')
+            if(it>1) then
+                call yaml_sequence(advance='no')
+            endif
             call yaml_mapping_open('SQNM',flow=.true.)
             !call yaml_map('iproc',iproc,fmt='(i3.3)')
             call yaml_map('iter',it,fmt='(i5)')
