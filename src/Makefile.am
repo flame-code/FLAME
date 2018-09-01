@@ -65,30 +65,40 @@ SRC_ += alborz_init_final.F90 processors.F90 \
 		potential_MPMD.F90 potential_BLJ_vc.F90 potential_BigDFT.F90 potential_VASP.F90 \
 		potential_QSC.F90 potential_LTB.F90 potential_FF.F90 potential_NetSock.F90 \
 		potential_DFTB.F90 \
-		binaries.F90 \
-		ternaries.F90 \
 		optimizer_simplex.F90
 
-minhocao_src = potential_alborz.F90  potential_corerepulsion.F90\
-		potential_confinement.F90 potential_IPI.F90 potential_MSOCK.F90\
-		potential_abinit.F90 potential_LJ_voids.F90 potential_BLJ_minhocao.F90\
-		potential_MLJ.F90 potential_LenoskyTB_minhocao.F90\
-		potential_LenoskyTB_LJ_minhocao.F90 potential_LenoskyMEAM.F90\
-		potential_PWSCF.F90 potential_VASP_minhocao.F90\
-		potential_SIESTA_minhocao.F90 potential_CP2K.F90\
-		potential_TERSOFF.F90 potential_EDIP.F90 potential_DFTB_minhocao.F90\
-		potential_MOPAC.F90 parser_minhocao.F90 parser_core_minhocao.F90\
-		io_vasp_minhocao.F90 io_ascii.F90 potential_main_minhocao.F90\
-		spher_harm_mathematica.F90 dynamics_md_fixlat.F90\
-		find_symmetry.F90 optimizer_sqnm_minhocao_module.F90\
-		optimizer_sqnm_minhocao.F90\
-		optimizer_bfgs_qe.F90 optimizer_sd_minhocao.F90\
-		optimizer_bfgs_minhocao.F90 optimizer_nlbfgs_minhocao.F90\
-		quaternions.F90 envelope.F90 cell_niggli.F90\
-		fingerprint_GOM.F90 fingerprint_MOLGOM.F90 fingerprint_oganov.F90\
-		fingerprint_oganov_cont.F90 fingerprint_BCM.F90\
-		fingerprint_atorb.F90 fingerprint_gaussmol.F90\
-		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 minhocao.F90
+minhocao_src = potential_alborz.F90  potential_corerepulsion.F90 \
+		potential_confinement.F90 potential_IPI.F90 potential_MSOCK.F90 \
+		potential_abinit.F90 potential_LJ_voids.F90 potential_BLJ_minhocao.F90 \
+		potential_MLJ.F90 potential_LenoskyTB_minhocao.F90 \
+		potential_LenoskyTB_LJ_minhocao.F90 potential_LenoskyMEAM.F90 \
+		potential_PWSCF.F90 potential_VASP_minhocao.F90 \
+		potential_SIESTA_minhocao.F90 potential_CP2K.F90 \
+		potential_TERSOFF.F90 potential_EDIP.F90 potential_DFTB_minhocao.F90 \
+		potential_MOPAC.F90 parser_minhocao.F90 parser_core_minhocao.F90 \
+		io_vasp_minhocao.F90 io_ascii.F90 potential_main_minhocao.F90 \
+		spher_harm_mathematica.F90 dynamics_md_fixlat.F90 \
+		find_symmetry.F90 optimizer_sqnm_minhocao_module.F90 \
+		optimizer_sqnm_minhocao.F90 \
+		optimizer_bfgs_qe.F90 optimizer_sd_minhocao.F90 \
+		optimizer_bfgs_minhocao.F90 optimizer_nlbfgs_minhocao.F90 \
+		quaternions.F90 envelope.F90 cell_niggli.F90 \
+		fingerprint_GOM.F90 fingerprint_MOLGOM.F90 fingerprint_oganov.F90 \
+		fingerprint_oganov_cont.F90 fingerprint_BCM.F90 \
+		fingerprint_atorb.F90 fingerprint_gaussmol.F90 \
+		fingerprint_XYZ2SM.F90 atoms_minhocao.F90 \
+		acceleration.F90 basic_minhocao.F90 cell_oganov.F90 \
+		compare_lammps.F90 convcheck.F90 correct_latvec.F90 enthalpy.F90 \
+		fingerprint.F90 fp_distance.F90 fpos_flat.F90 fragments.F90 \
+		gaussdist.F90 identical.F90 inertia_tensor.F90 init_rotvels.F90 \
+		init_vel.F90 insert.F90 latticetools_minhocao.F90 \
+		logo_minhocao.F90 md_minhocao.F90 md_minhocao_andersen.F90 \
+		md_minhocao_rbmd.F90 optimizer_fire_minhocao.F90 pbc_distance.F90 \
+		propagate.F90 replace.F90 save_low_conf.F90 slab_stress.F90 soften.F90 \
+		task_minhocao.F90 minhocao_enthalpyrelax.F90 minhocao_pathintegral.F90 \
+		minhocao_plot_fp_grid.F90 minhocao_poslowrelax.F90 \
+		minhocao_rotate_like_crazy.F90 minhocao_varvol.F90 torque_cell.F90 \
+		write_restart.F90
 
 #dependencies
 potential_main_minhocao.o: potential_abinit.o

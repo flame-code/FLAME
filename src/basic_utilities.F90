@@ -622,3 +622,358 @@ end function flm_index
 !    deallocate(pxz,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating pxz'
 !end subroutine projrotout
 !*****************************************************************************************
+subroutine elim_fixed_at(parini,nat,x)
+use mod_interface
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: iat,nat
+real(8):: x(3,nat)
+!write(*,*) "# Eliminiate"
+do iat=1,nat
+  if(parini%fixat(iat)) then
+     x(:,iat)=0.d0
+
+  endif
+!  write(*,*) x(:,iat)
+enddo
+end subroutine
+
+!************************************************************************************
+
+subroutine elim_fixed_lat(parini,latvec,x)
+use mod_interface
+use mod_parini, only: typ_parini
+implicit none
+type(typ_parini), intent(in):: parini
+integer:: i,k
+real(8):: x(3,3),latvec(3,3),lenlat,tmpvec(3)
+real(8):: len1,len2,len3,tmp1(3),tmp2(3),tmp3(3),tmp1len,tmp2len,tmp3len
+!The fixlat has 7 components:
+!a,b,c,alha,beta,gamma, and for fixed cell shape (volume fluctuation)
+
+!We should perform the projection out of the forces self-consistently
+do k=1,10
+if(parini%fixlat(7)) then
+!Here we implement cell fluctuation
+!There are only forces along the cell vectors
+   call diagcomp(latvec,x)
+   return
+elseif(all(parini%fixlat(1:6))) then
+!When the whole cell is fixed
+   x=0.d0
+   return
+elseif(parini%bc==2) then
+!If the boundary condition is free
+   x=0.d0
+   return
+else
+!Treat the case where a, b, or c are fixed
+do i=1,3
+   if(parini%fixlat(i)) then
+!Project out the component of x onto latvec
+   lenlat=dot_product(latvec(:,i),latvec(:,i))
+   tmpvec=dot_product(x(:,i),latvec(:,i))*latvec(:,i)/lenlat
+   x(:,i)=x(:,i)-tmpvec(:)
+   endif   
+enddo
+
+!Now eliminate the compoments of x which would change the angle between the lattice vectors
+!The correct way:
+do i=1,3
+   if(parini%fixlat(i+3)) then
+   len1=dot_product(latvec(:,modulo(i,3)+1),latvec(:,modulo(i,3)+1))
+   len2=dot_product(latvec(:,modulo(i+1,3)+1),latvec(:,modulo(i+1,3)+1))
+   call cross_product(latvec(:,modulo(i,3)+1),latvec(:,modulo(i+1,3)+1),tmpvec)
+   call cross_product(tmpvec,latvec(:,modulo(i,3)+1),tmp1)
+   call cross_product(tmpvec,latvec(:,modulo(i+1,3)+1),tmp2)
+   tmp1len=dot_product(tmp1,tmp1)  
+   tmp2len=dot_product(tmp2,tmp2)  
+!Project out these components
+   tmpvec=dot_product(x(:,modulo(i,3)+1),tmp1)*tmp1/tmp1len
+   x(:,modulo(i,3)+1)=x(:,modulo(i,3)+1)-tmpvec
+   tmpvec=dot_product(x(:,modulo(i+1,3)+1),tmp2)*tmp2/tmp2len
+   x(:,modulo(i+1,3)+1)=x(:,modulo(i+1,3)+1)-tmpvec
+   endif
+enddo
+endif
+!write(*,*) "elim_fixed_lat norm", sqrt(sum(x*x))
+enddo
+!!The simple way:
+!!This means only keep the components along the lattice vectors...
+!do i=1,3
+!   if(fixlat(i+3)) then
+!!   write(*,*) i+3,modulo(i,3)+1,modulo(i+1,3)+1
+!   lenlat=dot_product(latvec(:,modulo(i,3)+1),latvec(:,modulo(i,3)+1))
+!   tmpvec=dot_product(x(:,modulo(i,3)+1),latvec(:,modulo(i,3)+1))*latvec(:,modulo(i,3)+1)/lenlat
+!!   write(*,*) lenlat
+!   x(:,modulo(i,3)+1)=tmpvec(:)
+!   lenlat=dot_product(latvec(:,modulo(i+1,3)+1),latvec(:,modulo(i+1,3)+1))
+!   tmpvec=dot_product(x(:,modulo(i+1,3)+1),latvec(:,modulo(i+1,3)+1))*latvec(:,modulo(i+1,3)+1)/lenlat
+!!   write(*,*) lenlat
+!   x(:,modulo(i+1,3)+1)=tmpvec(:)
+!   endif   
+!enddo
+
+!!write(*,*) x(:,1)
+!!write(*,*) x(:,2)
+!!write(*,*) x(:,3)
+end subroutine
+
+!************************************************************************************
+
+        subroutine elim_moment(nat,vxyz,atmass)
+        use mod_interface
+        implicit none
+        real(8):: vxyz(3,nat),sx,sz,sy,atmass(nat)
+        integer:: iat,nat       
+ 
+        sx=0.d0 ; sy=0.d0 ; sz=0.d0
+        do iat=1,nat
+        sx=sx+vxyz(1,iat)*atmass(iat)
+        sy=sy+vxyz(2,iat)*atmass(iat)
+        sz=sz+vxyz(3,iat)*atmass(iat)
+        enddo
+        sx=sx/nat ; sy=sy/nat ; sz=sz/nat
+        do iat=1,nat
+        vxyz(1,iat)=vxyz(1,iat)-sx/atmass(iat)
+        vxyz(2,iat)=vxyz(2,iat)-sy/atmass(iat)
+        vxyz(3,iat)=vxyz(3,iat)-sz/atmass(iat)
+        enddo
+        return
+        end subroutine
+
+!************************************************************************************
+
+subroutine elim_torque_cell(latvec0,vlat)
+use mod_interface
+implicit none
+real(8), intent(in)    :: latvec0(3,3)
+real(8), intent(inout) :: vlat(3,3)
+real(8) :: torque(3),crossp(3),sx,sy,sz,tmax,cx,cy,cz
+integer :: i,ii,it,itmax
+real(8) :: unitmat(3,3),rotmat(3,3),rotmatall(3,3),xaxis(3),axis(3),latvec(3,3),tnorm,angle,axisnorm
+       latvec=latvec0
+       itmax=5000
+!Initialize
+       unitmat=0.d0
+       do i=1,3
+       unitmat(i,i)=1.d0
+       enddo
+       rotmatall=unitmat
+       xaxis=(/1.d0,0.d0,0.d0/)
+
+it=0
+do
+it=it+1
+       torque=0.d0
+       do i=1,3
+       call cross_product(latvec(:,i),vlat(:,i),crossp)
+       torque=torque+crossp
+       enddo
+       !write(*,'(3(e11.3),i6)')torque,loop
+       if (it.ge.itmax) goto 1001
+       if (torque(1)**2+torque(2)**2+torque(3)**2.lt.1.d-22) goto 1000
+
+
+        tnorm=sqrt(torque(1)**2+torque(2)**2+torque(3)**2)
+        angle=-acos(dot_product(torque,xaxis)/tnorm)
+        call cross_product(xaxis,torque,axis)
+        axisnorm=sqrt(axis(1)**2+axis(2)**2+axis(3)**2)
+        rotmat=unitmat
+        if(axisnorm.gt.0.d0) then
+        axis=axis/axisnorm
+        call rotation(rotmat,angle,axis)
+        endif
+        rotmatall=matmul(rotmat,rotmatall)
+        sy=0.d0 ; sz=0.d0
+        do i=1,3
+          latvec(:,i)=matmul(rotmat,latvec(:,i))
+          vlat(:,i)=matmul(rotmat,vlat(:,i))
+          sy=sy+latvec(2,i)**2
+          sz=sz+latvec(3,i)**2
+        enddo
+         cx=torque(1)/(sz+sy)*0.9d0
+         do i=1,3
+         vlat(2,i)=vlat(2,i)+cx*latvec(3,i)
+         vlat(3,i)=vlat(3,i)-cx*latvec(2,i)
+         enddo
+enddo
+1001  write(100,'(a,3(e11.3))') 'WARNING REMAINING TORQUE',torque
+
+1000  call invertmat(rotmatall,rotmat,3)
+      do i=1,3
+      vlat(:,i)=matmul(rotmat,vlat(:,i))
+      enddo
+      return
+end subroutine elim_torque_cell
+
+!************************************************************************************
+
+subroutine diagcomp(latvec,x)
+use mod_interface
+implicit none
+real(8):: latvec(3,3),x(3,3),xnrm,latvect(3,3),latvecinv(3,3),sigma(3,3)
+real(8):: len1,len2,len3,tmp1,tmp2,tmp3,tmpvec(3),vol
+!There are only forces along the cell vectors
+!Convert the target stress to the target gradient, assuming cell volume to be 1
+   len1=sqrt(dot_product(latvec(:,1),latvec(:,1)))
+   len2=sqrt(dot_product(latvec(:,2),latvec(:,2)))
+   len3=sqrt(dot_product(latvec(:,3),latvec(:,3)))
+   tmp1=dot_product(x(:,1),latvec(:,1))/len1
+   tmp2=dot_product(x(:,2),latvec(:,2))/len2
+   tmp3=dot_product(x(:,3),latvec(:,3))/len3
+!!!!Convert the target stress to the target gradient, assuming cell volume to be 1
+   latvect(:,1)=latvec(1,:)
+   latvect(:,2)=latvec(2,:)
+   latvect(:,3)=latvec(3,:)
+   sigma=matmul(x,latvect)
+   xnrm=sigma(1,1)+sigma(2,2)+sigma(3,3)
+   xnrm=xnrm/3.d0
+   sigma=0.d0
+   sigma(1,1)=xnrm
+   sigma(2,2)=xnrm
+   sigma(3,3)=xnrm
+   call invertmat(latvect,latvecinv,3)
+   x=matmul(sigma,latvecinv)
+
+   call getvol(latvec,vol)
+   vol=vol**(1.d0/3.d0)
+!   xnrm=xnrm/vol
+!   xnrm=(tmp1/len1+tmp2/len2+tmp3/len3)/3.d0*vol
+   xnrm=(x(1,1)+x(2,2)+x(3,3))/3.d0
+   vol=1.d0/vol
+   x(:,1)=latvec(:,1)*vol*xnrm
+   x(:,2)=latvec(:,2)*vol*xnrm
+   x(:,3)=latvec(:,3)*vol*xnrm
+end subroutine
+
+ subroutine backtocell(nat,latvec,rxyz_red)
+ use mod_interface
+ !This subroutine will transform back all atoms into the periodic cell
+ !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
+ implicit none
+ integer:: nat,i,iat,j
+ real(8) :: latvec(3,3), rxyz_red(3,nat), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
+ real(8) :: v(3,3),vol
+ logical:: neccesary
+!First check if the volume is positive
+ call getvol(latvec,vol)
+ if(vol.le.0.d0) stop "Negative volume during backtocell"
+ do iat=1,nat
+        rxyz_red(1,iat)=modulo(modulo(rxyz_red(1,iat),1.d0),1.d0)
+        rxyz_red(2,iat)=modulo(modulo(rxyz_red(2,iat),1.d0),1.d0)
+        rxyz_red(3,iat)=modulo(modulo(rxyz_red(3,iat),1.d0),1.d0)
+ enddo
+! v=latvec
+! vol= v(1,1)*v(2,2)*v(3,3)-v(1,1)*v(2,3)*v(3,2)-v(1,2)*v(2,1)*v(3,3)+&
+!      v(1,2)*v(2,3)*v(3,1)+v(1,3)*v(2,1)*v(3,2)-v(1,3)*v(2,2)*v(3,1)
+! if(vol.le.0.d0) stop "Negative volume during backtocell"
+! call rxyz_int2cart(latvec,rxyz_red,rxyz,nat)
+!
+! !To really be on the safe side, the translation vector can be shortened by  a factor eps in order
+! !to get the atom into the cell. 
+!!  eps=1.d-10
+!  eps=1.d-15
+! ! eps=1.d0-eps
+! count=0.d0
+! neccesary=.true.
+! do while(neccesary)
+! neccesary=.false.
+! count=count+1.d0
+! !generate 3 normal vectors of the 3 planes
+! call nveclatvec(latvec,nvec)
+! do iat=1,nat
+! !3 planes through origin (xy,yz,zx)
+! do i=1,3
+! dist(i)=DOT_PRODUCT(rxyz(:,iat),nvec(:,i))
+!! if(dist(i).lt.0.d0) then
+! if(dist(i).lt.-abs(dist(i))*eps) then
+!! write(*,*) "unten 1",i,iat
+! rxyz(:,iat)=rxyz(:,iat)+latvec(:,mod(i+1,3)+1)!*eps
+! neccesary=.true.
+! endif
+!
+! !3 planes on top/side/back (xy,yz,zx)
+! dist(i+3)=DOT_PRODUCT(rxyz(:,iat)-latvec(:,mod(i+1,3)+1),nvec(:,i))
+!! if(dist(i+3).gt.0.d0) then
+! if(dist(i+3).gt.abs(dist(i+3))*eps) then
+!! write(*,*) "unten 1",i,iat
+!! if(dist(i+3).gt.eps) then
+!! write(*,*) "oben 2",i,iat
+! rxyz(:,iat)=rxyz(:,iat)-latvec(:,mod(i+1,3)+1)!*eps
+! neccesary=.true.
+! endif
+! enddo
+! enddo
+! if(count.gt.1.d6) stop "Too many iterations in back-to-cell"
+! enddo
+! 
+! call rxyz_cart2int(latvec,rxyz_red,rxyz,nat)
+ end subroutine
+
+!************************************************************************************
+
+ subroutine backtocell_cart(nat,latvec,rxyz)
+ !This subroutine will transform back all atoms into the periodic cell
+ !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
+ use mod_interface
+ implicit none
+ integer:: nat,i,iat,j
+ real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
+ real(8) :: v(3,3),vol,rxyz_red(3,nat)
+ logical:: neccesary
+ call getvol(latvec,vol)
+   !First check if the volume is positive
+   if(vol.le.0.d0) stop "Negative volume during backtocell"
+   call rxyz_cart2int(latvec,rxyz_red,rxyz,nat)
+   do iat=1,nat
+       rxyz_red(1,iat)=modulo(modulo(rxyz_red(1,iat),1.d0),1.d0)
+       rxyz_red(2,iat)=modulo(modulo(rxyz_red(2,iat),1.d0),1.d0)
+       rxyz_red(3,iat)=modulo(modulo(rxyz_red(3,iat),1.d0),1.d0)
+   enddo
+   call rxyz_int2cart(latvec,rxyz_red,rxyz,nat)
+!!First check if the volume is positive
+! v=latvec
+! vol= v(1,1)*v(2,2)*v(3,3)-v(1,1)*v(2,3)*v(3,2)-v(1,2)*v(2,1)*v(3,3)+&
+!      v(1,2)*v(2,3)*v(3,1)+v(1,3)*v(2,1)*v(3,2)-v(1,3)*v(2,2)*v(3,1)
+! if(vol.le.0.d0) stop "Negative volume during backtocell"
+!
+! !To really be on the safe side, the translation vector can be shortened by  a factor eps in order
+! !to get the atom into the cell. 
+!!  eps=1.d-10
+!  eps=1.d-15
+! ! eps=1.d0-eps
+! count=0.d0
+! neccesary=.true.
+! do while(neccesary)
+! neccesary=.false.
+! count=count+1.d0
+! !generate 3 normal vectors of the 3 planes
+! call nveclatvec(latvec,nvec)
+! do iat=1,nat
+! !3 planes through origin (xy,yz,zx)
+! do i=1,3
+! dist(i)=DOT_PRODUCT(rxyz(:,iat),nvec(:,i))
+!! if(dist(i).lt.0.d0) then
+! if(dist(i).lt.-abs(dist(i))*eps) then
+!! write(*,*) "unten 1",i,iat
+! rxyz(:,iat)=rxyz(:,iat)+latvec(:,mod(i+1,3)+1)!*eps
+! neccesary=.true.
+! endif
+!
+! !3 planes on top/side/back (xy,yz,zx)
+! dist(i+3)=DOT_PRODUCT(rxyz(:,iat)-latvec(:,mod(i+1,3)+1),nvec(:,i))
+!! if(dist(i+3).gt.0.d0) then
+! if(dist(i+3).gt.abs(dist(i+3))*eps) then
+!! write(*,*) "unten 1",i,iat
+!! if(dist(i+3).gt.eps) then
+!! write(*,*) "oben 2",i,iat
+! rxyz(:,iat)=rxyz(:,iat)-latvec(:,mod(i+1,3)+1)!*eps
+! neccesary=.true.
+! endif
+! enddo
+! enddo
+! if(count.gt.1.d6) stop "Too many iterations in back-to-cell"
+! enddo
+ end subroutine
