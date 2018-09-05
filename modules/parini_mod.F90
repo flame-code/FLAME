@@ -82,6 +82,8 @@ module mod_parini
         integer:: nstep_ekf=100
         integer:: nstep_cep=200
         integer:: nconf_rmse=0
+        real(8):: alphax_q=1.d0
+        real(8):: alphax_r=5.d-2
         real(8):: ampl_rand=1.d0
         real(8):: rgnrmtol=-1.d0
         real(8):: qgnrmtol=-1.d0

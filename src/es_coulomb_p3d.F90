@@ -90,6 +90,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
 !    write(*,'(a50,f32.15)') 'Time for plane ',time(6)-time(5)
 !    write(*,'(a50,f32.15)') 'Time for Total without plane',time(5)-time(1)
 !    write(*,'(a50,f32.15)') 'Time for Total',time(6)-time(1)
+    call f_free(gausswidth)
     call f_release_routine()
 end subroutine calculate_forces_energy
 !*****************************************************************************************

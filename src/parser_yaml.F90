@@ -309,6 +309,8 @@ subroutine yaml_get_ann_parameters(parini)
     parini%symfunc=parini%subdict//"symfunc"
     parini%nstep_ekf=parini%subdict//"nstep_ekf"
     parini%nstep_cep=parini%subdict//"nstep_cep"
+    parini%alphax_q=parini%subdict//"alphax_q"
+    parini%alphax_r=parini%subdict//"alphax_r"
     parini%nconf_rmse=parini%subdict//"nconf_rmse"
     parini%ampl_rand=parini%subdict//"ampl_rand"
     parini%symfunc_type_ann=parini%subdict//"symfunc_type"

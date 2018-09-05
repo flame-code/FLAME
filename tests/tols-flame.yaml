@@ -6,6 +6,7 @@ Keys to ignore:
  - Code logo
  - Timestamp of this run
  - CPU time
+ - Walltime since initialization
 
 Patterns to ignore:
  - Timestamp

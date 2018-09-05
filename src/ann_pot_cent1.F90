@@ -650,13 +650,13 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         write(*,'(a,es14.5)') 'cep begin ',qtot_tmp
     endif
     if(trim(atoms%boundcond)=='slab') then
-        alphax=0.4d0
+        alphax=0.4d0*parini%alphax_q
     else
-        alphax=1.d0
+        alphax=1.d0*parini%alphax_q
     endif
     call yaml_sequence_open('Charge equilibration process')
     alpha=1.d-1*alphax
-    do iter=0,18000
+    do iter=0,parini%nstep_cep
         if(parini%iverbose>=2) then
             call yaml_sequence(advance='no')
         endif

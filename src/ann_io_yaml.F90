@@ -54,7 +54,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     type(dictionary), pointer :: dict_tmp
     call set_dict_ann(ann,fname,stypat)
     call yaml_comment('USER INPUT FILE',hfill='~')
-    call yaml_dict_dump(ann%dict)
+    if(parini%iverbose>=2) call yaml_dict_dump(ann%dict)
     call yaml_comment('',hfill='~')
     !logical:: all_read
 

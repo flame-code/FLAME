@@ -211,8 +211,8 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     call init_cent2(parini,ann_arr,atoms,cent)
     allocate(qgrad_old(atoms%nat),rgrad_old(3,atoms%nat))
     allocate(qat_old(atoms%nat),rel_old(3,atoms%nat))
-    alpha_q=2.d-1
-    alpha_r=5.d-2
+    alpha_q=2.d-1*parini%alphax_q
+    alpha_r=parini%alphax_r
     do istep=0,parini%nstep_cep
         call cal_potential_cent2(parini,ann_arr,atoms,cent)
         gnrm=sqrt(sum(cent%rgrad**2))
