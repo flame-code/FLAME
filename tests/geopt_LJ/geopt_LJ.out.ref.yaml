@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 22:38:43.924
+ Timestamp of this run                 : 2018-09-06 17:52:49.760
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -201,6 +201,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -298,6 +300,9 @@
  system info: {ntypat:  1, LJ:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ reading structures:
+   filename                            : posinp.acf
+   nconf                               :  1
  optimization parameters:
    method                              : SD
    precaution                          : high
@@ -423,3 +428,15 @@
    total energy and force evaluations  :  38
  CPU time: {iproc:  0, hrs:  0.189E-04, min:  0.113E-02, sec:  0.680E-01}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  4
+   Tot. No. of Deallocations           :  4
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.000
+     for the array                     : fbuf
+     in the routine                    : alborz_init
+     Memory Peak of process            : 27.920 MB
+ Walltime since initialization         :  00:00:00.083114054
+ Max No. of dictionaries used          :  773 #( 185 still in use)
+ Number of dictionary folders allocated:  1

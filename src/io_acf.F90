@@ -508,6 +508,7 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_all
     use mod_const, only: bohr2ang, ha2ev
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
@@ -631,7 +632,11 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
     if(present(atoms_all)) then
         atoms_all%nconf=iconf
     endif
-    write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
+    call yaml_mapping_open('reading structures')
+    call yaml_map('filename',trim(filename))
+    call yaml_map('nconf',iconf)
+    call yaml_mapping_close()
+    !write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
     close(1358)
 end subroutine acf_read
 !*****************************************************************************************

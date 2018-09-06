@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 21:43:50.221
+ Timestamp of this run                 : 2018-09-06 17:44:21.860
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -201,6 +201,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -317,5 +319,17 @@
    epot                                : -0.113238071624678E+02
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
- CPU time: {iproc:  0, hrs:  0.256E-04, min:  0.153E-02, sec:  0.920E-01}
+ CPU time: {iproc:  0, hrs:  0.300E-04, min:  0.180E-02, sec:  0.108E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  46
+   Tot. No. of Deallocations           :  46
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  5.125
+     for the array                     : vz
+     in the routine                    : force_gto_sym_ortho
+     Memory Peak of process            : 55.680 MB
+ Walltime since initialization         :  00:00:00.119526694
+ Max No. of dictionaries used          :  773 #( 185 still in use)
+ Number of dictionary folders allocated:  1

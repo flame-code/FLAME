@@ -37,6 +37,7 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -50,12 +51,15 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     type(typ_linked_lists):: linked_lists
     type(typ_pia_arr):: pia_arr
     if(firstcall==1) then
-        write(*,'(a)') 'GAMMA POINT only tight binding code'
+        call yaml_map('LTB GAMMA POINT only','first call')
+        !write(*,'(a)') 'GAMMA POINT only tight binding code'
         if(lenosky) then
-        write(*,'(a)') 'Reading spline potential coeff.cls'
-        call prmst38c(partb,pplocal) !Reads potential 
+            call yaml_comment('Reading spline potential coeff.cls') !,hfill='~')
+            !write(*,'(a)') 'Reading spline potential coeff.cls'
+            call prmst38c(partb,pplocal) !Reads potential 
         endif
-        write(*,'(a,f)') 'paircut= ',partb%paircut
+        call yaml_map('paircut',partb%paircut,fmt='(es18.10)')
+        !write(*,'(a,f)') 'paircut= ',partb%paircut
         firstcall=0
     endif
     linked_lists%rcut=partb%paircut

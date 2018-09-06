@@ -52,6 +52,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     character(5):: stypat
     type(dictionary), pointer :: subdict_ann
     type(dictionary), pointer :: dict_tmp
+    character(50):: str_out_ann
+    character(5):: str_out_ann_tt
     call set_dict_ann(ann,fname,stypat)
     call yaml_comment('USER INPUT FILE',hfill='~')
     if(parini%iverbose>=2) call yaml_dict_dump(ann%dict)
@@ -117,11 +119,28 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
 
     ann%nn(0)=ann%ng1+ann%ng2+ann%ng3+ann%ng4+ann%ng5+ann%ng6
     if(iproc==0) then
-        do i=0,ann%nl
-            write(*,'(a,i1,a,i4)') 'ann%(',i,')=',ann%nn(i)
+        str_out_ann=''
+        do i=0,ann%nl-1
+            write(str_out_ann_tt,'(i5)') ann%nn(i)
+            str_out_ann=trim(str_out_ann)//trim(adjustl(str_out_ann_tt))//'-'
         enddo
+        write(str_out_ann_tt,'(i5)') ann%nn(i)
+        str_out_ann=trim(str_out_ann)//trim(adjustl(str_out_ann_tt))
+        call yaml_map('ANN architecture',trim(str_out_ann))
+        !write(*,*) 'ANN architecture',trim(str_out_ann)
+        !do i=0,ann%nl
+        !    write(*,'(a,i1,a,i4)') 'ann%(',i,')=',ann%nn(i)
+        !enddo
         !write(*,'(a,3i4)') 'n0,n1,n2 ',ann%nn(0),ann%nn(1),ann%nn(2)
-        write(*,'(a,6i4)') 'ng1,ng2,ng3,ng4,ng5,ng6 ',ann%ng1,ann%ng2,ann%ng3,ann%ng4,ann%ng5,ann%ng6
+        call yaml_mapping_open('symfunc numbers from input',flow=.true.)
+        call yaml_map('ng1',ann%ng1)
+        call yaml_map('ng2',ann%ng2)
+        call yaml_map('ng3',ann%ng3)
+        call yaml_map('ng4',ann%ng4)
+        call yaml_map('ng5',ann%ng5)
+        call yaml_map('ng6',ann%ng6)
+        call yaml_mapping_close()
+        !write(*,'(a,6i4)') 'ng1,ng2,ng3,ng4,ng5,ng6 ',ann%ng1,ann%ng2,ann%ng3,ann%ng4,ann%ng5,ann%ng6
     endif
     if(.not. parini%bondbased_ann .and. ann%ng1>0) then
         stop 'ERROR: symmetry function of type G3 not implemented yet.'

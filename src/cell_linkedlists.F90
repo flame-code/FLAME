@@ -19,6 +19,7 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_linked_lists
     use mod_const, only: bohr2ang
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini 
     type(typ_atoms), intent(in):: atoms
@@ -34,9 +35,6 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     mlimnb=ceiling(linked_lists%rcut/linked_lists%avgnndis)
     mlimnb=max(2,2*mlimnb/3)
     linked_lists%scl=linked_lists%rcut/real(mlimnb,8) !length of cells in each direction.
-    if(parini%iverbose>1) then
-        write(*,*) 'nat,scl,mlimnb',atoms%nat,linked_lists%scl,mlimnb
-    endif
     call cell_vol(atoms%nat,atoms%cellvec,vol) 
     vol=abs(vol)*atoms%nat
     !write(*,*)atoms%cellvec(:,1)
@@ -50,7 +48,14 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     nrm_tmp=sqrt(dot_product(tmp,tmp))
     cell(2)=vol/nrm_tmp
     if(parini%iverbose>1) then
-        write(*,*) 'cell  ', cell(1),cell(2),cell(3)
+        call yaml_mapping_open('linked list info-1') !,flow=.true.)
+        call yaml_map('nat',atoms%nat)
+        call yaml_map('scl',linked_lists%scl)
+        call yaml_map('mlimnb',mlimnb)
+        call yaml_map('cell',(/cell(1),cell(2),cell(3)/))
+        call yaml_mapping_close()
+        !write(*,*) 'nat,scl,mlimnb',atoms%nat,linked_lists%scl,mlimnb
+        !write(*,*) 'cell  ', cell(1),cell(2),cell(3)
     endif
     sclinv=1.d0/linked_lists%scl
     linked_lists%mx=floor(cell(1)*sclinv) !calculating number of cells in x direction.
@@ -102,7 +107,11 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
 !    if(linked_lists%mz<linked_lists%mlimnb3/2) stop 'cell is the same size as supercell'
     associate(mx=>linked_lists%mx,my=>linked_lists%my,mz=>linked_lists%mz)
     if(parini%iverbose>1) then
-        write(*,*) 'mx,my,mz,total number of cells',mx,my,mz,mx*my*mz
+        call yaml_mapping_open('linked list info-2',flow=.true.)
+        call yaml_map('mx,my,mz',(/mx,my,mz/))
+        call yaml_map('total number of subcells',mx*my*mz)
+        call yaml_mapping_close()
+        !write(*,*) 'mx,my,mz,total number of cells',mx,my,mz,mx*my*mz
     endif
     allocate(linked_lists%head(mx,my,mz),stat=istat)
     if(istat/=0) stop 'ERROR: failure allocating linked_lists%head'

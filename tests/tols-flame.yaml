@@ -130,6 +130,7 @@ SP_CENT1_bulk:
 SP_CENT1_free:
  Keys to ignore:
   - conf. number
+  - Timing of CENT1
  epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6

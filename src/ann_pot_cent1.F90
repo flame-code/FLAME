@@ -7,6 +7,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -95,13 +96,22 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     call get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,poisson)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
-        write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
-        write(*,'(a,f8.3)') 'Timing:cent1: calculation of symfunc     ',time3-time2
-        write(*,'(a,f8.3)') 'Timing:cent1: neural network process     ',time4-time3
-        write(*,'(a,f8.3)') 'Timing:cent1: linear equations solver    ',time5-time4
-        write(*,'(a,f8.3)') 'Timing:cent1: force (SR term)            ',time6-time5
-        write(*,'(a,f8.3)') 'Timing:cent1: energy (SR+LR), force (LR) ',time7-time6
-        write(*,'(a,f8.3)') 'Timing:cent1: total time                 ',time7-time1
+        call yaml_mapping_open('Timing of CENT1')
+        call yaml_map('initialize matrix',time2-time1)
+        call yaml_map('calculation of symfunc',time3-time2)
+        call yaml_map('neural network process',time4-time3)
+        call yaml_map('linear equations solver',time5-time4)
+        call yaml_map('force (SR term)',time6-time5)
+        call yaml_map('energy (SR+LR), force (LR)',time7-time6)
+        call yaml_map('total time',time7-time1)
+        call yaml_mapping_close()
+        !write(*,'(a,f8.3)') 'Timing:cent1: initialize matrix          ',time2-time1
+        !write(*,'(a,f8.3)') 'Timing:cent1: calculation of symfunc     ',time3-time2
+        !write(*,'(a,f8.3)') 'Timing:cent1: neural network process     ',time4-time3
+        !write(*,'(a,f8.3)') 'Timing:cent1: linear equations solver    ',time5-time4
+        !write(*,'(a,f8.3)') 'Timing:cent1: force (SR term)            ',time6-time5
+        !write(*,'(a,f8.3)') 'Timing:cent1: energy (SR+LR), force (LR) ',time7-time6
+        !write(*,'(a,f8.3)') 'Timing:cent1: total time                 ',time7-time1
     endif !end of if for printing out timing.
     atoms%epot=epot_c
     if(trim(ann_arr%event)=='evalu') then
@@ -218,6 +228,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -252,7 +263,8 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     atoms%qat(1:nat)=ann_arr%qq(1:nat)
     call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>1) then
-        write(*,*) 'Lagrange ',ann_arr%qq(nat+1)
+        call yaml_map('Lagrange',ann_arr%qq(nat+1))
+        !write(*,*) 'Lagrange ',ann_arr%qq(nat+1)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         deallocate(ann_arr%ipiv)
@@ -491,6 +503,7 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -539,7 +552,8 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     atoms%qat(1:nat)=qq(1:nat)
     call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>1) then
-        write(*,*) 'Lagrange ',qq(nat+1),iter
+        call yaml_map('Lagrange',qq(nat+1))
+        !write(*,*) 'Lagrange ',qq(nat+1),iter
     endif
     deallocate(ipiv)
     deallocate(qq)

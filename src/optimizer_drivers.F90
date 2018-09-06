@@ -22,7 +22,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
     character(50):: comment
     paropt%converged=.false.
     nr=atoms%ndof
-    if(paropt%lprint) write(*,'(a,a,1x,i3)') 'begin of minimization using ',trim(paropt%approach),iproc
+    !if(paropt%lprint) write(*,'(a,a,1x,i3)') 'begin of minimization using ',trim(paropt%approach),iproc
     if(paropt%approach=='unknown') then
         if(iproc==0) write(*,*) 'The minimize routine returns becuase method is not specified.'
         return
@@ -322,7 +322,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
     endif
     !-------------------------------------------------------------------------------------
     deallocate(xr)
-    if(paropt%lprint) write(*,'(a,a,1x,i3)') 'end of minimization using ',trim(paropt%approach),iproc
+    !if(paropt%lprint) write(*,'(a,a,1x,i3)') 'end of minimization using ',trim(paropt%approach),iproc
 end subroutine minimize
 !*****************************************************************************************
 subroutine test_convergence(n,f,paropt)
