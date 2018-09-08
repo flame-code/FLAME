@@ -2,6 +2,7 @@
 subroutine cgminimum(iproc,n,nr,x,f,epot,paropt,nwork,work)
     use mod_interface
     use mod_opt, only: typ_paropt, frmt_base
+    use yaml_output
     implicit none
     type(typ_paropt):: paropt
     integer, intent(in):: iproc, n, nr, nwork
@@ -16,8 +17,14 @@ subroutine cgminimum(iproc,n,nr,x,f,epot,paropt,nwork,work)
     if(paropt%dolinesearch) then
         !if((epot-paropt%epotitm1)>paropt%anoise) then
         if(fnrm>5.d0*paropt%fnrmitm1) then
-            write(*,'(a35,i5,2e25.15)') 'back to SD:itcg,epot,epot-epotold', &
-                paropt%itcg,epot,epot-paropt%epotitm1
+            call yaml_sequence(advance='no')
+            call yaml_mapping_open('back to SD')
+            call yaml_map('iter',paropt%itcg,fmt='(i5)')
+            call yaml_map('epot',epot,fmt='(es20.12)')
+            call yaml_map('de',epot-paropt%epotitm1,fmt='(es20.12)')
+            call yaml_mapping_close()
+            !write(*,'(a35,i5,2e25.15)') 'back to SD:itcg,epot,epot-epotold', &
+            !    paropt%itcg,epot,epot-paropt%epotitm1
             x(1:nr)=work(1:nr)
             paropt%sdsaturated=.false.
             paropt%iflag=0
@@ -29,11 +36,29 @@ subroutine cgminimum(iproc,n,nr,x,f,epot,paropt,nwork,work)
         work(2*nr+1:2*nr+nr)=f(1:nr)+rlambda*work(2*nr+1:2*nr+nr)
         !call calmaxforcecomponent(nr,f,fmax)
         fmax=paropt%fmax
-        !write(*,'(a10,i4,e23.15,e11.3,2e12.5,e12.4)') 'CGMIN     ',paropt%itcg,epot, &
-        write(*,frmt) 'MIN:',iproc,paropt%itcg,epot, &
-            epot-paropt%epotitm1,fnrm,fmax,paropt%alpha/paropt%alphax,' CG'
+        call yaml_sequence(advance='no')
+        call yaml_mapping_open('CG',flow=.true.)
+        !call yaml_map('iproc',iproc,fmt='(i3.3)')
+        call yaml_map('iter',paropt%itcg,fmt='(i5)')
+        call yaml_map('epot',epot,fmt='(es20.12)')
+        call yaml_map('de',epot-paropt%epotitm1,fmt='(es9.1)')
+        call yaml_map('fmax',fmax,fmt='(es10.3)')
+        call yaml_map('fnrm',fnrm,fmt='(es10.3)')
+        call yaml_map('alpha/alphax',paropt%alpha/paropt%alphax,fmt='(e12.4)')
+        !call yaml_map('method','SD',fmt='(a)')
+        call yaml_mapping_close()
+        !write(*,frmt) 'MIN:',iproc,paropt%itcg,epot, &
+        !    epot-paropt%epotitm1,fnrm,fmax,paropt%alpha/paropt%alphax,' CG'
         !if(fmax<paropt%fmaxtol) then
         if(paropt%converged) then
+            call yaml_sequence(advance='no')
+            call yaml_mapping_open('CG FINISHED')
+            call yaml_map('success',.true.)
+            call yaml_map('iter',paropt%itcg,fmt='(i5)')
+            call yaml_map('epot',epot,fmt='(es20.12)')
+            call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+            call yaml_map('fmax',fmax,fmt='(es12.5)')
+            call yaml_mapping_close()
             paropt%iflag=0
             return
         endif
@@ -85,6 +110,7 @@ end subroutine cgminimum
 subroutine init_cgminimum(paropt,n,nr,f,nwork,work,epot,fnrm)
     use mod_interface
     use mod_opt, only: typ_paropt
+    use yaml_output
     implicit none
     type(typ_paropt), intent(inout):: paropt
     integer, intent(in):: n, nr, nwork
@@ -108,5 +134,6 @@ subroutine init_cgminimum(paropt,n,nr,f,nwork,work,epot,fnrm)
     work(nr+1:nr+nr)=f(1:nr)
     !rlambda=0.d0
     if(paropt%lprint .and. .not. paropt%param_reported) call report_param(paropt)
+    call yaml_sequence_open('CG optimization iterations')
 end subroutine init_cgminimum
 !*****************************************************************************************

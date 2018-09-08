@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 22:38:45.698
+ Timestamp of this run                 : 2018-09-07 15:19:26.720
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : saddle_1s
@@ -201,6 +201,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -298,7 +300,17 @@
  system info: {ntypat:  1, Si:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  3, seed2:  10}
+ reading structures:
+   filename                            : posinp.acf
+   nconf                               :  1
+ moving_atoms_rand                     :  [  57 ]
+ LTB GAMMA POINT only                  : first call
+  #Reading spline potential coeff.cls
+ paircut                               :  9.9021649099E+00
  ENERGY_m0: {epot: -1.068109624012961E+01, fmax:  3.708E-16}
+ dimsep                                :  0.00189
+ do_elim_trans                         :  No
+ do_elim_rot                           :  No
  Dimer lowest-mode optimization iterations:
  - dimer: {itlc:  1, curv0:  1.367284E-01, curv:  2.878270E-02, cosangle:  0.000000E+00, 
     cosangletol:  0.999848E+00,            fnrm:  0.336688E-03}
@@ -330,6 +342,7 @@
     cosangletol:  0.999848E+00,             fnrm:  0.186872E-02}
  - dimer: {itlc:  15, curv0: -1.497743E-01, curv: -1.500473E-01, cosangle:  0.999866E+00, 
     cosangletol:  0.999848E+00,             fnrm:  0.275043E-02}
+ initial iteration of lowest mode: {epotprime: -0.10515805E+02, fnrm:  0.44722232E+00}
  Dimer lowest-mode optimization iterations:
  - dimer: {itlc:  1, curv0: -1.500542E-01, curv: -1.502125E-01, cosangle:  0.999859E+00, 
     cosangletol:  0.999391E+00,            fnrm:  0.187957E-02}
@@ -474,6 +487,30 @@
         fnrm:  1.872E-03,           alpha/alphax:  0.2000E+01, isatur:  1, xmoved:  F}
  - SD: {iter:  35, epot: -1.057476518538E+01, de: -9.6E-06, fmax:  4.446E-04, 
         fnrm:  1.751E-03,           alpha/alphax:  0.1000E+01, isatur:  2, xmoved:  T}
+ - SD SATURATED:
+     iter                              :  35
+     epot                              : -1.057476518538E+01
+     fnrm                              :  1.75101E-03
+     fmax                              :  4.44612E-04
+   CG optimization iterations:
+   - CG: {iter:  0, epot: -1.057476518538E+01, de:  0.0E+00, fmax:  4.446E-04, 
+          fnrm:  1.751E-03,          alpha/alphax:  0.0000E+00}
+   - CG: {iter:  1, epot: -1.057482063723E+01, de: -5.5E-05, fmax:  2.531E-04, 
+          fnrm:  1.024E-03,          alpha/alphax:  0.8000E+01}
+   - CG: {iter:  2, epot: -1.057483676022E+01, de: -1.6E-05, fmax:  8.326E-04, 
+          fnrm:  1.584E-03,          alpha/alphax:  0.1052E+02}
+   - CG: {iter:  3, epot: -1.057484651154E+01, de: -9.8E-06, fmax:  7.729E-04, 
+          fnrm:  1.614E-03,          alpha/alphax:  0.2608E+01}
+   - CG: {iter:  4, epot: -1.057484598252E+01, de:  5.3E-07, fmax:  7.140E-04, 
+          fnrm:  1.137E-03,          alpha/alphax:  0.3595E+01}
+   - CG: {iter:  5, epot: -1.057484829859E+01, de: -2.3E-06, fmax:  1.234E-04, 
+          fnrm:  3.368E-04,          alpha/alphax:  0.1338E+01}
+   - CG FINISHED:
+       success                         :  Yes
+       iter                            :  5
+       epot                            : -1.057484829859E+01
+       fnrm                            :  3.36819E-04
+       fmax                            :  1.23380E-04
    Dimer lowest-mode optimization iterations:
    - dimer: {itlc:  1, curv0: -3.345953E-02, curv: -3.518906E-02, cosangle:  0.996177E+00, 
       cosangletol:  0.999962E+00,            fnrm:  0.535699E-03}
@@ -489,6 +526,7 @@
       cosangletol:  0.999962E+00,            fnrm:  0.543772E-03}
    - dimer: {itlc:  7, curv0: -3.597532E-02, curv: -3.598557E-02, cosangle:  0.999975E+00, 
       cosangletol:  0.999962E+00,            fnrm:  0.591756E-03}
+   lowestcurvatue                      : -3.5985566591085344E-002
    ENERGY_s: {epot: -1.057484829858585E+01, fmax:  1.134E-04}
    optimization parameters:
      method                            : SD
@@ -535,7 +573,7 @@
           fnrm:  5.340E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  15, epot: -1.065754546338E+01, de: -9.9E-03, fmax:  2.875E-02, 
           fnrm:  4.654E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  16, epot: -1.066539465403E+01, de: -7.8E-03, fmax:  2.186E-02, 
+   - SD: {iter:  16, epot: -1.066539465404E+01, de: -7.8E-03, fmax:  2.186E-02, 
           fnrm:  3.592E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  17, epot: -1.067078563300E+01, de: -5.4E-03, fmax:  1.279E-02, 
           fnrm:  2.529E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -708,7 +746,7 @@
        epot                            : -1.068109362750E+01
        fnrm                            :  1.05643E-04
        fmax                            :  1.85141E-05
-   ENERGY_m1: {epot: -1.068109362750142E+01, fmax:  1.851E-05}
+   ENERGY_m1: {epot: -1.068109362750143E+01, fmax:  1.851E-05}
    SD optimization iterations:
    - SD: {iter:  0, epot: -1.057551177944E+01, de:  0.0E+00, fmax:  4.042E-03, 
           fnrm:  6.665E-03,          alpha/alphax:  0.0000E+00, isatur:  0, xmoved:  T}
@@ -915,7 +953,20 @@
        epot                            : -1.058580059145E+01
        fnrm                            :  1.00534E-04
        fmax                            :  1.91749E-05
-   ENERGY_m2: {epot: -1.058580059145340E+01, fmax:  1.134E-04}
+   ENERGY_m2: {epot: -1.058580059145339E+01, fmax:  1.134E-04}
    barriers: {bh0:  0.106, curv: -0.036, bh1:  0.106, bh2:  0.011}
+   force_call                          :  289
    CPU time: {iproc:  0, hrs:  0.278E-02, min:  0.167E+00, sec:  0.100E+02}
    mpi finalized: {iproc_world:  0, nproc_world:  1}
+   Memory Consumption Report:
+     Tot. No. of Allocations           :  262
+     Tot. No. of Deallocations         :  262
+     Remaining Memory (B)              :  0
+     Memory occupation:
+       Peak Value (MB)                 :  0.025
+       for the array                   : uvnphi1
+       in the routine                  : rotatedimer
+       Memory Peak of process          : 54.752 MB
+   Walltime since initialization       :  00:00:10.026082830
+   Max No. of dictionaries used        :  773 #( 185 still in use)
+   Number of dictionary folders allocated:  1

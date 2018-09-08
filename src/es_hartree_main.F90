@@ -214,7 +214,8 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
     shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
     if(parini%iverbose>=2) then
-        write(*,*) 'real part in rcut',shortrange_at_rcut
+        call yaml_map('real part in rcut',shortrange_at_rcut)
+        !write(*,*) 'real part in rcut',shortrange_at_rcut
     endif
     end associate
     end associate
@@ -326,7 +327,8 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
     shortrange_at_rcut=erfc(poisson%linked_lists%rcut/(sqrt(2.d0)*poisson%alpha))/(poisson%linked_lists%rcut)
     if(parini%iverbose>=2) then
-        write(*,*) 'real part in rcut',shortrange_at_rcut
+        call yaml_map('real part in rcut',shortrange_at_rcut)
+        !write(*,*) 'real part in rcut',shortrange_at_rcut
     endif
     end associate
     end associate
@@ -554,6 +556,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use yaml_output
     !use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -597,7 +600,11 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
             g(iat)=g(iat)-parini%efield*atoms%rat(3,iat)
         enddo
         if (flag=="force") then
-            write(*,*)"dipole ,K =  " , dipole , 4*pi*dipole/(parini%efield*(poisson%cell(1)*poisson%cell(2)*(poisson%cell(3))))+1
+            call yaml_mapping_open('dipole for fixed_efield',flow=.true.)
+            call yaml_map('dipole',dipole)
+            call yaml_map('K',4.d0*pi*dipole/(parini%efield*(poisson%cell(1)*poisson%cell(2)*(poisson%cell(3))))+1)
+            call yaml_mapping_close()
+            !write(*,*)"dipole ,K =  " , dipole , 4*pi*dipole/(parini%efield*(poisson%cell(1)*poisson%cell(2)*(poisson%cell(3))))+1
         endif
     elseif((.not. poisson%point_particle) .and. trim(parini%bias_type)=='fixed_potdiff') then
         nbgpz=int(poisson%rgcut/poisson%hz)+2
@@ -622,7 +629,11 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
             atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
         enddo
         if (flag=="force") then
-            write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/(dv*(poisson%cell(1)*poisson%cell(2)))+1
+            call yaml_mapping_open('dipole for fixed_potdiff',flow=.true.)
+            call yaml_map('dipole',dipole)
+            call yaml_map('K',-4.d0*pi*dipole/(dv*(poisson%cell(1)*poisson%cell(2)))+1)
+            call yaml_mapping_close()
+            !write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/(dv*(poisson%cell(1)*poisson%cell(2)))+1
         endif
 
 
@@ -693,10 +704,14 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         atoms%ebattery=-charge0*dv
 
         if (flag=="force") then
+            call yaml_mapping_open('dipole for fixed_potdiff2',flow=.true.)
+            call yaml_map('dipole',dipole)
+            call yaml_map('K',-4.d0*pi*dipole/((dv)*(poisson%cell(1)*poisson%cell(2)))+1)
+            call yaml_mapping_close()
             write(*,*)"dipole ,beta =  " , dipole,beta
             write(*,*)"charge =                ",charge, charge0
             write(*,*)"externalwork = ",atoms%ebattery
-            write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/((dv)*(poisson%cell(1)*poisson%cell(2)))+1
+            !write(*,*)"dipole ,K =  " , dipole , -4*pi*dipole/((dv)*(poisson%cell(1)*poisson%cell(2)))+1
            ! allocate(pot_short(poisson%ngpx,poisson%ngpy,2,5))
            ! pot_short=0.d0
            ! poisson%pots=0.d0

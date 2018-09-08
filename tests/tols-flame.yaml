@@ -119,6 +119,7 @@ saddle_1s_Si64Bulk:
 SP_CENT1_bulk:
  Keys to ignore:
   - conf. number
+  - Timing of CENT1
  epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
@@ -138,6 +139,7 @@ SP_CENT1_free:
 SP_CENT1_slab:
  Keys to ignore:
   - conf. number
+  - Timing of CENT1
  Epsilon: 1.e-13
  epot: 1.e-13
  diff w.r.t. first conf: 1.e-6
@@ -176,6 +178,7 @@ SP_PP_p3dbias:
 geopt_CENT1_slab_fixed_efield:
  Keys to ignore:
   - iproc
+  - Timing of CENT1
  alphax: 1.e-5
  fmaxtol: 1.e-5
  dxmax: 1.e-5

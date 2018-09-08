@@ -41,7 +41,7 @@ subroutine surface_walking(parini)
     call set_ndof(atoms_s)
     !read(comment2,*) atoms_s%boundcond,atoms_s%cellvec(1,1),atoms_s%cellvec(2,2),atoms_s%cellvec(3,3),atoms_s%cellvec(1,2),atoms_s%cellvec(1,3),atoms_s%cellvec(2,3)
     !atoms_s%cellvec(2,1)=0.d0 ; atoms_s%cellvec(3,1)=0.d0 ; atoms_s%cellvec(3,2)=0.d0
-    write(*,*) 'nat ',atoms_s%nat
+    !write(*,*) 'nat ',atoms_s%nat
     uvn=f_malloc([1.to.3,1.to.atoms_s%nat],id='uvn')
     !----------------------------------------------------------------
     !call dm_init(dimsep,degreefreedom,alphax,fnrmtol,maxitec,maxitsd,maxitcg)
@@ -88,8 +88,8 @@ subroutine surface_walking(parini)
     !call random_number(uvn)
     !call normalizevector(3*atoms_s%nat,uvn)
     if(dmconverged) then
-        write(*,'(a,f10.3)') 'energy difference between saddle point and intial minimum ', &
-            atoms_s%epot-epot_m0
+        !write(*,'(a,f10.3)') 'energy difference between saddle point and intial minimum ', &
+        !    atoms_s%epot-epot_m0
         call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_s%fat,fmax_s)
         !write(*,'(a,es24.15,es13.3)') 'ENERGY: epot_s,fmax_s   ',atoms_s%epot,fmax_s
         call yaml_mapping_open('ENERGY_s',flow=.true.)
@@ -105,7 +105,8 @@ subroutine surface_walking(parini)
         !paropt_m%lprint=.true.
         call find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot_m0)
     endif
-    write(*,'(a,i7)') 'force_call',int(fcalls)
+    call yaml_map('force_call',int(fcalls))
+    !write(*,'(a,i7)') 'force_call',int(fcalls)
     call f_free(uvn) !,atoms_move_random)
     call atom_deallocate_old(atoms_s,sat=.true.,rat=.true.,fat=.true.,bemoved=.true.)
     !call deallocateatomsarrays
@@ -118,6 +119,7 @@ subroutine read_input(atoms_s) !,paropt)
         maxitsd, maxitcg, sdconverged, cgconverged, &
         nmatr, moving_atoms_rand, str_moving_atoms_rand
     use mod_atoms, only: typ_atoms
+    use yaml_output
     !use mod_opt, only: typ_paropt
     implicit none
     type(typ_atoms), intent(inout):: atoms_s
@@ -143,11 +145,12 @@ subroutine read_input(atoms_s) !,paropt)
     if(nmatr==0 .or. nmatr>10) stop 'ERROR: nmatr=0 or nmatr>10'
     !write(*,'(a)') trim(str_moving_atoms_rand)
     read(str_moving_atoms_rand,*) nmatr,moving_atoms_rand(1:nmatr)
-    write(*,'(a)',advance='no') 'moving_atoms_rand '
-    do iat=1,nmatr
-        write(*,'(i5)',advance='no') moving_atoms_rand(iat)
-    enddo
-    write(*,*)
+    call yaml_map('moving_atoms_rand',moving_atoms_rand(1:nmatr))
+    !write(*,'(a)',advance='no') 'moving_atoms_rand '
+    !do iat=1,nmatr
+    !    write(*,'(i5)',advance='no') moving_atoms_rand(iat)
+    !enddo
+    !write(*,*)
     sdconverged=.false.
     cgconverged=.false.
     if(atoms_s%ndof/=3*atoms_s%nat) then
@@ -309,7 +312,7 @@ subroutine alongnegcurvature(iproc,atoms,uvn,c)
     integer:: istat, i, ncount
     real(8):: pi, fnrm, c0, t1, t2, t3, DDOT, trand(10)
     stop 'ERROR: check this routine before use'
-    if(iproc==0) write(*,'(a,f15.5)') 'dimsep ',dimsep
+    !if(iproc==0) write(*,'(a,f15.5)') 'dimsep ',dimsep
     !ncount=icount
     pi=4.d0*atan(1.d0)
     call atom_copy_old(atoms,atoms_t,'atoms->atoms_t')

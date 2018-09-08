@@ -660,9 +660,9 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     allocate(gt(1:nat))
     !---------------------------------------------------------------
     qtot_tmp=sum(atoms%qat(1:atoms%nat))
-    if(parini%iverbose>=2) then
-        write(*,'(a,es14.5)') 'cep begin ',qtot_tmp
-    endif
+    !if(parini%iverbose>=2) then
+    !    write(*,'(a,es14.5)') 'cep begin ',qtot_tmp
+    !endif
     if(trim(atoms%boundcond)=='slab') then
         alphax=0.4d0*parini%alphax_q
     else
@@ -675,6 +675,10 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
             call yaml_sequence(advance='no')
         endif
         call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
+        gnrm2=DDOT(nat,g,1,g,1)
+        gnrm=sqrt(gnrm2)
+        if(iter==0) epotlong_old=ann_arr%epot_es
+        de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
             dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0
             do iat=1,nat
@@ -683,13 +687,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
                 dipole(2)=dipole(2)+atoms%qat(iat)*atoms%rat(2,iat)
                 dipole(3)=dipole(3)+atoms%qat(iat)*atoms%rat(3,iat)
             enddo
-            write(*,'(a,4f10.3)') 'qtot,dipole ',qtot,dipole(1),dipole(2),dipole(3)
-        endif
-        gnrm2=DDOT(nat,g,1,g,1)
-        gnrm=sqrt(gnrm2)
-        if(iter==0) epotlong_old=ann_arr%epot_es
-        de=ann_arr%epot_es-epotlong_old
-        if(parini%iverbose>=2) then
+            !write(*,'(a,4f10.3)') 'qtot,dipole ',qtot,dipole(1),dipole(2),dipole(3)
             !write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
             !call yaml_sequence(advance='no')
             call yaml_mapping_open('cep',flow=.true.)
@@ -698,6 +696,10 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
             call yaml_map('de',de,fmt='(es11.2)')
             call yaml_map('gnrm',gnrm,fmt='(es12.3)')
             call yaml_map('stepsize',alpha/alphax,fmt='(es12.3)')
+            call yaml_map('qtot',qtot,fmt='(f10.3)')
+            call yaml_map('dpx',dipole(1),fmt='(f10.3)')
+            call yaml_map('dpy',dipole(2),fmt='(f10.3)')
+            call yaml_map('dpz',dipole(3),fmt='(f10.3)')
             call yaml_mapping_close()
         endif
         if(gnrm<1.d-7) then
@@ -804,10 +806,19 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     deallocate(h)
     deallocate(gt)
     if(parini%iverbose>=2) then
-        do iat=1,atoms%nat
-            write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
-        enddo
+        call yaml_map('charge on atoms',atoms%qat(1:atoms%nat),fmt='(f10.5)')
+        !call yaml_sequence_open('charge on atom')
+        !do iat=1,atoms%nat
+        !    call yaml_sequence(advance='no')
+        !    call yaml_scalar(iat)
+        !    call yaml_scalar(atoms%qat(iat))
+        !    !write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
+        !enddo
+        !call yaml_sequence_close()
+        !do iat=1,atoms%nat
+        !    write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
+        !enddo
     endif
     end associate
 end subroutine get_qat_from_chi_operator
-!******************************************************************************************************************
+!*****************************************************************************************

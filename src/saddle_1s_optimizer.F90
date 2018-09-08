@@ -5,6 +5,7 @@ subroutine optimizer_saddle(parini,iproc,atoms_s,n,nr,x,f,epot,paropt,uvn)
     use mod_opt, only: typ_paropt
     use mod_potential, only: fcalls
     use mod_atoms, only: typ_atoms
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, n, nr
@@ -19,7 +20,7 @@ subroutine optimizer_saddle(parini,iproc,atoms_s,n,nr,x,f,epot,paropt,uvn)
     real(8), allocatable:: work(:), xr(:), fr(:), fold(:), feff(:)
     integer, allocatable:: ipiv(:)
     paropt%converged=.false.
-    if(paropt%lprint) write(*,'(a,a,1x,i3)') 'begin of minimization using ',trim(paropt%approach),iproc
+    !if(paropt%lprint) write(*,'(a,a,1x,i3)') 'begin of minimization using ',trim(paropt%approach),iproc
     if(paropt%approach=='unknown') then
         if(iproc==0) write(*,*) 'The optimizer_saddle routine returns becuase method is not specified.'
         return
@@ -74,6 +75,7 @@ subroutine optimizer_saddle(parini,iproc,atoms_s,n,nr,x,f,epot,paropt,uvn)
             call xr_to_x(nr,xr,n,atoms_s%bemoved,x)
             if(paropt%iflag<=0) exit
         enddo
+        call yaml_sequence_close()
         if(paropt%converged) exit
         paropt%ifail=paropt%ifail+1
         if(paropt%ifail>=paropt%nfail) then
@@ -85,7 +87,7 @@ subroutine optimizer_saddle(parini,iproc,atoms_s,n,nr,x,f,epot,paropt,uvn)
     endif
     !-------------------------------------------------------------------------------------
     deallocate(xr,fr,fold,feff)
-    if(paropt%lprint) write(*,'(a,a,1x,i3)') 'end of minimization using ',trim(paropt%approach),iproc
+    !if(paropt%lprint) write(*,'(a,a,1x,i3)') 'end of minimization using ',trim(paropt%approach),iproc
 end subroutine optimizer_saddle
 !*****************************************************************************************
 subroutine cal_potential_forces_modified(parini,iproc,atoms_s,n,x,f,epot,nr,uvn,feff,curv0,curv,fold,paropt)

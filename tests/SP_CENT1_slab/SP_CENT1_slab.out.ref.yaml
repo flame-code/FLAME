@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 22:13:01.530
+ Timestamp of this run                 : 2018-09-07 14:07:40.748
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -202,6 +202,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -300,6 +302,7 @@
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
  Number of configurations read: {filename: posinp.acf, nconf:  1}
+ number of ANN                         :  2
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ USER INPUT FILE
  main:
    nodes: [3, 3]
@@ -684,6 +687,8 @@
  - -2.221611970061196E-01
  - -7.957833452837898E-02
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ ANN architecture                      : 70-3-3-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ USER INPUT FILE
  main:
    nodes: [3, 3]
@@ -1068,228 +1073,340 @@
  - 1.216706544009089E-01
  - -2.645225395675557E-02
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ ANN architecture                      : 70-3-3-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
  epot of all configurations:
  - grid info: {ngpx:  42, ngpy:  38, ngpz:  35, ngptot:  55860, nbgpx:  10, nbgpy:  10, 
               nbgpz:  10,  hxx:  0.6973382769,     hyx:  0.0000000000, hzx:  0.0000000000, 
                 hxy:  0.0000000000,   hyy:  0.6677119014,         hzy:  0.0000000000, 
                 hxz:  0.0000000000,   hyz:  0.0000000000,         hzz:  0.6749021885}
+   real part in rcut                   : -1.682689492137086
+   linked list info-1:
+     nat                               :  48
+     scl                               :  6.0
+     mlimnb                            :  2
+     cell: [ 29.2882076308615,  25.37305225219355,  9.448630639252208]
+   linked list info-2: {mx,my,mz:  [  4,  4,  1 ], total number of subcells:  16}
    Charge equilibration process:
    - inside get_beta_grid              :  0.22714004981034179E+02
      cep: {iter:  0, epot_es:  9.0221487575649E+00, de:  0.00E+00, gnrm:  8.143E-02, 
-       stepsize:  1.000E-01}
+       stepsize:  1.000E-01,                      qtot:  0.000, dpx:  0.000, dpy: -65.970, 
+            dpz:  1.683}
    - inside get_beta_grid              :  0.22403535818322201E+02
      cep: {iter:  1, epot_es:  9.0385516090327E+00, de:  1.64E-02, gnrm:  7.821E-02, 
-       stepsize:  2.000E-01}
+       stepsize:  2.000E-01,                      qtot: -0.000, dpx:  0.000, dpy: -66.048, 
+            dpz:  1.660}
    - inside get_beta_grid              :  0.21815629391969296E+02
      cep: {iter:  2, epot_es:  9.0702253505050E+00, de:  3.17E-02, gnrm:  7.206E-02, 
-       stepsize:  4.000E-01}
+       stepsize:  4.000E-01,                      qtot:  0.000, dpx:  0.000, dpy: -66.197, 
+            dpz:  1.617}
    - inside get_beta_grid              :  0.20764909797035660E+02
      cep: {iter:  3, epot_es:  9.1291748599268E+00, de:  5.89E-02, gnrm:  6.077E-02, 
-       stepsize:  8.000E-01}
+       stepsize:  8.000E-01,                      qtot:  0.000, dpx:  0.000, dpy: -66.472, 
+            dpz:  1.539}
    - inside get_beta_grid              :  0.19730945285069488E+02
      cep: {iter:  4, epot_es:  9.1924398531045E+00, de:  6.33E-02, gnrm:  4.898E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot: -0.000, dpx:  0.000, dpy: -66.761, 
+            dpz:  1.462}
    - inside get_beta_grid              :  0.18971897557602539E+02
      cep: {iter:  5, epot_es:  9.2444155215456E+00, de:  5.20E-02, gnrm:  3.957E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx:  0.000, dpy: -66.993, 
+            dpz:  1.406}
    - inside get_beta_grid              :  0.18414603709168393E+02
      cep: {iter:  6, epot_es:  9.2870696038814E+00, de:  4.27E-02, gnrm:  3.203E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx:  0.000, dpy: -67.179, 
+            dpz:  1.365}
    - inside get_beta_grid              :  0.18005383683195223E+02
      cep: {iter:  7, epot_es:  9.3220440830831E+00, de:  3.50E-02, gnrm:  2.597E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx:  0.000, dpy: -67.329, 
+            dpz:  1.334}
    - inside get_beta_grid              :  0.17704849866982450E+02
      cep: {iter:  8, epot_es:  9.3507024057418E+00, de:  2.87E-02, gnrm:  2.108E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot: -0.000, dpx:  0.000, dpy: -67.449, 
+            dpz:  1.312}
    - inside get_beta_grid              :  0.17484099867414880E+02
      cep: {iter:  9, epot_es:  9.3741726921185E+00, de:  2.35E-02, gnrm:  1.713E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx:  0.000, dpy: -67.547, 
+            dpz:  1.296}
    - inside get_beta_grid              :  0.17321923791059394E+02
      cep: {iter:  10, epot_es:  9.3933858770798E+00, de:  1.92E-02, gnrm:  1.394E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.626, 
+            dpz:  1.284}
    - inside get_beta_grid              :  0.17202755633981944E+02
      cep: {iter:  11, epot_es:  9.4091086343794E+00, de:  1.57E-02, gnrm:  1.135E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.689, 
+            dpz:  1.275}
    - inside get_beta_grid              :  0.17115170465853502E+02
      cep: {iter:  12, epot_es:  9.4219713855211E+00, de:  1.29E-02, gnrm:  9.245E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.741, 
+            dpz:  1.268}
    - inside get_beta_grid              :  0.17050781955909184E+02
      cep: {iter:  13, epot_es:  9.4324918901703E+00, de:  1.05E-02, gnrm:  7.536E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.782, 
+            dpz:  1.264}
    - inside get_beta_grid              :  0.17003433558423652E+02
      cep: {iter:  14, epot_es:  9.4410949753403E+00, de:  8.60E-03, gnrm:  6.145E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.816, 
+            dpz:  1.260}
    - inside get_beta_grid              :  0.16968605110037537E+02
      cep: {iter:  15, epot_es:  9.4481289510015E+00, de:  7.03E-03, gnrm:  5.012E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.844, 
+            dpz:  1.257}
    - inside get_beta_grid              :  0.16942977445897103E+02
      cep: {iter:  16, epot_es:  9.4538792167656E+00, de:  5.75E-03, gnrm:  4.089E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.866, 
+            dpz:  1.256}
    - inside get_beta_grid              :  0.16924112937153403E+02
      cep: {iter:  17, epot_es:  9.4585795078498E+00, de:  4.70E-03, gnrm:  3.337E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.884, 
+            dpz:  1.254}
    - inside get_beta_grid              :  0.16910221070755103E+02
      cep: {iter:  18, epot_es:  9.4624211693175E+00, de:  3.84E-03, gnrm:  2.724E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.899, 
+            dpz:  1.253}
    - inside get_beta_grid              :  0.16899986420789094E+02
      cep: {iter:  19, epot_es:  9.4655607910635E+00, de:  3.14E-03, gnrm:  2.223E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.911, 
+            dpz:  1.252}
    - inside get_beta_grid              :  0.16892442395781458E+02
      cep: {iter:  20, epot_es:  9.4681264846875E+00, de:  2.57E-03, gnrm:  1.815E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.920, 
+            dpz:  1.252}
    - inside get_beta_grid              :  0.16886878573113311E+02
      cep: {iter:  21, epot_es:  9.4702230381935E+00, de:  2.10E-03, gnrm:  1.482E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.928, 
+            dpz:  1.251}
    - inside get_beta_grid              :  0.16882772678742914E+02
      cep: {iter:  22, epot_es:  9.4719361453964E+00, de:  1.71E-03, gnrm:  1.210E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.935, 
+            dpz:  1.251}
    - inside get_beta_grid              :  0.16879740652191561E+02
      cep: {iter:  23, epot_es:  9.4733358736380E+00, de:  1.40E-03, gnrm:  9.883E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.940, 
+            dpz:  1.251}
    - inside get_beta_grid              :  0.16877499983871424E+02
      cep: {iter:  24, epot_es:  9.4744795053116E+00, de:  1.14E-03, gnrm:  8.071E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.944, 
+            dpz:  1.251}
    - inside get_beta_grid              :  0.16875842793490829E+02
      cep: {iter:  25, epot_es:  9.4754138651391E+00, de:  9.34E-04, gnrm:  6.592E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.948, 
+            dpz:  1.251}
    - inside get_beta_grid              :  0.16874616058448908E+02
      cep: {iter:  26, epot_es:  9.4761772255001E+00, de:  7.63E-04, gnrm:  5.383E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.950, 
+            dpz:  1.251}
    - inside get_beta_grid              :  0.16873707090900847E+02
      cep: {iter:  27, epot_es:  9.4768008657881E+00, de:  6.24E-04, gnrm:  4.397E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.953, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16873032868209453E+02
      cep: {iter:  28, epot_es:  9.4773103482580E+00, de:  5.09E-04, gnrm:  3.591E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.955, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16872532192767640E+02
      cep: {iter:  29, epot_es:  9.4777265616615E+00, de:  4.16E-04, gnrm:  2.933E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.956, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16872159929602969E+02
      cep: {iter:  30, epot_es:  9.4780665747655E+00, de:  3.40E-04, gnrm:  2.396E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.957, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871882770058985E+02
      cep: {iter:  31, epot_es:  9.4783443342668E+00, de:  2.78E-04, gnrm:  1.957E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.958, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871676116537298E+02
      cep: {iter:  32, epot_es:  9.4785712353900E+00, de:  2.27E-04, gnrm:  1.598E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.959, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871521790928426E+02
      cep: {iter:  33, epot_es:  9.4787565883367E+00, de:  1.85E-04, gnrm:  1.305E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.960, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871406348383360E+02
      cep: {iter:  34, epot_es:  9.4789079995556E+00, de:  1.51E-04, gnrm:  1.066E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.961, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871319836038236E+02
      cep: {iter:  35, epot_es:  9.4790316833608E+00, de:  1.24E-04, gnrm:  8.709E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.961, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871254878916879E+02
      cep: {iter:  36, epot_es:  9.4791327166023E+00, de:  1.01E-04, gnrm:  7.114E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.961, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871206006461048E+02
      cep: {iter:  37, epot_es:  9.4792152467816E+00, de:  8.25E-05, gnrm:  5.811E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.962, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871169156085450E+02
      cep: {iter:  38, epot_es:  9.4792826621146E+00, de:  6.74E-05, gnrm:  4.746E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.962, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871141307037291E+02
      cep: {iter:  39, epot_es:  9.4793377304909E+00, de:  5.51E-05, gnrm:  3.877E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.962, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871120210178240E+02
      cep: {iter:  40, epot_es:  9.4793827130139E+00, de:  4.50E-05, gnrm:  3.167E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.962, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871104188439631E+02
      cep: {iter:  41, epot_es:  9.4794194567687E+00, de:  3.67E-05, gnrm:  2.586E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.962, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871091989341508E+02
      cep: {iter:  42, epot_es:  9.4794494706143E+00, de:  3.00E-05, gnrm:  2.113E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871082675917577E+02
      cep: {iter:  43, epot_es:  9.4794739871057E+00, de:  2.45E-05, gnrm:  1.726E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871075545962171E+02
      cep: {iter:  44, epot_es:  9.4794940130829E+00, de:  2.00E-05, gnrm:  1.410E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871070072195000E+02
      cep: {iter:  45, epot_es:  9.4795103709990E+00, de:  1.64E-05, gnrm:  1.151E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871065857871983E+02
      cep: {iter:  46, epot_es:  9.4795237326838E+00, de:  1.34E-05, gnrm:  9.404E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871062603819894E+02
      cep: {iter:  47, epot_es:  9.4795346469255E+00, de:  1.09E-05, gnrm:  7.681E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871060083926942E+02
      cep: {iter:  48, epot_es:  9.4795435620026E+00, de:  8.92E-06, gnrm:  6.274E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871058126889519E+02
      cep: {iter:  49, epot_es:  9.4795508440907E+00, de:  7.28E-06, gnrm:  5.125E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871056602601179E+02
      cep: {iter:  50, epot_es:  9.4795567922981E+00, de:  5.95E-06, gnrm:  4.186E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871055411989133E+02
      cep: {iter:  51, epot_es:  9.4795616509491E+00, de:  4.86E-06, gnrm:  3.419E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871054479408851E+02
      cep: {iter:  52, epot_es:  9.4795656196173E+00, de:  3.97E-06, gnrm:  2.793E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871053746945584E+02
      cep: {iter:  53, epot_es:  9.4795688613217E+00, de:  3.24E-06, gnrm:  2.281E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871053170132324E+02
      cep: {iter:  54, epot_es:  9.4795715092221E+00, de:  2.65E-06, gnrm:  1.863E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871052714729444E+02
      cep: {iter:  55, epot_es:  9.4795736720875E+00, de:  2.16E-06, gnrm:  1.522E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871052354298545E+02
      cep: {iter:  56, epot_es:  9.4795754387639E+00, de:  1.77E-06, gnrm:  1.243E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871052068360630E+02
      cep: {iter:  57, epot_es:  9.4795768818234E+00, de:  1.44E-06, gnrm:  1.016E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051841012861E+02
      cep: {iter:  58, epot_es:  9.4795780605450E+00, de:  1.18E-06, gnrm:  8.295E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051659865806E+02
      cep: {iter:  59, epot_es:  9.4795790233491E+00, de:  9.63E-07, gnrm:  6.775E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051515241923E+02
      cep: {iter:  60, epot_es:  9.4795798097870E+00, de:  7.86E-07, gnrm:  5.534E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051399559921E+02
      cep: {iter:  61, epot_es:  9.4795804521652E+00, de:  6.42E-07, gnrm:  4.521E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051306865663E+02
      cep: {iter:  62, epot_es:  9.4795809768723E+00, de:  5.25E-07, gnrm:  3.692E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051232468428E+02
      cep: {iter:  63, epot_es:  9.4795814054632E+00, de:  4.29E-07, gnrm:  3.016E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051172665705E+02
      cep: {iter:  64, epot_es:  9.4795817555444E+00, de:  3.50E-07, gnrm:  2.464E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051124525479E+02
      cep: {iter:  65, epot_es:  9.4795820414974E+00, de:  2.86E-07, gnrm:  2.012E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051085724087E+02
      cep: {iter:  66, epot_es:  9.4795822750691E+00, de:  2.34E-07, gnrm:  1.644E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051054411506E+02
      cep: {iter:  67, epot_es:  9.4795824658547E+00, de:  1.91E-07, gnrm:  1.343E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051029113168E+02
      cep: {iter:  68, epot_es:  9.4795826216920E+00, de:  1.56E-07, gnrm:  1.097E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    - inside get_beta_grid              :  0.16871051008654749E+02
      cep: {iter:  69, epot_es:  9.4795827489826E+00, de:  1.27E-07, gnrm:  8.957E-08, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx:  0.000, dpy: -67.963, 
+            dpz:  1.250}
    CEP: {iter:  69, epot_es:  9.4795827489826E+00, de:  1.27E-07, gnrm:  8.957E-08, 
      stepsize:  1.000E+00}
+   charge on atoms: [ 1.33268,  1.33267,  1.33266,  1.33266,  1.33268,  1.33266,  1.33267, 
+                      1.33266,  1.33268,  1.33267,  1.33265,  1.33266,  1.33268,  1.33266, 
+                      1.33267,  1.33266, -0.67626, -0.67625, -0.67626, -0.67625, -0.67626, 
+                     -0.67625, -0.67626, -0.67625, -0.67626, -0.67625, -0.67626, -0.67625, 
+                     -0.67626, -0.67625, -0.67626, -0.67625, -0.65641, -0.65641, -0.65640, 
+                     -0.65641, -0.65641, -0.65641, -0.65641, -0.65640, -0.65641, -0.65641, 
+                     -0.65640, -0.65641, -0.65641, -0.65641, -0.65641, -0.65640]
    inside get_beta_grid                :  0.16871051008654749E+02
+   Timing of CENT1:
+     initialize matrix                 :  4.0000000000000036E-003
+     calculation of symfunc            :  6.7999999999999991E-002
+     neural network process            :  0.0
+     linear equations solver           :  0.224
+     force (SR term)                   :  0.0
+     energy (SR+LR), force (LR)        :  4.0000000000000036E-003
+     total time                        :  0.3
+   linked list info-1:
+     nat                               :  48
+     scl                               :  3.325917985016777
+     mlimnb                            :  2
+     cell: [ 29.2882076308615,  25.37305225219355,  9.448630639252208]
+   linked list info-2: {mx,my,mz:  [  8,  7,  2 ], total number of subcells:  112}
    conf. number                        :  000001
    epot                                : -0.140361552019995E+05
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
- CPU time: {iproc:  0, hrs:  0.101E-03, min:  0.607E-02, sec:  0.364E+00}
+ CPU time: {iproc:  0, hrs:  0.102E-03, min:  0.613E-02, sec:  0.368E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  744
+   Tot. No. of Deallocations           :  744
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  11.165
+     for the array                     : vz
+     in the routine                    : force_gto_sym_ortho
+     Memory Peak of process            : 125.396 MB
+ Walltime since initialization         :  00:00:00.385808009
+ Max No. of dictionaries used          :  841 #( 185 still in use)
+ Number of dictionary folders allocated:  1

@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 22:13:00.804
+ Timestamp of this run                 : 2018-09-07 14:07:40.017
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -202,6 +202,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -300,6 +302,7 @@
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
  Number of configurations read: {filename: posinp.acf, nconf:  1}
+ number of ANN                         :  2
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ USER INPUT FILE
  main:
    nodes: [3, 3]
@@ -684,6 +687,8 @@
  - -2.221611970061196E-01
  - -7.957833452837898E-02
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ ANN architecture                      : 70-3-3-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ USER INPUT FILE
  main:
    nodes: [3, 3]
@@ -1068,69 +1073,133 @@
  - 1.216706544009089E-01
  - -2.645225395675557E-02
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ ANN architecture                      : 70-3-3-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
  epot of all configurations:
- - Charge equilibration process:
+ - linked list info-1:
+     nat                               :  12
+     scl                               :  6.0
+     mlimnb                            :  2
+     cell: [ 10.32168411031911,  10.32168411031911,  10.32168411031911]
+   linked list info-2: {mx,my,mz:  [  1,  1,  1 ], total number of subcells:  1}
+   Charge equilibration process:
    - cep: {iter:  0, epot_es:  2.1400306238637E+00, de:  0.00E+00, gnrm:  1.103E-01, 
-       stepsize:  1.000E-01}
+       stepsize:  1.000E-01,                      qtot:  0.000, dpx: -13.418, dpy: -13.418, 
+            dpz: -13.418}
    - cep: {iter:  1, epot_es:  2.1697786524384E+00, de:  2.97E-02, gnrm:  1.007E-01, 
-       stepsize:  2.000E-01}
+       stepsize:  2.000E-01,                      qtot: -0.000, dpx: -13.511, dpy: -13.511, 
+            dpz: -13.511}
    - cep: {iter:  2, epot_es:  2.2246231458288E+00, de:  5.48E-02, gnrm:  8.314E-02, 
-       stepsize:  4.000E-01}
+       stepsize:  4.000E-01,                      qtot: -0.000, dpx: -13.681, dpy: -13.681, 
+            dpz: -13.681}
    - cep: {iter:  3, epot_es:  2.3167063375748E+00, de:  9.21E-02, gnrm:  5.418E-02, 
-       stepsize:  8.000E-01}
+       stepsize:  8.000E-01,                      qtot:  0.000, dpx: -13.961, dpy: -13.961, 
+            dpz: -13.961}
    - cep: {iter:  4, epot_es:  2.3930945823011E+00, de:  7.64E-02, gnrm:  3.059E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.189, dpy: -14.189, 
+            dpz: -14.189}
    - cep: {iter:  5, epot_es:  2.4367683054877E+00, de:  4.37E-02, gnrm:  1.727E-02, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.318, dpy: -14.318, 
+            dpz: -14.318}
    - cep: {iter:  6, epot_es:  2.4615995952439E+00, de:  2.48E-02, gnrm:  9.750E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.391, dpy: -14.391, 
+            dpz: -14.391}
    - cep: {iter:  7, epot_es:  2.4756741885393E+00, de:  1.41E-02, gnrm:  5.504E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.432, dpy: -14.432, 
+            dpz: -14.432}
    - cep: {iter:  8, epot_es:  2.4836380003994E+00, de:  7.96E-03, gnrm:  3.108E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.455, dpy: -14.455, 
+            dpz: -14.455}
    - cep: {iter:  9, epot_es:  2.4881397769532E+00, de:  4.50E-03, gnrm:  1.754E-03, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.468, dpy: -14.468, 
+            dpz: -14.468}
    - cep: {iter:  10, epot_es:  2.4906831447523E+00, de:  2.54E-03, gnrm:  9.905E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.476, dpy: -14.476, 
+            dpz: -14.476}
    - cep: {iter:  11, epot_es:  2.4921196274662E+00, de:  1.44E-03, gnrm:  5.592E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.480, dpy: -14.480, 
+            dpz: -14.480}
    - cep: {iter:  12, epot_es:  2.4929308052618E+00, de:  8.11E-04, gnrm:  3.157E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.482, dpy: -14.482, 
+            dpz: -14.482}
    - cep: {iter:  13, epot_es:  2.4933888301230E+00, de:  4.58E-04, gnrm:  1.782E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.484, dpy: -14.484, 
+            dpz: -14.484}
    - cep: {iter:  14, epot_es:  2.4936474357531E+00, de:  2.59E-04, gnrm:  1.006E-04, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.484, dpy: -14.484, 
+            dpz: -14.484}
    - cep: {iter:  15, epot_es:  2.4937934426296E+00, de:  1.46E-04, gnrm:  5.681E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  16, epot_es:  2.4938758756045E+00, de:  8.24E-05, gnrm:  3.207E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  17, epot_es:  2.4939224153824E+00, de:  4.65E-05, gnrm:  1.811E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  18, epot_es:  2.4939486905317E+00, de:  2.63E-05, gnrm:  1.022E-05, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  19, epot_es:  2.4939635247512E+00, de:  1.48E-05, gnrm:  5.772E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  20, epot_es:  2.4939718997244E+00, de:  8.37E-06, gnrm:  3.259E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  21, epot_es:  2.4939766279885E+00, de:  4.73E-06, gnrm:  1.840E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  22, epot_es:  2.4939792974259E+00, de:  2.67E-06, gnrm:  1.039E-06, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  23, epot_es:  2.4939808045106E+00, de:  1.51E-06, gnrm:  5.864E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  24, epot_es:  2.4939816553655E+00, de:  8.51E-07, gnrm:  3.311E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  25, epot_es:  2.4939821357326E+00, de:  4.80E-07, gnrm:  1.869E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  26, epot_es:  2.4939824069334E+00, de:  2.71E-07, gnrm:  1.055E-07, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    - cep: {iter:  27, epot_es:  2.4939825600452E+00, de:  1.53E-07, gnrm:  5.957E-08, 
-       stepsize:  1.000E+00}
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
+            dpz: -14.485}
    CEP: {iter:  27, epot_es:  2.4939825600452E+00, de:  1.53E-07, gnrm:  5.957E-08, 
      stepsize:  1.000E+00}
+   charge on atoms: [ 1.40340,  1.40340,  1.40340,  1.40340, -0.70170, -0.70170, -0.70170, 
+                     -0.70170, -0.70170, -0.70170, -0.70170, -0.70170]
+   Timing of CENT1:
+     initialize matrix                 :  0.0
+     calculation of symfunc            :  0.176
+     neural network process            :  0.0
+     linear equations solver           :  3.5999999999999976E-002
+     force (SR term)                   :  0.0
+     energy (SR+LR), force (LR)        :  4.0000000000000036E-003
+     total time                        :  0.216
+   linked list info-1:
+     nat                               :  12
+     scl                               :  3.325917985016777
+     mlimnb                            :  2
+     cell: [ 10.32168411031911,  10.32168411031911,  10.32168411031911]
+   linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
    conf. number                        :  000001
    epot                                : -0.350917062052847E+04
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
  CPU time: {iproc:  0, hrs:  0.789E-04, min:  0.473E-02, sec:  0.284E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  121
+   Tot. No. of Deallocations           :  121
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  6.213
+     for the array                     : fat
+     in the routine                    : get_hartree
+     Memory Peak of process            : 257.792 MB
+ Walltime since initialization         :  00:00:00.298082439
+ Max No. of dictionaries used          :  841 #( 185 still in use)
+ Number of dictionary folders allocated:  1

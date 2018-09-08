@@ -6,6 +6,7 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
         do_elim_trans, do_elim_rot, dmconverged, beta
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms, typ_file_info
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, nat, ndof !number coordinates
@@ -27,7 +28,10 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     character(100):: comment
     !allocate(uvnt(ndof),stat=istat)
     !if(istat/=0) stop 'ERROR: failure allocating uvnold'
-    if(iproc==0) write(*,'(a,f15.5)') 'dimsep ',dimsep
+    if(iproc==0) then
+        call yaml_map('dimsep',dimsep,fmt='(f15.5)')
+        !write(*,'(a,f15.5)') 'dimsep ',dimsep
+    endif
     nit=0
     call atom_copy_old(atoms_s,atoms,'atoms_s->atoms')
     atoms%rat(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
@@ -44,7 +48,9 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
         if(.not. atoms_s%bemoved(2,iat)) uvn(2,iat)=0.d0
         if(.not. atoms_s%bemoved(3,iat)) uvn(3,iat)=0.d0
     enddo
-    write(*,'(a,2l4)') 'do_elim_trans,do_elim_rot ',do_elim_trans,do_elim_rot
+    call yaml_map('do_elim_trans',do_elim_trans)
+    call yaml_map('do_elim_rot',do_elim_rot)
+    !write(*,'(a,2l4)') 'do_elim_trans,do_elim_rot ',do_elim_trans,do_elim_rot
     !if(do_elim_trans) call projtransout(ndof,uvn)
     !if(do_elim_rot) call projrotout(3*nat,ndof,rat,uvn)
     !call normalizevector(ndof,uvn)
@@ -56,7 +62,13 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     call lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,1.d0,1000,curv0,curv,1)
     !call calnorm(ndof,fat,fnrm)
     call atom_calnorm(nat,atoms_s%bemoved,fat,fnrm)
-    if(iproc==0) write(*,'(a7,2i5,3e16.8)') 'dmit   ',0,0,epotprime,0.d0,fnrm
+    if(iproc==0) then
+        call yaml_mapping_open('initial iteration of lowest mode',flow=.true.)
+        call yaml_map('epotprime',epotprime,fmt='(e16.8)')
+        call yaml_map('fnrm',fnrm,fmt='(e16.8)')
+        call yaml_mapping_close()
+        !write(*,'(a7,2i5,3e16.8)') 'dmit   ',0,0,epotprime,0.d0,fnrm
+    endif
     !if(curv<0.d0 .and. fnrm<fnrmtol) then
     !    dmconverged=.true.
     !    write(*,*) 'structure seems to be already at a saddle ponit.'
@@ -81,7 +93,8 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     !call cgsaddle(iproc,3*nat,ndof,rat,uvn,fat,epot,curv0,curv)
     if(paropt%converged) then
         call lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,5.d-1,20,curv0,curv,1)
-        write(*,*) 'lowestcurvatue ',curv
+        call yaml_map('lowestcurvatue',curv)
+        !write(*,*) 'lowestcurvatue ',curv
         dmconverged=.true.
     endif
     !-------------------------------

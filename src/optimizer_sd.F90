@@ -85,8 +85,16 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
     endif
     if(paropt%isatur>paropt%nsatur .and. .not. paropt%sdsaturated &
         .and. trim(paropt%sdsaturation)=='yes') then
-        write(*,'(a,i6,e23.15,2e12.5)') &
-            'SD SATURATED: itsd,epot,fnrm,fmax',paropt%itsd,epot,fnrm,fmax
+        call yaml_sequence(advance='no')
+        call yaml_mapping_open('SD SATURATED') !,label='id001')
+        call yaml_map('iter',paropt%itsd,fmt='(i5)')
+        call yaml_map('epot',epot,fmt='(es20.12)')
+        call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+        call yaml_map('fmax',fmax,fmt='(es12.5)')
+        call yaml_mapping_close()
+        call final_sdminimum(paropt)
+        !write(*,'(a,i6,e23.15,2e12.5)') &
+        !    'SD SATURATED: itsd,epot,fnrm,fmax',paropt%itsd,epot,fnrm,fmax
         paropt%sdsaturated=.true.
         !paropt%alpha=-1.d0
         !paropt%itsd=0

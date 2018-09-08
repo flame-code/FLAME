@@ -5,6 +5,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     use mod_potential, only: potential 
     use mod_parini, only: typ_parini
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
@@ -34,18 +35,26 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
         vu=vu 
         dv= (vu-vl)
         d= poisson%cell(3)
-        write(*,*)'--------------------------------------------------------'
+        !write(*,*)'--------------------------------------------------------'
 !        write(*,*)"distance between planes",d
         A= poisson%ngpx*poisson%ngpy*poisson%hx*poisson%hy
         c= A/(4.d0*pi*d)
         dipole = beta*(poisson%hx*poisson%hy)
         charge0= -dipole/(2*pi*d)
         charge = -dipole/(2*pi*d)+c*(dv)
-        write(*,*)'dipole = ', dipole/(2*pi)
-        write(*,*)'real pot = ', beta/(poisson%ngpx*poisson%ngpy)+vl,&
-                                -beta/(poisson%ngpx*poisson%ngpy)+vu
-        write(*,*)'charge on upper  plate  ', charge
-        write(*,*)"C_0 = ",c, " K =" , charge/dv/c
+        call yaml_mapping_open('p3dbias info') !,flow=.true.)
+        call yaml_map('dipole moment',dipole/(2*pi))
+        call yaml_map('real pot (lower)',beta/(poisson%ngpx*poisson%ngpy)+vl)
+        call yaml_map('real pot (upper)',-beta/(poisson%ngpx*poisson%ngpy)+vu)
+        call yaml_map('charge on upper plane',charge)
+        call yaml_map('C_0',c)
+        call yaml_map('K',charge/dv/c)
+        call yaml_mapping_close()
+        !write(*,*)'dipole = ', dipole/(2*pi)
+        !write(*,*)'real pot = ', beta/(poisson%ngpx*poisson%ngpy)+vl,&
+        !                        -beta/(poisson%ngpx*poisson%ngpy)+vu
+        !write(*,*)'charge on upper  plate  ', charge
+        !write(*,*)"C_0 = ",c, " K =" , charge/dv/c
 
 
         !********************************************************************
@@ -552,6 +561,7 @@ end subroutine sollaplaceq
     use mod_interface
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
+    use yaml_output
     implicit none
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
@@ -654,7 +664,8 @@ end subroutine sollaplaceq
     enddo
     epot=0.5*epot    
 
-    write(*,*)"epotplane=" ,epot
+    !call yaml_map('epotplane',epot)
+    !write(*,*)"epotplane=" ,epot
  !   write(*,*)"sum force",sum(fatp(1,:)),sum(fatp(2,:)),sum(fatp(3,:))
    ! write(*,*)
    ! write(*,*)"------------------------------------------"
@@ -787,6 +798,7 @@ end subroutine LGW4
 subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_poisson), intent(inout):: poisson
@@ -819,8 +831,12 @@ subroutine surface_charge(parini,poisson,pot_short,vl,vu)
     !    t =t -E/(4*pi)*poisson%cell(1)*poisson%cell(2)
     !    tt=tt+E/(4*pi)*poisson%cell(1)*poisson%cell(2)
     !endif
-    write(*,'(a,es25.13)')'charge on lower plane' ,t
-    write(*,'(a,es25.13)')'charge on upper plane',tt
+    call yaml_mapping_open('charge on planes',flow=.true.)
+    call yaml_map('lower',t,fmt='(es25.13)')
+    call yaml_map('upper',tt,fmt='(es25.13)')
+    call yaml_mapping_close()
+    !write(*,'(a,es25.13)')'charge on lower plane' ,t
+    !write(*,'(a,es25.13)')'charge on upper plane',tt
     vl=poisson%vl
     vu=poisson%vu
 end subroutine surface_charge

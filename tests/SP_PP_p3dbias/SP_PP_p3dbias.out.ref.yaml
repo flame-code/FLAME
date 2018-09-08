@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 22:15:16.913
+ Timestamp of this run                 : 2018-09-07 14:09:36.740
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -201,6 +201,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -307,6 +309,14 @@
  hsp                                   :  1.56847268611587E-03
  epot of all configurations:
  - inside get_beta_grid                :  0.25742190731632512E+02
+   p3dbias info:
+     dipole moment                     :  1.951489734537109
+     real pot (lower)                  :  1.216549656504372E-002
+     real pot (upper)                  :  2.458382729295628E-002
+     charge on upper plane             :  5.4907212046700946E-002
+     C_0                               :  4.421464788603717
+     K                                 :  0.3379199784980316
+   charge on planes: {lower: -5.4907212030141E-02, upper:  5.4907212211325E-02}
    epotfixed                           :  1.266666977363207E+01
    epotlong                            :  2.077387299641451E+00
    epotplane                           : -1.260813575967193E-02
@@ -317,5 +327,17 @@
    epot                                : -0.113304471793506E+02
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
- CPU time: {iproc:  0, hrs:  0.711E-04, min:  0.427E-02, sec:  0.256E+00}
+ CPU time: {iproc:  0, hrs:  0.689E-04, min:  0.413E-02, sec:  0.248E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  46
+   Tot. No. of Deallocations           :  46
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  15.220
+     for the array                     : vz
+     in the routine                    : force_gto_sym_ortho
+     Memory Peak of process            : 68.524 MB
+ Walltime since initialization         :  00:00:00.262106487
+ Max No. of dictionaries used          :  773 #( 185 still in use)
+ Number of dictionary folders allocated:  1
