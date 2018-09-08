@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 22:38:44.409
+ Timestamp of this run                 : 2018-09-08 12:51:37.551
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : minhopp
@@ -201,6 +201,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -298,7 +300,17 @@
  system info: {ntypat:  1, LJ:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ minhopp parameters: {beta1:  1.05000, beta2:  1.05000, beta3:  0.95238, alpha1:  0.98039, 
+                     alpha2:  1.02000,    p1:  5.000E-01,  p2:  5.000E-01, 
+    critical ratio (.ge. 1):  1.0000E+00,               mdmin:  3, npminx:  5000, minter:  1}
+  #master proc reads input parameters from input.minhopp and sends to all.
+ input minima info: {nlmin:  0, nlminx:  101, eref: -44.325801}
+  #This is a new run.
+ number of sets for input parameters in input.minhopp:  1
+ other minhopp parameters: {iproc:  0, ediff:  1.1, ekin:  0.1, dt:  1.0E-002}
+  #reading cellvec sizes and atomic positions from posinp.acf
  Number of configurations read: {filename: posinp.acf, nconf:  1}
+ ndof                                  :  39
  MH steps:
  - optimization parameters:
      method                            : SD
@@ -434,7 +446,12 @@
        epot                            : -3.700489059226E+01
        fnrm                            :  1.98090E-03
        fmax                            :  8.09792E-04
- - SOFTEN:
+   input structure relaxed: {iproc:  0, epot: -3.700489059225553E+01}
+   re_sm                               : -3.700489059226E+01
+ - minhopp iteration info: {iproc:  0, istep:  0, ihopp:  0, nlmin:  1, 
+                             epot: -3.700489059226E+01}
+   escaped: {iproc:  0, nlmin:  1, nlmin_old:  1, minter:  1}
+   SOFTEN:
    - SOFT: {iter:  1, curv:  141.750, fd2:  139.548, de:  0.028, res:  2.012, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  111.743, fd2:  110.309, de:  0.022, res:  1.864, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  87.036, fd2:  86.226, de:  0.017, res:  1.584, eps_v:  0.020}
@@ -956,7 +973,15 @@
        epot                            : -4.147197980758E+01
        fnrm                            :  1.62220E-03
        fmax                            :  8.06588E-04
- - SOFTEN:
+   new lowest: {iproc:  0, nlmin:  1, erathopp: -4.147197980758E+01, de: -4.46709}
+ - minhopp iteration info: {iproc:  0, istep:  1, ihopp:  1, nlmin:  2, 
+                             epot: -4.147197980758E+01}
+   escaped: {iproc:  0, nlmin:  2, nlmin_old:  1, minter:  1}
+   writing minhopp results: {iproc:  0, nlmin:  2}
+    #master proc wrote poslow.xyz
+    #master proc wrote energies in earr.dat, can be used in a restart run.
+    #master proc wrote input/output parameters in input.minhopp.
+   SOFTEN:
    - SOFT: {iter:  1, curv:  128.425, fd2:  128.138, de:  0.026, res:  1.563, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  113.068, fd2:  112.963, de:  0.023, res:  1.138, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  103.886, fd2:  103.889, de:  0.021, res:  1.017, eps_v:  0.020}
@@ -1266,7 +1291,9 @@
        epot                            : -4.147197980435E+01
        fnrm                            :  1.80662E-03
        fmax                            :  7.58125E-04
- - SOFTEN:
+ - minhopp iteration info: {iproc:  0, istep:  2, ihopp:  1, nlmin:  2, 
+                             epot: -4.147197980758E+01}
+   SOFTEN:
    - SOFT: {iter:  1, curv:  183.418, fd2:  184.207, de:  0.037, res:  3.566, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  109.819, fd2:  110.150, de:  0.022, res:  2.118, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  83.033, fd2:  83.203, de:  0.017, res:  1.421, eps_v:  0.020}
@@ -1664,7 +1691,9 @@
        epot                            : -4.147197979714E+01
        fnrm                            :  1.69487E-03
        fmax                            :  9.06216E-04
- - SOFTEN:
+ - minhopp iteration info: {iproc:  0, istep:  3, ihopp:  1, nlmin:  2, 
+                             epot: -4.147197980758E+01}
+   SOFTEN:
    - SOFT: {iter:  1, curv:  173.214, fd2:  173.846, de:  0.035, res:  2.580, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  131.084, fd2:  131.536, de:  0.026, res:  1.892, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  107.638, fd2:  108.058, de:  0.022, res:  1.489, eps_v:  0.020}
@@ -2084,7 +2113,9 @@
        epot                            : -4.147197980563E+01
        fnrm                            :  2.08093E-03
        fmax                            :  7.43876E-04
- - SOFTEN:
+ - minhopp iteration info: {iproc:  0, istep:  4, ihopp:  1, nlmin:  2, 
+                             epot: -4.147197980758E+01}
+   SOFTEN:
    - SOFT: {iter:  1, curv:  201.805, fd2:  202.617, de:  0.041, res:  3.654, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  125.211, fd2:  125.826, de:  0.025, res:  2.049, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  101.421, fd2:  101.752, de:  0.020, res:  1.233, eps_v:  0.020}
@@ -2431,7 +2462,14 @@
        epot                            : -4.139439837496E+01
        fnrm                            :  1.60996E-03
        fmax                            :  7.60121E-04
- - SOFTEN:
+ - minhopp iteration info: {iproc:  0, istep:  5, ihopp:  2, nlmin:  3, 
+                             epot: -4.139439837496E+01}
+   escaped: {iproc:  0, nlmin:  3, nlmin_old:  2, minter:  1}
+   writing minhopp results: {iproc:  0, nlmin:  3}
+    #master proc wrote poslow.xyz
+    #master proc wrote energies in earr.dat, can be used in a restart run.
+    #master proc wrote input/output parameters in input.minhopp.
+   SOFTEN:
    - SOFT: {iter:  1, curv:  123.869, fd2:  123.976, de:  0.025, res:  2.225, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  94.105, fd2:  94.098, de:  0.019, res:  1.462, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  80.303, fd2:  80.198, de:  0.016, res:  1.133, eps_v:  0.020}
@@ -2731,7 +2769,9 @@
        epot                            : -4.139439834082E+01
        fnrm                            :  2.16605E-03
        fmax                            :  9.15062E-04
- - SOFTEN:
+ - minhopp iteration info: {iproc:  0, istep:  6, ihopp:  2, nlmin:  3, 
+                             epot: -4.139439837496E+01}
+   SOFTEN:
    - SOFT: {iter:  1, curv:  132.677, fd2:  134.807, de:  0.027, res:  1.913, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  110.681, fd2:  112.289, de:  0.022, res:  1.344, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  98.544, fd2:  99.920, de:  0.020, res:  1.161, eps_v:  0.020}
@@ -3144,7 +3184,14 @@
        epot                            : -4.144459694655E+01
        fnrm                            :  2.29276E-03
        fmax                            :  8.01977E-04
- - SOFTEN:
+ - minhopp iteration info: {iproc:  0, istep:  7, ihopp:  3, nlmin:  4, 
+                             epot: -4.144459694655E+01}
+   escaped: {iproc:  0, nlmin:  4, nlmin_old:  3, minter:  1}
+   writing minhopp results: {iproc:  0, nlmin:  4}
+    #master proc wrote poslow.xyz
+    #master proc wrote energies in earr.dat, can be used in a restart run.
+    #master proc wrote input/output parameters in input.minhopp.
+   SOFTEN:
    - SOFT: {iter:  1, curv:  163.185, fd2:  163.215, de:  0.033, res:  2.770, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  119.293, fd2:  119.672, de:  0.024, res:  1.569, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  103.689, fd2:  104.118, de:  0.021, res:  1.189, eps_v:  0.020}
@@ -3450,7 +3497,9 @@
        epot                            : -4.144459695502E+01
        fnrm                            :  2.27351E-03
        fmax                            :  9.85825E-04
- - SOFTEN:
+ - minhopp iteration info: {iproc:  0, istep:  8, ihopp:  3, nlmin:  4, 
+                             epot: -4.144459694655E+01}
+   SOFTEN:
    - SOFT: {iter:  1, curv:  139.921, fd2:  139.576, de:  0.028, res:  3.213, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  83.519, fd2:  83.810, de:  0.017, res:  1.558, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  69.176, fd2:  69.502, de:  0.014, res:  1.014, eps_v:  0.020}
@@ -3957,5 +4006,47 @@
        epot                            : -4.432680141008E+01
        fnrm                            :  1.40119E-03
        fmax                            :  4.98391E-04
- -  CPU time: {iproc:  0, hrs:  0.163E-03, min:  0.980E-02, sec:  0.588E+00}
+   new lowest: {iproc:  0, nlmin:  4, erathopp: -4.432680141008E+01, de: -2.85482}
+ - minhopp iteration info: {iproc:  0, istep:  9, ihopp:  4, nlmin:  5, 
+                             epot: -4.432680141008E+01}
+   success, eref is achieved by iproc  :  0
+ collecting accepted minima sent by other procs, final, iproc:  0
+ writing minhopp results: {iproc:  0, nlmin:  5}
+  #master proc wrote poslow.xyz
+  #master proc wrote energies in earr.dat, can be used in a restart run.
+  #master proc wrote input/output parameters in input.minhopp.
+ number of minima found by each processors: {iproc:  0, nlmin_l:  5, nlmin:  5}
+ ratio stuck: {same:  0.500E+00, old:  0.000E+00, new:  0.400E+00}
+ accepting/rejecting ratio: {iproc:  0, accept:  0.100E+01, reject:  0.000E+00}
+ force calls: {total:  2071.0, MD:  923.0, GEOPT:  959.0, SOFT:  189.0}
+ force calls all processes:
+   fcall_tot_all                       :  2071.0
+   fcall_tot_all_md                    :  923.0
+   fcall_tot_all_opt                   :  959.0
+   fcall_tot_all_soften                :  189.0
+   reached                             :  Yes
+ average minima hopping parameters: {iproc:  0, av_ediff:  1.04712539213543, 
+                               av_ekinetic:  9.4098809523809515E-002}
+ some minhopp results:
+   iproc                               :  0
+   most frequent visits                :  1
+   avg. numb. visits per minimum       :  0.100E+01
+   minimum energy separation           :  0.27E-01
+   esep                                :  0.16E-07
+   ediff                               :  0.102E+01
+   ekin                                :  0.105E+00
+   dt                                  :  0.128E-01
+ CPU time: {iproc:  0, hrs:  0.160E-03, min:  0.960E-02, sec:  0.576E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  184
+   Tot. No. of Deallocations           :  184
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.012
+     for the array                     : at_out%itypat
+     in the routine                    : Main_program
+     Memory Peak of process            : 37.076 MB
+ Walltime since initialization         :  00:00:00.591871445
+ Max No. of dictionaries used          :  773 #( 185 still in use)
+ Number of dictionary folders allocated:  1

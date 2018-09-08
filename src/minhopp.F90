@@ -30,7 +30,11 @@ subroutine minimahopping(parini)
     call yaml_sequence(advance='no')
     call relax_minhopp(parini,atoms_curr,paropt_prec,paropt)
     !stop
-    write(*,'(a,i4,e24.15)') 'input(relaxed): iproc,atoms_curr%epot',iproc,atoms_curr%epot
+    call yaml_mapping_open('input structure relaxed',flow=.true.)
+    call yaml_map('iproc',iproc)
+    call yaml_map('epot',atoms_curr%epot,fmt='(es24.15)')
+    call yaml_mapping_close()
+    !write(*,'(a,i4,e24.15)') 'input(relaxed): iproc,atoms_curr%epot',iproc,atoms_curr%epot
     if(nlmin>0) then
         write(*,'(a,1x,i4,2e24.15)') 'new/old energy for input configuration: iproc,new,old', &
             !iproc,atoms_curr%epot,atoms_allproc%epotall(iproc+1)
@@ -40,7 +44,16 @@ subroutine minimahopping(parini)
     endif
     if(nlmin==0) call minhopp_newrun_initialization(atoms_curr,atoms_locmin)
     re_sm=min(atoms_curr%epot,earr(1))
-    write(*,'(a,i4,e24.15)') 'iproc,initial re_sm',iproc,re_sm
+    call yaml_map('re_sm',re_sm,fmt='(es20.12)')
+    !call yaml_mapping_open('?????')
+    !call yaml_map('iproc',iproc,fmt='(i)')
+    !call yaml_map('istep',istep,fmt='(i)')
+    !call yaml_map('ihopp',ihopp,fmt='(i)')
+    !call yaml_map('epot',atoms_curr%epot,fmt='(es20.12)')
+    !call yaml_map('ediff',,fmt='()')
+    !call yaml_map('',,fmt='()')
+    !call yaml_mapping_close()
+    !write(*,'(a,i4,e24.15)') 'iproc,initial re_sm',iproc,re_sm
     write(2,'(a1,i3.3,5x,a,3x,a,10x,a,12x,a,2(6x,a))') '#',iproc,'istep','ihopp','epot','ediff','ekin','dt' !,'',''
     write(2,'(i4.3,i10,i6,e24.15,3f10.4,15x,a,2f9.1)') iproc,istep,ihopp,atoms_curr%epot,ediff,ekin,dt,'  --',count_md,count_opt
     !rathopp(1:3,1:nat)=atoms_curr%rat(1:3,1:nat)
@@ -54,10 +67,18 @@ subroutine minimahopping(parini)
         call yaml_sequence(advance='no')
         !collecting local minima data if send check by other processes.
         call collect_data_from_all_processors(5,atoms_curr,atoms_allproc,atoms_locmin)
-        write(*,'(a,i4,3i7,e24.15)') 'iproc,istep,ihopp,nlmin,erat ',iproc,istep-1,ihopp,nlmin,atoms_curr%epot
+        call yaml_mapping_open('minhopp iteration info',flow=.true.)
+        call yaml_map('iproc',iproc,fmt='(i)')
+        call yaml_map('istep',istep-1,fmt='(i)')
+        call yaml_map('ihopp',ihopp,fmt='(i)')
+        call yaml_map('nlmin',nlmin,fmt='(i)')
+        call yaml_map('epot',atoms_curr%epot,fmt='(es20.12)')
+        call yaml_mapping_close()
+        !write(*,'(a,i4,3i7,e24.15)') 'iproc,istep,ihopp,nlmin,erat ',iproc,istep-1,ihopp,nlmin,atoms_curr%epot
         !Energy has reached taregt eref and global minimum is presumably found
         if(re_sm<=eref) then
-            write(*,'(a,i4)') 'success: eref is achieved. iproc= ',iproc
+            call yaml_map('success, eref is achieved by iproc',iproc)
+            !write(*,'(a,i4)') 'success: eref is achieved. iproc= ',iproc
             exit
         endif
         if(escaped) then
@@ -66,7 +87,13 @@ subroutine minimahopping(parini)
             !even if minter=1, for the moment let's send in every cycle but I need
             !to find a better way control this action.
             if(1>0) then 
-                write(*,'(a,i4,2i7,i6)') 'iproc,nlmin,nlmin_old,minter',iproc,nlmin,nlmin_old,minter
+                call yaml_mapping_open('escaped',flow=.true.)
+                call yaml_map('iproc',iproc)
+                call yaml_map('nlmin',nlmin)
+                call yaml_map('nlmin_old',nlmin_old)
+                call yaml_map('minter',minter)
+                call yaml_mapping_close()
+                !write(*,'(a,i4,2i7,i6)') 'iproc,nlmin,nlmin_old,minter',iproc,nlmin,nlmin_old,minter
                 call send_minhopp_parameters_to_all(atoms_curr)
             endif
         endif
@@ -108,7 +135,8 @@ subroutine minimahopping(parini)
 #if defined(MPI)
     if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
 #endif
-    write(*,'(a,i4)') 'final collect of accepted minima sent by all other processors: iproc',iproc
+    call yaml_map('collecting accepted minima sent by other procs, final, iproc',iproc)
+    !write(*,'(a,i4)') 'final collect of accepted minima sent by all other processors: iproc',iproc
     call collect_data_from_all_processors(50,atoms_curr,atoms_allproc,atoms_locmin)
     call cancel_excessive_irecv
     !if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
@@ -124,6 +152,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_opt, only: typ_paropt
     use mod_potential, only: potential
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_paropt), intent(inout):: paropt_prec, paropt
@@ -159,7 +188,8 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     !reading nlmin,nlminx,ediffarr,ekinarr,dtarr and !distribute among all proc.
     call read_minhopp_parameters 
     if(iproc==imaster) then
-        write(*,'(a)') 'reading cellvec sizes and atomic positions from posinp.acf'
+        call yaml_comment('reading cellvec sizes and atomic positions from posinp.acf')
+        !write(*,'(a)') 'reading cellvec sizes and atomic positions from posinp.acf'
         !call acf_read(parini,'posinp.acf',nproc,atoms_all=atoms_allproc)
         call acf_read_new(parini,'posinp.acf',nproc,atoms_arr=atoms_allproc)
         !write(*,*) atoms_allproc%atoms%nat,atoms_curr%nat
@@ -168,7 +198,8 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
         !call set_ndof(atoms_allproc%atoms)
         call set_ndof(atoms_allproc%atoms(1))
         !write(*,'(a,i6)') 'ndof= ',atoms_allproc%atoms%ndof
-        write(*,'(a,i6)') 'ndof= ',atoms_allproc%atoms(1)%ndof
+        call yaml_map('ndof',atoms_allproc%atoms(1)%ndof)
+        !write(*,'(a,i6)') 'ndof= ',atoms_allproc%atoms(1)%ndof
         !call atom_copy(atoms_allproc%atoms,atoms_curr,'atoms_allproc%atoms->atoms_curr')
         call atom_copy(atoms_allproc%atoms(1),atoms_curr,'atoms_allproc%atoms->atoms_curr')
         !do jproc=1,nproc !HERE: what is loop doing?
@@ -376,17 +407,32 @@ subroutine print_minhopp_parameters
     use mod_minhopp, only: beta1, beta2, beta3, alpha1, alpha2, mdmin, minter, npminx
     !use mod_atoms, only:
     use mod_processors, only: iproc, imaster
+    use yaml_output
     implicit none
     real(8)::ratio,tt,p1,p2
     ratio=-log(alpha2)/log(alpha1)
     tt=beta2**ratio*beta3
     if(iproc==imaster) then
-        write(*,'(a,3f20.5)') 'beta1,beta2,beta3',beta1,beta2,beta3
-        write(*,'(a,2f20.5)') 'alpha1,alpha2',alpha1,alpha2
+        call yaml_mapping_open('minhopp parameters',flow=.true.)
+        call yaml_map('beta1',beta1,fmt='(f20.5)')
+        call yaml_map('beta2',beta2,fmt='(f20.5)')
+        call yaml_map('beta3',beta3,fmt='(f20.5)')
+        call yaml_map('alpha1',alpha1,fmt='(f20.5)')
+        call yaml_map('alpha2',alpha2,fmt='(f20.5)')
         p1=ratio/(1.d0+ratio);p2=1.d0/(1.d0+ratio)
-        write(*,'(a,2e10.3)') 'predicted fraction accepted, rejected',p1,p2
-        write(*,'(a,e11.4)') 'critical ratio (.ge. 1)',tt
-        write(*,'(a,i4,2i6)') 'mdmin,npminx,minter',mdmin,npminx,minter
+        call yaml_map('p1',p1,fmt='(es11.3)')
+        call yaml_map('p2',p2,fmt='(es11.3)')
+        call yaml_map('critical ratio (.ge. 1)',tt,fmt='(es12.4)')
+        call yaml_map('mdmin',mdmin,fmt='(i)')
+        call yaml_map('npminx',npminx,fmt='(i)')
+        call yaml_map('minter',minter,fmt='(i)')
+        call yaml_mapping_close()
+        !write(*,'(a,3f20.5)') 'beta1,beta2,beta3',beta1,beta2,beta3
+        !write(*,'(a,2f20.5)') 'alpha1,alpha2',alpha1,alpha2
+        !p1=ratio/(1.d0+ratio);p2=1.d0/(1.d0+ratio)
+        !write(*,'(a,2e10.3)') 'predicted fraction accepted, rejected',p1,p2
+        !write(*,'(a,e11.4)') 'critical ratio (.ge. 1)',tt
+        !write(*,'(a,i4,2i6)') 'mdmin,npminx,minter',mdmin,npminx,minter
     endif
     !if(tt<0.999999999999999d0) stop 'incompatible alpha s, beta s'
 end subroutine print_minhopp_parameters
@@ -438,7 +484,7 @@ subroutine readnat(atoms_curr)
     !    if(ios/=0) stop 'ERROR: failure openning posinp.xyz'
     !    read(9,*) atoms_curr%nat
     !    close(9)
-        write(*,'(a,i7)') 'nat ',atoms_curr%nat
+    !    write(*,'(a,i7)') 'nat ',atoms_curr%nat
     endif
 #if defined(MPI)
     if(parallel) then
@@ -495,9 +541,9 @@ subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
         !   if(nconf==1) then
                 !cv(1:3,1:3)=atoms_allproc%atoms%cellvec(1:3,1:3)
                 cv(1:3,1:3)=atoms_allproc%atoms(1)%cellvec(1:3,1:3)
-                write(*,'(a,3f20.10)') 'cellvec ',cv(1,1),cv(2,1),cv(3,1)
-                write(*,'(a,3f20.10)') 'cellvec ',cv(1,2),cv(2,2),cv(3,2)
-                write(*,'(a,3f20.10)') 'cellvec ',cv(1,3),cv(2,3),cv(3,3)
+                !write(*,'(a,3f20.10)') 'cellvec ',cv(1,1),cv(2,1),cv(3,1)
+                !write(*,'(a,3f20.10)') 'cellvec ',cv(1,2),cv(2,2),cv(3,2)
+                !write(*,'(a,3f20.10)') 'cellvec ',cv(1,3),cv(2,3),cv(3,3)
         !    endif
         !    atoms_curr%ndof=0
         !    do iat=1,atoms_curr%nat
@@ -582,6 +628,7 @@ subroutine read_minhopp_parameters
     use mod_processors, only: iproc, parallel, nproc, imaster, mpi_comm_abz
     use mod_minhopp, only: nrandoff, ediff, ekin, dt, nlmin, nlminx, eref, etoler, ekinarr, &
         dtarr, ediffarr, nstep
+    use yaml_output
     implicit none
     integer:: ios, i, mproc, k, jproc, ierr
     real(8):: tts
@@ -592,16 +639,24 @@ subroutine read_minhopp_parameters
     if(iproc==imaster) then
         open(unit=11,file='input.minhopp',status='old',iostat=ios)
         if(ios/=0) stop 'ERROR: failure openning input.minhopp'
-        write(*,'(a)') 'master proc reads input parameters from input.minhopp and sends to all.'
+        call yaml_comment('master proc reads input parameters from input.minhopp and sends to all.')
+        !write(*,'(a)') 'master proc reads input parameters from input.minhopp and sends to all.'
         read(11,*) nlmin
         !read(11,*) nlminx
         nlminx=nlmin+nstep+1 !+1 is need if nlmin=0 (and nbuf=0)
         !read(11,*) eref
-        write(*,'(a,1x,2i8,e24.15)') 'nlmin,nlminx,eref ',nlmin,nlminx,eref
+        call yaml_mapping_open('input minima info',flow=.true.)
+        call yaml_map('nlmin',nlmin)
+        call yaml_map('nlminx',nlminx)
+        call yaml_map('eref',eref)
+        call yaml_mapping_close()
+        !write(*,'(a,1x,2i8,e24.15)') 'nlmin,nlminx,eref ',nlmin,nlminx,eref
         if(nlmin==0) then
-            write(*,'(a)') 'This is a new run.'
+            call yaml_comment('This is a new run.')
+            !write(*,'(a)') 'This is a new run.'
         else
-            write(*,'(a)') 'This is a restart run.'
+            call yaml_comment('This is a restart run.')
+            !write(*,'(a)') 'This is a restart run.'
         endif
     endif
     !eref=-0.100000000000000E+05
@@ -620,7 +675,8 @@ subroutine read_minhopp_parameters
             dtarr(mproc)=dtarr(mproc) !*41.34137333656d0
             if(k<0) then;write(*,*) 'k=',k;exit;endif
         enddo
-        write(*,'(a,i4,a)') 'There were ',mproc,' sets of input parameters in input.minhopp'
+        call yaml_map('number of sets for input parameters in input.minhopp',mproc)
+        !write(*,'(a,i4,a)') 'There were ',mproc,' sets of input parameters in input.minhopp'
         close(11)
         if(mproc<nproc) then
             write(*,'(a)') 'WARNING: number of sets of input parameters fewer than nproc.'
@@ -642,7 +698,13 @@ subroutine read_minhopp_parameters
     do  i=1,nrandoff+iproc*1000
         call random_number(tts)
     enddo
-    write(*,'(a,i4,3e15.3)') 'In: iproc,ediff,ekin,dt',iproc,ediff,ekin,dt
+    call yaml_mapping_open('other minhopp parameters',flow=.true.)
+    call yaml_map('iproc',iproc)
+    call yaml_map('ediff',ediff)
+    call yaml_map('ekin',ekin)
+    call yaml_map('dt',dt)
+    call yaml_mapping_close()
+    !write(*,'(a,i4,3e15.3)') 'In: iproc,ediff,ekin,dt',iproc,ediff,ekin,dt
 end subroutine read_minhopp_parameters
 !*****************************************************************************************
 subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
@@ -1283,7 +1345,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     !eps_vxyz_init=1.d-1*atoms0%nat
     !alpha=2.d-3 !inputs_md%betax
     alpha=alpha_soften !0.8d0*alphax !2.d-2 !inputs_md%betax
-    if(lprint) write(*,'(a,i3)') 'softening begins ',iproc
+    !if(lprint) write(*,'(a,i3)') 'softening begins ',iproc
     call setpot_soften
     !write(*,*) 'HERE ',trim(atoms0%boundcond),atoms0%ndof,atoms0%bemoved
     !perfstatus='normal'
@@ -1404,6 +1466,7 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
     use mod_atoms, only: typ_atoms_arr, typ_file_info
     use mod_processors, only: iproc, imaster
     use mod_minhopp, only: nlmin_old, nlmin, earr, etoler
+    use yaml_output
     implicit none
     type(typ_atoms_arr), intent(inout):: atoms_allproc, atoms_locmin
     !local variables
@@ -1412,7 +1475,11 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
     integer:: iconf, iat
     nlmin_old=nlmin
     if(iproc/=imaster) return
-    write(*,'(a,i4,i7)') 'writing minhopp results: iproc,nlmin',iproc,nlmin
+    call yaml_mapping_open('writing minhopp results',flow=.true.)
+    call yaml_map('iproc',iproc)
+    call yaml_map('nlmin',nlmin)
+    call yaml_mapping_close()
+    !write(*,'(a,i4,i7)') 'writing minhopp results: iproc,nlmin',iproc,nlmin
     !call write_poscur(atoms_allproc)
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
@@ -1440,7 +1507,8 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
     file_info%filename_positions='poslow.acf'
     file_info%file_position='new'
     call acf_write_new(file_info,atoms_arr=atoms_locmin,strkey='poslow')
-    write(*,*) 'master proc wrote poslow.xyz'
+    call yaml_comment('master proc wrote poslow.xyz')
+    !write(*,*) 'master proc wrote poslow.xyz'
     call write_earr
     call write_minhopp_parameters
 end subroutine write_minhopp
@@ -1449,6 +1517,7 @@ subroutine write_minhopp_parameters
     use mod_interface
     use mod_processors, only: iproc, nproc, imaster
     use mod_minhopp, only: nlmin, ekinarr, dtarr, ediffarr, eref
+    use yaml_output
     implicit none
     !local variables
     integer::ios, jproc
@@ -1463,13 +1532,15 @@ subroutine write_minhopp_parameters
             write(11,'(3(e15.6,1x),a)') ediffarr(jproc),ekinarr(jproc),tt,'  ediff,ekin,dt'
         enddo
         close(11)
-        write(*,'(a)') 'master proc wrote input/output parameters in input.minhopp.'
+        call yaml_comment('master proc wrote input/output parameters in input.minhopp.')
+        !write(*,'(a)') 'master proc wrote input/output parameters in input.minhopp.'
     endif
 end subroutine write_minhopp_parameters
 !*****************************************************************************************
 subroutine write_earr
     use mod_interface
     use mod_minhopp, only: earr, nvisit, nlmin, nlminx, nbuf, eref
+    use yaml_output
     implicit none
     integer:: mm, k, ios
     real(8):: tt
@@ -1481,7 +1552,8 @@ subroutine write_earr
         tt=earr(k)
         write(12,'(e24.15,i5,2f10.5,e14.5)') tt,nvisit(k),tt-earr(1),tt-earr(k-1),tt-eref
     enddo
-    write(*,'(a)') 'master proc wrote energies in earr.dat, can be used in a restart run.'
+    call yaml_comment('master proc wrote energies in earr.dat, can be used in a restart run.')
+    !write(*,'(a)') 'master proc wrote energies in earr.dat, can be used in a restart run.'
     close(12)
 end subroutine write_earr
 !*****************************************************************************************
@@ -1584,6 +1656,7 @@ subroutine new_minimum(atoms_hopp)
     use mod_processors, only:iproc
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_minhopp, only: ibest
+    use yaml_output
     implicit none
     type(typ_atoms), intent(in):: atoms_hopp
     !local variables
@@ -1601,8 +1674,14 @@ subroutine new_minimum(atoms_hopp)
     endif
     if(kerathopp==0) then
         re_sm=min(re_sm,atoms_hopp%epot)
-        write(*,'(a,i4,i7,e24.15,f10.5)') 'new lowest: iproc,nlmin,erathopp,dE', &
-            iproc,nlmin,atoms_hopp%epot,atoms_hopp%epot-earr(1)
+        call yaml_mapping_open('new lowest',flow=.true.)
+        call yaml_map('iproc',iproc)
+        call yaml_map('nlmin',nlmin)
+        call yaml_map('erathopp',atoms_hopp%epot,fmt='(es20.12)')
+        call yaml_map('de',atoms_hopp%epot-earr(1),fmt='(f10.5)')
+        call yaml_mapping_close()
+        !write(*,'(a,i4,i7,e24.15,f10.5)') 'new lowest: iproc,nlmin,erathopp,dE', &
+        !    iproc,nlmin,atoms_hopp%epot,atoms_hopp%epot-earr(1)
         file_info%filename_positions='posbest.acf'
         if(ibest==1) then
             file_info%file_position='new'
@@ -1623,52 +1702,96 @@ subroutine print_final_statistics
         ihopp_acc, ihopp_rej, ihopp, ekin, av_ekinetic, nvisit,egap, esep, dt, ediff, &
         fcall_tot_all, fcall_tot_all_md, fcall_tot_all_opt, fcall_tot_all_soften
     use mod_potential, only: fcalls
+    use yaml_output
     implicit none
     !local variables
     integer:: i, itt, iss
     real(8):: tt1, tt2, t1, t2, t3
     logical:: reached
-    write(*,'(a,i4,2i7)') 'number of minima found by each processors: iproc,nlmin_l,nlmin',iproc,nlmin_l,nlmin
+    call yaml_mapping_open('number of minima found by each processors',flow=.true.)
+    call yaml_map('iproc',iproc)
+    call yaml_map('nlmin_l',nlmin_l)
+    call yaml_map('nlmin',nlmin)
+    call yaml_mapping_close()
+    !write(*,'(a,i4,2i7)') 'number of minima found by each processors: iproc,nlmin_l,nlmin',iproc,nlmin_l,nlmin
     !ratios from all the global counters
     if(istep>0 .and. ihopp>0) then
         t1=real(istep_sam,8)/real(istep,8)
         t2=real(istep_old,8)/real(istep,8)
         t3=real(istep_new,8)/real(istep,8)
-        write(*,'(a,i4,3e15.3)') 'ratio stuck: iproc,same,old,new',iproc,t1,t2,t3
+        call yaml_mapping_open('ratio stuck',flow=.true.)
+        call yaml_map('same',t1,fmt='(e11.3)')
+        call yaml_map('old',t2,fmt='(e11.3)')
+        call yaml_map('new',t3,fmt='(e11.3)')
+        call yaml_mapping_close()
+        !write(*,'(a,i4,3e15.3)') 'ratio stuck: iproc,same,old,new',iproc,t1,t2,t3
         tt1=real(ihopp_acc,8)/real(ihopp,8)
         tt2=real(ihopp_rej,8)/real(ihopp,8)
-        write(*,'(a,i4,2e15.3)') 'accepting/rejecting ratio: iproc,acc,rej',iproc,tt1,tt2 
+        call yaml_mapping_open('accepting/rejecting ratio',flow=.true.)
+        call yaml_map('iproc',iproc)
+        call yaml_map('accept',tt1,fmt='(e11.3)')
+        call yaml_map('reject',tt2,fmt='(e11.3)')
+        call yaml_mapping_close()
+        !write(*,'(a,i4,2e15.3)') 'accepting/rejecting ratio: iproc,acc,rej',iproc,tt1,tt2 
     endif
-    write(*,'(a,i4,4f15.1)') 'icount: iproc,total,md,geopt,soften ',&
-        iproc,fcalls,count_md_tot,count_opt_tot,count_soften_tot
+    call yaml_mapping_open('force calls',flow=.true.)
+    call yaml_map('total',fcalls)
+    call yaml_map('MD',count_md_tot)
+    call yaml_map('GEOPT',count_opt_tot)
+    call yaml_map('SOFT',count_soften_tot)
+    call yaml_mapping_close()
+    !write(*,'(a,i4,4f15.1)') 'icount: iproc,total,md,geopt,soften ',&
+    !    iproc,fcalls,count_md_tot,count_opt_tot,count_soften_tot
     if(iproc==0) then
         if(earr(1)<eref) then
             reached=.true.
         else
             reached=.false.
         endif
-        write(*,'(a,4f15.1,l3)') 'ICOUNT: TOTAL,MD,GEOPT,SOFTEN ',&
-            fcall_tot_all,fcall_tot_all_md,fcall_tot_all_opt,fcall_tot_all_soften,reached
+        call yaml_mapping_open('force calls all processes')
+        call yaml_map('fcall_tot_all',fcall_tot_all)
+        call yaml_map('fcall_tot_all_md',fcall_tot_all_md)
+        call yaml_map('fcall_tot_all_opt',fcall_tot_all_opt)
+        call yaml_map('fcall_tot_all_soften',fcall_tot_all_soften)
+        call yaml_map('reached',reached)
+        call yaml_mapping_close()
+        !write(*,'(a,4f15.1,l3)') 'ICOUNT: TOTAL,MD,GEOPT,SOFTEN ',&
+        !    fcall_tot_all,fcall_tot_all_md,fcall_tot_all_opt,fcall_tot_all_soften,reached
     endif
     if(istep>0 .and. ihopp>0) then
         av_ediff=av_ediff/real(ihopp,8)
         av_ekinetic=av_ekinetic/real(istep,8)
-        write(*,'(a,i4,2e15.3)') 'average minima hopping parameters: iproc,av_ediff,av_ekinetic', &
-            iproc,av_ediff,av_ekinetic
+        call yaml_mapping_open('average minima hopping parameters',flow=.true.)
+        call yaml_map('iproc',iproc)
+        call yaml_map('av_ediff',av_ediff)
+        call yaml_map('av_ekinetic',av_ekinetic)
+        call yaml_mapping_close()
+        !write(*,'(a,i4,2e15.3)') 'average minima hopping parameters: iproc,av_ediff,av_ekinetic', &
+        !    iproc,av_ediff,av_ekinetic
     endif
     itt=0.d0;iss=0.d0
     do i=1,nlmin
         itt=max(itt,nvisit(i))
         iss=iss+nvisit(i)
     enddo
-    write(*,'(a,i4,i8)') 'most frequent visits: iproc,most',iproc,itt
-    write(*,'(a,i4,e10.3)') 'avg. numb. visits per minimum: iproc,average',iproc,real(iss,8)/real(nlmin,8)
-    write(*,'(a,i4,e10.2)') 'minimum energy separation: iproc,egap',iproc,egap
+    call yaml_mapping_open('some minhopp results')
+    call yaml_map('iproc',iproc)
+    call yaml_map('most frequent visits',itt)
+    call yaml_map('avg. numb. visits per minimum',real(iss,8)/real(nlmin,8),fmt='(e10.3)')
+    call yaml_map('minimum energy separation',egap,fmt='(e10.2)')
+    !write(*,'(a,i4,i8)') 'most frequent visits: iproc,most',iproc,itt
+    !write(*,'(a,i4,e10.3)') 'avg. numb. visits per minimum: iproc,average',iproc,real(iss,8)/real(nlmin,8)
+    !write(*,'(a,i4,e10.2)') 'minimum energy separation: iproc,egap',iproc,egap
     if(istep_sam>0 .and. nlmin>1) then
         esep=sqrt(esep/real(istep_sam,8))
-        write(*,'(a,i4,e10.2)') 'average energy separation: iproc,esep',iproc,esep
+        call yaml_map('esep',esep,fmt='(e10.2)')
+        !write(*,'(a,i4,e10.2)') 'average energy separation: iproc,esep',iproc,esep
     endif
-    write(*,'(a,i4,3e15.3)') 'Out: iproc,ediff,ekin,dt',iproc,ediff,ekin,dt
+    call yaml_map('ediff',ediff,fmt='(e15.3)')
+    call yaml_map('ekin',ekin,fmt='(e15.3)')
+    call yaml_map('dt',dt,fmt='(e15.3)')
+    !write(*,'(a,i4,3e15.3)') 'Out: iproc,ediff,ekin,dt',iproc,ediff,ekin,dt
+    call yaml_mapping_close()
 end subroutine print_final_statistics
 !*****************************************************************************************
 subroutine MPI_atom_arr_copy(nat,atoms_arr)
