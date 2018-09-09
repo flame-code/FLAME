@@ -147,6 +147,7 @@ subroutine get_fp_oganov(nat,rxyz,latvec,r_cut,sigma,d_bin,kinds,nkinds,nkinds_s
 !This subroutine will compute the F-fingeprint function discretized into bins of size d_bin with 
 !smoothed out delta functions with sigma and generate the output fp. All conventions and 
 !methods are from J.Chem.Phys, 130, 104504 (2009) and IEEE Symposium, Okt 21-23. (2008) (M.Valle and A.Oganov)
+use yaml_output
 implicit none
 integer:: i,j,k,l,m,iat,jat,nat,nec,nec1,nec2,nec3,nexp,fp_size,i_bin,near_bin,n_peaks,fp_dim,iarr
 integer:: nkinds_sum(nkinds),kinds(nat),nkinds,imin,imax
@@ -183,7 +184,11 @@ call getvol(latvec,vol)
 !call n_rep(latvec,r_cut,nec)
 !write(*,'(a,i1.1,a)') " Creating expansion ",nec,"..."
 call n_rep_dim(latvec,r_cut+6.d0*sigma,nec1,nec2,nec3)
-write(*,'(a,3(i3,1x),a)') " Creating expansion for periodic Oganov FP ",nec1,nec2,nec3,"..."
+call yaml_mapping_open('Creating expansion for periodic',flow=.true.)
+call yaml_map('method','Oganov')
+call yaml_map('nec',(/nec1,nec2,nec3/))
+call yaml_mapping_close()
+!write(*,'(a,3(i3,1x),a)') " Creating expansion for periodic Oganov FP ",nec1,nec2,nec3,"..."
 !allocate(rxyzexp(3,nat,nec1+1,nec2+1,nec3+1),transvecall(3,nec1+1,nec2+1,nec3+1))
 
 allocate(rxyzexp(3,nat,2*nec1+1,2*nec2+1,2*nec3+1),transvecall(3,2*nec1+1,2*nec2+1,2*nec3+1))

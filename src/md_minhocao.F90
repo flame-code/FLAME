@@ -123,7 +123,12 @@ implicit none
 
  character(40)::filename,folder
  character(4) ::fn4
- write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
+ call yaml_mapping_open('PARAMETERS',flow=.true.)
+ call yaml_map('Ha_eV',Ha_eV)
+ call yaml_map('kb_HaK',kb_HaK)
+ call yaml_map('amu_emass',amu_emass)
+ call yaml_mapping_close()
+ !write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
 
 
 call yaml_sequence_open('atoms info in MD')
@@ -147,13 +152,17 @@ call yaml_sequence_close()
 !Here we split the routine in the Abinit native part and my new implentation
 md_type=parres%md_algo
 if(md_type==1) then
- write(*,'(a)') ' # Entering standalone Parrinello Rahman MD '
+    call yaml_comment('Entering standalone Parrinello Rahman MD')
+ !write(*,'(a)') ' # Entering standalone Parrinello Rahman MD '
 elseif(md_type==2) then
- write(*,'(a)') ' # Entering standalone Cleveland MD '
+    call yaml_comment('Entering standalone Cleveland MD')
+ !write(*,'(a)') ' # Entering standalone Cleveland MD '
 elseif(md_type==3) then
- write(*,'(a)') ' # Entering standalone Wentzcovitch MD '
+    call yaml_comment('Entering standalone Wentzcovitch MD')
+ !write(*,'(a)') ' # Entering standalone Wentzcovitch MD '
 elseif(md_type==4) then
- write(*,'(a)') ' # Entering standalone Andersen MD '
+    call yaml_comment('Entering standalone Andersen MD')
+ !write(*,'(a)') ' # Entering standalone Andersen MD '
 endif
 
 !The "reduced" coordinates in Andersen are quite different from the ones in PR
@@ -179,7 +188,11 @@ endif
   md_type=parres%md_algo
   if(md_type.lt.1.or.md_type.gt.4) stop "Wrong integrator option"
 
-if(parres%verb.gt.0) write(*,'(a,i3,a,i3)') " # MD Algorithm: ",md_type, ", MD Integrator: ",options
+if(parres%verb.gt.0) then
+    call yaml_map('MD Algorithm',md_type)
+    call yaml_map('MD Integrator',options)
+    !write(*,'(a,i3,a,i3)') " # MD Algorithm: ",md_type, ", MD Integrator: ",options
+endif
 
 !Now we run my implementation of MD
 pressure_md=0.d0
@@ -263,7 +276,8 @@ endif
 !        call wtpos_inter(nat,rxyz,latcur,0)
 
 !MHM: initialize variable to track the minima/maxima***********
-    write(*,*) '# MINHOP start MD'
+    call yaml_comment('MINHOP start MD')
+    !write(*,*) '# MINHOP start MD'
     nummax=0
     nummin=0
     enmin1=0.d0
@@ -300,7 +314,9 @@ endif
 
 !MHM: Write output to file in every step***********************************
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
-       write(*,*) "Pressure, Energy",pressure,etot_in
+       call yaml_map('Pressure',pressure)
+       call yaml_map('Energy',etot_in)
+       !write(*,*) "Pressure, Energy",pressure,etot_in
        call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
        ent_pos_0=enthalpy
        en0000=enthalpy-ent_pos_0
@@ -581,7 +597,8 @@ endif
                write(*,*) '# WARNING: nummin,nummax',nummin,nummax
 
           !write(67,*) " MD finished: exiting!"
-          write(*,*) " MD finished: exiting!"
+          call yaml_comment('MD finished: exiting')
+          !write(*,*) " MD finished: exiting!"
           exit
        endif
 
@@ -620,13 +637,23 @@ endif
          parres%dtion_md=parres%dtion_md*1.1d0 
        endif
      parres%dtion_md=min(parres%dtion_md,dt*dt_ratio/15.d0)
-     write(*,'(3(a,es10.2))') " # MD: steps per minium: ",dt_ratio,&
-           &", dtion_md set to: ",parres%dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
+     call yaml_mapping_open('MD info',flow=.true.)
+     call yaml_map('steps per minium',dt_ratio,fmt='(es10.2)')
+     call yaml_map('dtion_md set to',parres%dtion_md,fmt='(es10.2)')
+     call yaml_map('upper boundary',dt*dt_ratio/15.d0,fmt='(es10.2)')
+     call yaml_mapping_close()
+     !write(*,'(3(a,es10.2))') " # MD: steps per minium: ",dt_ratio,&
+     !      &", dtion_md set to: ",parres%dtion_md,", upper boundary: ",dt*dt_ratio/15.d0 
      endif
    
 
 !MD stopped, now do relaxation
-     write(*,'(a,i5,es15.7,es15.7)') ' # EXIT MD ',itime,enthalpy,etot_in
+    call yaml_mapping_open('EXIT MD',flow=.true.)
+    call yaml_map('itime',itime)
+    call yaml_map('enthalpy',enthalpy)
+    call yaml_map('etot_in',etot_in)
+    call yaml_mapping_close()
+    ! write(*,'(a,i5,es15.7,es15.7)') ' # EXIT MD ',itime,enthalpy,etot_in
 
 end subroutine MD_MHM
 

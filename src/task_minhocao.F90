@@ -144,7 +144,7 @@ subroutine task_minhocao(parini,parres)
   logical,allocatable:: sym_fixat(:)
 
 !Print the logo
-call print_logo() 
+!call print_logo() 
 
 !Delete the file CPUlimit, if it exists
 !  call system("rm -f CPUlimit")
@@ -226,7 +226,8 @@ call system_clock(count_max=clock_max)   !Find the time max
   readfix=.true.;readfrag=.true.
   INQUIRE(FILE=trim(filename), EXIST=file_exists)
   if(file_exists) then
-  write(*,*) "# Reading from ",trim(filename) 
+    call yaml_map('Reading from',trim(filename))
+  !write(*,*) "# Reading from ",trim(filename) 
   call read_atomic_file_ascii(filename,parini%nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,parini%fixat,parini%fixlat,&
        &readfix,parini%fragarr,readfrag,tmp_enthalpy,tmp_energy)
   endif
@@ -407,11 +408,21 @@ call system_clock(count_max=clock_max)   !Find the time max
 !Write initial parameters to global.out
   ratio=0.d0
 !  open(unit=67,file='global.out')
-  write(*,'(a,3(1x,1pe11.4))') ' # beta1,beta2,beta3',beta1,beta2,beta3
-  write(*,'(a,2(1x,1pe11.4))') ' # alpha1,alpha2',alpha1,alpha2
-  write(*,'(a,2(1x,1pe10.3))') ' # predicted fraction accepted, rejected', &
-  & ratio/(1.d0+ratio), 1.d0/(1.d0+ratio)
-  write(*,*) '# mdmin',parres%mdmin
+  call yaml_mapping_open('initial minima hopping parameters')
+  call yaml_map('beta1',beta1,fmt='(es11.4)')
+  call yaml_map('beta2',beta2,fmt='(es11.4)')
+  call yaml_map('beta3',beta3,fmt='(es11.4)')
+  call yaml_map('alpha1',alpha1,fmt='(es11.4)')
+  call yaml_map('alpha2',alpha2,fmt='(es11.4)')
+  call yaml_map('predicted fraction accepted',ratio/(1.d0+ratio),fmt='(es11.4)')
+  call yaml_map('predicted fraction rejected',1.d0/(1.d0+ratio),fmt='(es11.4)')
+  call yaml_mapping_close()
+  !write(*,'(a,3(1x,1pe11.4))') ' # beta1,beta2,beta3',beta1,beta2,beta3
+  !write(*,'(a,2(1x,1pe11.4))') ' # alpha1,alpha2',alpha1,alpha2
+  !write(*,'(a,2(1x,1pe10.3))') ' # predicted fraction accepted, rejected', &
+  !& ratio/(1.d0+ratio), 1.d0/(1.d0+ratio)
+  call yaml_map('mdmin',parres%mdmin)
+  !write(*,*) '# mdmin',parres%mdmin
   
 
 !Read earr.dat. In this version, earr contains the enthalpies, not the energies, since they are compared during MinHopp
@@ -426,7 +437,11 @@ call system_clock(count_max=clock_max)   !Find the time max
 !  write(67,*) 'accuracy for rounding=',accur
 !  write(*,*) 'accuracy for rounding=',accur
   read(12,*) ent_delta, fp_delta
-  write(*,'(a,2(es15.7))') " # Tolerance between structures: delta enthalpy, delta fingeprint: ", ent_delta,fp_delta 
+  call yaml_mapping_open('Tolerance between structures',flow=.true.)
+  call yaml_map('delta enthalpy',ent_delta,fmt='(es15.7)')
+  call yaml_map('delta fingeprint',fp_delta,fmt='(es15.7)')
+  call yaml_mapping_close()
+  !write(*,'(a,2(es15.7))') " # Tolerance between structures: delta enthalpy, delta fingeprint: ", ent_delta,fp_delta 
   if (nlmin.gt.nlminx) stop 'nlmin>nlminx'
 !  allocate(earr(0:nlminx,3),stat=i_stat) !This earr is modified from the original version: earr(i,1)=enthalpy,earr(i,2)=energy,earr(i,3)=visits
   allocate(e_arr(nlminx),ent_arr(nlminx),ct_arr(nlminx),pl_arr(3,parini%nat,nlminx),f_arr(3,parini%nat,nlminx),&
@@ -437,7 +452,8 @@ call system_clock(count_max=clock_max)   !Find the time max
   e_arr=0.d0;ent_arr=0.d0;dos_arr=0.d0
   if (nlmin == 0) then 
 !     write(67,*) ' New run with nlminx=',nlminx
-     write(*,*) '# New run with nlminx=',nlminx
+     call yaml_map('New run with nlminx',nlminx)
+     !write(*,*) '# New run with nlminx=',nlminx
   else
 !     write(67,*) ' Restart run with nlmin, nlminx=',nlmin,nlminx
      write(*,*) '# Restart run with nlmin, nlminx=',nlmin,nlminx
@@ -478,8 +494,14 @@ call system_clock(count_max=clock_max)   !Find the time max
   read(11,*) ediff,ekinetic,ekinetic_max
   close(11)
 
-  write(*,'(a,1x,3(1x,e10.3),1x,i4)') ' # In :ediff,temperature,maximum temperature,nsoften',&
-        &ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp
+  call yaml_mapping_open('In minhocao',flow=.true.)
+  call yaml_map('ediff',ediff,fmt='(es11.3)')
+  call yaml_map('temperature',ekinetic,fmt='(es11.3)')
+  call yaml_map('maximum temperature',ekinetic_max,fmt='(es11.3)')
+  call yaml_map('nsoften',parini%nsoften_minhopp,fmt='(es11.3)')
+  call yaml_mapping_close()
+  !write(*,'(a,1x,3(1x,e10.3),1x,i4)') ' # In :ediff,temperature,maximum temperature,nsoften',&
+  !      &ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp
 
 !If restart run read previously found energies and other infos
 !  elocmin=0.d0
@@ -641,7 +663,8 @@ call system_clock(count_max=clock_max)   !Find the time max
      file_exists=.false.
      INQUIRE(FILE=trim(filename), EXIST=file_exists)
   enddo
-write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
+  call yaml_map('Number of poslocm files found',nhop)
+!write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
      write(fn5,'(i5.5)') nhop
      if(parini%verb.ge.2) folder="data_hop_init/"
      if(parini%verb.ge.2) call system("mkdir "//trim(folder))
@@ -667,9 +690,17 @@ write(*,'(a,i5)') " # Number of poslocm_ files found: ",nhop
 !Check if the structure is already relaxed
   call convcheck(parini,parini%nat,pos_latvec,pos_fcart,pos_strten,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
 if(iexit==1) then
-  write(*,'(a,es15.7,es15.7)') ' # Input structure already relaxed. Proceeding with: Energy, Enthalpy: ',e_pos,ent_pos
+     call yaml_mapping_open('Input structure already relaxed',flow=.true.)
+     call yaml_map('ent_pos',ent_pos,fmt='(es20.12)')
+     call yaml_map('e_pos',e_pos,fmt='(es20.12)')
+     call yaml_mapping_close()
+  !write(*,'(a,es15.7,es15.7)') ' # Input structure already relaxed. Proceeding with: Energy, Enthalpy: ',e_pos,ent_pos
   else 
-  write(*,'(a,es15.7,es15.7)') ' # Calling the geometry optimizer for the first time here. Energy, Enthalpy: ',e_pos,ent_pos
+     call yaml_mapping_open('Calling the geometry optimizer for the first time here',flow=.true.)
+     call yaml_map('ent_pos',ent_pos,fmt='(es20.12)')
+     call yaml_map('e_pos',e_pos,fmt='(es20.12)')
+     call yaml_mapping_close()
+  !write(*,'(a,es15.7,es15.7)') ' # Calling the geometry optimizer for the first time here. Energy, Enthalpy: ',e_pos,ent_pos
 
 !Call geometry optimizer for the first time
   vel_in=0.d0
@@ -691,7 +722,8 @@ if(iexit==1) then
 
 !Update GEOPT counter
      count_geopt=count_geopt+counter     
-     write(*,'(a,i7)') " # Counter of GEOPT updated: ", int(count_geopt)
+     call yaml_map('Counter of GEOPT updated',int(count_geopt))
+     !write(*,'(a,i7)') " # Counter of GEOPT updated: ", int(count_geopt)
 endif
 
 !Check for symmetry
@@ -735,7 +767,16 @@ endif
      call write_atomic_file_ascii(parini,filename,parini%nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,parini%char_type,parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,&
      &e_pos,parini%target_pressure_habohr,ent_pos-eref,e_pos-eref)
      call dist_latvec2ang(dist_ang,pos_latvec,pi)
-     write(*,'(a,a,a,6(1x,es15.7))') " # Wrote file ",trim(filename),", with a,b,c,alpha,beta,gamma: ",dist_ang
+     call yaml_mapping_open('Wrote file',flow=.true.)
+     call yaml_map('filename',trim(filename))
+     call yaml_map('a',dist_ang(1),fmt='(es15.7)')
+     call yaml_map('b',dist_ang(2),fmt='(es15.7)')
+     call yaml_map('c',dist_ang(3),fmt='(es15.7)')
+     call yaml_map('alpha',dist_ang(4),fmt='(es15.7)')
+     call yaml_map('beta',dist_ang(5),fmt='(es15.7)')
+     call yaml_map('gamma',dist_ang(6),fmt='(es15.7)')
+     call yaml_mapping_close()
+     !write(*,'(a,a,a,6(1x,es15.7))') " # Wrote file ",trim(filename),", with a,b,c,alpha,beta,gamma: ",dist_ang
   endif
 
 !Do rounding of the received enthalpy
@@ -744,7 +785,11 @@ endif
 !!     write(67,'(a,1x,5(1x,1pe17.10))') 'INPUT(relaxed): ent_pos,rent_pos,e_pos,re_pos,eref ',ent_pos,rent_pos,e_pos,re_pos,eref
 !!     write(*,'(a,1x,5(1x,1pe17.10))') ' # INPUT(relaxed): ent_pos,rent_pos,e_pos,re_pos,eref ',ent_pos,rent_pos,e_pos,re_pos,eref
 !     write(67,'(a,1x,2(1x,1pe17.10))') 'INPUT(relaxed): ent_pos,e_pos ',ent_pos,e_pos
-     write(*,'(a,1x,2(1x,1pe17.10))') ' # INPUT(relaxed): ent_pos,e_pos ',ent_pos,e_pos
+     call yaml_mapping_open('INPUT(relaxed)',flow=.true.)
+     call yaml_map('ent_pos',ent_pos,fmt='(es20.12)')
+     call yaml_map('e_pos',e_pos,fmt='(es20.12)')
+     call yaml_mapping_close()
+     !write(*,'(a,1x,2(1x,1pe17.10))') ' # INPUT(relaxed): ent_pos,e_pos ',ent_pos,e_pos
   if (nlmin.gt.0) then
 !      write(67,'(a,2(1x,1pe24.17))') 'new/old enthalpy for input file',ent_pos
       write(*,'(a,2(1x,1pe24.17))') '# new/old enthalpy for input file',ent_pos
@@ -828,11 +873,20 @@ endif
   re_sm=min(ent_pos,ent_arr(1))
   open(unit=222,file='global.mon',status='unknown',position='append')
 !     write(67,*) 'initial re_sm',re_sm
-     write(*,*) '# initial re_sm',re_sm
+     call yaml_map('initial re_sm',re_sm)
+     !write(*,*) '# initial re_sm',re_sm
      write(222,'(i10,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3)')&
                 &nhop,escape,ent_pos-eref,ediff,ekinetic,spg_pos,fdos_pos
-     write(*,'(a,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3)')" #global: ",&
-     &escape,ent_pos-eref,ediff,ekinetic,spg_pos,fdos_pos
+    call yaml_mapping_open('global',flow=.true.)
+    call yaml_map('escape',escape,fmt='(f10.0)')
+    call yaml_map('de',ent_pos-eref,fmt='(es21.14)')
+    call yaml_map('ediff',ediff,fmt='(es10.3)')
+    call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
+    call yaml_map('spg_pos',spg_pos,fmt='(i)')
+    call yaml_map('fdos_pos',fdos_pos,fmt='(es10.3)')
+    call yaml_mapping_close()
+     !write(*,'(a,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3)')" #global: ",&
+     !&escape,ent_pos-eref,ediff,ekinetic,spg_pos,fdos_pos
      close(222)
 
   nlmin_old=nlmin
@@ -940,12 +994,17 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
      call get_enthalpy(wpos_latvec,e_wpos,parini%target_pressure_habohr,ent_wpos)
 
 !Show the energy and enthalpies after exiting MD
-     write(*,'(a,2(1x,es25.15))') " # After exiting MD, we have energy, enthalpy:    ",e_wpos,ent_wpos
+    call yaml_mapping_open('After exiting MD',flow=.true.)
+    call yaml_map('energy',e_wpos)
+    call yaml_map('enthalpy',ent_wpos)
+    call yaml_mapping_close()
+    ! write(*,'(a,2(1x,es25.15))') " # After exiting MD, we have energy, enthalpy:    ",e_wpos,ent_wpos
 !     write(67,'(a,2(1x,es25.15))') "After exiting MD, we have energy, enthalpy:    ",e_wpos,ent_wpos
 
 !Update MD counter
      count_md=count_md+counter     
-     write(*,'(a,i7)') " # Counter of MD updated: ", int(count_md)
+     call yaml_map('Counter of MD updated',int(count_md))
+     !write(*,'(a,i7)') " # Counter of MD updated: ", int(count_md)
 
 !Keep track of kinetic energy as average, not yet decided it this should not rather be the temperature. Not yet implemented
      av_ekinetic=av_ekinetic+ekinetic
@@ -974,7 +1033,8 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
 
 !Update GEOPT counter
      count_geopt=count_geopt+counter     
-     write(*,'(a,i7)') " # Counter of GEOPT updated: ", int(count_geopt)
+     call yaml_map('Counter of GEOPT updated',int(count_geopt))
+     !write(*,'(a,i7)') " # Counter of GEOPT updated: ", int(count_geopt)
 
 !Check for symmetry
    if(parini%findsym) then
@@ -1005,7 +1065,11 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
   !call backtocell(nat,wpos_latvec,wpos_red)
 
 !Show the energy and enthalpies after exiting GEOPT 
-  write(*,'(a,2(1x,es25.15))') " # After exiting GEOPT, we have energy, enthalpy: ",e_wpos,ent_wpos
+    call yaml_mapping_open('After exiting GEOPT',flow=.true.)
+    call yaml_map('e_wpos',e_wpos,fmt='(es25.15)')
+    call yaml_map('ent_wpos',ent_wpos,fmt='(es25.15)')
+    call yaml_mapping_close()
+  !write(*,'(a,2(1x,es25.15))') " # After exiting GEOPT, we have energy, enthalpy: ",e_wpos,ent_wpos
 !     write(67,'(a,2(1x,es25.15))') "After exiting GEOPT, we have energy, enthalpy: ",e_wpos,ent_wpos
 
 
@@ -1015,7 +1079,16 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
         call write_atomic_file_ascii(parini,filename,parini%nat,units,wpos_red,wpos_latvec,wpos_fcart,wpos_strten,parini%char_type,&
         &parini%ntypat_global,parini%typat_global,parini%fixat,parini%fixlat,e_wpos,parini%target_pressure_habohr,ent_wpos-eref,e_wpos-eref)
   call dist_latvec2ang(dist_ang,wpos_latvec,pi)
-  write(*,'(a,a,a,6(1x,es15.7))') " # Wrote file ",trim(filename),", with a,b,c,alpha,beta,gamma: ",dist_ang
+     call yaml_mapping_open('Wrote file',flow=.true.)
+     call yaml_map('filename',trim(filename))
+     call yaml_map('a',dist_ang(1),fmt='(es15.7)')
+     call yaml_map('b',dist_ang(2),fmt='(es15.7)')
+     call yaml_map('c',dist_ang(3),fmt='(es15.7)')
+     call yaml_map('alpha',dist_ang(4),fmt='(es15.7)')
+     call yaml_map('beta',dist_ang(5),fmt='(es15.7)')
+     call yaml_map('gamma',dist_ang(6),fmt='(es15.7)')
+     call yaml_mapping_close()
+  !write(*,'(a,a,a,6(1x,es15.7))') " # Wrote file ",trim(filename),", with a,b,c,alpha,beta,gamma: ",dist_ang
   endif
 
 !Get the fingerprint
@@ -1038,10 +1111,17 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
   !     'nlmin,ent_wpos,ent_pos ', nlmin,ent_wpos,ent_pos
   !write(67,'(a,i3,2(1x,1pe14.7))')  &
   !     'nlmin,e_wpos,e_pos      ', nlmin,e_wpos,e_pos
-  write(*,'(a,i3,2(1x,1pe14.7))')  &
-       ' # nlmin,ent_wpos,ent_pos', nlmin,ent_wpos,ent_pos
-  write(*,'(a,i3,2(1x,1pe14.7))')  &
-       ' # nlmin,e_wpos,e_pos    ', nlmin,e_wpos,e_pos
+  call yaml_mapping_open('some results',flow=.true.)
+  call yaml_map('nlmin',nlmin)
+  call yaml_map('ent_wpos',ent_wpos)
+  call yaml_map('ent_pos',ent_pos)
+  call yaml_map('e_wpos',e_wpos)
+  call yaml_map('e_pos',e_pos)
+  call yaml_mapping_close()
+  !write(*,'(a,i3,2(1x,1pe14.7))')  &
+  !     ' # nlmin,ent_wpos,ent_pos', nlmin,ent_wpos,ent_pos
+  !write(*,'(a,i3,2(1x,1pe14.7))')  &
+  !     ' # nlmin,e_wpos,e_pos    ', nlmin,e_wpos,e_pos
 
 !Not escaped, here it is checked to return to another MD if necessary
 !NEW
@@ -1062,13 +1142,27 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
           nhop,escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos, &
           escape_sam/escape,escape_old/escape,escape_new/escape,'   S'
      close(222)
-     write(*,'(a,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a)') " #global: ", &
-          escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos, &
-          escape_sam/escape,escape_old/escape,escape_new/escape,'   S'
+    call yaml_mapping_open('global',flow=.true.)
+    call yaml_map('escape',escape,fmt='(f10.0)')
+    call yaml_map('de',ent_wpos-eref,fmt='(es21.14)')
+    call yaml_map('ediff',ediff,fmt='(es10.3)')
+    call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
+    call yaml_map('spg_pos',spg_wpos,fmt='(i)')
+    call yaml_map('fdos_pos',fdos_wpos,fmt='(es10.3)')
+    call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
+    call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')
+    call yaml_map('ratio_new',escape_new/escape,fmt='(f5.2)')
+    call yaml_map('status','S')
+    call yaml_mapping_close()
+     !write(*,'(a,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a)') " #global: ", &
+     !     escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos, &
+     !     escape_sam/escape,escape_old/escape,escape_new/escape,'   S'
      write(*,'(a)')' # no escape from current minimum.'
 
      if(parini%auto_mdmin) parres%mdmin   = min(parini%mdmin_max, parres%mdmin + 1)  ! MALM
-     write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
+     call yaml_map('nsoften',parini%nsoften_minhopp)
+     call yaml_map('mdmin',parres%mdmin)
+     !write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
 
      goto 5555
    endif
@@ -1104,7 +1198,9 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
 !Check whether new minimum
   call identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
                  &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
-  write(*,*) "k_e_wpos,kid: ",k_e_wpos,kid
+  call yaml_map('k_e_wpos,kid',k_e_wpos)
+  call yaml_map('kid',kid)
+  !write(*,*) "k_e_wpos,kid: ",k_e_wpos,kid
 !!!  call hunt(earr(1,1),min(nlmin,nlminx),rent_wpos,k_e_wpos)
   if (.not.newmin) then                    !The case the structure was previously found
 !!!!     if(findsym) call replace(nlminx,nlmin,fp_len,nat,kid,e_wpos,ent_wpos,fp_wpos,wpos_red,&
@@ -1188,7 +1284,9 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
 !Local minima accepted  
    if(parini%auto_mdmin.and.newmin)      parres%mdmin   = max(parini%mdmin_min, parres%mdmin - 1)  ! MALM
    if(parini%auto_mdmin.and..not.newmin) parres%mdmin   = min(parini%mdmin_max, parres%mdmin + 1)  ! MALM
-   write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
+   call yaml_map('nsoften',parini%nsoften_minhopp)
+   call yaml_map('mdmin',parres%mdmin)
+   !write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
    accepted=accepted+1.d0
    e_pos=e_hop
    ent_pos=ent_hop
@@ -1213,9 +1311,23 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
           nhop,escape,ent_hop-eref,ediff,ekinetic,spg_hop,fdos_hop, &
           escape_sam/escape,escape_old/escape,escape_new/escape,newmin,' A ', nvisit
          close(222)
-         write(*,'(a,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),l3,a,i5)') " #global: ", &
-          escape,ent_hop-eref,ediff,ekinetic,spg_hop,fdos_hop, &
-          escape_sam/escape,escape_old/escape,escape_new/escape,newmin,' A ', nvisit
+        call yaml_mapping_open('global',flow=.true.)
+        call yaml_map('escape',escape,fmt='(f10.0)')
+        call yaml_map('de',ent_hop-eref,fmt='(es21.14)')
+        call yaml_map('ediff',ediff,fmt='(es10.3)')
+        call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
+        call yaml_map('spg_pos',spg_hop,fmt='(i)')
+        call yaml_map('fdos_pos',fdos_hop,fmt='(es10.3)')
+        call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
+        call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')
+        call yaml_map('ratio_new',escape_new/escape,fmt='(f5.2)')
+        call yaml_map('escaped',newmin)
+        call yaml_map('status','S')
+        call yaml_map('nvisit',nvisit)
+        call yaml_mapping_close()
+         !write(*,'(a,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),l3,a,i5)') " #global: ", &
+         ! escape,ent_hop-eref,ediff,ekinetic,spg_hop,fdos_hop, &
+         ! escape_sam/escape,escape_old/escape,escape_new/escape,newmin,' A ', nvisit
       else
          open(unit=222,file='global.mon',status='unknown',position='append')
          write(222,'(i10,1x,f10.0,1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a,i5)')  &
@@ -1225,18 +1337,47 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
               nhop,escape,ent_hop-eref,ediff,ekinetic,spg_hop,fdos_hop, &
               escape_sam/escape,escape_old/escape,escape_new/escape,'   A  ',nvisit
          close(222)
-         write(*,'(a,1x,f10.0,1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a,i5)') " #global: ", &
-              escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos, &
-              escape_sam/escape,escape_old/escape,escape_new/escape,'   I  ',int(ct_arr(k_e_wpos))
-         write(*,'(a,1x,f10.0,1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a,i5)') " #global: ", &
-              escape,ent_hop-eref,ediff,ekinetic,spg_hop,fdos_hop, &
-              escape_sam/escape,escape_old/escape,escape_new/escape,'   A  ',nvisit
+        call yaml_mapping_open('global',flow=.true.)
+        call yaml_map('escape',escape,fmt='(f10.0)')
+        call yaml_map('de',ent_wpos-eref,fmt='(es21.14)')
+        call yaml_map('ediff',ediff,fmt='(es10.3)')
+        call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
+        call yaml_map('spg_pos',spg_wpos,fmt='(i)')
+        call yaml_map('fdos_pos',fdos_wpos,fmt='(es10.3)')
+        call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
+        call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')
+        call yaml_map('ratio_new',escape_new/escape,fmt='(f5.2)')
+        !call yaml_map('escaped',newmin)
+        call yaml_map('status','I')
+        call yaml_map('nvisit',int(ct_arr(k_e_wpos)))
+        call yaml_mapping_close()
+        ! write(*,'(a,1x,f10.0,1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a,i5)') " #global: ", &
+        !      escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos, &
+        !      escape_sam/escape,escape_old/escape,escape_new/escape,'   I  ',int(ct_arr(k_e_wpos))
+        call yaml_mapping_open('global',flow=.true.)
+        call yaml_map('escape',escape,fmt='(f10.0)')
+        call yaml_map('de',ent_hop-eref,fmt='(es21.14)')
+        call yaml_map('ediff',ediff,fmt='(es10.3)')
+        call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
+        call yaml_map('spg_pos',spg_hop,fmt='(i)')
+        call yaml_map('fdos_pos',fdos_hop,fmt='(es10.3)')
+        call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
+        call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')
+        call yaml_map('ratio_new',escape_new/escape,fmt='(f5.2)')
+        !call yaml_map('escaped',newmin)
+        call yaml_map('status','A')
+        call yaml_map('nvisit',nvisit)
+        call yaml_mapping_close()
+        !write(*,'(a,1x,f10.0,1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),a,i5)') " #global: ", &
+        !      escape,ent_hop-eref,ediff,ekinetic,spg_hop,fdos_hop, &
+        !      escape_sam/escape,escape_old/escape,escape_new/escape,'   A  ',nvisit
       endif
 !      endif
       ent_hop=1.d100
       ediff=max(ediff*alpha1,1.d-4)
 ! write intermediate results
-      write(*,*) 'WINTER'
+    call yaml_comment('WINTER')
+      !write(*,*) 'WINTER'
 !!      call winter(parini,nat,units,re_pos,rent_pos,e_pos,pos_red,pos_latvec,npminx,nlminx,nlmin,npmin,accur, & 
 !!      &earr,elocmin,poslocmin,latlocmin,eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,&
 !!      &fixat,fixlat,target_pressure_habohr)
@@ -1249,7 +1390,9 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
   else
 !local minima rejected
 !    if(parini%auto_mdmin) parres%mdmin   = min(mdmin_max, parres%mdmin + 1)  ! MALM
-     write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
+    call yaml_map('nsoften',parini%nsoften_minhopp)
+    call yaml_map('mdmin',parres%mdmin)
+     !write(*,*) "# nsoften, mdmin: ", parini%nsoften_minhopp, parres%mdmin ! MALM
      open(unit=222,file='global.mon',status='unknown',position='append')
      write(222,'(i10,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3,3(1x,0pf5.2),l3,a,i5)')  &
           nhop,escape,ent_wpos-eref,ediff,ekinetic,spg_wpos,fdos_wpos,&
@@ -1290,13 +1433,31 @@ call yaml_sequence_close()
 
 
 !Print ratios from all the global counters
-     if(escape.gt.0.d0) write(*,'(a,3(1x,1pe10.3))') ' # ratio stuck,same,old,new', &
-          escape_sam/escape,escape_old/escape,escape_new/escape
-     write(*,'(a,2(1x,1pe10.3))') ' # ratio acc,rej',accepted/(accepted+rejected),rejected/(accepted+rejected)
-     write(*,'(a,2(1x,f12.1))')   ' # count_md,count_geopt',count_md,count_geopt
-     if(escape.gt.0.d0) write(*,'(a,2(1x,1pe10.3))') &
-          ' # average ediff, ekinetic',av_ediff/(accepted+rejected),av_ekinetic/escape
-     write(*,'(a,1x,i8)') ' # number of configurations for which atoms escaped ',nputback
+    call yaml_mapping_open('about minima hopping params')
+     if(escape.gt.0.d0) then
+        call yaml_mapping_open('ratios',flow=.true.)
+        call yaml_map('same',escape_sam/escape,fmt='(es10.3)')
+        call yaml_map('old',escape_old/escape,fmt='(es10.3)')
+        call yaml_map('new',escape_new/escape,fmt='(es10.3)')
+        call yaml_mapping_close()
+        !write(*,'(a,3(1x,1pe10.3))') ' # ratio stuck,same,old,new', &
+        !  escape_sam/escape,escape_old/escape,escape_new/escape
+     endif
+     call yaml_map('ratio_acc',accepted/(accepted+rejected),fmt='(es10.3)')
+     call yaml_map('ratio_rej',rejected/(accepted+rejected),fmt='(es10.3)')
+     call yaml_map('count_md',count_md,fmt='(f12.1))')
+     call yaml_map('count_geopt',count_geopt,fmt='(f12.1))')
+     !write(*,'(a,2(1x,1pe10.3))') ' # ratio acc,rej',accepted/(accepted+rejected),rejected/(accepted+rejected)
+     !write(*,'(a,2(1x,f12.1))')   ' # count_md,count_geopt',count_md,count_geopt
+     if(escape.gt.0.d0) then
+         call yaml_map('average ediff',av_ediff/(accepted+rejected),fmt='(es10.3)')
+         call yaml_map('average ekinetic',av_ekinetic/escape,fmt='(es10.3)')
+         !write(*,'(a,2(1x,1pe10.3))') &
+         ! ' # average ediff, ekinetic',av_ediff/(accepted+rejected),av_ekinetic/escape
+     endif
+     call yaml_map('number of configurations for which atoms escaped',nputback)
+     !write(*,'(a,1x,i8)') ' # number of configurations for which atoms escaped ',nputback
+     call yaml_mapping_close()
 
      tt=0.d0
      ss=0.d0
@@ -1304,13 +1465,19 @@ call yaml_sequence_close()
         tt=max(tt,real(ct_arr(i),8))
         ss=ss+real(ct_arr(i),8)
      enddo
-     write(*,'(a,f8.0)') ' # most frequent visits ',tt
-     write(*,'(a,1pe10.3)') ' # av. numb. visits per minimum',ss/nlmin
-     write(*,'(a,e9.2)') ' # minimum energy separation between presumably different configurations',egap
+     call yaml_mapping_open('about minima',flow=.true.)
+     call yaml_map('most frequent visits',tt,fmt='(f8.0)')
+     call yaml_map('avg. num. visits per minimum',ss/nlmin,fmt='(es10.3)')
+     call yaml_map('minimum energy separation',egap,fmt='(es9.2)')
+     !write(*,'(a,f8.0)') ' # most frequent visits ',tt
+     !write(*,'(a,1pe10.3)') ' # av. numb. visits per minimum',ss/nlmin
+     !write(*,'(a,e9.2)') ' # minimum energy separation between presumably different configurations',egap
      if (escape_sam.gt.0) then
         esep=sqrt(esep/escape_sam)
-        write(*,'(a,e9.2)') ' # average energy separation between presumably identical configurations',esep
+        call yaml_map('average energy separation',esep,fmt='(es9.2)')
+        !write(*,'(a,e9.2)') ' # average energy separation between presumably identical configurations',esep
      endif
+     call yaml_mapping_close()
 
 !  close(67)
 

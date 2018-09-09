@@ -37,7 +37,8 @@ implicit none
         character(4):: fn4         
         real(8):: pos_prev(3*parini%nat),dir_prev(3*parini%nat),dir(3*parini%nat),angle,norm
         logical:: decrease
-        write(*,'(a,i5)')" # Entering SOFTENING routine for ATOMS, nsoft= ",nsoft 
+        call yaml_map('Entering SOFTENING routine for ATOMS, nsoft',nsoft)
+        !write(*,'(a,i5)')" # Entering SOFTENING routine for ATOMS, nsoft= ",nsoft 
         !if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated" 
         if(parini%auto_soft) call yaml_comment('Automatic softening activated',hfill='~')
         decrease=.false.
@@ -75,7 +76,10 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot0)
         ddcart(i)=sdd*ddcart(i)
         enddo
 
+    if(parini%verb.gt.0) call yaml_sequence_open('SOFTEN atomic iterations')
+    !call yaml_sequence_open('SOFTEN_LAT')
  do it=1,nit
+    if(parini%verb.gt.0) call yaml_sequence(advance='no')
         do i=1,3*parini%nat
         wpos(i)=rxyz(i)+ddcart(i)
         enddo
@@ -129,7 +133,13 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot)
         res=res+fxyz(i)**2
         enddo
         
-if(parini%verb.gt.0) write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
+if(parini%verb.gt.0) then
+    call yaml_mapping_open('SOFTEN',flow=.true.)
+    call yaml_map('res',res,fmt='(e13.5)')
+    call yaml_map('it',it,fmt='(e13.5)')
+    call yaml_mapping_close()
+    !write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
+endif
         res=sqrt(res)
         tt=sqrt(tt)
 !if(it==1) write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: init atomic  it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
@@ -142,7 +152,7 @@ if(it==1) then
     call yaml_map('fd2',fd2,fmt='(e13.5)')
     call yaml_map('de',etot-etot0,fmt='(e18.10)')
     call yaml_mapping_close()
-    if(parini%verb.gt.0) call yaml_sequence_open('SOFTEN atomic iterations')
+    !if(parini%verb.gt.0) call yaml_sequence_open('SOFTEN atomic iterations')
 endif
 if(parini%verb.gt.0) then
         !write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
@@ -182,6 +192,7 @@ endif
         ddcart(i)=ddcart(i)*sdd
         enddo
       enddo
+      !call yaml_sequence_close()
 
 !       write(*,*) '# No convergence in low_cur_dir',res
 1000   continue
@@ -204,7 +215,8 @@ call yaml_mapping_close()
           else
              parres%alpha_at=parres%alpha_at*1.1d0
           endif
-       write(*,'(a,e18.10)') ' # SOFTEN: new alpha_at :  ',parres%alpha_at
+          call yaml_map('new alpha_at',parres%alpha_at,fmt='(es18.10)')
+       !write(*,'(a,e18.10)') ' # SOFTEN: new alpha_at :  ',parres%alpha_at
        endif
 
 
@@ -257,7 +269,8 @@ call yaml_mapping_close()
         logical:: decrease
         decrease=.false.
 
-        write(*,'(a,i5)')" # Entering SOFTENING routine for LATTICE, nsoft= ",nsoft
+        call yaml_map('Entering SOFTENING routine for LATTICE, nsoft',nsoft)
+        !write(*,'(a,i5)')" # Entering SOFTENING routine for LATTICE, nsoft= ",nsoft
         !if(parini%auto_soft) write(*,'(a)')" # Automatic softening activated"
         if(parini%auto_soft) call yaml_comment('Automatic softening activated',hfill='~')
 
@@ -308,7 +321,9 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot0)
         endif
 
 
+if(parini%verb.gt.0) call yaml_sequence_open('SOFTEN lattice iterations')
  do it=1,nit
+    if(parini%verb.gt.0) call yaml_sequence(advance='no')
         do i=1,9
         wlat(i)=latvec(i)+ddlat(i)
         enddo
@@ -366,7 +381,13 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot)
         res=res+flat(i)**2
         enddo
 
-if(parini%verb.gt.0) write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
+if(parini%verb.gt.0) then
+    call yaml_mapping_open('SOFTEN',flow=.true.)
+    call yaml_map('res',res,fmt='(e13.5)')
+    call yaml_map('it',it,fmt='(e13.5)')
+    call yaml_mapping_close()
+    !write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
+endif
         res=sqrt(res)
         tt=sqrt(tt)
 !if(it==1) write(*,'(a,i5,4(e13.5),e18.10)')' # SOFTEN: init lattice  it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
@@ -379,7 +400,6 @@ if(it==1) then
     call yaml_map('fd2',fd2,fmt='(e13.5)')
     call yaml_map('de',etot-etot0,fmt='(e18.10)')
     call yaml_mapping_close()
-    if(parini%verb.gt.0) call yaml_sequence_open('SOFTEN lattice iterations')
 endif
 if(parini%verb.gt.0) then
         !write(*,'(a,i5,4(e13.5),e18.10)') ' # SOFTEN: it,fnrm,res,curv,fd2,etot ',it,tt,res,curv,fd2,etot-etot0
@@ -442,7 +462,9 @@ call yaml_mapping_close()
           else
              parres%alpha_lat=parres%alpha_lat*1.1d0
           endif
-       write(*,'(a,es18.10,1x,es18.10)') ' # SOFTEN: new alpha_at, alpha_lat : ',parres%alpha_at,parres%alpha_lat
+          call yaml_map('new alpha_at',parres%alpha_at,fmt='(es18.10)')
+          call yaml_map('new alpha_lat',parres%alpha_lat,fmt='(es18.10)')
+       !write(*,'(a,es18.10,1x,es18.10)') ' # SOFTEN: new alpha_at, alpha_lat : ',parres%alpha_at,parres%alpha_lat
        endif
 
 

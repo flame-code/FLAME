@@ -22,9 +22,17 @@ implicit none
   vel_vol=0.d0
   vel_lat=0.d0
 
-  write(*,*) "# Initializing velocities"
-  write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
-  write(*,*) "# Temp",temp
+    call yaml_comment('Initializing velocities')
+    call yaml_mapping_open('PARAMETERS',flow=.true.)
+    call yaml_map('Ha_eV',Ha_eV)
+    call yaml_map('kb_HaK',kb_HaK)
+    call yaml_map('amu_emass',amu_emass)
+    call yaml_mapping_close()
+    call yaml_map('Temp',temp)
+
+  !write(*,*) "# Initializing velocities"
+  !write(*,*) "# PARAMETERS: Ha_eV,kb_HaK,amu_emass -->",Ha_eV,kb_HaK,amu_emass
+  !write(*,*) "# Temp",temp
 
 call yaml_sequence_open('atoms info in init_vel')
 !Assign masses to each atom (for MD)
@@ -111,9 +119,13 @@ else
          rescale_vel=sqrt(3.d0*parini%nat*kb_HaK*temp/v2gauss)
          vel(:,:)=vel(:,:)*rescale_vel
          if(parini%verb.gt.0) then
+             call yaml_sequence_open('velocity of atoms')
            do iat=1,parini%nat
-              write(*,'(a,i5,3(1x,es15.7))') " # iat, VEL: ",iat ,vel(:,iat)
+            call yaml_sequence(advance='no')
+            call yaml_map('VEL',vel(:,iat),fmt='(es15.7)')
+             !write(*,'(a,i5,3(1x,es15.7))') " # iat, VEL: ",iat ,vel(:,iat)
            end do
+             call yaml_sequence_close()
          endif
          endif
 
@@ -146,8 +158,9 @@ elseif(.not.all(parini%fixlat(1:6)).and.parini%bc.ne.2) then
 !        Now rescale the velocities to give the exact temperature*temp_fac_lat
          rescale_vel=sqrt(3.d0*3.d0*kb_HaK*temp*temp_fac_lat/v2gauss)
          vel_lat(:,:)=vel_lat(:,:)*rescale_vel
-         do i=1,3
-           write(*,'(a,i5,3(1x,es15.7))') " # lat, VEL: ",i,vel_lat(:,i)
-         end do
+         call yaml_map('lat. vel.',vel_lat,fmt='(es15.7)')
+         !do i=1,3
+         !  write(*,'(a,i5,3(1x,es15.7))') " # lat, VEL: ",i,vel_lat(:,i)
+         !end do
 endif
 end subroutine init_vel

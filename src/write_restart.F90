@@ -37,7 +37,10 @@ subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,po
      call write_atomic_file_ascii(parini,filename,nat,units,pos_red,pos_latvec,pos_fcart,pos_strten,char_type,&
           &ntypat,typat,fixat,fixlat,e_pos,pressure,ent_pos,e_pos)
 !     call write_atomic_file('poscur',re_pos,pos,at,'')
-     write(*,*) ' wrote poscur.ascii for RESTART',ent_pos
+    call yaml_mapping_open('wrote poscur.ascii for RESTART',flow=.true.)
+    call yaml_map('ent_pos',ent_pos)
+    call yaml_mapping_close()
+     !write(*,*) ' wrote poscur.ascii for RESTART',ent_pos
      
 
      
@@ -61,7 +64,8 @@ subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,po
            &char_type,ntypat,typat,fixat,fixlat,e_arr(k),pressure,ent_arr(k),e_arr(k))
         endif
      enddo
-     write(*,*) ' wrote poslow files',nlmin
+     call yaml_map('wrote poslow files',nlmin)
+     !write(*,*) ' wrote poslow files',nlmin
      !write(*,*) ' wrote earr.dat for  RESTART'
      call yaml_comment('wrote earr.dat for  RESTART',hfill='~')
      close(12)
@@ -85,7 +89,8 @@ subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,po
      n_arr=fp_len*mm
      filename="fp.bin"
      call bin_write(filename,fp_arr,n_arr)
-     write(*,*) ' wrote binary files poslow.bin, fcart.bin, strten.bin, latvec.bin and fp.bin for RESTART'
+     call yaml_comment('Binary files {poslow,fcart,strten,latvec,fp}.bin written for RESTART.')
+     !write(*,*) ' wrote binary files poslow.bin, fcart.bin, strten.bin, latvec.bin and fp.bin for RESTART'
 
 
 !!     call wtpos(npminx,nlminx,nlmin,npmin,poslocmin,latlocmin,earr,elocmin,char_type,&

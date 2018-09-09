@@ -1,7 +1,8 @@
 subroutine identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
            &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
-use mod_parini, only: typ_parini
 use mod_interface
+use mod_parini, only: typ_parini
+use yaml_output
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nlminx,nlmin,fp_len,kid,k_e_wpos,n_unique,n_nonuni
@@ -17,7 +18,11 @@ newmin=.true.
 !!do i=1,nlmin
 !!write(*,'(a,i3,5(e24.17))') ' # check identical: enarr ',i,ent_arr(i),(fp_arr(l,i),l=1,2)
 !!enddo
-write(*,'(a,e24.17,i3,5(e24.17))') ' # ID: Check identical: ent_wpos,k_e_wpos ',ent_wpos,k_e_wpos!,(wfp(l),l=1,2)
+call yaml_mapping_open('Check identical',flow=.true.)
+call yaml_map('ent_wpos',ent_wpos,fmt='(e24.17)')
+call yaml_map('k_e_wpos',k_e_wpos,fmt='(e24.17)')
+call yaml_mapping_close()
+!write(*,'(a,e24.17,i3,5(e24.17))') ' # ID: Check identical: ent_wpos,k_e_wpos ',ent_wpos,k_e_wpos!,(wfp(l),l=1,2)
 
 ! find lowest configuration that might be identical
 klow=k_e_wpos
@@ -39,8 +44,10 @@ enddo
 
 nid=0
 if(.not.inrange) then
-  write(*,'(a)') ' # ID: there is no minimum in the given enthalpy range'
-  write(*,'(a,L4)') ' # ID: wpos is a new minimum: ',newmin
+    call yaml_comment('ID: there is no minimum in the given enthalpy range')
+    call yaml_map('wpos is a new minimum',newmin)
+  !write(*,'(a)') ' # ID: there is no minimum in the given enthalpy range'
+  !write(*,'(a,L4)') ' # ID: wpos is a new minimum: ',newmin
   return  
 endif
 write(*,'(a,i5,i5)') ' # ID: Check k bounds: ',max(1,klow),min(nlmin,khigh)
@@ -63,7 +70,8 @@ if (fp_dist.lt.fp_delta) then
 endif
 enddo
 
-   write(*,'(a,L4)') ' # ID: wpos is a new minimum: ',newmin
+   call yaml_map('wpos is a new minimum',newmin)
+   !write(*,'(a,L4)') ' # ID: wpos is a new minimum: ',newmin
    if (nid.gt.1) write(*,*) '# WARNING: more than one identical configuration found'
 !          if (nsm.gt.1) write(100+iproc,*) 'WARNING: more than one identical configuration found'
 if (nid.eq.1) n_unique=n_unique+1

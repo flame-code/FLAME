@@ -4,6 +4,7 @@ subroutine insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_
   ! inserts the energy re_wpos at position k_e_wpos and shifts up all other energies
 !  implicit real*8 (a-h,o-z)
   use mod_interface
+  use yaml_output
   implicit none
   integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
   integer:: k, nlmin, k_e_wpos, nlminx,i
@@ -59,6 +60,7 @@ subroutine insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_
                  spg_arr(k_e_wpos+1)=spg_wpos
                  spgtol_arr(k_e_wpos+1)=spgtol_wpos
                  dos_arr(k_e_wpos+1)=fdos_wpos
-       write(*,*) '  -----   INSERT -----------'
+       call yaml_comment('INSERT')
+       !write(*,*) '  -----   INSERT -----------'
        return
 END SUBROUTINE insert

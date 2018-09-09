@@ -110,6 +110,7 @@ use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim
 use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl
 use fingerprint, only: fp_13_r_cut, fp_16_fp_dim
 use fingerprint
+use yaml_output
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: fp_len,iat,natmol
@@ -120,7 +121,8 @@ character(len=2):: finalchar(parini%nat) ! dimension(nat*molecules)
 select case(fp_method)
   case(11)!Oganov method
      call getvol(latvec,vol)
-     write(*,'(a,es15.7)') " # Suggested minimal cutoff radius for Oganov FP: ", vol**(1.d0/3.d0)*2.d0
+     call yaml_map('Suggested minimal cutoff radius for Oganov FP',vol**(1.d0/3.d0)*2.d0)
+     !write(*,'(a,es15.7)') " # Suggested minimal cutoff radius for Oganov FP: ", vol**(1.d0/3.d0)*2.d0
      call rxyz_int2cart(latvec,pos_red,rxyz,parini%nat)
      call get_fp_oganov(parini%nat,rxyz,latvec,fp_11_rcut,fp_11_sigma,fp_11_dbin,&
           &parini%typat_global,parini%ntypat_global,fp_11_nkinds_sum,fp_11_fp_size,fp_11_fp_dim,fp)

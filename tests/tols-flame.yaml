@@ -151,13 +151,19 @@ SP_CENT1_slab:
  inside get_beta_grid: 1.e-10
 
 minhocao_CENT1:
+ Keys to ignore:
+  - kid
  Epsilon: 1.e-10
  Velocity of CM: 2.e-8
 
 minhocao_LTB:
+ Keys to ignore:
+  - kid
  Epsilon: 1.e-11
 
 minhocao_LTB_fixkpt:
+ Keys to ignore:
+  - kid
  Epsilon: 1.e-11
 
 SP_PP_p3d:

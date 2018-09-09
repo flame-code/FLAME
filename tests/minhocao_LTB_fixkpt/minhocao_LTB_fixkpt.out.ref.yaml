@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-01 22:40:22.500
+ Timestamp of this run                 : 2018-09-09 14:54:10.173
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : minhocao
@@ -204,6 +204,8 @@
    symfunc                             : only_calculate
    nstep_ekf                           : 100
    nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
    nconf_rmse                          : 0
    ampl_rand                           : 1.0
    symfunc_type                        : behler
@@ -300,7 +302,25 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  1, Si:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ Reading from                          : poscur.ascii
+ initial minima hopping parameters:
+   beta1                               :  1.1000E+00
+   beta2                               :  1.1000E+00
+   beta3                               :  9.0909E-01
+   alpha1                              :  9.0909E-01
+   alpha2                              :  1.1000E+00
+   predicted fraction accepted         :  0.0000E+00
+   predicted fraction rejected         :  1.0000E+00
+ mdmin                                 :  2
+ Tolerance between structures: {delta enthalpy:  3.0000000E-03, 
+ delta fingeprint:  1.5000000E-01}
+ New run with nlminx                   :  3
+ In minhocao: {ediff:  1.167E-02, temperature:  3.179E+03, maximum temperature:  5.000E+07, 
+             nsoften:  1.401E-44}
+ Number of poslocm files found         :  0
  KPT mesh set up as follows            :  [  5,  5,  5 ]
+ Calling the geometry optimizer for the first time here: {ent_pos: -9.432871997117E-01, 
+ e_pos: -1.240257436165E+00}
  atoms info in FIRE:
  - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
  - atom: {iat:  2, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -310,8 +330,14 @@
  - atom: {iat:  6, AMU:  2.0000000E+00, EM:  3.6457770E+03}
  - atom: {iat:  7, AMU:  2.0000000E+00, EM:  3.6457770E+03}
  - atom: {iat:  8, AMU:  2.0000000E+00, EM:  3.6457770E+03}
+ FIRE info: {iat:  9, AMU:  1.0000000E+00, EM:  1.8228885E+03}
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Entering FIRE based on standalone PR MD
+ GEOPT Algorithm                       :  1
+ MD Integrator                         :  3
  KPT mesh set up as follows            :  [  5,  5,  5 ]
+  #MINHOP start FIRE
+ Pressure                              :  3.3989314870562059E-004
+ Energy                                : -1.240257436165158
  Writing the positions in FIRE         : posgeopt.0000.ascii
  FIRE optimization iterations:
  - Velocity of CM                      :  0.0000000E+00
@@ -548,6 +574,13 @@
             dt:  4.18E+01,                   fmax_at:  9.317E-05, fmax_lat:  9.808E-04, 
           rkin:  5.09E-05,                         P:  5.6E-07,    P_at:  1.1E-10, 
          P_lat:  5.6E-07}
+   Cell not changed: {latvec: [
+ [ 8.147549129656E+00, -1.796418017850E-02, -1.701673371371E-02], 
+ [ 2.618169064654E+00,  1.039543427128E+01,  2.793765386363E-01], 
+ [ 2.612233432725E+00,  9.243510366878E-01,  1.036575202449E+01]], latvec0: [
+ [ 8.147549129656E+00, -1.796418017850E-02, -1.701673371371E-02], 
+ [ 2.618169064654E+00,  1.039543427128E+01,  2.793765386363E-01], 
+ [ 2.612233432725E+00,  9.243510366878E-01,  1.036575202449E+01]]}
  - Velocity of CM                      :  6.2949651E-15
    Torquenrm info: {Torquenrm:  2.4124551E-09, Ekin:  2.4650537E-06, Enthalpy: -9.4784470E-01, 
                       ekinlat:  6.9363523E-05}
@@ -701,6 +734,9 @@
             dt:  4.92E+01,                   fmax_at:  1.858E-05, fmax_lat:  4.211E-05, 
           rkin:  3.59E-07,                         P:  9.7E-10,    P_at: -4.9E-12, 
          P_lat:  9.8E-10}
+   FIRE converged: {itime:  43, enthalpy: -9.479193495402E-01, fmax:  4.21117E-05}
+   EXIT FIRE: {itime:  43, enthalpy: -9.479193495402E-01, etot_in: -1.245759913981E+00}
+ Counter of GEOPT updated              :  43
  SPGLIB space group iterations:
    space_group                         :  2
    space_group                         :  2
@@ -723,9 +759,23 @@
    space_group                         :  65
    space_group                         :  221
    space_group                         :  221
+ FINAL SPGLIB: {SPG:  3.0968696E-43, TOL:  3.1547867E-01}
+ Suggested minimal cutoff radius for Oganov FP:  19.13861359683687
+ Creating expansion for periodic: {method: Oganov, nec:  [  4,  3,  3 ]}
+ Wrote file: {filename: poslocm_00000.ascii, a:  8.1924146E+00, b:  1.0708543E+01, 
+                     c:  1.0708650E+01,  alpha:  7.9896033E+01, beta:  7.5802831E+01, 
+                 gamma:  7.5802155E+01}
+ INPUT(relaxed): {ent_pos: -9.479193495402E-01, e_pos: -1.245759913981E+00}
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first configuration saved
+ initial re_sm                         : -0.9479193495402249
+ global: {escape:  0., de: -9.47919349540225E-01, ediff:  1.167E-02, ekinetic:  3.179E+03, 
+         spg_pos:  221,                        fdos_pos:  0.000E+00}
  Hopping steps:
- - atoms info in init_vel:
+ -  #Initializing velocities
+   PARAMETERS: {Ha_eV:  27.21138386, kb_HaK:  3.1668154197285284E-006, 
+            amu_emass:  1822.888484264545}
+   Temp                                :  3179.262056839826
+   atoms info in init_vel:
    - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  2, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  3, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -734,80 +784,120 @@
    - atom: {iat:  6, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  7, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  8, AMU:  2.0000000E+00, EM:  3.6457770E+03}
+   Entering SOFTENING routine for ATOMS, nsoft:  10
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Automatic softening activated
    KPT mesh set up as follows          :  [  5,  5,  5 ]
-   KPT mesh set up as follows          :  [  5,  5,  5 ]
-   SOFTEN init atomic: {it:  1, fnrm:  0.31430E-01, res:  0.10333E-01, curv:  0.59366E-01, 
-                       fd2:  0.58736E-01,            de:  0.7342038022E-02}
    SOFTEN atomic iterations:
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10678E-03, it:  0.14013E-44}
+     SOFTEN init atomic: {it:  1, fnrm:  0.31430E-01, res:  0.10333E-01, curv:  0.59366E-01, 
+                         fd2:  0.58736E-01,            de:  0.7342038022E-02}
      SOFTEN: {it:  1, fnrm:  0.31430E-01, res:  0.10333E-01, curv:  0.59366E-01, 
              fd2:  0.58736E-01,            de:  0.7342038022E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10505E-03, it:  0.28026E-44}
      SOFTEN: {it:  2, fnrm:  0.31141E-01, res:  0.10250E-01, curv:  0.58812E-01, 
              fd2:  0.58311E-01,            de:  0.7288870148E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10338E-03, it:  0.42039E-44}
      SOFTEN: {it:  3, fnrm:  0.30858E-01, res:  0.10168E-01, curv:  0.58270E-01, 
              fd2:  0.57892E-01,            de:  0.7236557172E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10175E-03, it:  0.56052E-44}
      SOFTEN: {it:  4, fnrm:  0.30582E-01, res:  0.10087E-01, curv:  0.57741E-01, 
              fd2:  0.57481E-01,            de:  0.7185075810E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10013E-03, it:  0.70065E-44}
      SOFTEN: {it:  5, fnrm:  0.30309E-01, res:  0.10007E-01, curv:  0.57219E-01, 
              fd2:  0.57075E-01,            de:  0.7134406327E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.98516E-04, it:  0.84078E-44}
      SOFTEN: {it:  6, fnrm:  0.30038E-01, res:  0.99255E-02, curv:  0.56702E-01, 
              fd2:  0.56676E-01,            de:  0.7084546485E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.96926E-04, it:  0.98091E-44}
      SOFTEN: {it:  7, fnrm:  0.29773E-01, res:  0.98451E-02, curv:  0.56196E-01, 
              fd2:  0.56284E-01,            de:  0.7035490605E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.95357E-04, it:  0.11210E-43}
      SOFTEN: {it:  8, fnrm:  0.29513E-01, res:  0.97651E-02, curv:  0.55701E-01, 
              fd2:  0.55898E-01,            de:  0.6987227068E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.93807E-04, it:  0.12612E-43}
      SOFTEN: {it:  9, fnrm:  0.29258E-01, res:  0.96854E-02, curv:  0.55216E-01, 
              fd2:  0.55518E-01,            de:  0.6939745487E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.92274E-04, it:  0.14013E-43}
      SOFTEN: {it:  10, fnrm:  0.29008E-01, res:  0.96059E-02, curv:  0.54742E-01, 
              fd2:  0.55144E-01,             de:  0.6893036556E-02}
    SOFTEN final atomic: {it:  11, fnrm:  0.29008E-01, res:  0.96059E-02, curv:  0.54742E-01, 
                         fd2:  0.55144E-01,             de:  0.6893036556E-02}
+   new alpha_at                        :  5.5000000000E-01
+   velocity of atoms:
+   - VEL                               :  [  5.2272834E-03,  4.8522281E-04, -1.2441902E-03 ]
+   - VEL                               :  [ -2.3393165E-03,  1.4571944E-04, -7.8922534E-04 ]
+   - VEL                               :  [  2.2945035E-04, -1.2944769E-03, -9.1388247E-05 ]
+   - VEL                               :  [ -1.7820682E-03,  6.4217546E-04, -1.7039730E-03 ]
+   - VEL                               :  [  9.281992E-04, -1.9980736E-03, -4.7128627E-04 ]
+   - VEL                               :  [ -2.0699218E-03,  1.2385810E-03, -2.6836360E-04 ]
+   - VEL                               :  [ -6.2942889E-04, -5.6603197E-05,  2.5418752E-03 ]
+   - VEL                               :  [  4.358025E-04,  8.3745504E-04,  2.0265515E-03 ]
+   Entering SOFTENING routine for LATTICE, nsoft:  10
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Automatic softening activated
    KPT mesh set up as follows          :  [  5,  5,  5 ]
-   KPT mesh set up as follows          :  [  5,  5,  5 ]
-   SOFTEN init lattice: {it:  1, fnrm:  0.71639E-01, res:  0.53525E-01, curv:  0.47615E-01, 
-                        fd2:  0.39194E-01,            de:  0.1959688115E-01}
    SOFTEN lattice iterations:
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.28649E-02, it:  0.14013E-44}
+     SOFTEN init lattice: {it:  1, fnrm:  0.71639E-01, res:  0.53525E-01, curv:  0.47615E-01, 
+                          fd2:  0.39194E-01,            de:  0.1959688115E-01}
      SOFTEN: {it:  1, fnrm:  0.71639E-01, res:  0.53525E-01, curv:  0.47615E-01, 
              fd2:  0.39194E-01,            de:  0.1959688115E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.23974E-02, it:  0.28026E-44}
      SOFTEN: {it:  2, fnrm:  0.63980E-01, res:  0.48963E-01, curv:  0.41184E-01, 
              fd2:  0.33715E-01,            de:  0.1685766719E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.19952E-02, it:  0.42039E-44}
      SOFTEN: {it:  3, fnrm:  0.57185E-01, res:  0.44667E-01, curv:  0.35706E-01, 
              fd2:  0.29137E-01,            de:  0.1456845809E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.16545E-02, it:  0.56052E-44}
      SOFTEN: {it:  4, fnrm:  0.51213E-01, res:  0.40676E-01, curv:  0.31117E-01, 
              fd2:  0.25330E-01,            de:  0.1266509423E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.13739E-02, it:  0.70065E-44}
      SOFTEN: {it:  5, fnrm:  0.46043E-01, res:  0.37066E-01, curv:  0.27315E-01, 
              fd2:  0.22173E-01,            de:  0.1108661428E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11495E-02, it:  0.84078E-44}
      SOFTEN: {it:  6, fnrm:  0.41634E-01, res:  0.33904E-01, curv:  0.24165E-01, 
              fd2:  0.19548E-01,            de:  0.9773882672E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.97360E-03, it:  0.98091E-44}
      SOFTEN: {it:  7, fnrm:  0.37904E-01, res:  0.31203E-01, curv:  0.21519E-01, 
              fd2:  0.17345E-01,            de:  0.8672588306E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.83720E-03, it:  0.11210E-43}
      SOFTEN: {it:  8, fnrm:  0.34750E-01, res:  0.28934E-01, curv:  0.19244E-01, 
              fd2:  0.15473E-01,            de:  0.7736547208E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.73783E-03, it:  0.12612E-43}
      SOFTEN: {it:  9, fnrm:  0.32240E-01, res:  0.27163E-01, curv:  0.17366E-01, 
              fd2:  0.13856E-01,            de:  0.6928017899E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.66886E-03, it:  0.14013E-43}
      SOFTEN: {it:  10, fnrm:  0.30351E-01, res:  0.25862E-01, curv:  0.15884E-01, 
              fd2:  0.12419E-01,             de:  0.6209296545E-02}
    SOFTEN final lattice: {it:  11, fnrm:  0.30351E-01, res:  0.25862E-01, curv:  0.15884E-01, 
                          fd2:  0.12419E-01,             de:  0.6209296545E-02}
+   new alpha_at                        :  5.5000000000E-01
+   new alpha_lat                       :  1.1000000000E+00
+   lat. vel.:
+   -  [-9.4830308E-04, -5.2917772E-04,  3.9894327E-04]
+   -  [-5.4776084E-06,  7.6378309E-04,  1.1020756E-03]
+   -  [ 6.8542472E-04,  1.1150014E-03,  3.4841859E-04]
+   PARAMETERS: {Ha_eV:  27.21138386, kb_HaK:  3.1668154197285284E-006, 
+            amu_emass:  1822.888484264545}
    atoms info in MD:
    - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  2, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -817,6 +907,12 @@
    - atom: {iat:  6, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  7, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  8, AMU:  2.0000000E+00, EM:  3.6457770E+03}
+    #Entering standalone Parrinello Rahman MD
+   MD Algorithm                        :  1
+   MD Integrator                       :  3
+    #MINHOP start MD
+   Pressure                            :  3.3989314870562059E-004
+   Energy                              : -1.245759913980621
    MD iterations:
      MD: {iter:  0, enth: -9.479193495402E-01, pV:  2.978E-01, ekinatom:  1.208E-01, 
        ekinlat:  4.531E-03,                nummax:  0, nummin:  0, parres%mdmin:  2}
@@ -1808,6 +1904,19 @@
      MD: {iter:  141, enth: -8.704158649001E-01, pV:  3.099E-01, ekinatom:  3.465E-02, 
        ekinlat:  1.328E-02,                  nummax:  2, nummin:  2, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0141.ascii
+      #MD finished: exiting
+   MD info: {steps per minium:  7.05E+01, dtion_md set to:  1.10E+01, 
+               upper boundary:  4.70E+01}
+   EXIT MD: {itime:  141, enthalpy: -0.870415864900133, etot_in: -1.180346332476444}
+   Cell changed: {latvec: [
+ [ 8.125194146713E+00, -1.427325810052E+00, -6.007441555600E-01], 
+ [-2.208549324536E+00, -1.160814977018E+00, -1.009263267655E+01], 
+ [ 1.688336657290E+00,  1.073814393910E+01,  4.864398701258E-01]], latvec0: [
+ [ 8.125194146713E+00, -1.427325810052E+00, -6.007441555600E-01], 
+ [ 1.688336657290E+00,  1.073814393910E+01,  4.864398701258E-01], 
+ [ 2.208549324536E+00,  1.160814977018E+00,  1.009263267655E+01]]}
+   After exiting MD: {energy: -1.180346332476444, enthalpy: -0.870415864900133}
+   Counter of MD updated               :  141
    atoms info in FIRE:
    - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  2, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -1817,8 +1926,14 @@
    - atom: {iat:  6, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  7, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  8, AMU:  2.0000000E+00, EM:  3.6457770E+03}
+   FIRE info: {iat:  9, AMU:  1.0000000E+00, EM:  1.8228885E+03}
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Entering FIRE based on standalone PR MD
+   GEOPT Algorithm                     :  1
+   MD Integrator                       :  3
    KPT mesh set up as follows          :  [  5,  5,  5 ]
+    #MINHOP start FIRE
+   Pressure                            :  3.3989314870562059E-004
+   Energy                              : -1.180346332476444
    Writing the positions in FIRE       : posgeopt.0000.ascii
    FIRE optimization iterations:
    - Velocity of CM                    :  0.0000000E+00
@@ -2298,6 +2413,13 @@
               dt:  2.44E+01,                   fmax_at:  6.619E-04, fmax_lat:  4.664E-04, 
             rkin:  1.46E-04,                         P:  2.0E-07,    P_at:  6.5E-09, 
            P_lat:  1.9E-07}
+     Cell changed: {latvec: [
+ [ 6.783702620083E+00, -5.477830247846E-01,  1.056575932612E+00], 
+ [-3.217471942128E+00,  2.469623346427E+00,  8.903730258724E+00], 
+ [-2.551879305157E+00, -1.269959915289E+01, -1.514117711268E+00]], latvec0: [
+ [ 6.783702620083E+00, -5.477830247846E-01,  1.056575932612E+00], 
+ [-3.566230677955E+00, -1.921840321642E+00, -9.960306191335E+00], 
+ [ 2.551879305157E+00,  1.269959915289E+01,  1.514117711268E+00]]}
    - Velocity of CM                    :  0.0000000E+00
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -9.6057725E-01, ekinlat:  0.0000000E+00}
@@ -2694,6 +2816,9 @@
               dt:  1.00E+02,                   fmax_at:  4.841E-05, fmax_lat:  3.814E-05, 
             rkin:  8.33E-05,                         P:  3.7E-10,    P_at:  4.1E-10, 
            P_lat: -3.9E-11}
+     FIRE converged: {itime:  97, enthalpy: -9.606692335399E-01, fmax:  4.84140E-05}
+     EXIT FIRE: {itime:  97, enthalpy: -9.606692335399E-01, etot_in: -1.234872622849E+00}
+   Counter of GEOPT updated            :  140
    SPGLIB space group iterations:
      space_group                       :  1
      space_group                       :  1
@@ -2716,11 +2841,43 @@
      space_group                       :  191
      space_group                       :  191
      space_group                       :  191
+   FINAL SPGLIB: {SPG:  2.6764801E-43, TOL:  7.9244659E-02}
+   After exiting GEOPT: {e_wpos: -1.234872622848957E+00, ent_wpos: -9.606692335399073E-01}
+   Wrote file: {filename: poslocm_00001.ascii, a:  6.8878748E+00, b:  9.7857447E+00, 
+                       c:  1.3036591E+01,  alpha:  1.0669426E+02, beta:  9.7623848E+01, 
+                   gamma:  1.0174869E+02}
+   Suggested minimal cutoff radius for Oganov FP:  18.61830462179833
+   Creating expansion for periodic: {method: Oganov, nec:  [  5,  4,  3 ]}
+   some results: {nlmin:  1, ent_wpos: -0.9606692335399073, ent_pos: -0.9479193495402249, 
+                 e_wpos: -1.234872622848957, e_pos: -1.245759913980621}
+   Check identical: {ent_wpos: -0.96066923353990730E+00, k_e_wpos:  0.00000000000000000E+00}
+    #ID: there is no minimum in the given enthalpy range
+   wpos is a new minimum               :  Yes
+   k_e_wpos,kid                        :  0
+   kid                                 :  100000
+    #INSERT
+   wrote poscur.ascii for RESTART: {ent_pos: -0.9479193495402249}
+   wrote poslow files                  :  2
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
+    #Binary files {poslow,fcart,strten,latvec,fp}.bin written for RESTART.
+   nsoften                             :  10
+   mdmin                               :  2
+   global: {escape:  1., de: -9.60669233539907E-01, ediff:  1.167E-02, ekinetic:  2.890E+03, 
+           spg_pos:  191,                        fdos_pos:  0.000E+00, ratio_sam:  0.00, 
+         ratio_old:  0.00,                      ratio_new:  1.00,       escaped:  Yes, 
+            status: S,                             nvisit:  1}
+    #WINTER
+   wrote poscur.ascii for RESTART: {ent_pos: -0.9606692335399073}
+   wrote poslow files                  :  2
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
- - atoms info in init_vel:
+    #Binary files {poslow,fcart,strten,latvec,fp}.bin written for RESTART.
+ -  #Initializing velocities
+   PARAMETERS: {Ha_eV:  27.21138386, kb_HaK:  3.1668154197285284E-006, 
+            amu_emass:  1822.888484264545}
+   Temp                                :  2890.238233490751
+   atoms info in init_vel:
    - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  2, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  3, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -2729,80 +2886,120 @@
    - atom: {iat:  6, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  7, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  8, AMU:  2.0000000E+00, EM:  3.6457770E+03}
+   Entering SOFTENING routine for ATOMS, nsoft:  10
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Automatic softening activated
    KPT mesh set up as follows          :  [  5,  5,  5 ]
-   KPT mesh set up as follows          :  [  5,  5,  5 ]
-   SOFTEN init atomic: {it:  1, fnrm:  0.37462E-01, res:  0.10876E-01, curv:  0.71698E-01, 
-                       fd2:  0.77140E-01,            de:  0.9642462546E-02}
    SOFTEN atomic iterations:
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11828E-03, it:  0.14013E-44}
+     SOFTEN init atomic: {it:  1, fnrm:  0.37462E-01, res:  0.10876E-01, curv:  0.71698E-01, 
+                         fd2:  0.77140E-01,            de:  0.9642462546E-02}
      SOFTEN: {it:  1, fnrm:  0.37462E-01, res:  0.10876E-01, curv:  0.71698E-01, 
              fd2:  0.77140E-01,            de:  0.9642462546E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11641E-03, it:  0.28026E-44}
      SOFTEN: {it:  2, fnrm:  0.37173E-01, res:  0.10789E-01, curv:  0.71144E-01, 
              fd2:  0.76621E-01,            de:  0.9577669900E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11459E-03, it:  0.42039E-44}
      SOFTEN: {it:  3, fnrm:  0.36888E-01, res:  0.10705E-01, curv:  0.70601E-01, 
              fd2:  0.76111E-01,            de:  0.9513900211E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11282E-03, it:  0.56052E-44}
      SOFTEN: {it:  4, fnrm:  0.36608E-01, res:  0.10622E-01, curv:  0.70066E-01, 
              fd2:  0.75609E-01,            de:  0.9451124357E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11111E-03, it:  0.70065E-44}
      SOFTEN: {it:  5, fnrm:  0.36333E-01, res:  0.10541E-01, curv:  0.69541E-01, 
              fd2:  0.75115E-01,            de:  0.9389312877E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10945E-03, it:  0.84078E-44}
      SOFTEN: {it:  6, fnrm:  0.36063E-01, res:  0.10462E-01, curv:  0.69024E-01, 
              fd2:  0.74627E-01,            de:  0.9328436055E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10785E-03, it:  0.98091E-44}
      SOFTEN: {it:  7, fnrm:  0.35797E-01, res:  0.10385E-01, curv:  0.68516E-01, 
              fd2:  0.74148E-01,            de:  0.9268463986E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10630E-03, it:  0.11210E-43}
      SOFTEN: {it:  8, fnrm:  0.35536E-01, res:  0.10310E-01, curv:  0.68016E-01, 
              fd2:  0.73675E-01,            de:  0.9209366455E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10481E-03, it:  0.12612E-43}
      SOFTEN: {it:  9, fnrm:  0.35280E-01, res:  0.10237E-01, curv:  0.67524E-01, 
              fd2:  0.73209E-01,            de:  0.9151112878E-02}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.10337E-03, it:  0.14013E-43}
      SOFTEN: {it:  10, fnrm:  0.35028E-01, res:  0.10167E-01, curv:  0.67040E-01, 
              fd2:  0.72749E-01,             de:  0.9093672726E-02}
    SOFTEN final atomic: {it:  11, fnrm:  0.35028E-01, res:  0.10167E-01, curv:  0.67040E-01, 
                         fd2:  0.72749E-01,             de:  0.9093672726E-02}
+   new alpha_at                        :  6.0500000000E-01
+   velocity of atoms:
+   - VEL                               :  [ -1.6762491E-03, -3.5593016E-03, -1.5794920E-03 ]
+   - VEL                               :  [  5.2570371E-04,  7.0875247E-04,  1.6013015E-03 ]
+   - VEL                               :  [  3.9443022E-05, -5.8975634E-04, -4.0210589E-04 ]
+   - VEL                               :  [  1.1592645E-03, -1.3331597E-04, -6.0786160E-04 ]
+   - VEL                               :  [  1.3357629E-03,  2.6855746E-03, -1.3552072E-04 ]
+   - VEL                               :  [ -1.2147379E-03, -3.0748187E-04,  3.0863629E-03 ]
+   - VEL                               :  [  3.7936548E-05,  3.1289510E-03, -2.4481043E-04 ]
+   - VEL                               :  [ -2.0712373E-04, -1.9334223E-03, -1.7178738E-03 ]
+   Entering SOFTENING routine for LATTICE, nsoft:  10
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Automatic softening activated
    KPT mesh set up as follows          :  [  5,  5,  5 ]
-   KPT mesh set up as follows          :  [  5,  5,  5 ]
-   SOFTEN init lattice: {it:  1, fnrm:  0.10383E+00, res:  0.55930E-01, curv:  0.87474E-01, 
-                        fd2:  0.11002E+00,            de:  0.5501056749E-01}
    SOFTEN lattice iterations:
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.31281E-02, it:  0.14013E-44}
+     SOFTEN init lattice: {it:  1, fnrm:  0.10383E+00, res:  0.55930E-01, curv:  0.87474E-01, 
+                          fd2:  0.11002E+00,            de:  0.5501056749E-01}
      SOFTEN: {it:  1, fnrm:  0.10383E+00, res:  0.55930E-01, curv:  0.87474E-01, 
              fd2:  0.11002E+00,            de:  0.5501056749E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.26552E-02, it:  0.28026E-44}
      SOFTEN: {it:  2, fnrm:  0.97111E-01, res:  0.51528E-01, curv:  0.82313E-01, 
              fd2:  0.10342E+00,            de:  0.5171183669E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.22550E-02, it:  0.42039E-44}
      SOFTEN: {it:  3, fnrm:  0.91181E-01, res:  0.47487E-01, curv:  0.77839E-01, 
              fd2:  0.97835E-01,            de:  0.4891750267E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.20036E-02, it:  0.56052E-44}
      SOFTEN: {it:  4, fnrm:  0.87032E-01, res:  0.44761E-01, curv:  0.74639E-01, 
              fd2:  0.93034E-01,            de:  0.4651712177E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.17861E-02, it:  0.70065E-44}
      SOFTEN: {it:  5, fnrm:  0.82936E-01, res:  0.42263E-01, curv:  0.71359E-01, 
              fd2:  0.88758E-01,            de:  0.4437887715E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.15714E-02, it:  0.84078E-44}
      SOFTEN: {it:  6, fnrm:  0.78610E-01, res:  0.39641E-01, curv:  0.67883E-01, 
              fd2:  0.84959E-01,            de:  0.4247967810E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.13905E-02, it:  0.98091E-44}
      SOFTEN: {it:  7, fnrm:  0.74611E-01, res:  0.37289E-01, curv:  0.64625E-01, 
              fd2:  0.81616E-01,            de:  0.4080802047E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.12639E-02, it:  0.11210E-43}
      SOFTEN: {it:  8, fnrm:  0.71214E-01, res:  0.35552E-01, curv:  0.61706E-01, 
              fd2:  0.78640E-01,            de:  0.3932020476E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11905E-02, it:  0.12612E-43}
      SOFTEN: {it:  9, fnrm:  0.68442E-01, res:  0.34504E-01, curv:  0.59108E-01, 
              fd2:  0.75911E-01,            de:  0.3795567069E-01}
-     KPT mesh set up as follows        :  [  5,  5,  5 ]
+   - KPT mesh set up as follows        :  [  5,  5,  5 ]
+     SOFTEN: {res:  0.11416E-02, it:  0.14013E-43}
      SOFTEN: {it:  10, fnrm:  0.66003E-01, res:  0.33788E-01, curv:  0.56698E-01, 
              fd2:  0.73326E-01,             de:  0.3666301175E-01}
    SOFTEN final lattice: {it:  11, fnrm:  0.66003E-01, res:  0.33788E-01, curv:  0.56698E-01, 
                          fd2:  0.73326E-01,             de:  0.3666301175E-01}
+   new alpha_at                        :  6.0500000000E-01
+   new alpha_lat                       :  1.2100000000E+00
+   lat. vel.:
+   -  [-1.2162781E-03,  4.9141033E-04,  5.5950087E-04]
+   -  [ 1.5639970E-04, -1.2795627E-04,  8.9167080E-04]
+   -  [-4.5288793E-04, -1.2004488E-03,  5.4865411E-05]
+   PARAMETERS: {Ha_eV:  27.21138386, kb_HaK:  3.1668154197285284E-006, 
+            amu_emass:  1822.888484264545}
    atoms info in MD:
    - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  2, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -2812,6 +3009,12 @@
    - atom: {iat:  6, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  7, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  8, AMU:  2.0000000E+00, EM:  3.6457770E+03}
+    #Entering standalone Parrinello Rahman MD
+   MD Algorithm                        :  1
+   MD Integrator                       :  3
+    #MINHOP start MD
+   Pressure                            :  3.3989314870562059E-004
+   Energy                              : -1.234872622848957
    MD iterations:
      MD: {iter:  0, enth: -9.606692335399E-01, pV:  2.742E-01, ekinatom:  1.098E-01, 
        ekinlat:  4.119E-03,                nummax:  0, nummin:  0, parres%mdmin:  2}
@@ -3334,6 +3537,19 @@
      MD: {iter:  74, enth: -8.871901541286E-01, pV:  3.019E-01, ekinatom:  3.612E-02, 
        ekinlat:  4.428E-03,                 nummax:  2, nummin:  2, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0074.ascii
+      #MD finished: exiting
+   MD info: {steps per minium:  3.70E+01, dtion_md set to:  1.21E+01, 
+               upper boundary:  2.71E+01}
+   EXIT MD: {itime:  74, enthalpy: -0.8871901541286202, etot_in: -1.189070649973646}
+   Cell changed: {latvec: [
+ [-6.899393079812E+00,  5.571964931803E-02, -5.286285224102E-01], 
+ [ 3.514960295098E+00, -2.936619846906E+00, -8.826550334342E+00], 
+ [ 2.247669692962E-01, -1.183973582046E+01,  7.256827361939E+00]], latvec0: [
+ [ 6.899393079812E+00, -5.571964931803E-02,  5.286285224102E-01], 
+ [-3.514960295098E+00,  2.936619846906E+00,  8.826550334342E+00], 
+ [-3.159665815418E+00, -1.472063601805E+01, -2.098351494813E+00]]}
+   After exiting MD: {energy: -1.189070649973646, enthalpy: -0.8871901541286201}
+   Counter of MD updated               :  215
    atoms info in FIRE:
    - atom: {iat:  1, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  2, AMU:  2.0000000E+00, EM:  3.6457770E+03}
@@ -3343,8 +3559,14 @@
    - atom: {iat:  6, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  7, AMU:  2.0000000E+00, EM:  3.6457770E+03}
    - atom: {iat:  8, AMU:  2.0000000E+00, EM:  3.6457770E+03}
+   FIRE info: {iat:  9, AMU:  1.0000000E+00, EM:  1.8228885E+03}
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Entering FIRE based on standalone PR MD
+   GEOPT Algorithm                     :  1
+   MD Integrator                       :  3
    KPT mesh set up as follows          :  [  5,  5,  5 ]
+    #MINHOP start FIRE
+   Pressure                            :  3.3989314870562059E-004
+   Energy                              : -1.189070649973645
    Writing the positions in FIRE       : posgeopt.0000.ascii
    FIRE optimization iterations:
    - Velocity of CM                    :  0.0000000E+00
@@ -3923,6 +4145,13 @@
               dt:  2.50E+01,                   fmax_at:  9.982E-04, fmax_lat:  4.605E-04, 
             rkin:  7.71E-05,                         P:  8.2E-08,    P_at:  6.9E-09, 
            P_lat:  7.5E-08}
+     Cell changed: {latvec: [
+ [ 6.797283297557E+00, -6.165218831581E-01,  7.944856432034E-01], 
+ [-3.423582601029E+00,  2.115739240398E+00,  9.002698266155E+00], 
+ [-3.067368634364E+00, -1.286333630584E+01, -2.145474566749E+00]], latvec0: [
+ [-6.797283297557E+00,  6.165218831581E-01, -7.944856432034E-01], 
+ [ 3.423582601029E+00, -2.115739240398E+00, -9.002698266155E+00], 
+ [ 3.063320621639E-01, -1.136411894860E+01,  7.651709342610E+00]]}
    - Velocity of CM                    :  0.0000000E+00
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -9.6355794E-01, ekinlat:  0.0000000E+00}
@@ -4355,6 +4584,9 @@
               dt:  5.00E+01,                    fmax_at:  3.154E-05, fmax_lat:  2.613E-05, 
             rkin:  6.74E-08,                          P:  1.7E-09,    P_at:  1.2E-12, 
            P_lat:  1.7E-09}
+     FIRE converged: {itime:  112, enthalpy: -9.637805670536E-01, fmax:  3.15439E-05}
+     EXIT FIRE: {itime:  112, enthalpy: -9.637805670536E-01, etot_in: -1.241546135540E+00}
+   Counter of GEOPT updated            :  252
    SPGLIB space group iterations:
      space_group                       :  1
      space_group                       :  1
@@ -4377,13 +4609,67 @@
      space_group                       :  74
      space_group                       :  74
      space_group                       :  74
+   FINAL SPGLIB: {SPG:  1.0369609E-43, TOL:  3.1547867E-02}
+   After exiting GEOPT: {e_wpos: -1.241546135540036E+00, ent_wpos: -9.637805670536314E-01}
+   Wrote file: {filename: poslocm_00002.ascii, a:  6.8746510E+00, b:  9.8571839E+00, 
+                       c:  1.3346294E+01,  alpha:  1.0589724E+02, beta:  9.8956890E+01, 
+                   gamma:  1.0452121E+02}
+   Suggested minimal cutoff radius for Oganov FP:  18.69858152466552
+   Creating expansion for periodic: {method: Oganov, nec:  [  5,  4,  3 ]}
+   some results: {nlmin:  2, ent_wpos: -0.9637805670536314, ent_pos: -0.9606692335399073, 
+                 e_wpos: -1.241546135540036, e_pos: -1.234872622848957}
+   Check identical: {ent_wpos: -0.96378056705363135E+00, k_e_wpos:  0.00000000000000000E+00}
+    #ID: there is no minimum in the given enthalpy range
+   wpos is a new minimum               :  Yes
+   k_e_wpos,kid                        :  0
+   kid                                 :  100000
+    #INSERT
+   wrote poscur.ascii for RESTART: {ent_pos: -0.9606692335399073}
+   wrote poslow files                  :  3
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
+    #Binary files {poslow,fcart,strten,latvec,fp}.bin written for RESTART.
+   nsoften                             :  10
+   mdmin                               :  2
+   global: {escape:  2., de: -9.63780567053631E-01, ediff:  1.061E-02, ekinetic:  2.627E+03, 
+           spg_pos:  74,                         fdos_pos:  0.000E+00, ratio_sam:  0.00, 
+         ratio_old:  0.00,                      ratio_new:  1.00,       escaped:  Yes, 
+            status: S,                             nvisit:  1}
+    #WINTER
+   wrote poscur.ascii for RESTART: {ent_pos: -0.9637805670536314}
+   wrote poslow files                  :  3
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
+    #Binary files {poslow,fcart,strten,latvec,fp}.bin written for RESTART.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ writing final results
  total minima found                    :  3
  minima accepeted                      :  3
+ wrote poscur.ascii for RESTART: {ent_pos: -0.9637805670536314}
+ wrote poslow files                    :  3
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
- CPU time: {iproc:  0, hrs:  0.826E-02, min:  0.496E+00, sec:  0.298E+02}
+  #Binary files {poslow,fcart,strten,latvec,fp}.bin written for RESTART.
+ about minima hopping params:
+   ratios: {same:  0.000E+00, old:  0.000E+00, new:  1.000E+00}
+   ratio_acc                           :  1.000E+00
+   ratio_rej                           :  0.000E+00
+   count_md                            :  215.0
+   count_geopt                         :  252.0
+   average ediff                       :  7.427E-03
+   average ekinetic                    :  3.035E+03
+   number of configurations for which atoms escaped:  0
+ about minima: {most frequent visits:  1., avg. num. visits per minimum:  1.000E+00, 
+           minimum energy separation:  0.00E+00}
+ CPU time: {iproc:  0, hrs:  0.844E-02, min:  0.506E+00, sec:  0.304E+02}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  4
+   Tot. No. of Deallocations           :  4
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.001
+     for the array                     : fbuf
+     in the routine                    : alborz_init
+     Memory Peak of process            : 172.120 MB
+ Walltime since initialization         :  00:00:30.379230020
+ Max No. of dictionaries used          :  773 #( 185 still in use)
+ Number of dictionary folders allocated:  1

@@ -607,7 +607,7 @@ endif
 call fp_assign(parini)
 
 !Increase calls to the routine
-if(calls==0) call params_echo(parini)
+!if(calls==0) call params_echo(parini)
 if(calls==0) call params_check(parini)
 calls=calls+1
 
@@ -717,7 +717,7 @@ calls=calls+1
     sd_beta_lat=parini%alphax_lat
     sd_beta_at=parini%alphax_at
 
-    call params_echo(parini)
+    !call params_echo(parini)
     !Check range of parameters
     call params_check(parini)
 end subroutine params_read_for_yaml

@@ -184,7 +184,12 @@ P_lat=0.d0
       latmass0=0.005d0*latmass_rel_fire*sum(amass(:))/real(parini%nat,8)
   endif
 
-   write(*,'(a,i5,2(1x,es15.7))') " # FIRE: latmass, AMU, EM: ", iat, latmass0/amu_emass,latmass0
+    call yaml_mapping_open('FIRE info',flow=.true.)
+    call yaml_map('iat',iat)
+    call yaml_map('AMU',latmass0/amu_emass,fmt='(es15.7)')
+    call yaml_map('EM',latmass0,fmt='(es15.7)')
+    call yaml_mapping_close()
+    !write(*,'(a,i5,2(1x,es15.7))') " # FIRE: latmass, AMU, EM: ", iat, latmass0/amu_emass,latmass0
 
 !******************************************************************
 !NEW VERISON OF MD: Directly implemented, simplest Parrinello-Rahman MD
@@ -212,7 +217,11 @@ call yaml_comment('Entering FIRE based on standalone PR MD',hfill='~')
 
   if(md_type.lt.1.or.md_type.gt.4) stop "Wrong algo option"
 
-if(parini%verb.gt.0) write(*,'(a,i3,a,i3)') " # GEOPT Algorithm: ",md_type, ", MD Integrator: ",options
+if(parini%verb.gt.0) then
+    call yaml_map('GEOPT Algorithm',md_type)
+    call yaml_map('MD Integrator',options)
+    !write(*,'(a,i3,a,i3)') " # GEOPT Algorithm: ",md_type, ", MD Integrator: ",options
+endif
 
 !Now we run my implementation of PR MD
 pressure_md=0.d0
@@ -324,7 +333,8 @@ endif
 !        call wtpos_inter(nat,rxyz,latcur,0)
 
 !MHM: initialize variable to track the minima/maxima***********
-    write(*,*) '# MINHOP start FIRE'
+    call yaml_comment('MINHOP start FIRE')
+    !write(*,*) '# MINHOP start FIRE'
     nummax=0
     nummin=0
     enmin1=0.d0
@@ -335,7 +345,9 @@ endif
 
 !MHM: Write output to file in every step***********************************
 !INITIAL STEP, STILL THE SAME STRUCTURE AS INPUT
-       write(*,*) "Pressure, Energy",pressure,etot_in
+       call yaml_map('Pressure',pressure)
+       call yaml_map('Energy',etot_in)
+       !write(*,*) "Pressure, Energy",pressure,etot_in
        call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
        ent_pos_0=enthalpy
        en0000=enthalpy-ent_pos_0
@@ -357,7 +369,12 @@ endif
 
 !Exit if the forces are already converged at the beginning
         if(iexit==1) then
-          write(*,'(a,i4,2(1x,es25.15))') " # FIRE converged before entering iterations", itime,enthalpy,fmax
+            call yaml_mapping_open('FIRE converged before entering iterations',flow=.true.)
+            call yaml_map('itime',itime)
+            call yaml_map('enthalpy',enthalpy,fmt='(es20.12)')
+            call yaml_map('fmax',fmax,fmt='(es12.5)')
+            call yaml_mapping_close()
+          !write(*,'(a,i4,2(1x,es25.15))') " # FIRE converged before entering iterations", itime,enthalpy,fmax
           max_kpt=.false.
           return 
         endif
@@ -657,7 +674,12 @@ if(parini%verb.gt.0) then
        !       &itime,enthalpy, fmax, fmax_at,fmax_lat,rkin,P,P_at,P_lat,dt,nstep,iprec
 endif
         if(iexit==1) then
-          write(*,'(a,i4,2(1x,es25.15))') " # FIRE converged", itime,enthalpy,fmax
+            call yaml_mapping_open('FIRE converged',flow=.true.)
+            call yaml_map('itime',itime)
+            call yaml_map('enthalpy',enthalpy,fmt='(es20.12)')
+            call yaml_map('fmax',fmax,fmt='(es12.5)')
+            call yaml_mapping_close()
+          !write(*,'(a,i4,2(1x,es25.15))') " # FIRE converged", itime,enthalpy,fmax
           exit
         endif
 !*********************************************************************
@@ -796,9 +818,14 @@ if(md_type.ne.4) call elim_fixed_lat(parini,latcur,vlatcur)
      enthalpy_min=min(enthalpy,enthalpy_min)
      enddo 
 !FIRE
-    call yaml_sequence_close()
-     write(*,'(a,i5,es15.7,es15.7)') ' # EXIT FIRE ',itime,enthalpy,etot_in
+    call yaml_mapping_open('EXIT FIRE',flow=.true.)
+    call yaml_map('itime',itime)
+    call yaml_map('enthalpy',enthalpy,fmt='(es20.12)')
+    call yaml_map('etot_in',etot_in,fmt='(es20.12)')
+    call yaml_mapping_close()
+     !write(*,'(a,i5,es15.7,es15.7)') ' # EXIT FIRE ',itime,enthalpy,etot_in
      max_kpt=.false.
+    call yaml_sequence_close()
 
 end subroutine GEOPT_FIRE_MHM 
 
