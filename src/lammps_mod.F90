@@ -102,6 +102,7 @@
        virial(4) = atoms%stress(1,2)*-1.d0/volume !*29421.02648438959d9
        virial(5) = atoms%stress(1,3)*-1.d0/volume !*29421.02648438959d9
        virial(6) = atoms%stress(2,3)*-1.d0/volume !*29421.02648438959d9
+       !write(*,'(a,f20.10)') 'VOL',volume
        !write(*,*) 'STRESSS',virial(1)
        !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,1),atoms%stress(2,1),atoms%stress(3,1)
        !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,2),atoms%stress(2,2),atoms%stress(3,2)

@@ -1,5 +1,4 @@
-# FLAME
-Fully loaded atomistic modeling environment
+# FLAME: a library for atomistic modeling environments
 
 INSTALLATION:
 FLAME requires autoconf and automake to be installed.
