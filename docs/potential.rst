@@ -8,7 +8,7 @@ EXPLAIN
 
 List available potentials:
 
-[potential] options
+potential options
 ====================
 
 **potential**:

@@ -6,7 +6,7 @@ testforces
 
 EXPLAIN 
 
-[testforces] options
+testforces options
 ====================
 
 **method**: The method by which the atomic forces are examined.

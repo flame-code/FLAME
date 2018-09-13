@@ -6,7 +6,7 @@ Comparing configurations
 
 EXPLAIN 
 
-[conf_comp] options
+conf_comp options
 ===================
 
 **tol**: Tolerance criterion based on which similarity of configurations is decided.

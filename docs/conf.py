@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Alborz documentation build configuration file, created by
+# FLAME documentation build configuration file, created by
 # sphinx-quickstart on Fri Feb 21 01:20:59 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Alborz'
+project = u'FLAME'
 copyright = u'2014, Alireza Ghasemi'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -64,7 +64,7 @@ release = '0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build','alborz.rst']
+exclude_patterns = ['_build','flame.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -127,7 +127,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -171,7 +171,7 @@ html_show_copyright = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Alborzdoc'
+htmlhelp_basename = 'FLAMEdoc'
 
 show_source = False
 html_show_sourcelink = False
@@ -193,7 +193,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Alborz.tex', u'Alborz Documentation',
+  ('index', 'flame.tex', u'FLAME Documentation',
    u'Alireza Ghasemi', 'manual'),
 ]
 
@@ -223,7 +223,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'alborz', u'Alborz Documentation',
+    ('index', 'flame', u'FLAME Documentation',
      [u'Alireza Ghasemi'], 1)
 ]
 
@@ -237,8 +237,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Alborz', u'Alborz Documentation',
-   u'Alireza Ghasemi', 'Alborz', 'One line description of project.',
+  ('index', 'FLAME', u'FLAME Documentation',
+   u'Alireza Ghasemi', 'FLAME', 'One line description of project.',
    'Miscellaneous'),
 ]
 

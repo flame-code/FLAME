@@ -1,5 +1,5 @@
 
-Welcome to Alborz
+Welcome to FLAME
 =================
 
 The Alborz software package contains a variety of atomistic simulation models and algorithms.

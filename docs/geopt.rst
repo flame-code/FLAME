@@ -8,7 +8,7 @@ The optimizer parameters can be set in this block.
 Some of these parameters are used by all optimizers and
 some are only relevant to some of optimizers.
 
-[geopt] options
+geopt options
 =================
 
 **method**: The optimization method for geometry optimization.

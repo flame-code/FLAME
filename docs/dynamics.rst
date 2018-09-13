@@ -6,7 +6,7 @@ Dynamics
 
 EXPLAIN Dynamics
 
-[dynamics] options
+dynamics options
 ==================
 
 **nstep**: Number of molecular dynamics steps

@@ -6,7 +6,7 @@ Artinificial Neural Network
 
 EXPLAIN 
 
-[ann] options
+ann options
 =================
 
 **nstep_ekf**: Number of extended Kalman filter steps

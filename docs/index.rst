@@ -1,9 +1,9 @@
-.. Alborz documentation master file, created by
+.. FLAME documentation master file, created by
    sphinx-quickstart on Fri Feb 21 01:20:59 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. include:: alborz.rst
+.. include:: flame.rst
 
 OTHER STUFF
 ==================================
@@ -14,11 +14,11 @@ OTHER STUFF
 
    documentation
 
+   flame_in
    minhopp
    main
    potential
    geopt
-   input_ini
    dynamics.rst
    ann.rst
    conf_comp.rst

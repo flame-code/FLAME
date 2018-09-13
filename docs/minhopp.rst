@@ -12,9 +12,9 @@ The Monte Carlo algorithm used in the minima hopping uses information of
 the history as well and a different feedback mechanism controls the
 acceptance/rejection of the metropolis algorithm.
 
-List of available options in [Main]
+List of available options in minhopp
 
-[minhopp] options
+minhopp options
 =================
 
 **nstep**: Number of Monte Carlo Steps
@@ -78,9 +78,9 @@ every configuration written into files.
 
 **etoler**: The tolerance criterion to check similarity and dissimilarity
 between two configuration used in the minhopp.
-Since there is a similarity check in Alborz, this option
+Since there is a similarity check in FLAME, this option
 and the depending codes will be removed and those of
-:ref:`[conf_comp] <conf_comp>` will be employed.
+:ref:`conf_comp <conf_comp>` will be employed.
 
     default: ``1.d-2``
 
@@ -93,7 +93,7 @@ This is done by letting different random number to be used.
 **minter**: It defines how frequent minhop results are written into files.
 These files can be used for a restart minhopp run. For MH runs in which
 the potential is obtained from fast methods such as force fields, it is
-recommended to use a much larger value than 1, otherwise alborz will be
+recommended to use a much larger value than 1, otherwise FLAME will be
 slow due printing intermediate results many times.
 
     default: ``1``
