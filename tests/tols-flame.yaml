@@ -99,6 +99,7 @@ minhopp_LJ:
 saddle_1s_Si64Bulk:
  Keys to ignore:
   - iproc
+ Epsilon: 1.e-11
  alphax: 1.e-5
  fmaxtol: 1.e-5
  dxmax: 1.e-5
@@ -107,7 +108,7 @@ saddle_1s_Si64Bulk:
  epot: 1.e-11
  fnrm: 1.e-11
  fmax: 1.e-11
- ndim: 1.e-13
+ ndim: 1.e-11
  curv0: 1.e-11
  curv: 1.e-11
  cosangle: 1.e-11
@@ -185,6 +186,7 @@ geopt_CENT1_slab_fixed_efield:
  Keys to ignore:
   - iproc
   - Timing of CENT1
+ Epsilon: 1.e-11
  alphax: 1.e-5
  fmaxtol: 1.e-5
  dxmax: 1.e-5
@@ -193,7 +195,7 @@ geopt_CENT1_slab_fixed_efield:
  epot: 1.e-10
  fnrm: 1.e-11
  fmax: 1.e-11
- ndim: 1.e-13
+ ndim: 1.e-11
  inside get_beta_grid: 1.e-10
  epot_es: 1.e-11
 
