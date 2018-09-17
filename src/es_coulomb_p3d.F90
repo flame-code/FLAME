@@ -67,12 +67,13 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     if(trim(parini%bias_type)=='fixed_efield' .or. trim(parini%bias_type)=='fixed_potdiff') then
         call bias_field_potener_forces(parini,poisson,atoms,epotplane) 
     endif
+    epot_dielec =0.d0
     if(trim(parini%bias_type)=='dielec') then
         call dielec_potener_forces(parini,poisson,atoms,epot_dielec) 
     end if
     call cpu_time(time(6))
     !atoms%epot=epotlong+epotshort-poisson%epotfixed+epotplane
-    atoms%epot=epotlong-poisson%epotfixed+epotplane
+    atoms%epot=epotlong-poisson%epotfixed+epotplane + epot_dielec
     call yaml_map('epotfixed',poisson%epotfixed,fmt='(es23.15))')
     call yaml_map('epotlong',epotlong,fmt='(es23.15))')
     call yaml_map('epotplane',epotplane,fmt='(es23.15))')
