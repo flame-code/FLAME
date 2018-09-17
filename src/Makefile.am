@@ -20,7 +20,7 @@ AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src
 LIBS += $(LAMMPS_ROOT)/src/liblammps_mpi.a
 endif
 
-SRC_ += alborz_init_final.F90 processors.F90 \
+SRC_ += flame_init_fini.F90 processors.F90 \
 		mpi_utilities.F90 \
 		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		lmder_modified.F90 \
@@ -67,7 +67,7 @@ SRC_ += alborz_init_final.F90 processors.F90 \
 		potential_DFTB.F90 \
 		optimizer_simplex.F90
 
-minhocao_src = potential_alborz.F90  potential_corerepulsion.F90 \
+minhocao_src = potential_flame.F90  potential_corerepulsion.F90 \
 		potential_confinement.F90 potential_IPI.F90 potential_MSOCK.F90 \
 		potential_abinit.F90 potential_LJ_voids.F90 potential_BLJ_minhocao.F90 \
 		potential_MLJ.F90 potential_LenoskyTB_minhocao.F90 \
@@ -105,7 +105,7 @@ potential_main_minhocao.o: potential_abinit.o
 
 libsrc_a_SOURCES = $(SRC_) $(minhocao_src)
 
-flame_SOURCES = alborz.F90
+flame_SOURCES = flame.F90
 flame_LDADD = libsrc.a  $(top_builddir)/modules/libmodules.a lenosky_tb/liblenosky.a libclowlevel.a
 
 libclowlevel_a_SOURCES = $(_SOURCES_CPP) $(_SOURCES_C)

@@ -15,7 +15,7 @@ libmodules_a_SOURCES =  task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 
 		interface_mod.F90 minhopp_mod.F90 \
 		saddle_mod.F90 dynamics_mod.F90 \
 		fsockets.F90 \
-		alborz_as_potential_mod.F90 \
+		flame_as_potential_mod.F90 \
 		timing_mod.F90 \
 		constants_minhocao_mod.F90
 
