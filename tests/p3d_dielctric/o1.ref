@@ -1,0 +1,73 @@
+ntypat  2
+type  1   Na
+type  2   Cl
+mpi started: iproc_world,nproc_world    0   1
+mpi started: iproc,nproc    0   1
+iproc,seed    0  2147483562  2147483398
+Number of configurations read from posinp.acf is    1
+                             ngpx,ngpy,ngpz,ngptot          30          30          88       79200
+                                 nbgpx,nbgpy,nbgpz          19          19          21
+                                       hgx,hgy,hgz     0.8692740     0.8692740     0.8020346
+hxx,hyx,hzx         0.8692740188        0.0000000000        0.0000000000
+hxy,hyy,hzy         0.0000000000        0.8692740188        0.0000000000
+hxz,hyz,hzz         0.0000000000        0.0000000000        0.8020345666
+ ecut   2.85444433015791      alpha   2.20000000000000     
+ delta= -0.637325199635061280481314778780335      
+ hsp=  1.400000000000000E-003
+inside get_beta_grid b       0.57503170872720766E+02
+ epotplane= -2.008602205777831E-003
+ -----------------------------------------------------------
+                                         epotfixed           0.261125856262756E+02
+                                          epotlong           0.441583215120796E+01
+                                       epot_dielec          -0.200860220577783E-02
+                                         epotplane           0.000000000000000E+00
+                                         epottotal          -0.216987620772734E+02
+ inside shortenergy  hsp=  1.400000000000000E-003
+                                         epotshort          -0.700037205596897E+01
+ externalwork2  0.000000000000000E+000
+CPU time: iproc,time(hrs)    0      0.342E-04
+CPU time: iproc,time(min)    0      0.205E-02
+CPU time: iproc,time(sec)    0      0.123E+00
+mpi finalized: iproc_world,nproc_world    0   1
+  #WARNING: Heap memory has not been completely freed! See status at finalization to find 
+  #where.
+ Size of the global database           :  13
+ Status of the memory at finalization:
+   2988421744:
+     [ gausswidth, calculate_forces_energy,  1152,  1 ]
+   2988448640:
+     [ at_out%sat, Main_program,  144,  1 ]
+   2988449376:
+     [ at_out%rat, Main_program,  3456,  2 ]
+   2988452848:
+     [ at_out%vat, Main_program,  3456,  2 ]
+   2988456320:
+     [ at_out%amass, Main_program,  1152,  1 ]
+   2988457488:
+     [ at_out%fat, Main_program,  3456,  2 ]
+   2988460960:
+     [ at_out%bemoved, Main_program,  1728,  2 ]
+   2988462704:
+     [ at_out%qat, Main_program,  1152,  1 ]
+   2988463872:
+     [ at_out%zat, Main_program,  1152,  1 ]
+   2988465040:
+     [ at_out%rcov, Main_program,  1152,  1 ]
+   2988466208:
+     [ at_out%itypat, Main_program,  576,  1 ]
+   Timestamp of Profile initialization:
+     2018-09-11 18:27:26.666
+   Process Id:
+     0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  46
+   Tot. No. of Deallocations           :  35
+   Remaining Memory (B)                :  18576
+   Memory occupation:
+     Peak Value (MB)                   :  4.582
+     for the array                     : vz
+     in the routine                    : force_gto_sym_ortho
+     Memory Peak of process            : 56.056 MB
+ Walltime since initialization         :  00:00:00.164931610
+ Max No. of dictionaries used          :  767 #( 184 still in use)
+ Number of dictionary folders allocated:  1
