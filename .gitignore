@@ -64,6 +64,7 @@ config.sub
 configure
 depcomp
 install-sh
+INSTALL
 missing
 modules/Makefile.in
 src/Makefile.in

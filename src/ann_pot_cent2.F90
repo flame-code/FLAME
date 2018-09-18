@@ -194,6 +194,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -281,6 +282,9 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
 
     call charge_analysis(parini,atoms,ann_arr)
     call final_cent2(cent)
+    if(parini%iverbose>=2) then
+        call yaml_map('charge on atoms',atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat),fmt='(f10.5)')
+    endif
 end subroutine get_qat_from_chi2
 !*****************************************************************************************
 subroutine init_cent2(parini,ann_arr,atoms,cent)

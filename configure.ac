@@ -36,6 +36,9 @@ AX_LAMMPS()
 AX_SPGLIB()
 AX_BPS()
 
+dnl pass the FUTILE variable to the Makefiles
+AC_ARG_VAR([FUTILE], [FUTILE root path])
+
 dnl Check for sed and put it in the SED variable
 AC_PROG_SED()
 

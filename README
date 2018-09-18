@@ -38,11 +38,12 @@ autoreconf -fi
 3) make a directory to build flame and then
 replace $FUTILE by the full path of futile built
 directory or define it as an environment variable:
-export FUTILE=path_to_built_futile_install_subdirectory
+export FUTILE=path_to_built_futile_directory
+IMPORTANT: exporting FUTILE variable is required, not optional.
 then,
 path_to_flame_source/configure FC=mpif90 F77=mpif90 CXX=mpicc CC=mpicc \
-FCFLAGS="-I$FUTILE/include -shared-intel -mcmodel=large  -mkl=sequential" \
-CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/lib \
+FCFLAGS="-I$FUTILE/install/include -shared-intel -mcmodel=large  -mkl=sequential" \
+CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/install/lib \
 -L/opt/intel/composer_xe_2013.2.146/mkl/lib/intel64 -lfutile-1 -lmkl_rt \
 -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm -lyaml -ldl -lrt -cxxlib"
 

@@ -182,6 +182,7 @@ subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -220,6 +221,20 @@ subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
         call get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     else
         stop 'ERROR: unknown syslinsolver'
+    endif
+    if(parini%iverbose>=2) then
+        call yaml_map('charge on atoms',atoms%qat(1:atoms%nat),fmt='(f10.5)')
+        !call yaml_sequence_open('charge on atom')
+        !do iat=1,atoms%nat
+        !    call yaml_sequence(advance='no')
+        !    call yaml_scalar(iat)
+        !    call yaml_scalar(atoms%qat(iat))
+        !    !write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
+        !enddo
+        !call yaml_sequence_close()
+        !do iat=1,atoms%nat
+        !    write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
+        !enddo
     endif
 end subroutine get_qat_from_chi
 !*****************************************************************************************
@@ -805,20 +820,6 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     deallocate(g)
     deallocate(h)
     deallocate(gt)
-    if(parini%iverbose>=2) then
-        call yaml_map('charge on atoms',atoms%qat(1:atoms%nat),fmt='(f10.5)')
-        !call yaml_sequence_open('charge on atom')
-        !do iat=1,atoms%nat
-        !    call yaml_sequence(advance='no')
-        !    call yaml_scalar(iat)
-        !    call yaml_scalar(atoms%qat(iat))
-        !    !write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
-        !enddo
-        !call yaml_sequence_close()
-        !do iat=1,atoms%nat
-        !    write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
-        !enddo
-    endif
     end associate
 end subroutine get_qat_from_chi_operator
 !*****************************************************************************************

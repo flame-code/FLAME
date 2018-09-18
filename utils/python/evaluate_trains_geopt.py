@@ -6,8 +6,8 @@ import random
 import os.path
 from time import sleep
 import yaml
-path="/home/ghasemi/FLAME/utils/python"
-sys.path.insert(1,path)
+#path="/home/ghasemi/FLAME/utils/python"
+#sys.path.insert(1,path)
 from acf import *
 #*****************************************************************************************
 def read_posinps(posinp_dir,fn_list):
