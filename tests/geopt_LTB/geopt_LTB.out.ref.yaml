@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-06 17:52:49.374
+ Timestamp of this run                 : 2018-09-20 14:12:06.429
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -55,13 +55,13 @@
    alpha_at                            : 1.0
    mol_soften                          : False
  geopt:
-   method                              : BFGS
-   fmaxtol                             : 2.d-5
-   alphax                              : 3.d0
-   condnum                             : 10.d0
+   method                              : FIRE
+   fmaxtol                             : 2.E-5
+   alphax                              : 3.0
+   condnum                             : 10.0
    precaution                          : normal
    lprint                              : True
-   dt_start                            : -1.0
+   dt_start                            : 10.E-3
    nit                                 : -1
    dxmax                               : -1.0
    anoise                              : -1.0
@@ -72,7 +72,7 @@
    trajectory                          : False
    nhist                               : 10
    dt_min                              : 1.0
-   dt_max                              : 80.0
+   dt_max                              : 1.0
    strfact                             : 100.0
    hesslat                             : 1.0
    hessat                              : 1.0
@@ -89,8 +89,8 @@
    sqnmtrustr                          : 0.1
  geopt_prec:
    method                              : SD
-   fmaxtol                             : 1.d-3
-   alphax                              : 2.d0
+   fmaxtol                             : 1.E-3
+   alphax                              : 2.0
    condnum                             : 10.0
    precaution                          : normal
    lprint                              : False
@@ -333,136 +333,395 @@
      epot                              : -2.608985039034E+00
      fnrm                              :  2.27804E-03
      fmax                              :  9.36875E-04
- BFGS optimization iterations:
- - BFGS: {iter:  0, epot: -2.608985039034E+00, de:  0.0E+00, fmax:  9.369E-04, 
-          fnrm:  2.278E-03,                 alpha:  8.0000E-01, zeta:  1.0000E+00, isatur:  0}
- - BFGS: {iter:  1, epot: -2.608996894590E+00, de: -1.2E-05, fmax:  7.156E-04, 
-          fnrm:  1.684E-03,                 alpha:  8.8000E-01, zeta:  1.0000E+00, isatur:  0}
- - BFGS: {iter:  2, epot: -2.609002854021E+00, de: -6.0E-06, fmax:  5.728E-04, 
-          fnrm:  1.339E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  0}
- - BFGS: {iter:  3, epot: -2.609006832986E+00, de: -4.0E-06, fmax:  4.579E-04, 
-          fnrm:  1.078E-03,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  0}
- - BFGS: {iter:  4, epot: -2.609009502980E+00, de: -2.7E-06, fmax:  3.923E-04, 
-          fnrm:  8.812E-04,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  0}
- - BFGS: {iter:  5, epot: -2.609011336010E+00, de: -1.8E-06, fmax:  3.456E-04, 
-          fnrm:  7.337E-04,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  0}
- - BFGS: {iter:  6, epot: -2.609012634043E+00, de: -1.3E-06, fmax:  3.043E-04, 
-          fnrm:  6.226E-04,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  2}
- - BFGS: {iter:  7, epot: -2.609013585143E+00, de: -9.5E-07, fmax:  2.681E-04, 
-          fnrm:  5.381E-04,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  4}
- - BFGS: {iter:  8, epot: -2.609014306222E+00, de: -7.2E-07, fmax:  2.365E-04, 
-          fnrm:  4.730E-04,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  6}
- - BFGS: {iter:  9, epot: -2.609015135433E+00, de: -8.3E-07, fmax:  1.944E-04, 
-          fnrm:  3.964E-04,                 alpha:  9.5000E-01, zeta:  1.0000E+00, isatur:  8}
- - BFGS: {iter:  10, epot: -2.609015734274E+00, de: -6.0E-07, fmax:  1.598E-04, 
-          fnrm:  3.427E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  10}
- - BFGS: {iter:  11, epot: -2.609016190826E+00, de: -4.6E-07, fmax:  1.315E-04, 
-          fnrm:  3.029E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  12}
- - BFGS: {iter:  12, epot: -2.609016650467E+00, de: -4.6E-07, fmax:  1.007E-04, 
-          fnrm:  2.631E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  14}
- - BFGS: {iter:  13, epot: -2.609017004184E+00, de: -3.5E-07, fmax:  7.699E-05, 
-          fnrm:  2.324E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  16}
- - BFGS: {iter:  14, epot: -2.609017285336E+00, de: -2.8E-07, fmax:  6.276E-05, 
-          fnrm:  2.071E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  18}
- - BFGS: {iter:  15, epot: -2.609017556507E+00, de: -2.7E-07, fmax:  5.670E-05, 
-          fnrm:  1.817E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  20}
- - BFGS: {iter:  16, epot: -2.609017768407E+00, de: -2.1E-07, fmax:  5.142E-05, 
-          fnrm:  1.607E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  22}
- - BFGS: {iter:  17, epot: -2.609017936410E+00, de: -1.7E-07, fmax:  4.666E-05, 
-          fnrm:  1.433E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  24}
- - BFGS: {iter:  18, epot: -2.609018091895E+00, de: -1.6E-07, fmax:  4.145E-05, 
-          fnrm:  1.271E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  26}
- - BFGS: {iter:  19, epot: -2.609018214215E+00, de: -1.2E-07, fmax:  3.675E-05, 
-          fnrm:  1.147E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  28}
- - BFGS: {iter:  20, epot: -2.609018313356E+00, de: -9.9E-08, fmax:  3.501E-05, 
-          fnrm:  1.051E-04,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  30}
- - BFGS: {iter:  21, epot: -2.609018406490E+00, de: -9.3E-08, fmax:  3.345E-05, 
-          fnrm:  9.708E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  32}
- - BFGS: {iter:  22, epot: -2.609018484999E+00, de: -7.9E-08, fmax:  3.204E-05, 
-          fnrm:  9.109E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  34}
- - BFGS: {iter:  23, epot: -2.609018554142E+00, de: -6.9E-08, fmax:  3.077E-05, 
-          fnrm:  8.643E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  36}
- - BFGS: {iter:  24, epot: -2.609018623611E+00, de: -6.9E-08, fmax:  2.948E-05, 
-          fnrm:  8.229E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  38}
- - BFGS: {iter:  25, epot: -2.609018687663E+00, de: -6.4E-08, fmax:  2.832E-05, 
-          fnrm:  7.871E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  40}
- - BFGS: {iter:  26, epot: -2.609018747971E+00, de: -6.0E-08, fmax:  2.729E-05, 
-          fnrm:  7.537E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  42}
- - BFGS: {iter:  27, epot: -2.609018810381E+00, de: -6.2E-08, fmax:  2.625E-05, 
-          fnrm:  7.203E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  44}
- - BFGS: {iter:  28, epot: -2.609018868874E+00, de: -5.8E-08, fmax:  2.532E-05, 
-          fnrm:  6.887E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  46}
- - BFGS: {iter:  29, epot: -2.609018923479E+00, de: -5.5E-08, fmax:  2.511E-05, 
-          fnrm:  6.593E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  48}
- - BFGS: {iter:  30, epot: -2.609018978683E+00, de: -5.5E-08, fmax:  2.530E-05, 
-          fnrm:  6.319E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  50}
- - BFGS: {iter:  31, epot: -2.609019029385E+00, de: -5.1E-08, fmax:  2.531E-05, 
-          fnrm:  6.084E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  52}
- - BFGS: {iter:  32, epot: -2.609019076064E+00, de: -4.7E-08, fmax:  2.517E-05, 
-          fnrm:  5.889E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  54}
- - BFGS: {iter:  33, epot: -2.609019122846E+00, de: -4.7E-08, fmax:  2.492E-05, 
-          fnrm:  5.727E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  56}
- - BFGS: {iter:  34, epot: -2.609019166142E+00, de: -4.3E-08, fmax:  2.455E-05, 
-          fnrm:  5.600E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  58}
- - BFGS: {iter:  35, epot: -2.609019206729E+00, de: -4.1E-08, fmax:  2.410E-05, 
-          fnrm:  5.500E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  60}
- - BFGS: {iter:  36, epot: -2.609019248145E+00, de: -4.1E-08, fmax:  2.357E-05, 
-          fnrm:  5.420E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  62}
- - BFGS: {iter:  37, epot: -2.609019287751E+00, de: -4.0E-08, fmax:  2.297E-05, 
-          fnrm:  5.354E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  64}
- - BFGS: {iter:  38, epot: -2.609019326230E+00, de: -3.8E-08, fmax:  2.234E-05, 
-          fnrm:  5.292E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  66}
- - BFGS: {iter:  39, epot: -2.609019366581E+00, de: -4.0E-08, fmax:  2.166E-05, 
-          fnrm:  5.231E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  68}
- - BFGS: {iter:  40, epot: -2.609019406472E+00, de: -4.0E-08, fmax:  2.096E-05, 
-          fnrm:  5.162E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  70}
- - BFGS: {iter:  41, epot: -2.609019446198E+00, de: -4.0E-08, fmax:  2.027E-05, 
-          fnrm:  5.080E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  72}
- - BFGS: {iter:  42, epot: -2.609019488190E+00, de: -4.2E-08, fmax:  1.958E-05, 
-          fnrm:  4.986E-05,                  alpha:  9.5000E-01, zeta:  1.0000E+00, 
-        isatur:  74}
- - BFGS FINISHED:
+ optimization parameters:
+   method                              : FIRE
+   precaution                          : normal
+   alphax                              :  3.000000
+   fmaxtol                             :  0.000020
+   dxmax                               : -1.000000
+   condnum                             :  10.000000
+   fnrmtolsatur                        : -1.000000
+   dt_start                            :  0.010000
+   nsatur                              : -1
+   nit                                 :  1000
+   lprint                              :  T
+ FIRE optimization iterations:
+ - FIRE: {iter:  0, epot: -2.608985039034E+00, de:  0.0E+00, fmax:  9.369E-04, 
+          fnrm:  2.278E-03,                  vnrm:  0.000E+00, alpha:  0.1000E+00, 
+            dt:  0.1000E-01,                ndown:  0,      power:  0.0000E+00}
+ - FIRE: {iter:  1, epot: -2.608985039293E+00, de: -2.6E-10, fmax:  9.369E-04, 
+          fnrm:  2.278E-03,                  vnrm:  2.278E-05, alpha:  0.1000E+00, 
+            dt:  0.1000E-01,                ndown:  1,      power:  0.5189E-07}
+ - FIRE: {iter:  2, epot: -2.608985040071E+00, de: -7.8E-10, fmax:  9.369E-04, 
+          fnrm:  2.278E-03,                  vnrm:  4.374E-05, alpha:  0.1000E+00, 
+            dt:  0.1000E-01,                ndown:  2,      power:  0.9964E-07}
+ - FIRE: {iter:  3, epot: -2.608985041327E+00, de: -1.3E-09, fmax:  9.368E-04, 
+          fnrm:  2.278E-03,                  vnrm:  6.302E-05, alpha:  0.1000E+00, 
+            dt:  0.1000E-01,                ndown:  3,      power:  0.1436E-06}
+ - FIRE: {iter:  4, epot: -2.608985043022E+00, de: -1.7E-09, fmax:  9.368E-04, 
+          fnrm:  2.278E-03,                  vnrm:  8.076E-05, alpha:  0.1000E+00, 
+            dt:  0.1000E-01,                ndown:  4,      power:  0.1840E-06}
+ - FIRE: {iter:  5, epot: -2.608985045121E+00, de: -2.1E-09, fmax:  9.368E-04, 
+          fnrm:  2.278E-03,                  vnrm:  9.935E-05, alpha:  0.9900E-01, 
+            dt:  0.1100E-01,                ndown:  5,      power:  0.2263E-06}
+ - FIRE: {iter:  6, epot: -2.608985047924E+00, de: -2.8E-09, fmax:  9.367E-04, 
+          fnrm:  2.278E-03,                  vnrm:  1.190E-04, alpha:  0.9801E-01, 
+            dt:  0.1210E-01,                ndown:  6,      power:  0.2711E-06}
+ - FIRE: {iter:  7, epot: -2.608985051585E+00, de: -3.7E-09, fmax:  9.367E-04, 
+          fnrm:  2.277E-03,                  vnrm:  1.400E-04, alpha:  0.9703E-01, 
+            dt:  0.1331E-01,                ndown:  7,      power:  0.3189E-06}
+ - FIRE: {iter:  8, epot: -2.608985056288E+00, de: -4.7E-09, fmax:  9.366E-04, 
+          fnrm:  2.277E-03,                  vnrm:  1.625E-04, alpha:  0.9606E-01, 
+            dt:  0.1464E-01,                ndown:  8,      power:  0.3701E-06}
+ - FIRE: {iter:  9, epot: -2.608985062262E+00, de: -6.0E-09, fmax:  9.365E-04, 
+          fnrm:  2.277E-03,                  vnrm:  1.867E-04, alpha:  0.9510E-01, 
+            dt:  0.1611E-01,                ndown:  9,      power:  0.4251E-06}
+ - FIRE: {iter:  10, epot: -2.608985069780E+00, de: -7.5E-09, fmax:  9.364E-04, 
+          fnrm:  2.277E-03,                   vnrm:  2.128E-04, alpha:  0.9415E-01, 
+            dt:  0.1772E-01,                 ndown:  10,     power:  0.4845E-06}
+ - FIRE: {iter:  11, epot: -2.608985079176E+00, de: -9.4E-09, fmax:  9.362E-04, 
+          fnrm:  2.276E-03,                   vnrm:  2.411E-04, alpha:  0.9321E-01, 
+            dt:  0.1949E-01,                 ndown:  11,     power:  0.5489E-06}
+ - FIRE: {iter:  12, epot: -2.608985090855E+00, de: -1.2E-08, fmax:  9.360E-04, 
+          fnrm:  2.276E-03,                   vnrm:  2.720E-04, alpha:  0.9227E-01, 
+            dt:  0.2144E-01,                 ndown:  12,     power:  0.6189E-06}
+ - FIRE: {iter:  13, epot: -2.608985105309E+00, de: -1.4E-08, fmax:  9.358E-04, 
+          fnrm:  2.275E-03,                   vnrm:  3.055E-04, alpha:  0.9135E-01, 
+            dt:  0.2358E-01,                 ndown:  13,     power:  0.6951E-06}
+ - FIRE: {iter:  14, epot: -2.608985123135E+00, de: -1.8E-08, fmax:  9.355E-04, 
+          fnrm:  2.274E-03,                   vnrm:  3.422E-04, alpha:  0.9044E-01, 
+            dt:  0.2594E-01,                 ndown:  14,     power:  0.7783E-06}
+ - FIRE: {iter:  15, epot: -2.608985145057E+00, de: -2.2E-08, fmax:  9.352E-04, 
+          fnrm:  2.273E-03,                   vnrm:  3.823E-04, alpha:  0.8953E-01, 
+            dt:  0.2853E-01,                 ndown:  15,     power:  0.8691E-06}
+ - FIRE: {iter:  16, epot: -2.608985171950E+00, de: -2.7E-08, fmax:  9.347E-04, 
+          fnrm:  2.272E-03,                   vnrm:  4.263E-04, alpha:  0.8864E-01, 
+            dt:  0.3138E-01,                 ndown:  16,     power:  0.9685E-06}
+ - FIRE: {iter:  17, epot: -2.608985204877E+00, de: -3.3E-08, fmax:  9.342E-04, 
+          fnrm:  2.271E-03,                   vnrm:  4.744E-04, alpha:  0.8775E-01, 
+            dt:  0.3452E-01,                 ndown:  17,     power:  0.1077E-05}
+ - FIRE: {iter:  18, epot: -2.608985245124E+00, de: -4.0E-08, fmax:  9.335E-04, 
+          fnrm:  2.269E-03,                   vnrm:  5.273E-04, alpha:  0.8687E-01, 
+            dt:  0.3797E-01,                 ndown:  18,     power:  0.1196E-05}
+ - FIRE: {iter:  19, epot: -2.608985294246E+00, de: -4.9E-08, fmax:  9.327E-04, 
+          fnrm:  2.267E-03,                   vnrm:  5.854E-04, alpha:  0.8601E-01, 
+            dt:  0.4177E-01,                 ndown:  19,     power:  0.1327E-05}
+ - FIRE: {iter:  20, epot: -2.608985354120E+00, de: -6.0E-08, fmax:  9.318E-04, 
+          fnrm:  2.264E-03,                   vnrm:  6.492E-04, alpha:  0.8515E-01, 
+            dt:  0.4595E-01,                 ndown:  20,     power:  0.1470E-05}
+ - FIRE: {iter:  21, epot: -2.608985427013E+00, de: -7.3E-08, fmax:  9.306E-04, 
+          fnrm:  2.261E-03,                   vnrm:  7.193E-04, alpha:  0.8429E-01, 
+            dt:  0.5054E-01,                 ndown:  21,     power:  0.1626E-05}
+ - FIRE: {iter:  22, epot: -2.608985515656E+00, de: -8.9E-08, fmax:  9.291E-04, 
+          fnrm:  2.257E-03,                   vnrm:  7.964E-04, alpha:  0.8345E-01, 
+            dt:  0.5560E-01,                 ndown:  22,     power:  0.1797E-05}
+ - FIRE: {iter:  23, epot: -2.608985623334E+00, de: -1.1E-07, fmax:  9.274E-04, 
+          fnrm:  2.252E-03,                   vnrm:  8.811E-04, alpha:  0.8262E-01, 
+            dt:  0.6116E-01,                 ndown:  23,     power:  0.1984E-05}
+ - FIRE: {iter:  24, epot: -2.608985753988E+00, de: -1.3E-07, fmax:  9.252E-04, 
+          fnrm:  2.246E-03,                   vnrm:  9.742E-04, alpha:  0.8179E-01, 
+            dt:  0.6727E-01,                 ndown:  24,     power:  0.2188E-05}
+ - FIRE: {iter:  25, epot: -2.608985912334E+00, de: -1.6E-07, fmax:  9.226E-04, 
+          fnrm:  2.239E-03,                   vnrm:  1.076E-03, alpha:  0.8097E-01, 
+            dt:  0.7400E-01,                 ndown:  25,     power:  0.2410E-05}
+ - FIRE: {iter:  26, epot: -2.608986103999E+00, de: -1.9E-07, fmax:  9.195E-04, 
+          fnrm:  2.230E-03,                   vnrm:  1.189E-03, alpha:  0.8016E-01, 
+            dt:  0.8140E-01,                 ndown:  26,     power:  0.2650E-05}
+ - FIRE: {iter:  27, epot: -2.608986335669E+00, de: -2.3E-07, fmax:  9.156E-04, 
+          fnrm:  2.219E-03,                   vnrm:  1.311E-03, alpha:  0.7936E-01, 
+            dt:  0.8954E-01,                 ndown:  27,     power:  0.2911E-05}
+ - FIRE: {iter:  28, epot: -2.608986615241E+00, de: -2.8E-07, fmax:  9.110E-04, 
+          fnrm:  2.207E-03,                   vnrm:  1.446E-03, alpha:  0.7857E-01, 
+            dt:  0.9850E-01,                 ndown:  28,     power:  0.3191E-05}
+ - FIRE: {iter:  29, epot: -2.608986951993E+00, de: -3.4E-07, fmax:  9.054E-04, 
+          fnrm:  2.191E-03,                   vnrm:  1.594E-03, alpha:  0.7778E-01, 
+            dt:  0.1083E+00,                 ndown:  29,     power:  0.3492E-05}
+ - FIRE: {iter:  30, epot: -2.608987356733E+00, de: -4.0E-07, fmax:  8.985E-04, 
+          fnrm:  2.172E-03,                   vnrm:  1.754E-03, alpha:  0.7700E-01, 
+            dt:  0.1192E+00,                 ndown:  30,     power:  0.3811E-05}
+ - FIRE: {iter:  31, epot: -2.608987841921E+00, de: -4.9E-07, fmax:  8.903E-04, 
+          fnrm:  2.150E-03,                   vnrm:  1.930E-03, alpha:  0.7623E-01, 
+            dt:  0.1311E+00,                 ndown:  31,     power:  0.4148E-05}
+ - FIRE: {iter:  32, epot: -2.608988421734E+00, de: -5.8E-07, fmax:  8.803E-04, 
+          fnrm:  2.123E-03,                   vnrm:  2.120E-03, alpha:  0.7547E-01, 
+            dt:  0.1442E+00,                 ndown:  32,     power:  0.4499E-05}
+ - FIRE: {iter:  33, epot: -2.608989112026E+00, de: -6.9E-07, fmax:  8.682E-04, 
+          fnrm:  2.090E-03,                   vnrm:  2.326E-03, alpha:  0.7472E-01, 
+            dt:  0.1586E+00,                 ndown:  33,     power:  0.4860E-05}
+ - FIRE: {iter:  34, epot: -2.608989930107E+00, de: -8.2E-07, fmax:  8.537E-04, 
+          fnrm:  2.051E-03,                   vnrm:  2.548E-03, alpha:  0.7397E-01, 
+            dt:  0.1745E+00,                 ndown:  34,     power:  0.5224E-05}
+ - FIRE: {iter:  35, epot: -2.608990894266E+00, de: -9.6E-07, fmax:  8.362E-04, 
+          fnrm:  2.004E-03,                   vnrm:  2.786E-03, alpha:  0.7323E-01, 
+            dt:  0.1919E+00,                 ndown:  35,     power:  0.5580E-05}
+ - FIRE: {iter:  36, epot: -2.608992022904E+00, de: -1.1E-06, fmax:  8.152E-04, 
+          fnrm:  1.947E-03,                   vnrm:  3.040E-03, alpha:  0.7250E-01, 
+            dt:  0.2111E+00,                 ndown:  36,     power:  0.5915E-05}
+ - FIRE: {iter:  37, epot: -2.608993333119E+00, de: -1.3E-06, fmax:  7.900E-04, 
+          fnrm:  1.881E-03,                   vnrm:  3.308E-03, alpha:  0.7177E-01, 
+            dt:  0.2323E+00,                 ndown:  37,     power:  0.6214E-05}
+ - FIRE: {iter:  38, epot: -2.608994838580E+00, de: -1.5E-06, fmax:  7.599E-04, 
+          fnrm:  1.802E-03,                   vnrm:  3.587E-03, alpha:  0.7106E-01, 
+            dt:  0.2555E+00,                 ndown:  38,     power:  0.6453E-05}
+ - FIRE: {iter:  39, epot: -2.608996546489E+00, de: -1.7E-06, fmax:  7.242E-04, 
+          fnrm:  1.710E-03,                   vnrm:  3.876E-03, alpha:  0.7034E-01, 
+            dt:  0.2810E+00,                 ndown:  39,     power:  0.6606E-05}
+ - FIRE: {iter:  40, epot: -2.608998453512E+00, de: -1.9E-06, fmax:  6.818E-04, 
+          fnrm:  1.602E-03,                   vnrm:  4.167E-03, alpha:  0.6964E-01, 
+            dt:  0.3091E+00,                 ndown:  40,     power:  0.6644E-05}
+ - FIRE: {iter:  41, epot: -2.609000540667E+00, de: -2.1E-06, fmax:  6.320E-04, 
+          fnrm:  1.479E-03,                   vnrm:  4.455E-03, alpha:  0.6894E-01, 
+            dt:  0.3400E+00,                 ndown:  41,     power:  0.6533E-05}
+ - FIRE: {iter:  42, epot: -2.609002767477E+00, de: -2.2E-06, fmax:  5.736E-04, 
+          fnrm:  1.339E-03,                   vnrm:  4.730E-03, alpha:  0.6826E-01, 
+            dt:  0.3740E+00,                 ndown:  42,     power:  0.6240E-05}
+ - FIRE: {iter:  43, epot: -2.609005066208E+00, de: -2.3E-06, fmax:  5.060E-04, 
+          fnrm:  1.185E-03,                   vnrm:  4.979E-03, alpha:  0.6757E-01, 
+            dt:  0.4114E+00,                 ndown:  43,     power:  0.5740E-05}
+ - FIRE: {iter:  44, epot: -2.609007337823E+00, de: -2.3E-06, fmax:  4.486E-04, 
+          fnrm:  1.022E-03,                   vnrm:  5.188E-03, alpha:  0.6690E-01, 
+            dt:  0.4526E+00,                 ndown:  44,     power:  0.5020E-05}
+ - FIRE: {iter:  45, epot: -2.609009452369E+00, de: -2.1E-06, fmax:  4.113E-04, 
+          fnrm:  8.592E-04,                   vnrm:  5.338E-03, alpha:  0.6623E-01, 
+            dt:  0.4979E+00,                 ndown:  45,     power:  0.4090E-05}
+ - FIRE: {iter:  46, epot: -2.609011257621E+00, de: -1.8E-06, fmax:  3.668E-04, 
+          fnrm:  7.200E-04,                   vnrm:  5.410E-03, alpha:  0.6557E-01, 
+            dt:  0.5476E+00,                 ndown:  46,     power:  0.2997E-05}
+ - FIRE: {iter:  47, epot: -2.609012600407E+00, de: -1.3E-06, fmax:  3.141E-04, 
+          fnrm:  6.395E-04,                   vnrm:  5.380E-03, alpha:  0.6491E-01, 
+            dt:  0.6024E+00,                 ndown:  47,     power:  0.1834E-05}
+ - FIRE: {iter:  48, epot: -2.609013363708E+00, de: -7.6E-07, fmax:  2.523E-04, 
+          fnrm:  6.490E-04,                   vnrm:  5.229E-03, alpha:  0.6426E-01, 
+            dt:  0.6626E+00,                 ndown:  48,     power:  0.7390E-06}
+ - FIRE: {iter:  49, epot: -2.609013516626E+00, de: -1.5E-07, fmax:  2.234E-04, 
+          fnrm:  7.364E-04,                   vnrm:  4.952E-03, alpha:  0.6362E-01, 
+            dt:  0.7289E+00,                 ndown:  49,     power: -0.1224E-06}
+ - FIRE: {iter:  50, epot: -2.609013516626E+00, de:  0.0E+00, fmax:  2.234E-04, 
+          fnrm:  7.364E-04,                   vnrm:  0.000E+00, alpha:  0.1000E+00, 
+            dt:  0.3645E+00,                 ndown:  0,      power:  0.0000E+00}
+ - FIRE: {iter:  51, epot: -2.609013552509E+00, de: -3.6E-08, fmax:  2.203E-04, 
+          fnrm:  7.308E-04,                   vnrm:  2.674E-04, alpha:  0.1000E+00, 
+            dt:  0.3645E+00,                 ndown:  1,      power:  0.1954E-06}
+ - FIRE: {iter:  52, epot: -2.609013657982E+00, de: -1.1E-07, fmax:  2.110E-04, 
+          fnrm:  7.142E-04,                   vnrm:  5.093E-04, alpha:  0.1000E+00, 
+            dt:  0.3645E+00,                 ndown:  2,      power:  0.3637E-06}
+ - FIRE: {iter:  53, epot: -2.609013821340E+00, de: -1.6E-07, fmax:  2.000E-04, 
+          fnrm:  6.880E-04,                   vnrm:  7.240E-04, alpha:  0.1000E+00, 
+            dt:  0.3645E+00,                 ndown:  3,      power:  0.4980E-06}
+ - FIRE: {iter:  54, epot: -2.609014028896E+00, de: -2.1E-07, fmax:  1.932E-04, 
+          fnrm:  6.540E-04,                   vnrm:  9.105E-04, alpha:  0.1000E+00, 
+            dt:  0.3645E+00,                 ndown:  4,      power:  0.5949E-06}
+ - FIRE: {iter:  55, epot: -2.609014266298E+00, de: -2.4E-07, fmax:  1.849E-04, 
+          fnrm:  6.140E-04,                   vnrm:  1.091E-03, alpha:  0.9900E-01, 
+            dt:  0.4009E+00,                 ndown:  5,      power:  0.6683E-06}
+ - FIRE: {iter:  56, epot: -2.609014551681E+00, de: -2.9E-07, fmax:  1.741E-04, 
+          fnrm:  5.643E-04,                   vnrm:  1.264E-03, alpha:  0.9801E-01, 
+            dt:  0.4410E+00,                 ndown:  6,      power:  0.7087E-06}
+ - FIRE: {iter:  57, epot: -2.609014875479E+00, de: -3.2E-07, fmax:  1.604E-04, 
+          fnrm:  5.063E-04,                   vnrm:  1.421E-03, alpha:  0.9703E-01, 
+            dt:  0.4851E+00,                 ndown:  7,      power:  0.7091E-06}
+ - FIRE: {iter:  58, epot: -2.609015221353E+00, de: -3.5E-07, fmax:  1.436E-04, 
+          fnrm:  4.433E-04,                   vnrm:  1.558E-03, alpha:  0.9606E-01, 
+            dt:  0.5336E+00,                 ndown:  8,      power:  0.6664E-06}
+ - FIRE: {iter:  59, epot: -2.609015567093E+00, de: -3.5E-07, fmax:  1.282E-04, 
+          fnrm:  3.828E-04,                   vnrm:  1.665E-03, alpha:  0.9510E-01, 
+            dt:  0.5870E+00,                 ndown:  9,      power:  0.5845E-06}
+ - FIRE: {iter:  60, epot: -2.609015888459E+00, de: -3.2E-07, fmax:  1.140E-04, 
+          fnrm:  3.370E-04,                   vnrm:  1.738E-03, alpha:  0.9415E-01, 
+            dt:  0.6456E+00,                 ndown:  10,     power:  0.4771E-06}
+ - FIRE: {iter:  61, epot: -2.609016166803E+00, de: -2.8E-07, fmax:  9.788E-05, 
+          fnrm:  3.200E-04,                   vnrm:  1.772E-03, alpha:  0.9321E-01, 
+            dt:  0.7102E+00,                 ndown:  11,     power:  0.3682E-06}
+ - FIRE: {iter:  62, epot: -2.609016399504E+00, de: -2.3E-07, fmax:  1.367E-04, 
+          fnrm:  3.333E-04,                   vnrm:  1.774E-03, alpha:  0.9227E-01, 
+            dt:  0.7812E+00,                 ndown:  12,     power:  0.2880E-06}
+ - FIRE: {iter:  63, epot: -2.609016608078E+00, de: -2.1E-07, fmax:  1.618E-04, 
+          fnrm:  3.594E-04,                   vnrm:  1.760E-03, alpha:  0.9135E-01, 
+            dt:  0.8594E+00,                 ndown:  13,     power:  0.2594E-06}
+ - FIRE: {iter:  64, epot: -2.609016834399E+00, de: -2.3E-07, fmax:  1.644E-04, 
+          fnrm:  3.739E-04,                   vnrm:  1.760E-03, alpha:  0.9044E-01, 
+            dt:  0.9453E+00,                 ndown:  14,     power:  0.2811E-06}
+ - FIRE: {iter:  65, epot: -2.609017117576E+00, de: -2.8E-07, fmax:  1.385E-04, 
+          fnrm:  3.587E-04,                   vnrm:  1.787E-03, alpha:  0.8953E-01, 
+            dt:  0.1000E+01,                 ndown:  15,     power:  0.3139E-06}
+ - FIRE: {iter:  66, epot: -2.609017440417E+00, de: -3.2E-07, fmax:  1.077E-04, 
+          fnrm:  3.143E-04,                   vnrm:  1.819E-03, alpha:  0.8864E-01, 
+            dt:  0.1000E+01,                 ndown:  16,     power:  0.3075E-06}
+ - FIRE: {iter:  67, epot: -2.609017732906E+00, de: -2.9E-07, fmax:  9.162E-05, 
+          fnrm:  2.643E-04,                   vnrm:  1.833E-03, alpha:  0.8775E-01, 
+            dt:  0.1000E+01,                 ndown:  17,     power:  0.2542E-06}
+ - FIRE: {iter:  68, epot: -2.609017954332E+00, de: -2.2E-07, fmax:  6.703E-05, 
+          fnrm:  2.350E-04,                   vnrm:  1.810E-03, alpha:  0.8687E-01, 
+            dt:  0.1000E+01,                 ndown:  18,     power:  0.1770E-06}
+ - FIRE: {iter:  69, epot: -2.609018096803E+00, de: -1.4E-07, fmax:  8.902E-05, 
+          fnrm:  2.343E-04,                   vnrm:  1.747E-03, alpha:  0.8601E-01, 
+            dt:  0.1000E+01,                 ndown:  19,     power:  0.1095E-06}
+ - FIRE: {iter:  70, epot: -2.609018182033E+00, de: -8.5E-08, fmax:  1.147E-04, 
+          fnrm:  2.430E-04,                   vnrm:  1.659E-03, alpha:  0.8515E-01, 
+            dt:  0.1000E+01,                 ndown:  20,     power:  0.6918E-07}
+ - FIRE: {iter:  71, epot: -2.609018237659E+00, de: -5.6E-08, fmax:  1.133E-04, 
+          fnrm:  2.420E-04,                   vnrm:  1.562E-03, alpha:  0.8429E-01, 
+            dt:  0.1000E+01,                 ndown:  21,     power:  0.4959E-07}
+ - FIRE: {iter:  72, epot: -2.609018277506E+00, de: -4.0E-08, fmax:  8.750E-05, 
+          fnrm:  2.300E-04,                   vnrm:  1.464E-03, alpha:  0.8345E-01, 
+            dt:  0.1000E+01,                 ndown:  22,     power:  0.3509E-07}
+ - FIRE: {iter:  73, epot: -2.609018301947E+00, de: -2.4E-08, fmax:  8.099E-05, 
+          fnrm:  2.199E-04,                   vnrm:  1.366E-03, alpha:  0.8262E-01, 
+            dt:  0.1000E+01,                 ndown:  23,     power:  0.1946E-07}
+ - FIRE: {iter:  74, epot: -2.609018312426E+00, de: -1.0E-08, fmax:  9.280E-05, 
+          fnrm:  2.248E-04,                   vnrm:  1.268E-03, alpha:  0.8179E-01, 
+            dt:  0.1000E+01,                 ndown:  24,     power:  0.1098E-07}
+ - FIRE: {iter:  75, epot: -2.609018322779E+00, de: -1.0E-08, fmax:  9.555E-05, 
+          fnrm:  2.416E-04,                   vnrm:  1.180E-03, alpha:  0.8097E-01, 
+            dt:  0.1000E+01,                 ndown:  25,     power:  0.2172E-07}
+ - FIRE: {iter:  76, epot: -2.609018355517E+00, de: -3.3E-08, fmax:  9.008E-05, 
+          fnrm:  2.545E-04,                   vnrm:  1.121E-03, alpha:  0.8016E-01, 
+            dt:  0.1000E+01,                 ndown:  26,     power:  0.5286E-07}
+ - FIRE: {iter:  77, epot: -2.609018426396E+00, de: -7.1E-08, fmax:  9.544E-05, 
+          fnrm:  2.503E-04,                   vnrm:  1.102E-03, alpha:  0.7936E-01, 
+            dt:  0.1000E+01,                 ndown:  27,     power:  0.9023E-07}
+ - FIRE: {iter:  78, epot: -2.609018531679E+00, de: -1.1E-07, fmax:  8.708E-05, 
+          fnrm:  2.264E-04,                   vnrm:  1.116E-03, alpha:  0.7857E-01, 
+            dt:  0.1000E+01,                 ndown:  28,     power:  0.1136E-06}
+ - FIRE: {iter:  79, epot: -2.609018649195E+00, de: -1.2E-07, fmax:  6.629E-05, 
+          fnrm:  1.907E-04,                   vnrm:  1.139E-03, alpha:  0.7778E-01, 
+            dt:  0.1000E+01,                 ndown:  29,     power:  0.1113E-06}
+ - FIRE: {iter:  80, epot: -2.609018752370E+00, de: -1.0E-07, fmax:  5.895E-05, 
+          fnrm:  1.617E-04,                   vnrm:  1.148E-03, alpha:  0.7700E-01, 
+            dt:  0.1000E+01,                 ndown:  30,     power:  0.8770E-07}
+ - FIRE: {iter:  81, epot: -2.609018826853E+00, de: -7.4E-08, fmax:  5.075E-05, 
+          fnrm:  1.583E-04,                   vnrm:  1.134E-03, alpha:  0.7623E-01, 
+            dt:  0.1000E+01,                 ndown:  31,     power:  0.6032E-07}
+ - FIRE: {iter:  82, epot: -2.609018878127E+00, de: -5.1E-08, fmax:  5.671E-05, 
+          fnrm:  1.757E-04,                   vnrm:  1.101E-03, alpha:  0.7547E-01, 
+            dt:  0.1000E+01,                 ndown:  32,     power:  0.4662E-07}
+ - FIRE: {iter:  83, epot: -2.609018924861E+00, de: -4.7E-08, fmax:  8.192E-05, 
+          fnrm:  1.915E-04,                   vnrm:  1.069E-03, alpha:  0.7472E-01, 
+            dt:  0.1000E+01,                 ndown:  33,     power:  0.5168E-07}
+ - FIRE: {iter:  84, epot: -2.609018983273E+00, de: -5.8E-08, fmax:  9.086E-05, 
+          fnrm:  1.913E-04,                   vnrm:  1.050E-03, alpha:  0.7397E-01, 
+            dt:  0.1000E+01,                 ndown:  34,     power:  0.6593E-07}
+ - FIRE: {iter:  85, epot: -2.609019055357E+00, de: -7.2E-08, fmax:  8.293E-05, 
+          fnrm:  1.728E-04,                   vnrm:  1.047E-03, alpha:  0.7323E-01, 
+            dt:  0.1000E+01,                 ndown:  35,     power:  0.7424E-07}
+ - FIRE: {iter:  86, epot: -2.609019129166E+00, de: -7.4E-08, fmax:  6.086E-05, 
+          fnrm:  1.440E-04,                   vnrm:  1.046E-03, alpha:  0.7250E-01, 
+            dt:  0.1000E+01,                 ndown:  36,     power:  0.6749E-07}
+ - FIRE: {iter:  87, epot: -2.609019188991E+00, de: -6.0E-08, fmax:  3.941E-05, 
+          fnrm:  1.215E-04,                   vnrm:  1.034E-03, alpha:  0.7177E-01, 
+            dt:  0.1000E+01,                 ndown:  37,     power:  0.4835E-07}
+ - FIRE: {iter:  88, epot: -2.609019226952E+00, de: -3.8E-08, fmax:  3.478E-05, 
+          fnrm:  1.213E-04,                   vnrm:  1.004E-03, alpha:  0.7106E-01, 
+            dt:  0.1000E+01,                 ndown:  38,     power:  0.2809E-07}
+ - FIRE: {iter:  89, epot: -2.609019247894E+00, de: -2.1E-08, fmax:  4.699E-05, 
+          fnrm:  1.374E-04,                   vnrm:  9.594E-04, alpha:  0.7034E-01, 
+            dt:  0.1000E+01,                 ndown:  39,     power:  0.1775E-07}
+ - FIRE: {iter:  90, epot: -2.609019264753E+00, de: -1.7E-08, fmax:  5.748E-05, 
+          fnrm:  1.516E-04,                   vnrm:  9.146E-04, alpha:  0.6964E-01, 
+            dt:  0.1000E+01,                 ndown:  40,     power:  0.2022E-07}
+ - FIRE: {iter:  91, epot: -2.609019288743E+00, de: -2.4E-08, fmax:  5.850E-05, 
+          fnrm:  1.540E-04,                   vnrm:  8.818E-04, alpha:  0.6894E-01, 
+            dt:  0.1000E+01,                 ndown:  41,     power:  0.2969E-07}
+ - FIRE: {iter:  92, epot: -2.609019322820E+00, de: -3.4E-08, fmax:  5.108E-05, 
+          fnrm:  1.452E-04,                   vnrm:  8.640E-04, alpha:  0.6826E-01, 
+            dt:  0.1000E+01,                 ndown:  42,     power:  0.3775E-07}
+ - FIRE: {iter:  93, epot: -2.609019362563E+00, de: -4.0E-08, fmax:  4.687E-05, 
+          fnrm:  1.325E-04,                   vnrm:  8.554E-04, alpha:  0.6757E-01, 
+            dt:  0.1000E+01,                 ndown:  43,     power:  0.3994E-07}
+ - FIRE: {iter:  94, epot: -2.609019402052E+00, de: -3.9E-08, fmax:  4.884E-05, 
+          fnrm:  1.257E-04,                   vnrm:  8.485E-04, alpha:  0.6690E-01, 
+            dt:  0.1000E+01,                 ndown:  44,     power:  0.3797E-07}
+ - FIRE: {iter:  95, epot: -2.609019439319E+00, de: -3.7E-08, fmax:  4.679E-05, 
+          fnrm:  1.280E-04,                   vnrm:  8.407E-04, alpha:  0.6623E-01, 
+            dt:  0.1000E+01,                 ndown:  45,     power:  0.3679E-07}
+ - FIRE: {iter:  96, epot: -2.609019477243E+00, de: -3.8E-08, fmax:  5.207E-05, 
+          fnrm:  1.332E-04,                   vnrm:  8.352E-04, alpha:  0.6557E-01, 
+            dt:  0.1000E+01,                 ndown:  46,     power:  0.3962E-07}
+ - FIRE: {iter:  97, epot: -2.609019519829E+00, de: -4.3E-08, fmax:  5.426E-05, 
+          fnrm:  1.327E-04,                   vnrm:  8.359E-04, alpha:  0.6491E-01, 
+            dt:  0.1000E+01,                 ndown:  47,     power:  0.4504E-07}
+ - FIRE: {iter:  98, epot: -2.609019567671E+00, de: -4.8E-08, fmax:  4.708E-05, 
+          fnrm:  1.232E-04,                   vnrm:  8.430E-04, alpha:  0.6426E-01, 
+            dt:  0.1000E+01,                 ndown:  48,     power:  0.4853E-07}
+ - FIRE: {iter:  99, epot: -2.609019616688E+00, de: -4.9E-08, fmax:  3.823E-05, 
+          fnrm:  1.083E-04,                   vnrm:  8.512E-04, alpha:  0.6362E-01, 
+            dt:  0.1000E+01,                 ndown:  49,     power:  0.4660E-07}
+ - FIRE: {iter:  100, epot: -2.609019661000E+00, de: -4.4E-08, fmax:  3.170E-05, 
+          fnrm:  9.655E-05,                    vnrm:  8.540E-04, alpha:  0.6298E-01, 
+            dt:  0.1000E+01,                  ndown:  50,     power:  0.3978E-07}
+ - FIRE: {iter:  101, epot: -2.609019697351E+00, de: -3.6E-08, fmax:  3.046E-05, 
+          fnrm:  9.621E-05,                    vnrm:  8.482E-04, alpha:  0.6235E-01, 
+            dt:  0.1000E+01,                  ndown:  51,     power:  0.3229E-07}
+ - FIRE: {iter:  102, epot: -2.609019727436E+00, de: -3.0E-08, fmax:  3.348E-05, 
+          fnrm:  1.043E-04,                    vnrm:  8.359E-04, alpha:  0.6173E-01, 
+            dt:  0.1000E+01,                  ndown:  52,     power:  0.2856E-07}
+ - FIRE: {iter:  103, epot: -2.609019756212E+00, de: -2.9E-08, fmax:  4.033E-05, 
+          fnrm:  1.107E-04,                    vnrm:  8.232E-04, alpha:  0.6111E-01, 
+            dt:  0.1000E+01,                  ndown:  53,     power:  0.2966E-07}
+ - FIRE: {iter:  104, epot: -2.609019787569E+00, de: -3.1E-08, fmax:  4.588E-05, 
+          fnrm:  1.083E-04,                    vnrm:  8.150E-04, alpha:  0.6050E-01, 
+            dt:  0.1000E+01,                  ndown:  54,     power:  0.3256E-07}
+ - FIRE: {iter:  105, epot: -2.609019821131E+00, de: -3.4E-08, fmax:  4.494E-05, 
+          fnrm:  9.659E-05,                    vnrm:  8.106E-04, alpha:  0.5990E-01, 
+            dt:  0.1000E+01,                  ndown:  55,     power:  0.3286E-07}
+ - FIRE: {iter:  106, epot: -2.609019852725E+00, de: -3.2E-08, fmax:  3.813E-05, 
+          fnrm:  8.154E-05,                    vnrm:  8.049E-04, alpha:  0.5930E-01, 
+            dt:  0.1000E+01,                  ndown:  56,     power:  0.2841E-07}
+ - FIRE: {iter:  107, epot: -2.609019877901E+00, de: -2.5E-08, fmax:  2.716E-05, 
+          fnrm:  7.431E-05,                    vnrm:  7.928E-04, alpha:  0.5870E-01, 
+            dt:  0.1000E+01,                  ndown:  57,     power:  0.2104E-07}
+ - FIRE: {iter:  108, epot: -2.609019895667E+00, de: -1.8E-08, fmax:  3.118E-05, 
+          fnrm:  8.119E-05,                    vnrm:  7.729E-04, alpha:  0.5812E-01, 
+            dt:  0.1000E+01,                  ndown:  58,     power:  0.1515E-07}
+ - FIRE: {iter:  109, epot: -2.609019909591E+00, de: -1.4E-08, fmax:  3.529E-05, 
+          fnrm:  9.387E-05,                    vnrm:  7.496E-04, alpha:  0.5754E-01, 
+            dt:  0.1000E+01,                  ndown:  59,     power:  0.1426E-07}
+ - FIRE: {iter:  110, epot: -2.609019925261E+00, de: -1.6E-08, fmax:  4.294E-05, 
+          fnrm:  1.015E-04,                    vnrm:  7.306E-04, alpha:  0.5696E-01, 
+            dt:  0.1000E+01,                  ndown:  60,     power:  0.1821E-07}
+ - FIRE: {iter:  111, epot: -2.609019946203E+00, de: -2.1E-08, fmax:  4.324E-05, 
+          fnrm:  9.926E-05,                    vnrm:  7.205E-04, alpha:  0.5639E-01, 
+            dt:  0.1000E+01,                  ndown:  61,     power:  0.2349E-07}
+ - FIRE: {iter:  112, epot: -2.609019971671E+00, de: -2.5E-08, fmax:  3.577E-05, 
+          fnrm:  8.846E-05,                    vnrm:  7.180E-04, alpha:  0.5583E-01, 
+            dt:  0.1000E+01,                  ndown:  62,     power:  0.2610E-07}
+ - FIRE: {iter:  113, epot: -2.609019997740E+00, de: -2.6E-08, fmax:  2.307E-05, 
+          fnrm:  7.553E-05,                    vnrm:  7.173E-04, alpha:  0.5527E-01, 
+            dt:  0.1000E+01,                  ndown:  63,     power:  0.2448E-07}
+ - FIRE: {iter:  114, epot: -2.609020020576E+00, de: -2.3E-08, fmax:  2.373E-05, 
+          fnrm:  7.020E-05,                    vnrm:  7.130E-04, alpha:  0.5472E-01, 
+            dt:  0.1000E+01,                  ndown:  64,     power:  0.2041E-07}
+ - FIRE: {iter:  115, epot: -2.609020039328E+00, de: -1.9E-08, fmax:  2.422E-05, 
+          fnrm:  7.612E-05,                    vnrm:  7.040E-04, alpha:  0.5417E-01, 
+            dt:  0.1000E+01,                  ndown:  65,     power:  0.1739E-07}
+ - FIRE: {iter:  116, epot: -2.609020056550E+00, de: -1.7E-08, fmax:  3.428E-05, 
+          fnrm:  8.539E-05,                    vnrm:  6.937E-04, alpha:  0.5363E-01, 
+            dt:  0.1000E+01,                  ndown:  66,     power:  0.1782E-07}
+ - FIRE: {iter:  117, epot: -2.609020075870E+00, de: -1.9E-08, fmax:  3.829E-05, 
+          fnrm:  8.928E-05,                    vnrm:  6.873E-04, alpha:  0.5309E-01, 
+            dt:  0.1000E+01,                  ndown:  67,     power:  0.2109E-07}
+ - FIRE: {iter:  118, epot: -2.609020098936E+00, de: -2.3E-08, fmax:  3.920E-05, 
+          fnrm:  8.441E-05,                    vnrm:  6.871E-04, alpha:  0.5256E-01, 
+            dt:  0.1000E+01,                  ndown:  68,     power:  0.2430E-07}
+ - FIRE: {iter:  119, epot: -2.609020124154E+00, de: -2.5E-08, fmax:  3.472E-05, 
+          fnrm:  7.261E-05,                    vnrm:  6.903E-04, alpha:  0.5203E-01, 
+            dt:  0.1000E+01,                  ndown:  69,     power:  0.2468E-07}
+ - FIRE: {iter:  120, epot: -2.609020148001E+00, de: -2.4E-08, fmax:  2.467E-05, 
+          fnrm:  6.079E-05,                    vnrm:  6.920E-04, alpha:  0.5151E-01, 
+            dt:  0.1000E+01,                  ndown:  70,     power:  0.2167E-07}
+ - FIRE: {iter:  121, epot: -2.609020167734E+00, de: -2.0E-08, fmax:  1.814E-05, 
+          fnrm:  5.850E-05,                    vnrm:  6.885E-04, alpha:  0.5100E-01, 
+            dt:  0.1000E+01,                  ndown:  71,     power:  0.1727E-07}
+ - FIRE FINISHED:
      success                           :  Yes
-     iter                              :  42
-     epot                              : -2.609019488190E+00
-     fnrm                              :  4.98640E-05
-     fmax                              :  1.95787E-05
+     iter                              :  121
+     epot                              : -2.609020167734E+00
+     fnrm                              :  5.84952E-05
+     fmax                              :  1.81439E-05
  task geopt:
    converged                           :  Yes
-   total energy and force evaluations  :  47
- CPU time: {iproc:  0, hrs:  0.544E-04, min:  0.327E-02, sec:  0.196E+00}
+   total energy and force evaluations  :  126
+ CPU time: {iproc:  0, hrs:  0.127E-03, min:  0.760E-02, sec:  0.456E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
    Tot. No. of Allocations             :  4
@@ -472,7 +731,7 @@
      Peak Value (MB)                   :  0.000
      for the array                     : fbuf
      in the routine                    : alborz_init
-     Memory Peak of process            : 30.760 MB
- Walltime since initialization         :  00:00:00.211834771
+     Memory Peak of process            : 30.408 MB
+ Walltime since initialization         :  00:00:00.474045174
  Max No. of dictionaries used          :  773 #( 185 still in use)
  Number of dictionary folders allocated:  1

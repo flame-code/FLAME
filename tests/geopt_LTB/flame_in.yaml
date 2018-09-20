@@ -7,15 +7,15 @@
    potential: ltb
 
  geopt:
-   method: BFGS 
-   fmaxtol: 2.d-5
-   condnum: 10.d0
-   alphax: 3.d0
-   precaution: normal
+   method: FIRE
+   fmaxtol: 2.E-5
+   alphax: 3.0
    lprint: True
    print_force: True
+   dt_start: 1.E-2
+   dt_max: 1.0
 
  geopt_prec:
    method: SD
-   fmaxtol: 1.d-3
-   alphax: 2.d0
+   fmaxtol: 1.E-3
+   alphax: 2.0

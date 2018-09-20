@@ -3,6 +3,7 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt, frmt_base
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: n, iproc
@@ -29,16 +30,37 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
     !    'FIREMIN   ',paropt%itfire,epot,de,fnrm,fmax,vnrm,dt,paropt%alpha,paropt%ndown,p
     if(paropt%lprint .and. parini%iverbose>=0) then
         !write(*,'(a4,i3.3,1x,i5,es23.15,es11.3,2es12.5,3es12.4,i4,1es12.4,a)') &
-        write(*,frmt) &
-            'MIN:',iproc,paropt%itfire,epot,de,fnrm,fmax,vnrm,dt,paropt%alpha,paropt%ndown,p,' FIRE'
+        !write(*,frmt) &
+        !    'MIN:',iproc,paropt%itfire,epot,de,fnrm,fmax,vnrm,dt,paropt%alpha,paropt%ndown,p,' FIRE'
+        call yaml_sequence(advance='no')
+        call yaml_mapping_open('FIRE',flow=.true.)
+        call yaml_map('iter',paropt%itfire,fmt='(i5)')
+        call yaml_map('epot',epot,fmt='(es20.12)')
+        call yaml_map('de',de,fmt='(es9.1)')
+        call yaml_map('fmax',fmax,fmt='(es10.3)')
+        call yaml_map('fnrm',fnrm,fmt='(es10.3)')
+        call yaml_map('vnrm',vnrm,fmt='(es10.3)')
+        call yaml_map('alpha',paropt%alpha,fmt='(e12.4)')
+        call yaml_map('dt',dt,fmt='(e12.4)')
+        call yaml_map('ndown',paropt%ndown,fmt='(i5)')
+        call yaml_map('power',p,fmt='(e12.4)')
+        call yaml_mapping_close()
     endif
     !write(21,'(a10,i5,es23.15,es11.3,2es12.5,3es12.4,i4,1es12.4)') &
     !    'FIREMIN   ',paropt%itfire,epot,de,fnrm,fmax,vnrm,dt,paropt%alpha,paropt%ndown,p
     !if(fmax<paropt%fmaxtol) then
     if(paropt%converged) then
         paropt%iflag=0
-        write(*,'(a,i4,es23.15,2es12.5)') &
-            'FIRE FINISHED: itfire,epot,fnrm,fmax ',paropt%itfire,epot,fnrm,fmax
+        !write(*,'(a,i4,es23.15,2es12.5)') &
+        !    'FIRE FINISHED: itfire,epot,fnrm,fmax ',paropt%itfire,epot,fnrm,fmax
+        call yaml_sequence(advance='no')
+        call yaml_mapping_open('FIRE FINISHED') !,label='id001')
+        call yaml_map('success',.true.)
+        call yaml_map('iter',paropt%itfire,fmt='(i5)')
+        call yaml_map('epot',epot,fmt='(es20.12)')
+        call yaml_map('fnrm',fnrm,fmt='(es12.5)')
+        call yaml_map('fmax',fmax,fmt='(es12.5)')
+        call yaml_mapping_close()
         return
     endif
     paropt%itfire=paropt%itfire+1
@@ -86,6 +108,7 @@ end subroutine fire
 subroutine init_fire(n,f,epot,work,paropt)
     use mod_interface
     use mod_opt, only: typ_paropt
+    use yaml_output
     implicit none
     integer, intent(in):: n
     real(8), intent(in):: epot, f(n)
@@ -119,5 +142,6 @@ subroutine init_fire(n,f,epot,work,paropt)
     paropt%itfire=0
     if(paropt%nit<0) paropt%nit=1000
     if(paropt%lprint .and. .not. paropt%param_reported) call report_param(paropt)
+    call yaml_sequence_open('FIRE optimization iterations')
 end subroutine init_fire
 !*****************************************************************************************

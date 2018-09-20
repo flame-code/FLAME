@@ -286,6 +286,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
             !if(paropt%iflag<0 .or. paropt%converged) exit
         enddo
         deallocate(work,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating work.'
+        call yaml_sequence_close()
     endif
     !-------------------------------------------------------------------------------------
     if(trim(paropt%approach)=='SQNM') then
