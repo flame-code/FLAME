@@ -1,7 +1,7 @@
 # Give here the list of existing tests
 SHORT_TESTDIRS = testforces_FD \
 				 SP_QSC \
-				 geopt_LTB \
+				 geopt_FIRE \
 				 geopt_BFGS \
 				 geopt_SQNM \
 				 minhopp_LJ \

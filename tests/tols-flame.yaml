@@ -44,7 +44,7 @@ SP_QSC:
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
 
-geopt_LTB:
+geopt_FIRE:
  Keys to ignore:
   - iproc
  alphax: 1.e-5
