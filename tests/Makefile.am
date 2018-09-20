@@ -2,7 +2,7 @@
 SHORT_TESTDIRS = testforces_FD \
 				 SP_QSC \
 				 geopt_LTB \
-				 geopt_LJ \
+				 geopt_BFGS \
 				 geopt_SQNM \
 				 minhopp_LJ \
 				 saddle_1s_Si64Bulk \
