@@ -83,6 +83,7 @@ module mod_minhopp
     real(8):: fcall_tot_all_soften=0.d0
     logical:: newmin
     logical:: escaped
+    logical:: accepted
     !logical:: write_results_now=.false.
     logical:: lprint=.true.
     logical:: die=.false.

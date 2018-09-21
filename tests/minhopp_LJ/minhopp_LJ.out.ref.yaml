@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-08 12:51:37.551
+ Timestamp of this run                 : 2018-09-21 11:14:41.828
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : minhopp
@@ -448,9 +448,9 @@
        fmax                            :  8.09792E-04
    input structure relaxed: {iproc:  0, epot: -3.700489059225553E+01}
    re_sm                               : -3.700489059226E+01
- - minhopp iteration info: {iproc:  0, istep:  0, ihopp:  0, nlmin:  1, 
-                             epot: -3.700489059226E+01}
-   escaped: {iproc:  0, nlmin:  1, nlmin_old:  1, minter:  1}
+   minhopp iteration info: {iproc:  0, istep:  0, ihopp:  0, nlmin:  1, escaped:  Yes, 
+                         accepted:  Yes,           epot: -3.700489059226E+01}
+ - escaped: {iproc:  0, nlmin:  1, nlmin_old:  1, minter:  1}
    SOFTEN:
    - SOFT: {iter:  1, curv:  141.750, fd2:  139.548, de:  0.028, res:  2.012, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  111.743, fd2:  110.309, de:  0.022, res:  1.864, eps_v:  0.020}
@@ -974,9 +974,9 @@
        fnrm                            :  1.62220E-03
        fmax                            :  8.06588E-04
    new lowest: {iproc:  0, nlmin:  1, erathopp: -4.147197980758E+01, de: -4.46709}
- - minhopp iteration info: {iproc:  0, istep:  1, ihopp:  1, nlmin:  2, 
-                             epot: -4.147197980758E+01}
-   escaped: {iproc:  0, nlmin:  2, nlmin_old:  1, minter:  1}
+   minhopp iteration info: {iproc:  0, istep:  1, ihopp:  1, nlmin:  2, escaped:  Yes, 
+                         accepted:  Yes,           epot: -4.147197980758E+01}
+ - escaped: {iproc:  0, nlmin:  2, nlmin_old:  1, minter:  1}
    writing minhopp results: {iproc:  0, nlmin:  2}
     #master proc wrote poslow.xyz
     #master proc wrote energies in earr.dat, can be used in a restart run.
@@ -1291,9 +1291,9 @@
        epot                            : -4.147197980435E+01
        fnrm                            :  1.80662E-03
        fmax                            :  7.58125E-04
- - minhopp iteration info: {iproc:  0, istep:  2, ihopp:  1, nlmin:  2, 
-                             epot: -4.147197980758E+01}
-   SOFTEN:
+   minhopp iteration info: {iproc:  0, istep:  2, ihopp:  1, nlmin:  2, escaped:  No, 
+                         accepted:  Yes,           epot: -4.147197980758E+01}
+ - SOFTEN:
    - SOFT: {iter:  1, curv:  183.418, fd2:  184.207, de:  0.037, res:  3.566, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  109.819, fd2:  110.150, de:  0.022, res:  2.118, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  83.033, fd2:  83.203, de:  0.017, res:  1.421, eps_v:  0.020}
@@ -1532,7 +1532,7 @@
           fnrm:  3.000E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  59, epot: -4.120714567869E+01, de: -1.8E-02, fmax:  1.519E+00, 
           fnrm:  2.928E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  60, epot: -4.122407438777E+01, de: -1.7E-02, fmax:  1.499E+00, 
+   - SD: {iter:  60, epot: -4.122407438776E+01, de: -1.7E-02, fmax:  1.499E+00, 
           fnrm:  2.854E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  61, epot: -4.124016056083E+01, de: -1.6E-02, fmax:  1.476E+00, 
           fnrm:  2.781E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -1691,9 +1691,9 @@
        epot                            : -4.147197979714E+01
        fnrm                            :  1.69487E-03
        fmax                            :  9.06216E-04
- - minhopp iteration info: {iproc:  0, istep:  3, ihopp:  1, nlmin:  2, 
-                             epot: -4.147197980758E+01}
-   SOFTEN:
+   minhopp iteration info: {iproc:  0, istep:  3, ihopp:  1, nlmin:  2, escaped:  No, 
+                         accepted:  Yes,           epot: -4.147197980758E+01}
+ - SOFTEN:
    - SOFT: {iter:  1, curv:  173.214, fd2:  173.846, de:  0.035, res:  2.580, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  131.084, fd2:  131.536, de:  0.026, res:  1.892, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  107.638, fd2:  108.058, de:  0.022, res:  1.489, eps_v:  0.020}
@@ -2113,9 +2113,9 @@
        epot                            : -4.147197980563E+01
        fnrm                            :  2.08093E-03
        fmax                            :  7.43876E-04
- - minhopp iteration info: {iproc:  0, istep:  4, ihopp:  1, nlmin:  2, 
-                             epot: -4.147197980758E+01}
-   SOFTEN:
+   minhopp iteration info: {iproc:  0, istep:  4, ihopp:  1, nlmin:  2, escaped:  No, 
+                         accepted:  Yes,           epot: -4.147197980758E+01}
+ - SOFTEN:
    - SOFT: {iter:  1, curv:  201.805, fd2:  202.617, de:  0.041, res:  3.654, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  125.211, fd2:  125.826, de:  0.025, res:  2.049, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  101.421, fd2:  101.752, de:  0.020, res:  1.233, eps_v:  0.020}
@@ -2304,7 +2304,7 @@
           fnrm:  4.197E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  15, epot: -4.102504016006E+01, de: -3.4E-02, fmax:  1.594E+00, 
           fnrm:  3.965E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  16, epot: -4.105563597589E+01, de: -3.1E-02, fmax:  1.528E+00, 
+   - SD: {iter:  16, epot: -4.105563597590E+01, de: -3.1E-02, fmax:  1.528E+00, 
           fnrm:  3.754E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  17, epot: -4.108308103671E+01, de: -2.7E-02, fmax:  1.462E+00, 
           fnrm:  3.560E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -2462,9 +2462,9 @@
        epot                            : -4.139439837496E+01
        fnrm                            :  1.60996E-03
        fmax                            :  7.60121E-04
- - minhopp iteration info: {iproc:  0, istep:  5, ihopp:  2, nlmin:  3, 
-                             epot: -4.139439837496E+01}
-   escaped: {iproc:  0, nlmin:  3, nlmin_old:  2, minter:  1}
+   minhopp iteration info: {iproc:  0, istep:  5, ihopp:  2, nlmin:  3, escaped:  Yes, 
+                         accepted:  Yes,           epot: -4.139439837496E+01}
+ - escaped: {iproc:  0, nlmin:  3, nlmin_old:  2, minter:  1}
    writing minhopp results: {iproc:  0, nlmin:  3}
     #master proc wrote poslow.xyz
     #master proc wrote energies in earr.dat, can be used in a restart run.
@@ -2769,9 +2769,9 @@
        epot                            : -4.139439834082E+01
        fnrm                            :  2.16605E-03
        fmax                            :  9.15062E-04
- - minhopp iteration info: {iproc:  0, istep:  6, ihopp:  2, nlmin:  3, 
-                             epot: -4.139439837496E+01}
-   SOFTEN:
+   minhopp iteration info: {iproc:  0, istep:  6, ihopp:  2, nlmin:  3, escaped:  No, 
+                         accepted:  Yes,           epot: -4.139439837496E+01}
+ - SOFTEN:
    - SOFT: {iter:  1, curv:  132.677, fd2:  134.807, de:  0.027, res:  1.913, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  110.681, fd2:  112.289, de:  0.022, res:  1.344, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  98.544, fd2:  99.920, de:  0.020, res:  1.161, eps_v:  0.020}
@@ -2935,7 +2935,7 @@
           fnrm:  3.706E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  16, epot: -4.033085450599E+01, de: -2.7E-02, fmax:  1.834E+00, 
           fnrm:  3.561E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  17, epot: -4.035575569307E+01, de: -2.5E-02, fmax:  1.796E+00, 
+   - SD: {iter:  17, epot: -4.035575569308E+01, de: -2.5E-02, fmax:  1.796E+00, 
           fnrm:  3.435E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  18, epot: -4.037897372913E+01, de: -2.3E-02, fmax:  1.755E+00, 
           fnrm:  3.327E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -2953,7 +2953,7 @@
           fnrm:  2.936E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  25, epot: -4.051277850789E+01, de: -1.7E-02, fmax:  1.747E+00, 
           fnrm:  2.904E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  26, epot: -4.052956645767E+01, de: -1.7E-02, fmax:  1.771E+00, 
+   - SD: {iter:  26, epot: -4.052956645768E+01, de: -1.7E-02, fmax:  1.771E+00, 
           fnrm:  2.879E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  27, epot: -4.054608820867E+01, de: -1.7E-02, fmax:  1.796E+00, 
           fnrm:  2.861E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -2977,9 +2977,9 @@
           fnrm:  2.940E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  37, epot: -4.071145885372E+01, de: -1.7E-02, fmax:  2.048E+00, 
           fnrm:  2.967E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  38, epot: -4.072915508009E+01, de: -1.8E-02, fmax:  2.073E+00, 
+   - SD: {iter:  38, epot: -4.072915508010E+01, de: -1.8E-02, fmax:  2.073E+00, 
           fnrm:  2.997E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  39, epot: -4.074721542425E+01, de: -1.8E-02, fmax:  2.097E+00, 
+   - SD: {iter:  39, epot: -4.074721542426E+01, de: -1.8E-02, fmax:  2.097E+00, 
           fnrm:  3.029E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  40, epot: -4.076566409102E+01, de: -1.8E-02, fmax:  2.121E+00, 
           fnrm:  3.062E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -2993,7 +2993,7 @@
           fnrm:  3.198E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  45, epot: -4.086419670056E+01, de: -2.1E-02, fmax:  2.225E+00, 
           fnrm:  3.230E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  46, epot: -4.088516320436E+01, de: -2.1E-02, fmax:  2.241E+00, 
+   - SD: {iter:  46, epot: -4.088516320437E+01, de: -2.1E-02, fmax:  2.241E+00, 
           fnrm:  3.260E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  47, epot: -4.090651456880E+01, de: -2.1E-02, fmax:  2.255E+00, 
           fnrm:  3.288E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -3003,7 +3003,7 @@
           fnrm:  3.333E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  50, epot: -4.097249690894E+01, de: -2.2E-02, fmax:  2.279E+00, 
           fnrm:  3.348E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  51, epot: -4.099495440269E+01, de: -2.2E-02, fmax:  2.280E+00, 
+   - SD: {iter:  51, epot: -4.099495440270E+01, de: -2.2E-02, fmax:  2.280E+00, 
           fnrm:  3.358E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  52, epot: -4.101752690277E+01, de: -2.3E-02, fmax:  2.277E+00, 
           fnrm:  3.362E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -3029,13 +3029,13 @@
           fnrm:  2.953E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  63, epot: -4.124482162866E+01, de: -1.7E-02, fmax:  1.908E+00, 
           fnrm:  2.867E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  64, epot: -4.126100767357E+01, de: -1.6E-02, fmax:  1.846E+00, 
+   - SD: {iter:  64, epot: -4.126100767358E+01, de: -1.6E-02, fmax:  1.846E+00, 
           fnrm:  2.776E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  65, epot: -4.127615942277E+01, de: -1.5E-02, fmax:  1.781E+00, 
           fnrm:  2.680E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  66, epot: -4.129026645393E+01, de: -1.4E-02, fmax:  1.714E+00, 
           fnrm:  2.582E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  67, epot: -4.130333560624E+01, de: -1.3E-02, fmax:  1.645E+00, 
+   - SD: {iter:  67, epot: -4.130333560625E+01, de: -1.3E-02, fmax:  1.645E+00, 
           fnrm:  2.480E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  68, epot: -4.131538914108E+01, de: -1.2E-02, fmax:  1.575E+00, 
           fnrm:  2.378E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -3184,9 +3184,9 @@
        epot                            : -4.144459694655E+01
        fnrm                            :  2.29276E-03
        fmax                            :  8.01977E-04
- - minhopp iteration info: {iproc:  0, istep:  7, ihopp:  3, nlmin:  4, 
-                             epot: -4.144459694655E+01}
-   escaped: {iproc:  0, nlmin:  4, nlmin_old:  3, minter:  1}
+   minhopp iteration info: {iproc:  0, istep:  7, ihopp:  3, nlmin:  4, escaped:  Yes, 
+                         accepted:  Yes,           epot: -4.144459694655E+01}
+ - escaped: {iproc:  0, nlmin:  4, nlmin_old:  3, minter:  1}
    writing minhopp results: {iproc:  0, nlmin:  4}
     #master proc wrote poslow.xyz
     #master proc wrote energies in earr.dat, can be used in a restart run.
@@ -3497,9 +3497,9 @@
        epot                            : -4.144459695502E+01
        fnrm                            :  2.27351E-03
        fmax                            :  9.85825E-04
- - minhopp iteration info: {iproc:  0, istep:  8, ihopp:  3, nlmin:  4, 
-                             epot: -4.144459694655E+01}
-   SOFTEN:
+   minhopp iteration info: {iproc:  0, istep:  8, ihopp:  3, nlmin:  4, escaped:  No, 
+                         accepted:  Yes,           epot: -4.144459694655E+01}
+ - SOFTEN:
    - SOFT: {iter:  1, curv:  139.921, fd2:  139.576, de:  0.028, res:  3.213, eps_v:  0.020}
    - SOFT: {iter:  2, curv:  83.519, fd2:  83.810, de:  0.017, res:  1.558, eps_v:  0.020}
    - SOFT: {iter:  3, curv:  69.176, fd2:  69.502, de:  0.014, res:  1.014, eps_v:  0.020}
@@ -3638,7 +3638,7 @@
    - MDEs: {iter:  115, en0000:  0.22304E+01, rkin:  0.17273E+01, nmax:  3, nmin:  2}
    - MDEs: {iter:  116, en0000:  0.22439E+01, rkin:  0.17370E+01, nmax:  3, nmin:  3}
    SD optimization iterations:
-   - SD: {iter:  0, epot: -3.920066138394E+01, de:  0.0E+00, fmax:  7.018E+00, 
+   - SD: {iter:  0, epot: -3.920066138395E+01, de:  0.0E+00, fmax:  7.018E+00, 
           fnrm:  1.859E+01,          alpha/alphax:  0.0000E+00, isatur:  0, xmoved:  T}
    - SD: {iter:  1, epot: -3.939228576869E+01, de: -1.9E-01, fmax:  5.137E+00, 
           fnrm:  1.591E+01,          alpha/alphax:  0.6000E+00, isatur:  0, xmoved:  T}
@@ -3732,13 +3732,13 @@
           fnrm:  1.988E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  46, epot: -4.097359437887E+01, de: -7.9E-03, fmax:  1.443E+00, 
           fnrm:  1.984E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  47, epot: -4.098146777280E+01, de: -7.9E-03, fmax:  1.431E+00, 
+   - SD: {iter:  47, epot: -4.098146777279E+01, de: -7.9E-03, fmax:  1.431E+00, 
           fnrm:  1.985E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  48, epot: -4.098936134054E+01, de: -7.9E-03, fmax:  1.421E+00, 
+   - SD: {iter:  48, epot: -4.098936134053E+01, de: -7.9E-03, fmax:  1.421E+00, 
           fnrm:  1.992E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  49, epot: -4.099731266825E+01, de: -8.0E-03, fmax:  1.413E+00, 
           fnrm:  2.002E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  50, epot: -4.100535786495E+01, de: -8.0E-03, fmax:  1.407E+00, 
+   - SD: {iter:  50, epot: -4.100535786494E+01, de: -8.0E-03, fmax:  1.407E+00, 
           fnrm:  2.017E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  51, epot: -4.101353161906E+01, de: -8.2E-03, fmax:  1.403E+00, 
           fnrm:  2.036E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -3750,11 +3750,11 @@
           fnrm:  2.115E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  55, epot: -4.104816350378E+01, de: -9.0E-03, fmax:  1.410E+00, 
           fnrm:  2.147E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  56, epot: -4.105746025948E+01, de: -9.3E-03, fmax:  1.416E+00, 
+   - SD: {iter:  56, epot: -4.105746025947E+01, de: -9.3E-03, fmax:  1.416E+00, 
           fnrm:  2.183E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  57, epot: -4.106707207802E+01, de: -9.6E-03, fmax:  1.425E+00, 
           fnrm:  2.221E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  58, epot: -4.107702809808E+01, de: -1.0E-02, fmax:  1.435E+00, 
+   - SD: {iter:  58, epot: -4.107702809807E+01, de: -1.0E-02, fmax:  1.435E+00, 
           fnrm:  2.262E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  59, epot: -4.108735735980E+01, de: -1.0E-02, fmax:  1.446E+00, 
           fnrm:  2.305E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -3776,7 +3776,7 @@
           fnrm:  2.727E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  68, epot: -4.120202174435E+01, de: -1.5E-02, fmax:  1.609E+00, 
           fnrm:  2.788E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  69, epot: -4.121774443929E+01, de: -1.6E-02, fmax:  1.633E+00, 
+   - SD: {iter:  69, epot: -4.121774443928E+01, de: -1.6E-02, fmax:  1.633E+00, 
           fnrm:  2.851E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  70, epot: -4.123418478724E+01, de: -1.6E-02, fmax:  1.657E+00, 
           fnrm:  2.916E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -3790,133 +3790,133 @@
           fnrm:  3.189E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  75, epot: -4.132841218808E+01, de: -2.1E-02, fmax:  1.794E+00, 
           fnrm:  3.261E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  76, epot: -4.134992537964E+01, de: -2.2E-02, fmax:  1.823E+00, 
+   - SD: {iter:  76, epot: -4.134992537963E+01, de: -2.2E-02, fmax:  1.823E+00, 
           fnrm:  3.335E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  77, epot: -4.137241855266E+01, de: -2.2E-02, fmax:  1.854E+00, 
           fnrm:  3.410E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  78, epot: -4.139593180079E+01, de: -2.4E-02, fmax:  1.885E+00, 
+   - SD: {iter:  78, epot: -4.139593180078E+01, de: -2.4E-02, fmax:  1.885E+00, 
           fnrm:  3.486E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  79, epot: -4.142050569220E+01, de: -2.5E-02, fmax:  1.916E+00, 
+   - SD: {iter:  79, epot: -4.142050569219E+01, de: -2.5E-02, fmax:  1.916E+00, 
           fnrm:  3.563E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  80, epot: -4.144618117340E+01, de: -2.6E-02, fmax:  1.949E+00, 
+   - SD: {iter:  80, epot: -4.144618117339E+01, de: -2.6E-02, fmax:  1.949E+00, 
           fnrm:  3.642E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  81, epot: -4.147299945464E+01, de: -2.7E-02, fmax:  1.982E+00, 
           fnrm:  3.722E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  82, epot: -4.150100187428E+01, de: -2.8E-02, fmax:  2.015E+00, 
+   - SD: {iter:  82, epot: -4.150100187427E+01, de: -2.8E-02, fmax:  2.015E+00, 
           fnrm:  3.802E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  83, epot: -4.153022973904E+01, de: -2.9E-02, fmax:  2.049E+00, 
+   - SD: {iter:  83, epot: -4.153022973903E+01, de: -2.9E-02, fmax:  2.049E+00, 
           fnrm:  3.884E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  84, epot: -4.156072413663E+01, de: -3.0E-02, fmax:  2.084E+00, 
+   - SD: {iter:  84, epot: -4.156072413662E+01, de: -3.0E-02, fmax:  2.084E+00, 
           fnrm:  3.967E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  85, epot: -4.159252571636E+01, de: -3.2E-02, fmax:  2.119E+00, 
+   - SD: {iter:  85, epot: -4.159252571635E+01, de: -3.2E-02, fmax:  2.119E+00, 
           fnrm:  4.050E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  86, epot: -4.162567443289E+01, de: -3.3E-02, fmax:  2.155E+00, 
+   - SD: {iter:  86, epot: -4.162567443288E+01, de: -3.3E-02, fmax:  2.155E+00, 
           fnrm:  4.134E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  87, epot: -4.166020924728E+01, de: -3.5E-02, fmax:  2.191E+00, 
+   - SD: {iter:  87, epot: -4.166020924727E+01, de: -3.5E-02, fmax:  2.191E+00, 
           fnrm:  4.219E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  88, epot: -4.169616777887E+01, de: -3.6E-02, fmax:  2.227E+00, 
+   - SD: {iter:  88, epot: -4.169616777885E+01, de: -3.6E-02, fmax:  2.227E+00, 
           fnrm:  4.304E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  89, epot: -4.173358590049E+01, de: -3.7E-02, fmax:  2.264E+00, 
+   - SD: {iter:  89, epot: -4.173358590048E+01, de: -3.7E-02, fmax:  2.264E+00, 
           fnrm:  4.389E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  90, epot: -4.177249726890E+01, de: -3.9E-02, fmax:  2.301E+00, 
+   - SD: {iter:  90, epot: -4.177249726889E+01, de: -3.9E-02, fmax:  2.301E+00, 
           fnrm:  4.475E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  91, epot: -4.181293278133E+01, de: -4.0E-02, fmax:  2.339E+00, 
+   - SD: {iter:  91, epot: -4.181293278132E+01, de: -4.0E-02, fmax:  2.339E+00, 
           fnrm:  4.561E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  92, epot: -4.185491994905E+01, de: -4.2E-02, fmax:  2.376E+00, 
+   - SD: {iter:  92, epot: -4.185491994904E+01, de: -4.2E-02, fmax:  2.376E+00, 
           fnrm:  4.646E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  93, epot: -4.189848217860E+01, de: -4.4E-02, fmax:  2.414E+00, 
+   - SD: {iter:  93, epot: -4.189848217858E+01, de: -4.4E-02, fmax:  2.414E+00, 
           fnrm:  4.731E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  94, epot: -4.194363795215E+01, de: -4.5E-02, fmax:  2.452E+00, 
+   - SD: {iter:  94, epot: -4.194363795213E+01, de: -4.5E-02, fmax:  2.452E+00, 
           fnrm:  4.815E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  95, epot: -4.199039990061E+01, de: -4.7E-02, fmax:  2.490E+00, 
+   - SD: {iter:  95, epot: -4.199039990060E+01, de: -4.7E-02, fmax:  2.490E+00, 
           fnrm:  4.898E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  96, epot: -4.203877376627E+01, de: -4.8E-02, fmax:  2.528E+00, 
+   - SD: {iter:  96, epot: -4.203877376625E+01, de: -4.8E-02, fmax:  2.528E+00, 
           fnrm:  4.979E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  97, epot: -4.208875725737E+01, de: -5.0E-02, fmax:  2.566E+00, 
+   - SD: {iter:  97, epot: -4.208875725735E+01, de: -5.0E-02, fmax:  2.566E+00, 
           fnrm:  5.059E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  98, epot: -4.214033880522E+01, de: -5.2E-02, fmax:  2.604E+00, 
+   - SD: {iter:  98, epot: -4.214033880521E+01, de: -5.2E-02, fmax:  2.604E+00, 
           fnrm:  5.137E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  99, epot: -4.219349624566E+01, de: -5.3E-02, fmax:  2.641E+00, 
+   - SD: {iter:  99, epot: -4.219349624564E+01, de: -5.3E-02, fmax:  2.641E+00, 
           fnrm:  5.212E+00,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  100, epot: -4.224819546135E+01, de: -5.5E-02, fmax:  2.677E+00, 
+   - SD: {iter:  100, epot: -4.224819546133E+01, de: -5.5E-02, fmax:  2.677E+00, 
           fnrm:  5.283E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  101, epot: -4.230438903981E+01, de: -5.6E-02, fmax:  2.713E+00, 
+   - SD: {iter:  101, epot: -4.230438903979E+01, de: -5.6E-02, fmax:  2.713E+00, 
           fnrm:  5.352E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  102, epot: -4.236201502295E+01, de: -5.8E-02, fmax:  2.748E+00, 
+   - SD: {iter:  102, epot: -4.236201502293E+01, de: -5.8E-02, fmax:  2.748E+00, 
           fnrm:  5.416E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  103, epot: -4.242099584602E+01, de: -5.9E-02, fmax:  2.781E+00, 
+   - SD: {iter:  103, epot: -4.242099584601E+01, de: -5.9E-02, fmax:  2.781E+00, 
           fnrm:  5.475E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  104, epot: -4.248123758432E+01, de: -6.0E-02, fmax:  2.813E+00, 
+   - SD: {iter:  104, epot: -4.248123758431E+01, de: -6.0E-02, fmax:  2.813E+00, 
           fnrm:  5.528E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  105, epot: -4.254262963988E+01, de: -6.1E-02, fmax:  2.844E+00, 
+   - SD: {iter:  105, epot: -4.254262963987E+01, de: -6.1E-02, fmax:  2.844E+00, 
           fnrm:  5.576E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  106, epot: -4.260504500229E+01, de: -6.2E-02, fmax:  2.872E+00, 
+   - SD: {iter:  106, epot: -4.260504500227E+01, de: -6.2E-02, fmax:  2.872E+00, 
           fnrm:  5.617E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  107, epot: -4.266834120050E+01, de: -6.3E-02, fmax:  2.897E+00, 
+   - SD: {iter:  107, epot: -4.266834120048E+01, de: -6.3E-02, fmax:  2.897E+00, 
           fnrm:  5.651E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  108, epot: -4.273236202020E+01, de: -6.4E-02, fmax:  2.920E+00, 
+   - SD: {iter:  108, epot: -4.273236202018E+01, de: -6.4E-02, fmax:  2.920E+00, 
           fnrm:  5.677E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  109, epot: -4.279693999014E+01, de: -6.5E-02, fmax:  2.940E+00, 
+   - SD: {iter:  109, epot: -4.279693999012E+01, de: -6.5E-02, fmax:  2.940E+00, 
           fnrm:  5.696E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  110, epot: -4.286189954307E+01, de: -6.5E-02, fmax:  2.956E+00, 
+   - SD: {iter:  110, epot: -4.286189954305E+01, de: -6.5E-02, fmax:  2.956E+00, 
           fnrm:  5.707E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  111, epot: -4.292706064240E+01, de: -6.5E-02, fmax:  2.968E+00, 
+   - SD: {iter:  111, epot: -4.292706064238E+01, de: -6.5E-02, fmax:  2.968E+00, 
           fnrm:  5.710E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  112, epot: -4.299224255377E+01, de: -6.5E-02, fmax:  2.976E+00, 
+   - SD: {iter:  112, epot: -4.299224255375E+01, de: -6.5E-02, fmax:  2.976E+00, 
           fnrm:  5.705E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  113, epot: -4.305726735745E+01, de: -6.5E-02, fmax:  2.979E+00, 
+   - SD: {iter:  113, epot: -4.305726735743E+01, de: -6.5E-02, fmax:  2.979E+00, 
           fnrm:  5.692E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  114, epot: -4.312196277214E+01, de: -6.5E-02, fmax:  2.976E+00, 
+   - SD: {iter:  114, epot: -4.312196277213E+01, de: -6.5E-02, fmax:  2.976E+00, 
           fnrm:  5.672E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  115, epot: -4.318616391340E+01, de: -6.4E-02, fmax:  2.969E+00, 
+   - SD: {iter:  115, epot: -4.318616391339E+01, de: -6.4E-02, fmax:  2.969E+00, 
           fnrm:  5.645E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  116, epot: -4.324971374761E+01, de: -6.4E-02, fmax:  2.955E+00, 
+   - SD: {iter:  116, epot: -4.324971374759E+01, de: -6.4E-02, fmax:  2.955E+00, 
           fnrm:  5.611E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  117, epot: -4.331246220706E+01, de: -6.3E-02, fmax:  2.935E+00, 
+   - SD: {iter:  117, epot: -4.331246220705E+01, de: -6.3E-02, fmax:  2.935E+00, 
           fnrm:  5.571E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  118, epot: -4.337426416797E+01, de: -6.2E-02, fmax:  2.909E+00, 
+   - SD: {iter:  118, epot: -4.337426416795E+01, de: -6.2E-02, fmax:  2.909E+00, 
           fnrm:  5.523E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  119, epot: -4.343497671104E+01, de: -6.1E-02, fmax:  2.876E+00, 
+   - SD: {iter:  119, epot: -4.343497671102E+01, de: -6.1E-02, fmax:  2.876E+00, 
           fnrm:  5.469E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  120, epot: -4.349445623824E+01, de: -5.9E-02, fmax:  2.836E+00, 
+   - SD: {iter:  120, epot: -4.349445623823E+01, de: -5.9E-02, fmax:  2.836E+00, 
           fnrm:  5.407E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  121, epot: -4.355255607615E+01, de: -5.8E-02, fmax:  2.789E+00, 
+   - SD: {iter:  121, epot: -4.355255607613E+01, de: -5.8E-02, fmax:  2.789E+00, 
           fnrm:  5.337E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  122, epot: -4.360912514547E+01, de: -5.7E-02, fmax:  2.735E+00, 
+   - SD: {iter:  122, epot: -4.360912514546E+01, de: -5.7E-02, fmax:  2.735E+00, 
           fnrm:  5.260E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  123, epot: -4.366400812728E+01, de: -5.5E-02, fmax:  2.673E+00, 
+   - SD: {iter:  123, epot: -4.366400812727E+01, de: -5.5E-02, fmax:  2.673E+00, 
           fnrm:  5.173E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  124, epot: -4.371704733320E+01, de: -5.3E-02, fmax:  2.604E+00, 
+   - SD: {iter:  124, epot: -4.371704733319E+01, de: -5.3E-02, fmax:  2.604E+00, 
           fnrm:  5.078E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  125, epot: -4.376808622346E+01, de: -5.1E-02, fmax:  2.528E+00, 
+   - SD: {iter:  125, epot: -4.376808622345E+01, de: -5.1E-02, fmax:  2.528E+00, 
           fnrm:  4.972E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  126, epot: -4.381697425034E+01, de: -4.9E-02, fmax:  2.445E+00, 
+   - SD: {iter:  126, epot: -4.381697425032E+01, de: -4.9E-02, fmax:  2.445E+00, 
           fnrm:  4.858E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  127, epot: -4.386357247730E+01, de: -4.7E-02, fmax:  2.356E+00, 
+   - SD: {iter:  127, epot: -4.386357247729E+01, de: -4.7E-02, fmax:  2.356E+00, 
           fnrm:  4.733E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  128, epot: -4.390775927686E+01, de: -4.4E-02, fmax:  2.262E+00, 
+   - SD: {iter:  128, epot: -4.390775927685E+01, de: -4.4E-02, fmax:  2.262E+00, 
           fnrm:  4.600E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  129, epot: -4.394943537928E+01, de: -4.2E-02, fmax:  2.163E+00, 
+   - SD: {iter:  129, epot: -4.394943537927E+01, de: -4.2E-02, fmax:  2.163E+00, 
           fnrm:  4.458E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  130, epot: -4.398852764829E+01, de: -3.9E-02, fmax:  2.061E+00, 
+   - SD: {iter:  130, epot: -4.398852764828E+01, de: -3.9E-02, fmax:  2.061E+00, 
           fnrm:  4.309E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  131, epot: -4.402499118854E+01, de: -3.6E-02, fmax:  1.956E+00, 
+   - SD: {iter:  131, epot: -4.402499118853E+01, de: -3.6E-02, fmax:  1.956E+00, 
           fnrm:  4.152E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  132, epot: -4.405880969746E+01, de: -3.4E-02, fmax:  1.851E+00, 
+   - SD: {iter:  132, epot: -4.405880969745E+01, de: -3.4E-02, fmax:  1.851E+00, 
           fnrm:  3.990E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  133, epot: -4.408999428725E+01, de: -3.1E-02, fmax:  1.745E+00, 
+   - SD: {iter:  133, epot: -4.408999428724E+01, de: -3.1E-02, fmax:  1.745E+00, 
           fnrm:  3.823E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  134, epot: -4.411858123958E+01, de: -2.9E-02, fmax:  1.641E+00, 
+   - SD: {iter:  134, epot: -4.411858123957E+01, de: -2.9E-02, fmax:  1.641E+00, 
           fnrm:  3.652E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  135, epot: -4.414462925322E+01, de: -2.6E-02, fmax:  1.538E+00, 
+   - SD: {iter:  135, epot: -4.414462925321E+01, de: -2.6E-02, fmax:  1.538E+00, 
           fnrm:  3.478E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  136, epot: -4.416821668690E+01, de: -2.4E-02, fmax:  1.444E+00, 
+   - SD: {iter:  136, epot: -4.416821668689E+01, de: -2.4E-02, fmax:  1.444E+00, 
           fnrm:  3.302E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  137, epot: -4.418943911552E+01, de: -2.1E-02, fmax:  1.375E+00, 
+   - SD: {iter:  137, epot: -4.418943911551E+01, de: -2.1E-02, fmax:  1.375E+00, 
           fnrm:  3.124E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  138, epot: -4.420840727942E+01, de: -1.9E-02, fmax:  1.302E+00, 
+   - SD: {iter:  138, epot: -4.420840727941E+01, de: -1.9E-02, fmax:  1.302E+00, 
           fnrm:  2.946E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  139, epot: -4.422524529217E+01, de: -1.7E-02, fmax:  1.226E+00, 
+   - SD: {iter:  139, epot: -4.422524529216E+01, de: -1.7E-02, fmax:  1.226E+00, 
           fnrm:  2.768E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  140, epot: -4.424008884699E+01, de: -1.5E-02, fmax:  1.149E+00, 
           fnrm:  2.592E+00,            alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -3934,7 +3934,7 @@
    - BFGS: {iter:  0, epot: -4.426438041851E+01, de:  0.0E+00, fmax:  9.925E-01, 
             fnrm:  2.250E+00,                 alpha:  8.0000E-01, zeta:  1.0000E+00, 
           isatur:  0}
-   - BFGS: {iter:  1, epot: -4.427710016322E+01, de: -1.3E-02, fmax:  8.901E-01, 
+   - BFGS: {iter:  1, epot: -4.427710016321E+01, de: -1.3E-02, fmax:  8.901E-01, 
             fnrm:  2.032E+00,                 alpha:  8.8000E-01, zeta:  1.0000E+00, 
           isatur:  0}
    - BFGS: {iter:  2, epot: -4.428675849563E+01, de: -9.7E-03, fmax:  7.989E-01, 
@@ -4007,9 +4007,9 @@
        fnrm                            :  1.40119E-03
        fmax                            :  4.98391E-04
    new lowest: {iproc:  0, nlmin:  4, erathopp: -4.432680141008E+01, de: -2.85482}
- - minhopp iteration info: {iproc:  0, istep:  9, ihopp:  4, nlmin:  5, 
-                             epot: -4.432680141008E+01}
-   success, eref is achieved by iproc  :  0
+   minhopp iteration info: {iproc:  0, istep:  9, ihopp:  4, nlmin:  5, escaped:  Yes, 
+                         accepted:  Yes,           epot: -4.432680141008E+01}
+ - success, eref is achieved by iproc  :  0
  collecting accepted minima sent by other procs, final, iproc:  0
  writing minhopp results: {iproc:  0, nlmin:  5}
   #master proc wrote poslow.xyz
@@ -4036,7 +4036,7 @@
    ediff                               :  0.102E+01
    ekin                                :  0.105E+00
    dt                                  :  0.128E-01
- CPU time: {iproc:  0, hrs:  0.160E-03, min:  0.960E-02, sec:  0.576E+00}
+ CPU time: {iproc:  0, hrs:  0.183E-03, min:  0.110E-01, sec:  0.660E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
    Tot. No. of Allocations             :  184
@@ -4046,7 +4046,7 @@
      Peak Value (MB)                   :  0.012
      for the array                     : at_out%itypat
      in the routine                    : Main_program
-     Memory Peak of process            : 37.076 MB
- Walltime since initialization         :  00:00:00.591871445
+     Memory Peak of process            : 37.000 MB
+ Walltime since initialization         :  00:00:00.676902471
  Max No. of dictionaries used          :  773 #( 185 still in use)
  Number of dictionary folders allocated:  1

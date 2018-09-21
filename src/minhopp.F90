@@ -4,7 +4,7 @@ subroutine minimahopping(parini)
     use mod_parini, only: typ_parini
     use mod_task, only: time_exceeded
     use mod_minhopp, only: nstep, nlmin, nlminx, ekin, istep, ihopp, kerathopp, ediff, etoler, re_sm, &
-        nlmin_old, minter, eref, nbuf, earr, dt, count_md, count_opt, escaped
+        nlmin_old, minter, eref, nbuf, earr, dt, count_md, count_opt, escaped, accepted
     use mod_processors, only: parallel, nproc, iproc, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_opt, only: typ_paropt
@@ -12,6 +12,7 @@ subroutine minimahopping(parini)
     !minima hopping program with restart option.
     implicit none
     type(typ_parini), intent(in):: parini
+    !local variables
     integer:: ierr,iconf
     type(typ_paropt):: paropt_prec, paropt
     type(typ_atoms):: atoms_curr, atoms_hopp
@@ -63,17 +64,12 @@ subroutine minimahopping(parini)
     nlmin_old=nlmin
     call request_receive(atoms_allproc)
     escaped=.true.
+    accepted=.true.
+    call report_minhopp_iteration_info(atoms_curr)
     do istep=1,nstep+1 !outer loop for hopping
         call yaml_sequence(advance='no')
         !collecting local minima data if send check by other processes.
         call collect_data_from_all_processors(5,atoms_curr,atoms_allproc,atoms_locmin)
-        call yaml_mapping_open('minhopp iteration info',flow=.true.)
-        call yaml_map('iproc',iproc,fmt='(i)')
-        call yaml_map('istep',istep-1,fmt='(i)')
-        call yaml_map('ihopp',ihopp,fmt='(i)')
-        call yaml_map('nlmin',nlmin,fmt='(i)')
-        call yaml_map('epot',atoms_curr%epot,fmt='(es20.12)')
-        call yaml_mapping_close()
         !write(*,'(a,i4,3i7,e24.15)') 'iproc,istep,ihopp,nlmin,erat ',iproc,istep-1,ihopp,nlmin,atoms_curr%epot
         !Energy has reached taregt eref and global minimum is presumably found
         if(re_sm<=eref) then
@@ -110,25 +106,29 @@ subroutine minimahopping(parini)
         if(abs(atoms_curr%epot-atoms_hopp%epot)<etoler) then !failed to escape.
             call escape_failed(parini,atoms_curr%epot,atoms_hopp%epot)
             escaped=.false.
-            cycle
         else
             escaped=.true.
         endif
         !-------------------------------------------------------------
-        !check whether new minimum
-        call hunt2(min(nlmin,nlminx+nbuf),earr(1),atoms_hopp%epot,kerathopp)
-        if(abs(atoms_hopp%epot-earr(kerathopp))<etoler) then 
-            call already_visited_minimum(parini)
-        else
-            call new_minimum(atoms_hopp)
+        if(escaped) then
+            !check whether new minimum
+            call hunt2(min(nlmin,nlminx+nbuf),earr(1),atoms_hopp%epot,kerathopp)
+            if(abs(atoms_hopp%epot-earr(kerathopp))<etoler) then 
+                call already_visited_minimum(parini)
+            else
+                call new_minimum(atoms_hopp)
+            endif
+            ihopp=ihopp+1
+            !Monte Carlo step for local minima hopping
+            if(atoms_hopp%epot-atoms_curr%epot<ediff) then !local minimum accepted.
+                accepted=.true.
+                call local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
+            else !local minima rejected.
+                accepted=.false.
+                call local_minimum_rejected(atoms_hopp)
+            endif
         endif
-        ihopp=ihopp+1
-        !Monte Carlo step for local minima hopping
-        if(atoms_hopp%epot-atoms_curr%epot<ediff) then !local minimum accepted.
-            call local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
-        else !local minima rejected.
-            call local_minimum_rejected(atoms_hopp)
-        endif
+        call report_minhopp_iteration_info(atoms_curr)
     enddo !end of outer loop for hopping
     call yaml_sequence_close()
     call send_minhopp_parameters_to_all(atoms_curr)
@@ -1632,6 +1632,28 @@ subroutine local_minimum_rejected(atoms_hopp)
     ediff=ediff*alpha2 !standard feedback
     !ediff=ediff*alpha2**(1.d0+.1d0*log(real(nvisit(kerathopp),8))) !enhanced feedback
 end subroutine local_minimum_rejected
+!*****************************************************************************************
+subroutine report_minhopp_iteration_info(atoms_curr)
+    use mod_interface
+    use mod_minhopp, only: istep, ihopp, nlmin, escaped, accepted
+    use mod_processors, only: iproc
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use yaml_output
+    !minima hopping program with restart option.
+    implicit none
+    type(typ_atoms), intent(in):: atoms_curr
+    !local variables
+
+    call yaml_mapping_open('minhopp iteration info',flow=.true.)
+    call yaml_map('iproc',iproc,fmt='(i)')
+    call yaml_map('istep',istep,fmt='(i)')
+    call yaml_map('ihopp',ihopp,fmt='(i)')
+    call yaml_map('nlmin',nlmin,fmt='(i)')
+    call yaml_map('escaped',escaped)
+    call yaml_map('accepted',accepted)
+    call yaml_map('epot',atoms_curr%epot,fmt='(es20.12)')
+    call yaml_mapping_close()
+end subroutine report_minhopp_iteration_info
 !*****************************************************************************************
 subroutine already_visited_minimum(parini)
     use mod_interface

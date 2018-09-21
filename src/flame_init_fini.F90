@@ -141,10 +141,12 @@ subroutine alborz_final(parini,file_ini)
     call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     call f_timing_stop(dict_info=dict_timing_info)
     !-----------------------------------------------------------------
+    call yaml_flush_document(unit=parini%iunit)
+    !ASK LUIGI OR DAMIEN ABOUT THE PUZZLING ISSUE OF WHICH MUST COME FIRST:
+    !yaml_close_stream or f_lib_finalize
+    !call yaml_close_stream(unit=parini%iunit)
     call f_release_routine()
     call f_lib_finalize()
-    !-----------------------------------------------------------------
-    call yaml_close_stream(unit=parini%iunit)
 end subroutine alborz_final
 !*****************************************************************************************
 subroutine init_random_seed(parini)

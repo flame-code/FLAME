@@ -2,13 +2,13 @@
 module mod_interface
     implicit none
 interface
-! ./modules/alborz_as_potential_mod.F90 :
 ! ./modules/ann_mod.F90 :
 ! ./modules/atoms_mod.F90 :
 ! ./modules/bader_mod.F90 :
 ! ./modules/constants_mod.F90 :
 ! ./modules/dynamics_mod.F90 :
 ! ./modules/electrostatics_mod.F90 :
+! ./modules/flame_as_potential_mod.F90 :
 ! ./modules/genconf_mod.F90 :
 ! ./modules/linked_lists_mod.F90 :
 ! ./modules/minhopp_mod.F90 :
@@ -23,38 +23,15 @@ interface
 ! ./modules/tightbinding_mod.F90 :
 ! ./modules/timing_mod.F90 :
 ! ./modules/unitsconversion_mod.F90 :
-! ./src/alborz.F90 :
-! ./src/alborz_init_final.F90 :
-subroutine alborz_init(parini,parres,file_ini)
-    use mod_task, only: typ_file_ini, time_start
-    use mod_parini, only: typ_parini
-    type(typ_file_ini), intent(inout):: file_ini
-    type(typ_parini), intent(inout):: parini
-    type(typ_parini), intent(inout):: parres
-    character(len=*), parameter:: filename='flame_log.yaml'
-end subroutine alborz_init
-subroutine alborz_initialize_timing_categories
-    character(len=*), parameter :: pscpt1='Alborz init-fin'
-    character(len=*), parameter :: pscpt2='potential'
-end subroutine alborz_initialize_timing_categories
-subroutine alborz_final(parini,file_ini)
-    use mod_parini, only: typ_parini
-    use mod_task, only: typ_file_ini, time_start, time_end
-    type(typ_parini), intent(in):: parini
-    type(typ_file_ini), intent(inout):: file_ini
-end subroutine alborz_final
-subroutine init_random_seed(parini)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-end subroutine init_random_seed
-subroutine set_atomc_types_info(parini)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(inout):: parini
-end subroutine set_atomc_types_info
-subroutine flm_print_logo(parini)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(inout):: parini
-end subroutine flm_print_logo
+! ./src/acceleration.F90 :
+subroutine acceleration(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
+integer:: iat,i,j,md_type,nat
+real(8),dimension(3,nat):: accpos,vpos,fcart,fpos
+real(8),dimension(3,3)  :: acclat,vlat,latvec,tmplat,pressure,a,velmat,sigma,lattrans,latdottrans,gdot,g,ginv,gtot,str_matrix
+real(8),dimension(3,3)  :: term1,term2,term3,term4,term5,term5_1,term5_2,sigmatrans,f0inv
+real(8):: amass(nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3
+real(8):: accvol,vvol,vol_1_3
+end subroutine acceleration
 ! ./src/ann_basic.F90 :
 subroutine ann_allocate(ekf,ann_arr)
     use mod_ann, only: typ_ann_arr, typ_ekf
@@ -1456,6 +1433,43 @@ subroutine count_substring(str1,str2,n)
     character(*), intent(in) :: str1, str2
     integer, intent(out):: n
 end subroutine count_substring
+! ./src/basic_minhocao.F90 :
+ subroutine cross_product(a,b,crossp)
+ real(8)::a(3),b(3)
+ real(8)::crossp(3)
+end subroutine cross_product
+ subroutine dot_p(a,b,dotp)
+ real(8)::a(3),b(3)
+ real(8)::dotp(3)
+end subroutine dot_p
+subroutine bin_write(filename,array,n)
+integer:: n
+real(8):: array(n)
+character(40):: filename
+end subroutine bin_write
+subroutine bin_read(filename,array,n)
+integer:: n
+real(8):: array(n)
+character(40):: filename
+end subroutine bin_read
+function round(enerd,accur)
+  real*8 enerd,accur,round
+end function round
+ subroutine rotation(rotmat,angle,axe)
+ real(8),INTENT(IN) :: angle
+ real(8),INTENT(IN) :: axe(3)
+ real(8):: rotmat(3,3),cosang,sinang
+end subroutine rotation
+ subroutine invertmat(mat,matinv,n)
+ real(8),intent(in) :: mat(n,n)
+ integer               :: n
+ real(8)               :: matinv(n,n),det(3),a(n,n),div
+ integer               :: IPIV(n), INFO
+end subroutine invertmat
+subroutine hunt(xx,n,x,jlo)
+  integer :: jlo,n
+  real(kind=8) :: x,xx(n)
+end subroutine hunt
 ! ./src/basic_utilities.F90 :
 subroutine elim_moment_alborz(nat,atomic_vector)
   integer, intent(in):: nat
@@ -1553,6 +1567,37 @@ function flm_index(str1,str2) result(ind)
     character(*), intent(in):: str1, str2
     integer:: ind, indp, len_str
 end function flm_index
+subroutine elim_fixed_at(parini,nat,x)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: iat,nat
+real(8):: x(3,nat)
+end subroutine elim_fixed_at
+subroutine elim_fixed_lat(parini,latvec,x)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+real(8):: x(3,3),latvec(3,3),lenlat,tmpvec(3)
+end subroutine elim_fixed_lat
+        subroutine elim_moment(nat,vxyz,atmass)
+        real(8):: vxyz(3,nat),sx,sz,sy,atmass(nat)
+        integer:: iat,nat       
+end subroutine elim_moment
+subroutine elim_torque_cell(latvec0,vlat)
+real(8), intent(in)    :: latvec0(3,3)
+real(8), intent(inout) :: vlat(3,3)
+end subroutine elim_torque_cell
+subroutine diagcomp(latvec,x)
+real(8):: latvec(3,3),x(3,3),xnrm,latvect(3,3),latvecinv(3,3),sigma(3,3)
+end subroutine diagcomp
+ subroutine backtocell(nat,latvec,rxyz_red)
+ integer:: nat,i,iat,j
+ real(8) :: latvec(3,3), rxyz_red(3,nat), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
+end subroutine backtocell
+ subroutine backtocell_cart(nat,latvec,rxyz)
+ integer:: nat,i,iat,j
+ real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
+ real(8) :: v(3,3),vol,rxyz_red(3,nat)
+end subroutine backtocell_cart
 ! ./src/best_charge_density.F90 :
 subroutine best_charge_density(parini)
     use mod_parini, only: typ_parini
@@ -1738,6 +1783,31 @@ function typer(nigmat,eps)
 real(8):: nigmat(6),eps
 integer:: nzero,npositive,i,typer
 end function typer
+! ./src/cell_oganov.F90 :
+ subroutine correct_latvec_oganov(latvec,pos_red,nat,iproc)
+ real(8)              :: latvec(3,3),rxyz(3,nat),pos_red(3,nat)  
+ integer              :: i,nat,counter,iproc
+end subroutine correct_latvec_oganov
+! ./src/compare_lammps.F90 :
+subroutine compare_lammps(parini,parres)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+type(typ_parini), intent(inout):: parres
+real(8):: latvec(3,3),xred(3,parini%nat),xcart(3,parini%nat),f_lammps(3,parini%nat),f(3,parini%nat),e_lammps,e,tmp_r,tmp_i,tilts(6),latvec_in(3,3),strten(6),latvec_box(3,3)
+end subroutine compare_lammps
+! ./src/convcheck.F90 :
+subroutine convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: nat, iexit,iat,istr,i
+real(8):: latvec_in(3,3),fcart_in(3,nat),strten_in(6),target_pressure_habohr,fmax,dstr(6)
+real(8):: tolmxf,strtarget(6),strfact,fmax_at,fmax_lat
+end subroutine convcheck
+! ./src/correct_latvec.F90 :
+subroutine correct_latvec(latvec,pos_red,nat,correctalg,iout)
+integer:: correctalg,nat,iproc,iout
+real(8):: latvec(3,3),pos_red(3,nat),latvec0(3,3),diff(9)
+end subroutine correct_latvec
 ! ./src/dynamics_md_fixlat.F90 :
 subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,etot_in,iprec,counter,folder)
  use mod_parini, only: typ_parini
@@ -1748,6 +1818,10 @@ subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,e
     real(8):: rxyz(3,parini%nat),fxyz(3,parini%nat),fxyz_old(3,parini%nat),vxyz(3,parini%nat),amass(parini%nat)
     character(40):: filename,folder
 end subroutine md_fixlat
+! ./src/enthalpy.F90 :
+subroutine get_enthalpy(latvec,energy,pressure,enthalpy)
+real(8):: acell(3),v(3,3),ucvol,pressure,latvec(3,3),energy,enthalpy
+end subroutine get_enthalpy
 ! ./src/envelope.F90 :
 SUBROUTINE envelope(x, y, n, vertex, nvert, iwk)
 INTEGER :: n, vertex(n), nvert, iwk(n)
@@ -1836,7 +1910,26 @@ subroutine dielec_potener_forces(parini,poisson,atoms,epot_dielec)
     type(typ_atoms), intent(inout):: atoms
     type(typ_parini), intent(in):: parini
     real(8), intent(out):: epot_dielec
+    REAL(8), PARAMETER :: PI = 3.14159265358979312
 end subroutine dielec_potener_forces
+subroutine sollaplaceq_dielctric(parini,poisson,hz,cell)
+    use mod_electrostatics, only: typ_poisson
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson), intent(inout):: poisson
+    real(8):: cell(3)
+    real(8):: hz , vlmvu, vlzumvuzl 
+end subroutine sollaplaceq_dielctric
+subroutine diff_pot_pp(parini,poisson,pot_short,vl,vu,nlayer)
+    use mod_electrostatics, only: typ_poisson
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    type(typ_poisson), intent(inout):: poisson
+    integer::ix, iy, iz, npl,npu,nlayer
+    real(8):: vl,vu
+    real(8) :: pot_short(poisson%ngpx,poisson%ngpy,2,nlayer)
+    real(8), parameter, dimension(7) :: cf7 = [-1.d0/60.d0,3.d0/20.d0,-3.d0/4.d0,0.d0,3.d0/4.d0,-3.d0/20.d0,1.d0/60.d0]
+end subroutine diff_pot_pp
 ! ./src/es_coulomb_p3d.F90 :
 subroutine calculate_forces_energy(parini,poisson,atoms)
     use mod_electrostatics, only: typ_poisson
@@ -2016,7 +2109,6 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(out):: ehartree
-    real(8):: qgrad(atoms%nat)
 end subroutine get_hartree_grad_rho
 subroutine get_hartree_force(parini,poisson,atoms)
     use mod_parini, only: typ_parini
@@ -2130,6 +2222,22 @@ INTEGER, INTENT(IN)   :: m
 INTEGER, INTENT(OUT)  :: k(:)
 REAL(8), INTENT(OUT)  :: sum
 end subroutine assndx
+! ./src/fingerprint.F90 :
+subroutine init_fp(parini,fp_len,latvec)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: fp_len,iat,nmax
+real(8):: convert,latvec(3,3),vol
+end subroutine init_fp
+subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
+use mod_parini, only: typ_parini
+use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
+type(typ_parini), intent(in):: parini
+integer:: fp_len,iat,natmol
+real(8):: fp(fp_len),pos_red(3,parini%nat),latvec(3,3),rxyz(3,parini%nat),vol,rcov_arr(parini%nat),fp_coganov_atomic(3,fp_15_fp_size,parini%ntypat_global,parini%nat)
+real(8):: rvan(parini%nat) !nat*molecules)
+character(len=2):: finalchar(parini%nat) ! dimension(nat*molecules)
+end subroutine get_fp
 ! ./src/fingerprint_GOM.F90 :
 subroutine get_fp_gauss(nat, ntypat, natx_sphere, typat, lseg, width_cutoff, nex_cutoff, alat, rxyz, rcov, fp)
   integer, intent(in) :: nat, ntypat, natx_sphere, lseg
@@ -2233,6 +2341,38 @@ subroutine sym2rvan(sym,rvan)
   real(8)  :: rvan
   character(len=2) :: sym  ! chemical symbol 
 end subroutine sym2rvan
+! ./src/flame.F90 :
+! ./src/flame_init_fini.F90 :
+subroutine alborz_init(parini,parres,file_ini)
+    use mod_task, only: typ_file_ini, time_start
+    use mod_parini, only: typ_parini
+    type(typ_file_ini), intent(inout):: file_ini
+    type(typ_parini), intent(inout):: parini
+    type(typ_parini), intent(inout):: parres
+    character(len=*), parameter:: filename='flame_log.yaml'
+end subroutine alborz_init
+subroutine alborz_initialize_timing_categories
+    character(len=*), parameter :: pscpt1='Alborz init-fin'
+    character(len=*), parameter :: pscpt2='potential'
+end subroutine alborz_initialize_timing_categories
+subroutine alborz_final(parini,file_ini)
+    use mod_parini, only: typ_parini
+    use mod_task, only: typ_file_ini, time_start, time_end
+    type(typ_parini), intent(in):: parini
+    type(typ_file_ini), intent(inout):: file_ini
+end subroutine alborz_final
+subroutine init_random_seed(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+end subroutine init_random_seed
+subroutine set_atomc_types_info(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine set_atomc_types_info
+subroutine flm_print_logo(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine flm_print_logo
 ! ./src/forcefield.F90 :
 subroutine forcefield_init(parini,atoms)
     use mod_parini, only: typ_parini
@@ -2253,6 +2393,80 @@ subroutine forcefield_final(parini,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
 end subroutine forcefield_final
+! ./src/fp_distance.F90 :
+subroutine get_fp_distance(parini,fp_len,fp1,fp2,fp_dist)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: fp_len
+real(8):: fp(fp_len),pos_red(3,parini%nat),latvec(3,3),rxyz(3,parini%nat),fp1(fp_len),fp2(fp_len),fp_dist
+end subroutine get_fp_distance
+! ./src/fpos_flat.F90 :
+subroutine fpos_flat(parini,pressure,fpos,flat,strten,fcart,latvec,md_type) 
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: iat,i,j,md_type
+real(8),dimension(3,parini%nat):: fcart,fpos
+real(8),dimension(3,3)  :: latvec,tmplat,pressure,a,velmat,sigma,flat,str_matrix
+real(8):: amass(parini%nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3,vol_1_3
+end subroutine fpos_flat
+! ./src/fragments.F90 :
+subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+real(8),dimension(3,parini%nat), INTENT(IN) :: xred
+real(8):: latvec(3,3),rotmat(3,3),dproj(6)
+integer :: nfrag, nfragold
+real(8):: ekin,vcm1,vcm2,vcm3,ekin0,scale,xcart(3,parini%nat)
+integer, dimension(parini%nat):: fragarr,fragsize
+end subroutine fragments
+subroutine get_fragsize(fragsize,lhead,llist,nat,nmol)
+integer:: nat,nmol,iat,ifrag,llist(nat),lhead(nmol),fragsize(nmol)
+end subroutine get_fragsize
+subroutine refragment(fragarr,nat)
+integer:: fragarr(nat),nat,iat,jat,cnt,find,fragarr_tmp(nat)
+end subroutine refragment
+subroutine make_linked_list(fragarr,fragsize,lhead,llist,nat,nmol)
+integer:: fragarr(nat),nat,iat,nmol,ifrag
+integer:: lhead(nmol),llist(nat),fragsize(nmol)
+end subroutine make_linked_list
+subroutine get_cmass(cmass,masstot,xcart,amass,lhead,llist,nat,nmol)
+integer:: nat,nmol,iat,ifrag,lhead(nmol),llist(nat)
+real(8):: xcart(3,nat),amass(nat),masstot(nmol),cmass(3,nmol)
+end subroutine get_cmass
+subroutine get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
+real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
+real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
+end subroutine get_inertia_tensor
+subroutine get_fcm_torque(fcm,torque,fcart,quat,xcart_mol,lhead,llist,nat,nmol)
+integer:: nat,nmol,iat,ifrag,llist(nat),lhead(nmol)
+real(8),intent(in):: fcart(3,nat),quat(4,nmol),xcart_mol(3,nat)
+real(8):: fcm(3,nmol),torque(3,nmol),crossp(3),xtmp(3),rotmat(3,3)
+end subroutine get_fcm_torque
+subroutine init_cm_mol(parini,latvec,xred,xcart_shifted,xred_cm,quat,amass,masstot,intens,inprin,inaxis,lhead,llist,nat,nmol)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+real(8),intent(in):: latvec(3,3),xred(3,nat)
+integer:: nat,nmol,iat,llist(nat),lhead(nmol),fragsize(nmol),imol,jmol,kmol
+real(8):: xcart_in(3,nat),xcart_shifted(3,nat),cmass(3,nmol),amass(nat)
+real(8):: masstot(nmol),angbohr,quat(4,nmol),xred_cm(3,nmol),xcart_tmp(3,nat)
+real(8):: circular(3,3),tol,rot_c(3,3),rot_all(3,3),inprin(3,nmol),intens(3,3,nmol)
+real(8):: inaxis(3,3,nmol),ident(3,3),tmp(3,nmol),quat_tmp(4),tmp_real(4),tmp_mat(3,3)
+logical:: symtop(nmol),tmp_logical
+end subroutine init_cm_mol
+! ./src/gaussdist.F90 :
+      subroutine gausdist(nat,vxyz,amass)
+      real(8):: t1,t2,tt,amass(nat)
+      real(8),parameter:: eps=1.d-8
+      real(8),dimension(3*nat)::  vxyz
+      integer:: nat,i
+end subroutine gausdist
+      subroutine gausdist_cell(latvec,vlat)
+      real(8),parameter:: eps=1.d-8
+      real(8)::  vlat(9),latvec(9)
+end subroutine gausdist_cell
 ! ./src/genconf_diatomic.F90 :
 subroutine genconf_diatomic(parini,genconf)
     use mod_parini, only: typ_parini
@@ -2462,6 +2676,61 @@ subroutine PATH_inalborz(N,A,II,F,JJ,U,V,FB,RC)
       real(8), parameter :: INF = 1.d9
       integer::  i,j,k,L,ii,jj,NUC,NLR,R
 end subroutine path_inalborz
+! ./src/identical.F90 :
+subroutine identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
+           &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: nlminx,nlmin,fp_len,kid,k_e_wpos,n_unique,n_nonuni
+integer:: i,l,klow,k,khigh,fp_method,lid(nlminx),nid
+real(8):: fp_arr(fp_len,nlminx),fp_wpos(fp_len),ent_arr(nlminx),ent_wpos,fp_delta,ent_delta,fp_dist_min,fp_dist
+logical newmin,inrange
+end subroutine identical
+! ./src/inertia_tensor.F90 :
+subroutine inertia_tensor(nat,xcart,cmass,amass,intens)
+integer:: nat,iat,i,j
+real(8):: xcart(3,nat),amass(nat),intens(3,3),cmass(3),xtmp(3),dist2
+end subroutine inertia_tensor
+! ./src/init_rotvels.F90 :
+subroutine init_rotvels(parini,nat,xred,latvec,temp,amass,vel)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer,intent(in):: nat
+real(8),intent(in):: xred(3,nat),latvec(3,3),temp,amass(nat)
+real(8),intent(out):: vel(3,nat)
+real(8):: xcart(3,nat),ekin_rot,ekin_trans,rotmat(3,3),dproj(6),angbohr,erot_tmp,ekin_tot,v2gauss,vtest,tmp(3)
+integer, dimension(nat):: fragarr,fragsize
+end subroutine init_rotvels
+subroutine assign_vel(nat,xcart,cmass,omega,vel)
+integer:: nat,iat
+real(8):: xcart(3,nat),cmass(3),xtmp(3),vel(3,nat),omega(3)
+end subroutine assign_vel
+subroutine rot_ener(omega,intens,erot)
+real(8):: omega(3),intens(3,3),erot
+end subroutine rot_ener
+! ./src/init_vel.F90 :
+subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
+ real(8) :: acell_in(3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3)
+ real(8):: vel(3,parini%nat),temp,pos_red(3,parini%nat),vcm(3),vel_vol
+ integer:: i,iat,idim,nsoften
+ real(8):: amass(parini%nat),s1,s2,v2gauss,vtest,rescale_vel,vel_lat(3,3),latvec(3,3),latmass
+ real(8), parameter :: temp_fac_lat=1.d-1 !This percentage of the temperature that should be given to the lattice 
+ character(40):: folder
+end subroutine init_vel
+! ./src/insert.F90 :
+subroutine insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_red,&
+  &wpos_latvec,wpos_fcart,wpos_strten,spg_wpos,spgtol_wpos,fdos_wpos,&
+  &e_arr,ent_arr,fp_arr,pl_arr,lat_arr,f_arr,str_arr,spg_arr,spgtol_arr,dos_arr,ct_arr)
+  integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
+  integer:: k, nlmin, k_e_wpos, nlminx,i
+  real(8):: e_wpos, ent_wpos, wpos_red(3,nat),wpos_latvec(3,3),spgtol_wpos,fdos_wpos,fp_wpos(fp_len)
+  real(8):: e_arr(nlminx),ent_arr(nlminx),fp_arr(fp_len,nlminx),pl_arr(3,nat,nlminx),f_arr(3,nat,nlminx)
+  real(8):: lat_arr(3,3,nlminx),spgtol_arr(nlminx),dos_arr(nlminx),fp1(fp_len),fp2(fp_len),str_arr(6,nlminx)
+  real(8):: wpos_fcart(3,nat),wpos_strten(6)
+end subroutine insert
 ! ./src/io_acf.F90 :
 subroutine acf_write(file_info,atoms,atoms_all,strkey)
     use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all
@@ -2617,6 +2886,81 @@ subroutine readxyz(filename,nat,rat,sat,comment1,comment2,atom_motion)
     character(*):: filename, comment1, comment2
     logical:: atom_motion(3,nat)
 end subroutine readxyz
+! ./src/latticetools_minhocao.F90 :
+ subroutine dist2line(point,ppoint1,ppoint2,dist)
+ real(8), intent(in) :: point(3),ppoint1(3),ppoint2(3)
+ real(8), intent(out):: dist
+end subroutine dist2line
+ subroutine dist2plane(point,nvec,ppoint,dist)
+ real(8), intent(in) :: point(3),nvec(3),ppoint(3)
+ real(8), intent(out):: dist
+end subroutine dist2plane
+subroutine dist_ang2latvec(dist_ang,latvec,pi)
+real(8):: dist_ang(6),latvec(3,3),pi,convang
+end subroutine dist_ang2latvec
+subroutine dist_latvec2ang(dist_ang,latvec,pi)
+real(8):: dist_ang(6),latvec(3,3),pi,convang
+end subroutine dist_latvec2ang
+ subroutine dproj2latvec(dproj,latvec)
+ real*8:: dproj(6),latvec(3,3)
+end subroutine dproj2latvec
+ subroutine latvec2dproj(dproj,latvec,rotmat,rxyz,nat)
+ integer,intent(in)  :: nat
+ real*8,intent(inout):: dproj(6),latvec(3,3),rotmat(3,3),rxyz(3,nat)
+end subroutine latvec2dproj
+ subroutine latvec2acell_rprim(latvec,acell,rprim)
+ real(8):: latvec(3,3), rprim(3,3), acell(3)
+end subroutine latvec2acell_rprim
+subroutine getvol(latvec,vol)
+real(8):: latvec(3,3),v(3,3),vol
+end subroutine getvol
+ subroutine acell_rprim2latvec(latvec,acell,rprim)
+ real(8):: latvec(3,3), rprim(3,3), acell(3)
+end subroutine acell_rprim2latvec
+ subroutine nveclatvec(latvec,nvec)
+ real*8, intent(in) :: latvec(3,3)
+ real*8, intent(out):: nvec(3,3)
+end subroutine nveclatvec
+ subroutine rxyz_cart2int(latvec,rxyzint,rxyzcart,nat)
+ real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3),latvecinv(3,3)
+ integer:: nat,iat
+end subroutine rxyz_cart2int
+ subroutine rxyz_int2cart(latvec,rxyzint,rxyzcart,nat)
+ real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3)
+ integer:: nat,iat
+end subroutine rxyz_int2cart
+ subroutine fxyz_cart2int(nat,fxyz_cart,fxyz_int,latvec)
+ real(8):: fxyz_cart(3,nat),fxyz_int(3,nat),latvec(3,3),transmat(3,3)
+ integer:: nat,iat
+end subroutine fxyz_cart2int
+subroutine k_expansion(parini,latvec,xred,ka,kb,kc,k_latvec,k_xcart)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+real(8):: latvec(3,3),k_latvec(3,3),k_xcart(3,parini%nat,ka,kb,kc),xred(3,parini%nat) 
+integer:: iat,k,l,m,ka,kb,kc
+end subroutine k_expansion
+ subroutine strten2flat(strten,flat,latvec,press)
+ real(8):: strten(6),flat(3,3),latvec(3,3),press,pressmat(3,3),str_matrix(3,3),latvect(3,3),latvectinv(3,3),vol
+end subroutine strten2flat
+subroutine rotate_stresstensor(strten,rotmat)
+real(8):: strten(6),rotmat(3,3),stress(3,3)
+end subroutine rotate_stresstensor
+ subroutine find_kpt(k1, k2, k3, lat, gridden)
+   integer, intent(out) :: k1,k2,k3
+   real(8), intent(in)  :: lat(3,3), gridden
+end subroutine find_kpt
+   subroutine track_kpt(gridden, glen, kpt)
+     real(8), intent(in) :: gridden, glen
+     integer :: kpt,j
+end subroutine track_kpt
+subroutine rotmat_fcart_stress(latvec_init,latvec_trans,rotmat)
+real(8):: latvec_init(3,3),latvec_trans(3,3),latvec_trans_inv(3,3),rotmat(3,3)
+end subroutine rotmat_fcart_stress
+ subroutine updaterxyz(latvecold,latvecnew,rxyz,nat)
+ real(8), intent(in)   :: latvecold(3,3), latvecnew(3,3)
+ real(8), intent(inout):: rxyz(3,nat)
+ integer, intent(in)   :: nat
+end subroutine updaterxyz
 ! ./src/lenosky_tightbinding.F90 :
 subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     use mod_parini, only: typ_parini
@@ -2716,6 +3060,9 @@ subroutine lmder_modified(parlm,m,ldfjac)
       type(typ_parlm), intent(inout):: parlm
       integer:: m,ldfjac
 end subroutine lmder_modified
+! ./src/logo_minhocao.F90 :
+subroutine print_logo()
+end subroutine print_logo
 ! ./src/md.F90 :
 subroutine dynamics(parini)
     use mod_parini, only: typ_parini
@@ -2745,6 +3092,147 @@ subroutine ekin_temprature(atoms,temp,vcm,rcm,totmass)
     real(8) :: vcm(3), rcm(3), t1, tmp
     real(8) :: aboltzmann, totmass, temp 
 end subroutine ekin_temprature
+! ./src/md_minhocao_andersen.F90 :
+subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
+ real(8) :: latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in,vvol_in
+ real(8):: amass(parini%nat)
+ real(8),dimension(3,parini%nat):: xcart
+ real(8),dimension(3,parini%nat):: fposcur
+ real(8),dimension(3,parini%nat):: accposcur
+ real(8),dimension(3,parini%nat):: accpospred
+ real(8),dimension(3,parini%nat):: accposprev
+ real(8),dimension(3,parini%nat):: fpospred
+ real(8),dimension(3,parini%nat):: vpospred
+ real(8),dimension(3,parini%nat):: poscur
+ real(8),dimension(3,parini%nat):: vxyz
+ real(8),dimension(3,parini%nat):: vposcur
+ real(8),dimension(3,parini%nat):: pospred
+ real(8),dimension(3,parini%nat):: dxred
+ real(8):: counter
+ integer:: iprec 
+ character(40)::filename,folder
+end subroutine md_andersen_mhm
+subroutine ekin_at_lat_andersen(amass,latmass,latvec,vpos,vlat,vvol,ekinat,ekinlat,f0,md_type,nat)
+integer:: iat,i,md_type,nat
+real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol,vvol
+real(8):: latmass,amass(nat),lattrans(3,3),latdottrans(3,3),ekintrace(3,3),sigma(3,3),sigmatrans(3,3),vol_1_3
+end subroutine ekin_at_lat_andersen
+! ./src/md_minhocao.F90 :
+subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
+ real(8) :: latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3),vvol_in
+ real(8):: amass(parini%nat)
+ real(8),dimension(3,parini%nat):: xcart
+ real(8),dimension(3,parini%nat):: fposcur
+ real(8),dimension(3,parini%nat):: accposcur
+ real(8),dimension(3,parini%nat):: accpospred
+ real(8),dimension(3,parini%nat):: accposprev
+ real(8),dimension(3,parini%nat):: fpospred
+ real(8),dimension(3,parini%nat):: vpospred
+ real(8),dimension(3,parini%nat):: poscur
+ real(8),dimension(3,parini%nat):: vxyz
+ real(8),dimension(3,parini%nat):: vposcur
+ real(8),dimension(3,parini%nat):: pospred
+ real(8),dimension(3,parini%nat):: dxred
+ real(8),dimension(parres%nmd_dynamics):: ensave   !zl
+ real(8),dimension(parres%nmd_dynamics):: ensmoth  !zl
+ real(8):: counter
+ integer:: iprec 
+ character(40)::filename,folder
+end subroutine md_mhm
+subroutine ekin_at_lat(amass,latmass,latvec,vpos,vlat,ekinat,ekinlat,f0,md_type,nat)
+integer:: iat,i,md_type,nat
+real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol
+real(8):: latmass,amass(nat),lattrans(3,3),latdottrans(3,3),ekintrace(3,3),sigma(3,3),sigmatrans(3,3)
+end subroutine ekin_at_lat
+subroutine stress_velocity(vpos,latvec,amass,nat,vpressure)
+real(8):: velmat(3,3),vpostmp(3),latvec(3,3),vpos(3,nat),vpressure,a(3,3),vol,amass(nat)
+integer:: iat,nat,i,j
+end subroutine stress_velocity
+! ./src/md_minhocao_rbmd.F90 :
+subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcart_in,strten_in,&
+                      &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
+                      &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
+ real(8) ::latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3),vvol_in
+ real(8):: amass(nmol)
+ real(8),dimension(3,nmol):: xred_cm_in
+ real(8),dimension(3,nmol):: fcart_cm
+ real(8),dimension(3,nmol):: torque
+ real(8),dimension(3,parini%nat) :: xcart_mol
+ real(8),dimension(3,nmol):: l_in
+ real(8),dimension(3,nmol):: vel_cm_in
+ real(8),dimension(4,nmol):: quat_in
+ real(8),dimension(4,nmol):: quatcur
+ real(8),dimension(4,nmol):: quatpred
+ real(8),dimension(3,3,nmol):: intens
+ real(8),dimension(3,nmol):: inprin
+ real(8),dimension(nmol):: masstot
+ real(8),dimension(3,3,nmol):: inaxis
+ integer,dimension(nmol):: lhead
+ integer,dimension(parini%nat):: llist
+ integer:: nmol
+ real(8),dimension(3,nmol):: xcart
+ real(8),dimension(3,nmol):: fposcur
+ real(8),dimension(3,nmol):: accposcur
+ real(8),dimension(3,nmol):: accpospred
+ real(8),dimension(3,nmol):: accposprev
+ real(8),dimension(3,nmol):: fpospred
+ real(8),dimension(3,nmol):: vpospred
+ real(8),dimension(3,nmol):: poscur
+ real(8),dimension(3,nmol):: vxyz
+ real(8),dimension(3,nmol):: vposcur
+ real(8),dimension(3,parini%nat):: pospred
+ real(8),dimension(3,parini%nat):: dxred
+ real(8):: counter
+ integer:: iprec 
+ character(40)::filename,folder
+end subroutine md_mhm_rot
+subroutine rbmd_symasym_s1(T_t,L_t,dt,L_til_t)
+real(8),intent(in) :: T_t(3), L_t(3),dt
+real(8),intent(out):: L_til_t(3)
+end subroutine rbmd_symasym_s1
+subroutine rbmd_sym_s23(Inprin,L_til_t,dt,L_til_t5,L_til_t10)
+real(8),intent(in) :: Inprin(3), L_til_t(3),dt
+real(8),intent(out):: L_til_t10(3),L_til_t5(3)
+end subroutine rbmd_sym_s23
+subroutine rbmd_symasym_s4(Inprin,L_til_t5,quat_t,dt,quat_t10)
+real(8),intent(in) :: Inprin(3),L_til_t5(3),dt,quat_t(4)
+real(8),intent(out):: quat_t10(4)
+end subroutine rbmd_symasym_s4
+function A_omega(omega)
+real(8),dimension(4,4):: A_omega
+real(8)::omega(3)
+end function a_omega
+subroutine rbmd_symasym_s5(T_t10,L_til_t10,dt,L_t10)
+real(8),intent(in) :: T_t10(3), L_til_t10(3),dt
+real(8),intent(out):: L_t10(3)
+end subroutine rbmd_symasym_s5
+subroutine rbmd_asym_s23(Inprin,L_til_t,dt,L_til_t5,L_til_t10)
+real(8),intent(in) :: Inprin(3), L_til_t(3),dt
+real(8),intent(out):: L_til_t10(3),L_til_t5(3)
+end subroutine rbmd_asym_s23
+subroutine rbmd_driver(quat_t,T_t,L_t,quat_t10,T_t10,L_t10,dt,inprin,&
+           &fragsize,symtop,nmol)
+real(8),intent(in) :: inprin(3,nmol),L_t(3,nmol),T_t(3,nmol),quat_t(4,nmol),dt,T_t10(3,nmol)
+integer,intent(in) :: nmol,fragsize(nmol)
+logical,intent(in) :: symtop(nmol)
+real(8),intent(out):: L_t10(3,nmol),quat_t10(4,nmol)
+real(8) :: L_til_t(3,nmol),L_til_t5(3,nmol),L_til_t10(3,nmol)
+end subroutine rbmd_driver
+subroutine expand_rigid(latvec,xred_cm,quat,xcart_mol,lhead,llist,nat,nmol,xred_in)
+real(8),intent(in):: latvec(3,3),xred_cm(3,nmol),quat(4,nmol),xcart_mol(3,nat)
+real(8),intent(out):: xred_in(3,nat)
+real(8):: rotmat(3,3),xcart_tmp(3,nat),cmass(3,nmol)
+integer:: nat,nmol,iat,imol,llist(nat),lhead(nmol)
+end subroutine expand_rigid
 ! ./src/md_NVT.F90 :
 subroutine md_nvt_langevin(parini,atoms)
     use mod_parini, only: typ_parini
@@ -2809,374 +3297,7 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
     real(8):: zeta(ntherm), dzeta(ntherm)
     real(8):: rat_init(3,atoms%nat)
 end subroutine write_trajectory_velocity
-! ./src/minhocao.F90 :
-subroutine task_minhocao(parini,parres)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(inout):: parini
- type(typ_parini), intent(inout):: parres
-  real(8), parameter :: beta1=1.10d0,beta2=1.10d0,beta3=1.d0/1.10d0
-  real(8), parameter :: alpha1=1.d0/1.10d0,alpha2=1.10d0
-end subroutine task_minhocao
-subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) :: latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3),vvol_in
- real(8):: amass(parini%nat)
- real(8),dimension(3,parini%nat):: xcart
- real(8),dimension(3,parini%nat):: fposcur
- real(8),dimension(3,parini%nat):: accposcur
- real(8),dimension(3,parini%nat):: accpospred
- real(8),dimension(3,parini%nat):: accposprev
- real(8),dimension(3,parini%nat):: fpospred
- real(8),dimension(3,parini%nat):: vpospred
- real(8),dimension(3,parini%nat):: poscur
- real(8),dimension(3,parini%nat):: vxyz
- real(8),dimension(3,parini%nat):: vposcur
- real(8),dimension(3,parini%nat):: pospred
- real(8),dimension(3,parini%nat):: dxred
- real(8),dimension(parres%nmd_dynamics):: ensave   !zl
- real(8),dimension(parres%nmd_dynamics):: ensmoth  !zl
- real(8):: counter
- integer:: iprec 
- character(40)::filename,folder
-end subroutine md_mhm
-subroutine acceleration_fire(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
-integer:: iat,i,j,md_type,nat
-real(8),dimension(3,nat):: accpos,vpos,fcart,fpos
-real(8),dimension(3,3)  :: acclat,vlat,latvec,tmplat,pressure,a,velmat,sigma,lattrans,latdottrans,gdot,g,ginv,gtot,str_matrix
-real(8),dimension(3,3)  :: term1,term2,term3,term4,term5,term5_1,term5_2,sigmatrans,f0inv
-real(8):: amass(nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3
-real(8):: accvol,vvol,vol_1_3
-end subroutine acceleration_fire
-subroutine acceleration(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
-integer:: iat,i,j,md_type,nat
-real(8),dimension(3,nat):: accpos,vpos,fcart,fpos
-real(8),dimension(3,3)  :: acclat,vlat,latvec,tmplat,pressure,a,velmat,sigma,lattrans,latdottrans,gdot,g,ginv,gtot,str_matrix
-real(8),dimension(3,3)  :: term1,term2,term3,term4,term5,term5_1,term5_2,sigmatrans,f0inv
-real(8):: amass(nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3
-real(8):: accvol,vvol,vol_1_3
-end subroutine acceleration
-subroutine stress_velocity(vpos,latvec,amass,nat,vpressure)
-real(8):: velmat(3,3),vpostmp(3),latvec(3,3),vpos(3,nat),vpressure,a(3,3),vol,amass(nat)
-integer:: iat,nat,i,j
-end subroutine stress_velocity
-subroutine fpos_flat(parini,pressure,fpos,flat,strten,fcart,latvec,md_type) 
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: iat,i,j,md_type
-real(8),dimension(3,parini%nat):: fcart,fpos
-real(8),dimension(3,3)  :: latvec,tmplat,pressure,a,velmat,sigma,flat,str_matrix
-real(8):: amass(parini%nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3,vol_1_3
-end subroutine fpos_flat
-subroutine ekin_at_lat(amass,latmass,latvec,vpos,vlat,ekinat,ekinlat,f0,md_type,nat)
-integer:: iat,i,md_type,nat
-real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol
-real(8):: latmass,amass(nat),lattrans(3,3),latdottrans(3,3),ekintrace(3,3),sigma(3,3),sigmatrans(3,3)
-end subroutine ekin_at_lat
-subroutine ekin_at_lat_andersen(amass,latmass,latvec,vpos,vlat,vvol,ekinat,ekinlat,f0,md_type,nat)
-integer:: iat,i,md_type,nat
-real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol,vvol
-real(8):: latmass,amass(nat),lattrans(3,3),latdottrans(3,3),ekintrace(3,3),sigma(3,3),sigmatrans(3,3),vol_1_3
-end subroutine ekin_at_lat_andersen
-subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) :: latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in,vvol_in
- real(8):: amass(parini%nat)
- real(8),dimension(3,parini%nat):: xcart
- real(8),dimension(3,parini%nat):: fposcur
- real(8),dimension(3,parini%nat):: accposcur
- real(8),dimension(3,parini%nat):: accpospred
- real(8),dimension(3,parini%nat):: accposprev
- real(8),dimension(3,parini%nat):: fpospred
- real(8),dimension(3,parini%nat):: vpospred
- real(8),dimension(3,parini%nat):: poscur
- real(8),dimension(3,parini%nat):: vxyz
- real(8),dimension(3,parini%nat):: vposcur
- real(8),dimension(3,parini%nat):: pospred
- real(8),dimension(3,parini%nat):: dxred
- real(8):: counter
- integer:: iprec 
- character(40)::filename,folder
-end subroutine md_andersen_mhm
-subroutine MD_PR_MHM_OLD    (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,etot_in,iprec,counter,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) :: latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3)
- real(8):: amass(parini%nat)
- real(8),dimension(3,parini%nat):: fposcur
- real(8),dimension(3,parini%nat):: fpospred
- real(8),dimension(3,parini%nat):: vpospred
- real(8),dimension(3,parini%nat):: poscur
- real(8),dimension(3,parini%nat):: vxyz
- real(8),dimension(3,parini%nat):: vposcur
- real(8),dimension(3,parini%nat):: pospred
- real(8):: counter
- integer:: iprec 
- character(40)::filename,folder
-end subroutine md_pr_mhm_old
-subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) :: latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3),vvol_in
- real(8):: amass(parini%nat)
- real(8),dimension(3,parini%nat):: xcart
- real(8),dimension(3,parini%nat):: fposcur
- real(8),dimension(3,parini%nat):: fpospred
- real(8),dimension(3,parini%nat):: vpospred
- real(8),dimension(3,parini%nat):: poscur
- real(8),dimension(3,parini%nat):: vxyz
- real(8),dimension(3,parini%nat):: vposcur
- real(8),dimension(3,parini%nat):: pospred
- real(8),dimension(3,parini%nat):: accposcur
- real(8),dimension(3,parini%nat):: accpospred
- real(8),dimension(3,parini%nat):: accposprev
- real(8),dimension(3,parini%nat):: dxred
- real(8):: counter 
- integer:: iprec
- character(40)::filename,folder
- real(8):: alpha,P,P_at,P_lat,fmax,fmax_at,fmax_lat,fall(3,parini%nat+3),fallnorm,vall(3,parini%nat+3),vallnorm
-end subroutine geopt_fire_mhm
-subroutine get_char_type(filename,nat,char_type,typat,ntypat)
-integer:: nat,natin,iat,ntypat,nfound,typat(ntypat),ierror
-character(40):: filename
-real(8):: pos(3,nat),dproj(6)
-character(2):: char_type(ntypat)
-end subroutine get_char_type
- subroutine dproj2latvec(dproj,latvec)
- real*8:: dproj(6),latvec(3,3)
-end subroutine dproj2latvec
- subroutine latvec2dproj(dproj,latvec,rotmat,rxyz,nat)
- integer,intent(in)  :: nat
- real*8,intent(inout):: dproj(6),latvec(3,3),rotmat(3,3),rxyz(3,nat)
-end subroutine latvec2dproj
- subroutine cross_product(a,b,crossp)
- real(8)::a(3),b(3)
- real(8)::crossp(3)
-end subroutine cross_product
- subroutine dot_p(a,b,dotp)
- real(8)::a(3),b(3)
- real(8)::dotp(3)
-end subroutine dot_p
- subroutine rotation(rotmat,angle,axe)
- real(8),INTENT(IN) :: angle
- real(8),INTENT(IN) :: axe(3)
- real(8):: rotmat(3,3),cosang,sinang
-end subroutine rotation
- subroutine rxyz_int2cart(latvec,rxyzint,rxyzcart,nat)
- real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3)
- integer:: nat,iat
-end subroutine rxyz_int2cart
- subroutine rxyz_cart2int(latvec,rxyzint,rxyzcart,nat)
- real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3),latvecinv(3,3)
- integer:: nat,iat
-end subroutine rxyz_cart2int
- subroutine invertmat(mat,matinv,n)
- real(8),intent(in) :: mat(n,n)
- integer               :: n
- real(8)               :: matinv(n,n),det(3),a(n,n),div
- integer               :: IPIV(n), INFO
-end subroutine invertmat
- subroutine latvec2acell_rprim(latvec,acell,rprim)
- real(8):: latvec(3,3), rprim(3,3), acell(3)
-end subroutine latvec2acell_rprim
- subroutine acell_rprim2latvec(latvec,acell,rprim)
- real(8):: latvec(3,3), rprim(3,3), acell(3)
-end subroutine acell_rprim2latvec
-subroutine get_enthalpy(latvec,energy,pressure,enthalpy)
-real(8):: acell(3),v(3,3),ucvol,pressure,latvec(3,3),energy,enthalpy
-end subroutine get_enthalpy
-function round(enerd,accur)
-  real*8 enerd,accur,round
-end function round
-subroutine wtioput(ediff,ekinetic,ekinetic_max,nsoften)
-  integer:: nsoften
-  real(8):: ediff, ekinetic,ekinetic_max
-end subroutine wtioput
-subroutine hunt(xx,n,x,jlo)
-  integer :: jlo,n
-  real(kind=8) :: x,xx(n)
-end subroutine hunt
-subroutine insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_red,&
-  &wpos_latvec,wpos_fcart,wpos_strten,spg_wpos,spgtol_wpos,fdos_wpos,&
-  &e_arr,ent_arr,fp_arr,pl_arr,lat_arr,f_arr,str_arr,spg_arr,spgtol_arr,dos_arr,ct_arr)
-  integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
-  integer:: k, nlmin, k_e_wpos, nlminx,i
-  real(8):: e_wpos, ent_wpos, wpos_red(3,nat),wpos_latvec(3,3),spgtol_wpos,fdos_wpos,fp_wpos(fp_len)
-  real(8):: e_arr(nlminx),ent_arr(nlminx),fp_arr(fp_len,nlminx),pl_arr(3,nat,nlminx),f_arr(3,nat,nlminx)
-  real(8):: lat_arr(3,3,nlminx),spgtol_arr(nlminx),dos_arr(nlminx),fp1(fp_len),fp2(fp_len),str_arr(6,nlminx)
-  real(8):: wpos_fcart(3,nat),wpos_strten(6)
-end subroutine insert
-subroutine save_low_conf(nat,npmin,npminx,ent_wpos,e_wpos,pos,latvec,spg,spgtol,fdos,elocmin,poslocmin,latlocmin)
-  integer:: iat,nat, npmin, npminx, kmax, k 
-  real(8):: e_wpos, ent_wpos, emax,spg,spgtol,fdos
-  real(8):: elocmin(npminx,5)
-  real(8):: pos(3,nat),latvec(3,3),poslocmin(3,nat,npminx),latlocmin(3,3,npminx)
-end subroutine save_low_conf
-subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
-   &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
-   &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,pressure)
-  use mod_parini, only: typ_parini
-  type(typ_parini), intent(in):: parini
-  integer, intent(in) :: nlminx,nlmin,nsoften,nat,npminx,fp_len
-  real(8), intent(in) :: eref,ediff,ekinetic,dt,e_pos,ent_pos,ekinetic_max,ent_delta,fp_delta
-  real(8), intent(in) :: pos_latvec(3,3) 
-  real(8), intent(in) :: pos_strten(6) 
-  real(8), dimension(nlminx),      intent(in) :: ent_arr,e_arr,spgtol_arr,dos_arr
-  real(8), dimension(3,3,nlminx),  intent(in) :: lat_arr
-  real(8), dimension(6,nlminx),    intent(in) :: str_arr
-  real(8), dimension(3,nat,nlminx),intent(in) :: pl_arr,f_arr
-  real(8), dimension(fp_len,nlminx),intent(in):: fp_arr
-  integer, dimension(nlminx),      intent(in) :: ct_arr,spg_arr
-  character(2), intent(in):: char_type(ntypat) 
-  integer, intent(in):: ntypat 
-  integer, intent(in):: typat(nat) 
-  real(8), intent(in):: pressure 
-  real(8), intent(in):: pos_red(3,nat) 
-  real(8), intent(in):: pos_fcart(3,nat) 
-  logical :: fixat(nat),fixlat(7)
-  character(len=40) :: units 
-end subroutine winter
-subroutine torque_cell(latvec0,vlat,torquenrm)
-real(8), intent(in)    :: latvec0(3,3)
-real(8), intent(inout) :: vlat(3,3),torquenrm
-end subroutine torque_cell
-      subroutine gausdist(nat,vxyz,amass)
-      real(8):: t1,t2,tt,amass(nat)
-      real(8),parameter:: eps=1.d-8
-      real(8),dimension(3*nat)::  vxyz
-      integer:: nat,i
-end subroutine gausdist
-      subroutine gausdist_cell(latvec,vlat)
-      real(8),parameter:: eps=1.d-8
-      real(8)::  vlat(9),latvec(9)
-end subroutine gausdist_cell
-        subroutine elim_moment(nat,vxyz,atmass)
-        real(8):: vxyz(3,nat),sx,sz,sy,atmass(nat)
-        integer:: iat,nat       
-end subroutine elim_moment
-subroutine elim_torque_cell(latvec0,vlat)
-real(8), intent(in)    :: latvec0(3,3)
-real(8), intent(inout) :: vlat(3,3)
-end subroutine elim_torque_cell
-subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) :: acell_in(3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3)
- real(8):: vel(3,parini%nat),temp,pos_red(3,parini%nat),vcm(3),vel_vol
- integer:: i,iat,idim,nsoften
- real(8):: amass(parini%nat),s1,s2,v2gauss,vtest,rescale_vel,vel_lat(3,3),latvec(3,3),latmass
- real(8), parameter :: temp_fac_lat=1.d-1 !This percentage of the temperature that should be given to the lattice 
- character(40):: folder
-end subroutine init_vel
-        subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) :: acell_in(3),xred_in(3,parini%nat),vel_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3)
-        integer:: nsoft,i,it,nit,iprec,iat
-        real(8):: curv0,curv,res,pressure,count_soft,alpha
-        real(8):: rxyz(3*parini%nat)
-        real(8):: latvec(9),latvec_in(9)
-        real(8):: ddcart(3*parini%nat)
-        real(8):: rxyzcart(3*parini%nat)
-        real(8):: pos_red0(3*parini%nat)
-        real(8):: pos_red_in(3*parini%nat)
-        real(8):: amass(parini%nat)
-        real(8):: wlat(9),wlatold(9),fxyzcart(3*parini%nat)
-        character(40):: filename,folder
-        real(8):: pos_prev(3*parini%nat),dir_prev(3*parini%nat),dir(3*parini%nat),angle,norm
-end subroutine soften_pos
-        subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) :: acell_in(3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3)
-        integer:: nsoft,i,it,nit,iprec,iat
-        real(8):: curv0,curv,res,pressure,count_soft,alpha,alphalat
-        real(8):: rxyz(3*parini%nat)
-        real(8):: latvec(9),latvec_in(9)
-        real(8):: dd(3*parini%nat)
-        real(8):: ddcart(3*parini%nat)
-        real(8):: rxyzcart(3*parini%nat)
-        real(8):: ddlat(9)
-        real(8):: ddall(3*parini%nat+9)
-        real(8):: pos_red0(3*parini%nat)
-        real(8):: amass(parini%nat)
-        real(8):: wlat(9),wlatold(9),fxyzcart(3*parini%nat)
-        character(40):: filename,folder
-end subroutine soften_lat
- subroutine fxyz_cart2int(nat,fxyz_cart,fxyz_int,latvec)
- real(8):: fxyz_cart(3,nat),fxyz_int(3,nat),latvec(3,3),transmat(3,3)
- integer:: nat,iat
-end subroutine fxyz_cart2int
- subroutine strten2flat(strten,flat,latvec,press)
- real(8):: strten(6),flat(3,3),latvec(3,3),press,pressmat(3,3),str_matrix(3,3),latvect(3,3),latvectinv(3,3),vol
-end subroutine strten2flat
- subroutine backtocell(nat,latvec,rxyz_red)
- integer:: nat,i,iat,j
- real(8) :: latvec(3,3), rxyz_red(3,nat), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
-end subroutine backtocell
- subroutine nveclatvec(latvec,nvec)
- real*8, intent(in) :: latvec(3,3)
- real*8, intent(out):: nvec(3,3)
-end subroutine nveclatvec
-subroutine getvol(latvec,vol)
-real(8):: latvec(3,3),v(3,3),vol
-end subroutine getvol
-subroutine correct_latvec(latvec,pos_red,nat,correctalg,iout)
-integer:: correctalg,nat,iproc,iout
-real(8):: latvec(3,3),pos_red(3,nat),latvec0(3,3),diff(9)
-end subroutine correct_latvec
- subroutine correct_latvec_oganov(latvec,pos_red,nat,iproc)
- real(8)              :: latvec(3,3),rxyz(3,nat),pos_red(3,nat)  
- integer              :: i,nat,counter,iproc
-end subroutine correct_latvec_oganov
- subroutine backtocell_cart(nat,latvec,rxyz)
- integer:: nat,i,iat,j
- real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
- real(8) :: v(3,3),vol,rxyz_red(3,nat)
-end subroutine backtocell_cart
-subroutine pathintegral(parini,parres,latvec,xred)
- use mod_parini, only: typ_parini
-       type(typ_parini), intent(in):: parini
-       type(typ_parini), intent(inout):: parres
-       real(8):: rxyz0(3,parini%nat),fxyz(3,parini%nat),displ(3,parini%nat)
-       real(8):: evals(3),s2(3,3),dmat(3,3),dproj(6),rotmat(3,3),xred(3,parini%nat)
-       real(8):: stepsize_at,stepsize_lat,t1,t2,t3,path,xred_in(3,parini%nat),latvec_in(3,3),strten_in(6)
-       real(8):: str_matrix(3,3),transformed(3,3),transformed_inv(3,3),fcart_in(3,parini%nat)
-       real(8):: dlat(6),latvec(3,3),latvecinv(3,3),stress(3,3),displat(3,3),tstress(3,3)
-end subroutine pathintegral
-subroutine plot_fp_grid(parini,nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: nlminx,nlmin,fp_len,i,kk,nat
-real(8):: fp_arr(fp_len,nlminx),fp_dist
-real(8):: tmp_acell(3),tmp_real,tmp_rprim(3,3),lat_arr(3,3,nlminx),pl_arr(3,nat,nlminx),randpos(3)
-end subroutine plot_fp_grid
-subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
- use mod_parini, only: typ_parini
-       type(typ_parini), intent(in):: parini
-       type(typ_parini), intent(inout):: parres
-       integer::  iprec,nstruct,i,ntol,spgint
-       real(8):: latvec(3,3),xred(3,parini%nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,parini%nat),vel_vol_in
-       real(8):: vel_in(3,parini%nat),vel_lat_in(3,3),fcart(3,parini%nat),strten(6),axis(3),rotmat(3,3),angle
-       real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
-end subroutine rotate_like_crazy
-subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
- use mod_parini, only: typ_parini
-       type(typ_parini), intent(in):: parini
-       type(typ_parini), intent(inout):: parres
-       integer::  iprec,nstruct,i,ntol,spgint
-       real(8):: latvec(3,3),xred(3,parini%nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,parini%nat),vel_vol_in
-       real(8):: vel_in(3,parini%nat),vel_lat_in(3,3),fcart(3,parini%nat),strten(6)
-       real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
-end subroutine poslowrelax
+! ./src/minhocao_enthalpyrelax.F90 :
 subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
@@ -3187,6 +3308,46 @@ subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
        integer:: ntol,spgint
        logical:: findsym
 end subroutine enthalpyrelax
+! ./src/minhocao_pathintegral.F90 :
+subroutine pathintegral(parini,parres,latvec,xred)
+ use mod_parini, only: typ_parini
+       type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
+       real(8):: rxyz0(3,parini%nat),fxyz(3,parini%nat),displ(3,parini%nat)
+       real(8):: evals(3),s2(3,3),dmat(3,3),dproj(6),rotmat(3,3),xred(3,parini%nat)
+       real(8):: stepsize_at,stepsize_lat,t1,t2,t3,path,xred_in(3,parini%nat),latvec_in(3,3),strten_in(6)
+       real(8):: str_matrix(3,3),transformed(3,3),transformed_inv(3,3),fcart_in(3,parini%nat)
+       real(8):: dlat(6),latvec(3,3),latvecinv(3,3),stress(3,3),displat(3,3),tstress(3,3)
+end subroutine pathintegral
+! ./src/minhocao_plot_fp_grid.F90 :
+subroutine plot_fp_grid(parini,nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer:: nlminx,nlmin,fp_len,i,kk,nat
+real(8):: fp_arr(fp_len,nlminx),fp_dist
+real(8):: tmp_acell(3),tmp_real,tmp_rprim(3,3),lat_arr(3,3,nlminx),pl_arr(3,nat,nlminx),randpos(3)
+end subroutine plot_fp_grid
+! ./src/minhocao_poslowrelax.F90 :
+subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
+ use mod_parini, only: typ_parini
+       type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
+       integer::  iprec,nstruct,i,ntol,spgint
+       real(8):: latvec(3,3),xred(3,parini%nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,parini%nat),vel_vol_in
+       real(8):: vel_in(3,parini%nat),vel_lat_in(3,3),fcart(3,parini%nat),strten(6)
+       real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
+end subroutine poslowrelax
+! ./src/minhocao_rotate_like_crazy.F90 :
+subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
+ use mod_parini, only: typ_parini
+       type(typ_parini), intent(in):: parini
+       type(typ_parini), intent(inout):: parres
+       integer::  iprec,nstruct,i,ntol,spgint
+       real(8):: latvec(3,3),xred(3,parini%nat),pinit,pfinal,psteps,latvec0(3,3),xred0(3,parini%nat),vel_vol_in
+       real(8):: vel_in(3,parini%nat),vel_lat_in(3,3),fcart(3,parini%nat),strten(6),axis(3),rotmat(3,3),angle
+       real(8):: counter,count_geopt,enthalpy,energy,vol,ext_press,tolmin,tolmax,spgtol_pos,spg_pos
+end subroutine rotate_like_crazy
+! ./src/minhocao_varvol.F90 :
 subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
  use mod_parini, only: typ_parini
        type(typ_parini), intent(in):: parini
@@ -3197,288 +3358,6 @@ subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
        integer:: ntol,spgint,itime
        logical:: findsym,is_percentage
 end subroutine varvol
- subroutine updaterxyz(latvecold,latvecnew,rxyz,nat)
- real(8), intent(in)   :: latvecold(3,3), latvecnew(3,3)
- real(8), intent(inout):: rxyz(3,nat)
- integer, intent(in)   :: nat
-end subroutine updaterxyz
-subroutine k_expansion(parini,latvec,xred,ka,kb,kc,k_latvec,k_xcart)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-real(8):: latvec(3,3),k_latvec(3,3),k_xcart(3,parini%nat,ka,kb,kc),xred(3,parini%nat) 
-integer:: iat,k,l,m,ka,kb,kc
-end subroutine k_expansion
-subroutine elim_fixed_at(parini,nat,x)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: iat,nat
-real(8):: x(3,nat)
-end subroutine elim_fixed_at
-subroutine elim_fixed_lat(parini,latvec,x)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-real(8):: x(3,3),latvec(3,3),lenlat,tmpvec(3)
-end subroutine elim_fixed_lat
-subroutine diagcomp(latvec,x)
-real(8):: latvec(3,3),x(3,3),xnrm,latvect(3,3),latvecinv(3,3),sigma(3,3)
-end subroutine diagcomp
-subroutine slab_stress(flat,fix_z)
-real(8):: flat(3,3),ekin1,ekin2
-logical:: fix_z
-end subroutine slab_stress
-subroutine propagate(parini,nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer::nat,i,iat,j
-real(8):: xred(3,nat),latvec(3,3),dxred(3,nat),dlatvec(3,3),xredout(3,nat),latvecout(3,3),len1,len2
-real(8):: orig_angle(3),new_angle(3),axis(3),rotmat(3,3),center(3),latvec0(3,3)
-end subroutine propagate
-subroutine convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: nat, iexit,iat,istr,i
-real(8):: latvec_in(3,3),fcart_in(3,nat),strten_in(6),target_pressure_habohr,fmax,dstr(6)
-real(8):: tolmxf,strtarget(6),strfact,fmax_at,fmax_lat
-end subroutine convcheck
-subroutine dist_ang2latvec(dist_ang,latvec,pi)
-real(8):: dist_ang(6),latvec(3,3),pi,convang
-end subroutine dist_ang2latvec
-subroutine dist_latvec2ang(dist_ang,latvec,pi)
-real(8):: dist_ang(6),latvec(3,3),pi,convang
-end subroutine dist_latvec2ang
-subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-real(8),dimension(3,parini%nat), INTENT(IN) :: xred
-real(8):: latvec(3,3),rotmat(3,3),dproj(6)
-integer :: nfrag, nfragold
-real(8):: ekin,vcm1,vcm2,vcm3,ekin0,scale,xcart(3,parini%nat)
-integer, dimension(parini%nat):: fragarr,fragsize
-end subroutine fragments
-subroutine pbc_distance0(latvec,xred_1,xred_2,distance2,dxyz)
-real(8):: xred_1(3),xred_2(3),diff(3),distance2,latvec(3,3),dxyz(3)
-end subroutine pbc_distance0
-subroutine pbc_distance1(latvec,xred_1,xred_2,distance2)
-real(8):: xred_1(3),xred_2(3),diff(3),distance2,latvec(3,3)
-end subroutine pbc_distance1
-subroutine pbc_distance2(latvec,xred_1,xcart_1,xred_2,xcart_2,distance2)
-real(8):: xred_1(3),xred_2(3),diff(3),distance2,latvec(3,3),xcart_1(3),xcart_2(3),xcart_tmp(3),xcart_20(3),xcart_10(3)
-end subroutine pbc_distance2
-subroutine inertia_tensor(nat,xcart,cmass,amass,intens)
-integer:: nat,iat,i,j
-real(8):: xcart(3,nat),amass(nat),intens(3,3),cmass(3),xtmp(3),dist2
-end subroutine inertia_tensor
-subroutine rot_ener(omega,intens,erot)
-real(8):: omega(3),intens(3,3),erot
-end subroutine rot_ener
-subroutine init_rotvels(parini,nat,xred,latvec,temp,amass,vel)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer,intent(in):: nat
-real(8),intent(in):: xred(3,nat),latvec(3,3),temp,amass(nat)
-real(8),intent(out):: vel(3,nat)
-real(8):: xcart(3,nat),ekin_rot,ekin_trans,rotmat(3,3),dproj(6),angbohr,erot_tmp,ekin_tot,v2gauss,vtest,tmp(3)
-integer, dimension(nat):: fragarr,fragsize
-end subroutine init_rotvels
-subroutine assign_vel(nat,xcart,cmass,omega,vel)
-integer:: nat,iat
-real(8):: xcart(3,nat),cmass(3),xtmp(3),vel(3,nat),omega(3)
-end subroutine assign_vel
-subroutine refragment(fragarr,nat)
-integer:: fragarr(nat),nat,iat,jat,cnt,find,fragarr_tmp(nat)
-end subroutine refragment
-subroutine make_linked_list(fragarr,fragsize,lhead,llist,nat,nmol)
-integer:: fragarr(nat),nat,iat,nmol,ifrag
-integer:: lhead(nmol),llist(nat),fragsize(nmol)
-end subroutine make_linked_list
-subroutine get_fcm_torque(fcm,torque,fcart,quat,xcart_mol,lhead,llist,nat,nmol)
-integer:: nat,nmol,iat,ifrag,llist(nat),lhead(nmol)
-real(8),intent(in):: fcart(3,nat),quat(4,nmol),xcart_mol(3,nat)
-real(8):: fcm(3,nmol),torque(3,nmol),crossp(3),xtmp(3),rotmat(3,3)
-end subroutine get_fcm_torque
-subroutine expand_rigid(latvec,xred_cm,quat,xcart_mol,lhead,llist,nat,nmol,xred_in)
-real(8),intent(in):: latvec(3,3),xred_cm(3,nmol),quat(4,nmol),xcart_mol(3,nat)
-real(8),intent(out):: xred_in(3,nat)
-real(8):: rotmat(3,3),xcart_tmp(3,nat),cmass(3,nmol)
-integer:: nat,nmol,iat,imol,llist(nat),lhead(nmol)
-end subroutine expand_rigid
-subroutine init_cm_mol(parini,latvec,xred,xcart_shifted,xred_cm,quat,amass,masstot,intens,inprin,inaxis,lhead,llist,nat,nmol)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-real(8),intent(in):: latvec(3,3),xred(3,nat)
-integer:: nat,nmol,iat,llist(nat),lhead(nmol),fragsize(nmol),imol,jmol,kmol
-real(8):: xcart_in(3,nat),xcart_shifted(3,nat),cmass(3,nmol),amass(nat)
-real(8):: masstot(nmol),angbohr,quat(4,nmol),xred_cm(3,nmol),xcart_tmp(3,nat)
-real(8):: circular(3,3),tol,rot_c(3,3),rot_all(3,3),inprin(3,nmol),intens(3,3,nmol)
-real(8):: inaxis(3,3,nmol),ident(3,3),tmp(3,nmol),quat_tmp(4),tmp_real(4),tmp_mat(3,3)
-logical:: symtop(nmol),tmp_logical
-end subroutine init_cm_mol
-subroutine get_cmass(cmass,masstot,xcart,amass,lhead,llist,nat,nmol)
-integer:: nat,nmol,iat,ifrag,lhead(nmol),llist(nat)
-real(8):: xcart(3,nat),amass(nat),masstot(nmol),cmass(3,nmol)
-end subroutine get_cmass
-subroutine get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
-real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
-real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
-end subroutine get_inertia_tensor
-subroutine get_fragsize(fragsize,lhead,llist,nat,nmol)
-integer:: nat,nmol,iat,ifrag,llist(nat),lhead(nmol),fragsize(nmol)
-end subroutine get_fragsize
-subroutine rbmd_symasym_s1(T_t,L_t,dt,L_til_t)
-real(8),intent(in) :: T_t(3), L_t(3),dt
-real(8),intent(out):: L_til_t(3)
-end subroutine rbmd_symasym_s1
-subroutine rbmd_sym_s23(Inprin,L_til_t,dt,L_til_t5,L_til_t10)
-real(8),intent(in) :: Inprin(3), L_til_t(3),dt
-real(8),intent(out):: L_til_t10(3),L_til_t5(3)
-end subroutine rbmd_sym_s23
-subroutine rbmd_symasym_s4(Inprin,L_til_t5,quat_t,dt,quat_t10)
-real(8),intent(in) :: Inprin(3),L_til_t5(3),dt,quat_t(4)
-real(8),intent(out):: quat_t10(4)
-end subroutine rbmd_symasym_s4
-function A_omega(omega)
-real(8),dimension(4,4):: A_omega
-real(8)::omega(3)
-end function a_omega
-subroutine rbmd_symasym_s5(T_t10,L_til_t10,dt,L_t10)
-real(8),intent(in) :: T_t10(3), L_til_t10(3),dt
-real(8),intent(out):: L_t10(3)
-end subroutine rbmd_symasym_s5
-subroutine rbmd_asym_s23(Inprin,L_til_t,dt,L_til_t5,L_til_t10)
-real(8),intent(in) :: Inprin(3), L_til_t(3),dt
-real(8),intent(out):: L_til_t10(3),L_til_t5(3)
-end subroutine rbmd_asym_s23
-subroutine rbmd_driver(quat_t,T_t,L_t,quat_t10,T_t10,L_t10,dt,inprin,&
-           &fragsize,symtop,nmol)
-real(8),intent(in) :: inprin(3,nmol),L_t(3,nmol),T_t(3,nmol),quat_t(4,nmol),dt,T_t10(3,nmol)
-integer,intent(in) :: nmol,fragsize(nmol)
-logical,intent(in) :: symtop(nmol)
-real(8),intent(out):: L_t10(3,nmol),quat_t10(4,nmol)
-real(8) :: L_til_t(3,nmol),L_til_t5(3,nmol),L_til_t10(3,nmol)
-end subroutine rbmd_driver
- subroutine find_kpt(k1, k2, k3, lat, gridden)
-   integer, intent(out) :: k1,k2,k3
-   real(8), intent(in)  :: lat(3,3), gridden
-end subroutine find_kpt
-   subroutine track_kpt(gridden, glen, kpt)
-     real(8), intent(in) :: gridden, glen
-     integer :: kpt,j
-end subroutine track_kpt
-subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcart_in,strten_in,&
-                      &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
-                      &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
- use mod_parini, only: typ_parini
- type(typ_parini), intent(in):: parini
- type(typ_parini), intent(inout):: parres
- real(8) ::latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3),vvol_in
- real(8):: amass(nmol)
- real(8),dimension(3,nmol):: xred_cm_in
- real(8),dimension(3,nmol):: fcart_cm
- real(8),dimension(3,nmol):: torque
- real(8),dimension(3,parini%nat) :: xcart_mol
- real(8),dimension(3,nmol):: l_in
- real(8),dimension(3,nmol):: vel_cm_in
- real(8),dimension(4,nmol):: quat_in
- real(8),dimension(4,nmol):: quatcur
- real(8),dimension(4,nmol):: quatpred
- real(8),dimension(3,3,nmol):: intens
- real(8),dimension(3,nmol):: inprin
- real(8),dimension(nmol):: masstot
- real(8),dimension(3,3,nmol):: inaxis
- integer,dimension(nmol):: lhead
- integer,dimension(parini%nat):: llist
- integer:: nmol
- real(8),dimension(3,nmol):: xcart
- real(8),dimension(3,nmol):: fposcur
- real(8),dimension(3,nmol):: accposcur
- real(8),dimension(3,nmol):: accpospred
- real(8),dimension(3,nmol):: accposprev
- real(8),dimension(3,nmol):: fpospred
- real(8),dimension(3,nmol):: vpospred
- real(8),dimension(3,nmol):: poscur
- real(8),dimension(3,nmol):: vxyz
- real(8),dimension(3,nmol):: vposcur
- real(8),dimension(3,parini%nat):: pospred
- real(8),dimension(3,parini%nat):: dxred
- real(8):: counter
- integer:: iprec 
- character(40)::filename,folder
-end subroutine md_mhm_rot
-subroutine init_fp(parini,fp_len,latvec)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: fp_len,iat,nmax
-real(8):: convert,latvec(3,3),vol
-end subroutine init_fp
-subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
-use mod_parini, only: typ_parini
-use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
-type(typ_parini), intent(in):: parini
-integer:: fp_len,iat,natmol
-real(8):: fp(fp_len),pos_red(3,parini%nat),latvec(3,3),rxyz(3,parini%nat),vol,rcov_arr(parini%nat),fp_coganov_atomic(3,fp_15_fp_size,parini%ntypat_global,parini%nat)
-real(8):: rvan(parini%nat) !nat*molecules)
-character(len=2):: finalchar(parini%nat) ! dimension(nat*molecules)
-end subroutine get_fp
-subroutine get_fp_distance(parini,fp_len,fp1,fp2,fp_dist)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: fp_len
-real(8):: fp(fp_len),pos_red(3,parini%nat),latvec(3,3),rxyz(3,parini%nat),fp1(fp_len),fp2(fp_len),fp_dist
-end subroutine get_fp_distance
-subroutine identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
-           &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-integer:: nlminx,nlmin,fp_len,kid,k_e_wpos,n_unique,n_nonuni
-integer:: i,l,klow,k,khigh,fp_method,lid(nlminx),nid
-real(8):: fp_arr(fp_len,nlminx),fp_wpos(fp_len),ent_arr(nlminx),ent_wpos,fp_delta,ent_delta,fp_dist_min,fp_dist
-logical newmin,inrange
-end subroutine identical
-subroutine replace(nlminx,nlmin,fp_len,nat,kid,e_wpos,ent_wpos,fp_wpos,wpos_red,&
-  &wpos_latvec,spg_wpos,spgtol_wpos,fdos_wpos,&
-  &e_arr,ent_arr,fp_arr,pl_arr,lat_arr,spg_arr,spgtol_arr,dos_arr,ct_arr,findsym)
-  integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
-  integer:: k, nlmin,nlminx,i,kid
-  real(8):: e_wpos, ent_wpos, wpos_red(3,nat),wpos_latvec(3,3),spgtol_wpos,fdos_wpos,fp_wpos(fp_len)
-  real(8):: e_arr(nlminx),ent_arr(nlminx),fp_arr(fp_len,nlminx),pl_arr(3,nat,nlminx)
-  real(8):: lat_arr(3,3,nlminx),spgtol_arr(nlminx),dos_arr(nlminx)
-  logical:: findsym
-end subroutine replace
- subroutine dist2plane(point,nvec,ppoint,dist)
- real(8), intent(in) :: point(3),nvec(3),ppoint(3)
- real(8), intent(out):: dist
-end subroutine dist2plane
- subroutine dist2line(point,ppoint1,ppoint2,dist)
- real(8), intent(in) :: point(3),ppoint1(3),ppoint2(3)
- real(8), intent(out):: dist
-end subroutine dist2line
-subroutine compare_lammps(parini,parres)
-use mod_parini, only: typ_parini
-type(typ_parini), intent(in):: parini
-type(typ_parini), intent(inout):: parres
-real(8):: latvec(3,3),xred(3,parini%nat),xcart(3,parini%nat),f_lammps(3,parini%nat),f(3,parini%nat),e_lammps,e,tmp_r,tmp_i,tilts(6),latvec_in(3,3),strten(6),latvec_box(3,3)
-end subroutine compare_lammps
-subroutine bin_write(filename,array,n)
-integer:: n
-real(8):: array(n)
-character(40):: filename
-end subroutine bin_write
-subroutine rotmat_fcart_stress(latvec_init,latvec_trans,rotmat)
-real(8):: latvec_init(3,3),latvec_trans(3,3),latvec_trans_inv(3,3),rotmat(3,3)
-end subroutine rotmat_fcart_stress
-subroutine rotate_stresstensor(strten,rotmat)
-real(8):: strten(6),rotmat(3,3),stress(3,3)
-end subroutine rotate_stresstensor
-subroutine bin_read(filename,array,n)
-integer:: n
-real(8):: array(n)
-character(40):: filename
-end subroutine bin_read
-subroutine print_logo()
-end subroutine print_logo
 ! ./src/minhopp_allocation.F90 :
 subroutine allocate_minhopp_arrays1(nproc)
     integer, intent(in):: nproc
@@ -3627,6 +3506,10 @@ subroutine local_minimum_rejected(atoms_hopp)
     use mod_atoms, only: typ_atoms
     type(typ_atoms), intent(in):: atoms_hopp
 end subroutine local_minimum_rejected
+subroutine report_minhopp_iteration_info(atoms_curr)
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    type(typ_atoms), intent(in):: atoms_curr
+end subroutine report_minhopp_iteration_info
 subroutine already_visited_minimum(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
@@ -4166,6 +4049,38 @@ subroutine init_fire(n,f,epot,work,paropt)
     real(8), intent(inout):: work(3*n)
     type(typ_paropt), intent(inout):: paropt
 end subroutine init_fire
+! ./src/optimizer_fire_minhocao.F90 :
+subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
+ real(8) :: latvec_in(3,3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3),vvol_in
+ real(8):: amass(parini%nat)
+ real(8),dimension(3,parini%nat):: xcart
+ real(8),dimension(3,parini%nat):: fposcur
+ real(8),dimension(3,parini%nat):: fpospred
+ real(8),dimension(3,parini%nat):: vpospred
+ real(8),dimension(3,parini%nat):: poscur
+ real(8),dimension(3,parini%nat):: vxyz
+ real(8),dimension(3,parini%nat):: vposcur
+ real(8),dimension(3,parini%nat):: pospred
+ real(8),dimension(3,parini%nat):: accposcur
+ real(8),dimension(3,parini%nat):: accpospred
+ real(8),dimension(3,parini%nat):: accposprev
+ real(8),dimension(3,parini%nat):: dxred
+ real(8):: counter 
+ integer:: iprec
+ character(40)::filename,folder
+ real(8):: alpha,P,P_at,P_lat,fmax,fmax_at,fmax_lat,fall(3,parini%nat+3),fallnorm,vall(3,parini%nat+3),vallnorm
+end subroutine geopt_fire_mhm
+subroutine acceleration_fire(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
+integer:: iat,i,j,md_type,nat
+real(8),dimension(3,nat):: accpos,vpos,fcart,fpos
+real(8),dimension(3,3)  :: acclat,vlat,latvec,tmplat,pressure,a,velmat,sigma,lattrans,latdottrans,gdot,g,ginv,gtot,str_matrix
+real(8),dimension(3,3)  :: term1,term2,term3,term4,term5,term5_1,term5_2,sigmatrans,f0inv
+real(8):: amass(nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3
+real(8):: accvol,vvol,vol_1_3
+end subroutine acceleration_fire
 ! ./src/optimizer_gmdfire.F90 :
 subroutine gmdfire(nr,x,epot,f,work,paropt)
     use mod_opt, only: typ_paropt
@@ -4638,6 +4553,16 @@ subroutine check_nonoptional_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(in):: parini
 end subroutine check_nonoptional_parameters
+! ./src/pbc_distance.F90 :
+subroutine pbc_distance0(latvec,xred_1,xred_2,distance2,dxyz)
+real(8):: xred_1(3),xred_2(3),diff(3),distance2,latvec(3,3),dxyz(3)
+end subroutine pbc_distance0
+subroutine pbc_distance1(latvec,xred_1,xred_2,distance2)
+real(8):: xred_1(3),xred_2(3),diff(3),distance2,latvec(3,3)
+end subroutine pbc_distance1
+subroutine pbc_distance2(latvec,xred_1,xcart_1,xred_2,xcart_2,distance2)
+real(8):: xred_1(3),xred_2(3),diff(3),distance2,latvec(3,3),xcart_1(3),xcart_2(3),xcart_tmp(3),xcart_20(3),xcart_10(3)
+end subroutine pbc_distance2
 ! ./src/phonon.F90 :
 subroutine cal_hessian_4p(parini)
     use mod_parini, only: typ_parini
@@ -4788,6 +4713,20 @@ subroutine final_potential_forces_ff(parini,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
 end subroutine final_potential_forces_ff
+! ./src/potential_flame.F90 :
+subroutine call_to_alborz_init(parini,nat)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: nat
+end subroutine call_to_alborz_init
+subroutine call_to_alborz_get(boundcond,nat,latvec,xred,fcart,energy,strten)
+    character(*), intent(in):: boundcond
+    integer, intent(in):: nat
+    real(8), intent(in):: latvec(3,3), xred(3,nat)
+    real(8), intent(inout):: fcart(3,nat), energy, strten(6)
+end subroutine call_to_alborz_get
+subroutine call_to_alborz_final
+end subroutine call_to_alborz_final
 ! ./src/potential_LJ.F90 :
 subroutine init_lennardjones
 end subroutine init_lennardjones
@@ -4953,6 +4892,25 @@ subroutine initprocessors
 end subroutine initprocessors
 subroutine finalizeprocessors
 end subroutine finalizeprocessors
+! ./src/propagate.F90 :
+subroutine propagate(parini,nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
+use mod_parini, only: typ_parini
+type(typ_parini), intent(in):: parini
+integer::nat,i,iat,j
+real(8):: xred(3,nat),latvec(3,3),dxred(3,nat),dlatvec(3,3),xredout(3,nat),latvecout(3,3),len1,len2
+real(8):: orig_angle(3),new_angle(3),axis(3),rotmat(3,3),center(3),latvec0(3,3)
+end subroutine propagate
+! ./src/replace.F90 :
+subroutine replace(nlminx,nlmin,fp_len,nat,kid,e_wpos,ent_wpos,fp_wpos,wpos_red,&
+  &wpos_latvec,spg_wpos,spgtol_wpos,fdos_wpos,&
+  &e_arr,ent_arr,fp_arr,pl_arr,lat_arr,spg_arr,spgtol_arr,dos_arr,ct_arr,findsym)
+  integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
+  integer:: k, nlmin,nlminx,i,kid
+  real(8):: e_wpos, ent_wpos, wpos_red(3,nat),wpos_latvec(3,3),spgtol_wpos,fdos_wpos,fp_wpos(fp_len)
+  real(8):: e_arr(nlminx),ent_arr(nlminx),fp_arr(fp_len,nlminx),pl_arr(3,nat,nlminx)
+  real(8):: lat_arr(3,3,nlminx),spgtol_arr(nlminx),dos_arr(nlminx)
+  logical:: findsym
+end subroutine replace
 ! ./src/saddle_1s_dimer.F90 :
 subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,paropt)
     use mod_parini, only: typ_parini
@@ -5058,6 +5016,13 @@ subroutine pot_initialize(parini,atoms,paropt,paropt_m)
     type(typ_atoms), intent(inout):: atoms
     type(typ_paropt), intent(inout):: paropt, paropt_m
 end subroutine pot_initialize
+! ./src/save_low_conf.F90 :
+subroutine save_low_conf(nat,npmin,npminx,ent_wpos,e_wpos,pos,latvec,spg,spgtol,fdos,elocmin,poslocmin,latlocmin)
+  integer:: iat,nat, npmin, npminx, kmax, k 
+  real(8):: e_wpos, ent_wpos, emax,spg,spgtol,fdos
+  real(8):: elocmin(npminx,5)
+  real(8):: pos(3,nat),latvec(3,3),poslocmin(3,nat,npminx),latlocmin(3,3,npminx)
+end subroutine save_low_conf
 ! ./src/shortrange.F90 :
 subroutine shortrange_init(atoms,shortrange,linked_lists,spline)
     use mod_atoms, only: typ_atoms
@@ -5096,6 +5061,49 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     real(8), intent(out):: cell(3)
     real(8), intent(out):: epot_short !short range electrostatic energy
 end subroutine cal_shortenergy
+! ./src/slab_stress.F90 :
+subroutine slab_stress(flat,fix_z)
+real(8):: flat(3,3),ekin1,ekin2
+logical:: fix_z
+end subroutine slab_stress
+! ./src/soften.F90 :
+ subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
+ real(8) :: acell_in(3),xred_in(3,parini%nat),vel_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3)
+        integer:: nsoft,i,it,nit,iprec,iat
+        real(8):: curv0,curv,res,pressure,count_soft,alpha
+        real(8):: rxyz(3*parini%nat)
+        real(8):: latvec(9),latvec_in(9)
+        real(8):: ddcart(3*parini%nat)
+        real(8):: rxyzcart(3*parini%nat)
+        real(8):: pos_red0(3*parini%nat)
+        real(8):: pos_red_in(3*parini%nat)
+        real(8):: amass(parini%nat)
+        real(8):: wlat(9),wlatold(9),fxyzcart(3*parini%nat)
+        character(40):: filename,folder
+        real(8):: pos_prev(3*parini%nat),dir_prev(3*parini%nat),dir(3*parini%nat),angle,norm
+end subroutine soften_pos
+ subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(in):: parini
+ type(typ_parini), intent(inout):: parres
+ real(8) :: acell_in(3),xred_in(3,parini%nat),vel_in(3,parini%nat),fcart_in(3,parini%nat),etot_in,strten_in(6),vel_lat_in(3,3)
+        integer:: nsoft,i,it,nit,iprec,iat
+        real(8):: curv0,curv,res,pressure,count_soft,alpha,alphalat
+        real(8):: rxyz(3*parini%nat)
+        real(8):: latvec(9),latvec_in(9)
+        real(8):: dd(3*parini%nat)
+        real(8):: ddcart(3*parini%nat)
+        real(8):: rxyzcart(3*parini%nat)
+        real(8):: ddlat(9)
+        real(8):: ddall(3*parini%nat+9)
+        real(8):: pos_red0(3*parini%nat)
+        real(8):: amass(parini%nat)
+        real(8):: wlat(9),wlatold(9),fxyzcart(3*parini%nat)
+        character(40):: filename,folder
+end subroutine soften_lat
 ! ./src/solve_poisson_cube.F90 :
 subroutine solve_poisson(parini)
     use mod_parini, only: typ_parini
@@ -5235,6 +5243,14 @@ subroutine genrandomconf(atoms,numb,conf)
     character(2):: numb
     type(typ_atoms):: atoms 
 end subroutine genrandomconf
+! ./src/task_minhocao.F90 :
+subroutine task_minhocao(parini,parres)
+ use mod_parini, only: typ_parini
+ type(typ_parini), intent(inout):: parini
+ type(typ_parini), intent(inout):: parres
+  real(8), parameter :: beta1=1.10d0,beta2=1.10d0,beta3=1.d0/1.10d0
+  real(8), parameter :: alpha1=1.d0/1.10d0,alpha2=1.10d0
+end subroutine task_minhocao
 ! ./src/task_miscellaneous.F90 :
 subroutine miscellaneous_task(parini)
     use mod_parini, only: typ_parini
@@ -5361,6 +5377,11 @@ subroutine Hamiltonian_der(u,flag2,mat)
     integer, intent(in):: flag2
     real(8), intent(out):: mat(4,4)
 end subroutine hamiltonian_der
+! ./src/torque_cell.F90 :
+subroutine torque_cell(latvec0,vlat,torquenrm)
+real(8), intent(in)    :: latvec0(3,3)
+real(8), intent(inout) :: vlat(3,3),torquenrm
+end subroutine torque_cell
 ! ./src/tosifumi.F90 :
 subroutine set_tosifumi(atoms,tosifumi)
     use mod_atoms, only: typ_atoms
@@ -5382,6 +5403,35 @@ subroutine tosifumi_parameters(s,p)
     character(6), intent(out):: s(10)
     real(8), intent(out):: p(5,10)
 end subroutine tosifumi_parameters
+! ./src/write_restart.F90 :
+subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
+   &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
+   &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,pressure)
+  use mod_parini, only: typ_parini
+  type(typ_parini), intent(in):: parini
+  integer, intent(in) :: nlminx,nlmin,nsoften,nat,npminx,fp_len
+  real(8), intent(in) :: eref,ediff,ekinetic,dt,e_pos,ent_pos,ekinetic_max,ent_delta,fp_delta
+  real(8), intent(in) :: pos_latvec(3,3) 
+  real(8), intent(in) :: pos_strten(6) 
+  real(8), dimension(nlminx),      intent(in) :: ent_arr,e_arr,spgtol_arr,dos_arr
+  real(8), dimension(3,3,nlminx),  intent(in) :: lat_arr
+  real(8), dimension(6,nlminx),    intent(in) :: str_arr
+  real(8), dimension(3,nat,nlminx),intent(in) :: pl_arr,f_arr
+  real(8), dimension(fp_len,nlminx),intent(in):: fp_arr
+  integer, dimension(nlminx),      intent(in) :: ct_arr,spg_arr
+  character(2), intent(in):: char_type(ntypat) 
+  integer, intent(in):: ntypat 
+  integer, intent(in):: typat(nat) 
+  real(8), intent(in):: pressure 
+  real(8), intent(in):: pos_red(3,nat) 
+  real(8), intent(in):: pos_fcart(3,nat) 
+  logical :: fixat(nat),fixlat(7)
+  character(len=40) :: units 
+end subroutine winter
+subroutine wtioput(ediff,ekinetic,ekinetic_max,nsoften)
+  integer:: nsoften
+  real(8):: ediff, ekinetic,ekinetic_max
+end subroutine wtioput
 end interface
 end module mod_interface
 !*****************************************************************************************
