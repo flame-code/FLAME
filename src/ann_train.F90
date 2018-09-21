@@ -120,6 +120,7 @@ subroutine ann_train(parini)
         endif
     endif
     call final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+
     call f_release_routine()
 end subroutine ann_train
 !*****************************************************************************************
@@ -349,14 +350,17 @@ subroutine init_ann_train(parini,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_ekf
     use mod_processors, only: iproc
+    use yaml_output
+    use futile
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_ekf), intent(inout):: ekf
     !local variables
     integer:: ialpha, i, ios, ia
-    character(15):: fnout
+    character(30):: fnout
     character (50)::fname
+    integer:: ierr
     ann_arr%n=parini%ntypat
     if(parini%bondbased_ann) then
         ann_arr%n=4
@@ -390,13 +394,21 @@ subroutine init_ann_train(parini,ann_arr,ekf)
     call ann_allocate(ekf,ann_arr)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
-        fnout='err_train'
-        open(unit=11,file=fnout,status='replace',iostat=ios)
-        if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
-        !write(fnout,'(a12,i3.3)') 'err_valid',iproc
-        fnout='err_valid'
-        open(unit=12,file=fnout,status='replace',iostat=ios)
-        if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
+        fnout="train_output.yaml"
+        ann_arr%iunit=f_get_free_unit(10**5)
+        call yaml_set_stream(unit=ann_arr%iunit,filename=trim(fnout),&
+             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
+        if (ierr/=0) then
+           call yaml_warning('Failed to create'//trim(fnout)//', error code='//trim(yaml_toa(ierr)))
+        end if
+        call yaml_release_document(ann_arr%iunit)
+        !fnout='err_train'
+        !open(unit=11,file=fnout,status='replace',iostat=ios)
+        !if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
+        !!write(fnout,'(a12,i3.3)') 'err_valid',iproc
+        !fnout='err_valid'
+        !open(unit=12,file=fnout,status='replace',iostat=ios)
+        !if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
     endif
 end subroutine init_ann_train
 !*****************************************************************************************
@@ -407,6 +419,7 @@ subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_tr
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -418,11 +431,20 @@ subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_tr
     call f_free(ekf%x)
 
     if(iproc==0) then
-        close(11)
-        close(12)
+        !close(11)
+        !close(12)
+        call yaml_close_stream(unit=ann_arr%iunit)
     endif
 
     call ann_deallocate(ann_arr)
+
+    do iconf=1,atoms_train%nconf
+        call f_free(symfunc_train%symfunc(iconf)%y)
+    enddo
+
+    do iconf=1,atoms_valid%nconf
+        call f_free(symfunc_valid%symfunc(iconf)%y)
+    enddo
 
     deallocate(atoms_train%conf_inc)
     deallocate(atoms_valid%conf_inc)
@@ -618,7 +640,7 @@ subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_val
     enddo
 end subroutine set_ebounds
 !*****************************************************************************************
-subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
+subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
@@ -626,13 +648,14 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     use mod_processors, only: iproc
     use mod_tightbinding, only: typ_partb
     use futile
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iter
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
     type(typ_atoms_arr), intent(inout):: atoms_arr
-    integer, intent(in):: ifile
+    character(*), intent(in):: data_set
     type(typ_partb), optional, intent(inout):: partb
     !local variables
     type(typ_atoms):: atoms
@@ -645,12 +668,15 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     real(8), save:: time_p=0.d0
     real(8):: dtime1, dtime2
     integer:: ilarge1, ilarge2, ilarge3, iunit, ios
-    character(28):: frmt1='(i6,5f10.3,i7,i5,3i6,a40,i6)'
-    character(28):: frmt2='(i6,5e10.1,i7,i5,3i6,a40,i6)'
-    character(28):: frmt
+    !character(28):: frmt1='(i6,5f10.3,i7,i5,3i6,a40,i6)'
+    !character(28):: frmt2='(i6,5e10.1,i7,i5,3i6,a40,i6)'
+    !character(28):: frmt
+    character(28):: fmt_main
+    character(28):: fmt1='(f10.3)'
+    character(28):: fmt2='(e10.1)'
     character(15):: filename
-    character(5):: data_set
     logical:: file_exists
+    character(len=8):: str_key
     call cpu_time(time1)
     pi=4.d0*atan(1.d0)
     rmse=0.d0
@@ -673,9 +699,9 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     if(parini%print_energy) then
         write(filename,'(a12,i3.3)') 'detailed_err',iter
         iunit=f_get_free_unit(10**5)
-        if(ifile==11) then
+        if(trim(data_set)=="train") then
             open(unit=iunit,file=trim(filename),status='unknown',iostat=ios)
-        elseif(ifile==12) then
+        elseif(trim(data_set)=="valid") then
             open(unit=iunit,file=trim(filename),status='old',access='append',iostat=ios)
         endif
         if(ios/=0) then
@@ -683,13 +709,6 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
             stop
         endif
         !write(iunit,'(a2,a44,4a23)') "#", " ","E_dft","E_ann","E_dft-E_ann/atom (Ha)","E_dft-E_ann (eV)" 
-        if(ifile==11) then
-            data_set='train'
-        elseif(ifile==12) then
-            data_set='valid'
-        else
-            stop 'ERROR: unknow value for ifile in ann_evaluate.'
-        endif
     endif
     configuration: do iconf=1,atoms_arr%nconf
         if(.not. atoms_arr%conf_inc(iconf)) cycle
@@ -699,14 +718,11 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
         else
             call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
         endif
-        !if(ifile==11) then
-        !    write(71,'(2es24.15)') (atoms%rat(1,2)-atoms%rat(1,1))*0.529177210d0,atoms%epot*27.211385d0
+        !if(iter==parini%nstep_ekf) then
+        !    write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
+        !        atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat,atoms%epot/atoms_arr%atoms(iconf)%nat, &
+        !        (atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         !endif
-        if(iter==parini%nstep_ekf) then
-            write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
-                atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat,atoms%epot/atoms_arr%atoms(iconf)%nat, &
-                (atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
-        endif
         tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         !HERE
         if(parini%print_energy) then
@@ -742,15 +758,12 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
             tt3=(ppx-ttx)**2+(ppy-tty)**2+(ppz-ttz)**2
             frmse=frmse+tt3
             tt3=sqrt(tt3)
-            !write(25+ifile,'(i4,3es14.5)') iat,tt1,tt2,tt3
-            !write(22,'(3es19.10)') ttx,tty,ttz
         enddo
         ttn=ttn+ann_arr%fchi_norm
         tta=tta+ann_arr%fchi_angle
         !write(44,'(2i7,4es14.5)') iter,iconf,ann_arr%fchi_norm,ann_arr%fchi_angle,ttn/nconf_force,tta/nconf_force
         !endif
     enddo configuration
-    !stop 'HERe'
     rmse=sqrt(rmse/real(atoms_arr%nconf_inc,8))
     if(nconf_force==0) nconf_force=1
     ttn=ttn/real(nconf_force,8)
@@ -761,18 +774,31 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
         rmse=rmse*1.d3
         errmax=errmax*1.d3
         if(rmse>99999.d0) then
-            frmt=frmt2
+            !frmt=frmt2
+            fmt_main=fmt2
         else
-            frmt=frmt1
+            !frmt=frmt1
+            fmt_main=fmt1
         endif
-        write(ifile,frmt) iter,rmse,ttn,tta,frmse,errmax,ierrmax,atoms_arr%atoms(ierrmax)%nat, &
-            ilarge1,ilarge2,ilarge3,trim(atoms_arr%fn(ierrmax)),atoms_arr%lconf(ierrmax)
-        !if(ifile==11) then
-        !tt1=1.d0/(ann_arr%ann(1)%gausswidth*sqrt(2.d0*pi))+ann_arr%ann(1)%hardness
-        !tt2=1.d0/(ann_arr%ann(2)%gausswidth*sqrt(2.d0*pi))+ann_arr%ann(2)%hardness
-        !ttmax=max(tt1,tt2)
-        !write(*,'(a,i6,5f10.3,i7,3f10.3)') 'ETA ',iter,rmse,ttn,tta,frmse,errmax,ierrmax,tt1,tt2,ttmax
-        !endif
+
+        !write(ifile,frmt) iter,rmse,ttn,tta,frmse,errmax,ierrmax,atoms_arr%atoms(ierrmax)%nat, &
+        !    ilarge1,ilarge2,ilarge3,trim(atoms_arr%fn(ierrmax)),atoms_arr%lconf(ierrmax)
+        write(str_key,'(a)') trim(data_set)
+        call yaml_mapping_open(trim(str_key),flow=.true.,unit=ann_arr%iunit)
+        call yaml_map('iter',iter,unit=ann_arr%iunit)
+        call yaml_map('rmse',rmse,fmt=trim(fmt_main),unit=ann_arr%iunit)
+        call yaml_map('ttn',ttn,fmt=trim(fmt_main),unit=ann_arr%iunit)
+        call yaml_map('tta',tta,fmt=trim(fmt_main),unit=ann_arr%iunit)
+        call yaml_map('frmse',frmse,fmt=trim(fmt_main),unit=ann_arr%iunit)
+        call yaml_map('errmax',errmax,fmt=trim(fmt_main),unit=ann_arr%iunit)
+        call yaml_map('ierrmax',ierrmax,unit=ann_arr%iunit)
+        call yaml_map('nat',atoms_arr%atoms(ierrmax)%nat,unit=ann_arr%iunit)
+        call yaml_map('ilarge1',ilarge1,unit=ann_arr%iunit)
+        call yaml_map('ilarge2',ilarge2,unit=ann_arr%iunit)
+        call yaml_map('ilarge3',ilarge3,unit=ann_arr%iunit)
+        call yaml_map('fn_ierrmax',trim(atoms_arr%fn(ierrmax)),unit=ann_arr%iunit)
+        call yaml_map('lconf_ierrmax',atoms_arr%lconf(ierrmax),unit=ann_arr%iunit)
+        call yaml_mapping_close(unit=ann_arr%iunit)
     endif
     call cpu_time(time2)
     dtime1=time1-time_p

@@ -5,6 +5,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_processors, only: iproc, mpi_comm_abz
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -54,6 +55,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         call fit_hgen(parini,atoms_valid,ann_arr,ekf)
     endif
     do iter=0,parini%nstep_ekf
+        call yaml_sequence(advance='no',unit=ann_arr%iunit)
         call cpu_time(time_s)
         !call randomize_data_order(atoms_train)
         do ia=1,ann_arr%n
@@ -68,8 +70,8 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         endif
         if(mod(iter,1)==0) then
             call analyze_epoch_init(parini,atoms_train,ann_arr)
-            call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,11)
-            call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,12)
+            call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
+            call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
             call analyze_epoch_print(parini,iter,atoms_train,ann_arr)
         endif
         if(iter==parini%nstep_ekf) exit
@@ -217,8 +219,8 @@ subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train
             enddo
         endif
         if(mod(iter,1)==0) then
-            call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,11)
-            call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,12)
+            call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
+            call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
         endif
         if(iter==parini%nstep_ekf) exit
         call cpu_time(time1)
@@ -363,6 +365,7 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr
     use mod_ann, only: typ_ann_arr
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iter
@@ -372,46 +375,65 @@ subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
     integer:: i, ios
     real(8):: ttavg, ttmin, ttmax, ssavg, ssmin, ssmax
     character(50):: fn_charge, fn_chi
+    character(20):: str_key
     if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(ann_arr%approach)=='cent2')) return
     do i=1,parini%ntypat
-        fn_charge='charge.'//trim(parini%stypat(i))
-        fn_chi='chi.'//trim(parini%stypat(i))
-        if(iter==0) then
-            open(unit=61,file=trim(fn_charge),status='replace',iostat=ios)
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure openning ',trim(fn_charge)
-                stop
-            endif
-            open(unit=71,file=trim(fn_chi),status='replace',iostat=ios)
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure openning ',trim(fn_chi)
-                stop
-            endif
-        else
-            open(unit=61,file=trim(fn_charge),status='old',position='append',iostat=ios)
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure openning ',trim(fn_charge)
-                stop
-            endif
-            open(unit=71,file=trim(fn_chi),status='old',position='append',iostat=ios)
-            if(ios/=0) then
-                write(*,'(2a)') 'ERROR: failure openning ',trim(fn_chi)
-                stop
-            endif
-        endif
+        !fn_charge='charge.'//trim(parini%stypat(i))
+        !fn_chi='chi.'//trim(parini%stypat(i))
+        !if(iter==0) then
+        !    open(unit=61,file=trim(fn_charge),status='replace',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_charge)
+        !        stop
+        !    endif
+        !    open(unit=71,file=trim(fn_chi),status='replace',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_chi)
+        !        stop
+        !    endif
+        !else
+        !    open(unit=61,file=trim(fn_charge),status='old',position='append',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_charge)
+        !        stop
+        !    endif
+        !    open(unit=71,file=trim(fn_chi),status='old',position='append',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_chi)
+        !        stop
+        !    endif
+        !endif
         ttavg=ann_arr%qsum(i)/real(ann_arr%natsum(i),8)
         ttmin=ann_arr%qmin(i)
         ttmax=ann_arr%qmax(i)
-        write(61,'(i6,4f8.3)') iter,ttavg,ttmin,ttmax,ttmax-ttmin
+        !write(61,'(i6,4f8.3)') iter,ttavg,ttmin,ttmax,ttmax-ttmin
+        
+        write(str_key,'(2a)') 'charge_',trim(parini%stypat(i))
+        call yaml_mapping_open(trim(str_key),flow=.true.,unit=ann_arr%iunit)
+        call yaml_map('iter',iter,unit=ann_arr%iunit)
+        call yaml_map('qavg',ttavg,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('qmin',ttmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('qmax',ttmax,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('qvar',ttmax-ttmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_mapping_close(unit=ann_arr%iunit)
+
         !write(61,'(i6,4es14.5)') iter,ttavg,ttmin,ttmax,ttmax-ttmin
         ssavg=ann_arr%chi_sum(i)/real(ann_arr%natsum(i),8)
         ssmin=ann_arr%chi_min(i)
         ssmax=ann_arr%chi_max(i)
-        write(71,'(i6,5f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin,ann_arr%chi_delta(i)
+        !write(71,'(i6,5f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin,ann_arr%chi_delta(i)
+        write(str_key,'(2a)') 'chi_',trim(parini%stypat(i))
+        call yaml_mapping_open(trim(str_key),flow=.true.,unit=ann_arr%iunit)
+        call yaml_map('iter',iter,unit=ann_arr%iunit)
+        call yaml_map('chiavg',ssavg,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('chimin',ssmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('chimax',ssmax,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('chivar',ssmax-ssmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_mapping_close(unit=ann_arr%iunit)
         !write(71,'(i6,4es14.5)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
         !if (trim(parini%stypat(i))=='O' .and. ssmax-ssmin> 0.01) stop
-        close(61)
-        close(71)
+        !close(61)
+        !close(71)
     enddo
 end subroutine analyze_epoch_print
 !*****************************************************************************************

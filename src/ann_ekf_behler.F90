@@ -45,8 +45,8 @@ subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             endif
         endif
         if(mod(iter,1)==0) then
-            call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,11)
-            call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,12)
+            call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
+            call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
         endif
         if(iter==parini%nstep_ekf) exit
         call cpu_time(time1)

@@ -108,13 +108,13 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     !call cal_electrostatic_eem2(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
-        write(*,'(a,f8.3)') 'Timing:cent2: initialize matrix          ',time2-time1
-        write(*,'(a,f8.3)') 'Timing:cent2: calculation of symfunc     ',time3-time2
-        write(*,'(a,f8.3)') 'Timing:cent2: neural network process     ',time4-time3
-        write(*,'(a,f8.3)') 'Timing:cent2: linear equations solver    ',time5-time4
-        write(*,'(a,f8.3)') 'Timing:cent2: force (SR term)            ',time6-time5
-        write(*,'(a,f8.3)') 'Timing:cent2: energy (SR+LR), force (LR) ',time7-time6
-        write(*,'(a,f8.3)') 'Timing:cent2: total time                 ',time7-time1
+        !write(*,'(a,f8.3)') 'Timing:cent2: initialize matrix          ',time2-time1
+        !write(*,'(a,f8.3)') 'Timing:cent2: calculation of symfunc     ',time3-time2
+        !write(*,'(a,f8.3)') 'Timing:cent2: neural network process     ',time4-time3
+        !write(*,'(a,f8.3)') 'Timing:cent2: linear equations solver    ',time5-time4
+        !write(*,'(a,f8.3)') 'Timing:cent2: force (SR term)            ',time6-time5
+        !write(*,'(a,f8.3)') 'Timing:cent2: energy (SR+LR), force (LR) ',time7-time6
+        !write(*,'(a,f8.3)') 'Timing:cent2: total time                 ',time7-time1
     endif !end of if for printing out timing.
     !atoms%epot=epot_c
     if(trim(ann_arr%event)=='evalu') then
@@ -214,7 +214,11 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     allocate(qat_old(atoms%nat),rel_old(3,atoms%nat))
     alpha_q=2.d-1*parini%alphax_q
     alpha_r=parini%alphax_r
+    call yaml_sequence_open('Charge equilibration process')
     do istep=0,parini%nstep_cep
+        if(parini%iverbose>=2) then
+            call yaml_sequence(advance='no')
+        endif
         call cal_potential_cent2(parini,ann_arr,atoms,cent)
         gnrm=sqrt(sum(cent%rgrad**2))
         gtot=sum(cent%qgrad(1:atoms%nat))
@@ -231,13 +235,36 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
         endif
         de=atoms%epot-epot_old
         if(parini%iverbose>=2) then
-            write(*,'(a,i5,es24.15,3es11.2,4f8.3)') 'cep: ', &
-                istep,atoms%epot,de,gnrm,gnrm2,q1,qtot,alpha_r,alpha_q
-            write(51,'(i5,2f8.3)') istep,cent%rel(3,1)-atoms%rat(3,1),cent%rel(3,2)-atoms%rat(3,2)
+            !write(*,'(a,i5,es24.15,3es11.2,4f8.3)') 'cep: ', &
+            !    istep,atoms%epot,de,gnrm,gnrm2,q1,qtot,alpha_r,alpha_q
+            !write(51,'(i5,2f8.3)') istep,cent%rel(3,1)-atoms%rat(3,1),cent%rel(3,2)-atoms%rat(3,2)
+            call yaml_mapping_open('cep',flow=.true.)
+            call yaml_map('iter',istep,fmt='(i5)')
+            call yaml_map('epot',atoms%epot,fmt='(es22.13)')
+            call yaml_map('de',de,fmt='(es10.2)')
+            call yaml_map('gnrm',gnrm,fmt='(es10.3)')
+            call yaml_map('gnrm2',gnrm2,fmt='(es10.3)')
+            call yaml_map('qtot',qtot,fmt='(es8.0)')
+            call yaml_map('alpha_q',alpha_q,fmt='(es9.2)')
+            call yaml_map('alpha_r',alpha_r,fmt='(es9.2)')
+            !call yaml_map('stepsize',alpha/alphax,fmt='(es12.3)')
+            !call yaml_map('qtot',qtot,fmt='(f10.3)')
+            !call yaml_map('dpx',dipole(1),fmt='(f10.3)')
+            !call yaml_map('dpy',dipole(2),fmt='(f10.3)')
+            !call yaml_map('dpz',dipole(3),fmt='(f10.3)')
+            call yaml_mapping_close()
         endif
         if(gnrm<parini%rgnrmtol .and. gnrm2<parini%qgnrmtol) then
-            write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
-                istep,atoms%epot,gnrm,gnrm2,q1,qtot
+            !write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
+            !    istep,atoms%epot,gnrm,gnrm2,q1,qtot
+            call yaml_sequence_close()
+            call yaml_map('iter',istep,fmt='(i5)')
+            call yaml_map('epot',atoms%epot,fmt='(es22.13)')
+            call yaml_map('de',de,fmt='(es11.2)')
+            call yaml_map('gnrm',gnrm,fmt='(es12.3)')
+            call yaml_map('gnrm2',gnrm2,fmt='(es12.3)')
+            call yaml_map('qtot',qtot,fmt='(es12.3)')
+            call yaml_mapping_close()
             exit
         endif
         if(istep==parini%nstep_cep) then
@@ -293,6 +320,7 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -340,8 +368,13 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     qtot_ion=sum(atoms%zat(1:atoms%nat))
     qtot_ele=sum(atoms%qat(1:atoms%nat))
     qtot=qtot_ion+qtot_ele
-    write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
-        qtot_ion,qtot_ele,qtot
+    !write(*,'(a,3es14.5)') 'Initial total charges: ionic,electronic,net ', &
+    !    qtot_ion,qtot_ele,qtot
+    call yaml_mapping_open('Initial total charges',flow=.true.)
+    call yaml_map('ionic',qtot_ion,fmt='(es9.1)')
+    call yaml_map('electronic',qtot_ele,fmt='(es9.1)')
+    call yaml_map('net',qtot,fmt='(es9.1)')
+    call yaml_mapping_close()
     do iat=1,atoms%nat
         cent%gwi(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
         cent%gwe(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
@@ -352,7 +385,8 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     alpha_largest=max(alpha_largest,parini%alpha_ewald*sqrt(2.d0))
     rcut=cent%poisson%linked_lists%rcut
     error_erfc_over_r=erfc(rcut/alpha_largest)/rcut
-    write(*,*) 'short range at cut-off: ',error_erfc_over_r !CORRECT_IT
+    !write(*,*) 'short range at cut-off: ',error_erfc_over_r !CORRECT_IT
+    call yaml_map('short range at cut-off',error_erfc_over_r) !CORRECT_IT
     !cent%poisson%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*poisson%alpha !CORRECT_IT
     cent%poisson%rgcut=sqrt(-log(1.d-8))*alpha_largest
 end subroutine init_cent2

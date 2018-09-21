@@ -930,7 +930,7 @@ subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_val
     type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
 end subroutine set_ebounds
-subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
+subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
     use mod_atoms, only: typ_atoms, typ_atoms_arr
@@ -940,7 +940,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,ifile,partb)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
     type(typ_atoms_arr), intent(inout):: atoms_arr
-    integer, intent(in):: ifile
+    character(*), intent(in):: data_set
     type(typ_partb), optional, intent(inout):: partb
 end subroutine ann_evaluate
 subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)

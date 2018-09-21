@@ -98,8 +98,8 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
         enddo
     elseif(iflag==0) then
         iter=icall0
-        call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,11)
-        call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,12)
+        call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
+        call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
         icall0=icall0+1
     endif
 end subroutine fcn_epot
