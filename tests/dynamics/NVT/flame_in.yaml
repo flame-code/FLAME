@@ -5,21 +5,26 @@ main:
 potential:
     potential: forcefield
     component_ff: coulomb:tosifumi
-    #bias: yes
-    #cal_charge: False
+    add_repulsive: False
     ewald:
-        #hx: 0.9448630639252209
-        #hz: 0.5669178383551325
-        ecut: 10.0
+        psolver   : p3d
+        cell_ortho: True
+        ewald: True
+        ecut : 5.0
+        ecutz : 7.0
+        rgcut     : 5.0 
         alpha: 2.26767135342053
         rcut: 15.684726861158667
-        rgcut: 9.0
-        nsp: 10000
-        plane_voltageu: 0.2
-        plane_voltagel: 0.0
+        nsp : 10000
 
 dynamics:
-    md_method: nvt
-    dt: 40
-    nmd: 5000
-    temp: 300
+    md_method : nvt_nose
+    #md_method : nvt_longev
+    dt : 82             # ~2 fs
+    nmd : 10000
+    temp : 300          # K
+    init_temp : 300     # K
+    ntherm : 2
+    highest_freq : 10   # THz
+        # If highest_freq is too small, the temperature can fluctuate wildly; 
+        # If it is too large, the temperature will take a very long time to equilibrate.

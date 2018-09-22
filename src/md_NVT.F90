@@ -366,7 +366,6 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     call final_potential_forces(parini,atoms)
 end subroutine md_nvt_nose_hoover_cp
 !*****************************************************************************************
-!   ...../codes/EON/client/Dynamics.cpp
 subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -401,9 +400,11 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     integer:: jj(3,atoms%nat), vfile
     real(8):: temp1, temp2
     real(8):: sumf1, sumf2, sumf3
+    real(8):: tau, time_unit
     logical:: lfist= .true.
     call random_seed() 
     rat_init=atoms%rat
+    time_unit=41.341373336
 !   dt=parini%dt_dynamics
 
     call init_potential_forces(parini,atoms)
@@ -418,9 +419,14 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     call acf_write(file_info,atoms=atoms,strkey='trajectory')
 
     !  ___________parameters_______________________________________
-    ntherm=2
+    ntherm = parini%ntherm
+    if (ntherm < 2) then
+        stop "ERRROR: nose-hoover chain works with more than 2 thermostat"
+    endif
     aboltzmann= 3.1668139952584056d-06
     temp_trget = parini%temp_dynamics
+    omega = parini%highest_frequency ! THz
+    !omega = 20.d0 !THz
 
     dt2 = 0.5d0*dt
     dt4 = 0.5d0*dt2
@@ -431,19 +437,21 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     nof= (-sum(jj))
     !nof = (3.d0*atoms%nat)
     !nof = (3.d0*atoms%nat+ntherm)
-    ekin_target=0.5d0*nof*aboltzmann*parini%init_temp_dynamics
+    !ekin_target=0.5d0*nof*aboltzmann*parini%init_temp_dynamics
+    ekin_target=1.5d0*atoms%nat*aboltzmann*parini%init_temp_dynamics
 
     allocate(zeta(ntherm), dzeta(ntherm),&
              mass_q(ntherm), azeta(ntherm))
     zeta  = 0.d0
     dzeta = 0.d0
     azeta = 0.d0
-    omega = 1.d0/40.d0
+    tau = 1.d3/ omega *time_unit !Time in atomic unit
 
-    !mass_q   = kt*40**2/omega**2
-    mass_q   = kt*dt**2/omega**2
-    !mass_q(1)= 3.d0*atoms%nat*kt*40**2/omega**2
-    mass_q(1)= 3.d0*atoms%nat*kt*dt**2/omega**2
+    !mass_q   = kt*tau**2
+    mass_q   = kt*(dt/time_unit)**2*tau**2
+    !mass_q(1)= 3.d0*atoms%nat*kt*tau**2
+    !mass_q(1)= nof*kt*tau**2
+    mass_q(1)= nof*kt*(dt/time_unit)**2*tau**2
 
     call get_atomic_mass(atoms,totmass)
     !_______________________initial velocity __________________________
@@ -468,6 +476,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         endif
     endif
     call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
+    temp=temp*(1.5d0*atoms%nat)/(0.5*nof)
     rcm_init = rcm 
     !____________________________________________________________________
     do imd=1,nmd
@@ -487,6 +496,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
             enddo
         endif
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
+        temp=temp*(1.5d0*atoms%nat)/(0.5*nof)
         call cal_potential_forces(parini,atoms)
 
         if(parini%fix_cm_dynamics) then
@@ -514,8 +524,8 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     !___________________  some steps temperature rescaling for pre_equilibrium  __________________
 
         if (imd<200 .and. (.not. parini%restart_dynamics)) then
-            tt=ekin_target/atoms%ekin
-            atoms%vat =  atoms%vat*tt
+            tt=(ekin_target/atoms%ekin)/(3.d0*atoms%nat)*nof
+            atoms%vat =  atoms%vat*sqrt(tt)
         endif
 ! ___________________  chain _____________________________________________
 
@@ -570,6 +580,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
             enddo
         enddo
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
+        temp=temp*(1.5d0*atoms%nat)/(0.5*nof)
 
 ! ____________________  chain ______________________________________________
         azeta(1) = (2.0*atoms%ekin-nof*kt)/mass_q(1);
@@ -815,22 +826,172 @@ subroutine get_atomic_mass(atoms,totmass)
     integer:: iat
     totmass=0.d0
     do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Na') then 
-            atoms%amass(iat)= 22.98976928*mass_conv
-        else if(trim(atoms%sat(iat))=='Cl') then
-            atoms%amass(iat)= 35.45*mass_conv
-        else if(trim(atoms%sat(iat))=='Si') then
-            atoms%amass(iat)= 28.085*mass_conv
-        else if(trim(atoms%sat(iat))=='Zr') then
-            atoms%amass(iat)= 91.224*mass_conv
-        else if(trim(atoms%sat(iat))=='Y') then
-            atoms%amass(iat)= 88.90585*mass_conv
+        if     (trim(atoms%sat(iat))=='H') then
+            atoms%amass(iat)= mass_conv* 1.0079
+        else if(trim(atoms%sat(iat))=='He') then   
+            atoms%amass(iat)= mass_conv* 4.0026 
+        else if(trim(atoms%sat(iat))=='Li') then   
+            atoms%amass(iat)= mass_conv* 6.941
+        else if(trim(atoms%sat(iat))=='Be') then   
+            atoms%amass(iat)= mass_conv* 9.0122
+        else if(trim(atoms%sat(iat))=='B') then
+            atoms%amass(iat)= mass_conv* 10.811 
+        else if(trim(atoms%sat(iat))=='C') then
+            atoms%amass(iat)= mass_conv* 12.0107 
+        else if(trim(atoms%sat(iat))=='N') then
+            atoms%amass(iat)= mass_conv* 14.0067 
         else if(trim(atoms%sat(iat))=='O') then
-            atoms%amass(iat)= 15.9994*mass_conv
-        else if(trim(atoms%sat(iat))=='K') then 
-            atoms%amass(iat)= 22.98976928*mass_conv
-        else if(trim(atoms%sat(iat))=='Br') then
-            atoms%amass(iat)= 35.45*mass_conv
+            atoms%amass(iat)= mass_conv* 15.9994 
+        else if(trim(atoms%sat(iat))=='F') then
+            atoms%amass(iat)= mass_conv* 18.9984 
+        else if(trim(atoms%sat(iat))=='Ne') then   
+            atoms%amass(iat)= mass_conv* 20.1797     
+        else if(trim(atoms%sat(iat))=='Na') then   
+            atoms%amass(iat)= mass_conv* 22.9897     
+        else if(trim(atoms%sat(iat))=='Mg') then   
+            atoms%amass(iat)= mass_conv* 24.305
+        else if(trim(atoms%sat(iat))=='Al') then   
+            atoms%amass(iat)= mass_conv* 26.9815     
+        else if(trim(atoms%sat(iat))=='Si') then   
+            atoms%amass(iat)= mass_conv* 28.0855     
+        else if(trim(atoms%sat(iat))=='P') then
+            atoms%amass(iat)= mass_conv* 30.9738 
+        else if(trim(atoms%sat(iat))=='S') then
+            atoms%amass(iat)= mass_conv* 32.065
+        else if(trim(atoms%sat(iat))=='Cl') then   
+            atoms%amass(iat)= mass_conv* 35.453 
+        else if(trim(atoms%sat(iat))=='K') then
+            atoms%amass(iat)= mass_conv* 39.0983 
+        else if(trim(atoms%sat(iat))=='Ar') then   
+            atoms%amass(iat)= mass_conv* 39.948
+        else if(trim(atoms%sat(iat))=='Ca') then   
+            atoms%amass(iat)= mass_conv* 40.078
+        else if(trim(atoms%sat(iat))=='Sc') then   
+            atoms%amass(iat)= mass_conv* 44.9559     
+        else if(trim(atoms%sat(iat))=='Ti') then   
+            atoms%amass(iat)= mass_conv* 47.867 
+        else if(trim(atoms%sat(iat))=='V') then
+            atoms%amass(iat)= mass_conv* 50.9415 
+        else if(trim(atoms%sat(iat))=='Cr') then   
+            atoms%amass(iat)= mass_conv* 51.9961     
+        else if(trim(atoms%sat(iat))=='Mn') then   
+            atoms%amass(iat)= mass_conv* 54.938
+        else if(trim(atoms%sat(iat))=='Fe') then   
+            atoms%amass(iat)= mass_conv* 55.845 
+        else if(trim(atoms%sat(iat))=='Ni') then   
+            atoms%amass(iat)= mass_conv* 58.6934     
+        else if(trim(atoms%sat(iat))=='Co') then   
+            atoms%amass(iat)= mass_conv* 58.9332     
+        else if(trim(atoms%sat(iat))=='Cu') then   
+            atoms%amass(iat)= mass_conv* 63.546
+        else if(trim(atoms%sat(iat))=='Zn') then   
+            atoms%amass(iat)= mass_conv* 65.39 
+        else if(trim(atoms%sat(iat))=='Ga') then   
+            atoms%amass(iat)= mass_conv* 69.723 
+        else if(trim(atoms%sat(iat))=='Ge') then   
+            atoms%amass(iat)= mass_conv* 72.64 
+        else if(trim(atoms%sat(iat))=='As') then   
+            atoms%amass(iat)= mass_conv* 74.9216     
+        else if(trim(atoms%sat(iat))=='Se') then   
+            atoms%amass(iat)= mass_conv* 78.96 
+        else if(trim(atoms%sat(iat))=='Br') then   
+            atoms%amass(iat)= mass_conv* 79.904 
+        else if(trim(atoms%sat(iat))=='Kr') then   
+            atoms%amass(iat)= mass_conv* 83.8 
+        else if(trim(atoms%sat(iat))=='Rb') then   
+            atoms%amass(iat)= mass_conv* 85.4678     
+        else if(trim(atoms%sat(iat))=='Sr') then   
+            atoms%amass(iat)= mass_conv* 87.62 
+        else if(trim(atoms%sat(iat))=='Y') then
+            atoms%amass(iat)= mass_conv* 88.9059 
+        else if(trim(atoms%sat(iat))=='Zr') then   
+            atoms%amass(iat)= mass_conv* 91.224
+        else if(trim(atoms%sat(iat))=='Nb') then   
+            atoms%amass(iat)= mass_conv* 92.9064     
+        else if(trim(atoms%sat(iat))=='Mo') then   
+            atoms%amass(iat)= mass_conv* 95.94 
+        else if(trim(atoms%sat(iat))=='Tc') then   
+            atoms%amass(iat)= mass_conv* 98 
+        else if(trim(atoms%sat(iat))=='Ru') then   
+            atoms%amass(iat)= mass_conv* 101.07
+        else if(trim(atoms%sat(iat))=='Rh') then   
+            atoms%amass(iat)= mass_conv* 102.9055    
+        else if(trim(atoms%sat(iat))=='Pd') then   
+            atoms%amass(iat)= mass_conv* 106.42
+        else if(trim(atoms%sat(iat))=='Ag') then   
+            atoms%amass(iat)= mass_conv* 107.8682    
+        else if(trim(atoms%sat(iat))=='Cd') then   
+            atoms%amass(iat)= mass_conv* 112.411     
+        else if(trim(atoms%sat(iat))=='In') then   
+            atoms%amass(iat)= mass_conv* 114.818     
+        else if(trim(atoms%sat(iat))=='Sn') then   
+            atoms%amass(iat)= mass_conv* 118.71
+        else if(trim(atoms%sat(iat))=='Sb') then   
+            atoms%amass(iat)= mass_conv* 121.76 
+        else if(trim(atoms%sat(iat))=='I') then
+            atoms%amass(iat)= mass_conv* 126.9045
+        else if(trim(atoms%sat(iat))=='Te') then   
+            atoms%amass(iat)= mass_conv* 127.6 
+        else if(trim(atoms%sat(iat))=='Xe') then   
+            atoms%amass(iat)= mass_conv* 131.293     
+        else if(trim(atoms%sat(iat))=='Cs') then   
+            atoms%amass(iat)= mass_conv* 132.9055    
+        else if(trim(atoms%sat(iat))=='Ba') then   
+            atoms%amass(iat)= mass_conv* 137.327     
+        else if(trim(atoms%sat(iat))=='La') then   
+            atoms%amass(iat)= mass_conv* 138.9055    
+        else if(trim(atoms%sat(iat))=='Ce') then   
+            atoms%amass(iat)= mass_conv* 140.116     
+        else if(trim(atoms%sat(iat))=='Pr') then   
+            atoms%amass(iat)= mass_conv* 140.9077    
+        else if(trim(atoms%sat(iat))=='Nd') then   
+            atoms%amass(iat)= mass_conv* 144.24 
+        else if(trim(atoms%sat(iat))=='Pm') then   
+            atoms%amass(iat)= mass_conv* 145
+        else if(trim(atoms%sat(iat))=='Sm') then   
+            atoms%amass(iat)= mass_conv* 150.36
+        else if(trim(atoms%sat(iat))=='Eu') then   
+            atoms%amass(iat)= mass_conv* 151.964     
+        else if(trim(atoms%sat(iat))=='Gd') then   
+            atoms%amass(iat)= mass_conv* 157.25
+        else if(trim(atoms%sat(iat))=='Tb') then   
+            atoms%amass(iat)= mass_conv* 158.9253    
+        else if(trim(atoms%sat(iat))=='Dy') then   
+            atoms%amass(iat)= mass_conv* 162.5
+        else if(trim(atoms%sat(iat))=='Ho') then   
+            atoms%amass(iat)= mass_conv* 164.9303    
+        else if(trim(atoms%sat(iat))=='Er') then   
+            atoms%amass(iat)= mass_conv* 167.259     
+        else if(trim(atoms%sat(iat))=='Tm') then   
+            atoms%amass(iat)= mass_conv* 168.9342    
+        else if(trim(atoms%sat(iat))=='Yb') then   
+            atoms%amass(iat)= mass_conv* 173.04
+        else if(trim(atoms%sat(iat))=='Lu') then   
+            atoms%amass(iat)= mass_conv* 174.967     
+        else if(trim(atoms%sat(iat))=='Hf') then   
+            atoms%amass(iat)= mass_conv* 178.49
+        else if(trim(atoms%sat(iat))=='Ta') then   
+            atoms%amass(iat)= mass_conv* 180.9479    
+        else if(trim(atoms%sat(iat))=='W') then
+            atoms%amass(iat)= mass_conv* 183.84
+        else if(trim(atoms%sat(iat))=='Re') then   
+            atoms%amass(iat)= mass_conv* 186.207     
+        else if(trim(atoms%sat(iat))=='Os') then   
+            atoms%amass(iat)= mass_conv* 190.23
+        else if(trim(atoms%sat(iat))=='Ir') then   
+            atoms%amass(iat)= mass_conv* 192.217     
+        else if(trim(atoms%sat(iat))=='Pt') then   
+            atoms%amass(iat)= mass_conv* 195.078     
+        else if(trim(atoms%sat(iat))=='Au') then   
+            atoms%amass(iat)= mass_conv* 196.9665    
+        else if(trim(atoms%sat(iat))=='Hg') then   
+            atoms%amass(iat)= mass_conv* 200.59
+        else if(trim(atoms%sat(iat))=='Tl') then   
+            atoms%amass(iat)= mass_conv* 204.3833    
+        else if(trim(atoms%sat(iat))=='Pb') then   
+            atoms%amass(iat)= mass_conv* 207.2 
+        else if(trim(atoms%sat(iat))=='Bi') then 
+            atoms%amass(iat)= mass_conv* 208.9804    
         else
             write(*,*)"unknown atomic type"
             stop

@@ -110,6 +110,8 @@ module mod_parini
         real(8):: dt_dynamics=-1.d0
         real(8):: temp_dynamics
         real(8):: init_temp_dynamics =0.d0
+        real(8):: highest_frequency  =10.d0
+        integer:: ntherm  = 2
         integer:: nmd_dynamics=0
         integer:: nfreq_dynamics=0
         character(20):: md_method_dynamics='unknown'
