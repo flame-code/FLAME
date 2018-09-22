@@ -345,6 +345,8 @@ subroutine yaml_get_dynamics_parameters(parini)
     parini%dt_dynamics=parini%subdict//"dt"
     parini%temp_dynamics=parini%subdict//"temp"
     parini%init_temp_dynamics=parini%subdict//"init_temp"
+    parini%highest_frequency=parini%subdict//"highest_freq"
+    parini%ntherm=parini%subdict//"ntherm"
     parini%md_method_dynamics=parini%subdict//"md_method"
     parini%print_force_dynamics=parini%subdict//"print_force"
     parini%restart_dynamics=parini%subdict//"restart"

@@ -248,6 +248,8 @@
   dt_init: 20.0
   nit_per_min: 25
   encon: False
+  highest_freq: 10.0
+  ntherm: 2
  bader:
    method: unknown
    filename: total_density.cube
