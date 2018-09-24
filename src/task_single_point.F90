@@ -15,9 +15,12 @@ subroutine single_point_task(parini)
     type(typ_file_info):: file_info
     real(8):: tt1, tt2, fxyz(3)
     integer:: iconf, iat
-    logical:: acf_exists
+    logical:: acf_exists, yaml_exists
+    inquire(file='posinp.yaml',exist=yaml_exists)
     inquire(file='posinp.acf',exist=acf_exists)
-    if(acf_exists) then
+    if(yaml_exists) then
+        call read_yaml_conf(parini,'posinp.yaml',10000,atoms_arr)
+    elseif(acf_exists) then
         call acf_read_new(parini,'posinp.acf',10000,atoms_arr)
     else
         atoms_arr%nconf=1
@@ -68,7 +71,13 @@ subroutine single_point_task(parini)
             call final_potential_forces(parini,atoms_arr%atoms(iconf))
         endif
         if (iconf==2)  file_info%file_position='append'
-        call acf_write(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout') !to be fixed later by atoms_arr
+        if(yaml_exists) then
+            file_info%filename_positions='posout.yaml'
+            call write_yaml_conf(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout')
+        elseif(acf_exists) then
+            file_info%filename_positions='posout.acf'
+            call acf_write(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout')
+        endif
     enddo
     do iconf=1,atoms_arr%nconf
         call atom_deallocate(atoms_arr%atoms(iconf))

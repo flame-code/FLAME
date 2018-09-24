@@ -24,6 +24,7 @@ module mod_atoms
         character(5):: stypat(20)='none'
         character(20):: boundcond='unknown'
         character(10):: units='angstrom'
+        character(10):: units_length_io='atomic'
         !coordinates type only at time of reading from file and writing to file.
         character(10):: coordinates_type='cartesian'
         character(50):: alloclist='all'

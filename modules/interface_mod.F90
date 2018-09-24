@@ -2886,6 +2886,21 @@ subroutine readxyz(filename,nat,rat,sat,comment1,comment2,atom_motion)
     character(*):: filename, comment1, comment2
     logical:: atom_motion(3,nat)
 end subroutine readxyz
+! ./src/io_yaml_conf.F90 :
+subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: filename
+    integer, intent(in):: nconfmax
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine read_yaml_conf
+subroutine write_yaml_conf(file_info,atoms,strkey)
+    use mod_atoms, only: typ_file_info, typ_atoms
+    type(typ_file_info), intent(inout):: file_info
+    type(typ_atoms), intent(in):: atoms
+    character(*), optional, intent(in):: strkey
+end subroutine write_yaml_conf
 ! ./src/latticetools_minhocao.F90 :
  subroutine dist2line(point,ppoint1,ppoint2,dist)
  real(8), intent(in) :: point(3),ppoint1(3),ppoint2(3)
