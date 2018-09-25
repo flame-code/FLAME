@@ -117,3 +117,23 @@ def acf_write(atoms_all,filename,labelpatt='none'):
                 f.write("%5s  %23.14E%23.14E%23.14E%5s\n" % (atoms.sat[i],x,y,z,atoms.bemoved[i]))
         f.close()
 #*****************************************************************************************
+def read_forces(nat,filename):
+    """read the force file """
+    fd = open(filename, 'r')
+    forces=[]
+    while True:
+        line = fd.readline()
+        if not line:
+            break
+        if "configuration" in line:
+            iat=0
+            fat=[]
+            continue
+        fat.append([float(line.split()[0]), float(line.split()[1]), float(line.split()[2])])
+        iat+=1
+        if iat==nat:
+            forces.append(fat)
+            del fat
+    return forces
+    fd.close()
+#*****************************************************************************************

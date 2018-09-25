@@ -14,3 +14,4 @@ class Atoms:
         self.qtot=0.0
         self.coordinates="Cartesian"
         self.pattern=-1
+        self.units_length_io='atomic'
