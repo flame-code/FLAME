@@ -58,6 +58,7 @@ def dict2atoms(dict_atoms):
     for key, value in dict_atoms.items(): 
         atoms=Atoms()
         atoms.nat       = dict_atoms[key]['nat']
+        atoms.units_length_io = dict_atoms[key]['units_length']
         atoms.boundcond = dict_atoms[key]['bc']
         for sub_key in value:
             if sub_key == 'epot':
@@ -76,7 +77,15 @@ def dict2atoms(dict_atoms):
             sat = dict_atoms[key]['coord'][i][3] 
             ab  = dict_atoms[key]['coord'][i][4]
             atoms.rat.append(r)
+            atoms.bemoved_present=True
             atoms.sat.append(sat)
             atoms.bemoved.append(ab)
+
+    if dict_atoms['conf'].has_key('cell'): atoms.cell_present=True
+    if dict_atoms['conf'].has_key('epot'): atoms.epot_present=True
+    if dict_atoms['conf'].has_key('force'): atoms.fat_present=True
+    if dict_atoms['conf'].has_key('qtot'): atoms.qtot_present=True
+    if dict_atoms['conf'].has_key('bemoved'): atoms.bemoved_present=True #CORRECT_IT
+    if dict_atoms['conf'].has_key('velocity'): atoms.vat_present=True
     return atoms
 #*****************************************************************************************

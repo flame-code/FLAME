@@ -2810,6 +2810,22 @@ real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2,tmp
 character(2):: char_type(ntypat)
 logical:: fixat(nat),fixlat(7)
 end subroutine write_atomic_file_ascii
+! ./src/io_bin.F90 :
+subroutine read_bin_conf(parini,filename,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: filename
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine read_bin_conf
+subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: filename
+    integer, intent(in):: iunit
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+end subroutine read_bin_conf_v1
 ! ./src/io_cube.F90 :
 subroutine cube_read(filename,atoms,poisson)
     use mod_atoms, only: typ_atoms

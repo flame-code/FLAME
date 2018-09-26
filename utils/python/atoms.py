@@ -15,3 +15,9 @@ class Atoms:
         self.coordinates="Cartesian"
         self.pattern=-1
         self.units_length_io='atomic'
+        self.cell_present=False
+        self.epot_present=False
+        self.fat_present=False
+        self.qtot_present=False
+        self.bemoved_present=False
+        self.vat_present=False
