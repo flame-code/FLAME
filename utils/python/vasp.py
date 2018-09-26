@@ -292,6 +292,7 @@ def poscar_read(filename):
             xred=float(line.split()[0])
             yred=float(line.split()[1])
             zred=float(line.split()[2])
+            atoms.bemoved.append("TTT")
             if(atoms.coordinates=="Direct"):
                 x=xred*atoms.cellvec[0][0]+yred*atoms.cellvec[1][0]+zred*atoms.cellvec[2][0]
                 y=xred*atoms.cellvec[0][1]+yred*atoms.cellvec[1][1]+zred*atoms.cellvec[2][1]

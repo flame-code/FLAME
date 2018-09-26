@@ -5,10 +5,10 @@ import argparse
 from acf import *
 from io_yaml import *
 
-str1 = "This script read acf and force files and convert them to yaml format"
+str1 = "This script read acf and force files and write them in a file with yaml format"
 parser = argparse.ArgumentParser(description=str1)
-parser.add_argument('fn_inp', action='store' ,type=str, help="the name of the input file in acf format")
-parser.add_argument('fn_out', action='store' ,type=str, help="the name of the output file in acf format")
+parser.add_argument('fn_inp', action='store' ,type=str, help="Name of the input file in acf format")
+parser.add_argument('fn_out', action='store' ,type=str, help="Name of the output file in yaml format")
 parser.add_argument("-force",action='store_false',help="if present, force will be written")
 args=parser.parse_args()
 force=not args.force
