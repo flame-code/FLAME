@@ -191,7 +191,15 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
         call yaml_comment('reading cellvec sizes and atomic positions from posinp.acf')
         !write(*,'(a)') 'reading cellvec sizes and atomic positions from posinp.acf'
         !call acf_read(parini,'posinp.acf',nproc,atoms_all=atoms_allproc)
-        call acf_read_new(parini,'posinp.acf',nproc,atoms_arr=atoms_allproc)
+        !call acf_read_new(parini,'posinp.acf',nproc,atoms_arr=atoms_allproc)
+        !inquire(file='posinp.yaml',exist=yaml_exists)
+        !inquire(file='posinp.acf',exist=acf_exists)
+        !if(yaml_exists) then
+            call read_yaml_conf(parini,'posinp.yaml',nproc,atoms_arr=atoms_allproc)
+        !elseif(acf_exists) then
+        !    call acf_read_new(parini,'posinp.acf',10000,atoms_arr=atoms_allproc)
+        !else
+        !endif
         !write(*,*) atoms_allproc%atoms%nat,atoms_curr%nat
         !write(*,*) atoms_allproc%atoms%bemoved(:,:)
         !write(*,*) atoms_curr%bemoved(:,:)
@@ -243,7 +251,8 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
         endif
         if(iproc==imaster) then
             !call acf_read(parini,'poslow.acf',npminx,atoms_arr=atoms_locmin)
-            call acf_read_new(parini,'poslow.acf',npminx,atoms_arr=atoms_locmin)
+            !call acf_read_new(parini,'poslow.acf',npminx,atoms_arr=atoms_locmin)
+            call read_yaml_conf(parini,'poslow.yaml',npminx,atoms_arr=atoms_locmin)
         endif
         call read_poslow(atoms_locmin)
     endif
@@ -1481,10 +1490,19 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
     call yaml_mapping_close()
     !write(*,'(a,i4,i7)') 'writing minhopp results: iproc,nlmin',iproc,nlmin
     !call write_poscur(atoms_allproc)
-    file_info%filename_positions='posout.acf'
-    file_info%file_position='new'
+    !file_info%filename_positions='posout.acf'
+    !file_info%file_position='new'
     !call acf_write(file_info,atoms_arr=atoms_allproc,strkey='poscur')
-    call acf_write_new(file_info,atoms_arr=atoms_allproc,strkey='poscur')
+    !call acf_write_new(file_info,atoms_arr=atoms_allproc,strkey='poscur')
+    file_info%filename_positions='posout.yaml'
+    do iconf=1,atoms_allproc%nconf
+        if(iconf==1) then
+            file_info%file_position='new'
+        else
+            file_info%file_position='append'
+        endif
+        call write_yaml_conf(file_info,atoms_allproc%atoms(iconf),strkey='poscur')
+    enddo
     !call write_poslow(atoms_locmin)
     do ipmin=1,atoms_locmin%nconf
         !if(abs(earr(ipmin)-atoms_locmin%epotall(ipmin))>etoler) then
@@ -1504,9 +1522,18 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
             write(*,'(a,2i4)') 'ERROR: ranking error in elocmin array: ipmin-1,ipmin',ipmin-1,ipmin
         endif
     enddo
-    file_info%filename_positions='poslow.acf'
-    file_info%file_position='new'
-    call acf_write_new(file_info,atoms_arr=atoms_locmin,strkey='poslow')
+    !file_info%filename_positions='poslow.acf'
+    !file_info%file_position='new'
+    !call acf_write_new(file_info,atoms_arr=atoms_locmin,strkey='poslow')
+    file_info%filename_positions='poslow.yaml'
+    do iconf=1,atoms_locmin%nconf
+        if(iconf==1) then
+            file_info%file_position='new'
+        else
+            file_info%file_position='append'
+        endif
+        call write_yaml_conf(file_info,atoms_locmin%atoms(iconf),strkey='poslow')
+    enddo
     call yaml_comment('master proc wrote poslow.xyz')
     !write(*,*) 'master proc wrote poslow.xyz'
     call write_earr
