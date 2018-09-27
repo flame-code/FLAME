@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-06 17:52:50.006
+ Timestamp of this run                 : 2018-09-27 13:00:13.149
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -244,6 +244,8 @@
    dt_init                             : 20.0
    nit_per_min                         : 25
    encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
  bader:
    method                              : unknown
    filename                            : total_density.cube
@@ -300,9 +302,7 @@
  system info: {ntypat:  1, Au:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
- reading structures:
-   filename                            : posinp.acf
-   nconf                               :  1
+ Number of configurations read: {filename: posinp.yaml, nconf:  1}
  SQNM optimization iterations:
  - SQNM: {iter:  1, epot: -1.653328384903E+00, de: -2.2E-01, fmax:  2.063E-01, 
           fnrm:  7.959E-01,                  ndim:  0}
@@ -386,7 +386,7 @@
           fnrm:  1.354E-01,                   ndim:  10}
  - SQNM: {iter:  41, epot: -2.180249499630E+00, de: -2.4E-04, fmax:  1.149E-02, 
           fnrm:  1.582E-01,                   ndim:  10}
- - SQNM: {iproc:  000, iter:  42, epot: -2.178351384767E+00, de:  1.898E-03, 
+ - SQNM: {iproc:  000, iter:  42, epot: -2.178351384766E+00, de:  1.898E-03, 
            fmax:  1.50915E-02,    fnrm:  1.95615E-01, ndim:  10}
  - SQNM: {iter:  42, epot: -2.180762026988E+00, de: -5.1E-04, fmax:  1.075E-02, 
           fnrm:  1.463E-01,                   ndim:  0}
@@ -426,13 +426,13 @@
           fnrm:  1.350E-01,                   ndim:  10}
  - SQNM: {iter:  60, epot: -2.189176527542E+00, de: -1.2E-04, fmax:  9.105E-03, 
           fnrm:  1.503E-01,                   ndim:  10}
- - SQNM: {iter:  61, epot: -2.189552758065E+00, de: -3.8E-04, fmax:  9.889E-03, 
+ - SQNM: {iter:  61, epot: -2.189552758064E+00, de: -3.8E-04, fmax:  9.889E-03, 
           fnrm:  1.624E-01,                   ndim:  10}
- - SQNM: {iter:  62, epot: -2.190358821691E+00, de: -8.1E-04, fmax:  7.852E-03, 
+ - SQNM: {iter:  62, epot: -2.190358821690E+00, de: -8.1E-04, fmax:  7.852E-03, 
           fnrm:  1.512E-01,                   ndim:  10}
- - SQNM: {iter:  63, epot: -2.192278564581E+00, de: -1.9E-03, fmax:  5.197E-03, 
+ - SQNM: {iter:  63, epot: -2.192278564582E+00, de: -1.9E-03, fmax:  5.197E-03, 
           fnrm:  1.218E-01,                   ndim:  10}
- - SQNM: {iter:  64, epot: -2.193710369651E+00, de: -1.4E-03, fmax:  5.148E-03, 
+ - SQNM: {iter:  64, epot: -2.193710369652E+00, de: -1.4E-03, fmax:  5.148E-03, 
           fnrm:  1.151E-01,                   ndim:  10}
  - SQNM: {iter:  65, epot: -2.194855797490E+00, de: -1.1E-03, fmax:  3.664E-03, 
           fnrm:  9.882E-02,                   ndim:  10}
@@ -444,39 +444,39 @@
           fnrm:  8.480E-02,                   ndim:  10}
  - SQNM: {iter:  69, epot: -2.199108392454E+00, de: -1.1E-03, fmax:  3.449E-03, 
           fnrm:  8.204E-02,                   ndim:  10}
- - SQNM: {iter:  70, epot: -2.200549479006E+00, de: -1.4E-03, fmax:  4.297E-03, 
+ - SQNM: {iter:  70, epot: -2.200549479012E+00, de: -1.4E-03, fmax:  4.297E-03, 
           fnrm:  8.839E-02,                   ndim:  10}
- - SQNM: {iter:  71, epot: -2.202124467256E+00, de: -1.6E-03, fmax:  4.076E-03, 
+ - SQNM: {iter:  71, epot: -2.202124467222E+00, de: -1.6E-03, fmax:  4.076E-03, 
           fnrm:  8.805E-02,                   ndim:  10}
- - SQNM: {iter:  72, epot: -2.203887423894E+00, de: -1.8E-03, fmax:  4.403E-03, 
+ - SQNM: {iter:  72, epot: -2.203887423783E+00, de: -1.8E-03, fmax:  4.403E-03, 
           fnrm:  8.419E-02,                   ndim:  10}
- - SQNM: {iter:  73, epot: -2.205194248680E+00, de: -1.3E-03, fmax:  2.920E-03, 
+ - SQNM: {iter:  73, epot: -2.205194248645E+00, de: -1.3E-03, fmax:  2.920E-03, 
           fnrm:  9.507E-02,                   ndim:  10}
- - SQNM: {iter:  74, epot: -2.205488713092E+00, de: -2.9E-04, fmax:  3.029E-03, 
+ - SQNM: {iter:  74, epot: -2.205488713082E+00, de: -2.9E-04, fmax:  3.029E-03, 
           fnrm:  8.639E-02,                   ndim:  10}
- - SQNM: {iter:  75, epot: -2.205510469211E+00, de: -2.2E-05, fmax:  4.384E-03, 
+ - SQNM: {iter:  75, epot: -2.205510469173E+00, de: -2.2E-05, fmax:  4.384E-03, 
           fnrm:  9.655E-02,                   ndim:  10}
- - SQNM: {iter:  76, epot: -2.205690223305E+00, de: -1.8E-04, fmax:  1.995E-03, 
+ - SQNM: {iter:  76, epot: -2.205690223306E+00, de: -1.8E-04, fmax:  1.995E-03, 
           fnrm:  7.707E-02,                   ndim:  10}
- - SQNM: {iter:  77, epot: -2.205843154766E+00, de: -1.5E-04, fmax:  1.205E-03, 
+ - SQNM: {iter:  77, epot: -2.205843154764E+00, de: -1.5E-04, fmax:  1.205E-03, 
           fnrm:  5.753E-02,                   ndim:  10}
- - SQNM: {iter:  78, epot: -2.205939082621E+00, de: -9.6E-05, fmax:  8.087E-04, 
+ - SQNM: {iter:  78, epot: -2.205939082619E+00, de: -9.6E-05, fmax:  8.087E-04, 
           fnrm:  4.763E-02,                   ndim:  10}
- - SQNM: {iter:  79, epot: -2.206048952780E+00, de: -1.1E-04, fmax:  7.428E-04, 
+ - SQNM: {iter:  79, epot: -2.206048952774E+00, de: -1.1E-04, fmax:  7.428E-04, 
           fnrm:  4.487E-02,                   ndim:  10}
- - SQNM: {iter:  80, epot: -2.206121093946E+00, de: -7.2E-05, fmax:  5.584E-04, 
+ - SQNM: {iter:  80, epot: -2.206121093943E+00, de: -7.2E-05, fmax:  5.584E-04, 
           fnrm:  4.143E-02,                   ndim:  10}
- - SQNM: {iter:  81, epot: -2.206252082139E+00, de: -1.3E-04, fmax:  4.907E-04, 
+ - SQNM: {iter:  81, epot: -2.206252082125E+00, de: -1.3E-04, fmax:  4.907E-04, 
           fnrm:  4.046E-02,                   ndim:  10}
- - SQNM: {iter:  82, epot: -2.206333881092E+00, de: -8.2E-05, fmax:  5.310E-04, 
+ - SQNM: {iter:  82, epot: -2.206333881112E+00, de: -8.2E-05, fmax:  5.310E-04, 
           fnrm:  3.807E-02,                   ndim:  10}
- - SQNM: {iter:  83, epot: -2.206379626277E+00, de: -4.6E-05, fmax:  4.494E-04, 
+ - SQNM: {iter:  83, epot: -2.206379626280E+00, de: -4.6E-05, fmax:  4.494E-04, 
           fnrm:  3.679E-02,                   ndim:  9}
  - SQNM: {iter:  84, epot: -2.206397829317E+00, de: -1.8E-05, fmax:  4.874E-04, 
           fnrm:  3.539E-02,                   ndim:  9}
  - SQNM: {iter:  85, epot: -2.206405784619E+00, de: -8.0E-06, fmax:  3.168E-04, 
           fnrm:  3.129E-02,                   ndim:  9}
- - SQNM: {iter:  86, epot: -2.206414779560E+00, de: -9.0E-06, fmax:  1.949E-04, 
+ - SQNM: {iter:  86, epot: -2.206414779559E+00, de: -9.0E-06, fmax:  1.949E-04, 
           fnrm:  2.358E-02,                   ndim:  10}
  - SQNM: {iter:  87, epot: -2.206418031846E+00, de: -3.3E-06, fmax:  1.250E-04, 
           fnrm:  1.854E-02,                   ndim:  9}
@@ -489,17 +489,17 @@
  task geopt:
    converged                           :  Yes
    total energy and force evaluations  :  89
- CPU time: {iproc:  0, hrs:  0.111E-04, min:  0.667E-03, sec:  0.400E-01}
+ CPU time: {iproc:  0, hrs:  0.178E-04, min:  0.107E-02, sec:  0.640E-01}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  25
-   Tot. No. of Deallocations           :  25
+   Tot. No. of Allocations             :  36
+   Tot. No. of Deallocations           :  36
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  0.056
+     Peak Value (MB)                   :  0.058
      for the array                     : wold
      in the routine                    : sqnm
-     Memory Peak of process            : 27.580 MB
- Walltime since initialization         :  00:00:00.056859885
- Max No. of dictionaries used          :  773 #( 185 still in use)
+     Memory Peak of process            : 27.548 MB
+ Walltime since initialization         :  00:00:00.085683065
+ Max No. of dictionaries used          :  777 #( 185 still in use)
  Number of dictionary folders allocated:  1

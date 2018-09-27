@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-20 14:12:06.429
+ Timestamp of this run                 : 2018-09-27 12:36:36.127
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -61,7 +61,7 @@
    condnum                             : 10.0
    precaution                          : normal
    lprint                              : True
-   dt_start                            : 10.E-3
+   dt_start                            : 1.E-2
    nit                                 : -1
    dxmax                               : -1.0
    anoise                              : -1.0
@@ -244,6 +244,8 @@
    dt_init                             : 20.0
    nit_per_min                         : 25
    encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
  bader:
    method                              : unknown
    filename                            : total_density.cube
@@ -300,9 +302,7 @@
  system info: {ntypat:  1, Si:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
- reading structures:
-   filename                            : posinp.acf
-   nconf                               :  1
+ Number of configurations read: {filename: posinp.yaml, nconf:  1}
  LTB GAMMA POINT only                  : first call
   #Reading spline potential coeff.cls
  paircut                               :  9.9021649099E+00
@@ -688,7 +688,7 @@
  - FIRE: {iter:  113, epot: -2.609019997740E+00, de: -2.6E-08, fmax:  2.307E-05, 
           fnrm:  7.553E-05,                    vnrm:  7.173E-04, alpha:  0.5527E-01, 
             dt:  0.1000E+01,                  ndown:  63,     power:  0.2448E-07}
- - FIRE: {iter:  114, epot: -2.609020020576E+00, de: -2.3E-08, fmax:  2.373E-05, 
+ - FIRE: {iter:  114, epot: -2.609020020575E+00, de: -2.3E-08, fmax:  2.373E-05, 
           fnrm:  7.020E-05,                    vnrm:  7.130E-04, alpha:  0.5472E-01, 
             dt:  0.1000E+01,                  ndown:  64,     power:  0.2041E-07}
  - FIRE: {iter:  115, epot: -2.609020039328E+00, de: -1.9E-08, fmax:  2.422E-05, 
@@ -721,17 +721,17 @@
  task geopt:
    converged                           :  Yes
    total energy and force evaluations  :  126
- CPU time: {iproc:  0, hrs:  0.127E-03, min:  0.760E-02, sec:  0.456E+00}
+ CPU time: {iproc:  0, hrs:  0.131E-03, min:  0.787E-02, sec:  0.472E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  4
-   Tot. No. of Deallocations           :  4
+   Tot. No. of Allocations             :  15
+   Tot. No. of Deallocations           :  15
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  0.000
-     for the array                     : fbuf
-     in the routine                    : alborz_init
-     Memory Peak of process            : 30.408 MB
- Walltime since initialization         :  00:00:00.474045174
- Max No. of dictionaries used          :  773 #( 185 still in use)
+     Peak Value (MB)                   :  0.002
+     for the array                     : atoms%itypat
+     in the routine                    : Main_program
+     Memory Peak of process            : 30.800 MB
+ Walltime since initialization         :  00:00:00.489805723
+ Max No. of dictionaries used          :  777 #( 185 still in use)
  Number of dictionary folders allocated:  1
