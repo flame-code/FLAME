@@ -4,6 +4,7 @@ class Atoms:
         self.rat=[]
         self.posred=[]
         self.fat=[]
+        self.vat=[]
         self.bemoved=[]
         self.qat=[]
         self.nat=-1
