@@ -20,7 +20,7 @@ end subroutine task_testforces
 subroutine testforces_fd(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_potential, only: potential
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
@@ -29,10 +29,16 @@ subroutine testforces_fd(parini)
     type(typ_parini), intent(in):: parini
     !local variables
     type(typ_atoms):: atoms , atoms_center
+    type(typ_atoms_arr):: atoms_arr
     integer:: iat
     real(8):: h, fnrm, fd, epot_r, epot_l, fsum(3)
     h=1.d-5/bohr2ang
-    call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    !call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    call read_yaml_conf(parini,'posinp.yaml',1,atoms_arr)
+    if(atoms_arr%nconf/=1) stop 'ERROR: atoms_arr%nconf/=1 in testforces_fd'
+    call atom_copy_old(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms_s')
+    call atom_deallocate(atoms_arr%atoms(1))
+    deallocate(atoms_arr%atoms)
     potential=trim(parini%potential_potential)
     call init_potential_forces(parini,atoms)
     call cal_potential_forces(parini,atoms)
