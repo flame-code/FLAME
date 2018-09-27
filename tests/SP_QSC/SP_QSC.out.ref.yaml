@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-06 17:42:05.392
+ Timestamp of this run                 : 2018-09-27 10:43:45.514
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -244,6 +244,8 @@
    dt_init                             : 20.0
    nit_per_min                         : 25
    encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
  bader:
    method                              : unknown
    filename                            : total_density.cube
@@ -300,31 +302,31 @@
  system info: {ntypat:  1, Au:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
- Number of configurations read: {filename: posinp.acf, nconf:  3}
+ Number of configurations read: {filename: posinp.yaml, nconf:  3}
  epot of all configurations:
  - conf. number                        :  000001
-   epot                                : -0.768138187413785E+00
+   epot                                : -0.415227380327226E+00
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
  - conf. number                        :  000002
-   epot                                : -0.762102099359612E+00
-   diff w.r.t. first conf              :  0.0060361
-   diff w.r.t. prev. conf              :  0.0060361
+   epot                                : -0.520577997474653E+00
+   diff w.r.t. first conf              : -0.1053506
+   diff w.r.t. prev. conf              : -0.1053506
  - conf. number                        :  000003
-   epot                                : -0.755923496383129E+00
-   diff w.r.t. first conf              :  0.0122147
-   diff w.r.t. prev. conf              :  0.0061786
- CPU time: {iproc:  0, hrs:  0.100E-04, min:  0.600E-03, sec:  0.360E-01}
+   epot                                : -0.611259405314035E+00
+   diff w.r.t. first conf              : -0.1960320
+   diff w.r.t. prev. conf              : -0.0906814
+ CPU time: {iproc:  0, hrs:  0.778E-05, min:  0.467E-03, sec:  0.280E-01}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  44
-   Tot. No. of Deallocations           :  44
+   Tot. No. of Allocations             :  35
+   Tot. No. of Deallocations           :  35
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  0.003
-     for the array                     : at_out%itypat
+     Peak Value (MB)                   :  0.002
+     for the array                     : atoms%itypat
      in the routine                    : Main_program
-     Memory Peak of process            : 40.860 MB
- Walltime since initialization         :  00:00:00.049213543
- Max No. of dictionaries used          :  773 #( 185 still in use)
+     Memory Peak of process            : 24.024 MB
+ Walltime since initialization         :  00:00:00.042327455
+ Max No. of dictionaries used          :  777 #( 185 still in use)
  Number of dictionary folders allocated:  1
