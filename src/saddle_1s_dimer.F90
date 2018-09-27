@@ -75,9 +75,10 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     !    write(*,*) 'epot,fnrm ',epotprime,fnrm
     !    stop !replace by exit later
     !endif
-    file_info%filename_positions='posout.acf'
+    file_info%filename_positions='posout.yaml'
     file_info%file_position='append'
-    call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    !call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    call write_yaml_conf(file_info,atoms_s,strkey='posout')
 
     !call escapeconvex(iproc,3*nat,ndof,rat,uvn,fat,curv0,curv)
     !beta=10.d0

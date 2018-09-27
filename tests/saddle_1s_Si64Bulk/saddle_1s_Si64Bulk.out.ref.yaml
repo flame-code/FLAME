@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-07 15:19:26.720
+ Timestamp of this run                 : 2018-09-27 20:34:36.501
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : saddle_1s
@@ -244,6 +244,8 @@
    dt_init                             : 20.0
    nit_per_min                         : 25
    encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
  bader:
    method                              : unknown
    filename                            : total_density.cube
@@ -300,9 +302,7 @@
  system info: {ntypat:  1, Si:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
  random number generator: {iproc:  0, seed1:  3, seed2:  10}
- reading structures:
-   filename                            : posinp.acf
-   nconf                               :  1
+ Number of configurations read: {filename: posinp.yaml, nconf:  1}
  moving_atoms_rand                     :  [  57 ]
  LTB GAMMA POINT only                  : first call
   #Reading spline potential coeff.cls
@@ -526,7 +526,7 @@
       cosangletol:  0.999962E+00,            fnrm:  0.543772E-03}
    - dimer: {itlc:  7, curv0: -3.597532E-02, curv: -3.598557E-02, cosangle:  0.999975E+00, 
       cosangletol:  0.999962E+00,            fnrm:  0.591756E-03}
-   lowestcurvatue                      : -3.5985566591085344E-002
+   lowestcurvatue                      : -3.5985566591287363E-002
    ENERGY_s: {epot: -1.057484829858585E+01, fmax:  1.134E-04}
    optimization parameters:
      method                            : SD
@@ -573,7 +573,7 @@
           fnrm:  5.340E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  15, epot: -1.065754546338E+01, de: -9.9E-03, fmax:  2.875E-02, 
           fnrm:  4.654E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  16, epot: -1.066539465404E+01, de: -7.8E-03, fmax:  2.186E-02, 
+   - SD: {iter:  16, epot: -1.066539465403E+01, de: -7.8E-03, fmax:  2.186E-02, 
           fnrm:  3.592E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  17, epot: -1.067078563300E+01, de: -5.4E-03, fmax:  1.279E-02, 
           fnrm:  2.529E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -746,7 +746,7 @@
        epot                            : -1.068109362750E+01
        fnrm                            :  1.05643E-04
        fmax                            :  1.85141E-05
-   ENERGY_m1: {epot: -1.068109362750143E+01, fmax:  1.851E-05}
+   ENERGY_m1: {epot: -1.068109362750142E+01, fmax:  1.851E-05}
    SD optimization iterations:
    - SD: {iter:  0, epot: -1.057551177944E+01, de:  0.0E+00, fmax:  4.042E-03, 
           fnrm:  6.665E-03,          alpha/alphax:  0.0000E+00, isatur:  0, xmoved:  T}
@@ -953,20 +953,20 @@
        epot                            : -1.058580059145E+01
        fnrm                            :  1.00534E-04
        fmax                            :  1.91749E-05
-   ENERGY_m2: {epot: -1.058580059145339E+01, fmax:  1.134E-04}
+   ENERGY_m2: {epot: -1.058580059145340E+01, fmax:  1.134E-04}
    barriers: {bh0:  0.106, curv: -0.036, bh1:  0.106, bh2:  0.011}
    force_call                          :  289
-   CPU time: {iproc:  0, hrs:  0.278E-02, min:  0.167E+00, sec:  0.100E+02}
+   CPU time: {iproc:  0, hrs:  0.282E-02, min:  0.169E+00, sec:  0.102E+02}
    mpi finalized: {iproc_world:  0, nproc_world:  1}
    Memory Consumption Report:
-     Tot. No. of Allocations           :  262
-     Tot. No. of Deallocations         :  262
+     Tot. No. of Allocations           :  273
+     Tot. No. of Deallocations         :  273
      Remaining Memory (B)              :  0
      Memory occupation:
        Peak Value (MB)                 :  0.025
        for the array                   : uvnphi1
        in the routine                  : rotatedimer
-       Memory Peak of process          : 54.752 MB
-   Walltime since initialization       :  00:00:10.026082830
-   Max No. of dictionaries used        :  773 #( 185 still in use)
+       Memory Peak of process          : 54.772 MB
+   Walltime since initialization       :  00:00:10.205996491
+   Max No. of dictionaries used        :  777 #( 185 still in use)
    Number of dictionary folders allocated:  1

@@ -2,7 +2,7 @@
 subroutine surface_walking(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
     use mod_potential, only: potential, fcalls
     use mod_saddle, only: dmconverged, str_moving_atoms_rand, dimsep, ampl
     use mod_opt, only: typ_paropt
@@ -15,6 +15,7 @@ subroutine surface_walking(parini)
     !local variables
     type(typ_paropt):: paropt, paropt_m, paropt_m_prec
     type(typ_atoms):: atoms_s
+    type(typ_atoms_arr):: atoms_arr
     type(typ_file_info):: file_info
     integer:: iat, ios
     real(8):: epot_t
@@ -37,7 +38,12 @@ subroutine surface_walking(parini)
     ampl=parini%ampl_saddle_1s*ang2bohr
 
     paropt=parini%paropt_saddle_1s_opt
-    call acf_read(parini,'posinp.acf',1,atoms=atoms_s)
+    !call acf_read(parini,'posinp.acf',1,atoms=atoms_s)
+    call read_yaml_conf(parini,'posinp.yaml',10000,atoms_arr)
+    if(atoms_arr%nconf/=1) stop 'ERROR: atoms_arr%nconf/=1 in surface_walking'
+    call atom_copy_old(atoms_arr%atoms(1),atoms_s,'atoms_arr%atoms(iconf)->atoms_s')
+    call atom_deallocate(atoms_arr%atoms(1))
+    deallocate(atoms_arr%atoms)
     call set_ndof(atoms_s)
     !read(comment2,*) atoms_s%boundcond,atoms_s%cellvec(1,1),atoms_s%cellvec(2,2),atoms_s%cellvec(3,3),atoms_s%cellvec(1,2),atoms_s%cellvec(1,3),atoms_s%cellvec(2,3)
     !atoms_s%cellvec(2,1)=0.d0 ; atoms_s%cellvec(3,1)=0.d0 ; atoms_s%cellvec(3,2)=0.d0
@@ -64,23 +70,26 @@ subroutine surface_walking(parini)
     call yaml_map('epot',epot_m0,fmt='(es24.15)')
     call yaml_map('fmax',fmax_m0,fmt='(es12.3)')
     call yaml_mapping_close()
-    file_info%filename_positions='posout.acf'
+    file_info%filename_positions='posout.yaml'
     file_info%file_position='new'
-    call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    !call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    call write_yaml_conf(file_info,atoms_s,strkey='posout')
     !---------------------------------------------------------------------------
     call random_move_atoms(atoms_s%nat,atoms_s%bemoved,atoms_s%cellvec,atoms_s%rat)
     !call cal_potential_forces(parini,iproc,3*atoms_s%nat,atoms_s%rat,atoms_s%fat,epot_m0)
     !call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_s%fat,fmax_m0)
     !write(*,'(a,es24.15,es13.3)') 'ENERGY: epot_m0,fmax_m0 ',epot_m0,fmax_m0
-    file_info%filename_positions='posout.acf'
+    file_info%filename_positions='posout.yaml'
     file_info%file_position='append'
-    call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    !call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    call write_yaml_conf(file_info,atoms_s,strkey='posout')
     !stop
     !---------------------------------------------------------------------------
     call dimmethimproved(parini,iproc,atoms_s,atoms_s%nat,atoms_s%ndof,atoms_s%rat,atoms_s%epot,atoms_s%fat,curv,uvn,paropt)
-    file_info%filename_positions='posout.acf'
+    file_info%filename_positions='posout.yaml'
     file_info%file_position='append'
-    call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    !call acf_write(file_info,atoms=atoms_s,strkey='posout')
+    call write_yaml_conf(file_info,atoms_s,strkey='posout')
 
     write(filename,'(a10)') 'modout.xyz'
     write(comment,'(a11,es24.15,a7,i5)') ' angstroem ',curv,' iter= ',0
@@ -260,9 +269,10 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
         call yaml_map('fmax',fmax1,fmt='(es12.3)')
         call yaml_mapping_close()
     endif
-    file_info%filename_positions='posmin1.acf'
+    file_info%filename_positions='posmin1.yaml'
     file_info%file_position='new'
-    call acf_write(file_info,atoms=atoms_m1,strkey='minimum1')
+    !call acf_write(file_info,atoms=atoms_m1,strkey='minimum1')
+    call write_yaml_conf(file_info,atoms_m1,strkey='minimum1')
     do iat=1,atoms_s%nat
         if(atoms_s%bemoved(1,iat)) atoms_m2%rat(1,iat)=atoms_s%rat(1,iat)-zeta*uvn(1,iat)
         if(atoms_s%bemoved(2,iat)) atoms_m2%rat(2,iat)=atoms_s%rat(2,iat)-zeta*uvn(2,iat)
@@ -280,9 +290,10 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
         call yaml_map('fmax',fmax2,fmt='(es12.3)')
         call yaml_mapping_close()
     endif
-    file_info%filename_positions='posmin2.acf'
+    file_info%filename_positions='posmin2.yaml'
     file_info%file_position='new'
-    call acf_write(file_info,atoms=atoms_m2,strkey='minimum2')
+    !call acf_write(file_info,atoms=atoms_m2,strkey='minimum2')
+    call write_yaml_conf(file_info,atoms_m2,strkey='minimum2')
     !write(*,'(a,4f13.3)') 'bh0,curv,bh1,bh2 ', &
     !    atoms_s%epot-epot_m0,curv,atoms_s%epot-atoms_m1%epot,atoms_s%epot-atoms_m2%epot
     call yaml_mapping_open('barriers',flow=.true.)
