@@ -548,7 +548,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
     type(typ_atoms_arr), intent(inout):: atoms_arr
     !local variables
     integer:: i, iat, ios, k, iconf
-    character(256):: filename, fn_tmp, filename_force
+    character(256):: filename, fn_tmp, fn_ext
     type(typ_atoms_arr):: atoms_arr_of !configuration of one file
     type(typ_atoms_arr):: atoms_arr_t
     real(8):: ttx, tty, ttz, fx, fy, fz
@@ -568,10 +568,17 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
         fn_tmp=adjustl(trim(filename))
         if(fn_tmp(1:1)=='#') cycle
         !call acf_read_new(parini,filename,10000,atoms_arr_of)
-        call read_yaml_conf(parini,filename,10000,atoms_arr_of)
-        !ind=index(filename,'/',back=.true.)
-        !len_filename=len(filename)
-        !filename_force=filename(1:ind)//'force_'//filename(ind+1:len_filename)
+        ind=index(filename,'.',back=.true.)
+        len_filename=len(filename)
+        fn_ext=filename(ind+1:len_filename)
+        if(trim(fn_ext)=='bin') then
+            call read_bin_conf(parini,filename,atoms_arr_of)
+        elseif(trim(fn_ext)=='yaml') then
+            call read_yaml_conf(parini,filename,10000,atoms_arr_of)
+        else
+            write(*,*) 'ERROR: only binary and yaml files can be read in read_data_yaml'
+            stop
+        endif
         !if(parini%read_forces_ann) then
         !    open(unit=2,file=trim(filename_force),status='old',iostat=ios)
         !endif
