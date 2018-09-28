@@ -567,14 +567,15 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
         filename=trim(fn_list(ifile))
         fn_tmp=adjustl(trim(filename))
         if(fn_tmp(1:1)=='#') cycle
-        call acf_read_new(parini,filename,10000,atoms_arr_of)
-        ind=index(filename,'/',back=.true.)
-        len_filename=len(filename)
-        filename_force=filename(1:ind)//'force_'//filename(ind+1:len_filename)
-        if(parini%read_forces_ann) then
-            open(unit=2,file=trim(filename_force),status='old',iostat=ios)
-        endif
-        if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning force of list_posinp';stop;endif
+        !call acf_read_new(parini,filename,10000,atoms_arr_of)
+        call read_yaml_conf(parini,filename,10000,atoms_arr_of)
+        !ind=index(filename,'/',back=.true.)
+        !len_filename=len(filename)
+        !filename_force=filename(1:ind)//'force_'//filename(ind+1:len_filename)
+        !if(parini%read_forces_ann) then
+        !    open(unit=2,file=trim(filename_force),status='old',iostat=ios)
+        !endif
+        !if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning force of list_posinp';stop;endif
         over_iconf: do iconf=1,atoms_arr_of%nconf
             atoms_arr_t%nconf=atoms_arr_t%nconf+1
             if(atoms_arr_t%nconf>nconfmax) then
@@ -585,7 +586,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%qtot=atoms_arr_of%atoms(iconf)%qtot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
-            if(parini%read_forces_ann) read(2,*)
+            !if(parini%read_forces_ann) read(2,*)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
                 ttx=atoms_arr_of%atoms(iconf)%rat(1,iat)
                 tty=atoms_arr_of%atoms(iconf)%rat(2,iat)
@@ -595,10 +596,10 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(3,iat)=ttz
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)
                 if(parini%read_forces_ann) then
-                    read(2,*) fx,fy,fz
-                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=fx
-                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=fy
-                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(3,iat)=fz
+                    !read(2,*) fx,fy,fz
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=atoms_arr_of%atoms(iconf)%fat(1,iat)
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=atoms_arr_of%atoms(iconf)%fat(2,iat)
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(3,iat)=atoms_arr_of%atoms(iconf)%fat(3,iat)
                 else
                     atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(1,iat)=0.d0
                     atoms_arr_t%atoms(atoms_arr_t%nconf)%fat(2,iat)=0.d0
@@ -610,7 +611,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             call atom_deallocate(atoms_arr_of%atoms(iconf))
         enddo over_iconf
         deallocate(atoms_arr_of%atoms)
-        if(parini%read_forces_ann) close(2)
+        !if(parini%read_forces_ann) close(2)
     enddo over_files
     !close(1)
     atoms_arr%nconf=atoms_arr_t%nconf

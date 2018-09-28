@@ -4979,7 +4979,7 @@ end subroutine rotatedimer
 ! ./src/saddle_1s.F90 :
 subroutine surface_walking(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
     use mod_opt, only: typ_paropt
     type(typ_parini), intent(in):: parini
 end subroutine surface_walking
@@ -5219,7 +5219,7 @@ end subroutine task_genconf
 subroutine geopt(parini)
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms_arr, typ_file_info
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
 end subroutine geopt
 subroutine init_geopt(parini,paropt,paropt_prec)
@@ -5320,7 +5320,7 @@ subroutine task_testforces(parini)
 end subroutine task_testforces
 subroutine testforces_fd(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
     type(typ_parini), intent(in):: parini
 end subroutine testforces_fd
 subroutine teststress_fd(parini)

@@ -16,6 +16,7 @@ force=not args.force
 atoms_all=acf_read(args.fn_inp)
 for atoms in atoms_all:
     atoms.units_length_io='angstrom'
+    atoms.epot=atoms.epot/27.211385
 
 if force:
     fn_force="force_%s" % args.fn_inp
