@@ -8,8 +8,9 @@ from io_yaml import *
 
 str1 = "This script read a file in the yaml dictionary format and write it in the ascii format."
 parser = argparse.ArgumentParser(description=str1)
+str2="Name of the output file, if there is one configuration, otherwise it is ignored."
 parser.add_argument('fn_inp', action='store' ,type=str, help="Name of the input file in yaml format")
-parser.add_argument('fn_out', action='store' ,type=str, help="Name of the output file in ascii format")
+parser.add_argument('fn_out', action='store' ,type=str, help=str2)
 args=parser.parse_args()
 
 atoms_all = read_yaml(args.fn_inp)
@@ -19,7 +20,7 @@ if len(atoms_all)==1:
         atoms_all[0].cellvec,atoms_all[0].rat=latvec2dproj(atoms_all[0].cellvec,atoms_all[0].rat,atoms_all[0].nat)
     ascii_write(atoms_all[0],args.fn_out)
 else:
-    print "\nATTENTION: The are more than one configuration in ACF file."
+    print "\nATTENTION: The are more than one configuration in YAML file. The given name for the output is ignored!"
     prefix=raw_input("Please provide a prefix to generate files enumeratedly: [Default=tt]")
     if prefix=="": prefix="tt"
     nconf=0

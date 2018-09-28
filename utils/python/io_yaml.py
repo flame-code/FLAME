@@ -27,6 +27,8 @@ def atoms2dict(atoms):
     dict_atoms={'conf':{}}
     if len(atoms.fat)>0:
         dict_atoms['conf']['force']=[]
+    if len(atoms.vat)>0:
+        dict_atoms['conf']['velocity']=[]
     if atoms.qtot:
         dict_atoms['conf']['qtot']=atoms.qtot
     if atoms.epot:
@@ -40,6 +42,8 @@ def atoms2dict(atoms):
                 atoms.rat[iat][2],atoms.sat[iat],atoms.bemoved[iat]])
         if len(atoms.fat)>0:
             dict_atoms['conf']['force'].append(atoms.fat[iat])
+        if len(atoms.vat)>0:
+            dict_atoms['conf']['velocity'].append(atoms.vat[iat])
     dict_atoms['conf']['units_length']=atoms.units_length_io
     dict_atoms['conf']['bc']=atoms.boundcond
     dict_atoms['conf']['cell']=[]
@@ -55,37 +59,47 @@ def atoms2dict(atoms):
     return dict_atoms
 #*****************************************************************************************
 def dict2atoms(dict_atoms):
-    for key, value in dict_atoms.items(): 
-        atoms=Atoms()
-        atoms.nat       = dict_atoms[key]['nat']
-        atoms.units_length_io = dict_atoms[key]['units_length']
-        atoms.boundcond = dict_atoms[key]['bc']
-        for sub_key in value:
-            if sub_key == 'epot':
-                atoms.epot = dict_atoms[key]['epot']
-            if sub_key == 'qtot':
-                atoms.qtot = dict_atoms[key]['qtot']
-            if sub_key == 'force':
-                for i in range(int(atoms.nat)):
-                    fr = dict_atoms[key]['force'][i]
-                    atoms.fat.append(fr)
-        atoms.cellvec[0] = dict_atoms[key]['cell'][0]
-        atoms.cellvec[1] = dict_atoms[key]['cell'][1]
-        atoms.cellvec[2] = dict_atoms[key]['cell'][2]
-        for i in range(int(atoms.nat)):
-            r   = dict_atoms[key]['coord'][i]
-            sat = dict_atoms[key]['coord'][i][3] 
-            ab  = dict_atoms[key]['coord'][i][4]
-            atoms.rat.append(r)
-            atoms.bemoved_present=True
-            atoms.sat.append(sat)
-            atoms.bemoved.append(ab)
+    atoms=Atoms()
+    atoms.nat             = dict_atoms['conf']['nat']
+    atoms.units_length_io = dict_atoms['conf']['units_length']
+    atoms.boundcond       = dict_atoms['conf']['bc']
 
-    if dict_atoms['conf'].has_key('cell'): atoms.cell_present=True
-    if dict_atoms['conf'].has_key('epot'): atoms.epot_present=True
-    if dict_atoms['conf'].has_key('force'): atoms.fat_present=True
-    if dict_atoms['conf'].has_key('qtot'): atoms.qtot_present=True
-    if dict_atoms['conf'].has_key('bemoved'): atoms.bemoved_present=True #CORRECT_IT
-    if dict_atoms['conf'].has_key('velocity'): atoms.vat_present=True
+    if dict_atoms['conf'].has_key('epot'):
+        atoms.epot_present=True
+        atoms.epot = dict_atoms['conf']['epot']
+    if dict_atoms['conf'].has_key('qtot'):
+        atoms.qtot_present=True
+        atoms.qtot = dict_atoms['conf']['qtot']
+    if dict_atoms['conf'].has_key('force'):
+        atoms.fat_present=True
+        for i in range(int(atoms.nat)):
+            fr = dict_atoms['conf']['force'][i]
+            atoms.fat.append(fr)
+    if dict_atoms['conf'].has_key('cell'):
+        atoms.cell_present=True
+        atoms.cellvec[0] = dict_atoms['conf']['cell'][0]
+        atoms.cellvec[1] = dict_atoms['conf']['cell'][1]
+        atoms.cellvec[2] = dict_atoms['conf']['cell'][2]
+    if dict_atoms['conf'].has_key('velocity'):
+        atoms.vat_present=True
+        for i in range(int(atoms.nat)):
+            vx = dict_atoms['conf']['velocity'][i][0]
+            vy = dict_atoms['conf']['velocity'][i][1]
+            vz = dict_atoms['conf']['velocity'][i][2]
+            atoms.vat.append([vx,vy,vz])
+    for i in range(int(atoms.nat)):
+        x = dict_atoms['conf']['coord'][i][0]
+        y = dict_atoms['conf']['coord'][i][1]
+        z = dict_atoms['conf']['coord'][i][2]
+        atoms.rat.append([x,y,z])
+        sat = dict_atoms['conf']['coord'][i][3] 
+        atoms.sat.append(sat)
+        if len(dict_atoms['conf']['coord'][i])==5:
+            atoms.bemoved_present=True
+            abm = dict_atoms['conf']['coord'][i][4]
+            atoms.bemoved.append(abm)
+        #else:
+        #    atoms.bemoved.append(' ')
+
     return atoms
 #*****************************************************************************************
