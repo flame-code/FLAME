@@ -196,3 +196,192 @@ subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
     call f_free(wa)
 end subroutine read_bin_conf_v1
 !*****************************************************************************************
+subroutine write_bin_conf(file_info,atoms,strkey)
+    use mod_interface
+    use mod_atoms, only: typ_atoms, typ_file_info
+    use dynamic_memory
+    use futile
+    implicit none
+    type(typ_file_info), intent(inout):: file_info
+    type(typ_atoms), intent(in):: atoms
+    character(*), optional, intent(in):: strkey
+    !local variables
+    integer:: ios, iconf, i, nconf, iat, k, nat, ii, ndigit, iiconf
+    real(8):: ver
+    integer:: iver, iunit
+    iunit=f_get_free_unit(10**5)
+    if(trim(file_info%file_position)=='new') then
+        open(unit=iunit,file=trim(file_info%filename_positions),status='replace',form='unformatted', &
+            access='stream',action='write',iostat=ios)
+    elseif(trim(file_info%file_position)=='append') then
+        open(unit=iunit,file=trim(file_info%filename_positions),status='old',position='append',form='unformatted', &
+            access='stream',action='readwrite',iostat=ios)
+    endif
+    if(ios/=0) then
+        write(*,'(2a)') 'ERROR: failure openning file ',trim(file_info%filename_positions)
+        stop
+    endif
+    call write_bin_conf_v1(file_info%filename_positions,file_info%file_position,iunit,atoms)
+    close(iunit)
+end subroutine write_bin_conf
+!*****************************************************************************************
+subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use dynamic_memory
+    implicit none
+    character(*), intent(in):: filename
+    character(*), intent(in):: file_position
+    integer, intent(in):: iunit
+    type(typ_atoms), intent(in):: atoms
+    !local variables
+    integer:: ios, iconf, i, nconf, iat, k, ii, ndigit, iiconf
+    integer:: nwa, nread, isat, irr, iwa, ipos, ibc, ibm, i1, i2, i3
+    real(8), allocatable:: wa(:)
+    real(8):: r_nconf, rr, ver
+    logical:: cell_present, epot_present, fat_present
+    logical:: qtot_present, bemoved_present, vat_present
+    !integer, save:: icall=0
+    !icall=icall+1
+    nwa=10**8
+    wa=f_malloc([1.to.nwa],id='wa_write_bin_conf_v1')
+    iwa=0
+    if(file_position=='new') then
+        ver=1.d0
+        iwa=iwa+1 ; wa(iwa)=ver
+        ipos=1
+        nconf=1
+        iwa=iwa+1 ; wa(iwa)=real(nconf,8)
+    elseif(file_position=='append') then
+        inquire(unit=iunit,pos=ipos)
+        read(iunit,iostat=ios,pos=9) r_nconf
+        if(ios/=0) then
+            write(*,*) 'ERROR: cannot read the number of already written confs in the file= ',trim(filename)
+            stop
+        endif
+        nconf=int(r_nconf)
+        nconf=nconf+1
+        write(iunit,iostat=ios,pos=9) real(nconf,8)
+    else
+        write(*,*) 'ERROR: unknown file_position in write_bin_conf_v1, file_position',trim(file_position)
+    endif
+
+    cell_present=.true.
+    epot_present=.true.
+    fat_present=.true.
+    qtot_present=.true.
+    bemoved_present=.true.
+    vat_present=.false.
+    if(cell_present) then
+        iwa=iwa+1 ; wa(iwa)=1.d0
+    else
+        iwa=iwa+1 ; wa(iwa)=0.d0
+    endif
+    if(epot_present) then
+        iwa=iwa+1 ; wa(iwa)=1.d0
+    else
+        iwa=iwa+1 ; wa(iwa)=0.d0
+    endif
+    if(fat_present) then
+        iwa=iwa+1 ; wa(iwa)=1.d0
+    else
+        iwa=iwa+1 ; wa(iwa)=0.d0
+    endif
+    if(qtot_present) then
+        iwa=iwa+1 ; wa(iwa)=1.d0
+    else
+        iwa=iwa+1 ; wa(iwa)=0.d0
+    endif
+    if(bemoved_present) then
+        iwa=iwa+1 ; wa(iwa)=1.d0
+    else
+        iwa=iwa+1 ; wa(iwa)=0.d0
+    endif
+    if(vat_present) then
+        iwa=iwa+1 ; wa(iwa)=1.d0
+    else
+        iwa=iwa+1 ; wa(iwa)=0.d0
+    endif
+    if(trim(atoms%boundcond)=='free') then
+        iwa=iwa+1 ; wa(iwa)=0.d0
+    elseif(trim(atoms%boundcond)=='wire') then
+        iwa=iwa+1 ; wa(iwa)=1.d0
+    elseif(trim(atoms%boundcond)=='slab') then
+        iwa=iwa+1 ; wa(iwa)=2.d0
+    elseif(trim(atoms%boundcond)=='bulk') then
+        iwa=iwa+1 ; wa(iwa)=3.d0
+    else
+        write(*,*) "ERROR: unknown boundary conditions in write_bin_conf_v1, ",trim(atoms%boundcond)
+        stop
+    endif
+    iwa=iwa+1 ; wa(iwa)=real(atoms%nat,8)
+    do iat=1,atoms%nat
+        iwa=iwa+1 ; wa(iwa)=atoms%rat(1,iat)
+        iwa=iwa+1 ; wa(iwa)=atoms%rat(2,iat)
+        iwa=iwa+1 ; wa(iwa)=atoms%rat(3,iat)
+    enddo
+    do iat=1,atoms%nat
+        call sat_to_iatom(atoms%sat(iat),isat)
+        iwa=iwa+1 ; wa(iwa)=real(isat,8)
+    enddo
+    if(cell_present) then
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(1,1)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(2,1)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(3,1)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(1,2)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(2,2)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(3,2)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(1,3)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(2,3)
+        iwa=iwa+1 ; wa(iwa)=atoms%cellvec(3,3)
+    endif
+    if(epot_present) then
+        iwa=iwa+1 ; wa(iwa)=atoms%epot
+    endif
+    if(fat_present) then
+        do iat=1,atoms%nat
+            iwa=iwa+1 ; wa(iwa)=atoms%fat(1,iat)
+            iwa=iwa+1 ; wa(iwa)=atoms%fat(2,iat)
+            iwa=iwa+1 ; wa(iwa)=atoms%fat(3,iat)
+        enddo
+    endif
+    if(qtot_present) then
+        iwa=iwa+1 ; wa(iwa)=atoms%qtot
+    endif
+    if(bemoved_present) then
+        do iat=1,atoms%nat
+            if(atoms%bemoved(1,iat)) then
+                i1=1
+            else
+                i1=0
+            endif
+            if(atoms%bemoved(2,iat)) then
+                i2=1
+            else
+                i2=0
+            endif
+            if(atoms%bemoved(3,iat)) then
+                i3=1
+            else
+                i3=0
+            endif
+            ibm=i1+i2*2+i3*4
+            iwa=iwa+1 ; wa(iwa)=real(ibm,8)
+        enddo
+    endif
+    if(vat_present) then
+        do iat=1,atoms%nat
+            iwa=iwa+1 ; wa(iwa)=atoms%vat(1,iat)
+            iwa=iwa+1 ; wa(iwa)=atoms%vat(2,iat)
+            iwa=iwa+1 ; wa(iwa)=atoms%vat(3,iat)
+        enddo
+    endif
+    write(iunit,iostat=ios,pos=ipos) wa(1:iwa)
+    if(ios/=0) then
+        write(*,*) 'ERROR: cannot write wa in write_bin_conf_v1, ios= ',ios
+        stop
+    endif
+    call f_free(wa)
+end subroutine write_bin_conf_v1
+!*****************************************************************************************

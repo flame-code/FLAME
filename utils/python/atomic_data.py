@@ -11,10 +11,14 @@ def get_atomic_symbol(iatom):
           'Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es',
           'Fm','Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt']
     if iatom<1 or iatom>109:
-        print "ERROR: unknown atomic number in get_atomic_symbol %5d" % iatom
-        exit()
+        if iatom==201:
+            sat='LJ'
+        else:
+            print "ERROR: unknown atomic number in get_atomic_symbol %5d" % iatom
+            exit()
     else:
-        return elemens[iatom-1]
+        sat=elemens[iatom-1]
+    return sat
 #*****************************************************************************************
 def get_atomic_number(sat):
     sat_dict={'H':1,\

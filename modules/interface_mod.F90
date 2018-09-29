@@ -2826,6 +2826,19 @@ subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
     integer, intent(in):: iunit
     type(typ_atoms_arr), intent(inout):: atoms_arr
 end subroutine read_bin_conf_v1
+subroutine write_bin_conf(file_info,atoms,strkey)
+    use mod_atoms, only: typ_atoms, typ_file_info
+    type(typ_file_info), intent(inout):: file_info
+    type(typ_atoms), intent(in):: atoms
+    character(*), optional, intent(in):: strkey
+end subroutine write_bin_conf
+subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
+    use mod_atoms, only: typ_atoms
+    character(*), intent(in):: filename
+    character(*), intent(in):: file_position
+    integer, intent(in):: iunit
+    type(typ_atoms), intent(in):: atoms
+end subroutine write_bin_conf_v1
 ! ./src/io_cube.F90 :
 subroutine cube_read(filename,atoms,poisson)
     use mod_atoms, only: typ_atoms

@@ -35,13 +35,13 @@ subroutine geopt(parini)
         potential=trim(parini%potential_potential)
         call init_geopt(parini,paropt,paropt_prec)
         paropt%trajectory=parini%paropt_geopt%trajectory
-        paropt%filename='traj_mgo.acf'
+        paropt%filename='traj_mgo.bin'
         paropt%eps=1.d-8
         call init_potential_forces(parini,atoms_arr%atoms(iconf))
         paropt%funits=5.d0
         if(parini%two_level_geopt) then
             paropt_prec%trajectory=parini%paropt_geopt_prec%trajectory
-            paropt_prec%filename='traj_pgo.acf'
+            paropt_prec%filename='traj_pgo.bin'
             paropt_prec%lprint=.true.
             !alphax not given in [geopt_prec] so we use the one in [geopt]
             if(paropt_prec%alphax<0.d0) then

@@ -40,7 +40,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         if(istat/=0) stop 'ERROR: failure allocating diag.'
         do
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
@@ -77,7 +78,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         do
         do
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
@@ -89,7 +91,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         enddo
         do 
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
@@ -134,7 +137,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         do
         do
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
@@ -146,7 +150,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         enddo
         do 
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
@@ -185,7 +190,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         !enddo
         do
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
@@ -225,7 +231,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
     !    write(72,'(3es23.13)') atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
     !enddo
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
@@ -274,7 +281,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         if(istat/=0) stop 'ERROR: failure allocating work.'
         do
             if(paropt%trajectory) then
-                call acf_write(file_info,atoms=atoms,strkey='geopt')
+                !call acf_write(file_info,atoms=atoms,strkey='geopt')
+                call write_bin_conf(file_info,atoms,strkey='geopt')
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)

@@ -368,7 +368,7 @@ subroutine relax_minhopp(parini,atoms,paropt_prec,paropt)
         if(parini%trajectory_minhopp) then
             paropt_prec%trajectory=parini%trajectory_minhopp
             paropt_prec%print_force=parini%print_force_minhopp
-            write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_pgo.acf'
+            write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_pgo.bin'
             paropt_prec%filename=ttfn
         endif
         call setpot_geopt_prec
@@ -380,7 +380,7 @@ subroutine relax_minhopp(parini,atoms,paropt_prec,paropt)
     if(parini%trajectory_minhopp) then
         paropt%trajectory=parini%trajectory_minhopp
         paropt%print_force=parini%print_force_minhopp
-        write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_mgo.acf'
+        write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_mgo.bin'
         paropt%filename=ttfn
     endif
     call minimize(parini,iproc,atoms,paropt)
@@ -892,11 +892,12 @@ subroutine mdescape(parini,atoms_hopp)
     call setpot_mdescape
     !tt1=0.5d0*dt;tt2=dt*tt1
     if(parini%trajectory_minhopp) then
-        write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_mde.acf'
+        write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_mde.bin'
         file_info%filename_positions=ttfn
         file_info%file_position='new'
         file_info%print_force=parini%print_force_minhopp
-        call acf_write(file_info,atoms=atoms_hopp,strkey='mdescape')
+        !call acf_write(file_info,atoms=atoms_hopp,strkey='mdescape')
+        call write_bin_conf(file_info,atoms_hopp,strkey='mdescape')
     endif
     call cal_potential_forces(parini,atoms_hopp)
     epot0=atoms_hopp%epot
@@ -917,7 +918,8 @@ subroutine mdescape(parini,atoms_hopp)
         enmin1=en0000
         if(parini%trajectory_minhopp) then
             file_info%file_position='append'
-            call acf_write(file_info,atoms=atoms_hopp,strkey='mdescape')
+            !call acf_write(file_info,atoms=atoms_hopp,strkey='mdescape')
+            call write_bin_conf(file_info,atoms_hopp,strkey='mdescape')
         endif
         call cal_potential_forces(parini,atoms_hopp)
         en0000=atoms_hopp%epot-epot0
@@ -1359,10 +1361,11 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     !write(*,*) 'HERE ',trim(atoms0%boundcond),atoms0%ndof,atoms0%bemoved
     !perfstatus='normal'
     if(parini%trajectory_minhopp) then
-        write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_sof.acf'
+        write(ttfn,'(a9,i3.3,a5,i7.7,a8)') 'traj_proc',iproc,'_step',istep,'_sof.bin'
         file_info%filename_positions=ttfn
         file_info%file_position='new'
-        call acf_write(file_info,atoms=atoms0,strkey='soften')
+        !call acf_write(file_info,atoms=atoms0,strkey='soften')
+        call write_bin_conf(file_info,atoms0,strkey='soften')
     endif
     call cal_potential_forces(parini,atoms0)
     etot0=atoms0%epot
@@ -1396,7 +1399,8 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
         enddo
         if(parini%trajectory_minhopp) then
             file_info%file_position='append'
-            call acf_write(file_info,atoms=atoms,strkey='soften')
+            !call acf_write(file_info,atoms=atoms,strkey='soften')
+            call write_bin_conf(file_info,atoms,strkey='soften')
         endif
         call cal_potential_forces(parini,atoms)
         fd2=2.d0*(atoms%epot-etot0)/eps_vxyz**2
@@ -1731,13 +1735,14 @@ subroutine new_minimum(atoms_hopp)
         call yaml_mapping_close()
         !write(*,'(a,i4,i7,e24.15,f10.5)') 'new lowest: iproc,nlmin,erathopp,dE', &
         !    iproc,nlmin,atoms_hopp%epot,atoms_hopp%epot-earr(1)
-        file_info%filename_positions='posbest.acf'
+        file_info%filename_positions='posbest.bin'
         if(ibest==1) then
             file_info%file_position='new'
         else
             file_info%file_position='append'
         endif
-        call acf_write(file_info,atoms=atoms_hopp,strkey='posbest')
+        !call acf_write(file_info,atoms=atoms_hopp,strkey='posbest')
+        call write_bin_conf(file_info,atoms_hopp,strkey='posbest')
         ibest=ibest+1
     endif
 end subroutine new_minimum
