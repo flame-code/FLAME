@@ -476,7 +476,8 @@ subroutine read_ann_yaml(parini,ann_arr)
             write(fn_tt,'(i1)') iann
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
-        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. &
+            trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='atombased') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
             stop 'ERROR: reading ANN parameters is only for cent1,cent2,tb'

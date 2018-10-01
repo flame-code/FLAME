@@ -402,6 +402,7 @@ subroutine init_ann_train(parini,ann_arr,ekf)
            call yaml_warning('Failed to create'//trim(fnout)//', error code='//trim(yaml_toa(ierr)))
         end if
         call yaml_release_document(ann_arr%iunit)
+        call yaml_sequence_open('training iterations',unit=ann_arr%iunit)
         !fnout='err_train'
         !open(unit=11,file=fnout,status='replace',iostat=ios)
         !if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
