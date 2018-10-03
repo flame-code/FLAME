@@ -61,9 +61,10 @@ def atoms2dict(atoms):
 def dict2atoms(dict_atoms):
     atoms=Atoms()
     atoms.nat             = dict_atoms['conf']['nat']
-    atoms.units_length_io = dict_atoms['conf']['units_length']
     atoms.boundcond       = dict_atoms['conf']['bc']
 
+    if dict_atoms['conf'].has_key('units_length'):
+        atoms.units_length_io = dict_atoms['conf']['units_length']
     if dict_atoms['conf'].has_key('epot'):
         atoms.epot_present=True
         atoms.epot = dict_atoms['conf']['epot']
