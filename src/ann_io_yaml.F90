@@ -4,6 +4,7 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc
@@ -15,6 +16,7 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     real(8)::rcut
     !call f_lib_initialize()
     !call yaml_new_document()
+    call yaml_sequence_open('ann input files') !,flow=.true.)
     do iann=1,ann_arr%n
         if(parini%bondbased_ann) then
             stypat=parini%stypat(1)
@@ -23,13 +25,16 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
         endif
         !-------------------------------------------------------
         fname = trim(stypat)//'.ann.input.yaml'
-        write(*,*)trim(fname)
+        call yaml_sequence(advance='no')
+        call yaml_comment(trim(fname))
+        !write(*,*)trim(fname)
         call get_symfunc_parameters_yaml(parini,iproc,fname,ann_arr%ann(iann),rcut)
         ann_arr%rcut = rcut
         !-------------------------------------------------------
         call dict_free(ann_arr%ann(iann)%dict)
         nullify(ann_arr%ann(iann)%dict)
     enddo
+    call yaml_sequence_close()
     !call f_lib_finalize()
 end subroutine read_input_ann_yaml
 !*****************************************************************************************
@@ -55,9 +60,9 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     character(50):: str_out_ann
     character(5):: str_out_ann_tt
     call set_dict_ann(ann,fname,stypat)
-    call yaml_comment('USER INPUT FILE',hfill='~')
+    !call yaml_comment('USER INPUT FILE',hfill='~')
     if(parini%iverbose>=2) call yaml_dict_dump(ann%dict)
-    call yaml_comment('',hfill='~')
+    !call yaml_comment('',hfill='~')
     !logical:: all_read
 
     subdict_ann => ann%dict//"main"
@@ -264,6 +269,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
@@ -285,14 +291,16 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
         do i=1,ann_arr%n
             write(fn_tt,'(i1)') i
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
-            write(*,'(a)') trim(filename)
+            call yaml_comment(trim(filename))
+            !write(*,'(a)') trim(filename)
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
         trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
         do i=1,ann_arr%n
             filename=trim(parini%stypat(i))//trim(fn)
-            write(*,'(a)') trim(filename)
+            !write(*,'(a)') trim(filename)
+            call yaml_comment(trim(filename))
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     else

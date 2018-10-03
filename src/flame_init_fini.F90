@@ -9,6 +9,7 @@ subroutine alborz_init(parini,parres,file_ini)
     use time_profiling
     use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
@@ -48,6 +49,7 @@ subroutine alborz_init(parini,parres,file_ini)
     if(parini%exists_yaml_file) then
         call yaml_get_parameters(parini)
     else
+        call yaml_comment('flame_in.yaml does not exists, trying input.ini')
         allocate(file_ini%file_lines(file_ini%nline_max)) !,comment_line(nline_max))
         file_ini%file_lines(1:file_ini%nline_max)=' '
         !reading file input.ini into array file_lines which later it will be parsed.

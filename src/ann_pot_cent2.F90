@@ -258,6 +258,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
             !write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
             !    istep,atoms%epot,gnrm,gnrm2,q1,qtot
             call yaml_sequence_close()
+            call yaml_mapping_open('CEP',flow=.true.)
             call yaml_map('iter',istep,fmt='(i5)')
             call yaml_map('epot',atoms%epot,fmt='(es22.13)')
             call yaml_map('de',de,fmt='(es11.2)')

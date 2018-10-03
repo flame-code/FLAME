@@ -6,6 +6,7 @@ subroutine ann_train(parini)
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -40,9 +41,12 @@ subroutine ann_train(parini)
     endif
     !-------------------------------------------------------
     if(iproc==0) then
-        write(*,'(a,i)') 'number of ANN wights:             ',ekf%n
-        write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
-        write(*,'(a,i)') 'number of validating data points: ',atoms_valid%nconf
+        call yaml_map('number of ANN wights',ekf%n)
+        call yaml_map('number of training data points',atoms_train%nconf)
+        call yaml_map('number of validating data points',atoms_valid%nconf)
+        !write(*,'(a,i)') 'number of ANN wights:             ',ekf%n
+        !write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
+        !write(*,'(a,i)') 'number of validating data points: ',atoms_valid%nconf
     endif
     call set_conf_inc_random(parini,atoms_train)
     call set_conf_inc_random(parini,atoms_valid)
@@ -56,7 +60,9 @@ subroutine ann_train(parini)
     call cpu_time(time2)
     call set_gbounds(parini,ann_arr,atoms_train,'bounds_train',symfunc_train)
     call cpu_time(time3)
-    write(*,'(a,2f10.1)') 'TIMING: evaluation symmetry functions: ',time2-time1,time3-time2
+    !write(*,'(a,2f10.1)') 'TIMING: evaluation symmetry functions: ',time2-time1,time3-time2
+    call yaml_map('TIMING evaluation symmetry functions for valid',time2-time1)
+    call yaml_map('TIMING evaluation symmetry functions for train',time3-time2)
     !-------------------------------------------------------------------------------------
     !IMPORTANT: The following must be done after set_gbounds is called for training set.
     !if(trim(parini%symfunc)/='do_not_save') then
@@ -120,6 +126,7 @@ subroutine ann_train(parini)
         endif
     endif
     call final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    !stop 'AAAAAAAAAAAAAAAAAAA'
 
     call f_release_routine()
 end subroutine ann_train
@@ -131,6 +138,7 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_symfunc
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -145,9 +153,9 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
     enddo
     !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     call atom_allocate_old(atoms,1,0,0)
-    write(*,*) atoms%nat
-    write(*,*) atoms%sat(:)
-    write(*,*) atoms%itypat(:)
+    !write(*,*) atoms%nat
+    !write(*,*) atoms%sat(:)
+    !write(*,*) atoms%itypat(:)
     atoms%rat(1,1)=1.d0 ; atoms%rat(2,1)=1.d0 ; atoms%rat(3,1)=1.d0
     atoms%cellvec(1:3,1:3)=0.d0
     atoms%cellvec(1,1)=10.d0
@@ -156,7 +164,9 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
     atoms%boundcond='free'
     ann_arr%event='potential'
     ann_arr%compute_symfunc=.true.
+    !call yaml_sequence_open('total charge of single atom in adjusting ener_ref')
     do ityp=1,parini%ntypat
+        !call yaml_sequence(advance='no')
         atoms%sat(1)=parini%stypat(ityp)
         atoms%itypat(1)=parini%ltypat(ityp)
         t_ener_ref=ann_arr%ann(atoms%itypat(1))%ener_ref
@@ -164,8 +174,11 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
         call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
         ann_arr%ann(atoms%itypat(1))%ener_ref=t_ener_ref-atoms%epot
         call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
-        write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
+        !call yaml_map('type',trim(atoms%sat(1)))
+        !call yaml_map('charge',atoms%zat(1)+atoms%qat(1))
+        !write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
     enddo
+    !call yaml_sequence_close()
     call atom_deallocate_old(atoms)
 end subroutine set_single_atom_energy
 !*****************************************************************************************
@@ -366,7 +379,8 @@ subroutine init_ann_train(parini,ann_arr,ekf)
         ann_arr%n=4
     endif
     if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in ann_train'
-    write(*,*) 'Here', ann_arr%n
+    call yaml_map('number of ann',ann_arr%n)
+    !write(*,*) 'Here', ann_arr%n
     allocate(ann_arr%ann(ann_arr%n))
     ann_arr%approach=trim(parini%approach_ann)
     fname = trim(parini%stypat(1))//'.ann.input.yaml'
@@ -383,14 +397,21 @@ subroutine init_ann_train(parini,ann_arr,ekf)
     !---------------------------------------------
     ekf%num(1:10)=0
     ekf%n=0
+    call yaml_sequence_open('EKF') !,flow=.true.)
     do i=1,ann_arr%n
         do ialpha=1,ann_arr%ann(i)%nl
             ekf%num(i)=ekf%num(i)+(ann_arr%ann(i)%nn(ialpha-1)+1)*ann_arr%ann(i)%nn(ialpha)
         enddo
         ekf%loc(i)=ekf%n+1
         ekf%n=ekf%n+ekf%num(i)
-        write(*,'(a,3i5)') 'EKF: ',ekf%loc(i),ekf%num(i),ekf%n
+        call yaml_sequence(advance='no')
+        call yaml_map('iann',i)
+        call yaml_map('loc',ekf%loc(i))
+        call yaml_map('num',ekf%num(i))
+        call yaml_map('n',ekf%n)
+        !write(*,'(a,3i5)') 'EKF: ',ekf%loc(i),ekf%num(i),ekf%n
     enddo
+    call yaml_sequence_close()
     call ann_allocate(ekf,ann_arr)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
@@ -625,7 +646,7 @@ subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_val
     endif
     ann_arr%ann(1)%ebounds(1)=-1.d0
     ann_arr%ann(1)%ebounds(2)= 1.d0
-    write(*,'(a,2es14.5)') 'ebounds: ',ann_arr%ann(1)%ebounds(1),ann_arr%ann(1)%ebounds(2)
+    !write(*,'(a,2es14.5)') 'ebounds: ',ann_arr%ann(1)%ebounds(1),ann_arr%ann(1)%ebounds(2)
     tt=2.d0/(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))
     do iconf=1,atoms_train%nconf
         nat=1 !atoms_train%atoms(iconf)%nat
@@ -804,7 +825,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb
     call cpu_time(time2)
     dtime1=time1-time_p
     dtime2=time2-time1
-    write(*,'(a,2f20.2)') 'TIME ',dtime1,dtime2
+    !write(*,'(a,2f20.2)') 'TIME ',dtime1,dtime2
     time_p=time2
     if(parini%print_energy) then
         close(iunit)
@@ -1213,6 +1234,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc, mpi_comm_abz
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -1285,30 +1307,66 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
             enddo
         endif
     enddo
+    call yaml_mapping_open('symfunc bounds')
     do i=1,ann_arr%n
     do ig=1,ann_arr%ann(1)%nn(0) !HERE
         if(iproc==0) then
+        call yaml_sequence(advance='no')
         if(parini%bondbased_ann) then
-            write(*,'(2(i7,2i4,es20.10),1x,a)') &
-                iconfmin(ig,1),atoms_arr%atoms(iconfmin(ig,1))%nat,ibmin(ig),gminarr(ig,1), &
-                iconfmax(ig,1),atoms_arr%atoms(iconfmax(ig,1))%nat,ibmax(ig),gmaxarr(ig,1),trim(strmess)
-            write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,1))),atoms_arr%lconf(iconfmin(ig,1)), &
-                trim(atoms_arr%fn(iconfmax(ig,1))),atoms_arr%lconf(iconfmax(ig,1))
+            call yaml_mapping_open(trim(strmess),flow=.true.)
+            !write(*,'(2(i7,2i4,es20.10),1x,a)') &
+            !    iconfmin(ig,1),atoms_arr%atoms(iconfmin(ig,1))%nat,ibmin(ig),gminarr(ig,1), &
+            !    iconfmax(ig,1),atoms_arr%atoms(iconfmax(ig,1))%nat,ibmax(ig),gmaxarr(ig,1),trim(strmess)
+
+            call yaml_map('iconfmin',iconfmin(ig,1),fmt='(i7)')
+            call yaml_map('nat',atoms_arr%atoms(iconfmin(ig,1))%nat,fmt='(i4)')
+            call yaml_map('ibmin',ibmin(ig),fmt='(i4)')
+            call yaml_map('gminarr',gminarr(ig,1),fmt='(es20.10)')
+            call yaml_map('iconfmax',iconfmax(ig,1),fmt='(i7)')
+            call yaml_map('nat',atoms_arr%atoms(iconfmax(ig,1))%nat,fmt='(i4)')
+            call yaml_map('ibmax',ibmax(ig),fmt='(i4)')
+            call yaml_map('gmaxarr',gmaxarr(ig,1),fmt='(es20.10)')
+            call yaml_map('strmess',trim(strmess))
+
+            !write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,1))),atoms_arr%lconf(iconfmin(ig,1)), &
+            !    trim(atoms_arr%fn(iconfmax(ig,1))),atoms_arr%lconf(iconfmax(ig,1))
+
+            call yaml_map('fn_min',trim(atoms_arr%fn(iconfmin(ig,1))))
+            call yaml_map('lconf_min',atoms_arr%lconf(iconfmin(ig,1)),fmt='(i6)')
+            call yaml_map('fn_max',trim(atoms_arr%fn(iconfmax(ig,1))))
+            call yaml_map('lconf_max',atoms_arr%lconf(iconfmax(ig,1)),fmt='(i6)')
+
+            call yaml_mapping_close()
         else
-            !write(*,*) &
-            !    iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
-            !    iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)
-            !write(*,*) trim(atoms_arr%fn(iconfmin(ig,i))),atoms_arr%lconf(iconfmin(ig,i)), &
+            call yaml_mapping_open(trim(strmess),flow=.true.)
+            !write(*,'(2(i7,2i4,es20.10),1x,a)') &
+            !    iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,ibmin(ig),gminarr(ig,i), &
+            !    iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,ibmax(ig),gmaxarr(ig,i),trim(strmess)
+
+            call yaml_map('iconfmin',iconfmin(ig,i),fmt='(i7)')
+            call yaml_map('nat',atoms_arr%atoms(iconfmin(ig,i))%nat,fmt='(i4)')
+            call yaml_map('ibmin',ibmin(ig),fmt='(i4)')
+            call yaml_map('gminarr',gminarr(ig,i),fmt='(es20.10)')
+            call yaml_map('iconfmax',iconfmax(ig,i),fmt='(i7)')
+            call yaml_map('nat',atoms_arr%atoms(iconfmax(ig,i))%nat,fmt='(i4)')
+            call yaml_map('ibmax',ibmax(ig),fmt='(i4)')
+            call yaml_map('gmaxarr',gmaxarr(ig,i),fmt='(es20.10)')
+            call yaml_map('strmess',trim(strmess))
+
+            !write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,i))),atoms_arr%lconf(iconfmin(ig,i)), &
             !    trim(atoms_arr%fn(iconfmax(ig,i))),atoms_arr%lconf(iconfmax(ig,i))
-            write(*,'(2(i7,2i4,es20.10),1x,a)') &
-                iconfmin(ig,i),atoms_arr%atoms(iconfmin(ig,i))%nat,iatmin(ig,i),gminarr(ig,i), &
-                iconfmax(ig,i),atoms_arr%atoms(iconfmax(ig,i))%nat,iatmax(ig,i),gmaxarr(ig,i),trim(strmess)
-            write(*,'(2(a50,i6,1x))') trim(atoms_arr%fn(iconfmin(ig,i))),atoms_arr%lconf(iconfmin(ig,i)), &
-                trim(atoms_arr%fn(iconfmax(ig,i))),atoms_arr%lconf(iconfmax(ig,i))
+
+            call yaml_map('fn_min',trim(atoms_arr%fn(iconfmin(ig,i))))
+            call yaml_map('lconf_min',atoms_arr%lconf(iconfmin(ig,i)),fmt='(i6)')
+            call yaml_map('fn_max',trim(atoms_arr%fn(iconfmax(ig,i))))
+            call yaml_map('lconf_max',atoms_arr%lconf(iconfmax(ig,i)),fmt='(i6)')
+
+            call yaml_mapping_close()
         endif
         endif
     enddo
     enddo
+    call yaml_mapping_close()
 
     if(parini%bondbased_ann) then
         !------------------------------ bond symmetry function ----------------------------------------
