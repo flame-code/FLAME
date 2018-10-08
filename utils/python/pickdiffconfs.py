@@ -1,17 +1,18 @@
 #!/usr/bin/env python
+import argparse
 import commands
 import string
 import re
 import sys
+from io_yaml import *
+import copy
 #*****************************************************************************************
-if len(sys.argv) < 3:
-    print "usage: pickdiffconfs.py \"grep -B 6 -A 63 poslow%5.5d ../../minhop_data/poslow.acf %s\" dtol"
-    print "       63 is number of atoms plus 3"
-    print "       ../../minhop_data/poslow.acf is filename of configurations"
-    exit()
-else:
-    command = sys.argv[1]
-    dtol = float(sys.argv[2])
+str1 = "This script selects diverse structures."
+parser = argparse.ArgumentParser(description=str1)
+parser.add_argument('fn_inp', action='store' ,type=str, help="Name of the input file in yaml format")
+parser.add_argument('fn_out', action='store' ,type=str, help="Name of the output file in acf format")
+parser.add_argument('dtol', action='store' ,type=float, help="tolerance for distances")
+args=parser.parse_args()
 
 dist=[]
 #f=open("tt1","r")
@@ -62,26 +63,16 @@ for iconf in range(nconf):
         continue
     new=True
     for jconf in range(len(sel)):
-        if dist[iconf][sel[jconf]]<dtol:
+        if dist[iconf][sel[jconf]]<args.dtol:
             new=False
             break
     if new==True:
         sel.append(iconf)
 
-
-command=command+"\n"
-f=open("r1.sh","w")
+atoms_all=read_yaml(args.fn_inp)
+atoms_all_out=[]
 for iconf in range(len(sel)):
-    #print "grep -B 6 -A 63 poslow%5.5d ../../../minhop_data/poslow.acf" % (sel[iconf]+1)
-    if iconf==0:
-        tt_com=">all.acf"
-    else:
-        tt_com=">>all.acf"
-    #f.write("grep -B 6 -A 63 poslow%5.5d ../../minhop_data/poslow.acf %s\n" % (sel[iconf]+1,tt_com))
-    f.write(command % (sel[iconf]+1,tt_com))
-f.close()
-#1
-#88
-#213
-#for iconf in range(nconf):
-#    if dist[0][iconf]>9.0 and dist[87][iconf]>9.0 and dist[212][iconf]>9.0: print "wrong"
+    atoms_all_out.append(Atoms)
+    atoms_all_out[-1]=copy.deepcopy(atoms_all[sel[iconf]])
+
+write_yaml(atoms_all_out,args.fn_out)
