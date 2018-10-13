@@ -427,13 +427,14 @@ subroutine best_charge_density_pot(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_ann, only: typ_cent, typ_ann_arr
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
     type(typ_poisson):: poisson_dft, poisson_cent
     type(typ_atoms):: atoms
+    type(typ_atoms_arr):: atoms_arr
     logical:: esc
     integer:: atoms_type, iter, iter_max, cel_vol ,cel_vol_inv, ix, iy, iz, l, nclx, ncrx,ncly, ncry, nclz, ncrz ,nbgx, nbgy, nbgz
     integer:: at_range ,xg_at , yg_at , zg_at , n_at, i, j, k, lcn, ss, Ne, isatur, nsatur, ng(3)! lcn = linear combinarion number
@@ -464,7 +465,14 @@ subroutine best_charge_density_pot(parini)
     hgy = poisson_dft%hgrid(2,2)
     hgz = poisson_dft%hgrid(3,3)
     cv_temp=atoms%cellvec
-    call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    
+    !call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    call read_yaml_conf(parini,'posinp.yaml',1,atoms_arr)
+    if(atoms_arr%nconf/=1) stop 'ERROR: atoms_arr%nconf/=1 in testforces_fd'
+    call atom_copy_old(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms_s')
+    call atom_deallocate(atoms_arr%atoms(1))
+    deallocate(atoms_arr%atoms)
+
     atoms%zat=zat_temp
     atoms%rat = at_rat
     rat(1,:) = atoms%rat(1,:)
