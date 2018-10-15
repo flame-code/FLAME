@@ -20,6 +20,7 @@ subroutine best_charge_density_rho(parini)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent, typ_ann_arr
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -429,6 +430,7 @@ subroutine best_charge_density_pot(parini)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_ann, only: typ_cent, typ_ann_arr
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -445,6 +447,7 @@ subroutine best_charge_density_pot(parini)
     real(8),allocatable::  dft_rho(:,:,:), weight(:,:,:),weighted_rho(:,:,:), dft_pot(:,:,:), cent_pot(:,:,:)
     real(8),allocatable:: A(:,:), Q(:,:), At(:,:), Qt(:,:), qpar(:,:), apar(:,:),rpar(:,:), qpar_t(:,:), rat_t(:,:),rat(:,:)
     real(8),allocatable:: dft_fat(:,:), cent_fat(:,:), gwit(:), at_rat(:,:),cent_rho(:,:,:),cv_temp(:,:), atom_charge(:),atom_charge_type(:)
+    real(8),allocatable:: mean_arr(:), std_arr(:)
     real(8) :: B1, B2, h , Be1 , Be2, Beta1, Beta2
     integer :: iter2, iter3
     real(8) :: dx, dy, dz, dr
@@ -465,6 +468,11 @@ subroutine best_charge_density_pot(parini)
     hgy = poisson_dft%hgrid(2,2)
     hgz = poisson_dft%hgrid(3,3)
     cv_temp=atoms%cellvec
+    call yaml_mapping_open('grid spacing',flow=.true.)
+    call yaml_map('hx',hgx,fmt='(f6.3)')
+    call yaml_map('hy',hgy,fmt='(f6.3)')
+    call yaml_map('hz',hgz,fmt='(f6.3)')
+    call yaml_mapping_close()
     
     !call acf_read(parini,'posinp.acf',1,atoms=atoms)
     call read_yaml_conf(parini,'posinp.yaml',1,atoms_arr)
@@ -484,6 +492,7 @@ subroutine best_charge_density_pot(parini)
     read(1377,*) !Number of atoms types
     read(1377,*) atoms_type
     allocate(t_num(0:atoms_type),Qt(lcn,atoms_type),At(lcn,atoms_type),rat_t(1:3,atoms_type),Q(1:lcn,1:atoms%nat),A(1:lcn,1:atoms%nat))
+    allocate(mean_arr(lcn),std_arr(lcn))
     t_num(0) = 0
     read(1377,*) !Number of each atom type 
     do i = 1 ,atoms_type 
@@ -507,8 +516,13 @@ subroutine best_charge_density_pot(parini)
     associate(nx=>poisson_dft%ngpx,ny=>poisson_dft%ngpy,nz=>poisson_dft%ngpz)
     associate(cv1=>cv_temp(1,1),cv2=>cv_temp(2,2),cv3=>cv_temp(3,3))
     associate(x_at=>rat(1,n_at),y_at=>rat(2,n_at),z_at=>rat(3,n_at))
-    write(2,*) "Number of grids : " , nx , ny , nz
-    write(2,'(a,3es14.6)') 'Grid spacing : ' , hgx , hgy , hgz
+    !write(2,*) "Number of grids : " , nx , ny , nz
+    !write(2,'(a,3es14.6)') 'Grid spacing : ' , hgx , hgy , hgz
+    call yaml_mapping_open('number of grid points',flow=.true.)
+    call yaml_map('nx',nx)
+    call yaml_map('ny',ny)
+    call yaml_map('nz',nz)
+    call yaml_mapping_close()
     cel_vol = nx*ny*nz
     cel_vol_inv = 1.d0/(cel_vol+0.d0)
     allocate(dft_pot(nx,ny,nz),dft_rho(nx,ny,nz),weighted_rho(nx,ny,nz),dft_fat(1:3,1:atoms%nat),weight(nx,ny,nz),gwit(1:atoms%nat))
@@ -531,7 +545,8 @@ subroutine best_charge_density_pot(parini)
     dft_ener = ehartree
     dft_pot = poisson_dft%pot
     dft_q = hgx*hgy*hgz*sum(dft_rho)
-    write(2,*)'Total charge density of DFT : ',dft_q
+    !write(2,*)'Total charge density of DFT : ',dft_q
+    call yaml_map('Total charge of DFT',dft_q,fmt='(f10.3)')
 !//////////////////////////////////////////CENT PART//////////////////////////////////////
     allocate(cent_pot(nx,ny,nz))
     allocate(qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat),rpar(1:3,1:atoms%nat),qpar_t(1:lcn,1:atoms_type))
@@ -582,9 +597,12 @@ subroutine best_charge_density_pot(parini)
     weight = 1.d0
     call set_rcov(atoms)
     if(rclx>=0 .and. rcrx>=0 .and. rcly>=0 .and. rcry>=0 .and. rclz>=0 .and. rcrz>=0) then
-        write(2,*) 'Cutoff : 2 times of covalent radius is considered for cutoff'
+        !write(2,*) 'Cutoff : 2 times of covalent radius is considered for cutoff'
+        call yaml_comment('Cutoff is based on exp(-r^4) and covalent radius.')
+        call yaml_mapping_open('rcov',flow=.true.)
         do i = 1 , atoms%nat
-        write(2,*) 'rcov of ',atoms%sat(i),'is :',atoms%rcov(i)
+        !write(2,*) 'rcov of ',atoms%sat(i),'is :',atoms%rcov(i)
+            call yaml_map(trim(atoms%sat(i)),atoms%rcov(i),fmt='(f6.3)')
             do iz = 1 , nz
                 dz = (hgz*(iz-1)-atoms%rat(3,i))**2
                 do iy = 1 , ny
@@ -599,8 +617,10 @@ subroutine best_charge_density_pot(parini)
                 enddo
             enddo
         enddo
+        call yaml_mapping_close()
     else
-        write(2,*) 'Cutoff : whole cell is considered'
+        !write(2,*) 'Cutoff : whole cell is considered'
+        call yaml_comment('Cutoff : whole cell is considered')
     end if
     do iz = 1 , nz
         do iy = 1 , ny
@@ -621,7 +641,10 @@ subroutine best_charge_density_pot(parini)
     end do
     ng(1) = nx ; ng(2) = ny ; ng(3) = nz
     total_time = 0.d0
+    call yaml_sequence_open('SD iterations')
     do iter=1,huge(iter_max)
+        call yaml_sequence(advance='no')
+        call yaml_map('iter',iter)
         start = 0.d0
         finish = 0.d0
         call cpu_time(start)
@@ -634,18 +657,11 @@ subroutine best_charge_density_pot(parini)
             weight(1:nx,1:ny,1:nz),poisson_dft%pot(1:nx,1:ny,1:nz),cent_pot(1:nx,1:ny,1:nz),qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat),rpar(1:3,1:atoms%nat))
         gtot = sum(qpar)
         qpar = qpar - (gtot+0.d0)/(atoms%nat*lcn+0.d0)
-        do i = 1 , atoms%nat
-            do l = 1 , lcn
-                write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, QPAR : ',atoms%sat(i),i,iter,l,qpar(l,i)
-            end do
-            do l = 1 , lcn
-                write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, APAR : ',atoms%sat(i),i,iter,l,apar(l,i)
-            end do
-        end do
         Q = Q - SD_S_Q*qpar
         A = A - SD_S_A*apar
         rat(1:3,1:atoms%nat) = rat(1:3,1:atoms%nat) - SD_S_R*rpar(1:3,1:atoms%nat)
-        write(2,*) ' Total charge of cell: ',sum(Q)
+        !write(2,*) ' Total charge of cell: ',sum(Q)
+        call yaml_map('sum of Q',sum(Q),fmt='(es15.7)')
         do i = 1 , lcn
             ss = 0
             do j = 1 , atoms_type
@@ -659,22 +675,42 @@ subroutine best_charge_density_pot(parini)
                 a(i,1+t_num(j-1):t_num(j-1)+t_num(j))=at(i,j)
             end do
         end do
+        call yaml_sequence_open('info for each atom')
         do i = 1 , atoms%nat
+            call yaml_sequence(advance='no')
+            call yaml_map('iat',i)
+            call yaml_map('type',trim(atoms%sat(i)))
+            call yaml_map('qpar',qpar(1:lcn,i),fmt='(es15.7)')
+            !do l = 1 , lcn
+            !    write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, QPAR : ',atoms%sat(i),i,iter,l,qpar(l,i)
+            !end do
+            call yaml_map('apar',apar(1:lcn,i),fmt='(es15.7)')
+            !do l = 1 , lcn
+            !    write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, APAR : ',atoms%sat(i),i,iter,l,apar(l,i)
+            !end do
+            call yaml_map('rpar',rpar(1:3,i),fmt='(es15.7)')
+            call yaml_map('dr',rat(1:3,i)-atoms%rat(1:3,i),fmt='(es15.7)')
+            !write(2,'(a39,a3,i3,i5,3es16.7)') 'Atom, Atom_Num, ITER, RAT_[X,Y,Z] : ',atoms%sat(i),i,iter,rat(1,i),rat(2,i),rat(3,i)
+            !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_X, dx :',atoms%sat(i),i,iter,rpar(1,i),atoms%rat(1,i)-rat(1,i)
+            !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Y, dy :',atoms%sat(i),i,iter,rpar(2,i),atoms%rat(2,i)-rat(2,i)
+            !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Z, dz :',atoms%sat(i),i,iter,rpar(3,i),atoms%rat(3,i)-rat(3,i)
+            call yaml_map('rel',rat(1:3,i),fmt='(es15.7)')
+            call yaml_map('Q',Q(1:lcn,i),fmt='(es15.7)')
+            call yaml_map('A',A(1:lcn,i),fmt='(es15.7)')
             total_charge = 0.d0
-            write(2,'(a39,a3,i3,i5,3es16.7)') 'Atom, Atom_Num, ITER, RAT_[X,Y,Z] : ',atoms%sat(i),i,iter,rat(1,i),rat(2,i),rat(3,i)
-            write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_X, dx :',atoms%sat(i),i,iter,rpar(1,i),atoms%rat(1,i)-rat(1,i)
-            write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Y, dy :',atoms%sat(i),i,iter,rpar(2,i),atoms%rat(2,i)-rat(2,i)
-            write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Z, dz :',atoms%sat(i),i,iter,rpar(3,i),atoms%rat(3,i)-rat(3,i)
             do l = 1 , lcn
                 total_charge = total_charge+Q(l,i)
-                write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, Q : ',atoms%sat(i),i,iter,l,Q(l,i)
+                !write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, Q : ',atoms%sat(i),i,iter,l,Q(l,i)
             end do
-            write(2,'(a40,a3,2es14.6)') 'Atom, Total charge, charge changes : ',atoms%sat(i), total_charge, -abs(atom_charge(i))+abs(total_charge)
-            do l = 1 , lcn
-                write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, A : ',atoms%sat(i),i,iter,l,A(l,i)
-            end do
-            write(2,*) '---------------------------'
+            !write(2,'(a40,a3,2es14.6)') 'Atom, Total charge, charge changes : ',atoms%sat(i), total_charge, -abs(atom_charge(i))+abs(total_charge)
+            call yaml_map('total charge',total_charge,fmt='(es15.7)')
+            call yaml_map('charge changes',-abs(atom_charge(i))+abs(total_charge),fmt='(es15.7)')
+            !do l = 1 , lcn
+            !    write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, A : ',atoms%sat(i),i,iter,l,A(l,i)
+            !end do
+            !write(2,*) '---------------------------'
         end do
+        call yaml_sequence_close()
         err_max = 0.d0
         pot_err = 0.d0
         do i = 1 , nz
@@ -691,33 +727,59 @@ subroutine best_charge_density_pot(parini)
         pot_err= hgx*hgy*hgz*pot_err
         rmse_old=rmse
         rmse = sqrt(pot_err)
-        write(2,'(a,i6,3es14.6)')'ITER RMSE POT_ERR ERR_MAX: ',iter,rmse,pot_err,err_max
+        call yaml_mapping_open('SD',flow=.true.)
+        call yaml_map('iter',iter)
+        call yaml_map('rmse',rmse,fmt='(es14.6)')
+        !call yaml_map('pot_err',pot_err,fmt='(es14.6)')
+        call yaml_map('err_max',err_max,fmt='(es14.6)')
+        !write(2,'(a,i6,3es14.6)')'ITER RMSE POT_ERR ERR_MAX: ',iter,rmse,pot_err,err_max
         if (abs(rmse_old-rmse) < err )then
             isatur=isatur+1
         else
             isatur=0
         endif
-        write(2,*) 'saturation number :',isatur
+        call yaml_map('isatur',isatur)
+        !write(2,*) 'saturation number :',isatur
+        call yaml_mapping_close()
         call cpu_time(finish)
         total_time = total_time + finish - start
-        write(2,'(a45,f6.3,a45)') "================================ ITER TIME : ",finish-start,"(sec)========================================"
+        call yaml_map('time of each SD iter',finish-start,fmt='(f6.3)')
+        !write(2,'(a45,f6.3,a45)') "================================ ITER TIME : ",finish-start,"(sec)========================================"
         if(isatur>nsatur) then
-            write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            write(2,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            call yaml_comment('MAX CONVERSION REACHED',hfill='~')
+            !write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            !write(2,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             exit
         endif
-    end Do
-    write(2,'(a36,f14.5,f14.5)') 'Total SD time, average per iter : ' , total_time , (total_time+0.d0)/(iter+0.d0)
+    end do !end of loop over iter
+    call yaml_sequence_close()
+    call yaml_map('total time of SD',total_time,fmt='(f6.3)')
+    call yaml_map('average time of each SD iter',(total_time)/real(iter,kind=8),fmt='(f6.3)')
+    !write(2,'(a36,f14.5,f14.5)') 'Total SD time, average per iter : ' , total_time , (total_time+0.d0)/(iter+0.d0)
+    call yaml_sequence_open('final values of params')
     ss = 0
     do j = 1 , atoms_type
+        call yaml_sequence(advance='no')
         ss = ss+t_num(j-1)
+        call yaml_map('type',trim(atoms%sat(ss+1)))
         do i = 1 , lcn    
             call stdval_rzx(Q(i,ss+1:ss+t_num(j)),t_num(j),mean,std,var)
-            write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD Q of :',atoms%sat(ss+1), i,mean,var,std
-            call stdval_rzx(A(i,ss+1:ss+t_num(j)),t_num(j),mean,std,var)
-            write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD A of :',atoms%sat(ss+1), i,mean,var,std
+            !write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD Q of :',atoms%sat(ss+1), i,mean,var,std
+            mean_arr(i)=mean
+            std_arr(i)=std
         enddo
+        call yaml_map('avg of Q',mean_arr(1:lcn),fmt='(es14.6)')
+        call yaml_map('std of Q',std_arr(1:lcn),fmt='(es14.6)')
+        do i = 1 , lcn    
+            call stdval_rzx(A(i,ss+1:ss+t_num(j)),t_num(j),mean,std,var)
+            !write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD A of :',atoms%sat(ss+1), i,mean,var,std
+            mean_arr(i)=mean
+            std_arr(i)=std
+        enddo
+        call yaml_map('avg of A',mean_arr(1:lcn),fmt='(es14.6)')
+        call yaml_map('std of A',std_arr(1:lcn),fmt='(es14.6)')
     enddo
+    call yaml_sequence_close()
     do ix = 1 , nx
         write(3,*) ix*hgx , dft_pot(ix,ny/2,nz/2) ,cent_pot(ix,ny/2,nz/2)
     end do 
@@ -769,7 +831,13 @@ subroutine best_charge_density_pot(parini)
     poisson_cent%rho=-1.d0*poisson_cent%rho
     call get_hartree(parini,poisson_cent,atoms,Q(1,1:atoms%nat),ehartree)
     cent_ener = ehartree
-    write(2,'(a,4es14.6)') 'CENT energy , DFT energy , Energy difference , Err Percentage : ' , cent_ener , dft_ener , cent_ener-dft_ener,(cent_ener-dft_ener)*100.d0/dft_ener
+    call yaml_mapping_open('energy',flow=.true.)
+    call yaml_map('CENT',cent_ener,fmt='(es15.7)')
+    call yaml_map('DFT',dft_ener,fmt='(es15.7)')
+    call yaml_map('dE',cent_ener-dft_ener,fmt='(es15.7)')
+    call yaml_map('dE percent',(cent_ener-dft_ener)*100.d0/dft_ener,fmt='(es15.7)')
+    call yaml_mapping_close()
+    !write(2,'(a,4es14.6)') 'CENT energy , DFT energy , Energy difference , Err Percentage : ' , cent_ener , dft_ener , cent_ener-dft_ener,(cent_ener-dft_ener)*100.d0/dft_ener
     poisson_dft%q=atoms%zat
     poisson_cent%q=atoms%zat
     !if (atoms_type > 2) stop('atoms type is more than 2')
@@ -821,14 +889,24 @@ subroutine best_charge_density_pot(parini)
     atoms%fat = 0.d0
     call get_hartree_force(parini,poisson_cent,atoms)
     cent_fat = atoms%fat
+    call yaml_sequence_open('force due to electronic charge')
+    force_err=0.d0
     do i = 1 , atoms%nat
+        call yaml_sequence(advance='no')
         total_force_cent = sqrt(sum(cent_fat(1:3,i)**2))
         total_force_dft = sqrt(sum(dft_fat(1:3,i)**2))
-        force_err = sqrt(sum((cent_fat(1:3,i)-dft_fat(1:3,i))**2))
-        write(2,'(a41,a3,i3,4es14.6)') 'ATOM, ATOM_NUM, force, total_force DFT : ',atoms%sat(i), i , dft_fat(1:3,i), total_force_dft
-        write(2,'(a42,a3,i3,4es14.6)') 'ATOM, ATOM_NUM, force, total_force CENT : ',atoms%sat(i),i,cent_fat(1:3,i), total_force_cent
-        write(2,'(a28,a3,i,es14.6)') 'ATOM, ATOM_NUM, force err : ',atoms%sat(i),i, force_err
+        force_err = force_err + sum((cent_fat(1:3,i)-dft_fat(1:3,i))**2)
+        call yaml_map('type',trim(atoms%sat(i)))
+        call yaml_map('iat',i)
+        call yaml_map('dft_fat',dft_fat(1:3,i),fmt='(es15.7)')
+        call yaml_map('cent_fat',cent_fat(1:3,i),fmt='(es15.7)')
+        !write(2,'(a41,a3,i3,4es14.6)') 'ATOM, ATOM_NUM, force, total_force DFT : ',atoms%sat(i), i , dft_fat(1:3,i), total_force_dft
+        !write(2,'(a42,a3,i3,4es14.6)') 'ATOM, ATOM_NUM, force, total_force CENT : ',atoms%sat(i),i,cent_fat(1:3,i), total_force_cent
+        !write(2,'(a28,a3,i,es14.6)') 'ATOM, ATOM_NUM, force err : ',atoms%sat(i),i, force_err
     end do
+    call yaml_sequence_close()
+    force_err=sqrt(force_err)
+    call yaml_map('force rmse',force_err,fmt='(es15.7)')
     end associate
     end associate
     end associate
