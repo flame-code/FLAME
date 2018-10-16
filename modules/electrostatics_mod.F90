@@ -28,6 +28,8 @@ module mod_electrostatics
         real(8), allocatable:: rcart(:,:)
         real(8), allocatable:: rgrad(:,:)
         integer:: npl, npu
+        real(8):: dpm(3)
+        real(8):: qpm(3,3)
         real(8):: beta !This is exactly the beta in the P3D paper.
         real(8):: cv(3,3)
         logical:: point_particle= .false.

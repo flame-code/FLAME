@@ -514,6 +514,23 @@ subroutine erf_over_r_taylor(r,funcval,funcval_der)
     real(8), intent(in):: r
     real(8), intent(out):: funcval, funcval_der
 end subroutine erf_over_r_taylor
+subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    type(typ_poisson), intent(inout):: poisson
+end subroutine calc_multipoles_cent2
+subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+end subroutine calc_multipoles_grid_cent2
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_parini, only: typ_parini
@@ -2318,6 +2335,7 @@ subroutine fit_elecpot(parini)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_ann, only: typ_cent, typ_ann_arr
     type(typ_parini), intent(in):: parini
 end subroutine fit_elecpot
 subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar,rpar)

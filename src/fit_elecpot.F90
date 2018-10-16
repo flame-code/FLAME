@@ -27,6 +27,7 @@ subroutine fit_elecpot(parini)
     type(typ_poisson):: poisson_dft, poisson_cent
     type(typ_atoms):: atoms
     type(typ_atoms_arr):: atoms_arr
+    type(typ_cent):: cent
     logical:: esc
     integer:: atoms_type, iter, iter_max, cel_vol ,cel_vol_inv, ix, iy, iz, l, nclx, ncrx,ncly, ncry, nclz, ncrz ,nbgx, nbgy, nbgz
     integer:: at_range ,xg_at , yg_at , zg_at , n_at, i, j, k, lcn, ss, Ne, isatur, nsatur, ng(3)! lcn = linear combinarion number
@@ -41,6 +42,7 @@ subroutine fit_elecpot(parini)
     real(8) :: B1, B2, h , Be1 , Be2, Beta1, Beta2
     integer :: iter2, iter3, iat
     real(8) :: dx, dy, dz, dr
+    real(8) :: dpm_err(3), qpm_err(3,3)
     !////////////////////////E.O. TEMP for charge on grid/////////////////////////////////
     pi=4.d0*atan(1.d0)
     nsatur = 5 
@@ -51,6 +53,10 @@ subroutine fit_elecpot(parini)
     !open(unit=1377,file='params.txt')
 !//////////////////////////////////////READING INPUT PARAMETERS///////////////////////////
     call cube_read('electronic_density.cube',atoms,poisson_dft)
+    poisson_dft%rho=-1.d0*poisson_dft%rho
+    call calc_multipoles_grid_cent2(parini,atoms,poisson_dft)
+    call yaml_map('DFT electric dpm',poisson_dft%dpm,fmt='(f10.4)')
+    call yaml_map('DFT electric qpm',poisson_dft%qpm(1:3,1:3),fmt='(f10.4)')
     allocate(at_rat(3,atoms%nat),rat(3,atoms%nat),cv_temp(3,3),zat_temp(1:atoms%nat))
     zat_temp=atoms%zat
     at_rat = atoms%rat ! because acf_read corrupts atoms%rat
@@ -146,7 +152,6 @@ subroutine fit_elecpot(parini)
         rat_t(1:3,j) = rat(1:3,ss+1)
     end do
     volinv = (cv1*cv2*cv3)*cel_vol_inv
-    poisson_dft%rho=-1.d0*poisson_dft%rho
     !this is because get_psolver_bps changes poisson_dft%rho
     dft_rho = poisson_dft%rho
 !///////////////////////////////////////////DFT PART//////////////////////////////////////
@@ -259,10 +264,22 @@ subroutine fit_elecpot(parini)
     !end do
     ng(1) = nx ; ng(2) = ny ; ng(3) = nz
     total_time = 0.d0
+    allocate(cent%rel(1:3,1:atoms%nat))
     call yaml_sequence_open('SD iterations')
     do iter=1,huge(iter_max)
         call yaml_sequence(advance='no')
         call yaml_map('iter',iter)
+        !cent%rel(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
+        do iat=1,atoms%nat
+            atoms%qat(iat)=sum(Q(1:lcn,iat))
+        enddo
+        call calc_multipoles_cent2(parini,atoms,poisson_cent,rat)
+        call yaml_map('CENT electric dpm',poisson_cent%dpm,fmt='(f10.4)')
+        call yaml_map('CENT electric qpm',poisson_cent%qpm(1:3,1:3),fmt='(f10.4)')
+        dpm_err(1:3)=poisson_cent%dpm(1:3)-poisson_dft%dpm(1:3)
+        qpm_err(1:3,1:3)=poisson_cent%qpm(1:3,1:3)-poisson_dft%qpm(1:3,1:3)
+        call yaml_map('dpm_err',dpm_err,fmt='(f10.4)')
+        call yaml_map('qpm_err',qpm_err(1:3,1:3),fmt='(f10.4)')
         start = 0.d0
         finish = 0.d0
         call cpu_time(start)
@@ -433,7 +450,7 @@ subroutine fit_elecpot(parini)
     poisson_cent%gw_ewald = A(1,1:atoms%nat)
     call put_charge_density(parini,poisson_cent)
     do i = 2 , lcn
-        poisson_cent%reset_rho = .true.
+        poisson_cent%reset_rho = .false.
         poisson_cent%q = Q(i,1:atoms%nat)
         poisson_cent%gw_ewald = A(i,1:atoms%nat)
         call put_charge_density(parini,poisson_cent)
@@ -444,6 +461,20 @@ subroutine fit_elecpot(parini)
     do ix = 1 , nx
         write(4,'(4es16.7)') ix*hgx , dft_rho(ix,ny/2,nz/2) ,cent_rho(ix,ny/2,nz/2),weighted_rho(ix,ny/2,nz/2)
     end do
+
+    !cent%rel(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
+    do iat=1,atoms%nat
+        atoms%qat(iat)=sum(Q(1:lcn,iat))
+    enddo
+    call calc_multipoles_cent2(parini,atoms,poisson_cent,rat)
+    call yaml_map('CENT electric dpm (FINAL)',poisson_cent%dpm,fmt='(f10.4)')
+    call yaml_map('CENT electric qpm (FINAL)',poisson_cent%qpm(1:3,1:3),fmt='(f10.4)')
+    dpm_err(1:3)=poisson_cent%dpm(1:3)-poisson_dft%dpm(1:3)
+    qpm_err(1:3,1:3)=poisson_cent%qpm(1:3,1:3)-poisson_dft%qpm(1:3,1:3)
+    call yaml_map('dpm_err (FINAL)',dpm_err,fmt='(f10.4)')
+    call yaml_map('qpm_err (FINAL)',qpm_err(1:3,1:3),fmt='(f10.4)')
+    !call calc_multipoles_grid_cent2(parini,atoms,poisson_cent)
+
     poisson_cent%rho=-1.d0*poisson_cent%rho
     call cube_write('cent_rho.cube',atoms,poisson_cent,'rho')
     poisson_cent%rho=-1.d0*poisson_cent%rho
