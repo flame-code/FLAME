@@ -1598,38 +1598,6 @@ end subroutine backtocell
  real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count
  real(8) :: v(3,3),vol,rxyz_red(3,nat)
 end subroutine backtocell_cart
-! ./src/best_charge_density.F90 :
-subroutine best_charge_density(parini)
-    use mod_parini, only: typ_parini
-    type(typ_parini), intent(in):: parini
-end subroutine best_charge_density
-subroutine best_charge_density_rho(parini)
-    use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-end subroutine best_charge_density_rho
-subroutine best_charge_density_pot(parini)
-    use mod_parini, only: typ_parini
-    use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
-    type(typ_parini), intent(in):: parini
-end subroutine best_charge_density_pot
-subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar,rpar)
-    logical :: reset
-    integer , intent(in):: nat, ng(1:3), lcn
-    real(8) , intent(in):: rat(1:3,1:nat), hgx, hgy, hgz, qat(1:lcn,1:nat),gw(1:lcn,1:nat),weight(1:ng(1),1:ng(2),1:ng(3))
-    real(8) , intent(in):: dft_pot(1:ng(1),1:ng(2),1:ng(3))
-    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat), rpar(1:3,1:nat)
-    real(8) :: cent_pot_a_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_q_par(1:ng(1),1:ng(2),1:ng(3))
-    real(8) :: cent_pot_x_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_y_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_z_par(1:ng(1),1:ng(2),1:ng(3))
-end subroutine put_pot_sym_rzx
-subroutine stdval_rzx(f,f_len,mean,std,var)
-    integer, intent(in) :: f_len
-    real(8), intent(in) :: f(f_len)
-    real(8), intent(out) :: mean, std, var
-    real(8) :: g(f_len)
-end subroutine stdval_rzx
 ! ./src/buckingham.F90 :
 subroutine set_buckingham(atoms,tosifumi)
     use mod_atoms, only: typ_atoms
@@ -2341,6 +2309,32 @@ subroutine sym2rvan(sym,rvan)
   real(8)  :: rvan
   character(len=2) :: sym  ! chemical symbol 
 end subroutine sym2rvan
+! ./src/fit_elecpot.F90 :
+subroutine subtask_fit_elecpot(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+end subroutine subtask_fit_elecpot
+subroutine fit_elecpot(parini)
+    use mod_parini, only: typ_parini
+    use mod_electrostatics, only: typ_poisson
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    type(typ_parini), intent(in):: parini
+end subroutine fit_elecpot
+subroutine put_pot_sym_rzx(rat,hgx,hgy,hgz,nat,qat,gw,ng,lcn,reset,weight,dft_pot,cent_pot,qpar,apar,rpar)
+    logical :: reset
+    integer , intent(in):: nat, ng(1:3), lcn
+    real(8) , intent(in):: rat(1:3,1:nat), hgx, hgy, hgz, qat(1:lcn,1:nat),gw(1:lcn,1:nat),weight(1:ng(1),1:ng(2),1:ng(3))
+    real(8) , intent(in):: dft_pot(1:ng(1),1:ng(2),1:ng(3))
+    real(8) , intent(out):: cent_pot(1:ng(1),1:ng(2),1:ng(3)), apar(1:lcn,1:nat), qpar(1:lcn,1:nat), rpar(1:3,1:nat)
+    real(8) :: cent_pot_a_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_q_par(1:ng(1),1:ng(2),1:ng(3))
+    real(8) :: cent_pot_x_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_y_par(1:ng(1),1:ng(2),1:ng(3)), cent_pot_z_par(1:ng(1),1:ng(2),1:ng(3))
+end subroutine put_pot_sym_rzx
+subroutine stdval_rzx(f,f_len,mean,std,var)
+    integer, intent(in) :: f_len
+    real(8), intent(in) :: f(f_len)
+    real(8), intent(out) :: mean, std, var
+    real(8) :: g(f_len)
+end subroutine stdval_rzx
 ! ./src/flame.F90 :
 ! ./src/flame_init_fini.F90 :
 subroutine alborz_init(parini,parres,file_ini)
@@ -2358,7 +2352,7 @@ end subroutine alborz_initialize_timing_categories
 subroutine alborz_final(parini,file_ini)
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini, time_start, time_end
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini
     type(typ_file_ini), intent(inout):: file_ini
 end subroutine alborz_final
 subroutine init_random_seed(parini)
@@ -4584,6 +4578,10 @@ subroutine yaml_get_fingerprint_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
 end subroutine yaml_get_fingerprint_parameters
+subroutine yaml_get_fit_elecpot_parameters(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(inout):: parini
+end subroutine yaml_get_fit_elecpot_parameters
 subroutine set_dict_parini_default(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini

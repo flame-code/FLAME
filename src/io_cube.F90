@@ -149,6 +149,7 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
                 else
                     stop 'ERROR: what should cube_write write into file?'
                 endif
+                if(quantity<1.d-90) quantity=0.d0
                 write(1358,'(1x,es12.5,1x)',advance='no') quantity
                 !write(1358,'(1x,f13.6,1x)',advance='no') quantity
                 item=item+1

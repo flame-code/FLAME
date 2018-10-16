@@ -54,6 +54,8 @@ subroutine yaml_get_parameters(parini)
             call yaml_get_fingerprint_parameters(parini)
         case("misc")
             call yaml_get_misc_parameters(parini)
+        case("fit_elecpot")
+            call yaml_get_fit_elecpot_parameters(parini)
         end select
         parini%subdict=>dict_next(parini%subdict)
     end do
@@ -618,6 +620,63 @@ subroutine yaml_get_fingerprint_parameters(parini)
     parini%fp_18_width_cutoff=parini%subdict//"widthcut"
     parini%fp_18_width_overlap=parini%subdict//"widthover"
 end subroutine yaml_get_fingerprint_parameters
+!*****************************************************************************************
+subroutine yaml_get_fit_elecpot_parameters(parini)
+    use mod_parini, only: typ_parini
+    use dictionaries
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    type(typ_parini), intent(inout):: parini
+    !local variales
+    integer:: igto, ityp
+    real(8):: ttq, tta
+    if(dict_size(parini%subdict)<1) stop 'ERROR: fit_elecpot block in flame_in.yaml is empty.'
+    parini%lcn=parini%subdict//"ngto"
+    if(parini%lcn<1 .and. trim(parini%subtask_misc)=='fit_elecpot') then
+        stop 'ERROR: parini%lcn<1 in flame_in.yaml'
+    endif
+    parini%iat_plot=parini%subdict//"iat_plot"
+    parini%qt=f_malloc([1.to.parini%lcn,1.to.parini%ntypat],id='parini%q_per_type')
+    parini%at=f_malloc([1.to.parini%lcn,1.to.parini%ntypat],id='parini%gwe_per_type')
+    if(trim(parini%subtask_misc)=='fit_elecpot') then
+        !write(*,*) dict_len(parini%subdict//"q_per_type")
+        if(dict_len(parini%subdict//"q_per_type")/=parini%ntypat) then
+            write(*,*) 'ERROR: incorrect length of list q_per_type in flame_in.yaml'
+            stop
+        endif
+        if(dict_len(parini%subdict//"gwe_per_type")/=parini%ntypat) then
+            write(*,*) 'ERROR: incorrect length of list gwe_per_type in flame_in.yaml'
+            stop
+        endif
+        do ityp=0,parini%ntypat-1
+            !write(*,*) dict_len(parini%subdict//"q_per_type"//ityp)
+            if(dict_len(parini%subdict//"q_per_type"//ityp)/=parini%lcn) then
+                write(*,*) 'ERROR: incorrect length of sublist q_per_type in flame_in.yaml'
+                stop
+            endif
+            if(dict_len(parini%subdict//"gwe_per_type"//ityp)/=parini%lcn) then
+                write(*,*) 'ERROR: incorrect length of sublist gwe_per_type in flame_in.yaml'
+                stop
+            endif
+            do igto=0,parini%lcn-1
+                parini%qt(igto+1,ityp+1)=parini%subdict//"q_per_type"//ityp//igto
+                parini%at(igto+1,ityp+1)=parini%subdict//"gwe_per_type"//ityp//igto
+            enddo
+        enddo
+    else
+        !call yaml_dict_dump(parini%subdict)
+        ttq=parini%subdict//"q_per_type"
+        tta=parini%subdict//"gwe_per_type"
+        parini%qt=ttq
+        parini%at=tta
+    endif
+    parini%alphax_q_fit_elecpot=parini%subdict//"alphax_q"
+    parini%alphax_a_fit_elecpot=parini%subdict//"alphax_a"
+    parini%alphax_r_fit_elecpot=parini%subdict//"alphax_r"
+    parini%pot_rmse_tol=parini%subdict//"pot_rmse_tol"
+    parini%cutoff_fit_elecpot=parini%subdict//"cutoff_fit_elecpot"
+end subroutine yaml_get_fit_elecpot_parameters
 !*****************************************************************************************
 subroutine set_dict_parini_default(parini)
     use mod_parini, only: typ_parini
