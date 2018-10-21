@@ -1,16 +1,18 @@
 # FLAME: a library for atomistic modeling environments
 
-##Installation
+[FLAME](flame-code.org) is a highly modular open source software package to perform atomistic simulations using a wide variety of techniques.
 
-FLAME requires autoconf and automake to be installed.
+## Installation
+
+FLAME requires `autoconf` and `automake` to be installed.
 
 It is recommended to install FLAME in a directory different from
 the source.
 
-###Steps to install FLAME
+### Steps to install FLAME
 
 1. You first need to install `futile` which is
-a set of utilities from the [BigDFT] (http://bigdft.org) project.
+a set of utilities from the [BigDFT](http://bigdft.org) project.
 
 Preferably, use the tar file given inside the
 FLAME to avoid inconsistency of versions.
