@@ -4,7 +4,7 @@
 </div>
 -->
 
-[comment]: <> (-----------------)
+[comment]: # (-----------------)
 
 # FLAME: a library for atomistic modeling environments
 
