@@ -208,3 +208,12 @@ geopt_CENT1_slab_fixed_efield:
  inside get_beta_grid: 1.e-10
  epot_es: 1.e-11
 
+vibfreq_fourpoints:
+ Keys to ignore:
+  - mode_00052
+  - mode_00053
+  - mode_00054
+  - mode_00055
+  - mode_00056
+  - mode_00057
+ Epsilon: 1.e-11

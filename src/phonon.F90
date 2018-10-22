@@ -6,6 +6,7 @@ subroutine cal_hessian_4p(parini)
     use mod_processors, only: iproc
     use mod_potential, only: potential
     use futile
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -18,7 +19,13 @@ subroutine cal_hessian_4p(parini)
     integer:: istat, lwork, info, jj !, nat_yes
     integer:: i, iat, ixyz, j, jat, jxyz, imode, ii, iconf, iunit
     character(5):: fn
-    call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    character(10):: strkey
+    !call acf_read(parini,'posinp.acf',1,atoms=atoms)
+    call read_yaml_conf(parini,'posinp.yaml',10000,atoms_arr)
+    if(atoms_arr%nconf/=1) stop 'ERROR: atoms_arr%nconf/=1 in cal_hessian_4p'
+    call atom_copy(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(1)->atoms')
+    call atom_deallocate(atoms_arr%atoms(1))
+    deallocate(atoms_arr%atoms)
     potential=trim(parini%potential_potential)
     !logical, allocatable:: yes(:)
     allocate(hess(3*atoms%nat,3*atoms%nat),stat=istat)
@@ -210,20 +217,25 @@ subroutine cal_hessian_4p(parini)
     call DSYEV('V','L',3*atoms%nat,hess,3*atoms%nat,eval,work,lwork,info)
     if(info/=0) stop 'DSYEV'
     if(iproc==0) then
-        iunit=f_get_free_unit(10**5)
-        open(unit=iunit,file='phonons.dat',status='replace')
+        !iunit=f_get_free_unit(10**5)
+        !open(unit=iunit,file='phonons.dat',status='replace')
+        call yaml_map('vibrational frequencies',eval,fmt='(e23.15)')
         !write(iunit,*) '---  TB eigenvalues in a.u. -------------'
         atoms_arr%nconf=2*10+1
         allocate(atoms_arr%atoms(atoms_arr%nconf))
+        call yaml_sequence_open('vibrational eigenmodes')
         do imode=1,3*atoms%nat
+            call yaml_sequence(advance='no')
             write(fn,'(i5.5)') imode
-            file_info%filename_positions='mode_'//fn//'.acf'
+            strkey='mode_'//fn
+            call yaml_map(strkey,hess(1:3*atoms%nat,imode),fmt='(e23.15)')
+            file_info%filename_positions='mode_'//fn//'.yaml'
             file_info%file_position='new'
             file_info%print_force=.false.
             !tt=eval(imode)/(.529d0**2/27.2114d0)
             !write(iunit,'(a,i6,2e15.5)') 'eval (eV/A^2), a.u. ',imode,tt,eval(imode)
             !eval(imode)=tt
-            write(iunit,'(i6,e15.5)') imode,eval(imode)
+            !write(iunit,'(i6,e15.5)') imode,eval(imode)
             if(trim(atoms%boundcond)=='free' .and. imode>3*atoms%nat-6) cycle
             if(trim(atoms%boundcond)/='free' .and. imode>3*atoms%nat-3) cycle
             iconf=0
@@ -237,14 +249,24 @@ subroutine cal_hessian_4p(parini)
                     atoms_arr%atoms(iconf)%rat(3,iat)=atoms%rat(3,iat)+alpha*hess(3*iat-0,imode)
                 enddo
             enddo
-            call acf_write_new(file_info,atoms_arr=atoms_arr,strkey='mode'//fn)
+            !call acf_write_new(file_info,atoms_arr=atoms_arr,strkey='mode'//fn)
+            do iconf=1,atoms_arr%nconf
+                if(iconf==1) then
+                    file_info%file_position='new'
+                else
+                    file_info%file_position='append'
+                endif
+                call write_yaml_conf(file_info,atoms_arr%atoms(iconf),strkey='mode'//fn)
+            enddo
         enddo
-        close(iunit)
+        call yaml_sequence_close()
+        !close(iunit)
         !open(unit=1359,file='eigenvectors.dat',status='replace')
         !write(1359,*) hess
         !close(1359)
         deallocate(atoms_arr%atoms)
     endif
+    call atom_deallocate(atoms)
 end subroutine cal_hessian_4p
 !*****************************************************************************************
 subroutine projectout_rotation(atoms,hess,rlarge,lwork,work)
