@@ -271,8 +271,8 @@ subroutine projectout_rotation(atoms,hess,rlarge,lwork,work)
     do i=1,3*atoms%nat-2,3
         iat=(i-1)/3+1
         ixyz=mod(i-1,3)+1
-        work(i+1)= (atoms%rat(ixyz,iat)-cmx)
-        work(i+0)=-(atoms%rat(ixyz,iat)-cmy)
+        work(i+1)= (atoms%rat(ixyz+0,iat)-cmx)
+        work(i+0)=-(atoms%rat(ixyz+1,iat)-cmy)
     enddo
     t1=0.d0  ; t2=0.d0
     do i=1,3*atoms%nat-2,3
@@ -296,8 +296,8 @@ subroutine projectout_rotation(atoms,hess,rlarge,lwork,work)
     do i=1,3*atoms%nat-2,3
         iat=(i-1)/3+1
         ixyz=mod(i-1,3)+1
-        work(i+2)= (atoms%rat(ixyz,iat)-cmx)
-        work(i+0)=-(atoms%rat(ixyz,iat)-cmz)
+        work(i+2)= (atoms%rat(ixyz+0,iat)-cmx)
+        work(i+0)=-(atoms%rat(ixyz+2,iat)-cmz)
     enddo
     t1=0.d0  ; t3=0.d0
     do i=1,3*atoms%nat-2,3
@@ -321,8 +321,8 @@ subroutine projectout_rotation(atoms,hess,rlarge,lwork,work)
     do i=1,3*atoms%nat-2,3
         iat=(i-1)/3+1
         ixyz=mod(i-1,3)+1
-        work(i+2)= (atoms%rat(ixyz,iat)-cmy)
-        work(i+1)=-(atoms%rat(ixyz,iat)-cmz)
+        work(i+2)= (atoms%rat(ixyz+1,iat)-cmy)
+        work(i+1)=-(atoms%rat(ixyz+2,iat)-cmz)
     enddo
     t2=0.d0 ; t3=0.d0
     do i=1,3*atoms%nat-2,3
