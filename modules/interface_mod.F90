@@ -1497,6 +1497,13 @@ subroutine elim_moment_mass(nat,atomic_vector,atomic_mass)
   real(8), intent(inout):: atomic_vector(3,nat)
   real(8), intent(in):: atomic_mass(nat)
 end subroutine elim_moment_mass
+subroutine calc_rotation_eigenvectors(nat,rat0,vrot)
+  integer, intent(in) :: nat
+  real(8), dimension(3*nat), intent(in) :: rat0
+  real(8), dimension(3*nat,3), intent(out) :: vrot
+  character(len=*), parameter :: subname='elim_torque_reza_alborz'
+  real(8), dimension(3*nat) :: rat
+end subroutine calc_rotation_eigenvectors
 subroutine elim_torque_reza_alborz(nat,rat0,fat)
   integer, intent(in) :: nat
   real(8), dimension(3*nat), intent(in) :: rat0
@@ -4629,13 +4636,11 @@ subroutine cal_hessian_4p(parini)
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
     type(typ_parini), intent(in):: parini
 end subroutine cal_hessian_4p
-subroutine projectout_rotation(atoms,hess,rlarge,lwork,work)
+subroutine projectout_rotation(atoms,hess,rlarge)
     use mod_atoms, only: typ_atoms
     type(typ_atoms), intent(in):: atoms
     real(8), intent(inout):: hess(3*atoms%nat,3*atoms%nat)
     real(8), intent(in):: rlarge
-    integer, intent(in):: lwork
-    real(8), intent(inout):: work(lwork)
 end subroutine projectout_rotation
 ! ./src/plain_ewald.F90 :
 subroutine plain_ewald(atoms,en)

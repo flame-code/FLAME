@@ -216,4 +216,4 @@ vibfreq_fourpoints:
   - mode_00055
   - mode_00056
   - mode_00057
- Epsilon: 1.e-11
+ Epsilon: 1.e-7
