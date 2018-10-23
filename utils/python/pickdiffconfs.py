@@ -5,6 +5,7 @@ import string
 import re
 import sys
 from io_yaml import *
+from io_bin import *
 import copy
 #*****************************************************************************************
 str1 = "This script selects diverse structures."
@@ -68,11 +69,16 @@ for iconf in range(nconf):
             break
     if new==True:
         sel.append(iconf)
-
-atoms_all=read_yaml(args.fn_inp)
+if args.fn_inp.endswith('.bin'):
+    atoms_all=bin_read(args.fn_inp)
+elif args.fn_inp.endswith('.yaml'):
+    atoms_all=read_yaml(args.fn_inp)
 atoms_all_out=[]
 for iconf in range(len(sel)):
     atoms_all_out.append(Atoms)
     atoms_all_out[-1]=copy.deepcopy(atoms_all[sel[iconf]])
 
-write_yaml(atoms_all_out,args.fn_out)
+if args.fn_inp.endswith('.bin'):
+    bin_write(atoms_all_out,args.fn_out,1)
+elif args.fn_inp.endswith('.yaml'):
+    write_yaml(atoms_all_out,args.fn_out)
