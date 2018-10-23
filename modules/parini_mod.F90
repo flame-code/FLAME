@@ -287,6 +287,17 @@ module mod_parini
         integer:: abinit_kpt_mode       !If 1, the kpoint mesh is defined by kptrlen length, else a monkhorst pack mesh is generated (only abinit)
         integer:: siesta_kpt_mode       !If 1, the kpoint mesh is defined by cutoff length, else a monkhorst pack mesh is generated (only siesta)
         !-----------------------------------------------------------------------
+        !Block fit_elecpot
+        integer:: lcn
+        integer:: iat_plot
+        real(8), allocatable:: qt(:,:)
+        real(8), allocatable:: at(:,:)
+        real(8):: alphax_q_fit_elecpot
+        real(8):: alphax_a_fit_elecpot
+        real(8):: alphax_r_fit_elecpot
+        real(8):: pot_rmse_tol
+        logical:: cutoff_fit_elecpot
+        !-----------------------------------------------------------------------
         type(dictionary), pointer :: dict_user
         type(dictionary), pointer :: dict
         type(dictionary), pointer :: subdict

@@ -1042,3 +1042,156 @@ subroutine erf_over_r_taylor(r,funcval,funcval_der)
                 (1.d1*a5+rsq*(1.2d1*a6+rsq*(1.4d1*a7+rsq*a8*1.6d1)))))))
 end subroutine erf_over_r_taylor
 !*****************************************************************************************
+subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: rel(3,atoms%nat)
+    type(typ_poisson), intent(inout):: poisson
+    !local variables
+    integer:: iat
+    real(8):: cx, cy, cz, qtot, ztot
+    real(8):: dpx, dpy, dpz
+    real(8):: qpxx, qpyy, qpzz, qpxy, qpxz, qpyz
+    real(8):: x, y, z, rsq
+    cx=0.d0 ; cy=0.d0 ; cz=0.d0
+    ztot=0.d0
+    do iat=1,atoms%nat
+        ztot=ztot+atoms%zat(iat)
+        cx=cx+atoms%zat(iat)*atoms%rat(1,iat)
+        cy=cy+atoms%zat(iat)*atoms%rat(2,iat)
+        cz=cz+atoms%zat(iat)*atoms%rat(3,iat)
+    enddo
+    cx=cx/ztot
+    cy=cy/ztot
+    cz=cz/ztot
+    dpx=0.0 ; dpy=0.0 ; dpz=0.0
+    qpxx=0.0 ; qpyy=0.0 ; qpzz=0.0
+    qpxy=0.0 ; qpxz=0.0 ; qpyz=0.0
+    do iat=1,atoms%nat
+        !ionic part
+        x=atoms%rat(1,iat)-cx
+        y=atoms%rat(2,iat)-cy
+        z=atoms%rat(3,iat)-cz
+        rsq=x**2+y**2+z**2
+        qpxx=qpxx+(3.0*x*x-rsq)*atoms%zat(iat)
+        qpyy=qpyy+(3.0*y*y-rsq)*atoms%zat(iat)
+        qpzz=qpzz+(3.0*z*z-rsq)*atoms%zat(iat)
+        qpxy=qpxy+(3.0*x*y)*atoms%zat(iat)
+        qpxz=qpxz+(3.0*x*z)*atoms%zat(iat)
+        qpyz=qpyz+(3.0*y*z)*atoms%zat(iat)
+        !electronic part
+        x=rel(1,iat)-cx
+        y=rel(2,iat)-cy
+        z=rel(3,iat)-cz
+        rsq=x**2+y**2+z**2
+        dpx=dpx+atoms%qat(iat)*x
+        dpy=dpy+atoms%qat(iat)*y
+        dpz=dpz+atoms%qat(iat)*z
+        qpxx=qpxx+(3.0*x*x-rsq)*atoms%qat(iat)
+        qpyy=qpyy+(3.0*y*y-rsq)*atoms%qat(iat)
+        qpzz=qpzz+(3.0*z*z-rsq)*atoms%qat(iat)
+        qpxy=qpxy+(3.0*x*y)*atoms%qat(iat)
+        qpxz=qpxz+(3.0*x*z)*atoms%qat(iat)
+        qpyz=qpyz+(3.0*y*z)*atoms%qat(iat)
+    enddo
+    poisson%dpm(1)=dpx ; poisson%dpm(2)=dpy ; poisson%dpm(3)=dpz
+    poisson%qpm(1,1)=qpxx ; poisson%qpm(1,2)=qpxy ; poisson%qpm(1,3)=qpxz
+    poisson%qpm(2,1)=qpxy ; poisson%qpm(2,2)=qpyy ; poisson%qpm(2,3)=qpyz
+    poisson%qpm(3,1)=qpxz ; poisson%qpm(3,2)=qpyz ; poisson%qpm(3,3)=qpzz
+    !write(*,'(a,3f8.4)') 'Dipole moments',dpx,dpy,dpz
+    !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxx,qpxy,qpxz
+    !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxy,qpyy,qpyz
+    !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxz,qpyz,qpzz
+end subroutine calc_multipoles_cent2
+!*****************************************************************************************
+subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    !local variables
+    integer:: iat, ix, iy, iz
+    real(8):: cx, cy, cz, qtot, ztot
+    real(8):: dpx, dpy, dpz
+    real(8):: qpxx, qpyy, qpzz, qpxy, qpxz, qpyz
+    real(8):: x, y, z, rsq, vol_voxel, rho
+    cx=0.d0 ; cy=0.d0 ; cz=0.d0
+    ztot=0.d0
+    do iat=1,atoms%nat
+        ztot=ztot+atoms%zat(iat)
+        cx=cx+atoms%zat(iat)*atoms%rat(1,iat)
+        cy=cy+atoms%zat(iat)*atoms%rat(2,iat)
+        cz=cz+atoms%zat(iat)*atoms%rat(3,iat)
+    enddo
+    cx=cx/ztot
+    cy=cy/ztot
+    cz=cz/ztot
+    dpx=0.0 ; dpy=0.0 ; dpz=0.0
+    qpxx=0.0 ; qpyy=0.0 ; qpzz=0.0
+    qpxy=0.0 ; qpxz=0.0 ; qpyz=0.0
+    do iz=1,poisson%ngpz
+        do iy=1,poisson%ngpy
+            do ix=1,poisson%ngpx
+                x=(ix-1)*poisson%hgrid(1,1)-cx
+                y=(iy-1)*poisson%hgrid(2,2)-cy
+                z=(iz-1)*poisson%hgrid(3,3)-cz
+                rsq=x**2+y**2+z**2
+                rho=poisson%rho(ix,iy,iz)
+                dpx=dpx+x*rho
+                dpy=dpy+y*rho
+                dpz=dpz+z*rho
+                qpxx=qpxx+(3.0*x*x-rsq)*rho
+                qpyy=qpyy+(3.0*y*y-rsq)*rho
+                qpzz=qpzz+(3.0*z*z-rsq)*rho
+                qpxy=qpxy+(3.0*x*y)*rho
+                qpxz=qpxz+(3.0*x*z)*rho
+                qpyz=qpyz+(3.0*y*z)*rho
+            enddo
+        enddo
+    enddo
+    vol_voxel=poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    dpx=dpx*vol_voxel
+    dpy=dpy*vol_voxel
+    dpz=dpz*vol_voxel
+    qpxx=qpxx*vol_voxel
+    qpyy=qpyy*vol_voxel
+    qpzz=qpzz*vol_voxel
+    qpxy=qpxy*vol_voxel
+    qpxz=qpxz*vol_voxel
+    qpyz=qpyz*vol_voxel
+    do iat=1,atoms%nat
+        !ionic part
+        x=atoms%rat(1,iat)-cx
+        y=atoms%rat(2,iat)-cy
+        z=atoms%rat(3,iat)-cz
+        rsq=x**2+y**2+z**2
+        qpxx=qpxx+(3.0*x*x-rsq)*atoms%zat(iat)
+        qpyy=qpyy+(3.0*y*y-rsq)*atoms%zat(iat)
+        qpzz=qpzz+(3.0*z*z-rsq)*atoms%zat(iat)
+        qpxy=qpxy+(3.0*x*y)*atoms%zat(iat)
+        qpxz=qpxz+(3.0*x*z)*atoms%zat(iat)
+        qpyz=qpyz+(3.0*y*z)*atoms%zat(iat)
+    enddo
+    poisson%dpm(1)=dpx ; poisson%dpm(2)=dpy ; poisson%dpm(3)=dpz
+    poisson%qpm(1,1)=qpxx ; poisson%qpm(1,2)=qpxy ; poisson%qpm(1,3)=qpxz
+    poisson%qpm(2,1)=qpxy ; poisson%qpm(2,2)=qpyy ; poisson%qpm(2,3)=qpyz
+    poisson%qpm(3,1)=qpxz ; poisson%qpm(3,2)=qpyz ; poisson%qpm(3,3)=qpzz
+    !write(*,'(a,3f8.4)') 'Dipole moments',dpx,dpy,dpz
+    !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxx,qpxy,qpxz
+    !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxy,qpyy,qpyz
+    !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxz,qpyz,qpzz
+end subroutine calc_multipoles_grid_cent2
+!*****************************************************************************************

@@ -47,6 +47,82 @@ subroutine elim_moment_mass(nat,atomic_vector,atomic_mass)
   enddo
 end subroutine elim_moment_mass
 !*****************************************************************************************
+subroutine calc_rotation_eigenvectors(nat,rat0,vrot)
+    use mod_interface
+  implicit none
+  integer, intent(in) :: nat
+  real(8), dimension(3*nat), intent(in) :: rat0
+  !real(8), dimension(3*nat), intent(inout) :: fat
+  real(8), dimension(3*nat,3), intent(out) :: vrot
+  !local variables
+  character(len=*), parameter :: subname='elim_torque_reza_alborz'
+  integer :: i,iat,i_all,i_stat
+  real(8) :: vrotnrm,cmx,cmy,cmz,alpha,totmass, DNRM2
+  !this is an automatic array but it should be allocatable
+  real(8), dimension(3) :: evaleria
+  real(8), dimension(3,3) :: teneria
+  real(8), dimension(3*nat) :: rat
+  real(8), dimension(:), allocatable :: amass
+  
+  allocate(amass(nat),stat=i_stat)
+
+  rat=rat0
+  amass(1:nat)=1.d0
+  !project out rotations
+  totmass=0.d0
+  cmx=0.d0 
+  cmy=0.d0
+  cmz=0.d0
+  do i=1,3*nat-2,3
+     iat=(i+2)/3
+     cmx=cmx+amass(iat)*rat(i+0)
+     cmy=cmy+amass(iat)*rat(i+1)
+     cmz=cmz+amass(iat)*rat(i+2)
+     totmass=totmass+amass(iat)
+  enddo
+  cmx=cmx/totmass 
+  cmy=cmy/totmass 
+  cmz=cmz/totmass
+  do i=1,3*nat-2,3
+     rat(i+0)=rat(i+0)-cmx
+     rat(i+1)=rat(i+1)-cmy
+     rat(i+2)=rat(i+2)-cmz
+  enddo
+
+  call moment_of_inertia_alborz(nat,rat,teneria,evaleria)
+  do iat=1,nat
+     i=iat*3-2
+     call mycross(teneria(1,1),rat(i),vrot(i,1))
+     call mycross(teneria(1,2),rat(i),vrot(i,2))
+     call mycross(teneria(1,3),rat(i),vrot(i,3))
+  enddo
+  call normalizevector_alborz(3*nat,vrot(1,1))
+  call normalizevector_alborz(3*nat,vrot(1,2))
+  call normalizevector_alborz(3*nat,vrot(1,3))
+  
+  do i=1,3*nat-2,3
+     rat(i+0)=rat(i+0)+cmx
+     rat(i+1)=rat(i+1)+cmy
+     rat(i+2)=rat(i+2)+cmz
+  enddo
+
+  vrotnrm=DNRM2(3*nat,vrot(1,1),1)
+  if (vrotnrm /= 0.d0) vrot(1:3*nat,1)=vrot(1:3*nat,1)/vrotnrm
+  vrotnrm=DNRM2(3*nat,vrot(1,2),1)
+  if (vrotnrm /= 0.d0) vrot(1:3*nat,2)=vrot(1:3*nat,2)/vrotnrm
+  vrotnrm=DNRM2(3*nat,vrot(1,3),1)
+  if (vrotnrm /= 0.d0) vrot(1:3*nat,3)=vrot(1:3*nat,3)/vrotnrm
+  !do i=1,3
+  !   alpha=0.d0  
+  !   if(abs(evaleria(i))>1.d-10) then
+  !      alpha=dot_product(vrot(:,i),fat(:))
+  !      fat(:)=fat(:)-alpha*vrot(:,i) 
+  !   endif
+  !enddo
+  !i_all=-product(shape(amass))*kind(amass)
+  deallocate(amass,stat=i_stat)
+end subroutine calc_rotation_eigenvectors
+!*****************************************************************************************
 !> Eliminate the translational forces before calling this subroutine!!!
 !! Main subroutine: Input is nat (number of atoms), rat0 (atomic positions) and fat (forces on atoms)
 !! The atomic positions will be returned untouched

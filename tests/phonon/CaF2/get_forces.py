@@ -4,6 +4,8 @@ import yaml
 import copy
 import sys
 import os.path
+sys.path.insert(1,'../../../utils/python')
+from io_yaml import *
 
 def force_acf(filename):
 	if not os.path.isfile(filename):
@@ -46,7 +48,9 @@ for arg,dat in zip(sys.argv[1:],datamap['displacements']):
         redpos=datamap['points'][iat]['coordinates']
 #    print arg,dat['displacement'],dat['atom'],np.add(np.dot(lat.T,redpos),dat['displacement'])
     print "Extracting forces from", arg
-    force = force_acf(arg)
+    #force = force_acf(arg)
+    atoms_all=read_yaml(arg) #'posout.yaml')
+    force=atoms_all[0].fat
     fout.write("%d \n" % (dat['atom']))
    # displ=np.add(np.dot(lat.T,redpos),dat['displacement'])
     displ=dat['displacement']

@@ -283,6 +283,16 @@
    gaussian_width: -1.0
    boundcond: unknown
    posinp: unknown
+ fit_elecpot:
+   ngto: 1
+   iat_plot: 1
+   gwe_per_type: -1.0
+   q_per_type: -1.0
+   alphax_q: -1.0
+   alphax_a: -1.0
+   alphax_r: -1.0
+   pot_rmse_tol: 1.E-6
+   cutoff_fit_elecpot: True
  fingerprint:
    method: OGANOV
    rcut: 15.0
