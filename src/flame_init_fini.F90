@@ -118,10 +118,12 @@ subroutine alborz_final(parini,file_ini)
     use mod_timing , only: dict_timing_info, TCAT_ALBORZ_INIT_FINAL
     use dynamic_memory
     implicit none
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini
     type(typ_file_ini), intent(inout):: file_ini
     !local variables
     call f_routine(id='alborz_final')
+    call f_free(parini%qt)
+    call f_free(parini%at)
     call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
     if(.not. parini%exists_yaml_file) then
         deallocate(file_ini%file_lines,file_ini%stat_line_is_read) !,comment_line)

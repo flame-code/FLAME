@@ -9,8 +9,8 @@ subroutine miscellaneous_task(parini)
         call solve_poisson(parini)
     elseif(trim(parini%subtask_misc)=='linkedlist_test') then
         call linkedlist_test(parini)
-    elseif(trim(parini%subtask_misc)=='best_charge_density') then
-        call best_charge_density(parini)
+    elseif(trim(parini%subtask_misc)=='fit_elecpot') then
+        call subtask_fit_elecpot(parini)
     elseif(trim(parini%subtask_misc)=='test_free_bps') then
         call test_free_BPS(parini)
     else

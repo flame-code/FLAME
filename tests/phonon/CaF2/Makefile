@@ -6,7 +6,7 @@ run:
 #	phonopy -d --tol=0.001 --dim="-3 3 3 3 -3 3 3 3 -3"
 	phonopy -d --tol=0.001 --dim="4 4 4"
 	./runall.sh
-	python get_forces.py DIR_POSCAR-00?/force_posout.acf
+	python get_forces.py DIR_POSCAR-00?/posout.yaml
 	phonopy -d --tol=0.001 -s -p band.conf
 
 clean:
