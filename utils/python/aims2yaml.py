@@ -8,71 +8,6 @@ from aims import *
 from io_yaml import *
 from latvec2dproj import *
 #*****************************************************************************************
-def get_input_geometry(iline,lines,nat,has_unit_cell):
-    atoms=Atoms()
-    if has_unit_cell:
-        atoms.boundcond="bulk"
-        atoms.cellvec[0][0]=float(lines[iline+2].split()[1])
-        atoms.cellvec[0][1]=float(lines[iline+2].split()[2])
-        atoms.cellvec[0][2]=float(lines[iline+2].split()[3])
-        atoms.cellvec[1][0]=float(lines[iline+3].split()[1])
-        atoms.cellvec[1][1]=float(lines[iline+3].split()[2])
-        atoms.cellvec[1][2]=float(lines[iline+3].split()[3])
-        atoms.cellvec[2][0]=float(lines[iline+4].split()[1])
-        atoms.cellvec[2][1]=float(lines[iline+4].split()[2])
-        atoms.cellvec[2][2]=float(lines[iline+4].split()[3])
-        istart=iline+7
-    else:
-        atoms.boundcond="free"
-        istart=iline+4
-    #print atoms.cellvec
-    atoms.nat=nat
-    for iat in range(nat):
-        atoms.sat.append(lines[istart+iat].split()[3])
-        #print atoms.sat[-1]
-        atoms.rat.append([])
-        atoms.rat[-1].append(float(lines[istart+iat].split()[4]))
-        atoms.rat[-1].append(float(lines[istart+iat].split()[5]))
-        atoms.rat[-1].append(float(lines[istart+iat].split()[6]))
-        atoms.bemoved.append("TTT")
-    return atoms
-#*****************************************************************************************
-def get_updated_geometry(iline,lines,nat,has_unit_cell):
-    atoms=Atoms()
-    if has_unit_cell:
-        atoms.boundcond="bulk"
-        atoms.cellvec[0][0]=float(lines[iline+2].split()[1])
-        atoms.cellvec[0][1]=float(lines[iline+2].split()[2])
-        atoms.cellvec[0][2]=float(lines[iline+2].split()[3])
-        atoms.cellvec[1][0]=float(lines[iline+3].split()[1])
-        atoms.cellvec[1][1]=float(lines[iline+3].split()[2])
-        atoms.cellvec[1][2]=float(lines[iline+3].split()[3])
-        atoms.cellvec[2][0]=float(lines[iline+4].split()[1])
-        atoms.cellvec[2][1]=float(lines[iline+4].split()[2])
-        atoms.cellvec[2][2]=float(lines[iline+4].split()[3])
-        istart=iline+6
-    else:
-        atoms.boundcond="free"
-        istart=iline+2
-    #print atoms.cellvec
-    atoms.nat=nat
-    if lines[istart].split()[0]=='|':
-        icol_xyz=3
-        icol_sat=3
-    else:
-        icol_xyz=0
-        icol_sat=4
-    for iat in range(nat):
-        atoms.sat.append(lines[istart+iat].split()[icol_sat])
-        #print atoms.sat[-1]
-        atoms.rat.append([])
-        atoms.rat[-1].append(float(lines[istart+iat].split()[icol_xyz+1]))
-        atoms.rat[-1].append(float(lines[istart+iat].split()[icol_xyz+2]))
-        atoms.rat[-1].append(float(lines[istart+iat].split()[icol_xyz+3]))
-        atoms.bemoved.append("TTT")
-    return atoms
-#*****************************************************************************************
-#*****************************************************************************************
 str1="Extract configurations during MD or geometry optimization from FHI-aims output."
 parser=argparse.ArgumentParser(description=str1)
 parser.add_argument("-last",action='store_false',help="if present, only last configuration is written")
@@ -112,8 +47,8 @@ for iline,line in enumerate(lines):
         #print str_line
         atoms=get_input_geometry(iline,lines,nat,has_unit_cell)
         #rotation to lattice and all atom
-        if not atoms.boundcond=="free":
-            atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+        ##if not atoms.boundcond=="free":
+        ##    atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
 
         #for iat in range(atoms.nat):
         iskip=6+nat
@@ -124,8 +59,8 @@ for iline,line in enumerate(lines):
         #print str_line
         atoms=get_updated_geometry(iline,lines,nat,has_unit_cell)
         #rotation to lattice and all atom
-        if not atoms.boundcond=="free":
-            atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
+        ##if not atoms.boundcond=="free":
+        ##    atoms.cellvec,atoms.rat=latvec2dproj(atoms.cellvec,atoms.rat,atoms.nat)
 
         iskip=5+nat
         continue
