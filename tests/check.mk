@@ -130,7 +130,7 @@ $(INS): in_message
 	name=`basename $@ .out`
 
 %.report.yaml: %.ref.yaml
-	@name=`basename $< .out.ref.yaml | sed "s/[^_]*_\?\(.*\)$$/\1/"`; \
+	@name=`basename $< .out.ref.yaml | sed "s/[^_]*_\?\(.*\)$$/\1/" | sed "s/output\(.*\)$$//"`; \
 	tols=`basename $< .out.ref.yaml` ;\
 	if test -n "$$name" ; then log=flame_log.yaml ; else log=`basename $< .ref.yaml`.yaml ; fi ;\
 	echo "python $(pythondir)/fldiff_yaml.py -r $< -d $$log -t $(abs_top_srcdir)/tests/tols-flame.yaml --label=$$tols -o $@" ; \
