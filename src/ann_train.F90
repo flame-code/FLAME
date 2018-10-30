@@ -211,7 +211,7 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     external:: cal_rmse_force_cent2
     external:: cal_rmse_energy_cent2
     ndim=10
-    ftol=1.d-4
+    ftol=parini%ftol_ann
     step=0.d0
     !vertices(1,1)=ann_arr%ann(2)%chi0-ann_arr%ann(1)%chi0
     vertices(1,1)=ann_arr%ann(1)%chi0
@@ -232,10 +232,14 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     vertices(9,1)=ann_arr%ann(1)%ener_ref
     vertices(10,1)=ann_arr%ann(2)%ener_ref
 
-    do i=2,ndim+1
+    do i=2,ndim-1
         vertices(1:ndim,i)=vertices(1:ndim,1)
-        vertices(i-1,i)=vertices(i-1,i)+1.d-3
+        vertices(i-1,i)=vertices(i-1,i)+1.d-2
     enddo
+    vertices(1:ndim,ndim)=vertices(1:ndim,1)
+    vertices(ndim-1,ndim)=vertices(ndim-1,ndim)+1.d-3
+    vertices(1:ndim,ndim+1)=vertices(1:ndim,1)
+    vertices(ndim,ndim+1)=vertices(ndim,ndim+1)+1.d-3
 
     atoms_smplx_t=>atoms_smplx
     parini_t=>parini

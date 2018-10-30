@@ -17,7 +17,8 @@ SHORT_TESTDIRS = testforces_FD \
 				 geopt_CENT1_slab_fixed_efield \
 				 vibfreq_fourpoints \
 				 train_atombased \
-				 train_CENT1
+				 train_CENT1 \
+				 train_CENT2
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 

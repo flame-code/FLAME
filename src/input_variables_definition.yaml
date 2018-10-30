@@ -215,6 +215,7 @@
    qgnrmtol: 5.E-4
    etol: 1.0
    dtol: 1.0
+   ftol: 1.E-4
    normalization: False
    bondbased: False
    prefit: False
