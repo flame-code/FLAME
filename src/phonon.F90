@@ -165,6 +165,13 @@ subroutine cal_hessian_4p(parini)
     enddo
     call DSYEV('V','L',3*atoms%nat,hess,3*atoms%nat,eval,work,lwork,info)
     do j=1,3*atoms%nat
+        if(hess(1,j)<0.d0) then
+            do i=1,3*atoms%nat
+                hess(i,j)=-hess(i,j)
+            enddo
+        endif
+    enddo
+    do j=1,3*atoms%nat
         jat=(j-1)/3+1
         jxyz=mod(j-1,3)+1
         ttmass=1.d0/sqrt(atoms%amass(jat))
