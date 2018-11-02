@@ -6,7 +6,7 @@ subroutine minimahopping(parini)
     use mod_minhopp, only: nstep, nlmin, nlminx, ekin, istep, ihopp, kerathopp, ediff, etoler, re_sm, &
         nlmin_old, minter, eref, nbuf, earr, dt, count_md, count_opt, escaped, accepted
     use mod_processors, only: parallel, nproc, iproc, imaster, mpi_comm_abz
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     use mod_opt, only: typ_paropt
     use yaml_output
     !minima hopping program with restart option.
@@ -149,7 +149,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     use mod_minhopp, only: nlmin, alpha_soften, npminx, nstep, alpha1, alpha2, &
         beta1, beta2, beta3, eref, etoler, minter, mdmin, nsoften, nrandoff
     use mod_processors, only: nproc, iproc, imaster, mpi_comm_abz, parallel
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy, set_ndof
     use mod_opt, only: typ_paropt
     use mod_potential, only: potential
     use yaml_output
@@ -273,7 +273,7 @@ subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_
     use mod_minhopp, only: count_md_tot, count_opt_tot, count_soften_tot, &
         fcall_tot_all, fcall_tot_all_md, fcall_tot_all_opt, fcall_tot_all_soften
     use mod_processors, only: iproc, imaster, mpi_comm_abz, parallel
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_deallocate
     use mod_opt, only: typ_paropt
     use mod_potential, only: fcalls
     implicit none
@@ -506,7 +506,7 @@ subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
     use mod_interface
     !use mod_minhopp, only: eratallproc
     use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
     type(typ_atoms):: atoms_curr
     type(typ_atoms_arr):: atoms_allproc
@@ -635,6 +635,7 @@ end subroutine read_poscur_alborz
 subroutine read_minhopp_parameters 
     use mod_interface
     use mod_processors, only: iproc, parallel, nproc, imaster, mpi_comm_abz
+    use mod_atoms, only: atom_copy
     use mod_minhopp, only: nrandoff, ediff, ekin, dt, nlmin, nlminx, eref, etoler, ekinarr, &
         dtarr, ediffarr, nstep
     use yaml_output
@@ -719,7 +720,7 @@ end subroutine read_minhopp_parameters
 subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
     use mod_interface
     use mod_minhopp, only: nlmin, nlmin_l, earr, nvisit
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
     type(typ_atoms), intent(in):: atoms_curr
     type(typ_atoms_arr), intent(inout):: atoms_locmin
@@ -993,7 +994,7 @@ subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_
     use mod_interface
     use mod_processors, only: parallel, iproc
     use mod_minhopp, only: ekinarr, ediffarr, dtarr, dt, ekin, ediff
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
     integer, intent(in):: ntry
     type(typ_atoms), intent(in):: atoms_curr
@@ -1193,7 +1194,7 @@ subroutine save_low_conf_alborz(atoms,atoms_locmin)
     use mod_interface
     !save configuration if it is among the lowest ones in energy
     use mod_minhopp, only: etoler
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     use mod_processors, only: iproc
     implicit none
     type(typ_atoms), intent(in):: atoms
@@ -1336,7 +1337,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     use mod_processors, only: iproc
     use mod_potential, only: fcalls
     use mod_minhopp, only: lprint, alpha_soften, istep
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate, atom_copy
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -1614,7 +1615,7 @@ subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
     use mod_minhopp, only: istep_sam, ekin, ihopp, istep, ediff, istep_old, istep_new, dt, &
         nlmin, nlmin_l, ihopp_acc, alpha1, nvisit, nbuf, kerathopp, newmin, av_ediff, count_md, count_opt
     use mod_processors, only: parallel, iproc
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
     type(typ_atoms), intent(in):: atoms_hopp
     type(typ_atoms), intent(inout):: atoms_curr

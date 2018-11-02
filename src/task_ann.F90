@@ -2,6 +2,7 @@
 subroutine task_ann(parini)
     use mod_interface
     use mod_parini, only: typ_parini
+    use mod_train, only: ann_train
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables

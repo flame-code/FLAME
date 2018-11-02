@@ -5,7 +5,9 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     use mod_saddle, only: dimsep, nit, epotprime, &
         do_elim_trans, do_elim_rot, dmconverged, beta
     use mod_opt, only: typ_paropt
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, atom_normalizevector
+    use mod_atoms, only: atom_deallocate_old
+    use mod_atoms, only: atom_calnorm
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -108,7 +110,7 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_saddle, only:nit,do_elim_trans,do_elim_rot
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_ddot, atom_normalizevector
     use dynamic_memory
     use yaml_output
     implicit none
@@ -180,7 +182,8 @@ subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_saddle, only: do_elim_rot, do_elim_trans, dimsep
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_normalizevector
+    use mod_atoms, only: atom_calnorm, atom_deallocate_old
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

@@ -2,19 +2,13 @@
 module mod_interface
     implicit none
 interface
-! ./modules/ann_mod.F90 :
-! ./modules/atoms_mod.F90 :
 ! ./modules/bader_mod.F90 :
 ! ./modules/constants_mod.F90 :
 ! ./modules/dynamics_mod.F90 :
-! ./modules/electrostatics_mod.F90 :
-! ./modules/flame_as_potential_mod.F90 :
 ! ./modules/genconf_mod.F90 :
-! ./modules/linked_lists_mod.F90 :
 ! ./modules/minhopp_mod.F90 :
 ! ./modules/opt_mod.F90 :
 ! ./modules/parini_mod.F90 :
-! ./modules/potential_mod.F90 :
 ! ./modules/processors_mod.F90 :
 ! ./modules/saddle_mod.F90 :
 ! ./modules/shortrange_mod.F90 :
@@ -34,7 +28,8 @@ real(8):: accvol,vvol,vol_1_3
 end subroutine acceleration
 ! ./src/ann_basic.F90 :
 subroutine ann_allocate(ekf,ann_arr)
-    use mod_ann, only: typ_ann_arr, typ_ekf
+    use mod_ann, only: typ_ann_arr
+    use mod_ekf, only: typ_ekf
     type(typ_ekf), intent(in):: ekf
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine ann_allocate
@@ -70,66 +65,6 @@ subroutine ann_check_symmetry_function(parini)
     use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
 end subroutine ann_check_symmetry_function
-! ./src/ann_ekf_behler.F90 :
-subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-    type(typ_atoms_arr), intent(inout):: atoms_train
-    type(typ_atoms_arr), intent(inout):: atoms_valid
-    type(typ_ekf), intent(inout):: ekf
-end subroutine ekf_behler
-! ./src/ann_ekf_rivals.F90 :
-subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-    type(typ_atoms_arr), intent(inout):: atoms_train
-    type(typ_atoms_arr), intent(inout):: atoms_valid
-    type(typ_ekf), intent(inout):: ekf
-end subroutine ekf_rivals
-subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-    type(typ_atoms_arr), intent(inout):: atoms_train
-    type(typ_atoms_arr), intent(inout):: atoms_valid
-    type(typ_ekf), intent(inout):: ekf
-end subroutine ekf_rivals_tmp
-subroutine set_ref_energy(parini,atoms_train,atoms_ref,ind)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms_arr), intent(in):: atoms_train
-    type(typ_atoms_arr), intent(inout):: atoms_ref
-    integer, intent(out):: ind(200)
-end subroutine set_ref_energy
-subroutine analyze_epoch_init(parini,atoms_train,ann_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
-    use mod_ann, only: typ_ann_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms_arr), intent(in):: atoms_train
-    type(typ_ann_arr), intent(inout):: ann_arr
-end subroutine analyze_epoch_init
-subroutine analyze_epoch_print(parini,iter,atoms_train,ann_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
-    use mod_ann, only: typ_ann_arr
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iter
-    type(typ_atoms_arr), intent(in):: atoms_train
-    type(typ_ann_arr), intent(inout):: ann_arr
-end subroutine analyze_epoch_print
 ! ./src/ann_evaluate.F90 :
 subroutine ann_evaluate_subtask(parini)
     use mod_parini, only: typ_parini
@@ -194,7 +129,7 @@ subroutine read_ann(parini,ann_arr)
 end subroutine read_ann
 subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
@@ -245,7 +180,7 @@ subroutine set_dict_ann(ann,fname,stypat)
 end subroutine set_dict_ann
 subroutine read_data_yaml(parini,filename_list,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
@@ -253,7 +188,8 @@ end subroutine read_data_yaml
 ! ./src/ann_lm.F90 :
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
     use mod_parlm, only: typ_parlm
     use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
@@ -266,8 +202,9 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
 end subroutine ann_lm
 subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
@@ -276,11 +213,13 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     integer:: m, n, ldfjac, iflag
     real(8):: x(n), fvec(m), fjac(ldfjac,n)
 end subroutine fcn_epot
+! ./src/ann_mod.F90 :
 ! ./src/ann_pot_atom.F90 :
 subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ekf, only: typ_ekf
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -292,7 +231,8 @@ end subroutine cal_ann_atombased
 subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ekf, only: typ_ekf
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
@@ -394,7 +334,7 @@ end subroutine get_ener_gradient_cent1
 subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_qat
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -405,7 +345,8 @@ end subroutine get_qat_from_chi_operator
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf, typ_cent
+    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_cent
+    use mod_ekf, only: typ_ekf
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -566,7 +507,8 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     use mod_tightbinding, only: typ_partb
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ekf, only: typ_ekf
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -575,8 +517,9 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
 end subroutine cal_ann_main
 subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
@@ -586,8 +529,9 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
 end subroutine prefit_cent_ener_ref
 subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
@@ -601,7 +545,8 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ekf, only: typ_ekf
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -629,8 +574,9 @@ subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,c
 end subroutine lenoskytb_ann
 subroutine fit_hgen(parini,atoms_train,ann_arr,ekf)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate_old
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ekf, only: typ_ekf
     use mod_parlm, only: typ_parlm
     type(typ_parini), intent(in):: parini
     type(typ_atoms_arr), intent(in):: atoms_train
@@ -638,7 +584,7 @@ subroutine fit_hgen(parini,atoms_train,ann_arr,ekf)
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine fit_hgen
 subroutine fcn_hgen(m,n,x,fvec,fjac,ldfjac,iflag,iann,ann_arr,hgen_ltb,yall)
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc
     integer, intent(in):: m, n, ldfjac, iflag, iann
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(in):: x(n), hgen_ltb(4,325), yall(ann_arr%ann(1)%nn(0),1000,325)
@@ -768,7 +714,7 @@ end subroutine symmetry_functions_g05_atom2
 subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_rcov
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
@@ -852,192 +798,10 @@ subroutine symmetry_functions_g04_bond(ann_arr,iat,jat,rij,drij,fcij,fcdij,rik,d
     real(8), intent(in):: rij, rik, rjk
     real(8), intent(in):: drij(3), drik(3), drjk(3)
 end subroutine symmetry_functions_g04_bond
-! ./src/ann_train.F90 :
-subroutine ann_train(parini)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms_arr, typ_atoms
-    type(typ_parini), intent(in):: parini
-end subroutine ann_train
-subroutine set_single_atom_energy(parini,ann_arr,ekf)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_symfunc
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_ekf), intent(in):: ekf
-end subroutine set_single_atom_energy
-subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in), target:: parini
-    type(typ_ann_arr), intent(inout), target:: ann_arr
-    type(typ_ekf), intent(inout), target:: ekf
-    type(typ_atoms_arr), intent(inout), target:: atoms_smplx
-end subroutine cent2_simplex
-subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
-    use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_symfunc
-    integer, intent(in) :: ndim
-    real(8), intent(in) :: vertex(ndim)
-    real(8), intent(out) :: rmse_force_cent2
-end subroutine cal_rmse_force_cent2
-subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
-    use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_symfunc
-    integer, intent(in) :: ndim
-    real(8), intent(in) :: vertex(ndim)
-    real(8), intent(out) :: rmse_energy_cent2
-end subroutine cal_rmse_energy_cent2
-subroutine init_ann_train(parini,ann_arr,ekf)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_ekf), intent(inout):: ekf
-end subroutine init_ann_train
-subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_ekf), intent(inout):: ekf
-    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-end subroutine final_ann_train
-subroutine set_conf_inc_random(parini,atoms_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine set_conf_inc_random
-subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(in):: ann_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-end subroutine apply_gbounds_atom
-subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(in):: ann_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-end subroutine apply_gbounds_bond
-subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(in):: ann_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine prepare_atoms_arr
-subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-end subroutine set_ebounds
-subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
-    use mod_tightbinding, only: typ_partb
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iter
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    character(*), intent(in):: data_set
-    type(typ_partb), optional, intent(inout):: partb
-end subroutine ann_evaluate
-subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_tightbinding, only: typ_partb
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc), intent(inout):: symfunc
-end subroutine eval_cal_ann_main
-subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    character(*), intent(in):: strmess
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-end subroutine set_gbounds
-subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iconf
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    character(*), intent(in):: strmess
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-end subroutine write_symfunc
-subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    use mod_linked_lists, only: typ_pia_arr
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iconf
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    character(*), intent(in):: strmess
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-end subroutine read_symfunc
-subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    character(*), intent(in):: strmess
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-end subroutine save_gbounds
-subroutine convert_x_ann(n,x,ann)
-    use mod_ann, only: typ_ann
-    integer, intent(in):: n
-    real(8), intent(in):: x(n)
-    type(typ_ann), intent(inout):: ann
-end subroutine convert_x_ann
-subroutine convert_ann_x(n,x,ann)
-    use mod_ann, only: typ_ann
-    integer, intent(in):: n
-    real(8), intent(inout):: x(n)
-    type(typ_ann), intent(inout):: ann
-end subroutine convert_ann_x
-subroutine convert_ann_epotd(ann,n,epotd)
-    use mod_ann, only: typ_ann
-    type(typ_ann), intent(in):: ann
-    integer, intent(in):: n
-    real(8), intent(inout):: epotd(n)
-end subroutine convert_ann_epotd
-subroutine randomize_data_order(atoms_arr)
-    use mod_atoms, only: typ_atoms_arr, typ_atoms
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine randomize_data_order
 ! ./src/ann_weights_init.F90 :
 subroutine set_annweights(parini,ekf)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ekf
+    use mod_ekf, only: typ_ekf
     type(typ_parini), intent(in):: parini
     type(typ_ekf), intent(inout):: ekf
 end subroutine set_annweights
@@ -1249,132 +1013,6 @@ subroutine near_grad_weight (poisson,d,i_dist,car_lat)
     integer, intent(inout):: d(3)
     real(8), intent(in):: i_dist(-1:1,-1:1,-1:1),car_lat(3,3)
 end subroutine near_grad_weight
-! ./src/basic_atoms.F90 :
-subroutine atom_allocate(atoms,nat,natim,nfp)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-    integer, intent(in):: nat, natim, nfp
-end subroutine atom_allocate
-subroutine atom_deallocate(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-end subroutine atom_deallocate
-subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,zat,rcov,typat)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-    integer, intent(in):: nat, natim, nfp
-    logical, optional, intent(in):: sat, vat, amass
-    logical, optional, intent(in):: fat, bemoved, qat, zat, rcov, typat
-end subroutine atom_allocate_old
-subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-    logical, optional, intent(in):: sat, rat, ratim, vat, amass
-    logical, optional, intent(in):: fat, bemoved, qat, zat, rcov, fp, typat
-end subroutine atom_deallocate_old
-subroutine atom_all_allocate(atoms_all,ratall,fatall,epotall,fpall,qtotall)
-    use mod_atoms, only: typ_atoms_all
-    type(typ_atoms_all), intent(inout):: atoms_all
-    logical, optional, intent(in):: ratall, fatall, epotall, fpall, qtotall
-end subroutine atom_all_allocate
-subroutine atom_all_deallocate(atoms_all,ratall,fatall,epotall,fpall,qtotall)
-    use mod_atoms, only: typ_atoms_all
-    type(typ_atoms_all), intent(inout):: atoms_all
-    logical, optional, intent(in):: ratall, fatall, epotall, fpall, qtotall
-end subroutine atom_all_deallocate
-subroutine atom_copy(at_inp,at_out,str_message)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(in):: at_inp
-    type(typ_atoms), intent(inout):: at_out
-    character(*):: str_message
-end subroutine atom_copy
-subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(in):: at_inp
-    type(typ_atoms), intent(inout):: at_out
-    character(*):: str_message
-    logical, optional, intent(in):: sat, rat, ratim, vat, amass
-    logical, optional, intent(in):: fat, bemoved, qat, zat, rcov, fp, typat
-end subroutine atom_copy_old
-subroutine atom_build_periodic_images(atoms,rcut)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-    real(8), intent(in):: rcut
-end subroutine atom_build_periodic_images
-subroutine set_typat(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-end subroutine set_typat
-subroutine set_ndof(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout):: atoms
-end subroutine set_ndof
-subroutine bemoved2string(bemoved,str_motion)
-    logical:: bemoved(3)
-    character(3):: str_motion
-end subroutine bemoved2string
-subroutine string2bemoved(str_motion,bemoved)
-    character(3):: str_motion
-    logical:: bemoved(3)
-end subroutine string2bemoved
-subroutine atoms_all_writexyz(filename,fn_position,atoms_all,strkey)
-    use mod_atoms, only: typ_atoms_all
-    character(*), intent(in):: filename, fn_position, strkey
-    type(typ_atoms_all), intent(in):: atoms_all
-end subroutine atoms_all_writexyz
-subroutine atom_normalizevector(nat,bemoved,vxyz)
-    integer, intent(in):: nat
-    logical, intent(in):: bemoved(3,nat)
-    real(8), intent(inout):: vxyz(3,nat)
-end subroutine atom_normalizevector
-function atom_ddot(nat,vec1,vec2,bemoved) result(res)
-    integer, intent(in):: nat
-    real(8), intent(in):: vec1(3,nat), vec2(3,nat)
-    logical, intent(in):: bemoved(3,nat)
-    real(8):: res
-end function atom_ddot
-subroutine atom_calnorm(nat,bemoved,vec,vnrm)
-    integer, intent(in):: nat
-    logical, intent(in):: bemoved(3,nat)
-    real(8), intent(in):: vec(3,nat)
-    real(8), intent(out):: vnrm
-end subroutine atom_calnorm
-subroutine atom_calmaxforcecomponent(nat,bemoved,vec,vmax)
-    integer, intent(in):: nat
-    logical, intent(in):: bemoved(3,nat)
-    real(8), intent(in):: vec(3,nat)
-    real(8), intent(out):: vmax
-end subroutine atom_calmaxforcecomponent
-subroutine checkallatomstobeincell(nat,rat,cellvec,allatomsincell)
-    integer:: iat,nat
-    real(8):: rat(3,nat),cellvec(3,3)
-    logical:: allatomsincell
-end subroutine checkallatomstobeincell
-subroutine determinexyzminmax(nat,rat,cellvec,xmin,ymin,zmin,xmax,ymax,zmax)
-    integer:: iat,nat
-    real(8):: rat(3,nat),cellvec(3,3)
-    real(8):: xmin,ymin,zmin,xmax,ymax,zmax,x,y,z
-end subroutine determinexyzminmax
-subroutine set_rcov(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout) :: atoms
-end subroutine set_rcov
-subroutine set_qat(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout) :: atoms
-end subroutine set_qat
-subroutine set_atomic_mass(atoms)
-    use mod_atoms, only: typ_atoms
-    type(typ_atoms), intent(inout) :: atoms
-end subroutine set_atomic_mass
-subroutine sat_to_iatom(sat,iatom)
-    character(*), intent(in) :: sat
-    integer, intent(out) :: iatom
-end subroutine sat_to_iatom
-subroutine iatom_to_sat(iatom,sat)
-    integer, intent(in) :: iatom
-    character(*), intent(out) :: sat
-end subroutine iatom_to_sat
 ! ./src/basic.F90 :
 subroutine elim_white_space(string)
     character(256), intent(inout):: string
@@ -1632,7 +1270,7 @@ end subroutine set_buckingham
 ! ./src/cell_linkedlists.F90 :
 subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_electrostatics, only: typ_linked_lists
     type(typ_parini), intent(in):: parini 
     type(typ_atoms), intent(in):: atoms
@@ -1810,6 +1448,7 @@ subroutine MD_fixlat(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,e
     real(8):: rxyz(3,parini%nat),fxyz(3,parini%nat),fxyz_old(3,parini%nat),vxyz(3,parini%nat),amass(parini%nat)
     character(40):: filename,folder
 end subroutine md_fixlat
+! ./src/electrostatics_mod.F90 :
 ! ./src/enthalpy.F90 :
 subroutine get_enthalpy(latvec,energy,pressure,enthalpy)
 real(8):: acell(3),v(3,3),ucvol,pressure,latvec(3,3),energy,enthalpy
@@ -2360,6 +1999,7 @@ subroutine stdval_rzx(f,f_len,mean,std,var)
     real(8), intent(out) :: mean, std, var
     real(8) :: g(f_len)
 end subroutine stdval_rzx
+! ./src/flame_as_potential_mod.F90 :
 ! ./src/flame.F90 :
 ! ./src/flame_init_fini.F90 :
 subroutine alborz_init(parini,parres,file_ini)
@@ -2395,7 +2035,7 @@ end subroutine flm_print_logo
 ! ./src/forcefield.F90 :
 subroutine forcefield_init(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat, set_qat
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -2489,7 +2129,7 @@ end subroutine gausdist_cell
 ! ./src/genconf_diatomic.F90 :
 subroutine genconf_diatomic(parini,genconf)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_all, typ_file_info
+    use mod_atoms, only: typ_atoms_all, typ_file_info, atom_all_allocate, atom_all_deallocate
     use mod_genconf, only: typ_genconf
     type(typ_parini), intent(in):: parini
     type(typ_genconf), intent(in):: genconf
@@ -2497,7 +2137,7 @@ end subroutine genconf_diatomic
 ! ./src/genconf_random.F90 :
 subroutine genrandom(parini,genconf)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
     use mod_genconf, only: typ_genconf
     type(typ_parini), intent(inout):: parini
     type(typ_genconf), intent(in):: genconf
@@ -2506,7 +2146,7 @@ end subroutine genrandom
 ! ./src/genconf_rangrow.F90 :
 subroutine rangrow(parini,genconf)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
     use mod_genconf, only: typ_genconf
     type(typ_parini), intent(inout):: parini
     type(typ_genconf), intent(in):: genconf
@@ -2514,7 +2154,7 @@ end subroutine rangrow
 ! ./src/genconf_trimer.F90 :
 subroutine genconf_trimer(parini,genconf)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_all, typ_file_info
+    use mod_atoms, only: typ_atoms_all, typ_file_info, atom_all_allocate, atom_all_deallocate
     use mod_genconf, only: typ_genconf
     type(typ_parini), intent(in):: parini
     type(typ_genconf), intent(in):: genconf
@@ -2752,14 +2392,14 @@ subroutine insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_
 end subroutine insert
 ! ./src/io_acf.F90 :
 subroutine acf_write(file_info,atoms,atoms_all,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all
+    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
     type(typ_file_info), intent(inout):: file_info
     type(typ_atoms), optional, intent(in):: atoms
     type(typ_atoms_all), optional, intent(in):: atoms_all
     character(*), optional, intent(in):: strkey
 end subroutine acf_write
 subroutine acf_write_new(file_info,atoms_arr,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_file_info), intent(inout):: file_info
     type(typ_atoms_arr),intent(in):: atoms_arr
     character(*), optional, intent(in):: strkey
@@ -2770,7 +2410,7 @@ subroutine rotate4acf(nat,rat,cv,cvrot)
     real(8), intent(in):: cv(3,3), cvrot(3,3)
 end subroutine rotate4acf
 subroutine acf_force_write(file_info,atoms,atoms_all,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all
+    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
     type(typ_file_info), intent(inout):: file_info
     type(typ_atoms), optional, intent(in):: atoms
     type(typ_atoms_all), optional, intent(in):: atoms_all
@@ -2778,7 +2418,7 @@ subroutine acf_force_write(file_info,atoms,atoms_all,strkey)
 end subroutine acf_force_write
 subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_all
+    use mod_atoms, only: typ_atoms, typ_atoms_all, atom_all_allocate, atom_copy_old
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
     integer, intent(in):: nconfmax
@@ -2787,7 +2427,7 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
 end subroutine acf_read
 subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate, atom_copy
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
     integer, intent(in):: nconfmax
@@ -2832,14 +2472,14 @@ end subroutine write_atomic_file_ascii
 ! ./src/io_bin.F90 :
 subroutine read_bin_conf(parini,filename,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_allocate
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
     type(typ_atoms_arr), intent(inout):: atoms_arr
 end subroutine read_bin_conf
 subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, iatom_to_sat, atom_allocate
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
     integer, intent(in):: iunit
@@ -2852,7 +2492,7 @@ subroutine write_bin_conf(file_info,atoms,strkey)
     character(*), optional, intent(in):: strkey
 end subroutine write_bin_conf
 subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, sat_to_iatom
     character(*), intent(in):: filename
     character(*), intent(in):: file_position
     integer, intent(in):: iunit
@@ -2860,14 +2500,14 @@ subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
 end subroutine write_bin_conf_v1
 ! ./src/io_cube.F90 :
 subroutine cube_read(filename,atoms,poisson)
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, iatom_to_sat, atom_allocate_old
     use mod_electrostatics, only: typ_poisson
     character(*), intent(in):: filename
     type(typ_atoms), intent(out):: atoms
     type(typ_poisson), intent(out):: poisson
 end subroutine cube_read
 subroutine cube_write(filename,atoms,poisson,rho_or_pot)
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, sat_to_iatom
     use mod_electrostatics, only: typ_poisson
     character(*), intent(in):: filename
     type(typ_atoms), intent(in):: atoms
@@ -2937,7 +2577,7 @@ end subroutine readxyz
 ! ./src/io_yaml_conf.F90 :
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_allocate
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
     integer, intent(in):: nconfmax
@@ -3108,6 +2748,7 @@ subroutine clsspline(s)
     use mod_splinetb, only: NSPMAX, spline_typ
     type(spline_typ), intent(inout):: s
 end subroutine clsspline
+! ./src/linked_lists_mod.F90 :
 ! ./src/lmder_modified.F90 :
 subroutine init_lmder_modified(parlm,m,ldfjac)
     use mod_parlm, only: typ_parlm
@@ -3129,12 +2770,12 @@ end subroutine print_logo
 ! ./src/md.F90 :
 subroutine dynamics(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, set_ndof, atom_deallocate_old
     type(typ_parini), intent(inout):: parini
 end subroutine dynamics
 subroutine md_nve(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, set_atomic_mass
     type(typ_parini), intent(in):: parini
     type(typ_atoms):: atoms, atoms_old
 end subroutine md_nve
@@ -3433,13 +3074,13 @@ end subroutine deallocate_minhopp_arrays
 ! ./src/minhopp.F90 :
 subroutine minimahopping(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     use mod_opt, only: typ_paropt
     type(typ_parini), intent(in):: parini
 end subroutine minimahopping
 subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy, set_ndof
     use mod_opt, only: typ_paropt
     type(typ_parini), intent(in):: parini
     type(typ_paropt), intent(inout):: paropt_prec, paropt
@@ -3449,7 +3090,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
 end subroutine init_minimahopping
 subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_deallocate
     use mod_opt, only: typ_paropt
     type(typ_parini), intent(in):: parini
     type(typ_paropt), intent(inout):: paropt_prec, paropt
@@ -3478,14 +3119,14 @@ subroutine readnat(atoms_curr)
     type(typ_atoms):: atoms_curr
 end subroutine readnat
 subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     type(typ_atoms):: atoms_curr
     type(typ_atoms_arr):: atoms_allproc
 end subroutine read_poscur_alborz
 subroutine read_minhopp_parameters 
 end subroutine read_minhopp_parameters
 subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     type(typ_atoms), intent(in):: atoms_curr
     type(typ_atoms_arr), intent(inout):: atoms_locmin
 end subroutine minhopp_newrun_initialization
@@ -3508,7 +3149,7 @@ subroutine mdescape(parini,atoms_hopp)
     type(typ_atoms), intent(inout):: atoms_hopp
 end subroutine mdescape
 subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_locmin)
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     integer, intent(in):: ntry
     type(typ_atoms), intent(in):: atoms_curr
     type(typ_atoms_arr), intent(inout):: atoms_allproc, atoms_locmin
@@ -3528,7 +3169,7 @@ subroutine insert_alborz(kepos,epos)
     real(8), intent(in):: epos
 end subroutine insert_alborz
 subroutine save_low_conf_alborz(atoms,atoms_locmin)
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     type(typ_atoms), intent(in):: atoms
     type(typ_atoms_arr), intent(inout):: atoms_locmin
 end subroutine save_low_conf_alborz
@@ -3540,7 +3181,7 @@ subroutine velopt(parini,atoms)
 end subroutine velopt
 subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate, atom_copy
     type(typ_parini), intent(in):: parini
     integer, intent(in):: nstep
     type(typ_atoms), intent(inout):: atoms0
@@ -3560,7 +3201,7 @@ subroutine escape_failed(parini,erat,erathopp)
     real(8), intent(in):: erat, erathopp
 end subroutine escape_failed
 subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     type(typ_atoms), intent(in):: atoms_hopp
     type(typ_atoms), intent(inout):: atoms_curr
     type(typ_atoms_arr), intent(inout):: atoms_locmin
@@ -4633,7 +4274,7 @@ end subroutine pbc_distance2
 ! ./src/phonon.F90 :
 subroutine cal_hessian_4p(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_copy_old
     type(typ_parini), intent(in):: parini
 end subroutine cal_hessian_4p
 subroutine projectout_rotation(atoms,hess,rlarge)
@@ -4666,7 +4307,7 @@ subroutine init_potential_ann(parini,atoms)
 end subroutine init_potential_ann
 subroutine cal_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_ann, only: typ_symfunc
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -4675,7 +4316,7 @@ subroutine final_potential_ann
 end subroutine final_potential_ann
 subroutine add_repulsive_potential(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_rcov
     use mod_linked_lists, only: typ_linked_lists
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -4745,7 +4386,7 @@ end subroutine init_potential_forces_dftb
 subroutine final_potential_forces_dftb
 end subroutine final_potential_forces_dftb
 subroutine cal_potential_forces_dftb(atoms)
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat
     type(typ_atoms), intent(inout):: atoms
 end subroutine cal_potential_forces_dftb
 subroutine writexyz_dftb(filename,atoms)
@@ -4843,6 +4484,7 @@ subroutine cal_potential_forces_vc(iproc,nat,rat,cellvec,pressure,fat,celldv,str
     real(8), intent(in):: rat(3,nat), cellvec(3,3), pressure
     real(8), intent(inout):: fat(3,nat), celldv(3,3), stress(3,3), epot, enth
 end subroutine cal_potential_forces_vc
+! ./src/potential_mod.F90 :
 ! ./src/potential_MPMD.F90 :
 subroutine init_potential_forces_mpmd(atoms_t)
     use mod_atoms, only: typ_atoms
@@ -4931,7 +4573,7 @@ subroutine final_potential_forces_siesta
 end subroutine final_potential_forces_siesta
 ! ./src/potential_VASP.F90 :
 subroutine init_potential_forces_vasp(atoms_t)
-        use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat
     type(typ_atoms), intent(inout):: atoms_t
 end subroutine init_potential_forces_vasp
 subroutine cal_potential_forces_vasp(atoms)
@@ -4980,7 +4622,7 @@ end subroutine replace
 subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,paropt)
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, atom_normalizevector
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, nat, ndof !number coordinates
     type(typ_atoms), intent(inout):: atoms_s
@@ -4993,7 +4635,7 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
 end subroutine dimmethimproved
 subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,maxitlc,curv0,curv,nw)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_ddot, atom_normalizevector
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, nat, ndof, maxitlc, nw
     type(typ_atoms), intent(inout):: atoms_s
@@ -5002,7 +4644,7 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
 end subroutine lowestcurvature
 subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_normalizevector
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, nat, ndof
     real(8), intent(in):: rat(3,nat), fat(3,nat)
@@ -5013,7 +4655,7 @@ end subroutine rotatedimer
 ! ./src/saddle_1s.F90 :
 subroutine surface_walking(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
     use mod_opt, only: typ_paropt
     type(typ_parini), intent(in):: parini
 end subroutine surface_walking
@@ -5029,7 +4671,7 @@ subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
 end subroutine random_move_atoms
 subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot_m0)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate_old, atom_allocate_old
     use mod_opt, only: typ_paropt
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc !, nat, ndof
@@ -5038,7 +4680,7 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
     real(8), intent(in):: uvn(3,atoms_s%nat), curv, epot_m0
 end subroutine find_minima
 subroutine alongnegcurvature(iproc,atoms,uvn,c)
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_deallocate_old
     integer, intent(in):: iproc
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: uvn(3,atoms%nat) !unit vector along the dimer, \hat{n}.
@@ -5058,7 +4700,7 @@ end subroutine optimizer_saddle
 subroutine cal_potential_forces_modified(parini,iproc,atoms_s,n,x,f,epot,nr,uvn,feff,curv0,curv,fold,paropt)
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_calnorm, atom_deallocate_old
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, n, nr
     type(typ_atoms), intent(inout):: atoms_s
@@ -5221,7 +4863,7 @@ end subroutine task_bader
 ! ./src/task_confcomp.F90 :
 subroutine conf_comp(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_all
+    use mod_atoms, only: typ_atoms_all, atom_all_allocate, atom_all_deallocate, set_rcov
     type(typ_parini), intent(in):: parini
 end subroutine conf_comp
 subroutine set_fpall_ann(atoms_all)
@@ -5253,7 +4895,7 @@ end subroutine task_genconf
 subroutine geopt(parini)
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
-    use mod_atoms, only: typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
 end subroutine geopt
 subroutine init_geopt(parini,paropt,paropt_prec)
@@ -5265,7 +4907,7 @@ end subroutine init_geopt
 ! ./src/task_lammps.F90 :
 subroutine lammps_task(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_copy, atom_deallocate, set_typat
     use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int, C_FUNPTR
     type(typ_parini), intent(in):: parini
 end subroutine lammps_task
@@ -5278,7 +4920,7 @@ end subroutine lammps_write
 ! ./src/task_linkedlist.F90 :
 subroutine  linkedlist_test(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, type_pairs, typ_file_info
+    use mod_atoms, only: typ_atoms, type_pairs, typ_file_info, atom_deallocate_old
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
     type(typ_parini), intent(in):: parini
 end subroutine linkedlist_test
@@ -5338,12 +4980,12 @@ end subroutine alborz_as_potential_final
 ! ./src/task_single_point.F90 :
 subroutine single_point_task(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
 end subroutine single_point_task
 subroutine read_poscar_for_single_point(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_allocate_old
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
     type(typ_atoms):: atoms
 end subroutine read_poscar_for_single_point
@@ -5354,7 +4996,7 @@ subroutine task_testforces(parini)
 end subroutine task_testforces
 subroutine testforces_fd(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate
     type(typ_parini), intent(in):: parini
 end subroutine testforces_fd
 subroutine teststress_fd(parini)
@@ -5387,7 +5029,7 @@ subroutine set_indorb(partb,atoms)
 end subroutine set_indorb
 subroutine gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     type(typ_linked_lists), intent(in):: linked_lists

@@ -2,7 +2,7 @@
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_allocate
     use mod_const, only: bohr2ang, ha2ev
     use dictionaries
     use yaml_parse

@@ -12,7 +12,8 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     use mod_tightbinding, only: typ_partb
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ekf, only: typ_ekf
     !use mod_tightbinding, only: typ_partb
     implicit none
     type(typ_parini), intent(in):: parini
@@ -68,8 +69,9 @@ end subroutine cal_ann_main
 subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -152,8 +154,9 @@ end subroutine prefit_cent_ener_ref
 subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

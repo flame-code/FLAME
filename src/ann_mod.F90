@@ -126,16 +126,6 @@ module mod_ann
         integer:: nconf=-1
         type(typ_symfunc), allocatable:: symfunc(:)
     end type typ_symfunc_arr
-    type typ_ekf
-        integer:: n=-1
-        integer:: loc(10)
-        integer:: num(10)
-        real(8), allocatable:: x(:)
-        real(8), allocatable:: epotd(:)
-        real(8), allocatable:: g(:) !gradient of neural artificial neural network output
-        real(8), allocatable:: gc(:,:)
-        real(8), allocatable:: gs(:,:)
-    end type typ_ekf
     type typ_cent
         real(8), allocatable:: gwi(:)
         real(8), allocatable:: gwe(:)

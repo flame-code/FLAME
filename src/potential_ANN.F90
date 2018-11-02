@@ -60,9 +60,10 @@ end subroutine init_potential_ann
 subroutine cal_potential_ann(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_potential, only: ann_arr, fcalls, fcalls_sec, potential, potential_sec, ann_boundcheck
     use mod_ann, only: typ_symfunc
+    use mod_ekf, only: eval_cal_ann_main
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -134,7 +135,7 @@ end subroutine final_potential_ann
 subroutine add_repulsive_potential(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_rcov
     use mod_linked_lists, only: typ_linked_lists
     implicit none
     type(typ_parini), intent(in):: parini

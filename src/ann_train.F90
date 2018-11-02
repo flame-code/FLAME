@@ -1,8 +1,26 @@
 !*****************************************************************************************
+module mod_callback
+    use mod_atoms, only: typ_atoms_arr
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_ekf, only: typ_ekf
+    type(typ_parini), pointer:: parini_t
+    type(typ_atoms_arr), pointer:: atoms_smplx_t
+    type(typ_ann_arr), pointer:: ann_arr_t
+    type(typ_ekf), pointer:: ekf_t
+end module mod_callback
+!*****************************************************************************************
+module mod_train
+    implicit none
+    private
+    public:: ann_train !, convert_x_ann, convert_ann_epotd
+contains
+!*****************************************************************************************
 subroutine ann_train(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf, ekf_rivals, ekf_rivals_tmp, ekf_behler
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use dynamic_memory
@@ -134,9 +152,11 @@ end subroutine ann_train
 subroutine set_single_atom_energy(parini,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr !, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
+    use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old
     use mod_ann, only: typ_symfunc
+    use mod_ekf, only: eval_cal_ann_main
     use dynamic_memory
     use yaml_output
     implicit none
@@ -182,20 +202,11 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
     call atom_deallocate_old(atoms)
 end subroutine set_single_atom_energy
 !*****************************************************************************************
-module mod_callback
-    use mod_atoms, only: typ_atoms_arr
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf
-    type(typ_parini), pointer:: parini_t
-    type(typ_atoms_arr), pointer:: atoms_smplx_t
-    type(typ_ann_arr), pointer:: ann_arr_t
-    type(typ_ekf), pointer:: ekf_t
-end module mod_callback
-!*****************************************************************************************
 subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     !use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf !, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr !, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
     use mod_atoms, only: typ_atoms_arr
     use mod_callback
     use dynamic_memory
@@ -208,8 +219,8 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     real(8):: vertices(10,11), fval(11)
     real(8):: step, ftol
     integer:: ndim, iter, i
-    external:: cal_rmse_force_cent2
-    external:: cal_rmse_energy_cent2
+    !external:: cal_rmse_force_cent2
+    !external:: cal_rmse_energy_cent2
     ndim=10
     ftol=parini%ftol_ann
     step=0.d0
@@ -253,7 +264,7 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     use mod_interface
     use mod_callback, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback, only: ann_arr=>ann_arr_t, ekf=>ekf_t
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_copy_old 
     use mod_ann, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
@@ -308,7 +319,7 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
     use mod_interface
     use mod_callback, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback, only: ann_arr=>ann_arr_t, ekf=>ekf_t
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_copy_old
     use mod_ann, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
@@ -365,7 +376,8 @@ end subroutine cal_rmse_energy_cent2
 subroutine init_ann_train(parini,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf
+    use mod_ann, only: typ_ann_arr
+    use mod_ekf, only: typ_ekf
     use mod_processors, only: iproc
     use yaml_output
     use futile
@@ -441,7 +453,8 @@ end subroutine init_ann_train
 subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_ekf, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ekf, only: typ_ekf
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc
     use dynamic_memory
@@ -665,220 +678,6 @@ subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_val
         !write(*,'(a,i6,f8.3)') 'valid: ',iconf,symfunc_valid%symfunc(iconf)%epot
     enddo
 end subroutine set_ebounds
-!*****************************************************************************************
-subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_ekf, typ_symfunc
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
-    use mod_processors, only: iproc
-    use mod_tightbinding, only: typ_partb
-    use futile
-    use yaml_output
-    implicit none
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iter
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_arr
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    character(*), intent(in):: data_set
-    type(typ_partb), optional, intent(inout):: partb
-    !local variables
-    type(typ_atoms):: atoms
-    type(typ_symfunc):: symfunc
-    real(8):: rmse, errmax, tt, pi
-    real(8):: frmse, ttx, tty, ttz, ppx, ppy, ppz, tt1, tt2, tt3, ttn, tta, ttmax
-    integer:: iconf, ierrmax, iat, nat_tot, nconf_force
-    real(8):: time1=0.d0
-    real(8):: time2=0.d0
-    real(8), save:: time_p=0.d0
-    real(8):: dtime1, dtime2
-    integer:: ilarge1, ilarge2, ilarge3, iunit, ios
-    !character(28):: frmt1='(i6,5f10.3,i7,i5,3i6,a40,i6)'
-    !character(28):: frmt2='(i6,5e10.1,i7,i5,3i6,a40,i6)'
-    !character(28):: frmt
-    character(28):: fmt_main
-    character(28):: fmt1='(f10.3)'
-    character(28):: fmt2='(e10.1)'
-    character(15):: filename
-    logical:: file_exists
-    character(len=8):: str_key
-    call cpu_time(time1)
-    pi=4.d0*atan(1.d0)
-    rmse=0.d0
-    frmse=0.d0
-    ttn=0.d0
-    tta=0.d0
-    nat_tot=0
-    nconf_force=0
-    errmax=0.d0
-    ierrmax=0
-    ilarge1=0
-    ilarge2=0
-    ilarge3=0
-    ann_arr%event='evalu'
-    if(parini%save_symfunc_behnam) then
-        ann_arr%compute_symfunc=.false.
-    else
-        ann_arr%compute_symfunc=.true.
-    endif
-    if(parini%print_energy) then
-        write(filename,'(a12,i3.3)') 'detailed_err',iter
-        iunit=f_get_free_unit(10**5)
-        if(trim(data_set)=="train") then
-            open(unit=iunit,file=trim(filename),status='unknown',iostat=ios)
-        elseif(trim(data_set)=="valid") then
-            open(unit=iunit,file=trim(filename),status='old',access='append',iostat=ios)
-        endif
-        if(ios/=0) then
-            write(*,'(a,a)') 'ERROR: failure openning file: ',trim(filename)
-            stop
-        endif
-        !write(iunit,'(a2,a44,4a23)') "#", " ","E_dft","E_ann","E_dft-E_ann/atom (Ha)","E_dft-E_ann (eV)" 
-    endif
-    configuration: do iconf=1,atoms_arr%nconf
-        if(.not. atoms_arr%conf_inc(iconf)) cycle
-        call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
-        if(parini%save_symfunc_behnam) then
-            call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
-        else
-            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
-        endif
-        !if(iter==parini%nstep_ekf) then
-        !    write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
-        !        atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat,atoms%epot/atoms_arr%atoms(iconf)%nat, &
-        !        (atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
-        !endif
-        tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
-        !HERE
-        if(parini%print_energy) then
-            write(iunit,'(i7,es14.5,a40,i6,a)') iconf,tt,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
-        endif
-        if(tt>1.d-2) ilarge1=ilarge1+1
-        if(tt>1.d-3) ilarge2=ilarge2+1
-        if(tt>1.d-4) ilarge3=ilarge3+1
-        if(tt>errmax) then
-            errmax=tt
-            ierrmax=iconf
-        endif
-        rmse=rmse+tt**2
-        !if(tt>1.d-2) then
-        !    atoms_arr%inclusion(iconf)=0
-        !else
-        !    atoms_arr%inclusion(iconf)=1
-        !endif
-        !write(22,'(a,i5.5)') 'configuration ',iconf
-        !if(atoms%nat<=parini%nat_force) then
-        nat_tot=nat_tot+atoms%nat
-        nconf_force=nconf_force+1
-        do iat=1,atoms%nat
-            ttx=atoms_arr%atoms(iconf)%fat(1,iat)
-            tty=atoms_arr%atoms(iconf)%fat(2,iat)
-            ttz=atoms_arr%atoms(iconf)%fat(3,iat)
-            ppx=atoms%fat(1,iat)
-            ppy=atoms%fat(2,iat)
-            ppz=atoms%fat(3,iat)
-            !write(41,'(2i6,6f7.3)') iconf,iat,ttx,tty,ttz,ppx,ppy,ppz
-            tt1=sqrt(ttx**2+tty**2+ttz**2)
-            tt2=sqrt(ppx**2+ppy**2+ppz**2)
-            tt3=(ppx-ttx)**2+(ppy-tty)**2+(ppz-ttz)**2
-            frmse=frmse+tt3
-            tt3=sqrt(tt3)
-        enddo
-        ttn=ttn+ann_arr%fchi_norm
-        tta=tta+ann_arr%fchi_angle
-        !write(44,'(2i7,4es14.5)') iter,iconf,ann_arr%fchi_norm,ann_arr%fchi_angle,ttn/nconf_force,tta/nconf_force
-        !endif
-    enddo configuration
-    rmse=sqrt(rmse/real(atoms_arr%nconf_inc,8))
-    if(nconf_force==0) nconf_force=1
-    ttn=ttn/real(nconf_force,8)
-    tta=tta/real(nconf_force,8)
-    if(nat_tot==0) nat_tot=1
-    frmse=sqrt(frmse/real(3*nat_tot,8))
-    if(iproc==0) then
-        rmse=rmse*1.d3
-        errmax=errmax*1.d3
-        if(rmse>99999.d0) then
-            !frmt=frmt2
-            fmt_main=fmt2
-        else
-            !frmt=frmt1
-            fmt_main=fmt1
-        endif
-
-        !write(ifile,frmt) iter,rmse,ttn,tta,frmse,errmax,ierrmax,atoms_arr%atoms(ierrmax)%nat, &
-        !    ilarge1,ilarge2,ilarge3,trim(atoms_arr%fn(ierrmax)),atoms_arr%lconf(ierrmax)
-        write(str_key,'(a)') trim(data_set)
-        call yaml_mapping_open(trim(str_key),flow=.true.,unit=ann_arr%iunit)
-        call yaml_map('iter',iter,unit=ann_arr%iunit)
-        call yaml_map('rmse',rmse,fmt=trim(fmt_main),unit=ann_arr%iunit)
-        call yaml_map('ttn',ttn,fmt=trim(fmt_main),unit=ann_arr%iunit)
-        call yaml_map('tta',tta,fmt=trim(fmt_main),unit=ann_arr%iunit)
-        call yaml_map('frmse',frmse,fmt=trim(fmt_main),unit=ann_arr%iunit)
-        call yaml_map('errmax',errmax,fmt=trim(fmt_main),unit=ann_arr%iunit)
-        call yaml_map('ierrmax',ierrmax,unit=ann_arr%iunit)
-        call yaml_map('nat',atoms_arr%atoms(ierrmax)%nat,unit=ann_arr%iunit)
-        call yaml_map('ilarge1',ilarge1,unit=ann_arr%iunit)
-        call yaml_map('ilarge2',ilarge2,unit=ann_arr%iunit)
-        call yaml_map('ilarge3',ilarge3,unit=ann_arr%iunit)
-        call yaml_map('fn_ierrmax',trim(atoms_arr%fn(ierrmax)),unit=ann_arr%iunit)
-        call yaml_map('lconf_ierrmax',atoms_arr%lconf(ierrmax),unit=ann_arr%iunit)
-        call yaml_mapping_close(unit=ann_arr%iunit)
-    endif
-    call cpu_time(time2)
-    dtime1=time1-time_p
-    dtime2=time2-time1
-    !write(*,'(a,2f20.2)') 'TIME ',dtime1,dtime2
-    time_p=time2
-    if(parini%print_energy) then
-        close(iunit)
-    endif
-    ann_arr%compute_symfunc=.false.
-end subroutine ann_evaluate
-!*****************************************************************************************
-!Subroutine cal_ann_main is called during training process.
-!It does the same job as subroutine eval_cal_ann_main with a few more
-!commands related to ANN weights.
-!These two subroutine are supposed to be merged.
-!eval_cal_ann_main is called for task_training but only for
-!obtaining energy/forces when information on errors on
-!training and validation data points are expected.
-!eval_cal_ann_main is called by potential_ANN
-subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
-    use mod_interface
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_tightbinding, only: typ_partb
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc), intent(inout):: symfunc
-    !local variables
-    type(typ_partb):: partb
-    type(typ_ekf):: ekf
-    if(trim(ann_arr%event)=='potential') then
-        !allocate(symfunc%y(ann_arr%ann(1)%nn(0),atoms%nat))
-    endif
-    if(trim(ann_arr%approach)=='atombased') then
-        call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
-        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='tb') then
-        call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
-    else
-        write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
-        stop
-    endif
-    if(trim(ann_arr%event)=='potential') then
-        !deallocate(symfunc%y)
-        !call ann_deallocate(ann_arr)
-    endif
-end subroutine eval_cal_ann_main
 !*****************************************************************************************
 subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_interface
@@ -1425,6 +1224,49 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     deallocate(iconfmax)
 end subroutine save_gbounds
 !*****************************************************************************************
+subroutine randomize_data_order(atoms_arr)
+    use mod_interface
+    use mod_atoms, only: typ_atoms_arr, typ_atoms, atom_copy_old, atom_deallocate_old
+    implicit none
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    !local variables 
+    integer:: i1, i2, iconf !, nat_t
+    real(8):: t1, t2 !, rat_t(3,1000), epot_t
+    type(typ_atoms):: atoms_t
+    !if(natmax>1000) stop 'ERROR: natmax>1000'
+    iconf=0
+    do
+        call random_number(t1)
+        call random_number(t2)
+        i1=int(t1*real(atoms_arr%nconf,8))+1
+        i2=int(t2*real(atoms_arr%nconf,8))+1
+        if(i1<1 .or. i1>atoms_arr%nconf) stop 'ERROR: something wrong with i1'
+        if(i2<1 .or. i2>atoms_arr%nconf) stop 'ERROR: something wrong with i2'
+        if(i1==i2) cycle
+        iconf=iconf+1
+        call atom_copy_old(atoms_arr%atoms(i1),atoms_t,'atoms_arr%atoms(i1)->atoms_t')
+        call atom_copy_old(atoms_arr%atoms(i2),atoms_arr%atoms(i1),'atoms_arr%atoms(i2)->atoms_arr%atoms(i1)')
+        call atom_copy_old(atoms_t,atoms_arr%atoms(i2),'atoms_t->atoms_arr%atoms(i2)')
+
+        !nat_t=natarr(i1)
+        !rat_t(1:3,1:nat_t)=ratall(1:3,1:nat_t,i1)
+        !epot_t=epotall(i1)
+
+        !natarr(i1)=natarr(i2)
+        !ratall(1:3,1:natarr(i2),i1)=ratall(1:3,1:natarr(i2),i2)
+        !epotall(i1)=epotall(i2)
+
+        !natarr(i2)=nat_t
+        !ratall(1:3,1:nat_t,i2)=rat_t(1:3,1:nat_t)
+        !epotall(i2)=epot_t
+
+        if(iconf>1*atoms_arr%nconf) exit
+    enddo
+    call atom_deallocate_old(atoms_t)
+end subroutine randomize_data_order
+!*****************************************************************************************
+end module mod_train
+!*****************************************************************************************
 subroutine convert_x_ann(n,x,ann)
     use mod_interface
     use mod_ann, only: typ_ann
@@ -1497,45 +1339,4 @@ subroutine convert_ann_epotd(ann,n,epotd)
     enddo
     if(l/=n) stop 'ERROR: l/=n'
 end subroutine convert_ann_epotd
-!*****************************************************************************************
-subroutine randomize_data_order(atoms_arr)
-    use mod_interface
-    use mod_atoms, only: typ_atoms_arr, typ_atoms
-    implicit none
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    !local variables 
-    integer:: i1, i2, iconf !, nat_t
-    real(8):: t1, t2 !, rat_t(3,1000), epot_t
-    type(typ_atoms):: atoms_t
-    !if(natmax>1000) stop 'ERROR: natmax>1000'
-    iconf=0
-    do
-        call random_number(t1)
-        call random_number(t2)
-        i1=int(t1*real(atoms_arr%nconf,8))+1
-        i2=int(t2*real(atoms_arr%nconf,8))+1
-        if(i1<1 .or. i1>atoms_arr%nconf) stop 'ERROR: something wrong with i1'
-        if(i2<1 .or. i2>atoms_arr%nconf) stop 'ERROR: something wrong with i2'
-        if(i1==i2) cycle
-        iconf=iconf+1
-        call atom_copy_old(atoms_arr%atoms(i1),atoms_t,'atoms_arr%atoms(i1)->atoms_t')
-        call atom_copy_old(atoms_arr%atoms(i2),atoms_arr%atoms(i1),'atoms_arr%atoms(i2)->atoms_arr%atoms(i1)')
-        call atom_copy_old(atoms_t,atoms_arr%atoms(i2),'atoms_t->atoms_arr%atoms(i2)')
-
-        !nat_t=natarr(i1)
-        !rat_t(1:3,1:nat_t)=ratall(1:3,1:nat_t,i1)
-        !epot_t=epotall(i1)
-
-        !natarr(i1)=natarr(i2)
-        !ratall(1:3,1:natarr(i2),i1)=ratall(1:3,1:natarr(i2),i2)
-        !epotall(i1)=epotall(i2)
-
-        !natarr(i2)=nat_t
-        !ratall(1:3,1:nat_t,i2)=rat_t(1:3,1:nat_t)
-        !epotall(i2)=epot_t
-
-        if(iconf>1*atoms_arr%nconf) exit
-    enddo
-    call atom_deallocate_old(atoms_t)
-end subroutine randomize_data_order
 !*****************************************************************************************

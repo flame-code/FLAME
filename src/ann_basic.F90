@@ -1,7 +1,8 @@
 !*****************************************************************************************
 subroutine ann_allocate(ekf,ann_arr)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_ekf
+    use mod_ann, only: typ_ann_arr
+    use mod_ekf, only: typ_ekf
     use dynamic_memory
     implicit none
     type(typ_ekf), intent(in):: ekf

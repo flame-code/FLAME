@@ -19,6 +19,7 @@ subroutine fit_elecpot(parini)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: atom_copy_old, atom_deallocate, set_rcov
     use mod_ann, only: typ_cent, typ_ann_arr
     use yaml_output
     implicit none

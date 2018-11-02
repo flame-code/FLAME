@@ -3,7 +3,8 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf
+    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ekf, only: typ_ekf
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
@@ -630,7 +631,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_qat
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     use yaml_output

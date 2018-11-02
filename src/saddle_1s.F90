@@ -2,7 +2,8 @@
 subroutine surface_walking(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
+    use mod_atoms, only: atom_copy_old, atom_deallocate, set_ndof, atom_calmaxforcecomponent
     use mod_potential, only: potential, fcalls
     use mod_saddle, only: dmconverged, str_moving_atoms_rand, dimsep, ampl
     use mod_opt, only: typ_paropt
@@ -226,7 +227,9 @@ end subroutine random_move_atoms
 subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot_m0)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate_old, atom_allocate_old
+    use mod_atoms, only: atom_calmaxforcecomponent
+    use mod_atoms, only: atom_copy_old
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none
@@ -311,8 +314,9 @@ end subroutine find_minima
 !*****************************************************************************************
 subroutine alongnegcurvature(iproc,atoms,uvn,c)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_saddle, only: dimsep
+    use mod_atoms, only: atom_copy_old
     implicit none
     integer, intent(in):: iproc
     type(typ_atoms), intent(inout):: atoms

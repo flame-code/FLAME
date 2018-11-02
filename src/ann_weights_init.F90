@@ -2,7 +2,8 @@
 subroutine set_annweights(parini,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ekf
+    !use mod_ann, only: 
+    use mod_ekf, only: typ_ekf
     use mod_processors, only: iproc, mpi_comm_abz
     implicit none
     type(typ_parini), intent(in):: parini

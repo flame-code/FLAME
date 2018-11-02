@@ -16,7 +16,7 @@
 subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_electrostatics, only: typ_linked_lists
     use mod_const, only: bohr2ang
     use yaml_output
@@ -141,7 +141,7 @@ end subroutine linkedlists_init
 !*****************************************************************************************
 subroutine linkedlists_final(linked_lists)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_electrostatics, only: typ_linked_lists
     implicit none
     type(typ_linked_lists), intent(inout):: linked_lists

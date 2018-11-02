@@ -50,7 +50,7 @@ end subroutine final_potential_forces_dftb
 !*****************************************************************************************
 subroutine cal_potential_forces_dftb(atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat
     !use mod_potential, only:
     use mod_processors, only: iproc
     implicit none

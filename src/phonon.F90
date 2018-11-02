@@ -2,7 +2,8 @@
 subroutine cal_hessian_4p(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_copy_old
+    use mod_atoms, only: atom_copy, atom_deallocate, set_atomic_mass
     use mod_processors, only: iproc
     use mod_potential, only: potential
     use futile

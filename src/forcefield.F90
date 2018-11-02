@@ -2,7 +2,7 @@
 subroutine forcefield_init(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat, set_qat
     use mod_potential, only: poisson
     use mod_potential, only: shortrange
     use mod_electrostatics, only: typ_poisson

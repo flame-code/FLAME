@@ -1,7 +1,102 @@
 !*****************************************************************************************
+module mod_atoms
+    implicit none
+    type typ_atoms
+        integer:: nat=-1 !number of atoms
+        integer:: natim=0 !number of atoms of all periodic images including itself 
+        integer:: ndof=-1 !number of degrees of freedom
+        real(8):: cellvec(3,3)=-1.d0 !cell vectors
+        real(8):: celldv(3,3)=0.d0 !
+        real(8):: stress(3,3)=0.d0 !
+        real(8):: epot=0.d0 !potential energy
+        real(8):: ekin=0.d0 !kinetic energy
+        real(8):: etot=0.d0 !total energy
+        real(8):: enth=0.d0 !enthalpy
+        real(8):: ebattery=0.d0 !energy of external work of battery in p3d_bias
+        real(8):: qtot=0.d0 !total charge of the configuration
+        real(8):: ztot=0.d0 !total ionic charge of the configuration
+        real(8):: pressure=0.d0 !external pressure
+        real(8):: tol
+        real(8):: qtypat(20)=1.d20
+        integer:: ntypat=-1
+        integer:: ltypat(20)=-1
+        integer:: nfp=-1
+        character(5):: stypat(20)='none'
+        character(20):: boundcond='unknown'
+        character(10):: units='angstrom'
+        character(10):: units_length_io='atomic'
+        !coordinates type only at time of reading from file and writing to file.
+        character(10):: coordinates_type='cartesian'
+        character(50):: alloclist='all'
+        character(5), allocatable:: sat(:) !symbol of atoms
+        real(8), allocatable:: rat(:,:) !atomic positions
+        real(8), allocatable:: ratim(:,:) !atomic positions of periodic images
+        real(8), allocatable:: vat(:,:) !atomic velocities
+        real(8), allocatable:: amass(:) !atomic mass
+        real(8), allocatable:: fat(:,:) !atomic forces
+        logical, allocatable:: bemoved(:,:) !status to be moved or not
+        real(8), allocatable:: qat(:) !atomic charges
+        real(8), allocatable:: zat(:) !ionic charges
+        real(8), allocatable:: rcov(:) !covalent radii
+        real(8), allocatable:: fp(:) !fingerprint
+        integer, allocatable:: itypat(:) !The type of each atom is set in this array
+        !contains
+        !procedure:: atoms_assign
+        !generic:: assignment(=) => atoms_assign
+    end type typ_atoms
+    type typ_atoms_all
+        type(typ_atoms):: atoms
+        integer:: nconfmax=-1 !maximum number of configurations
+        integer:: nconf=-1 !number of configurations
+        real(8), allocatable:: epotall(:) !potential energy
+        real(8), allocatable:: qtotall(:) !total charge
+        real(8), allocatable:: ratall(:,:,:) !atomic positions
+        real(8), allocatable:: fatall(:,:,:) !atomic positions
+        real(8), allocatable:: fpall(:,:) !fingerprint
+    end type typ_atoms_all
+    type typ_atoms_arr
+        type(typ_atoms), allocatable:: atoms(:)
+        integer:: nconfmax=-1 !maximum number of configurations
+        integer:: nconf=-1 !number of configurations
+        !integer, allocatable:: inclusion(:)
+        character(50), allocatable:: fn(:)
+        integer, allocatable:: lconf(:)
+        logical, allocatable:: conf_inc(:)
+        integer:: nconf_inc=-1
+    end type typ_atoms_arr
+    !type typ_atoms_arr
+    !    integer:: natmax=10000
+    !    integer, allocatable:: natarr(:)
+    !    real(8), allocatable:: cellvecarr(:,:,:)
+    !    real(8), allocatable:: epotarr(:)
+    !    character(20), allocatable:: boundcondarr(:)
+    !    character(5), allocatable:: sat(:,:)
+    !    real(8), allocatable:: ratarr(:,:,:)
+    !    logical, allocatable:: bemoved(:,:,:)
+    !end type typ_atoms_arr
+    type typ_file_info
+        character(256):: filename_positions='unknown'
+        character(256):: filename_forces='unknown'
+        character(50):: file_position='unknown'
+        character(50):: frmt='(a5,2x,3es24.15,2x,3l1)'
+        logical:: print_force
+        integer:: nconf=0
+    end type typ_file_info
+    !contains
+    !subroutine atoms_assign(a,b)
+    !    !import typ_atoms
+    !    class(typ_atoms), intent(inout):: a
+    !    class(typ_atoms), intent(in):: b
+    !    write(*,'(a)') 'ERROR: assignment is not accept for type typ_atoms,'
+    !    write(*,'(a)') '       please use subroutine atom_copy.'
+    !    stop
+    !end subroutine atoms_assign
+    type type_pairs
+        integer ,allocatable:: posat2nd(:,:)
+    end type type_pairs
+contains
+!*****************************************************************************************
 subroutine atom_allocate(atoms,nat,natim,nfp)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     use dynamic_memory
     implicit none
     type(typ_atoms), intent(inout):: atoms
@@ -89,8 +184,6 @@ subroutine atom_allocate(atoms,nat,natim,nfp)
 end subroutine atom_allocate
 !*****************************************************************************************
 subroutine atom_deallocate(atoms)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     use dynamic_memory
     implicit none
     type(typ_atoms), intent(inout):: atoms
@@ -198,8 +291,6 @@ subroutine atom_deallocate(atoms)
 end subroutine atom_deallocate
 !*****************************************************************************************
 subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,zat,rcov,typat)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: nat, natim, nfp
@@ -271,8 +362,6 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,z
 end subroutine atom_allocate_old
 !*****************************************************************************************
 subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms
     logical, optional, intent(in):: sat, rat, ratim, vat, amass
@@ -399,8 +488,6 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
 end subroutine atom_deallocate_old
 !*****************************************************************************************
 subroutine atom_all_allocate(atoms_all,ratall,fatall,epotall,fpall,qtotall)
-    use mod_interface
-    use mod_atoms, only: typ_atoms_all
     implicit none
     type(typ_atoms_all), intent(inout):: atoms_all
     logical, optional, intent(in):: ratall, fatall, epotall, fpall, qtotall
@@ -432,8 +519,6 @@ subroutine atom_all_allocate(atoms_all,ratall,fatall,epotall,fpall,qtotall)
 end subroutine atom_all_allocate
 !*****************************************************************************************
 subroutine atom_all_deallocate(atoms_all,ratall,fatall,epotall,fpall,qtotall)
-    use mod_interface
-    use mod_atoms, only: typ_atoms_all
     implicit none
     type(typ_atoms_all), intent(inout):: atoms_all
     logical, optional, intent(in):: ratall, fatall, epotall, fpall, qtotall
@@ -461,8 +546,6 @@ subroutine atom_all_deallocate(atoms_all,ratall,fatall,epotall,fpall,qtotall)
 end subroutine atom_all_deallocate
 !*****************************************************************************************
 subroutine atom_copy(at_inp,at_out,str_message)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     use dynamic_memory
     implicit none
     type(typ_atoms), intent(in):: at_inp
@@ -741,8 +824,6 @@ subroutine atom_copy(at_inp,at_out,str_message)
 end subroutine atom_copy
 !*****************************************************************************************
 subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(in):: at_inp
     type(typ_atoms), intent(inout):: at_out
@@ -1061,8 +1142,6 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
 end subroutine atom_copy_old
 !*****************************************************************************************
 subroutine atom_build_periodic_images(atoms,rcut)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: rcut
@@ -1103,8 +1182,6 @@ subroutine atom_build_periodic_images(atoms,rcut)
 end subroutine atom_build_periodic_images
 !*****************************************************************************************
 subroutine set_typat(atoms)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms
     !local variables
@@ -1138,8 +1215,6 @@ subroutine set_typat(atoms)
 end subroutine set_typat
 !*****************************************************************************************
 subroutine set_ndof(atoms)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms
     !local variables
@@ -1153,7 +1228,6 @@ subroutine set_ndof(atoms)
 end subroutine set_ndof
 !*****************************************************************************************
 subroutine bemoved2string(bemoved,str_motion)
-    use mod_interface
     implicit none
     logical:: bemoved(3)
     character(3):: str_motion
@@ -1175,7 +1249,6 @@ subroutine bemoved2string(bemoved,str_motion)
 end subroutine bemoved2string
 !*****************************************************************************************
 subroutine string2bemoved(str_motion,bemoved)
-    use mod_interface
     implicit none
     character(3):: str_motion
     logical:: bemoved(3)
@@ -1203,8 +1276,6 @@ subroutine string2bemoved(str_motion,bemoved)
 end subroutine string2bemoved
 !*****************************************************************************************
 subroutine atoms_all_writexyz(filename,fn_position,atoms_all,strkey)
-    use mod_interface
-    use mod_atoms, only: typ_atoms_all
     implicit none
     character(*), intent(in):: filename, fn_position, strkey
     type(typ_atoms_all), intent(in):: atoms_all
@@ -1255,8 +1326,6 @@ subroutine atoms_all_writexyz(filename,fn_position,atoms_all,strkey)
 end subroutine atoms_all_writexyz
 !*****************************************************************************************
 subroutine atom_normalizevector(nat,bemoved,vxyz)
-    use mod_interface
-    !use mod_atoms, only:
     implicit none
     integer, intent(in):: nat
     logical, intent(in):: bemoved(3,nat)
@@ -1293,8 +1362,6 @@ subroutine atom_normalizevector(nat,bemoved,vxyz)
 end subroutine atom_normalizevector
 !*****************************************************************************************
 function atom_ddot(nat,vec1,vec2,bemoved) result(res)
-    use mod_interface
-    !use mod_atoms, only:
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: vec1(3,nat), vec2(3,nat)
@@ -1311,8 +1378,6 @@ function atom_ddot(nat,vec1,vec2,bemoved) result(res)
 end function atom_ddot
 !*****************************************************************************************
 subroutine atom_calnorm(nat,bemoved,vec,vnrm)
-    use mod_interface
-    !use mod_atoms, only:
     implicit none
     integer, intent(in):: nat
     logical, intent(in):: bemoved(3,nat)
@@ -1330,8 +1395,6 @@ subroutine atom_calnorm(nat,bemoved,vec,vnrm)
 end subroutine atom_calnorm
 !*****************************************************************************************
 subroutine atom_calmaxforcecomponent(nat,bemoved,vec,vmax)
-    use mod_interface
-    !use mod_atoms, only: 
     implicit none
     integer, intent(in):: nat
     logical, intent(in):: bemoved(3,nat)
@@ -1536,7 +1599,6 @@ end subroutine atom_calmaxforcecomponent
 !end subroutine writeposout
 !*****************************************************************************************
 subroutine checkallatomstobeincell(nat,rat,cellvec,allatomsincell)
-    use mod_interface
     implicit none
     integer:: iat,nat
     real(8):: rat(3,nat),cellvec(3,3)
@@ -1555,7 +1617,6 @@ subroutine checkallatomstobeincell(nat,rat,cellvec,allatomsincell)
 end subroutine checkallatomstobeincell
 !*****************************************************************************************
 subroutine determinexyzminmax(nat,rat,cellvec,xmin,ymin,zmin,xmax,ymax,zmax)
-    use mod_interface
     implicit none
     integer:: iat,nat
     real(8):: rat(3,nat),cellvec(3,3)
@@ -1576,8 +1637,6 @@ subroutine determinexyzminmax(nat,rat,cellvec,xmin,ymin,zmin,xmax,ymax,zmax)
 end subroutine determinexyzminmax
 !*****************************************************************************************
 subroutine set_rcov(atoms)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
     implicit none
@@ -1793,8 +1852,6 @@ subroutine set_rcov(atoms)
 end subroutine set_rcov
 !*****************************************************************************************
 subroutine set_qat(atoms)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     use mod_processors, only: iproc
     implicit none
     type(typ_atoms), intent(inout) :: atoms
@@ -1924,8 +1981,6 @@ subroutine set_qat(atoms)
 end subroutine set_qat
 !*****************************************************************************************
 subroutine set_atomic_mass(atoms)
-    use mod_interface
-    use mod_atoms, only: typ_atoms
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
     implicit none
@@ -2141,7 +2196,6 @@ subroutine set_atomic_mass(atoms)
 end subroutine set_atomic_mass
 !*****************************************************************************************
 subroutine sat_to_iatom(sat,iatom)
-    use mod_interface
     use mod_processors, only: iproc
     implicit none
     character(*), intent(in) :: sat
@@ -2376,7 +2430,6 @@ subroutine sat_to_iatom(sat,iatom)
 end subroutine sat_to_iatom
 !*****************************************************************************************
 subroutine iatom_to_sat(iatom,sat)
-    use mod_interface
     use mod_processors, only: iproc
     implicit none
     integer, intent(in) :: iatom
@@ -2401,4 +2454,6 @@ subroutine iatom_to_sat(iatom,sat)
         sat=trim(elements(iatom))
     endif
 end subroutine iatom_to_sat
+!*****************************************************************************************
+end module mod_atoms
 !*****************************************************************************************
