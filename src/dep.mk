@@ -25,7 +25,7 @@
 ./vasp_recompute_kpt.o : ./vasp_recompute_kpt.F90 
 ./optimizer_gmdfire.o : ./optimizer_gmdfire.F90 ./interface_mod.o 
 ./task_bader.o : ./task_bader.F90 ./interface_mod.o 
-./potential_main_minhocao.o : ./potential_main_minhocao.F90 ./potential_LJ_voids.o ./potential_MSOCK.o ./potential_IPI.o ./potential_EDIP.o ./potential_TERSOFF.o ./potential_flame.o ./potential_LenoskyTB_LJ_minhocao.o ./potential_LAMMPS.o ./potential_PWSCF.o ./potential_MLJ.o ./potential_BLJ_minhocao.o ./potential_LenoskyMEAM.o ./potential_LenoskyTB_minhocao.o ./potential_DFTB_minhocao.o ./potential_VASP_minhocao.o ./potential_SIESTA_minhocao.o ./potential_MOPAC.o ./potential_CP2K.o ./potential_abinit.o ./potential_corerepulsion.o 
+./potential_main_minhocao.o : ./potential_main_minhocao.F90 ./potential_LJ_voids.o ./potential_MSOCK.o ./potential_IPI.o ./potential_EDIP.o ./potential_TERSOFF.o ./potential_flame.o ./potential_LenoskyTB_LJ_minhocao.o ./potential_PWSCF.o ./potential_MLJ.o ./potential_BLJ_minhocao.o ./potential_LenoskyMEAM.o ./potential_LenoskyTB_minhocao.o ./potential_DFTB_minhocao.o ./potential_VASP_minhocao.o ./potential_SIESTA_minhocao.o ./potential_MOPAC.o ./potential_CP2K.o ./potential_abinit.o ./potential_corerepulsion.o 
 ./minhocao_pathintegral.o : ./minhocao_pathintegral.F90 ./potential_main_minhocao.o ./interface_mod.o 
 ./io_utils.o : ./io_utils.F90 
 ./potential_DFTB.o : ./potential_DFTB.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
@@ -190,7 +190,6 @@
 ./optimizer_bfgs_qe.o : ./optimizer_bfgs_qe.F90 ./potential_main_minhocao.o 
 ./bader_neargrid.o : ./bader_neargrid.F90 ./interface_mod.o 
 ./convcheck.o : ./convcheck.F90 ./interface_mod.o 
-./potential_LAMMPS.o : ./potential_LAMMPS.F90 ./potential_LAMMPS_interface.o 
 ./potential_VASP_minhocao.o : ./potential_VASP_minhocao.F90 
 ./spher_harm_mathematica.o : ./spher_harm_mathematica.F90 
 ./bader_ongrid.o : ./bader_ongrid.F90 

@@ -125,6 +125,7 @@ _SOURCES_C = sockets.c basic_c_wrappers.c $(DATABASE_SRC)
 _SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp 
 if HAVE_LAMMPS
     _SOURCES_CPP += potential_LAMMPS_wrapper.cpp potential_LAMMPS_wrapper2.cpp
+potential_LAMMPS.o : potential_LAMMPS.F90 potential_LAMMPS_interface.o
 endif
 
 if HAVE_SPGLIB
