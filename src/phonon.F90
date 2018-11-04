@@ -2,7 +2,8 @@
 subroutine cal_hessian_4p(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_copy_old
+    use mod_atoms, only: atom_copy, atom_deallocate, set_atomic_mass
     use mod_processors, only: iproc
     use mod_potential, only: potential
     use futile
@@ -164,6 +165,13 @@ subroutine cal_hessian_4p(parini)
         enddo
     enddo
     call DSYEV('V','L',3*atoms%nat,hess,3*atoms%nat,eval,work,lwork,info)
+    do j=1,3*atoms%nat
+        if(hess(1,j)<0.d0) then
+            do i=1,3*atoms%nat
+                hess(i,j)=-hess(i,j)
+            enddo
+        endif
+    enddo
     do j=1,3*atoms%nat
         jat=(j-1)/3+1
         jxyz=mod(j-1,3)+1

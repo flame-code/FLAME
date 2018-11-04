@@ -3,6 +3,7 @@ subroutine alborz_as_potential_init(nat,sat)
     use mod_interface
     use mod_alborz_as_potential, only: parini, parres, file_ini, atoms
     use mod_potential, only: potential
+    use mod_atoms, only: atom_allocate_old
     implicit none
     integer, intent(in):: nat
     character(5), intent(in):: sat(nat)
@@ -54,6 +55,7 @@ end subroutine alborz_as_potential_get
 subroutine alborz_as_potential_final
     use mod_interface
     use mod_alborz_as_potential, only: parini, file_ini, atoms
+    use mod_atoms, only: atom_deallocate_old
     implicit none
     call atom_deallocate_old(atoms)
     if(trim(parini%task)/='minhocao') then

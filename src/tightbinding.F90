@@ -46,7 +46,7 @@ end subroutine set_indorb
 subroutine gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
     use mod_interface
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_const, only: ha2ev

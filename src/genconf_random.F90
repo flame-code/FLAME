@@ -2,7 +2,8 @@
 subroutine genrandom(parini,genconf)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
+    use mod_atoms, only: set_rcov
     use mod_genconf, only: typ_genconf
     implicit none
     type(typ_parini), intent(inout):: parini

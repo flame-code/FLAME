@@ -51,7 +51,7 @@ subroutine cal_architecture_2hiddenlayer(ann,epot)
     real(8), intent(inout):: epot
     !local variables
     integer:: i, j, k, l, lp
-    real(8):: tt
+    real(8):: tt, tt2
     real(8):: c(100), ff(1000,1000)
     if(ann%nl/=3) then
         write(*,'(a,i3)') 'ERROR: this routine works only for ann%nl=3, while ann%nl= ',ann%nl
@@ -64,8 +64,9 @@ subroutine cal_architecture_2hiddenlayer(ann,epot)
             tt=tt+ann%a(i,j,1)*ann%y(i,0)
         enddo
         ann%x(j,1)=ann%b(j,1)+tt
-        ann%y(j,1)=tanh(ann%x(j,1))
-        ann%yd(j,1)=1.d0/cosh(ann%x(j,1))**2
+        tt2=tanh(ann%x(j,1))
+        ann%y(j,1)=tt2
+        ann%yd(j,1)=1.d0-tt2**2
     enddo
     !-------------------------------------------------------
     do k=1,ann%nn(2)
@@ -74,8 +75,9 @@ subroutine cal_architecture_2hiddenlayer(ann,epot)
             tt=tt+ann%a(j,k,2)*ann%y(j,1)
         enddo
         ann%x(k,2)=ann%b(k,2)+tt
-        ann%y(k,2)=tanh(ann%x(k,2))
-        ann%yd(k,2)=1.d0/cosh(ann%x(k,2))**2
+        tt2=tanh(ann%x(k,2))
+        ann%y(k,2)=tt2
+        ann%yd(k,2)=1.d0-tt2**2
     enddo
     !-------------------------------------------------------
     tt=0.d0
@@ -150,7 +152,7 @@ subroutine cal_architecture_der_1hiddenlayer(ann,epot)
     epot=ann%x(1,2)
     !------------------------------------------------------
     do j=1,ann%nn(1)
-         tt=ann%a(j,1,2)/(cosh(ann%x(j,1)))**2
+         tt=ann%a(j,1,2)*(1.d0-ann%y(j,1)**2)
         ann%bd(j,1)=tt
         do lp=1,ann%nn(0)
             ann%ad(lp+(j-1)*ann%nn(0),2)=tt*ann%y(lp,0)
@@ -207,9 +209,9 @@ subroutine cal_architecture_der_2hiddenlayer(ann,epot)
     do l=1,ann%nn(1)
         tt=0.d0
         do k=1,ann%nn(2)
-            tt=tt+ann%a(k,1,3)*ann%a(l,k,2)/cosh(ann%x(k,2))**2
+            tt=tt+ann%a(k,1,3)*ann%a(l,k,2)*(1.d0-ann%y(k,2)**2)
         enddo
-        tt=tt/(cosh(ann%x(l,1)))**2
+        tt=tt*(1.d0-ann%y(l,1)**2)
         ann%bd(l,1)=tt
         do lp=1,ann%nn(0)
             !ann%ad(lp,l,1)=tt*ann%y(lp,0)
@@ -218,7 +220,7 @@ subroutine cal_architecture_der_2hiddenlayer(ann,epot)
     enddo
     !-------------------------------------------------------
     do l=1,ann%nn(2)
-        tt=ann%a(l,1,3)/(cosh(ann%x(l,2)))**2
+        tt=ann%a(l,1,3)*(1.d0-ann%y(l,2)**2)
         ann%bd(l,2)=tt
         do lp=1,ann%nn(1)
             !ann%ad(lp,l,2)=tt*ann%y(lp,1)

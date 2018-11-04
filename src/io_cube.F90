@@ -1,7 +1,7 @@
 !*****************************************************************************************
 subroutine cube_read(filename,atoms,poisson)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, iatom_to_sat, atom_allocate_old
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
@@ -109,7 +109,7 @@ end subroutine cube_read
 !*****************************************************************************************
 subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, sat_to_iatom
     use mod_electrostatics, only: typ_poisson
     implicit none
     character(*), intent(in):: filename

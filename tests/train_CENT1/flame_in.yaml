@@ -1,0 +1,21 @@
+main:
+    task        : ann
+    seed        : 6731916
+    types       : Na Cl
+    verbosity   : 2
+
+ann:
+    subtask       : train
+    optimizer     : rivals
+    approach      : cent1
+    nstep_ekf     : 15
+    nconf_rmse     : 400
+    ampl_rand     :   0.020
+    symfunc       : only_calculate
+    prefit        : False
+    print_energy  : True
+
+potential:
+    potential: ann
+    ewald:
+        ewald: False

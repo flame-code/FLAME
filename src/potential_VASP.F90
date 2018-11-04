@@ -3,7 +3,7 @@ subroutine init_potential_forces_vasp(atoms_t)
     use mod_interface
     use mod_potential, only: sat, atom_motion, cellvec, ntypat, stypat, &
         single_point_calculation, comment, comment2, vasp5, natarr
-        use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_typat
     implicit none
     type(typ_atoms), intent(inout):: atoms_t
     !real(8):: cv_t(3,3)

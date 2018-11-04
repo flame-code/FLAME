@@ -3,7 +3,7 @@ subroutine dynamics(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, set_ndof, atom_deallocate_old
     use mod_dynamics, only: dt, nmd,nfreq,md_method
     use mod_processors, only: iproc
     implicit none
@@ -49,7 +49,8 @@ subroutine md_nve(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, set_atomic_mass
+    use mod_atoms, only: atom_deallocate_old
     use mod_dynamics, only: dt, nmd,nfreq
     use mod_processors, only: iproc
     implicit none

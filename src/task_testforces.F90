@@ -20,7 +20,7 @@ end subroutine task_testforces
 subroutine testforces_fd(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate
     use mod_potential, only: potential
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang

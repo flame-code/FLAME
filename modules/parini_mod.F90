@@ -89,6 +89,7 @@ module mod_parini
         real(8):: qgnrmtol=-1.d0
         real(8):: etol_ann !the tolerance difference of energies of two configuration
         real(8):: dtol_ann !distance between two FP
+        real(8):: ftol_ann !tolerance for simplex method
         real(8):: weight_hardness
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.

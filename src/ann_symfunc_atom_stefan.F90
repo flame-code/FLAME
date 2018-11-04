@@ -3,7 +3,7 @@ subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_rcov
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr

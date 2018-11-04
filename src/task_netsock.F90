@@ -2,7 +2,7 @@
 subroutine netsock_task(parini)
     !use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof
     use mod_potential, only: fcalls, perfstatus, potential
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr, bohr2ang

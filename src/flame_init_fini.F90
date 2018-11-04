@@ -217,6 +217,7 @@ end subroutine init_random_seed
 subroutine set_atomc_types_info(parini)
     use mod_interface
     use mod_parini, only: typ_parini
+    use mod_atoms, only: sat_to_iatom
     use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini
