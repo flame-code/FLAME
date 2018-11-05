@@ -458,7 +458,8 @@ end subroutine read_ann
 subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: atom_allocate_old, atom_deallocate, atom_deallocate_old
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

@@ -8,7 +8,7 @@
 subroutine lammps_task(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_copy, atom_deallocate, set_typat
     use mod_potential, only: potential
 #if defined(HAVE_LAMMPS)
     use mpi

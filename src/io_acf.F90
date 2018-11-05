@@ -4,7 +4,8 @@
 !*****************************************************************************************
 subroutine acf_write(file_info,atoms,atoms_all,strkey)
     use mod_interface
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all
+    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
+    use mod_atoms, only: atom_deallocate_old
     use mod_const, only: bohr2ang, ha2ev
     implicit none
     type(typ_file_info), intent(inout):: file_info
@@ -206,7 +207,8 @@ end subroutine acf_write
 !*****************************************************************************************
 subroutine acf_write_new(file_info,atoms_arr,strkey)
     use mod_interface
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: atom_deallocate_old
     use mod_const, only: bohr2ang, ha2ev
     implicit none
     type(typ_file_info), intent(inout):: file_info
@@ -399,7 +401,8 @@ end subroutine rotate4acf
 !*****************************************************************************************
 subroutine acf_force_write(file_info,atoms,atoms_all,strkey)
     use mod_interface
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all
+    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
+    use mod_atoms, only: atom_deallocate_old
     implicit none
     type(typ_file_info), intent(inout):: file_info
     type(typ_atoms), optional, intent(in):: atoms
@@ -506,7 +509,8 @@ end subroutine acf_force_write
 subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_all
+    use mod_atoms, only: typ_atoms, typ_atoms_all, atom_all_allocate, atom_copy_old
+    use mod_atoms, only: atom_allocate_old
     use mod_const, only: bohr2ang, ha2ev
     use yaml_output
     implicit none
@@ -643,7 +647,8 @@ end subroutine acf_read
 subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate, atom_copy
+    use mod_atoms, only: atom_deallocate
     use mod_const, only: bohr2ang, ha2ev
     use yaml_output
     implicit none

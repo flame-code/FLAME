@@ -1,0 +1,521 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2018-10-30 08:14:08.046
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : ann
+   types                               : B
+   two_level_geopt                     : False
+   verbosity                           : 1
+   verbose                             : 3
+   seed                                : 234511
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_1s:
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+ potential:
+   potential                           : ann
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     ecut_auto                         : False
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : train
+   optimizer                           : rivals
+   approach                            : atombased
+   symfunc                             : only_calculate
+   nstep_ekf                           : 20
+   nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
+   nconf_rmse                          : 500
+   ampl_rand                           : 0.005
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_cent2                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : True
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  1, B:  1}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  234511, seed2:  234518}
+ number of ann                         :  1
+ ann input files:
+ -  #B.ann.input.yaml
+   ANN architecture                    : 19-5-5-1
+   symfunc numbers from input: {ng1:  0, ng2:  7, ng3:  0, ng4:  0, ng5:  12, ng6:  0}
+ EKF:
+ - iann                                :  1
+   loc                                 :  1
+   num                                 :  136
+   n                                   :  136
+ Number of configurations read: {filename: posinp_train.yaml, nconf:  6}
+ Number of configurations read: {filename: posinp_valid.yaml, nconf:  3}
+ number of ANN wights                  :  136
+ number of training data points        :  6
+ number of validating data points      :  3
+ symfunc bounds:
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.7769912488E+00, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  5.4347942382E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.2059839894E+00, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  4.0914479422E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  7.0872582821E-01, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  2.6724695876E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  2, nat:  11, ibmin:  0, gminarr:  3.0510368282E-01, iconfmax:  2, 
+                       nat:  11,          ibmax:  0, gmaxarr:  1.4381188853E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  2,          fn_max: posinp_valid.yaml, lconf_max:  2}
+ - bounds_valid: {iconfmin:  2, nat:  11, ibmin:  0, gminarr:  6.5315149108E-02, iconfmax:  2, 
+                       nat:  11,          ibmax:  0, gmaxarr:  4.9227712333E-01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  2,          fn_max: posinp_valid.yaml, lconf_max:  2}
+ - bounds_valid: {iconfmin:  2, nat:  11, ibmin:  0, gminarr:  4.4883456760E-03, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  7.1913992514E-02, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  2,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  2, nat:  11, ibmin:  0, gminarr:  8.5491462534E-06, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  9.2800090118E-04, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  2,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  2.0587276480E+00, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.4515668254E+01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  4.3168924404E-01, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.2837280433E+01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.8102737638E+00, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.0771951087E+01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.4088399381E-01, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  9.0174459978E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.4408086125E+00, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  7.0347835631E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.9201239424E-02, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  5.7312559864E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  5.4203861702E-01, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  2.4409111466E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.5050391223E-04, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  2.4000810366E+00, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.8856578205E-01, iconfmax:  2, 
+                       nat:  11,          ibmax:  0, gmaxarr:  6.8132237882E-01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  2}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  1.0198905576E-09, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  9.8825057884E-01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  2, nat:  11, ibmin:  0, gminarr:  1.0400540471E-03, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.3212395442E-01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  2,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ - bounds_valid: {iconfmin:  1, nat:  14, ibmin:  0, gminarr:  7.7003801522E-35, iconfmax:  3, 
+                       nat:  13,          ibmax:  0, gmaxarr:  2.6341697724E-01, 
+                   strmess: bounds_valid,             fn_min: posinp_valid.yaml, 
+                 lconf_min:  1,          fn_max: posinp_valid.yaml, lconf_max:  3}
+ symfunc bounds:
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.4063776075E+00, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  6.2141647357E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  8.7188551369E-01, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  4.7925838265E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  4.6828543113E-01, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  3.2190118873E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  2.1223253779E-01, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.6981575700E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  6.0319638230E-02, iconfmax:  5, 
+                       nat:  13,          ibmax:  0, gmaxarr:  5.3584489061E-01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  5}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  5.7189741118E-03, iconfmax:  5, 
+                       nat:  13,          ibmax:  0, gmaxarr:  7.9910488185E-02, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  5}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.6173121076E-05, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  9.5485964896E-04, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.4019709348E+00, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.7603941986E+01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.6611103429E-01, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.8364085706E+01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.3003161899E+00, iconfmax:  6, 
+                       nat:  14,          ibmax:  0, gmaxarr:  1.2917046026E+01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  6}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  4.2109665342E-02, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.3310651467E+01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.1379690072E+00, iconfmax:  6, 
+                       nat:  14,          ibmax:  0, gmaxarr:  8.6840098918E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  6}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  4.1708340898E-03, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  8.6611046069E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  4.7897794387E-01, iconfmax:  6, 
+                       nat:  14,          ibmax:  0, gmaxarr:  3.0993450419E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  6}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.8177866899E-05, iconfmax:  2, 
+                       nat:  13,          ibmax:  0, gmaxarr:  3.6025026967E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  2}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  2.4932984400E-01, iconfmax:  6, 
+                       nat:  14,          ibmax:  0, gmaxarr:  9.9302724328E-01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  6}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  5.1189692541E-11, iconfmax:  5, 
+                       nat:  13,          ibmax:  0, gmaxarr:  1.6539190188E+00, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  5}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  1.1897171131E-03, iconfmax:  6, 
+                       nat:  14,          ibmax:  0, gmaxarr:  3.2668266366E-01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  6}
+ - bounds_train: {iconfmin:  4, nat:  10, ibmin:  0, gminarr:  4.7295260277E-42, iconfmax:  6, 
+                       nat:  14,          ibmax:  0, gmaxarr:  6.5173349479E-01, 
+                   strmess: bounds_train,             fn_min: posinp_train.yaml, 
+                 lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  6}
+ TIMING evaluation symmetry functions for valid:  8.0000000000000071E-003
+ TIMING evaluation symmetry functions for train:  7.9999999999999793E-003
+  #B.ann.param.yaml.00000
+  #B.ann.param.yaml.00001
+  #B.ann.param.yaml.00002
+  #B.ann.param.yaml.00003
+  #B.ann.param.yaml.00004
+  #B.ann.param.yaml.00005
+  #B.ann.param.yaml.00006
+  #B.ann.param.yaml.00007
+  #B.ann.param.yaml.00008
+  #B.ann.param.yaml.00009
+  #B.ann.param.yaml.00010
+  #B.ann.param.yaml.00011
+  #B.ann.param.yaml.00012
+  #B.ann.param.yaml.00013
+  #B.ann.param.yaml.00014
+  #B.ann.param.yaml.00015
+  #B.ann.param.yaml.00016
+  #B.ann.param.yaml.00017
+  #B.ann.param.yaml.00018
+  #B.ann.param.yaml.00019
+  #B.ann.param.yaml.00020
+  #B.ann.param.yaml
+ CPU time: {iproc:  0, hrs:  0.153E-03, min:  0.920E-02, sec:  0.552E+00}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  696
+   Tot. No. of Deallocations           :  696
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.336
+     for the array                     : symfunc%y0dr
+     in the routine                    : symmetry_functions_driver
+     Memory Peak of process            : 308.180 MB
+ Walltime since initialization         :  00:00:00.572249371
+ Max No. of dictionaries used          :  1141 #( 185 still in use)
+ Number of dictionary folders allocated:  1

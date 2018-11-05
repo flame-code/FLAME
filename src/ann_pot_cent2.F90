@@ -3,7 +3,8 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_ekf, typ_cent
+    use mod_ann, only: typ_ann_arr, typ_symfunc, typ_cent
+    use mod_ekf, only: typ_ekf
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none

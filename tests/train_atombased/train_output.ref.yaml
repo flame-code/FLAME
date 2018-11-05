@@ -1,0 +1,127 @@
+ training iterations:
+ - train: {iter:  0, rmse:  183.394, ttn:  0.000, tta:  0.000, frmse:  0.022, 
+         errmax:  200.883,       ierrmax:  3,     nat:  14, ilarge1:  6, ilarge2:  6, 
+        ilarge3:  6,          fn_ierrmax: posinp_train.yaml, lconf_ierrmax:  3}
+   valid: {iter:  0, rmse:  179.212, ttn:  0.000, tta:  0.000, frmse:  0.022, 
+         errmax:  190.160,       ierrmax:  3,     nat:  13, ilarge1:  3, ilarge2:  3, 
+        ilarge3:  3,          fn_ierrmax: posinp_valid.yaml, lconf_ierrmax:  3}
+ - train: {iter:  1, rmse:  94.821, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  111.927, 
+        ierrmax:  3,  nat:  14, ilarge1:  6, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  1, rmse:  90.439, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  101.204, 
+        ierrmax:  3,  nat:  13, ilarge1:  3, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  3}
+ - train: {iter:  2, rmse:  41.628, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  57.691, 
+        ierrmax:  3,  nat:  14, ilarge1:  6, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  2, rmse:  36.750, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  46.968, 
+        ierrmax:  3,  nat:  13, ilarge1:  3, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  3}
+ - train: {iter:  3, rmse:  19.100, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  32.578, 
+        ierrmax:  3,  nat:  14, ilarge1:  4, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  3, rmse:  13.465, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  21.855, 
+        ierrmax:  3,  nat:  13, ilarge1:  1, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  3}
+ - train: {iter:  4, rmse:  13.034, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  22.438, 
+        ierrmax:  3,  nat:  14, ilarge1:  3, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  4, rmse:  8.166, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  11.715, 
+        ierrmax:  3,  nat:  13,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  3}
+ - train: {iter:  5, rmse:  12.236, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  18.572, 
+        ierrmax:  3,  nat:  14, ilarge1:  3, ilarge2:  5,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  5, rmse:  8.782, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  11.411, 
+        ierrmax:  2,  nat:  11,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+ - train: {iter:  6, rmse:  12.241, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  19.605, 
+        ierrmax:  5,  nat:  13, ilarge1:  3, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  5}
+   valid: {iter:  6, rmse:  9.416, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  12.852, 
+        ierrmax:  2,  nat:  11,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+ - train: {iter:  7, rmse:  12.286, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  20.138, 
+        ierrmax:  5,  nat:  13, ilarge1:  3, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  5}
+   valid: {iter:  7, rmse:  9.694, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  13.385, 
+        ierrmax:  2,  nat:  11,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+ - train: {iter:  8, rmse:  12.308, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  20.334, 
+        ierrmax:  5,  nat:  13, ilarge1:  3, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  5}
+   valid: {iter:  8, rmse:  9.802, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  13.581, 
+        ierrmax:  2,  nat:  11,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+ - train: {iter:  9, rmse:  12.438, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  20.243, 
+        ierrmax:  3,  nat:  14, ilarge1:  3, ilarge2:  4,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  9, rmse:  8.301, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  9.734, 
+        ierrmax:  2,  nat:  11,             ilarge1:  0,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+ - train: {iter:  10, rmse:  25.112, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  39.782, 
+        ierrmax:  3,   nat:  14, ilarge1:  5, ilarge2:  6,   ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,     lconf_ierrmax:  3}
+   valid: {iter:  10, rmse:  19.839, ttn:  0.000, tta:  0.000, frmse:  0.022, errmax:  29.194, 
+        ierrmax:  3,   nat:  13, ilarge1:  2, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,     lconf_ierrmax:  3}
+ - train: {iter:  11, rmse:  6.924, ttn:  0.000, tta:  0.000, frmse:  0.068, errmax:  10.057, 
+        ierrmax:  3,   nat:  14,             ilarge1:  1,   ilarge2:  3, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  11, rmse:  11.340, ttn:  0.000, tta:  0.000, frmse:  0.052, errmax:  15.696, 
+        ierrmax:  3,   nat:  13, ilarge1:  2, ilarge2:  2,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,     lconf_ierrmax:  3}
+ - train: {iter:  12, rmse:  3.584, ttn:  0.000, tta:  0.000, frmse:  0.055, errmax:  6.808, 
+        ierrmax:  3,   nat:  14,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  12, rmse:  9.613, ttn:  0.000, tta:  0.000, frmse:  0.047, errmax:  11.721, 
+        ierrmax:  3,   nat:  13,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  3}
+ - train: {iter:  13, rmse:  3.250, ttn:  0.000, tta:  0.000, frmse:  0.054, errmax:  6.611, 
+        ierrmax:  3,   nat:  14,             ilarge1:  0,   ilarge2:  4, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  13, rmse:  9.873, ttn:  0.000, tta:  0.000, frmse:  0.047, errmax:  11.606, 
+        ierrmax:  3,   nat:  13,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  3}
+ - train: {iter:  14, rmse:  2.874, ttn:  0.000, tta:  0.000, frmse:  0.044, errmax:  6.449, 
+        ierrmax:  3,   nat:  14,             ilarge1:  0,   ilarge2:  2, ilarge3:  4, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  14, rmse:  9.190, ttn:  0.000, tta:  0.000, frmse:  0.039, errmax:  10.660, 
+        ierrmax:  3,   nat:  13,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  3}
+ - train: {iter:  15, rmse:  2.293, ttn:  0.000, tta:  0.000, frmse:  0.043, errmax:  3.927, 
+        ierrmax:  3,   nat:  14,             ilarge1:  0,   ilarge2:  5, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  15, rmse:  8.825, ttn:  0.000, tta:  0.000, frmse:  0.035, errmax:  11.831, 
+        ierrmax:  2,   nat:  11,             ilarge1:  1,   ilarge2:  3, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  2}
+ - train: {iter:  16, rmse:  1.944, ttn:  0.000, tta:  0.000, frmse:  0.070, errmax:  4.316, 
+        ierrmax:  3,   nat:  14,             ilarge1:  0,   ilarge2:  3, ilarge3:  5, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  3}
+   valid: {iter:  16, rmse:  8.568, ttn:  0.000, tta:  0.000, frmse:  0.047, errmax:  10.569, 
+        ierrmax:  2,   nat:  11,             ilarge1:  2,   ilarge2:  2, ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  2}
+ - train: {iter:  17, rmse:  0.589, ttn:  0.000, tta:  0.000, frmse:  0.111, errmax:  0.774, 
+        ierrmax:  1,   nat:  10,             ilarge1:  0,   ilarge2:  0, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  1}
+   valid: {iter:  17, rmse:  10.281, ttn:  0.000, tta:  0.000, frmse:  0.075, errmax:  13.753, 
+        ierrmax:  2,   nat:  11, ilarge1:  1, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,     lconf_ierrmax:  2}
+ - train: {iter:  18, rmse:  0.354, ttn:  0.000, tta:  0.000, frmse:  0.110, errmax:  0.823, 
+        ierrmax:  4,   nat:  10,             ilarge1:  0,   ilarge2:  0, ilarge3:  3, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  4}
+   valid: {iter:  18, rmse:  10.550, ttn:  0.000, tta:  0.000, frmse:  0.076, errmax:  14.521, 
+        ierrmax:  2,   nat:  11, ilarge1:  1, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,     lconf_ierrmax:  2}
+ - train: {iter:  19, rmse:  0.245, ttn:  0.000, tta:  0.000, frmse:  0.110, errmax:  0.524, 
+        ierrmax:  4,   nat:  10,             ilarge1:  0,   ilarge2:  0, ilarge3:  3, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  4}
+   valid: {iter:  19, rmse:  11.122, ttn:  0.000, tta:  0.000, frmse:  0.077, errmax:  15.422, 
+        ierrmax:  2,   nat:  11, ilarge1:  1, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,     lconf_ierrmax:  2}
+ - train: {iter:  20, rmse:  0.069, ttn:  0.000, tta:  0.000, frmse:  0.112, errmax:  0.122, 
+        ierrmax:  2,   nat:  13,             ilarge1:  0,   ilarge2:  0, ilarge3:  1, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  2}
+   valid: {iter:  20, rmse:  11.263, ttn:  0.000, tta:  0.000, frmse:  0.079, errmax:  15.554, 
+        ierrmax:  2,   nat:  11, ilarge1:  1, ilarge2:  3,   ilarge3:  3, 
+     fn_ierrmax: posinp_valid.yaml,     lconf_ierrmax:  2}

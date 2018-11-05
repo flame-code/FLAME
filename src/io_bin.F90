@@ -2,7 +2,7 @@
 subroutine read_bin_conf(parini,filename,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_allocate
     use dynamic_memory
     use futile
     implicit none
@@ -42,7 +42,7 @@ end subroutine read_bin_conf
 subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, iatom_to_sat, atom_allocate
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -228,7 +228,7 @@ end subroutine write_bin_conf
 subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, sat_to_iatom
     use dynamic_memory
     implicit none
     character(*), intent(in):: filename

@@ -2,7 +2,7 @@
 subroutine conf_comp(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_all
+    use mod_atoms, only: typ_atoms_all, atom_all_allocate, atom_all_deallocate, set_rcov
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables

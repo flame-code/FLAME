@@ -1,7 +1,7 @@
 subroutine  linkedlist_test(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, type_pairs, typ_file_info
+    use mod_atoms, only: typ_atoms, type_pairs, typ_file_info, atom_deallocate_old
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
     implicit none

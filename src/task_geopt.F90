@@ -3,7 +3,7 @@ subroutine geopt(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
-    use mod_atoms, only: typ_atoms_arr, typ_file_info
+    use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
     use mod_potential, only: fcalls, perfstatus, potential
     use mod_processors, only: iproc, nproc
     use mod_const, only: ang2bohr, bohr2ang, ev2ha

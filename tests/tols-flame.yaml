@@ -87,7 +87,7 @@ geopt_SQNM:
  ndim: 1.e-13
 
 posout.ref.yaml:
- Epsilon: 1.e-11
+ Epsilon: 1.e-10
  force: 1.e-07
  coord: 1.e-07
 
@@ -142,7 +142,8 @@ SP_CENT1_free:
  Keys to ignore:
   - conf. number
   - Timing of CENT1
- epot: 1.e-13
+ Epsilon: 1.e-10
+ epot: 1.e-10
  diff w.r.t. first conf: 1.e-6
  diff w.r.t. prev. conf: 1.e-6
 
@@ -216,4 +217,26 @@ vibfreq_fourpoints:
   - mode_00055
   - mode_00056
   - mode_00057
- Epsilon: 1.e-7
+ Epsilon: 1.e-6
+
+train_atombased:
+ Keys to ignore:
+  - TIMING evaluation symmetry functions for train
+  - TIMING evaluation symmetry functions for valid
+ Epsilon: 1.e-10
+
+train_output.ref.yaml:
+ Epsilon: 1.e-10
+
+train_CENT1:
+ Keys to ignore:
+  - TIMING evaluation symmetry functions for train
+  - TIMING evaluation symmetry functions for valid
+  - Timing of CENT1
+ Epsilon: 1.e-10
+
+train_CENT2:
+ Keys to ignore:
+  - TIMING evaluation symmetry functions for train
+  - TIMING evaluation symmetry functions for valid
+ Epsilon: 1.e-10

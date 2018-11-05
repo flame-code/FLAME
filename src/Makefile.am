@@ -20,7 +20,12 @@ AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src
 LIBS += $(LAMMPS_ROOT)/src/liblammps_mpi.a
 endif
 
-SRC_ += flame_init_fini.F90 processors.F90 \
+SRC_ += atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
+		electrostatics_mod.F90 \
+		ann_mod.F90 \
+		potential_mod.F90 \
+		interface_mod.F90 \
+		flame_init_fini.F90 processors.F90 \
 		mpi_utilities.F90 \
 		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		lmder_modified.F90 \
@@ -28,9 +33,9 @@ SRC_ += flame_init_fini.F90 processors.F90 \
 		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
 		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
-		ann_ekf_rivals.F90 ann_ekf_behler.F90 ann_lm.F90 \
+		ann_lm.F90 \
 		ann_pot_main.F90 ann_pot_atom.F90 ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_cent_common.F90 \
-		ann_pot_tb.F90 \
+		ann_pot_tb.F90 train_optimizer.F90 \
 		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
 		md.F90 md_NVT.F90\
@@ -48,7 +53,7 @@ SRC_ += flame_init_fini.F90 processors.F90 \
 		optimizer_drivers.F90 optimizer_drivers_vc.F90 task_geopt.F90 task_single_point.F90 \
 		task_netsock.F90 task_lammps.F90 \
 		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
-		basic_atoms.F90 basic_utilities.F90 \
+		basic_utilities.F90 \
 		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
 		io_utils.F90 \
 		io_yaml_conf.F90 io_bin.F90 \
@@ -102,7 +107,9 @@ minhocao_src = potential_flame.F90  potential_corerepulsion.F90 \
 		write_restart.F90
 
 #dependencies
-potential_main_minhocao.o: potential_abinit.o
+#potential_main_minhocao.o: potential_abinit.o
+#interface_mod.o: ekf_mod.o
+include $(srcdir)/dep.mk
 
 libsrc_a_SOURCES = $(SRC_) $(minhocao_src)
 
@@ -118,6 +125,7 @@ _SOURCES_C = sockets.c basic_c_wrappers.c $(DATABASE_SRC)
 _SOURCES_CPP = potential_QSC_main.cpp potential_QSC_wrapper.cpp 
 if HAVE_LAMMPS
     _SOURCES_CPP += potential_LAMMPS_wrapper.cpp potential_LAMMPS_wrapper2.cpp
+potential_LAMMPS.o : potential_LAMMPS.F90 potential_LAMMPS_interface.o
 endif
 
 if HAVE_SPGLIB
