@@ -2,7 +2,7 @@
 module mod_ekf
     implicit none
     !private
-    public:: ekf_rivals, ekf_rivals_tmp, ekf_behler, ann_evaluate, eval_cal_ann_main
+    public:: ekf_rivals, ekf_rivals_tmp, ekf_behler, ann_evaluate
     type, public:: typ_ekf
         integer:: n=-1
         integer:: loc(10)
@@ -583,6 +583,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb
     !local variables
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
+    type(typ_ekf):: ekf
     real(8):: rmse, errmax, tt, pi
     real(8):: frmse, ttx, tty, ttz, ppx, ppy, ppz, tt1, tt2, tt3, ttn, tta, ttmax
     integer:: iconf, ierrmax, iat, nat_tot, nconf_force
@@ -637,9 +638,9 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb
         if(.not. atoms_arr%conf_inc(iconf)) cycle
         call atom_copy_old(atoms_arr%atoms(iconf),atoms,'atoms_arr%atoms(iconf)->atoms')
         if(parini%save_symfunc_behnam) then
-            call eval_cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr)
+            call cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr,ekf)
         else
-            call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+            call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
         endif
         !if(iter==parini%nstep_ekf) then
         !    write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
@@ -733,48 +734,6 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set,partb
     endif
     ann_arr%compute_symfunc=.false.
 end subroutine ann_evaluate
-!*****************************************************************************************
-!Subroutine cal_ann_main is called during training process.
-!It does the same job as subroutine eval_cal_ann_main with a few more
-!commands related to ANN weights.
-!These two subroutine are supposed to be merged.
-!eval_cal_ann_main is called for task_training but only for
-!obtaining energy/forces when information on errors on
-!training and validation data points are expected.
-!eval_cal_ann_main is called by potential_ANN
-subroutine eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_tightbinding, only: typ_partb
-    use mod_ann, only: typ_ann_arr, typ_symfunc
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc), intent(inout):: symfunc
-    !local variables
-    type(typ_partb):: partb
-    type(typ_ekf):: ekf
-    if(trim(ann_arr%event)=='potential') then
-        !allocate(symfunc%y(ann_arr%ann(1)%nn(0),atoms%nat))
-    endif
-    if(trim(ann_arr%approach)=='atombased') then
-        call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
-        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
-    elseif(trim(ann_arr%approach)=='tb') then
-        call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
-    else
-        write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
-        stop
-    endif
-    if(trim(ann_arr%event)=='potential') then
-        !deallocate(symfunc%y)
-        !call ann_deallocate(ann_arr)
-    endif
-end subroutine eval_cal_ann_main
 !*****************************************************************************************
 end module mod_ekf
 !*****************************************************************************************

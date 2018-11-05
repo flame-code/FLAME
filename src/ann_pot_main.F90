@@ -1,12 +1,4 @@
 !*****************************************************************************************
-!Subroutine cal_ann_main is called during training process.
-!It does the same job as subroutine eval_cal_ann_main with a few more
-!commands related to ANN weights.
-!These two subroutine are supposed to be merged.
-!eval_cal_ann_main is called for task_training but only for
-!obtaining energy/forces when information on errors on
-!training and validation data points are expected.
-!eval_cal_ann_main is called by potential_ANN
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     use mod_interface
     use mod_tightbinding, only: typ_partb
@@ -27,17 +19,21 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
     integer:: i, j, iat
     type(typ_partb):: partb
     if(trim(ann_arr%approach)=='atombased') then
-        allocate(ekf%gs(ekf%num(1),atoms%nat)) !HERE
-        call convert_x_ann(ekf%num(1),ekf%x(ekf%loc(1)),ann_arr%ann(1))
+        if(trim(ann_arr%event)=='train') then
+            allocate(ekf%gs(ekf%num(1),atoms%nat)) !HERE
+            call convert_x_ann(ekf%num(1),ekf%x(ekf%loc(1)),ann_arr%ann(1))
+        endif
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
-        ekf%g(1:ekf%n)=0.d0
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+ekf%gs(j,iat)
+        if(trim(ann_arr%event)=='train') then
+            ekf%g(1:ekf%n)=0.d0
+            do iat=1,atoms%nat
+                i=atoms%itypat(iat)
+                do j=1,ekf%num(1)
+                    ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+ekf%gs(j,iat)
+                enddo
             enddo
-        enddo
-        deallocate(ekf%gs) !HERE
+            deallocate(ekf%gs)
+        endif
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     elseif(trim(ann_arr%approach)=='cent2') then

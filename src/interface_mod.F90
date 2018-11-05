@@ -4309,6 +4309,7 @@ subroutine cal_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_ann, only: typ_symfunc
+    use mod_ekf, only: typ_ekf
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
 end subroutine cal_potential_ann

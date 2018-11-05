@@ -213,7 +213,6 @@
 ./potential_sec_main.o : ./potential_sec_main.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./saddle_1s.o : ./saddle_1s.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./potential_LAMMPS_interface.o : ./potential_LAMMPS_interface.F90 
-./interface_mod.o : ./interface_mod.F90 ./potential_mod.o ./electrostatics_mod.o ./linked_lists_mod.o ./ann_mod.o ./atoms_mod.o ./train_optimizer.o ./ann_mod.o 
 ./optimizer_sqnm_minhocao_module.o : ./optimizer_sqnm_minhocao_module.F90 
 ./fingerprint_gaussmol.o : ./fingerprint_gaussmol.F90 
 ./vasp_recompute_kpt_odd.o : ./vasp_recompute_kpt_odd.F90 

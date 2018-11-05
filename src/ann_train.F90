@@ -156,13 +156,12 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
     use mod_ekf, only: typ_ekf
     use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old
     use mod_ann, only: typ_symfunc
-    use mod_ekf, only: eval_cal_ann_main
     use dynamic_memory
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_ekf), intent(in):: ekf
+    type(typ_ekf), intent(inout):: ekf
     !local variables
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
@@ -191,9 +190,9 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
         atoms%itypat(1)=parini%ltypat(ityp)
         t_ener_ref=ann_arr%ann(atoms%itypat(1))%ener_ref
         ann_arr%ann(atoms%itypat(1))%ener_ref=0.d0
-        call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%ann(atoms%itypat(1))%ener_ref=t_ener_ref-atoms%epot
-        call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
         !call yaml_map('type',trim(atoms%sat(1)))
         !call yaml_map('charge',atoms%zat(1)+atoms%qat(1))
         !write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
