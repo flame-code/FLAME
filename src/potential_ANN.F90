@@ -63,7 +63,7 @@ subroutine cal_potential_ann(parini,atoms)
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_potential, only: ann_arr, fcalls, fcalls_sec, potential, potential_sec, ann_boundcheck
     use mod_ann, only: typ_symfunc
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -71,7 +71,7 @@ subroutine cal_potential_ann(parini,atoms)
     integer:: iat, jat, i0, i
     real(8):: epoti, fcalls_t
     type(typ_symfunc):: symfunc
-    type(typ_ekf):: ekf
+    type(typ_opt_ann):: opt_ann
     if(trim(potential)=='ann') then
         fcalls_t=fcalls
     elseif(trim(potential_sec)=='ann') then
@@ -98,12 +98,12 @@ subroutine cal_potential_ann(parini,atoms)
     endif
     !atoms%epot=0.d0
     !atoms%fat(1:3,1:atoms%nat)=0.d0
-    !call cal_ann_cent1(atoms,symfunc,ann_arr,ekf)
+    !call cal_ann_cent1(atoms,symfunc,ann_arr,opt_ann)
     if(trim(ann_arr%event)/='potential') then
         write(*,*) 'ERROR: ann_arr%event different from potential'
         stop
     endif
-    call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+    call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
 !    do iat=1,atoms%nat
 !        call symmetry_functions(ann_arr%ann(i),iat,atoms,.true.)
 !        !if(trim(ann_boundcheck)=='weak' .or. trim(ann_boundcheck)=='strong') then

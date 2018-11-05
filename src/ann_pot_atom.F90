@@ -1,10 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -12,7 +12,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng, jat, ib
@@ -82,7 +82,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
             endif
         elseif(trim(ann_arr%event)=='train') then
             call cal_architecture_der(ann_arr%ann(i),epoti)
-            call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ekf%gs(1,iat))
+            call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),opt_ann%gs(1,iat))
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif
@@ -92,9 +92,9 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
     vol=vol*real(atoms%nat,8)
     atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)/vol
 !    tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
-!    !ekf%epot=(ekf%epot*atoms%nat+1.d0)*tt+ann_arr%ann(1)%ebounds(1)
-!    ekf%epot=((ekf%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1))
-!    tt=abs(ekf%epot-atoms%epot)/atoms%nat
+!    !opt_ann%epot=(opt_ann%epot*atoms%nat+1.d0)*tt+ann_arr%ann(1)%ebounds(1)
+!    opt_ann%epot=((opt_ann%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1))
+!    tt=abs(opt_ann%epot-atoms%epot)/atoms%nat
     deallocate(symfunc%linked_lists%prime_bound)
     deallocate(symfunc%linked_lists%bound_rad)
     deallocate(symfunc%linked_lists%bound_ang)

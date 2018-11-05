@@ -111,7 +111,7 @@
    optimizer                           : unknown
    approach                            : eem1
    symfunc                             : only_calculate
-   nstep_ekf                           : 100
+   nstep_opt                           : 100
    nstep_cep                           : 200
    nat_force                           : 0
    ampl_rand                           : 1.0

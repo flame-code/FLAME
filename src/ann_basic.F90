@@ -1,11 +1,11 @@
 !*****************************************************************************************
-subroutine ann_allocate(ekf,ann_arr)
+subroutine ann_allocate(opt_ann,ann_arr)
     use mod_interface
     use mod_ann, only: typ_ann_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use dynamic_memory
     implicit none
-    type(typ_ekf), intent(in):: ekf
+    type(typ_opt_ann), intent(in):: opt_ann
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
     integer:: istat, ng
@@ -26,7 +26,7 @@ subroutine ann_allocate(ekf,ann_arr)
     ann_arr%chi_o=0.d0
     ann_arr%chi_d=0.d0
     ann_arr%a=0.d0
-    allocate(ann_arr%g_per_atom(1:ekf%num(1),1:ann_arr%natmax))
+    allocate(ann_arr%g_per_atom(1:opt_ann%num(1),1:ann_arr%natmax))
     !symfunc%linked_lists%maxbound_rad is assumed 10000
     allocate(ann_arr%fatpq(1:3,1:10000))
     allocate(ann_arr%stresspq(1:3,1:3,1:10000))

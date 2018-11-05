@@ -1,16 +1,16 @@
 !*****************************************************************************************
-subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_parlm, only: typ_parlm
     use mod_atoms, only: typ_atoms_arr
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
     type(typ_ann_arr):: ann_arr
-    type(typ_ekf):: ekf
+    type(typ_opt_ann):: opt_ann
     type(typ_atoms_arr):: atoms_train
     type(typ_atoms_arr):: atoms_valid
     type(typ_symfunc_arr):: symfunc_train
@@ -18,17 +18,17 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     type(typ_parlm):: parlm
     real(8):: tt, epot
     integer:: m, iann
-    allocate(ekf%g(ekf%n)) !,v1(ekf%n),ekf%epotd(ekf%num(1)))
+    allocate(opt_ann%g(opt_ann%n)) !,v1(opt_ann%n),opt_ann%epotd(opt_ann%num(1)))
     if(parini%fit_hoppint) then
-        call fit_hgen(parini,atoms_valid,ann_arr,ekf)
+        call fit_hgen(parini,atoms_valid,ann_arr,opt_ann)
     endif
     parlm%xtol=1.d-8
     parlm%ftol=1.d-8
     parlm%gtol=1.d-8
     m=atoms_train%nconf
-    parlm%n=ekf%n
+    parlm%n=opt_ann%n
     call init_lmder_modified(parlm,m,m)
-    parlm%x(1:parlm%n)=ekf%x(1:parlm%n)
+    parlm%x(1:parlm%n)=opt_ann%x(1:parlm%n)
     do
         call lmder_modified(parlm,m,m)
         write(*,*) 'nfev,njev: ',parlm%nfev,parlm%njev
@@ -39,39 +39,39 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
         !iann=1
         if(parlm%icontinue==700) then
             do iann=1,ann_arr%n
-                call convert_x_ann(ekf%num(iann),parlm%wa2(ekf%loc(iann)),ann_arr%ann(iann))
+                call convert_x_ann(opt_ann%num(iann),parlm%wa2(opt_ann%loc(iann)),ann_arr%ann(iann))
             enddo
-            !ekf%x(1:parlm%n)=parlm%wa2(1:parlm%n)
+            !opt_ann%x(1:parlm%n)=parlm%wa2(1:parlm%n)
             call fcn_epot(m,parlm%n,parlm%wa2,parlm%wa4,parlm%fjac,m,parlm%iflag, &
-                parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+                parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
         else
             do iann=1,ann_arr%n
-                call convert_x_ann(ekf%num(iann),parlm%x(ekf%loc(iann)),ann_arr%ann(iann))
+                call convert_x_ann(opt_ann%num(iann),parlm%x(opt_ann%loc(iann)),ann_arr%ann(iann))
             enddo
-            !ekf%x(1:parlm%n)=parlm%x(1:parlm%n)
+            !opt_ann%x(1:parlm%n)=parlm%x(1:parlm%n)
             call fcn_epot(m,parlm%n,parlm%x,parlm%fvec,parlm%fjac,m,parlm%iflag, &
-                parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+                parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
         endif
         !istep=istep+1
     enddo
-    ekf%x(1:parlm%n)=parlm%x(1:parlm%n)
+    opt_ann%x(1:parlm%n)=parlm%x(1:parlm%n)
     write(*,*) 'info= ',parlm%info
     call final_lmder_modified(parlm)
 end subroutine ann_lm
 !*****************************************************************************************
-subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
-    use mod_ekf, only: ann_evaluate
+    use mod_opt_ann, only: ann_evaluate
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     integer:: m, n, ldfjac, iflag
     real(8):: x(n), fvec(m), fjac(ldfjac,n)
     !local variables
@@ -80,24 +80,24 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     integer, save:: icall=0
     integer, save:: icall0=0
     icall=icall+1
-    !ekf%x(1:n)=x(1:n)
+    !opt_ann%x(1:n)=x(1:n)
     !do ia=1,ann_arr%n
-    !    call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+    !    call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
     !enddo
     write(*,'(a,i,a,i,a)') '**************** icall= ',icall,'  iflag= ',iflag,'  ************'
     if(iflag==1) then
         ann_arr%event='evalu'
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
             fvec(iconf)=(atoms%epot-symfunc_train%symfunc(iconf)%epot)**2
         enddo
     elseif(iflag==2) then
         ann_arr%event='train'
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
-            fjac(iconf,1:ekf%n)=ekf%g(1:ekf%n)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)*2.d0
+            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
+            fjac(iconf,1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)*2.d0
         enddo
     elseif(iflag==0) then
         iter=icall0

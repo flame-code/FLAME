@@ -1,10 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
@@ -14,7 +14,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_poisson):: poisson
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
@@ -42,12 +42,12 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%a=0.d0
     endif
     if(trim(ann_arr%event)=='train') then
-        !The following is allocated with ekf%num(1), this means number of
+        !The following is allocated with opt_ann%num(1), this means number of
         !nodes in the input layer is the same for all atom types.
         !Therefore, it must be fixed later.
-        !g_per_atom=f_malloc([1.to.ekf%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
+        !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
         do i=1,ann_arr%n
-            call convert_x_ann(ekf%num(i),ekf%x(ekf%loc(i)),ann_arr%ann(i))
+            call convert_x_ann(opt_ann%num(i),opt_ann%x(opt_ann%loc(i)),ann_arr%ann(i))
         enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
@@ -77,8 +77,8 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
             ann_arr%chi_i(iat)=out_ann
             tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
             ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-            call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ann_arr%g_per_atom(1,iat))
-            ann_arr%g_per_atom(1:ekf%num(1),iat)=ann_arr%g_per_atom(1:ekf%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
+            call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),ann_arr%g_per_atom(1,iat))
+            ann_arr%g_per_atom(1:opt_ann%num(1),iat)=ann_arr%g_per_atom(1:opt_ann%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif
@@ -162,16 +162,16 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         deallocate(ann_arr%stresspq)
     endif
     if(trim(ann_arr%event)=='train') then
-        ekf%g(1:ekf%n)=0.d0
+        opt_ann%g(1:opt_ann%n)=0.d0
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
-            do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+            do j=1,opt_ann%num(1)
+                opt_ann%g(opt_ann%loc(i)+j-1)=opt_ann%g(opt_ann%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
         !do i=1,ann_arr%n
-        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
-        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        !    opt_ann%g(opt_ann%loc(i)+opt_ann%num(1)-1)=opt_ann%g(opt_ann%loc(i)+opt_ann%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
         !enddo
     endif
     call f_release_routine()

@@ -199,7 +199,7 @@
    optimizer                           : rivals
    approach                            : cent2
    symfunc                             : only_calculate
-   nstep_ekf                           : 10
+   nstep_opt                           : 10
    nstep_cep                           : 200
    alphax_q                            : 1.0
    alphax_r                            : 0.05

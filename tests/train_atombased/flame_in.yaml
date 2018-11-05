@@ -8,7 +8,7 @@ ann:
     subtask       : train
     optimizer     : rivals
     approach      : atombased
-    nstep_ekf     : 20
+    nstep_opt     : 20
     nconf_rmse    : 500
     ampl_rand     : 0.005 
     symfunc       : only_calculate

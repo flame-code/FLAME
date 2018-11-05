@@ -3,11 +3,11 @@ module mod_callback
     use mod_atoms, only: typ_atoms_arr
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     type(typ_parini), pointer:: parini_t
     type(typ_atoms_arr), pointer:: atoms_smplx_t
     type(typ_ann_arr), pointer:: ann_arr_t
-    type(typ_ekf), pointer:: ekf_t
+    type(typ_opt_ann), pointer:: opt_ann_t
 end module mod_callback
 !*****************************************************************************************
 module mod_train
@@ -20,7 +20,7 @@ subroutine ann_train(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf, ekf_rivals, ekf_rivals_tmp, ekf_behler
+    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_rivals_tmp, ekf_behler
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use dynamic_memory
@@ -29,7 +29,7 @@ subroutine ann_train(parini)
     type(typ_parini), intent(in):: parini
     !local variables
     type(typ_ann_arr):: ann_arr
-    type(typ_ekf):: ekf
+    type(typ_opt_ann):: opt_ann
     type(typ_atoms_arr):: atoms_train
     type(typ_atoms_arr):: atoms_valid
     type(typ_atoms_arr):: atoms_smplx
@@ -39,7 +39,7 @@ subroutine ann_train(parini)
     real(8):: time1, time2, time3, t_ener_ref
     logical:: file_exists
     call f_routine(id='ann_train')
-    call init_ann_train(parini,ann_arr,ekf)
+    call init_ann_train(parini,ann_arr,opt_ann)
     !-------------------------------------------------------
     !Reading configurations and their energies and forces
     inquire(file="list_posinp_train.yaml",exist=file_exists)
@@ -59,10 +59,10 @@ subroutine ann_train(parini)
     endif
     !-------------------------------------------------------
     if(iproc==0) then
-        call yaml_map('number of ANN wights',ekf%n)
+        call yaml_map('number of ANN wights',opt_ann%n)
         call yaml_map('number of training data points',atoms_train%nconf)
         call yaml_map('number of validating data points',atoms_valid%nconf)
-        !write(*,'(a,i)') 'number of ANN wights:             ',ekf%n
+        !write(*,'(a,i)') 'number of ANN wights:             ',opt_ann%n
         !write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
         !write(*,'(a,i)') 'number of validating data points: ',atoms_valid%nconf
     endif
@@ -95,47 +95,47 @@ subroutine ann_train(parini)
     !-------------------------------------------------------------------------------------
     call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !-------------------------------------------------------
-    ekf%x=f_malloc([1.to.ekf%n],id='ekf%x')
+    opt_ann%x=f_malloc([1.to.opt_ann%n],id='opt_ann%x')
     if (.not. parini%restart_param) then
-        call set_annweights(parini,ekf)
+        call set_annweights(parini,opt_ann)
         if(trim(parini%approach_ann)=='cent2') then
             do ia=1,ann_arr%n
-                ekf%x(ekf%loc(ia)+ekf%num(1)-1)=0.d0
-                !write(*,*) 'XXX ',ia,ekf%loc(ia)+ekf%num(1)-1
+                opt_ann%x(opt_ann%loc(ia)+opt_ann%num(1)-1)=0.d0
+                !write(*,*) 'XXX ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
             enddo
         endif
     else
         do ia=1,ann_arr%n
-            call convert_ann_x(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+            call convert_ann_x(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
         enddo
     endif
     if(trim(parini%approach_ann)=='cent2') then
-        call set_single_atom_energy(parini,ann_arr,ekf)
+        call set_single_atom_energy(parini,ann_arr,opt_ann)
     endif
 
     ann_arr%compute_symfunc=.false.
     !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
     if(parini%prefit_ann ) then
-        !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
-        call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+        !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
+        call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     endif
 
     if(trim(parini%approach_ann)=='cent2' .and. parini%prefit_cent2_ann) then
-        call cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
+        call cent2_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     endif
     if(trim(parini%optimizer_ann)=='behler') then
-        call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+        call ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     else if(trim(parini%optimizer_ann)=='rivals') then
-        call ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+        call ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     else if(trim(parini%optimizer_ann)=='rivals_tmp') then
-        call ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+        call ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     else if(trim(parini%optimizer_ann)=='lm') then
-        call ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,ekf)
+        call ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
     else
         write(*,*) 'ERROR: unknown optimzer in ANN training'
     endif
 
-    !call convert_x_ann(ekf%n,ekf%x,ann_arr) !HERE
+    !call convert_x_ann(opt_ann%n,opt_ann%x,ann_arr) !HERE
     if(iproc==0) then
         if( ann_arr%exists_yaml_file) then
             call write_ann_all_yaml(parini,ann_arr,-1)
@@ -143,17 +143,17 @@ subroutine ann_train(parini)
             call write_ann_all(parini,ann_arr,-1)
         endif
     endif
-    call final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    call final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !stop 'AAAAAAAAAAAAAAAAAAA'
 
     call f_release_routine()
 end subroutine ann_train
 !*****************************************************************************************
-subroutine set_single_atom_energy(parini,ann_arr,ekf)
+subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr !, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old
     use mod_ann, only: typ_symfunc
     use dynamic_memory
@@ -161,14 +161,14 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
     integer:: ia, ityp
     real(8):: t_ener_ref
     do ia=1,ann_arr%n
-        call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
+        call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
     enddo
     !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     call atom_allocate_old(atoms,1,0,0)
@@ -190,9 +190,9 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
         atoms%itypat(1)=parini%ltypat(ityp)
         t_ener_ref=ann_arr%ann(atoms%itypat(1))%ener_ref
         ann_arr%ann(atoms%itypat(1))%ener_ref=0.d0
-        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         ann_arr%ann(atoms%itypat(1))%ener_ref=t_ener_ref-atoms%epot
-        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         !call yaml_map('type',trim(atoms%sat(1)))
         !call yaml_map('charge',atoms%zat(1)+atoms%qat(1))
         !write(*,'(a,f)') 'Adjusting ener_ref: total charge= ',atoms%zat(1)+atoms%qat(1)
@@ -201,18 +201,18 @@ subroutine set_single_atom_energy(parini,ann_arr,ekf)
     call atom_deallocate_old(atoms)
 end subroutine set_single_atom_energy
 !*****************************************************************************************
-subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
+subroutine cent2_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     !use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr !, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_callback
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in), target:: parini
     type(typ_ann_arr), intent(inout), target:: ann_arr
-    type(typ_ekf), intent(inout), target:: ekf
+    type(typ_opt_ann), intent(inout), target:: opt_ann
     type(typ_atoms_arr), intent(inout), target:: atoms_smplx
     !local variables
     real(8):: vertices(10,11), fval(11)
@@ -254,7 +254,7 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,ekf)
     atoms_smplx_t=>atoms_smplx
     parini_t=>parini
     ann_arr_t=>ann_arr
-    ekf_t=>ekf
+    opt_ann_t=>opt_ann
     !call simplex(vertices,fval,step,ndim,ftol,cal_rmse_force_cent2,iter)
     call simplex(vertices,fval,step,ndim,ftol,cal_rmse_energy_cent2,iter)
 end subroutine cent2_simplex
@@ -262,7 +262,7 @@ end subroutine cent2_simplex
 subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     use mod_interface
     use mod_callback, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
-    use mod_callback, only: ann_arr=>ann_arr_t, ekf=>ekf_t
+    use mod_callback, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
     use mod_atoms, only: typ_atoms, atom_copy_old 
     use mod_ann, only: typ_symfunc
     implicit none
@@ -302,7 +302,7 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     ann_arr%compute_symfunc=.true.
     do iconf=1,atoms_smplx%nconf
         call atom_copy_old(atoms_smplx%atoms(iconf),atoms,'atoms_smplx%atoms(iconf)->atoms')
-        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         do iat=1,atoms%nat
             rmse=rmse+(atoms%fat(1,iat)-atoms_smplx%atoms(iconf)%fat(1,iat))**2 &
                      +(atoms%fat(2,iat)-atoms_smplx%atoms(iconf)%fat(2,iat))**2 &
@@ -317,7 +317,7 @@ end subroutine cal_rmse_force_cent2
 subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
     use mod_interface
     use mod_callback, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
-    use mod_callback, only: ann_arr=>ann_arr_t, ekf=>ekf_t
+    use mod_callback, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
     use mod_atoms, only: typ_atoms, atom_copy_old
     use mod_ann, only: typ_symfunc
     implicit none
@@ -357,13 +357,13 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
         'BETA= ',ann_arr%ann(1)%gausswidth_ion,ann_arr%ann(2)%gausswidth_ion, &
         'E0= ',ann_arr%ann(1)%ener_ref,ann_arr%ann(2)%ener_ref
 
-    !call set_single_atom_energy(parini,ann_arr,ekf)
+    !call set_single_atom_energy(parini,ann_arr,opt_ann)
     rmse=0.d0
     ann_arr%event='potential'
     ann_arr%compute_symfunc=.true.
     do iconf=1,atoms_smplx%nconf
         call atom_copy_old(atoms_smplx%atoms(iconf),atoms,'atoms_smplx%atoms(iconf)->atoms')
-        call cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         do iat=1,atoms%nat
             rmse=rmse+(atoms%epot-atoms_smplx%atoms(iconf)%epot)**2
         enddo
@@ -372,18 +372,18 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
     write(*,*) 'rmse_energy_cent2 ',rmse_energy_cent2
 end subroutine cal_rmse_energy_cent2
 !*****************************************************************************************
-subroutine init_ann_train(parini,ann_arr,ekf)
+subroutine init_ann_train(parini,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_processors, only: iproc
     use yaml_output
     use futile
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     integer:: ialpha, i, ios, ia
     character(30):: fnout
@@ -410,24 +410,24 @@ subroutine init_ann_train(parini,ann_arr,ekf)
         call read_input_ann(parini,iproc,ann_arr)
     endif
     !---------------------------------------------
-    ekf%num(1:10)=0
-    ekf%n=0
+    opt_ann%num(1:10)=0
+    opt_ann%n=0
     call yaml_sequence_open('EKF') !,flow=.true.)
     do i=1,ann_arr%n
         do ialpha=1,ann_arr%ann(i)%nl
-            ekf%num(i)=ekf%num(i)+(ann_arr%ann(i)%nn(ialpha-1)+1)*ann_arr%ann(i)%nn(ialpha)
+            opt_ann%num(i)=opt_ann%num(i)+(ann_arr%ann(i)%nn(ialpha-1)+1)*ann_arr%ann(i)%nn(ialpha)
         enddo
-        ekf%loc(i)=ekf%n+1
-        ekf%n=ekf%n+ekf%num(i)
+        opt_ann%loc(i)=opt_ann%n+1
+        opt_ann%n=opt_ann%n+opt_ann%num(i)
         call yaml_sequence(advance='no')
         call yaml_map('iann',i)
-        call yaml_map('loc',ekf%loc(i))
-        call yaml_map('num',ekf%num(i))
-        call yaml_map('n',ekf%n)
-        !write(*,'(a,3i5)') 'EKF: ',ekf%loc(i),ekf%num(i),ekf%n
+        call yaml_map('loc',opt_ann%loc(i))
+        call yaml_map('num',opt_ann%num(i))
+        call yaml_map('n',opt_ann%n)
+        !write(*,'(a,3i5)') 'EKF: ',opt_ann%loc(i),opt_ann%num(i),opt_ann%n
     enddo
     call yaml_sequence_close()
-    call ann_allocate(ekf,ann_arr)
+    call ann_allocate(opt_ann,ann_arr)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
         fnout="train_output.yaml"
@@ -449,11 +449,11 @@ subroutine init_ann_train(parini,ann_arr,ekf)
     endif
 end subroutine init_ann_train
 !*****************************************************************************************
-subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc
     use dynamic_memory
@@ -461,12 +461,12 @@ subroutine final_ann_train(parini,ann_arr,ekf,atoms_train,atoms_valid,symfunc_tr
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
     !local variables
     integer:: iconf
-    call f_free(ekf%x)
+    call f_free(opt_ann%x)
 
     if(iproc==0) then
         !close(11)
