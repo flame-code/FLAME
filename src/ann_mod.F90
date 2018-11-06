@@ -4,7 +4,9 @@ module mod_ann
     use mod_linked_lists, only: typ_linked_lists
     use mod_electrostatics, only: typ_poisson
     implicit none
-    type typ_ann
+    private
+    public:: ann_allocate, ann_deallocate
+    type, public:: typ_ann
         type(dictionary), pointer :: dict
         integer:: nl !number of hidden layer plus one
         integer:: nn(0:10)
@@ -70,7 +72,7 @@ module mod_ann
         character(256):: hlines(10)
         
     end type typ_ann
-    type typ_ann_arr
+    type, public:: typ_ann_arr
         logical:: exists_yaml_file = .false.
         integer:: iunit
         integer:: n=-1
@@ -112,7 +114,7 @@ module mod_ann
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
     end type typ_ann_arr
-    type typ_symfunc
+    type, public:: typ_symfunc
         integer:: ng=-1
         integer:: nat=-1
         real(8):: epot
@@ -122,11 +124,11 @@ module mod_ann
         real(8), allocatable:: y0dr(:,:,:)
         type(typ_linked_lists):: linked_lists
     end type typ_symfunc
-    type typ_symfunc_arr
+    type, public:: typ_symfunc_arr
         integer:: nconf=-1
         type(typ_symfunc), allocatable:: symfunc(:)
     end type typ_symfunc_arr
-    type typ_cent
+    type, public:: typ_cent
         real(8), allocatable:: gwi(:)
         real(8), allocatable:: gwe(:)
         real(8), allocatable:: gwit(:)
@@ -135,6 +137,68 @@ module mod_ann
         real(8), allocatable:: rgrad(:,:)
         type(typ_poisson):: poisson
     end type typ_cent
+contains
+!*****************************************************************************************
+subroutine ann_allocate(n,num,ann_arr)
+    !use mod_ann, only: typ_ann_arr
+    !use mod_opt_ann, only: typ_opt_ann
+    use dynamic_memory
+    implicit none
+    integer, intent(in):: n
+    integer, intent(in):: num(n)
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: istat, ng
+    ng=ann_arr%ann(1)%nn(0)
+    !allocate(ann_arr%yall(ng,natmax),stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%yall.'
+    !allocate(ann_arr%y0d(ng,3,natmax,natmax),stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%y0d.'
+    !allocate(ann_arr%y0dr(ng,9,natmax,natmax),stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%y0dr.'
+    allocate(ann_arr%fat_chi(1:3,1:ann_arr%natmax))
+    allocate(ann_arr%chi_i(1:ann_arr%natmax))
+    allocate(ann_arr%chi_o(1:ann_arr%natmax))
+    allocate(ann_arr%chi_d(1:ann_arr%natmax))
+    allocate(ann_arr%a(1:(ann_arr%natmax+1)*(ann_arr%natmax+1)))
+    ann_arr%fat_chi=0.d0
+    ann_arr%chi_i=0.d0
+    ann_arr%chi_o=0.d0
+    ann_arr%chi_d=0.d0
+    ann_arr%a=0.d0
+    allocate(ann_arr%g_per_atom(1:num(1),1:ann_arr%natmax))
+    !symfunc%linked_lists%maxbound_rad is assumed 10000
+    allocate(ann_arr%fatpq(1:3,1:10000))
+    allocate(ann_arr%stresspq(1:3,1:3,1:10000))
+    allocate(ann_arr%ipiv(1:ann_arr%natmax+1))
+    allocate(ann_arr%qq(1:ann_arr%natmax+1))
+end subroutine ann_allocate
+!*****************************************************************************************
+subroutine ann_deallocate(ann_arr)
+    !use mod_ann, only: typ_ann_arr
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: istat
+    !deallocate(ann_arr%yall,stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%yall.'
+    !deallocate(ann_arr%y0d,stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%y0d.'
+    !deallocate(ann_arr%y0dr,stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%y0dr.'
+    deallocate(ann_arr%chi_i)
+    deallocate(ann_arr%chi_o)
+    deallocate(ann_arr%chi_d)
+    deallocate(ann_arr%a)
+    deallocate(ann_arr%fat_chi)
+    deallocate(ann_arr%g_per_atom)
+    deallocate(ann_arr%fatpq)
+    deallocate(ann_arr%stresspq)
+    deallocate(ann_arr%ipiv)
+    deallocate(ann_arr%qq)
+end subroutine ann_deallocate
+!*****************************************************************************************
 end module mod_ann
 !*****************************************************************************************
 !module data_point

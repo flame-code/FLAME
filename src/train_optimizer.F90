@@ -2,11 +2,13 @@
 module mod_opt_ann
     implicit none
     !private
-    public:: ekf_rivals, ekf_rivals_tmp, ekf_behler, ann_evaluate
+    public:: ekf_rivals, ekf_rivals_tmp, ekf_behler, ann_evaluate, init_opt_ann
     type, public:: typ_opt_ann
         integer:: n=-1
         integer:: loc(10)
         integer:: num(10)
+        integer:: ndp_train=-1
+        integer:: ndp_valid=-1
         real(8), allocatable:: x(:)
         real(8), allocatable:: epotd(:)
         real(8), allocatable:: g(:) !gradient of neural artificial neural network output
@@ -14,6 +16,21 @@ module mod_opt_ann
         real(8), allocatable:: gs(:,:)
     end type typ_opt_ann
 contains
+!*****************************************************************************************
+subroutine init_opt_ann(ndp_train,ndp_valid,opt_ann,ann_arr)
+    use mod_ann, only: typ_ann_arr, ann_allocate
+    use dynamic_memory
+    implicit none
+    integer, intent(in):: ndp_train
+    integer, intent(in):: ndp_valid
+    type(typ_opt_ann), intent(inout):: opt_ann
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: istat, ng
+    opt_ann%ndp_train=ndp_train
+    opt_ann%ndp_valid=ndp_valid
+    call ann_allocate(opt_ann%n,opt_ann%num,ann_arr)
+end subroutine init_opt_ann
 !*****************************************************************************************
 subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     use mod_parini, only: typ_parini

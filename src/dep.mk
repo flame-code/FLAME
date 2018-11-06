@@ -123,7 +123,7 @@
 ./identical.o : ./identical.F90 ./interface_mod.o 
 ./fragments.o : ./fragments.F90 ./interface_mod.o 
 ./find_symmetry.o : ./find_symmetry.F90 ./interface_mod.o 
-./parser_core.o : ./parser_core.F90 ./interface_mod.o 
+./parser_core.o : ./parser_core.F90 
 ./flame.o : ./flame.F90 ./flame_as_potential_mod.o ./interface_mod.o 
 ./minhopp_allocation.o : ./minhopp_allocation.F90 ./interface_mod.o 
 ./ann_pot_atom.o : ./ann_pot_atom.F90 ./linked_lists_mod.o ./train_optimizer.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
@@ -161,7 +161,6 @@
 ./init_rotvels.o : ./init_rotvels.F90 ./interface_mod.o 
 ./optimizer_sd.o : ./optimizer_sd.F90 ./interface_mod.o 
 ./io_bin.o : ./io_bin.F90 ./atoms_mod.o ./interface_mod.o 
-./ann_basic.o : ./ann_basic.F90 ./train_optimizer.o ./ann_mod.o ./interface_mod.o 
 ./ann_pot_cent1.o : ./ann_pot_cent1.F90 ./linked_lists_mod.o ./electrostatics_mod.o ./train_optimizer.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
 ./optimizer_drivers_vc.o : ./optimizer_drivers_vc.F90 ./atoms_mod.o ./interface_mod.o 
 ./atoms_minhocao.o : ./atoms_minhocao.F90 

@@ -39,7 +39,6 @@ subroutine ann_train(parini)
     real(8):: time1, time2, time3, t_ener_ref
     logical:: file_exists
     call f_routine(id='ann_train')
-    call init_ann_train(parini,ann_arr,opt_ann)
     !-------------------------------------------------------
     !Reading configurations and their energies and forces
     inquire(file="list_posinp_train.yaml",exist=file_exists)
@@ -57,6 +56,7 @@ subroutine ann_train(parini)
     if(trim(parini%approach_ann)=='cent2') then
         call read_data_yaml(parini,'list_posinp_smplx.yaml',atoms_smplx)
     endif
+    call init_ann_train(parini,ann_arr,opt_ann,symfunc_train,symfunc_valid)
     !-------------------------------------------------------
     if(iproc==0) then
         call yaml_map('number of ANN wights',opt_ann%n)
@@ -372,11 +372,11 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
     write(*,*) 'rmse_energy_cent2 ',rmse_energy_cent2
 end subroutine cal_rmse_energy_cent2
 !*****************************************************************************************
-subroutine init_ann_train(parini,ann_arr,opt_ann)
+subroutine init_ann_train(parini,ann_arr,opt_ann,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_opt_ann, only: typ_opt_ann, init_opt_ann
     use mod_processors, only: iproc
     use yaml_output
     use futile
@@ -384,6 +384,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_opt_ann), intent(inout):: opt_ann
+    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
     !local variables
     integer:: ialpha, i, ios, ia
     character(30):: fnout
@@ -427,7 +428,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann)
         !write(*,'(a,3i5)') 'EKF: ',opt_ann%loc(i),opt_ann%num(i),opt_ann%n
     enddo
     call yaml_sequence_close()
-    call ann_allocate(opt_ann,ann_arr)
+    call init_opt_ann(symfunc_train%nconf,symfunc_valid%nconf,opt_ann,ann_arr)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
         fnout="train_output.yaml"
@@ -452,7 +453,7 @@ end subroutine init_ann_train
 subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, ann_deallocate
     use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc

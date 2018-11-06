@@ -188,6 +188,7 @@ def get_files():
                    './src/train_optimizer.F90',
                    './src/ann_train.F90',
                    './src/atoms_mod.F90',
+                   './src/ann_mod.F90',
                    ]
     
     for file in exclude_files:

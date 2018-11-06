@@ -26,17 +26,6 @@ real(8),dimension(3,3)  :: term1,term2,term3,term4,term5,term5_1,term5_2,sigmatr
 real(8):: amass(nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3
 real(8):: accvol,vvol,vol_1_3
 end subroutine acceleration
-! ./src/ann_basic.F90 :
-subroutine ann_allocate(opt_ann,ann_arr)
-    use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann
-    type(typ_opt_ann), intent(in):: opt_ann
-    type(typ_ann_arr), intent(inout):: ann_arr
-end subroutine ann_allocate
-subroutine ann_deallocate(ann_arr)
-    use mod_ann, only: typ_ann_arr
-    type(typ_ann_arr), intent(inout):: ann_arr
-end subroutine ann_deallocate
 ! ./src/ann_best_symfunc.F90 :
 subroutine ann_best_symfunc(parini)
     use mod_parini, only: typ_parini
@@ -75,7 +64,7 @@ end subroutine ann_evaluate_subtask
 ! ./src/ann_gen_symmetry_function.F90 :
 subroutine ann_gen_symmetry_function(parini)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_symfunc, ann_deallocate
     use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
 end subroutine ann_gen_symmetry_function
@@ -213,7 +202,6 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     integer:: m, n, ldfjac, iflag
     real(8):: x(n), fvec(m), fjac(ldfjac,n)
 end subroutine fcn_epot
-! ./src/ann_mod.F90 :
 ! ./src/ann_pot_atom.F90 :
 subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_parini, only: typ_parini

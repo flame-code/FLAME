@@ -30,7 +30,7 @@ SRC_ += atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
 		mpi_utilities.F90 \
 		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		lmder_modified.F90 \
-		ann_basic.F90 ann_process.F90 ann_weights_init.F90 ann_io.F90 ann_io_yaml.F90 ann_best_symfunc.F90 \
+		ann_process.F90 ann_weights_init.F90 ann_io.F90 ann_io_yaml.F90 ann_best_symfunc.F90 \
 		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
 		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
