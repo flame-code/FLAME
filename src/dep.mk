@@ -170,7 +170,7 @@
 ./genconf_trimer.o : ./genconf_trimer.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./ann_best_symfunc.o : ./ann_best_symfunc.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
 ./phonon.o : ./phonon.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
-./ann_pot_main.o : ./ann_pot_main.F90 ./train_optimizer.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
+./ann_pot_main.o : ./ann_pot_main.F90 ./ann_train.o ./atoms_mod.o ./train_optimizer.o ./ann_mod.o ./interface_mod.o 
 ./spglib_int.o : ./spglib_int.F90 
 ./ann_evaluate.o : ./ann_evaluate.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
 ./fingerprint.o : ./fingerprint.F90 ./interface_mod.o 

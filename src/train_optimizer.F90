@@ -2,7 +2,7 @@
 module mod_opt_ann
     implicit none
     !private
-    public:: ekf_rivals, ekf_rivals_tmp, ekf_behler, ann_evaluate, init_opt_ann
+    public:: ekf_rivals, ekf_behler, ann_evaluate, init_opt_ann
     type, public:: typ_opt_ann
         integer:: n=-1
         integer:: loc(10)
@@ -35,7 +35,7 @@ end subroutine init_opt_ann
 subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: typ_atoms_arr
     !use mod_train, only: convert_x_ann
     use mod_processors, only: iproc, mpi_comm_abz
     use yaml_output
@@ -50,9 +50,8 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     real(8), allocatable:: f(:) !Kalman gain matrix
     real(8), allocatable:: p(:,:) !covariance matrix
     real(8), allocatable:: v1(:) !work array
-    type(typ_atoms):: atoms
     integer:: i, j, iter, iconf, ios, ia
-    real(8):: DDOT, tt, den
+    real(8):: DDOT, tt, den, fcn_ann, fcn_ref
     real(8):: r, rinv, r0, rf, alpha
     real(8):: time_s, time_e, time1, time2, time3 !, time4
     real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
@@ -124,8 +123,7 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
         write(31,'(i6,es14.5)') iter,r
         do iconf=1,atoms_train%nconf
             ann_arr%event='train'
-            call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
+            call get_fcn_ann(parini,iconf,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
             if(trim(parini%approach_ann)=='tb') then
                 do j=1,opt_ann%n
                     opt_ann%g(j)=opt_ann%g(j)+parini%weight_hardness*opt_ann%x(j)
@@ -149,7 +147,8 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             call DGEMV('N',opt_ann%n,opt_ann%n,rinv,p,opt_ann%n,opt_ann%g,1,0.d0,f,1)
             do i=1,opt_ann%n
                 !write(81,*) iter,iconf,i,f(i)*(epotall(iconf)-opt_ann%epot)
-                opt_ann%x(i)=opt_ann%x(i)+f(i)*(symfunc_train%symfunc(iconf)%epot-atoms%epot)
+                !opt_ann%x(i)=opt_ann%x(i)+f(i)*(symfunc_train%symfunc(iconf)%epot-fcn_ann)
+                opt_ann%x(i)=opt_ann%x(i)+f(i)*(fcn_ref-fcn_ann)
             enddo
             call cpu_time(time3)
             dtime5=dtime5+time2-time1
@@ -180,159 +179,6 @@ subroutine ekf_rivals(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     close(42)
     deallocate(f,p,opt_ann%g,v1,opt_ann%epotd)
 end subroutine ekf_rivals
-!*****************************************************************************************
-subroutine ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
-    use mod_processors, only: iproc, mpi_comm_abz
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-    type(typ_atoms_arr), intent(inout):: atoms_train
-    type(typ_atoms_arr), intent(inout):: atoms_valid
-    type(typ_opt_ann), intent(inout):: opt_ann
-    !local variables
-    real(8), allocatable:: f(:) !Kalman gain matrix
-    real(8), allocatable:: p(:,:) !covariance matrix
-    real(8), allocatable:: v1(:) !work array
-    type(typ_atoms):: atoms, atoms_ann_ref
-    integer:: i, j, iter, iconf, ios, ia
-    real(8):: DDOT, tt, den
-    real(8):: r, rinv, r0, rf, alpha
-    character(16):: fn
-    character(50):: filename
-    real(8):: time_s, time_e, time1, time2, time3 !, time4
-    real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
-    real(8):: tt1, tt2, tt3, tt4, tt5, tt6
-    type(typ_atoms_arr):: atoms_ref
-    integer:: ind(200), mat
-    real(8):: de_ann, de_ref, de
-    allocate(f(opt_ann%n),p(opt_ann%n,opt_ann%n),opt_ann%g(opt_ann%n),v1(opt_ann%n),opt_ann%epotd(opt_ann%num(1)))
-    p(1:opt_ann%n,1:opt_ann%n)=0.d0
-    do i=1,opt_ann%n
-        p(i,i)=1.d-2
-    enddo
-    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1') then
-        r0=300.d0
-        alpha=20.d-2
-        rf=1.d-8
-    elseif(trim(parini%approach_ann)=='cent2') then
-        r0=100.d0
-        alpha=80.d-2
-        rf=1.d-8
-    else
-        r0=1.d0
-        alpha=5.d-1
-        rf=1.d-8
-    endif
-    call set_ref_energy(parini,atoms_train,atoms_ref,ind)
-    do iter=0,parini%nstep_opt_ann
-        call cpu_time(time_s)
-        !call randomize_data_order(atoms_train)
-        do ia=1,ann_arr%n
-            call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
-        enddo
-        if(iproc==0) then
-            if( ann_arr%exists_yaml_file) then
-                write(fn,'(a11,i5.5)') '.ann.param.yaml',iter
-            else
-                write(fn,'(a11,i5.5)') '.ann.param.',iter  
-            endif
-            do i=1,ann_arr%n
-                filename=trim(parini%stypat(i))//trim(fn)
-                write(*,'(a)') trim(filename)
-                if( ann_arr%exists_yaml_file) then
-                    call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
-                else
-                    call write_ann(parini,filename,ann_arr%ann(i))
-                endif
-            enddo
-        endif
-        if(mod(iter,1)==0) then
-            call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
-            call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
-        endif
-        if(iter==parini%nstep_opt_ann) exit
-        call cpu_time(time1)
-        dtime1=time1-time_s !time to get ANN energies for atoms_train and atoms_valid
-        dtime2=0.d0 !time to convert ANN 1D array to ANN typ_ann
-        dtime3=0.d0 !time to calculate ANN and its derivatives w.r.t. weights
-        dtime4=0.d0 !time to convert derivative of ANN in typ_ann to 1D array
-        dtime5=0.d0 !time to matrix-vector multiplication in Kalman filter
-        dtime6=0.d0 !time of the rest of Kalman filter algorithm
-        r=(r0-rf)*exp(-alpha*(iter))+rf
-        rinv=1.d0/r
-        !write(31,'(i6,es14.5)') iter,r
-        do iconf=1,atoms_train%nconf
-            ann_arr%event='train'
-
-            mat=atoms_train%atoms(iconf)%nat
-            call atom_copy_old(atoms_ref%atoms(mat),atoms_ann_ref,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms_ann_ref,symfunc_train%symfunc(ind(mat)),ann_arr,opt_ann)
-
-            call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
-            call cpu_time(time1)
-            call DGEMV('T',opt_ann%n,opt_ann%n,1.d0,p,opt_ann%n,opt_ann%g,1,0.d0,v1,1)
-            !call cal_matvec_mpi(opt_ann%n,p,opt_ann%g,v1)
-            call cpu_time(time2)
-            tt=DDOT(opt_ann%n,opt_ann%g,1,v1,1)
-            den=1.d0/(tt+r)
-            do j=1,opt_ann%n
-                do i=1,opt_ann%n
-                    p(i,j)=p(i,j)-v1(i)*v1(j)*den
-                    !if(i==j) p(i,j)=p(i,j)+1.d-1
-                    !write(21,'(2i5,es20.10)') i,j,p(i,j)
-                enddo
-            enddo
-                    !write(21,'(a)') '----------------------------------------'
-            !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,iconf,r,den
-            call DGEMV('N',opt_ann%n,opt_ann%n,rinv,p,opt_ann%n,opt_ann%g,1,0.d0,f,1)
-            if(iter<0) then
-                de_ann=atoms%epot
-                de_ref=symfunc_train%symfunc(iconf)%epot
-            else
-                de_ann=atoms%epot-atoms_ann_ref%epot
-                de_ref=symfunc_train%symfunc(iconf)%epot-atoms_ref%atoms(mat)%epot
-            endif
-            write(89,'(i2,i4,2es14.5)') iter,mat,abs(de_ref-de_ann),abs(symfunc_train%symfunc(iconf)%epot-atoms%epot)
-            de=de_ref-de_ann
-            de=sign(min(2.d-2/(iter*0+1),abs(de)),de)
-            do i=1,opt_ann%n
-                !write(81,*) iter,iconf,i,f(i)*(epotall(iconf)-opt_ann%epot)
-                opt_ann%x(i)=opt_ann%x(i)+f(i)*(min((iter+1)*1.d0,1.d0)*de) !+max(1.d0-iter*2.d-2,0.d0)*(symfunc_train%symfunc(iconf)%epot-atoms%epot))
-            enddo
-            call cpu_time(time3)
-            dtime5=dtime5+time2-time1
-            dtime6=dtime6+time3-time2
-        enddo
-        call cpu_time(time_e)
-        dtime=time_e-time_s
-        !dtime=dtime1+dtime2+dtime3+dtime4+dtime5+dtime6
-        tt1=dtime1/dtime*100.d0
-        tt2=dtime2/dtime*100.d0
-        tt3=dtime3/dtime*100.d0
-        tt4=dtime4/dtime*100.d0
-        tt5=dtime5/dtime*100.d0
-        tt6=dtime6/dtime*100.d0
-        tt=tt1+tt2+tt3+tt4+tt5+tt6
-        if(iter==0) then
-            open(unit=41,file='time_real.prc',status='replace',iostat=ios)
-            if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
-            write(41,'(a1,4x,7a10)') '#',' dtime1 ',' dtime2 ',' dtime3 ',' dtime4 ',' dtime5 ',' dtime6 ',' sum '
-            open(unit=42,file='time_frac.prc',status='replace',iostat=ios)
-            if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
-            write(42,'(a1,4x,7a10)') '#','    tt1 ','    tt2 ','    tt3 ','    tt4 ','    tt5 ','    tt6 ', 'sum '
-        endif
-        write(41,'(i5,7f10.2)') iter,dtime1,dtime2,dtime3,dtime4,dtime5,dtime6,dtime
-        write(42,'(i5,7f10.1)') iter,tt1,tt2,tt3,tt4,tt5,tt6,tt
-    enddo
-    close(41)
-    close(42)
-    deallocate(f,p,opt_ann%g,v1,opt_ann%epotd)
-end subroutine ekf_rivals_tmp
 !*****************************************************************************************
 subroutine set_ref_energy(parini,atoms_train,atoms_ref,ind)
     use mod_parini, only: typ_parini
@@ -469,7 +315,7 @@ end subroutine analyze_epoch_print
 subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc, mpi_comm_abz
     implicit none
     type(typ_parini), intent(in):: parini
@@ -482,9 +328,9 @@ subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
     real(8), allocatable:: f(:) !Kalman gain matrix
     real(8), allocatable:: p(:,:) !covariance matrix
     real(8), allocatable:: v1(:) !work array
-    type(typ_atoms):: atoms
     integer:: i, j, iter, iconf, ios, ia
     real(8):: DDOT, tt, den, alambda, alambdainv, alambda0
+    real(8):: fcn_ann, fcn_ref
     real(8):: time_s, time_e, time1, time2, time3 !, time4
     real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
     real(8):: tt1, tt2, tt3, tt4, tt5, tt6
@@ -527,8 +373,7 @@ subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             alambdainv=1.d0/alambda
             !write(31,'(2i6,f14.10)') iter,iconf,alambda
             ann_arr%event='train'
-            call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
+            call get_fcn_ann(parini,iconf,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
             call cpu_time(time1)
             !opt_ann%g(1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(opt_ann%epot-epotall(iconf))
             call DGEMV('T',opt_ann%n,opt_ann%n,1.d0,p,opt_ann%n,opt_ann%g,1,0.d0,v1,1)
@@ -549,7 +394,7 @@ subroutine ekf_behler(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,ato
             !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,iconf,alambda,den
             do i=1,opt_ann%n
                 !write(81,*) iter,iconf,i,f(i)*(epotall(iconf)-opt_ann%epot)
-                opt_ann%x(i)=opt_ann%x(i)+f(i)*(symfunc_train%symfunc(iconf)%epot-atoms%epot)
+                opt_ann%x(i)=opt_ann%x(i)+f(i)*(fcn_ref-fcn_ann)
             enddo
             call cpu_time(time3)
             dtime5=dtime5+time2-time1

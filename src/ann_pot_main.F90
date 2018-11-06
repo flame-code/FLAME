@@ -1,4 +1,28 @@
 !*****************************************************************************************
+subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
+    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_callback_ann, only: atoms_train=>atoms_train_t
+    use mod_callback_ann, only: symfunc_train=>symfunc_train_t
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: idp
+    character(*), intent(in):: str_dataset
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_opt_ann), intent(inout):: opt_ann
+    real(8), intent(out):: fcn_ann
+    real(8), intent(out):: fcn_ref
+    !local variables
+    type(typ_atoms):: atoms
+    call atom_copy_old(atoms_train%atoms(idp),atoms,'atoms_train%atoms(iconf)->atoms')
+    call cal_ann_main(parini,atoms,symfunc_train%symfunc(idp),ann_arr,opt_ann)
+    fcn_ann=atoms%epot
+    fcn_ref=symfunc_train%symfunc(idp)%epot
+end subroutine get_fcn_ann
+!*****************************************************************************************
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_tightbinding, only: typ_partb

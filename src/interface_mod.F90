@@ -491,6 +491,19 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine repulsive_potential_cent
 ! ./src/ann_pot_main.F90 :
+subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
+    use mod_atoms, only: typ_atoms, atom_copy_old
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: idp
+    character(*), intent(in):: str_dataset
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_opt_ann), intent(inout):: opt_ann
+    real(8), intent(out):: fcn_ann
+    real(8), intent(out):: fcn_ref
+end subroutine get_fcn_ann
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_tightbinding, only: typ_partb
     use mod_parini, only: typ_parini
