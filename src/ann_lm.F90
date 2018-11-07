@@ -20,7 +20,7 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     integer:: m, iann
     allocate(opt_ann%g(opt_ann%n)) !,v1(opt_ann%n),opt_ann%epotd(opt_ann%num(1)))
     if(parini%fit_hoppint) then
-        call fit_hgen(parini,atoms_valid,ann_arr,opt_ann)
+        call fit_hgen(parini,ann_arr,opt_ann)
     endif
     parlm%xtol=1.d-8
     parlm%ftol=1.d-8
@@ -65,7 +65,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     use mod_ann, only: typ_ann_arr, typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
-    use mod_opt_ann, only: ann_evaluate
+    !use mod_opt_ann, only: ann_evaluate
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr

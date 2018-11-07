@@ -57,7 +57,7 @@
 ./fingerprint_oganov_cont.o : ./fingerprint_oganov_cont.F90 
 ./potential_BLJ_minhocao.o : ./potential_BLJ_minhocao.F90 
 ./potential_confinement.o : ./potential_confinement.F90 ./interface_mod.o 
-./train_optimizer.o : ./train_optimizer.F90 ./atoms_mod.o ./ann_mod.o 
+./train_optimizer.o : ./train_optimizer.F90 ./ann_mod.o 
 ./potential_DFTB_minhocao.o : ./potential_DFTB_minhocao.F90 
 ./task_single_point.o : ./task_single_point.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./parser_core_minhocao.o : ./parser_core_minhocao.F90 

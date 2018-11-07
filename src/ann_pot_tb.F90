@@ -238,19 +238,18 @@ subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,c
     call lenoskytb_final(partb)
 end subroutine lenoskytb_ann
 !*****************************************************************************************
-subroutine fit_hgen(parini,atoms_train,ann_arr,opt_ann)
+subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     !use mod_tightbinding, only: typ_partb
     !use mod_potl, only: potl_typ
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate_old
+    use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_ann, only: typ_ann_arr, typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
     use mod_parlm, only: typ_parlm
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_atoms_arr), intent(in):: atoms_train
     !type(typ_atoms), intent(inout):: atoms
     type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_ann_arr), intent(inout):: ann_arr
