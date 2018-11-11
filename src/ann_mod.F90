@@ -75,7 +75,7 @@ module mod_ann
     type, public:: typ_ann_arr
         logical:: exists_yaml_file = .false.
         integer:: iunit
-        integer:: n=-1
+        integer:: nann=-1
         integer:: natmax=1000
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.

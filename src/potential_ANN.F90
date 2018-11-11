@@ -13,25 +13,25 @@ subroutine init_potential_ann(parini,atoms)
     character(10):: fn
     character (50)::fname
     !write(*,*) trim(parini%stypat_ann)
-    !call count_words(parini%stypat_ann,ann_arr%n)
+    !call count_words(parini%stypat_ann,ann_arr%nann)
     ann_arr%approach=trim(parini%approach_ann)
     !write (*,*) 'parini         ', ann_arr%approach
     if (trim(ann_arr%approach)=='tb') then
-        ann_arr%n=4
+        ann_arr%nann=4
     else
-        ann_arr%n=parini%ntypat !this should be changed for bond based ANN
+        ann_arr%nann=parini%ntypat !this should be changed for bond based ANN
     endif
-    call yaml_map('number of ANN',ann_arr%n)
-    !write(*,*) 'ann_arr%n= ',ann_arr%n
-    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%n)
-    !do i=1,ann_arr%n
+    call yaml_map('number of ANN',ann_arr%nann)
+    !write(*,*) 'ann_arr%nann= ',ann_arr%nann
+    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
+    !do i=1,ann_arr%nann
     !    ann_arr%ltypat(i)=i
     !    write(*,*) i,ann_arr%stypat(i)
     !enddo
-    if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in init_potential_ann'
-    allocate(ann_arr%ann(ann_arr%n))
+    if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in init_potential_ann'
+    allocate(ann_arr%ann(ann_arr%nann))
     do iat=1,atoms%nat
-        do i=1,ann_arr%n !this should be changed for bond based ANN
+        do i=1,ann_arr%nann !this should be changed for bond based ANN
             if(trim(adjustl(atoms%sat(iat)))==trim(parini%stypat(i))) then
                 atoms%itypat(iat)=parini%ltypat(i)
                 exit

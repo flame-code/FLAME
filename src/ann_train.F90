@@ -104,13 +104,13 @@ subroutine ann_train(parini)
     if (.not. parini%restart_param) then
         call set_annweights(parini,opt_ann)
         if(trim(parini%approach_ann)=='cent2') then
-            do ia=1,ann_arr%n
+            do ia=1,ann_arr%nann
                 opt_ann%x(opt_ann%loc(ia)+opt_ann%num(1)-1)=0.d0
                 !write(*,*) 'XXX ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
             enddo
         endif
     else
-        do ia=1,ann_arr%n
+        do ia=1,ann_arr%nann
             call convert_ann_x(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
         enddo
     endif
@@ -176,7 +176,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     type(typ_symfunc):: symfunc
     integer:: ia, ityp
     real(8):: t_ener_ref
-    do ia=1,ann_arr%n
+    do ia=1,ann_arr%nann
         call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
     enddo
     !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
@@ -400,14 +400,14 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     character(30):: fnout
     character (50)::fname
     integer:: ierr
-    ann_arr%n=parini%ntypat
+    ann_arr%nann=parini%ntypat
     if(parini%bondbased_ann) then
-        ann_arr%n=4
+        ann_arr%nann=4
     endif
-    if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in ann_train'
-    call yaml_map('number of ann',ann_arr%n)
-    !write(*,*) 'Here', ann_arr%n
-    allocate(ann_arr%ann(ann_arr%n))
+    if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in ann_train'
+    call yaml_map('number of ann',ann_arr%nann)
+    !write(*,*) 'Here', ann_arr%nann
+    allocate(ann_arr%ann(ann_arr%nann))
     ann_arr%approach=trim(parini%approach_ann)
     fname = trim(parini%stypat(1))//'.ann.input.yaml'
     inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
@@ -424,7 +424,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     opt_ann%num(1:10)=0
     opt_ann%n=0
     call yaml_sequence_open('EKF') !,flow=.true.)
-    do i=1,ann_arr%n
+    do i=1,ann_arr%nann
         do ialpha=1,ann_arr%ann(i)%nl
             opt_ann%num(i)=opt_ann%num(i)+(ann_arr%ann(i)%nn(ialpha-1)+1)*ann_arr%ann(i)%nn(ialpha)
         enddo
@@ -638,7 +638,7 @@ subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
         deallocate(ratred)
         endif
         do iat=1,atoms_arr%atoms(iconf)%nat
-            do i=1,ann_arr%n
+            do i=1,ann_arr%nann
                 if(trim(atoms_arr%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
                     atoms_arr%atoms(iconf)%itypat(iat)=parini%ltypat(i)
                     exit
@@ -1121,7 +1121,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         endif
     enddo
     call yaml_mapping_open('symfunc bounds')
-    do i=1,ann_arr%n
+    do i=1,ann_arr%nann
     do ig=1,ann_arr%ann(1)%nn(0) !HERE
         if(iproc==0) then
         call yaml_sequence(advance='no')
@@ -1185,7 +1185,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         !------------------------------ bond symmetry function ----------------------------------------
         !IMPORTANT: the upper bound of the loop over i needs to be corrected for multicomponent systems.
         if(atoms_arr%atoms(1)%ntypat>1) stop 'ERROR: this part not ready for ntypat>1'
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
         do i0=1,ann_arr%ann(i)%nn(0)
             if(gminarr(i0,1)==0.d0) then
                 ann_arr%ann(i)%gbounds(1,i0)=-epsilon(1.d0)
@@ -1203,7 +1203,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         enddo
         ! ----------------------------------------------------------------------------------------------
     else
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
         do i0=1,ann_arr%ann(i)%nn(0)
             !if(abs(gminarr(i0))<epsilon(1.d0)
             if(gminarr(i0,i)==0.d0) then

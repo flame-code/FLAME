@@ -44,7 +44,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         !nodes in the input layer is the same for all atom types.
         !Therefore, it must be fixed later.
         !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             call convert_x_ann(opt_ann%num(i),opt_ann%x(opt_ann%loc(i)),ann_arr%ann(i))
         enddo
     endif
@@ -313,7 +313,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
         call lmder_modified(parlm,m,m)
         write(*,*) 'nfev,njev: ',parlm%nfev,parlm%njev
         if(parlm%finish) exit
-        !do iann=1,ann_arr%n
+        !do iann=1,ann_arr%nann
         !    call convert_x_ann(opt_ann%num(iann),parlm%x,ann_arr%ann(iann))
         !enddo
         if(parlm%icontinue==700) then

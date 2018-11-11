@@ -84,7 +84,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
     do iter=0,parini%nstep_opt_ann
         call yaml_sequence(advance='no',unit=ann_arr%iunit)
         call cpu_time(time_s)
-        do ia=1,ann_arr%n
+        do ia=1,ann_arr%nann
             call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
         enddo
         if(iproc==0) then
@@ -293,7 +293,7 @@ subroutine ekf_behler(parini,ann_arr,opt_ann)
     alambda=0.997d0
     do iter=0,parini%nstep_opt_ann
         call cpu_time(time_s)
-        do ia=1,ann_arr%n
+        do ia=1,ann_arr%nann
             call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
         enddo
         if(iproc==0) then

@@ -21,17 +21,17 @@ subroutine ann_gen_symmetry_function(parini)
     logical:: file_exists
     
     !write(*,*) trim(parini%stypat_ann)
-    !call count_words(parini%stypat_ann,ann_arr%n)
-    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%n)
-    ann_arr%n=parini%ntypat
+    !call count_words(parini%stypat_ann,ann_arr%nann)
+    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
+    ann_arr%nann=parini%ntypat
     
-    !do i=1,ann_arr%n
+    !do i=1,ann_arr%nann
     !    ann_arr%ltypat(i)=i
     !    write(*,*) i,ann_arr%stypat(i)
     !enddo
     
-    if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in gen_symmetry_function'
-    allocate(ann_arr%ann(ann_arr%n))
+    if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in gen_symmetry_function'
+    allocate(ann_arr%ann(ann_arr%nann))
     ann_arr%approach=trim(parini%approach_ann)
     
     fname = trim(parini%stypat(1))//'.ann.input.yaml'
@@ -70,7 +70,7 @@ subroutine ann_gen_symmetry_function(parini)
     endif
     do iconf=1,atoms_gen%nconf
         do iat=1,atoms_gen%atoms(iconf)%nat
-            do i=1,ann_arr%n 
+            do i=1,ann_arr%nann 
                 if(trim(atoms_gen%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
                 atoms_gen%atoms(iconf)%itypat(iat)=parini%ltypat(i)
                 exit

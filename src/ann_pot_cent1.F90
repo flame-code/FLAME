@@ -46,7 +46,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
         !nodes in the input layer is the same for all atom types.
         !Therefore, it must be fixed later.
         !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             call convert_x_ann(opt_ann%num(i),opt_ann%x(opt_ann%loc(i)),ann_arr%ann(i))
         enddo
     endif
@@ -169,7 +169,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
                 opt_ann%g(opt_ann%loc(i)+j-1)=opt_ann%g(opt_ann%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        !do i=1,ann_arr%n
+        !do i=1,ann_arr%nann
         !    opt_ann%g(opt_ann%loc(i)+opt_ann%num(1)-1)=opt_ann%g(opt_ann%loc(i)+opt_ann%num(1)-1)*1.d-4
         !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
         !enddo
@@ -504,7 +504,7 @@ subroutine charge_analysis(parini,atoms,ann_arr)
         chi_max_per_conf(i)=max(c,chi_max_per_conf(i))
         ann_arr%chi_sum(i)=ann_arr%chi_sum(i)+c
     enddo
-    do i=1,ann_arr%n
+    do i=1,ann_arr%nann
         ann_arr%chi_delta(i)=max(ann_arr%chi_delta(i),chi_max_per_conf(i)-chi_min_per_conf(i))
     enddo
     !if(parini%iverbose>=1) then

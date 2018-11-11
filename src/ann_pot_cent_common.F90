@@ -153,8 +153,8 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     h=-7.d0
     !-------------------------------------------------------
     linked_lists%rcut=0.d0
-    do i=1,ann_arr%n
-        do j=i,ann_arr%n
+    do i=1,ann_arr%nann
+        do j=i,ann_arr%nann
             !write(*,*) parini%stypat(i),parini%stypat(j),ann_arr%reprcut(i,j)
             if(ann_arr%reprcut(i,j)>linked_lists%rcut) then
                 linked_lists%rcut=ann_arr%reprcut(i,j)

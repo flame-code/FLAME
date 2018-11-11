@@ -38,14 +38,14 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
         !enddo
         !iann=1
         if(parlm%icontinue==700) then
-            do iann=1,ann_arr%n
+            do iann=1,ann_arr%nann
                 call convert_x_ann(opt_ann%num(iann),parlm%wa2(opt_ann%loc(iann)),ann_arr%ann(iann))
             enddo
             !opt_ann%x(1:parlm%n)=parlm%wa2(1:parlm%n)
             call fcn_epot(m,parlm%n,parlm%wa2,parlm%wa4,parlm%fjac,m,parlm%iflag, &
                 parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
         else
-            do iann=1,ann_arr%n
+            do iann=1,ann_arr%nann
                 call convert_x_ann(opt_ann%num(iann),parlm%x(opt_ann%loc(iann)),ann_arr%ann(iann))
             enddo
             !opt_ann%x(1:parlm%n)=parlm%x(1:parlm%n)
@@ -81,7 +81,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     integer, save:: icall0=0
     icall=icall+1
     !opt_ann%x(1:n)=x(1:n)
-    !do ia=1,ann_arr%n
+    !do ia=1,ann_arr%nann
     !    call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
     !enddo
     write(*,'(a,i,a,i,a)') '**************** icall= ',icall,'  iflag= ',iflag,'  ************'

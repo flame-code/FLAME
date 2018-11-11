@@ -108,7 +108,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     !return
     ann_arr%event='train'
     allocate(opt_ann%g(opt_ann%n))
-    do ia=1,ann_arr%n
+    do ia=1,ann_arr%nann
         call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
     enddo
     nsatur=3
@@ -143,7 +143,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
             do iat=1,atoms%nat
                 anat(atoms%itypat(iat))=anat(atoms%itypat(iat))+1.d0
             enddo
-            do ia=1,ann_arr%n
+            do ia=1,ann_arr%nann
                 g(ia)=g(ia)+2.d0*anat(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
             enddo
         enddo
@@ -158,7 +158,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
             ann_arr%ann(1)%ener_ref,ann_arr%ann(2)%ener_ref,isatur
         if(rmse*1.d3<2.d1) exit
         if(isatur>nsatur) exit
-        do ia=1,ann_arr%n
+        do ia=1,ann_arr%nann
             de0=alpha*g(ia)
             de0=sign(min(abs(de0),1.d0),de0)
             ann_arr%ann(ia)%ener_ref=ann_arr%ann(ia)%ener_ref-de0
@@ -192,7 +192,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     real(8):: anat2(100), g2(100), qnet
     ann_arr%event='train'
     allocate(opt_ann%g(opt_ann%n))
-    do ia=1,ann_arr%n
+    do ia=1,ann_arr%nann
         call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
     enddo
     nsatur=3
@@ -221,7 +221,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
                 anat1(atoms%itypat(iat))=anat1(atoms%itypat(iat))+qnet
                 anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*qnet**2
             enddo
-            do ia=1,ann_arr%n
+            do ia=1,ann_arr%nann
                 g1(ia)=g1(ia)+2.d0*anat1(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
                 g2(ia)=g2(ia)+2.d0*anat2(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
             enddo
@@ -238,7 +238,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
             ann_arr%ann(1)%hardness,ann_arr%ann(2)%hardness,isatur
         if(rmse*1.d3<1.d0) exit
         if(isatur>nsatur) exit
-        do ia=1,ann_arr%n
+        do ia=1,ann_arr%nann
             dchi0=alpha1*g1(ia)
             dchi0=sign(min(abs(dchi0),1.d-1),dchi0)
             ann_arr%ann(ia)%chi0=ann_arr%ann(ia)%chi0-dchi0

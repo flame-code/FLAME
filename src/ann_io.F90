@@ -12,7 +12,7 @@ subroutine read_input_ann(parini,iproc,ann_arr)
     character(256):: fn_fullpath
     character(5):: stypat
     real(8):: rcut
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         if(parini%bondbased_ann) then
             stypat=parini%stypat(1)
         else
@@ -36,8 +36,8 @@ subroutine read_input_ann(parini,iproc,ann_arr)
         close(1)
     enddo
     !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-    !    do i=1,ann_arr%n
-    !        do j=i,ann_arr%n
+    !    do i=1,ann_arr%nann
+    !        do j=i,ann_arr%nann
     !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !        enddo
@@ -280,14 +280,14 @@ subroutine write_ann_all(parini,ann_arr,iter)
         if(parini%ntypat>1) then
             stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
         endif
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             write(fn_tt,'(i1)') i
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
@@ -393,7 +393,7 @@ subroutine read_ann(parini,ann_arr)
     character(16):: fn
     character(1):: fn_tt
     character(50):: filename
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         write(fn,'(a10)') '.ann.param'
         if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
             if(parini%ntypat>1) then
@@ -446,8 +446,8 @@ subroutine read_ann(parini,ann_arr)
         close(1)
     enddo
     !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-    !    do i=1,ann_arr%n
-    !        do j=i,ann_arr%n
+    !    do i=1,ann_arr%nann
+    !        do j=i,ann_arr%nann
     !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !        enddo
