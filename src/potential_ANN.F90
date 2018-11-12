@@ -4,6 +4,7 @@ subroutine init_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: ann_arr, ann_boundcheck
+    use mod_ann, only: set_number_of_ann
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -16,11 +17,8 @@ subroutine init_potential_ann(parini,atoms)
     !call count_words(parini%stypat_ann,ann_arr%nann)
     ann_arr%approach=trim(parini%approach_ann)
     !write (*,*) 'parini         ', ann_arr%approach
-    if (trim(ann_arr%approach)=='tb') then
-        ann_arr%nann=4
-    else
-        ann_arr%nann=parini%ntypat !this should be changed for bond based ANN
-    endif
+    call set_number_of_ann(parini,ann_arr)
+    if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in init_potential_ann'
     call yaml_map('number of ANN',ann_arr%nann)
     !write(*,*) 'ann_arr%nann= ',ann_arr%nann
     !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)

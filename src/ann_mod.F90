@@ -5,7 +5,7 @@ module mod_ann
     use mod_electrostatics, only: typ_poisson
     implicit none
     private
-    public:: ann_allocate, ann_deallocate
+    public:: ann_allocate, ann_deallocate, set_number_of_ann
     type, public:: typ_ann
         type(dictionary), pointer :: dict
         integer:: nl !number of hidden layer plus one
@@ -138,6 +138,18 @@ module mod_ann
         type(typ_poisson):: poisson
     end type typ_cent
 contains
+!*****************************************************************************************
+subroutine set_number_of_ann(parini,ann_arr)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    ann_arr%nann=parini%ntypat
+    if(parini%bondbased_ann) then
+        ann_arr%nann=4
+    endif
+end subroutine set_number_of_ann
 !*****************************************************************************************
 subroutine ann_allocate(n,num,ann_arr)
     !use mod_ann, only: typ_ann_arr

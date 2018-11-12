@@ -384,7 +384,7 @@ end subroutine cal_rmse_energy_cent2
 subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, set_number_of_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann
     use mod_processors, only: iproc
@@ -400,10 +400,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     character(30):: fnout
     character (50)::fname
     integer:: ierr
-    ann_arr%nann=parini%ntypat
-    if(parini%bondbased_ann) then
-        ann_arr%nann=4
-    endif
+    call set_number_of_ann(parini,ann_arr)
     if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in ann_train'
     call yaml_map('number of ann',ann_arr%nann)
     !write(*,*) 'Here', ann_arr%nann
