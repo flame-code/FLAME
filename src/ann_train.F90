@@ -2,7 +2,8 @@
 module mod_callback_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann
     type(typ_parini), pointer:: parini_t
     type(typ_atoms_arr), pointer:: atoms_train_t
@@ -23,7 +24,8 @@ contains
 subroutine ann_train(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
@@ -161,10 +163,10 @@ end subroutine ann_train
 subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr !, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old
-    use mod_ann, only: typ_symfunc
+    use mod_symfunc, only: typ_symfunc
     use dynamic_memory
     use yaml_output
     implicit none
@@ -213,7 +215,7 @@ end subroutine set_single_atom_energy
 subroutine cent2_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     !use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr !, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_callback_ann
@@ -273,7 +275,7 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
     use mod_atoms, only: typ_atoms, atom_copy_old 
-    use mod_ann, only: typ_symfunc
+    use mod_symfunc, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
     real(8), intent(in) :: vertex(ndim)
@@ -328,7 +330,7 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
     use mod_atoms, only: typ_atoms, atom_copy_old
-    use mod_ann, only: typ_symfunc
+    use mod_symfunc, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
     real(8), intent(in) :: vertex(ndim)
@@ -460,7 +462,8 @@ end subroutine init_ann_train
 subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, ann_deallocate
+    use mod_ann, only: typ_ann_arr, ann_deallocate
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc
@@ -529,7 +532,8 @@ end subroutine set_conf_inc_random
 subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     implicit none
     type(typ_parini), intent(in):: parini
@@ -569,7 +573,8 @@ end subroutine apply_gbounds_atom
 subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     implicit none
     type(typ_parini), intent(in):: parini
@@ -647,7 +652,8 @@ end subroutine prepare_atoms_arr
 !*****************************************************************************************
 subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -689,7 +695,8 @@ end subroutine set_ebounds
 subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc, mpi_comm_abz
@@ -809,7 +816,8 @@ end subroutine set_gbounds
 !*****************************************************************************************
 subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc, mpi_comm_abz
@@ -905,7 +913,8 @@ end subroutine write_symfunc
 !*****************************************************************************************
 subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc, mpi_comm_abz
@@ -1039,7 +1048,8 @@ end subroutine read_symfunc
 !*****************************************************************************************
 subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc, mpi_comm_abz
@@ -1383,7 +1393,9 @@ end subroutine convert_ann_epotd
 !*****************************************************************************************
 subroutine ann_evaluate_all(parini,iter,ann_arr)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use mod_callback_ann, only: atoms_train=>atoms_train_t
     use mod_callback_ann, only: atoms_valid=>atoms_valid_t
@@ -1400,7 +1412,9 @@ end subroutine ann_evaluate_all
 !*****************************************************************************************
 subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use mod_opt_ann, only: typ_opt_ann
     use mod_processors, only: iproc

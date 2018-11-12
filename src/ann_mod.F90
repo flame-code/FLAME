@@ -114,20 +114,6 @@ module mod_ann
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
     end type typ_ann_arr
-    type, public:: typ_symfunc
-        integer:: ng=-1
-        integer:: nat=-1
-        real(8):: epot
-        real(8), allocatable:: y(:,:)
-        real(8), allocatable:: y0d_bond(:,:)
-        real(8), allocatable:: y0d(:,:,:)
-        real(8), allocatable:: y0dr(:,:,:)
-        type(typ_linked_lists):: linked_lists
-    end type typ_symfunc
-    type, public:: typ_symfunc_arr
-        integer:: nconf=-1
-        type(typ_symfunc), allocatable:: symfunc(:)
-    end type typ_symfunc_arr
     type, public:: typ_cent
         real(8), allocatable:: gwi(:)
         real(8), allocatable:: gwe(:)

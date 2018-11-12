@@ -25,6 +25,7 @@ SRC_ += atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
 		ann_mod.F90 \
 		potential_mod.F90 \
 		train_optimizer.F90 \
+		symfunc_mod.F90 \
 		interface_mod.F90 \
 		flame_init_fini.F90 processors.F90 \
 		mpi_utilities.F90 \

@@ -2,7 +2,8 @@
 subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use time_profiling
     use mod_timing , only: TCAT_SYMFUNC_COMPUT

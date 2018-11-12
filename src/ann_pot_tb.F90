@@ -5,7 +5,8 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
@@ -244,7 +245,8 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     !use mod_tightbinding, only: typ_partb
     !use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms, atom_allocate_old
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
     use mod_parlm, only: typ_parlm
     use dynamic_memory
@@ -334,7 +336,8 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
 end subroutine fit_hgen
 !*****************************************************************************************
 subroutine fcn_hgen(m,n,x,fvec,fjac,ldfjac,iflag,iann,ann_arr,hgen_ltb,yall)
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     implicit none
     integer, intent(in):: m, n, ldfjac, iflag, iann
     type(typ_ann_arr), intent(inout):: ann_arr

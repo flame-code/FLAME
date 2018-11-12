@@ -60,7 +60,7 @@ subroutine cal_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_potential, only: ann_arr, fcalls, fcalls_sec, potential, potential_sec, ann_boundcheck
-    use mod_ann, only: typ_symfunc
+    use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
     implicit none
     type(typ_parini), intent(in):: parini

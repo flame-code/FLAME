@@ -32,7 +32,7 @@
 ./optimizer_cg.o : ./optimizer_cg.F90 ./interface_mod.o 
 ./genconf_diatomic.o : ./genconf_diatomic.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./optimizer_diis.o : ./optimizer_diis.F90 ./interface_mod.o 
-./ann_gen_symmetry_function.o : ./ann_gen_symmetry_function.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_gen_symmetry_function.o : ./ann_gen_symmetry_function.F90 ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./potential_LenoskyMEAM.o : ./potential_LenoskyMEAM.F90 
 ./task_potential.o : ./task_potential.F90 ./atoms_mod.o ./potential_mod.o ./flame_as_potential_mod.o ./interface_mod.o 
 ./potential_LenoskyTB_LJ_minhocao.o : ./potential_LenoskyTB_LJ_minhocao.F90 
@@ -49,7 +49,7 @@
 ./io_acf.o : ./io_acf.F90 ./atoms_mod.o ./interface_mod.o 
 ./optimizer_bfgs.o : ./optimizer_bfgs.F90 ./interface_mod.o 
 ./binaries.o : ./binaries.F90 
-./ann_lm.o : ./ann_lm.F90 ./atoms_mod.o ./ann_mod.o ./train_optimizer.o ./ann_mod.o ./interface_mod.o 
+./ann_lm.o : ./ann_lm.F90 ./atoms_mod.o ./ann_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./fingerprint_atorb.o : ./fingerprint_atorb.F90 ./interface_mod.o 
 ./save_low_conf.o : ./save_low_conf.F90 ./interface_mod.o 
 ./correct_latvec.o : ./correct_latvec.F90 ./interface_mod.o 
@@ -94,7 +94,7 @@
 ./saddle_1s_pot.o : ./saddle_1s_pot.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./potential_CP2K.o : ./potential_CP2K.F90 
 ./ascii2POSCAR.o : ./ascii2POSCAR.F90 
-./ann_symfunc_atom_behler.o : ./ann_symfunc_atom_behler.F90 ./linked_lists_mod.o ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_symfunc_atom_behler.o : ./ann_symfunc_atom_behler.F90 ./linked_lists_mod.o ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./minhocao_enthalpyrelax.o : ./minhocao_enthalpyrelax.F90 ./potential_main_minhocao.o ./interface_mod.o 
 ./enthalpy.o : ./enthalpy.F90 ./interface_mod.o 
 ./md_NVT.o : ./md_NVT.F90 ./atoms_mod.o ./potential_mod.o ./interface_mod.o 
@@ -108,7 +108,7 @@
 ./potential_abinit.o : ./potential_abinit.F90 
 ./forcefield.o : ./forcefield.F90 ./electrostatics_mod.o ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./io_yaml_conf.o : ./io_yaml_conf.F90 ./atoms_mod.o ./interface_mod.o 
-./ann_symfunc_atom_stefan.o : ./ann_symfunc_atom_stefan.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_symfunc_atom_stefan.o : ./ann_symfunc_atom_stefan.F90 ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./flame_init_fini.o : ./flame_init_fini.F90 ./atoms_mod.o ./interface_mod.o 
 ./lammps_mod.o : ./lammps_mod.F90 ./potential_LAMMPS_interface.o ./atoms_mod.o 
 ./parser_yaml.o : ./parser_yaml.F90 
@@ -126,9 +126,9 @@
 ./parser_core.o : ./parser_core.F90 
 ./flame.o : ./flame.F90 ./flame_as_potential_mod.o ./interface_mod.o 
 ./minhopp_allocation.o : ./minhopp_allocation.F90 ./interface_mod.o 
-./ann_pot_atom.o : ./ann_pot_atom.F90 ./linked_lists_mod.o ./train_optimizer.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
+./ann_pot_atom.o : ./ann_pot_atom.F90 ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
 ./task_genconf.o : ./task_genconf.F90 ./interface_mod.o 
-./ann_pot_cent_common.o : ./ann_pot_cent_common.F90 ../src/act2_cell_linkedlist.inc ../src/act1_cell_linkedlist.inc ./linked_lists_mod.o ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_pot_cent_common.o : ./ann_pot_cent_common.F90 ../src/act2_cell_linkedlist.inc ../src/act1_cell_linkedlist.inc ./linked_lists_mod.o ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./task_geopt.o : ./task_geopt.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./cell_niggli.o : ./cell_niggli.F90 ./interface_mod.o 
 ./ann_process.o : ./ann_process.F90 ./ann_mod.o ./interface_mod.o 
@@ -138,7 +138,7 @@
 ./potential_flame.o : ./potential_flame.F90 
 ./envelope.o : ./envelope.F90 
 ./fit_elecpot.o : ./fit_elecpot.F90 ./ann_mod.o ./atoms_mod.o ./electrostatics_mod.o ./interface_mod.o 
-./ann_pot_cent2.o : ./ann_pot_cent2.F90 ./electrostatics_mod.o ./linked_lists_mod.o ./train_optimizer.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
+./ann_pot_cent2.o : ./ann_pot_cent2.F90 ./electrostatics_mod.o ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
 ./saddle_1s_optimizer.o : ./saddle_1s_optimizer.F90 ./atoms_mod.o ./potential_mod.o ./interface_mod.o 
 ./gaussdist.o : ./gaussdist.F90 ./interface_mod.o 
 ./grid_gto_sym.o : ./grid_gto_sym.F90 ./atoms_mod.o ./interface_mod.o 
@@ -156,23 +156,23 @@
 ./task_lammps.o : ./task_lammps.F90 ./lammps_mod.o ./potential_LAMMPS_interface.o ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./potential_QSC.o : ./potential_QSC.F90 ./atoms_mod.o ./potential_mod.o ./interface_mod.o 
 ./optimizer_sqnm_minhocao.o : ./optimizer_sqnm_minhocao.F90 ./optimizer_sqnm_minhocao_module.o ./potential_main_minhocao.o ./interface_mod.o 
-./potential_ANN.o : ./potential_ANN.F90 ../src/act2_cell_linkedlist.inc ../src/act1_cell_linkedlist.inc ./linked_lists_mod.o ./train_optimizer.o ./ann_mod.o ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
+./potential_ANN.o : ./potential_ANN.F90 ../src/act2_cell_linkedlist.inc ../src/act1_cell_linkedlist.inc ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./write_restart.o : ./write_restart.F90 ./interface_mod.o 
 ./init_rotvels.o : ./init_rotvels.F90 ./interface_mod.o 
 ./optimizer_sd.o : ./optimizer_sd.F90 ./interface_mod.o 
 ./io_bin.o : ./io_bin.F90 ./atoms_mod.o ./interface_mod.o 
-./ann_pot_cent1.o : ./ann_pot_cent1.F90 ./linked_lists_mod.o ./electrostatics_mod.o ./train_optimizer.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
+./ann_pot_cent1.o : ./ann_pot_cent1.F90 ./linked_lists_mod.o ./electrostatics_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
 ./optimizer_drivers_vc.o : ./optimizer_drivers_vc.F90 ./atoms_mod.o ./interface_mod.o 
 ./atoms_minhocao.o : ./atoms_minhocao.F90 
 ./plain_ewald.o : ./plain_ewald.F90 ./atoms_mod.o ./interface_mod.o 
 ./ann_io_yaml.o : ./ann_io_yaml.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
 ./PWSCF_restruct.o : ./PWSCF_restruct.F90 
 ./genconf_trimer.o : ./genconf_trimer.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
-./ann_best_symfunc.o : ./ann_best_symfunc.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_best_symfunc.o : ./ann_best_symfunc.F90 ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./phonon.o : ./phonon.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
-./ann_pot_main.o : ./ann_pot_main.F90 ./ann_train.o ./atoms_mod.o ./train_optimizer.o ./ann_mod.o ./interface_mod.o 
+./ann_pot_main.o : ./ann_pot_main.F90 ./symfunc_mod.o ./ann_train.o ./atoms_mod.o ./train_optimizer.o ./ann_mod.o ./interface_mod.o 
 ./spglib_int.o : ./spglib_int.F90 
-./ann_evaluate.o : ./ann_evaluate.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_evaluate.o : ./ann_evaluate.F90 ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./fingerprint.o : ./fingerprint.F90 ./interface_mod.o 
 ./potential_LTB.o : ./potential_LTB.F90 ./interface_mod.o ./atoms_mod.o ./potential_mod.o 
 ./task_testforces.o : ./task_testforces.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
@@ -181,7 +181,7 @@
 ./es_hartree_bps.o : ./es_hartree_bps.F90 ./electrostatics_mod.o ./atoms_mod.o ./interface_mod.o 
 ./potential_LJ.o : ./potential_LJ.F90 ./atoms_mod.o ./interface_mod.o 
 ./genconf_rangrow.o : ./genconf_rangrow.F90 ./atoms_mod.o ./interface_mod.o 
-./ann_symfunc_main.o : ./ann_symfunc_main.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_symfunc_main.o : ./ann_symfunc_main.F90 ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./fingerprint_oganov.o : ./fingerprint_oganov.F90 
 ./optimizer_sqnm.o : ./optimizer_sqnm.F90 ./atoms_mod.o ./interface_mod.o 
 ./potential_IPI.o : ./potential_IPI.F90 
@@ -201,14 +201,14 @@
 ./io_vasp.o : ./io_vasp.F90 ./interface_mod.o 
 ./compare_lammps.o : ./compare_lammps.F90 ./potential_main_minhocao.o ./interface_mod.o 
 ./potential_SIESTA.o : ./potential_SIESTA.F90 ./atoms_mod.o ./potential_mod.o ./interface_mod.o 
-./ann_pot_tb.o : ./ann_pot_tb.F90 ./ann_mod.o ./linked_lists_mod.o ./train_optimizer.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
-./ann_symfunc_pair_behler.o : ./ann_symfunc_pair_behler.F90 ./linked_lists_mod.o ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_pot_tb.o : ./ann_pot_tb.F90 ./ann_mod.o ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./interface_mod.o 
+./ann_symfunc_pair_behler.o : ./ann_symfunc_pair_behler.F90 ./linked_lists_mod.o ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./recompute_kpt.o : ./recompute_kpt.F90 
 ./mpi_utilities.o : ./mpi_utilities.F90 ./interface_mod.o 
 ./md_minhocao_rbmd.o : ./md_minhocao_rbmd.F90 ./potential_main_minhocao.o ./interface_mod.o 
 ./minhocao_varvol.o : ./minhocao_varvol.F90 ./potential_main_minhocao.o ./interface_mod.o 
 ./convex_hull.o : ./convex_hull.F90 
-./ann_check_symmetry_function.o : ./ann_check_symmetry_function.F90 ./atoms_mod.o ./ann_mod.o ./interface_mod.o 
+./ann_check_symmetry_function.o : ./ann_check_symmetry_function.F90 ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./potential_sec_main.o : ./potential_sec_main.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./saddle_1s.o : ./saddle_1s.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./potential_LAMMPS_interface.o : ./potential_LAMMPS_interface.F90 
@@ -219,8 +219,9 @@
 ./fingerprint_BCM.o : ./fingerprint_BCM.F90 ./interface_mod.o 
 ./soften.o : ./soften.F90 ./potential_main_minhocao.o ./interface_mod.o 
 ./expand_poslows.o : ./expand_poslows.F90 
+./symfunc_mod.o : ./symfunc_mod.F90 ./linked_lists_mod.o 
 ./cell_linkedlists.o : ./cell_linkedlists.F90 ./linked_lists_mod.o ./electrostatics_mod.o ./atoms_mod.o ./interface_mod.o 
-./ann_train.o : ./ann_train.F90 ./linked_lists_mod.o ./interface_mod.o ./train_optimizer.o ./ann_mod.o ./atoms_mod.o 
+./ann_train.o : ./ann_train.F90 ./linked_lists_mod.o ./interface_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o 
 ./fingerprint_GOM.o : ./fingerprint_GOM.F90 
 ./slab_stress.o : ./slab_stress.F90 ./interface_mod.o 
 ./optimizer_bfgs_minhocao.o : ./optimizer_bfgs_minhocao.F90 ./interface_mod.o ./potential_main_minhocao.o 

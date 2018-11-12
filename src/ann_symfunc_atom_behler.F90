@@ -2,7 +2,8 @@
 subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr !,typ_linked_lists
     use dynamic_memory
@@ -93,7 +94,8 @@ end subroutine symmetry_functions_driver
 !*****************************************************************************************
 subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -148,7 +150,8 @@ end subroutine symmetry_functions_g02_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,kat_maincell,rij,rik,rjk,drij,drik,drjk,fcij,fcdij,fcik,fcdik,fcjk,fcdjk,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -213,7 +216,8 @@ end subroutine symmetry_functions_g04_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -620,7 +624,8 @@ end function cutoff_function_der
 !*****************************************************************************************
 subroutine symmetry_functions_g05_atom2(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr

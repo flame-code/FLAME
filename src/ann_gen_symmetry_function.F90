@@ -2,7 +2,8 @@
 subroutine ann_gen_symmetry_function(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_symfunc, ann_deallocate
+    use mod_ann, only: typ_ann_arr, ann_deallocate
+    use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc, mpi_comm_abz
     implicit none

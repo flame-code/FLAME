@@ -2,7 +2,8 @@
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_parini), intent(in):: parini
@@ -65,7 +66,8 @@ end subroutine cal_force_chi_part1
 subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_parini), intent(in):: parini

@@ -2,7 +2,8 @@
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann
     use mod_parlm, only: typ_parlm
     use mod_atoms, only: typ_atoms_arr
@@ -62,7 +63,8 @@ end subroutine ann_lm
 subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     !use mod_opt_ann, only: ann_evaluate
