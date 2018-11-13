@@ -418,23 +418,6 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
         call read_input_ann(parini,iproc,ann_arr)
     endif
     !---------------------------------------------
-    opt_ann%num(1:10)=0
-    opt_ann%n=0
-    call yaml_sequence_open('EKF') !,flow=.true.)
-    do i=1,ann_arr%nann
-        do ialpha=1,ann_arr%ann(i)%nl
-            opt_ann%num(i)=opt_ann%num(i)+(ann_arr%ann(i)%nn(ialpha-1)+1)*ann_arr%ann(i)%nn(ialpha)
-        enddo
-        opt_ann%loc(i)=opt_ann%n+1
-        opt_ann%n=opt_ann%n+opt_ann%num(i)
-        call yaml_sequence(advance='no')
-        call yaml_map('iann',i)
-        call yaml_map('loc',opt_ann%loc(i))
-        call yaml_map('num',opt_ann%num(i))
-        call yaml_map('n',opt_ann%n)
-        !write(*,'(a,3i5)') 'EKF: ',opt_ann%loc(i),opt_ann%num(i),opt_ann%n
-    enddo
-    call yaml_sequence_close()
     call init_opt_ann(atoms_train%nconf,atoms_valid%nconf,opt_ann,ann_arr)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
@@ -460,9 +443,9 @@ end subroutine init_ann_train
 subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, ann_deallocate
+    use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, fini_opt_ann
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc
     use dynamic_memory
@@ -483,7 +466,7 @@ subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfun
         call yaml_close_stream(unit=ann_arr%iunit)
     endif
 
-    call ann_deallocate(ann_arr)
+    call fini_opt_ann(opt_ann,ann_arr)
 
     do iconf=1,atoms_train%nconf
         call f_free(symfunc_train%symfunc(iconf)%y)

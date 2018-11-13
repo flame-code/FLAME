@@ -2,35 +2,57 @@
 module mod_opt_ann
     implicit none
     !private
-    public:: ekf_rivals, ekf_behler, init_opt_ann, convert_x_ann_arr
+    public:: ekf_rivals, ekf_behler, init_opt_ann, convert_x_ann_arr, fini_opt_ann
     public:: convert_x_ann, convert_ann_x
     type, public:: typ_opt_ann
-        integer:: n=-1
-        integer:: loc(10)
-        integer:: num(10)
-        integer:: ndp_train=-1
-        integer:: ndp_valid=-1
-        real(8), allocatable:: x(:)
-        real(8), allocatable:: epotd(:)
-        real(8), allocatable:: g(:) !gradient of neural artificial neural network output
-        real(8), allocatable:: gc(:,:)
-        real(8), allocatable:: gs(:,:)
+        private
+        integer:: nann=-1
+        integer, public:: n=-1
+        integer, public:: ndp_train=-1
+        integer, public:: ndp_valid=-1
+        integer, allocatable, public:: loc(:)
+        integer, allocatable, public:: num(:)
+        real(8), allocatable, public:: x(:)
+        real(8), allocatable, public:: epotd(:)
+        real(8), allocatable, public:: g(:) !gradient of neural artificial neural network output
+        real(8), allocatable, public:: gc(:,:)
+        real(8), allocatable, public:: gs(:,:)
     end type typ_opt_ann
 contains
 !*****************************************************************************************
 subroutine init_opt_ann(ndp_train,ndp_valid,opt_ann,ann_arr)
     use mod_ann, only: typ_ann_arr, ann_allocate
     use dynamic_memory
+    use yaml_output
     implicit none
     integer, intent(in):: ndp_train
     integer, intent(in):: ndp_valid
     type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    integer:: istat, ng
+    integer:: istat, ng, iann, ialpha
+    opt_ann%nann=ann_arr%nann
     opt_ann%ndp_train=ndp_train
     opt_ann%ndp_valid=ndp_valid
-    call ann_allocate(opt_ann%n,opt_ann%num,ann_arr)
+    opt_ann%num=f_malloc0([1.to.opt_ann%nann],id='opt_ann%num')
+    opt_ann%loc=f_malloc0([1.to.opt_ann%nann],id='opt_ann%loc')
+    opt_ann%n=0
+    call yaml_sequence_open('EKF') !,flow=.true.)
+    do iann=1,ann_arr%nann
+        do ialpha=1,ann_arr%ann(iann)%nl
+            opt_ann%num(iann)=opt_ann%num(iann)+(ann_arr%ann(iann)%nn(ialpha-1)+1)*ann_arr%ann(iann)%nn(ialpha)
+        enddo
+        opt_ann%loc(iann)=opt_ann%n+1
+        opt_ann%n=opt_ann%n+opt_ann%num(iann)
+        call yaml_sequence(advance='no')
+        call yaml_map('iann',iann)
+        call yaml_map('loc',opt_ann%loc(iann))
+        call yaml_map('num',opt_ann%num(iann))
+        call yaml_map('n',opt_ann%n)
+        !write(*,'(a,3i5)') 'EKF: ',opt_ann%loc(iann),opt_ann%num(iann),opt_ann%n
+    enddo
+    call yaml_sequence_close()
+    call ann_allocate(opt_ann%nann,opt_ann%num,ann_arr)
 end subroutine init_opt_ann
 !*****************************************************************************************
 subroutine convert_x_ann(n,x,ann)
@@ -56,6 +78,18 @@ subroutine convert_x_ann(n,x,ann)
     enddo
     if(l/=n) stop 'ERROR: l/=n'
 end subroutine convert_x_ann
+!*****************************************************************************************
+subroutine fini_opt_ann(opt_ann,ann_arr)
+    use mod_ann, only: typ_ann_arr, ann_deallocate
+    use dynamic_memory
+    implicit none
+    type(typ_opt_ann), intent(inout):: opt_ann
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    call f_free(opt_ann%num)
+    call f_free(opt_ann%loc)
+    call ann_deallocate(ann_arr)
+end subroutine fini_opt_ann
 !*****************************************************************************************
 subroutine convert_ann_x(n,x,ann)
     use mod_ann, only: typ_ann
