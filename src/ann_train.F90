@@ -26,7 +26,7 @@ subroutine ann_train(parini)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler
+    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, convert_ann_x
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use mod_callback_ann
@@ -164,7 +164,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old
     use mod_symfunc, only: typ_symfunc
     use dynamic_memory
@@ -178,9 +178,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     type(typ_symfunc):: symfunc
     integer:: ia, ityp
     real(8):: t_ener_ref
-    do ia=1,ann_arr%nann
-        call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
-    enddo
+    call convert_x_ann_arr(opt_ann,ann_arr)
     !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     call atom_allocate_old(atoms,1,0,0)
     !write(*,*) atoms%nat
@@ -1317,56 +1315,6 @@ subroutine set_ref_energy(parini,atoms_train,atoms_ref,ind)
 end subroutine set_ref_energy
 !*****************************************************************************************
 end module mod_train
-!*****************************************************************************************
-subroutine convert_x_ann(n,x,ann)
-    use mod_interface
-    use mod_ann, only: typ_ann
-    implicit none
-    integer, intent(in):: n
-    real(8), intent(in):: x(n)
-    type(typ_ann), intent(inout):: ann
-    !local variables
-    integer:: i, j, l, ialpha
-    l=0
-    do ialpha=1,ann%nl
-        do j=1,ann%nn(ialpha)
-            do i=1,ann%nn(ialpha-1)
-                l=l+1
-                ann%a(i,j,ialpha)=x(l)
-            enddo
-        enddo
-        do i=1,ann%nn(ialpha)
-            l=l+1
-            ann%b(i,ialpha)=x(l)
-        enddo
-    enddo
-    if(l/=n) stop 'ERROR: l/=n'
-end subroutine convert_x_ann
-!*****************************************************************************************
-subroutine convert_ann_x(n,x,ann)
-    use mod_interface
-    use mod_ann, only: typ_ann
-    implicit none
-    integer, intent(in):: n
-    real(8), intent(inout):: x(n)
-    type(typ_ann), intent(inout):: ann
-    !local variables
-    integer:: i, j, l, ialpha
-    l=0
-    do ialpha=1,ann%nl
-        do j=1,ann%nn(ialpha)
-            do i=1,ann%nn(ialpha-1)
-                l=l+1
-                x(l)=ann%a(i,j,ialpha)
-            enddo
-        enddo
-        do i=1,ann%nn(ialpha)
-            l=l+1
-            x(l)=ann%b(i,ialpha)
-        enddo
-    enddo
-    if(l/=n) stop 'ERROR: l/=n'
-end subroutine convert_ann_x
 !*****************************************************************************************
 subroutine convert_ann_epotd(ann,n,epotd)
     use mod_interface

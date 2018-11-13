@@ -2,7 +2,8 @@
 module mod_opt_ann
     implicit none
     !private
-    public:: ekf_rivals, ekf_behler, init_opt_ann
+    public:: ekf_rivals, ekf_behler, init_opt_ann, convert_x_ann_arr
+    public:: convert_x_ann, convert_ann_x
     type, public:: typ_opt_ann
         integer:: n=-1
         integer:: loc(10)
@@ -31,6 +32,67 @@ subroutine init_opt_ann(ndp_train,ndp_valid,opt_ann,ann_arr)
     opt_ann%ndp_valid=ndp_valid
     call ann_allocate(opt_ann%n,opt_ann%num,ann_arr)
 end subroutine init_opt_ann
+!*****************************************************************************************
+subroutine convert_x_ann(n,x,ann)
+    use mod_ann, only: typ_ann
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: x(n)
+    type(typ_ann), intent(inout):: ann
+    !local variables
+    integer:: i, j, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do j=1,ann%nn(ialpha)
+            do i=1,ann%nn(ialpha-1)
+                l=l+1
+                ann%a(i,j,ialpha)=x(l)
+            enddo
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            ann%b(i,ialpha)=x(l)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_x_ann
+!*****************************************************************************************
+subroutine convert_ann_x(n,x,ann)
+    use mod_ann, only: typ_ann
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(inout):: x(n)
+    type(typ_ann), intent(inout):: ann
+    !local variables
+    integer:: i, j, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do j=1,ann%nn(ialpha)
+            do i=1,ann%nn(ialpha-1)
+                l=l+1
+                x(l)=ann%a(i,j,ialpha)
+            enddo
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            x(l)=ann%b(i,ialpha)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_ann_x
+!*****************************************************************************************
+subroutine convert_x_ann_arr(opt_ann,ann_arr)
+    use mod_ann, only: typ_ann_arr
+    use dynamic_memory
+    implicit none
+    type(typ_opt_ann), intent(in):: opt_ann
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: ia
+    do ia=1,ann_arr%nann
+        call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
+    enddo
+end subroutine convert_x_ann_arr
 !*****************************************************************************************
 subroutine ekf_rivals(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
@@ -84,9 +146,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
     do iter=0,parini%nstep_opt_ann
         call yaml_sequence(advance='no',unit=ann_arr%iunit)
         call cpu_time(time_s)
-        do ia=1,ann_arr%nann
-            call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
-        enddo
+        call convert_x_ann_arr(opt_ann,ann_arr)
         if(iproc==0) then
             if( ann_arr%exists_yaml_file) then
                 call write_ann_all_yaml(parini,ann_arr,iter)
@@ -116,6 +176,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
         write(31,'(i6,es14.5)') iter,r
         do iconf=1,opt_ann%ndp_train
             ann_arr%event='train'
+            call convert_x_ann_arr(opt_ann,ann_arr)
             call get_fcn_ann(parini,iconf,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
             if(trim(parini%approach_ann)=='tb') then
                 do j=1,opt_ann%n
@@ -293,9 +354,7 @@ subroutine ekf_behler(parini,ann_arr,opt_ann)
     alambda=0.997d0
     do iter=0,parini%nstep_opt_ann
         call cpu_time(time_s)
-        do ia=1,ann_arr%nann
-            call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
-        enddo
+        call convert_x_ann_arr(opt_ann,ann_arr)
         if(iproc==0) then
             if( ann_arr%exists_yaml_file) then
                 call write_ann_all_yaml(parini,ann_arr,iter)

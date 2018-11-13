@@ -7,7 +7,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
     implicit none
@@ -45,9 +45,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         !nodes in the input layer is the same for all atom types.
         !Therefore, it must be fixed later.
         !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        do i=1,ann_arr%nann
-            call convert_x_ann(opt_ann%num(i),opt_ann%x(opt_ann%loc(i)),ann_arr%ann(i))
-        enddo
+        call convert_x_ann_arr(opt_ann,ann_arr)
     endif
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
@@ -247,7 +245,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann
     use mod_parlm, only: typ_parlm
     use dynamic_memory
     implicit none

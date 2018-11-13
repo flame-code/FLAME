@@ -5,7 +5,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
@@ -47,9 +47,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
         !nodes in the input layer is the same for all atom types.
         !Therefore, it must be fixed later.
         !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        do i=1,ann_arr%nann
-            call convert_x_ann(opt_ann%num(i),opt_ann%x(opt_ann%loc(i)),ann_arr%ann(i))
-        enddo
+        call convert_x_ann_arr(opt_ann,ann_arr)
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
     call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)

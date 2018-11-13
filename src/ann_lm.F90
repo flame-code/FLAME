@@ -4,7 +4,7 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_parlm, only: typ_parlm
     use mod_atoms, only: typ_atoms_arr
     implicit none
@@ -39,16 +39,12 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
         !enddo
         !iann=1
         if(parlm%icontinue==700) then
-            do iann=1,ann_arr%nann
-                call convert_x_ann(opt_ann%num(iann),parlm%wa2(opt_ann%loc(iann)),ann_arr%ann(iann))
-            enddo
+            call convert_x_ann_arr(opt_ann,ann_arr)
             !opt_ann%x(1:parlm%n)=parlm%wa2(1:parlm%n)
             call fcn_epot(m,parlm%n,parlm%wa2,parlm%wa4,parlm%fjac,m,parlm%iflag, &
                 parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
         else
-            do iann=1,ann_arr%nann
-                call convert_x_ann(opt_ann%num(iann),parlm%x(opt_ann%loc(iann)),ann_arr%ann(iann))
-            enddo
+            call convert_x_ann_arr(opt_ann,ann_arr)
             !opt_ann%x(1:parlm%n)=parlm%x(1:parlm%n)
             call fcn_epot(m,parlm%n,parlm%x,parlm%fvec,parlm%fjac,m,parlm%iflag, &
                 parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
@@ -83,9 +79,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     integer, save:: icall0=0
     icall=icall+1
     !opt_ann%x(1:n)=x(1:n)
-    !do ia=1,ann_arr%nann
-    !    call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
-    !enddo
+    !call convert_x_ann_arr(opt_ann,ann_arr)
     write(*,'(a,i,a,i,a)') '**************** icall= ',icall,'  iflag= ',iflag,'  ************'
     if(iflag==1) then
         ann_arr%event='evalu'
