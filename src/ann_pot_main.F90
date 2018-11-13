@@ -30,7 +30,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     !use mod_tightbinding, only: typ_partb
     implicit none
     type(typ_parini), intent(in):: parini
@@ -43,20 +43,22 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     !real(8), allocatable:: xt(:), gt(:)
     integer:: i, j, iat
     type(typ_partb):: partb
+    real(8), allocatable:: ann_grad(:)
     if(trim(ann_arr%approach)=='atombased') then
         if(trim(ann_arr%event)=='train') then
-            allocate(opt_ann%gs(opt_ann%num(1),atoms%nat)) !HERE
+            allocate(ann_grad(opt_ann%n))
         endif
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
         if(trim(ann_arr%event)=='train') then
-            opt_ann%g(1:opt_ann%n)=0.d0
+            ann_grad(1:opt_ann%n)=0.d0
             do iat=1,atoms%nat
                 i=atoms%itypat(iat)
                 do j=1,opt_ann%num(1)
-                    opt_ann%g(opt_ann%loc(i)+j-1)=opt_ann%g(opt_ann%loc(i)+j-1)+opt_ann%gs(j,iat)
+                    ann_grad(opt_ann%loc(i)+j-1)=ann_grad(opt_ann%loc(i)+j-1)+ann_arr%g_per_atom(j,iat)
                 enddo
             enddo
-            deallocate(opt_ann%gs)
+            call set_opt_ann_grad(opt_ann%n,ann_grad,opt_ann)
+            deallocate(ann_grad)
         endif
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
@@ -64,10 +66,11 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         call cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
+        !if(trim(ann_arr%event)=='train') then
         ! E0=atoms%epot
         ! allocate(xt(opt_ann%n),gt(opt_ann%n))
         ! xt(1:opt_ann%n)=opt_ann%x(1:opt_ann%n)
-        ! gt(1:opt_ann%n)=opt_ann%g(1:opt_ann%n)
+        ! gt(1:opt_ann%n)=ann_grad(1:opt_ann%n)
         ! do i=1,opt_ann%n
         !     g_tb=gt(i)
         !     !!Finite difference 
@@ -80,6 +83,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         !     opt_ann%x(i)=xt(i)
         ! enddo
         ! stop 'TTTTTTTTTTTTTTTT'
+        !endif
     else
         write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
         stop
@@ -108,7 +112,6 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     real(8), allocatable:: epotall(:), eref_all(:)
     !return
     ann_arr%event='train'
-    allocate(opt_ann%g(opt_ann%n))
     call convert_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
     isatur=0
@@ -166,7 +169,6 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     enddo
     call f_free(epotall)
     call f_free(eref_all)
-    deallocate(opt_ann%g)
     !stop
 end subroutine prefit_cent_ener_ref
 !*****************************************************************************************
@@ -191,7 +193,6 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
     real(8):: anat2(100), g2(100), qnet
     ann_arr%event='train'
-    allocate(opt_ann%g(opt_ann%n))
     call convert_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
     isatur=0
@@ -246,6 +247,5 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse_old=rmse
     enddo
-    deallocate(opt_ann%g)
 end subroutine prefit_cent
 !*****************************************************************************************

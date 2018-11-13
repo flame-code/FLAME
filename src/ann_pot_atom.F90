@@ -83,7 +83,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
             endif
         elseif(trim(ann_arr%event)=='train') then
             call cal_architecture_der(ann_arr%ann(i),epoti)
-            call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),opt_ann%gs(1,iat))
+            call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),ann_arr%g_per_atom(1,iat))
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif

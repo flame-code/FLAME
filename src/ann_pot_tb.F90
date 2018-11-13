@@ -7,7 +7,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
     implicit none
@@ -22,6 +22,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     type(typ_pia_arr):: pia_arr
     type(potl_typ):: pplocal
     real(8), allocatable:: hgen(:,:), dhgen(:,:)
+    real(8), allocatable:: ann_grad(:)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
     real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc, tt1
@@ -29,6 +30,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
     allocate(partb%dedh(4,atoms%nat,atoms%nat),source=0.d0)
+    allocate(ann_grad(opt_ann%n))
     linked_lists%rcut=partb%paircut !ann_arr%rcut
     linked_lists%triplex=.true.
     call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
@@ -123,7 +125,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         partb%event=ann_arr%event
         call lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,atoms%nat,c)
         if(trim(ann_arr%event)=='train') then
-            opt_ann%g=0.d0
+            ann_grad=0.d0
             do i=1,4
                 do j=1,opt_ann%num(1)
                     tt1=0.d0
@@ -133,9 +135,10 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
                     !write(*,'(a,5i4,2es14.5,i4)') 'DEDH',i,j,ib,iat,jat,partb%dedh(i,iat,jat),ann_arr%g_per_bond(j,i,ib),opt_ann%loc(i)+j-1
                     tt1=tt1+partb%dedh(i,iat,jat)*ann_arr%g_per_bond(j,i,ib)
                     enddo
-                    opt_ann%g(opt_ann%loc(i)+j-1)=tt1
+                    ann_grad(opt_ann%loc(i)+j-1)=tt1
                 enddo
             enddo
+            call set_opt_ann_grad(opt_ann%n,ann_grad,opt_ann)
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
@@ -161,6 +164,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     deallocate(linked_lists%prime_bound)
     deallocate(linked_lists%bound_rad)
     deallocate(linked_lists%bound_ang)
+    deallocate(ann_grad)
 end subroutine cal_ann_tb
 !*****************************************************************************************
 subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,count_md)

@@ -26,7 +26,7 @@ subroutine ann_train(parini)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, convert_ann_x
+    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, convert_ann_x, ann_lm
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use mod_callback_ann

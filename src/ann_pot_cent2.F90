@@ -5,7 +5,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -22,6 +22,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
     real(8),allocatable :: gausswidth(:)
+    real(8), allocatable:: ann_grad(:)
     call f_routine(id='cal_ann_cent2')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -164,17 +165,20 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
         call f_free(ann_arr%stresspq)
     endif
     if(trim(ann_arr%event)=='train') then
-        opt_ann%g(1:opt_ann%n)=0.d0
+        allocate(ann_grad(opt_ann%n))
+        ann_grad(1:opt_ann%n)=0.d0
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
             do j=1,opt_ann%num(1)
-                opt_ann%g(opt_ann%loc(i)+j-1)=opt_ann%g(opt_ann%loc(i)+j-1)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
+                ann_grad(opt_ann%loc(i)+j-1)=ann_grad(opt_ann%loc(i)+j-1)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
+        call set_opt_ann_grad(opt_ann%n,ann_grad,opt_ann)
         !do i=1,ann_arr%nann
-        !    opt_ann%g(opt_ann%loc(i)+opt_ann%num(1)-1)=opt_ann%g(opt_ann%loc(i)+opt_ann%num(1)-1)*1.d-4
+        !    ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)=ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)*1.d-4
         !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
         !enddo
+        deallocate(ann_grad)
     endif
     if(parini%iverbose>=3) then
         fnet=0.d0

@@ -178,36 +178,6 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
     character(*), intent(in):: filename_list
     type(typ_atoms_arr), intent(inout):: atoms_arr
 end subroutine read_data_yaml
-! ./src/ann_lm.F90 :
-subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann
-    use mod_parlm, only: typ_parlm
-    use mod_atoms, only: typ_atoms_arr
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr):: ann_arr
-    type(typ_opt_ann):: opt_ann
-    type(typ_atoms_arr):: atoms_train
-    type(typ_atoms_arr):: atoms_valid
-    type(typ_symfunc_arr):: symfunc_train
-    type(typ_symfunc_arr):: symfunc_valid
-end subroutine ann_lm
-subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-    type(typ_opt_ann), intent(inout):: opt_ann
-    integer:: m, n, ldfjac, iflag
-    real(8):: x(n), fvec(m), fjac(ldfjac,n)
-end subroutine fcn_epot
 ! ./src/ann_pot_atom.F90 :
 subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
@@ -228,7 +198,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
@@ -343,7 +313,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -532,7 +502,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -545,7 +515,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -562,7 +532,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -593,7 +563,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann
     use mod_parlm, only: typ_parlm
     type(typ_parini), intent(in):: parini
     type(typ_opt_ann), intent(inout):: opt_ann

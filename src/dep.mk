@@ -49,7 +49,6 @@
 ./io_acf.o : ./io_acf.F90 ./atoms_mod.o ./interface_mod.o 
 ./optimizer_bfgs.o : ./optimizer_bfgs.F90 ./interface_mod.o 
 ./binaries.o : ./binaries.F90 
-./ann_lm.o : ./ann_lm.F90 ./atoms_mod.o ./ann_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./interface_mod.o 
 ./fingerprint_atorb.o : ./fingerprint_atorb.F90 ./interface_mod.o 
 ./save_low_conf.o : ./save_low_conf.F90 ./interface_mod.o 
 ./correct_latvec.o : ./correct_latvec.F90 ./interface_mod.o 
@@ -57,7 +56,7 @@
 ./fingerprint_oganov_cont.o : ./fingerprint_oganov_cont.F90 
 ./potential_BLJ_minhocao.o : ./potential_BLJ_minhocao.F90 
 ./potential_confinement.o : ./potential_confinement.F90 ./interface_mod.o 
-./train_optimizer.o : ./train_optimizer.F90 ./ann_mod.o 
+./train_optimizer.o : ./train_optimizer.F90 ./atoms_mod.o ./ann_mod.o ./symfunc_mod.o ./ann_mod.o 
 ./potential_DFTB_minhocao.o : ./potential_DFTB_minhocao.F90 
 ./task_single_point.o : ./task_single_point.F90 ./potential_mod.o ./atoms_mod.o ./interface_mod.o 
 ./parser_core_minhocao.o : ./parser_core_minhocao.F90 
