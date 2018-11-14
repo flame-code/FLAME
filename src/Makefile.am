@@ -8,19 +8,25 @@ bin_PROGRAMS = flame
 
 SRC_F = minpack/dpmpar.f minpack/enorm.f  minpack/lmder.f minpack/lmpar.f minpack/qrfac.f minpack/qrsolv.f
 
-AM_FCFLAGS = -DMPI -I$(top_builddir)/modules/
+AM_FCFLAGS = -DMPI 
 AM_CPPFLAGS = -DQSC_STANDALONE
 
 SRC_ = $(SRC_F)
 
-if HAVE_LAMMPS
-SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90 lammps_mod.F90
-AM_FCFLAGS += -DHAVE_LAMMPS
-AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src
-LIBS += $(LAMMPS_ROOT)/src/liblammps_mpi.a
-endif
-
-SRC_ += atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
+SRC_ += task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
+		constants_mod.F90 \
+		spline_mod.F90 \
+		shortrange_mod.F90 \
+		opt_mod.F90 genconf_mod.F90 parini_mod.F90 \
+		tightbinding_mod.F90 \
+		bader_mod.F90 \
+		minhocao_mod.F90 \
+		minhopp_mod.F90 \
+		saddle_mod.F90 dynamics_mod.F90 \
+		fsockets.F90 \
+		timing_mod.F90 \
+		constants_minhocao_mod.F90 \
+		atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
 		electrostatics_mod.F90 \
 		ann_mod.F90 \
 		potential_mod.F90 \
@@ -74,6 +80,13 @@ SRC_ += atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
 		potential_DFTB.F90 \
 		optimizer_simplex.F90
 
+if HAVE_LAMMPS
+SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90 lammps_mod.F90
+AM_FCFLAGS += -DHAVE_LAMMPS
+AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src
+LIBS += $(LAMMPS_ROOT)/src/liblammps_mpi.a
+endif
+
 minhocao_src = potential_flame.F90  potential_corerepulsion.F90 \
 		potential_confinement.F90 potential_IPI.F90 potential_MSOCK.F90 \
 		potential_abinit.F90 potential_LJ_voids.F90 potential_BLJ_minhocao.F90 \
@@ -115,7 +128,7 @@ include $(srcdir)/dep.mk
 libsrc_a_SOURCES = $(SRC_) $(minhocao_src)
 
 flame_SOURCES = flame.F90
-flame_LDADD = libsrc.a  $(top_builddir)/modules/libmodules.a lenosky_tb/liblenosky.a libclowlevel.a
+flame_LDADD = libsrc.a  lenosky_tb/liblenosky.a libclowlevel.a
 
 libclowlevel_a_SOURCES = $(_SOURCES_CPP) $(_SOURCES_C)
 
