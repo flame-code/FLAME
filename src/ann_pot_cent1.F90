@@ -23,7 +23,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
-    real(8), allocatable:: ann_grad(:)
+    real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_cent1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -162,19 +162,18 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
         deallocate(ann_arr%stresspq)
     endif
     if(trim(ann_arr%event)=='train') then
-        allocate(ann_grad(opt_ann%n))
-        ann_grad(1:opt_ann%n)=0.d0
+        allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
-            do j=1,opt_ann%num(1)
-                ann_grad(opt_ann%loc(i)+j-1)=ann_grad(opt_ann%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
         !do i=1,ann_arr%nann
         !    ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)=ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)*1.d-4
         !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
         !enddo
-        call set_opt_ann_grad(opt_ann%n,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
         deallocate(ann_grad)
     endif
     call f_release_routine()

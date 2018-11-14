@@ -106,7 +106,6 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
         call f_free(symfunc%y0dr)
         endif
     endif
-    !call ann_deallocate(ann_arr)
     call f_release_routine()
 end subroutine cal_ann_atombased
 !*****************************************************************************************

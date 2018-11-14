@@ -67,7 +67,7 @@ end subroutine ann_evaluate_subtask
 ! ./src/ann_gen_symmetry_function.F90 :
 subroutine ann_gen_symmetry_function(parini)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, ann_deallocate
+    use mod_ann, only: typ_ann_arr, ann_arr_deallocate
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     type(typ_parini), intent(in):: parini
@@ -198,7 +198,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
@@ -313,7 +313,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -491,7 +491,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -532,7 +532,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -563,7 +563,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann, get_opt_ann_x, set_opt_ann_x
     use mod_parlm, only: typ_parlm
     type(typ_parini), intent(in):: parini
     type(typ_opt_ann), intent(inout):: opt_ann
@@ -793,13 +793,6 @@ subroutine symmetry_functions_g04_bond(ann_arr,iat,jat,rij,drij,fcij,fcdij,rik,d
     real(8), intent(in):: rij, rik, rjk
     real(8), intent(in):: drij(3), drik(3), drjk(3)
 end subroutine symmetry_functions_g04_bond
-! ./src/ann_weights_init.F90 :
-subroutine set_annweights(parini,opt_ann)
-    use mod_parini, only: typ_parini
-    use mod_opt_ann, only: typ_opt_ann
-    type(typ_parini), intent(in):: parini
-    type(typ_opt_ann), intent(inout):: opt_ann
-end subroutine set_annweights
 ! ./src/atoms_minhocao.F90 :
 subroutine atmdata(amu,rcov,symbol,znucl)
  real(8),intent(in) :: znucl

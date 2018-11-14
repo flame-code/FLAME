@@ -37,7 +37,6 @@
 ./task_potential.o : ./task_potential.F90 ./atoms_mod.o ./potential_mod.o ./flame_as_potential_mod.o ./interface_mod.o 
 ./potential_LenoskyTB_LJ_minhocao.o : ./potential_LenoskyTB_LJ_minhocao.F90 
 ./task_miscellaneous.o : ./task_miscellaneous.F90 ./interface_mod.o 
-./ann_weights_init.o : ./ann_weights_init.F90 ./train_optimizer.o ./interface_mod.o 
 ./bader_weight.o : ./bader_weight.F90 ./interface_mod.o 
 ./potential_MLJ.o : ./potential_MLJ.F90 
 ./POSCAR2ascii.o : ./POSCAR2ascii.F90 

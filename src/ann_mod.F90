@@ -5,7 +5,8 @@ module mod_ann
     use mod_electrostatics, only: typ_poisson
     implicit none
     private
-    public:: ann_allocate, ann_deallocate, set_number_of_ann
+    public:: ann_arr_allocate, ann_arr_deallocate, set_number_of_ann
+    public:: init_ann_arr, fini_ann_arr
     type, public:: typ_ann
         type(dictionary), pointer :: dict
         integer:: nl !number of hidden layer plus one
@@ -77,6 +78,7 @@ module mod_ann
         integer:: iunit
         integer:: nann=-1
         integer:: natmax=1000
+        integer:: nweight_max=-1
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
         character(30):: event='unknown'
@@ -137,13 +139,39 @@ subroutine set_number_of_ann(parini,ann_arr)
     endif
 end subroutine set_number_of_ann
 !*****************************************************************************************
-subroutine ann_allocate(n,num,ann_arr)
+subroutine init_ann_arr(ann_arr)
     !use mod_ann, only: typ_ann_arr
     !use mod_opt_ann, only: typ_opt_ann
     use dynamic_memory
     implicit none
-    integer, intent(in):: n
-    integer, intent(in):: num(n)
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: nw, ialpha, iann
+    do iann=1,ann_arr%nann
+        nw=0
+        do ialpha=1,ann_arr%ann(iann)%nl
+            nw=nw+(ann_arr%ann(iann)%nn(ialpha-1)+1)*ann_arr%ann(iann)%nn(ialpha)
+        enddo
+        ann_arr%nweight_max=max(ann_arr%nweight_max,nw)
+    enddo
+    call ann_arr_allocate(ann_arr)
+end subroutine init_ann_arr
+!*****************************************************************************************
+subroutine fini_ann_arr(ann_arr)
+    !use mod_ann, only: typ_ann_arr
+    !use mod_opt_ann, only: typ_opt_ann
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    call ann_arr_deallocate(ann_arr)
+end subroutine fini_ann_arr
+!*****************************************************************************************
+subroutine ann_arr_allocate(ann_arr)
+    !use mod_ann, only: typ_ann_arr
+    !use mod_opt_ann, only: typ_opt_ann
+    use dynamic_memory
+    implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
     integer:: istat, ng
@@ -164,15 +192,15 @@ subroutine ann_allocate(n,num,ann_arr)
     ann_arr%chi_o=0.d0
     ann_arr%chi_d=0.d0
     ann_arr%a=0.d0
-    allocate(ann_arr%g_per_atom(1:num(1),1:ann_arr%natmax))
+    allocate(ann_arr%g_per_atom(ann_arr%nweight_max,ann_arr%natmax))
     !symfunc%linked_lists%maxbound_rad is assumed 10000
     allocate(ann_arr%fatpq(1:3,1:10000))
     allocate(ann_arr%stresspq(1:3,1:3,1:10000))
     allocate(ann_arr%ipiv(1:ann_arr%natmax+1))
     allocate(ann_arr%qq(1:ann_arr%natmax+1))
-end subroutine ann_allocate
+end subroutine ann_arr_allocate
 !*****************************************************************************************
-subroutine ann_deallocate(ann_arr)
+subroutine ann_arr_deallocate(ann_arr)
     !use mod_ann, only: typ_ann_arr
     use dynamic_memory
     implicit none
@@ -195,7 +223,7 @@ subroutine ann_deallocate(ann_arr)
     deallocate(ann_arr%stresspq)
     deallocate(ann_arr%ipiv)
     deallocate(ann_arr%qq)
-end subroutine ann_deallocate
+end subroutine ann_arr_deallocate
 !*****************************************************************************************
 end module mod_ann
 !*****************************************************************************************

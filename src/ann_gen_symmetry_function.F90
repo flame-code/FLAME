@@ -2,7 +2,7 @@
 subroutine ann_gen_symmetry_function(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, ann_deallocate
+    use mod_ann, only: typ_ann_arr, ann_arr_deallocate
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc, mpi_comm_abz
@@ -94,6 +94,6 @@ subroutine ann_gen_symmetry_function(parini)
         enddo
         close(1)
     enddo
-    call ann_deallocate(ann_arr)
+    call ann_arr_deallocate(ann_arr)
 end subroutine ann_gen_symmetry_function 
 !*****************************************************************************************

@@ -27,6 +27,7 @@ subroutine ann_train(parini)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, convert_ann_x, ann_lm
+    use mod_opt_ann, only: set_annweights
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
     use mod_callback_ann
@@ -102,19 +103,19 @@ subroutine ann_train(parini)
     !-------------------------------------------------------------------------------------
     call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !-------------------------------------------------------
-    opt_ann%x=f_malloc([1.to.opt_ann%n],id='opt_ann%x')
+    !opt_ann%x=f_malloc([1.to.opt_ann%n],id='opt_ann%x')
     if (.not. parini%restart_param) then
-        call set_annweights(parini,opt_ann)
-        if(trim(parini%approach_ann)=='cent2') then
-            do ia=1,ann_arr%nann
-                opt_ann%x(opt_ann%loc(ia)+opt_ann%num(1)-1)=0.d0
-                !write(*,*) 'XXX ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
-            enddo
-        endif
-    else
-        do ia=1,ann_arr%nann
-            call convert_ann_x(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
-        enddo
+        call set_annweights(parini,opt_ann,ann_arr)
+        !if(trim(parini%approach_ann)=='cent2') then
+        !    do ia=1,ann_arr%nann
+        !        opt_ann%x(opt_ann%loc(ia)+opt_ann%num(1)-1)=0.d0
+        !        !write(*,*) 'XXX ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
+        !    enddo
+        !endif
+    !else
+    !    do ia=1,ann_arr%nann
+    !        call convert_ann_x(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
+    !    enddo
     endif
     if(trim(parini%approach_ann)=='cent2') then
         call set_single_atom_energy(parini,ann_arr,opt_ann)
@@ -384,7 +385,7 @@ end subroutine cal_rmse_energy_cent2
 subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, set_number_of_ann
+    use mod_ann, only: typ_ann_arr, set_number_of_ann, init_ann_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann
     use mod_processors, only: iproc
@@ -418,6 +419,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
         call read_input_ann(parini,iproc,ann_arr)
     endif
     !---------------------------------------------
+    call init_ann_arr(ann_arr)
     call init_opt_ann(atoms_train%nconf,atoms_valid%nconf,opt_ann,ann_arr)
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
@@ -443,7 +445,7 @@ end subroutine init_ann_train
 subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, fini_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, fini_opt_ann
     use mod_atoms, only: typ_atoms_arr
@@ -458,7 +460,7 @@ subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfun
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
     !local variables
     integer:: iconf
-    call f_free(opt_ann%x)
+    !call f_free(opt_ann%x)
 
     if(iproc==0) then
         !close(11)
@@ -466,7 +468,8 @@ subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfun
         call yaml_close_stream(unit=ann_arr%iunit)
     endif
 
-    call fini_opt_ann(opt_ann,ann_arr)
+    call fini_ann_arr(ann_arr)
+    call fini_opt_ann(opt_ann)
 
     do iconf=1,atoms_train%nconf
         call f_free(symfunc_train%symfunc(iconf)%y)

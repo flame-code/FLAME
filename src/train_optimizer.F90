@@ -3,7 +3,7 @@ module mod_opt_ann
     implicit none
     !private
     public:: ekf_rivals, ekf_behler, init_opt_ann, convert_x_ann_arr, fini_opt_ann
-    public:: set_opt_ann_grad
+    public:: set_opt_ann_grad, set_annweights, get_opt_ann_x, set_opt_ann_x
     public:: convert_x_ann, convert_ann_x
     public:: ann_lm
     type, public:: typ_opt_ann
@@ -12,16 +12,16 @@ module mod_opt_ann
         integer, public:: n=-1
         integer:: ndp_train=-1
         integer:: ndp_valid=-1
-        integer, allocatable, public:: loc(:)
+        integer, allocatable:: loc(:)
         integer, allocatable, public:: num(:)
-        real(8), allocatable, public:: x(:)
+        real(8), allocatable:: x(:)
         real(8), allocatable:: epotd(:)
         real(8), allocatable:: g(:) !gradient of neural artificial neural network output
     end type typ_opt_ann
 contains
 !*****************************************************************************************
 subroutine init_opt_ann(ndp_train,ndp_valid,opt_ann,ann_arr)
-    use mod_ann, only: typ_ann_arr, ann_allocate
+    use mod_ann, only: typ_ann_arr
     use dynamic_memory
     use yaml_output
     implicit none
@@ -52,40 +52,69 @@ subroutine init_opt_ann(ndp_train,ndp_valid,opt_ann,ann_arr)
         !write(*,'(a,3i5)') 'EKF: ',opt_ann%loc(iann),opt_ann%num(iann),opt_ann%n
     enddo
     opt_ann%g=f_malloc0([1.to.opt_ann%n],id='opt_ann%g')
+    opt_ann%x=f_malloc0([1.to.opt_ann%n],id='opt_ann%x')
     call yaml_sequence_close()
-    call ann_allocate(opt_ann%nann,opt_ann%num,ann_arr)
 end subroutine init_opt_ann
 !*****************************************************************************************
-subroutine fini_opt_ann(opt_ann,ann_arr)
-    use mod_ann, only: typ_ann_arr, ann_deallocate
+subroutine fini_opt_ann(opt_ann)
+    use mod_ann, only: typ_ann_arr
     use dynamic_memory
     implicit none
     type(typ_opt_ann), intent(inout):: opt_ann
-    type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
     call f_free(opt_ann%num)
     call f_free(opt_ann%loc)
     call f_free(opt_ann%g)
-    call ann_deallocate(ann_arr)
+    call f_free(opt_ann%x)
 end subroutine fini_opt_ann
 !*****************************************************************************************
-subroutine set_opt_ann_grad(ngrad,grad,opt_ann)
+subroutine set_opt_ann_grad(nw_per_ann,grad,opt_ann)
     use dynamic_memory
     use yaml_output
     implicit none
-    integer, intent(in):: ngrad
-    real(8), intent(in):: grad(ngrad)
+    integer, intent(in):: nw_per_ann
     type(typ_opt_ann), intent(inout):: opt_ann
+    real(8), intent(in):: grad(nw_per_ann,opt_ann%nann)
     !local variables
-    integer:: i
-    if(ngrad/=opt_ann%n) then
-        write(*,*) 'ERROR: ngrad/=opt_ann%n'
-        stop
-    endif
-    do i=1,ngrad
-        opt_ann%g(i)=grad(i)
+    integer:: i, j
+    do i=1,opt_ann%nann
+        do j=1,nw_per_ann
+            opt_ann%g(opt_ann%loc(i)+j-1)=grad(j,i)
+        enddo
     enddo
 end subroutine set_opt_ann_grad
+!*****************************************************************************************
+subroutine set_opt_ann_x(nw_per_ann,x_arr,opt_ann)
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    integer, intent(in):: nw_per_ann
+    type(typ_opt_ann), intent(inout):: opt_ann
+    real(8), intent(in):: x_arr(nw_per_ann,opt_ann%nann)
+    !local variables
+    integer:: i, j
+    do i=1,opt_ann%nann
+        do j=1,nw_per_ann
+            opt_ann%x(opt_ann%loc(i)+j-1)=x_arr(j,i)
+        enddo
+    enddo
+end subroutine set_opt_ann_x
+!*****************************************************************************************
+subroutine get_opt_ann_x(nw_per_ann,opt_ann,x_arr)
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    integer, intent(in):: nw_per_ann
+    type(typ_opt_ann), intent(in):: opt_ann
+    real(8), intent(out):: x_arr(nw_per_ann,opt_ann%nann)
+    !local variables
+    integer:: i, j
+    do i=1,opt_ann%nann
+        do j=1,nw_per_ann
+            x_arr(j,i)=opt_ann%x(opt_ann%loc(i)+j-1)
+        enddo
+    enddo
+end subroutine get_opt_ann_x
 !*****************************************************************************************
 subroutine convert_x_ann(n,x,ann)
     use mod_ann, only: typ_ann
@@ -116,7 +145,7 @@ subroutine convert_ann_x(n,x,ann)
     implicit none
     integer, intent(in):: n
     real(8), intent(inout):: x(n)
-    type(typ_ann), intent(inout):: ann
+    type(typ_ann), intent(in):: ann
     !local variables
     integer:: i, j, l, ialpha
     l=0
@@ -585,6 +614,72 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
         icall0=icall0+1
     endif
 end subroutine fcn_epot
+!*****************************************************************************************
+subroutine set_annweights(parini,opt_ann,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_processors, only: iproc, mpi_comm_abz
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_opt_ann), intent(inout):: opt_ann
+    type(typ_ann_arr), intent(in):: ann_arr
+    !local variables
+    integer:: ierr, i, ia
+    real(8):: tt
+    character(50):: approach
+#if defined(MPI)
+    include 'mpif.h'
+#endif
+    if (parini%restart_param) then
+        do ia=1,opt_ann%nann
+            call convert_ann_x(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
+        enddo
+        return
+    endif
+    !approach='uniform'
+    approach='pure_electrostatic'
+    !approach='type_dependent'
+    if(iproc==0) then
+        if(trim(approach)=='uniform') then
+            call random_number(opt_ann%x)
+            opt_ann%x(1:opt_ann%n)=(opt_ann%x(1:opt_ann%n)-0.5d0)*2.d0*parini%ampl_rand
+        elseif(trim(approach)=='pure_electrostatic') then
+            do i=1,opt_ann%n
+                if(i<=opt_ann%n/2) then
+                    call random_number(opt_ann%x(i))
+                    tt=-2.d0*parini%ampl_rand
+                    opt_ann%x(i)=(opt_ann%x(i)-0.5d0)*tt
+                else
+                    opt_ann%x(i)=-opt_ann%x(i-opt_ann%n/2)
+                endif
+            enddo
+            !opt_ann%x(opt_ann%n/2)=0.d0
+            !opt_ann%x(opt_ann%n)=0.d0
+        elseif(trim(approach)=='type_dependent') then
+            do i=1,opt_ann%n
+                if(i<=opt_ann%n/4) then
+                    call random_number(opt_ann%x(i))
+                    tt=2.d0*parini%ampl_rand
+                    opt_ann%x(i)=(opt_ann%x(i)-0.5d0)*tt
+                elseif(i<=opt_ann%n/2) then
+                    opt_ann%x(i)=-opt_ann%x(i-opt_ann%n/4)
+                elseif(i<=3*opt_ann%n/4) then
+                    call random_number(opt_ann%x(i))
+                    tt=2.d0*parini%ampl_rand
+                    opt_ann%x(i)=-(opt_ann%x(i)-0.5d0)*tt
+                else
+                    opt_ann%x(i)=-opt_ann%x(i-opt_ann%n/4)
+                endif
+            enddo
+        else
+            stop 'ERROR: unknown approach in set_annweights'
+        endif
+
+    endif
+#if defined(MPI)
+    call MPI_BCAST(opt_ann%x,opt_ann%n,MPI_DOUBLE_PRECISION,0,mpi_comm_abz,ierr)
+#endif
+end subroutine set_annweights
 !*****************************************************************************************
 end module mod_opt_ann
 !*****************************************************************************************

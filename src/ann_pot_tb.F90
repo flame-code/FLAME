@@ -22,7 +22,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     type(typ_pia_arr):: pia_arr
     type(potl_typ):: pplocal
     real(8), allocatable:: hgen(:,:), dhgen(:,:)
-    real(8), allocatable:: ann_grad(:)
+    real(8), allocatable:: ann_grad(:,:)
     integer:: iat, jat, ng, i, j, k, isat, ib, nb, ixyz
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
     real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc, tt1
@@ -30,7 +30,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
     allocate(partb%dedh(4,atoms%nat,atoms%nat),source=0.d0)
-    allocate(ann_grad(opt_ann%n))
+    allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann))
     linked_lists%rcut=partb%paircut !ann_arr%rcut
     linked_lists%triplex=.true.
     call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
@@ -135,10 +135,10 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
                     !write(*,'(a,5i4,2es14.5,i4)') 'DEDH',i,j,ib,iat,jat,partb%dedh(i,iat,jat),ann_arr%g_per_bond(j,i,ib),opt_ann%loc(i)+j-1
                     tt1=tt1+partb%dedh(i,iat,jat)*ann_arr%g_per_bond(j,i,ib)
                     enddo
-                    ann_grad(opt_ann%loc(i)+j-1)=tt1
+                    ann_grad(j,i)=tt1
                 enddo
             enddo
-            call set_opt_ann_grad(opt_ann%n,ann_grad,opt_ann)
+            call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
@@ -249,7 +249,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann, get_opt_ann_x, set_opt_ann_x
     use mod_parlm, only: typ_parlm
     use dynamic_memory
     implicit none
@@ -268,6 +268,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     real(8), allocatable:: yall(:,:,:)
     real(8), allocatable:: grad(:,:)
     real(8):: hgen_ltb(4,325), dis_ltb(325)
+    real(8), allocatable:: x_arr(:,:)
     character(10):: str_tmp
     call atom_allocate_old(atoms,2,0,0)
     atoms%boundcond='free'
@@ -309,10 +310,13 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     parlm%ftol=5.d-3
     parlm%gtol=5.d-3
     m=325
-    parlm%n=opt_ann%n /4
+    parlm%n=opt_ann%n/4
+    x_arr=f_malloc([1.to.ann_arr%nweight_max,1.to.ann_arr%nann],id='x_arr')
     do iann=1,4
     call init_lmder_modified(parlm,m,m)
-    parlm%x(1:parlm%n)=opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+opt_ann%num(1)-1)
+    call get_opt_ann_x(ann_arr%nweight_max,opt_ann,x_arr)
+    !parlm%x(1:parlm%n)=opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+opt_ann%num(1)-1)
+    parlm%x(1:parlm%n)=x_arr(1:parlm%n,iann)
     do
         call lmder_modified(parlm,m,m)
         write(*,*) 'nfev,njev: ',parlm%nfev,parlm%njev
@@ -328,11 +332,14 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
             call fcn_hgen(m,parlm%n,parlm%x,parlm%fvec,parlm%fjac,m,parlm%iflag,iann,ann_arr,hgen_ltb,yall)
         endif
     enddo
-    opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+opt_ann%num(1)-1)=parlm%x(1:parlm%n)
+    !opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+opt_ann%num(1)-1)=parlm%x(1:parlm%n)
+    x_arr(1:parlm%n,iann)=parlm%x(1:parlm%n)
+    call set_opt_ann_x(ann_arr%nweight_max,x_arr,opt_ann)
     write(*,*) 'info= ',parlm%info
     call final_lmder_modified(parlm)
     enddo
     !-------------------------------------------------------
+    call f_free(x_arr)
     deallocate(grad)
     deallocate(ann_arr%g_per_bond)
 end subroutine fit_hgen
