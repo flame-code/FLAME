@@ -8,6 +8,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
+    use mod_opt_ann, only: convert_ann_epotd
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
     implicit none
@@ -347,6 +348,7 @@ end subroutine fit_hgen
 subroutine fcn_hgen(m,n,x,fvec,fjac,ldfjac,iflag,iann,ann_arr,hgen_ltb,yall)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
+    use mod_opt_ann, only: convert_ann_epotd
     implicit none
     integer, intent(in):: m, n, ldfjac, iflag, iann
     type(typ_ann_arr), intent(inout):: ann_arr

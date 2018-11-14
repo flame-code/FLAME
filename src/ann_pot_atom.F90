@@ -5,7 +5,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad, convert_ann_epotd
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -20,7 +20,11 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     real(8):: epoti, tt,vol
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
+    real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_atombased')
+    if(trim(ann_arr%event)=='train') then
+        allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann))
+    endif
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     else
@@ -105,6 +109,17 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)
         endif
+    endif
+    if(trim(ann_arr%event)=='train') then
+        ann_grad(1:ann_arr%nweight_max,1:ann_arr%nann)=0.d0
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
+        deallocate(ann_grad)
     endif
     call f_release_routine()
 end subroutine cal_ann_atombased

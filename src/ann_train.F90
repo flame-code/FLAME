@@ -18,7 +18,7 @@ end module mod_callback_ann
 module mod_train
     implicit none
     private
-    public:: ann_train !, convert_x_ann, convert_ann_epotd
+    public:: ann_train
 contains
 !*****************************************************************************************
 subroutine ann_train(parini)
@@ -26,7 +26,7 @@ subroutine ann_train(parini)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, convert_ann_x, ann_lm
+    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, ann_lm
     use mod_opt_ann, only: set_annweights
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_processors, only: iproc
@@ -43,8 +43,7 @@ subroutine ann_train(parini)
     type(typ_atoms_arr):: atoms_smplx
     type(typ_symfunc_arr), target:: symfunc_train
     type(typ_symfunc_arr), target:: symfunc_valid
-    integer:: iconf, ia, ityp
-    real(8):: time1, time2, time3, t_ener_ref
+    real(8):: time1, time2, time3
     logical:: file_exists
     call f_routine(id='ann_train')
     !-------------------------------------------------------
@@ -103,19 +102,8 @@ subroutine ann_train(parini)
     !-------------------------------------------------------------------------------------
     call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !-------------------------------------------------------
-    !opt_ann%x=f_malloc([1.to.opt_ann%n],id='opt_ann%x')
     if (.not. parini%restart_param) then
         call set_annweights(parini,opt_ann,ann_arr)
-        !if(trim(parini%approach_ann)=='cent2') then
-        !    do ia=1,ann_arr%nann
-        !        opt_ann%x(opt_ann%loc(ia)+opt_ann%num(1)-1)=0.d0
-        !        !write(*,*) 'XXX ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
-        !    enddo
-        !endif
-    !else
-    !    do ia=1,ann_arr%nann
-    !        call convert_ann_x(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
-    !    enddo
     endif
     if(trim(parini%approach_ann)=='cent2') then
         call set_single_atom_energy(parini,ann_arr,opt_ann)
@@ -147,7 +135,6 @@ subroutine ann_train(parini)
         write(*,*) 'ERROR: unknown optimzer in ANN training'
     endif
 
-    !call convert_x_ann(opt_ann%n,opt_ann%x,ann_arr) !HERE
     if(iproc==0) then
         if( ann_arr%exists_yaml_file) then
             call write_ann_all_yaml(parini,ann_arr,-1)
@@ -156,7 +143,6 @@ subroutine ann_train(parini)
         endif
     endif
     call final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
-    !stop 'AAAAAAAAAAAAAAAAAAA'
 
     call f_release_routine()
 end subroutine ann_train
@@ -177,7 +163,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     !local variables
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
-    integer:: ia, ityp
+    integer:: ityp
     real(8):: t_ener_ref
     call convert_x_ann_arr(opt_ann,ann_arr)
     !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
@@ -397,7 +383,6 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
     !local variables
-    integer:: ialpha, i, ios, ia
     character(30):: fnout
     character (50)::fname
     integer:: ierr
@@ -432,13 +417,6 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
         end if
         call yaml_release_document(ann_arr%iunit)
         call yaml_sequence_open('training iterations',unit=ann_arr%iunit)
-        !fnout='err_train'
-        !open(unit=11,file=fnout,status='replace',iostat=ios)
-        !if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
-        !!write(fnout,'(a12,i3.3)') 'err_valid',iproc
-        !fnout='err_valid'
-        !open(unit=12,file=fnout,status='replace',iostat=ios)
-        !if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
     endif
 end subroutine init_ann_train
 !*****************************************************************************************
@@ -683,7 +661,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
-    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use mod_processors, only: iproc, nproc
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -693,22 +671,6 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     type(typ_symfunc_arr), intent(inout):: symfunc_arr
     !local variables 
     integer:: iconf
-    integer:: jproc, ierr, ireq, ireq_tmp, nreq, mreq, ii !, itry
-    integer, allocatable:: ireqarr(:)
-    logical:: flag
-#if defined(MPI)
-    include 'mpif.h'
-    integer:: status_mpi(MPI_STATUS_SIZE)
-#endif
-#if defined(MPI)
-    associate(MPI_DP=>MPI_DOUBLE_PRECISION)
-    if(nproc>1) then
-        nreq=atoms_arr%nconf/nproc
-        if(mod(atoms_arr%nconf,nproc)>iproc) nreq=nreq+1
-        nreq=atoms_arr%nconf-nreq
-        ireqarr=f_malloc([1.to.nreq],id='ireqarr')
-    endif
-#endif
     if(.not. allocated(symfunc_arr%symfunc)) then
         symfunc_arr%nconf=atoms_arr%nconf
         allocate(symfunc_arr%symfunc(symfunc_arr%nconf))
@@ -744,58 +706,8 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         !    deallocate(symfunc_arr%symfunc(iconf)%linked_lists%prime_bound)
         !    deallocate(symfunc_arr%symfunc(iconf)%linked_lists%bound_ang)
         endif
-#if defined(MPI)
-        if(nproc>1) then
-        do jproc=0,nproc-1
-            if(jproc==iproc) cycle
-            associate(ntot=>symfunc_arr%symfunc(iconf)%ng*symfunc_arr%symfunc(iconf)%nat)
-            call MPI_ISEND(symfunc_arr%symfunc(iconf)%y(1,1),ntot,MPI_DP,jproc,iconf,mpi_comm_abz,ireq_tmp,ierr)
-            end associate
-        enddo
-        endif
-#endif
     enddo configuration
-#if defined(MPI)
-    if(nproc>1) then
-    ireq=0
-    do iconf=1,atoms_arr%nconf
-        jproc=mod(iconf-1,nproc)
-        if(jproc==iproc) cycle
-        ireq=ireq+1
-        associate(ntot=>symfunc_arr%symfunc(iconf)%ng*symfunc_arr%symfunc(iconf)%nat)
-        call MPI_IRECV(symfunc_arr%symfunc(iconf)%y(1,1),ntot,MPI_DP,jproc,iconf,mpi_comm_abz,ireqarr(ireq),ierr)
-        end associate
-    enddo
-    call MPI_BARRIER(mpi_comm_abz,ierr)
-
-    !itry=0
-    ireq=0
-    mreq=nreq
-    do
-        !itry=itry+1
-        ireq=ireq+1
-        flag=.false.
-        call MPI_TEST(ireqarr(ireq),flag,status_mpi,ierr)
-        if(flag) then
-            !write(41,'(i3,i6,l2,4i6)') status_mpi(MPI_SOURCE),status_mpi(MPI_TAG),flag,mreq,nreq,ireq,itry
-            ii=ireqarr(ireq)
-            ireqarr(ireq)=ireqarr(mreq)
-            ireqarr(mreq)=ii
-            mreq=mreq-1
-        endif
-        if(mreq==0) exit
-        if(ireq>=mreq) ireq=0
-    enddo
-    call MPI_BARRIER(mpi_comm_abz,ierr)
-    endif !end of if for nproc>1
-#endif
     call save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
-#if defined(MPI)
-    if(nproc>1) then
-        call f_free(ireqarr)
-    endif
-    end associate
-#endif
 end subroutine set_gbounds
 !*****************************************************************************************
 subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
@@ -804,7 +716,7 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
     use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
-    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use mod_processors, only: iproc, nproc
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -901,7 +813,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
-    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use mod_processors, only: iproc, nproc
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -1036,7 +948,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
-    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use mod_processors, only: iproc, nproc
     use dynamic_memory
     use yaml_output
     implicit none
@@ -1068,10 +980,6 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     do iconf=1,atoms_arr%nconf
         !if(mod(iconf-1,nproc)==iproc) cycle
         !write(41,'(i6,i3)',advance='no') mod(iconf-1,nproc),iproc
-        !associate(n=>symfunc_arr%symfunc(iconf)%ng*symfunc_arr%symfunc(iconf)%nat)
-        !call MPI_RECV(symfunc_arr%symfunc(iconf)%y(1,1),n,MPI_DP,mod(iconf-1,nproc),iconf,mpi_comm_abz,status_mpi,ierr)
-        !end associate
-        !write(41,'(i6,i3)') status_mpi(MPI_TAG),status_mpi(MPI_SOURCE)
         if(parini%bondbased_ann) then
             !-------------------------------- bond symmetry function --------------------------------
             !if(symfunc_arr%symfunc(iconf)%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
@@ -1302,29 +1210,6 @@ end subroutine set_ref_energy
 !*****************************************************************************************
 end module mod_train
 !*****************************************************************************************
-subroutine convert_ann_epotd(ann,n,epotd)
-    use mod_interface
-    use mod_ann, only: typ_ann
-    implicit none
-    type(typ_ann), intent(in):: ann
-    integer, intent(in):: n
-    real(8), intent(inout):: epotd(n)
-    !local variables
-    integer:: i, ij, l, ialpha
-    l=0
-    do ialpha=1,ann%nl
-        do ij=1,ann%nn(ialpha)*ann%nn(ialpha-1)
-            l=l+1
-            epotd(l)=ann%ad(ij,ialpha)
-        enddo
-        do i=1,ann%nn(ialpha)
-            l=l+1
-            epotd(l)=ann%bd(i,ialpha)
-        enddo
-    enddo
-    if(l/=n) stop 'ERROR: l/=n'
-end subroutine convert_ann_epotd
-!*****************************************************************************************
 subroutine ann_evaluate_all(parini,iter,ann_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -1366,7 +1251,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     type(typ_symfunc):: symfunc
     type(typ_opt_ann):: opt_ann
     real(8):: rmse, errmax, tt, pi
-    real(8):: frmse, ttx, tty, ttz, ppx, ppy, ppz, tt1, tt2, tt3, ttn, tta, ttmax
+    real(8):: frmse, ttx, tty, ttz, ppx, ppy, ppz, tt1, tt2, tt3, ttn, tta
     integer:: iconf, ierrmax, iat, nat_tot, nconf_force
     real(8):: time1=0.d0
     real(8):: time2=0.d0
@@ -1380,7 +1265,6 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     character(28):: fmt1='(f10.3)'
     character(28):: fmt2='(e10.1)'
     character(15):: filename
-    logical:: file_exists
     character(len=8):: str_key
     call cpu_time(time1)
     pi=4.d0*atan(1.d0)

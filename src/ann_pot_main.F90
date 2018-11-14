@@ -30,7 +30,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
+    use mod_opt_ann, only: typ_opt_ann
     !use mod_tightbinding, only: typ_partb
     implicit none
     type(typ_parini), intent(in):: parini
@@ -43,23 +43,8 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     !real(8), allocatable:: xt(:), gt(:)
     integer:: i, j, iat
     type(typ_partb):: partb
-    real(8), allocatable:: ann_grad(:,:)
     if(trim(ann_arr%approach)=='atombased') then
-        if(trim(ann_arr%event)=='train') then
-            allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann))
-        endif
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
-        if(trim(ann_arr%event)=='train') then
-            ann_grad(1:ann_arr%nweight_max,1:ann_arr%nann)=0.d0
-            do iat=1,atoms%nat
-                i=atoms%itypat(iat)
-                do j=1,ann_arr%nweight_max
-                    ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
-                enddo
-            enddo
-            call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
-            deallocate(ann_grad)
-        endif
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='cent2') then

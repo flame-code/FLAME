@@ -5,7 +5,7 @@ module mod_opt_ann
     public:: ekf_rivals, ekf_behler, init_opt_ann, convert_x_ann_arr, fini_opt_ann
     public:: set_opt_ann_grad, set_annweights, get_opt_ann_x, set_opt_ann_x
     public:: convert_x_ann, convert_ann_x
-    public:: ann_lm
+    public:: ann_lm, convert_ann_epotd
     type, public:: typ_opt_ann
         private
         integer:: nann=-1
@@ -176,6 +176,28 @@ subroutine convert_x_ann_arr(opt_ann,ann_arr)
         call convert_x_ann(opt_ann%num(ia),opt_ann%x(opt_ann%loc(ia)),ann_arr%ann(ia))
     enddo
 end subroutine convert_x_ann_arr
+!*****************************************************************************************
+subroutine convert_ann_epotd(ann,n,epotd)
+    use mod_ann, only: typ_ann
+    implicit none
+    type(typ_ann), intent(in):: ann
+    integer, intent(in):: n
+    real(8), intent(inout):: epotd(n)
+    !local variables
+    integer:: i, ij, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do ij=1,ann%nn(ialpha)*ann%nn(ialpha-1)
+            l=l+1
+            epotd(l)=ann%ad(ij,ialpha)
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            epotd(l)=ann%bd(i,ialpha)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_ann_epotd
 !*****************************************************************************************
 subroutine ekf_rivals(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
