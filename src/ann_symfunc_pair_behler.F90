@@ -2,7 +2,8 @@
 subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr !,typ_linked_lists
     implicit none
@@ -156,7 +157,8 @@ end subroutine symmetry_functions_driver_bond_tmp
 subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
     use mod_interface
     use mod_linked_lists, only: typ_pia
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_pia), intent(in):: pia

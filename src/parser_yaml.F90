@@ -309,7 +309,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%optimizer_ann=parini%subdict//"optimizer"
     parini%approach_ann=parini%subdict//"approach"
     parini%symfunc=parini%subdict//"symfunc"
-    parini%nstep_ekf=parini%subdict//"nstep_ekf"
+    parini%nstep_opt_ann=parini%subdict//"nstep_opt"
     parini%nstep_cep=parini%subdict//"nstep_cep"
     parini%alphax_q=parini%subdict//"alphax_q"
     parini%alphax_r=parini%subdict//"alphax_r"

@@ -17,7 +17,7 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     !call f_lib_initialize()
     !call yaml_new_document()
     call yaml_sequence_open('ann input files') !,flow=.true.)
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         if(parini%bondbased_ann) then
             stypat=parini%stypat(1)
         else
@@ -288,7 +288,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
         if(parini%ntypat>1) then
             stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
         endif
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             write(fn_tt,'(i1)') i
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             call yaml_comment(trim(filename))
@@ -297,7 +297,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
         enddo
     elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
         trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             !write(*,'(a)') trim(filename)
             call yaml_comment(trim(filename))
@@ -471,7 +471,7 @@ subroutine read_ann_yaml(parini,ann_arr)
     character(16):: fn
     character(1):: fn_tt
     character(50):: filename
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         if (parini%restart_param) then
             write(fn,'(a15)') '.ann.input.yaml'
         else

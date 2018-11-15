@@ -2,7 +2,8 @@
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_parini), intent(in):: parini
@@ -65,7 +66,8 @@ end subroutine cal_force_chi_part1
 subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_parini), intent(in):: parini
@@ -153,8 +155,8 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     h=-7.d0
     !-------------------------------------------------------
     linked_lists%rcut=0.d0
-    do i=1,ann_arr%n
-        do j=i,ann_arr%n
+    do i=1,ann_arr%nann
+        do j=i,ann_arr%nann
             !write(*,*) parini%stypat(i),parini%stypat(j),ann_arr%reprcut(i,j)
             if(ann_arr%reprcut(i,j)>linked_lists%rcut) then
                 linked_lists%rcut=ann_arr%reprcut(i,j)

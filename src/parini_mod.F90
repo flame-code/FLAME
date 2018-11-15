@@ -79,7 +79,7 @@ module mod_parini
         character(50):: syslinsolver_ann='direct'
         character(50):: symfunc_type_ann='behler'
         character(50):: symfunc='only_calculate'
-        integer:: nstep_ekf=100
+        integer:: nstep_opt_ann=100
         integer:: nstep_cep=200
         integer:: nconf_rmse=0
         real(8):: alphax_q=1.d0

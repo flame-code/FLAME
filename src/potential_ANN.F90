@@ -4,6 +4,7 @@ subroutine init_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: ann_arr, ann_boundcheck
+    use mod_ann, only: set_number_of_ann
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -13,25 +14,22 @@ subroutine init_potential_ann(parini,atoms)
     character(10):: fn
     character (50)::fname
     !write(*,*) trim(parini%stypat_ann)
-    !call count_words(parini%stypat_ann,ann_arr%n)
+    !call count_words(parini%stypat_ann,ann_arr%nann)
     ann_arr%approach=trim(parini%approach_ann)
     !write (*,*) 'parini         ', ann_arr%approach
-    if (trim(ann_arr%approach)=='tb') then
-        ann_arr%n=4
-    else
-        ann_arr%n=parini%ntypat !this should be changed for bond based ANN
-    endif
-    call yaml_map('number of ANN',ann_arr%n)
-    !write(*,*) 'ann_arr%n= ',ann_arr%n
-    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%n)
-    !do i=1,ann_arr%n
+    call set_number_of_ann(parini,ann_arr)
+    if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in init_potential_ann'
+    call yaml_map('number of ANN',ann_arr%nann)
+    !write(*,*) 'ann_arr%nann= ',ann_arr%nann
+    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
+    !do i=1,ann_arr%nann
     !    ann_arr%ltypat(i)=i
     !    write(*,*) i,ann_arr%stypat(i)
     !enddo
-    if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in init_potential_ann'
-    allocate(ann_arr%ann(ann_arr%n))
+    if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in init_potential_ann'
+    allocate(ann_arr%ann(ann_arr%nann))
     do iat=1,atoms%nat
-        do i=1,ann_arr%n !this should be changed for bond based ANN
+        do i=1,ann_arr%nann !this should be changed for bond based ANN
             if(trim(adjustl(atoms%sat(iat)))==trim(parini%stypat(i))) then
                 atoms%itypat(iat)=parini%ltypat(i)
                 exit
@@ -62,8 +60,8 @@ subroutine cal_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_potential, only: ann_arr, fcalls, fcalls_sec, potential, potential_sec, ann_boundcheck
-    use mod_ann, only: typ_symfunc
-    use mod_ekf, only: eval_cal_ann_main
+    use mod_symfunc, only: typ_symfunc
+    use mod_opt_ann, only: typ_opt_ann
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -71,6 +69,7 @@ subroutine cal_potential_ann(parini,atoms)
     integer:: iat, jat, i0, i
     real(8):: epoti, fcalls_t
     type(typ_symfunc):: symfunc
+    type(typ_opt_ann):: opt_ann
     if(trim(potential)=='ann') then
         fcalls_t=fcalls
     elseif(trim(potential_sec)=='ann') then
@@ -97,8 +96,12 @@ subroutine cal_potential_ann(parini,atoms)
     endif
     !atoms%epot=0.d0
     !atoms%fat(1:3,1:atoms%nat)=0.d0
-    !call cal_ann_cent1(atoms,symfunc,ann_arr,ekf)
-    call eval_cal_ann_main(parini,atoms,symfunc,ann_arr)
+    !call cal_ann_cent1(atoms,symfunc,ann_arr,opt_ann)
+    if(trim(ann_arr%event)/='potential') then
+        write(*,*) 'ERROR: ann_arr%event different from potential'
+        stop
+    endif
+    call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
 !    do iat=1,atoms%nat
 !        call symmetry_functions(ann_arr%ann(i),iat,atoms,.true.)
 !        !if(trim(ann_boundcheck)=='weak' .or. trim(ann_boundcheck)=='strong') then

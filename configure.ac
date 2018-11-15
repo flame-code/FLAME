@@ -45,7 +45,6 @@ AC_PROG_SED()
 dnl Give the name of file.in to transform to file
 AC_CONFIG_FILES([
 Makefile
-modules/Makefile
 src/Makefile
 src/lenosky_tb/Makefile
 tests/Makefile

@@ -1,10 +1,12 @@
 !*****************************************************************************************
-subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_ekf, only: typ_ekf
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
+    use mod_opt_ann, only: convert_ann_epotd
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
@@ -14,7 +16,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_poisson):: poisson
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
@@ -22,6 +24,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
+    real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_cent1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -42,13 +45,11 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%a=0.d0
     endif
     if(trim(ann_arr%event)=='train') then
-        !The following is allocated with ekf%num(1), this means number of
+        !The following is allocated with opt_ann%num(1), this means number of
         !nodes in the input layer is the same for all atom types.
         !Therefore, it must be fixed later.
-        !g_per_atom=f_malloc([1.to.ekf%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        do i=1,ann_arr%n
-            call convert_x_ann(ekf%num(i),ekf%x(ekf%loc(i)),ann_arr%ann(i))
-        enddo
+        !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
+        call convert_x_ann_arr(opt_ann,ann_arr)
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
     call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)
@@ -77,8 +78,8 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
             ann_arr%chi_i(iat)=out_ann
             tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
             ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-            call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ann_arr%g_per_atom(1,iat))
-            ann_arr%g_per_atom(1:ekf%num(1),iat)=ann_arr%g_per_atom(1:ekf%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
+            call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),ann_arr%g_per_atom(1,iat))
+            ann_arr%g_per_atom(1:opt_ann%num(1),iat)=ann_arr%g_per_atom(1:opt_ann%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif
@@ -162,17 +163,19 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         deallocate(ann_arr%stresspq)
     endif
     if(trim(ann_arr%event)=='train') then
-        ekf%g(1:ekf%n)=0.d0
+        allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
-            do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        !do i=1,ann_arr%n
-        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
-        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
+        !do i=1,ann_arr%nann
+        !    ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)=ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
         !enddo
+        call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
+        deallocate(ann_grad)
     endif
     call f_release_routine()
 end subroutine cal_ann_cent1
@@ -504,7 +507,7 @@ subroutine charge_analysis(parini,atoms,ann_arr)
         chi_max_per_conf(i)=max(c,chi_max_per_conf(i))
         ann_arr%chi_sum(i)=ann_arr%chi_sum(i)+c
     enddo
-    do i=1,ann_arr%n
+    do i=1,ann_arr%nann
         ann_arr%chi_delta(i)=max(ann_arr%chi_delta(i),chi_max_per_conf(i)-chi_min_per_conf(i))
     enddo
     !if(parini%iverbose>=1) then

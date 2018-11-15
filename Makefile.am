@@ -1,1 +1,1 @@
-SUBDIRS = modules src
+SUBDIRS = src

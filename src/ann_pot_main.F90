@@ -1,76 +1,86 @@
 !*****************************************************************************************
-!Subroutine cal_ann_main is called during training process.
-!It does the same job as subroutine eval_cal_ann_main with a few more
-!commands related to ANN weights.
-!These two subroutine are supposed to be merged.
-!eval_cal_ann_main is called for task_training but only for
-!obtaining energy/forces when information on errors on
-!training and validation data points are expected.
-!eval_cal_ann_main is called by potential_ANN
-subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,ekf)
+subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
+    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_callback_ann, only: atoms_train=>atoms_train_t
+    use mod_callback_ann, only: symfunc_train=>symfunc_train_t
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: idp
+    character(*), intent(in):: str_dataset
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_opt_ann), intent(inout):: opt_ann
+    real(8), intent(out):: fcn_ann
+    real(8), intent(out):: fcn_ref
+    !local variables
+    type(typ_atoms):: atoms
+    call atom_copy_old(atoms_train%atoms(idp),atoms,'atoms_train%atoms(iconf)->atoms')
+    call cal_ann_main(parini,atoms,symfunc_train%symfunc(idp),ann_arr,opt_ann)
+    fcn_ann=atoms%epot
+    fcn_ref=symfunc_train%symfunc(idp)%epot
+end subroutine get_fcn_ann
+!*****************************************************************************************
+subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_tightbinding, only: typ_partb
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_ekf, only: typ_ekf
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
+    use mod_opt_ann, only: typ_opt_ann
     !use mod_tightbinding, only: typ_partb
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     !real(8):: g, g_tb, dis, E0, E1 
     !real(8), allocatable:: xt(:), gt(:)
     integer:: i, j, iat
     type(typ_partb):: partb
     if(trim(ann_arr%approach)=='atombased') then
-        allocate(ekf%gs(ekf%num(1),atoms%nat)) !HERE
-        call convert_x_ann(ekf%num(1),ekf%x(ekf%loc(1)),ann_arr%ann(1))
-        call cal_ann_atombased(parini,atoms,symfunc,ann_arr,ekf)
-        ekf%g(1:ekf%n)=0.d0
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+ekf%gs(j,iat)
-            enddo
-        enddo
-        deallocate(ekf%gs) !HERE
+        call cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
-        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,ekf)
+        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='tb') then
-        call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
+        call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
+        !if(trim(ann_arr%event)=='train') then
         ! E0=atoms%epot
-        ! allocate(xt(ekf%n),gt(ekf%n))
-        ! xt(1:ekf%n)=ekf%x(1:ekf%n)
-        ! gt(1:ekf%n)=ekf%g(1:ekf%n)
-        ! do i=1,ekf%n
+        ! allocate(xt(opt_ann%n),gt(opt_ann%n))
+        ! xt(1:opt_ann%n)=opt_ann%x(1:opt_ann%n)
+        ! gt(1:opt_ann%n)=ann_grad(1:opt_ann%n)
+        ! do i=1,opt_ann%n
         !     g_tb=gt(i)
         !     !!Finite difference 
-        !     dis=1.d-4 !*abs(ekf%x(i))
-        !     ekf%x(i)=ekf%x(i)+dis
-        !     call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,ekf)
+        !     dis=1.d-4 !*abs(opt_ann%x(i))
+        !     opt_ann%x(i)=opt_ann%x(i)+dis
+        !     call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         !     E1=atoms%epot
         !     g=(E1-E0)/dis
         !     write(*,'(a,2es19.10,es14.5,2es19.10)') 'FD-TEST',g_tb,g,g-g_tb,E0,E1
-        !     ekf%x(i)=xt(i)
+        !     opt_ann%x(i)=xt(i)
         ! enddo
         ! stop 'TTTTTTTTTTTTTTTT'
+        !endif
     else
         write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
         stop
     endif
 end subroutine cal_ann_main
 !*****************************************************************************************
-subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
@@ -79,7 +89,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
     type(typ_atoms_arr), intent(inout):: atoms_train
     type(typ_atoms_arr), intent(inout):: atoms_valid
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
@@ -87,10 +97,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     real(8), allocatable:: epotall(:), eref_all(:)
     !return
     ann_arr%event='train'
-    allocate(ekf%g(ekf%n))
-    do ia=1,ann_arr%n
-        call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
-    enddo
+    call convert_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
     isatur=0
     epotall=f_malloc([1.to.atoms_train%nconf],id='epotall')
@@ -109,7 +116,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             if(istep==0) then
-                call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+                call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
                 epotall(iconf)=atoms%epot
             else
                 tt=0.d0
@@ -123,7 +130,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
             do iat=1,atoms%nat
                 anat(atoms%itypat(iat))=anat(atoms%itypat(iat))+1.d0
             enddo
-            do ia=1,ann_arr%n
+            do ia=1,ann_arr%nann
                 g(ia)=g(ia)+2.d0*anat(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
             enddo
         enddo
@@ -138,7 +145,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
             ann_arr%ann(1)%ener_ref,ann_arr%ann(2)%ener_ref,isatur
         if(rmse*1.d3<2.d1) exit
         if(isatur>nsatur) exit
-        do ia=1,ann_arr%n
+        do ia=1,ann_arr%nann
             de0=alpha*g(ia)
             de0=sign(min(abs(de0),1.d0),de0)
             ann_arr%ann(ia)%ener_ref=ann_arr%ann(ia)%ener_ref-de0
@@ -147,15 +154,15 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     enddo
     call f_free(epotall)
     call f_free(eref_all)
-    deallocate(ekf%g)
     !stop
 end subroutine prefit_cent_ener_ref
 !*****************************************************************************************
-subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,ekf)
+subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr
-    use mod_ekf, only: typ_ekf
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
@@ -164,17 +171,14 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
     type(typ_atoms_arr), intent(inout):: atoms_train
     type(typ_atoms_arr), intent(inout):: atoms_valid
-    type(typ_ekf), intent(inout):: ekf
+    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
     real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
     real(8):: anat2(100), g2(100), qnet
     ann_arr%event='train'
-    allocate(ekf%g(ekf%n))
-    do ia=1,ann_arr%n
-        call convert_x_ann(ekf%num(ia),ekf%x(ekf%loc(ia)),ann_arr%ann(ia))
-    enddo
+    call convert_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
     isatur=0
     alpha1=0.2d0/real(atoms_train%nconf,8)
@@ -185,7 +189,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         g2=0.d0
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,ekf)
+            call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
             rmse=rmse+((symfunc_train%symfunc(iconf)%epot-atoms%epot)/atoms%nat)**2
             anat1=0.d0
             anat2=0.d0
@@ -201,7 +205,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
                 anat1(atoms%itypat(iat))=anat1(atoms%itypat(iat))+qnet
                 anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*qnet**2
             enddo
-            do ia=1,ann_arr%n
+            do ia=1,ann_arr%nann
                 g1(ia)=g1(ia)+2.d0*anat1(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
                 g2(ia)=g2(ia)+2.d0*anat2(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
             enddo
@@ -218,7 +222,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
             ann_arr%ann(1)%hardness,ann_arr%ann(2)%hardness,isatur
         if(rmse*1.d3<1.d0) exit
         if(isatur>nsatur) exit
-        do ia=1,ann_arr%n
+        do ia=1,ann_arr%nann
             dchi0=alpha1*g1(ia)
             dchi0=sign(min(abs(dchi0),1.d-1),dchi0)
             ann_arr%ann(ia)%chi0=ann_arr%ann(ia)%chi0-dchi0
@@ -228,6 +232,5 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse_old=rmse
     enddo
-    deallocate(ekf%g)
 end subroutine prefit_cent
 !*****************************************************************************************
