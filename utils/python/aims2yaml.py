@@ -30,6 +30,7 @@ has_unit_cell=False
 iskip=0
 nat=0
 ev2bohr=27.211385/0.52917721
+Ehar=27.211385 #eV
 
 for iline,line in enumerate(lines):
     if iskip>0:
@@ -74,7 +75,7 @@ for iline,line in enumerate(lines):
         ediff=abs(1000.0*(epot_corrected-epot_uncorrected)/float(nat))
         if ediff>1.0:
             print "WARNING: difference between energy and free energy in meV/atom: %6.3f" % ediff
-        atoms.epot=epot_uncorrected
+        atoms.epot=epot_uncorrected/Ehar
         continue
     #-------------------------------------------------------
     if 'Charged system requested' in str_line:
