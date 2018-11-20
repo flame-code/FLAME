@@ -125,7 +125,7 @@ end subroutine cal_force_chi_part2
 subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     use mod_linked_lists, only: typ_linked_lists
     implicit none
@@ -167,12 +167,13 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     stress(1:3,1:3)=0.d0
     epot_rep=0.d0
     linked_lists%fat=0.d0
+    call update_ratp(linked_lists%typ_atoms)
     include '../src/act1_cell_linkedlist.inc'
     do  iat=ip,il
         !qiat=linked_lists%qat(iat)
-        xiat=linked_lists%rat(1,iat)
-        yiat=linked_lists%rat(2,iat)
-        ziat=linked_lists%rat(3,iat)
+        xiat=linked_lists%ratp(1,iat)
+        yiat=linked_lists%ratp(2,iat)
+        ziat=linked_lists%ratp(3,iat)
         jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
         jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
         jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
@@ -180,9 +181,9 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
         iat_maincell=mod(iat-1,atoms%nat)+1
         iatp=linked_lists%perm(iat)
         do  jat=jp,jl
-            dx=xiat-linked_lists%rat(1,jat)
-            dy=yiat-linked_lists%rat(2,jat)
-            dz=ziat-linked_lists%rat(3,jat)
+            dx=xiat-linked_lists%ratp(1,jat)
+            dy=yiat-linked_lists%ratp(2,jat)
+            dz=ziat-linked_lists%ratp(3,jat)
             rsq=dx*dx+dy*dy+dz*dz
             maincell=maincell_iat+linked_lists%maincell(jat)
             jat_maincell=mod(iat-1,atoms%nat)+1

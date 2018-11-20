@@ -37,7 +37,7 @@ end subroutine init_lenosky_tb
 subroutine lenosky_tb(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_potential, only: cell, natsi
     implicit none
     type(typ_parini), intent(in):: parini
@@ -47,11 +47,13 @@ subroutine lenosky_tb(parini,atoms)
     real(8):: count_t
     !if(iproc==0) call sleep(1)
     count_t=0.d0
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        atoms%rat(1,iat)=modulo(modulo(atoms%rat(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
-        atoms%rat(2,iat)=modulo(modulo(atoms%rat(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
-        atoms%rat(3,iat)=modulo(modulo(atoms%rat(3,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
+        atoms%ratp(1,iat)=modulo(modulo(atoms%ratp(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
+        atoms%ratp(2,iat)=modulo(modulo(atoms%ratp(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
+        atoms%ratp(3,iat)=modulo(modulo(atoms%ratp(3,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
     enddo
+    call update_rat(atoms,upall=.true.)
     call lenoskytb_alborz(parini,atoms,natsi,count_t)
 end subroutine lenosky_tb
 !*****************************************************************************************

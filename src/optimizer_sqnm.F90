@@ -14,7 +14,7 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    !use yaml_output
    !use module_sqn, only: modify_gradient, getSubSpaceEvecEval, findbonds
    use mod_parini, only: typ_parini
-   use mod_atoms, only: typ_atoms
+   use mod_atoms, only: typ_atoms, set_rat, get_rat
    use mod_opt, only: typ_paropt, frmt_base
    use mod_processors, only: iproc, nproc
    use dynamic_memory
@@ -220,8 +220,10 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    !call vcopy(3*runObj%atoms%astruct%nat, runObj%atoms%astruct%rxyz(1,1), 1,rxyz(1,1,idx(0)), 1)
    !call vcopy(3*runObj%atoms%astruct%nat, runObj%atoms%astruct%rxyz(1,1), 1,rxyzOld(1,1), 1)
    !call vcopy(3*outs%fdim, outs%fxyz(1,1), 1, fxyz(1,1,idx(0)), 1)
-   rxyz(1:3,1:nat,idx(0))=atoms%rat(1:3,1:nat)
-   rxyzOld(1:3,1:nat)=atoms%rat(1:3,1:nat)
+   !rxyz(1:3,1:nat,idx(0))=atoms%rat(1:3,1:nat)
+   call get_rat(atoms,rxyz(1,1,idx(0)))
+   !rxyzOld(1:3,1:nat)=atoms%rat(1:3,1:nat)
+   call get_rat(atoms,rxyzOld)
    fxyz(1:3,1:nat,idx(0))=atoms%fat(1:3,1:nat)
    !----------------------------------------------------------------------------
    !The following lines added by Alireza to avoid moving fixed atoms.
@@ -421,7 +423,8 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
             !the energies and coordinates used/obtained from/in the last ACCEPTED iteration step
             !(otherwise coordinates of last call to bigdft_state would be returned)
             !call vcopy(3 * runObj%atoms%astruct%nat, rxyz(1,1,idx(nhist-1)), 1,runObj%atoms%astruct%rxyz(1,1), 1)
-            atoms%rat(1:3,1:nat)=rxyz(1:3,1:nat,idx(nhist-1))
+            !atoms%rat(1:3,1:nat)=rxyz(1:3,1:nat,idx(nhist-1))
+            call set_rat(atoms,rxyz(1,1,idx(nhist-1)),setall=.true.)
             goto 900  !sqnm will return to caller the energies and coordinates used/obtained from the last ACCEPTED iteration step
          endif
 
@@ -616,7 +619,7 @@ end subroutine sqnm
 subroutine minenergyandforces_alborz(parini,iproc,nproc,eeval,imode,atoms,nat,rat,fat,fstretch,fxyzraw,epot,iconnect,nbond_,wold,alpha_stretch0,alpha_stretch,infocode)
     use mod_parini, only: typ_parini
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, set_rat
     !use bigdft_run!module_types
     !use module_sqn
     !use module_interfaces
@@ -645,7 +648,8 @@ subroutine minenergyandforces_alborz(parini,iproc,nproc,eeval,imode,atoms,nat,ra
     infocode=0
     if(eeval)then
         !call vcopy(3 * runObj%atoms%astruct%nat, rat(1,1), 1,runObj%atoms%astruct%rxyz(1,1), 1)
-        atoms%rat(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
+        !atoms%rat(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
+        call set_rat(atoms,rat,setall=.true.)
         !runObj%inputs%inputPsiId=1
         !call bigdft_set_input_policy(INPUT_POLICY_MEMORY, runObj)
         !call bigdft_state(runObj,outs,infocode)
@@ -1113,7 +1117,7 @@ end subroutine modify_gradient
 !has to be called before findsad (if operating in biomolecule mode)
 subroutine findbonds(label,iproc,verbosity,atoms,rcov,nbond,iconnect)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat
     implicit none
     integer, intent(in) :: iproc,verbosity
     character(len=*), intent(in) :: label
@@ -1124,12 +1128,15 @@ subroutine findbonds(label,iproc,verbosity,atoms,rcov,nbond,iconnect)
     !local variables
     integer :: iat,jat
     real(8) :: dist2
+    real(8), allocatable:: rat(:,:)
+    allocate(rat(3,atoms%nat))
+    call get_rat(atoms,rat)
     nbond=0
     do iat=1,atoms%nat
         do jat=1,iat-1
-            dist2=(atoms%rat(1,iat)-atoms%rat(1,jat))**2+&
-                  (atoms%rat(2,iat)-atoms%rat(2,jat))**2+&
-                  (atoms%rat(3,iat)-atoms%rat(3,jat))**2
+            dist2=(rat(1,iat)-rat(1,jat))**2+&
+                  (rat(2,iat)-rat(2,jat))**2+&
+                  (rat(3,iat)-rat(3,jat))**2
             if (dist2.le.(1.2d0*(rcov(iat)+rcov(jat)))**2) then
                 nbond=nbond+1
                 if (nbond.gt.1000) then
@@ -1145,6 +1152,7 @@ subroutine findbonds(label,iproc,verbosity,atoms,rcov,nbond,iconnect)
         write(*,*) trim(adjustl(label)),' Found',nbond,' bonds.'
         !call yaml_scalar(trim(adjustl(label))//&
         !' Found'//trim(yaml_toa(nbond))//' bonds.')
+    deallocate(rat)
 end subroutine findbonds
 !*****************************************************************************************
 subroutine projectbond(nat,nbond,rat,fat,fstretch,iconnect,wold,alpha_stretch0,alpha_stretch)

@@ -71,7 +71,7 @@ end subroutine init_potential_forces_vasp
 !*****************************************************************************************
 subroutine cal_potential_forces_vasp(atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_potential, only: atom_motion, cellvec, vasp5, comment, comment2, &
         perfstatus, perfstatus_old, vasp_restart, fcalls, natarr, ntypat
     use mod_processors, only: iproc
@@ -96,7 +96,8 @@ subroutine cal_potential_forces_vasp(atoms)
     !natarr(4)=36
     write(dir,'(a3,i3.3)') 'tmp',iproc
     filename=dir//'/POSCAR'
-    call write_poscar(filename,atoms%nat,atoms%rat,cellvec,ntypat,natarr,comment,vasp5,comment2,atom_motion)
+    call update_ratp(atoms)
+    call write_poscar(filename,atoms%nat,atoms%ratp,cellvec,ntypat,natarr,comment,vasp5,comment2,atom_motion)
     !write(*,*) 'IPROC ',iproc
     !stop
     if(fcalls<1.d0 .or. trim(perfstatus)/=trim(perfstatus_old)) then
@@ -137,7 +138,8 @@ subroutine cal_potential_forces_vasp(atoms)
     filename1=dir//'/vasprun.xml'
     filename2=dir//'/CONTCAR'
     !write(*,*) filename
-    call get_output_vasp_geopt_alborz(filename1,filename2,atoms%nat,cellvec,atoms%rat,atoms%fat,atoms%epot,stress,success)
+    call update_ratp(atoms)
+    call get_output_vasp_geopt_alborz(filename1,filename2,atoms%nat,cellvec,atoms%ratp,atoms%fat,atoms%epot,stress,success)
     if(success) exit
     vasp_restart=.false.
     enddo !end of loop over itry

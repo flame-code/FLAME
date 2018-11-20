@@ -2,6 +2,7 @@ subroutine  linkedlist_test(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, type_pairs, typ_file_info, atom_deallocate_old
+    use mod_atoms, only: atom_allocate, atom_allocate_old, update_ratp
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
     implicit none
@@ -60,8 +61,8 @@ do conf=1,maxconf
     atoms%cellvec(3,3)=6.d0+rnd*30
     call random_number(rnd)
     atoms%nat=4+40*rnd
-    allocate(atoms%rat(3,atoms%nat),atoms%sat(atoms%nat))
-    allocate(atoms%bemoved(3,atoms%nat))
+    !allocate(atoms%rat(3,atoms%nat),atoms%sat(atoms%nat))
+    call atom_allocate_old(atoms,atoms%nat,0,0)
     allocate(posat1st(atoms%nat), nim(atoms%nat))
     allocate(posat1st_list(atoms%nat), nim_list(atoms%nat))
     do iat= 1,atoms%nat
@@ -101,7 +102,8 @@ do conf=1,maxconf
     enddo
     !Get the rest
 
-    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
+    call update_ratp(atoms)
+    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,rat_int)
 call system_clock(t1)
     nim=0
     do iat= 1,atoms%nat
@@ -191,7 +193,7 @@ end subroutine linkedlist_test
 subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, type_pairs
+    use mod_atoms, only: typ_atoms, type_pairs, update_ratp
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists
     implicit none
@@ -214,21 +216,22 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
     hxinv=real(linked_lists%mx,8)/cell(1)
     !-------------------------------------------------------
     nim=0
+    call update_ratp(linked_lists%typ_atoms)
     include 'act1_cell_linkedlist.inc'
     do  iat=ip,il
-        xiat=linked_lists%rat(1,iat)
-        yiat=linked_lists%rat(2,iat)
-        ziat=linked_lists%rat(3,iat)
+        xiat=linked_lists%ratp(1,iat)
+        yiat=linked_lists%ratp(2,iat)
+        ziat=linked_lists%ratp(3,iat)
         jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
         jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
         jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
         do  jat=jp,jl
-            call rxyz_cart2int_alborz(1,atoms%cellvec,linked_lists%rat(:,jat),rat_i)
-            !jx=floor(linked_lists%rat(1,jat)*hxinv)+1
+            call rxyz_cart2int_alborz(1,atoms%cellvec,linked_lists%ratp(:,jat),rat_i)
+            !jx=floor(linked_lists%ratp(1,jat)*hxinv)+1
             jx=floor(rat_i(1)*linked_lists%mx)+1
-            dx=xiat-linked_lists%rat(1,jat)
-            dy=yiat-linked_lists%rat(2,jat)
-            dz=ziat-linked_lists%rat(3,jat)
+            dx=xiat-linked_lists%ratp(1,jat)
+            dy=yiat-linked_lists%ratp(2,jat)
+            dz=ziat-linked_lists%ratp(3,jat)
             r1=(dx**2+dy**2+dz**2)
             if (r1<linked_lists%rcut**2) then
                 if (linked_lists%maincell(iat)+linked_lists%maincell(jat) >-1 ) then
@@ -268,14 +271,14 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
                     do kat=kp,kl
                         if (kat<=iat .or. kat<=jat) cycle
                         if ((linked_lists%maincell(iat)+linked_lists%maincell(jat)+linked_lists%maincell(kat)) <-2 )cycle
-                        dx3=linked_lists%rat(1,kat)-linked_lists%rat(1,jat)
-                        dy3=linked_lists%rat(2,kat)-linked_lists%rat(2,jat)
-                        dz3=linked_lists%rat(3,kat)-linked_lists%rat(3,jat)
+                        dx3=linked_lists%ratp(1,kat)-linked_lists%ratp(1,jat)
+                        dy3=linked_lists%ratp(2,kat)-linked_lists%ratp(2,jat)
+                        dz3=linked_lists%ratp(3,kat)-linked_lists%ratp(3,jat)
                         r3=(dx3**2+dy3**2+dz3**2)
                         if (r3<linked_lists%rcut**2) cycle
-                        dx2=xiat-linked_lists%rat(1,kat)
-                        dy2=yiat-linked_lists%rat(2,kat)
-                        dz2=ziat-linked_lists%rat(3,kat)
+                        dx2=xiat-linked_lists%ratp(1,kat)
+                        dy2=yiat-linked_lists%ratp(2,kat)
+                        dz2=ziat-linked_lists%ratp(3,kat)
                         r2=(dx2**2+dy2**2+dz2**2)
                         if (r2<linked_lists%rcut**2 ) then
                             call sort_alborz(linked_lists%perm(iat),linked_lists%perm(jat),linked_lists%perm(kat),conf)
@@ -296,13 +299,13 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
                  do kat=kp,kl
                  if (iat>=kat .or. jat==kat) cycle
                  if ((linked_lists%maincell(iat)+linked_lists%maincell(jat)+linked_lists%maincell(kat)) <-2 )cycle
-                 dx2=xiat-linked_lists%rat(1,kat)
-                 dy2=yiat-linked_lists%rat(2,kat)
-                 dz2=ziat-linked_lists%rat(3,kat)
+                 dx2=xiat-linked_lists%ratp(1,kat)
+                 dy2=yiat-linked_lists%ratp(2,kat)
+                 dz2=ziat-linked_lists%ratp(3,kat)
                  r2=(dx2**2+dy2**2+dz2**2)
-                 dx3=linked_lists%rat(1,kat)-linked_lists%rat(1,jat)
-                 dy3=linked_lists%rat(2,kat)-linked_lists%rat(2,jat)
-                 dz3=linked_lists%rat(3,kat)-linked_lists%rat(3,jat)
+                 dx3=linked_lists%ratp(1,kat)-linked_lists%ratp(1,jat)
+                 dy3=linked_lists%ratp(2,kat)-linked_lists%ratp(2,jat)
+                 dz3=linked_lists%ratp(3,kat)-linked_lists%ratp(3,jat)
                  r3=(dx3**2+dy3**2+dz3**2)
                  if (r1<linked_lists%rcut**2 .and. r2<linked_lists%rcut**2 .and. r3<linked_lists%rcut**2)  then
                      if (jat<kat) then
@@ -378,7 +381,7 @@ end subroutine sort2_alborz
 subroutine genrandomconf(atoms,numb,conf)
     use mod_interface
     use mod_atoms, only: typ_atoms
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, update_rat
     real(8)::amargin ,amargin_xrel ,amargin_yrel ,amargin_zrel
     real(8):: ranxyz(3)
     integer ::mat,conf
@@ -398,10 +401,11 @@ subroutine genrandomconf(atoms,numb,conf)
         ranxyz(1)=ranxyz(1)*(1.d0-2.d0*amargin_xrel)+amargin_xrel
         ranxyz(2)=ranxyz(2)*(1.d0-2.d0*amargin_yrel)+amargin_yrel
         ranxyz(3)=ranxyz(3)*(1.d0-2.d0*amargin_zrel)+amargin_zrel
-        atoms%rat(1,mat)=ranxyz(1)*atoms%cellvec(1,1)
-        atoms%rat(2,mat)=ranxyz(2)*atoms%cellvec(2,2)
-        atoms%rat(3,mat)=ranxyz(3)*atoms%cellvec(3,3)
+        atoms%ratp(1,mat)=ranxyz(1)*atoms%cellvec(1,1)
+        atoms%ratp(2,mat)=ranxyz(2)*atoms%cellvec(2,2)
+        atoms%ratp(3,mat)=ranxyz(3)*atoms%cellvec(3,3)
     enddo
+    call update_rat(atoms,upall=.true.)
     
 
     file_info%filename_positions='posinp_'//char(49)//numb//'.acf'

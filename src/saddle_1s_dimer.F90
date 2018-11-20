@@ -7,7 +7,7 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, atom_normalizevector
     use mod_atoms, only: atom_deallocate_old
-    use mod_atoms, only: atom_calnorm
+    use mod_atoms, only: atom_calnorm, set_rat
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -36,7 +36,8 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     endif
     nit=0
     call atom_copy_old(atoms_s,atoms,'atoms_s->atoms')
-    atoms%rat(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
+    !atoms%rat(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
+    call set_rat(atoms,rat,setall=.true.)
     call cal_potential_forces(parini,atoms)
     fat(1:3,1:atoms%nat)=atoms%fat(1:3,1:atoms%nat)
     epotprime=atoms%epot
@@ -183,7 +184,7 @@ subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm
     use mod_parini, only: typ_parini
     use mod_saddle, only: do_elim_rot, do_elim_trans, dimsep
     use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_normalizevector
-    use mod_atoms, only: atom_calnorm, atom_deallocate_old
+    use mod_atoms, only: atom_calnorm, atom_deallocate_old, set_rat
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -219,7 +220,8 @@ subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm
     !write(*,*) 'dimsep',dimsep
     pi=4.d0*atan(1.d0)
     xim1(1:3,1:nat)=rat(1:3,1:nat)+dimsep*uvn(1:3,1:nat)
-    atoms%rat(1:3,1:nat)=xim1(1:3,1:nat)
+    !atoms%rat(1:3,1:nat)=xim1(1:3,1:nat)
+    call set_rat(atoms,xim1,setall=.true.)
     call cal_potential_forces(parini,atoms)
     fim1(1:3,1:nat)=atoms%fat(1:3,1:nat)
     epotim1=atoms%epot
@@ -254,7 +256,8 @@ subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm
         if(atoms_s%bemoved(3,iat)) uvnphi1(3,iat)=cos(phi1)*uvn(3,iat)+sin(phi1)*uvp(3,iat)
     enddo
     xim1(1:3,1:nat)=rat(1:3,1:nat)+dimsep*uvnphi1(1:3,1:nat)
-    atoms%rat(1:3,1:nat)=xim1(1:3,1:nat)
+    !atoms%rat(1:3,1:nat)=xim1(1:3,1:nat)
+    call set_rat(atoms,xim1,setall=.true.)
     call cal_potential_forces(parini,atoms)
     fim1(1:3,1:nat)=atoms%fat(1:3,1:nat)
     epotim1=atoms%epot

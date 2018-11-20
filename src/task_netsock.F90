@@ -2,7 +2,7 @@
 subroutine netsock_task(parini)
     !use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof
+    use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, update_rat
     use mod_potential, only: fcalls, perfstatus, potential
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr, bohr2ang
@@ -78,7 +78,8 @@ subroutine netsock_task(parini)
                 atoms_arr%atoms(iconf)%cellvec=latvec
                 if(potential=='vcblj')atoms_arr%atoms(iconf)%cellvec=latvec*bohr2ang
 !Convert the units of positions and lattice vectors in a format that alborz will understand
-                call rxyz_int2cart_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,pos,atoms_arr%atoms(iconf)%rat)
+                call rxyz_int2cart_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,pos,atoms_arr%atoms(iconf)%ratp)
+                call update_rat(atoms_arr%atoms(iconf),upall=.true.)
 !Compute the forces and stress here!!!
                 call cal_potential_forces(parini,atoms_arr%atoms(iconf))
 !Get Force

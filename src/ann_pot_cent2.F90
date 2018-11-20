@@ -2,7 +2,7 @@
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
@@ -25,6 +25,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     real(8),allocatable :: gausswidth(:)
     real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_cent2')
+    call update_ratp(atoms)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
         allocate(ann_arr%chi_i(1:atoms%nat))
@@ -353,7 +354,7 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
 
     do iat=1,atoms%nat
         call random_number(ttrand)
-        cent%rel(1:3,iat)=atoms%rat(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
+        cent%rel(1:3,iat)=atoms%ratp(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
     cent%poisson%linked_lists%rcut=parini%rcut_ewald
@@ -435,16 +436,16 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
         cent%poisson%bc=atoms%boundcond
         cent%poisson%q(1:cent%poisson%nat)=atoms%zat(1:atoms%nat)
         cent%poisson%gw(1:cent%poisson%nat)=cent%gwit(1:atoms%nat)
-        cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+        cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%ratp(1:3,1:atoms%nat)
         call get_hartree_force(parini,cent%poisson,atoms)
         call cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     else
         call cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
     endif
     do iat=1,atoms%nat !summation over ions/electrons
-        dx=cent%rel(1,iat)-atoms%rat(1,iat)
-        dy=cent%rel(2,iat)-atoms%rat(2,iat)
-        dz=cent%rel(3,iat)-atoms%rat(3,iat)
+        dx=cent%rel(1,iat)-atoms%ratp(1,iat)
+        dy=cent%rel(2,iat)-atoms%ratp(2,iat)
+        dz=cent%rel(3,iat)-atoms%ratp(3,iat)
         spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
         atoms%fat(1,iat)=atoms%fat(1,iat)+spring_const*dx
         atoms%fat(2,iat)=atoms%fat(2,iat)+spring_const*dy
@@ -482,9 +483,9 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
         hardness=ann_arr%ann(atoms%itypat(iat))%hardness
         atoms%epot=atoms%epot+0.5d0*hardness*(atoms%zat(iat)+atoms%qat(iat))**2
         cent%qgrad(iat)=cent%qgrad(iat)+ann_arr%chi_o(iat)+(atoms%zat(iat)+atoms%qat(iat))*hardness
-        dx=cent%rel(1,iat)-atoms%rat(1,iat)
-        dy=cent%rel(2,iat)-atoms%rat(2,iat)
-        dz=cent%rel(3,iat)-atoms%rat(3,iat)
+        dx=cent%rel(1,iat)-atoms%ratp(1,iat)
+        dy=cent%rel(2,iat)-atoms%ratp(2,iat)
+        dz=cent%rel(3,iat)-atoms%ratp(3,iat)
         spring_const=ann_arr%ann(atoms%itypat(iat))%spring_const
         atoms%epot=atoms%epot+0.5d0*spring_const*(dx**2+dy**2+dz**2)
         cent%rgrad(1,iat)=cent%rgrad(1,iat)+spring_const*dx
@@ -559,9 +560,9 @@ subroutine cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
     !nuclei-nuclei interaction
     do iat=1,atoms%nat !summation over ions
         do jat=iat+1,atoms%nat !summation over ions
-            dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-            dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-            dz=atoms%rat(3,jat)-atoms%rat(3,iat)
+            dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
+            dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
+            dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
             r=sqrt(dx*dx+dy*dy+dz*dz)
             gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
             epot_es=epot_es              +atoms%zat(iat)*atoms%zat(jat)*erf(gama*r)/r
@@ -571,9 +572,9 @@ subroutine cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
     !electron-nuclei interaction
     do iat=1,atoms%nat !summation over ions
         do jel=1,atoms%nat !summation over electrons
-            dx=cent%rel(1,jel)-atoms%rat(1,iat)
-            dy=cent%rel(2,jel)-atoms%rat(2,iat)
-            dz=cent%rel(3,jel)-atoms%rat(3,iat)
+            dx=cent%rel(1,jel)-atoms%ratp(1,iat)
+            dy=cent%rel(2,jel)-atoms%ratp(2,iat)
+            dz=cent%rel(3,jel)-atoms%ratp(3,iat)
             r=sqrt(dx*dx+dy*dy+dz*dz)
             gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jel)**2)
             if(r<0.1d0) then
@@ -624,9 +625,9 @@ subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
     !nuclei-nuclei interaction
     do iat=1,atoms%nat !summation over ions
         do jat=iat+1,atoms%nat !summation over ions
-            dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-            dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-            dz=atoms%rat(3,jat)-atoms%rat(3,iat)
+            dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
+            dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
+            dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
             r=sqrt(dx*dx+dy*dy+dz*dz)
             !gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwi(jat)**2)
             !epot_es=epot_es              +atoms%zat(iat)*atoms%zat(jat)*erf(gama*r)/r
@@ -646,9 +647,9 @@ subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
     !electron-nuclei interaction
     do iat=1,atoms%nat !summation over ions
         do jel=1,atoms%nat !summation over electrons
-            dx=cent%rel(1,jel)-atoms%rat(1,iat)
-            dy=cent%rel(2,jel)-atoms%rat(2,iat)
-            dz=cent%rel(3,jel)-atoms%rat(3,iat)
+            dx=cent%rel(1,jel)-atoms%ratp(1,iat)
+            dy=cent%rel(2,jel)-atoms%ratp(2,iat)
+            dz=cent%rel(3,jel)-atoms%ratp(3,iat)
             r=sqrt(dx*dx+dy*dy+dz*dz)
             if((iat==jel) .and. r>0.3d0) then
                 write(*,'(a,es14.5,i6,1x,a)') 'ERROR: Center of electron far from atom: r= ', &
@@ -766,7 +767,7 @@ subroutine put_gauss_to_grid(parini,atoms,cent)
     cent%poisson%bc=atoms%boundcond
     cent%poisson%q(1:cent%poisson%nat)=atoms%zat(1:atoms%nat)
     cent%poisson%gw(1:cent%poisson%nat)=cent%gwit(1:atoms%nat)
-    cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+    cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%ratp(1:3,1:atoms%nat)
     call put_charge_density(parini,cent%poisson)
     if(.not. cent%poisson%initialized) then
         stop 'ERROR: put_gauss_to_grid: poisson is not initialized!'
@@ -816,9 +817,9 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
         gama=1.d0/(sqrt(2.d0)*alpha)
         epot_short=epot_short+atoms%zat(iat)*atoms%zat(jat)*erfc(gama*r)/r
         !---------------------------------------------------
-        dx=cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%rat(1,jat)
-        dy=cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%rat(2,jat)
-        dz=cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%rat(3,jat)
+        dx=cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%ratp(1,jat)
+        dy=cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%ratp(2,jat)
+        dz=cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%ratp(3,jat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jat)**2)
         epot_short=epot_short+atoms%zat(iat)*atoms%qat(jat)*erf(gama*r)/r
@@ -837,9 +838,9 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
         cent%rgrad(3,jat)=cent%rgrad(3,jat)+(tt21+tt22)*dz
         cent%qgrad(jat)=cent%qgrad(jat)+tt31+tt32
         !---------------------------------------------------
-        dx=-cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%rat(1,iat)
-        dy=-cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%rat(2,iat)
-        dz=-cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%rat(3,iat)
+        dx=-cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%ratp(1,iat)
+        dy=-cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%ratp(2,iat)
+        dz=-cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%ratp(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(jat)**2+cent%gwe(iat)**2)
         epot_short=epot_short+atoms%zat(jat)*atoms%qat(iat)*erf(gama*r)/r
@@ -868,9 +869,9 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     shift=shift*pi/vol
     do iat=1,atoms%nat
         jat=iat
-        dx=cent%rel(1,jat)-atoms%rat(1,iat)
-        dy=cent%rel(2,jat)-atoms%rat(2,iat)
-        dz=cent%rel(3,jat)-atoms%rat(3,iat)
+        dx=cent%rel(1,jat)-atoms%ratp(1,iat)
+        dy=cent%rel(2,jat)-atoms%ratp(2,iat)
+        dz=cent%rel(3,jat)-atoms%ratp(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         if(r>0.3d0) then
             write(*,'(a,es14.5,i6,1x,a)') 'ERROR: Center of electron far from atom: r= ', &
@@ -954,9 +955,9 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
         atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
-        dx=cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%rat(1,jat)
-        dy=cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%rat(2,jat)
-        dz=cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%rat(3,jat)
+        dx=cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,jat)-atoms%ratp(1,jat)
+        dy=cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,jat)-atoms%ratp(2,jat)
+        dz=cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,jat)-atoms%ratp(3,jat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(iat)**2+cent%gwe(jat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
@@ -970,9 +971,9 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
         atoms%fat(2,iat)=atoms%fat(2,iat)+(tt21+tt22)*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+(tt21+tt22)*dz
         !---------------------------------------------------
-        dx=-cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%rat(1,iat)
-        dy=-cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%rat(2,iat)
-        dz=-cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%rat(3,iat)
+        dx=-cent%poisson%pia_arr%pia(ib)%dr(1)+cent%rel(1,iat)-atoms%ratp(1,iat)
+        dy=-cent%poisson%pia_arr%pia(ib)%dr(2)+cent%rel(2,iat)-atoms%ratp(2,iat)
+        dz=-cent%poisson%pia_arr%pia(ib)%dr(3)+cent%rel(3,iat)-atoms%ratp(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         gama=1.d0/sqrt(cent%gwi(jat)**2+cent%gwe(iat)**2)
         ee1=(2.d0/sqrt(pi)*gama*exp(-gama**2*r**2)-erf(gama*r)/r)/r**2
@@ -989,9 +990,9 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     enddo
     do iat=1,atoms%nat
         jat=iat
-        dx=cent%rel(1,jat)-atoms%rat(1,iat)
-        dy=cent%rel(2,jat)-atoms%rat(2,iat)
-        dz=cent%rel(3,jat)-atoms%rat(3,iat)
+        dx=cent%rel(1,jat)-atoms%ratp(1,iat)
+        dy=cent%rel(2,jat)-atoms%ratp(2,iat)
+        dz=cent%rel(3,jat)-atoms%ratp(3,iat)
         r=sqrt(dx*dx+dy*dy+dz*dz)
         if(r>0.3d0) then
             write(*,'(a,es14.5,i6,1x,a)') 'ERROR: Center of electron far from atom: r= ', &
@@ -1068,9 +1069,9 @@ subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
     ztot=0.d0
     do iat=1,atoms%nat
         ztot=ztot+atoms%zat(iat)
-        cx=cx+atoms%zat(iat)*atoms%rat(1,iat)
-        cy=cy+atoms%zat(iat)*atoms%rat(2,iat)
-        cz=cz+atoms%zat(iat)*atoms%rat(3,iat)
+        cx=cx+atoms%zat(iat)*atoms%ratp(1,iat)
+        cy=cy+atoms%zat(iat)*atoms%ratp(2,iat)
+        cz=cz+atoms%zat(iat)*atoms%ratp(3,iat)
     enddo
     cx=cx/ztot
     cy=cy/ztot
@@ -1080,9 +1081,9 @@ subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
     qpxy=0.0 ; qpxz=0.0 ; qpyz=0.0
     do iat=1,atoms%nat
         !ionic part
-        x=atoms%rat(1,iat)-cx
-        y=atoms%rat(2,iat)-cy
-        z=atoms%rat(3,iat)-cz
+        x=atoms%ratp(1,iat)-cx
+        y=atoms%ratp(2,iat)-cy
+        z=atoms%ratp(3,iat)-cz
         rsq=x**2+y**2+z**2
         qpxx=qpxx+(3.0*x*x-rsq)*atoms%zat(iat)
         qpyy=qpyy+(3.0*y*y-rsq)*atoms%zat(iat)
@@ -1136,9 +1137,9 @@ subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
     ztot=0.d0
     do iat=1,atoms%nat
         ztot=ztot+atoms%zat(iat)
-        cx=cx+atoms%zat(iat)*atoms%rat(1,iat)
-        cy=cy+atoms%zat(iat)*atoms%rat(2,iat)
-        cz=cz+atoms%zat(iat)*atoms%rat(3,iat)
+        cx=cx+atoms%zat(iat)*atoms%ratp(1,iat)
+        cy=cy+atoms%zat(iat)*atoms%ratp(2,iat)
+        cz=cz+atoms%zat(iat)*atoms%ratp(3,iat)
     enddo
     cx=cx/ztot
     cy=cy/ztot
@@ -1178,9 +1179,9 @@ subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
     qpyz=qpyz*vol_voxel
     do iat=1,atoms%nat
         !ionic part
-        x=atoms%rat(1,iat)-cx
-        y=atoms%rat(2,iat)-cy
-        z=atoms%rat(3,iat)-cz
+        x=atoms%ratp(1,iat)-cx
+        y=atoms%ratp(2,iat)-cy
+        z=atoms%ratp(3,iat)-cz
         rsq=x**2+y**2+z**2
         qpxx=qpxx+(3.0*x*x-rsq)*atoms%zat(iat)
         qpyy=qpyy+(3.0*y*y-rsq)*atoms%zat(iat)

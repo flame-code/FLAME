@@ -36,7 +36,7 @@ end subroutine final_potential_forces_bigdft
 !*****************************************************************************************
 subroutine cal_potential_forces_bigdft(atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_potential, only: perfstatus, perfstatus_old, fcalls, bigdft_restart
     use mod_processors, only: iproc
     implicit none
@@ -50,7 +50,8 @@ subroutine cal_potential_forces_bigdft(atoms)
     logical:: success
     write(dir,'(a3,i3.3)') 'tmp',iproc
     filename=dir//'/posinp.xyz'
-    call writexyz_bigdft(filename,atoms%nat,atoms%rat,'angstroemd0')
+    call update_ratp(atoms)
+    call writexyz_bigdft(filename,atoms%nat,atoms%ratp,'angstroemd0')
     if(fcalls<1.d0 .or. trim(perfstatus)/=trim(perfstatus_old)) then
         bigdft_restart=.false.
     else

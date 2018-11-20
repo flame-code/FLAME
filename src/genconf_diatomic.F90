@@ -3,7 +3,7 @@ subroutine genconf_diatomic(parini,genconf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_all, typ_file_info, atom_all_allocate, atom_all_deallocate
-    use mod_atoms, only: atom_allocate_old, atom_deallocate_old
+    use mod_atoms, only: atom_allocate_old, atom_deallocate_old, set_rat
     use mod_genconf, only: typ_genconf
     use mod_processors, only: iproc
     use mod_potential, only: potential
@@ -44,11 +44,7 @@ subroutine genconf_diatomic(parini,genconf)
         atoms_all%ratall(1,2,iconf)=(4.d0+parini%dmin_genconf+(iconf-1)*dx)/bohr2ang
         atoms_all%ratall(2:3,2,iconf)=4.d0/bohr2ang
         if(trim(genconf%cal_pot)=='yes') then
-            do iat=1,atoms_all%atoms%nat
-                atoms_all%atoms%rat(1,iat)=atoms_all%ratall(1,iat,iconf)
-                atoms_all%atoms%rat(2,iat)=atoms_all%ratall(2,iat,iconf)
-                atoms_all%atoms%rat(3,iat)=atoms_all%ratall(3,iat,iconf)
-            enddo
+            call set_rat(atoms_all%atoms,atoms_all%ratall(1,1,iconf),setall=.true.)
             call cal_potential_forces(parini,atoms_all%atoms)
             atoms_all%epotall(iconf)=atoms_all%atoms%epot
             r=atoms_all%ratall(1,2,iconf)-atoms_all%ratall(1,1,iconf)

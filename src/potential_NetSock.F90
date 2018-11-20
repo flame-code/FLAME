@@ -20,7 +20,7 @@
 !  use defs_basis
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
-  use mod_atoms, only: typ_atoms
+  use mod_atoms, only: typ_atoms, update_ratp
   implicit none
   type(typ_atoms), intent(inout):: atoms
   integer:: iproc
@@ -55,7 +55,8 @@ endif
     latvec=atoms%cellvec
 !Transform to reduced coordinates
 !    call rxyz_cart2int(latvec,xred,atoms%rat,atoms%nat)
-    call rxyz_cart2int_alborz(atoms%nat,latvec,atoms%rat,xred)
+    call update_ratp(atoms)
+    call rxyz_cart2int_alborz(atoms%nat,latvec,atoms%ratp,xred)
     call send_data(xred,latvec,atoms%nat,atoms%nat,msg,nmsg,latvec_rot)
     call get_data(energy,fcart,strten,latvec,latvec_rot,atoms%nat)
 !We have all info here, but we will only pass etot and fcart

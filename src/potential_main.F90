@@ -48,7 +48,7 @@ end subroutine init_potential_forces
 subroutine cal_potential_forces(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat, update_ratp, set_rat
     use mod_potential, only: potential, fcalls
     use mod_processors, only: iproc
     use dynamic_memory
@@ -60,21 +60,22 @@ subroutine cal_potential_forces(parini,atoms)
     real(8), allocatable:: ratred(:,:), rat_backup(:,:)
     call f_routine(id='cal_potential_forces')
     allocate(rat_backup(3,atoms%nat))
-    rat_backup(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)
+    call get_rat(atoms,rat_backup)
+    call update_ratp(atoms)
     if(trim(atoms%boundcond)=='bulk') then
         allocate(ratred(3,atoms%nat))
-        call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,ratred)
+        call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,ratred)
         call backtocell_alborz(atoms%nat,atoms%cellvec,ratred)
-        call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%rat)
+        call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%ratp)
         deallocate(ratred)
     elseif(trim(atoms%boundcond)=='slab') then
         allocate(ratred(3,atoms%nat))
-        call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,ratred)
+        call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,ratred)
         do iat=1,atoms%nat
             ratred(1,iat)=modulo(modulo(ratred(1,iat),1.d0),1.d0)
             ratred(2,iat)=modulo(modulo(ratred(2,iat),1.d0),1.d0)
         enddo
-        call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%rat)
+        call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%ratp)
         deallocate(ratred)
     endif
     do iat=1,atoms%nat
@@ -105,7 +106,7 @@ subroutine cal_potential_forces(parini,atoms)
             call cal_potential_forces_ff(parini,atoms)
         case('vcblj')
             allocate(ratred(3,atoms%nat))
-            call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,ratred)
+            call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,ratred)
             call lennardjones_vc(iproc,atoms%nat,ratred,atoms%cellvec,atoms%pressure,atoms%fat,atoms%celldv,atoms%stress,atoms%epot,atoms%enth)
             deallocate(ratred)
         case('dftb')
@@ -127,7 +128,7 @@ subroutine cal_potential_forces(parini,atoms)
     !    write(27,'(3es17.9)') atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
     !enddo
     write(27,'(3es20.12)') sqrt(sum(atoms%fat(1,:)**2)),sqrt(sum(atoms%fat(2,:)**2)),sqrt(sum(atoms%fat(3,:)**2))
-    atoms%rat(1:3,1:atoms%nat)=rat_backup(1:3,1:atoms%nat)
+    call set_rat(atoms,rat_backup,setall=.true.)
     deallocate(rat_backup)
     call f_release_routine()
 end subroutine cal_potential_forces

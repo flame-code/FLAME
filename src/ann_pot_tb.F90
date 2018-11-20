@@ -4,7 +4,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_parini, only: typ_parini
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
@@ -82,13 +82,14 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         enddo over_ib
     enddo over_i
     pi=4.d0*atan(1.d0)
+    call update_ratp(atoms)
     do ib=1,nb
         iat=symfunc%linked_lists%bound_rad(1,ib)
         jat=symfunc%linked_lists%bound_rad(2,ib)
         if(trim(ann_arr%event)=='potential') then
-        dx=atoms%rat(1,iat)-atoms%rat(1,jat)
-        dy=atoms%rat(2,iat)-atoms%rat(2,jat)
-        dz=atoms%rat(3,iat)-atoms%rat(3,jat)
+        dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+        dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+        dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
         rsq=dx**2+dy**2+dz**2
         r=sqrt(rsq)
         rc=partb%paircut
@@ -247,7 +248,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     !use mod_tightbinding, only: typ_partb
     !use mod_potl, only: potl_typ
-    use mod_atoms, only: typ_atoms, atom_allocate_old
+    use mod_atoms, only: typ_atoms, atom_allocate_old, set_rat_iat, update_ratp
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann, convert_x_ann, get_opt_ann_x, set_opt_ann_x
@@ -277,8 +278,8 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     atoms%cellvec(1,1)=30.d0
     atoms%cellvec(2,2)=30.d0
     atoms%cellvec(3,3)=30.d0
-    atoms%rat(1,1)=5.d0 ; atoms%rat(2,1)=5.d0 ; atoms%rat(3,1)=5.d0
-    atoms%rat(1,2)=7.d0 ; atoms%rat(2,2)=5.d0 ; atoms%rat(3,2)=5.d0
+    call set_rat_iat(atoms,1,(/5.d0,5.d0,5.d0/))
+    call set_rat_iat(atoms,2,(/7.d0,5.d0,5.d0/))
 
     open(unit=101,file='hgen.ltb',status='old',iostat=ios)
     if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning hgen.ltb ';stop;endif
@@ -291,9 +292,10 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     nb=1
     allocate(ann_arr%g_per_bond(opt_ann%num(1),4,nb))
     allocate(yall(ann_arr%ann(1)%nn(0),1000,325))
+    call update_ratp(atoms)
     do i=1,325
         !call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-        atoms%rat(1,2)=atoms%rat(1,1)+dis_ltb(i)
+        atoms%ratp(1,2)=atoms%ratp(1,1)+dis_ltb(i)
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
         ng=ann_arr%ann(1)%nn(0)
         nb=symfunc%linked_lists%maxbound_rad

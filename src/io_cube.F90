@@ -1,7 +1,7 @@
 !*****************************************************************************************
 subroutine cube_read(filename,atoms,poisson)
     use mod_interface
-    use mod_atoms, only: typ_atoms, iatom_to_sat, atom_allocate_old
+    use mod_atoms, only: typ_atoms, iatom_to_sat, atom_allocate_old, update_rat
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
@@ -38,13 +38,14 @@ subroutine cube_read(filename,atoms,poisson)
     atoms%cellvec(3,3)=poisson%ngpz*poisson%hgrid(3,3)
     write(*,'(2a)') 'reading ',trim(filename)
     do iat=1,atoms%nat
-        read(1358,*) iatom,atoms%zat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
+        read(1358,*) iatom,atoms%zat(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat)
         call iatom_to_sat(iatom,atoms%sat(iat))
         !if(iatom==1) atoms%sat(iat)='H'
         !if(iatom==6) atoms%sat(iat)='C'
         !if(iatom==7) atoms%sat(iat)='N'
         !if(iatom==29) atoms%sat(iat)='Cu'
     enddo
+    call update_rat(atoms,upall=.true.)
     poisson%rho=f_malloc([1.to.poisson%ngpx,1.to.poisson%ngpy,1.to.poisson%ngpz], &
         id='poisson%rho')
     !allocate(poisson%rho(poisson%ngpx,poisson%ngpy,poisson%ngpz),stat=istat)
@@ -109,7 +110,7 @@ end subroutine cube_read
 !*****************************************************************************************
 subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     use mod_interface
-    use mod_atoms, only: typ_atoms, sat_to_iatom
+    use mod_atoms, only: typ_atoms, sat_to_iatom, get_rat
     use mod_electrostatics, only: typ_poisson
     implicit none
     character(*), intent(in):: filename
@@ -121,6 +122,7 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     !local variables
     real(8):: tt, quantity
     integer:: iat, igpx, igpy, igpz, item, ios, iatom
+    real(8), allocatable:: rat(:,:)
     open(unit=1358,file=trim(filename),status='replace',iostat=ios)
     if(ios/=0) then;write(*,'(2a)') 'ERROR: failure openning ',trim(filename);stop;endif
     write(*,'(2a)') 'writing ',trim(filename)
@@ -130,13 +132,15 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     write(1358,'(i5,3f13.6)') poisson%ngpx,poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
     write(1358,'(i5,3f13.6)') poisson%ngpy,poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
     write(1358,'(i5,3f13.6)') poisson%ngpz,poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
+    allocate(rat(3,atoms%nat))
+    call get_rat(atoms,rat)
     do iat=1,atoms%nat
         !if(trim(atoms%sat(iat))=='H') iatom=1
         !if(trim(atoms%sat(iat))=='C') iatom=6
         !if(trim(atoms%sat(iat))=='N') iatom=7
         !if(trim(atoms%sat(iat))=='Cu') iatom=29
         call sat_to_iatom(atoms%sat(iat),iatom)
-        write(1358,'(i5,f13.5,3f13.6)') iatom,atoms%zat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
+        write(1358,'(i5,f13.5,3f13.6)') iatom,atoms%zat(iat),rat(1,iat),rat(2,iat),rat(3,iat)
     enddo
     item=0
     do igpx=1,poisson%ngpx
@@ -149,7 +153,7 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
                 else
                     stop 'ERROR: what should cube_write write into file?'
                 endif
-                if(quantity<1.d-90) quantity=0.d0
+                if(abs(quantity)<1.d-90) quantity=0.d0
                 write(1358,'(1x,es12.5,1x)',advance='no') quantity
                 !write(1358,'(1x,f13.6,1x)',advance='no') quantity
                 item=item+1
@@ -161,5 +165,6 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
         enddo
     enddo
     close(1358)
+    deallocate(rat)
 end subroutine cube_write
 !*****************************************************************************************

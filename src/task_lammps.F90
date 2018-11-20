@@ -62,7 +62,7 @@ end subroutine lammps_task
 subroutine lammps_write(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     integer:: iat,j
     type(typ_parini), intent(in):: parini
@@ -90,8 +90,9 @@ subroutine lammps_write(parini,atoms)
     write(10,'(a)')"Atoms"
     write(10,*)
 
+    call update_ratp(atoms)
     do iat= 1,atoms%nat
-        write(10,'(i8,i3,3es24.15)') iat, id_type(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
+        write(10,'(i8,i3,3es24.15)') iat, id_type(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat)
     enddo
     deallocate(id_type)
 end subroutine lammps_write

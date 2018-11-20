@@ -458,7 +458,7 @@ end subroutine read_ann
 subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: typ_atoms_arr, atom_copy_old, set_rat_atoms
     use mod_atoms, only: atom_allocate_old, atom_deallocate, atom_deallocate_old
     use dynamic_memory
     implicit none
@@ -470,7 +470,7 @@ subroutine read_data_old(parini,filename_list,atoms_arr)
     character(256):: filename, fn_tmp, filename_force
     type(typ_atoms_arr):: atoms_arr_of !configuration of one file
     type(typ_atoms_arr):: atoms_arr_t
-    real(8):: ttx, tty, ttz, fx, fy, fz
+    real(8):: fx, fy, fz
     integer:: nconfmax, ind, len_filename
     call f_routine(id='read_data_old')
     nconfmax=1*10**5
@@ -504,13 +504,8 @@ subroutine read_data_old(parini,filename_list,atoms_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             if(parini%read_forces_ann) read(2,*)
+            call set_rat_atoms(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf),setall=.true.)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
-                ttx=atoms_arr_of%atoms(iconf)%rat(1,iat)
-                tty=atoms_arr_of%atoms(iconf)%rat(2,iat)
-                ttz=atoms_arr_of%atoms(iconf)%rat(3,iat)
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(1,iat)=ttx
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(2,iat)=tty
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(3,iat)=ttz
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)
                 if(parini%read_forces_ann) then
                     read(2,*) fx,fy,fz

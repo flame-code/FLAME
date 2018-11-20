@@ -143,7 +143,7 @@ end subroutine bias_potener_forces
 subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_linked_lists
     use mod_parini, only: typ_parini
     implicit none
@@ -207,19 +207,20 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     hgyinv=1.d0/poisson%hy
     hgzinv=1.d0/poisson%hz
 
+    call update_ratp(linked_lists%typ_atoms)
     do kz=linked_lists%mz,max(linked_lists%mz-mlimnlayer-linked_lists%mlimnb,1),-1
     do ky=1,linked_lists%my
     do kx=1,linked_lists%mx
     ip=linked_lists%prime(kx,ky,kz)
     il=linked_lists%last(kx,ky,kz)
     do  iat=ip,il
-        if (zgpu-linked_lists%rat(3,iat)>linked_lists%rcut+dnlayer) cycle
-        iatox=nint(linked_lists%rat(1,iat)*hgxinv)+1
-        iatoy=nint(linked_lists%rat(2,iat)*hgyinv)+1
-        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+nbgpz_poisson
-        xat=linked_lists%rat(1,iat)-(iatox-1)*poisson%hx
-        yat=linked_lists%rat(2,iat)-(iatoy-1)*poisson%hy
-        zat=linked_lists%rat(3,iat)-(iatoz-1-nbgpz_poisson)*poisson%hz
+        if (zgpu-linked_lists%ratp(3,iat)>linked_lists%rcut+dnlayer) cycle
+        iatox=nint(linked_lists%ratp(1,iat)*hgxinv)+1
+        iatoy=nint(linked_lists%ratp(2,iat)*hgyinv)+1
+        iatoz=nint(linked_lists%ratp(3,iat)*hgzinv)+1+nbgpz_poisson
+        xat=linked_lists%ratp(1,iat)-(iatox-1)*poisson%hx
+        yat=linked_lists%ratp(2,iat)-(iatoy-1)*poisson%hy
+        zat=linked_lists%ratp(3,iat)-(iatoz-1-nbgpz_poisson)*poisson%hz
         do iz=-nbgpz,nbgpz
             jz=iatoz+iz
             if (.not. (jz<=npu .and. jz>npu-nlayer)) cycle
@@ -251,13 +252,13 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     ip=linked_lists%prime(kx,ky,kz)
     il=linked_lists%last(kx,ky,kz)
     do  iat=ip,il
-        if (-zgpl+linked_lists%rat(3,iat)>linked_lists%rcut+dnlayer) cycle
-        iatox=nint(linked_lists%rat(1,iat)*hgxinv)+1
-        iatoy=nint(linked_lists%rat(2,iat)*hgyinv)+1
-        iatoz=nint(linked_lists%rat(3,iat)*hgzinv)+1+nbgpz_poisson
-        xat=linked_lists%rat(1,iat)-(iatox-1)*poisson%hx
-        yat=linked_lists%rat(2,iat)-(iatoy-1)*poisson%hy
-        zat=linked_lists%rat(3,iat)-(iatoz-1-nbgpz_poisson)*poisson%hz
+        if (-zgpl+linked_lists%ratp(3,iat)>linked_lists%rcut+dnlayer) cycle
+        iatox=nint(linked_lists%ratp(1,iat)*hgxinv)+1
+        iatoy=nint(linked_lists%ratp(2,iat)*hgyinv)+1
+        iatoz=nint(linked_lists%ratp(3,iat)*hgzinv)+1+nbgpz_poisson
+        xat=linked_lists%ratp(1,iat)-(iatox-1)*poisson%hx
+        yat=linked_lists%ratp(2,iat)-(iatoy-1)*poisson%hy
+        zat=linked_lists%ratp(3,iat)-(iatoz-1-nbgpz_poisson)*poisson%hz
         do iz=-nbgpz,nbgpz
             jz=iatoz+iz
             if (.not. (jz>=npl .and. jz<npl+nlayer .and. jz<=npu-nlayer)) cycle
@@ -560,7 +561,7 @@ end subroutine sollaplaceq
  subroutine calculate_force_ener_plane(atoms,poisson,epot,nbgpz)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use yaml_output
     implicit none
     type(typ_poisson), intent(inout):: poisson
@@ -587,11 +588,12 @@ end subroutine sollaplaceq
     ngpz=poisson%ngpz
     npl=poisson%npl
     npu=poisson%npu
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        if (atoms%rat(3,iat) < (int((nlgz/2.d0))*poisson%hz)) then
-             write(*,*) 'ERROR:atoms are too close to lower plane ',atoms%rat(3,iat),npl,ceiling(nlgz/2.d0)*poisson%hz 
+        if (atoms%ratp(3,iat) < (int((nlgz/2.d0))*poisson%hz)) then
+             write(*,*) 'ERROR:atoms are too close to lower plane ',atoms%ratp(3,iat),npl,ceiling(nlgz/2.d0)*poisson%hz 
              stop
-        else if (poisson%cell(3)-atoms%rat(3,iat) < (int((nlgz/2.d0))*poisson%hz)) then
+        else if (poisson%cell(3)-atoms%ratp(3,iat) < (int((nlgz/2.d0))*poisson%hz)) then
              write(*,*) 'ERROR:atoms are too close to upper plane' 
              stop
         endif
@@ -621,10 +623,11 @@ end subroutine sollaplaceq
     t2=0.d0
     fatp=0.d0
     call cpu_time (time1)
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        x=atoms%rat(1,iat)
-        y=atoms%rat(2,iat)
-        z=atoms%rat(3,iat)
+        x=atoms%ratp(1,iat)
+        y=atoms%ratp(2,iat)
+        z=atoms%ratp(3,iat)
         !call LGW(nlgx, wx,poisson%hx, x, LGx, DLGx, ix1, 0)
         !call LGW(nlgy, wy,poisson%hy, y, LGy, DLGy, iy1, 0)
         !call LGW(nlgz, wz,poisson%hz, z, LGz, DLGz, iz1, nbgpz )
@@ -895,7 +898,7 @@ end subroutine determine_limitsphere
 subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -926,8 +929,9 @@ subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
         !E = parini%efield
     elseif(poisson%point_particle .and. trim(parini%bias_type)=='fixed_potdiff') then
         dipole=0.d0
+        call update_ratp(atoms)
         do iat=1,atoms%nat
-            dipole= dipole + atoms%rat(3,iat)*atoms%qat(iat)
+            dipole= dipole + atoms%ratp(3,iat)*atoms%qat(iat)
         enddo
         beta2 = - 2.d0*pi/(poisson%cell(2)*poisson%cell(1))*dipole
         dv = parini%vu_ewald-parini%vl_ewald 

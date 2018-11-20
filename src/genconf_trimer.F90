@@ -52,22 +52,22 @@ subroutine genconf_trimer(parini,genconf)
             do
                 !write(*,*) iphi,irho2,irho3,atoms_all%nconf
                 !first atom
-                atoms_all%atoms%rat(1,1)=6.d0
-                atoms_all%atoms%rat(2,1)=6.d0
-                atoms_all%atoms%rat(3,1)=6.d0
+                atoms_all%atoms%ratp(1,1)=6.d0
+                atoms_all%atoms%ratp(2,1)=6.d0
+                atoms_all%atoms%ratp(3,1)=6.d0
                 !second atoms
-                atoms_all%atoms%rat(1,2)=6.d0+irho2*drho
-                atoms_all%atoms%rat(2,2)=6.d0
-                atoms_all%atoms%rat(3,2)=6.d0
+                atoms_all%atoms%ratp(1,2)=6.d0+irho2*drho
+                atoms_all%atoms%ratp(2,2)=6.d0
+                atoms_all%atoms%ratp(3,2)=6.d0
                 !third atom
-                atoms_all%atoms%rat(1,3)=6.d0+irho3*drho*cos(iphi*dphi)
-                atoms_all%atoms%rat(2,3)=6.d0+irho3*drho*sin(iphi*dphi)
-                atoms_all%atoms%rat(3,3)=6.d0
+                atoms_all%atoms%ratp(1,3)=6.d0+irho3*drho*cos(iphi*dphi)
+                atoms_all%atoms%ratp(2,3)=6.d0+irho3*drho*sin(iphi*dphi)
+                atoms_all%atoms%ratp(3,3)=6.d0
                 !calculating distances
                 r12=irho2*drho
                 r13=irho3*drho
-                dx=atoms_all%atoms%rat(1,3)-atoms_all%atoms%rat(1,2)
-                dy=atoms_all%atoms%rat(2,3)-atoms_all%atoms%rat(2,2)
+                dx=atoms_all%atoms%ratp(1,3)-atoms_all%atoms%ratp(1,2)
+                dy=atoms_all%atoms%ratp(2,3)-atoms_all%atoms%ratp(2,2)
                 r23=sqrt(dx**2+dy**2)
                 if(r12<0.7d0*r0 .or. r13<0.7d0*r0 .or. r23<0.7d0*r0) goto 1000
                 if(r12>2.0d0*r0 .or. r13>2.0d0*r0 .or. r23>2.0d0*r0) goto 1000
@@ -91,7 +91,7 @@ subroutine genconf_trimer(parini,genconf)
                     atoms_all%epotall(atoms_all%nconf)=atoms_all%atoms%epot
                     write(21,'(i5,3f10.4,es24.15)') atoms_all%nconf,r12,r13,r23,atoms_all%atoms%epot
                 endif
-                atoms_all%ratall(1:3,1:3,atoms_all%nconf)=atoms_all%atoms%rat(1:3,1:3)
+                atoms_all%ratall(1:3,1:3,atoms_all%nconf)=atoms_all%atoms%ratp(1:3,1:3)
 1000            continue
                 !if(irho2==0) exit
                 if((irho3==irho2 .and. irho3_inc==1) .or. (irho3==0 .and. irho3_inc==-1)) then

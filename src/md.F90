@@ -50,7 +50,7 @@ subroutine md_nve(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, set_atomic_mass
-    use mod_atoms, only: atom_deallocate_old
+    use mod_atoms, only: atom_deallocate_old, update_ratp, update_rat
     use mod_dynamics, only: dt, nmd,nfreq
     use mod_processors, only: iproc
     implicit none
@@ -88,11 +88,12 @@ subroutine md_nve(parini,atoms)
     atoms%ekin=0.d0
     vcm(1:3)=0.d0
     rcm(1:3)=0.d0
+    call update_ratp(atoms)
     do iat=1,atoms%nat
         t1=atoms%amass(iat)
         atoms%ekin=atoms%ekin+t1*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
         vcm(1:3)=vcm(1:3)+t1*atoms%vat(1:3,iat)
-        rcm(1:3)=rcm(1:3)+t1*atoms%rat(1:3,iat)
+        rcm(1:3)=rcm(1:3)+t1*atoms%ratp(1:3,iat)
     enddo
     vcm(1:3)=vcm(1:3)/totmass
     rcm(1:3)=rcm(1:3)/totmass
@@ -104,10 +105,12 @@ subroutine md_nve(parini,atoms)
     write(21,'(i9,5es25.15)') 0,atoms%epot,atoms%ekin,etot,etot-etotold,temp
     write(22,'(i9,6es20.10)') 0,rcm(1:3),vcm(1:3)
     do imd=1,nmd
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             t1=dt**2/(2.d0*atoms%amass(iat))
-            atoms%rat(1:3,iat)=atoms%rat(1:3,iat)+dt*atoms%vat(1:3,iat)+t1*atoms%fat(1:3,iat)
+            atoms%ratp(1:3,iat)=atoms%ratp(1:3,iat)+dt*atoms%vat(1:3,iat)+t1*atoms%fat(1:3,iat)
         enddo
+        call update_rat(atoms,upall=.true.)
         call cal_potential_forces(parini,atoms)
         do iat=1,atoms%nat
             t1=dt/(2.d0*atoms%amass(iat))
@@ -117,11 +120,12 @@ subroutine md_nve(parini,atoms)
         atoms%ekin=0.d0
         vcm(1:3)=0.d0
         rcm(1:3)=0.d0
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             t1=atoms%amass(iat)
             atoms%ekin=atoms%ekin+t1*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
             vcm(1:3)=vcm(1:3)+t1*atoms%vat(1:3,iat)
-            rcm(1:3)=rcm(1:3)+t1*atoms%rat(1:3,iat)
+            rcm(1:3)=rcm(1:3)+t1*atoms%ratp(1:3,iat)
         enddo
         vcm(1:3)=vcm(1:3)/totmass
         rcm(1:3)=rcm(1:3)/totmass
@@ -150,7 +154,7 @@ subroutine md_nph(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, set_rat, update_ratp, update_rat
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     implicit none
@@ -185,11 +189,13 @@ subroutine md_nph(parini,atoms)
     w=totmass/atoms%nat
     call set_velocities(atoms)
     epotold=atoms%epot
-    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,s)
+    call update_ratp(atoms)
+    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,s)
     call backtocell_alborz(atoms%nat,atoms%cellvec,s)
     do iat=1,atoms%nat
-        atoms%rat(1:3,iat)=matmul(atoms%cellvec,s(1:3,iat))
+        atoms%ratp(1:3,iat)=matmul(atoms%cellvec,s(1:3,iat))
     enddo
+    call update_rat(atoms,upall=.true.)
     call cal_potential_forces(parini,atoms)
     write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
     file_info%filename_positions='posout.acf'
@@ -199,11 +205,12 @@ subroutine md_nph(parini,atoms)
     atoms%ekin=0.d0
     vcm(1:3)=0.d0
     rcm(1:3)=0.d0
+    call update_ratp(atoms)
     do iat=1,atoms%nat
         t1=atoms%amass(iat)
         atoms%ekin=atoms%ekin+t1*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
         vcm(1:3)=vcm(1:3)+t1*atoms%vat(1:3,iat)
-        rcm(1:3)=rcm(1:3)+t1*atoms%rat(1:3,iat)
+        rcm(1:3)=rcm(1:3)+t1*atoms%ratp(1:3,iat)
     enddo
     vcm(1:3)=vcm(1:3)/totmass
     rcm(1:3)=rcm(1:3)/totmass
@@ -296,7 +303,7 @@ subroutine md_nph(parini,atoms)
         enddo
         s_old(1:3,1:atoms%nat)=s(1:3,1:atoms%nat)
         s(1:3,1:atoms%nat)=s_new(1:3,1:atoms%nat)
-        atoms%rat(1:3,1:atoms%nat)=rat_new(1:3,1:atoms%nat)
+        call set_rat(atoms,rat_new,setall=.true.)
         cellvec_old(1:3,1:3)=atoms%cellvec(1:3,1:3)
         atoms%cellvec(1:3,1:3)=cellvec_new(1:3,1:3)
         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -314,11 +321,12 @@ subroutine md_nph(parini,atoms)
         atoms%ekin=0.d0
         vcm(1:3)=0.d0
         rcm(1:3)=0.d0
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             t1=atoms%amass(iat)
             atoms%ekin=atoms%ekin+t1*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
             vcm(1:3)=vcm(1:3)+t1*atoms%vat(1:3,iat)
-            rcm(1:3)=rcm(1:3)+t1*atoms%rat(1:3,iat)
+            rcm(1:3)=rcm(1:3)+t1*atoms%ratp(1:3,iat)
         enddo
         vcm(1:3)=vcm(1:3)/totmass
         rcm(1:3)=rcm(1:3)/totmass
@@ -348,7 +356,7 @@ end subroutine md_nph
 !*****************************************************************************************
 subroutine set_velocities(atoms, ekin_arg)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     type(typ_atoms), intent(inout):: atoms
     !local variables
@@ -380,7 +388,8 @@ subroutine set_velocities(atoms, ekin_arg)
         call elim_moment_mass(atoms%nat,atoms%vat,atoms%amass)
     else
         call elim_moment_alborz(atoms%nat,atoms%vat)
-        call elim_torque_reza_alborz(atoms%nat,atoms%rat,atoms%vat)
+        call update_ratp(atoms)
+        call elim_torque_reza_alborz(atoms%nat,atoms%ratp,atoms%vat)
     endif
     do i=1,10
         ekin=0.d0
@@ -395,7 +404,8 @@ subroutine set_velocities(atoms, ekin_arg)
             call elim_moment_mass(atoms%nat,atoms%vat,atoms%amass)
         else
             call elim_moment_alborz(atoms%nat,atoms%vat)
-            call elim_torque_reza_alborz(atoms%nat,atoms%rat,atoms%vat)
+            call update_ratp(atoms)
+            call elim_torque_reza_alborz(atoms%nat,atoms%ratp,atoms%vat)
         endif
         write(*,*) 'i,ekin ',i,ekin
     enddo
@@ -403,7 +413,7 @@ end subroutine set_velocities
 !*****************************************************************************************
 subroutine ekin_temprature(atoms,temp,vcm,rcm,totmass) 
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     type(typ_atoms):: atoms
     integer :: iat
@@ -415,12 +425,13 @@ subroutine ekin_temprature(atoms,temp,vcm,rcm,totmass)
     vcm(1:3)=0.d0
     rcm(1:3)=0.d0
     totmass= 0.d0
+    call update_ratp(atoms)
     do iat=1,atoms%nat
         t1=atoms%amass(iat)
         totmass=totmass + t1
         atoms%ekin=atoms%ekin+t1*(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
         vcm(1:3)=vcm(1:3)+t1*atoms%vat(1:3,iat)
-        rcm(1:3)=rcm(1:3)+t1*atoms%rat(1:3,iat)
+        rcm(1:3)=rcm(1:3)+t1*atoms%ratp(1:3,iat)
     enddo
     vcm(1:3)=vcm(1:3)/totmass
     rcm(1:3)=rcm(1:3)/totmass

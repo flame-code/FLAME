@@ -58,7 +58,7 @@ end subroutine init_potential_ann
 subroutine cal_potential_ann(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, atom_deallocate_old
+    use mod_atoms, only: typ_atoms, atom_deallocate_old, get_rat
     use mod_potential, only: ann_arr, fcalls, fcalls_sec, potential, potential_sec, ann_boundcheck
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
@@ -82,11 +82,7 @@ subroutine cal_potential_ann(parini,atoms)
         if(.not. allocated(atoms%ratim)) then
             allocate(atoms%ratim(3,atoms%natim),source=0.d0)
         endif
-        do jat=1,atoms%nat
-            atoms%ratim(1,jat)=atoms%rat(1,jat)
-            atoms%ratim(2,jat)=atoms%rat(2,jat)
-            atoms%ratim(3,jat)=atoms%rat(3,jat)
-        enddo
+        call get_rat(atoms,atoms%ratim)
     !elseif(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab' .or. &
     !       trim(atoms%boundcond)=='wire') then
     !    call atom_build_periodic_images(atoms,8.d0)
@@ -138,7 +134,7 @@ end subroutine final_potential_ann
 subroutine add_repulsive_potential(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, set_rcov
+    use mod_atoms, only: typ_atoms, set_rcov, update_ratp
     use mod_linked_lists, only: typ_linked_lists
     implicit none
     type(typ_parini), intent(in):: parini
@@ -162,21 +158,22 @@ subroutine add_repulsive_potential(parini,atoms)
     !-------------------------------------------------------
     epot_rep=0.d0
     linked_lists%fat=0.d0
+    call update_ratp(linked_lists%typ_atoms)
     include '../src/act1_cell_linkedlist.inc'
     do  iat=ip,il
         !qiat=linked_lists%qat(iat)
-        xiat=linked_lists%rat(1,iat)
-        yiat=linked_lists%rat(2,iat)
-        ziat=linked_lists%rat(3,iat)
+        xiat=linked_lists%ratp(1,iat)
+        yiat=linked_lists%ratp(2,iat)
+        ziat=linked_lists%ratp(3,iat)
         jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
         jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
         jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
         maincell_iat=linked_lists%maincell(iat)
         iatp=linked_lists%perm(iat)
         do  jat=jp,jl
-            dx=xiat-linked_lists%rat(1,jat)
-            dy=yiat-linked_lists%rat(2,jat)
-            dz=ziat-linked_lists%rat(3,jat)
+            dx=xiat-linked_lists%ratp(1,jat)
+            dy=yiat-linked_lists%ratp(2,jat)
+            dz=ziat-linked_lists%ratp(3,jat)
             rsq= dx*dx+dy*dy+dz*dz
             maincell=maincell_iat+linked_lists%maincell(jat)
             rc=(atoms%rcov(iatp)+atoms%rcov(linked_lists%perm(jat)))*0.7d0

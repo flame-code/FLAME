@@ -4,7 +4,7 @@ subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
-    use mod_atoms, only: typ_atoms, set_rcov
+    use mod_atoms, only: typ_atoms, set_rcov, get_rat
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -13,6 +13,7 @@ subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     !local variables
     integer:: ig, i, iconf
     integer:: iat , jat, kat, istat
+    real(8), allocatable:: rat(:,:)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))
     allocate(symfunc%y(ng,atoms%nat),stat=istat,source=0.d0)
@@ -25,7 +26,10 @@ subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     symfunc%y0dr=0.d0
 
     call set_rcov(atoms) 
-    call fingerprint_power(atoms%nat, ng/4, atoms%cellvec, atoms%rat, atoms%rcov, symfunc%y)
+    allocate(rat(3,atoms%nat))
+    call get_rat(atoms,rat)
+    call fingerprint_power(atoms%nat, ng/4, atoms%cellvec,rat,atoms%rcov,symfunc%y)
+    deallocate(rat)
     !-------------------------------------------------------------------------------------
     !do ig=1,ann_arr%ann(1)%nn(0)
     !if(parini%iverbose>=2) then

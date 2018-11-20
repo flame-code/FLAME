@@ -1,50 +1,69 @@
 !*****************************************************************************************
 module mod_atoms
     implicit none
-    type typ_atoms
-        integer:: nat=-1 !number of atoms
-        integer:: natim=0 !number of atoms of all periodic images including itself 
-        integer:: ndof=-1 !number of degrees of freedom
-        real(8):: cellvec(3,3)=-1.d0 !cell vectors
-        real(8):: celldv(3,3)=0.d0 !
-        real(8):: stress(3,3)=0.d0 !
-        real(8):: epot=0.d0 !potential energy
-        real(8):: ekin=0.d0 !kinetic energy
-        real(8):: etot=0.d0 !total energy
-        real(8):: enth=0.d0 !enthalpy
-        real(8):: ebattery=0.d0 !energy of external work of battery in p3d_bias
-        real(8):: qtot=0.d0 !total charge of the configuration
-        real(8):: ztot=0.d0 !total ionic charge of the configuration
-        real(8):: pressure=0.d0 !external pressure
-        real(8):: tol
-        real(8):: qtypat(20)=1.d20
-        integer:: ntypat=-1
-        integer:: ltypat(20)=-1
-        integer:: nfp=-1
-        character(5):: stypat(20)='none'
-        character(20):: boundcond='unknown'
-        character(10):: units='angstrom'
-        character(10):: units_length_io='atomic'
+    private
+    public:: get_rat, get_rat_iat
+    public:: set_rat, set_rat_iat, set_rat_atoms
+    public:: update_rat, update_ratp
+    public:: atom_allocate, atom_deallocate, atom_allocate_old, atom_deallocate_old
+    public:: atom_all_allocate, atom_all_deallocate
+    public:: atom_copy, atom_copy_old
+    public:: atom_build_periodic_images
+    public:: set_typat, atom_ddot
+    public:: set_ndof
+    public:: bemoved2string, string2bemoved
+    public:: atoms_all_writexyz
+    public:: atom_normalizevector
+    public:: atom_calnorm, atom_calmaxforcecomponent
+    public:: checkallatomstobeincell
+    public:: determinexyzminmax
+    public:: set_rcov, set_qat, set_atomic_mass, sat_to_iatom, iatom_to_sat
+    type, public:: typ_atoms
+        private
+        integer, public:: nat=-1 !number of atoms
+        integer, public:: natim=0 !number of atoms of all periodic images including itself 
+        integer, public:: ndof=-1 !number of degrees of freedom
+        real(8), public:: cellvec(3,3)=-1.d0 !cell vectors
+        real(8), public:: celldv(3,3)=0.d0 !
+        real(8), public:: stress(3,3)=0.d0 !
+        real(8), public:: epot=0.d0 !potential energy
+        real(8), public:: ekin=0.d0 !kinetic energy
+        real(8), public:: etot=0.d0 !total energy
+        real(8), public:: enth=0.d0 !enthalpy
+        real(8), public:: ebattery=0.d0 !energy of external work of battery in p3d_bias
+        real(8), public:: qtot=0.d0 !total charge of the configuration
+        real(8), public:: ztot=0.d0 !total ionic charge of the configuration
+        real(8), public:: pressure=0.d0 !external pressure
+        real(8), public:: tol
+        real(8), public:: qtypat(20)=1.d20
+        integer, public:: ntypat=-1
+        integer, public:: ltypat(20)=-1
+        integer, public:: nfp=-1
+        character(5), public:: stypat(20)='none'
+        character(20), public:: boundcond='unknown'
+        character(10), public:: units='angstrom'
+        character(10), public:: units_length_io='atomic'
         !coordinates type only at time of reading from file and writing to file.
-        character(10):: coordinates_type='cartesian'
-        character(50):: alloclist='all'
-        character(5), allocatable:: sat(:) !symbol of atoms
+        character(10), public:: coordinates_type='cartesian'
+        character(50), public:: alloclist='all'
+        character(5), allocatable, public:: sat(:) !symbol of atoms
         real(8), allocatable:: rat(:,:) !atomic positions
-        real(8), allocatable:: ratim(:,:) !atomic positions of periodic images
-        real(8), allocatable:: vat(:,:) !atomic velocities
-        real(8), allocatable:: amass(:) !atomic mass
-        real(8), allocatable:: fat(:,:) !atomic forces
-        logical, allocatable:: bemoved(:,:) !status to be moved or not
-        real(8), allocatable:: qat(:) !atomic charges
-        real(8), allocatable:: zat(:) !ionic charges
-        real(8), allocatable:: rcov(:) !covalent radii
-        real(8), allocatable:: fp(:) !fingerprint
-        integer, allocatable:: itypat(:) !The type of each atom is set in this array
+        real(8), allocatable, public:: ratp(:,:) !public atomic positions
+        real(8), allocatable, public:: ratim(:,:) !atomic positions of periodic images
+        real(8), allocatable, public:: vat(:,:) !atomic velocities
+        real(8), allocatable, public:: amass(:) !atomic mass
+        real(8), allocatable, public:: fat(:,:) !atomic forces
+        logical, allocatable, public:: bemoved(:,:) !status to be moved or not
+        real(8), allocatable, public:: qat(:) !atomic charges
+        real(8), allocatable, public:: zat(:) !ionic charges
+        real(8), allocatable, public:: rcov(:) !covalent radii
+        real(8), allocatable, public:: fp(:) !fingerprint
+        integer, allocatable, public:: itypat(:) !The type of each atom is set in this array
         !contains
         !procedure:: atoms_assign
         !generic:: assignment(=) => atoms_assign
     end type typ_atoms
-    type typ_atoms_all
+    type, public:: typ_atoms_all
         type(typ_atoms):: atoms
         integer:: nconfmax=-1 !maximum number of configurations
         integer:: nconf=-1 !number of configurations
@@ -54,7 +73,7 @@ module mod_atoms
         real(8), allocatable:: fatall(:,:,:) !atomic positions
         real(8), allocatable:: fpall(:,:) !fingerprint
     end type typ_atoms_all
-    type typ_atoms_arr
+    type, public:: typ_atoms_arr
         type(typ_atoms), allocatable:: atoms(:)
         integer:: nconfmax=-1 !maximum number of configurations
         integer:: nconf=-1 !number of configurations
@@ -74,7 +93,7 @@ module mod_atoms
     !    real(8), allocatable:: ratarr(:,:,:)
     !    logical, allocatable:: bemoved(:,:,:)
     !end type typ_atoms_arr
-    type typ_file_info
+    type, public:: typ_file_info
         character(256):: filename_positions='unknown'
         character(256):: filename_forces='unknown'
         character(50):: file_position='unknown'
@@ -91,10 +110,137 @@ module mod_atoms
     !    write(*,'(a)') '       please use subroutine atom_copy.'
     !    stop
     !end subroutine atoms_assign
-    type type_pairs
+    type, public:: type_pairs
         integer ,allocatable:: posat2nd(:,:)
     end type type_pairs
 contains
+!*****************************************************************************************
+subroutine get_rat_iat(atoms,iat,xyz)
+    implicit none
+    type(typ_atoms), intent(in):: atoms
+    integer, intent(in):: iat
+    real(8), intent(out):: xyz(3)
+    !local variables
+    xyz(1)=atoms%rat(1,iat)
+    xyz(2)=atoms%rat(2,iat)
+    xyz(3)=atoms%rat(3,iat)
+end subroutine get_rat_iat
+!*****************************************************************************************
+subroutine get_rat(atoms,rat)
+    implicit none
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(out):: rat(3,atoms%nat)
+    !local variables
+    integer:: iat
+    do iat=1,atoms%nat
+        rat(1,iat)=atoms%rat(1,iat)
+        rat(2,iat)=atoms%rat(2,iat)
+        rat(3,iat)=atoms%rat(3,iat)
+    enddo
+end subroutine get_rat
+!*****************************************************************************************
+subroutine update_ratp(atoms)
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    !local variables
+    integer:: iat
+    do iat=1,atoms%nat
+        atoms%ratp(1,iat)=atoms%rat(1,iat)
+        atoms%ratp(2,iat)=atoms%rat(2,iat)
+        atoms%ratp(3,iat)=atoms%rat(3,iat)
+    enddo
+end subroutine update_ratp
+!*****************************************************************************************
+subroutine update_rat(atoms,upall)
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    logical, intent(in), optional:: upall
+    !local variables
+    integer:: iat
+    logical:: upall_in
+    upall_in=.false.
+    if(present(upall)) then
+        upall_in=upall
+    endif
+    if(upall_in) then
+        do iat=1,atoms%nat
+            atoms%rat(1,iat)=atoms%ratp(1,iat)
+            atoms%rat(2,iat)=atoms%ratp(2,iat)
+            atoms%rat(3,iat)=atoms%ratp(3,iat)
+        enddo
+    else
+        do iat=1,atoms%nat
+            if(atoms%bemoved(1,iat)) atoms%rat(1,iat)=atoms%ratp(1,iat)
+            if(atoms%bemoved(2,iat)) atoms%rat(2,iat)=atoms%ratp(2,iat)
+            if(atoms%bemoved(3,iat)) atoms%rat(3,iat)=atoms%ratp(3,iat)
+        enddo
+    endif
+end subroutine update_rat
+!*****************************************************************************************
+subroutine set_rat(atoms,rat,setall)
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: rat(3,atoms%nat)
+    logical, intent(in), optional:: setall
+    !local variables
+    integer:: iat
+    logical:: setall_in
+    setall_in=.false.
+    if(present(setall)) then
+        setall_in=setall
+    endif
+    if(setall_in) then
+        do iat=1,atoms%nat
+            atoms%rat(1,iat)=rat(1,iat)
+            atoms%rat(2,iat)=rat(2,iat)
+            atoms%rat(3,iat)=rat(3,iat)
+        enddo
+    else
+        do iat=1,atoms%nat
+            if(atoms%bemoved(1,iat)) atoms%rat(1,iat)=rat(1,iat)
+            if(atoms%bemoved(2,iat)) atoms%rat(2,iat)=rat(2,iat)
+            if(atoms%bemoved(3,iat)) atoms%rat(3,iat)=rat(3,iat)
+        enddo
+    endif
+end subroutine set_rat
+!*****************************************************************************************
+subroutine set_rat_atoms(atoms,atoms_src,setall)
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_atoms), intent(in):: atoms_src
+    logical, intent(in), optional:: setall
+    !local variables
+    integer:: iat
+    logical:: setall_in
+    setall_in=.false.
+    if(present(setall)) then
+        setall_in=setall
+    endif
+    if(setall_in) then
+        do iat=1,atoms%nat
+            atoms%rat(1,iat)=atoms_src%rat(1,iat)
+            atoms%rat(2,iat)=atoms_src%rat(2,iat)
+            atoms%rat(3,iat)=atoms_src%rat(3,iat)
+        enddo
+    else
+        do iat=1,atoms%nat
+            if(atoms%bemoved(1,iat)) atoms%rat(1,iat)=atoms_src%rat(1,iat)
+            if(atoms%bemoved(2,iat)) atoms%rat(2,iat)=atoms_src%rat(2,iat)
+            if(atoms%bemoved(3,iat)) atoms%rat(3,iat)=atoms_src%rat(3,iat)
+        enddo
+    endif
+end subroutine set_rat_atoms
+!*****************************************************************************************
+subroutine set_rat_iat(atoms,iat,xyz)
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    integer, intent(in):: iat
+    real(8), intent(in):: xyz(3)
+    !local variables
+    if(atoms%bemoved(1,iat)) atoms%rat(1,iat)=xyz(1)
+    if(atoms%bemoved(2,iat)) atoms%rat(2,iat)=xyz(2)
+    if(atoms%bemoved(3,iat)) atoms%rat(3,iat)=xyz(3)
+end subroutine set_rat_iat
 !*****************************************************************************************
 subroutine atom_allocate(atoms,nat,natim,nfp)
     use dynamic_memory
@@ -137,6 +283,11 @@ subroutine atom_allocate(atoms,nat,natim,nfp)
         if(allocated(atoms%rat)) stop 'ERROR: rat is already allocated'
         atoms%rat=f_malloc0([1.to.3,1.to.nat],id='atoms%rat')
     endif
+    ind=index(atoms%alloclist,'ratp')
+    if(ind_all>0 .or. ind>0) then
+        if(allocated(atoms%ratp)) stop 'ERROR: ratp is already allocated'
+        atoms%ratp=f_malloc0([1.to.3,1.to.nat],id='atoms%ratp')
+    endif
     ind=index(atoms%alloclist,'vat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(atoms%vat)) stop 'ERROR: vat is already allocated'
@@ -145,7 +296,7 @@ subroutine atom_allocate(atoms,nat,natim,nfp)
     ind=index(atoms%alloclist,'amass')
     if(ind_all>0 .or. ind>0) then
         if(allocated(atoms%amass)) stop 'ERROR: amass is already allocated'
-        atoms%amass=f_malloc0([1.to.nat],id='atoms%rat')
+        atoms%amass=f_malloc0([1.to.nat],id='atoms%amass')
     endif
     ind=index(atoms%alloclist,'fat')
     if(ind_all>0 .or. ind>0) then
@@ -222,6 +373,14 @@ subroutine atom_deallocate(atoms)
             stop 'ERROR: rat is not allocated'
         else
             call f_free(atoms%rat)
+        endif
+    endif
+    ind=index(atoms%alloclist,'ratp')
+    if((ind_all>0 .and. allocated(atoms%ratp)) .or. ind>0) then
+        if(.not. allocated(atoms%ratp)) then
+            stop 'ERROR: ratp is not allocated'
+        else
+            call f_free(atoms%ratp)
         endif
     endif
     ind=index(atoms%alloclist,'vat')
@@ -321,6 +480,9 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,z
     if(atoms%nat>0 .and. .not. allocated(atoms%rat)) then
         allocate(atoms%rat(3,atoms%nat),source=0.d0)
     endif
+    if(atoms%nat>0 .and. .not. allocated(atoms%ratp)) then
+        allocate(atoms%ratp(3,atoms%nat),source=0.d0)
+    endif
     if(atoms%natim>0 .and. .not. allocated(atoms%ratim)) then
         allocate(atoms%ratim(3,atoms%natim),source=0.d0)
     endif
@@ -393,6 +555,15 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             endif
         else
             deallocate(atoms%rat)
+        endif
+    endif
+    if(all_of_them .or. (present(rat) .and. rat)) then
+        if(.not. allocated(atoms%ratp)) then
+            if(.not. all_of_them) then
+                stop 'ERROR: ratp is not allocated'
+            endif
+        else
+            deallocate(atoms%ratp)
         endif
     endif
     if(all_of_them .or. (present(ratim) .and. ratim)) then
@@ -609,6 +780,24 @@ subroutine atom_copy(at_inp,at_out,str_message)
             enddo
         else
             err_mess='ERROR: rat in at_inp%alloclist but at_inp%rat not allocated:'
+            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
+            stop
+        endif
+        if(allocated(at_inp%ratp)) then
+            ishape(1:2)=shape(at_out%ratp)
+            if(allocated(at_out%ratp) .and. at_inp%nat/=ishape(2)) then
+                call f_free(at_out%ratp)
+            endif
+            if(.not. allocated(at_out%ratp)) then
+                at_out%ratp=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%ratp')
+            endif
+            do iat=1,at_inp%nat
+                at_out%ratp(1,iat)=at_inp%ratp(1,iat)
+                at_out%ratp(2,iat)=at_inp%ratp(2,iat)
+                at_out%ratp(3,iat)=at_inp%ratp(3,iat)
+            enddo
+        else
+            err_mess='ERROR: ratp in at_inp%alloclist but at_inp%ratp not allocated:'
             write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
             stop
         endif
@@ -906,6 +1095,28 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
         endif
     else
         err_mess='ERROR: cannot copy typ_atoms%rat when source is not allocated:'
+        if(prsnt) then
+            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
+            stop
+        endif
+    endif
+    if(allocated(at_inp%ratp)) then
+        if(all_of_them .or. prsnt) then
+            ishape(1:2)=shape(at_out%ratp)
+            if(allocated(at_out%ratp) .and. at_inp%nat/=ishape(2)) then
+                call atom_deallocate_old(at_out,rat=.true.)
+            endif
+            if(.not. allocated(at_out%ratp)) then
+                call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp)
+            endif
+            do iat=1,at_inp%nat
+                at_out%ratp(1,iat)=at_inp%ratp(1,iat)
+                at_out%ratp(2,iat)=at_inp%ratp(2,iat)
+                at_out%ratp(3,iat)=at_inp%ratp(3,iat)
+            enddo
+        endif
+    else
+        err_mess='ERROR: cannot copy typ_atoms%ratp when source is not allocated:'
         if(prsnt) then
             write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
             stop

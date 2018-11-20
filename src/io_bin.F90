@@ -42,7 +42,7 @@ end subroutine read_bin_conf
 subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, iatom_to_sat, atom_allocate
+    use mod_atoms, only: typ_atoms_arr, iatom_to_sat, atom_allocate, update_rat
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -113,10 +113,11 @@ subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
         iwa=iwa+1 ; nat=int(wa(iwa))
         call atom_allocate(atoms_arr%atoms(iconf),nat,0,0)
         do iat=1,atoms_arr%atoms(iconf)%nat
-            iwa=iwa+1 ; atoms_arr%atoms(iconf)%rat(1,iat)=wa(iwa)
-            iwa=iwa+1 ; atoms_arr%atoms(iconf)%rat(2,iat)=wa(iwa)
-            iwa=iwa+1 ; atoms_arr%atoms(iconf)%rat(3,iat)=wa(iwa)
+            iwa=iwa+1 ; atoms_arr%atoms(iconf)%ratp(1,iat)=wa(iwa)
+            iwa=iwa+1 ; atoms_arr%atoms(iconf)%ratp(2,iat)=wa(iwa)
+            iwa=iwa+1 ; atoms_arr%atoms(iconf)%ratp(3,iat)=wa(iwa)
         enddo
+        call update_rat(atoms_arr%atoms(iconf),upall=.true.)
         do iat=1,atoms_arr%atoms(iconf)%nat
             iwa=iwa+1 ; isat=int(wa(iwa))
             call iatom_to_sat(isat,atoms_arr%atoms(iconf)%sat(iat))
@@ -228,7 +229,7 @@ end subroutine write_bin_conf
 subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, sat_to_iatom
+    use mod_atoms, only: typ_atoms, sat_to_iatom, get_rat
     use dynamic_memory
     implicit none
     character(*), intent(in):: filename
@@ -242,8 +243,8 @@ subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
     real(8):: r_nconf, rr, ver
     logical:: cell_present, epot_present, fat_present
     logical:: qtot_present, bemoved_present, vat_present
-    !integer, save:: icall=0
-    !icall=icall+1
+    real(8), allocatable:: rat(:,:)
+    allocate(rat(3,atoms%nat))
     nwa=10**8
     wa=f_malloc([1.to.nwa],id='wa_write_bin_conf_v1')
     iwa=0
@@ -316,10 +317,11 @@ subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
         stop
     endif
     iwa=iwa+1 ; wa(iwa)=real(atoms%nat,8)
+    call get_rat(atoms,rat)
     do iat=1,atoms%nat
-        iwa=iwa+1 ; wa(iwa)=atoms%rat(1,iat)
-        iwa=iwa+1 ; wa(iwa)=atoms%rat(2,iat)
-        iwa=iwa+1 ; wa(iwa)=atoms%rat(3,iat)
+        iwa=iwa+1 ; wa(iwa)=rat(1,iat)
+        iwa=iwa+1 ; wa(iwa)=rat(2,iat)
+        iwa=iwa+1 ; wa(iwa)=rat(3,iat)
     enddo
     do iat=1,atoms%nat
         call sat_to_iatom(atoms%sat(iat),isat)
@@ -383,5 +385,6 @@ subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
         stop
     endif
     call f_free(wa)
+    deallocate(rat)
 end subroutine write_bin_conf_v1
 !*****************************************************************************************

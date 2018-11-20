@@ -21,6 +21,7 @@ subroutine testforces_fd(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate
+    use mod_atoms, only: get_rat_iat, set_rat_iat
     use mod_potential, only: potential
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
@@ -31,7 +32,7 @@ subroutine testforces_fd(parini)
     type(typ_atoms):: atoms , atoms_center
     type(typ_atoms_arr):: atoms_arr
     integer:: iat
-    real(8):: h, fnrm, fd, epot_r, epot_l, fsum(3)
+    real(8):: h, fnrm, fd, epot_r, epot_l, fsum(3), xyz(3)
     h=1.d-5/bohr2ang
     !call acf_read(parini,'posinp.acf',1,atoms=atoms)
     call read_yaml_conf(parini,'posinp.yaml',1,atoms_arr)
@@ -65,11 +66,14 @@ subroutine testforces_fd(parini)
     call yaml_sequence_open('force_error')
     do iat=1,atoms%nat
         call yaml_sequence(advance='no')
+        call get_rat_iat(atoms,iat,xyz)
         !testing x-component of the force
-        atoms%rat(1,iat)=atoms%rat(1,iat)-h
+        xyz(1)=xyz(1)-h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         epot_l=atoms%epot
-        atoms%rat(1,iat)=atoms%rat(1,iat)+2.d0*h
+        xyz(1)=xyz(1)+2.d0*h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         epot_r=atoms%epot
         fd=-(epot_r-epot_l)/(2.d0*h)
@@ -82,13 +86,16 @@ subroutine testforces_fd(parini)
         call yaml_map('err_x',fd-atoms_center%fat(1,iat),fmt='(f20.12)')
         !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_x error of atom ',iat,' is', &
         !    fd-atoms_center%fat(1,iat),atoms_center%fat(1,iat)
-        atoms%rat(1,iat)=atoms%rat(1,iat)-h
+        xyz(1)=xyz(1)-h
+        call set_rat_iat(atoms,iat,xyz)
 
         !testing y-component of the force
-        atoms%rat(2,iat)=atoms%rat(2,iat)-h
+        xyz(2)=xyz(2)-h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         epot_l=atoms%epot
-        atoms%rat(2,iat)=atoms%rat(2,iat)+2.d0*h
+        xyz(2)=xyz(2)+2.d0*h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         epot_r=atoms%epot
         fd=-(epot_r-epot_l)/(2.d0*h)
@@ -100,13 +107,16 @@ subroutine testforces_fd(parini)
         call yaml_map('err_y',fd-atoms_center%fat(2,iat),fmt='(f20.12)')
         !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_y error of atom ',iat,' is', &
         !    fd-atoms_center%fat(2,iat),atoms_center%fat(2,iat)
-        atoms%rat(2,iat)=atoms%rat(2,iat)-h
+        xyz(2)=xyz(2)-h
+        call set_rat_iat(atoms,iat,xyz)
 
         !testing z-component of the force
-        atoms%rat(3,iat)=atoms%rat(3,iat)-h
+        xyz(3)=xyz(3)-h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         epot_l=atoms%epot
-        atoms%rat(3,iat)=atoms%rat(3,iat)+2.d0*h
+        xyz(3)=xyz(3)+2.d0*h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         epot_r=atoms%epot
         fd=-(epot_r-epot_l)/(2.d0*h)
@@ -118,7 +128,8 @@ subroutine testforces_fd(parini)
         call yaml_map('err_z',fd-atoms_center%fat(3,iat),fmt='(f20.12)')
         !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_z error of atom ',iat,' is', &
         !    fd-atoms_center%fat(3,iat),atoms_center%fat(3,iat)
-        atoms%rat(3,iat)=atoms%rat(3,iat)-h
+        xyz(3)=xyz(3)-h
+        call set_rat_iat(atoms,iat,xyz)
     enddo
     call yaml_sequence_close()
     call final_potential_forces(parini,atoms)
@@ -127,7 +138,7 @@ end subroutine testforces_fd
 subroutine teststress_fd(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_potential, only: potential
     use mod_processors, only: iproc
     implicit none
@@ -145,7 +156,8 @@ subroutine teststress_fd(parini)
    
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     allocate(rat_int(3,atoms%nat))
-    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
+    call update_ratp(atoms)
+    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,rat_int)
     call vc_init_potential_forces(atoms)
     call cal_potential_forces_vc(iproc,atoms%nat,rat_int,atoms%cellvec,atoms%pressure,atoms%fat,atoms%celldv,atoms%stress,atoms%epot,atoms%enth)
     write(*,*) "epot=",atoms%epot
@@ -215,7 +227,7 @@ end subroutine teststress_fd
 subroutine teststress_fd_cellvec(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_potential, only: potential
     use mod_processors, only: iproc
     implicit none
@@ -233,7 +245,8 @@ subroutine teststress_fd_cellvec(parini)
    
     call acf_read(parini,'posinp.acf',1,atoms=atoms) !Cartezy
     allocate(rat_int(3,atoms%nat))
-    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
+    call update_ratp(atoms)
+    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,rat_int)
     call init_potential_forces(parini,atoms)
     call cell_vol(atoms%nat,atoms%cellvec,vol)   !to calculate the volume per atom
     vol=vol*real(atoms%nat,8)                    !the volume of the cell
@@ -247,7 +260,8 @@ subroutine teststress_fd_cellvec(parini)
             hij=atoms%cellvec(i,j)
                 do k=-m,m
                     atoms%cellvec(i,j)=hij+k*h
-                     call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%rat)  !to convert the reduced coordinates to cartezian
+                     call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%ratp)  !to convert the reduced coordinates to cartezian
+                     call update_rat(atoms)
                      call cal_potential_forces(parini,atoms)
                     ener(k)=atoms%epot
                     tt=tt+(ener(k)*c(k))

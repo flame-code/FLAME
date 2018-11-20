@@ -5,7 +5,8 @@
 subroutine acf_write(file_info,atoms,atoms_all,strkey)
     use mod_interface
     use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
-    use mod_atoms, only: atom_deallocate_old
+    use mod_atoms, only: atom_deallocate_old, update_ratp, set_rat_atoms, set_rat
+    use mod_atoms, only: update_rat
     use mod_const, only: bohr2ang, ha2ev
     implicit none
     type(typ_file_info), intent(inout):: file_info
@@ -72,7 +73,9 @@ subroutine acf_write(file_info,atoms,atoms_all,strkey)
         !write(*,'(a,3es9.0)') 'BEFORE ',cv(1,1),cv(1,2),cv(1,3)
         !write(*,'(a,3es9.0)') 'BEFORE ',cv(2,1),cv(2,2),cv(2,3)
         !write(*,'(a,3es9.0)') 'BEFORE ',cv(3,1),cv(3,2),cv(3,3)
-        call latvec2dproj_alborz(dproj,cv,rotmat,atoms_t%rat,atoms_t%nat)
+        call update_ratp(atoms_t)
+        call latvec2dproj_alborz(dproj,cv,rotmat,atoms_t%ratp,atoms_t%nat)
+        call update_rat(atoms_t,upall=.true.)
         !write(*,'(a,3es9.0)') 'AFTER  ',cv(1,1),cv(1,2),cv(1,3)
         !write(*,'(a,3es9.0)') 'AFTER  ',cv(2,1),cv(2,2),cv(2,3)
         !write(*,'(a,3es9.0)') 'AFTER  ',cv(3,1),cv(3,2),cv(3,3)
@@ -138,30 +141,25 @@ subroutine acf_write(file_info,atoms,atoms_all,strkey)
         file_info%nconf=file_info%nconf+1
         write(1358,'(i7,2x,a,2x,i7)') atoms_t%nat,trim(atoms_t%boundcond),file_info%nconf
         if(present(atoms)) then
-            do iat=1,atoms_t%nat
-                atoms_t%rat(1,iat)=atoms%rat(1,iat)
-                atoms_t%rat(2,iat)=atoms%rat(2,iat)
-                atoms_t%rat(3,iat)=atoms%rat(3,iat)
-            enddo
+            call set_rat_atoms(atoms_t,atoms,setall=.true.)
         else if(present(atoms_all)) then 
-            do iat=1,atoms_t%nat
-                atoms_t%rat(1,iat)=atoms_all%ratall(1,iat,iconf)
-                atoms_t%rat(2,iat)=atoms_all%ratall(2,iat,iconf)
-                atoms_t%rat(3,iat)=atoms_all%ratall(3,iat,iconf)
-            enddo
+            call set_rat(atoms_t,atoms_all%ratall(1,1,iconf),setall=.true.)
         else
             write(*,'(a)') 'ERROR: in acf_write, what is going on?'
             stop
         endif
         if(trim(atoms_t%boundcond)=='bulk') then
-            call rotate4acf(atoms_t%nat,atoms_t%rat(1,1),atoms_t%cellvec,cv)
+            call update_ratp(atoms_t)
+            call rotate4acf(atoms_t%nat,atoms_t%ratp(1,1),atoms_t%cellvec,cv)
+            call update_rat(atoms_t,upall=.true.)
         endif
         write(1358,'(3es24.15)') cv(1,1),cv(1,2),cv(2,2)
         write(1358,'(3es24.15)') cv(1,3),cv(2,3),cv(3,3)
+        call update_ratp(atoms_t)
         do iat=1,atoms_t%nat
-            xt=atoms_t%rat(1,iat)
-            yt=atoms_t%rat(2,iat)
-            zt=atoms_t%rat(3,iat)
+            xt=atoms_t%ratp(1,iat)
+            yt=atoms_t%ratp(2,iat)
+            zt=atoms_t%ratp(3,iat)
             if(trim(coord)=='cartesian') then
                 if(trim(units)=='angstrom' .and. trim(atoms_t%boundcond)/='bulk') then
                     x=xt*bohr2ang
@@ -208,7 +206,7 @@ end subroutine acf_write
 subroutine acf_write_new(file_info,atoms_arr,strkey)
     use mod_interface
     use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_arr, atom_copy_old
-    use mod_atoms, only: atom_deallocate_old
+    use mod_atoms, only: atom_deallocate_old, update_ratp, update_rat
     use mod_const, only: bohr2ang, ha2ev
     implicit none
     type(typ_file_info), intent(inout):: file_info
@@ -261,7 +259,9 @@ subroutine acf_write_new(file_info,atoms_arr,strkey)
         !write(*,'(a,3es9.0)') 'BEFORE ',cv(1,1),cv(1,2),cv(1,3)
         !write(*,'(a,3es9.0)') 'BEFORE ',cv(2,1),cv(2,2),cv(2,3)
         !write(*,'(a,3es9.0)') 'BEFORE ',cv(3,1),cv(3,2),cv(3,3)
-        call latvec2dproj_alborz(dproj,cv,rotmat,atoms_t%rat,atoms_t%nat)
+        call update_ratp(atoms_t)
+        call latvec2dproj_alborz(dproj,cv,rotmat,atoms_t%ratp,atoms_t%nat)
+        call update_rat(atoms_t,upall=.true.)
         !write(*,'(a,3es9.0)') 'AFTER  ',cv(1,1),cv(1,2),cv(1,3)
         !write(*,'(a,3es9.0)') 'AFTER  ',cv(2,1),cv(2,2),cv(2,3)
         !write(*,'(a,3es9.0)') 'AFTER  ',cv(3,1),cv(3,2),cv(3,3)
@@ -324,14 +324,16 @@ subroutine acf_write_new(file_info,atoms_arr,strkey)
         !    stop
         !endif
         if(trim(atoms_t%boundcond)=='bulk') then
-            call rotate4acf(atoms_t%nat,atoms_t%rat(1,1),atoms_t%cellvec,cv)
+            call update_ratp(atoms_t)
+            call rotate4acf(atoms_t%nat,atoms_t%ratp(1,1),atoms_t%cellvec,cv)
+            call update_rat(atoms_t,upall=.true.)
         endif
         write(1358,'(3es24.15)') cv(1,1),cv(1,2),cv(2,2)
         write(1358,'(3es24.15)') cv(1,3),cv(2,3),cv(3,3)
         atoms: do iat=1,atoms_t%nat
-            xt=atoms_t%rat(1,iat)
-            yt=atoms_t%rat(2,iat)
-            zt=atoms_t%rat(3,iat)
+            xt=atoms_t%ratp(1,iat)
+            yt=atoms_t%ratp(2,iat)
+            zt=atoms_t%ratp(3,iat)
             if(trim(coord)=='cartesian') then
                 if(trim(units)=='angstrom' .and. trim(atoms_t%boundcond)/='bulk') then
                     x=xt*bohr2ang
@@ -510,7 +512,7 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_all, atom_all_allocate, atom_copy_old
-    use mod_atoms, only: atom_allocate_old
+    use mod_atoms, only: atom_allocate_old, update_ratp, get_rat, update_rat
     use mod_const, only: bohr2ang, ha2ev
     use yaml_output
     implicit none
@@ -590,19 +592,19 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
             read(str,*) atoms_t%sat(iat),x,y,z
             if(trim(atoms_t%coordinates_type)=='cartesian') then
                 if(trim(atoms_t%units)=='angstrom') then
-                    atoms_t%rat(1,iat)=x/bohr2ang
-                    atoms_t%rat(2,iat)=y/bohr2ang
-                    atoms_t%rat(3,iat)=z/bohr2ang
+                    atoms_t%ratp(1,iat)=x/bohr2ang
+                    atoms_t%ratp(2,iat)=y/bohr2ang
+                    atoms_t%ratp(3,iat)=z/bohr2ang
                 else
-                    atoms_t%rat(1,iat)=x
-                    atoms_t%rat(2,iat)=y
-                    atoms_t%rat(3,iat)=z
+                    atoms_t%ratp(1,iat)=x
+                    atoms_t%ratp(2,iat)=y
+                    atoms_t%ratp(3,iat)=z
                 endif
             else
                 !It must be reduced coordinates so applying r=hs
-                atoms_t%rat(1,iat)=atoms_t%cellvec(1,1)*x+atoms_t%cellvec(1,2)*y+atoms_t%cellvec(1,3)*z
-                atoms_t%rat(2,iat)=atoms_t%cellvec(2,1)*x+atoms_t%cellvec(2,2)*y+atoms_t%cellvec(2,3)*z
-                atoms_t%rat(3,iat)=atoms_t%cellvec(3,1)*x+atoms_t%cellvec(3,2)*y+atoms_t%cellvec(3,3)*z
+                atoms_t%ratp(1,iat)=atoms_t%cellvec(1,1)*x+atoms_t%cellvec(1,2)*y+atoms_t%cellvec(1,3)*z
+                atoms_t%ratp(2,iat)=atoms_t%cellvec(2,1)*x+atoms_t%cellvec(2,2)*y+atoms_t%cellvec(2,3)*z
+                atoms_t%ratp(3,iat)=atoms_t%cellvec(3,1)*x+atoms_t%cellvec(3,2)*y+atoms_t%cellvec(3,3)*z
             endif
             if(trim(c5)=='bemoved') then
                 read(str,*) s,t1,t2,t3,str_motion
@@ -613,6 +615,7 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
             !    atoms_t%rat(1,iat),atoms_t%rat(2,iat),atoms_t%rat(3,iat), &
             !    atoms_t%bemoved(1,iat),atoms_t%bemoved(2,iat),atoms_t%bemoved(3,iat)
         enddo
+        call update_rat(atoms_t,upall=.true.)
 
         if(present(atoms)) then
             call atom_copy_old(atoms_t,atoms,'atoms_t->atoms')
@@ -624,7 +627,8 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
             call atom_all_allocate(atoms_all,ratall=.true.,fatall=.true.,epotall=.true.,qtotall=.true.)
         endif
         if(present(atoms_all)) then
-            atoms_all%ratall(1:3,1:atoms_t%nat,iconf+1)=atoms_t%rat(1:3,1:atoms_t%nat)
+            !atoms_all%ratall(1:3,1:atoms_t%nat,iconf+1)=atoms_t%rat(1:3,1:atoms_t%nat)
+            call get_rat(atoms_t,atoms_all%ratall(1,1,iconf+1))
             atoms_all%epotall(iconf+1)=atoms_t%epot
             atoms_all%qtotall(iconf+1)=atoms_t%qtot
         endif
@@ -648,7 +652,7 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate, atom_copy
-    use mod_atoms, only: atom_deallocate
+    use mod_atoms, only: atom_deallocate, update_rat
     use mod_const, only: bohr2ang, ha2ev
     use yaml_output
     implicit none
@@ -720,19 +724,19 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
             read(str,*) atoms_t%sat(iat),x,y,z
             if(trim(atoms_t%coordinates_type)=='cartesian') then
                 if(trim(atoms_t%units)=='angstrom') then
-                    atoms_t%rat(1,iat)=x/bohr2ang
-                    atoms_t%rat(2,iat)=y/bohr2ang
-                    atoms_t%rat(3,iat)=z/bohr2ang
+                    atoms_t%ratp(1,iat)=x/bohr2ang
+                    atoms_t%ratp(2,iat)=y/bohr2ang
+                    atoms_t%ratp(3,iat)=z/bohr2ang
                 else
-                    atoms_t%rat(1,iat)=x
-                    atoms_t%rat(2,iat)=y
-                    atoms_t%rat(3,iat)=z
+                    atoms_t%ratp(1,iat)=x
+                    atoms_t%ratp(2,iat)=y
+                    atoms_t%ratp(3,iat)=z
                 endif
             else
                 !It must be reduced coordinates so applying r=hs
-                atoms_t%rat(1,iat)=atoms_t%cellvec(1,1)*x+atoms_t%cellvec(1,2)*y+atoms_t%cellvec(1,3)*z
-                atoms_t%rat(2,iat)=atoms_t%cellvec(2,1)*x+atoms_t%cellvec(2,2)*y+atoms_t%cellvec(2,3)*z
-                atoms_t%rat(3,iat)=atoms_t%cellvec(3,1)*x+atoms_t%cellvec(3,2)*y+atoms_t%cellvec(3,3)*z
+                atoms_t%ratp(1,iat)=atoms_t%cellvec(1,1)*x+atoms_t%cellvec(1,2)*y+atoms_t%cellvec(1,3)*z
+                atoms_t%ratp(2,iat)=atoms_t%cellvec(2,1)*x+atoms_t%cellvec(2,2)*y+atoms_t%cellvec(2,3)*z
+                atoms_t%ratp(3,iat)=atoms_t%cellvec(3,1)*x+atoms_t%cellvec(3,2)*y+atoms_t%cellvec(3,3)*z
             endif
             if(trim(c5)=='bemoved') then
                 read(str,*) s,t1,t2,t3,str_motion
@@ -743,6 +747,7 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
             !    atoms_t%rat(1,iat),atoms_t%rat(2,iat),atoms_t%rat(3,iat), &
             !    atoms_t%bemoved(1,iat),atoms_t%bemoved(2,iat),atoms_t%bemoved(3,iat)
         enddo
+        call update_rat(atoms_t,upall=.true.)
         iconf=iconf+1
         call atom_copy(atoms_t,atoms_arr%atoms(iconf),'atoms_t->atoms_arr%atoms')
         if(iconf>=nconfmax) exit

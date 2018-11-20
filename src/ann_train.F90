@@ -152,7 +152,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
-    use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old
+    use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old, set_rat_iat
     use mod_symfunc, only: typ_symfunc
     use dynamic_memory
     use yaml_output
@@ -171,7 +171,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     !write(*,*) atoms%nat
     !write(*,*) atoms%sat(:)
     !write(*,*) atoms%itypat(:)
-    atoms%rat(1,1)=1.d0 ; atoms%rat(2,1)=1.d0 ; atoms%rat(3,1)=1.d0
+    call set_rat_iat(atoms,1,(/1.d0,1.d0,1.d0/))
     atoms%cellvec(1:3,1:3)=0.d0
     atoms%cellvec(1,1)=10.d0
     atoms%cellvec(2,2)=10.d0
@@ -584,7 +584,7 @@ subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, update_ratp, update_rat
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -596,9 +596,11 @@ subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
     do iconf=1,atoms_arr%nconf
         if(trim(atoms_arr%atoms(iconf)%boundcond)=='bulk') then
         allocate(ratred(1:3,1:atoms_arr%atoms(iconf)%nat))
-        call rxyz_cart2int_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,atoms_arr%atoms(iconf)%rat,ratred)
+        call update_ratp(atoms_arr%atoms(iconf))
+        call rxyz_cart2int_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,atoms_arr%atoms(iconf)%ratp,ratred)
         call backtocell_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,ratred)
-        call rxyz_int2cart_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,ratred,atoms_arr%atoms(iconf)%rat)
+        call rxyz_int2cart_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,ratred,atoms_arr%atoms(iconf)%ratp)
+        call update_rat(atoms_arr%atoms(iconf),upall=.true.)
         deallocate(ratred)
         endif
         do iat=1,atoms_arr%atoms(iconf)%nat
@@ -714,7 +716,7 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, update_ratp
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc
     use dynamic_memory
@@ -756,10 +758,11 @@ subroutine write_symfunc(parini,iconf,atoms_arr,strmess,symfunc_arr)
     wa(1)=real(nat,8)
     wa(2)=real(ng,8)
     wa(3)=real(nb,8)
+    call update_ratp(atoms_arr%atoms(iconf))
     do iat=1,atoms_arr%atoms(iconf)%nat
-        wa(3+iat*3-2)=atoms_arr%atoms(iconf)%rat(1,iat)
-        wa(3+iat*3-1)=atoms_arr%atoms(iconf)%rat(2,iat)
-        wa(3+iat*3-0)=atoms_arr%atoms(iconf)%rat(3,iat)
+        wa(3+iat*3-2)=atoms_arr%atoms(iconf)%ratp(1,iat)
+        wa(3+iat*3-1)=atoms_arr%atoms(iconf)%ratp(2,iat)
+        wa(3+iat*3-0)=atoms_arr%atoms(iconf)%ratp(3,iat)
     enddo
     n=3+3*atoms_arr%atoms(iconf)%nat
     bondbased: if(parini%bondbased_ann) then
@@ -811,7 +814,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, update_ratp
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc
     use dynamic_memory
@@ -883,10 +886,11 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
         stop
     endif
     endif
+    call update_ratp(atoms_arr%atoms(iconf))
     do iat=1,nat
-        ttx=abs(wa(3+iat*3-2)-atoms_arr%atoms(iconf)%rat(1,iat))
-        tty=abs(wa(3+iat*3-1)-atoms_arr%atoms(iconf)%rat(2,iat))
-        ttz=abs(wa(3+iat*3-0)-atoms_arr%atoms(iconf)%rat(3,iat))
+        ttx=abs(wa(3+iat*3-2)-atoms_arr%atoms(iconf)%ratp(1,iat))
+        tty=abs(wa(3+iat*3-1)-atoms_arr%atoms(iconf)%ratp(2,iat))
+        ttz=abs(wa(3+iat*3-0)-atoms_arr%atoms(iconf)%ratp(3,iat))
         if(ttx>eps .or. tty>eps .or. ttz>eps) then
             smsg='ERROR: inconsistency of configuration in symmetry functions file. '
             !write(*,*) wa(3+iat*3-2),wa(3+iat*3-1),wa(3+iat*3-0)
