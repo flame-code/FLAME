@@ -2,7 +2,7 @@
 module mod_atoms
     implicit none
     private
-    public:: get_rat, get_rat_iat
+    public:: get_rat, get_rat_iat, swap_rat
     public:: set_rat, set_rat_iat, set_rat_atoms
     public:: update_rat, update_ratp
     public:: atom_allocate, atom_deallocate, atom_allocate_old, atom_deallocate_old
@@ -241,6 +241,30 @@ subroutine set_rat_iat(atoms,iat,xyz)
     if(atoms%bemoved(2,iat)) atoms%rat(2,iat)=xyz(2)
     if(atoms%bemoved(3,iat)) atoms%rat(3,iat)=xyz(3)
 end subroutine set_rat_iat
+!*****************************************************************************************
+subroutine swap_rat(atoms,iat,jat)
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    integer, intent(in):: iat
+    integer, intent(in):: jat
+    !local variables
+    real(8):: xyz(3)
+    if(atoms%bemoved(1,iat)) stop 'ERROR: swap fixed atom'
+    if(atoms%bemoved(2,iat)) stop 'ERROR: swap fixed atom'
+    if(atoms%bemoved(3,iat)) stop 'ERROR: swap fixed atom'
+    if(atoms%bemoved(1,jat)) stop 'ERROR: swap fixed atom'
+    if(atoms%bemoved(2,jat)) stop 'ERROR: swap fixed atom'
+    if(atoms%bemoved(3,jat)) stop 'ERROR: swap fixed atom'
+    xyz(1)=atoms%rat(1,iat)
+    xyz(2)=atoms%rat(2,iat)
+    xyz(3)=atoms%rat(3,iat)
+    atoms%rat(1,iat)=atoms%rat(1,jat)
+    atoms%rat(2,iat)=atoms%rat(2,jat)
+    atoms%rat(3,iat)=atoms%rat(3,jat)
+    atoms%rat(1,jat)=xyz(1)
+    atoms%rat(2,jat)=xyz(2)
+    atoms%rat(3,jat)=xyz(3)
+end subroutine swap_rat
 !*****************************************************************************************
 subroutine atom_allocate(atoms,nat,natim,nfp)
     use dynamic_memory
