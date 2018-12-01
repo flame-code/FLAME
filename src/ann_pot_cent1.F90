@@ -87,7 +87,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi(parini,ann_arr,atoms,poisson,ann_arr%a)
+    call get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time5)
     atoms%stress(1:3,1:3)=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
@@ -180,7 +180,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     call f_release_routine()
 end subroutine cal_ann_cent1
 !*****************************************************************************************
-subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
+subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -240,7 +240,7 @@ subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
         !    write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
         !enddo
     endif
-end subroutine get_qat_from_chi
+end subroutine get_qat_from_chi_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     use mod_interface
@@ -331,25 +331,7 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
         if(trim(atoms%boundcond)/='free') then
             write(*,*) 'ERROR: syslinsolver=direct can be used only for free BC.'
         endif
-        call update_ratp(atoms)
-        do iat=1,atoms%nat
-            a(iat,atoms%nat+1)=1.d0
-            a(atoms%nat+1,iat)=1.d0
-            beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
-            gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
-            a(iat,iat)=gama*2.d0/sqrt(pi)+ann_arr%ann(atoms%itypat(iat))%hardness
-            do jat=iat+1,atoms%nat
-                dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
-                dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
-                dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
-                r=sqrt(dx*dx+dy*dy+dz*dz)
-                beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
-                gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
-                a(iat,jat)=erf(gama*r)/r
-                a(jat,iat)=a(iat,jat)
-            enddo
-        enddo
-        a(atoms%nat+1,atoms%nat+1)=0.d0
+        call get_amat_cent1(atoms,ann_arr,a)
     elseif(trim(parini%syslinsolver_ann)=='operator') then
         if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
             allocate(gausswidth(atoms%nat))
@@ -367,6 +349,39 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     endif
     end associate
 end subroutine init_electrostatic_cent1
+!*****************************************************************************************
+subroutine get_amat_cent1(atoms,ann_arr,a)
+    use mod_interface
+    use mod_atoms, only: typ_atoms, update_ratp
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+    !local variables
+    integer:: iat, jat
+    real(8):: dx, dy, dz, r, pi, beta_iat, beta_jat, gama
+    pi=4.d0*atan(1.d0)
+    call update_ratp(atoms)
+    do iat=1,atoms%nat
+        a(iat,atoms%nat+1)=1.d0
+        a(atoms%nat+1,iat)=1.d0
+        beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
+        gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
+        a(iat,iat)=gama*2.d0/sqrt(pi)+ann_arr%ann(atoms%itypat(iat))%hardness
+        do jat=iat+1,atoms%nat
+            dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
+            dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
+            dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
+            gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
+            a(iat,jat)=erf(gama*r)/r
+            a(jat,iat)=a(iat,jat)
+        enddo
+    enddo
+    a(atoms%nat+1,atoms%nat+1)=0.d0
+end subroutine get_amat_cent1
 !*****************************************************************************************
 subroutine fini_electrostatic_cent1(parini,atoms,poisson)
     use mod_interface

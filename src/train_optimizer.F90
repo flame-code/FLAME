@@ -231,6 +231,10 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
         r0=10.d0
         alpha=100.d-2
         rf=1.d-6
+    elseif(trim(parini%approach_ann)=='cent3') then
+        r0=10.d0
+        alpha=100.d-2
+        rf=1.d-6
     elseif(trim(parini%approach_ann)=='tb') then
         r0=100.d0
         alpha=100.d-2
@@ -345,7 +349,8 @@ subroutine analyze_epoch_init(parini,ann_arr)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(ann_arr%approach)=='cent2')) return
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
+        .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3')) return
     ann_arr%natsum(1:10)=0
     ann_arr%qmin(1:10)=huge(1.d0)
     ann_arr%qmax(1:10)=-huge(1.d0)
@@ -369,7 +374,8 @@ subroutine analyze_epoch_print(parini,iter,ann_arr)
     real(8):: ttavg, ttmin, ttmax, ssavg, ssmin, ssmax
     character(50):: fn_charge, fn_chi
     character(20):: str_key
-    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(ann_arr%approach)=='cent2')) return
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
+        .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3')) return
     do i=1,parini%ntypat
         !fn_charge='charge.'//trim(parini%stypat(i))
         !fn_chi='chi.'//trim(parini%stypat(i))

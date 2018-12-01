@@ -214,6 +214,7 @@
 ./timing_mod.o : ./timing_mod.F90 
 ./vasp_recompute_cell.o : ./vasp_recompute_cell.F90 
 ./saddle_1s_dimer.o : ./saddle_1s_dimer.F90 ./atoms_mod.o ./opt_mod.o ./saddle_mod.o ./parini_mod.o ./interface_mod.o 
+./ann_pot_cent3.o : ./ann_pot_cent3.F90 ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
 ./io_vasp.o : ./io_vasp.F90 ./interface_mod.o 
 ./compare_lammps.o : ./compare_lammps.F90 ./parini_mod.o ./constants_minhocao_mod.o ./potential_main_minhocao.o ./minhocao_mod.o ./interface_mod.o 
 ./potential_SIESTA.o : ./potential_SIESTA.F90 ./atoms_mod.o ./potential_mod.o ./interface_mod.o 

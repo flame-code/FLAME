@@ -192,7 +192,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_opt_ann), intent(inout):: opt_ann
 end subroutine cal_ann_cent1
-subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
+subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -202,7 +202,7 @@ subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
-end subroutine get_qat_from_chi
+end subroutine get_qat_from_chi_cent1
 subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -223,6 +223,13 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
 end subroutine init_electrostatic_cent1
+subroutine get_amat_cent1(atoms,ann_arr,a)
+    use mod_atoms, only: typ_atoms, update_ratp
+    use mod_ann, only: typ_ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+end subroutine get_amat_cent1
 subroutine fini_electrostatic_cent1(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -306,7 +313,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     type(typ_symfunc), intent(inout):: symfunc
     type(typ_opt_ann), intent(inout):: opt_ann
 end subroutine cal_ann_cent2
-subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
+subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -314,7 +321,7 @@ subroutine get_qat_from_chi2(parini,ann_arr,atoms,cent)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
-end subroutine get_qat_from_chi2
+end subroutine get_qat_from_chi_cent2
 subroutine init_cent2(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -346,7 +353,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
 end subroutine cal_potential_cent2
-subroutine cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
+subroutine cal_cent2_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -355,7 +362,7 @@ subroutine cal_pot_with_pairsum(parini,ann_arr,atoms,cent,epot_es)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es
-end subroutine cal_pot_with_pairsum
+end subroutine cal_cent2_pot_pairsum
 subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -365,7 +372,7 @@ subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
 end subroutine cal_cent2_pairsum_force
-subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
+subroutine cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -374,16 +381,16 @@ subroutine cal_pot_with_bps(parini,ann_arr,atoms,cent,epot_es)
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es
-end subroutine cal_pot_with_bps
-subroutine put_gauss_to_grid(parini,atoms,cent)
+end subroutine cal_cent2_pot_bps
+subroutine put_cent2_gauss_to_grid(parini,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_cent), intent(inout):: cent
-end subroutine put_gauss_to_grid
-subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
+end subroutine put_cent2_gauss_to_grid
+subroutine cal_cent2_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -393,8 +400,8 @@ subroutine cal_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     type(typ_atoms), intent(in):: atoms
     type(typ_cent), intent(inout):: cent
     real(8), intent(inout):: epot_es
-end subroutine cal_shortrange_ewald
-subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
+end subroutine cal_cent2_shortrange_ewald
+subroutine cal_shortrange_ewald_force_cent2(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -402,7 +409,7 @@ subroutine cal_shortrange_ewald_force(parini,ann_arr,atoms,cent)
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_cent), intent(inout):: cent
-end subroutine cal_shortrange_ewald_force
+end subroutine cal_shortrange_ewald_force_cent2
 subroutine erf_over_r_taylor(r,funcval,funcval_der)
     real(8), intent(in):: r
     real(8), intent(out):: funcval, funcval_der
@@ -424,6 +431,136 @@ subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
 end subroutine calc_multipoles_grid_cent2
+! ./src/ann_pot_cent3.F90 :
+subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, update_ratp
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_symfunc, only: typ_symfunc
+    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
+    use mod_linked_lists, only: typ_pia_arr
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_opt_ann), intent(inout):: opt_ann
+end subroutine cal_ann_cent3
+subroutine get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine get_qat_from_chi_cent3
+subroutine get_qat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(in):: cent
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+end subroutine get_qat_from_chi_dir_cent3
+subroutine get_qat_from_chi_operator_cent3(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine get_qat_from_chi_operator_cent3
+subroutine init_cent3(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine init_cent3
+subroutine final_cent3(cent)
+    use mod_ann, only: typ_cent
+    type(typ_cent), intent(inout):: cent
+end subroutine final_cent3
+subroutine cent3_force(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine cent3_force
+subroutine cal_potential_cent3(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine cal_potential_cent3
+subroutine cal_cent3_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    real(8), intent(inout):: epot_es
+end subroutine cal_cent3_pot_pairsum
+subroutine cal_cent3_pairsum_force(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine cal_cent3_pairsum_force
+subroutine cal_cent3_pot_bps(parini,ann_arr,atoms,cent,epot_es)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+    real(8), intent(inout):: epot_es
+end subroutine cal_cent3_pot_bps
+subroutine put_cent3_gauss_to_grid(parini,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine put_cent3_gauss_to_grid
+subroutine cal_cent3_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr, typ_cent
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(in):: atoms
+    type(typ_cent), intent(inout):: cent
+    real(8), intent(inout):: epot_es
+end subroutine cal_cent3_shortrange_ewald
+subroutine cal_shortrange_ewald_force_cent3(parini,ann_arr,atoms,cent)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(inout):: cent
+end subroutine cal_shortrange_ewald_force_cent3
 ! ./src/ann_pot_cent_common.F90 :
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
     use mod_parini, only: typ_parini
@@ -5096,6 +5233,8 @@ subroutine wtioput(ediff,ekinetic,ekinetic_max,nsoften)
   integer:: nsoften
   real(8):: ediff, ekinetic,ekinetic_max
 end subroutine wtioput
+! ./t2.f90 :
+! ./t3.f90 :
 end interface
 end module mod_interface
 !*****************************************************************************************

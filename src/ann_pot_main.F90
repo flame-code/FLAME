@@ -49,6 +49,8 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='cent2') then
         call cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent3') then
+        call cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         !if(trim(ann_arr%event)=='train') then
