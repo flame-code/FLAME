@@ -24,6 +24,8 @@ iline_forces=-1
 conf_complete=False
 nat=0
 ev2bohr=27.211385/0.52917721
+Ehar=27.211385 #eV
+
 for line in f.readlines():
     if iline_atomtypes>-1 and iline_atomtypes<7:
         iline_atomtypes+=1
@@ -111,7 +113,7 @@ for line in f.readlines():
         e_fr_energy=float(line.split()[2])
     #-------------------------------------------------------
     if str_line.find('e_wo_entrp')==12:
-        atoms.epot=float(line.split()[2])
+        atoms.epot=float(line.split()[2])/Ehar
         ediff=abs(1000.0*(e_fr_energy-atoms.epot)/float(nat))
         print "Difference between energy and free energy in meV: %6.3f" % ediff
         conf_complete=True
