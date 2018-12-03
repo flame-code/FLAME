@@ -82,7 +82,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
@@ -99,7 +99,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     real(8), allocatable:: epotall(:), eref_all(:)
     !return
     ann_arr%event='train'
-    call convert_x_ann_arr(opt_ann,ann_arr)
+    call convert_opt_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
     isatur=0
     epotall=f_malloc([1.to.atoms_train%nconf],id='epotall')
@@ -164,7 +164,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
@@ -180,7 +180,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
     real(8):: anat2(100), g2(100), qnet
     ann_arr%event='train'
-    call convert_x_ann_arr(opt_ann,ann_arr)
+    call convert_opt_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
     isatur=0
     alpha1=0.2d0/real(atoms_train%nconf,8)

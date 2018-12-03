@@ -5,10 +5,9 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms, update_ratp
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
-    use mod_opt_ann, only: convert_ann_epotd
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
     implicit none
@@ -43,13 +42,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     allocate(partb%dhgenall1(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%dhgenall2(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%dhgenall3(linked_lists%maxbound_rad),source=0.d0)
-    if(trim(ann_arr%event)=='train' .and. trim(parini%optimizer_ann)/='lm') then
-        !The following is allocated with opt_ann%num(1), this means number of
-        !nodes in the input layer is the same for all atom types.
-        !Therefore, it must be fixed later.
-        !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        call convert_x_ann_arr(opt_ann,ann_arr)
-    endif
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     endif
@@ -58,7 +50,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     allocate(hgen(4,nb))
     allocate(dhgen(4,nb))
     if(trim(ann_arr%event)=='train') then
-        allocate(ann_arr%g_per_bond(opt_ann%num(1),4,nb))
+        allocate(ann_arr%g_per_bond(ann_arr%num(1),4,nb))
     endif
     over_i: do i=1,4
         over_ib: do ib=1,nb
@@ -68,7 +60,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
             !write(*,*) "symfunc", ng, nb, symfunc%y(1,ib)
                 call cal_architecture_der(ann_arr%ann(i),hgen(i,ib))
                 !write(*,*) "hopping", hgen(i,ib)
-                call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),ann_arr%g_per_bond(1,i,ib))
+                call convert_ann_epotd(ann_arr%ann(i),ann_arr%num(i),ann_arr%g_per_bond(1,i,ib))
                 !write(*,*) "dhda", ann_arr%g_per_bond(1,i,ib)
             elseif(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
                 call cal_architecture(ann_arr%ann(i),hgen(i,ib))          
@@ -109,7 +101,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
             hbar=hgen(i,ib)
             hgen(i,ib)=hbar*fc
             dhgen(i,ib)=dhgen(i,ib)*fc+hbar*dfc
-            !do j=1, opt_ann%num(1)
+            !do j=1, ann_arr%num(1)
             !    ann_arr%g_per_bond(j,i,ib)=fc*ann_arr%g_per_bond(j,i,ib)
             !enddo
         enddo
@@ -129,7 +121,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         if(trim(ann_arr%event)=='train') then
             ann_grad=0.d0
             do i=1,4
-                do j=1,opt_ann%num(1)
+                do j=1,ann_arr%num(1)
                     tt1=0.d0
                     do ib=1,nb
                     iat=symfunc%linked_lists%bound_rad(1,ib)
@@ -140,7 +132,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
                     ann_grad(j,i)=tt1
                 enddo
             enddo
-            call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
+            call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
         endif
     tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
     atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
@@ -249,9 +241,9 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     !use mod_tightbinding, only: typ_partb
     !use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms, atom_allocate_old, set_rat_iat, update_ratp
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_x_ann
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann, get_opt_ann_x, set_opt_ann_x
+    use mod_opt_ann, only: typ_opt_ann, get_opt_ann_x, set_opt_ann_x
     use mod_parlm, only: typ_parlm
     use dynamic_memory
     implicit none
@@ -288,9 +280,9 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
         !write(44,'(a,5es14.5)') 'hgen-L',hgen_ltb(1,i),hgen_ltb(2,i),hgen_ltb(3,i),hgen_ltb(4,i),dis_ltb(i)
     enddo
     close(101)
-    allocate(grad(opt_ann%num(1),4))
+    allocate(grad(ann_arr%num(1),4))
     nb=1
-    allocate(ann_arr%g_per_bond(opt_ann%num(1),4,nb))
+    allocate(ann_arr%g_per_bond(ann_arr%num(1),4,nb))
     allocate(yall(ann_arr%ann(1)%nn(0),1000,325))
     call update_ratp(atoms)
     do i=1,325
@@ -317,27 +309,27 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     x_arr=f_malloc([1.to.ann_arr%nweight_max,1.to.ann_arr%nann],id='x_arr')
     do iann=1,4
     call init_lmder_modified(parlm,m,m)
-    call get_opt_ann_x(ann_arr%nweight_max,opt_ann,x_arr)
-    !parlm%x(1:parlm%n)=opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+opt_ann%num(1)-1)
+    call get_opt_ann_x(ann_arr,opt_ann,x_arr)
+    !parlm%x(1:parlm%n)=opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+ann_arr%num(1)-1)
     parlm%x(1:parlm%n)=x_arr(1:parlm%n,iann)
     do
         call lmder_modified(parlm,m,m)
         write(*,*) 'nfev,njev: ',parlm%nfev,parlm%njev
         if(parlm%finish) exit
         !do iann=1,ann_arr%nann
-        !    call convert_x_ann(opt_ann%num(iann),parlm%x,ann_arr%ann(iann))
+        !    call convert_x_ann(ann_arr%num(iann),parlm%x,ann_arr%ann(iann))
         !enddo
         if(parlm%icontinue==700) then
-            call convert_x_ann(opt_ann%num(iann),parlm%wa2,ann_arr%ann(iann))
+            call convert_x_ann(ann_arr%num(iann),parlm%wa2,ann_arr%ann(iann))
             call fcn_hgen(m,parlm%n,parlm%wa2,parlm%wa4,parlm%fjac,m,parlm%iflag,iann,ann_arr,hgen_ltb,yall)
         else
-            call convert_x_ann(opt_ann%num(iann),parlm%x,ann_arr%ann(iann))
+            call convert_x_ann(ann_arr%num(iann),parlm%x,ann_arr%ann(iann))
             call fcn_hgen(m,parlm%n,parlm%x,parlm%fvec,parlm%fjac,m,parlm%iflag,iann,ann_arr,hgen_ltb,yall)
         endif
     enddo
-    !opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+opt_ann%num(1)-1)=parlm%x(1:parlm%n)
+    !opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+ann_arr%num(1)-1)=parlm%x(1:parlm%n)
     x_arr(1:parlm%n,iann)=parlm%x(1:parlm%n)
-    call set_opt_ann_x(ann_arr%nweight_max,x_arr,opt_ann)
+    call set_opt_ann_x(ann_arr,x_arr,opt_ann)
     write(*,*) 'info= ',parlm%info
     call final_lmder_modified(parlm)
     enddo
@@ -348,9 +340,8 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
 end subroutine fit_hgen
 !*****************************************************************************************
 subroutine fcn_hgen(m,n,x,fvec,fjac,ldfjac,iflag,iann,ann_arr,hgen_ltb,yall)
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: convert_ann_epotd
     implicit none
     integer, intent(in):: m, n, ldfjac, iflag, iann
     type(typ_ann_arr), intent(inout):: ann_arr

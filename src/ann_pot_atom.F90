@@ -3,9 +3,9 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad, convert_ann_epotd
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -87,7 +87,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
             endif
         elseif(trim(ann_arr%event)=='train') then
             call cal_architecture_der(ann_arr%ann(i),epoti)
-            call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),ann_arr%g_per_atom(1,iat))
+            call convert_ann_epotd(ann_arr%ann(i),ann_arr%num(i),ann_arr%g_per_atom(1,iat))
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif
@@ -118,7 +118,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
                 ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
         deallocate(ann_grad)
     endif
     call f_release_routine()

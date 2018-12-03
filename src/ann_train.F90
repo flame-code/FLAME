@@ -142,7 +142,7 @@ subroutine ann_train(parini)
             call write_ann_all(parini,ann_arr,-1)
         endif
     endif
-    call final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    call fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
 
     call f_release_routine()
 end subroutine ann_train
@@ -151,7 +151,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
     use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old, set_rat_iat
     use mod_symfunc, only: typ_symfunc
     use dynamic_memory
@@ -165,7 +165,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     type(typ_symfunc):: symfunc
     integer:: ityp
     real(8):: t_ener_ref
-    call convert_x_ann_arr(opt_ann,ann_arr)
+    call convert_opt_x_ann_arr(opt_ann,ann_arr)
     !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     call atom_allocate_old(atoms,1,0,0)
     !write(*,*) atoms%nat
@@ -420,7 +420,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     endif
 end subroutine init_ann_train
 !*****************************************************************************************
-subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, fini_ann_arr
@@ -460,7 +460,7 @@ subroutine final_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfun
     deallocate(atoms_train%conf_inc)
     deallocate(atoms_valid%conf_inc)
     !deallocate(atoms_train%inclusion)
-end subroutine final_ann_train
+end subroutine fini_ann_train
 !*****************************************************************************************
 subroutine set_conf_inc_random(parini,atoms_arr)
     use mod_interface

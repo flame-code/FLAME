@@ -167,9 +167,9 @@ end subroutine read_data_yaml
 subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad, convert_ann_epotd
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -181,9 +181,9 @@ end subroutine cal_ann_atombased
 subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
@@ -303,9 +303,9 @@ end subroutine get_qat_from_chi_operator
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
-    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -435,9 +435,9 @@ end subroutine calc_multipoles_grid_cent2
 subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
-    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -624,7 +624,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -637,7 +637,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -652,9 +652,9 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
     use mod_atoms, only: typ_atoms, update_ratp
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -683,16 +683,16 @@ end subroutine lenoskytb_ann
 subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_allocate_old, set_rat_iat, update_ratp
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_x_ann
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann, get_opt_ann_x, set_opt_ann_x
+    use mod_opt_ann, only: typ_opt_ann, get_opt_ann_x, set_opt_ann_x
     use mod_parlm, only: typ_parlm
     type(typ_parini), intent(in):: parini
     type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_ann_arr), intent(inout):: ann_arr
 end subroutine fit_hgen
 subroutine fcn_hgen(m,n,x,fvec,fjac,ldfjac,iflag,iann,ann_arr,hgen_ltb,yall)
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
     integer, intent(in):: m, n, ldfjac, iflag, iann
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(in):: x(n), hgen_ltb(4,325), yall(ann_arr%ann(1)%nn(0),1000,325)

@@ -7,6 +7,8 @@ module mod_ann
     private
     public:: ann_arr_allocate, ann_arr_deallocate, set_number_of_ann
     public:: init_ann_arr, fini_ann_arr
+    public:: convert_x_ann, convert_ann_x, convert_x_ann_arr
+    public:: convert_ann_epotd
     type, public:: typ_ann
         type(dictionary), pointer :: dict
         integer:: nl !number of hidden layer plus one
@@ -103,6 +105,8 @@ module mod_ann
         real(8):: yall_bond(100,100,100)
         real(8):: y0d_bond(100,3,100,100)
         !real(8), allocatable:: y0dr(:,:,:)
+        integer, allocatable:: loc(:)
+        integer, allocatable, public:: num(:)
         real(8), allocatable:: a(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
@@ -140,13 +144,13 @@ subroutine set_number_of_ann(parini,ann_arr)
 end subroutine set_number_of_ann
 !*****************************************************************************************
 subroutine init_ann_arr(ann_arr)
-    !use mod_ann, only: typ_ann_arr
     !use mod_opt_ann, only: typ_opt_ann
+    use yaml_output
     use dynamic_memory
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    integer:: nw, ialpha, iann
+    integer:: nw, ialpha, iann, nwtot
     do iann=1,ann_arr%nann
         nw=0
         do ialpha=1,ann_arr%ann(iann)%nl
@@ -155,20 +159,38 @@ subroutine init_ann_arr(ann_arr)
         ann_arr%nweight_max=max(ann_arr%nweight_max,nw)
     enddo
     call ann_arr_allocate(ann_arr)
+    ann_arr%num=f_malloc0([1.to.ann_arr%nann],id='ann_arr%num')
+    ann_arr%loc=f_malloc0([1.to.ann_arr%nann],id='ann_arr%loc')
+    nwtot=0
+    call yaml_sequence_open('EKF') !,flow=.true.)
+    do iann=1,ann_arr%nann
+        do ialpha=1,ann_arr%ann(iann)%nl
+            ann_arr%num(iann)=ann_arr%num(iann)+(ann_arr%ann(iann)%nn(ialpha-1)+1)*ann_arr%ann(iann)%nn(ialpha)
+        enddo
+        ann_arr%loc(iann)=nwtot+1
+        nwtot=nwtot+ann_arr%num(iann)
+        call yaml_sequence(advance='no')
+        call yaml_map('iann',iann)
+        call yaml_map('loc',ann_arr%loc(iann))
+        call yaml_map('num',ann_arr%num(iann))
+        call yaml_map('n',nwtot)
+        !write(*,'(a,3i5)') 'EKF: ',ann_arr%loc(iann),ann_arr%num(iann),nwtot
+    enddo
+    call yaml_sequence_close()
 end subroutine init_ann_arr
 !*****************************************************************************************
 subroutine fini_ann_arr(ann_arr)
-    !use mod_ann, only: typ_ann_arr
     !use mod_opt_ann, only: typ_opt_ann
     use dynamic_memory
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
     call ann_arr_deallocate(ann_arr)
+    call f_free(ann_arr%num)
+    call f_free(ann_arr%loc)
 end subroutine fini_ann_arr
 !*****************************************************************************************
 subroutine ann_arr_allocate(ann_arr)
-    !use mod_ann, only: typ_ann_arr
     !use mod_opt_ann, only: typ_opt_ann
     use dynamic_memory
     implicit none
@@ -201,7 +223,6 @@ subroutine ann_arr_allocate(ann_arr)
 end subroutine ann_arr_allocate
 !*****************************************************************************************
 subroutine ann_arr_deallocate(ann_arr)
-    !use mod_ann, only: typ_ann_arr
     use dynamic_memory
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -224,6 +245,91 @@ subroutine ann_arr_deallocate(ann_arr)
     deallocate(ann_arr%ipiv)
     deallocate(ann_arr%qq)
 end subroutine ann_arr_deallocate
+!*****************************************************************************************
+subroutine convert_x_ann(n,x,ann)
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: x(n)
+    type(typ_ann), intent(inout):: ann
+    !local variables
+    integer:: i, j, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do j=1,ann%nn(ialpha)
+            do i=1,ann%nn(ialpha-1)
+                l=l+1
+                ann%a(i,j,ialpha)=x(l)
+            enddo
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            ann%b(i,ialpha)=x(l)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_x_ann
+!*****************************************************************************************
+subroutine convert_ann_x(n,x,ann)
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(inout):: x(n)
+    type(typ_ann), intent(in):: ann
+    !local variables
+    integer:: i, j, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do j=1,ann%nn(ialpha)
+            do i=1,ann%nn(ialpha-1)
+                l=l+1
+                x(l)=ann%a(i,j,ialpha)
+            enddo
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            x(l)=ann%b(i,ialpha)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_ann_x
+!*****************************************************************************************
+subroutine convert_x_ann_arr(nwtot,x,ann_arr)
+    use dynamic_memory
+    implicit none
+    integer, intent(in):: nwtot
+    real(8), intent(in):: x(nwtot)
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: ia, n
+    n=sum(ann_arr%num(1:ann_arr%nann))
+    if(n/=nwtot) then
+        write(*,*) 'ERROR: inconsistency in total number of weights in convert_x_ann_arr'
+        stop
+    endif
+    do ia=1,ann_arr%nann
+        call convert_x_ann(ann_arr%num(ia),x(ann_arr%loc(ia)),ann_arr%ann(ia))
+    enddo
+end subroutine convert_x_ann_arr
+!*****************************************************************************************
+subroutine convert_ann_epotd(ann,n,epotd)
+    implicit none
+    type(typ_ann), intent(in):: ann
+    integer, intent(in):: n
+    real(8), intent(inout):: epotd(n)
+    !local variables
+    integer:: i, ij, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do ij=1,ann%nn(ialpha)*ann%nn(ialpha-1)
+            l=l+1
+            epotd(l)=ann%ad(ij,ialpha)
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            epotd(l)=ann%bd(i,ialpha)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_ann_epotd
 !*****************************************************************************************
 end module mod_ann
 !*****************************************************************************************

@@ -3,10 +3,9 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
-    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, convert_x_ann_arr, set_opt_ann_grad
-    use mod_opt_ann, only: convert_ann_epotd
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     use yaml_output
     use dynamic_memory
@@ -45,13 +44,6 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
         ann_arr%chi_d=0.d0
         ann_arr%a=0.d0
     endif
-    if(trim(ann_arr%event)=='train') then
-        !The following is allocated with opt_ann%num(1), this means number of
-        !nodes in the input layer is the same for all atom types.
-        !Therefore, it must be fixed later.
-        !g_per_atom=f_malloc([1.to.opt_ann%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        call convert_x_ann_arr(opt_ann,ann_arr)
-    endif
     if(parini%iverbose>=2) call cpu_time(time1)
     allocate(gausswidth(atoms%nat))
     gausswidth(:)=1.d0 !TO_BE_CORRECTED
@@ -86,8 +78,8 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
             ann_arr%chi_i(iat)=out_ann
             tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
             ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-            call convert_ann_epotd(ann_arr%ann(i),opt_ann%num(i),ann_arr%g_per_atom(1,iat))
-            ann_arr%g_per_atom(1:opt_ann%num(1),iat)=ann_arr%g_per_atom(1:opt_ann%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
+            call convert_ann_epotd(ann_arr%ann(i),ann_arr%num(i),ann_arr%g_per_atom(1,iat))
+            ann_arr%g_per_atom(1:ann_arr%num(1),iat)=ann_arr%g_per_atom(1:ann_arr%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif
@@ -193,10 +185,10 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
                 ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        call set_opt_ann_grad(ann_arr%nweight_max,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
         !do i=1,ann_arr%nann
-        !    ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)=ann_grad(opt_ann%loc(i)+opt_ann%num(1)-1)*1.d-4
-        !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+opt_ann%num(1)-1
+        !    ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)=ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)*1.d-4
+        !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+ann_arr%num(1)-1
         !enddo
         deallocate(ann_grad)
     endif
