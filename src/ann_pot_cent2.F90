@@ -1,11 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -13,7 +12,6 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     type(typ_cent):: cent
@@ -22,7 +20,6 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
     real(8),allocatable :: gausswidth(:)
-    real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_cent2')
     call update_ratp(atoms)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
@@ -157,21 +154,6 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
         deallocate(ann_arr%fat_chi)
         call f_free(ann_arr%fatpq)
         call f_free(ann_arr%stresspq)
-    endif
-    if(trim(ann_arr%event)=='train') then
-        allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-        !do i=1,ann_arr%nann
-        !    ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)=ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)*1.d-4
-        !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+ann_arr%num(1)-1
-        !enddo
-        deallocate(ann_grad)
     endif
     if(parini%iverbose>=3) then
         fnet=0.d0
@@ -487,6 +469,8 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     if(trim(parini%psolver)=='pairsum') then
         call cal_cent2_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
     else
+        !write(*,*) 'AAAAAAAAAAAAA'
+        !stop
         call cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
     endif
     atoms%epot=atoms%epot+epot_es

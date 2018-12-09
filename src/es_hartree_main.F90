@@ -129,6 +129,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     pi=4.d0*atan(1.d0)
     ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
+    write(*,*) 'ECUT',parini%ecut_ewald
     poisson_rough%hx=pi/sqrt(2.d0*parini%ecut_ewald)
     poisson_rough%hy=pi/sqrt(2.d0*parini%ecut_ewald)
     poisson_rough%hz=pi/sqrt(2.d0*parini%ecut_ewald)
@@ -150,6 +151,9 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !---------------------------------------------------------------------------
     !call calparam(parini,atoms,poisson_rough,poisson)
     call set_ngp_bps(parini,atoms,poisson_rough,poisson)
+        !write(*,*) 'BBBBBBBBBBBB'
+        !write(*,*) ngpx,ngpy,ngpz
+        !stop
     if(trim(atoms%boundcond)=='bulk') then
     poisson%hgrid(1,1)=atoms%cellvec(1,1)/ngpx ; poisson%hgrid(2,1)=atoms%cellvec(2,1)/ngpx ; poisson%hgrid(3,1)=atoms%cellvec(3,1)/ngpx
     poisson%hgrid(1,2)=atoms%cellvec(1,2)/ngpy ; poisson%hgrid(2,2)=atoms%cellvec(2,2)/ngpy ; poisson%hgrid(3,2)=atoms%cellvec(3,2)/ngpy

@@ -112,6 +112,7 @@ module mod_ann
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
         real(8), allocatable:: fat_chi(:,:)
+        real(8), allocatable:: dqat_weights(:,:)
         real(8), allocatable:: g_per_atom(:,:)
         real(8), allocatable:: g_per_bond(:,:,:)
         real(8), allocatable:: fatpq(:,:)
@@ -214,6 +215,7 @@ subroutine ann_arr_allocate(ann_arr)
     ann_arr%chi_o=0.d0
     ann_arr%chi_d=0.d0
     ann_arr%a=0.d0
+    allocate(ann_arr%dqat_weights(ann_arr%nweight_max,ann_arr%natmax))
     allocate(ann_arr%g_per_atom(ann_arr%nweight_max,ann_arr%natmax))
     !symfunc%linked_lists%maxbound_rad is assumed 10000
     allocate(ann_arr%fatpq(1:3,1:10000))
@@ -239,6 +241,7 @@ subroutine ann_arr_deallocate(ann_arr)
     deallocate(ann_arr%chi_d)
     deallocate(ann_arr%a)
     deallocate(ann_arr%fat_chi)
+    deallocate(ann_arr%dqat_weights)
     deallocate(ann_arr%g_per_atom)
     deallocate(ann_arr%fatpq)
     deallocate(ann_arr%stresspq)

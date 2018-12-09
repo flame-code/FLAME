@@ -135,7 +135,7 @@
 ./parser_core.o : ./parser_core.F90 ./task_mod.o 
 ./flame.o : ./flame.F90 ./flame_as_potential_mod.o ./parini_mod.o ./task_mod.o ./interface_mod.o 
 ./minhopp_allocation.o : ./minhopp_allocation.F90 ./minhopp_mod.o ./interface_mod.o 
-./ann_pot_atom.o : ./ann_pot_atom.F90 ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
+./ann_pot_atom.o : ./ann_pot_atom.F90 ./linked_lists_mod.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
 ./task_genconf.o : ./task_genconf.F90 ./parini_mod.o ./genconf_mod.o ./interface_mod.o 
 ./ann_pot_cent_common.o : ./ann_pot_cent_common.F90 ../src/act2_cell_linkedlist.inc ../src/act1_cell_linkedlist.inc ./linked_lists_mod.o ./atoms_mod.o ./symfunc_mod.o ./ann_mod.o ./parini_mod.o ./interface_mod.o 
 ./task_geopt.o : ./task_geopt.F90 ./constants_mod.o ./processors_mod.o ./potential_mod.o ./atoms_mod.o ./opt_mod.o ./parini_mod.o ./interface_mod.o 
@@ -147,7 +147,7 @@
 ./potential_flame.o : ./potential_flame.F90 ./parini_mod.o 
 ./envelope.o : ./envelope.F90 
 ./fit_elecpot.o : ./fit_elecpot.F90 ./ann_mod.o ./atoms_mod.o ./electrostatics_mod.o ./parini_mod.o ./interface_mod.o 
-./ann_pot_cent2.o : ./ann_pot_cent2.F90 ./electrostatics_mod.o ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
+./ann_pot_cent2.o : ./ann_pot_cent2.F90 ./electrostatics_mod.o ./linked_lists_mod.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
 ./saddle_1s_optimizer.o : ./saddle_1s_optimizer.F90 ./saddle_mod.o ./atoms_mod.o ./potential_mod.o ./opt_mod.o ./parini_mod.o ./interface_mod.o 
 ./gaussdist.o : ./gaussdist.F90 ./interface_mod.o 
 ./grid_gto_sym.o : ./grid_gto_sym.F90 ./parini_mod.o ./atoms_mod.o ./interface_mod.o 
@@ -174,7 +174,7 @@
 ./init_rotvels.o : ./init_rotvels.F90 ./constants_minhocao_mod.o ./minhocao_mod.o ./parini_mod.o ./interface_mod.o 
 ./optimizer_sd.o : ./optimizer_sd.F90 ./opt_mod.o ./parini_mod.o ./interface_mod.o 
 ./io_bin.o : ./io_bin.F90 ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
-./ann_pot_cent1.o : ./ann_pot_cent1.F90 ./linked_lists_mod.o ./electrostatics_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
+./ann_pot_cent1.o : ./ann_pot_cent1.F90 ./linked_lists_mod.o ./electrostatics_mod.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
 ./spline_mod.o : ./spline_mod.F90 
 ./optimizer_drivers_vc.o : ./optimizer_drivers_vc.F90 ./opt_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
 ./atoms_minhocao.o : ./atoms_minhocao.F90 ./minhocao_mod.o ./constants_minhocao_mod.o 
@@ -214,7 +214,7 @@
 ./timing_mod.o : ./timing_mod.F90 
 ./vasp_recompute_cell.o : ./vasp_recompute_cell.F90 
 ./saddle_1s_dimer.o : ./saddle_1s_dimer.F90 ./atoms_mod.o ./opt_mod.o ./saddle_mod.o ./parini_mod.o ./interface_mod.o 
-./ann_pot_cent3.o : ./ann_pot_cent3.F90 ./linked_lists_mod.o ./train_optimizer.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
+./ann_pot_cent3.o : ./ann_pot_cent3.F90 ./linked_lists_mod.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
 ./io_vasp.o : ./io_vasp.F90 ./interface_mod.o 
 ./compare_lammps.o : ./compare_lammps.F90 ./parini_mod.o ./constants_minhocao_mod.o ./potential_main_minhocao.o ./minhocao_mod.o ./interface_mod.o 
 ./potential_SIESTA.o : ./potential_SIESTA.F90 ./atoms_mod.o ./potential_mod.o ./interface_mod.o 

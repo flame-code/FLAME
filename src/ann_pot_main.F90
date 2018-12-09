@@ -3,7 +3,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_atoms, only: typ_atoms, atom_copy_old
     use mod_callback_ann, only: atoms_train=>atoms_train_t
     use mod_callback_ann, only: symfunc_train=>symfunc_train_t
@@ -17,8 +17,46 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     real(8), intent(out):: fcn_ref
     !local variables
     type(typ_atoms):: atoms
+    real(8), allocatable:: ann_grad(:,:)
+    integer:: iat, i, j
     call atom_copy_old(atoms_train%atoms(idp),atoms,'atoms_train%atoms(iconf)->atoms')
     call cal_ann_main(parini,atoms,symfunc_train%symfunc(idp),ann_arr,opt_ann)
+    allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
+    if(trim(ann_arr%approach)=='atombased') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent1') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent2') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent3') then
+        !The following must be corrected and uncommented later.
+        !do iat=1,atoms%nat
+        !    i=atoms%itypat(iat)
+        !    do j=1,ann_arr%nweight_max
+        !        ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
+        !    enddo
+        !enddo
+        !call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    endif
+    deallocate(ann_grad)
     fcn_ann=atoms%epot
     fcn_ref=symfunc_train%symfunc(idp)%epot
 end subroutine get_fcn_ann
@@ -44,13 +82,13 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     integer:: i, j, iat
     type(typ_partb):: partb
     if(trim(ann_arr%approach)=='atombased') then
-        call cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
+        call cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
-        call cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
+        call cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
+        call cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent3') then
-        call cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
+        call cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
         !if(trim(ann_arr%event)=='train') then

@@ -1,11 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
@@ -15,7 +14,6 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_poisson):: poisson
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
@@ -23,7 +21,6 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
-    real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_cent1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -153,21 +150,6 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
         deallocate(ann_arr%fat_chi)
         deallocate(ann_arr%fatpq)
         deallocate(ann_arr%stresspq)
-    endif
-    if(trim(ann_arr%event)=='train') then
-        allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        !do i=1,ann_arr%nann
-        !    ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)=ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)*1.d-4
-        !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+ann_arr%num(1)-1
-        !enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-        deallocate(ann_grad)
     endif
     call f_release_routine()
 end subroutine cal_ann_cent1

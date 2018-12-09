@@ -164,33 +164,29 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
     type(typ_atoms_arr), intent(inout):: atoms_arr
 end subroutine read_data_yaml
 ! ./src/ann_pot_atom.F90 :
-subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
 end subroutine cal_ann_atombased
 ! ./src/ann_pot_cent1.F90 :
-subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
 end subroutine cal_ann_cent1
 subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
     use mod_parini, only: typ_parini
@@ -300,18 +296,16 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     type(typ_poisson),intent(inout):: poisson
 end subroutine get_qat_from_chi_operator
 ! ./src/ann_pot_cent2.F90 :
-subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
 end subroutine cal_ann_cent2
 subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
@@ -432,19 +426,27 @@ subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
     type(typ_poisson), intent(inout):: poisson
 end subroutine calc_multipoles_grid_cent2
 ! ./src/ann_pot_cent3.F90 :
-subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
 end subroutine cal_ann_cent3
+subroutine get_dqat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(in):: cent
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+end subroutine get_dqat_from_chi_dir_cent3
 subroutine get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -597,7 +599,7 @@ end subroutine repulsive_potential_cent
 subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_atoms, only: typ_atoms, atom_copy_old
     type(typ_parini), intent(in):: parini
     integer, intent(in):: idp

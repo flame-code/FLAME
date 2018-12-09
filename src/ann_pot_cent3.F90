@@ -1,11 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     use yaml_output
     use dynamic_memory
@@ -14,7 +13,6 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     type(typ_cent):: cent
@@ -23,7 +21,6 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
     real(8),allocatable :: gausswidth(:)
-    real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_cent3')
     call update_ratp(atoms)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
@@ -92,7 +89,9 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
     if(parini%iverbose>=2) call cpu_time(time4)
 
     call init_cent3(parini,ann_arr,atoms,cent)
-
+    if(trim(ann_arr%event)=='train') then
+        call get_dqat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,ann_arr%a)
+    endif
 
     call get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
     
@@ -177,21 +176,6 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
         call f_free(ann_arr%fatpq)
         call f_free(ann_arr%stresspq)
     endif
-    if(trim(ann_arr%event)=='train') then
-        allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-        !do i=1,ann_arr%nann
-        !    ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)=ann_grad(opt_ann%loc(i)+ann_arr%num(1)-1)*1.d-4
-        !    !write(*,*) 'GGG ',ia,opt_ann%loc(ia)+ann_arr%num(1)-1
-        !enddo
-        deallocate(ann_grad)
-    endif
     if(parini%iverbose>=3) then
         fnet=0.d0
         do iat=1,atoms%nat
@@ -203,6 +187,65 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr,opt_ann)
     endif
     call f_release_routine()
 end subroutine cal_ann_cent3
+!*****************************************************************************************
+subroutine get_dqat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
+    use mod_interface
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr, typ_cent
+    use mod_atoms, only: typ_atoms
+    use yaml_output
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_cent), intent(in):: cent
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+    !local variables
+    integer:: info, iat, jel, iw, nweights
+    real(8):: qtot_ion, hardness, dx, dy, dz, r, tt, gama, tt1, ttg
+    associate(nat=>atoms%nat)
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        allocate(ann_arr%ipiv(1:nat+1))
+        allocate(ann_arr%qq(1:nat+1))
+    endif
+    call DGETRF(nat+1,nat+1,a,nat+1,ann_arr%ipiv,info)
+    if(info/=0) then
+        write(*,'(a,i)') 'ERROR: DGETRF info=',info
+        stop
+    endif
+    !do iat=1,nat
+    !if(trim(atoms%sat(iat))=='Na') then
+    !    chi(iat)=chi(iat)/0.93d0
+    !elseif(trim(atoms%sat(iat))=='Cl') then
+    !    chi(iat)=chi(iat)/3.16d0
+    !endif
+    !enddo
+    nweights=sum(ann_arr%num(1:ann_arr%nann))
+    do iw=1,nweights
+        !ann_arr%qq(1:nat)=-ann_arr%chi_o(1:nat)
+        ann_arr%qq(1:nat)=-ann_arr%g_per_atom(iw,1:nat)
+        !-------------------------------------------------------
+        !qtot_ion=sum(atoms%zat(1:atoms%nat))
+        !ann_arr%qq(nat+1)=atoms%qtot-qtot_ion
+        ann_arr%qq(nat+1)=0.d0
+        call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,ann_arr%qq,nat+1,info)
+        if(info/=0) then
+            write(*,'(a,i)') 'ERROR: DGETRS info=',info
+            stop
+        endif
+        ann_arr%dqat_weights(iw,1:nat)=ann_arr%qq(1:nat)
+        !call charge_analysis(parini,atoms,ann_arr)
+        if(parini%iverbose>1) then
+            call yaml_map('Lagrange',ann_arr%qq(nat+1))
+            !write(*,*) 'Lagrange ',ann_arr%qq(nat+1)
+        endif
+    enddo
+    if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
+        deallocate(ann_arr%ipiv)
+        deallocate(ann_arr%qq)
+    endif
+    end associate
+end subroutine get_dqat_from_chi_dir_cent3
 !*****************************************************************************************
 subroutine get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
     use mod_interface

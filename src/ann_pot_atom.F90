@@ -1,11 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
+subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     implicit none
@@ -13,18 +12,13 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_opt_ann), intent(inout):: opt_ann
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng, jat, ib
     real(8):: epoti, tt,vol
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
-    real(8), allocatable:: ann_grad(:,:)
     call f_routine(id='cal_ann_atombased')
-    if(trim(ann_arr%event)=='train') then
-        allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann))
-    endif
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     else
@@ -109,17 +103,6 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr,opt_ann)
         call f_free(symfunc%y0d)
         call f_free(symfunc%y0dr)
         endif
-    endif
-    if(trim(ann_arr%event)=='train') then
-        ann_grad(1:ann_arr%nweight_max,1:ann_arr%nann)=0.d0
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-        deallocate(ann_grad)
     endif
     call f_release_routine()
 end subroutine cal_ann_atombased

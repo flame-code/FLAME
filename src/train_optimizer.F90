@@ -116,7 +116,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
     real(8), allocatable:: f(:) !Kalman gain matrix
     real(8), allocatable:: p(:,:) !covariance matrix
     real(8), allocatable:: v1(:) !work array
-    integer:: i, j, iter, iconf, ios, ia
+    integer:: i, j, iter, idp, ios, ia
     real(8):: DDOT, tt, den, fcn_ann, fcn_ref
     real(8):: r, rinv, r0, rf, alpha
     real(8):: time_s, time_e, time1, time2, time3 !, time4
@@ -187,14 +187,14 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
        ! endif
         rinv=1.d0/r
         write(31,'(i6,es14.5)') iter,r
-        do iconf=1,opt_ann%ndp_train
+        do idp=1,opt_ann%ndp_train
             ann_arr%event='train'
             !The following is allocated with ann_arr%num(1), this means number of
             !nodes in the input layer is the same for all atom types.
             !Therefore, it must be fixed later.
             !g_per_atom=f_malloc([1.to.ann_arr%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
             call convert_opt_x_ann_arr(opt_ann,ann_arr)
-            call get_fcn_ann(parini,iconf,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
+            call get_fcn_ann(parini,idp,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
             if(trim(parini%approach_ann)=='tb') then
                 do j=1,opt_ann%n
                     opt_ann%g(j)=opt_ann%g(j)+parini%weight_hardness*opt_ann%x(j)
@@ -214,10 +214,10 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
                 enddo
             enddo
                     !write(21,'(a)') '----------------------------------------'
-            !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,iconf,r,den
+            !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,idp,r,den
             call DGEMV('N',opt_ann%n,opt_ann%n,rinv,p,opt_ann%n,opt_ann%g,1,0.d0,f,1)
             do i=1,opt_ann%n
-                !write(81,*) iter,iconf,i,f(i)*(epotall(iconf)-opt_ann%epot)
+                !write(81,*) iter,idp,i,f(i)*(epotall(idp)-opt_ann%epot)
                 opt_ann%x(i)=opt_ann%x(i)+f(i)*(fcn_ref-fcn_ann)
             enddo
             call cpu_time(time3)
@@ -356,7 +356,7 @@ subroutine ekf_behler(parini,ann_arr,opt_ann)
     real(8), allocatable:: f(:) !Kalman gain matrix
     real(8), allocatable:: p(:,:) !covariance matrix
     real(8), allocatable:: v1(:) !work array
-    integer:: i, j, iter, iconf, ios, ia
+    integer:: i, j, iter, idp, ios, ia
     real(8):: DDOT, tt, den, alambda, alambdainv, alambda0
     real(8):: fcn_ann, fcn_ref
     real(8):: time_s, time_e, time1, time2, time3 !, time4
@@ -392,20 +392,20 @@ subroutine ekf_behler(parini,ann_arr,opt_ann)
         dtime4=0.d0 !time to convert derivative of ANN in typ_ann to 1D array
         dtime5=0.d0 !time to matrix-vector multiplication in Kalman filter
         dtime6=0.d0 !time of the rest of Kalman filter algorithm
-        do iconf=1,opt_ann%ndp_train
+        do idp=1,opt_ann%ndp_train
             alambda=min(alambda0*alambda+1.d0-alambda0,0.999999d0)
             alambdainv=1.d0/alambda
-            !write(31,'(2i6,f14.10)') iter,iconf,alambda
+            !write(31,'(2i6,f14.10)') iter,idp,alambda
             ann_arr%event='train'
-            call get_fcn_ann(parini,iconf,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
+            call get_fcn_ann(parini,idp,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
             call cpu_time(time1)
-            !opt_ann%g(1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(opt_ann%epot-epotall(iconf))
+            !opt_ann%g(1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(opt_ann%epot-epotall(idp))
             call DGEMV('T',opt_ann%n,opt_ann%n,1.d0,p,opt_ann%n,opt_ann%g,1,0.d0,v1,1)
             !call cal_matvec_mpi(opt_ann%n,p,opt_ann%g,v1)
             call cpu_time(time2)
             tt=DDOT(opt_ann%n,opt_ann%g,1,v1,1)
             den=alambdainv/(1.d0+tt*alambdainv)
-            !write(*,'(i7,i5,f14.10,es11.2)') iter,iconf,alambda,den
+            !write(*,'(i7,i5,f14.10,es11.2)') iter,idp,alambda,den
             !call DGEMV('T',opt_ann%n,opt_ann%n,den,p,opt_ann%n,opt_ann%g,1,0.d0,f,1)
             f(1:opt_ann%n)=v1(1:opt_ann%n)*den
             do j=1,opt_ann%n
@@ -415,9 +415,9 @@ subroutine ekf_behler(parini,ann_arr,opt_ann)
                 enddo
             enddo
                     !write(21,'(a)') '----------------------------------------'
-            !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,iconf,alambda,den
+            !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,idp,alambda,den
             do i=1,opt_ann%n
-                !write(81,*) iter,iconf,i,f(i)*(epotall(iconf)-opt_ann%epot)
+                !write(81,*) iter,idp,i,f(i)*(epotall(idp)-opt_ann%epot)
                 opt_ann%x(i)=opt_ann%x(i)+f(i)*(fcn_ref-fcn_ann)
             enddo
             call cpu_time(time3)
