@@ -56,6 +56,10 @@ def atoms2dict(atoms):
     dict_atoms['conf']['cell'].append([])
     dict_atoms['conf']['cell'][-1].append([])
     dict_atoms['conf']['cell'][2]=atoms.cellvec[2]
+    if atoms.elecfield_present:
+        dict_atoms['conf']['elecfield']=[]
+        dict_atoms['conf']['elecfield'].append([])
+        dict_atoms['conf']['elecfield'][-1]=([atoms.elecfield[0],atoms.elecfield[1],atoms.elecfield[2]])
     if atoms.dpm_present:
         dict_atoms['conf']['dpm']=[]
         dict_atoms['conf']['dpm'].append([])

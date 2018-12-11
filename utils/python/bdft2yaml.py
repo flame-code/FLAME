@@ -21,17 +21,22 @@ def bdft_read(filename):
         for j in range(3):
             atoms_all[0].rat[i][j]=docs["posinp"]["positions"][i][atoms_all[0].sat[i]][j]
             atoms_all[0].fat[i][j]=docs["Atomic Forces (Ha/Bohr)"][i][atoms_all[0].sat[i]][j]
+    if (abs(docs["dft"]["elecfield"][1]) > 0) or (abs(docs["dft"]["elecfield"][2]) > 0) or (abs(docs["dft"]["elecfield"][0]) > 0) :
+        atoms_all[0].elecfield=[-1 for i in range(3)]
+        atoms_all[0].elecfield_present=True
+        for i in range(3):
+            atoms_all[0].elecfield[i]=docs["dft"]["elecfield"][i]
     if abs(docs["Electric Dipole Moment (AU)"]["norm(P)"]) > 0:
         atoms_all[0].dpm=[-1 for i in range(3)]
         atoms_all[0].dpm_present=True
         for i in range(3):
             atoms_all[0].dpm[i]=docs["Electric Dipole Moment (AU)"]["P vector"][i]
-    if abs(docs["Quadrupole Moment (AU)"]["trace"]) > 0:
-        atoms_all[0].qpm=[[-1 for i in range(3)] for j in range(3)]
-        atoms_all[0].qpm_present=True
-    for i in range(3):
-        for j in range(3):
-            atoms_all[0].qpm[i][j]=docs["Quadrupole Moment (AU)"]["Q matrix"][i][j]
+#    if abs(docs["Quadrupole Moment (AU)"]["trace"]) > 0:
+#        atoms_all[0].qpm=[[-1 for i in range(3)] for j in range(3)]
+#        atoms_all[0].qpm_present=True
+#    for i in range(3):
+#        for j in range(3):
+#            atoms_all[0].qpm[i][j]=docs["Quadrupole Moment (AU)"]["Q matrix"][i][j]
     
     atoms_all[0].units_length_io=docs["posinp"]["units"]
     atoms_all[0].epot = docs["Input Hamiltonian"]["Energies"]["Epot"]
