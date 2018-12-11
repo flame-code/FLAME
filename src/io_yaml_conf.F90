@@ -90,6 +90,12 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
         if(has_key(dict1,"qtot")) then
             atoms_arr%atoms(iconf)%qtot=dict1//'qtot'
         endif
+        if(has_key(dict1,"dpm")) then
+            atoms_arr%atoms(iconf)%dpm=dict1//'dpm'
+        endif
+        if(has_key(dict1,"elecfield")) then
+            atoms_arr%atoms(iconf)%elecfield=dict1//'elecfield'
+        endif
         if(has_key(dict1,"epot")) then
             atoms_arr%atoms(iconf)%epot=dict1//'epot'
         endif

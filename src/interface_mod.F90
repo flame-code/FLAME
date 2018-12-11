@@ -600,7 +600,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
-    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp
     type(typ_parini), intent(in):: parini
     integer, intent(in):: idp
     character(*), intent(in):: str_dataset

@@ -31,8 +31,10 @@ module mod_atoms
         real(8), public:: etot=0.d0 !total energy
         real(8), public:: enth=0.d0 !enthalpy
         real(8), public:: ebattery=0.d0 !energy of external work of battery in p3d_bias
-        real(8), public:: qtot=0.d0 !total charge of the configuration
-        real(8), public:: ztot=0.d0 !total ionic charge of the configuration
+        real(8), public:: qtot=0.d0 !total charge
+        real(8), public:: ztot=0.d0 !total ionic charge
+        real(8), public:: dpm(3)=0.d0 !total electric dipole moment
+        real(8), public:: elecfield(3)=0.d0 !external electric field
         real(8), public:: pressure=0.d0 !external pressure
         real(8), public:: tol
         real(8), public:: qtypat(20)=1.d20
@@ -752,12 +754,20 @@ subroutine atom_copy(at_inp,at_out,str_message)
     if(at_inp%nat<1) stop 'ERROR: at_inp%nat must be larger than zero'
     ind_all=index(at_inp%alloclist,'all')
     at_out%nat=at_inp%nat
-    if(ind_all>0) then
+    !if(ind_all>0) then
         at_out%ndof=at_inp%ndof
         at_out%boundcond=at_inp%boundcond
         at_out%units=at_inp%units
         at_out%coordinates_type=at_inp%coordinates_type
-        at_out%cellvec(1:3,1:3)=at_inp%cellvec(1:3,1:3)
+        at_out%cellvec(1,1)=at_inp%cellvec(1,1)
+        at_out%cellvec(2,1)=at_inp%cellvec(2,1)
+        at_out%cellvec(3,1)=at_inp%cellvec(3,1)
+        at_out%cellvec(1,2)=at_inp%cellvec(1,2)
+        at_out%cellvec(2,2)=at_inp%cellvec(2,2)
+        at_out%cellvec(3,2)=at_inp%cellvec(3,2)
+        at_out%cellvec(1,3)=at_inp%cellvec(1,3)
+        at_out%cellvec(2,3)=at_inp%cellvec(2,3)
+        at_out%cellvec(3,3)=at_inp%cellvec(3,3)
         at_out%epot=at_inp%epot
         at_out%ekin=at_inp%ekin
         at_out%etot=at_inp%etot
@@ -765,7 +775,15 @@ subroutine atom_copy(at_inp,at_out,str_message)
         at_out%tol=at_inp%tol
         at_out%qtot=at_inp%qtot
         at_out%units_length_io=at_inp%units_length_io
-    endif
+        at_out%alloclist=at_inp%alloclist
+        at_out%dpm(1)=at_inp%dpm(1)
+        at_out%dpm(2)=at_inp%dpm(2)
+        at_out%dpm(3)=at_inp%dpm(3)
+        at_out%elecfield(1)=at_inp%elecfield(1)
+        at_out%elecfield(2)=at_inp%elecfield(2)
+        at_out%elecfield(3)=at_inp%elecfield(3)
+
+    !endif
     !copying array at_inp%sat to at_out%sat
     ind=index(at_inp%alloclist,'sat')
     if(ind_all>0 .or. ind>0) then
@@ -1065,19 +1083,33 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     endif
     !if(at_inp%nat/=at_out%nat) all_of_them=.true.
     at_out%nat=at_inp%nat
-    if(all_of_them) then
+    !if(all_of_them) then
         at_out%ndof=at_inp%ndof
         at_out%boundcond=at_inp%boundcond
         at_out%units=at_inp%units
         at_out%coordinates_type=at_inp%coordinates_type
-        at_out%cellvec(1:3,1:3)=at_inp%cellvec(1:3,1:3)
+        at_out%cellvec(1,1)=at_inp%cellvec(1,1)
+        at_out%cellvec(2,1)=at_inp%cellvec(2,1)
+        at_out%cellvec(3,1)=at_inp%cellvec(3,1)
+        at_out%cellvec(1,2)=at_inp%cellvec(1,2)
+        at_out%cellvec(2,2)=at_inp%cellvec(2,2)
+        at_out%cellvec(3,2)=at_inp%cellvec(3,2)
+        at_out%cellvec(1,3)=at_inp%cellvec(1,3)
+        at_out%cellvec(2,3)=at_inp%cellvec(2,3)
+        at_out%cellvec(3,3)=at_inp%cellvec(3,3)
         at_out%epot=at_inp%epot
         at_out%ekin=at_inp%ekin
         at_out%etot=at_inp%etot
         at_out%nfp=at_inp%nfp
         at_out%tol=at_inp%tol
         at_out%qtot=at_inp%qtot
-    endif
+        at_out%dpm(1)=at_inp%dpm(1)
+        at_out%dpm(2)=at_inp%dpm(2)
+        at_out%dpm(3)=at_inp%dpm(3)
+        at_out%elecfield(1)=at_inp%elecfield(1)
+        at_out%elecfield(2)=at_inp%elecfield(2)
+        at_out%elecfield(3)=at_inp%elecfield(3)
+    !endif
     !copying array at_inp%sat to at_out%sat
     if(present(sat)) then ; prsnt=sat ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%sat)) then

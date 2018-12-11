@@ -603,6 +603,8 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%epot=atoms_arr_of%atoms(iconf)%epot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%qtot=atoms_arr_of%atoms(iconf)%qtot
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%dpm(1:3)=atoms_arr_of%atoms(iconf)%dpm(1:3)
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%elecfield(1:3)=atoms_arr_of%atoms(iconf)%elecfield(1:3)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             !if(parini%read_forces_ann) read(2,*)

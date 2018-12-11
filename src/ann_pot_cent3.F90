@@ -95,6 +95,10 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
 
     call get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
     
+    call calc_multipoles_cent2(parini,atoms,cent%poisson,cent%rel)
+    atoms%dpm(1)=cent%poisson%dpm(1)
+    atoms%dpm(2)=cent%poisson%dpm(2)
+    atoms%dpm(3)=cent%poisson%dpm(3)
 
     !------------------------------------------------------
     call cent3_force(parini,ann_arr,atoms,cent)
@@ -204,6 +208,7 @@ subroutine get_dqat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
     integer:: info, iat, jel, iw, nweights
     real(8):: qtot_ion, hardness, dx, dy, dz, r, tt, gama, tt1, ttg
     associate(nat=>atoms%nat)
+    call get_amat_cent1(atoms,ann_arr,a)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%ipiv(1:nat+1))
         allocate(ann_arr%qq(1:nat+1))
@@ -392,7 +397,7 @@ subroutine get_qat_from_chi_operator_cent3(parini,ann_arr,atoms,cent)
             call yaml_sequence(advance='no')
         endif
         call cal_potential_cent3(parini,ann_arr,atoms,cent)
-        gnrm=sqrt(sum(cent%rgrad**2))
+        !gnrm=sqrt(sum(cent%rgrad**2))
         gtot=sum(cent%qgrad(1:atoms%nat))
         cent%qgrad(1:atoms%nat)=cent%qgrad(1:atoms%nat)-gtot/atoms%nat
         gnrm2=sqrt(sum(cent%qgrad(1:atoms%nat)**2))
@@ -414,7 +419,7 @@ subroutine get_qat_from_chi_operator_cent3(parini,ann_arr,atoms,cent)
             call yaml_map('iter',istep,fmt='(i5)')
             call yaml_map('epot',atoms%epot,fmt='(es22.13)')
             call yaml_map('de',de,fmt='(es10.2)')
-            call yaml_map('gnrm',gnrm,fmt='(es10.3)')
+            !call yaml_map('gnrm',gnrm,fmt='(es10.3)')
             call yaml_map('gnrm2',gnrm2,fmt='(es10.3)')
             call yaml_map('qtot',qtot,fmt='(es8.0)')
             call yaml_map('alpha_q',alpha_q,fmt='(es9.2)')
@@ -426,7 +431,8 @@ subroutine get_qat_from_chi_operator_cent3(parini,ann_arr,atoms,cent)
             !call yaml_map('dpz',dipole(3),fmt='(f10.3)')
             call yaml_mapping_close()
         endif
-        if(gnrm<parini%rgnrmtol .and. gnrm2<parini%qgnrmtol) then
+        !if(gnrm<parini%rgnrmtol .and. gnrm2<parini%qgnrmtol) then
+        if(gnrm2<parini%qgnrmtol) then
             !write(*,'(a,i5,es24.15,2es11.2,2f8.3)') 'CEP converged: ', &
             !    istep,atoms%epot,gnrm,gnrm2,q1,qtot
             call yaml_sequence_close()
@@ -434,7 +440,7 @@ subroutine get_qat_from_chi_operator_cent3(parini,ann_arr,atoms,cent)
             call yaml_map('iter',istep,fmt='(i5)')
             call yaml_map('epot',atoms%epot,fmt='(es22.13)')
             call yaml_map('de',de,fmt='(es11.2)')
-            call yaml_map('gnrm',gnrm,fmt='(es12.3)')
+            !call yaml_map('gnrm',gnrm,fmt='(es12.3)')
             call yaml_map('gnrm2',gnrm2,fmt='(es12.3)')
             call yaml_map('qtot',qtot,fmt='(es12.3)')
             call yaml_mapping_close()

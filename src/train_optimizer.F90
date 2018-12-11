@@ -10,25 +10,22 @@ module mod_opt_ann
         private
         integer, public:: n=-1
         integer:: ndp_train=-1
-        integer:: ndp_valid=-1
         real(8), allocatable:: x(:)
         real(8), allocatable:: epotd(:)
         real(8), allocatable:: g(:) !gradient of neural artificial neural network output
     end type typ_opt_ann
 contains
 !*****************************************************************************************
-subroutine init_opt_ann(ndp_train,ndp_valid,opt_ann,ann_arr)
+subroutine init_opt_ann(ndp_train,opt_ann,ann_arr)
     use mod_ann, only: typ_ann_arr
     use dynamic_memory
     implicit none
     integer, intent(in):: ndp_train
-    integer, intent(in):: ndp_valid
     type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
     opt_ann%n=sum(ann_arr%num(1:ann_arr%nann))
     opt_ann%ndp_train=ndp_train
-    opt_ann%ndp_valid=ndp_valid
     opt_ann%g=f_malloc0([1.to.opt_ann%n],id='opt_ann%g')
     opt_ann%x=f_malloc0([1.to.opt_ann%n],id='opt_ann%x')
 end subroutine init_opt_ann
@@ -533,14 +530,14 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
-            fvec(iconf)=(atoms%epot-symfunc_train%symfunc(iconf)%epot)**2
+            fvec(iconf)=(atoms%epot-atoms_train%atoms(iconf)%epot)**2
         enddo
     elseif(iflag==2) then
         ann_arr%event='train'
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
-            fjac(iconf,1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)*2.d0
+            fjac(iconf,1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(atoms%epot-atoms_train%atoms(iconf)%epot)*2.d0
         enddo
     elseif(iflag==0) then
         iter=icall0

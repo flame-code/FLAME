@@ -4,7 +4,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
-    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp
     use mod_callback_ann, only: atoms_train=>atoms_train_t
     use mod_callback_ann, only: symfunc_train=>symfunc_train_t
     implicit none
@@ -18,9 +18,24 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     !local variables
     type(typ_atoms):: atoms
     real(8), allocatable:: ann_grad(:,:)
-    integer:: iat, i, j
-    call atom_copy_old(atoms_train%atoms(idp),atoms,'atoms_train%atoms(iconf)->atoms')
-    call cal_ann_main(parini,atoms,symfunc_train%symfunc(idp),ann_arr,opt_ann)
+    integer:: iat, i, j, iconf, ixyz
+    !-----------------------------------------------------------------
+    if(trim(ann_arr%approach)=='atombased') then
+        iconf=idp
+    elseif(trim(ann_arr%approach)=='cent1') then
+        iconf=idp
+    elseif(trim(ann_arr%approach)=='cent2') then
+        iconf=idp
+    elseif(trim(ann_arr%approach)=='cent3') then
+        iconf=int((idp-1)/3)+1
+        ixyz=mod(idp-1,3)+1
+    elseif(trim(ann_arr%approach)=='tb') then
+        iconf=idp
+    endif
+    !-----------------------------------------------------------------
+    call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
+    call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
+    !-----------------------------------------------------------------
     allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
     if(trim(ann_arr%approach)=='atombased') then
         do iat=1,atoms%nat
@@ -47,18 +62,25 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
         enddo
         call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
     elseif(trim(ann_arr%approach)=='cent3') then
-        !The following must be corrected and uncommented later.
-        !do iat=1,atoms%nat
-        !    i=atoms%itypat(iat)
-        !    do j=1,ann_arr%nweight_max
-        !        ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
-        !    enddo
-        !enddo
-        !call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+        call update_ratp(atoms)
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+(atoms%ratp(ixyz,iat))*ann_arr%dqat_weights(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
     endif
     deallocate(ann_grad)
-    fcn_ann=atoms%epot
-    fcn_ref=symfunc_train%symfunc(idp)%epot
+    !-----------------------------------------------------------------
+    if(trim(ann_arr%approach)=='cent3') then
+        fcn_ann=atoms%dpm(ixyz)
+        fcn_ref=atoms_train%atoms(iconf)%dpm(ixyz)
+        write(*,'(a,2f10.3)') 'fcn_ann,fcn_ref ',fcn_ann,fcn_ref
+    else
+        fcn_ann=atoms%epot
+        fcn_ref=atoms_train%atoms(iconf)%epot
+    endif
 end subroutine get_fcn_ann
 !*****************************************************************************************
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
@@ -165,13 +187,13 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
                 enddo
                 atoms%epot=epotall(iconf)-eref_all(iconf)+tt
             endif
-            rmse=rmse+((symfunc_train%symfunc(iconf)%epot-atoms%epot)/atoms%nat)**2
+            rmse=rmse+((atoms_train%atoms(iconf)%epot-atoms%epot)/atoms%nat)**2
             anat=0.d0
             do iat=1,atoms%nat
                 anat(atoms%itypat(iat))=anat(atoms%itypat(iat))+1.d0
             enddo
             do ia=1,ann_arr%nann
-                g(ia)=g(ia)+2.d0*anat(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
+                g(ia)=g(ia)+2.d0*anat(ia)*(atoms%epot-atoms_train%atoms(iconf)%epot)/atoms%nat**2
             enddo
         enddo
         rmse=sqrt(rmse/atoms_train%nconf)
@@ -230,7 +252,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         do iconf=1,atoms_train%nconf
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
-            rmse=rmse+((symfunc_train%symfunc(iconf)%epot-atoms%epot)/atoms%nat)**2
+            rmse=rmse+((atoms_train%atoms(iconf)%epot-atoms%epot)/atoms%nat)**2
             anat1=0.d0
             anat2=0.d0
             do iat=1,atoms%nat
@@ -246,8 +268,8 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
                 anat2(atoms%itypat(iat))=anat2(atoms%itypat(iat))+0.5d0*qnet**2
             enddo
             do ia=1,ann_arr%nann
-                g1(ia)=g1(ia)+2.d0*anat1(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
-                g2(ia)=g2(ia)+2.d0*anat2(ia)*(atoms%epot-symfunc_train%symfunc(iconf)%epot)/atoms%nat**2
+                g1(ia)=g1(ia)+2.d0*anat1(ia)*(atoms%epot-atoms_train%atoms(iconf)%epot)/atoms%nat**2
+                g2(ia)=g2(ia)+2.d0*anat2(ia)*(atoms%epot-atoms_train%atoms(iconf)%epot)/atoms%nat**2
             enddo
         enddo
         rmse=sqrt(rmse/atoms_train%nconf)

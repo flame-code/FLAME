@@ -27,7 +27,6 @@ module mod_ann
         real(8):: d(350)
         real(8):: gbounds(2,350)
         real(8):: two_over_gdiff(350)
-        real(8):: ebounds(2)=(/-1.d0,1.d0/)
         !real(8):: rc1(350)
         real(8):: gausswidth
         real(8):: gausswidth_ion

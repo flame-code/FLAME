@@ -134,8 +134,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
             enddo
             call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
         endif
-    tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
-    atoms%epot=((atoms%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1)) !*atoms%nat
     deallocate(hgen)
     deallocate(dhgen)
     if(trim(ann_arr%event)=='train') then

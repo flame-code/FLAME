@@ -7,7 +7,6 @@ module mod_symfunc
     type, public:: typ_symfunc
         integer:: ng=-1
         integer:: nat=-1
-        real(8):: epot
         real(8), allocatable:: y(:,:)
         real(8), allocatable:: y0d_bond(:,:)
         real(8), allocatable:: y0d(:,:,:)

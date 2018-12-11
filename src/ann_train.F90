@@ -5,6 +5,7 @@ module mod_callback_ann
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann
+    implicit none
     type(typ_parini), pointer:: parini_t
     type(typ_atoms_arr), pointer:: atoms_train_t
     type(typ_atoms_arr), pointer:: atoms_valid_t
@@ -100,8 +101,6 @@ subroutine ann_train(parini)
     endif
     !endif
     !-------------------------------------------------------------------------------------
-    call set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
-    !-------------------------------------------------------
     if (.not. parini%restart_param) then
         call set_annweights(parini,opt_ann,ann_arr)
     endif
@@ -405,7 +404,11 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     endif
     !---------------------------------------------
     call init_ann_arr(ann_arr)
-    call init_opt_ann(atoms_train%nconf,atoms_valid%nconf,opt_ann,ann_arr)
+    if(trim(ann_arr%approach)=='cent3') then
+        call init_opt_ann(3*atoms_train%nconf,opt_ann,ann_arr)
+    else
+        call init_opt_ann(atoms_train%nconf,opt_ann,ann_arr)
+    endif
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
         fnout="train_output.yaml"
@@ -613,48 +616,6 @@ subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
         enddo
     enddo
 end subroutine prepare_atoms_arr
-!*****************************************************************************************
-subroutine set_ebounds(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
-    use mod_interface
-    use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc_arr
-    use mod_atoms, only: typ_atoms_arr
-    implicit none
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_atoms_arr), intent(in):: atoms_train, atoms_valid
-    type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
-    !local variables
-    integer:: iconf, nat
-    real(8):: epot, tt
-    ann_arr%ann(1)%ebounds(1)= 1.d20
-    ann_arr%ann(1)%ebounds(2)=-1.d20
-    do iconf=1,atoms_train%nconf
-        tt=atoms_train%atoms(iconf)%epot/atoms_train%atoms(iconf)%nat
-        ann_arr%ann(1)%ebounds(1)=min(ann_arr%ann(1)%ebounds(1),tt)
-        ann_arr%ann(1)%ebounds(2)=max(ann_arr%ann(1)%ebounds(2),tt)
-    enddo
-    if(atoms_train%nconf==1) then
-        tt=atoms_train%atoms(1)%epot !/atoms_train%atoms(1)%nat
-        ann_arr%ann(1)%ebounds(1)=(tt-1.d0)/atoms_train%atoms(1)%nat
-        ann_arr%ann(1)%ebounds(2)=(tt+1.d0)/atoms_train%atoms(1)%nat
-    endif
-    ann_arr%ann(1)%ebounds(1)=-1.d0
-    ann_arr%ann(1)%ebounds(2)= 1.d0
-    !write(*,'(a,2es14.5)') 'ebounds: ',ann_arr%ann(1)%ebounds(1),ann_arr%ann(1)%ebounds(2)
-    tt=2.d0/(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))
-    do iconf=1,atoms_train%nconf
-        nat=1 !atoms_train%atoms(iconf)%nat
-        epot=atoms_train%atoms(iconf)%epot
-        symfunc_train%symfunc(iconf)%epot=(epot/nat-ann_arr%ann(1)%ebounds(1))*tt-1.d0
-        !write(*,'(a,i6,f8.3)') 'train: ',iconf,symfunc_train%symfunc(iconf)%epot
-    enddo
-    do iconf=1,atoms_valid%nconf
-        nat=1 !atoms_valid%atoms(iconf)%nat
-        epot=atoms_valid%atoms(iconf)%epot
-        symfunc_valid%symfunc(iconf)%epot=(epot/nat-ann_arr%ann(1)%ebounds(1))*tt-1.d0
-        !write(*,'(a,i6,f8.3)') 'valid: ',iconf,symfunc_valid%symfunc(iconf)%epot
-    enddo
-end subroutine set_ebounds
 !*****************************************************************************************
 subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_interface
