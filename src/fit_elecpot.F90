@@ -387,10 +387,10 @@ subroutine fit_elecpot(parini)
         call cpu_time(finish)
         total_time = total_time + finish - start
         call yaml_map('time of each SD iter',finish-start,fmt='(f6.3)')
-        !write(2,'(a45,f6.3,a45)') "================================ ITER TIME : ",finish-start,"(sec)========================================"
-        !if(isatur>nsatur) then
-        call yaml_map('dpm_err_norm',sqrt(sum(dpm_err**2)),fmt='(es14.6)')
-        if(sqrt(sum(dpm_err**2))<err) then !!! HERE
+        write(2,'(a45,f6.3,a45)') "================================ ITER TIME : ",finish-start,"(sec)========================================"
+        if(isatur>nsatur) then
+        !call yaml_map('dpm_err_norm',sqrt(sum(dpm_err**2)),fmt='(es14.6)')
+        !if(sqrt(sum(dpm_err**2))<err) then !!! HERE
             call yaml_comment('MAX CONVERSION REACHED',hfill='~')
             !write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             !write(2,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
