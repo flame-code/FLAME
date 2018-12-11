@@ -38,12 +38,20 @@ def bdft_read(filename):
 #        for j in range(3):
 #            atoms_all[0].qpm[i][j]=docs["Quadrupole Moment (AU)"]["Q matrix"][i][j]
     
-    atoms_all[0].units_length_io=docs["posinp"]["units"]
+    if (docs["posinp"]["units"]=='angstroem'):
+        atoms_all[0].units_length_io='angstrom'
+    elif (docs["posinp"]["units"]=='Atomic'):
+        atoms_all[0].units_length_io='bohr'
     atoms_all[0].epot = docs["Input Hamiltonian"]["Energies"]["Epot"]
     atoms_all[0].qtot = -1.0*(docs["Input Hamiltonian"]["Total electronic charge"]+docs["Total ionic charge"])
     if abs(atoms_all[0].qtot)< 1.E-6:
         atoms_all[0].qtot=0.E+00
-    atoms_all[0].boundcond = docs["Atomic System Properties"]["Boundary Conditions"]
+    if (docs["Atomic System Properties"]["Boundary Conditions"]=='Periodic'):
+        atoms_all[0].boundcond = 'bulk'
+    elif (docs["Atomic System Properties"]["Boundary Conditions"]=='Surface'):
+        atoms_all[0].boundcond = 'slab'
+    elif (docs["Atomic System Properties"]["Boundary Conditions"]=='Free'):
+        atoms_all[0].boundcond = 'free'
     atoms_all[0].cellvec[0][0]= docs["Sizes of the simulation domain"]["Angstroem"][0]
     atoms_all[0].cellvec[1][1]= docs["Sizes of the simulation domain"]["Angstroem"][1]
     atoms_all[0].cellvec[2][2]= docs["Sizes of the simulation domain"]["Angstroem"][2]
