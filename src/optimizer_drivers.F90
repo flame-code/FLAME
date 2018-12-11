@@ -2,7 +2,7 @@
 subroutine minimize(parini,iproc,atoms,paropt)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, update_ratp, update_rat
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none
@@ -45,7 +45,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             call sdminimum(parini,iproc,nr,xr,fr,atoms%epot,paropt,nwork,work)
     !if(paropt%iflag<=0) then
@@ -56,7 +57,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
     !    write(*,'(3es23.13)') xr(1),xr(2),xr(3)
     !    stop
     !endif
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0) exit
         enddo
         call yaml_sequence_close()
@@ -83,10 +85,12 @@ subroutine minimize(parini,iproc,atoms,paropt)
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             call sdminimum(parini,iproc,nr,xr,fr,atoms%epot,paropt,nwork,work)
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0 .or. paropt%sdsaturated) exit
         enddo
         do 
@@ -96,11 +100,13 @@ subroutine minimize(parini,iproc,atoms,paropt)
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             !write(24,*) paropt%fmax
             call cgminimum(iproc,3*atoms%nat,nr,xr,fr,atoms%epot,paropt,nwork,work)
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0) exit
         enddo
         if(paropt%converged) exit
@@ -142,10 +148,12 @@ subroutine minimize(parini,iproc,atoms,paropt)
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             call sdminimum(parini,iproc,nr,xr,fr,atoms%epot,paropt,nwork,work)
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0 .or. paropt%sdsaturated) exit
         enddo
         do 
@@ -155,12 +163,14 @@ subroutine minimize(parini,iproc,atoms,paropt)
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             !write(24,*) paropt%fmax
             !call cgminimum(iproc,3*atoms%nat,nr,xr,fr,atoms%epot,paropt,nwork,work)
             call diisminimum(3*atoms%nat,nr,xr,atoms%epot,fr,paropt,nwork,work)
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0) exit
         enddo
         if(paropt%converged) exit
@@ -195,10 +205,12 @@ subroutine minimize(parini,iproc,atoms,paropt)
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             call nlbfgs(nr,m,xr,atoms%epot,fr,diag,work,paropt)
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0) exit
             !if(paropt%iflag<0 .or. paropt%converged) exit
         enddo
@@ -250,11 +262,13 @@ subroutine minimize(parini,iproc,atoms,paropt)
             !enddo
             !write(*,'(a,3es20.10)') 'drift ',drift(1),drift(2),drift(3)
             !endif
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             call mybfgs(iproc,nr,xr,atoms%epot,fr,nwork,work,paropt)
             !if(iproc==0) write(*,*) 'TESET ',paropt%iflag,paropt%converged
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0) exit
             !if(paropt%iflag<0 .or. paropt%converged) exit
         enddo
@@ -286,10 +300,12 @@ subroutine minimize(parini,iproc,atoms,paropt)
             endif
             file_info%file_position='append'
             call cal_potential_forces(parini,atoms)
-            call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+            call update_ratp(atoms)
+            call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
             call test_convergence(nr,fr,paropt)
             call fire(parini,iproc,nr,xr,atoms%epot,fr,work,paropt)
-            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%rat)
+            call xr_to_x(nr,xr,3*atoms%nat,atoms%bemoved,atoms%ratp)
+            call update_rat(atoms)
             if(paropt%iflag<=0) exit
             !if(paropt%iflag<0 .or. paropt%converged) exit
         enddo
@@ -301,7 +317,8 @@ subroutine minimize(parini,iproc,atoms,paropt)
         count_sqnm=0.d0
         fail=.true.
         call sqnm(parini,atoms,paropt,count_sqnm,fail)
-        call x_to_xr(3*atoms%nat,atoms%rat,atoms%fat,atoms%bemoved,nr,xr,fr)
+        call update_ratp(atoms)
+        call x_to_xr(3*atoms%nat,atoms%ratp,atoms%fat,atoms%bemoved,nr,xr,fr)
         call test_convergence(nr,fr,paropt)
         call yaml_sequence_close()
     endif

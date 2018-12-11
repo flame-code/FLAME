@@ -8,7 +8,7 @@ ann:
     subtask       : train
     optimizer     : rivals
     approach      : cent2
-    nstep_ekf     : 10
+    nstep_opt     : 10
     nconf_rmse     : 1000
     ampl_rand     :   0.020
     syslinsolver  : operator

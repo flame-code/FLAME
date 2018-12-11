@@ -1,10 +1,10 @@
 !*****************************************************************************************
-subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
+subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_ekf, only: typ_ekf
+    use mod_ann, only: typ_ann_arr, convert_ann_epotd
+    use mod_symfunc, only: typ_symfunc
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
@@ -14,7 +14,6 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_symfunc), intent(inout):: symfunc
-    type(typ_ekf), intent(inout):: ekf
     type(typ_poisson):: poisson
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
@@ -40,15 +39,6 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         ann_arr%chi_o=0.d0
         ann_arr%chi_d=0.d0
         ann_arr%a=0.d0
-    endif
-    if(trim(ann_arr%event)=='train') then
-        !The following is allocated with ekf%num(1), this means number of
-        !nodes in the input layer is the same for all atom types.
-        !Therefore, it must be fixed later.
-        !g_per_atom=f_malloc([1.to.ekf%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
-        do i=1,ann_arr%n
-            call convert_x_ann(ekf%num(i),ekf%x(ekf%loc(i)),ann_arr%ann(i))
-        enddo
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
     call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)
@@ -77,8 +67,8 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
             ann_arr%chi_i(iat)=out_ann
             tt1=tanh(ann_arr%ann(i)%prefactor_chi*out_ann)
             ann_arr%chi_o(iat)=ann_arr%ann(i)%ampl_chi*tt1+ann_arr%ann(i)%chi0
-            call convert_ann_epotd(ann_arr%ann(i),ekf%num(i),ann_arr%g_per_atom(1,iat))
-            ann_arr%g_per_atom(1:ekf%num(1),iat)=ann_arr%g_per_atom(1:ekf%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
+            call convert_ann_epotd(ann_arr%ann(i),ann_arr%num(i),ann_arr%g_per_atom(1,iat))
+            ann_arr%g_per_atom(1:ann_arr%num(1),iat)=ann_arr%g_per_atom(1:ann_arr%num(1),iat)*ann_arr%ann(i)%ampl_chi*ann_arr%ann(i)%prefactor_chi*(1.d0-tt1**2)
         else
             stop 'ERROR: undefined content for ann_arr%event'
         endif
@@ -86,7 +76,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi(parini,ann_arr,atoms,poisson,ann_arr%a)
+    call get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time5)
     atoms%stress(1:3,1:3)=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
@@ -161,23 +151,10 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr,ekf)
         deallocate(ann_arr%fatpq)
         deallocate(ann_arr%stresspq)
     endif
-    if(trim(ann_arr%event)=='train') then
-        ekf%g(1:ekf%n)=0.d0
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ekf%num(1)
-                ekf%g(ekf%loc(i)+j-1)=ekf%g(ekf%loc(i)+j-1)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        !do i=1,ann_arr%n
-        !    ekf%g(ekf%loc(i)+ekf%num(1)-1)=ekf%g(ekf%loc(i)+ekf%num(1)-1)*1.d-4
-        !    !write(*,*) 'GGG ',ia,ekf%loc(ia)+ekf%num(1)-1
-        !enddo
-    endif
     call f_release_routine()
 end subroutine cal_ann_cent1
 !*****************************************************************************************
-subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
+subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -237,7 +214,7 @@ subroutine get_qat_from_chi(parini,ann_arr,atoms,poisson,a)
         !    write(*,*) 'charge on atom ',iat,atoms%qat(iat) 
         !enddo
     endif
-end subroutine get_qat_from_chi
+end subroutine get_qat_from_chi_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     use mod_interface
@@ -292,7 +269,7 @@ end subroutine get_qat_from_chi_dir
 subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -328,24 +305,7 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
         if(trim(atoms%boundcond)/='free') then
             write(*,*) 'ERROR: syslinsolver=direct can be used only for free BC.'
         endif
-        do iat=1,atoms%nat
-            a(iat,atoms%nat+1)=1.d0
-            a(atoms%nat+1,iat)=1.d0
-            beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
-            gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
-            a(iat,iat)=gama*2.d0/sqrt(pi)+ann_arr%ann(atoms%itypat(iat))%hardness
-            do jat=iat+1,atoms%nat
-                dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-                dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-                dz=atoms%rat(3,jat)-atoms%rat(3,iat)
-                r=sqrt(dx*dx+dy*dy+dz*dz)
-                beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
-                gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
-                a(iat,jat)=erf(gama*r)/r
-                a(jat,iat)=a(iat,jat)
-            enddo
-        enddo
-        a(atoms%nat+1,atoms%nat+1)=0.d0
+        call get_amat_cent1(atoms,ann_arr,a)
     elseif(trim(parini%syslinsolver_ann)=='operator') then
         if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
             allocate(gausswidth(atoms%nat))
@@ -363,6 +323,39 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     endif
     end associate
 end subroutine init_electrostatic_cent1
+!*****************************************************************************************
+subroutine get_amat_cent1(atoms,ann_arr,a)
+    use mod_interface
+    use mod_atoms, only: typ_atoms, update_ratp
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_ann_arr), intent(inout):: ann_arr
+    real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
+    !local variables
+    integer:: iat, jat
+    real(8):: dx, dy, dz, r, pi, beta_iat, beta_jat, gama
+    pi=4.d0*atan(1.d0)
+    call update_ratp(atoms)
+    do iat=1,atoms%nat
+        a(iat,atoms%nat+1)=1.d0
+        a(atoms%nat+1,iat)=1.d0
+        beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
+        gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
+        a(iat,iat)=gama*2.d0/sqrt(pi)+ann_arr%ann(atoms%itypat(iat))%hardness
+        do jat=iat+1,atoms%nat
+            dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
+            dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
+            dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
+            gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
+            a(iat,jat)=erf(gama*r)/r
+            a(jat,iat)=a(iat,jat)
+        enddo
+    enddo
+    a(atoms%nat+1,atoms%nat+1)=0.d0
+end subroutine get_amat_cent1
 !*****************************************************************************************
 subroutine fini_electrostatic_cent1(parini,atoms,poisson)
     use mod_interface
@@ -412,7 +405,7 @@ end subroutine get_electrostatic_cent1
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
@@ -432,14 +425,15 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         pi=4.d0*atan(1.d0)
         tt2=0.d0
         tt3=0.d0
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             beta_iat=ann_arr%ann(atoms%itypat(iat))%gausswidth
             gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
             tt2=tt2+atoms%qat(iat)**2*gama/sqrt(pi)
             do jat=iat+1,atoms%nat
-                dx=atoms%rat(1,jat)-atoms%rat(1,iat)
-                dy=atoms%rat(2,jat)-atoms%rat(2,iat)
-                dz=atoms%rat(3,jat)-atoms%rat(3,iat)
+                dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
+                dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
+                dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
                 r=sqrt(dx*dx+dy*dy+dz*dz)
                 beta_jat=ann_arr%ann(atoms%itypat(jat))%gausswidth
                 gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
@@ -504,7 +498,7 @@ subroutine charge_analysis(parini,atoms,ann_arr)
         chi_max_per_conf(i)=max(c,chi_max_per_conf(i))
         ann_arr%chi_sum(i)=ann_arr%chi_sum(i)+c
     enddo
-    do i=1,ann_arr%n
+    do i=1,ann_arr%nann
         ann_arr%chi_delta(i)=max(ann_arr%chi_delta(i),chi_max_per_conf(i)-chi_min_per_conf(i))
     enddo
     !if(parini%iverbose>=1) then
@@ -583,7 +577,7 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
@@ -607,7 +601,8 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
     poisson%bc=atoms%boundcond
     poisson%q(1:poisson%nat)=atoms%qat(1:atoms%nat)
     poisson%gw(1:poisson%nat)=gausswidth(1:atoms%nat)
-    poisson%rcart(1:3,1:poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+    call update_ratp(atoms)
+    poisson%rcart(1:3,1:poisson%nat)=atoms%ratp(1:3,1:atoms%nat)
     call put_charge_density(parini,poisson)
     poisson%qgrad(1:atoms%nat)=0.d0
     call get_hartree(parini,poisson,atoms,gausswidth,ann_arr%epot_es)
@@ -631,7 +626,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms, set_qat
+    use mod_atoms, only: typ_atoms, set_qat, update_ratp
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     use yaml_output
@@ -697,11 +692,12 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
             dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0
+            call update_ratp(atoms)
             do iat=1,nat
                 !write(30+iter,'(i5,2f20.10)') iat,atoms%qat(iat),g(iat)
-                dipole(1)=dipole(1)+atoms%qat(iat)*atoms%rat(1,iat)
-                dipole(2)=dipole(2)+atoms%qat(iat)*atoms%rat(2,iat)
-                dipole(3)=dipole(3)+atoms%qat(iat)*atoms%rat(3,iat)
+                dipole(1)=dipole(1)+atoms%qat(iat)*atoms%ratp(1,iat)
+                dipole(2)=dipole(2)+atoms%qat(iat)*atoms%ratp(2,iat)
+                dipole(3)=dipole(3)+atoms%qat(iat)*atoms%ratp(3,iat)
             enddo
             !write(*,'(a,4f10.3)') 'qtot,dipole ',qtot,dipole(1),dipole(2),dipole(3)
             !write(*,'(a,i5,es24.15,3es14.5)') 'cep: ',iter,ann_arr%epot_es,de,gnrm,alpha/alphax
@@ -768,10 +764,10 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
         gnrm2=DDOT(nat,g,1,g,1)
         gnrm=sqrt(gnrm2)
-        dpm=0.d0
-        do iat=1,nat
-            dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
-        enddo
+        !dpm=0.d0
+        !do iat=1,nat
+        !    dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
+        !enddo
         !write(33,'(i4,es14.5)') iter,dpm
         !write(*,'(a,i6,2es14.5)') 'get_charge_slab ',iter,gnrm,qtot
         if(iter==0) epotlong_old=ann_arr%epot_es

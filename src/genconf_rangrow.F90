@@ -3,7 +3,7 @@ subroutine rangrow(parini,genconf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
-    use mod_atoms, only: set_rcov, determinexyzminmax
+    use mod_atoms, only: set_rcov, determinexyzminmax, set_rat_atoms
     use mod_genconf, only: typ_genconf
     use mod_const, only: ang2bohr
     implicit none
@@ -23,7 +23,7 @@ subroutine rangrow(parini,genconf)
     write(*,'(a,i6)') 'nat ',atoms%nat
     if(atoms%nat<1) stop 'ERROR: atoms%nat<1'
     call atom_allocate_old(atoms_p,atoms%nat+genconf%nat_add,0,0,sat=.true.,bemoved=.true.,rcov=.true.)
-    atoms_p%rat(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)
+    call set_rat_atoms(atoms_p,atoms,setall=.true.)
     atoms_p%sat(1:atoms%nat)=atoms%sat(1:atoms%nat)
     atoms_p%bemoved(1:3,1:atoms%nat)=atoms%bemoved(1:3,1:atoms%nat)
     atoms_p%cellvec(1:3,1:3)=atoms%cellvec(1:3,1:3)
@@ -65,14 +65,14 @@ subroutine rangrow(parini,genconf)
         r=min(max(r,rmin),rmax)
         theta=theta*pi
         phi=phi*twopi
-        atoms_p%rat(1,nat_yet)=atoms_p%rat(1,mat)+r*sin(theta)*cos(phi)
-        atoms_p%rat(2,nat_yet)=atoms_p%rat(2,mat)+r*sin(theta)*sin(phi)
-        atoms_p%rat(3,nat_yet)=atoms_p%rat(3,mat)+r*cos(theta)
+        atoms_p%ratp(1,nat_yet)=atoms_p%ratp(1,mat)+r*sin(theta)*cos(phi)
+        atoms_p%ratp(2,nat_yet)=atoms_p%ratp(2,mat)+r*sin(theta)*sin(phi)
+        atoms_p%ratp(3,nat_yet)=atoms_p%ratp(3,mat)+r*cos(theta)
         good=.true.
         do iat=1,nat_yet-1
-            dx=atoms_p%rat(1,iat)-atoms_p%rat(1,nat_yet)
-            dy=atoms_p%rat(2,iat)-atoms_p%rat(2,nat_yet)
-            dz=atoms_p%rat(3,iat)-atoms_p%rat(3,nat_yet)
+            dx=atoms_p%ratp(1,iat)-atoms_p%ratp(1,nat_yet)
+            dy=atoms_p%ratp(2,iat)-atoms_p%ratp(2,nat_yet)
+            dz=atoms_p%ratp(3,iat)-atoms_p%ratp(3,nat_yet)
             dist=sqrt(dx**2+dy**2+dz**2)
             !distmin=parini%fbmin_genconf*(atoms_p%rcov(iat)+atoms_p%rcov(nat_yet))
             if(trim(atoms_p%sat(nat_yet))=='Na' .and. trim(atoms_p%sat(iat))=='Na') then
@@ -93,14 +93,14 @@ subroutine rangrow(parini,genconf)
         endif
         atoms_p%bemoved(1:3,nat_yet)=.true.
         write(*,'(a,2i3,a5,3es24.15,a,i6)') 'new atom #',nat_yet,mat, &
-            trim(atoms_p%sat(nat_yet)),atoms_p%rat(1,nat_yet),atoms_p%rat(2,nat_yet),atoms_p%rat(3,nat_yet),' is added: itry= ',itry
+            trim(atoms_p%sat(nat_yet)),atoms_p%ratp(1,nat_yet),atoms_p%ratp(2,nat_yet),atoms_p%ratp(3,nat_yet),' is added: itry= ',itry
     enddo
     atoms_p%cellvec=1.d2
-    call determinexyzminmax(atoms_p%nat,atoms_p%rat,atoms_p%cellvec,xmin,ymin,zmin,xmax,ymax,zmax)
+    call determinexyzminmax(atoms_p%nat,atoms_p%ratp,atoms_p%cellvec,xmin,ymin,zmin,xmax,ymax,zmax)
     do iat=1,atoms_p%nat
-        atoms_p%rat(1,iat)=atoms_p%rat(1,iat)-xmin+amargin
-        atoms_p%rat(2,iat)=atoms_p%rat(2,iat)-ymin+amargin
-        atoms_p%rat(3,iat)=atoms_p%rat(3,iat)-zmin+amargin
+        atoms_p%ratp(1,iat)=atoms_p%ratp(1,iat)-xmin+amargin
+        atoms_p%ratp(2,iat)=atoms_p%ratp(2,iat)-ymin+amargin
+        atoms_p%ratp(3,iat)=atoms_p%ratp(3,iat)-zmin+amargin
     enddo
     atoms_p%cellvec=0.d0
     atoms_p%cellvec(1,1)=xmax-xmin+2.d0*amargin

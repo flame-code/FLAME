@@ -2,7 +2,7 @@
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, atom_allocate
+    use mod_atoms, only: typ_atoms_arr, atom_allocate, update_rat
     use mod_const, only: bohr2ang, ha2ev
     use dictionaries
     use yaml_parse
@@ -90,6 +90,12 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
         if(has_key(dict1,"qtot")) then
             atoms_arr%atoms(iconf)%qtot=dict1//'qtot'
         endif
+        if(has_key(dict1,"dpm")) then
+            atoms_arr%atoms(iconf)%dpm=dict1//'dpm'
+        endif
+        if(has_key(dict1,"elecfield")) then
+            atoms_arr%atoms(iconf)%elecfield=dict1//'elecfield'
+        endif
         if(has_key(dict1,"epot")) then
             atoms_arr%atoms(iconf)%epot=dict1//'epot'
         endif
@@ -100,14 +106,15 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
                 x=dict2//0
                 y=dict2//1
                 z=dict2//2
-                atoms_arr%atoms(iconf)%rat(1,iat)=x*cf_length
-                atoms_arr%atoms(iconf)%rat(2,iat)=y*cf_length
-                atoms_arr%atoms(iconf)%rat(3,iat)=z*cf_length
+                atoms_arr%atoms(iconf)%ratp(1,iat)=x*cf_length
+                atoms_arr%atoms(iconf)%ratp(2,iat)=y*cf_length
+                atoms_arr%atoms(iconf)%ratp(3,iat)=z*cf_length
                 atoms_arr%atoms(iconf)%sat(iat)=dict1//'coord'//ii//3
                 str_motion=dict1//'coord'//ii//4
                 call str_motion2bemoved(str_motion,atoms_arr%atoms(iconf)%bemoved(1,iat))
                 nullify(dict2)
             enddo
+            call update_rat(atoms_arr%atoms(iconf),upall=.true.)
         else
             do iat=1,nat
                 ii=iat-1
@@ -115,15 +122,16 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
                 x=dict2//0
                 y=dict2//1
                 z=dict2//2
-                atoms_arr%atoms(iconf)%rat(1,iat)=x*cf_length
-                atoms_arr%atoms(iconf)%rat(2,iat)=y*cf_length
-                atoms_arr%atoms(iconf)%rat(3,iat)=z*cf_length
+                atoms_arr%atoms(iconf)%ratp(1,iat)=x*cf_length
+                atoms_arr%atoms(iconf)%ratp(2,iat)=y*cf_length
+                atoms_arr%atoms(iconf)%ratp(3,iat)=z*cf_length
                 atoms_arr%atoms(iconf)%sat(iat)=dict1//'coord'//ii//3
                 nullify(dict2)
                 atoms_arr%atoms(iconf)%bemoved(1,iat)=.true.
                 atoms_arr%atoms(iconf)%bemoved(2,iat)=.true.
                 atoms_arr%atoms(iconf)%bemoved(3,iat)=.true.
             enddo
+            call update_rat(atoms_arr%atoms(iconf),upall=.true.)
         endif
         if(has_key(dict1,"force")) then
             do iat=1,nat
@@ -153,7 +161,7 @@ end subroutine read_yaml_conf
 !*****************************************************************************************
 subroutine write_yaml_conf(file_info,atoms,strkey)
     use mod_interface
-    use mod_atoms, only: typ_file_info, typ_atoms
+    use mod_atoms, only: typ_file_info, typ_atoms, update_ratp, get_rat
     use mod_const, only: bohr2ang, ha2ev
     use dictionaries
     use futile
@@ -177,6 +185,8 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     real(8):: cvcx, cvcy, cvcz
     type(dictionary), pointer :: dict1, single_atom_list, coord_list
     type(dictionary), pointer :: conf_dict, force_list
+    real(8), allocatable:: rat(:,:)
+    allocate(rat(3,atoms%nat))
 
     dict1=>dict_new()
 
@@ -211,11 +221,12 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     call set(conf_dict//'epot',atoms%epot)
     call set(conf_dict//'coord',list_new(.item. "it will be overwritten"))
     coord_list=>conf_dict//'coord'
+    call get_rat(atoms,rat)
     do iat=1,atoms%nat
         ii=iat-1
-        x=atoms%rat(1,iat)*cf_length
-        y=atoms%rat(2,iat)*cf_length
-        z=atoms%rat(3,iat)*cf_length
+        x=rat(1,iat)*cf_length
+        y=rat(2,iat)*cf_length
+        z=rat(3,iat)*cf_length
         call set(coord_list//ii,list_new(.item. "it will be overwritten"))
         single_atom_list=>coord_list//ii
         call set(single_atom_list,(/x,y,z/))
@@ -268,5 +279,6 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     !call yaml_map('nconf',nconf)
     !call yaml_mapping_close()
     !write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
+    deallocate(rat)
 end subroutine write_yaml_conf
 !*****************************************************************************************

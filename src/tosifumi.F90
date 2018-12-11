@@ -60,7 +60,7 @@ end subroutine set_tosifumi
 !*****************************************************************************************
 subroutine coulomb_free_direct(atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_shortrange, only: typ_tosifumi
     implicit none
     type(typ_atoms), intent(inout):: atoms
@@ -75,14 +75,15 @@ subroutine coulomb_free_direct(atoms)
         atoms%fat(2,iat)=0.d0
         atoms%fat(3,iat)=0.d0
     enddo
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        xiat=atoms%rat(1,iat)
-        yiat=atoms%rat(2,iat)
-        ziat=atoms%rat(3,iat)
+        xiat=atoms%ratp(1,iat)
+        yiat=atoms%ratp(2,iat)
+        ziat=atoms%ratp(3,iat)
         do jat=iat+1,atoms%nat
-            dx=xiat-atoms%rat(1,jat)
-            dy=yiat-atoms%rat(2,jat)
-            dz=ziat-atoms%rat(3,jat)
+            dx=xiat-atoms%ratp(1,jat)
+            dy=yiat-atoms%ratp(2,jat)
+            dz=ziat-atoms%ratp(3,jat)
             rsq=dx*dx+dy*dy+dz*dz
             r=sqrt(rsq)
             rinv=1.d0/r
@@ -109,7 +110,7 @@ end subroutine coulomb_free_direct
 !*****************************************************************************************
 subroutine calenergyforces(atoms,tosifumi)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_shortrange, only: typ_tosifumi
     implicit none
     type(typ_atoms), intent(inout):: atoms
@@ -125,14 +126,15 @@ subroutine calenergyforces(atoms,tosifumi)
     !write(*,*) atoms%itypat(3)
     !write(*,*) atoms%itypat(4)
     !stop
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        xiat=atoms%rat(1,iat)
-        yiat=atoms%rat(2,iat)
-        ziat=atoms%rat(3,iat)
+        xiat=atoms%ratp(1,iat)
+        yiat=atoms%ratp(2,iat)
+        ziat=atoms%ratp(3,iat)
         do jat=iat+1,atoms%nat
-            dx=xiat-atoms%rat(1,jat)
-            dy=yiat-atoms%rat(2,jat)
-            dz=ziat-atoms%rat(3,jat)
+            dx=xiat-atoms%ratp(1,jat)
+            dy=yiat-atoms%ratp(2,jat)
+            dz=ziat-atoms%ratp(3,jat)
             rsq=dx*dx+dy*dy+dz*dz
             r=sqrt(rsq)
             rinv=1.d0/r

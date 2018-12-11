@@ -2,7 +2,8 @@
 subroutine ann_check_symmetry_function(parini)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_processors, only: iproc, mpi_comm_abz
     use dynamic_memory
@@ -28,15 +29,15 @@ subroutine ann_check_symmetry_function(parini)
     associate(etol=>parini%etol_ann,dtol=>parini%dtol_ann)
     !---------------------------------------------------------- 
     !write(*,*) trim(parini%stypat_ann)
-    !call count_words(parini%stypat_ann,ann_arr%n)
-    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%n)
-    ann_arr%n=parini%ntypat
-    !do i=1,ann_arr%n
+    !call count_words(parini%stypat_ann,ann_arr%nann)
+    !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
+    ann_arr%nann=parini%ntypat
+    !do i=1,ann_arr%nann
     !    ann_arr%ltypat(i)=i
     !    write(*,*) i,ann_arr%stypat(i)
     !enddo
-    if(ann_arr%n==0) stop 'ERROR: number of type of atoms zero in check_symmetry_function'
-    allocate(ann_arr%ann(ann_arr%n))
+    if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in check_symmetry_function'
+    allocate(ann_arr%ann(ann_arr%nann))
     ann_arr%approach=trim(parini%approach_ann)
     fname = trim(parini%stypat(1))//'.ann.input.yaml'
     inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
@@ -69,7 +70,7 @@ subroutine ann_check_symmetry_function(parini)
     endif
     do iconf=1,atoms_check%nconf
         do iat=1,atoms_check%atoms(iconf)%nat
-            do i=1,ann_arr%n 
+            do i=1,ann_arr%nann 
                 if(trim(atoms_check%atoms(iconf)%sat(iat))==trim(parini%stypat(i))) then
                     atoms_check%atoms(iconf)%itypat(iat)=parini%ltypat(i)
                     exit
@@ -123,7 +124,7 @@ subroutine ann_check_symmetry_function(parini)
             call f_free(symfunc%y0d)
             call f_free(symfunc%y0dr)
         enddo configurations
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             do i0=1,ann_arr%ann(i)%nn(0)
                 ann_arr%ann(i)%gbounds(1,i0)=gminarr(i0)
                 ann_arr%ann(i)%gbounds(2,i0)=gmaxarr(i0)

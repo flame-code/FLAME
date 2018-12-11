@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine read_file_input(file_ini)
-    use mod_interface
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -63,7 +62,6 @@ subroutine read_file_input(file_ini)
 end subroutine read_file_input
 !*****************************************************************************************
 subroutine get_header_location(file_ini,str_header)
-    use mod_interface
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -93,7 +91,6 @@ subroutine get_header_location(file_ini,str_header)
 end subroutine get_header_location
 !*****************************************************************************************
 subroutine split_line(file_ini)
-    use mod_interface
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -120,7 +117,6 @@ subroutine split_line(file_ini)
 end subroutine split_line
 !*****************************************************************************************
 subroutine get_one_param(file_ini,var_name,int_var,real_var,char_var,char_line_var,log_var)
-    use mod_interface
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini

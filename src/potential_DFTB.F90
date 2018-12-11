@@ -94,7 +94,7 @@ end subroutine cal_potential_forces_dftb
 !*****************************************************************************************
 subroutine writexyz_dftb(filename,atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat_iat
     use mod_const, only: bohr2ang
     use mod_processors, only: iproc
     !use mod_potential, only: sat, cellvec
@@ -103,7 +103,7 @@ subroutine writexyz_dftb(filename,atoms)
     type(typ_atoms), intent(in):: atoms
     !local variables
     integer:: iat, i
-    real(8):: x, y, z, cellx, celly, cellz
+    real(8):: x, y, z, cellx, celly, cellz, xyz(3)
     character(1):: bc
     !character(5):: an
     open(unit=1358,file=trim(filename),status='replace')
@@ -129,9 +129,10 @@ subroutine writexyz_dftb(filename,atoms)
         !if(nzx(imass(iat))==1 ) an=' H'
         !if(nzx(imass(iat))==14) an='Si'
         !an=' C '
-        x=atoms%rat(1,iat)*bohr2ang !*0.529177d0
-        y=atoms%rat(2,iat)*bohr2ang !*0.529177d0
-        z=atoms%rat(3,iat)*bohr2ang !*0.529177d0
+        call get_rat_iat(atoms,iat,xyz)
+        x=xyz(1)*bohr2ang !*0.529177d0
+        y=xyz(2)*bohr2ang !*0.529177d0
+        z=xyz(3)*bohr2ang !*0.529177d0
         write(1358,'(i5,i3,3x,3es23.14)') iat,atoms%itypat(iat),x,y,z
     enddo
     close(1358)

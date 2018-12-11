@@ -12,7 +12,7 @@ subroutine read_input_ann(parini,iproc,ann_arr)
     character(256):: fn_fullpath
     character(5):: stypat
     real(8):: rcut
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         if(parini%bondbased_ann) then
             stypat=parini%stypat(1)
         else
@@ -36,8 +36,8 @@ subroutine read_input_ann(parini,iproc,ann_arr)
         close(1)
     enddo
     !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-    !    do i=1,ann_arr%n
-    !        do j=i,ann_arr%n
+    !    do i=1,ann_arr%nann
+    !        do j=i,ann_arr%nann
     !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !        enddo
@@ -280,14 +280,14 @@ subroutine write_ann_all(parini,ann_arr,iter)
         if(parini%ntypat>1) then
             stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
         endif
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             write(fn_tt,'(i1)') i
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
@@ -393,7 +393,7 @@ subroutine read_ann(parini,ann_arr)
     character(16):: fn
     character(1):: fn_tt
     character(50):: filename
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         write(fn,'(a10)') '.ann.param'
         if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
             if(parini%ntypat>1) then
@@ -446,8 +446,8 @@ subroutine read_ann(parini,ann_arr)
         close(1)
     enddo
     !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-    !    do i=1,ann_arr%n
-    !        do j=i,ann_arr%n
+    !    do i=1,ann_arr%nann
+    !        do j=i,ann_arr%nann
     !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
     !        enddo
@@ -458,7 +458,7 @@ end subroutine read_ann
 subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: typ_atoms_arr, atom_copy_old, set_rat_atoms
     use mod_atoms, only: atom_allocate_old, atom_deallocate, atom_deallocate_old
     use dynamic_memory
     implicit none
@@ -470,7 +470,7 @@ subroutine read_data_old(parini,filename_list,atoms_arr)
     character(256):: filename, fn_tmp, filename_force
     type(typ_atoms_arr):: atoms_arr_of !configuration of one file
     type(typ_atoms_arr):: atoms_arr_t
-    real(8):: ttx, tty, ttz, fx, fy, fz
+    real(8):: fx, fy, fz
     integer:: nconfmax, ind, len_filename
     call f_routine(id='read_data_old')
     nconfmax=1*10**5
@@ -504,13 +504,8 @@ subroutine read_data_old(parini,filename_list,atoms_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             if(parini%read_forces_ann) read(2,*)
+            call set_rat_atoms(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf),setall=.true.)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
-                ttx=atoms_arr_of%atoms(iconf)%rat(1,iat)
-                tty=atoms_arr_of%atoms(iconf)%rat(2,iat)
-                ttz=atoms_arr_of%atoms(iconf)%rat(3,iat)
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(1,iat)=ttx
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(2,iat)=tty
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(3,iat)=ttz
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)
                 if(parini%read_forces_ann) then
                     read(2,*) fx,fy,fz

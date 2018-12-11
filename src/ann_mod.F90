@@ -4,7 +4,12 @@ module mod_ann
     use mod_linked_lists, only: typ_linked_lists
     use mod_electrostatics, only: typ_poisson
     implicit none
-    type typ_ann
+    private
+    public:: ann_arr_allocate, ann_arr_deallocate, set_number_of_ann
+    public:: init_ann_arr, fini_ann_arr
+    public:: convert_x_ann, convert_ann_x, convert_x_ann_arr
+    public:: convert_ann_epotd
+    type, public:: typ_ann
         type(dictionary), pointer :: dict
         integer:: nl !number of hidden layer plus one
         integer:: nn(0:10)
@@ -22,7 +27,6 @@ module mod_ann
         real(8):: d(350)
         real(8):: gbounds(2,350)
         real(8):: two_over_gdiff(350)
-        real(8):: ebounds(2)=(/-1.d0,1.d0/)
         !real(8):: rc1(350)
         real(8):: gausswidth
         real(8):: gausswidth_ion
@@ -70,11 +74,12 @@ module mod_ann
         character(256):: hlines(10)
         
     end type typ_ann
-    type typ_ann_arr
+    type, public:: typ_ann_arr
         logical:: exists_yaml_file = .false.
         integer:: iunit
-        integer:: n=-1
+        integer:: nann=-1
         integer:: natmax=1000
+        integer:: nweight_max=-1
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
         character(30):: event='unknown'
@@ -99,11 +104,14 @@ module mod_ann
         real(8):: yall_bond(100,100,100)
         real(8):: y0d_bond(100,3,100,100)
         !real(8), allocatable:: y0dr(:,:,:)
+        integer, allocatable:: loc(:)
+        integer, allocatable, public:: num(:)
         real(8), allocatable:: a(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
         real(8), allocatable:: fat_chi(:,:)
+        real(8), allocatable:: dqat_weights(:,:)
         real(8), allocatable:: g_per_atom(:,:)
         real(8), allocatable:: g_per_bond(:,:,:)
         real(8), allocatable:: fatpq(:,:)
@@ -112,21 +120,7 @@ module mod_ann
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
     end type typ_ann_arr
-    type typ_symfunc
-        integer:: ng=-1
-        integer:: nat=-1
-        real(8):: epot
-        real(8), allocatable:: y(:,:)
-        real(8), allocatable:: y0d_bond(:,:)
-        real(8), allocatable:: y0d(:,:,:)
-        real(8), allocatable:: y0dr(:,:,:)
-        type(typ_linked_lists):: linked_lists
-    end type typ_symfunc
-    type typ_symfunc_arr
-        integer:: nconf=-1
-        type(typ_symfunc), allocatable:: symfunc(:)
-    end type typ_symfunc_arr
-    type typ_cent
+    type, public:: typ_cent
         real(8), allocatable:: gwi(:)
         real(8), allocatable:: gwe(:)
         real(8), allocatable:: gwit(:)
@@ -135,6 +129,210 @@ module mod_ann
         real(8), allocatable:: rgrad(:,:)
         type(typ_poisson):: poisson
     end type typ_cent
+contains
+!*****************************************************************************************
+subroutine set_number_of_ann(parini,ann_arr)
+    use mod_parini, only: typ_parini
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    ann_arr%nann=parini%ntypat
+    if(parini%bondbased_ann) then
+        ann_arr%nann=4
+    endif
+end subroutine set_number_of_ann
+!*****************************************************************************************
+subroutine init_ann_arr(ann_arr)
+    !use mod_opt_ann, only: typ_opt_ann
+    use yaml_output
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: nw, ialpha, iann, nwtot
+    do iann=1,ann_arr%nann
+        nw=0
+        do ialpha=1,ann_arr%ann(iann)%nl
+            nw=nw+(ann_arr%ann(iann)%nn(ialpha-1)+1)*ann_arr%ann(iann)%nn(ialpha)
+        enddo
+        ann_arr%nweight_max=max(ann_arr%nweight_max,nw)
+    enddo
+    call ann_arr_allocate(ann_arr)
+    ann_arr%num=f_malloc0([1.to.ann_arr%nann],id='ann_arr%num')
+    ann_arr%loc=f_malloc0([1.to.ann_arr%nann],id='ann_arr%loc')
+    nwtot=0
+    call yaml_sequence_open('EKF') !,flow=.true.)
+    do iann=1,ann_arr%nann
+        do ialpha=1,ann_arr%ann(iann)%nl
+            ann_arr%num(iann)=ann_arr%num(iann)+(ann_arr%ann(iann)%nn(ialpha-1)+1)*ann_arr%ann(iann)%nn(ialpha)
+        enddo
+        ann_arr%loc(iann)=nwtot+1
+        nwtot=nwtot+ann_arr%num(iann)
+        call yaml_sequence(advance='no')
+        call yaml_map('iann',iann)
+        call yaml_map('loc',ann_arr%loc(iann))
+        call yaml_map('num',ann_arr%num(iann))
+        call yaml_map('n',nwtot)
+        !write(*,'(a,3i5)') 'EKF: ',ann_arr%loc(iann),ann_arr%num(iann),nwtot
+    enddo
+    call yaml_sequence_close()
+end subroutine init_ann_arr
+!*****************************************************************************************
+subroutine fini_ann_arr(ann_arr)
+    !use mod_opt_ann, only: typ_opt_ann
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    call ann_arr_deallocate(ann_arr)
+    call f_free(ann_arr%num)
+    call f_free(ann_arr%loc)
+end subroutine fini_ann_arr
+!*****************************************************************************************
+subroutine ann_arr_allocate(ann_arr)
+    !use mod_opt_ann, only: typ_opt_ann
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: istat, ng
+    ng=ann_arr%ann(1)%nn(0)
+    !allocate(ann_arr%yall(ng,natmax),stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%yall.'
+    !allocate(ann_arr%y0d(ng,3,natmax,natmax),stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%y0d.'
+    !allocate(ann_arr%y0dr(ng,9,natmax,natmax),stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to allocate array ann_arr%y0dr.'
+    allocate(ann_arr%fat_chi(1:3,1:ann_arr%natmax))
+    allocate(ann_arr%chi_i(1:ann_arr%natmax))
+    allocate(ann_arr%chi_o(1:ann_arr%natmax))
+    allocate(ann_arr%chi_d(1:ann_arr%natmax))
+    allocate(ann_arr%a(1:(ann_arr%natmax+1)*(ann_arr%natmax+1)))
+    ann_arr%fat_chi=0.d0
+    ann_arr%chi_i=0.d0
+    ann_arr%chi_o=0.d0
+    ann_arr%chi_d=0.d0
+    ann_arr%a=0.d0
+    allocate(ann_arr%dqat_weights(ann_arr%nweight_max,ann_arr%natmax))
+    allocate(ann_arr%g_per_atom(ann_arr%nweight_max,ann_arr%natmax))
+    !symfunc%linked_lists%maxbound_rad is assumed 10000
+    allocate(ann_arr%fatpq(1:3,1:10000))
+    allocate(ann_arr%stresspq(1:3,1:3,1:10000))
+    allocate(ann_arr%ipiv(1:ann_arr%natmax+1))
+    allocate(ann_arr%qq(1:ann_arr%natmax+1))
+end subroutine ann_arr_allocate
+!*****************************************************************************************
+subroutine ann_arr_deallocate(ann_arr)
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: istat
+    !deallocate(ann_arr%yall,stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%yall.'
+    !deallocate(ann_arr%y0d,stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%y0d.'
+    !deallocate(ann_arr%y0dr,stat=istat)
+    !if(istat/=0) stop 'ERROR: unable to deallocate array ann_arr%y0dr.'
+    deallocate(ann_arr%chi_i)
+    deallocate(ann_arr%chi_o)
+    deallocate(ann_arr%chi_d)
+    deallocate(ann_arr%a)
+    deallocate(ann_arr%fat_chi)
+    deallocate(ann_arr%dqat_weights)
+    deallocate(ann_arr%g_per_atom)
+    deallocate(ann_arr%fatpq)
+    deallocate(ann_arr%stresspq)
+    deallocate(ann_arr%ipiv)
+    deallocate(ann_arr%qq)
+end subroutine ann_arr_deallocate
+!*****************************************************************************************
+subroutine convert_x_ann(n,x,ann)
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: x(n)
+    type(typ_ann), intent(inout):: ann
+    !local variables
+    integer:: i, j, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do j=1,ann%nn(ialpha)
+            do i=1,ann%nn(ialpha-1)
+                l=l+1
+                ann%a(i,j,ialpha)=x(l)
+            enddo
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            ann%b(i,ialpha)=x(l)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_x_ann
+!*****************************************************************************************
+subroutine convert_ann_x(n,x,ann)
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(inout):: x(n)
+    type(typ_ann), intent(in):: ann
+    !local variables
+    integer:: i, j, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do j=1,ann%nn(ialpha)
+            do i=1,ann%nn(ialpha-1)
+                l=l+1
+                x(l)=ann%a(i,j,ialpha)
+            enddo
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            x(l)=ann%b(i,ialpha)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_ann_x
+!*****************************************************************************************
+subroutine convert_x_ann_arr(nwtot,x,ann_arr)
+    use dynamic_memory
+    implicit none
+    integer, intent(in):: nwtot
+    real(8), intent(in):: x(nwtot)
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: ia, n
+    n=sum(ann_arr%num(1:ann_arr%nann))
+    if(n/=nwtot) then
+        write(*,*) 'ERROR: inconsistency in total number of weights in convert_x_ann_arr'
+        stop
+    endif
+    do ia=1,ann_arr%nann
+        call convert_x_ann(ann_arr%num(ia),x(ann_arr%loc(ia)),ann_arr%ann(ia))
+    enddo
+end subroutine convert_x_ann_arr
+!*****************************************************************************************
+subroutine convert_ann_epotd(ann,n,epotd)
+    implicit none
+    type(typ_ann), intent(in):: ann
+    integer, intent(in):: n
+    real(8), intent(inout):: epotd(n)
+    !local variables
+    integer:: i, ij, l, ialpha
+    l=0
+    do ialpha=1,ann%nl
+        do ij=1,ann%nn(ialpha)*ann%nn(ialpha-1)
+            l=l+1
+            epotd(l)=ann%ad(ij,ialpha)
+        enddo
+        do i=1,ann%nn(ialpha)
+            l=l+1
+            epotd(l)=ann%bd(i,ialpha)
+        enddo
+    enddo
+    if(l/=n) stop 'ERROR: l/=n'
+end subroutine convert_ann_epotd
+!*****************************************************************************************
 end module mod_ann
 !*****************************************************************************************
 !module data_point

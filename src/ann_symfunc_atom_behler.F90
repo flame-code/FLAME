@@ -2,7 +2,8 @@
 subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr !,typ_linked_lists
     use dynamic_memory
@@ -93,7 +94,8 @@ end subroutine symmetry_functions_driver
 !*****************************************************************************************
 subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -148,8 +150,8 @@ end subroutine symmetry_functions_g02_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,kat_maincell,rij,rik,rjk,drij,drik,drjk,fcij,fcdij,fcik,fcdik,fcjk,fcdjk,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
-    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     integer, intent(in):: isat, iat, jsat, jat_maincell, ksat, kat_maincell
@@ -213,7 +215,8 @@ end subroutine symmetry_functions_g04_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -347,241 +350,6 @@ subroutine symmetry_functions_g06_atom(ann,iat,jat_maincell,r,dr,fc,fcd)
     enddo
 end subroutine symmetry_functions_g06_atom
 !*****************************************************************************************
-subroutine symmetry_functions_g02(ann,iat,atoms,i0)
-    use mod_interface
-    use mod_ann, only: typ_ann
-    use mod_atoms, only: typ_atoms
-    implicit none
-    type(typ_ann), intent(inout):: ann
-    integer, intent(in):: iat
-    type(typ_atoms), intent(in):: atoms
-    integer, intent(inout):: i0
-    !local variables
-    integer:: jat, ig, jat_maincell
-    real(8):: tte, ttx, tty, ttz, tt1
-    real(8):: fc, fcd, r, dx, dy, dz
-    real(8):: eta, rc, rs, vij
-    stop 'ERROR: this routine does not work!'
-    do ig=1,ann%ng2
-        i0=i0+1
-        rs=ann%g2rs(ig)
-        eta=ann%g2eta(ig)
-!HERE        rc=ann%g2rc(ig)
-        tte=0.d0
-        do jat=1,atoms%natim
-            if(jat==iat) cycle
-            dx=atoms%ratim(1,jat)-atoms%rat(1,iat)
-            dy=atoms%ratim(2,jat)-atoms%rat(2,iat)
-            dz=atoms%ratim(3,jat)-atoms%rat(3,iat)
-            r=sqrt(dx**2+dy**2+dz**2)
-            fc=cutoff_function(r,rc)
-            fcd=cutoff_function_der(r,rc)
-            vij=exp(-eta*(r-rs)**2)
-            tte=tte+vij*fc
-            tt1=(-2.d0*eta*(r-rs)*fc+fcd)*vij/r
-            ttx=tt1*dx
-            tty=tt1*dy
-            ttz=tt1*dz
-            jat_maincell=mod(jat-1,atoms%nat)+1
-            !following lines commented due to moving yall
-            !ann%y0d(i0,1,jat_maincell)=ann%y0d(i0,1,jat_maincell)+ttx
-            !ann%y0d(i0,2,jat_maincell)=ann%y0d(i0,2,jat_maincell)+tty
-            !ann%y0d(i0,3,jat_maincell)=ann%y0d(i0,3,jat_maincell)+ttz
-            !ann%y0d(i0,1,iat)=ann%y0d(i0,1,iat)-ttx
-            !ann%y0d(i0,2,iat)=ann%y0d(i0,2,iat)-tty
-            !ann%y0d(i0,3,iat)=ann%y0d(i0,3,iat)-ttz
-        enddo
-        !ann%y0d(i0,1:3,1:atoms%nat)=ann%y0d(i0,1:3,1:atoms%nat)*two_over_gdiff/(log(10.d0)*(tte+1.d0))
-        !tte=log10(tte+1.d0)
-        !ann%yall(i0,iat)=tte !commented due to moving yall
-    enddo
-end subroutine symmetry_functions_g02
-!*****************************************************************************************
-subroutine symmetry_functions_g04(ann,iat,atoms,i0)
-    use mod_interface
-    use mod_ann, only: typ_ann
-    use mod_atoms, only: typ_atoms
-    implicit none
-    type(typ_ann), intent(inout):: ann
-    integer, intent(in):: iat
-    type(typ_atoms), intent(in):: atoms
-    integer, intent(inout):: i0
-    !local variables
-    integer:: jat, kat, ig
-    real(8):: cos_theta, tte, ttx, tty, ttz, tt1, tt2
-    real(8):: fcij, fcik, fcjk
-    real(8):: rij, rik, rjk
-    real(8):: dxij, dyij, dzij, dxik, dyik, dzik, dxjk, dyjk, dzjk
-    stop 'ERROR: this routine does not work!'
-    do ig=1,ann%ng4
-        i0=i0+1
-        tte=0.d0
-        do jat=1,atoms%natim
-            if(jat==iat) cycle
-            dxij=atoms%ratim(1,jat)-atoms%rat(1,iat)
-            dyij=atoms%ratim(2,jat)-atoms%rat(2,iat)
-            dzij=atoms%ratim(3,jat)-atoms%rat(3,iat)
-            rij=sqrt(dxij**2+dyij**2+dzij**2)
-!HERE            fcij=cutoff_function(rij,ann%g4rc(ig))
-            do kat=jat+1,atoms%natim
-                if(kat==iat) cycle
-                dxik=atoms%ratim(1,kat)-atoms%rat(1,iat)
-                dyik=atoms%ratim(2,kat)-atoms%rat(2,iat)
-                dzik=atoms%ratim(3,kat)-atoms%rat(3,iat)
-                rik=sqrt(dxik**2+dyik**2+dzik**2)
-!HERE                fcik=cutoff_function(rik,ann%g4rc(ig))
-                dxjk=atoms%ratim(1,kat)-atoms%ratim(1,jat)
-                dyjk=atoms%ratim(2,kat)-atoms%ratim(2,jat)
-                dzjk=atoms%ratim(3,kat)-atoms%ratim(3,jat)
-                rjk=sqrt(dxjk**2+dyjk**2+dzjk**2)
-!HERE                fcjk=cutoff_function(rjk,ann%g4rc(ig))
-                cos_theta=(dxij*dxik+dyij*dyik+dzij*dzik)/(rij*rik)
-                tte=tte+(1.d0+ann%g4lambda(ig)*cos_theta)**ann%g4zeta(ig)*exp(-ann%g4eta(ig)*(rij**2+rik**2+rjk**2))*fcij*fcik*fcjk
-            enddo
-        enddo
-        tte=tte*2.d0**(1.d0-ann%g4zeta(ig))
-        !tte=log10(1.d0+tte)
-        !ann%yall(i0,iat)=tte !commented due to moving yall
-    enddo
-end subroutine symmetry_functions_g04
-!*****************************************************************************************
-subroutine symmetry_functions_g05(ann,iat,atoms,i0)
-    use mod_interface
-    use mod_ann, only: typ_ann
-    use mod_atoms, only: typ_atoms
-    implicit none
-    type(typ_ann), intent(inout):: ann
-    integer, intent(in):: iat
-    type(typ_atoms), intent(in):: atoms
-    integer, intent(inout):: i0
-    !local variables
-    integer:: jat, kat, ig, jat_maincell, kat_maincell
-    real(8):: tte, ttjx, ttjy, ttjz, ttkx, ttky, ttkz, tt1, tt2, tt3, tt4, tt5
-    real(8):: ss1, ss2, ss3, ss4
-    real(8):: cos_theta, fcij, fcik, fcdij, fcdik, uijk, vijk
-    real(8):: rij, rik, rjk
-    real(8):: dxij, dyij, dzij, dxik, dyik, dzik
-    real(8):: zeta, alam, eta, rc, zzz
-    stop 'ERROR: this routine does not work!'
-    do ig=1,ann%ng5
-        i0=i0+1
-        zeta=ann%g5zeta(ig)
-        alam=ann%g5lambda(ig)
-        eta=ann%g5eta(ig)
-!HERE        rc=ann%g5rc(ig)
-        zzz=2.d0**(1.d0-zeta)
-        tte=0.d0
-        do jat=1,atoms%natim
-            if(jat==iat) cycle
-            dxij=atoms%ratim(1,jat)-atoms%rat(1,iat)
-            dyij=atoms%ratim(2,jat)-atoms%rat(2,iat)
-            dzij=atoms%ratim(3,jat)-atoms%rat(3,iat)
-            rij=sqrt(dxij**2+dyij**2+dzij**2)
-            fcij=cutoff_function(rij,rc)
-            fcdij=cutoff_function_der(rij,rc)
-            do kat=jat+1,atoms%natim
-                if(kat==iat) cycle
-                dxik=atoms%ratim(1,kat)-atoms%rat(1,iat)
-                dyik=atoms%ratim(2,kat)-atoms%rat(2,iat)
-                dzik=atoms%ratim(3,kat)-atoms%rat(3,iat)
-                rik=sqrt(dxik**2+dyik**2+dzik**2)
-                fcik=cutoff_function(rik,rc)
-                fcdik=cutoff_function_der(rik,rc)
-                cos_theta=(dxij*dxik+dyij*dyik+dzij*dzik)/(rij*rik)
-                uijk=(1.d0+alam*cos_theta)**zeta
-                vijk=exp(-eta*(rij**2+rik**2))
-                tte=tte+uijk*vijk*fcij*fcik
-                ss1=vijk*fcij*fcik
-                ss2=uijk*fcij*fcik
-                ss3=uijk*vijk*fcik
-                ss4=uijk*vijk*fcij
-
-                tt1=zeta*alam*(1.d0+alam*cos_theta)**(zeta-1)*ss1
-                tt2=tt1/(rij*rik)
-                tt3=2.d0*eta*vijk*ss2
-                tt4=-tt1*cos_theta/rij**2-tt3+ss3*fcdij/rij
-                tt5=-tt1*cos_theta/rik**2-tt3+ss4*fcdik/rik
-
-                ttjx=tt2*dxik+tt4*dxij
-                ttjy=tt2*dyik+tt4*dyij
-                ttjz=tt2*dzik+tt4*dzij
-
-                ttkx=tt2*dxij+tt5*dxik
-                ttky=tt2*dyij+tt5*dyik
-                ttkz=tt2*dzij+tt5*dzik
-
-                jat_maincell=mod(jat-1,atoms%nat)+1
-                kat_maincell=mod(kat-1,atoms%nat)+1
-                !following lines commented due to moving yall
-                !ann%y0d(i0,1,iat)=ann%y0d(i0,1,iat)-ttjx-ttkx
-                !ann%y0d(i0,2,iat)=ann%y0d(i0,2,iat)-ttjy-ttky
-                !ann%y0d(i0,3,iat)=ann%y0d(i0,3,iat)-ttjz-ttkz
-                !ann%y0d(i0,1,jat_maincell)=ann%y0d(i0,1,jat_maincell)+ttjx
-                !ann%y0d(i0,2,jat_maincell)=ann%y0d(i0,2,jat_maincell)+ttjy
-                !ann%y0d(i0,3,jat_maincell)=ann%y0d(i0,3,jat_maincell)+ttjz
-                !ann%y0d(i0,1,kat_maincell)=ann%y0d(i0,1,kat_maincell)+ttkx
-                !ann%y0d(i0,2,kat_maincell)=ann%y0d(i0,2,kat_maincell)+ttky
-                !ann%y0d(i0,3,kat_maincell)=ann%y0d(i0,3,kat_maincell)+ttkz
-            enddo
-        enddo
-        !following line commented due to moving yall
-        !ann%y0d(i0,1:3,1:atoms%nat)=zzz*ann%y0d(i0,1:3,1:atoms%nat)
-        tte=tte*zzz
-        !ann%yall(i0,iat)=tte !commented due to moving yall
-    enddo
-end subroutine symmetry_functions_g05
-!*****************************************************************************************
-subroutine symmetry_functions_g06(ann,iat,atoms,i0)
-    use mod_interface
-    use mod_ann, only: typ_ann
-    use mod_atoms, only: typ_atoms
-    implicit none
-    type(typ_ann), intent(inout):: ann
-    integer, intent(in):: iat
-    type(typ_atoms), intent(in):: atoms
-    integer, intent(inout):: i0
-    !local variables
-    integer:: jat, ig
-    real(8):: fc, r, dx, dy, dz
-    real(8):: teneria(1:3,1:3), eval(3)
-    integer, parameter::lwork=100
-    integer :: info
-    real(8) :: rcov
-    real(8), dimension(lwork) :: work
-    stop 'ERROR: this routine does not work!'
-    do ig=1,ann%ng6,3
-        teneria(1:3,1:3)=0.d0
-        rcov=ann%g6eta((ig-1)/3+1)
-        do jat=1,atoms%natim
-            dx=atoms%ratim(1,jat)-atoms%rat(1,iat)
-            dy=atoms%ratim(2,jat)-atoms%rat(2,iat)
-            dz=atoms%ratim(3,jat)-atoms%rat(3,iat)
-            r=sqrt(dx**2+dy**2+dz**2)
-!HERE            fc=cutoff_function(r,ann%g6rc((ig-1)/3+1))
-            !fc=exp(-r/(4.d0*rcov))
-            !fc=amass(jat)*exp(-r/(4.d0*rcov))
-            !fc=amass(jat)*exp(-r**2/(6.d0*rcov)**2)
-            teneria(1,1)=teneria(1,1)+fc*(dy*dy+dz*dz+2.d0*(rcov*0.5d0)**2)
-            teneria(2,2)=teneria(2,2)+fc*(dx*dx+dz*dz+2.d0*(rcov*0.5d0)**2)
-            teneria(3,3)=teneria(3,3)+fc*(dx*dx+dy*dy+2.d0*(rcov*0.5d0)**2)
-            teneria(1,2)=teneria(1,2)-fc*(dx*dy)
-            teneria(1,3)=teneria(1,3)-fc*(dx*dz)
-            teneria(2,3)=teneria(2,3)-fc*(dy*dz)
-        enddo
-        teneria(2,1)=teneria(1,2)
-        teneria(3,1)=teneria(1,3)
-        teneria(3,2)=teneria(2,3)
-        !diagonalize inertia tensor
-        call DSYEV('V','L',3,teneria,3,eval,work,lwork,info)
-        i0=i0+1
-        !ann%yall(i0,iat)=eval(1) !commented due to moving yall
-        i0=i0+1
-        !ann%yall(i0,iat)=eval(2) !commented due to moving yall
-        i0=i0+1
-        !ann%yall(i0,iat)=eval(3) !commented due to moving yall
-    enddo
-end subroutine symmetry_functions_g06
-!*****************************************************************************************
 function cutoff_function(r, rc) result(fc)
     use mod_interface
     implicit none
@@ -620,7 +388,8 @@ end function cutoff_function_der
 !*****************************************************************************************
 subroutine symmetry_functions_g05_atom2(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
     use mod_interface
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr

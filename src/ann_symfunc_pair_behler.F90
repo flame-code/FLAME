@@ -2,7 +2,8 @@
 subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr !,typ_linked_lists
     implicit none
@@ -96,7 +97,7 @@ end subroutine symmetry_functions_driver_bond
 subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
     use mod_interface
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
@@ -110,6 +111,7 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
     integer, parameter::lwork=100
     integer :: info
     real(8), dimension(lwork) :: work
+    real(8), allocatable:: rat(:,:)
     do iat=1,atoms%nat
     isat=atoms%itypat(iat)
     rc=ann_arr%rcut
@@ -117,12 +119,14 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
     eta1=ann_arr%ann(isat)%g2eta(1)
     eta2=ann_arr%ann(isat)%g4eta(1)
     zeta=ann_arr%ann(isat)%g4zeta(1)
+    allocate(rat(3,atoms%nat))
+    call get_rat(atoms,rat)
     do jat=1,atoms%nat
         if(jat==iat) cycle
         !distance between bond atoms
-        drij(1)=atoms%rat(1,jat)-atoms%rat(1,iat)
-        drij(2)=atoms%rat(2,jat)-atoms%rat(2,iat)
-        drij(3)=atoms%rat(3,jat)-atoms%rat(3,iat)
+        drij(1)=rat(1,jat)-rat(1,iat)
+        drij(2)=rat(2,jat)-rat(2,iat)
+        drij(3)=rat(3,jat)-rat(3,iat)
         rij=sqrt(drij(1)**2+drij(2)**2+drij(3)**2)
         !-----------------------------------------------------------------
         fcij=cutoff_function(rij,rc)
@@ -130,12 +134,12 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
         vij=exp(-eta1*(rij-rs)**2)
         do kat=1,atoms%natim
             if(kat==iat .or. kat==jat) cycle
-            drik(1)=atoms%ratim(1,kat)-atoms%rat(1,iat)
-            drik(2)=atoms%ratim(2,kat)-atoms%rat(2,iat)
-            drik(3)=atoms%ratim(3,kat)-atoms%rat(3,iat)
-            drjk(1)=atoms%ratim(1,kat)-atoms%rat(1,jat)
-            drjk(2)=atoms%ratim(2,kat)-atoms%rat(2,jat)
-            drjk(3)=atoms%ratim(3,kat)-atoms%rat(3,jat)
+            drik(1)=atoms%ratim(1,kat)-rat(1,iat)
+            drik(2)=atoms%ratim(2,kat)-rat(2,iat)
+            drik(3)=atoms%ratim(3,kat)-rat(3,iat)
+            drjk(1)=atoms%ratim(1,kat)-rat(1,jat)
+            drjk(2)=atoms%ratim(2,kat)-rat(2,jat)
+            drjk(3)=atoms%ratim(3,kat)-rat(3,jat)
             rik=sqrt(drik(1)**2+drik(2)**2+drik(3)**2)
             rjk=sqrt(drjk(1)**2+drjk(2)**2+drjk(3)**2)
             fcik=cutoff_function(rik,rc)
@@ -151,12 +155,14 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
     enddo
     i0=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4
     enddo
+    deallocate(rat)
 end subroutine symmetry_functions_driver_bond_tmp
 !**********************************************************************************************
 subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
     use mod_interface
     use mod_linked_lists, only: typ_pia
-    use mod_ann, only: typ_ann_arr, typ_symfunc
+    use mod_ann, only: typ_ann_arr
+    use mod_symfunc, only: typ_symfunc
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_pia), intent(in):: pia

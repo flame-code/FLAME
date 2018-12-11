@@ -18,7 +18,8 @@ subroutine fit_elecpot(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, get_rat, set_rat, update_ratp
+    use mod_atoms, only: atom_copy_old, atom_deallocate, set_rcov, get_rat_iat
     use mod_ann, only: typ_cent, typ_ann_arr
     use yaml_output
     implicit none
@@ -41,7 +42,7 @@ subroutine fit_elecpot(parini)
     real(8),allocatable:: mean_arr(:), std_arr(:)
     real(8) :: B1, B2, h , Be1 , Be2, Beta1, Beta2
     integer :: iter2, iter3, iat
-    real(8) :: dx, dy, dz, dr
+    real(8) :: dx, dy, dz, dr, dxyz(3)
     real(8) :: dpm_err(3), qpm_err(3,3)
     !////////////////////////E.O. TEMP for charge on grid/////////////////////////////////
     pi=4.d0*atan(1.d0)
@@ -60,7 +61,8 @@ subroutine fit_elecpot(parini)
     call yaml_map('DFT electric qpm',poisson_dft%qpm(1:3,1:3),fmt='(f10.4)')
     allocate(at_rat(3,atoms%nat),rat(3,atoms%nat),cv_temp(3,3),zat_temp(1:atoms%nat))
     zat_temp=atoms%zat
-    at_rat = atoms%rat ! because acf_read corrupts atoms%rat
+    !at_rat = atoms%rat ! because acf_read corrupts atoms%rat
+    call get_rat(atoms,at_rat)
     hgx = poisson_dft%hgrid(1,1)
     hgy = poisson_dft%hgrid(2,2)
     hgz = poisson_dft%hgrid(3,3)
@@ -79,10 +81,12 @@ subroutine fit_elecpot(parini)
     deallocate(atoms_arr%atoms)
 
     atoms%zat=zat_temp
-    atoms%rat = at_rat
-    rat(1,:) = atoms%rat(1,:)
-    rat(2,:) = atoms%rat(2,:)
-    rat(3,:) = atoms%rat(3,:)
+    !atoms%rat = at_rat
+    call set_rat(atoms,at_rat,setall=.true.)
+    !rat(1,:) = atoms%rat(1,:)
+    !rat(2,:) = atoms%rat(2,:)
+    !rat(3,:) = atoms%rat(3,:)
+    call get_rat(atoms,rat)
     atoms%cellvec=cv_temp
     !read(1377,*) !Number of STO-NG's N
     !read(1377,*) lcn
@@ -221,15 +225,16 @@ subroutine fit_elecpot(parini)
         !write(2,*) 'Cutoff : 2 times of covalent radius is considered for cutoff'
         call yaml_comment('Cutoff is based on exp(-r^4) and covalent radius.')
         call yaml_mapping_open('rcov',flow=.true.)
+        call update_ratp(atoms)
         do i = 1 , atoms%nat
         !write(2,*) 'rcov of ',atoms%sat(i),'is :',atoms%rcov(i)
             call yaml_map(trim(atoms%sat(i)),atoms%rcov(i),fmt='(f6.3)')
             do iz = 1 , nz
-                dz = (hgz*(iz-1)-atoms%rat(3,i))**2
+                dz = (hgz*(iz-1)-atoms%ratp(3,i))**2
                 do iy = 1 , ny
-                    dy = (hgy*(iy-1)-atoms%rat(2,i))**2
+                    dy = (hgy*(iy-1)-atoms%ratp(2,i))**2
                     do ix = 1 , nx
-                        dx = (hgx*(ix-1)-atoms%rat(1,i))**2
+                        dx = (hgx*(ix-1)-atoms%ratp(1,i))**2
                         dr = sqrt(dx+dy+dz)
                         weight(ix,iy,iz) = weight(ix,iy,iz)*(1.d0-exp(-1.d0*(dr/(4.d0*atoms%rcov(i)))**4))
                         !write(55,'(3i4,3es14.6)') ix, iy, iz,dr,exp(-1.d0*(dr/(2.d0*atoms%rcov(i)))**4)
@@ -325,7 +330,9 @@ subroutine fit_elecpot(parini)
             !    write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, APAR : ',atoms%sat(i),i,iter,l,apar(l,i)
             !end do
             call yaml_map('rpar',rpar(1:3,i),fmt='(es15.7)')
-            call yaml_map('dr',rat(1:3,i)-atoms%rat(1:3,i),fmt='(es15.7)')
+            call get_rat_iat(atoms,i,dxyz)
+            dxyz(1:3)=rat(1:3,i)-dxyz(1:3)
+            call yaml_map('dr',dxyz,fmt='(es15.7)')
             !write(2,'(a39,a3,i3,i5,3es16.7)') 'Atom, Atom_Num, ITER, RAT_[X,Y,Z] : ',atoms%sat(i),i,iter,rat(1,i),rat(2,i),rat(3,i)
             !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_X, dx :',atoms%sat(i),i,iter,rpar(1,i),atoms%rat(1,i)-rat(1,i)
             !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Y, dy :',atoms%sat(i),i,iter,rpar(2,i),atoms%rat(2,i)-rat(2,i)

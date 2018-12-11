@@ -1,8 +1,9 @@
+!*****************************************************************************************
 subroutine test_free_bps(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp, get_rat
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -42,7 +43,8 @@ subroutine test_free_bps(parini)
     allocate(poisson_grd%q(1:poisson_grd%nat), poisson_grd%gw_ewald(1:poisson_grd%nat), poisson_grd%rcart(1:3,1:poisson_grd%nat))
     poisson_grd%q(1:poisson_grd%nat)=atoms%qat(1:atoms%nat)
     poisson_grd%gw_ewald(1:poisson_grd%nat)=gausswidth(1:atoms%nat)
-    poisson_grd%rcart(1:3,1:poisson_grd%nat)=atoms%rat(1:3,1:atoms%nat)
+    !poisson_grd%rcart(1:3,1:poisson_grd%nat)=atoms%rat(1:3,1:atoms%nat)
+    call get_rat(atoms,poisson_grd%rcart)
     call put_charge_density(parini,poisson_grd)
     !-------------------------------------------------------
 !    do iat=1,atoms%nat
@@ -71,13 +73,14 @@ subroutine test_free_bps(parini)
     write(*,'(a,2es19.10)') "Ehartree, Ehartree_differance : ", ehartree_grd,ehartree_grd-1.d0/(gausswidth(1)*sqrt(2.d0*pi))
     pot_grd(1:ngx,1:ngy,1:ngz) = poisson_grd%pot(1:ngx,1:ngy,1:ngz)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    call update_ratp(atoms)
     do iat=1,atoms%nat
         do iz=1,ngz
-            dz=(iz-1-nbgz*1)*hz - atoms%rat(3,iat)
+            dz=(iz-1-nbgz*1)*hz - atoms%ratp(3,iat)
             do iy=1,ngy
-                dy=(iy-1-nbgy*1)*hy - atoms%rat(2,iat)
+                dy=(iy-1-nbgy*1)*hy - atoms%ratp(2,iat)
                 do ix=1,ngx
-                    dx=(ix-1-nbgx*1)*hx - atoms%rat(1,iat)
+                    dx=(ix-1-nbgx*1)*hx - atoms%ratp(1,iat)
                     r=sqrt(dx**2+dy**2+dz**2)
                     if (r <= 1.d-12) then 
                         pot_anl(ix,iy,iz)=2.d0/sqrt(pi)
@@ -111,3 +114,4 @@ subroutine test_free_bps(parini)
     end associate
     deallocate(poisson_grd%q, poisson_grd%gw_ewald,poisson_grd%rcart,pot_anl,pot_grd,gausswidth)
 end subroutine test_free_bps
+!*****************************************************************************************

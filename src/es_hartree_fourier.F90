@@ -2,7 +2,7 @@
 subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_poisson
     use time_profiling
     use mod_timing , only: TCAT_PSOLVER
@@ -21,16 +21,17 @@ subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     gwsq=f_malloc([1.to.atoms%nat],id='gwsq')
     ratred=f_malloc([1.to.3,1.to.atoms%nat],id='ratred')
     fat=f_malloc([1.to.3,1.to.atoms%nat],id='fat')
+    call update_ratp(atoms)
     if(poisson%gw_identical) then
          !gwsq(1:atoms%nat)=ewaldwidth(1:atoms%nat)**2
          !call get_psolver_fourier_various(atoms%nat,atoms%rat,ratred,atoms%qat, &
          !    atoms%cellvec,gwsq,ecut,ehartree,fat,g,stress,atoms%celldv)
         alphasq=poisson%alpha**2
-        call get_psolver_fourier_identical(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat, &
+        call get_psolver_fourier_identical(parini%iverbose,atoms%nat,atoms%ratp,ratred,atoms%qat, &
             atoms%cellvec,alphasq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
      else
         gwsq(1:atoms%nat)=gausswidth(1:atoms%nat)**2
-        call get_psolver_fourier_various(parini%iverbose,atoms%nat,atoms%rat,ratred,atoms%qat,atoms%cellvec, &
+        call get_psolver_fourier_various(parini%iverbose,atoms%nat,atoms%ratp,ratred,atoms%qat,atoms%cellvec, &
             gwsq,poisson%ecut,ehartree,fat,g,stress,atoms%celldv)
     end if
     do iat=1,atoms%nat

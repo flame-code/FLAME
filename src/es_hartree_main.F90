@@ -129,6 +129,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     pi=4.d0*atan(1.d0)
     ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
+    write(*,*) 'ECUT',parini%ecut_ewald
     poisson_rough%hx=pi/sqrt(2.d0*parini%ecut_ewald)
     poisson_rough%hy=pi/sqrt(2.d0*parini%ecut_ewald)
     poisson_rough%hz=pi/sqrt(2.d0*parini%ecut_ewald)
@@ -150,6 +151,9 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !---------------------------------------------------------------------------
     !call calparam(parini,atoms,poisson_rough,poisson)
     call set_ngp_bps(parini,atoms,poisson_rough,poisson)
+        !write(*,*) 'BBBBBBBBBBBB'
+        !write(*,*) ngpx,ngpy,ngpz
+        !stop
     if(trim(atoms%boundcond)=='bulk') then
     poisson%hgrid(1,1)=atoms%cellvec(1,1)/ngpx ; poisson%hgrid(2,1)=atoms%cellvec(2,1)/ngpx ; poisson%hgrid(3,1)=atoms%cellvec(3,1)/ngpx
     poisson%hgrid(1,2)=atoms%cellvec(1,2)/ngpy ; poisson%hgrid(2,2)=atoms%cellvec(2,2)/ngpy ; poisson%hgrid(3,2)=atoms%cellvec(3,2)/ngpy
@@ -554,7 +558,7 @@ end subroutine get_hartree
 subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_poisson
     use yaml_output
     !use dynamic_memory
@@ -590,14 +594,15 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
             !    enddo
             !enddo
         enddo
+        call update_ratp(atoms)
         dipole=0.d0
         do iat=1,atoms%nat
-            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+            dipole=dipole+atoms%qat(iat)*atoms%ratp(3,iat)
         enddo
         ehartree=ehartree-parini%efield*dipole
         do iat=1,atoms%nat
             atoms%fat(3,iat)=atoms%fat(3,iat)+parini%efield*atoms%qat(iat)
-            g(iat)=g(iat)-parini%efield*atoms%rat(3,iat)
+            g(iat)=g(iat)-parini%efield*atoms%ratp(3,iat)
         enddo
         if (flag=="force") then
             call yaml_mapping_open('dipole for fixed_efield',flow=.true.)
@@ -610,7 +615,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         nbgpz=int(poisson%rgcut/poisson%hz)+2
         dipole=0.d0
         do iat=1,atoms%nat
-            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+            dipole=dipole+atoms%qat(iat)*atoms%ratp(3,iat)
         enddo
         beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
         dv=(poisson%vu-poisson%vl) 
@@ -625,7 +630,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         !ehartree = ehartree + 0.5*c*dv**2
 
         do iat=1,atoms%nat
-            g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%rat(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
+            g(iat)=g(iat)+(dv+2.d0*beta)/poisson%cell(3) * atoms%ratp(3,iat)!-atoms%rat(3,iat)/poisson%cell(3)*(dv)
             atoms%fat(3,iat)=atoms%fat(3,iat)-((dv+2.d0*beta)/poisson%cell(3))*atoms%qat(iat)!+atoms%qat(iat)/poisson%cell(3)*(dv)
         enddo
         if (flag=="force") then
@@ -691,7 +696,7 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
         ehartree=ehartree+epot
         dipole=0.d0
         do iat=1,atoms%nat
-            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+            dipole=dipole+atoms%qat(iat)*atoms%ratp(3,iat)
         enddo
         !write(*,*)"dipole  =  " , dipole
         beta=-dipole*2.d0*pi/(poisson%cell(1)*poisson%cell(2)) 
@@ -764,7 +769,7 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_linked_lists, only: typ_linked_lists
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -790,20 +795,21 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     gg=0.d0
     tt2=2.d0/sqrt(pi)
     stress = 0.d0
+    call update_ratp(linked_lists%typ_atoms)
     include 'act1_cell_linkedlist.inc'
     do  iat=ip,il
         qiat=linked_lists%qat(iat)
-        xiat=linked_lists%rat(1,iat)
-        yiat=linked_lists%rat(2,iat)
-        ziat=linked_lists%rat(3,iat)
+        xiat=linked_lists%ratp(1,iat)
+        yiat=linked_lists%ratp(2,iat)
+        ziat=linked_lists%ratp(3,iat)
         jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
         jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
         jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
         maincell_iat=linked_lists%maincell(iat)
         do  jat=jp,jl
-            dx=xiat-linked_lists%rat(1,jat)
-            dy=yiat-linked_lists%rat(2,jat)
-            dz=ziat-linked_lists%rat(3,jat)
+            dx=xiat-linked_lists%ratp(1,jat)
+            dy=yiat-linked_lists%ratp(2,jat)
+            dz=ziat-linked_lists%ratp(3,jat)
             rsq= dx*dx+dy*dy+dz*dz
             maincell=maincell_iat+linked_lists%maincell(jat)
             if(rsq<rcutsq .and. maincell >-1) then

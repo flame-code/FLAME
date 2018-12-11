@@ -96,6 +96,7 @@ subroutine cal_potential_forces_modified(parini,iproc,atoms_s,n,x,f,epot,nr,uvn,
     use mod_saddle, only: beta
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_calnorm, atom_deallocate_old
+    use mod_atoms, only: set_rat
     implicit none
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc, n, nr
@@ -107,7 +108,8 @@ subroutine cal_potential_forces_modified(parini,iproc,atoms_s,n,x,f,epot,nr,uvn,
     type(typ_atoms):: atoms
     real(8):: t1, DDOT, fnrm, fnrm_small
     call atom_copy_old(atoms_s,atoms,'atoms_s->atoms')
-    atoms%rat(1:3,1:atoms%nat)=x(1:3,1:atoms%nat)
+    !atoms%rat(1:3,1:atoms%nat)=x(1:3,1:atoms%nat)
+    call set_rat(atoms,x,setall=.true.)
     call cal_potential_forces(parini,atoms)
     f(1:3,1:atoms%nat)=atoms%fat(1:3,1:atoms%nat)
     epot=atoms%epot

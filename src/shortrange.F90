@@ -93,7 +93,7 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     use mod_shortrange, only: typ_shortrange
     use mod_linked_lists, only: typ_linked_lists
     use mod_spline, only: typ_spline
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -122,20 +122,21 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     twosqrtinv=1.d0/sqrt(2.d0)
     linked_lists%fat=0.d0
     rcutsq=linked_lists%rcut**2
+    call update_ratp(linked_lists%typ_atoms)
     include 'act1_cell_linkedlist.inc'
     do  iat=ip,il
         qiat=linked_lists%qat(iat)
-        xiat=linked_lists%rat(1,iat)
-        yiat=linked_lists%rat(2,iat)
-        ziat=linked_lists%rat(3,iat)
+        xiat=linked_lists%ratp(1,iat)
+        yiat=linked_lists%ratp(2,iat)
+        ziat=linked_lists%ratp(3,iat)
         jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
         jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
         jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
         maincell_iat=linked_lists%maincell(iat)
         do  jat=jp,jl
-            dx=xiat-linked_lists%rat(1,jat)
-            dy=yiat-linked_lists%rat(2,jat)
-            dz=ziat-linked_lists%rat(3,jat)
+            dx=xiat-linked_lists%ratp(1,jat)
+            dy=yiat-linked_lists%ratp(2,jat)
+            dz=ziat-linked_lists%ratp(3,jat)
             rsq= dx*dx+dy*dy+dz*dz
             maincell=maincell_iat+linked_lists%maincell(jat)
             if(rsq<rcutsq .and. maincell >-1) then

@@ -4,6 +4,7 @@ subroutine md_nvt_langevin(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: get_rat, update_ratp, update_rat, set_rat
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -32,7 +33,7 @@ subroutine md_nvt_langevin(parini,atoms)
     pi=4.d0*atan(1.d0)
 
     call random_seed() 
-    rat_init=atoms%rat
+    call get_rat(atoms,rat_init)
     !  ___________parameters_______________________________________
     gama=1.d-3
     aboltzmann= 3.1668139952584056d-06
@@ -87,12 +88,14 @@ subroutine md_nvt_langevin(parini,atoms)
     else
         t1=0.5*dt*dt
     endif
+    call update_ratp(atoms)
     do iat=1,atoms%nat
         forces_langevin(1:3,iat)=atoms%fat(1:3,iat)+langev(iat)*eta(1:3,iat)-gama*atoms%amass(iat)*atoms%vat(1:3,iat)
-        rat_next(1:3,iat)=atoms%rat(1:3,iat) + t1*forces_langevin(1:3,iat)/atoms%amass(iat) + dt*atoms%vat(1:3,iat)
-        atoms%vat(1:3,iat)=(rat_next(1:3,iat)-atoms%rat(1:3,iat))/dt
-        atoms%rat(1:3,iat)=rat_next(1:3,iat)
+        rat_next(1:3,iat)=atoms%ratp(1:3,iat) + t1*forces_langevin(1:3,iat)/atoms%amass(iat) + dt*atoms%vat(1:3,iat)
+        atoms%vat(1:3,iat)=(rat_next(1:3,iat)-atoms%ratp(1:3,iat))/dt
+        atoms%ratp(1:3,iat)=rat_next(1:3,iat)
     enddo
+    call update_rat(atoms,upall=.true.)
     !call back_to_cell(atoms)
 
     !_____________________________________________________________________
@@ -100,8 +103,9 @@ subroutine md_nvt_langevin(parini,atoms)
         parini%time_dynamics = (imd-1)*dt
 
         dipole=0.d0
+        call update_ratp(atoms)
         do iat=1,atoms%nat
-            dipole=dipole+atoms%qat(iat)*atoms%rat(3,iat)
+            dipole=dipole+atoms%qat(iat)*atoms%ratp(3,iat)
         enddo
         write(31,*) "dtime",parini%time_dynamics,parini%vu_ac_ewald*sin(2*pi*parini%frequency_ewald*parini%time_dynamics),dipole
 
@@ -122,27 +126,31 @@ subroutine md_nvt_langevin(parini,atoms)
         write(22,'(i9,6es20.10)') imd-1,rcm(1:3),vcm(1:3)
 
         call set_langevin_randforce(eta,atoms%nat)
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             forces_langevin(1:3,iat)=atoms%fat(1:3,iat)+langev(iat)*eta(1:3,iat)-gama*atoms%amass(iat)*atoms%vat(1:3,iat)
-            rat_next(1:3,iat)= atoms%rat(1:3,iat)+atoms%vat(1:3,iat)*dt &
+            rat_next(1:3,iat)= atoms%ratp(1:3,iat)+atoms%vat(1:3,iat)*dt &
             &       + dt*dt*forces_langevin(1:3,iat)/atoms%amass(iat)
         enddo
         tol=1.d0
         call ekin_temprature(atoms,temp_prev,vcm,rcm,totmass) 
         do while (tol>tolerance)
-            atoms%vat = 0.5*((rat_next-atoms%rat)/dt+vat_old)
+            call update_ratp(atoms)
+            atoms%vat = 0.5*((rat_next-atoms%ratp)/dt+vat_old)
             call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
             do iat=1,atoms%nat
                 forces_langevin(1:3,iat)=atoms%fat(1:3,iat)+langev(iat)*eta(1:3,iat)-gama*atoms%amass(iat)*atoms%vat(1:3,iat)
-                rat_next(1:3,iat)= atoms%rat(1:3,iat)+ vat_old(1:3,iat)*dt &
+                call update_ratp(atoms)
+                rat_next(1:3,iat)= atoms%ratp(1:3,iat)+ vat_old(1:3,iat)*dt &
                 &       + dt*dt*forces_langevin(1:3,iat)/atoms%amass(iat)
             enddo
             tol=dabs(temp-temp_prev)/dabs(temp_prev)
             temp_prev=temp
         enddo
 
-        atoms%vat = (rat_next - atoms%rat )/dt
-        atoms%rat = rat_next
+        call update_ratp(atoms)
+        atoms%vat = (rat_next - atoms%ratp )/dt
+        call set_rat(atoms,rat_next,setall=.true.)
         !call back_to_cell(atoms)
         if(mod(imd,100)==0) then
             file_info%file_position='append'
@@ -153,9 +161,9 @@ subroutine md_nvt_langevin(parini,atoms)
             msd1= 0.d0
             msd2= 0.d0
             msd3= 0.d0
+            call update_ratp(atoms)
             do iat=1,atoms%nat
-
-                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+                dx(1:3)=atoms%ratp(:,iat)-rat_init(:,iat)
                 rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
                 r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
                 msd1 = msd1 + rsq                !all directions
@@ -179,7 +187,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, set_rat, get_rat, update_ratp
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -206,7 +214,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     real(8):: r, dx(3) , rsq, msd1, msd2, msd3
 
     !call random_seed() 
-    rat_init=atoms%rat
+    call get_rat(atoms,rat_init)
 
     call init_potential_forces(parini,atoms)
     open(unit=1000,file="velocity",status='replace')
@@ -272,19 +280,20 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
    !_________________________ The first md step _________________________
     imd=1
     t1=0.5*dt*dt
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        rat_next(1:3,iat)=atoms%rat(1:3,iat) + t1*forces_nosehoover(1:3,iat)/atoms%amass(iat) + dt*atoms%vat(1:3,iat)
+        rat_next(1:3,iat)=atoms%ratp(1:3,iat) + t1*forces_nosehoover(1:3,iat)/atoms%amass(iat) + dt*atoms%vat(1:3,iat)
     enddo
     do iat=1,atoms%nat
-        atoms%vat(1:3,iat)=(rat_next(1:3,iat)-atoms%rat(1:3,iat))/dt
+        atoms%vat(1:3,iat)=(rat_next(1:3,iat)-atoms%ratp(1:3,iat))/dt
     enddo
     call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
     call thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
     dzeta=(zeta_next-zeta)/dt
     zeta_prev = zeta
     zeta      = zeta_next
-    rat_prev  = atoms%rat
-    atoms%rat       = rat_next
+    call get_rat(atoms,rat_prev)
+    call set_rat(atoms,rat_next,setall=.true.)
     !_____________________________________________________________________
     do imd=2,nmd
         parini%time_dynamics = (imd-1)*dt
@@ -297,9 +306,10 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
         etotold=etot
         write(21,'(i9,4es25.15)') imd-1,etot,atoms%epot,atoms%ekin,temp
         write(22,'(i9,6es20.10)') imd-1,rcm(1:3),vcm(1:3)
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             forces_nosehoover(1:3,iat)=atoms%fat(1:3,iat)-atoms%amass(iat)*atoms%vat(1:3,iat)*dzeta(1:3,iat,1)
-            rat_next(1:3,iat)= 2.d0*atoms%rat(1:3,iat)-rat_prev(1:3,iat) &
+            rat_next(1:3,iat)= 2.d0*atoms%ratp(1:3,iat)-rat_prev(1:3,iat) &
             &       + dt*dt*forces_nosehoover(1:3,iat)/atoms%amass(iat)
         enddo
         call thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
@@ -310,20 +320,21 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
             atoms%vat = 0.5*((rat_next  - rat_prev)/dt)
             dzeta     = 0.5*((zeta_next - zeta_prev)/dt)
             call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
+            call update_ratp(atoms)
             do iat=1,atoms%nat
                 forces_nosehoover(1:3,iat)=atoms%fat(1:3,iat)-atoms%amass(iat)*atoms%vat(1:3,iat)*dzeta(1:3,iat,1)
-                rat_next(1:3,iat)= 2.d0*atoms%rat(1:3,iat)-rat_prev(1:3,iat) &
+                rat_next(1:3,iat)= 2.d0*atoms%ratp(1:3,iat)-rat_prev(1:3,iat) &
                 &       + dt*dt*forces_nosehoover(1:3,iat)/atoms%amass(iat)
             enddo
             call thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
             tol=dabs(temp-temp_prev)/dabs(temp_prev)
             temp_prev=temp
         enddo
-
-        atoms%vat = 0.5*(3.d0*rat_next-4.d0*atoms%rat+rat_prev)/dt
+        call update_ratp(atoms)
+        atoms%vat = 0.5*(3.d0*rat_next-4.d0*atoms%ratp+rat_prev)/dt
         !atoms%vat = (rat_next-atoms%rat)/dt
-        rat_prev  =atoms%rat
-        atoms%rat = rat_next
+        call get_rat(atoms,rat_prev)
+        call set_rat(atoms,rat_next,setall=.true.)
         dzeta=0.5d0*(3.d0*zeta_next-4.d0*zeta+zeta_prev)/dt
         zeta_prev=zeta
         zeta=zeta_next
@@ -337,9 +348,9 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
             msd1= 0.d0
             msd2= 0.d0
             msd3= 0.d0
+            call update_ratp(atoms)
             do iat=1,atoms%nat
-
-                dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+                dx(1:3)=atoms%ratp(:,iat)-rat_init(:,iat)
                 rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
                 r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
                 msd1 = msd1 + rsq                !all directions
@@ -370,7 +381,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, get_rat, update_ratp, update_rat
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -403,7 +414,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: tau, time_unit
     logical:: lfist= .true.
     call random_seed() 
-    rat_init=atoms%rat
+    call get_rat(atoms,rat_init)
     time_unit=41.341373336
 !   dt=parini%dt_dynamics
 
@@ -484,13 +495,15 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         epotold=atoms%epot
 
         if(parini%vflip_dynamics) then
+            call update_ratp(atoms)
             do iat=1,atoms%nat
-                if (atoms%cellvec(3,3)-atoms%rat(3,iat) < 5.5d0 .and. atoms%vat(3,iat) > 0.d0)then
+                if (atoms%cellvec(3,3)-atoms%ratp(3,iat) < 5.5d0 .and. atoms%vat(3,iat) > 0.d0)then
                     atoms%vat(3,iat) = -atoms%vat(3,iat)
                 endif
             enddo
+            call update_ratp(atoms)
             do iat=1,atoms%nat
-                if (atoms%rat(3,iat) < 5.5d0 .and. atoms%vat(3,iat) < 0.d0)then
+                if (atoms%ratp(3,iat) < 5.5d0 .and. atoms%vat(3,iat) < 0.d0)then
                     atoms%vat(3,iat) = -atoms%vat(3,iat)
                 endif
             enddo
@@ -556,29 +569,33 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         dzeta(ntherm) =dzeta(ntherm) + azeta(ntherm) *dt4;
 ! ___________________ end of  chain _________________________________________    
 
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             do j=1,3
                 if (atoms%bemoved(j,iat)) then
-                    atoms%rat(j,iat) = atoms%rat(j,iat) + atoms%vat(j,iat)*dt2
+                    atoms%ratp(j,iat) = atoms%ratp(j,iat) + atoms%vat(j,iat)*dt2
                 else
                     atoms%vat(j,iat) = 0.d0
-                    atoms%rat(j,iat) = rat_init(j,iat) 
+                    atoms%ratp(j,iat) = rat_init(j,iat) 
                 endif
             enddo
         enddo
+        call update_rat(atoms)
 
         call cal_potential_forces(parini,atoms)
+        call update_ratp(atoms)
         do iat=1,atoms%nat
             do j=1,3
                 if (atoms%bemoved(j,iat)) then
                     atoms%vat(j,iat) = atoms%vat(j,iat) + atoms%fat(j,iat) / atoms%amass(iat)*dt
-                    atoms%rat(j,iat) = atoms%rat(j,iat) + atoms%vat(j,iat)*dt2
+                    atoms%ratp(j,iat) = atoms%ratp(j,iat) + atoms%vat(j,iat)*dt2
                 else
                     atoms%vat(j,iat) = 0.d0
-                    atoms%rat(j,iat) = rat_init(j,iat) 
+                    atoms%ratp(j,iat) = rat_init(j,iat) 
                 endif
             enddo
         enddo
+        call update_rat(atoms)
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
         temp=temp*(1.5d0*atoms%nat)/(0.5*nof)
 
@@ -653,7 +670,7 @@ subroutine set_langevin_randforce(eta,nat)
 end subroutine set_langevin_randforce
 !*****************************************************************************************
 subroutine back_to_cell(atoms)
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp, update_rat
     implicit none
     type(typ_atoms):: atoms
     integer :: iat
@@ -661,16 +678,20 @@ subroutine back_to_cell(atoms)
         if (trim(atoms%boundcond)=='free') then
             continue
         else if (trim(atoms%boundcond)=='bulk') then
+            call update_ratp(atoms)
             do iat=1,atoms%nat
-                atoms%rat(1,iat)=modulo(modulo(atoms%rat(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
-                atoms%rat(2,iat)=modulo(modulo(atoms%rat(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
-                atoms%rat(3,iat)=modulo(modulo(atoms%rat(2,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
+                atoms%ratp(1,iat)=modulo(modulo(atoms%ratp(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
+                atoms%ratp(2,iat)=modulo(modulo(atoms%ratp(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
+                atoms%ratp(3,iat)=modulo(modulo(atoms%ratp(2,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
             enddo
+            call update_rat(atoms,upall=.true.)
         else if (trim(atoms%boundcond)=='slab') then
+            call update_ratp(atoms)
             do iat=1,atoms%nat
-                atoms%rat(1,iat)=modulo(modulo(atoms%rat(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
-                atoms%rat(2,iat)=modulo(modulo(atoms%rat(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
+                atoms%ratp(1,iat)=modulo(modulo(atoms%ratp(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
+                atoms%ratp(2,iat)=modulo(modulo(atoms%ratp(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
             enddo
+            call update_rat(atoms,upall=.true.)
         else
             write(*,*)"periodic BC is just modified for slab "
             stop
@@ -680,19 +701,20 @@ end subroutine back_to_cell
 !***********************************************************************************************
 !It works just for repolsive of wall in z direction.
 subroutine plane_repulsion(atoms)
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     integer :: iat
     real(8) rl, ru,t1,t2
     type(typ_atoms):: atoms
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        rl=atoms%rat(3,iat)
+        rl=atoms%ratp(3,iat)
         if (rl<5.5d0) then
             t1=200.d0*exp(-1.5d0*rl)
             atoms%fat(3,iat)=atoms%fat(3,iat)+t1
             !atoms%epot = atoms%epot+t1/3.d0
         endif
-        ru=atoms%cellvec(3,3)-atoms%rat(3,iat)
+        ru=atoms%cellvec(3,3)-atoms%ratp(3,iat)
         if (ru<5.5d0) then
             t2=200.d0*exp(-1.5d0*ru)
             atoms%fat(3,iat)=atoms%fat(3,iat)-t2
@@ -1003,7 +1025,7 @@ end subroutine get_atomic_mass
 subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: typ_atoms, typ_file_info, update_ratp
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables
@@ -1027,9 +1049,10 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
     msd1= 0.d0
     msd2= 0.d0
     msd3= 0.d0
+    call update_ratp(atoms)
     do iat=1,atoms%nat
 
-        dx(1:3)=atoms%rat(:,iat)-rat_init(:,iat)
+        dx(1:3)=atoms%ratp(:,iat)-rat_init(:,iat)
         rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
         r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
         msd1 = msd1 + rsq                !all directions
@@ -1070,3 +1093,4 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
         close(1003)
     endif
 end subroutine write_trajectory_velocity
+!*****************************************************************************************

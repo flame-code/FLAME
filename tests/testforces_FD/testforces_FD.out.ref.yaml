@@ -199,7 +199,7 @@
    optimizer                           : unknown
    approach                            : atombased
    symfunc                             : only_calculate
-   nstep_ekf                           : 100
+   nstep_opt                           : 100
    nstep_cep                           : 200
    alphax_q                            : 1.0
    alphax_r                            : 0.05

@@ -4,6 +4,7 @@ subroutine cal_hessian_4p(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_copy_old
     use mod_atoms, only: atom_copy, atom_deallocate, set_atomic_mass
+    use mod_atoms, only: update_ratp, update_rat, set_rat, set_rat_iat, get_rat
     use mod_processors, only: iproc
     use mod_potential, only: potential
     use futile
@@ -18,6 +19,7 @@ subroutine cal_hessian_4p(parini)
     real(8), allocatable:: hess(:,:), freq(:)
     real(8), allocatable:: rat_center(:), eval(:), work(:)
     real(8):: h, rlarge, twelfth, twothird, shift, dm, tt, s, alpha, ttmass, ttnorm
+    real(8):: xyz(3)
     integer:: istat, lwork, info, jj !, nat_yes
     integer:: i, iat, ixyz, j, jat, jxyz, imode, ii, iconf, iunit
     character(5):: fn
@@ -45,23 +47,18 @@ subroutine cal_hessian_4p(parini)
     twothird=-2.d0/(3.d0*h)
     !-------------------------------------------------------
     call init_potential_forces(parini,atoms)
-    do i=1,3*atoms%nat
-        iat=(i-1)/3+1
-        ixyz=mod(i-1,3)+1
-        rat_center(i)=atoms%rat(ixyz,iat)
-    enddo
+    call get_rat(atoms,rat_center)
     ii=1
     do i=ii,3*atoms%nat
         iat=(i-1)/3+1
         ixyz=mod(i-1,3)+1
         !if(.not. yes(iat)) cycle
-        do j=1,3*atoms%nat
-            jat=(j-1)/3+1
-            jxyz=mod(j-1,3)+1
-            atoms%rat(jxyz,jat)=rat_center(j)
-        enddo
+        call set_rat(atoms,rat_center,setall=.true.)
         !-----------------------------------------
-        atoms%rat(ixyz,iat)=atoms%rat(ixyz,iat)-2*h
+        call update_ratp(atoms)
+        xyz=atoms%ratp(1:3,iat)
+        xyz(ixyz)=atoms%ratp(ixyz,iat)-2*h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         do j=1,3*atoms%nat
             jat=(j-1)/3+1
@@ -69,7 +66,10 @@ subroutine cal_hessian_4p(parini)
             hess(j,i)=twelfth*atoms%fat(jxyz,jat)
         enddo
         !-----------------------------------------
-        atoms%rat(ixyz,iat)=atoms%rat(ixyz,iat)+h
+        call update_ratp(atoms)
+        xyz=atoms%ratp(1:3,iat)
+        xyz(ixyz)=atoms%ratp(ixyz,iat)+h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         do j=1,3*atoms%nat
             jat=(j-1)/3+1
@@ -77,7 +77,10 @@ subroutine cal_hessian_4p(parini)
             hess(j,i)=hess(j,i)-twothird*atoms%fat(jxyz,jat)
         enddo
         !-----------------------------------------
-        atoms%rat(ixyz,iat)=atoms%rat(ixyz,iat)+2*h
+        call update_ratp(atoms)
+        xyz=atoms%ratp(1:3,iat)
+        xyz(ixyz)=atoms%ratp(ixyz,iat)+2*h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         do j=1,3*atoms%nat
             jat=(j-1)/3+1
@@ -85,7 +88,10 @@ subroutine cal_hessian_4p(parini)
             hess(j,i)=hess(j,i)+twothird*atoms%fat(jxyz,jat)
         enddo
         !-----------------------------------------
-        atoms%rat(ixyz,iat)=atoms%rat(ixyz,iat)+h
+        call update_ratp(atoms)
+        xyz=atoms%ratp(1:3,iat)
+        xyz(ixyz)=atoms%ratp(ixyz,iat)+h
+        call set_rat_iat(atoms,iat,xyz)
         call cal_potential_forces(parini,atoms)
         do j=1,3*atoms%nat
             jat=(j-1)/3+1
@@ -105,11 +111,7 @@ subroutine cal_hessian_4p(parini)
         !endif
         !-----------------------------------------
     enddo
-    do j=1,3*atoms%nat
-        jat=(j-1)/3+1
-        jxyz=mod(j-1,3)+1
-        atoms%rat(jxyz,jat)=rat_center(j)
-    enddo
+    call set_rat(atoms,rat_center,setall=.true.)
     call final_potential_forces(parini,atoms)
     !-------------------------------------------------------
     !deallocate(yes)
@@ -204,6 +206,7 @@ subroutine cal_hessian_4p(parini)
         atoms_arr%nconf=2*10+1
         allocate(atoms_arr%atoms(atoms_arr%nconf))
         call yaml_sequence_open('vibrational eigenmodes')
+        call update_ratp(atoms)
         do imode=1,3*atoms%nat
             call yaml_sequence(advance='no')
             write(fn,'(i5.5)') imode
@@ -224,10 +227,11 @@ subroutine cal_hessian_4p(parini)
                 call atom_copy_old(atoms,atoms_arr%atoms(iconf),'atoms->atoms_arr%atoms(iconf)')
                 alpha=j*5.d-2 !1.d-4/eval(imode)
                 do iat=1,atoms%nat
-                    atoms_arr%atoms(iconf)%rat(1,iat)=atoms%rat(1,iat)+alpha*hess(3*iat-2,imode)
-                    atoms_arr%atoms(iconf)%rat(2,iat)=atoms%rat(2,iat)+alpha*hess(3*iat-1,imode)
-                    atoms_arr%atoms(iconf)%rat(3,iat)=atoms%rat(3,iat)+alpha*hess(3*iat-0,imode)
+                    atoms_arr%atoms(iconf)%ratp(1,iat)=atoms%ratp(1,iat)+alpha*hess(3*iat-2,imode)
+                    atoms_arr%atoms(iconf)%ratp(2,iat)=atoms%ratp(2,iat)+alpha*hess(3*iat-1,imode)
+                    atoms_arr%atoms(iconf)%ratp(3,iat)=atoms%ratp(3,iat)+alpha*hess(3*iat-0,imode)
                 enddo
+                call update_rat(atoms_arr%atoms(iconf),upall=.true.)
             enddo
             !call acf_write_new(file_info,atoms_arr=atoms_arr,strkey='mode'//fn)
             do iconf=1,atoms_arr%nconf
@@ -248,10 +252,10 @@ end subroutine cal_hessian_4p
 !*****************************************************************************************
 subroutine projectout_rotation(atoms,hess,rlarge)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use dynamic_memory
     implicit none
-    type(typ_atoms), intent(in):: atoms
+    type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: hess(3*atoms%nat,3*atoms%nat)
     real(8), intent(in):: rlarge
     !local variables
@@ -260,7 +264,8 @@ subroutine projectout_rotation(atoms,hess,rlarge)
     real(8), allocatable:: vrot(:,:)
     integer:: ixyz, iat, i, j
     vrot=f_malloc0([1.to.3*atoms%nat,1.to.3],id='vrot')
-    call calc_rotation_eigenvectors(atoms%nat,atoms%rat,vrot)
+    call update_ratp(atoms)
+    call calc_rotation_eigenvectors(atoms%nat,atoms%ratp,vrot)
     do j=1,3*atoms%nat
         do i=1,3*atoms%nat
             hess(i,j)=hess(i,j)+(rlarge)*vrot(i,1)*vrot(j,1)

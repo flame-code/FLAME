@@ -3,7 +3,7 @@ subroutine genrandom(parini,genconf)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
-    use mod_atoms, only: set_rcov
+    use mod_atoms, only: set_rcov, update_rat, set_rat_atoms, update_ratp
     use mod_genconf, only: typ_genconf
     implicit none
     type(typ_parini), intent(inout):: parini
@@ -129,18 +129,19 @@ subroutine genrandom(parini,genconf)
     write(*,*)atoms%cellvec(1,3),atoms%cellvec(2,3),atoms%cellvec(3,3)
     
 
+    call update_ratp(atoms)
     do iz=-nz,nz
     do iy=-ny,ny
     do ix=-nx,nx
         do iat=1,atoms%nat
-            ratall(1,iat,ix,iy,iz)=atoms%rat(1,iat)+ix*atoms%cellvec(1,1)+iy*atoms%cellvec(1,2)+iz*atoms%cellvec(1,3)
-            ratall(2,iat,ix,iy,iz)=atoms%rat(2,iat)+iy*atoms%cellvec(2,2)+iz*atoms%cellvec(2,3)
-            ratall(3,iat,ix,iy,iz)=atoms%rat(3,iat)+iz*atoms%cellvec(3,3)
+            ratall(1,iat,ix,iy,iz)=atoms%ratp(1,iat)+ix*atoms%cellvec(1,1)+iy*atoms%cellvec(1,2)+iz*atoms%cellvec(1,3)
+            ratall(2,iat,ix,iy,iz)=atoms%ratp(2,iat)+iy*atoms%cellvec(2,2)+iz*atoms%cellvec(2,3)
+            ratall(3,iat,ix,iy,iz)=atoms%ratp(3,iat)+iz*atoms%cellvec(3,3)
         enddo
     enddo
     enddo
     enddo
-    atoms_p%rat(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)
+    call set_rat_atoms(atoms_p,atoms,setall=.true.)
     atoms_p%bemoved(1:3,1:atoms%nat)=atoms%bemoved(1:3,1:atoms%nat)
     atoms_p%cellvec(1:3,1:3)=atoms%cellvec(1:3,1:3)
     atoms_p%boundcond=atoms%boundcond
@@ -158,16 +159,17 @@ subroutine genrandom(parini,genconf)
         ranxyz(1)=ranxyz(1)*(1.d0-2.d0*amargin_xrel)+amargin_xrel
         ranxyz(2)=ranxyz(2)*(1.d0-2.d0*amargin_yrel)+amargin_yrel
         ranxyz(3)=ranxyz(3)*(1.d0-2.d0*amargin_zrel)+amargin_zrel
-        call  rxyz_int2cart_alborz(1,atoms%cellvec,ranxyz,atoms_p%rat(:,mat))
+        call  rxyz_int2cart_alborz(1,atoms%cellvec,ranxyz,atoms_p%ratp(:,mat))
+        call update_rat(atoms_p,upall=.true.)
         reject=.false.
         rmin=1.d20
         loop_iz: do iz=-nz,nz
         do iy=-ny,ny
         do ix=-nx,nx
             do iat=1,mat-1
-                dx=ratall(1,iat,ix,iy,iz)-atoms_p%rat(1,mat)
-                dy=ratall(2,iat,ix,iy,iz)-atoms_p%rat(2,mat)
-                dz=ratall(3,iat,ix,iy,iz)-atoms_p%rat(3,mat)
+                dx=ratall(1,iat,ix,iy,iz)-atoms_p%ratp(1,mat)
+                dy=ratall(2,iat,ix,iy,iz)-atoms_p%ratp(2,mat)
+                dz=ratall(3,iat,ix,iy,iz)-atoms_p%ratp(3,mat)
                 r=sqrt(dx**2+dy**2+dz**2)
                 !if((r<0.9d0 .and. trim(atoms_p%sat(iat))=='H') .or. &
                 !   (r<1.9d0 .and. trim(atoms_p%sat(iat))=='Si')) then
@@ -201,13 +203,13 @@ subroutine genrandom(parini,genconf)
         endif
         atoms_p%bemoved(1:3,mat)=.true.
         write(*,'(a,i3,a5,3es24.15,a,i6,es15.7)') 'new atom #',mat, &
-            trim(atoms_p%sat(mat)),atoms_p%rat(1,mat),atoms_p%rat(2,mat),atoms_p%rat(3,mat),' is added: itry= ',itry,rmin
+            trim(atoms_p%sat(mat)),atoms_p%ratp(1,mat),atoms_p%ratp(2,mat),atoms_p%ratp(3,mat),' is added: itry= ',itry,rmin
         do iz=-nz,nz
         do iy=-ny,ny
         do ix=-nx,nx
-            ratall(1,mat,ix,iy,iz)=atoms_p%rat(1,iat)+ix*atoms%cellvec(1,1)+iy*atoms%cellvec(1,2)+iz*atoms%cellvec(1,3)
-            ratall(2,mat,ix,iy,iz)=atoms_p%rat(2,iat)+iy*atoms%cellvec(2,2)+iz*atoms%cellvec(2,3)
-            ratall(3,mat,ix,iy,iz)=atoms_p%rat(3,iat)+iz*atoms%cellvec(3,3)
+            ratall(1,mat,ix,iy,iz)=atoms_p%ratp(1,iat)+ix*atoms%cellvec(1,1)+iy*atoms%cellvec(1,2)+iz*atoms%cellvec(1,3)
+            ratall(2,mat,ix,iy,iz)=atoms_p%ratp(2,iat)+iy*atoms%cellvec(2,2)+iz*atoms%cellvec(2,3)
+            ratall(3,mat,ix,iy,iz)=atoms_p%ratp(3,iat)+iz*atoms%cellvec(3,3)
         enddo
         enddo
         enddo

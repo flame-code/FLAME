@@ -54,7 +54,7 @@ end subroutine conf_comp
 !*****************************************************************************************
 subroutine set_fpall_ann(atoms_all)
     use mod_interface
-    use mod_atoms, only: typ_atoms_all
+    use mod_atoms, only: typ_atoms_all, set_rat
     use dynamic_memory
     implicit none
     type(typ_atoms_all), intent(inout):: atoms_all
@@ -71,7 +71,7 @@ subroutine set_fpall_ann(atoms_all)
     !rcov=1.1d0
     !rcut=3.d0*rcov
     do iconf=1,atoms_all%nconf
-        atoms_all%atoms%rat(1:3,1:atoms_all%atoms%nat)=atoms_all%ratall(1:3,1:atoms_all%atoms%nat,iconf)
+        call set_rat(atoms_all%atoms,atoms_all%ratall(1,1,iconf),setall=.true.)
         call build_images(atoms_all%atoms,natpmax,natp,ratp)
         print '(a,i5)','natp=',natp
         !write(*,*) 'iconf=',iconf
@@ -201,7 +201,7 @@ end subroutine set_fpall_ann
 !*****************************************************************************************
 subroutine set_fpall_angle(atoms_all)
     use mod_interface
-    use mod_atoms, only: typ_atoms_all
+    use mod_atoms, only: typ_atoms_all, set_rat
     use dynamic_memory
     implicit none
     type(typ_atoms_all), intent(inout):: atoms_all
@@ -219,7 +219,7 @@ subroutine set_fpall_angle(atoms_all)
     shift=1.5d0
     rcut=2.d0
     do iconf=1,atoms_all%nconf
-        atoms_all%atoms%rat(1:3,1:atoms_all%atoms%nat)=atoms_all%ratall(1:3,1:atoms_all%atoms%nat,iconf)
+        call set_rat(atoms_all%atoms,atoms_all%ratall(1,1,iconf),setall=.true.)
         call build_images(atoms_all%atoms,natpmax,natp,ratp)
         print '(a,i5)','natp=',natp
         !write(*,*) 'iconf=',iconf
@@ -286,7 +286,7 @@ end subroutine set_fpall_angle
 !*****************************************************************************************
 subroutine set_fpall_distance(atoms_all)
     use mod_interface
-    use mod_atoms, only: typ_atoms_all
+    use mod_atoms, only: typ_atoms_all, set_rat
     use dynamic_memory
     implicit none
     type(typ_atoms_all), intent(inout):: atoms_all
@@ -302,7 +302,7 @@ subroutine set_fpall_distance(atoms_all)
     !rcut=3.d0*rcov
     shift=2.d0
     do iconf=1,atoms_all%nconf
-        atoms_all%atoms%rat(1:3,1:atoms_all%atoms%nat)=atoms_all%ratall(1:3,1:atoms_all%atoms%nat,iconf)
+        call set_rat(atoms_all%atoms,atoms_all%ratall(1,1,iconf),setall=.true.)
         call build_images(atoms_all%atoms,natpmax,natp,ratp)
         print '(a,i5)','natp=',natp
         !write(*,*) 'iconf=',iconf
@@ -371,7 +371,7 @@ end subroutine set_fpall_distance
 !*****************************************************************************************
 subroutine build_images(atoms,natpmax,natp,ratp)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat
     implicit none
     type(typ_atoms), intent(in):: atoms
     integer, intent(in):: natpmax
@@ -381,11 +381,7 @@ subroutine build_images(atoms,natpmax,natp,ratp)
     integer:: iat, ix, iy, iz
     real(8):: x, y, z
     ratp(1:3,1:natpmax)=0.d0
-    do iat=1,atoms%nat
-        ratp(1,iat)=atoms%rat(1,iat)
-        ratp(2,iat)=atoms%rat(2,iat)
-        ratp(3,iat)=atoms%rat(3,iat)
-    enddo
+    call get_rat(atoms,ratp)
     natp=atoms%nat
     if(trim(atoms%boundcond)=='free') then
         return
@@ -403,9 +399,9 @@ subroutine build_images(atoms,natpmax,natp,ratp)
             x=ix*atoms%cellvec(1,1)+iy*atoms%cellvec(1,2)+iz*atoms%cellvec(1,3)
             y=ix*atoms%cellvec(2,1)+iy*atoms%cellvec(2,2)+iz*atoms%cellvec(2,3)
             z=ix*atoms%cellvec(3,1)+iy*atoms%cellvec(3,2)+iz*atoms%cellvec(3,3)
-            ratp(1,natp)=atoms%rat(1,iat)+x
-            ratp(2,natp)=atoms%rat(2,iat)+y
-            ratp(3,natp)=atoms%rat(3,iat)+z
+            ratp(1,natp)=ratp(1,iat)+x
+            ratp(2,natp)=ratp(2,iat)+y
+            ratp(3,natp)=ratp(3,iat)+z
         enddo
     enddo
     enddo

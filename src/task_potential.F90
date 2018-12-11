@@ -24,6 +24,7 @@ end subroutine alborz_as_potential_init
 subroutine alborz_as_potential_get(boundcond,nat,cellvec,rat,sat,fat,epot,stress)
     use mod_interface
     use mod_alborz_as_potential, only: parini, atoms
+    use mod_atoms, only: set_rat
     implicit none
     character(*), intent(in):: boundcond
     integer, intent(in):: nat
@@ -36,11 +37,7 @@ subroutine alborz_as_potential_get(boundcond,nat,cellvec,rat,sat,fat,epot,stress
     if(atoms%nat/=nat) then
         write(*,'(a,2i6)') 'ERROR: atoms%nat=/nat in alborz_as_potential_get',atoms%nat,nat
     endif
-    do iat=1,nat
-        atoms%rat(1,iat)=rat(1,iat)
-        atoms%rat(2,iat)=rat(2,iat)
-        atoms%rat(3,iat)=rat(3,iat)
-    enddo
+    call set_rat(atoms,rat,setall=.true.)
     atoms%cellvec(1:3,1:3)=cellvec(1:3,1:3)
     call cal_potential_forces(parini,atoms)
     epot=atoms%epot

@@ -45,7 +45,7 @@ end subroutine init_potential_forces_qsc
 !*****************************************************************************************
 subroutine cal_potential_forces_qsc(atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_potential, only: l_atomic_num
     use mod_const, only: bohr2ang, ev2ha
     implicit none
@@ -54,17 +54,19 @@ subroutine cal_potential_forces_qsc(atoms)
     integer:: iat
     real(8):: cv(3,3), tt
     real(8), allocatable:: rat(:,:)
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        atoms%rat(1,iat)=modulo(modulo(atoms%rat(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
-        atoms%rat(2,iat)=modulo(modulo(atoms%rat(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
-        atoms%rat(3,iat)=modulo(modulo(atoms%rat(3,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
+        atoms%ratp(1,iat)=modulo(modulo(atoms%ratp(1,iat),atoms%cellvec(1,1)),atoms%cellvec(1,1))
+        atoms%ratp(2,iat)=modulo(modulo(atoms%ratp(2,iat),atoms%cellvec(2,2)),atoms%cellvec(2,2))
+        atoms%ratp(3,iat)=modulo(modulo(atoms%ratp(3,iat),atoms%cellvec(3,3)),atoms%cellvec(3,3))
     enddo
+    call update_rat(atoms,upall=.true.)
     allocate(rat(3,atoms%nat))
     cv(1:3,1:3)=atoms%cellvec(1:3,1:3)*bohr2ang
     do iat=1,atoms%nat
-        rat(1,iat)=atoms%rat(1,iat)*bohr2ang
-        rat(2,iat)=atoms%rat(2,iat)*bohr2ang
-        rat(3,iat)=atoms%rat(3,iat)*bohr2ang
+        rat(1,iat)=atoms%ratp(1,iat)*bohr2ang
+        rat(2,iat)=atoms%ratp(2,iat)*bohr2ang
+        rat(3,iat)=atoms%ratp(3,iat)*bohr2ang
     enddo
     call qsc_energy_forces(atoms%nat,rat,l_atomic_num,atoms%fat,atoms%epot,cv);
     atoms%epot=atoms%epot*ev2ha

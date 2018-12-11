@@ -1,6 +1,6 @@
    module callback
      use mod_parini, only: typ_parini
-     use mod_atoms, only: typ_atoms
+     use mod_atoms, only: typ_atoms, set_rat
      implicit none
      type(typ_parini):: parini_lammps
      type(typ_atoms):: atoms
@@ -81,11 +81,7 @@
        atoms%cellvec(2,3) = boxyz 
        atoms%cellvec(3,3) = boxzhi
        call getvol_alborz(atoms%cellvec,volume)
-       do iat=1,atoms%nat
-           atoms%rat(1,iat)=pos(1,iat)
-           atoms%rat(2,iat)=pos(2,iat)
-           atoms%rat(3,iat)=pos(3,iat)
-       enddo
+       call set_rat(atoms,pos,setall=.true.)
        call cal_potential_forces(parini_lammps,atoms)
        etot=atoms%epot
        do iat=1,atoms%nat

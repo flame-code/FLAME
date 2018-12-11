@@ -7,7 +7,7 @@ end subroutine init_lennardjones
 !energy and forces for Lennard Jones potential
 subroutine lennardjones(atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     type(typ_atoms), intent(inout):: atoms
     !local variabbles
@@ -16,14 +16,15 @@ subroutine lennardjones(atoms)
     real(8):: tt, t1, t2, t3
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
+    call update_ratp(atoms)
     do iat=1,atoms%nat
-        xiat=atoms%rat(1,iat)
-        yiat=atoms%rat(2,iat)
-        ziat=atoms%rat(3,iat)
+        xiat=atoms%ratp(1,iat)
+        yiat=atoms%ratp(2,iat)
+        ziat=atoms%ratp(3,iat)
         do jat=iat+1,atoms%nat
-            dx=atoms%rat(1,jat)-xiat
-            dy=atoms%rat(2,jat)-yiat
-            dz=atoms%rat(3,jat)-ziat
+            dx=atoms%ratp(1,jat)-xiat
+            dy=atoms%ratp(2,jat)-yiat
+            dz=atoms%ratp(3,jat)-ziat
             rsq=dx**2+dy**2+dz**2
             rinvsq=1.d0/rsq
             rinv4=rinvsq**2;rinv6=rinvsq*rinv4;rinv12=rinv6**2

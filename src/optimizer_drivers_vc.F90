@@ -3,6 +3,7 @@ subroutine vc_minimize(parini,iproc,atoms,paropt)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info
+    use mod_atoms, only: update_ratp, update_rat, set_rat, get_rat
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_parini), intent(in):: parini
@@ -64,14 +65,16 @@ subroutine vc_minimize(parini,iproc,atoms,paropt)
             call acf_write(file_info,atoms=atoms,strkey='traj')
             call fxyz_cart2int_alborz(atoms%nat,atoms%fat,atoms%cellvec,fat_int)
             atoms%fat=fat_int
-            call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
-            atoms%rat=rat_int
+            call update_ratp(atoms)
+            call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,rat_int)
+            call set_rat(atoms,rat_int,setall=.true.)
             call vc_x_to_xr(atoms,nr,xr,fr)
             call vc_test_convergence(nr,fr,paropt)
             call sdminimum(parini,iproc,nr,xr,fr,atoms%epot,paropt,nwork,work)
             call vc_xr_to_x(nr,xr,atoms)
-            rat_int=atoms%rat
-            call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%rat)
+            call get_rat(atoms,rat_int)
+            call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%ratp)
+            call update_rat(atoms,upall=.true.)
             if(paropt%iflag<=0) exit
         enddo
         deallocate(work,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating work.'
@@ -104,24 +107,27 @@ subroutine vc_minimize(parini,iproc,atoms,paropt)
             call acf_write(file_info,atoms=atoms,strkey='traj')
             call fxyz_cart2int_alborz(atoms%nat,atoms%fat,atoms%cellvec,fat_int)
             atoms%fat=fat_int
-            call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
-            atoms%rat=rat_int
+            call update_ratp(atoms)
+            call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,rat_int)
+            call set_rat(atoms,rat_int,setall=.true.)
             !call fxyz_cart2int_alborz(atoms%nat,fat_int,atoms%cellvec,atoms%fat)
             !atoms%fat=fat_int
             call vc_x_to_xr(atoms,nr,xr,fr)
             call vc_test_convergence(nr,fr,paropt)
             call mybfgs(iproc,nr,xr,atoms%epot,fr,nwork,work,paropt)
             call vc_xr_to_x(nr,xr,atoms)
-            rat_int=atoms%rat
-            call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%rat)
+            call get_rat(atoms,rat_int)
+            call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%ratp)
+            call update_rat(atoms,upall=.true.)
             !call xr_to_x(nr,xr,n,atoms%bemoved,atoms%rat)
             if(paropt%iflag<=0) exit
         enddo
         deallocate(work,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating work.'
     endif
     !-------------------------------------------------------------------------------------
-    rat_int(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)
-    call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%rat)
+    call get_rat(atoms,rat_int)
+    call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,rat_int,atoms%ratp)
+    call update_rat(atoms,upall=.true.)
     deallocate(rat_int,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating rat_int.'
     deallocate(fat_int,stat=istat);if(istat/=0) stop 'ERROR: failure deallocating fat_int.'
     deallocate(xr)
@@ -147,7 +153,7 @@ end subroutine vc_test_convergence
 !*****************************************************************************************
 subroutine vc_x_to_xr(atoms,nr,xr,fr)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat
     implicit none
     type(typ_atoms), intent(in):: atoms
     integer, intent(in):: nr
@@ -156,6 +162,9 @@ subroutine vc_x_to_xr(atoms,nr,xr,fr)
     real(8), intent(inout):: xr(nr), fr(nr)
     !local variables
     integer:: i, j, ixyz, iat
+    real(8), allocatable:: rat(:,:)
+    allocate(rat(3,atoms%nat))
+    call get_rat(atoms,rat)
     j=0
     do iat=1,atoms%nat
     do ixyz=1,3
@@ -165,7 +174,7 @@ subroutine vc_x_to_xr(atoms,nr,xr,fr)
         if(atoms%bemoved(ixyz,iat)) then
             j=j+1
             if(j>nr) stop 'ERROR: j>nr in subroutine x_to_xr'
-            xr(j)=atoms%rat(ixyz,iat)
+            xr(j)=rat(ixyz,iat)
             fr(j)=atoms%fat(ixyz,iat)
         endif
     enddo
@@ -179,11 +188,12 @@ subroutine vc_x_to_xr(atoms,nr,xr,fr)
     j=j+1 ; xr(j)=atoms%cellvec(1,3) ; fr(j)=atoms%celldv(1,3)
     j=j+1 ; xr(j)=atoms%cellvec(2,3) ; fr(j)=atoms%celldv(2,3)
     j=j+1 ; xr(j)=atoms%cellvec(3,3) ; fr(j)=atoms%celldv(3,3)
+    deallocate(rat)
 end subroutine vc_x_to_xr
 !*****************************************************************************************
 subroutine vc_xr_to_x(nr,xr,atoms)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_rat
     implicit none
     integer, intent(in):: nr
     real(8), intent(in):: xr(nr)
@@ -198,10 +208,11 @@ subroutine vc_xr_to_x(nr,xr,atoms)
         if(atoms%bemoved(ixyz,iat)) then
             j=j+1
             if(j>nr) stop 'ERROR: j>nr in subroutine vc_xr_to_x'
-            atoms%rat(ixyz,iat)=xr(j)
+            atoms%ratp(ixyz,iat)=xr(j)
         endif
     enddo
     enddo
+    call update_rat(atoms)
     j=j+1 ; atoms%cellvec(1,1)=xr(j)
     j=j+1 ; atoms%cellvec(2,1)=xr(j)
     j=j+1 ; atoms%cellvec(3,1)=xr(j)

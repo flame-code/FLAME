@@ -171,7 +171,7 @@ end subroutine linkedlists_final
 !*****************************************************************************************
 subroutine prepprimelast(atoms,linked_lists)
     use mod_interface
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat, update_rat
     use mod_electrostatics, only: typ_linked_lists
     implicit none
     type(typ_atoms), intent(in):: atoms
@@ -181,8 +181,10 @@ subroutine prepprimelast(atoms,linked_lists)
     integer:: nx, ny, nz
     integer:: mx, my, mz, mlimnb, mlimnb1, mlimnb2,bulkbc, ishift_r ,mlimnb3
     real(8), allocatable:: rat_int(:,:)
+    real(8), allocatable:: rat(:,:)
     real(8):: rcart(3), rfrac(3)
     allocate(rat_int(1:3,1:atoms%nat))
+    allocate(rat(1:3,1:atoms%nat))
     mx=linked_lists%mx
     my=linked_lists%my
     mz=linked_lists%mz
@@ -201,7 +203,8 @@ subroutine prepprimelast(atoms,linked_lists)
     !later corresponding atoms in main cell will be +1.
     linked_lists%maincell=-1
     linked_lists%last=0
-    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
+    call get_rat(atoms,rat)
+    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,rat,rat_int)
     !we are doing the following since in mutiple application of h and h^0-1, i.e.,
     !in going from reduced to Cartesian and vice versa, there can be rounding
     !which can put atoms outside cell, e.g. 0 can be -2.E-17
@@ -251,9 +254,9 @@ subroutine prepprimelast(atoms,linked_lists)
                     rfrac(2)=rat_int(2,iat)+real(ny,kind=8)
                     rfrac(3)=rat_int(3,iat)+real(nz,kind=8)
                     rcart=matmul(atoms%cellvec,rfrac)
-                    linked_lists%rat(1,jat)=rcart(1)
-                    linked_lists%rat(2,jat)=rcart(2)
-                    linked_lists%rat(3,jat)=rcart(3)
+                    linked_lists%ratp(1,jat)=rcart(1)
+                    linked_lists%ratp(2,jat)=rcart(2)
+                    linked_lists%ratp(3,jat)=rcart(3)
                     linked_lists%itypat(jat)=atoms%itypat(iat)
                     linked_lists%perm(jat)=iat
                     linked_lists%qat(jat)=atoms%qat(iat)
@@ -273,6 +276,7 @@ subroutine prepprimelast(atoms,linked_lists)
             enddo
         enddo !end of loop over iy
     enddo !end of loop over iz
+    call update_rat(linked_lists%typ_atoms,upall=.true.)
     !write(*,*)jat,"main"
     !When cell is small such that the number of cells in a direction is
     !small and natim's (number of atoms in segments explained in top of the file)
@@ -287,6 +291,7 @@ subroutine prepprimelast(atoms,linked_lists)
         !stop
     endif
     deallocate(rat_int)
+    deallocate(rat)
     !write(*,*) 'jat-1',jat-1
 end subroutine prepprimelast
 !*****************************************************************************************
@@ -295,7 +300,7 @@ end subroutine prepprimelast
 subroutine make_list_new(parini,atoms,linked_lists,cell)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat
     use mod_electrostatics, only: typ_linked_lists
     implicit none
     type(typ_parini), intent(in):: parini 
@@ -309,7 +314,9 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
     integer:: iat, ix, iy, iz, ind, ishift1, ishift2, ishift3
     integer:: mx, my, mz, mlimnb1, mlimnb2, mlimnb3
     real(8), allocatable:: rat_int(:,:)
+    real(8), allocatable:: rat(:,:)
     allocate(rat_int(1:3,1:atoms%nat))
+    allocate(rat(1:3,1:atoms%nat))
     mx=linked_lists%mx
     my=linked_lists%my
     mz=linked_lists%mz
@@ -323,7 +330,8 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
     !initialize the heads
     linked_lists%head=0
     !form the cell list
-    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%rat,rat_int)
+    call get_rat(atoms,rat)
+    call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,rat,rat_int)
     !we are doing the following since in mutiple application of h and h^0-1, i.e.,
     !in going from reduced to Cartesian and vice versa, there can be rounding
     !which can put atoms outside cell, e.g. 0 can be -2.E-17
@@ -436,6 +444,7 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
     endif
     linked_lists%natim=linked_lists%natim+natim
     deallocate(rat_int)
+    deallocate(rat)
 end subroutine make_list_new
 !*****************************************************************************************
 !This subroutine determines the bounds of ix and iy to count
@@ -529,7 +538,7 @@ end subroutine determine_sclimitsphere
 subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, type_pairs
+    use mod_atoms, only: typ_atoms, type_pairs, update_ratp
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
     implicit none
@@ -574,15 +583,16 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     neighbor(:)=0
     bound_rad=0
     bound_dist=0
+    call update_ratp(linked_lists%typ_atoms)
     do iz=1,linked_lists%mz+linked_lists%mlimnb3
     do iy=1-linked_lists%mlimnb2,linked_lists%my+linked_lists%mlimnb2
     do ix=1-((isign(1,iy-1)-1)/2)*linked_lists%mx,linked_lists%mx+linked_lists%mlimnb1
     ip=linked_lists%prime(ix,iy,iz)
     il=linked_lists%last(ix,iy,iz)
     do  iat=ip,il
-        xiat=linked_lists%rat(1,iat)
-        yiat=linked_lists%rat(2,iat)
-        ziat=linked_lists%rat(3,iat)
+        xiat=linked_lists%ratp(1,iat)
+        yiat=linked_lists%ratp(2,iat)
+        ziat=linked_lists%ratp(3,iat)
         maincell_iat=linked_lists%maincell(iat)
         do jz=iz,min(linked_lists%mz+linked_lists%mlimnb3,iz+linked_lists%mlimnb)
         do jy=iy+linked_lists%limnby(1,jz-iz),iy+linked_lists%limnby(2,jz-iz)
@@ -590,9 +600,9 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
         jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
         jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
         do  jat=jp,jl
-            drij(1)=linked_lists%rat(1,jat)-xiat
-            drij(2)=linked_lists%rat(2,jat)-yiat
-            drij(3)=linked_lists%rat(3,jat)-ziat
+            drij(1)=linked_lists%ratp(1,jat)-xiat
+            drij(2)=linked_lists%ratp(2,jat)-yiat
+            drij(3)=linked_lists%ratp(3,jat)-ziat
             rijsq=drij(1)**2+drij(2)**2+drij(3)**2
             if (rijsq< rcutsq .and. (maincell_iat+linked_lists%maincell(jat)) >-1 ) then
                     rij=sqrt(rijsq)

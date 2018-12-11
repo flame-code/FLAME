@@ -2,7 +2,7 @@ subroutine solve_poisson(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat, update_ratp
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -49,7 +49,7 @@ subroutine solve_poisson(parini)
     poisson_ion%bc=atoms%boundcond
     poisson_ion%q(1:poisson_ion%nat)=atoms%zat(1:atoms%nat)
     poisson_ion%gw(1:poisson_ion%nat)=gausswidth(1:atoms%nat)
-    poisson_ion%rcart(1:3,1:poisson_ion%nat)=atoms%rat(1:3,1:atoms%nat)
+    call get_rat(atoms,poisson_ion%rcart)
     call put_charge_density(parini,poisson_ion)
     t1=0.d0
     t2=0.d0
@@ -77,9 +77,10 @@ subroutine solve_poisson(parini)
     call fini_hartree(parini,atoms,poisson_ion)
     call cube_write('total_rho.cube',atoms,poisson,'rho')
     !-------------------------------------------------------
+    call update_ratp(atoms)
     t1=0.d0
     do iat=1,atoms%nat
-        t1=t1+atoms%zat(iat)*atoms%rat(3,iat)
+        t1=t1+atoms%zat(iat)*atoms%ratp(3,iat)
     enddo
     !t1=t1*(2*pi)/(cell(1)*cell(2))
     write(*,*) 't1=',t1

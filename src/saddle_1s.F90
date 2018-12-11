@@ -4,6 +4,7 @@ subroutine surface_walking(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
     use mod_atoms, only: atom_copy_old, atom_deallocate, set_ndof, atom_calmaxforcecomponent
+    use mod_atoms, only: update_ratp, update_rat
     use mod_potential, only: potential, fcalls
     use mod_saddle, only: dmconverged, str_moving_atoms_rand, dimsep, ampl
     use mod_opt, only: typ_paropt
@@ -76,7 +77,9 @@ subroutine surface_walking(parini)
     !call acf_write(file_info,atoms=atoms_s,strkey='posout')
     call write_yaml_conf(file_info,atoms_s,strkey='posout')
     !---------------------------------------------------------------------------
-    call random_move_atoms(atoms_s%nat,atoms_s%bemoved,atoms_s%cellvec,atoms_s%rat)
+    call update_ratp(atoms_s)
+    call random_move_atoms(atoms_s%nat,atoms_s%bemoved,atoms_s%cellvec,atoms_s%ratp)
+    call update_rat(atoms_s)
     !call cal_potential_forces(parini,iproc,3*atoms_s%nat,atoms_s%rat,atoms_s%fat,epot_m0)
     !call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_s%fat,fmax_m0)
     !write(*,'(a,es24.15,es13.3)') 'ENERGY: epot_m0,fmax_m0 ',epot_m0,fmax_m0
@@ -86,7 +89,9 @@ subroutine surface_walking(parini)
     call write_yaml_conf(file_info,atoms_s,strkey='posout')
     !stop
     !---------------------------------------------------------------------------
-    call dimmethimproved(parini,iproc,atoms_s,atoms_s%nat,atoms_s%ndof,atoms_s%rat,atoms_s%epot,atoms_s%fat,curv,uvn,paropt)
+    call update_ratp(atoms_s)
+    call dimmethimproved(parini,iproc,atoms_s,atoms_s%nat,atoms_s%ndof,atoms_s%ratp,atoms_s%epot,atoms_s%fat,curv,uvn,paropt)
+    call update_rat(atoms_s)
     file_info%filename_positions='posout.yaml'
     file_info%file_position='append'
     !call acf_write(file_info,atoms=atoms_s,strkey='posout')
@@ -229,7 +234,7 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate_old, atom_allocate_old
     use mod_atoms, only: atom_calmaxforcecomponent
-    use mod_atoms, only: atom_copy_old
+    use mod_atoms, only: atom_copy_old, get_rat, update_rat
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none
@@ -255,11 +260,13 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
     !atoms_m1%rat(1:3,1:atoms_s%nat)=atoms_s%rat(1:3,1:atoms_s%nat)
     !atoms_m2%rat(1:3,1:atoms_s%nat)=atoms_s%rat(1:3,1:atoms_s%nat)
     zeta=min(0.2d0,0.1d0/abs(curv))
+    call get_rat(atoms_s,atoms_m1%ratp)
     do iat=1,atoms_s%nat
-        if(atoms_s%bemoved(1,iat)) atoms_m1%rat(1,iat)=atoms_s%rat(1,iat)+zeta*uvn(1,iat)
-        if(atoms_s%bemoved(2,iat)) atoms_m1%rat(2,iat)=atoms_s%rat(2,iat)+zeta*uvn(2,iat)
-        if(atoms_s%bemoved(3,iat)) atoms_m1%rat(3,iat)=atoms_s%rat(3,iat)+zeta*uvn(3,iat)
+        if(atoms_s%bemoved(1,iat)) atoms_m1%ratp(1,iat)=atoms_m1%ratp(1,iat)+zeta*uvn(1,iat)
+        if(atoms_s%bemoved(2,iat)) atoms_m1%ratp(2,iat)=atoms_m1%ratp(2,iat)+zeta*uvn(2,iat)
+        if(atoms_s%bemoved(3,iat)) atoms_m1%ratp(3,iat)=atoms_m1%ratp(3,iat)+zeta*uvn(3,iat)
     enddo
+    call update_rat(atoms_m1)
     if(parini%two_level_geopt) then
         call minimize(parini,iproc,atoms_m1,paropt_m_prec)
     endif
@@ -276,11 +283,13 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
     file_info%file_position='new'
     !call acf_write(file_info,atoms=atoms_m1,strkey='minimum1')
     call write_yaml_conf(file_info,atoms_m1,strkey='minimum1')
+    call get_rat(atoms_s,atoms_m2%ratp)
     do iat=1,atoms_s%nat
-        if(atoms_s%bemoved(1,iat)) atoms_m2%rat(1,iat)=atoms_s%rat(1,iat)-zeta*uvn(1,iat)
-        if(atoms_s%bemoved(2,iat)) atoms_m2%rat(2,iat)=atoms_s%rat(2,iat)-zeta*uvn(2,iat)
-        if(atoms_s%bemoved(3,iat)) atoms_m2%rat(3,iat)=atoms_s%rat(3,iat)-zeta*uvn(3,iat)
+        if(atoms_s%bemoved(1,iat)) atoms_m2%ratp(1,iat)=atoms_m2%ratp(1,iat)-zeta*uvn(1,iat)
+        if(atoms_s%bemoved(2,iat)) atoms_m2%ratp(2,iat)=atoms_m2%ratp(2,iat)-zeta*uvn(2,iat)
+        if(atoms_s%bemoved(3,iat)) atoms_m2%ratp(3,iat)=atoms_m2%ratp(3,iat)-zeta*uvn(3,iat)
     enddo
+    call update_rat(atoms_m2)
     call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_m2%fat,fmax2)
     if(parini%two_level_geopt) then
         call minimize(parini,iproc,atoms_m2,paropt_m_prec)
@@ -316,7 +325,7 @@ subroutine alongnegcurvature(iproc,atoms,uvn,c)
     use mod_interface
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_saddle, only: dimsep
-    use mod_atoms, only: atom_copy_old
+    use mod_atoms, only: atom_copy_old, update_rat, update_ratp
     implicit none
     integer, intent(in):: iproc
     type(typ_atoms), intent(inout):: atoms
@@ -347,8 +356,10 @@ subroutine alongnegcurvature(iproc,atoms,uvn,c)
     !if(do_elim_rot) call projrotout(n,nr,x,uvn)
     !call normalizevector(nr,uvn)
     !call lowestcurvature(iproc,n/3,nr,x,uvn,f,2.d0,10,c0,c,1)
+    call update_ratp(atoms_t)
     do i=-5,5
-        atoms_t%rat(1:3,1:atoms%nat)=atoms%rat(1:3,1:atoms%nat)+i*4.d-2*uvn(1:3,1:atoms%nat)
+        atoms_t%ratp(1:3,1:atoms%nat)=atoms%ratp(1:3,1:atoms%nat)+i*4.d-2*uvn(1:3,1:atoms%nat)
+        call update_rat(atoms_t,upall=.true.)
         stop 'ERROR: line was commented due to missing parini in this routine'
         !call cal_potential_forces(parini,atoms_t)
         call calnorm(3*atoms_t%nat,atoms_t%fat,fnrm)

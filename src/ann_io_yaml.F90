@@ -17,7 +17,7 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     !call f_lib_initialize()
     !call yaml_new_document()
     call yaml_sequence_open('ann input files') !,flow=.true.)
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         if(parini%bondbased_ann) then
             stypat=parini%stypat(1)
         else
@@ -81,7 +81,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     !endif
     rcut               =  subdict_ann//"rcut"
     ann%method         =  subdict_ann//"method"
-    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
+        trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
         ann%ampl_chi       =  subdict_ann//"ampl_chi" 
         ann%prefactor_chi  =  subdict_ann//"prefactor_chi" 
         ann%ener_ref       =  subdict_ann//"ener_ref" 
@@ -90,7 +91,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         ann%chi0           =  subdict_ann//"chi0" 
         ann%qinit          =  subdict_ann//"qinit"
     endif
-    if(trim(parini%approach_ann)=='cent2' ) then
+    if(trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
         ann%zion           =  subdict_ann//"zion" 
         ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
         ann%spring_const   =  subdict_ann//"spring_const"
@@ -288,7 +289,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
         if(parini%ntypat>1) then
             stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
         endif
-        do i=1,ann_arr%n
+        do i=1,ann_arr%nann
             write(fn_tt,'(i1)') i
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             call yaml_comment(trim(filename))
@@ -296,15 +297,15 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
-        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
-        do i=1,ann_arr%n
+        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3') then
+        do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             !write(*,'(a)') trim(filename)
             call yaml_comment(trim(filename))
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     else
-        stop 'ERROR: writing ANN parameters is only for cent1,cent2,tb'
+        stop 'ERROR: writing ANN parameters is only for cent1,cent2,cent3,tb'
     endif
 end subroutine write_ann_all_yaml
 !*****************************************************************************************
@@ -338,7 +339,8 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     enddo
     call set(subdict_ann//"rcut",rcut)
     call set(subdict_ann//"method",ann%method)
-    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. trim(parini%approach_ann)=='cent2') then
+    if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
+        trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"ampl_chi",ann%ampl_chi)
         call set(subdict_ann//"prefactor_chi",ann%prefactor_chi)
         call set(subdict_ann//"ener_ref",ann%ener_ref)
@@ -347,7 +349,7 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
         call set(subdict_ann//"chi0",ann%chi0)
         call set(subdict_ann//"qinit",ann%qinit)
     endif
-    if(trim(parini%approach_ann)=='cent2' ) then
+    if(trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"zion",ann%zion)
         call set(subdict_ann//"gausswidth_ion",ann%gausswidth_ion)
         call set(subdict_ann//"spring_const",ann%spring_const)
@@ -471,7 +473,7 @@ subroutine read_ann_yaml(parini,ann_arr)
     character(16):: fn
     character(1):: fn_tt
     character(50):: filename
-    do iann=1,ann_arr%n
+    do iann=1,ann_arr%nann
         if (parini%restart_param) then
             write(fn,'(a15)') '.ann.input.yaml'
         else
@@ -485,10 +487,10 @@ subroutine read_ann_yaml(parini,ann_arr)
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
         elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. &
-            trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='atombased') then
+            trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3' .or. trim(ann_arr%approach)=='atombased') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
-            stop 'ERROR: reading ANN parameters is only for cent1,cent2,tb'
+            stop 'ERROR: reading ANN parameters is only for cent1,cent2,cent3,tb'
         endif
         !-------------------------------------------------------
         call get_symfunc_parameters_yaml(parini,iproc,filename,ann_arr%ann(iann),rcut)
@@ -550,7 +552,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
-    use mod_atoms, only: atom_deallocate_old
+    use mod_atoms, only: atom_deallocate_old, set_rat_atoms
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -561,7 +563,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
     character(256):: filename, fn_tmp, fn_ext
     type(typ_atoms_arr):: atoms_arr_of !configuration of one file
     type(typ_atoms_arr):: atoms_arr_t
-    real(8):: ttx, tty, ttz, fx, fy, fz
+    real(8):: fx, fy, fz
     integer:: nconfmax, ind, len_filename, nfiles, nfiles_max, ifile
     character(256), allocatable:: fn_list(:)
     call f_routine(id='read_data_yaml')
@@ -601,16 +603,13 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%epot=atoms_arr_of%atoms(iconf)%epot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%qtot=atoms_arr_of%atoms(iconf)%qtot
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%dpm(1:3)=atoms_arr_of%atoms(iconf)%dpm(1:3)
+            atoms_arr_t%atoms(atoms_arr_t%nconf)%elecfield(1:3)=atoms_arr_of%atoms(iconf)%elecfield(1:3)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             !if(parini%read_forces_ann) read(2,*)
+            call set_rat_atoms(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf),setall=.true.)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
-                ttx=atoms_arr_of%atoms(iconf)%rat(1,iat)
-                tty=atoms_arr_of%atoms(iconf)%rat(2,iat)
-                ttz=atoms_arr_of%atoms(iconf)%rat(3,iat)
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(1,iat)=ttx
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(2,iat)=tty
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%rat(3,iat)=ttz
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)
                 if(parini%read_forces_ann) then
                     !read(2,*) fx,fy,fz

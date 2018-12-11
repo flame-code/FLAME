@@ -56,7 +56,7 @@ end subroutine init_potential_forces_mpmd
 subroutine cal_potential_forces_mpmd(atoms)
     use mod_interface
     use mod_const
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_processors, only: iproc_pot
     use mod_potential, only: cellvec, l_atomic_num !, fcalls
     implicit none
@@ -84,10 +84,11 @@ subroutine cal_potential_forces_mpmd(atoms)
         icwd(i)=ichar(cwd(i:i))
     enddo
     cellvec = cellvec * bohr2ang 
-    atoms%rat = atoms%rat * bohr2ang
+    call update_ratp(atoms)
+    atoms%ratp = atoms%ratp * bohr2ang
     call MPI_SEND(atoms%nat   ,1          ,MPI_INTEGER         ,iproc_pot,0,MPI_COMM_WORLD,ierr)
     call MPI_SEND(l_atomic_num,atoms%nat  ,MPI_INTEGER         ,iproc_pot,0,MPI_COMM_WORLD,ierr)
-    call MPI_SEND(atoms%rat   ,3*atoms%nat,MPI_DOUBLE_PRECISION,iproc_pot,0,MPI_COMM_WORLD,ierr)
+    call MPI_SEND(atoms%ratp   ,3*atoms%nat,MPI_DOUBLE_PRECISION,iproc_pot,0,MPI_COMM_WORLD,ierr)
     call MPI_SEND(cellvec     ,9          ,MPI_DOUBLE_PRECISION,iproc_pot,0,MPI_COMM_WORLD,ierr)
     call MPI_SEND(ipbc        ,1          ,MPI_INTEGER         ,iproc_pot,0,MPI_COMM_WORLD,ierr)
     call MPI_SEND(icwd        ,1024       ,MPI_INTEGER         ,iproc_pot,0,MPI_COMM_WORLD,ierr)
@@ -113,7 +114,8 @@ subroutine cal_potential_forces_mpmd(atoms)
      atoms%fat = atoms%fat / (ha2ev/bohr2ang)
      atoms%epot = atoms%epot / ha2ev
      cellvec = cellvec / bohr2ang
-     atoms%rat = atoms%rat/ bohr2ang
+     atoms%ratp = atoms%ratp/ bohr2ang
+     call update_rat(atoms)
 
     !do iat=1,atoms%nat
     !    write(101+int(fcalls),'(3f14.6)') fat(1,iat),fat(2,iat),fat(3,iat)

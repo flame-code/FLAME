@@ -2,7 +2,7 @@
 subroutine calculate_forces_energy(parini,poisson,atoms)
     use mod_interface
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, get_rat
     use mod_parini, only: typ_parini
     use dynamic_memory
     use yaml_output
@@ -41,7 +41,7 @@ subroutine calculate_forces_energy(parini,poisson,atoms)
     poisson%bc=atoms%boundcond
     poisson%q(1:poisson%nat)=atoms%qat(1:atoms%nat)
     poisson%gw(1:poisson%nat)=gausswidth(1:atoms%nat)
-    poisson%rcart(1:3,1:poisson%nat)=atoms%rat(1:3,1:atoms%nat)
+    call get_rat(atoms,poisson%rcart)
     call put_charge_density(parini,poisson)
     call cpu_time(time(2))
     !-----------------------------------------------------------------------
