@@ -11,11 +11,13 @@ subroutine init_potential_forces_dftb(atoms)
     !character(5):: sat_t(nat)
     !local variables
     integer:: iat
-    character(7):: dir
+    !character(7):: dir
+    character(2):: dir
     character(50):: filename
     logical:: dftb_input_exists
     if(atoms%nat==0) stop 'ERROR: nat=0 in init_potential_forces_dftb'
-    write(dir,'(a4,i3.3)') 'proc',iproc
+    !write(dir,'(a4,i3.3)') 'proc',iproc
+    dir='./'
     filename=dir//'/dftb_in.hsd'
     inquire(file=trim(filename),exist=dftb_input_exists)
     if(dftb_input_exists) then
@@ -51,27 +53,62 @@ end subroutine final_potential_forces_dftb
 subroutine cal_potential_forces_dftb(atoms)
     use mod_interface
     use mod_atoms, only: typ_atoms, set_typat
+    use mod_const, only: bohr2ang
     !use mod_potential, only:
     use mod_processors, only: iproc
     implicit none
     type(typ_atoms), intent(inout):: atoms
     !local variables
-    character(7):: dir
+    !character(7):: dir
+    character(2):: dir
     character(50):: filename
     character(100):: command
     !real(8):: stress(3,3)
-    integer:: iat, itry
+    integer:: iat, itry, i
     logical:: success
     call set_typat(atoms)
     !write(*,*) atoms%ntypat
     !write(*,*) atoms%stypat(1:atoms%ntypat)
     !write(*,*) atoms%ltypat(1:atoms%ntypat)
     !stop
-    write(dir,'(a4,i3.3)') 'proc',iproc
+    !write(dir,'(a4,i3.3)') 'proc',iproc
+    dir='./'
     filename=dir//'/posinp.gen'
-    call writexyz_dftb(filename,atoms)
+    !call writexyz_dftb(filename,atoms)
+    !-------------------------------------------------------
+    open(unit=87,file="input_geometry.gen")
+    if(trim(atoms%boundcond)=='free') then
+        write(87,'(i5,a)') atoms%nat, " C"
+    elseif(trim(atoms%boundcond)=='wire' .or. trim(atoms%boundcond)=='slab' .or. &
+        trim(atoms%boundcond)=='bulk') then
+        write(87,'(i5,a)') atoms%nat, " S"
+    else
+        write(*,*) 'ERROR: unknown BC ',trim(atoms%boundcond)
+        stop
+    endif
+    write(87,*) (trim(atoms%stypat(i))//" ", i=1,atoms%ntypat)
+    if(trim(atoms%boundcond)=='free') then
+        do iat=1,atoms%nat
+            write(87,'(i5,1x,i5,3(1x,es25.15))') iat,atoms%itypat(iat),atoms%ratp(:,iat)*bohr2ang
+        end do
+    elseif(trim(atoms%boundcond)=='wire' .or. trim(atoms%boundcond)=='slab' .or. &
+        trim(atoms%boundcond)=='bulk') then
+        do iat=1,atoms%nat
+            write(87,'(i5,1x,i5,3(1x,es25.15))') iat,atoms%itypat(iat),atoms%ratp(:,iat)*bohr2ang
+        end do
+        write(87,'(3(1x,es25.15))') 0.d0,0.d0,0.d0
+        write(87,'(3(1x,es25.15))') atoms%cellvec(:,1)*bohr2ang
+        write(87,'(3(1x,es25.15))') atoms%cellvec(:,2)*bohr2ang
+        write(87,'(3(1x,es25.15))') atoms%cellvec(:,3)*bohr2ang
+    else
+        write(*,*) 'ERROR: unknown BC ',trim(atoms%boundcond)
+        stop
+    endif
+    close(87)
+    !-------------------------------------------------------
     !call system("sleep 1")
-    command='cd '//dir//'; ~/dftb+ ; cd ..'
+    !command='cd '//dir//'; ~/dftb+ ; cd ..'
+    command="./runjob.sh"
     call system(trim(command))
     filename=dir//'/detailed.out'
     !write(*,*) filename
