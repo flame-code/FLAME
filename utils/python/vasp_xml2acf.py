@@ -5,23 +5,25 @@ import copy
 from acf import *
 #*****************************************************************************************
 lastconf=False
-if len(sys.argv) < 2:
-    print "usage: vasp_xml2acf.py output_filename"
+if len(sys.argv) < 3:
+    print "usage: vasp_xml2acf.py vasprun.xml output_filename"
     exit()
-elif len(sys.argv)==3:
+elif len(sys.argv)==4:
     if sys.argv[1]=='-last':
         lastconf=True
     else:
         print "ERROR: wrong command option: %s" % sys.argv[1]
         exit()
-    filename = sys.argv[2]
-elif len(sys.argv)==2:
-    filename = sys.argv[1]
+    finp = sys.argv[2]
+    fout = sys.argv[3]
+elif len(sys.argv)==3:
+    finp = sys.argv[1]
+    fout = sys.argv[2]
 else:
     print "ERROR: only two command options are allowed."
     exit()
 
-f=open("vasprun.xml","r")
+f=open(finp,"r")
 atoms_all=[]
 ntypes=[]
 stypes=[]
@@ -121,7 +123,8 @@ for line in f.readlines():
     if str_line.find('e_wo_entrp')==12:
         atoms.epot=float(line.split()[2])
         ediff=abs(1000.0*(e_fr_energy-atoms.epot)/float(nat))
-        print "Difference between energy and free energy in meV: %6.3f" % ediff
+        if ediff>1.0:
+            print "WARNING: Difference between energy and free energy in (meV/atom): %6.3f" % ediff
         conf_complete=True
     #-------------------------------------------------------
     if conf_complete:
@@ -142,12 +145,12 @@ if lastconf==True:
     atoms_lastconf.append(Atoms())
     atoms_lastconf[-1]=copy.copy(atoms_all[-1])
     #writing last configuration into file
-    acf_write(atoms_lastconf,filename)
+    acf_write(atoms_lastconf,fout)
 else:
     #writing all configurations into file
-    acf_write(atoms_all,filename)
+    acf_write(atoms_all,fout)
     #writing atomic forces
-    filename_force="force_"+filename
+    filename_force="force_"+fout
     f=open(filename_force,"w")
     tt=27.211385/0.52917721
     nconf=0
