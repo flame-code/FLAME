@@ -39,7 +39,8 @@ subroutine fit_elecpot(parini)
     real(8),allocatable::  dft_rho(:,:,:), weight(:,:,:),weighted_rho(:,:,:), dft_pot(:,:,:), cent_pot(:,:,:)
     real(8),allocatable:: A(:,:), Q(:,:), At(:,:), Qt(:,:), qpar(:,:), apar(:,:),rpar(:,:), qpar_t(:,:), rat_t(:,:),rat(:,:)
     real(8),allocatable:: dft_fat(:,:), cent_fat(:,:), gwit(:), at_rat(:,:),cent_rho(:,:,:),cv_temp(:,:), atom_charge(:),atom_charge_type(:)
-    real(8),allocatable:: mean_arr(:), std_arr(:)
+    real(8),allocatable:: mean_arr(:), std_arr(:), a_type(:,:,:),q_type(:,:,:)
+    integer,allocatable:: natom_type(:)
     real(8) :: B1, B2, h , Be1 , Be2, Beta1, Beta2
     integer :: iter2, iter3, iat
     real(8) :: dx, dy, dz, dr, dxyz(3)
@@ -158,7 +159,7 @@ subroutine fit_elecpot(parini)
     end do
     volinv = (cv1*cv2*cv3)*cel_vol_inv
     !this is because get_psolver_bps changes poisson_dft%rho
-    dft_rho = poisson_dft%rho
+    dft_rho=poisson_dft%rho
 !///////////////////////////////////////////DFT PART//////////////////////////////////////
     dft_fat = 0.d0
     dft_ener= 0.d0 
@@ -175,59 +176,38 @@ subroutine fit_elecpot(parini)
     allocate(cent_pot(nx,ny,nz))
     allocate(qpar(1:lcn,1:atoms%nat),apar(1:lcn,1:atoms%nat),rpar(1:3,1:atoms%nat),qpar_t(1:lcn,1:atoms_type))
     allocate(cent_fat(1:3,1:atoms%nat))
+    !---------------------------------------------------------------------
     do i = 1 , lcn
-        ss=0
-        do j = 1 , atoms_type
-            ss = ss + t_num(j-1)
-            Q(i,ss+1:t_num(j)+ss) = Qt(i,j)
-            A(i,ss+1:t_num(j)+ss) = At(i,j)
+        do j = 1 , parini%ntypat
+            do k = 1 , atoms%nat
+                if(trim(atoms%sat(k))==trim(parini%stypat(j))) then
+                    a(i,k)=at(i,j)
+                    q(i,k)=qt(i,j)
+                end if
+            end do
         end do
     end do
     qnrm = (dft_q+0.d0)/(sum(Q(1:lcn,1:atoms%nat)))
     Q(1:lcn,1:atoms%nat) = Q(1:lcn,1:atoms%nat)*qnrm
     do i = 1 , lcn
-        ss = 0
-        do j = 1 , atoms_type
-            ss = ss + t_num(j-1)
-            qt(i,j)=q(i,1+ss)
-            at(i,j)=a(i,1+ss)
-        end do
-    end do
-    !read(1377,*) ! read left and right boundaries for x, y and z.
-    !read(1377,*)    rclx , rcrx
-    !read(1377,*)    rcly , rcry
-    !read(1377,*)    rclz , rcrz
-    !weight = 1.d0
-    !exc = 0.d0
-    !if(rclx>=0 .and. rcrx>=0 .and. rcly>=0 .and. rcry>=0 .and. rclz>=0 .and. rcrz>=0) then
-    !    rminx = minval(atoms%rat(1,:)); rminy = minval(atoms%rat(2,:)); rminz = minval(atoms%rat(3,:));
-    !    rmaxx = maxval(atoms%rat(1,:)); rmaxy = maxval(atoms%rat(2,:)); rmaxz = maxval(atoms%rat(3,:));
-    !    nclx=int((rminx-rclx)/hgx); ncrx=int((rmaxx+rcrx)/hgx);
-    !    ncly=int((rminy-rcly)/hgy); ncry=int((rmaxy+rcry)/hgy); 
-    !    nclz=int((rminz-rclz)/hgz); ncrz=int((rmaxz+rcrz)/hgz);
-    !    write(2,'(a,6i4)') 'Cutoff grid numbers (ncl? ncr?) : ',nclx, ncrx, ncly, ncry, nclz, ncrz
-    !    do iz = nclz , ncrz
-    !        do iy = ncly , ncry
-    !            do ix = nclx , ncrx
-    !                weight(ix,iy,iz) = 0.d0
-    !                exc = exc+1.d0
-    !            enddo
-    !        enddo
-    !    enddo
-    !else
-    !    write(2,*) 'Cutoff : whole cell is considered'
-    !end if
-    !ivolinv_integration = (cv1*cv2*cv3+0.d0)/(nx*ny*nz-exc+0.d0)
+        ss=1
+        do j = 1 , atoms%nat
+            if(trim(atoms%sat(j))==trim(parini%stypat(ss))) then
+                if(ss<=parini%ntypat) then
+                    qt(i,ss)=q(i,j)
+                    at(i,ss)=a(i,j)
+                    ss = ss+1
+                endif
+            endif
+        enddo
+    enddo 
     weight = 1.d0
     call set_rcov(atoms)
-    !if(rclx>=0 .and. rcrx>=0 .and. rcly>=0 .and. rcry>=0 .and. rclz>=0 .and. rcrz>=0) then
     if(parini%cutoff_fit_elecpot) then
-        !write(2,*) 'Cutoff : 2 times of covalent radius is considered for cutoff'
         call yaml_comment('Cutoff is based on exp(-r^4) and covalent radius.')
         call yaml_mapping_open('rcov',flow=.true.)
         call update_ratp(atoms)
         do i = 1 , atoms%nat
-        !write(2,*) 'rcov of ',atoms%sat(i),'is :',atoms%rcov(i)
             call yaml_map(trim(atoms%sat(i)),atoms%rcov(i),fmt='(f6.3)')
             do iz = 1 , nz
                 dz = (hgz*(iz-1)-atoms%ratp(3,i))**2
@@ -237,15 +217,12 @@ subroutine fit_elecpot(parini)
                         dx = (hgx*(ix-1)-atoms%ratp(1,i))**2
                         dr = sqrt(dx+dy+dz)
                         weight(ix,iy,iz) = weight(ix,iy,iz)*(1.d0-exp(-1.d0*(dr/(4.d0*atoms%rcov(i)))**4))
-                        !write(55,'(3i4,3es14.6)') ix, iy, iz,dr,exp(-1.d0*(dr/(2.d0*atoms%rcov(i)))**4)
-                        !write(66,*) ix, iy, iz, weight(ix,iy,iz)
                     enddo
                 enddo
             enddo
         enddo
         call yaml_mapping_close()
     else
-        !write(2,*) 'Cutoff : whole cell is considered'
         call yaml_comment('Cutoff : whole cell is considered')
     end if
     do iz = 1 , nz
@@ -272,10 +249,17 @@ subroutine fit_elecpot(parini)
     total_time = 0.d0
     allocate(cent%rel(1:3,1:atoms%nat))
     call yaml_sequence_open('SD iterations')
+    allocate(natom_type(parini%ntypat))
+    natom_type = 0
+    do i = 1 , parini%ntypat
+        do j = 1 , atoms%nat
+            if(trim(atoms%sat(j))==trim(parini%stypat(i))) natom_type(i)=natom_type(i)+1
+        end do
+    end do
+    allocate(a_type(lcn,parini%ntypat,maxval(natom_type)),q_type(lcn,parini%ntypat,maxval(natom_type)))
     do iter=1,huge(iter_max)
         call yaml_sequence(advance='no')
         call yaml_map('iter',iter)
-        !cent%rel(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
         do iat=1,atoms%nat
             atoms%qat(iat)=sum(Q(1:lcn,iat))
         enddo
@@ -301,19 +285,36 @@ subroutine fit_elecpot(parini)
         Q = Q - SD_S_Q*qpar
         A = A - SD_S_A*apar
         rat(1:3,1:atoms%nat) = rat(1:3,1:atoms%nat) - SD_S_R*rpar(1:3,1:atoms%nat)
-        !write(2,*) ' Total charge of cell: ',sum(Q)
         call yaml_map('sum of Q',sum(Q),fmt='(es15.7)')
         do i = 1 , lcn
-            ss = 0
-            do j = 1 , atoms_type
-                ss = ss + t_num(j-1)
-                qt(i,j)=q(i,1+ss)
-                at(i,j)=a(i,1+ss)
-            end do
-        end do
+               ss=1
+            do j = 1 , atoms%nat
+                if(trim(atoms%sat(j))==trim(parini%stypat(ss))) then
+                    if(ss<=parini%ntypat) then
+                        qt(i,ss)=q(i,j)
+                        at(i,ss)=a(i,j)
+                        ss = ss+1
+                    end if
+                endif
+            enddo
+        enddo 
         do i = 1 , lcn
-            do j = 1 , atoms_type
-                a(i,1+t_num(j-1):t_num(j-1)+t_num(j))=at(i,j)
+            do j = 1 , parini%ntypat
+                ss=1
+                do k = 1 , atoms%nat
+                    if(trim(atoms%sat(k))==trim(parini%stypat(j))) then
+                        a_type(i,j,ss)=a(i,k)
+                        q_type(i,j,ss)=q(i,k)
+                        ss=ss+1
+                    endif
+                enddo
+            enddo
+        enddo
+        do i = 1 , lcn
+            do j = 1 , parini%ntypat
+                do k = 1 , atoms%nat
+                    if(trim(atoms%sat(k))==trim(parini%stypat(j))) a(i,k)=at(i,j)
+                end do
             end do
         end do
         call yaml_sequence_open('info for each atom')
@@ -322,36 +323,20 @@ subroutine fit_elecpot(parini)
             call yaml_map('iat',i)
             call yaml_map('type',trim(atoms%sat(i)))
             call yaml_map('qpar',qpar(1:lcn,i),fmt='(es15.7)')
-            !do l = 1 , lcn
-            !    write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, QPAR : ',atoms%sat(i),i,iter,l,qpar(l,i)
-            !end do
             call yaml_map('apar',apar(1:lcn,i),fmt='(es15.7)')
-            !do l = 1 , lcn
-            !    write(2,'(a37,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, APAR : ',atoms%sat(i),i,iter,l,apar(l,i)
-            !end do
             call yaml_map('rpar',rpar(1:3,i),fmt='(es15.7)')
             call get_rat_iat(atoms,i,dxyz)
             dxyz(1:3)=rat(1:3,i)-dxyz(1:3)
             call yaml_map('dr',dxyz,fmt='(es15.7)')
-            !write(2,'(a39,a3,i3,i5,3es16.7)') 'Atom, Atom_Num, ITER, RAT_[X,Y,Z] : ',atoms%sat(i),i,iter,rat(1,i),rat(2,i),rat(3,i)
-            !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_X, dx :',atoms%sat(i),i,iter,rpar(1,i),atoms%rat(1,i)-rat(1,i)
-            !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Y, dy :',atoms%sat(i),i,iter,rpar(2,i),atoms%rat(2,i)-rat(2,i)
-            !write(2,'(a38,a3,i3,i5,2es16.7)') 'Atom, Atom_Num, ITER, RPAR_Z, dz :',atoms%sat(i),i,iter,rpar(3,i),atoms%rat(3,i)-rat(3,i)
             call yaml_map('rel',rat(1:3,i),fmt='(es15.7)')
             call yaml_map('Q',Q(1:lcn,i),fmt='(es15.7)')
             call yaml_map('A',A(1:lcn,i),fmt='(es15.7)')
             total_charge = 0.d0
             do l = 1 , lcn
                 total_charge = total_charge+Q(l,i)
-                !write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, Q : ',atoms%sat(i),i,iter,l,Q(l,i)
             end do
-            !write(2,'(a40,a3,2es14.6)') 'Atom, Total charge, charge changes : ',atoms%sat(i), total_charge, -abs(atom_charge(i))+abs(total_charge)
             call yaml_map('total charge',total_charge,fmt='(es15.7)')
             call yaml_map('charge changes',-abs(atom_charge(i))+abs(total_charge),fmt='(es15.7)')
-            !do l = 1 , lcn
-            !    write(2,'(a34,a3,i3,i5,i3,es16.7)') 'Atom, Atom_Num, ITER, LCN, A : ',atoms%sat(i),i,iter,l,A(l,i)
-            !end do
-            !write(2,*) '---------------------------'
         end do
         call yaml_sequence_close()
         err_max = 0.d0
@@ -373,53 +358,41 @@ subroutine fit_elecpot(parini)
         call yaml_mapping_open('SD',flow=.true.)
         call yaml_map('iter',iter)
         call yaml_map('rmse',rmse,fmt='(es14.6)')
-        !call yaml_map('pot_err',pot_err,fmt='(es14.6)')
         call yaml_map('err_max',err_max,fmt='(es14.6)')
-        !write(2,'(a,i6,3es14.6)')'ITER RMSE POT_ERR ERR_MAX: ',iter,rmse,pot_err,err_max
         if (abs(rmse_old-rmse) < err )then
             isatur=isatur+1
         else
             isatur=0
         endif
         call yaml_map('isatur',isatur)
-        !write(2,*) 'saturation number :',isatur
         call yaml_mapping_close()
         call cpu_time(finish)
         total_time = total_time + finish - start
         call yaml_map('time of each SD iter',finish-start,fmt='(f6.3)')
         write(2,'(a45,f6.3,a45)') "================================ ITER TIME : ",finish-start,"(sec)========================================"
         if(isatur>nsatur) then
-        !call yaml_map('dpm_err_norm',sqrt(sum(dpm_err**2)),fmt='(es14.6)')
-        !if(sqrt(sum(dpm_err**2))<err) then !!! HERE
             call yaml_comment('MAX CONVERSION REACHED',hfill='~')
-            !write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            !write(2,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAX CONVERSION REACHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             exit
         endif
     end do !end of loop over iter
     call yaml_sequence_close()
     call yaml_map('total time of SD',total_time,fmt='(f6.3)')
     call yaml_map('average time of each SD iter',(total_time)/real(iter,kind=8),fmt='(f6.3)')
-    !write(2,'(a36,f14.5,f14.5)') 'Total SD time, average per iter : ' , total_time , (total_time+0.d0)/(iter+0.d0)
     call yaml_sequence_open('final values of params')
-    ss = 0
-    do j = 1 , atoms_type
+        do i = 1 , parini%ntypat
         call yaml_sequence(advance='no')
-        ss = ss+t_num(j-1)
-        call yaml_map('type',trim(atoms%sat(ss+1)))
-        do i = 1 , lcn    
-            call stdval_rzx(Q(i,ss+1:ss+t_num(j)),t_num(j),mean,std,var)
-            !write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD Q of :',atoms%sat(ss+1), i,mean,var,std
-            mean_arr(i)=mean
-            std_arr(i)=std
+        call yaml_map('type',trim(parini%stypat(i)))
+        do j = 1 , lcn    
+            call stdval_rzx(q_type(j,i,1:natom_type(i)),natom_type(i),mean,std,var)
+            mean_arr(j)=mean
+            std_arr(j)=std
         enddo
         call yaml_map('avg of Q',mean_arr(1:lcn),fmt='(es14.6)')
         call yaml_map('std of Q',std_arr(1:lcn),fmt='(es14.6)')
-        do i = 1 , lcn    
-            call stdval_rzx(A(i,ss+1:ss+t_num(j)),t_num(j),mean,std,var)
-            !write(2,'(a,a3,i,3es14.6)') 'LCN, MEAN, VAR, STD A of :',atoms%sat(ss+1), i,mean,var,std
-            mean_arr(i)=mean
-            std_arr(i)=std
+        do j = 1 , lcn    
+            call stdval_rzx(a_type(j,i,1:natom_type(i)),natom_type(i),mean,std,var)
+            mean_arr(j)=mean
+            std_arr(j)=std
         enddo
         call yaml_map('avg of A',mean_arr(1:lcn),fmt='(es14.6)')
         call yaml_map('std of A',std_arr(1:lcn),fmt='(es14.6)')
@@ -472,7 +445,6 @@ subroutine fit_elecpot(parini)
         write(4,'(4es16.7)') ix*hgx , dft_rho(ix,ny/2,nz/2) ,cent_rho(ix,ny/2,nz/2),weighted_rho(ix,ny/2,nz/2)
     end do
 
-    !cent%rel(1:3,1:atoms%nat)=rat(1:3,1:atoms%nat)
     do iat=1,atoms%nat
         atoms%qat(iat)=sum(Q(1:lcn,iat))
     enddo
@@ -516,9 +488,6 @@ subroutine fit_elecpot(parini)
         call yaml_map('iat',i)
         call yaml_map('dft_fat',dft_fat(1:3,i),fmt='(es15.7)')
         call yaml_map('cent_fat',cent_fat(1:3,i),fmt='(es15.7)')
-        !write(2,'(a41,a3,i3,4es14.6)') 'ATOM, ATOM_NUM, force, total_force DFT : ',atoms%sat(i), i , dft_fat(1:3,i), total_force_dft
-        !write(2,'(a42,a3,i3,4es14.6)') 'ATOM, ATOM_NUM, force, total_force CENT : ',atoms%sat(i),i,cent_fat(1:3,i), total_force_cent
-        !write(2,'(a28,a3,i,es14.6)') 'ATOM, ATOM_NUM, force err : ',atoms%sat(i),i, force_err
     end do
     call yaml_sequence_close()
     force_err=sqrt(force_err)
