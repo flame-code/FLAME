@@ -451,9 +451,9 @@ subroutine fit_elecpot(parini)
     poisson_cent%rcart(1,1:atoms%nat) = rat(1,1:atoms%nat) - nbgx*hgx     
     poisson_cent%rcart(2,1:atoms%nat) = rat(2,1:atoms%nat) - nbgy*hgy     
     poisson_cent%rcart(3,1:atoms%nat) = rat(3,1:atoms%nat) - nbgz*hgz     
-    poisson_dft%rcart(1,1:atoms%nat)  = atoms%rat(1,1:atoms%nat)  - nbgx*hgx     
-    poisson_dft%rcart(2,1:atoms%nat)  = atoms%rat(2,1:atoms%nat)  - nbgy*hgy     
-    poisson_dft%rcart(3,1:atoms%nat)  = atoms%rat(3,1:atoms%nat)  - nbgz*hgz     
+    poisson_dft%rcart(1,1:atoms%nat)  = atoms%ratp(1,1:atoms%nat)  - nbgx*hgx     
+    poisson_dft%rcart(2,1:atoms%nat)  = atoms%ratp(2,1:atoms%nat)  - nbgy*hgy     
+    poisson_dft%rcart(3,1:atoms%nat)  = atoms%ratp(3,1:atoms%nat)  - nbgz*hgz     
     poisson_dft%rho = dft_rho
     poisson_cent%reset_rho = .True.
     poisson_cent%q = Q(1,1:atoms%nat)
