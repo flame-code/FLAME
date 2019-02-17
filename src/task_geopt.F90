@@ -68,7 +68,7 @@ subroutine geopt(parini)
             !file_info%filename_positions='posout.acf'
             !call acf_write(file_info,atoms=atoms,strkey='posout')
 
-            if(iconf==2) file_info%file_position='append'
+            if(iconf.gt.1) file_info%file_position='append'
             if(yaml_exists) then
                 file_info%filename_positions='posout.yaml'
                 call write_yaml_conf(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout')
