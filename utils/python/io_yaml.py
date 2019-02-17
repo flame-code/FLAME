@@ -1,10 +1,17 @@
 from atoms import *
 import copy
 import yaml
+
+############################################
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+############################################
 #*****************************************************************************************
 def read_yaml(filename):
     stream=open(filename, "r")
-    dict_list = list(yaml.load_all(stream))
+    dict_list = list(yaml.load_all(stream, Loader=Loader))
     atoms_all=[]
     for dl in dict_list:
         atoms=dict2atoms(dl)
