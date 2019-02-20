@@ -82,7 +82,7 @@ for line in f.readlines():
         if iline_positions==0:
             atoms.nat=nat
             atoms.boundcond="free"
-        atoms.sat.append(sat[iline_positions])
+        atoms.sat.append(sat[iline_positions].strip())
         #print atoms.sat[-1]
         atoms.rat.append([])
         xred=float(line.split()[1])

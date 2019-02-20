@@ -5,6 +5,7 @@ from io_yaml import *
 #****************************************************
 def replicate(na,nb,nc,atoms):
     atoms_out=Atoms()
+    atoms_out = atoms
     if atoms.boundcond=="bulk":
         for i in range(int(atoms.nat)):
             for n in range(0,int(na)):
@@ -32,8 +33,8 @@ def replicate(na,nb,nc,atoms):
     atoms_out.cellvec[2][1]=atoms.cellvec[2][1]*nc
     atoms_out.cellvec[2][2]=atoms.cellvec[2][2]*nc
     atoms_out.nat = na*nb*nc*atoms.nat    
-    atoms_out.boundcond="bulk"
-    atoms_out.epot=atoms.epot
+    if (na!=1 and nb!=1 and nc!=1):
+        atoms_out.epot = 1.E100
     return atoms_out
 #****************************************************
 str1 = "This script replicate a structure in the cell vectors direction."
