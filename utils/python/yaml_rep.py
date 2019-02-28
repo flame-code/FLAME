@@ -5,7 +5,8 @@ from io_yaml import *
 #****************************************************
 def replicate(na,nb,nc,atoms):
     atoms_out=Atoms()
-    atoms_out = atoms
+    atoms_out.boundcond = atoms.boundcond
+    atoms_out.units_length_io = atoms.units_length_io
     if atoms.boundcond=="bulk":
         for i in range(int(atoms.nat)):
             for n in range(0,int(na)):
@@ -33,8 +34,6 @@ def replicate(na,nb,nc,atoms):
     atoms_out.cellvec[2][1]=atoms.cellvec[2][1]*nc
     atoms_out.cellvec[2][2]=atoms.cellvec[2][2]*nc
     atoms_out.nat = na*nb*nc*atoms.nat    
-    if (na!=1 and nb!=1 and nc!=1):
-        atoms_out.epot = 1.E100
     return atoms_out
 #****************************************************
 str1 = "This script replicate a structure in the cell vectors direction."
@@ -48,7 +47,11 @@ parser.add_argument('n3', type=int, help='scales c by n3 factor')
 args=parser.parse_args()
 
 atoms_all=read_yaml(args.fn_inp)
-atoms=atoms_all[-1]
+nconf = len(atoms_all)
+if (nconf!=1):
+    print "ERROR : Number of configurations in the input file is %d" %nconf
+    exit()
+atoms=copy.copy(atoms_all[-1])
 n1 = args.n1
 n2 = args.n2
 n3 = args.n3
