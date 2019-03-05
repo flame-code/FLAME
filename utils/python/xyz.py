@@ -82,3 +82,25 @@ def xyz_write(atoms_all,frmt):
             else:
                 print "%5s  %23.14E%23.14E%23.14E%5s" % (atoms.sat[i],x,y,z,atoms.bemoved[i])
 #*****************************************************************************************
+def xyz_write_b(atoms_all,frmt,filename):
+    f= open(filename,"w")
+    iconf=0
+    for atoms in atoms_all:
+        iconf+=1
+        if frmt=='bigdft':
+            first="%d  angstroem  struct%5.5d" % (atoms.nat,iconf)
+            second=atoms.boundcond
+        else:
+            first="%d" % atoms.nat
+            second=''
+        f.write("%s \n" % (first))
+        f.write("%s \n" % (second))
+        for i in range(atoms.nat):
+            x=atoms.rat[i][0]
+            y=atoms.rat[i][1]
+            z=atoms.rat[i][2]
+            if frmt=='bigdft':
+                f.write("%5s  %23.14E%23.14E%23.14E \n" % (atoms.sat[i],x,y,z))
+            else:
+                f.write("%5s  %23.14E%23.14E%23.14E%5s\n" % (atoms.sat[i],x,y,z,atoms.bemoved[i]))
+#*****************************************************************************************

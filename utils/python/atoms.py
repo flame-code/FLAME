@@ -10,6 +10,9 @@ class Atoms:
         self.nat=-1
         self.nmolecule=-1
         self.cellvec=[[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
+        self.qpm=[[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
+        self.dpm=[0.0,0.0,0.0]
+        self.elecfield=[0.0,0.0,0.0]
         self.boundcond="unknown"
         self.epot=1.E100
         self.qtot=0.0
@@ -22,3 +25,6 @@ class Atoms:
         self.qtot_present=False
         self.bemoved_present=False
         self.vat_present=False
+        self.dpm_present=False
+        self.qpm_present=False
+        self.elecfield_present=False

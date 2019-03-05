@@ -21,8 +21,8 @@ unless(-f $filename) {
     exit 0;
 }
 
-$forces = `grep 'Maximum force component' $filename` ;
-$energy = `grep 'Total energy uncorrected' $filename` ;
+$forces = `grep -a 'Maximum force component' $filename` ;
+$energy = `grep -a 'Total energy uncorrected' $filename` ;
 
 @forces = split /\n/ , $forces ;
 @energy = split /\n/ , $energy ; 
