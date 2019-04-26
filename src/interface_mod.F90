@@ -226,11 +226,13 @@ subroutine get_amat_cent1(atoms,ann_arr,a)
     type(typ_ann_arr), intent(inout):: ann_arr
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
 end subroutine get_amat_cent1
-subroutine fini_electrostatic_cent1(parini,atoms,poisson)
+subroutine fini_electrostatic_cent1(parini,ann_arr,atoms,poisson)
     use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
 end subroutine fini_electrostatic_cent1

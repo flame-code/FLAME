@@ -84,6 +84,7 @@ module mod_ann
         logical:: cal_force=.true.
         character(30):: event='unknown'
         character(50):: approach='unknown'
+        character(50):: syslinsolver='unknown'
         real(8):: rcut=-1.d0
         real(8):: ener_ref
         real(8):: epot_es

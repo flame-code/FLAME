@@ -122,7 +122,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
         ann_arr%fchi_angle=tt3/(tt1*tt2)
         ann_arr%fchi_norm=tt2/tt1
     endif
-    call fini_electrostatic_cent1(parini,atoms,poisson)
+    call fini_electrostatic_cent1(parini,ann_arr,atoms,poisson)
     !call repulsive_potential_cent(parini,atoms,ann_arr)
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)
@@ -171,7 +171,7 @@ subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
     integer:: iat
     real(8):: qtot
     character(200):: smsg
-    if(trim(parini%syslinsolver_ann)=='direct') then
+    if(trim(ann_arr%syslinsolver)=='direct') then
         if(trim(atoms%boundcond)=='free') then
             call get_qat_from_chi_dir(parini,ann_arr,atoms,a)
             !qtot=0.d0
@@ -186,7 +186,7 @@ subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
             write(*,'(2a)') trim(smsg),trim(atoms%boundcond)
             stop
         endif
-    elseif(trim(parini%syslinsolver_ann)=='apply_matrix') then
+    elseif(trim(ann_arr%syslinsolver)=='apply_matrix') then
         if(trim(atoms%boundcond)=='free') then
             call get_qat_from_chi_iter(parini,ann_arr,atoms,a)
         else
@@ -195,7 +195,7 @@ subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
             write(*,'(2a)') trim(smsg),trim(atoms%boundcond)
             stop
         endif
-    elseif(trim(parini%syslinsolver_ann)=='operator') then
+    elseif(trim(ann_arr%syslinsolver)=='operator') then
         call get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     else
         stop 'ERROR: unknown syslinsolver'
@@ -285,6 +285,15 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     real(8):: dx, dy, dz, r, tt1, tt2, pi, beta_iat, beta_jat, gama, ttf
     associate(epot_es=>ann_arr%epot_es)
     pi=4.d0*atan(1.d0)
+    if(trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train') then
+        if(trim(atoms%boundcond)=='free') then
+            ann_arr%syslinsolver=trim(parini%syslinsolver_ann)
+        else
+            ann_arr%syslinsolver='operator'
+        endif
+    else
+        ann_arr%syslinsolver=trim(parini%syslinsolver_ann)
+    endif
     ann_arr%ener_ref=0.d0
     do iat=1,atoms%nat
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
@@ -301,12 +310,12 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
             poisson%alpha=parini%alpha_ewald
         endif
     end if
-    if(trim(parini%syslinsolver_ann)=='direct' .or. trim(parini%syslinsolver_ann)=='apply_matrix') then
+    if(trim(ann_arr%syslinsolver)=='direct' .or. trim(ann_arr%syslinsolver)=='apply_matrix') then
         if(trim(atoms%boundcond)/='free') then
             write(*,*) 'ERROR: syslinsolver=direct can be used only for free BC.'
         endif
         call get_amat_cent1(atoms,ann_arr,a)
-    elseif(trim(parini%syslinsolver_ann)=='operator') then
+    elseif(trim(ann_arr%syslinsolver)=='operator') then
         if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
             allocate(gausswidth(atoms%nat))
             gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
@@ -314,11 +323,12 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
             call init_hartree(parini,atoms,poisson,gausswidth)
             deallocate(gausswidth)
         else
-            write(*,*) 'ERROR: currently syslinsolver=operator only for BC=bulk/slab.'
+            write(*,'(a)',advance='no') 'ERROR: currently syslinsolver=operator only '
+            write(*,'(2a)') 'for BC=bulk/slab, but now BC=',trim(trim(atoms%boundcond))
             stop
         endif
     else
-        write(*,*) 'ERROR: unknown value for syslinsolver',trim(parini%syslinsolver_ann)
+        write(*,*) 'ERROR: unknown value for syslinsolver',trim(ann_arr%syslinsolver)
         stop
     endif
     end associate
@@ -357,18 +367,20 @@ subroutine get_amat_cent1(atoms,ann_arr,a)
     a(atoms%nat+1,atoms%nat+1)=0.d0
 end subroutine get_amat_cent1
 !*****************************************************************************************
-subroutine fini_electrostatic_cent1(parini,atoms,poisson)
+subroutine fini_electrostatic_cent1(parini,ann_arr,atoms,poisson)
     use mod_interface
     use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     !use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    if(trim(parini%syslinsolver_ann)=='operator') then
+    if(trim(ann_arr%syslinsolver)=='operator') then
         call fini_hartree(parini,atoms,poisson)
     endif
 end subroutine fini_electrostatic_cent1
