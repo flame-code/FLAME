@@ -101,9 +101,7 @@ subroutine ann_train(parini)
     endif
     !endif
     !-------------------------------------------------------------------------------------
-    if (.not. parini%restart_param) then
-        call set_annweights(parini,opt_ann,ann_arr)
-    endif
+    call set_annweights(parini,opt_ann,ann_arr)
     if(trim(parini%approach_ann)=='cent2') then
         call set_single_atom_energy(parini,ann_arr,opt_ann)
     endif
