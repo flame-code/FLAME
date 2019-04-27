@@ -286,10 +286,10 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
     associate(epot_es=>ann_arr%epot_es)
     pi=4.d0*atan(1.d0)
     if(trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train') then
-        if(trim(atoms%boundcond)=='free') then
-            ann_arr%syslinsolver=trim(parini%syslinsolver_ann)
+        if(trim(atoms%boundcond)=='free' .and. parini%free_bc_direct) then
+            ann_arr%syslinsolver='direct'
         else
-            ann_arr%syslinsolver='operator'
+            ann_arr%syslinsolver=trim(parini%syslinsolver_ann)
         endif
     else
         ann_arr%syslinsolver=trim(parini%syslinsolver_ann)
@@ -760,6 +760,9 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
             atoms%qat(iat)=atoms%qat(iat)-alpha*g(iat)
         enddo
     enddo
+    if(.not. (gnrm<1.d-7)) then
+        call yaml_sequence_close()
+    endif
     !do iat=1,nat
     !    write(*,'(i5,4f10.3)') iat,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
     !enddo

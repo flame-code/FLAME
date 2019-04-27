@@ -101,6 +101,7 @@ module mod_parini
         logical:: fit_hoppint=.false. 
         logical:: save_symfunc_force_ann=.false.
         logical:: save_symfunc_behnam=.false.
+        logical:: free_bc_direct=.false.
         !-----------------------------------------------------------------------
         !parameters of [saddle_1s]
         logical:: avail_saddle_1s=.false.

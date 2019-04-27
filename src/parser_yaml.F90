@@ -333,6 +333,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%save_symfunc_force_ann=parini%subdict//"save_symfunc_force"
     parini%weight_hardness=parini%subdict//"weight_hardness"
     parini%save_symfunc_behnam=parini%subdict//"save_symfunc_behnam"
+    parini%free_bc_direct=parini%subdict//"freeBC_direct"
     parini%ftol_ann=parini%subdict//"ftol"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
