@@ -110,7 +110,7 @@
    dt_min                              : 1.0
    dt_max                              : 80.0
    strfact                             : 100.0
- saddle_1s_opt:
+ saddle_opt:
    method                              : unknown
    fmaxtol                             : -1.0
    alphax                              : -1.0
@@ -130,7 +130,7 @@
    dt_min                              : 1.0
    dt_max                              : 80.0
    strfact                             : 100.0
- saddle_1s:
+ saddle:
    list_random_displace                : None
    dimsep                              : -1.0
    ampl                                : -1.0

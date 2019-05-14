@@ -4125,18 +4125,18 @@ subroutine get_geopt_prec_parameters(file_ini,parini)
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
 end subroutine get_geopt_prec_parameters
-subroutine get_saddle_1s_opt_parameters(file_ini,parini)
+subroutine get_saddle_opt_parameters(file_ini,parini)
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
-end subroutine get_saddle_1s_opt_parameters
-subroutine get_saddle_1s_parameters(file_ini,parini)
+end subroutine get_saddle_opt_parameters
+subroutine get_saddle_parameters(file_ini,parini)
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
-end subroutine get_saddle_1s_parameters
+end subroutine get_saddle_parameters
 subroutine get_potential_parameters(file_ini,parini)
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini
@@ -4276,14 +4276,14 @@ subroutine yaml_get_geopt_prec_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
 end subroutine yaml_get_geopt_prec_parameters
-subroutine yaml_get_saddle_1s_opt_parameters(parini)
+subroutine yaml_get_saddle_opt_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
-end subroutine yaml_get_saddle_1s_opt_parameters
-subroutine yaml_get_saddle_1s_parameters(parini)
+end subroutine yaml_get_saddle_opt_parameters
+subroutine yaml_get_saddle_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
-end subroutine yaml_get_saddle_1s_parameters
+end subroutine yaml_get_saddle_parameters
 subroutine yaml_get_potential_parameters(parini)
     use mod_parini, only: typ_parini
     type(typ_parini), intent(inout):: parini
@@ -4743,12 +4743,12 @@ subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm
     real(8), allocatable:: uvp(:,:) !unit vector normal to uvn ie. \hat{\phi} 
 end subroutine rotatedimer
 ! ./src/saddle_1s.F90 :
-subroutine surface_walking(parini)
+subroutine dimer_method(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
     use mod_opt, only: typ_paropt
     type(typ_parini), intent(in):: parini
-end subroutine surface_walking
+end subroutine dimer_method
 subroutine read_input(atoms_s) !,paropt)
     use mod_atoms, only: typ_atoms
     type(typ_atoms), intent(inout):: atoms_s
@@ -4942,6 +4942,474 @@ subroutine ylm_mathematica(l,m,theta,phi,ylm_r,ylm_i)
 integer:: l,m
 real(8):: theta,phi,ylm_r,ylm_i
 end subroutine ylm_mathematica
+! ./src/splinedsaddle.F90 :
+subroutine splined_saddle(parini)
+  use mod_parini, only: typ_parini
+  use mod_atoms, only: typ_atoms, atom_deallocate, typ_atoms_arr
+  type(typ_parini), intent(in):: parini
+  character(len=*), parameter :: subname='BigDFT'
+end subroutine splined_saddle
+subroutine givemesaddle(parini,epot_sp,ratsp,fatsp,ifile,nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use minimization_sp, only:parameterminimization_sp  !Reza
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    use mod_atoms, only: typ_atoms, update_ratp, set_rat, update_rat, typ_file_info
+    use mod_atoms, only: get_rat, typ_atoms_arr, atom_deallocate
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms):: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer :: np,np_neb,np_t,iat,ifile
+    real(8) ::epot_sp,ratsp(3,atoms%nat),fatsp(3,atoms%nat),fnoise
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine givemesaddle
+subroutine change_np(n,np1,x1,atoms,np2,x2)
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    integer::n,np1,np2,i,ip,mp,iat,ixyz
+    real(8)::x1(n,0:np1),x2(n,0:np2)
+    type(typ_atoms), intent(inout) :: atoms
+end subroutine change_np
+subroutine pickbestanchors2(parini,n,np,x,fends,pnow,nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_parini), intent(in):: parini
+    integer :: n,np,i,ip,npv,nproc,iproc,mp,ncount_bigdft,ixyz,iat,icycle,ncycle
+    real(8)::x(n,0:np),fends(n,2) !,f(n,0:np),calnorm
+    type(typ_atoms), intent(inout) :: atoms
+    type(parametersplinedsaddle)::pnow,pold
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine pickbestanchors2
+subroutine pickbestanchors(parini,n,np,x,fends,pnow,nproc,iproc,atoms,             ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    type(typ_parini), intent(in):: parini
+    integer::n,np,i,ip,istat,npv,nproc,iproc,mp,ncount_bigdft,ixyz,iat
+    real(8)::x(n,0:np),fends(n,2) !,f(n,0:np),calnorm
+    type(typ_atoms), intent(inout) :: atoms
+    type(parametersplinedsaddle)::pnow,pold
+    integer, parameter :: ndeb1=0
+end subroutine pickbestanchors
+subroutine readinputsplsad(iproc,np,np_neb,parmin,parmin_neb,pnow)
+    use minimization_sp, only:parameterminimization_sp
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    type(parameterminimization_sp)::parmin_neb,parmin
+    type(parametersplinedsaddle)::pnow
+    integer::iproc,np,np_neb,ios,iline,ich,ios_t,ios_open
+end subroutine readinputsplsad
+subroutine neb(parini,n,nr,np,x,f,parmin,pnow,nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use minimization_sp, only:parameterminimization_sp
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::n,nr,np,ip,icall,istat,it,nwork,nra
+    real(8)::x(n,0:np),f(n,0:np)
+    type(parameterminimization_sp)::parmin
+    type(parametersplinedsaddle)::pnow,pold
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine neb
+subroutine atomic_copymoving_forward_ss(atoms,n,x,nr,xa)
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_atoms), intent(inout) :: atoms
+    integer::n,nr,i,iat,ixyz,ir
+    real(8)::x(n),xa(nr)
+end subroutine atomic_copymoving_forward_ss
+subroutine atomic_copymoving_backward_ss(atoms,nr,xa,n,x)
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_atoms), intent(inout) :: atoms
+    integer::n,nr,i,iat,ixyz,ir
+    real(8)::x(n),xa(nr)
+end subroutine atomic_copymoving_backward_ss
+subroutine calmaxforcecomponentsub(atoms,f,fnrm,fspmax)
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_atoms), intent(inout) :: atoms
+    real(8)::f(3*atoms%nat),fnrm,fspmax
+end subroutine calmaxforcecomponentsub
+subroutine calmaxforcecomponentanchors(atoms,np,f,fnrm,fspmax)
+    use mod_atoms, only: typ_atoms
+    type(typ_atoms), intent(inout) :: atoms
+    integer::np,i,ip,iat,ixyz
+    real(8)::f(3*atoms%nat,1:np-1),fnrm,fspmax
+end subroutine calmaxforcecomponentanchors
+subroutine nebforce(parini,n,np,x,f,fnrmtot,pnow,nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, set_rat !, update_ratp
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::n,np,i,ip,istat,infocode
+    real(8)::x(n,0:np),f(n,0:np),fnoise
+    real(8)::tt,t1,t2,springcons,fnrmtot,time1,time2,fnrmarr(99),fspmaxarr(99),DNRM2
+    type(parametersplinedsaddle)::pnow
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine nebforce
+subroutine splinedsaddle(parini,n,nr,np,x,etmax,f,xtmax,parmin,fends,pnow,nproc, &
+    iproc,atoms,ncount_bigdft,fatsp)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    use minimization_sp, only:parameterminimization_sp
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::n,nr,np,i,ip,icall,istat,it,nwork,nra
+    real(8)::x(n,0:np),f(n,0:np),fends(n,2),etmax,xtmax(n),fatsp(n)
+    type(parameterminimization_sp)::parmin
+    type(parametersplinedsaddle)::pnow,pold
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine splinedsaddle
+subroutine bfgs_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
+    use minimization_sp, only:parameterminimization_sp
+    integer::iproc,nr,nwork,mf,my,ms,nrsqtwo,iw1,iw2,iw3,iw4,info,i,j,l,mx
+    real(8)::x(nr),f(nr),epot,work(nwork)
+    type(parameterminimization_sp)::parmin
+end subroutine bfgs_splsad
+subroutine dfp_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
+    use minimization_sp, only:parameterminimization_sp
+    integer::iproc,nr,nwork,mf,my,ms,nrsqtwo,iw1,iw2,iw3,info,i,j,l,mx
+    real(8)::x(nr),f(nr),epot,work(nwork)
+    type(parameterminimization_sp)::parmin
+end subroutine dfp_splsad
+subroutine reportcalvmaxanchorforces(iproc,icall,n,np,x,etmax,fspnrm,fspmax,pnow,atoms,ncount_bigdft)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    integer::iproc,icall,n,np,ncount_bigdft
+    real(8)::x(n,0:np),etmax,fspnrm,fspmax,cbh1,cbh2
+    type(parametersplinedsaddle)::pnow
+    type(typ_atoms), intent(inout) :: atoms
+    character(25), parameter::frt1='(a,2i5,2es24.15,a,2f15.5)'
+end subroutine reportcalvmaxanchorforces
+subroutine testparmin(iproc,it,parmin,str)
+    use minimization_sp, only:parameterminimization_sp
+    integer::iproc,it,ii
+    type(parameterminimization_sp)::parmin
+    character(*)::str
+end subroutine testparmin
+subroutine perpendicularforce(parini,n,np,x,f,pnow,nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, set_rat !, update_ratp, update_rat
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::n,np,i,ip,istat,infocode,mp
+    real(8)::x(n,0:np),f(n,0:np),fnoise,epotarr(0:100)
+    type(parametersplinedsaddle)::pnow
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine perpendicularforce
+subroutine calvmaxanchorforces(parini,istep,n,np,x,xold,fends,etmax,f,xtmax,pnow,pold,ftmax, &
+    nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, set_rat !, update_ratp, update_rat
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::n,np,mp,i,ip,j,infocode
+    real(8)::x(n,0:np),xold(n,0:np),fends(n,2),f(n,0:np),xtmax(n),ftmax(n)
+    integer::istat,istep
+    type(parametersplinedsaddle)::pnow,pold
+    real(8)::etmax,tt,fnoise,time1,time2
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine calvmaxanchorforces
+subroutine checkpathway(iproc,istep,n,np,x,xold,pnow)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::iproc,istep,n,np,ip,i
+    real(8)::x(n,0:np),xold(n,0:np),dmax
+    type(parametersplinedsaddle)::pnow
+end subroutine checkpathway
+subroutine caltmax2(parini,istep,n,np,x,xold,fends,epot,xt,ft,pnow,pold,nproc,iproc,atoms, &
+        ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::istep,n,np,ip,mp,mpv,iter,npv,ipv,ibad,ibadold
+    real(8)::x(n,0:np),xold(n,0:np),fends(n,2),xt(n),ft(n)
+    type(parametersplinedsaddle)::pnow,pold
+    real(8)::epot,alpha,oneisideal,vdold,vdtol
+    character(32), parameter::frt =  '(3i5,e24.15,e15.6,e13.5,4e12.4)' !IS THERE A BUG HERE?
+    character(37), parameter::frt2='(a,3i5,es24.15,es15.6,es13.5,4es12.4)'
+end subroutine caltmax2
+subroutine polish_sv(npv,pnow)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::npv,ipv,lpvarr(100),lpvn,mpv
+    type(parametersplinedsaddle)::pnow
+end subroutine polish_sv
+subroutine write_v_of_t(iproc,istep,npv,pnow,icall,fn)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::iproc,istep,npv,mpv,ipv
+    type(parametersplinedsaddle)::pnow
+    character(*)::fn
+    integer::icall
+end subroutine write_v_of_t
+subroutine ffdfdd_hermite(n,s,h,e,ed,t,m,v,vd,vdd)
+    integer::n,m
+    real(8)::s(0:n),h(n),e(0:n),ed(0:n),t,v,vd,vdd
+end subroutine ffdfdd_hermite
+subroutine fdd_quadratic(n,s,h,e,t,m,vd,vdd)
+    integer::n,m
+    real(8)::s(0:n),h(n),e(0:n),t,vd,vdd
+end subroutine fdd_quadratic
+subroutine calv_quadratic(iproc,istep,npv,pnow,mpv,vdc,vddc)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::iproc,istep,npv,mpv
+    type(parametersplinedsaddle)::pnow
+    real(8)::vdc,vddc
+end subroutine calv_quadratic
+subroutine calv_hermite(iproc,istep,npv,pnow,mpv,vc,vdc,vddc)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::iproc,istep,npv,mpv
+    type(parametersplinedsaddle)::pnow
+    real(8)::vc,vdc,vddc
+end subroutine calv_hermite
+subroutine guessinitialtmax_hermite(npv,pnow)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::npv,ipvt,istat,iroot,nroot,npvt
+    type(parametersplinedsaddle)::pnow
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine guessinitialtmax_hermite
+subroutine calvcubic(iproc,istep,npv,pnow,mpv,vc,vdc,vddc)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::iproc,istep,npv,mpv
+    type(parametersplinedsaddle)::pnow
+    real(8)::vc,vdc,vddc
+end subroutine calvcubic
+subroutine calvquintic(iproc,istep,npv,pnow,mpv,vq,vdq,vddq)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::iproc,istep,npv,mpv
+    type(parametersplinedsaddle)::pnow
+    real(8)::vq,vdq,vddq
+end subroutine calvquintic
+subroutine fill_ex_exd(parini,istep,n,np,x,fends,npv,pnow,pold,xt,ft,nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    use mod_atoms, only: typ_atoms, set_rat !, update_ratp, update_rat
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::istep,n,np,ip,mp,i,npv,infocode
+    real(8)::x(n,0:np),fends(n,2),xt(n),ft(n),dt
+    type(parametersplinedsaddle)::pnow,pold
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine fill_ex_exd
+subroutine estimate_sv(iproc,istep,np,npv,pnow,pold)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::iproc,istep,np,npv,ip,mp,icycle,ncycle
+    type(parametersplinedsaddle)::pnow,pold
+end subroutine estimate_sv
+subroutine insertpoint(npv,epot,vd,mpv,np,pnow)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::npv,mpv,np,ip,lpv
+    real(8)::epot,vd
+    type(parametersplinedsaddle)::pnow
+end subroutine insertpoint
+subroutine guessinitialtmax_cubic(npv,pnow)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::npv,ipvt,istat,iroot,nroot,npvt
+    type(parametersplinedsaddle)::pnow
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine guessinitialtmax_cubic
+subroutine guessinitialtmax_quintic(npv,pnow,iproc)
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    integer::npv,mpv,ipvt,istat,iroot,nroot,npvt,iproc
+    type(parametersplinedsaddle)::pnow
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine guessinitialtmax_quintic
+subroutine factor_inter_quintic(n,h,y,d,a,b)
+    integer::n,i,j,k,info
+    integer, parameter::kl=2,ku=2
+    real(8)::h(n),y(0:n),d(0:n),a(n),b(n),t1,t2,t3,t4
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine factor_inter_quintic
+subroutine ffdfdd_quintic(n,s,h,y,d,a,b,i,t,v,vd,vdd)
+    integer::n,i
+    real(8)::y(0:n),d(0:n),s(0:n),h(n),a,b,t,v,vd,vdd
+end subroutine ffdfdd_quintic
+subroutine calindex(np,s,t,ip,strcall)
+    integer::np,ip
+    real(8)::s(0:np),t
+    character(*)::strcall
+end subroutine calindex
+subroutine prepdd(atoms,n,np,x,e1,e2,h,s,mp,tmax,dd)
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_atoms), intent(inout) :: atoms
+    integer::n,np,mp,istat,i,info,ip,j,jp
+    real(8)::x(n,0:np),e1(np-1),e2(np-2),h(np),s(0:np),dd(n,n,np-1),tmax
+    integer, parameter::ndeb1=0
+end subroutine prepdd
+subroutine prepcd3cd4(np,h,mp,ainv,i,j,yi,yj,cd1,cd2)
+    integer::np,mp,istat,i,j,ip,jp
+    real(8)::h(np),yi(0:np),yj(0:np),cd1(np-1),cd2(np-1),ainv(np-1,np-1)
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine prepcd3cd4
+subroutine prepcd1cd2(np,h,mp,yi,yj,cd1,cd2,ainv)
+    integer::np,mp,istat,ip,jp
+    real(8)::h(np),yi(0:np),yj(0:np),cd1(np-1),cd2(np-1),ainv(np-1,np-1),t1,t2,t3,t4
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine prepcd1cd2
+subroutine func_ss(parini,tt,epot,ett,n,np,x,pnow,mp,xt,ft,nproc,iproc,atoms,ncount_bigdft)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms,set_rat !, update_ratp, update_rat
+    use modulesplinedsaddle, only:parametersplinedsaddle
+    type(typ_parini), intent(in):: parini
+    integer, intent(in) :: nproc,iproc
+    type(typ_atoms), intent(inout) :: atoms
+    integer, intent(inout) :: ncount_bigdft
+    integer::n,np,mp,i,istat,infocode
+    type(parametersplinedsaddle)::pnow
+    real(8)::tt,ett,x(n,0:np),epot,xt(n),ft(n),t1,fnoise,time1,time2
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine func_ss
+subroutine equalarclengthparametrization(atoms,n,np,x,s,h)
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_atoms), intent(in) :: atoms
+    integer::n,np
+    real(8)::x(n,0:np),s(0:np),h(np),tt
+end subroutine equalarclengthparametrization
+subroutine factor_cubic(np,h,e1,e2)
+    integer::np
+    real(8)::h(np),e1(np-1),e2(np-2) 
+end subroutine factor_cubic
+subroutine inter_cubic(np,y,h,e1,e2,c)
+    integer::np
+    real(8)::y(0:np),h(np),e1(np-1),e2(np-2),c(0:np)
+end subroutine inter_cubic
+subroutine qdq(np,s,mp,tmax,c,h,i,j,yi,yj,cd1,cd2,dd)
+    integer::np,mp,i,j,ip,istat
+    real(8)::s(0:np),tmax,c(0:np),h(np),yi(0:np),yj(0:np),cd1(np-1),cd2(np-1),dd(np-1)
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine qdq
+subroutine calsd1sd2(np,mp,yi,h,sd1,sd2)
+    integer::np,mp,ip
+    real(8)::yi(0:np),h(np),sd1(np-1),sd2(np-1)
+end subroutine calsd1sd2
+function delta_ss(i,j)
+    integer::i,j
+    real(8)::delta_ss
+end function delta_ss
+subroutine ffdfdd_cubic(np,y,s,mp,hmp,t,c,f,fd,fdd)
+    integer::np,mp
+    real(8)::y(0:np),s(0:np),hmp,c(0:np),t,p0,p1,p2,p3,f,fd,fdd
+end subroutine ffdfdd_cubic
+subroutine caltangentupwind(n,np,x,ex,tang)
+    integer::n,np,ip
+    real(8)::x(n,0:np),ex(0:np),tang(n,0:np)
+end subroutine caltangentupwind
+subroutine normalizevector2(n,v)
+    integer::n,i
+    real(8)::v(n),vnrm
+end subroutine normalizevector2
+subroutine initminimize_ss(parmin)
+    use minimization_sp, only:parameterminimization_sp
+    type(parameterminimization_sp)::parmin
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine initminimize_ss
+subroutine finalminimize_ss(parmin)
+    use minimization_sp, only:parameterminimization_sp
+    type(parameterminimization_sp)::parmin
+end subroutine finalminimize_ss
+subroutine checkconvergence(parmin,fspmax)
+    use minimization_sp, only:parameterminimization_sp
+    real(8)::fspmax
+    type(parameterminimization_sp)::parmin
+end subroutine checkconvergence
+subroutine initsdminimum_ss(n,nr,x,parmin,nwork,work)
+    use minimization_sp, only:parameterminimization_sp
+    integer::n,nr,nwork
+    real(8)::x(n),work(nwork)
+    type(parameterminimization_sp)::parmin
+end subroutine initsdminimum_ss
+subroutine fire_splsad(iproc,nr,x,epot,f,work,parmin)
+    use minimization_sp, only:parameterminimization_sp
+    integer::iproc,nr
+    real(8)::x(nr),epot,f(nr),de,DDOT,fnrm,fmax,vnrm,dt,p
+    real(8)::work(3*nr) !1:nr velocities, nr+1:2*nr previous force
+    type(parameterminimization_sp)::parmin
+end subroutine fire_splsad
+subroutine sdminimum_ss(iproc,n,nr,x,f,epot,parmin,nwork,work)
+    use minimization_sp, only:parameterminimization_sp
+    integer::iproc,n,nr,nwork
+    real(8)::x(n),f(n),epot,work(nwork),fmax,fnrm
+    type(parameterminimization_sp)::parmin
+end subroutine sdminimum_ss
+subroutine diisminimum_ss(iproc,n,nr,x,epot,f,parmin,nwork,work)
+    use minimization_sp, only:parameterminimization_sp
+    integer::n,nr,nwork,i,info,id,jd,iproc
+    real(8)::x(n),f(n),epot,work(nwork),fnrm,dnrm2,ddot,fmax
+    type(parameterminimization_sp)::parmin
+    character(28), parameter::frt1='(a10,i4,e23.15,e11.3,2e12.5)'
+end subroutine diisminimum_ss
+function mydot(n,v1,v2)
+    integer::n,i
+    real(8)::v1(n),v2(n),mydot
+end function mydot
+function calmaxforcecomponent_ss(n,v)
+    integer::n,i
+    real(8)::v(n),calmaxforcecomponent_ss
+end function calmaxforcecomponent_ss
+function calnorm_ss(n,v)
+    integer::n,i
+    real(8)::v(n),calnorm_ss
+end function calnorm_ss
+subroutine writepathway(n,np,x,filename,atoms)
+    use mod_atoms, only: typ_atoms
+    integer::n,np,jp,iat
+    real(8)::x(n,0:np),ed_tt,edd_tt,dtt,tt,xyz(3)
+    type(typ_atoms), intent(in) :: atoms
+    character(*)::filename
+    integer, parameter::ndeb1=0,ndeb2=0
+end subroutine writepathway
+subroutine writeanchorpoints(n,np,x,filename,atoms)
+    use mod_atoms, only: typ_atoms
+    integer::n,np,iat
+    real(8)::x(n,0:np),xyz(3)
+    type(typ_atoms), intent(in) :: atoms
+    character(*)::filename
+end subroutine writeanchorpoints
+subroutine readanchorpoints(n,np,x,filename,units)
+    integer::n,np,ip,iat,i
+    real(8)::x(n,0:100),xyz(3)
+    character(len=*), intent(in) :: units
+    character(*)::filename
+end subroutine readanchorpoints
+subroutine initializepoints(atoms,n,x1,x2,np,x)
+    use mod_atoms, only: typ_atoms !, update_ratp, update_rat
+    type(typ_atoms), intent(inout) :: atoms
+    integer::n,np,ip,i,iat,ixyz
+    real(8)::x1(n),x2(n),x(n,0:np),dt,t,tt
+end subroutine initializepoints
+subroutine atomic_dot(atoms,x,y,dot)
+    use mod_atoms, only: typ_atoms
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: x(3,atoms%nat), y(3,atoms%nat)
+    real(8), intent(out):: dot
+end subroutine atomic_dot
+subroutine call_bigdft(nproc,iproc,atoms,rxyz,etot,fxyz,fnoise,infocode,parini)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, set_rat, get_rat !, update_ratp, update_rat
+    integer, intent(in) :: nproc, iproc
+    type(typ_atoms), intent(inout) :: atoms
+    real(8), intent(in):: rxyz(3,atoms%nat)
+    real(8), intent(out):: etot, fxyz(3,atoms%nat), fnoise
+    integer, intent(out):: infocode
+    type(typ_parini), intent(in):: parini
+end subroutine call_bigdft
+! ./src/splinedsaddle_mod.F90 :
 ! ./src/spline_mod.F90 :
 ! ./src/symfunc_mod.F90 :
 ! ./src/task_ann.F90 :
@@ -5072,6 +5540,11 @@ subroutine alborz_as_potential_get(boundcond,nat,cellvec,rat,sat,fat,epot,stress
 end subroutine alborz_as_potential_get
 subroutine alborz_as_potential_final
 end subroutine alborz_as_potential_final
+! ./src/task_saddle.F90 :
+subroutine task_saddle(parini)
+    use mod_parini, only: typ_parini
+    type(typ_parini), intent(in):: parini
+end subroutine task_saddle
 ! ./src/task_single_point.F90 :
 subroutine single_point_task(parini)
     use mod_parini, only: typ_parini

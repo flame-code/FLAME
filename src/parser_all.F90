@@ -109,7 +109,7 @@ subroutine get_geopt_parameters(file_ini,parini)
     if(file_ini%iline_header==0) then
         parini%avail_geopt=.false.
         if(trim(parini%task)=='minhopp' .or. trim(parini%task)=='geopt' .or. &
-            trim(parini%task)=='saddle_1s') then
+            trim(parini%task)=='saddle') then
             write(*,'(a)') 'WARNING: [geopt] block not available in input.ini, default values will be used.'
         endif
         return
@@ -137,7 +137,7 @@ subroutine get_geopt_prec_parameters(file_ini,parini)
     if(file_ini%iline_header==0) then
         parini%avail_geopt_prec=.false.
         if(parini%two_level_geopt .and. (trim(parini%task)=='minhopp' .or. trim(parini%task)=='geopt' .or. &
-            trim(parini%task)=='saddle_1s')) then
+            trim(parini%task)=='saddle')) then
             write(*,'(a)') 'WARNING: [geopt_prec] block not available in input.ini, default values will be used.'
         endif
         return
@@ -152,7 +152,7 @@ subroutine get_geopt_prec_parameters(file_ini,parini)
     enddo
 end subroutine get_geopt_prec_parameters
 !*****************************************************************************************
-subroutine get_saddle_1s_opt_parameters(file_ini,parini)
+subroutine get_saddle_opt_parameters(file_ini,parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini
@@ -161,25 +161,25 @@ subroutine get_saddle_1s_opt_parameters(file_ini,parini)
     type(typ_parini), intent(inout):: parini
     !local variables
     integer:: iline
-    call get_header_location(file_ini,'[saddle_1s_opt]')
+    call get_header_location(file_ini,'[saddle_opt]')
     if(file_ini%iline_header==0) then
-        parini%avail_saddle_1s_opt=.false.
-        if(trim(parini%task)=='saddle_1s') then
-            write(*,'(a)') 'WARNING: [saddle_1s_opt] block not available in input.ini, default values will be used.'
+        parini%avail_saddle_opt=.false.
+        if(trim(parini%task)=='saddle') then
+            write(*,'(a)') 'WARNING: [saddle_opt] block not available in input.ini, default values will be used.'
         endif
         return
     else
-        parini%avail_saddle_1s_opt=.true.
+        parini%avail_saddle_opt=.true.
     endif
     do iline=file_ini%iline_header+1,file_ini%iline_next_header-1
         file_ini%iline=iline
         if(file_ini%stat_line_is_read(file_ini%iline)) cycle
         call split_line(file_ini)
-        call get_opt_param(file_ini,parini%paropt_saddle_1s_opt)
+        call get_opt_param(file_ini,parini%paropt_saddle_opt)
     enddo
-end subroutine get_saddle_1s_opt_parameters
+end subroutine get_saddle_opt_parameters
 !*****************************************************************************************
-subroutine get_saddle_1s_parameters(file_ini,parini)
+subroutine get_saddle_parameters(file_ini,parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini
@@ -188,25 +188,25 @@ subroutine get_saddle_1s_parameters(file_ini,parini)
     type(typ_parini), intent(inout):: parini
     !local variables
     integer:: iline
-    call get_header_location(file_ini,'[saddle_1s]')
+    call get_header_location(file_ini,'[saddle]')
     if(file_ini%iline_header==0) then
-        parini%avail_saddle_1s=.false.
-        if(trim(parini%task)=='saddle_1s') then
-            write(*,'(a)') 'WARNING: [saddle_1s] block not available in input.ini, default values will be used.'
+        parini%avail_saddle=.false.
+        if(trim(parini%task)=='saddle') then
+            write(*,'(a)') 'WARNING: [saddle] block not available in input.ini, default values will be used.'
         endif
         return
     else
-        parini%avail_saddle_1s=.true.
+        parini%avail_saddle=.true.
     endif
     do iline=file_ini%iline_header+1,file_ini%iline_next_header-1
         file_ini%iline=iline
         if(file_ini%stat_line_is_read(file_ini%iline)) cycle
         call split_line(file_ini)
-        call get_one_param(file_ini,'list_random_displace',char_line_var=parini%str_moving_atoms_rand_saddle_1s)
-        call get_one_param(file_ini,'dimsep',real_var=parini%dimsep_saddle_1s)
-        call get_one_param(file_ini,'ampl',real_var=parini%ampl_saddle_1s)
+        call get_one_param(file_ini,'list_random_displace',char_line_var=parini%str_moving_atoms_rand_saddle)
+        call get_one_param(file_ini,'dimsep',real_var=parini%dimsep_saddle)
+        call get_one_param(file_ini,'ampl',real_var=parini%ampl_saddle)
     enddo
-end subroutine get_saddle_1s_parameters
+end subroutine get_saddle_parameters
 !*****************************************************************************************
 subroutine get_potential_parameters(file_ini,parini)
     use mod_interface
@@ -221,7 +221,7 @@ subroutine get_potential_parameters(file_ini,parini)
     if(file_ini%iline_header==0) then
         parini%avail_potential=.false.
         if(trim(parini%task)=='minhopp' .or. trim(parini%task)=='geopt' .or. &
-            trim(parini%task)=='saddle_1s' .or. trim(parini%task)=='dynamics' .or. &
+            trim(parini%task)=='saddle' .or. trim(parini%task)=='dynamics' .or. &
             trim(parini%task)=='genconf') then
             write(*,'(a)') 'WARNING: [potential] block not available in input.ini, default values will be used.'
         endif
