@@ -9,6 +9,8 @@ subroutine task_saddle(parini)
         call dimer_method(parini)
     else if(trim(parini%method_saddle)=='splined_saddle') then
         call splined_saddle(parini)
+    else if(trim(parini%method_saddle)=='bar_saddle') then
+        call bar_saddle(parini)
     else
         write(*,'(2a)') 'ERROR: unknown parini%method_saddle ',trim(parini%method_saddle)
         stop

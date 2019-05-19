@@ -82,7 +82,7 @@ SRC_ += task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
 		potential_QSC.F90 potential_LTB.F90 potential_FF.F90 potential_NetSock.F90 \
 		potential_DFTB.F90 \
 		optimizer_simplex.F90 \
-		splinedsaddle.F90
+		splinedsaddle.F90 barsaddle.F90
 
 if HAVE_LAMMPS
 SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90 lammps_mod.F90

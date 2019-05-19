@@ -484,11 +484,15 @@ subroutine set_conf_inc_random(parini,atoms_arr)
     endif
     allocate(atoms_arr%conf_inc(atoms_arr%nconf),source=.false.)
     atoms_arr%nconf_inc=parini%nconf_rmse
-    do irand=1,atoms_arr%nconf_inc
+    irand=0
+    do
+        if(irand==atoms_arr%nconf_inc) exit
         call random_number(tt)
         tt=tt*real(atoms_arr%nconf)
         iconf=int(tt)+1
+        if(atoms_arr%conf_inc(iconf)) cycle
         atoms_arr%conf_inc(iconf)=.true.
+        irand=irand+1
     enddo
 end subroutine set_conf_inc_random
 !*****************************************************************************************
