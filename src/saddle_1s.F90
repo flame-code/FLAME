@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine surface_walking(parini)
+subroutine dimer_method(parini)
     use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
@@ -28,21 +28,21 @@ subroutine surface_walking(parini)
     character(10):: filename
     character(100):: comment
     !character(256):: comment1, comment2
-    call f_routine(id='surface_walking')
+    call f_routine(id='dimer_method')
     !----------------------------------------------------------------
     potential=trim(parini%potential_potential)
     paropt_m=parini%paropt_geopt
     if(parini%two_level_geopt) then
         paropt_m_prec=parini%paropt_geopt_prec
     endif
-    str_moving_atoms_rand=parini%str_moving_atoms_rand_saddle_1s
-    dimsep=parini%dimsep_saddle_1s*ang2bohr
-    ampl=parini%ampl_saddle_1s*ang2bohr
+    str_moving_atoms_rand=parini%str_moving_atoms_rand_saddle
+    dimsep=parini%dimsep_saddle*ang2bohr
+    ampl=parini%ampl_saddle*ang2bohr
 
-    paropt=parini%paropt_saddle_1s_opt
+    paropt=parini%paropt_saddle_opt
     !call acf_read(parini,'posinp.acf',1,atoms=atoms_s)
     call read_yaml_conf(parini,'posinp.yaml',10000,atoms_arr)
-    if(atoms_arr%nconf/=1) stop 'ERROR: atoms_arr%nconf/=1 in surface_walking'
+    if(atoms_arr%nconf/=1) stop 'ERROR: atoms_arr%nconf/=1 in dimer_method'
     call atom_copy_old(atoms_arr%atoms(1),atoms_s,'atoms_arr%atoms(iconf)->atoms_s')
     call atom_deallocate(atoms_arr%atoms(1))
     deallocate(atoms_arr%atoms)
@@ -126,7 +126,7 @@ subroutine surface_walking(parini)
     call atom_deallocate_old(atoms_s,sat=.true.,rat=.true.,fat=.true.,bemoved=.true.)
     !call deallocateatomsarrays
     call f_release_routine()
-end subroutine surface_walking
+end subroutine dimer_method
 !*****************************************************************************************
 subroutine read_input(atoms_s) !,paropt)
     use mod_interface

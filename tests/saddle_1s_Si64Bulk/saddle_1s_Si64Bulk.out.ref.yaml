@@ -18,10 +18,10 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-27 20:34:36.501
+ Timestamp of this run                 : 2019-05-06 19:26:14.669
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
-   task                                : saddle_1s
+   task                                : saddle
    types                               : Si
    two_level_geopt                     : True
    verbosity                           : 0
@@ -107,7 +107,7 @@
    dt_min                              : 1.0
    dt_max                              : 80.0
    strfact                             : 100.0
- saddle_1s_opt:
+ saddle_opt:
    method                              : SDCG
    fmaxtol                             : 2.E-4
    alphax                              : 3.0
@@ -127,10 +127,11 @@
    dt_min                              : 1.0
    dt_max                              : 80.0
    strfact                             : 100.0
- saddle_1s:
+ saddle:
    list_random_displace                : 1 57
    dimsep                              : 1.E-3
    ampl                                : 6.E-1
+   method                              : dimer
  potential:
    potential                           : ltb
    cal_charge                          : False
@@ -211,6 +212,7 @@
    qgnrmtol                            : 5.E-4
    etol                                : 1.0
    dtol                                : 1.0
+   ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False
    prefit                              : False
@@ -223,6 +225,7 @@
    save_symfunc_force                  : False
    weight_hardness                     : 0.001
    save_symfunc_behnam                 : False
+   freeBC_direct                       : False
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -279,6 +282,16 @@
    gaussian_width                      : -1.0
    boundcond                           : unknown
    posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
  fingerprint:
    method                              : OGANOV
    rcut                                : 15.0
@@ -307,7 +320,7 @@
  LTB GAMMA POINT only                  : first call
   #Reading spline potential coeff.cls
  paircut                               :  9.9021649099E+00
- ENERGY_m0: {epot: -1.068109624012961E+01, fmax:  3.708E-16}
+ ENERGY_m0: {epot: -1.068109624012957E+01, fmax:  4.367E-16}
  dimsep                                :  0.00189
  do_elim_trans                         :  No
  do_elim_rot                           :  No
@@ -526,8 +539,8 @@
       cosangletol:  0.999962E+00,            fnrm:  0.543772E-03}
    - dimer: {itlc:  7, curv0: -3.597532E-02, curv: -3.598557E-02, cosangle:  0.999975E+00, 
       cosangletol:  0.999962E+00,            fnrm:  0.591756E-03}
-   lowestcurvatue                      : -3.5985566591287363E-002
-   ENERGY_s: {epot: -1.057484829858585E+01, fmax:  1.134E-04}
+   lowestcurvatue                      : -3.5985566591220562E-002
+   ENERGY_s: {epot: -1.057484829858586E+01, fmax:  1.134E-04}
    optimization parameters:
      method                            : SD
      precaution                        : normal
@@ -571,7 +584,7 @@
           fnrm:  5.549E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  14, epot: -1.064760272631E+01, de: -1.1E-02, fmax:  3.265E-02, 
           fnrm:  5.340E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  15, epot: -1.065754546338E+01, de: -9.9E-03, fmax:  2.875E-02, 
+   - SD: {iter:  15, epot: -1.065754546337E+01, de: -9.9E-03, fmax:  2.875E-02, 
           fnrm:  4.654E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  16, epot: -1.066539465403E+01, de: -7.8E-03, fmax:  2.186E-02, 
           fnrm:  3.592E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -746,7 +759,7 @@
        epot                            : -1.068109362750E+01
        fnrm                            :  1.05643E-04
        fmax                            :  1.85141E-05
-   ENERGY_m1: {epot: -1.068109362750142E+01, fmax:  1.851E-05}
+   ENERGY_m1: {epot: -1.068109362750143E+01, fmax:  1.851E-05}
    SD optimization iterations:
    - SD: {iter:  0, epot: -1.057551177944E+01, de:  0.0E+00, fmax:  4.042E-03, 
           fnrm:  6.665E-03,          alpha/alphax:  0.0000E+00, isatur:  0, xmoved:  T}
@@ -953,20 +966,20 @@
        epot                            : -1.058580059145E+01
        fnrm                            :  1.00534E-04
        fmax                            :  1.91749E-05
-   ENERGY_m2: {epot: -1.058580059145340E+01, fmax:  1.134E-04}
+   ENERGY_m2: {epot: -1.058580059145339E+01, fmax:  1.134E-04}
    barriers: {bh0:  0.106, curv: -0.036, bh1:  0.106, bh2:  0.011}
    force_call                          :  289
    CPU time: {iproc:  0, hrs:  0.282E-02, min:  0.169E+00, sec:  0.102E+02}
    mpi finalized: {iproc_world:  0, nproc_world:  1}
    Memory Consumption Report:
-     Tot. No. of Allocations           :  273
-     Tot. No. of Deallocations         :  273
+     Tot. No. of Allocations           :  276
+     Tot. No. of Deallocations         :  276
      Remaining Memory (B)              :  0
      Memory occupation:
        Peak Value (MB)                 :  0.025
        for the array                   : uvnphi1
        in the routine                  : rotatedimer
-       Memory Peak of process          : 54.772 MB
-   Walltime since initialization       :  00:00:10.205996491
-   Max No. of dictionaries used        :  777 #( 185 still in use)
+       Memory Peak of process          : 55.120 MB
+   Walltime since initialization       :  00:01:02.249990935
+   Max No. of dictionaries used        :  801 #( 185 still in use)
    Number of dictionary folders allocated:  1
