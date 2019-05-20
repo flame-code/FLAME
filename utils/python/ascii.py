@@ -42,7 +42,8 @@ def ascii_read(filename):
         iline+=1
         if iline==1:
             if len(line.split()) > 1:
-                atoms.epot=float(line.split()[1])*27.211385
+               #atoms.epot=float(line.split()[1])*27.211385
+                atoms.epot=float(line.split()[1])
             else:
                 atoms.epot=0.0
             #print atoms.epot
