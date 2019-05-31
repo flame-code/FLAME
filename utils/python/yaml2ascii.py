@@ -5,7 +5,7 @@ from latvec2dproj import *
 from ascii import *
 from io_yaml import *
 
-str1 = "This script read a file in the yaml dictionary format and write it in the ascii format."
+str1 = "This script reads a file in the yaml dictionary format and writes it in the ascii format."
 parser = argparse.ArgumentParser(description=str1)
 str2="Name of the output file, if there is one configuration, otherwise it is ignored."
 parser.add_argument('fn_inp', action='store' ,type=str, help="Name of the input file in yaml format")

@@ -1,5 +1,5 @@
 main:
-    task: saddle_1s
+    task: saddle
     two_level_geopt: True
     seed: 3
     types: Si
@@ -7,12 +7,13 @@ main:
 potential:
     potential: ltb
 
-saddle_1s:
+saddle:
+    method: dimer
     ampl: 6.E-1
     dimsep: 1.E-3
     list_random_displace: 1 57
 
-saddle_1s_opt:
+saddle_opt:
     method: SDCG
     nit: 200
     fmaxtol: 2.E-4

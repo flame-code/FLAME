@@ -50,9 +50,9 @@ module mod_parini
         logical:: avail_geopt_prec=.false.
         type(typ_paropt):: paropt_geopt_prec
         !-----------------------------------------------------------------------
-        !parameters of [saddle_1s_opt]
-        logical:: avail_saddle_1s_opt=.false.
-        type(typ_paropt):: paropt_saddle_1s_opt
+        !parameters of [saddle_opt]
+        logical:: avail_saddle_opt=.false.
+        type(typ_paropt):: paropt_saddle_opt
         !-----------------------------------------------------------------------
         !parameters of [bader]
         logical:: avail_bader=.false.
@@ -101,12 +101,31 @@ module mod_parini
         logical:: fit_hoppint=.false. 
         logical:: save_symfunc_force_ann=.false.
         logical:: save_symfunc_behnam=.false.
+        logical:: free_bc_direct=.false.
         !-----------------------------------------------------------------------
-        !parameters of [saddle_1s]
-        logical:: avail_saddle_1s=.false.
-        character(256):: str_moving_atoms_rand_saddle_1s
-        real(8):: dimsep_saddle_1s=-1.d0
-        real(8):: ampl_saddle_1s=-1.d0
+        !parameters of [saddle]
+        character(50):: method_saddle='unknown'
+        logical:: avail_saddle=.false.
+        character(256):: str_moving_atoms_rand_saddle
+        real(8):: dimsep_saddle=-1.d0
+        real(8):: ampl_saddle=-1.d0
+        integer:: np_splsad !np-1 is the number of movable anchor points
+        integer:: np_neb
+        integer:: ns2_splsad !number of extra points along the path, beginning of maximization
+        integer:: max_fcalls !maximum number of force calls
+        real(8):: vdtol_splsad !tolerance for the derivative of potential at maximum point
+        real(8):: dt_saddle
+        real(8):: htol_splsad !minimal distance to accept new point during maximization
+        real(8):: alphax_saddle !reference step size for geometry optimization
+        real(8):: fmaxtol_splsad !tolerance for maximum force component for splsad
+        real(8):: fmaxtol_neb !tolerance for maximum force component for NEB
+        character(20):: hybrid_splsad
+        character(20):: doneb
+        character(20):: docineb
+        character(20):: typintpol !interpolation method for the maximization (cubic or quintic)
+        character(20):: pickbestanchorpoints
+        character(20):: runstat !new or restart (anchorposinp.xyz is needed if restart)
+        character(10):: opt_method_saddle !SD or SDCG or SDDIIS or LBFGS or FIRE
         !-----------------------------------------------------------------------
         !parameters of [dynamics]
         logical:: avail_dynamics=.false.

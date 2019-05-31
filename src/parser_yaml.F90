@@ -30,10 +30,10 @@ subroutine yaml_get_parameters(parini)
             call yaml_get_geopt_parameters(parini)
         case("geopt_prec")
             call yaml_get_geopt_prec_parameters(parini)
-        case("saddle_1s_opt")
-            call yaml_get_saddle_1s_opt_parameters(parini)
-        case("saddle_1s")
-            call yaml_get_saddle_1s_parameters(parini)
+        case("saddle_opt")
+            call yaml_get_saddle_opt_parameters(parini)
+        case("saddle")
+            call yaml_get_saddle_parameters(parini)
         case("potential")
             call yaml_get_potential_parameters(parini)
         case("ann")
@@ -219,27 +219,45 @@ subroutine yaml_get_geopt_prec_parameters(parini)
     call yaml_get_opt_parameters(parini,parini%paropt_geopt_prec)
 end subroutine yaml_get_geopt_prec_parameters
 !*****************************************************************************************
-subroutine yaml_get_saddle_1s_opt_parameters(parini)
+subroutine yaml_get_saddle_opt_parameters(parini)
     use mod_parini, only: typ_parini
     use dictionaries
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
-    if(dict_size(parini%subdict)<1) stop 'ERROR: saddle_1s_opt block in flame_in.yaml is empty.'
-    call yaml_get_opt_parameters(parini,parini%paropt_saddle_1s_opt)
-end subroutine yaml_get_saddle_1s_opt_parameters
+    if(dict_size(parini%subdict)<1) stop 'ERROR: saddle_opt block in flame_in.yaml is empty.'
+    call yaml_get_opt_parameters(parini,parini%paropt_saddle_opt)
+end subroutine yaml_get_saddle_opt_parameters
 !*****************************************************************************************
-subroutine yaml_get_saddle_1s_parameters(parini)
+subroutine yaml_get_saddle_parameters(parini)
     use mod_parini, only: typ_parini
     use dictionaries
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
-    if(dict_size(parini%subdict)<1) stop 'ERROR: saddle_1s block in flame_in.yaml is empty.'
-    parini%str_moving_atoms_rand_saddle_1s=parini%subdict//"list_random_displace"
-    parini%dimsep_saddle_1s=parini%subdict//"dimsep"
-    parini%ampl_saddle_1s=parini%subdict//"ampl"
-end subroutine yaml_get_saddle_1s_parameters
+    if(dict_size(parini%subdict)<1) stop 'ERROR: saddle block in flame_in.yaml is empty.'
+    parini%method_saddle=parini%subdict//"method"
+    parini%str_moving_atoms_rand_saddle=parini%subdict//"list_random_displace"
+    parini%dimsep_saddle=parini%subdict//"dimsep"
+    parini%ampl_saddle=parini%subdict//"ampl"
+    parini%np_splsad=parini%subdict//"np_splsad"
+    parini%np_neb=parini%subdict//"np_neb"
+    parini%ns2_splsad=parini%subdict//"ns2"
+    parini%vdtol_splsad=parini%subdict//"vdtol"
+    parini%dt_saddle=parini%subdict//"dt"
+    parini%htol_splsad=parini%subdict//"htol"
+    parini%alphax_saddle=parini%subdict//"alphax"
+    parini%hybrid_splsad=parini%subdict//"hybrid"
+    parini%typintpol=parini%subdict//"typintpol"
+    parini%pickbestanchorpoints=parini%subdict//"pickbestanchorpoints"
+    parini%runstat=parini%subdict//"runstat"
+    parini%doneb=parini%subdict//"doneb"
+    parini%docineb=parini%subdict//"docineb"
+    parini%max_fcalls=parini%subdict//"fcalls_max"
+    parini%fmaxtol_splsad=parini%subdict//"fmaxtol_splsad"
+    parini%fmaxtol_neb=parini%subdict//"fmaxtol_neb"
+    parini%opt_method_saddle=parini%subdict//"opt_method"
+end subroutine yaml_get_saddle_parameters
 !*****************************************************************************************
 subroutine yaml_get_potential_parameters(parini)
     use mod_parini, only: typ_parini
@@ -333,6 +351,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%save_symfunc_force_ann=parini%subdict//"save_symfunc_force"
     parini%weight_hardness=parini%subdict//"weight_hardness"
     parini%save_symfunc_behnam=parini%subdict//"save_symfunc_behnam"
+    parini%free_bc_direct=parini%subdict//"freeBC_direct"
     parini%ftol_ann=parini%subdict//"ftol"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************

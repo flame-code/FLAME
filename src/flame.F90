@@ -19,8 +19,8 @@ program alborz
         call task_minhocao(parini,parres)
     elseif(trim(parini%task)=='geopt') then
         call geopt(parini)
-    elseif(trim(parini%task)=='saddle_1s') then
-        call surface_walking(parini)
+    elseif(trim(parini%task)=='saddle') then
+        call task_saddle(parini)
     elseif(trim(parini%task)=='dynamics') then
         call dynamics(parini)
     elseif(trim(parini%task)=='conf_comp') then

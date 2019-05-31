@@ -2147,7 +2147,7 @@ subroutine set_qat(atoms)
         elseif(trim(atoms%stypat(itypat))=='Sn') then
             atoms%qtypat(itypat)=2.0d0
         elseif(trim(atoms%stypat(itypat))=='O') then
-            atoms%qtypat(itypat)=-2.0d0
+            atoms%qtypat(itypat)=-1.2d0
         elseif(trim(atoms%stypat(itypat))=='Si') then
             atoms%qtypat(itypat)=1.1d0
         elseif(trim(atoms%stypat(itypat))=='Pb') then
@@ -2179,7 +2179,7 @@ subroutine set_qat(atoms)
         elseif(trim(atoms%stypat(itypat))=='He') then
             atoms%qtypat(itypat)=0.d0
         elseif(trim(atoms%stypat(itypat))=='Mg') then
-            atoms%qtypat(itypat)=2.d0
+            atoms%qtypat(itypat)=1.2d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%stypat=',trim(atoms%stypat(itypat))
             stop
@@ -2206,7 +2206,7 @@ subroutine set_qat(atoms)
         else if(trim(atoms%sat(iat))=='Si') then
             atoms%qat(iat)=1.1d0
         else if(trim(atoms%sat(iat))=='O') then
-            atoms%qat(iat)=-2.0d0
+            atoms%qat(iat)=-1.2d0
         else if(trim(atoms%sat(iat))=='Pb') then
             atoms%qat(iat)=0.9d0
         else if(trim(atoms%sat(iat))=='Te') then
@@ -2236,7 +2236,7 @@ subroutine set_qat(atoms)
         else if(trim(atoms%sat(iat))=='He') then
             atoms%qat(iat)=0.d0
         else if(trim(atoms%sat(iat))=='Mg') then
-            atoms%qat(iat)=2.d0
+            atoms%qat(iat)=1.2d0
         else
             write(*,*) 'ERROR: no atomic charge stored for atoms%sat=',trim(atoms%sat(iat))
             stop

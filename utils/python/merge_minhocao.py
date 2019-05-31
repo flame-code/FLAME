@@ -10,20 +10,23 @@ import numpy as np
 #os.mkdir(dir)
 ofile = open("earr_total.txt","w")
 #*****************************naming columns of the earr.dat file 
-data=np.ndarray(shape=[0],dtype=[('dir','S6'),('ID',int),('energy',float),('col3',float),('col4',int),('col5',int),('col6',float),('col7',float)])
-write=np.ndarray(shape=[0],dtype=[('dir','S6'),('ID',int),('energy',float),('col3',float),('col4',int),('col5',int),('col6',float),('col7',float)])
+data=np.ndarray(shape=[0],dtype=[('dir','S8'),('ID',int),('energy',float),('col3',float),('col4',int),('col5',int),('col6',float),('col7',float)])
+write=np.ndarray(shape=[0],dtype=[('dir','S8'),('ID',int),('energy',float),('col3',float),('col4',int),('col5',int),('col6',float),('col7',float)])
 #data=[[None]*7]
 #*****************************
 def genfield(directory):
     for line in open(directory+'/earr.dat','r'):
         yield directory+' ' + line
 #*****************************read all earr.dat files of each run* and sort by energy value
-for file in np.sort(glob.glob("run*")):
+for file in np.sort(glob.glob("run*/")):
+    file=file[:-1]
     print file
     #os.chdir(file)
     
     #with open("earr.dat","r") as ifile:
-    tmp=np.genfromtxt(genfield(file),skip_header=2,dtype=[('dir','S6'),('ID',int),('energy',float),('col3',float),('col4',int),('col5',int),('col6',float),('col7',float)])
+    tmp=np.genfromtxt(genfield(file),skip_header=2,dtype=[('dir','S8'),('ID',int),('energy',float),('col3',float),('col4',int),('col5',int),('col6',float),('col7',float)])
+    if tmp.ndim==0:
+        tmp=[tmp]
     data=np.concatenate((data,tmp))
     #print data
     #lines = ifile.readlines()

@@ -108,7 +108,7 @@
    dt_min: 1.0
    dt_max: 80.0
    strfact: 100.0
- saddle_1s_opt:
+ saddle_opt:
    method: unknown
    fmaxtol: -1.0
    alphax: -1.0
@@ -128,10 +128,28 @@
    dt_min: 1.0
    dt_max: 80.0
    strfact: 100.0
- saddle_1s:
+ saddle:
+   method: unknown
    list_random_displace: None
    dimsep: -1.0
    ampl: -1.0
+   np_splsad: 2
+   np_neb: 2
+   ns2: 0
+   vdtol: 0.1
+   dt: 0.03
+   htol: 0.02
+   alphax: 0.5
+   hybrid: no
+   docineb: no
+   doneb: unknown
+   pickbestanchorpoints: unknown
+   runstat: new
+   typintpol: cubic
+   fcalls_max: 100
+   fmaxtol_splsad: 2.E-4
+   fmaxtol_neb: 2.E-2
+   opt_method: SD
  potential:
    potential: unknown
    cal_charge: False
@@ -228,6 +246,7 @@
    save_symfunc_force: False
    weight_hardness: 0.001
    save_symfunc_behnam: False
+   freeBC_direct: False
  dynamics:
   nmd: 300
   nfreq: 0
