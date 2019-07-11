@@ -139,6 +139,7 @@ subroutine bar_saddle(parini)
 !call init_bar(ndim,n_anchor,rxyz1,rxyz2,dbar,bar_vec,bar_cm,e_anc,e_max,tt,nproc,iproc,atoms,rst_left,inputs,lo_inputs,ncount_bigdft)
     !Initiallize random bar, and get its energy at the center
     !call init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
+    call read_bar_saddle_params(atoms%nat)
     call init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
     call call_bigdft(nproc,iproc,atoms,bar_cm,etot1,fxyz1,fnoise,infocode,parini)
 !if(ncount_bigdft.gt.maxit) then
@@ -849,6 +850,7 @@ do i=1,3,2
 !    call func2d(n_dim,bar_cm+real(i-2,8)*bar_vec,fbar_tot(:,i),etot(i))
 !    call lenjon(n_dim/3,bar_cm+real(i-2,8)*bar_vec,fbar_tot(:,i),etot(i))
     call call_bigdft(nproc,iproc,atoms,bar_cm+real(i-2,8)*bar_vec,       etot(i),fbar_tot(:,i),       fnoise,infocode,parini)
+    write(*,*) i,etot(i)
     !Compute the force in the direction of the bar
     norm=sqrt(dot_product(bar_vec,bar_vec))
     bar_vec_unit=bar_vec/norm
