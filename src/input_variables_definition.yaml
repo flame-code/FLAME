@@ -150,6 +150,14 @@
    fmaxtol_splsad: 2.E-4
    fmaxtol_neb: 2.E-2
    opt_method: SD
+   dbar: 0.1
+   stepsize: 20.0
+   fnrmtol_coarse: 1.E-2
+   nstep: 1000
+   bar_contract: True
+   dbar_contracted: 1.E-3
+   fnrmtol_contracted: 2.E-4
+   nstep_contract: 20
  potential:
    potential: unknown
    cal_charge: False

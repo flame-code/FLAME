@@ -109,6 +109,14 @@ module mod_parini
         character(256):: str_moving_atoms_rand_saddle
         real(8):: dimsep_saddle=-1.d0
         real(8):: ampl_saddle=-1.d0
+        real(8):: dbar
+        real(8):: alphax_bs
+        real(8):: fnrmtol_coarse
+        real(8):: contr_dbar
+        real(8):: fnrmtol_contracted
+        logical:: bar_contract
+        integer:: nstep_contract
+        integer:: nstep_bs
         integer:: np_splsad !np-1 is the number of movable anchor points
         integer:: np_neb
         integer:: ns2_splsad !number of extra points along the path, beginning of maximization

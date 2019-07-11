@@ -6,8 +6,10 @@ real(8):: dbar,alpha_bar,bar_tol,contr_dbar,contr_bar_tol,fnrm_switch,dbar_relax
 logical:: hybrid,restart,bar_contract,relax_init,relax_final
 
 contains
-  subroutine read_bar_saddle_params(nat)
+  subroutine read_bar_saddle_params(nat,parini)
+  use mod_parini, only: typ_parini
   integer:: nat
+  type(typ_parini), intent(in):: parini
   character(100):: line
 !4                    #nanch
 !T T                  #relax inital endpoints, relax final endpoints
@@ -18,15 +20,24 @@ contains
 !F                    #Restart
 !T 1.d-1 5.d-5 10     #Bar contraction, final dbar, final fmax_tol, ncontract
   !Read input parameters
-  open(unit=2,file="input.barsad")
-  read(2,*) n_anchor ;  ndim=3*nat !read(2,*) ndim
-  read(2,*) dbar,alpha_bar, bar_tol
-  read(2,*) maxit
-  read(2,*) relax_init,relax_final,dbar_relax
-  read(2,*) hybrid,fnrm_switch
-  read(2,*) restart
-  read(2,'(a100)') line;read(line,*) bar_contract;if(bar_contract) read(line,*) bar_contract,contr_dbar,contr_bar_tol,ncontr
-  close(2)
+  !open(unit=2,file="input.barsad")
+  !read(2,*) n_anchor
+  ndim=3*nat !read(2,*) ndim
+  !read(2,*) dbar,alpha_bar, bar_tol
+  !read(2,*) maxit
+  !read(2,*) relax_init,relax_final,dbar_relax
+  !read(2,*) hybrid,fnrm_switch
+  !read(2,*) restart
+  !read(2,'(a100)') line;read(line,*) bar_contract;if(bar_contract) read(line,*) bar_contract,contr_dbar,contr_bar_tol,ncontr
+  !close(2)
+  dbar=parini%dbar
+  alpha_bar=parini%alphax_bs
+  bar_tol=parini%fnrmtol_coarse
+  maxit=parini%nstep_bs
+  bar_contract=parini%bar_contract
+  contr_dbar=parini%contr_dbar
+  contr_bar_tol=parini%fnrmtol_contracted
+  ncontr=parini%nstep_contract
   end subroutine
 end module bar_saddle_params
 
@@ -139,7 +150,7 @@ subroutine bar_saddle(parini)
 !call init_bar(ndim,n_anchor,rxyz1,rxyz2,dbar,bar_vec,bar_cm,e_anc,e_max,tt,nproc,iproc,atoms,rst_left,inputs,lo_inputs,ncount_bigdft)
     !Initiallize random bar, and get its energy at the center
     !call init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
-    call read_bar_saddle_params(atoms%nat)
+    call read_bar_saddle_params(atoms%nat,parini)
     call init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
     call call_bigdft(nproc,iproc,atoms,bar_cm,etot1,fxyz1,fnoise,infocode,parini)
 !if(ncount_bigdft.gt.maxit) then

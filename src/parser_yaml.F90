@@ -257,6 +257,14 @@ subroutine yaml_get_saddle_parameters(parini)
     parini%fmaxtol_splsad=parini%subdict//"fmaxtol_splsad"
     parini%fmaxtol_neb=parini%subdict//"fmaxtol_neb"
     parini%opt_method_saddle=parini%subdict//"opt_method"
+    parini%dbar=parini%subdict//"dbar"
+    parini%alphax_bs=parini%subdict//"stepsize"
+    parini%fnrmtol_coarse=parini%subdict//"fnrmtol_coarse"
+    parini%nstep_bs=parini%subdict//"nstep"
+    parini%bar_contract=parini%subdict//"bar_contract"
+    parini%contr_dbar=parini%subdict//"dbar_contracted"
+    parini%fnrmtol_contracted=parini%subdict//"fnrmtol_contracted"
+    parini%nstep_contract=parini%subdict//"nstep_contract"
 end subroutine yaml_get_saddle_parameters
 !*****************************************************************************************
 subroutine yaml_get_potential_parameters(parini)
