@@ -1,0 +1,848 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2019-07-13 15:13:09.597
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : saddle
+   types                               : Si
+   two_level_geopt                     : True
+   verbosity                           : 0
+   verbose                             : 3
+   seed                                : 3
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle:
+   method                              : bar_saddle
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 5.E-4
+   nstep_contract                      : 40
+ potential:
+   potential                           : ltb
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     ecut_auto                         : False
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : atombased
+   symfunc                             : only_calculate
+   nstep_opt                           : 100
+   nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   ftol                                : 1.E-4
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_cent2                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+   freeBC_direct                       : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  1, Si:  1}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  3, seed2:  10}
+ Number of configurations read: {filename: posinp.yaml, nconf:  1}
+ LTB GAMMA POINT only                  : first call
+  #Reading spline potential coeff.cls
+ paircut                               :  9.9021649099E+00
+ BARSAD optimization iterations:
+ - BARSAD: {iter:  0, epot: -2.1832196E+00, xmax:  1.38E-01, fmax:  2.9497400E-02, 
+            fnrm:  5.0520107E-02}
+ - BARSAD: {iter:  1, epot: -2.1342800E+00, xmax: -2.07E-01, fmax:  7.4318615E-02, 
+            fnrm:  1.4763789E-01,          epotl: -2.1342344E+00, epotr: -2.1337875E+00, 
+           alpha:  2.1000000E+01,           dbar:  1.0000000E-01}
+   Reducing step size to               :  1.4700000E+01
+ - BARSAD: {iter:  2, epot: -2.1669047E+00, xmax:  1.45E-01, fmax:  5.0004191E-02, 
+            fnrm:  9.2396462E-02,          epotl: -2.1665737E+00, epotr: -2.1668148E+00, 
+           alpha:  1.4700000E+01,           dbar:  1.0000000E-01}
+   Reducing step size to               :  1.0290000E+01
+ - BARSAD: {iter:  3, epot: -2.1814616E+00, xmax:  4.05E-01, fmax:  3.1165010E-02, 
+            fnrm:  5.5552867E-02,          epotl: -2.1809791E+00, epotr: -2.1815769E+00, 
+           alpha:  1.0290000E+01,           dbar:  1.0000000E-01}
+   Reducing step size to               :  7.2030000E+00
+ - BARSAD: {iter:  4, epot: -2.1871761E+00, xmax:  4.38E-01, fmax:  1.6193894E-02, 
+            fnrm:  2.9722423E-02,          epotl: -2.1866198E+00, epotr: -2.1873297E+00, 
+           alpha:  7.2030000E+00,           dbar:  1.0000000E-01}
+   Reducing step size to               :  5.0421000E+00
+ - BARSAD: {iter:  5, epot: -2.1887327E+00, xmax:  3.51E-01, fmax:  4.5455717E-03, 
+            fnrm:  1.4020627E-02,          epotl: -2.1881266E+00, epotr: -2.1888348E+00, 
+           alpha:  5.0421000E+00,           dbar:  1.0000000E-01}
+   Reducing step size to               :  3.5294700E+00
+ - BARSAD: {iter:  6, epot: -2.1885048E+00, xmax:  2.69E-01, fmax:  7.4527006E-03, 
+            fnrm:  1.4974186E-02,          epotl: -2.1878537E+00, epotr: -2.1885292E+00, 
+           alpha:  3.5294700E+00,           dbar:  1.0000000E-01}
+ - BARSAD: {iter:  7, epot: -2.1890252E+00, xmax:  3.58E-01, fmax:  3.7280051E-03, 
+            fnrm:  9.5041056E-03,          epotl: -2.1885802E+00, epotr: -2.1891048E+00, 
+           alpha:  3.7059435E+00,           dbar:  1.0000000E-01}
+   SAD: Starting contraction
+ - BARSAD: {iter:  8, epot: -2.1892413E+00, xmax:  3.81E-01, fmax:  2.3010546E-03, 
+            fnrm:  6.7097979E-03,          epotl: -2.1889362E+00, epotr: -2.1893052E+00, 
+           alpha:  3.8912407E+00,           dbar:  9.7525000E-02}
+ - BARSAD: {iter:  9, epot: -2.1893563E+00, xmax:  4.07E-01, fmax:  1.8210737E-03, 
+            fnrm:  4.9806392E-03,          epotl: -2.1891165E+00, epotr: -2.1894140E+00, 
+           alpha:  4.0858027E+00,           dbar:  9.5050000E-02}
+ - BARSAD: {iter:  10, epot: -2.1894184E+00, xmax:  4.57E-01, fmax:  1.4790272E-03, 
+            fnrm:  3.9074505E-03,           epotl: -2.1892091E+00, epotr: -2.1894801E+00, 
+           alpha:  4.2900928E+00,            dbar:  9.2575000E-02}
+ - BARSAD: {iter:  11, epot: -2.1894510E+00, xmax:  5.30E-01, fmax:  1.2629674E-03, 
+            fnrm:  3.2628859E-03,           epotl: -2.1892553E+00, epotr: -2.1895217E+00, 
+           alpha:  4.5045975E+00,            dbar:  9.0100000E-02}
+ - BARSAD: {iter:  12, epot: -2.1894658E+00, xmax:  6.23E-01, fmax:  1.1363553E-03, 
+            fnrm:  2.9035205E-03,           epotl: -2.1892748E+00, epotr: -2.1895477E+00, 
+           alpha:  4.7298274E+00,            dbar:  8.7625000E-02}
+ - BARSAD: {iter:  13, epot: -2.1894681E+00, xmax:  7.33E-01, fmax:  1.0704575E-03, 
+            fnrm:  2.7261512E-03,           epotl: -2.1892770E+00, epotr: -2.1895622E+00, 
+           alpha:  4.9663187E+00,            dbar:  8.5150000E-02}
+ - BARSAD: {iter:  14, epot: -2.1894600E+00, xmax:  8.62E-01, fmax:  1.0467934E-03, 
+            fnrm:  2.6664641E-03,           epotl: -2.1892657E+00, epotr: -2.1895669E+00, 
+           alpha:  5.2146347E+00,            dbar:  8.2675000E-02}
+ - BARSAD: {iter:  15, epot: -2.1894413E+00, xmax:  1.01E+00, fmax:  1.0540960E-03, 
+            fnrm:  2.6910495E-03,           epotl: -2.1892415E+00, epotr: -2.1895618E+00, 
+           alpha:  5.4753664E+00,            dbar:  8.0200000E-02}
+ - BARSAD: {iter:  16, epot: -2.1894105E+00, xmax:  1.19E+00, fmax:  1.0856809E-03, 
+            fnrm:  2.7857001E-03,           epotl: -2.1892032E+00, epotr: -2.1895458E+00, 
+           alpha:  5.7491347E+00,            dbar:  7.7725000E-02}
+ - BARSAD: {iter:  17, epot: -2.1893652E+00, xmax:  1.41E+00, fmax:  1.1378168E-03, 
+            fnrm:  2.9463129E-03,           epotl: -2.1891483E+00, epotr: -2.1895163E+00, 
+           alpha:  6.0365915E+00,            dbar:  7.5250000E-02}
+ - BARSAD: {iter:  18, epot: -2.1893011E+00, xmax:  1.67E+00, fmax:  1.2087704E-03, 
+            fnrm:  3.1736933E-03,           epotl: -2.1890726E+00, epotr: -2.1894696E+00, 
+           alpha:  6.3384210E+00,            dbar:  7.2775000E-02}
+ - BARSAD: {iter:  19, epot: -2.1892125E+00, xmax:  1.93E+00, fmax:  1.2999507E-03, 
+            fnrm:  3.4721552E-03,           epotl: -2.1889703E+00, epotr: -2.1894002E+00, 
+           alpha:  6.6553421E+00,            dbar:  7.0300000E-02}
+ - BARSAD: {iter:  20, epot: -2.1890913E+00, xmax:  2.19E+00, fmax:  1.4114760E-03, 
+            fnrm:  3.8424854E-03,           epotl: -2.1888336E+00, epotr: -2.1893002E+00, 
+           alpha:  6.9881092E+00,            dbar:  6.7825000E-02}
+ - BARSAD: {iter:  21, epot: -2.1889265E+00, xmax:  2.67E+00, fmax:  1.5398066E-03, 
+            fnrm:  4.2820962E-03,           epotl: -2.1886514E+00, epotr: -2.1891582E+00, 
+           alpha:  7.3375146E+00,            dbar:  6.5350000E-02}
+ - BARSAD: {iter:  22, epot: -2.1887034E+00, xmax:  3.78E+00, fmax:  1.6861954E-03, 
+            fnrm:  4.7929821E-03,           epotl: -2.1884090E+00, epotr: -2.1889591E+00, 
+           alpha:  7.7043904E+00,            dbar:  6.2875000E-02}
+ - BARSAD: {iter:  23, epot: -2.1884033E+00, xmax:  4.47E+00, fmax:  1.8582969E-03, 
+            fnrm:  5.4041191E-03,           epotl: -2.1880870E+00, epotr: -2.1886846E+00, 
+           alpha:  8.0896099E+00,            dbar:  6.0400000E-02}
+ - BARSAD: {iter:  24, epot: -2.1879981E+00, xmax:  5.28E+00, fmax:  2.0537073E-03, 
+            fnrm:  6.1230870E-03,           epotl: -2.1876577E+00, epotr: -2.1883072E+00, 
+           alpha:  8.4940904E+00,            dbar:  5.7925000E-02}
+ - BARSAD: {iter:  25, epot: -2.1874511E+00, xmax:  6.29E+00, fmax:  2.2752464E-03, 
+            fnrm:  6.9547244E-03,           epotl: -2.1870853E+00, epotr: -2.1877895E+00, 
+           alpha:  8.9187949E+00,            dbar:  5.5450000E-02}
+ - BARSAD: {iter:  26, epot: -2.1867185E+00, xmax:  7.42E+00, fmax:  2.5263040E-03, 
+            fnrm:  7.8896547E-03,           epotl: -2.1863286E+00, epotr: -2.1870855E+00, 
+           alpha:  9.3647347E+00,            dbar:  5.2975000E-02}
+ - BARSAD: {iter:  27, epot: -2.1857625E+00, xmax:  8.84E+00, fmax:  2.7907034E-03, 
+            fnrm:  8.8754067E-03,           epotl: -2.1853552E+00, epotr: -2.1861522E+00, 
+           alpha:  9.8329714E+00,            dbar:  5.0500000E-02}
+ - BARSAD: {iter:  28, epot: -2.1845889E+00, xmax:  1.37E+01, fmax:  3.0513121E-03, 
+            fnrm:  9.7877956E-03,           epotl: -2.1841806E+00, epotr: -2.1849857E+00, 
+           alpha:  1.0324620E+01,            dbar:  4.8025000E-02}
+ - BARSAD: {iter:  29, epot: -2.1833082E+00, xmax:  2.09E+01, fmax:  3.2579958E-03, 
+            fnrm:  1.0486666E-02,           epotl: -2.1829202E+00, epotr: -2.1836891E+00, 
+           alpha:  1.0840851E+01,            dbar:  4.5550000E-02}
+ - BARSAD: {iter:  30, epot: -2.1821219E+00, xmax:  1.00E+10, fmax:  3.3734093E-03, 
+            fnrm:  1.0833718E-02,           epotl: -2.1817735E+00, epotr: -2.1824664E+00, 
+           alpha:  1.1382893E+01,            dbar:  4.3075000E-02}
+ - BARSAD: {iter:  31, epot: -2.1812140E+00, xmax:  1.00E+10, fmax:  3.4341337E-03, 
+            fnrm:  1.0789524E-02,           epotl: -2.1809158E+00, epotr: -2.1815099E+00, 
+           alpha:  1.1952038E+01,            dbar:  4.0600000E-02}
+ - BARSAD: {iter:  32, epot: -2.1806475E+00, xmax:  1.00E+10, fmax:  3.4883788E-03, 
+            fnrm:  1.0507737E-02,           epotl: -2.1803962E+00, epotr: -2.1808962E+00, 
+           alpha:  1.2549640E+01,            dbar:  3.8125000E-02}
+ - BARSAD: {iter:  33, epot: -2.1803176E+00, xmax:  1.00E+10, fmax:  3.3522325E-03, 
+            fnrm:  1.0489305E-02,           epotl: -2.1800998E+00, epotr: -2.1805314E+00, 
+           alpha:  1.3177122E+01,            dbar:  3.5650000E-02}
+ - BARSAD: {iter:  34, epot: -2.1799913E+00, xmax:  1.00E+10, fmax:  4.8740380E-03, 
+            fnrm:  1.2347091E-02,           epotl: -2.1797886E+00, epotr: -2.1801863E+00, 
+           alpha:  1.3835978E+01,            dbar:  3.3175000E-02}
+ - BARSAD: {iter:  35, epot: -2.1789921E+00, xmax:  1.00E+10, fmax:  7.0780646E-03, 
+            fnrm:  2.1215192E-02,           epotl: -2.1787921E+00, epotr: -2.1791832E+00, 
+           alpha:  1.4527777E+01,            dbar:  3.0700000E-02}
+   Reducing step size to               :  1.0169444E+01
+ - BARSAD: {iter:  36, epot: -2.1796385E+00, xmax:  1.00E+10, fmax:  4.4351612E-03, 
+            fnrm:  1.4677955E-02,           epotl: -2.1794541E+00, epotr: -2.1798161E+00, 
+           alpha:  1.0169444E+01,            dbar:  2.8225000E-02}
+   Reducing step size to               :  7.1186108E+00
+ - BARSAD: {iter:  37, epot: -2.1799142E+00, xmax:  1.00E+10, fmax:  3.3092748E-03, 
+            fnrm:  1.1138340E-02,           epotl: -2.1797477E+00, epotr: -2.1800754E+00, 
+           alpha:  7.1186108E+00,            dbar:  2.5750000E-02}
+   Reducing step size to               :  4.9830275E+00
+ - BARSAD: {iter:  38, epot: -2.1800205E+00, xmax:  1.00E+10, fmax:  3.2197071E-03, 
+            fnrm:  9.8288760E-03,           epotl: -2.1798721E+00, epotr: -2.1801648E+00, 
+           alpha:  4.9830275E+00,            dbar:  2.3275000E-02}
+ - BARSAD: {iter:  39, epot: -2.1798792E+00, xmax:  1.00E+10, fmax:  3.2726894E-03, 
+            fnrm:  9.8388290E-03,           epotl: -2.1797401E+00, epotr: -2.1800147E+00, 
+           alpha:  5.2321789E+00,            dbar:  2.0800000E-02}
+ - BARSAD: {iter:  40, epot: -2.1796699E+00, xmax:  1.00E+10, fmax:  3.2753598E-03, 
+            fnrm:  1.0060336E-02,           epotl: -2.1795400E+00, epotr: -2.1797967E+00, 
+           alpha:  5.4937879E+00,            dbar:  1.8325000E-02}
+ - BARSAD: {iter:  41, epot: -2.1793761E+00, xmax:  3.65E+01, fmax:  3.3094566E-03, 
+            fnrm:  1.0401891E-02,           epotl: -2.1792563E+00, epotr: -2.1794936E+00, 
+           alpha:  5.7684773E+00,            dbar:  1.5850000E-02}
+ - BARSAD: {iter:  42, epot: -2.1789791E+00, xmax:  3.59E+01, fmax:  3.6457002E-03, 
+            fnrm:  1.0834085E-02,           epotl: -2.1788714E+00, epotr: -2.1790852E+00, 
+           alpha:  6.0569011E+00,            dbar:  1.3375000E-02}
+ - BARSAD: {iter:  43, epot: -2.1784692E+00, xmax:  4.90E+01, fmax:  4.0449166E-03, 
+            fnrm:  1.1317267E-02,           epotl: -2.1783765E+00, epotr: -2.1785610E+00, 
+           alpha:  6.3597462E+00,            dbar:  1.0900000E-02}
+ - BARSAD: {iter:  44, epot: -2.1778538E+00, xmax:  6.59E+01, fmax:  4.4288106E-03, 
+            fnrm:  1.1804905E-02,           epotl: -2.1777793E+00, epotr: -2.1779278E+00, 
+           alpha:  6.6777335E+00,            dbar:  8.4250000E-03}
+ - BARSAD: {iter:  45, epot: -2.1771702E+00, xmax:  9.97E+01, fmax:  4.7662400E-03, 
+            fnrm:  1.2219810E-02,           epotl: -2.1771171E+00, epotr: -2.1772231E+00, 
+           alpha:  7.0116202E+00,            dbar:  5.9500000E-03}
+ - BARSAD: {iter:  46, epot: -2.1765083E+00, xmax:  2.25E+02, fmax:  5.0021006E-03, 
+            fnrm:  1.2455274E-02,           epotl: -2.1764784E+00, epotr: -2.1765381E+00, 
+           alpha:  7.3622012E+00,            dbar:  3.4750000E-03}
+ - BARSAD: {iter:  47, epot: -2.1760164E+00, xmax:  1.00E+10, fmax:  5.0635498E-03, 
+            fnrm:  1.2388743E-02,           epotl: -2.1760086E+00, epotr: -2.1760241E+00, 
+           alpha:  7.7303112E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  48, epot: -2.1758366E+00, xmax:  1.00E+10, fmax:  4.8705277E-03, 
+            fnrm:  1.2033471E-02,           epotl: -2.1758301E+00, epotr: -2.1758432E+00, 
+           alpha:  8.1168268E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  49, epot: -2.1759784E+00, xmax:  1.00E+10, fmax:  4.5726499E-03, 
+            fnrm:  1.1408054E-02,           epotl: -2.1759728E+00, epotr: -2.1759839E+00, 
+           alpha:  8.5226681E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  50, epot: -2.1762763E+00, xmax:  1.00E+10, fmax:  3.9884315E-03, 
+            fnrm:  1.0683436E-02,           epotl: -2.1762711E+00, epotr: -2.1762815E+00, 
+           alpha:  8.9488015E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  51, epot: -2.1765181E+00, xmax:  1.00E+10, fmax:  3.4631364E-03, 
+            fnrm:  1.0181900E-02,           epotl: -2.1765125E+00, epotr: -2.1765236E+00, 
+           alpha:  9.3962416E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  52, epot: -2.1765284E+00, xmax:  1.00E+10, fmax:  3.5428028E-03, 
+            fnrm:  1.0230937E-02,           epotl: -2.1765218E+00, epotr: -2.1765350E+00, 
+           alpha:  9.8660537E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  53, epot: -2.1760905E+00, xmax:  1.00E+10, fmax:  3.9570786E-03, 
+            fnrm:  1.1235489E-02,           epotl: -2.1760822E+00, epotr: -2.1760988E+00, 
+           alpha:  1.0359356E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  54, epot: -2.1749581E+00, xmax:  1.00E+10, fmax:  5.2229520E-03, 
+            fnrm:  1.3118517E-02,           epotl: -2.1749480E+00, epotr: -2.1749681E+00, 
+           alpha:  1.0877324E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  55, epot: -2.1732152E+00, xmax:  8.42E+02, fmax:  5.6582534E-03, 
+            fnrm:  1.4170920E-02,           epotl: -2.1732044E+00, epotr: -2.1732259E+00, 
+           alpha:  1.1421190E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  56, epot: -2.1711888E+00, xmax:  1.00E+10, fmax:  5.6453108E-03, 
+            fnrm:  1.4368662E-02,           epotl: -2.1711777E+00, epotr: -2.1711999E+00, 
+           alpha:  1.1992250E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  57, epot: -2.1688501E+00, xmax:  1.00E+10, fmax:  5.3687155E-03, 
+            fnrm:  1.5073792E-02,           epotl: -2.1688385E+00, epotr: -2.1688617E+00, 
+           alpha:  1.2591862E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  58, epot: -2.1657675E+00, xmax:  1.00E+10, fmax:  7.6316882E-03, 
+            fnrm:  1.8379339E-02,           epotl: -2.1657534E+00, epotr: -2.1657816E+00, 
+           alpha:  1.3221456E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  59, epot: -2.1598223E+00, xmax:  8.21E+02, fmax:  1.1114195E-02, 
+            fnrm:  2.7000756E-02,           epotl: -2.1598044E+00, epotr: -2.1598402E+00, 
+           alpha:  1.3882528E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  60, epot: -2.1484188E+00, xmax:  6.34E+02, fmax:  1.6644098E-02, 
+            fnrm:  4.6221347E-02,           epotl: -2.1484020E+00, epotr: -2.1484357E+00, 
+           alpha:  1.4576655E+01,            dbar:  1.0000000E-03}
+   Reducing step size to               :  1.0203658E+01
+ - BARSAD: {iter:  61, epot: -2.1534547E+00, xmax:  6.92E+02, fmax:  1.2844445E-02, 
+            fnrm:  3.2562281E-02,           epotl: -2.1534365E+00, epotr: -2.1534729E+00, 
+           alpha:  1.0203658E+01,            dbar:  1.0000000E-03}
+   Reducing step size to               :  7.1425608E+00
+ - BARSAD: {iter:  62, epot: -2.1561816E+00, xmax:  6.77E+02, fmax:  1.1369115E-02, 
+            fnrm:  2.5119099E-02,           epotl: -2.1561630E+00, epotr: -2.1562001E+00, 
+           alpha:  7.1425608E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  63, epot: -2.1522357E+00, xmax: -6.27E+02, fmax:  1.1428626E-02, 
+            fnrm:  2.4169964E-02,           epotl: -2.1522181E+00, epotr: -2.1522533E+00, 
+           alpha:  7.4996889E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  64, epot: -2.1492119E+00, xmax: -6.30E+02, fmax:  1.1040649E-02, 
+            fnrm:  2.2179425E-02,           epotl: -2.1491976E+00, epotr: -2.1492261E+00, 
+           alpha:  7.8746733E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  65, epot: -2.1480389E+00, xmax:  1.00E+10, fmax:  9.7866156E-03, 
+            fnrm:  1.9891935E-02,           epotl: -2.1480283E+00, epotr: -2.1480494E+00, 
+           alpha:  8.2684070E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  66, epot: -2.1481101E+00, xmax:  1.00E+10, fmax:  9.6166488E-03, 
+            fnrm:  1.8471313E-02,           epotl: -2.1481012E+00, epotr: -2.1481189E+00, 
+           alpha:  8.6818273E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  67, epot: -2.1483290E+00, xmax:  1.00E+10, fmax:  7.8244230E-03, 
+            fnrm:  1.8120392E-02,           epotl: -2.1483203E+00, epotr: -2.1483376E+00, 
+           alpha:  9.1159187E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  68, epot: -2.1481840E+00, xmax:  1.00E+10, fmax:  8.7851339E-03, 
+            fnrm:  1.9169746E-02,           epotl: -2.1481752E+00, epotr: -2.1481927E+00, 
+           alpha:  9.5717146E+00,            dbar:  1.0000000E-03}
+   Reducing step size to               :  6.7002002E+00
+ - BARSAD: {iter:  69, epot: -2.1484708E+00, xmax:  1.00E+10, fmax:  8.4684329E-03, 
+            fnrm:  1.5869811E-02,           epotl: -2.1484619E+00, epotr: -2.1484797E+00, 
+           alpha:  6.7002002E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  70, epot: -2.1483020E+00, xmax:  1.00E+10, fmax:  7.2757635E-03, 
+            fnrm:  1.4832643E-02,           epotl: -2.1482930E+00, epotr: -2.1483109E+00, 
+           alpha:  7.0352102E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  71, epot: -2.1479747E+00, xmax:  1.00E+10, fmax:  7.6829582E-03, 
+            fnrm:  1.4126159E-02,           epotl: -2.1479659E+00, epotr: -2.1479835E+00, 
+           alpha:  7.3869708E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  72, epot: -2.1476250E+00, xmax:  1.00E+10, fmax:  6.7464947E-03, 
+            fnrm:  1.3709877E-02,           epotl: -2.1476168E+00, epotr: -2.1476333E+00, 
+           alpha:  7.7563193E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  73, epot: -2.1473903E+00, xmax:  1.00E+10, fmax:  7.1038288E-03, 
+            fnrm:  1.3375392E-02,           epotl: -2.1473825E+00, epotr: -2.1473980E+00, 
+           alpha:  8.1441353E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  74, epot: -2.1472539E+00, xmax:  1.00E+10, fmax:  6.1096621E-03, 
+            fnrm:  1.3202167E-02,           epotl: -2.1472464E+00, epotr: -2.1472614E+00, 
+           alpha:  8.5513420E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  75, epot: -2.1470648E+00, xmax:  1.00E+10, fmax:  6.5836292E-03, 
+            fnrm:  1.3174263E-02,           epotl: -2.1470570E+00, epotr: -2.1470725E+00, 
+           alpha:  8.9789091E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  76, epot: -2.1465805E+00, xmax:  1.00E+10, fmax:  7.1814969E-03, 
+            fnrm:  1.3753408E-02,           epotl: -2.1465721E+00, epotr: -2.1465888E+00, 
+           alpha:  9.4278546E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  77, epot: -2.1455802E+00, xmax:  1.00E+10, fmax:  6.8606320E-03, 
+            fnrm:  1.5881341E-02,           epotl: -2.1455714E+00, epotr: -2.1455890E+00, 
+           alpha:  9.8992473E+00,            dbar:  1.0000000E-03}
+   Reducing step size to               :  6.9294731E+00
+ - BARSAD: {iter:  78, epot: -2.1460532E+00, xmax:  1.00E+10, fmax:  5.9085953E-03, 
+            fnrm:  1.2650878E-02,           epotl: -2.1460442E+00, epotr: -2.1460621E+00, 
+           alpha:  6.9294731E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  79, epot: -2.1452134E+00, xmax:  1.00E+10, fmax:  5.1317897E-03, 
+            fnrm:  1.2160672E-02,           epotl: -2.1452040E+00, epotr: -2.1452227E+00, 
+           alpha:  7.2759468E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  80, epot: -2.1441410E+00, xmax:  1.00E+10, fmax:  5.2173310E-03, 
+            fnrm:  1.1796392E-02,           epotl: -2.1441316E+00, epotr: -2.1441504E+00, 
+           alpha:  7.6397441E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  81, epot: -2.1429600E+00, xmax:  1.00E+10, fmax:  4.5187481E-03, 
+            fnrm:  1.1629690E-02,           epotl: -2.1429508E+00, epotr: -2.1429692E+00, 
+           alpha:  8.0217313E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  82, epot: -2.1417753E+00, xmax:  1.00E+10, fmax:  4.5631712E-03, 
+            fnrm:  1.1596260E-02,           epotl: -2.1417664E+00, epotr: -2.1417842E+00, 
+           alpha:  8.4228179E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  83, epot: -2.1406387E+00, xmax:  1.00E+10, fmax:  5.0861908E-03, 
+            fnrm:  1.1919451E-02,           epotl: -2.1406301E+00, epotr: -2.1406473E+00, 
+           alpha:  8.8439588E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  84, epot: -2.1395949E+00, xmax:  1.00E+10, fmax:  4.9237363E-03, 
+            fnrm:  1.2540229E-02,           epotl: -2.1395867E+00, epotr: -2.1396031E+00, 
+           alpha:  9.2861567E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  85, epot: -2.1386911E+00, xmax:  1.00E+10, fmax:  7.1135221E-03, 
+            fnrm:  1.3795826E-02,           epotl: -2.1386835E+00, epotr: -2.1386986E+00, 
+           alpha:  9.7504646E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  86, epot: -2.1380566E+00, xmax:  1.00E+10, fmax:  7.0845380E-03, 
+            fnrm:  1.6024700E-02,           epotl: -2.1380500E+00, epotr: -2.1380632E+00, 
+           alpha:  1.0237988E+01,            dbar:  1.0000000E-03}
+   Reducing step size to               :  7.1665914E+00
+ - BARSAD: {iter:  87, epot: -2.1384230E+00, xmax:  1.00E+10, fmax:  5.2092663E-03, 
+            fnrm:  1.2664171E-02,           epotl: -2.1384157E+00, epotr: -2.1384303E+00, 
+           alpha:  7.1665914E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  88, epot: -2.1382861E+00, xmax:  1.00E+10, fmax:  5.6471871E-03, 
+            fnrm:  1.2460233E-02,           epotl: -2.1382796E+00, epotr: -2.1382926E+00, 
+           alpha:  7.5249210E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  89, epot: -2.1384587E+00, xmax:  1.00E+10, fmax:  5.4961245E-03, 
+            fnrm:  1.2562839E-02,           epotl: -2.1384533E+00, epotr: -2.1384640E+00, 
+           alpha:  7.9011671E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  90, epot: -2.1390497E+00, xmax:  1.00E+10, fmax:  5.5517358E-03, 
+            fnrm:  1.2663589E-02,           epotl: -2.1390460E+00, epotr: -2.1390535E+00, 
+           alpha:  8.2962254E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  91, epot: -2.1400727E+00, xmax:  1.00E+10, fmax:  5.7462597E-03, 
+            fnrm:  1.2568218E-02,           epotl: -2.1400708E+00, epotr: -2.1400746E+00, 
+           alpha:  8.7110367E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  92, epot: -2.1413876E+00, xmax:  5.54E+00, fmax:  5.2099444E-03, 
+            fnrm:  1.2210006E-02,           epotl: -2.1413876E+00, epotr: -2.1413875E+00, 
+           alpha:  9.1465885E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  93, epot: -2.1427485E+00, xmax:  1.41E+02, fmax:  5.2413419E-03, 
+            fnrm:  1.1611299E-02,           epotl: -2.1427502E+00, epotr: -2.1427468E+00, 
+           alpha:  9.6039180E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  94, epot: -2.1439008E+00, xmax:  1.88E+02, fmax:  4.6381074E-03, 
+            fnrm:  1.0559118E-02,           epotl: -2.1439039E+00, epotr: -2.1438978E+00, 
+           alpha:  1.0084114E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  95, epot: -2.1446644E+00, xmax:  1.99E+02, fmax:  4.3326617E-03, 
+            fnrm:  9.4914054E-03,           epotl: -2.1446683E+00, epotr: -2.1446606E+00, 
+           alpha:  1.0588320E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  96, epot: -2.1450594E+00, xmax:  2.23E+02, fmax:  3.4416481E-03, 
+            fnrm:  8.5491993E-03,           epotl: -2.1450635E+00, epotr: -2.1450553E+00, 
+           alpha:  1.1117736E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  97, epot: -2.1452179E+00, xmax:  2.13E+02, fmax:  3.5050703E-03, 
+            fnrm:  7.9288407E-03,           epotl: -2.1452217E+00, epotr: -2.1452141E+00, 
+           alpha:  1.1673622E+01,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  98, epot: -2.1452792E+00, xmax:  3.46E+02, fmax:  2.9912432E-03, 
+            fnrm:  8.2602147E-03,           epotl: -2.1452826E+00, epotr: -2.1452759E+00, 
+           alpha:  1.2257303E+01,            dbar:  1.0000000E-03}
+   Reducing step size to               :  8.5801124E+00
+ - BARSAD: {iter:  99, epot: -2.1452971E+00, xmax:  1.97E+02, fmax:  2.7345389E-03, 
+            fnrm:  6.9597235E-03,           epotl: -2.1453004E+00, epotr: -2.1452938E+00, 
+           alpha:  8.5801124E+00,            dbar:  1.0000000E-03}
+ - BARSAD: {iter:  100, epot: -2.1453737E+00, xmax:  1.71E+02, fmax:  2.8733364E-03, 
+            fnrm:  6.5644634E-03,            epotl: -2.1453765E+00, epotr: -2.1453709E+00, 
+           alpha:  9.0091180E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  101, epot: -2.1454472E+00, xmax:  1.83E+02, fmax:  2.6162640E-03, 
+            fnrm:  6.9196293E-03,            epotl: -2.1454494E+00, epotr: -2.1454450E+00, 
+           alpha:  9.4595739E+00,             dbar:  1.0000000E-03}
+   Reducing step size to               :  6.6217017E+00
+ - BARSAD: {iter:  102, epot: -2.1454492E+00, xmax:  1.44E+02, fmax:  2.5172234E-03, 
+            fnrm:  5.9002472E-03,            epotl: -2.1454517E+00, epotr: -2.1454467E+00, 
+           alpha:  6.6217017E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  103, epot: -2.1455214E+00, xmax:  1.29E+02, fmax:  2.3962662E-03, 
+            fnrm:  5.4936046E-03,            epotl: -2.1455238E+00, epotr: -2.1455191E+00, 
+           alpha:  6.9527868E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  104, epot: -2.1455923E+00, xmax:  1.16E+02, fmax:  2.3087707E-03, 
+            fnrm:  5.1436401E-03,            epotl: -2.1455944E+00, epotr: -2.1455902E+00, 
+           alpha:  7.3004262E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  105, epot: -2.1456603E+00, xmax:  1.04E+02, fmax:  2.0943315E-03, 
+            fnrm:  4.8463390E-03,            epotl: -2.1456623E+00, epotr: -2.1456584E+00, 
+           alpha:  7.6654475E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  106, epot: -2.1457242E+00, xmax:  9.14E+01, fmax:  2.0560690E-03, 
+            fnrm:  4.6093896E-03,            epotl: -2.1457260E+00, epotr: -2.1457225E+00, 
+           alpha:  8.0487198E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  107, epot: -2.1457831E+00, xmax:  7.90E+01, fmax:  1.7899552E-03, 
+            fnrm:  4.4897723E-03,            epotl: -2.1457847E+00, epotr: -2.1457816E+00, 
+           alpha:  8.4511558E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  108, epot: -2.1458359E+00, xmax:  6.59E+01, fmax:  1.8086863E-03, 
+            fnrm:  4.5794066E-03,            epotl: -2.1458372E+00, epotr: -2.1458346E+00, 
+           alpha:  8.8737136E+00,             dbar:  1.0000000E-03}
+   Reducing step size to               :  6.2115995E+00
+ - BARSAD: {iter:  109, epot: -2.1458329E+00, xmax:  7.19E+01, fmax:  1.8024483E-03, 
+            fnrm:  3.8291906E-03,            epotl: -2.1458344E+00, epotr: -2.1458314E+00, 
+           alpha:  6.2115995E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  110, epot: -2.1458748E+00, xmax:  6.38E+01, fmax:  1.6344366E-03, 
+            fnrm:  3.4673782E-03,            epotl: -2.1458761E+00, epotr: -2.1458734E+00, 
+           alpha:  6.5221795E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  111, epot: -2.1459146E+00, xmax:  5.53E+01, fmax:  1.5831820E-03, 
+            fnrm:  3.1991743E-03,            epotl: -2.1459158E+00, epotr: -2.1459134E+00, 
+           alpha:  6.8482885E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  112, epot: -2.1459540E+00, xmax:  4.71E+01, fmax:  1.4517934E-03, 
+            fnrm:  2.9706532E-03,            epotl: -2.1459551E+00, epotr: -2.1459530E+00, 
+           alpha:  7.1907029E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  113, epot: -2.1459934E+00, xmax:  3.93E+01, fmax:  1.3874334E-03, 
+            fnrm:  2.7659488E-03,            epotl: -2.1459943E+00, epotr: -2.1459925E+00, 
+           alpha:  7.5502381E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  114, epot: -2.1460329E+00, xmax:  3.21E+01, fmax:  1.2724328E-03, 
+            fnrm:  2.5814008E-03,            epotl: -2.1460336E+00, epotr: -2.1460321E+00, 
+           alpha:  7.9277500E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  115, epot: -2.1460722E+00, xmax:  2.55E+01, fmax:  1.2126981E-03, 
+            fnrm:  2.4161964E-03,            epotl: -2.1460728E+00, epotr: -2.1460716E+00, 
+           alpha:  8.3241375E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  116, epot: -2.1461111E+00, xmax:  1.96E+01, fmax:  1.1052552E-03, 
+            fnrm:  2.2728625E-03,            epotl: -2.1461116E+00, epotr: -2.1461106E+00, 
+           alpha:  8.7403443E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  117, epot: -2.1461489E+00, xmax:  1.46E+01, fmax:  1.0601094E-03, 
+            fnrm:  2.1582342E-03,            epotl: -2.1461493E+00, epotr: -2.1461486E+00, 
+           alpha:  9.1773616E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  118, epot: -2.1461851E+00, xmax:  1.03E+01, fmax:  9.4908507E-04, 
+            fnrm:  2.0929064E-03,            epotl: -2.1461854E+00, epotr: -2.1461849E+00, 
+           alpha:  9.6362296E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  119, epot: -2.1462188E+00, xmax:  6.56E+00, fmax:  9.3368352E-04, 
+            fnrm:  2.1318224E-03,            epotl: -2.1462190E+00, epotr: -2.1462187E+00, 
+           alpha:  1.0118041E+01,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  120, epot: -2.1462482E+00, xmax:  2.91E+00, fmax:  9.1507925E-04, 
+            fnrm:  2.4185442E-03,            epotl: -2.1462483E+00, epotr: -2.1462481E+00, 
+           alpha:  1.0623943E+01,             dbar:  1.0000000E-03}
+   Reducing step size to               :  7.4367602E+00
+ - BARSAD: {iter:  121, epot: -2.1462432E+00, xmax:  5.22E+00, fmax:  8.3475325E-04, 
+            fnrm:  1.9387025E-03,            epotl: -2.1462433E+00, epotr: -2.1462430E+00, 
+           alpha:  7.4367602E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  122, epot: -2.1462660E+00, xmax:  3.86E+00, fmax:  8.3282334E-04, 
+            fnrm:  1.8144764E-03,            epotl: -2.1462661E+00, epotr: -2.1462659E+00, 
+           alpha:  7.8085982E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  123, epot: -2.1462877E+00, xmax:  2.65E+00, fmax:  7.5191880E-04, 
+            fnrm:  1.7274720E-03,            epotl: -2.1462877E+00, epotr: -2.1462876E+00, 
+           alpha:  8.1990281E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  124, epot: -2.1463081E+00, xmax:  1.58E+00, fmax:  7.4544935E-04, 
+            fnrm:  1.6719007E-03,            epotl: -2.1463081E+00, epotr: -2.1463080E+00, 
+           alpha:  8.6089796E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  125, epot: -2.1463272E+00, xmax:  6.25E-01, fmax:  6.6513484E-04, 
+            fnrm:  1.6590727E-03,            epotl: -2.1463272E+00, epotr: -2.1463272E+00, 
+           alpha:  9.0394285E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  126, epot: -2.1463447E+00, xmax: -4.05E-01, fmax:  6.6978108E-04, 
+            fnrm:  1.7231052E-03,            epotl: -2.1463447E+00, epotr: -2.1463447E+00, 
+           alpha:  9.4914000E+00,             dbar:  1.0000000E-03}
+   Reducing step size to               :  6.6439800E+00
+ - BARSAD: {iter:  127, epot: -2.1463413E+00, xmax:  8.65E-01, fmax:  6.6829240E-04, 
+            fnrm:  1.4486583E-03,            epotl: -2.1463413E+00, epotr: -2.1463412E+00, 
+           alpha:  6.6439800E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  128, epot: -2.1463542E+00, xmax:  6.61E-01, fmax:  6.2133823E-04, 
+            fnrm:  1.3460888E-03,            epotl: -2.1463542E+00, epotr: -2.1463542E+00, 
+           alpha:  6.9761790E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  129, epot: -2.1463665E+00, xmax:  3.80E-01, fmax:  6.0473437E-04, 
+            fnrm:  1.2748232E-03,            epotl: -2.1463665E+00, epotr: -2.1463665E+00, 
+           alpha:  7.3249879E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  130, epot: -2.1463783E+00, xmax:  1.22E-01, fmax:  5.6720158E-04, 
+            fnrm:  1.2143285E-03,            epotl: -2.1463783E+00, epotr: -2.1463783E+00, 
+           alpha:  7.6912373E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  131, epot: -2.1463897E+00, xmax: -8.89E-02, fmax:  5.4644380E-04, 
+            fnrm:  1.1586598E-03,            epotl: -2.1463897E+00, epotr: -2.1463897E+00, 
+           alpha:  8.0757992E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  132, epot: -2.1464005E+00, xmax: -2.52E-01, fmax:  5.1152642E-04, 
+            fnrm:  1.1062549E-03,            epotl: -2.1464005E+00, epotr: -2.1464005E+00, 
+           alpha:  8.4795891E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  133, epot: -2.1464108E+00, xmax: -3.76E-01, fmax:  4.9106431E-04, 
+            fnrm:  1.0576158E-03,            epotl: -2.1464108E+00, epotr: -2.1464108E+00, 
+           alpha:  8.9035686E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  134, epot: -2.1464206E+00, xmax: -4.84E-01, fmax:  4.5595370E-04, 
+            fnrm:  1.0155500E-03,            epotl: -2.1464206E+00, epotr: -2.1464206E+00, 
+           alpha:  9.3487470E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  135, epot: -2.1464298E+00, xmax: -6.29E-01, fmax:  4.3918143E-04, 
+            fnrm:  9.8783068E-04,            epotl: -2.1464298E+00, epotr: -2.1464298E+00, 
+           alpha:  9.8161844E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  136, epot: -2.1464383E+00, xmax: -9.63E-01, fmax:  4.0015560E-04, 
+            fnrm:  9.9567951E-04,            epotl: -2.1464383E+00, epotr: -2.1464383E+00, 
+           alpha:  1.0306994E+01,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  137, epot: -2.1464458E+00, xmax: -2.05E+00, fmax:  3.9431798E-04, 
+            fnrm:  1.0941986E-03,            epotl: -2.1464458E+00, epotr: -2.1464459E+00, 
+           alpha:  1.0822343E+01,             dbar:  1.0000000E-03}
+   Reducing step size to               :  7.5756403E+00
+ - BARSAD: {iter:  138, epot: -2.1464442E+00, xmax: -5.07E-01, fmax:  3.9603107E-04, 
+            fnrm:  9.1985406E-04,            epotl: -2.1464442E+00, epotr: -2.1464442E+00, 
+           alpha:  7.5756403E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  139, epot: -2.1464499E+00, xmax: -3.27E-01, fmax:  3.6785792E-04, 
+            fnrm:  8.6984969E-04,            epotl: -2.1464499E+00, epotr: -2.1464499E+00, 
+           alpha:  7.9544223E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  140, epot: -2.1464553E+00, xmax: -2.87E-01, fmax:  3.5947795E-04, 
+            fnrm:  8.3334137E-04,            epotl: -2.1464553E+00, epotr: -2.1464553E+00, 
+           alpha:  8.3521434E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  141, epot: -2.1464604E+00, xmax: -3.51E-01, fmax:  3.3273066E-04, 
+            fnrm:  8.0860410E-04,            epotl: -2.1464604E+00, epotr: -2.1464604E+00, 
+           alpha:  8.7697506E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  142, epot: -2.1464652E+00, xmax: -5.73E-01, fmax:  3.2539503E-04, 
+            fnrm:  8.0092514E-04,            epotl: -2.1464652E+00, epotr: -2.1464653E+00, 
+           alpha:  9.2082381E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  143, epot: -2.1464697E+00, xmax: -1.19E+00, fmax:  2.9674499E-04, 
+            fnrm:  8.2542353E-04,            epotl: -2.1464697E+00, epotr: -2.1464698E+00, 
+           alpha:  9.6686500E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  144, epot: -2.1464738E+00, xmax: -3.30E+00, fmax:  3.5140369E-04, 
+            fnrm:  9.1280414E-04,            epotl: -2.1464737E+00, epotr: -2.1464739E+00, 
+           alpha:  1.0152083E+01,             dbar:  1.0000000E-03}
+   Reducing step size to               :  7.1064578E+00
+ - BARSAD: {iter:  145, epot: -2.1464732E+00, xmax:  1.74E-01, fmax:  2.9620384E-04, 
+            fnrm:  7.1843326E-04,            epotl: -2.1464732E+00, epotr: -2.1464732E+00, 
+           alpha:  7.1064578E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  146, epot: -2.1464763E+00, xmax:  4.83E-01, fmax:  2.7706760E-04, 
+            fnrm:  6.6716823E-04,            epotl: -2.1464763E+00, epotr: -2.1464763E+00, 
+           alpha:  7.4617807E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  147, epot: -2.1464793E+00, xmax:  4.96E-01, fmax:  2.7044886E-04, 
+            fnrm:  6.3324935E-04,            epotl: -2.1464793E+00, epotr: -2.1464793E+00, 
+           alpha:  7.8348697E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  148, epot: -2.1464822E+00, xmax:  3.97E-01, fmax:  2.5311619E-04, 
+            fnrm:  6.0764087E-04,            epotl: -2.1464822E+00, epotr: -2.1464822E+00, 
+           alpha:  8.2266132E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  149, epot: -2.1464849E+00, xmax:  2.27E-01, fmax:  2.4591054E-04, 
+            fnrm:  5.8903658E-04,            epotl: -2.1464849E+00, epotr: -2.1464849E+00, 
+           alpha:  8.6379438E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  150, epot: -2.1464875E+00, xmax: -4.81E-02, fmax:  2.2873553E-04, 
+            fnrm:  5.8034642E-04,            epotl: -2.1464875E+00, epotr: -2.1464875E+00, 
+           alpha:  9.0698410E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  151, epot: -2.1464900E+00, xmax: -6.28E-01, fmax:  2.2326372E-04, 
+            fnrm:  5.8968863E-04,            epotl: -2.1464900E+00, epotr: -2.1464900E+00, 
+           alpha:  9.5233331E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  152, epot: -2.1464923E+00, xmax: -2.61E+00, fmax:  2.2929191E-04, 
+            fnrm:  6.3296561E-04,            epotl: -2.1464922E+00, epotr: -2.1464923E+00, 
+           alpha:  9.9994997E+00,             dbar:  1.0000000E-03}
+   Reducing step size to               :  6.9996498E+00
+ - BARSAD: {iter:  153, epot: -2.1464918E+00, xmax:  5.40E-01, fmax:  2.0991819E-04, 
+            fnrm:  5.2004760E-04,            epotl: -2.1464918E+00, epotr: -2.1464918E+00, 
+           alpha:  6.9996498E+00,             dbar:  1.0000000E-03}
+ - BARSAD: {iter:  154, epot: -2.1464935E+00, xmax:  6.92E-01, fmax:  2.0523854E-04, 
+            fnrm:  4.8767027E-04,            epotl: -2.1464935E+00, epotr: -2.1464935E+00, 
+           alpha:  7.3496323E+00,             dbar:  1.0000000E-03}
+   BARSAD: Saddle point search converged
+ CPU time: {iproc:  0, hrs:  0.289E-03, min:  0.173E-01, sec:  0.104E+01}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  29
+   Tot. No. of Deallocations           :  29
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.004
+     for the array                     : at_out%itypat
+     in the routine                    : Main_program
+     Memory Peak of process            : 30.388 MB
+ Walltime since initialization         :  00:00:01.064794417
+ Max No. of dictionaries used          :  853 #( 185 still in use)
+ Number of dictionary folders allocated:  1

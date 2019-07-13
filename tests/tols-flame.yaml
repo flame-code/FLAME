@@ -126,6 +126,11 @@ saddle_1s_Si64Bulk:
  bh1: 1.e-11
  bh2: 1.e-11
 
+saddle_1s_barsad:
+ Keys to ignore:
+  - iproc
+ Epsilon: 1.e-11
+
 SP_CENT1_bulk:
  Keys to ignore:
   - conf. number

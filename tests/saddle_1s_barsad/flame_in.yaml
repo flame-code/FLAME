@@ -1,0 +1,41 @@
+main:
+    task: saddle
+    two_level_geopt: True
+    seed: 3
+    types: Si
+
+potential:
+    potential: ltb
+
+saddle:
+    method: bar_saddle
+    #dbar: 0.1
+    nstep_contract: 40
+    fnrmtol_contracted: 5.E-4
+#    ampl: 6.E-1
+#    dimsep: 1.E-3
+#    list_random_displace: 1 57
+
+##saddle_opt:
+##    method: SDCG
+##    nit: 200
+##    fmaxtol: 2.E-4
+##    alphax: 3.0
+##    lprint: True
+##
+##geopt:
+##    method: BFGS
+##    alphax: 3.0
+##    fmaxtol: 2.E-5
+##    condnum: 40.0
+##    precaution: normal
+##    lprint: True
+##    #dt_start: 2.E-3
+##
+##geopt_prec:
+##    method: SD
+##    alphax: 3.0
+##    fmaxtol: 1.E-3
+##    lprint: True
+##
+##
