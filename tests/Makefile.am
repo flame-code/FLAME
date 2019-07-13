@@ -7,6 +7,7 @@ SHORT_TESTDIRS = testforces_FD \
 				 minhopp_LJ \
 				 saddle_1s_Si64Bulk \
 				 saddle_1s_barsad \
+				 saddle_1s_barsad_dir \
 				 SP_CENT1_bulk \
 				 SP_CENT1_free \
 				 SP_CENT1_slab \

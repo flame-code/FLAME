@@ -79,6 +79,7 @@ subroutine bar_saddle(parini)
     !local variables
     integer :: iconf, infocode
     type(typ_atoms) :: atoms
+    type(typ_atoms) :: atoms_2
     type(typ_atoms_arr) :: atoms_arr
     real(8), dimension(:,:), allocatable :: fxyz1
     real(8), dimension(:,:), pointer :: rxyz1, rxyz2
@@ -93,7 +94,10 @@ subroutine bar_saddle(parini)
     !The following reads a maximum of two configurations but
     !I am sending you a posinp.yaml that includes one configuration.
     call read_yaml_conf(parini,'posinp.yaml',2,atoms_arr)
-    call atom_copy(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(1)=>atoms')
+    call atom_copy(atoms_arr%atoms(1),atoms,  'atoms_arr%atoms(1)=>atoms')
+    if (atoms_arr%nconf == 2) then
+        call atom_copy(atoms_arr%atoms(2),atoms_2,'atoms_arr%atoms(2)=>atoms')
+    endif
     do iconf=1,atoms_arr%nconf
         call atom_deallocate(atoms_arr%atoms(iconf))
     enddo
@@ -109,6 +113,9 @@ subroutine bar_saddle(parini)
     !Eventually, I would like to use rxyz1 as the estimated saddle point, and
     !rxyz2 as one of the end points of the saddle bar
     call get_rat(atoms,rxyz1)
+    if (atoms_arr%nconf == 2) then
+        call get_rat(atoms_2,rxyz2)
+    endif
     call init_potential_forces(parini,atoms)
     !-------------------------------------------------------
     !-------------------------------------------------------
@@ -149,9 +156,12 @@ subroutine bar_saddle(parini)
 !n_anchor=10
 !call init_bar(ndim,n_anchor,rxyz1,rxyz2,dbar,bar_vec,bar_cm,e_anc,e_max,tt,nproc,iproc,atoms,rst_left,inputs,lo_inputs,ncount_bigdft)
     !Initiallize random bar, and get its energy at the center
-    !call init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
     call read_bar_saddle_params(atoms%nat,parini)
-    call init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
+    if (atoms_arr%nconf == 1) then
+        call init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
+    elseif (atoms_arr%nconf == 2) then
+        call init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
+    endif
     call call_bigdft(nproc,iproc,atoms,bar_cm,etot1,fxyz1,fnoise,infocode,parini)
 !if(ncount_bigdft.gt.maxit) then
 !   if(iproc==0) write(*,'(a)') "SAD: MAXIT reached, exiting"
@@ -220,6 +230,7 @@ subroutine bar_saddle(parini)
     deallocate(rxyz1,rxyz2)
     deallocate(fxyz1)
     call atom_deallocate(atoms)
+    call atom_deallocate(atoms_2)
 end subroutine bar_saddle
 !*****************************************************************************************
 subroutine init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
@@ -244,6 +255,7 @@ bar_vec = bar_vec*2.d0 - 1.d0
 !Rescale
 bar_vec=bar_vec/sqrt(dot_product(bar_vec,bar_vec))*dbar
 end subroutine
+!*****************************************************************************************
 subroutine init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
 !This routine will determine where and how the initial bar should be placed
 !We will set bar_cm=rxyz1, and dir as rxyz2-rxyz1
@@ -265,7 +277,7 @@ bar_vec = rxyz2-rxyz1
 !Rescale
 bar_vec=bar_vec/sqrt(dot_product(bar_vec,bar_vec))*dbar
 end subroutine
-
+!*****************************************************************************************
 subroutine find_saddle(n_dim,bar_vec,bar_cm,fxyz,etot,emax,bar_max,alpha_bar,bar_tol,atoms,parini)
     use mod_interface
     use mod_parini, only: typ_parini
@@ -851,7 +863,7 @@ subroutine write_atomic_file(filename,etot,pos,atoms,comment,forces)
                    symbol=name(1:2)
                    !suffix=' '
                 end if
-                if(atoms%units=='angstroemd0' .or. atoms%units=='angstroem') then
+                if(atoms%units=='angstroemd0' .or. atoms%units=='angstroem' .or. atoms%units=='angstrom') then
                     xyz(1:3)=pos(:,i)*0.5291772108d0 !non-BigDFT
                 else
                     xyz(1:3)=pos(:,i)

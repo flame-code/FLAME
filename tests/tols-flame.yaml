@@ -134,6 +134,14 @@ saddle_1s_barsad:
  fmax: 1.e-9
  fnrm: 1.e-9
 
+saddle_1s_barsad_dir:
+ Keys to ignore:
+  - iproc
+  - xmax
+ Epsilon: 1.e-11
+ fmax: 1.e-9
+ fnrm: 1.e-9
+
 SP_CENT1_bulk:
  Keys to ignore:
   - conf. number
