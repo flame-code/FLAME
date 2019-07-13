@@ -208,8 +208,8 @@ subroutine bar_saddle(parini)
     !-------------------------------------------------------
     !-------------------------------------------------------
     !-------------------------------------------------------
-    call call_bigdft(nproc,iproc,atoms,rxyz1,etot1,fxyz1,fnoise,infocode,parini)
-    call yaml_map('epot',etot1,fmt='(e24.15)')
+    !call call_bigdft(nproc,iproc,atoms,rxyz1,etot1,fxyz1,fnoise,infocode,parini)
+    !call yaml_map('epot',etot1,fmt='(e24.15)')
     !-------------------------------------------------------
     !-------------------------------------------------------
     !-------------------------------------------------------
@@ -292,6 +292,7 @@ character(5):: fn
 logical:: contracting,lo_acc,skip
 integer:: optimizer
 !Optimizer: 1-energy feedback (not stable), 2-gradient feedback (very safe!), 3-BFGS under development
+call yaml_sequence_open('BARSAD optimization iterations')
 optimizer=2
 
 if(hybrid) then
@@ -317,25 +318,39 @@ else
   call forcebar_decomp(n_dim,bar_vec,bar_cm,fbar_para,fbar_perp,fbar_tot,etot_all,xmax,emax,bar_max,nproc,iproc,atoms,parini,iter)
 endif
 call fnrmandforcemax(fbar_tot(:,2),fnrm,fmax,atoms%nat)
-fnrm=sqrt(fnrm)
 !call fmaxfnrm(n_dim,fbar_tot(:,2),fmax,fnrm)
 fbar_para_old=fbar_para;fbar_perp_old=fbar_perp;fbar_tot_old=fbar_tot
 bar_vec_old=bar_vec;bar_cm_old=bar_cm
 etot_all_old=etot_all
-if(iproc==0) write(*,'(a,i5,es15.7,es10.2,2(es15.7))') "SAD: Bar Saddle iter,app_etot,xmax,fmax,fnrm:                       ", iter,etot_all(2),xmax,fmax,fnrm
+
+if(iproc==0) then
+    call yaml_sequence(advance='no')
+    call yaml_mapping_open('BARSAD',flow=.true.)
+    call yaml_map('iter',iter,fmt='(i5)')
+    call yaml_map('epot',etot_all(2),fmt='(es15.7)')
+    call yaml_map('xmax',xmax,fmt='(es10.2)')
+    call yaml_map('fmax',fmax,fmt='(es15.7)')
+    call yaml_map('fnrm',fnrm,fmt='(es15.7)')
+    call yaml_mapping_close()
+endif
+
+
+
+!if(iproc==0) write(*,'(a,i5,es15.7,es10.2,2(es15.7))') "SAD: Bar Saddle iter,app_etot,xmax,fmax,fnrm:                       ", iter,etot_all(2),xmax,fmax,fnrm
     call fnrmandforcemax(fbar_tot(:,2),fnrm,fmax,atoms%nat)
-    fnrm=sqrt(fnrm)
     if(hybrid .and. lo_acc .and. (fnrm.lt.fnrm_switch)) then
       lo_acc=.false.
       skip=.true.
-      if(iproc==0)   write(*,'(a)') "SAD: Switching to higher accuracy"
+      if(iproc==0) call yaml_scalar("BARSAD: Switching to higher accuracy")
+      !if(iproc==0) write(*,'(a)') "SAD: Switching to higher accuracy"
     endif   
     if(fnrm.lt.bar_tol) then
-    if(iproc==0)   write(*,'(a)') "SAD: Saddle point search converged before entering iterations"
+    if(iproc==0) call yaml_scalar("BARSAD: Saddle point search converged before entering iterations")
+    !if(iproc==0) write(*,'(a)') "SAD: Saddle point search converged before entering iterations"
     goto 1002
     endif
 
-
+!stating the loop over optimization
 do iter=1,maxit!(maxit-ncount_bigdft)/2
 !Contract dbar slowly if desired
    if(contracting.and.contractcount.lt.ncontr) then
@@ -360,7 +375,8 @@ end select
     if(hybrid .and. lo_acc .and. (fnrm.lt.fnrm_switch)) then
       lo_acc=.false.
       skip=.true.
-      if(iproc==0)   write(*,'(a)') "SAD: Switching to higher accuracy"
+      if(iproc==0)   write(*,'(a)') "BARSAD: Switching to higher accuracy"
+      !if(iproc==0)   write(*,'(a)') "SAD: Switching to higher accuracy"
     endif   
 if(lo_acc) then
    call forcebar_decomp(n_dim,bar_vec,bar_cm,fbar_para,fbar_perp,fbar_tot,etot_all,xmax,emax,bar_max,nproc,iproc,atoms,parini,iter)
@@ -370,9 +386,23 @@ endif
 
 
    call fnrmandforcemax(fbar_tot(:,2),fnrm,fmax,atoms%nat)
-   fnrm=sqrt(fnrm)
 !   call fmaxfnrm(n_dim,fbar_tot(:,2),fmax,fnrm)
-    if(iproc==0)   write(*,'(a,i5,es15.7,es10.2,6(es15.7))') "SAD: Bar Saddle iter,app_etot,xmax,fmax,fnrm,left,right,alpha,dbar: ", iter,etot_all(2),xmax,fmax,fnrm,etot_all(1),etot_all(3),alpha,dbar!acos(dot_product(bar_vec,fbar_tot(:,2))/sqrt(dot_product(bar_vec,bar_vec))/sqrt(dot_product(fbar_tot(:,2),fbar_tot(:,2))))
+if(iproc==0) then
+    call yaml_sequence(advance='no')
+    call yaml_mapping_open('BARSAD',flow=.true.)
+    call yaml_map('iter',iter,fmt='(i5)')
+    call yaml_map('epot',etot_all(2),fmt='(es15.7)')
+    call yaml_map('xmax',xmax,fmt='(es10.2)')
+    call yaml_map('fmax',fmax,fmt='(es15.7)')
+    call yaml_map('fnrm',fnrm,fmt='(es15.7)')
+    call yaml_map('epotl',etot_all(1),fmt='(es15.7)')
+    call yaml_map('epotr',etot_all(3),fmt='(es15.7)')
+    call yaml_map('alpha',alpha,fmt='(es15.7)')
+    call yaml_map('dbar',dbar,fmt='(es15.7)')
+    call yaml_mapping_close()
+endif
+
+    !if(iproc==0)   write(*,'(a,i5,es15.7,es10.2,6(es15.7))') "SAD: Bar Saddle iter,app_etot,xmax,fmax,fnrm,left,right,alpha,dbar: ", iter,etot_all(2),xmax,fmax,fnrm,etot_all(1),etot_all(3),alpha,dbar!acos(dot_product(bar_vec,fbar_tot(:,2))/sqrt(dot_product(bar_vec,bar_vec))/sqrt(dot_product(fbar_tot(:,2),fbar_tot(:,2))))
 !   write(3,trim(filename)) bar_cm-bar_vec,bar_cm,bar_cm+bar_vec
 
 
@@ -424,13 +454,16 @@ endif
        contractcount=0
        bar_tol=contr_bar_tol
        diffbar=dbar-contr_dbar
-       if(iproc==0)   write(*,'(a)') "SAD: Starting contraction"
+       !if(iproc==0)   write(*,'(a)') "SAD: Starting contraction"
+       if(iproc==0) call yaml_scalar("SAD: Starting contraction")
        else
          if(lo_acc) then
             lo_acc=.false.
             if(iproc==0)   write(*,'(a)') "SAD: Switching to higher accuracy"
          else
-            if(iproc==0)   write(*,'(a)') "SAD: Saddle point search converged"
+            !if(iproc==0)   write(*,'(a)') "SAD: Saddle point search converged"
+            !call yaml_sequence(advance='no')
+            if(iproc==0)   call yaml_scalar("BARSAD: Saddle point search converged")
             goto 1002
          endif
        endif
@@ -438,9 +471,11 @@ endif
 
 !    if(etot_all(1).gt.etot_all(2).or.etot_all(3).gt.etot_all(2)) stop "Energy
 !    ordering bad!"
-enddo
+enddo !end of loop over saddle optimization
+
 if(iproc==0)   write(*,'(a)') "SAD: Saddle point search did not converge in given number of iterations"
 1002 continue
+call yaml_sequence_close()
 if(iproc==0) then
       filename="possaddle_cur"
               call write_atomic_file(trim(filename),etot_all(2),bar_cm(:),atoms,"Approximate saddle",fbar_tot(:,2))
@@ -525,7 +560,8 @@ call elim_torque_unit(n_dim/3,bar_cm,grad_trans)
        fbar_para=fbar_para_old;fbar_perp=fbar_perp_old;fbar_tot=fbar_tot_old
        bar_vec=bar_vec_old;bar_cm=bar_cm_old
        etot_all=etot_all_old
-       if(iproc==0) write(*,'(a,es15.7)') "SAD: Reducing step size to", alpha
+       !if(iproc==0) write(*,'(a,es15.7)') "SAD: Reducing step size to", alpha
+       if(iproc==0) call yaml_map('Reducing step size to',alpha,fmt='(es15.7)')
      else
        fbar_para_old=fbar_para;fbar_perp_old=fbar_perp;fbar_tot_old=fbar_tot
        bar_vec_old=bar_vec;bar_cm_old=bar_cm
@@ -602,7 +638,8 @@ call elim_torque_unit(n_dim/3,bar_cm,grad_trans)
        bar_vec=bar_vec_old;bar_cm=bar_cm_old
        fbar_para=fbar_para_old;fbar_perp=fbar_perp_old;fbar_tot=fbar_tot_old;grad_trans=grad_trans_old
        bar_vec=bar_vec_old;bar_cm=bar_cm_old
-       if(iproc==0) write(*,'(a,es15.7)') "SAD: Reducing step size to", alpha
+       !if(iproc==0) write(*,'(a,es15.7)') "SAD: Reducing step size to", alpha
+       if(iproc==0) call yaml_map('Reducing step size to',alpha,fmt='(es15.7)')
      else
        fbar_para_old=fbar_para;fbar_perp_old=fbar_perp;fbar_tot_old=fbar_tot;grad_trans_old=grad_trans
        bar_vec_old=bar_vec;bar_cm_old=bar_cm
@@ -861,7 +898,7 @@ do i=1,3,2
 !    call func2d(n_dim,bar_cm+real(i-2,8)*bar_vec,fbar_tot(:,i),etot(i))
 !    call lenjon(n_dim/3,bar_cm+real(i-2,8)*bar_vec,fbar_tot(:,i),etot(i))
     call call_bigdft(nproc,iproc,atoms,bar_cm+real(i-2,8)*bar_vec,       etot(i),fbar_tot(:,i),       fnoise,infocode,parini)
-    write(*,*) i,etot(i)
+    !write(*,*) i,etot(i)
     !Compute the force in the direction of the bar
     norm=sqrt(dot_product(bar_vec,bar_vec))
     bar_vec_unit=bar_vec/norm
