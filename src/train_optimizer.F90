@@ -524,7 +524,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     icall=icall+1
     !opt_ann%x(1:n)=x(1:n)
     !call convert_opt_x_ann_arr(opt_ann,ann_arr)
-    write(*,'(a,i,a,i,a)') '**************** icall= ',icall,'  iflag= ',iflag,'  ************'
+    write(*,'(a24,i8,a9,i8,a14)') '**************** icall= ',icall,'  iflag= ',iflag,'  ************'
     if(iflag==1) then
         ann_arr%event='evalu'
         do iconf=1,atoms_train%nconf

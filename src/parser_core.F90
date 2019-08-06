@@ -39,7 +39,7 @@ subroutine read_file_input(file_ini)
         istart1=scan(str_tmp,'=')
         istart2=scan(str_tmp,'=',.true.)
         if(istart2>0 .and. istart2>istart1) then
-            write(*,'(a,i)') 'ERROR: input.ini: too many equal sign in line #',iline
+            write(*,'(a47,i8)') 'ERROR: input.ini: too many equal sign in line #',iline
             stop
         endif
         if(istart1>0) then
@@ -52,7 +52,7 @@ subroutine read_file_input(file_ini)
                     str_tmp=str_tmp(1:istart1)//' '//str_tmp(istart1+1:255)
                 endif
             else
-                write(*,'(a,i)') 'ERROR: input.ini: improper position of equal sign in line #',iline
+                write(*,'(a59,i8)') 'ERROR: input.ini: improper position of equal sign in line #',iline
             endif
         endif
         file_ini%file_lines(iline)=str_tmp
@@ -155,7 +155,7 @@ subroutine get_one_param(file_ini,var_name,int_var,real_var,char_var,char_line_v
         endif
         if(ios_err/=0) then
             str_m='ERROR: input.ini: improper content for '//trim(var_name)//' at line #'
-            write(*,'(a,i)') trim(str_m),file_ini%iline
+            write(*,'(a100,i8)') trim(str_m),file_ini%iline
             stop
         endif
         file_ini%stat_line_is_read(file_ini%iline)=.true.

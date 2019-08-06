@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine cal_matvec_mpi(n,p,g,v1)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_matvec_mpi
     use mod_processors, only: iproc, nproc, mpi_comm_abz
     integer, intent(in):: n
     real(8), intent(in):: p(n,n), g(n)
