@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
-    use mod_interface
+    use mod_interface, except_this_one=>symmetry_functions
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -36,7 +36,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
                     enddo
                 endif
                 if(ann_arr%ann(1)%nn(0)/=ann_arr%ann(1)%ng1+ann_arr%ann(1)%ng2+ann_arr%ann(1)%ng3+ann_arr%ann(1)%ng4) then
-                    write(*,'(a,2i)') 'ERROR: inconsistency between # of input nodes and # of symmetry functions:', &
+                    write(*,'(a74,2i7)') 'ERROR: inconsistency between # of input nodes and # of symmetry functions:', &
                     ann_arr%ann(1)%nn(0),ann_arr%ann(1)%ng1+ann_arr%ann(1)%ng2+ann_arr%ann(1)%ng3+ann_arr%ann(1)%ng4
                     stop
                 endif
@@ -82,7 +82,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
             ng=ann_arr%ann(isat)%nn(0)
             if(ng/=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ &
                 ann_arr%ann(isat)%ng4+ann_arr%ann(isat)%ng5+ann_arr%ann(isat)%ng6) then
-                write(*,'(a,2i)') &
+                write(*,'(a74,2i7)') &
                     'ERROR: inconsistency between # of input nodes and # of symmetry functions:', &
                     ann_arr%ann(isat)%nn(0),ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ &
                     ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4+ann_arr%ann(isat)%ng5+ann_arr%ann(isat)%ng6

@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
-    use mod_interface
+    use mod_interface, except_this_one=>symmetry_functions_driver
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -93,7 +93,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
 end subroutine symmetry_functions_driver
 !*****************************************************************************************
 subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
-    use mod_interface
+    use mod_interface, except_this_one=>symmetry_functions_g02_atom
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
@@ -149,7 +149,7 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
 end subroutine symmetry_functions_g02_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,kat_maincell,rij,rik,rjk,drij,drik,drjk,fcij,fcdij,fcik,fcdik,fcjk,fcdjk,symfunc)
-    use mod_interface
+    use mod_interface, except_this_one=>symmetry_functions_g04_atom
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     implicit none
@@ -214,7 +214,7 @@ subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,k
 end subroutine symmetry_functions_g04_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
-    use mod_interface
+    use mod_interface, except_this_one=>symmetry_functions_g05_atom
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia
@@ -320,7 +320,7 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
 end subroutine symmetry_functions_g05_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g06_atom(ann,iat,jat_maincell,r,dr,fc,fcd)
-    use mod_interface
+    use mod_interface, except_this_one=>symmetry_functions_g06_atom
     use mod_ann, only: typ_ann
     implicit none
     type(typ_ann), intent(inout):: ann
@@ -351,7 +351,6 @@ subroutine symmetry_functions_g06_atom(ann,iat,jat_maincell,r,dr,fc,fcd)
 end subroutine symmetry_functions_g06_atom
 !*****************************************************************************************
 function cutoff_function(r, rc) result(fc)
-    use mod_interface
     implicit none
     real(8), intent(in):: r, rc
     !local variables
@@ -374,7 +373,6 @@ function cutoff_function(r, rc) result(fc)
 end function cutoff_function
 !*****************************************************************************************
 function cutoff_function_der(r, rc) result(fcd)
-    use mod_interface
     implicit none
     real(8), intent(in):: r, rc
     !local variables
@@ -387,7 +385,7 @@ function cutoff_function_der(r, rc) result(fcd)
 end function cutoff_function_der
 !*****************************************************************************************
 subroutine symmetry_functions_g05_atom2(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
-    use mod_interface
+    use mod_interface, except_this_one=>symmetry_functions_g05_atom2
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia

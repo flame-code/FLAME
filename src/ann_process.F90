@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine cal_architecture(ann,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_architecture
     use mod_ann, only: typ_ann
     implicit none
     type(typ_ann), intent(inout):: ann
@@ -15,7 +15,7 @@ end subroutine cal_architecture
 !*****************************************************************************************
 !This routine lack implementation of forces so cannot be called yet.
 subroutine cal_architecture_1hiddenlayer(ann,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_architecture_1hiddenlayer
     use mod_ann, only: typ_ann
     implicit none
     type(typ_ann), intent(inout):: ann
@@ -44,7 +44,7 @@ subroutine cal_architecture_1hiddenlayer(ann,epot)
 end subroutine cal_architecture_1hiddenlayer
 !*****************************************************************************************
 subroutine cal_architecture_2hiddenlayer(ann,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_architecture_2hiddenlayer
     use mod_ann, only: typ_ann
     implicit none
     type(typ_ann), intent(inout):: ann
@@ -108,7 +108,7 @@ subroutine cal_architecture_2hiddenlayer(ann,epot)
 end subroutine cal_architecture_2hiddenlayer
 !*****************************************************************************************
 subroutine cal_architecture_der(ann,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_architecture_der
     use mod_ann, only: typ_ann
     implicit none
     type(typ_ann), intent(inout):: ann
@@ -122,7 +122,7 @@ subroutine cal_architecture_der(ann,epot)
 end subroutine cal_architecture_der
 !****************************************************************************************
 subroutine cal_architecture_der_1hiddenlayer(ann,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_architecture_der_1hiddenlayer
     use mod_ann, only: typ_ann
     implicit none
     type(typ_ann), intent(inout):: ann
@@ -168,7 +168,7 @@ subroutine cal_architecture_der_1hiddenlayer(ann,epot)
 end subroutine cal_architecture_der_1hiddenlayer
 !*****************************************************************************************
 subroutine cal_architecture_der_2hiddenlayer(ann,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_architecture_der_2hiddenlayer
     use mod_ann, only: typ_ann
     implicit none
     type(typ_ann), intent(inout):: ann

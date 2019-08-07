@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
-    use mod_interface
+    use mod_interface, except_this_one=>get_fcn_ann
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
@@ -84,7 +84,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
 end subroutine get_fcn_ann
 !*****************************************************************************************
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_ann_main
     use mod_tightbinding, only: typ_partb
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -138,7 +138,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
 end subroutine cal_ann_main
 !*****************************************************************************************
 subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
-    use mod_interface
+    use mod_interface, except_this_one=>prefit_cent_ener_ref
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
@@ -220,7 +220,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
 end subroutine prefit_cent_ener_ref
 !*****************************************************************************************
 subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
-    use mod_interface
+    use mod_interface, except_this_one=>prefit_cent
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr

@@ -39,7 +39,7 @@
 !
 ! THIS WORK WAS SUPPORTED BY  C.N.R. , ITALY.
 subroutine hung(N,A,F,Z)
-    use mod_interface
+    use mod_interface, except_this_one=>hung
     implicit none
       integer:: n
       real(8)::  A(n,n),Z,U(n),V(n)
@@ -63,7 +63,6 @@ subroutine hung(N,A,F,Z)
 end subroutinE hung
 !********************************************************************************
 subroutine INCR_inalborz(n,F,J,FB,RC)
-    use mod_interface
 implicit none
 ! ASSIGNMENT OF COLUMN  J .
       integer:: n,I,J,JJ,  F(n),FB(n),RC(n)
@@ -77,7 +76,6 @@ implicit none
 end subroutine INCR_inalborz
 !********************************************************************************
 subroutine INIT_inalborz(N,A,F,M,U,V,FB,P)
-    use mod_interface
 ! SEARCH FOR THE INITIAL DUAL AND PARTIAL PRIMAL SOLUTIONS.
 ! P(I) = FIRST UNSCANNED COLUMN OF ROW  I .
     implicit none
@@ -153,7 +151,6 @@ subroutine INIT_inalborz(N,A,F,M,U,V,FB,P)
 end subroutine INIT_inalborz
 !********************************************************************************
 subroutine PATH_inalborz(N,A,II,F,JJ,U,V,FB,RC)
-    use mod_interface
 ! DETERMINATION OF AN AUGMENTING PATH STARTING FROM
 ! UNASSIGNED ROW  II  AND TERMINATING AT UNASSIGNED COLUMN
 ! JJ , WITH UPDATING OF DUAL VARIABLES  U(I)  AND  V(J) .

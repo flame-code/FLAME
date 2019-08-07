@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine ann_best_symfunc(parini)
-    use mod_interface
+    use mod_interface, except_this_one=>ann_best_symfunc
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     use mod_symfunc, only: typ_symfunc_arr
@@ -26,7 +26,7 @@ subroutine ann_best_symfunc(parini)
         call read_data_old(parini,'list_posinp_train',atoms_train)
     endif
     if(iproc==0) then
-        write(*,'(a,i)') 'number of training data points:   ',atoms_train%nconf
+        write(*,'(a34,i8)') 'number of training data points:   ',atoms_train%nconf
     endif
 
     allocate(his(1000,10000),source=0.d0)
@@ -90,7 +90,7 @@ subroutine ann_best_symfunc(parini)
 end subroutine ann_best_symfunc
 !*****************************************************************************************
 subroutine cal_symfunc_diversity(n_tot,his,ann,disparity)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_symfunc_diversity
     use mod_ann, only: typ_ann
     implicit none
     integer, intent(in):: n_tot
@@ -117,7 +117,7 @@ subroutine cal_symfunc_diversity(n_tot,his,ann,disparity)
 end subroutine cal_symfunc_diversity
 !*****************************************************************************************
 subroutine gbounds_distro(ann,atoms_arr,strmess)
-    use mod_interface
+    use mod_interface, except_this_one=>gbounds_distro
     use mod_atoms, only: typ_atoms_arr
     use mod_ann, only: typ_ann
     use mod_processors, only: iproc

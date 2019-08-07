@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_ann_cent1
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
@@ -155,7 +155,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
 end subroutine cal_ann_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
-    use mod_interface
+    use mod_interface, except_this_one=>get_qat_from_chi_cent1
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -217,7 +217,7 @@ subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
 end subroutine get_qat_from_chi_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
-    use mod_interface
+    use mod_interface, except_this_one=>get_qat_from_chi_dir
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -236,7 +236,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     endif
     call DGETRF(nat+1,nat+1,a,nat+1,ann_arr%ipiv,info)
     if(info/=0) then
-        write(*,'(a,i)') 'ERROR: DGETRF info=',info
+        write(*,'(a19,i8)') 'ERROR: DGETRF info=',info
         stop
     endif
     !do iat=1,nat
@@ -250,7 +250,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     ann_arr%qq(nat+1)=atoms%qtot
     call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,ann_arr%qq,nat+1,info)
     if(info/=0) then
-        write(*,'(a,i)') 'ERROR: DGETRS info=',info
+        write(*,'(a19,i8)') 'ERROR: DGETRS info=',info
         stop
     endif
     atoms%qat(1:nat)=ann_arr%qq(1:nat)
@@ -267,7 +267,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
 subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
-    use mod_interface
+    use mod_interface, except_this_one=>init_electrostatic_cent1
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
@@ -335,7 +335,7 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
 end subroutine init_electrostatic_cent1
 !*****************************************************************************************
 subroutine get_amat_cent1(atoms,ann_arr,a)
-    use mod_interface
+    use mod_interface, except_this_one=>get_amat_cent1
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     implicit none
@@ -368,7 +368,7 @@ subroutine get_amat_cent1(atoms,ann_arr,a)
 end subroutine get_amat_cent1
 !*****************************************************************************************
 subroutine fini_electrostatic_cent1(parini,ann_arr,atoms,poisson)
-    use mod_interface
+    use mod_interface, except_this_one=>fini_electrostatic_cent1
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -386,7 +386,7 @@ subroutine fini_electrostatic_cent1(parini,ann_arr,atoms,poisson)
 end subroutine fini_electrostatic_cent1
 !*****************************************************************************************
 subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
-    use mod_interface
+    use mod_interface, except_this_one=>get_electrostatic_cent1
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -415,7 +415,7 @@ subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
 end subroutine get_electrostatic_cent1
 !*****************************************************************************************
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_electrostatic_ann
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
@@ -472,7 +472,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
 end subroutine cal_electrostatic_ann
 !*****************************************************************************************
 subroutine charge_analysis(parini,atoms,ann_arr)
-    use mod_interface
+    use mod_interface, except_this_one=>charge_analysis
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -520,7 +520,7 @@ subroutine charge_analysis(parini,atoms,ann_arr)
 end subroutine charge_analysis
 !*****************************************************************************************
 subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
-    use mod_interface
+    use mod_interface, except_this_one=>get_qat_from_chi_iter
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -537,56 +537,54 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
     real(8), allocatable:: qq(:), h(:), Ah(:), g(:)
     real(8):: hAh, ddot, alpha, beta, dot_gold, dot_gnew 
     real(8):: resnormtol, resnorm
-    associate(nat=>atoms%nat)
-    allocate(ipiv(1:nat+1))
-    allocate(qq(1:nat+1))
-    allocate(h(1:nat+1))
-    allocate(Ah(1:nat+1))
-    allocate(g(1:nat+1))
+    allocate(ipiv(1:atoms%nat+1))
+    allocate(qq(1:atoms%nat+1))
+    allocate(h(1:atoms%nat+1))
+    allocate(Ah(1:atoms%nat+1))
+    allocate(g(1:atoms%nat+1))
 
-    qq(1:nat+1)=0.d0  !??????????????????
+    qq(1:atoms%nat+1)=0.d0  !??????????????????
     resnormtol=1.d-10
     niter=1000        !?????????????????? 
     iter=0
-    g(1:nat)=-ann_arr%chi_o(1:nat)
-    g(nat+1)=atoms%qtot
-    call DSYMV ('U',nat+1,1.d0,a,nat+1,qq,1,-1.d0,g,1)
-    h(1:nat+1)=-g(1:nat+1)
-    dot_gold = DDOT(nat+1,g,1,g,1)
+    g(1:atoms%nat)=-ann_arr%chi_o(1:atoms%nat)
+    g(atoms%nat+1)=atoms%qtot
+    call DSYMV ('U',atoms%nat+1,1.d0,a,atoms%nat+1,qq,1,-1.d0,g,1)
+    h(1:atoms%nat+1)=-g(1:atoms%nat+1)
+    dot_gold = DDOT(atoms%nat+1,g,1,g,1)
     do j=1,niter
         iter = iter+1
-        call DSYMV ('U',nat+1,1.d0,a,nat+1,h,1,0.d0,Ah,1)
-        hAh= DDOT(nat+1,h,1,Ah,1)
+        call DSYMV ('U',atoms%nat+1,1.d0,a,atoms%nat+1,h,1,0.d0,Ah,1)
+        hAh= DDOT(atoms%nat+1,h,1,Ah,1)
         alpha = dot_gold/hAh
 
-        do i=1,nat+1
+        do i=1,atoms%nat+1
             qq(i) = qq(i)+alpha*h(i)
             g(i) = g(i)+alpha*Ah(i)
         enddo
-        dot_gnew = ddot(nat+1,g,1,g,1)
+        dot_gnew = ddot(atoms%nat+1,g,1,g,1)
         beta = dot_gnew/dot_gold
-        h(1:nat+1) = -g(1:nat+1)+beta*h(1:nat+1)
+        h(1:atoms%nat+1) = -g(1:atoms%nat+1)+beta*h(1:atoms%nat+1)
         dot_gold = dot_gnew
         resnorm = sqrt(dot_gold)
         if (resnorm<resnormtol) exit
     enddo
 
-    atoms%qat(1:nat)=qq(1:nat)
+    atoms%qat(1:atoms%nat)=qq(1:atoms%nat)
     call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>1) then
-        call yaml_map('Lagrange',qq(nat+1))
-        !write(*,*) 'Lagrange ',qq(nat+1),iter
+        call yaml_map('Lagrange',qq(atoms%nat+1))
+        !write(*,*) 'Lagrange ',qq(atoms%nat+1),iter
     endif
     deallocate(ipiv)
     deallocate(qq)
     deallocate(h)
     deallocate(Ah)
     deallocate(g)
-    end associate
 end subroutine get_qat_from_chi_iter
 !*****************************************************************************************
 subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
-    use mod_interface
+    use mod_interface, except_this_one=>get_ener_gradient_cent1
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms, update_ratp
@@ -635,7 +633,7 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
 end subroutine get_ener_gradient_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>get_qat_from_chi_operator
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms, set_qat, update_ratp
@@ -653,16 +651,15 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     real(8) :: beta, dpm
     real(8) :: DDOT, aa, bb, gnrmtol, tt, qtot, y0, y1, gnrm, gnrm2, gnrm2old
     real(8) :: alpha, alphax, alpha0, de, epotlong_old, sss, qtot_tmp, dipole(3)
-    associate(nat=>atoms%nat)
     gnrmtol=parini%gnrmtol_eem
     call set_qat(atoms)
     !atoms%qat=atoms%qat*0.8d0
-    !do iat=1,nat
+    !do iat=1,atoms%nat
     !    write(*,'(i5,f10.3)') iat,atoms%qat(iat)
     !enddo
     !stop
     !open(unit=1358,file='charges.dat',status='old')
-    !do iat=1,atoms%nat
+    !do iat=1,atoms%atoms%nat
     !    read(1358,*) tt,atoms%qat(iat)
     !enddo
     !close(1358)
@@ -671,16 +668,16 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         write(*,'(a)') '       Correct the initial guess of atomic charge assignment.'
         stop
     else
-        sss=sum(atoms%qat(1:nat))
-        sss=sss/real(nat,8)
-        do iat=1,nat
+        sss=sum(atoms%qat(1:atoms%nat))
+        sss=sss/real(atoms%nat,8)
+        do iat=1,atoms%nat
             atoms%qat(iat)=atoms%qat(iat)-sss
         enddo
     endif
-    allocate(qq(1:nat))
-    allocate(g(1:nat))
-    allocate(h(1:nat))
-    allocate(gt(1:nat))
+    allocate(qq(1:atoms%nat))
+    allocate(g(1:atoms%nat))
+    allocate(h(1:atoms%nat))
+    allocate(gt(1:atoms%nat))
     !---------------------------------------------------------------
     qtot_tmp=sum(atoms%qat(1:atoms%nat))
     !if(parini%iverbose>=2) then
@@ -698,14 +695,14 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
             call yaml_sequence(advance='no')
         endif
         call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
-        gnrm2=DDOT(nat,g,1,g,1)
+        gnrm2=DDOT(atoms%nat,g,1,g,1)
         gnrm=sqrt(gnrm2)
         if(iter==0) epotlong_old=ann_arr%epot_es
         de=ann_arr%epot_es-epotlong_old
         if(parini%iverbose>=2) then
             dipole(1)=0.d0 ; dipole(2)=0.d0 ; dipole(3)=0.d0
             call update_ratp(atoms)
-            do iat=1,nat
+            do iat=1,atoms%nat
                 !write(30+iter,'(i5,2f20.10)') iat,atoms%qat(iat),g(iat)
                 dipole(1)=dipole(1)+atoms%qat(iat)*atoms%ratp(1,iat)
                 dipole(2)=dipole(2)+atoms%qat(iat)*atoms%ratp(2,iat)
@@ -743,7 +740,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
             gt=g
             qq=atoms%qat
         endif
-        tt=DDOT(nat,g,1,gt,1)/sqrt(DDOT(nat,g,1,g,1)*DDOT(nat,gt,1,gt,1))
+        tt=DDOT(atoms%nat,g,1,gt,1)/sqrt(DDOT(atoms%nat,g,1,g,1)*DDOT(atoms%nat,gt,1,gt,1))
         !write(*,'(a,i4,f10.3,2es14.5)') 'angle  ',iter,tt,sum((g-gt)**2),sum((qq-atoms%qat)**2)
         if(tt>0.5d0) then
             alpha=min(alpha*2.0d0,1.d0*alphax)
@@ -756,14 +753,14 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         epotlong_old=ann_arr%epot_es
         gt=g
         qq=atoms%qat
-        do iat=1,nat
+        do iat=1,atoms%nat
             atoms%qat(iat)=atoms%qat(iat)-alpha*g(iat)
         enddo
     enddo
     if(.not. (gnrm<1.d-7)) then
         call yaml_sequence_close()
     endif
-    !do iat=1,nat
+    !do iat=1,atoms%nat
     !    write(*,'(i5,4f10.3)') iat,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)
     !enddo
     !stop
@@ -777,10 +774,10 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     do
         exit !no CG
         call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
-        gnrm2=DDOT(nat,g,1,g,1)
+        gnrm2=DDOT(atoms%nat,g,1,g,1)
         gnrm=sqrt(gnrm2)
         !dpm=0.d0
-        !do iat=1,nat
+        !do iat=1,atoms%nat
         !    dpm=dpm+atoms%qat(iat)*atoms%rat(3,iat)
         !enddo
         !write(33,'(i4,es14.5)') iter,dpm
@@ -800,28 +797,28 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
             stop
         endif
         if(iter==0) then
-            h(1:nat)=-g(1:nat)
+            h(1:atoms%nat)=-g(1:atoms%nat)
         else
             beta=gnrm2/gnrm2old
-            h(1:nat)=-g(1:nat)+beta*h(1:nat)
+            h(1:atoms%nat)=-g(1:atoms%nat)+beta*h(1:atoms%nat)
         endif
         !obtaining inforrmation from a trial point
-!        qq(1:nat)=atoms%qat(1:nat) !saving charges in a temporary array
-!        do iat=1,nat
+!        qq(1:atoms%nat)=atoms%qat(1:atoms%nat) !saving charges in a temporary array
+!        do iat=1,atoms%nat
 !            atoms%qat(iat)=atoms%qat(iat)+alpha0*h(iat)
 !        enddo
         epotlong_old=ann_arr%epot_es !This must be here to avoid saving eh of trial point
 !        call get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,gt,qtot)
-!        y0=DDOT(nat,gt,1,h,1)
-!        y1=DDOT(nat,g,1,h,1)
+!        y0=DDOT(atoms%nat,gt,1,h,1)
+!        y1=DDOT(atoms%nat,g,1,h,1)
 !        tt=y0/(y0-y1)
 !        !write(*,'(a,2(1x,e10.3),2x,e12.5)')  'y0,y1,y0/(y0-y1)',y0,y1,tt
 !        !alpha=alpha0*tt
 !        alpha=alpha0*max(min(tt,2.0d0),-0.2d0)
-!        atoms%qat(1:nat)=qq(1:nat) !putting back the charges
+!        atoms%qat(1:atoms%nat)=qq(1:atoms%nat) !putting back the charges
         !updating charges
         alpha=alphax
-        do iat=1,nat
+        do iat=1,atoms%nat
             atoms%qat(iat)=atoms%qat(iat)+alpha*h(iat)
         enddo
         gnrm2old=gnrm2
@@ -832,6 +829,5 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     deallocate(g)
     deallocate(h)
     deallocate(gt)
-    end associate
 end subroutine get_qat_from_chi_operator
 !*****************************************************************************************

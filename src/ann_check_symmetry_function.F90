@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine ann_check_symmetry_function(parini)
-    use mod_interface
+    use mod_interface, except_this_one=> ann_check_symmetry_function
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
@@ -66,7 +66,7 @@ subroutine ann_check_symmetry_function(parini)
     !close(1)
     !----------------------------------------------------------   
     if(iproc==0) then
-        write(*,'(a,i)') 'number of checking data points:   ',atoms_check%nconf
+        write(*,'(a34,i8)') 'number of checking data points:   ',atoms_check%nconf
     endif
     do iconf=1,atoms_check%nconf
         do iat=1,atoms_check%atoms(iconf)%nat

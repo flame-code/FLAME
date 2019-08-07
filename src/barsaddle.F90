@@ -1100,9 +1100,9 @@ end subroutine
         yt=y
         ytp1=-yp1
         ytpn=-ypn
-        call spline(xt,yt,n,ytp1,ytpn,y2)
+        call spline_barsaddle(xt,yt,n,ytp1,ytpn,y2)
       else
-        call spline(x,y,n,yp1,ypn,y2)
+        call spline_barsaddle(x,y,n,yp1,ypn,y2)
       endif
       end subroutine
       
@@ -1126,7 +1126,7 @@ end subroutine
       endif
       end subroutine
 
-      subroutine spline(x,y,n,yp1,ypn,y2)  
+      subroutine spline_barsaddle(x,y,n,yp1,ypn,y2)  
 !From numerical recipes
 !Given arrays x[1..n] and y[1..n] containing a tabulated function, i.e., yi= f(xi), with
 !x1 < x2 < : : :  < xN , and given values yp1 and ypn for the first derivative of the interpolating
@@ -1203,7 +1203,7 @@ end subroutine
 !taken from brent.f90
 !**********************************************************
 
-      function brent(ax,bx,cx,f,tol,xmin,nbrent,nproc,iproc,atoms,parini,ncount_bigdft)  
+      function brent_barsaddle(ax,bx,cx,f,tol,xmin,nbrent,nproc,iproc,atoms,parini,ncount_bigdft)  
 !Given a function f, and given a bracketing triplet of abscissas ax, bx, cx (such that bx is
 !between ax and cx, and f(bx) is less than both f(ax) and f(cx)), this routine isolates
 !the minimum to a fractional precision of about tol using Brent's method. The abscissa of
@@ -1219,7 +1219,7 @@ implicit none
     type(typ_atoms):: atoms
 
       INTEGER ITMAX,nbrent,ncount_bigdft
-      REAL(8):: brent,ax,bx,cx,tol,xmin,CGOLD,ZEPS  
+      REAL(8):: brent_barsaddle,ax,bx,cx,tol,xmin,CGOLD,ZEPS  
       REAL(8),EXTERNAL:: f  
       PARAMETER (CGOLD=.3819660,ZEPS=1.0d-10)  
       INTEGER:: iter  
@@ -1302,7 +1302,7 @@ implicit none
 11    continue  
       stop 'brent exceed maximum iterations'  
 3     xmin=x  
-      brent=fx  
+      brent_barsaddle=fx  
       return  
       END  
  
