@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine vc_init_potential_forces(atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>vc_init_potential_forces
     use mod_atoms, only: typ_atoms
     use mod_potential, only: fcalls, potential
     implicit none
@@ -16,7 +16,7 @@ end subroutine vc_init_potential_forces
 !*****************************************************************************************
 !(nat,latvec,xred,fxyz,celldv,stress,pressure,etot,enth,count1)
 subroutine cal_potential_forces_vc(iproc,nat,rat,cellvec,pressure,fat,celldv,stress,epot,enth)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_forces_vc
     use mod_potential, only: potential, fcalls
     implicit none
     integer, intent(in):: iproc, nat

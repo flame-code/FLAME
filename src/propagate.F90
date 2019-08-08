@@ -1,5 +1,5 @@
 subroutine propagate(parini,nat,xred,latvec0,dxred,dlatvec,xredout,latvecout)
-use mod_interface
+use mod_interface, except_this_one=>propagate
 use mod_parini, only: typ_parini
 !This subroutine will propagate the coordinates of the atoms and the cells according to the
 !value of fixed or free degrees of freedom according to

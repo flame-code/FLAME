@@ -1,5 +1,5 @@
 subroutine torque_cell(latvec0,vlat,torquenrm)
-use mod_interface
+use mod_interface, except_this_one=>torque_cell
 implicit none
 real(8), intent(in)    :: latvec0(3,3)
 real(8), intent(inout) :: vlat(3,3),torquenrm

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine netsock_task(parini)
-    !use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, update_rat
     use mod_potential, only: fcalls, perfstatus, potential
@@ -56,7 +55,7 @@ subroutine netsock_task(parini)
 !receive-send iteration
         if(parini%usesocket) then 
             call readbuffer(sock_socket, header, MSGLEN)
-            write(*,'(i,a,a)') iproc, ' # SOCKET SLAVE: header received ',trim(header)
+            write(*,'(i6,a33,a100)') iproc, ' # SOCKET SLAVE: header received ',trim(header)
             if (trim(header) == "STATUS") then 
                 call send_status(header, MSGLEN, isinit)
             else if (trim(header) == "INIT") then 

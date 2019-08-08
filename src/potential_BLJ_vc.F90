@@ -6,7 +6,7 @@
 !********************************************************
 !*****************************************************************************************
 subroutine init_lennardjones_vc(nat,sat)
-    use mod_interface
+    use mod_interface, except_this_one=>init_lennardjones_vc
     use mod_potential, only: sigmalj, epslj, rcut, kinds
     !We consider particle 1 as A- and particle 2 as B-particles     
     !In general the parmeters are symmetric, i.e. sigma(A,B)=sigma(B,A)
@@ -45,7 +45,7 @@ end subroutine init_lennardjones_vc
 !*****************************************************************************************
 !subroutine lennardjones_vc(nat,latvec,xred0,fxyz,celldv,stress,pressure,etot,enth)
 subroutine lennardjones_vc(iproc,nat,xred0,latvec,pressure,fxyz,celldv,stress,etot,enth)
-    use mod_interface
+    use mod_interface, except_this_one=>lennardjones_vc
     use mod_potential, only: sigmalj, epslj, rcut, kinds
     !energy/forces for truncated Lennard Jones potential according to PRA 8, 1504 (1973)
     !input: nat: number of atoms totally
@@ -183,7 +183,7 @@ subroutine lennardjones_vc(iproc,nat,xred0,latvec,pressure,fxyz,celldv,stress,et
 end subroutine lennardjones_vc
 !*****************************************************************************************
 subroutine stress_volume_alborz(latvec,vol,pressure,stressvol)
-    use mod_interface
+    use mod_interface, except_this_one=>stress_volume_alborz
     !This subroutine will compute the additional components to the negative
     !derivative of the enthalpy with respect to the cell variables
     !For the derivatives with respect to hij, the lattive vector components of the
@@ -202,7 +202,7 @@ subroutine stress_volume_alborz(latvec,vol,pressure,stressvol)
 end subroutine stress_volume_alborz
 !*****************************************************************************************
 subroutine cell_vol(nat,latvec,vol)
-    use mod_interface
+    use mod_interface, except_this_one=>cell_vol
     !This subroutine will use the lattice vectors latvec to calculate the volume per atom of the simulation cell, vol
     implicit none
     integer:: nat

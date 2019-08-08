@@ -1,5 +1,5 @@
 subroutine inertia_tensor(nat,xcart,cmass,amass,intens)
-use mod_interface
+use mod_interface, except_this_one=>inertia_tensor
 !This routine computes the inertia tensor with respect to the center of mass of a system with nat atoms
 implicit none
 integer:: nat,iat,i,j

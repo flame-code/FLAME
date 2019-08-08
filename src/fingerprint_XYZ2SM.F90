@@ -273,7 +273,7 @@ deallocate(stmp)
 allocate (sijat(norb,norb))
 allocate (spow(norb,norb), stmp(norb,norb))
 
-print '(" calcaulating the  powers ... " \)' 
+print '(" calcaulating the  powers ... " )' 
 
 do iatcell = 1, nat
 
@@ -334,7 +334,7 @@ deallocate (eval)
 
 spow=sijat
 do im=1,m
-print '(i3\)', im
+print '(i3)', im
    call DGEMM ('n', 'n', norb, norb , norb, 1.d0, spow, norb, sijat, norb, 0.d0, stmp, norb )
 
    spow=stmp

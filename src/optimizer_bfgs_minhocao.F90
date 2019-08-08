@@ -1700,7 +1700,7 @@ end subroutine init_hessinv
 !************************************************************************************
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use mod_interface
+ use mod_interface, except_this_one=>GEOPT_MBFGS_MHM
  use global, only: units
  use defs_basis
  use minpar
@@ -2109,7 +2109,7 @@ END SUBROUTINE
 !************************************************************************************
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use mod_interface
+ use mod_interface, except_this_one=>GEOPT_MBFGS_MHM_OLD
  use global, only: units
  use defs_basis
  use minpar

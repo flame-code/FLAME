@@ -261,7 +261,7 @@ do ii=1,3
 end subroutine bader_weight
 !*****************************************************************************************
   subroutine calc_weight(poisson, p,nat)
-      use mod_interface
+      use mod_interface, except_this_one=>calc_weight
     use mod_poisson_weight, only: typ_poisson
     implicit none
     type(typ_poisson), intent(inout):: poisson
@@ -415,7 +415,7 @@ end subroutine bader_weight
   end subroutine ongrid_weight
 !*****************************************************************************************
 subroutine edag_refinement_weight (last_iter,iter,poisson,i_dist,car_lat)
-      use mod_interface
+      use mod_interface, except_this_one=>edag_refinement_weight
     use mod_poisson_weight, only: typ_poisson
     implicit none
     logical, intent(out):: last_iter

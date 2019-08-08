@@ -16,7 +16,7 @@
 
 !  subroutine evaluate_msock(iproc,nat,latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
   subroutine cal_potential_forces_netsock(atoms)
-  use mod_interface
+  use mod_interface, except_this_one=>cal_potential_forces_netsock
 !  use defs_basis
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
@@ -66,12 +66,12 @@ endif
     write(*,*) "Energy: ", energy
     write(*,*) "Forces: "
     do iat=1,atoms%nat
-      write(*,'(3(pe20.12))') fcart(:,iat)
+      write(*,'(3(es20.12))') fcart(:,iat)
     enddo
   end subroutine
 
   subroutine init_netsock(parini)
-  use mod_interface
+  use mod_interface, except_this_one=>init_netsock
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_parini, only: typ_parini
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string

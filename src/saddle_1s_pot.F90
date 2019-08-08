@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine pot_initialize(parini,atoms,paropt,paropt_m)
-    use mod_interface
+    use mod_interface, except_this_one=>pot_initialize
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_opt, only: typ_paropt

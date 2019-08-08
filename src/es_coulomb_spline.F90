@@ -72,7 +72,7 @@
 !end program erf_rinv_spline
 !*****************************************************************************************
 subroutine build_shortrange_spline(shortrange,spline,rcut,a)
-    use mod_interface
+    use mod_interface, except_this_one=>build_shortrange_spline
     use mod_shortrange, only: typ_shortrange
     use mod_spline, only: typ_spline
     use yaml_output
@@ -144,7 +144,7 @@ end subroutine build_shortrange_spline
             !fspq(0:4,0:nsp-1)=fspq(0:4,0:nsp-1)+a4*fspq_4(0:4,0:nsp-1)
 !*****************************************************************************************
 subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
-    use mod_interface
+    use mod_interface, except_this_one=>build_spline
     use mod_spline, only: typ_spline
     use yaml_output
     implicit none
@@ -204,7 +204,7 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
 end subroutine build_spline 
 !*****************************************************************************************
 subroutine erf_over_r(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_interface, except_this_one=>erf_over_r
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a
@@ -244,7 +244,7 @@ end subroutine erf_over_r
 !funcder=12.q0*exp(-r12)/(sqrt(pi)*r)-(6.q0*erf(r6))/r**7
 !funcsecder=-144.q0*exp(-r12)/(sqrt(pi)*r2)+exp(-r12)*(5.q0*r4-144.q0*r**16)/(sqrt(pi)*r6)+(42.q0*erf(r6))/r8
 subroutine one_over_r6(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_interface, except_this_one=>one_over_r6
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a
@@ -280,7 +280,7 @@ subroutine one_over_r6(r,a,hsp,func,funcder,funcsecder)
 end subroutine one_over_r6
 !*****************************************************************************************
 subroutine one_over_r8(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_interface, except_this_one=>one_over_r8
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a
@@ -318,7 +318,7 @@ end subroutine one_over_r8
 !(-144.q0*exp(-r16)/r2-256.q0/r16)/sqrt(pi)+(72*erf(r8))/r10
 !*****************************************************************************************
 subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_interface, except_this_one=>exp_ar
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a

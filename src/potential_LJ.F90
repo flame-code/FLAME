@@ -1,12 +1,10 @@
 !*****************************************************************************************
 subroutine init_lennardjones
-    use mod_interface
     implicit none
 end subroutine init_lennardjones
 !*****************************************************************************************
 !energy and forces for Lennard Jones potential
 subroutine lennardjones(atoms)
-    use mod_interface
     use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     type(typ_atoms), intent(inout):: atoms

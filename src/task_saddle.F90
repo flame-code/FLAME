@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine task_saddle(parini)
-    use mod_interface
+    use mod_interface, except_this_one=>task_saddle
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini

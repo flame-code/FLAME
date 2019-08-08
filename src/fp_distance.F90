@@ -3,7 +3,7 @@ use mod_parini, only: typ_parini
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
-use mod_interface
+use mod_interface, except_this_one=>get_fp_distance
 use fingerprint
 use defs_basis, only: pi
 implicit none

@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine init_potential_forces_ff(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>init_potential_forces_ff
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     implicit none
@@ -14,7 +14,7 @@ subroutine init_potential_forces_ff(parini,atoms)
 end subroutine init_potential_forces_ff
 !*****************************************************************************************
 subroutine cal_potential_forces_ff(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_forces_ff
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     !use mod_potential, only: poisson
@@ -28,7 +28,7 @@ subroutine cal_potential_forces_ff(parini,atoms)
 end subroutine cal_potential_forces_ff
 !*****************************************************************************************
 subroutine final_potential_forces_ff(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>final_potential_forces_ff
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     !use mod_potential, only: poisson

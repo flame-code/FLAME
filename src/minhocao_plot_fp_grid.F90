@@ -1,6 +1,6 @@
 subroutine plot_fp_grid(parini,nlminx,nlmin,nat,fp_len,fp_arr,lat_arr,pl_arr)
 use mod_parini, only: typ_parini
-use mod_interface
+use mod_interface, except_this_one=>plot_fp_grid
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: nlminx,nlmin,fp_len,i,kk,nat

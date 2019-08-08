@@ -354,7 +354,7 @@ end subroutine bader_neargrid
   end function mat_vol
 !***************************************************************************************
 subroutine edag_refinement (last_iter,iter,poisson,i_dist,car_lat)
-    use mod_interface
+    use mod_interface, except_this_one=>edag_refinement
     use mod_poisson_neargrid, only: typ_poisson
     implicit none
     logical, intent(out):: last_iter
@@ -448,7 +448,7 @@ subroutine edag_refinement (last_iter,iter,poisson,i_dist,car_lat)
 
 !***************************************************************************************
   function is_edge_neargrid (poisson,d) result(is_edge)
-      use mod_interface
+      use mod_interface, except_this_one=>is_edge_neargrid
     use mod_poisson_neargrid, only: typ_poisson
     type(typ_poisson):: poisson
     logical :: is_edge

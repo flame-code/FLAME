@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine elim_moment_alborz(nat,atomic_vector)
-    use mod_interface
   implicit none
   integer, intent(in):: nat
   real(8), intent(inout):: atomic_vector(3,nat)
@@ -22,7 +21,6 @@ subroutine elim_moment_alborz(nat,atomic_vector)
 end subroutine elim_moment_alborz
 !*****************************************************************************************
 subroutine elim_moment_mass(nat,atomic_vector,atomic_mass)
-    use mod_interface
   implicit none
   integer, intent(in):: nat
   real(8), intent(inout):: atomic_vector(3,nat)
@@ -48,7 +46,7 @@ subroutine elim_moment_mass(nat,atomic_vector,atomic_mass)
 end subroutine elim_moment_mass
 !*****************************************************************************************
 subroutine calc_rotation_eigenvectors(nat,rat0,vrot)
-    use mod_interface
+    use mod_interface, except_this_one=>calc_rotation_eigenvectors
   implicit none
   integer, intent(in) :: nat
   real(8), dimension(3*nat), intent(in) :: rat0
@@ -129,7 +127,7 @@ end subroutine calc_rotation_eigenvectors
 !! In fat, the rotational forces will be eliminated with respect to the center of mass. 
 !! All atoms are treated equally (same atomic mass) 
 subroutine elim_torque_reza_alborz(nat,rat0,fat)
-    use mod_interface
+    use mod_interface, except_this_one=>elim_torque_reza_alborz
   implicit none
   integer, intent(in) :: nat
   real(8), dimension(3*nat), intent(in) :: rat0
@@ -205,7 +203,6 @@ subroutine elim_torque_reza_alborz(nat,rat0,fat)
 end subroutine elim_torque_reza_alborz
 !*****************************************************************************************
 subroutine mycross(a,b,c)
-    use mod_interface
   implicit none
   real(8), dimension(3), intent(in):: a,b
   real(8), dimension(3), intent(out):: c
@@ -215,7 +212,6 @@ subroutine mycross(a,b,c)
 end subroutine mycross
 !*****************************************************************************************
 subroutine moment_of_inertia_alborz(nat,rat,teneria,evaleria)
-    use mod_interface
   implicit none
   integer, intent(in) :: nat
   real(8), dimension(3,nat), intent(in) :: rat
@@ -252,7 +248,6 @@ subroutine moment_of_inertia_alborz(nat,rat,teneria,evaleria)
 end subroutine moment_of_inertia_alborz
 !*****************************************************************************************
 subroutine normalizevector_alborz(n,v)
-    use mod_interface
     implicit none
     integer, intent(in):: n
     real(8), intent(inout):: v(n)
@@ -271,7 +266,6 @@ subroutine normalizevector_alborz(n,v)
 end subroutine normalizevector_alborz
 !*****************************************************************************************
 subroutine calnorm(n,v,vnrm)
-    use mod_interface
     implicit none
     integer, intent(in):: n
     real(8), intent(in):: v(n)
@@ -286,7 +280,6 @@ subroutine calnorm(n,v,vnrm)
 end subroutine calnorm
 !*****************************************************************************************
 subroutine calmaxforcecomponent(n,v,vmax)
-    use mod_interface
     implicit none
     integer, intent(in):: n
     real(8), intent(in):: v(n)
@@ -300,7 +293,7 @@ subroutine calmaxforcecomponent(n,v,vmax)
 end subroutine calmaxforcecomponent
 !*****************************************************************************************
 subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
-    use mod_interface
+    use mod_interface, except_this_one=>rxyz_cart2int_alborz
     !This subrouine will convert the internal coordinates into cartesian coordinates
     implicit none
     integer, intent(in):: nat
@@ -321,7 +314,6 @@ subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
 end subroutine rxyz_cart2int_alborz
 !*****************************************************************************************
 subroutine rxyz_int2cart_alborz(nat,cellvec,rat_int,rat_cart)
-    use mod_interface
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: cellvec(3,3), rat_int(3,nat)
@@ -334,7 +326,6 @@ subroutine rxyz_int2cart_alborz(nat,cellvec,rat_int,rat_cart)
 end subroutine rxyz_int2cart_alborz
 !*****************************************************************************************
 subroutine invertmat_alborz(a,ainv)
-    use mod_interface
     implicit none
     real(8),intent(in):: a(3,3)
     real(8),intent(out):: ainv(3,3)
@@ -369,7 +360,6 @@ subroutine invertmat_alborz(a,ainv)
 end subroutine invertmat_alborz
 !*****************************************************************************************
 subroutine invertmat_alborz_qp(a,ainv)
-    use mod_interface
     implicit none
     real(16),intent(in):: a(3,3)
     real(16),intent(out):: ainv(3,3)
@@ -392,7 +382,6 @@ subroutine invertmat_alborz_qp(a,ainv)
 end subroutine invertmat_alborz_qp
 !*****************************************************************************************
 subroutine convertupper(str)
-    use mod_interface
     character(*), intent(inout):: str
     integer:: i
     do i=1,len(str)
@@ -404,7 +393,6 @@ subroutine convertupper(str)
 end subroutine convertupper
 !*****************************************************************************************
 subroutine convertlower(str)
-    use mod_interface
     character(*), intent(inout) :: str
     integer:: i
     do i=1,len(str)
@@ -416,7 +404,6 @@ subroutine convertlower(str)
 end subroutine convertlower
 !*****************************************************************************************
 subroutine check_whether_time_exceeded
-    use mod_interface
     use mod_task, only: time_start, time_exceeded
     use mod_processors, only: iproc
     implicit none
@@ -436,7 +423,6 @@ subroutine check_whether_time_exceeded
 end subroutine check_whether_time_exceeded
 !*****************************************************************************************
 subroutine expdist(n,x)
-    use mod_interface
     !generates n random numbers distributed according to  exp(-x)
     implicit none
     integer, intent(in):: n
@@ -454,7 +440,6 @@ subroutine expdist(n,x)
 end subroutine expdist
 !*****************************************************************************************
 subroutine gausdist_alborz(n,x)
-    use mod_interface
     !generates n random numbers distributed according to  exp(-.5*x**2)
     implicit none
     integer, intent(in) ::n
@@ -483,7 +468,6 @@ subroutine gausdist_alborz(n,x)
 end subroutine gausdist_alborz
 !*****************************************************************************************
 subroutine randdist(a,n,x)
-    use mod_interface
     !create a uniform random numbers in interval [-a,a]
     implicit none
     real(8), intent(in) :: a
@@ -500,7 +484,6 @@ subroutine randdist(a,n,x)
 end subroutine randdist
 !*****************************************************************************************
 subroutine hunt2(n,x,p,ip)
-    use mod_interface
     !p is in interval [x(ip),x(ip+1)[ ; x(0)=-Infinity ; x(n+1) = Infinity
     use mod_minhopp, only: etoler
     implicit none
@@ -520,7 +503,6 @@ subroutine hunt2(n,x,p,ip)
 end subroutine hunt2
 !*****************************************************************************************
 subroutine hpsort(n,ra)
-    use mod_interface
     implicit real*8 (a-h,o-z)
     real*8 ::ra(n)
     if (n.lt.2) return
@@ -699,7 +681,6 @@ end function flm_index
 !end subroutine projrotout
 !*****************************************************************************************
 subroutine elim_fixed_at(parini,nat,x)
-use mod_interface
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -718,7 +699,7 @@ end subroutine
 !************************************************************************************
 
 subroutine elim_fixed_lat(parini,latvec,x)
-use mod_interface
+use mod_interface, except_this_one=>elim_fixed_lat
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -799,7 +780,6 @@ end subroutine
 !************************************************************************************
 
         subroutine elim_moment(nat,vxyz,atmass)
-        use mod_interface
         implicit none
         real(8):: vxyz(3,nat),sx,sz,sy,atmass(nat)
         integer:: iat,nat       
@@ -822,7 +802,7 @@ end subroutine
 !************************************************************************************
 
 subroutine elim_torque_cell(latvec0,vlat)
-use mod_interface
+use mod_interface, except_this_one=>elim_torque_cell
 implicit none
 real(8), intent(in)    :: latvec0(3,3)
 real(8), intent(inout) :: vlat(3,3)
@@ -887,7 +867,7 @@ end subroutine elim_torque_cell
 !************************************************************************************
 
 subroutine diagcomp(latvec,x)
-use mod_interface
+use mod_interface, except_this_one=>diagcomp
 implicit none
 real(8):: latvec(3,3),x(3,3),xnrm,latvect(3,3),latvecinv(3,3),sigma(3,3)
 real(8):: len1,len2,len3,tmp1,tmp2,tmp3,tmpvec(3),vol
@@ -925,7 +905,7 @@ real(8):: len1,len2,len3,tmp1,tmp2,tmp3,tmpvec(3),vol
 end subroutine
 
  subroutine backtocell(nat,latvec,rxyz_red)
- use mod_interface
+ use mod_interface, except_this_one=>backtocell
  !This subroutine will transform back all atoms into the periodic cell
  !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
  implicit none
@@ -993,7 +973,7 @@ end subroutine
  subroutine backtocell_cart(nat,latvec,rxyz)
  !This subroutine will transform back all atoms into the periodic cell
  !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
- use mod_interface
+ use mod_interface, except_this_one=>backtocell_cart
  implicit none
  integer:: nat,i,iat,j
  real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count

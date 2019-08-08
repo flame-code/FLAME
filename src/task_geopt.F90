@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine geopt(parini)
-    use mod_interface
+    use mod_interface, except_this_one=>geopt
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
@@ -95,7 +95,6 @@ subroutine geopt(parini)
 end subroutine geopt
 !*****************************************************************************************
 subroutine init_geopt(parini,paropt,paropt_prec)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
     implicit none

@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine genrandom(parini,genconf)
-    use mod_interface
+    use mod_interface, except_this_one=>genrandom
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
     use mod_atoms, only: set_rcov, update_rat, set_rat_atoms, update_ratp

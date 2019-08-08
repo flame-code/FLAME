@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine setpot_init(parini,atoms_curr,paropt,paropt_prec)
-    use mod_interface
+    use mod_interface, except_this_one=>setpot_init
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_opt, only: typ_paropt
@@ -29,7 +29,7 @@ subroutine setpot_init(parini,atoms_curr,paropt,paropt_prec)
 end subroutine setpot_init
 !*****************************************************************************************
 subroutine setpot_final(parini,atoms_curr)
-    use mod_interface
+    use mod_interface, except_this_one=>setpot_final
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     implicit none
@@ -40,7 +40,7 @@ subroutine setpot_final(parini,atoms_curr)
 end subroutine setpot_final
 !*****************************************************************************************
 subroutine setpot_mdescape
-    use mod_interface
+    use mod_interface, except_this_one=>setpot_mdescape
     use mod_potential, only: potential, perfstatus, single_point_calculation
     implicit none
     !local variables
@@ -57,7 +57,7 @@ subroutine setpot_mdescape
 end subroutine setpot_mdescape
 !*****************************************************************************************
 subroutine setpot_soften
-    use mod_interface
+    use mod_interface, except_this_one=>setpot_soften
     use mod_potential, only: potential, perfstatus, single_point_calculation
     implicit none
     !local variables
@@ -70,7 +70,7 @@ subroutine setpot_soften
 end subroutine setpot_soften
 !*****************************************************************************************
 subroutine setpot_geopt_prec
-    use mod_interface
+    use mod_interface, except_this_one=>setpot_geopt_prec
     use mod_potential, only: potential, perfstatus, single_point_calculation
     implicit none
     !local variables
@@ -87,7 +87,7 @@ subroutine setpot_geopt_prec
 end subroutine setpot_geopt_prec
 !*****************************************************************************************
 subroutine setpot_geopt
-    use mod_interface
+    use mod_interface, except_this_one=>setpot_geopt
     use mod_potential, only: potential, perfstatus, single_point_calculation
     implicit none
     !local variables

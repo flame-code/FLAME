@@ -1,6 +1,6 @@
 !**********************************************************************************************
 subroutine MD_ANDERSEN_MHM     (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use mod_interface
+ use mod_interface, except_this_one=>MD_ANDERSEN_MHM
  use global, only: units
  use defs_basis
  use interface_code
@@ -505,7 +505,7 @@ end subroutine
 !**********************************************************************************************
 
 subroutine ekin_at_lat_andersen(amass,latmass,latvec,vpos,vlat,vvol,ekinat,ekinlat,f0,md_type,nat)
-use mod_interface
+use mod_interface, except_this_one=>ekin_at_lat_andersen
 implicit none
 integer:: iat,i,md_type,nat
 real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol,vvol

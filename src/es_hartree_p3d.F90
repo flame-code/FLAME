@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine init_psolver_p3d(poisson)
-    use mod_interface
+    use mod_interface, except_this_one=>init_psolver_p3d
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
@@ -23,7 +23,7 @@ subroutine init_psolver_p3d(poisson)
 end subroutine init_psolver_p3d
 !*****************************************************************************************
 subroutine fini_psolver_p3d(poisson)
-    use mod_interface
+    use mod_interface, except_this_one=>fini_psolver_p3d
     use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_poisson), intent(inout):: poisson
@@ -44,7 +44,7 @@ subroutine fini_psolver_p3d(poisson)
 end subroutine fini_psolver_p3d
 !*****************************************************************************************
 subroutine get_psolver_p3d(parini,poisson,cell,hx,hy,hz,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>get_psolver_p3d
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -80,7 +80,7 @@ end subroutine get_psolver_p3d
 !*****************************************************************************************
 !This subroutine calculates the systems of linear equations using LAPACK routines.
 subroutine solve_syslinequ_p3d(poisson,hz,cell)
-    use mod_interface
+    use mod_interface, except_this_one=>solve_syslinequ_p3d
     use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_poisson), intent(inout):: poisson
@@ -352,7 +352,7 @@ subroutine solve_syslinequ_p3d(poisson,hz,cell)
 end subroutine solve_syslinequ_p3d
 !*****************************************************************************************
 subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
-    use mod_interface
+    use mod_interface, except_this_one=>fdcoeff
     implicit none
     integer::ngpz,ngpzm1
     real(8)::e1(ngpz) !Diagonal elements of the matrix
@@ -378,7 +378,7 @@ subroutine fdcoeff(ngpz,e1,e2,g,gsq,hz,hzsq)
 end subroutine fdcoeff
 !*****************************************************************************************
 subroutine prepare00(ngpz,nem,f,c,hz)
-    use mod_interface
+    use mod_interface, except_this_one=>prepare00
     implicit none
     integer::ngpz,i,nem,n
     real(8)::f(ngpz+2*nem),c(ngpz),eta(6),hz 
@@ -399,7 +399,7 @@ subroutine prepare00(ngpz,nem,f,c,hz)
 end subroutine prepare00
 !*****************************************************************************************
 subroutine prepare(ngpz,nem,f,c,gsq,hz,hzsq)
-    use mod_interface
+    use mod_interface, except_this_one=>prepare
     implicit none
     integer::ngpz,i,nem,n
     real(8)::f(ngpz+2*nem),c(ngpz),eta(6),gsq,hz,hzsq,a
@@ -449,7 +449,7 @@ subroutine prepare(ngpz,nem,f,c,gsq,hz,hzsq)
 end subroutine prepare
 !*****************************************************************************************
 subroutine prepcoeff(hz,eta,coefftot1,coefftoti,coefftotn)
-    use mod_interface
+    use mod_interface, except_this_one=>prepcoeff
     implicit none
     real(8)::hz,coeff(16,8),coefftot1(17),coefftoti(17),coefftotn(17),eta(6)
     real(8)::hzsq,hzeta(6)
@@ -640,7 +640,7 @@ end subroutine prepcoeff
 !This subroutine calculates the dipole moment which defines the boundary 
 !condition for the single ODE in which gamma=0
 subroutine get_beta_grid(hzsq,ngpz,analc00,beta_grid)
-    use mod_interface
+    use mod_interface, except_this_one=>get_beta_grid
     use yaml_output
     implicit none
     real(8), intent(in):: hzsq, analc00(ngpz)

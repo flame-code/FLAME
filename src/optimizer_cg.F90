@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine cgminimum(iproc,n,nr,x,f,epot,paropt,nwork,work)
-    use mod_interface
+    use mod_interface, except_this_one=>cgminimum
     use mod_opt, only: typ_paropt, frmt_base
     use yaml_output
     implicit none
@@ -108,7 +108,7 @@ subroutine cgminimum(iproc,n,nr,x,f,epot,paropt,nwork,work)
 end subroutine cgminimum
 !*****************************************************************************************
 subroutine init_cgminimum(paropt,n,nr,f,nwork,work,epot,fnrm)
-    use mod_interface
+    use mod_interface, except_this_one=>init_cgminimum
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none

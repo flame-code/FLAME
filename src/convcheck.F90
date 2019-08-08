@@ -1,5 +1,5 @@
 subroutine convcheck(parini,nat,latvec_in,fcart_in,strten_in,target_pressure_habohr,strfact,fmax,fmax_at,fmax_lat,tolmxf,iexit)
-use mod_interface
+use mod_interface, except_this_one=>convcheck
 use mod_parini, only: typ_parini
 use defs_basis
 implicit none

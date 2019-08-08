@@ -3048,7 +3048,6 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     type(typ_parini), intent(inout):: parini
     type(typ_atoms):: atoms
     real(8):: rat_init(3,atoms%nat)
-    integer:: jj(3,atoms%nat), vfile
 end subroutine md_nvt_nose_hoover_chain
 subroutine set_langevin_randforce(eta,nat)
     integer :: nat
@@ -4882,7 +4881,7 @@ end subroutine slab_stress
         real(8):: amass(parini%nat)
         real(8):: wlat(9),wlatold(9),fxyzcart(3*parini%nat)
         character(40):: filename,folder
-        real(8):: pos_prev(3*parini%nat),dir_prev(3*parini%nat),dir(3*parini%nat),angle,norm
+        real(8):: pos_prev(3*parini%nat),dir_prev(3*parini%nat),dir(3*parini%nat),angle,vnrm
 end subroutine soften_pos
  subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
  use mod_parini, only: typ_parini

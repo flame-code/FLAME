@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine init_potential_forces_vasp(atoms_t)
-    use mod_interface
+    use mod_interface, except_this_one=>init_potential_forces_vasp
     use mod_potential, only: sat, atom_motion, cellvec, ntypat, stypat, &
         single_point_calculation, comment, comment2, vasp5, natarr
     use mod_atoms, only: typ_atoms, set_typat
@@ -70,7 +70,7 @@ subroutine init_potential_forces_vasp(atoms_t)
 end subroutine init_potential_forces_vasp
 !*****************************************************************************************
 subroutine cal_potential_forces_vasp(atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_forces_vasp
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_potential, only: atom_motion, cellvec, vasp5, comment, comment2, &
         perfstatus, perfstatus_old, vasp_restart, fcalls, natarr, ntypat
@@ -155,7 +155,6 @@ subroutine cal_potential_forces_vasp(atoms)
 end subroutine cal_potential_forces_vasp
 !*****************************************************************************************
 subroutine final_potential_forces_vasp
-    use mod_interface
     use mod_potential, only: sat
     implicit none
     !local variables
@@ -167,7 +166,7 @@ subroutine final_potential_forces_vasp
 end subroutine final_potential_forces_vasp
 !*****************************************************************************************
 subroutine add_repulsive_wall(iproc,nat,rat,cellvec,fat,epot)
-    use mod_interface
+    use mod_interface, except_this_one=>add_repulsive_wall
     use mod_potential, only: sat
     implicit none
     integer, intent(in):: iproc, nat
@@ -403,7 +402,7 @@ end subroutine add_repulsive_wall
 
 !*****************************************************************************************
 subroutine get_output_vasp_geopt_alborz(filename1,filename2,nat,latvec,xred,fcart,energy,strten,success)
-    use mod_interface
+    use mod_interface, except_this_one=>get_output_vasp_geopt_alborz
     !use defs_basis
     !Since its a single call, we only have forces and stresses from one configuration!
     use mod_potential, only: single_point_calculation

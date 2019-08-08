@@ -1,7 +1,7 @@
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
 subroutine get_glimitsphere(hx,hy,hz,nbgpx,nbgpy,nbgpz,mboundg)
-    use mod_interface
+    use mod_interface, except_this_one=>get_glimitsphere
     use mod_electrostatics, only: typ_poisson
     implicit none
     real(8), intent(in):: hx, hy, hz
@@ -37,7 +37,7 @@ subroutine get_glimitsphere(hx,hy,hz,nbgpx,nbgpy,nbgpz,mboundg)
 end subroutine get_glimitsphere
 !*****************************************************************************************
 subroutine init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
-    use mod_interface
+    use mod_interface, except_this_one=>init_grid_param
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: rxyz(3,nat)
@@ -96,7 +96,7 @@ subroutine init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,
 end subroutine init_grid_param
 !*****************************************************************************************
 subroutine charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
-    use mod_interface
+    use mod_interface, except_this_one=>charge_back_to_cell
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -146,7 +146,7 @@ subroutine charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
 end subroutine charge_back_to_cell
 !*****************************************************************************************
 subroutine potential_on_extended_grid(lda,ngx,ngy,ngz,nagx,nagy,nagz,ibcx,pot,wa)
-    use mod_interface
+    use mod_interface, except_this_one=>potential_on_extended_grid
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory

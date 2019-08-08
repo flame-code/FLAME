@@ -45,7 +45,7 @@
 
 
 subroutine fixcell_niggli(nat,latvec,xred)
-use mod_interface
+use mod_interface, except_this_one=>fixcell_niggli
 implicit none
 !This routine will apply the niggli reduction to the cell and to the reduced coordinates and transform them back into the cell
 integer:: nat,iat
@@ -71,7 +71,7 @@ end subroutine
 subroutine niggli(latvec_in,latvec_out,transmat,eps)
 !This soubroutine will produce the niggli reduced cell based on the improved algorithm of R. W. Grosse-Kunstleve,* N. K. Sauter and P. D. Adams
 !On exit, latvec_out will contain the reduced cell, and transmat will provide the transformation operator in latvec_in
-use mod_interface
+use mod_interface, except_this_one=>niggli
 implicit none
 real(8):: latvec_in(3,3),latvec_out(3,3),transmat(3,3),eps,tmpmat(3,3)
 real(8):: pi,nigmat(6),dist_ang(6),nigmat_check(6)
@@ -250,25 +250,25 @@ endif
 end subroutine
 
 subroutine  a1_action(nigmat,tmpmat,eps)
-use mod_interface
+use mod_interface, except_this_one=>a1_action
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n1_action(nigmat,tmpmat,eps)
 end subroutine
 subroutine  a2_action(nigmat,tmpmat,eps)
-use mod_interface
+use mod_interface, except_this_one=>a2_action
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n2_action(nigmat,tmpmat,eps)
 end subroutine
 subroutine  a3_action(nigmat,tmpmat,eps)
-use mod_interface
+use mod_interface, except_this_one=>a3_action
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n3_true_action(nigmat,tmpmat,eps)
 end subroutine
 subroutine  a4_action(nigmat,tmpmat,eps)
-use mod_interface
+use mod_interface, except_this_one=>a4_action
 implicit none
 real(8):: nigmat(6),tmpmat(3,3),eps
 call n3_false_action(nigmat,tmpmat,eps)

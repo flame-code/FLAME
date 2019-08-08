@@ -2,7 +2,7 @@ subroutine init_fp(parini,fp_len,latvec)
 !This routine will initiallize the parameters for the fingerprinting
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
-use mod_interface
+use mod_interface, except_this_one=>init_fp
 use mod_parini, only: typ_parini
 use fingerprint
 use global, only: units
@@ -104,7 +104,7 @@ subroutine get_fp(parini,fp_len,pos_red,latvec,fp)
 !For 10<fp_method<20: fully periodic systems
 !For 20<fp_method<30: molecular systems
 use mod_parini, only: typ_parini
-use mod_interface
+use mod_interface, except_this_one=>get_fp
 use fingerprint, only: fp_15_fp_size, fp_method, fp_11_rcut, fp_11_sigma, fp_11_dbin
 use fingerprint, only: fp_11_fp_size, fp_11_nkinds_sum, fp_11_fp_dim
 use fingerprint, only: fp_12_r_cut, fp_12_fp_dim, fp_16_fp_size, fp_12_nl, fp_13_nl

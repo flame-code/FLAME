@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
-    use mod_interface
+    use mod_interface, except_this_one=>fire
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt, frmt_base
     use yaml_output
@@ -106,7 +106,7 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
 end subroutine fire
 !*****************************************************************************************
 subroutine init_fire(n,f,epot,work,paropt)
-    use mod_interface
+    use mod_interface, except_this_one=>init_fire
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none

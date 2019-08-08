@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_potential_forces_bigdft(atoms_t)
-    use mod_interface
     use mod_potential, only: cellvec, sat
     use mod_atoms, only: typ_atoms
     implicit none
@@ -23,7 +22,6 @@ subroutine init_potential_forces_bigdft(atoms_t)
 end subroutine init_potential_forces_bigdft
 !*****************************************************************************************
 subroutine final_potential_forces_bigdft
-    use mod_interface
     use mod_potential, only: sat
     implicit none
     !local variables
@@ -35,7 +33,7 @@ subroutine final_potential_forces_bigdft
 end subroutine final_potential_forces_bigdft
 !*****************************************************************************************
 subroutine cal_potential_forces_bigdft(atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_forces_bigdft
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_potential, only: perfstatus, perfstatus_old, fcalls, bigdft_restart
     use mod_processors, only: iproc
@@ -101,7 +99,7 @@ subroutine cal_potential_forces_bigdft(atoms)
 end subroutine cal_potential_forces_bigdft
 !*****************************************************************************************
 subroutine writexyz_bigdft(filename,nat,rat,comment)
-    use mod_interface
+    use mod_interface, except_this_one=>writexyz_bigdft
     use mod_potential, only: sat, cellvec
     implicit none
     integer:: nat,iat
@@ -128,7 +126,7 @@ subroutine writexyz_bigdft(filename,nat,rat,comment)
 end subroutine writexyz_bigdft
 !*****************************************************************************************
 subroutine get_output_bigdft(iproc,filename,nat,fat,epot,success)
-    use mod_interface
+    use mod_interface, except_this_one=>get_output_bigdft
     !Since its a single call, we only have forces from one configuration
     implicit none
     integer, intent(in):: iproc, nat

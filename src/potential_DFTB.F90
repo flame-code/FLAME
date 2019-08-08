@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine init_potential_forces_dftb(atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>init_potential_forces_dftb
     !use mod_potential, only: cellvec, sat
     use mod_atoms, only: typ_atoms
     use mod_processors, only: iproc
@@ -38,7 +38,6 @@ subroutine init_potential_forces_dftb(atoms)
 end subroutine init_potential_forces_dftb
 !*****************************************************************************************
 subroutine final_potential_forces_dftb
-    use mod_interface
     use mod_potential, only: sat
     implicit none
     !local variables
@@ -51,7 +50,7 @@ subroutine final_potential_forces_dftb
 end subroutine final_potential_forces_dftb
 !*****************************************************************************************
 subroutine cal_potential_forces_dftb(atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_forces_dftb
     use mod_atoms, only: typ_atoms, set_typat
     use mod_const, only: bohr2ang
     !use mod_potential, only:
@@ -130,7 +129,7 @@ subroutine cal_potential_forces_dftb(atoms)
 end subroutine cal_potential_forces_dftb
 !*****************************************************************************************
 subroutine writexyz_dftb(filename,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>writexyz_dftb
     use mod_atoms, only: typ_atoms, get_rat_iat
     use mod_const, only: bohr2ang
     use mod_processors, only: iproc
@@ -176,7 +175,7 @@ subroutine writexyz_dftb(filename,atoms)
 end subroutine writexyz_dftb
 !*****************************************************************************************
 subroutine get_output_dftb_alborz(filename,atoms,success)
-    use mod_interface
+    use mod_interface, except_this_one=>get_output_dftb_alborz
     use mod_atoms, only: typ_atoms
     implicit none
     character(*), intent(in):: filename

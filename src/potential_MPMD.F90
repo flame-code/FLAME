@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine init_potential_forces_mpmd(atoms_t)
-    use mod_interface
+    use mod_interface, except_this_one=>init_potential_forces_mpmd
     use mod_potential, only: ntypat, natarr, stypat, cellvec, l_atomic_num
     use mod_atoms, only: typ_atoms
     implicit none
@@ -54,7 +54,7 @@ subroutine init_potential_forces_mpmd(atoms_t)
 end subroutine init_potential_forces_mpmd
 !*****************************************************************************************
 subroutine cal_potential_forces_mpmd(atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_forces_mpmd
     use mod_const
     use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_processors, only: iproc_pot
@@ -128,7 +128,7 @@ subroutine cal_potential_forces_mpmd(atoms)
 end subroutine cal_potential_forces_mpmd
 !*****************************************************************************************
 subroutine mpmd_init
-    use mod_interface
+    use mod_interface, except_this_one=>mpmd_init
     use mod_processors, only: iproc_list_pot, iproc_type_all, nproc_world, mpi_group_world, &
         nproc_pot, iproc_pot, nproc, iproc
     implicit none

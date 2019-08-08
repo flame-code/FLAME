@@ -1,7 +1,7 @@
 !**********************************************************************************************
 
 subroutine acceleration(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
-use mod_interface
+use mod_interface, except_this_one=>acceleration
 implicit none
 integer:: iat,i,j,md_type,nat
 real(8),dimension(3,nat):: accpos,vpos,fcart,fpos

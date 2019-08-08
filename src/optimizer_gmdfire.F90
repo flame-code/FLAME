@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine gmdfire(nr,x,epot,f,work,paropt)
-    use mod_interface
+    use mod_interface, except_this_one=>gmdfire
     use mod_opt, only: typ_paropt
     implicit none
     integer:: nr

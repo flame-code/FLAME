@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine allocate_minhopp_arrays1(nproc)
-    use mod_interface
+    use mod_interface, except_this_one=>allocate_minhopp_arrays1
     use mod_minhopp, only: nlmin, nlminx, earr, nvisit, dtarr, ediffarr, ekinarr, &
         itagintermediate, mtagarr1, mtagarr2, do_req1, do_req2, ireqarr1, ireqarr2, nbuf
     implicit none
@@ -42,7 +42,7 @@ subroutine allocate_minhopp_arrays1(nproc)
 end subroutine allocate_minhopp_arrays1
 !*****************************************************************************************
 subroutine allocate_minhopp_arrays2(nat,nproc)
-    use mod_interface
+    use mod_interface, except_this_one=>allocate_minhopp_arrays2
     use mod_minhopp, only: nbuf, abuf, abufall, abuf1, abuf2
     implicit none
     integer, intent(in):: nat, nproc
@@ -59,7 +59,7 @@ subroutine allocate_minhopp_arrays2(nat,nproc)
 end subroutine allocate_minhopp_arrays2
 !*****************************************************************************************
 subroutine deallocate_minhopp_arrays
-    use mod_interface
+    use mod_interface, except_this_one=>deallocate_minhopp_arrays
     use mod_minhopp, only: earr, nvisit, abuf, abufall, dtarr, ediffarr, ekinarr, &
         itagintermediate, mtagarr1, mtagarr2, abuf1, abuf2, do_req1, do_req2, ireqarr1, ireqarr2
     implicit none

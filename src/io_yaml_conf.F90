@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
-    use mod_interface
+    use mod_interface, except_this_one=>read_yaml_conf
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate, update_rat
     use mod_const, only: bohr2ang, ha2ev
@@ -160,7 +160,7 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
 end subroutine read_yaml_conf
 !*****************************************************************************************
 subroutine write_yaml_conf(file_info,atoms,strkey)
-    use mod_interface
+    use mod_interface, except_this_one=>write_yaml_conf
     use mod_atoms, only: typ_file_info, typ_atoms, update_ratp, get_rat
     use mod_const, only: bohr2ang, ha2ev
     use dictionaries

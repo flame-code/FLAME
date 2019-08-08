@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine init_potential_forces(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>init_potential_forces
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: fcalls, potential
@@ -46,7 +46,7 @@ subroutine init_potential_forces(parini,atoms)
 end subroutine init_potential_forces
 !*****************************************************************************************
 subroutine cal_potential_forces(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_forces
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, get_rat, update_ratp, set_rat
     use mod_potential, only: potential, fcalls
@@ -134,7 +134,7 @@ subroutine cal_potential_forces(parini,atoms)
 end subroutine cal_potential_forces
 !*****************************************************************************************
 subroutine final_potential_forces(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>final_potential_forces
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: potential
@@ -175,7 +175,7 @@ subroutine final_potential_forces(parini,atoms)
 end subroutine final_potential_forces
 !*****************************************************************************************
 subroutine remove_drift(atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>remove_drift
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms

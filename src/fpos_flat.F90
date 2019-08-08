@@ -1,6 +1,6 @@
 subroutine fpos_flat(parini,pressure,fpos,flat,strten,fcart,latvec,md_type) 
 !Computes the pure generalized forces on atom and cell (no contributions from velocities)
-use mod_interface
+use mod_interface, except_this_one=>fpos_flat
 use mod_parini, only: typ_parini
 
 implicit none

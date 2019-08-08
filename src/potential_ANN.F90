@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine init_potential_ann(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>init_potential_ann
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: ann_arr, ann_boundcheck
@@ -56,7 +56,7 @@ subroutine init_potential_ann(parini,atoms)
 end subroutine init_potential_ann
 !*****************************************************************************************
 subroutine cal_potential_ann(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>cal_potential_ann
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_deallocate_old, get_rat
     use mod_potential, only: ann_arr, fcalls, fcalls_sec, potential, potential_sec, ann_boundcheck
@@ -124,7 +124,6 @@ subroutine cal_potential_ann(parini,atoms)
 end subroutine cal_potential_ann
 !*****************************************************************************************
 subroutine final_potential_ann
-    use mod_interface
     use mod_potential, only: ann_arr
     implicit none
     !local variables
@@ -132,7 +131,7 @@ subroutine final_potential_ann
 end subroutine final_potential_ann
 !*****************************************************************************************
 subroutine add_repulsive_potential(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>add_repulsive_potential
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_rcov, update_ratp
     use mod_linked_lists, only: typ_linked_lists

@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine diisminimum(n,nr,x,epot,f,paropt,nwork,work)
-    use mod_interface
+    use mod_interface, except_this_one=>diisminimum
     use mod_opt, only: typ_paropt
     implicit none
     integer:: n, nr, nwork, info, id, jd
@@ -19,7 +19,7 @@ subroutine diisminimum(n,nr,x,epot,f,paropt,nwork,work)
 
 
     if(epot>emin+1.d-2*abs(emin) .or. fnrm>2.d0*fnrmlowest) then 
-        write(*,'(a,i,2E10.2)') 'DIVERGENCE in DIIS, switch back to SD', &
+        write(*,'(a37,i8,2E10.2)') 'DIVERGENCE in DIIS, switch back to SD', &
             itdiis,(epot-emin)/abs(emin),fnrm/fnrmlowest
         call dcopy(nr,work((3*paropt%idsx+2)*nr+1),1,x,1)
         !call sdminimum(0,n,n,x,fnrmtol,f,epot,sdconverged)

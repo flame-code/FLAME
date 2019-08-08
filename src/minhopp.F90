@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine minimahopping(parini)
-    use mod_interface
+    use mod_interface, except_this_one=>minimahopping
     use mod_parini, only: typ_parini
     use mod_task, only: time_exceeded
     use mod_minhopp, only: nstep, nlmin, nlminx, ekin, istep, ihopp, kerathopp, ediff, etoler, re_sm, &
@@ -144,7 +144,7 @@ subroutine minimahopping(parini)
 end subroutine minimahopping
 !*****************************************************************************************
 subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
-    use mod_interface
+    use mod_interface, except_this_one=>init_minimahopping
     use mod_parini, only: typ_parini
     use mod_minhopp, only: nlmin, alpha_soften, npminx, nstep, alpha1, alpha2, &
         beta1, beta2, beta3, eref, etoler, minter, mdmin, nsoften, nrandoff
@@ -268,7 +268,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
 end subroutine init_minimahopping
 !*****************************************************************************************
 subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
-    use mod_interface
+    use mod_interface, except_this_one=>final_minimahopping
     use mod_parini, only: typ_parini
     use mod_minhopp, only: count_md_tot, count_opt_tot, count_soften_tot, &
         fcall_tot_all, fcall_tot_all_md, fcall_tot_all_opt, fcall_tot_all_soften
@@ -318,7 +318,7 @@ subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_
 end subroutine final_minimahopping
 !*****************************************************************************************
 subroutine set_amass(atoms_hopp)
-    use mod_interface
+    use mod_interface, except_this_one=>set_amass
     use mod_atoms, only: typ_atoms
     use mod_processors, only: iproc, imaster
     implicit none
@@ -344,7 +344,7 @@ subroutine set_amass(atoms_hopp)
 end subroutine set_amass
 !*****************************************************************************************
 subroutine relax_minhopp(parini,atoms,paropt_prec,paropt)
-    use mod_interface
+    use mod_interface, except_this_one=>relax_minhopp
     use mod_parini, only: typ_parini
     use mod_minhopp, only: die, count_opt, count_opt_tot, istep
     use mod_opt, only: typ_paropt
@@ -411,7 +411,7 @@ subroutine relax_minhopp(parini,atoms,paropt_prec,paropt)
 end subroutine relax_minhopp
 !*****************************************************************************************
 subroutine print_minhopp_parameters
-    use mod_interface
+    use mod_interface, except_this_one=>print_minhopp_parameters
     use mod_task, only: time_start
     use mod_minhopp, only: beta1, beta2, beta3, alpha1, alpha2, mdmin, minter, npminx
     !use mod_atoms, only:
@@ -447,7 +447,7 @@ subroutine print_minhopp_parameters
 end subroutine print_minhopp_parameters
 !*****************************************************************************************
 subroutine read_earr
-    use mod_interface
+    use mod_interface, except_this_one=>read_earr
     use mod_minhopp, only: nlmin, nlminx, nbuf, earr, nvisit
     use mod_processors, only: iproc, parallel, imaster, mpi_comm_abz
     implicit none
@@ -476,7 +476,7 @@ subroutine read_earr
 end subroutine read_earr
 !*****************************************************************************************
 subroutine readnat(atoms_curr)
-    use mod_interface
+    use mod_interface, except_this_one=>readnat
     use mod_minhopp, only: nlmin
     use mod_processors, only: iproc, parallel, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms
@@ -503,7 +503,7 @@ subroutine readnat(atoms_curr)
 end subroutine readnat
 !*****************************************************************************************
 subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
-    use mod_interface
+    use mod_interface, except_this_one=>read_poscur_alborz
     !use mod_minhopp, only: eratallproc
     use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
@@ -633,7 +633,7 @@ subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
 end subroutine read_poscur_alborz
 !*****************************************************************************************
 subroutine read_minhopp_parameters 
-    use mod_interface
+    use mod_interface, except_this_one=>read_minhopp_parameters
     use mod_processors, only: iproc, parallel, nproc, imaster, mpi_comm_abz
     use mod_atoms, only: atom_copy
     use mod_minhopp, only: nrandoff, ediff, ekin, dt, nlmin, nlminx, eref, etoler, ekinarr, &
@@ -718,7 +718,7 @@ subroutine read_minhopp_parameters
 end subroutine read_minhopp_parameters
 !*****************************************************************************************
 subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
-    use mod_interface
+    use mod_interface, except_this_one=>minhopp_newrun_initialization
     use mod_minhopp, only: nlmin, nlmin_l, earr, nvisit
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
@@ -740,7 +740,7 @@ subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
 end subroutine minhopp_newrun_initialization
 !*****************************************************************************************
 subroutine read_poslow(atoms_locmin)
-    use mod_interface
+    use mod_interface, except_this_one=>read_poslow
     use mod_processors, only: iproc, nproc, imaster, parallel, mpi_comm_abz
     use mod_minhopp, only: nlmin
     use mod_atoms, only: typ_atoms_arr
@@ -790,7 +790,7 @@ subroutine read_poslow(atoms_locmin)
 end subroutine read_poslow
 !*****************************************************************************************
 subroutine send_minimum_to_all(atoms_curr)
-    use mod_interface
+    use mod_interface, except_this_one=>send_minimum_to_all
     use mod_minhopp, only: nbuf, abufall, mtagarr1
     use mod_processors, only: nproc, iproc, mpi_comm_abz
     use mod_atoms, only: typ_atoms, get_rat
@@ -819,7 +819,7 @@ subroutine send_minimum_to_all(atoms_curr)
 end subroutine send_minimum_to_all
 !*****************************************************************************************
 subroutine send_minhopp_parameters_to_all(atoms_curr)
-    use mod_interface
+    use mod_interface, except_this_one=>send_minhopp_parameters_to_all
     use mod_minhopp, only: nbuf, abufall, mtagarr2, ediff, ekin, dt
     use mod_processors, only: nproc, iproc, mpi_comm_abz
     use mod_atoms, only: typ_atoms, get_rat
@@ -850,7 +850,7 @@ subroutine send_minhopp_parameters_to_all(atoms_curr)
 end subroutine send_minhopp_parameters_to_all
 !*****************************************************************************************
 subroutine mdescape(parini,atoms_hopp)
-    use mod_interface
+    use mod_interface, except_this_one=>mdescape
     use mod_parini, only: typ_parini
     use mod_minhopp, only: av_ekinetic, mdmin, dt, ekin, istep, count_md, count_md_tot, istep
     use mod_processors, only: iproc, nproc
@@ -985,7 +985,7 @@ end subroutine mdescape
 !MPI_IRECV(BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, REQUEST, IERROR)
 !MPI_RECV (BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, STATUS, IERROR) 
 subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_locmin)
-    use mod_interface
+    use mod_interface, except_this_one=>collect_data_from_all_processors
     use mod_processors, only: parallel, iproc
     use mod_minhopp, only: ekinarr, ediffarr, dtarr, dt, ekin, ediff
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
@@ -1017,7 +1017,7 @@ subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_
 end subroutine collect_data_from_all_processors
 !*****************************************************************************************
 subroutine request_receive(atoms_allproc)
-    use mod_interface
+    use mod_interface, except_this_one=>request_receive
     use mod_processors, only: iproc, nproc, mpi_comm_abz
     use mod_minhopp, only: mtagarr1, mtagarr2, abuf1, abuf2, do_req1, do_req2, ireqarr1, ireqarr2
     use mod_atoms, only: typ_atoms_arr
@@ -1051,7 +1051,7 @@ subroutine request_receive(atoms_allproc)
 end subroutine request_receive
 !*****************************************************************************************
 subroutine test_receive(atoms_allproc,atoms_locmin)
-    use mod_interface
+    use mod_interface, except_this_one=>test_receive
     use mod_processors, only: iproc, nproc
     use mod_minhopp, only: nlmin, nlminx, abuf1, abuf2, etoler, earr, re_sm, abuf, mtagarr1, mtagarr2, &
         nvisit, do_req1, do_req2, ireqarr1, ireqarr2, nbuf, ekinarr, ediffarr, dtarr
@@ -1128,7 +1128,7 @@ end subroutine test_receive
 !*****************************************************************************************
 !MPI_CANCEL(REQUEST, IERROR)
 subroutine cancel_excessive_irecv
-    use mod_interface
+    use mod_interface, except_this_one=>cancel_excessive_irecv
     use mod_processors, only: iproc, nproc
     use mod_minhopp, only: mtagarr1, mtagarr2, do_req1, do_req2, ireqarr1, ireqarr2
     implicit none
@@ -1161,7 +1161,7 @@ subroutine cancel_excessive_irecv
 end subroutine cancel_excessive_irecv
 !*****************************************************************************************
 subroutine insert_alborz(kepos,epos)
-    use mod_interface
+    use mod_interface, except_this_one=>insert_alborz
     !inserts the energy epos at position kepos and shifts up all other energies
     use mod_minhopp, only: nbuf, nlmin, earr, nvisit
     implicit none
@@ -1178,7 +1178,7 @@ subroutine insert_alborz(kepos,epos)
 end subroutine insert_alborz
 !*****************************************************************************************
 subroutine save_low_conf_alborz(atoms,atoms_locmin)
-    use mod_interface
+    use mod_interface, except_this_one=>save_low_conf_alborz
     !save configuration if it is among the lowest ones in energy
     use mod_minhopp, only: etoler
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
@@ -1237,7 +1237,7 @@ subroutine save_low_conf_alborz(atoms,atoms_locmin)
 end subroutine save_low_conf_alborz
 !*****************************************************************************************
 subroutine velopt(parini,atoms)
-    use mod_interface
+    use mod_interface, except_this_one=>velopt
     use mod_parini, only: typ_parini
     !assigns velocities according to boltzmann distribution
     use mod_minhopp, only: ekin, ekin, dt, count_soften, count_soften_tot, nsoften !, vdamp
@@ -1320,7 +1320,7 @@ subroutine velopt(parini,atoms)
 end subroutine velopt
 !*****************************************************************************************
 subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
-    use mod_interface
+    use mod_interface, except_this_one=>soften
     use mod_parini, only: typ_parini
     use mod_processors, only: iproc
     use mod_potential, only: fcalls
@@ -1467,7 +1467,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
 end subroutine soften
 !*****************************************************************************************
 subroutine write_minhopp(atoms_allproc,atoms_locmin)
-    use mod_interface
+    use mod_interface, except_this_one=>write_minhopp
     use mod_atoms, only: typ_atoms_arr, typ_file_info
     use mod_processors, only: iproc, imaster
     use mod_minhopp, only: nlmin_old, nlmin, earr, etoler
@@ -1537,7 +1537,7 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
 end subroutine write_minhopp
 !*****************************************************************************************
 subroutine write_minhopp_parameters
-    use mod_interface
+    use mod_interface, except_this_one=>write_minhopp_parameters
     use mod_processors, only: iproc, nproc, imaster
     use mod_minhopp, only: nlmin, ekinarr, dtarr, ediffarr, eref
     use yaml_output
@@ -1548,7 +1548,7 @@ subroutine write_minhopp_parameters
     if(iproc==imaster) then
         open(unit=11,file='input.minhopp',status='replace',iostat=ios)
         if(ios/=0) stop 'ERROR: failure openning input.minhopp'
-        write(11,'(i,1x,a)') nlmin,'number of minima already found'
+        write(11,'(i8,1x,a30)') nlmin,'number of minima already found'
         !write(11,'(i,1x,a)') 2*nlmin,'number of minima to be found in consecutive run'
         do jproc=0,nproc-1
             tt=dtarr(jproc) !/41.34137333656d0
@@ -1561,7 +1561,7 @@ subroutine write_minhopp_parameters
 end subroutine write_minhopp_parameters
 !*****************************************************************************************
 subroutine write_earr
-    use mod_interface
+    use mod_interface, except_this_one=>write_earr
     use mod_minhopp, only: earr, nvisit, nlmin, nlminx, nbuf, eref
     use yaml_output
     implicit none
@@ -1581,7 +1581,7 @@ subroutine write_earr
 end subroutine write_earr
 !*****************************************************************************************
 subroutine escape_failed(parini,erat,erathopp)
-    use mod_interface
+    use mod_interface, except_this_one=>escape_failed
     use mod_parini, only: typ_parini
     use mod_minhopp, only: istep_sam, esep, ekin, beta1, ihopp, istep, ediff, istep_old, &
         istep_new, dt, count_md, count_opt
@@ -1602,7 +1602,7 @@ subroutine escape_failed(parini,erat,erathopp)
 end subroutine escape_failed
 !*****************************************************************************************
 subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
-    use mod_interface
+    use mod_interface, except_this_one=>local_minimum_accepted
     use mod_minhopp, only: istep_sam, ekin, ihopp, istep, ediff, istep_old, istep_new, dt, &
         nlmin, nlmin_l, ihopp_acc, alpha1, nvisit, nbuf, kerathopp, newmin, av_ediff, count_md, count_opt
     use mod_processors, only: parallel, iproc
@@ -1638,7 +1638,7 @@ subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
 end subroutine local_minimum_accepted
 !*****************************************************************************************
 subroutine local_minimum_rejected(atoms_hopp)
-    use mod_interface
+    use mod_interface, except_this_one=>local_minimum_rejected
     use mod_minhopp, only: istep_sam, ekin, ihopp, istep, ediff, istep_old, istep_new, &
         alpha2, nvisit, newmin, ihopp_rej, dt, count_md, count_opt
     use mod_processors, only: iproc
@@ -1657,7 +1657,7 @@ subroutine local_minimum_rejected(atoms_hopp)
 end subroutine local_minimum_rejected
 !*****************************************************************************************
 subroutine report_minhopp_iteration_info(atoms_curr)
-    use mod_interface
+    use mod_interface, except_this_one=>report_minhopp_iteration_info
     use mod_minhopp, only: istep, ihopp, nlmin, escaped, accepted
     use mod_processors, only: iproc
     use mod_atoms, only: typ_atoms, typ_atoms_arr
@@ -1679,7 +1679,7 @@ subroutine report_minhopp_iteration_info(atoms_curr)
 end subroutine report_minhopp_iteration_info
 !*****************************************************************************************
 subroutine already_visited_minimum(parini)
-    use mod_interface
+    use mod_interface, except_this_one=>already_visited_minimum
     use mod_parini, only: typ_parini
     use mod_minhopp, only: newmin, istep_old, ekin, beta2, nvisit, kerathopp , dt, ediff, alpha3
     implicit none
@@ -1695,7 +1695,7 @@ subroutine already_visited_minimum(parini)
 end subroutine already_visited_minimum
 !*****************************************************************************************
 subroutine new_minimum(atoms_hopp)
-    use mod_interface
+    use mod_interface, except_this_one=>new_minimum
     use mod_minhopp, only: newmin, istep_new, ekin, beta3, kerathopp, nlminx, earr, egap, &
         re_sm,nlmin, etoler, dt
     use mod_processors, only:iproc
@@ -1740,7 +1740,7 @@ subroutine new_minimum(atoms_hopp)
 end subroutine new_minimum
 !*****************************************************************************************
 subroutine print_final_statistics
-    use mod_interface
+    use mod_interface, except_this_one=>print_final_statistics
     use mod_processors, only: iproc
     use mod_task, only: time_start
     use mod_minhopp, only: nlmin_l, nlmin, istep_sam, istep_old, istep_new, &
@@ -1841,7 +1841,7 @@ subroutine print_final_statistics
 end subroutine print_final_statistics
 !*****************************************************************************************
 subroutine MPI_atom_arr_copy(nat,atoms_arr)
-    use mod_interface
+    use mod_interface, except_this_one=>MPI_atom_arr_copy
     use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms, typ_atoms_arr, get_rat, set_rat
     implicit none

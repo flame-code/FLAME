@@ -1,5 +1,5 @@
 subroutine get_enthalpy(latvec,energy,pressure,enthalpy)
-use mod_interface
+use mod_interface, except_this_one=>get_enthalpy
 !This routine will compute the enthalpy within the given units
 implicit none
 integer:: natin,iat

@@ -10,7 +10,7 @@
 !subroutine geopt(nat,wpos,etot,fout,fnrmtol,count,count_sd,displr)
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use mod_interface
+ use mod_interface, except_this_one=>GEOPT_SD
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use steepest_descent
  use defs_basis
@@ -264,7 +264,7 @@ do it=1,nit
       call get_enthalpy(latvec_in,etot_in,pressure,enthalpy)
       call convcheck(parini,parini%nat,latvec_in,fcart_in,strten_in,parini%target_pressure_habohr,parini%paropt_geopt%strfact,fmax,fmax_at,fmax_lat,parini%paropt_geopt%fmaxtol,iexit)
       counter=real(it,8)
-      write(*,'(i,a,5es15.7)') it," GEOPT_SD ",enthalpy,fmax,fmax_at,fmax_lat,beta
+      write(*,'(i8,a10,5es15.7)') it," GEOPT_SD ",enthalpy,fmax,fmax_at,fmax_lat,beta
       if(iexit==1) then
             write(*,*) " SD converged in iteration",it
             return
