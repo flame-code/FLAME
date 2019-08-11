@@ -2,8 +2,16 @@
 !This file contains routines to read/write ACF files.
 !ACF: Alborz Configuration Format
 !*****************************************************************************************
+module mod_acf
+    implicit none
+    private
+    public:: acf_write, acf_write_new, rotate4acf
+    public:: acf_force_write, acf_read, acf_read_new
+    public:: str_motion2bemoved
+contains
+!*****************************************************************************************
 subroutine acf_write(file_info,atoms,atoms_all,strkey)
-    use mod_interface, except_this_one=>acf_write
+    use mod_interface
     use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
     use mod_atoms, only: atom_deallocate_old, update_ratp, set_rat_atoms, set_rat
     use mod_atoms, only: update_rat
@@ -204,7 +212,7 @@ subroutine acf_write(file_info,atoms,atoms_all,strkey)
 end subroutine acf_write
 !*****************************************************************************************
 subroutine acf_write_new(file_info,atoms_arr,strkey)
-    use mod_interface, except_this_one=>acf_write_new
+    use mod_interface
     use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_arr, atom_copy_old
     use mod_atoms, only: atom_deallocate_old, update_ratp, update_rat
     use mod_const, only: bohr2ang, ha2ev
@@ -378,7 +386,7 @@ subroutine acf_write_new(file_info,atoms_arr,strkey)
 end subroutine acf_write_new
 !*****************************************************************************************
 subroutine rotate4acf(nat,rat,cv,cvrot)
-    use mod_interface, except_this_one=>rotate4acf
+    use mod_interface
     implicit none
     integer, intent(in):: nat
     real(8), intent(inout):: rat(3,nat)
@@ -402,7 +410,7 @@ subroutine rotate4acf(nat,rat,cv,cvrot)
 end subroutine rotate4acf
 !*****************************************************************************************
 subroutine acf_force_write(file_info,atoms,atoms_all,strkey)
-    use mod_interface, except_this_one=>acf_force_write
+    use mod_interface
     use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
     use mod_atoms, only: atom_deallocate_old
     implicit none
@@ -509,7 +517,7 @@ subroutine acf_force_write(file_info,atoms,atoms_all,strkey)
 end subroutine acf_force_write
 !*****************************************************************************************
 subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
-    use mod_interface, except_this_one=>acf_read
+    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_all, atom_all_allocate, atom_copy_old
     use mod_atoms, only: atom_allocate_old, update_ratp, get_rat, update_rat
@@ -649,7 +657,7 @@ subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
 end subroutine acf_read
 !*****************************************************************************************
 subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
-    use mod_interface, except_this_one=>acf_read_new
+    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate, atom_copy
     use mod_atoms, only: atom_deallocate, update_rat
@@ -764,7 +772,7 @@ subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
 end subroutine acf_read_new
 !*****************************************************************************************
 subroutine str_parse(str,line,atoms_t,c5)
-    use mod_interface, except_this_one=>str_parse
+    use mod_interface
     use mod_atoms, only: typ_atoms, typ_atoms_all
     implicit none
     character(*), intent(in):: str
@@ -856,7 +864,7 @@ subroutine str_parse(str,line,atoms_t,c5)
 end subroutine str_parse
 !*****************************************************************************************
 subroutine str_motion2bemoved(str_motion,bemoved)
-    use mod_interface, except_this_one=>str_motion2bemoved
+    use mod_interface
     implicit none
     character(*), intent(in):: str_motion
     logical, intent(inout):: bemoved(3)
@@ -883,4 +891,6 @@ subroutine str_motion2bemoved(str_motion,bemoved)
         stop 'ERROR: incorrect symbol for atomic motion in input configuration'
     endif
 end subroutine str_motion2bemoved
+!*****************************************************************************************
+end module mod_acf
 !*****************************************************************************************

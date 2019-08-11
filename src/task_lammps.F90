@@ -13,6 +13,7 @@ subroutine lammps_task(parini)
 #if defined(HAVE_LAMMPS)
     use mpi
     use LAMMPS
+    use mod_acf, only: acf_read_new
     use callback !, only: atoms
     use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int, C_FUNPTR
 #endif

@@ -7,6 +7,7 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     use dictionaries
     use yaml_parse
     use dynamic_memory
+    use mod_acf, only: str_motion2bemoved
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini

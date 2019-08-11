@@ -5,6 +5,7 @@ subroutine  linkedlist_test(parini)
     use mod_atoms, only: atom_allocate, atom_allocate_old, update_ratp
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
+    use mod_acf, only: acf_read
     implicit none
     type(typ_linked_lists):: linked_lists
     type(typ_parini), intent(in):: parini
@@ -382,9 +383,11 @@ subroutine genrandomconf(atoms,numb,conf)
     use mod_interface, except_this_one=>genrandomconf
     use mod_atoms, only: typ_atoms
     use mod_atoms, only: typ_atoms, typ_file_info, update_rat
+    use mod_acf, only: acf_write
+    implicit none
     real(8)::amargin ,amargin_xrel ,amargin_yrel ,amargin_zrel
     real(8):: ranxyz(3)
-    integer ::mat,conf
+    integer ::mat,conf, itry
     character(2):: numb
     type(typ_atoms):: atoms 
     type(typ_file_info):: file_info

@@ -2,6 +2,7 @@
 subroutine dynamics(parini)
     use mod_interface, except_this_one=>dynamics
     use mod_parini, only: typ_parini
+    use mod_acf, only: acf_read, acf_write
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_ndof, atom_deallocate_old
     use mod_dynamics, only: dt, nmd,nfreq,md_method
@@ -51,6 +52,7 @@ subroutine md_nve(parini,atoms)
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, set_atomic_mass
     use mod_atoms, only: atom_deallocate_old, update_ratp, update_rat
+    use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd,nfreq
     use mod_processors, only: iproc
     implicit none
@@ -155,6 +157,7 @@ subroutine md_nph(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_rat, update_ratp, update_rat
+    use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     implicit none

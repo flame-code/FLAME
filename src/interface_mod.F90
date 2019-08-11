@@ -2475,60 +2475,6 @@ subroutine insert(nlminx,nlmin,fp_len,nat,k_e_wpos,e_wpos,ent_wpos,fp_wpos,wpos_
   real(8):: lat_arr(3,3,nlminx),spgtol_arr(nlminx),dos_arr(nlminx),fp1(fp_len),fp2(fp_len),str_arr(6,nlminx)
   real(8):: wpos_fcart(3,nat),wpos_strten(6)
 end subroutine insert
-! ./src/io_acf.F90 :
-subroutine acf_write(file_info,atoms,atoms_all,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
-    type(typ_file_info), intent(inout):: file_info
-    type(typ_atoms), optional, intent(in):: atoms
-    type(typ_atoms_all), optional, intent(in):: atoms_all
-    character(*), optional, intent(in):: strkey
-end subroutine acf_write
-subroutine acf_write_new(file_info,atoms_arr,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_arr, atom_copy_old
-    type(typ_file_info), intent(inout):: file_info
-    type(typ_atoms_arr),intent(in):: atoms_arr
-    character(*), optional, intent(in):: strkey
-end subroutine acf_write_new
-subroutine rotate4acf(nat,rat,cv,cvrot)
-    integer, intent(in):: nat
-    real(8), intent(inout):: rat(3,nat)
-    real(8), intent(in):: cv(3,3), cvrot(3,3)
-end subroutine rotate4acf
-subroutine acf_force_write(file_info,atoms,atoms_all,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, typ_atoms_all, atom_copy_old
-    type(typ_file_info), intent(inout):: file_info
-    type(typ_atoms), optional, intent(in):: atoms
-    type(typ_atoms_all), optional, intent(in):: atoms_all
-    character(*), optional, intent(in):: strkey
-end subroutine acf_force_write
-subroutine acf_read(parini,filename,nconfmax,atoms,atoms_all)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_all, atom_all_allocate, atom_copy_old
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: filename
-    integer, intent(in):: nconfmax
-    type(typ_atoms), optional, intent(inout):: atoms
-    type(typ_atoms_all), optional, intent(inout):: atoms_all
-end subroutine acf_read
-subroutine acf_read_new(parini,filename,nconfmax,atoms_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate, atom_copy
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: filename
-    integer, intent(in):: nconfmax
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine acf_read_new
-subroutine str_parse(str,line,atoms_t,c5)
-    use mod_atoms, only: typ_atoms, typ_atoms_all
-    character(*), intent(in):: str
-    integer, intent(in):: line
-    type(typ_atoms), intent(inout):: atoms_t
-    character(*), intent(inout):: c5
-end subroutine str_parse
-subroutine str_motion2bemoved(str_motion,bemoved)
-    character(*), intent(in):: str_motion
-    logical, intent(inout):: bemoved(3)
-end subroutine str_motion2bemoved
 ! ./src/io_ascii.F90 :
 subroutine ascii_getsystem(parini,filename)
 use mod_parini, only: typ_parini

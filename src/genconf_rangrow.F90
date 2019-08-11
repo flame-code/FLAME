@@ -6,6 +6,7 @@ subroutine rangrow(parini,genconf)
     use mod_atoms, only: set_rcov, determinexyzminmax, set_rat_atoms
     use mod_genconf, only: typ_genconf
     use mod_const, only: ang2bohr
+    use mod_acf, only: acf_read, acf_write
     implicit none
     type(typ_parini), intent(inout):: parini
     type(typ_genconf), intent(in):: genconf

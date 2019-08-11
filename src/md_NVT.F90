@@ -5,6 +5,7 @@ subroutine md_nvt_langevin(parini,atoms)
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_atoms, only: get_rat, update_ratp, update_rat, set_rat
+    use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -188,6 +189,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_rat, get_rat, update_ratp
+    use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -382,6 +384,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, get_rat, update_ratp, update_rat
+    use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -1030,6 +1033,7 @@ subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,
     use mod_interface, except_this_one=>write_trajectory_velocity
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, update_ratp
+    use mod_acf, only: acf_write
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables

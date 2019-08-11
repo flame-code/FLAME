@@ -7,6 +7,7 @@ subroutine genconf_trimer(parini,genconf)
     use mod_genconf, only: typ_genconf
     use mod_processors, only: iproc
     use mod_potential, only: potential
+    use mod_acf, only: acf_write
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_genconf), intent(in):: genconf

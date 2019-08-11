@@ -998,7 +998,7 @@ subroutine  diagonalizeMatrix(n, mat, eval)
   lwork=100*n
   allocate(work(lwork))
   call dsyev('n','l', n, mat, n, eval, work, lwork, info)
-  if(info/=0) stop' ERROR in dsyev'
+  if(info/=0) stop ' ERROR in dsyev'
   deallocate(work)
 
 end subroutine diagonalizeMatrix

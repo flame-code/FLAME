@@ -460,6 +460,7 @@ subroutine read_data_old(parini,filename_list,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_copy_old, set_rat_atoms
     use mod_atoms, only: atom_allocate_old, atom_deallocate, atom_deallocate_old
+    use mod_acf, only: acf_read_new
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

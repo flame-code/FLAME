@@ -7,6 +7,7 @@ subroutine netsock_task(parini)
     use mod_const, only: ev2ha, ang2bohr, bohr2ang
     USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
     use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
+    use mod_acf, only: acf_read_new
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables

@@ -190,6 +190,7 @@ def get_files():
                    './src/atoms_mod.F90',
                    './src/barsaddle.F90',
                    './src/ann_mod.F90',
+                   './src/io_acf.F90',
                    ]
     
     for file in exclude_files:

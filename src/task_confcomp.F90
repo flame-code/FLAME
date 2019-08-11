@@ -3,6 +3,7 @@ subroutine conf_comp(parini)
     use mod_interface, except_this_one=>conf_comp
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_all, atom_all_allocate, atom_all_deallocate, set_rcov
+    use mod_acf, only: acf_read
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
