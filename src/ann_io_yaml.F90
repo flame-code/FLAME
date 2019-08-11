@@ -553,6 +553,8 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
     use mod_atoms, only: atom_deallocate_old, set_rat_atoms
+    use mod_yaml_conf, only: read_yaml_conf
+    use mod_bin, only: read_bin_conf
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

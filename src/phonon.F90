@@ -7,6 +7,7 @@ subroutine cal_hessian_4p(parini)
     use mod_atoms, only: update_ratp, update_rat, set_rat, set_rat_iat, get_rat
     use mod_processors, only: iproc
     use mod_potential, only: potential
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use futile
     use dynamic_memory
     use yaml_output

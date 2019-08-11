@@ -8,6 +8,7 @@ subroutine dimer_method(parini)
     use mod_potential, only: potential, fcalls
     use mod_saddle, only: dmconverged, str_moving_atoms_rand, dimsep, ampl
     use mod_opt, only: typ_paropt
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_processors, only: iproc
     use mod_const, only: ang2bohr
     use dynamic_memory
@@ -235,6 +236,7 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate_old, atom_allocate_old
     use mod_atoms, only: atom_calmaxforcecomponent
     use mod_atoms, only: atom_copy_old, get_rat, update_rat
+    use mod_yaml_conf, only: write_yaml_conf
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none

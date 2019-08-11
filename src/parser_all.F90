@@ -3,6 +3,7 @@ subroutine get_main_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_main_parameters
     use mod_task, only: typ_file_ini
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
@@ -30,6 +31,7 @@ end subroutine get_main_parameters
 subroutine get_minhopp_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_minhopp_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -72,6 +74,7 @@ end subroutine get_minhopp_parameters
 subroutine get_opt_param(file_ini,paropt)
     use mod_interface, except_this_one=>get_opt_param
     use mod_task, only: typ_file_ini
+    use mod_parser_ini, only: get_one_param, get_header_location
     use mod_opt, only: typ_paropt
     use mod_saddle, only: str_moving_atoms_rand, ampl, dimsep
     implicit none
@@ -99,6 +102,7 @@ end subroutine get_opt_param
 subroutine get_geopt_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_geopt_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -127,6 +131,7 @@ end subroutine get_geopt_parameters
 subroutine get_geopt_prec_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_geopt_prec_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -155,6 +160,7 @@ end subroutine get_geopt_prec_parameters
 subroutine get_saddle_opt_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_saddle_opt_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -182,6 +188,7 @@ end subroutine get_saddle_opt_parameters
 subroutine get_saddle_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_saddle_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -211,6 +218,7 @@ end subroutine get_saddle_parameters
 subroutine get_potential_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_potential_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -250,6 +258,7 @@ end subroutine get_potential_parameters
 subroutine get_ann_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_ann_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -293,6 +302,7 @@ end subroutine get_ann_parameters
 subroutine get_dynamics_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_dynamics_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     use mod_dynamics, only: dt, nmd,nfreq
     implicit none
@@ -331,6 +341,7 @@ end subroutine get_dynamics_parameters
 subroutine get_bader_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_bader_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -360,6 +371,7 @@ end subroutine get_bader_parameters
 subroutine get_genconf_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_genconf_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     use mod_genconf, only: typ_genconf
     implicit none
@@ -399,6 +411,7 @@ end subroutine get_genconf_parameters
 subroutine get_conf_comp_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_conf_comp_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -426,6 +439,7 @@ end subroutine get_conf_comp_parameters
 subroutine get_testforces_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_testforces_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -453,6 +467,7 @@ end subroutine get_testforces_parameters
 subroutine get_single_point_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_single_point_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -485,6 +500,7 @@ end subroutine get_single_point_parameters
 subroutine get_ewald_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_ewald_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
@@ -526,6 +542,7 @@ end subroutine get_ewald_parameters
 subroutine get_misc_parameters(file_ini,parini)
     use mod_interface, except_this_one=>get_misc_parameters
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: get_one_param, get_header_location, split_line
     use mod_task, only: typ_file_ini
     implicit none
     type(typ_file_ini), intent(inout):: file_ini

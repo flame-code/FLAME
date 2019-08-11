@@ -7,6 +7,7 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, atom_normalizevector
     use mod_atoms, only: atom_deallocate_old
+    use mod_yaml_conf, only: write_yaml_conf
     use mod_atoms, only: atom_calnorm, set_rat
     use yaml_output
     implicit none

@@ -26,6 +26,7 @@ subroutine testforces_fd(parini)
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
     use mod_acf, only: acf_read
+    use mod_yaml_conf, only: read_yaml_conf
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini

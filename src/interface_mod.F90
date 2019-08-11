@@ -2500,35 +2500,6 @@ real(8):: energy, etotal, enthalpy, enthalpy_at,pressure,printval1,printval2,tmp
 character(2):: char_type(ntypat)
 logical:: fixat(nat),fixlat(7)
 end subroutine write_atomic_file_ascii
-! ./src/io_bin.F90 :
-subroutine read_bin_conf(parini,filename,atoms_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, atom_allocate
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: filename
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine read_bin_conf
-subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, iatom_to_sat, atom_allocate, update_rat
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: filename
-    integer, intent(in):: iunit
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine read_bin_conf_v1
-subroutine write_bin_conf(file_info,atoms,strkey)
-    use mod_atoms, only: typ_atoms, typ_file_info
-    type(typ_file_info), intent(inout):: file_info
-    type(typ_atoms), intent(in):: atoms
-    character(*), optional, intent(in):: strkey
-end subroutine write_bin_conf
-subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
-    use mod_atoms, only: typ_atoms, sat_to_iatom, get_rat
-    character(*), intent(in):: filename
-    character(*), intent(in):: file_position
-    integer, intent(in):: iunit
-    type(typ_atoms), intent(in):: atoms
-end subroutine write_bin_conf_v1
 ! ./src/io_cube.F90 :
 subroutine cube_read(filename,atoms,poisson)
     use mod_atoms, only: typ_atoms, iatom_to_sat, atom_allocate_old, update_rat
@@ -2605,21 +2576,6 @@ subroutine readxyz(filename,nat,rat,sat,comment1,comment2,atom_motion)
     character(*):: filename, comment1, comment2
     logical:: atom_motion(3,nat)
 end subroutine readxyz
-! ./src/io_yaml_conf.F90 :
-subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, atom_allocate, update_rat
-    type(typ_parini), intent(in):: parini
-    character(*), intent(in):: filename
-    integer, intent(in):: nconfmax
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-end subroutine read_yaml_conf
-subroutine write_yaml_conf(file_info,atoms,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, update_ratp, get_rat
-    type(typ_file_info), intent(inout):: file_info
-    type(typ_atoms), intent(in):: atoms
-    character(*), optional, intent(in):: strkey
-end subroutine write_yaml_conf
 ! ./src/latticetools_minhocao.F90 :
  subroutine dist2line(point,ppoint1,ppoint2,dist)
  real(8), intent(in) :: point(3),ppoint1(3),ppoint2(3)
@@ -2816,11 +2772,6 @@ subroutine md_nph(parini,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_atoms):: atoms
 end subroutine md_nph
-subroutine set_velocities(atoms, ekin_arg)
-    use mod_atoms, only: typ_atoms, update_ratp
-    type(typ_atoms), intent(inout):: atoms
-    real(8), optional::ekin_arg
-end subroutine set_velocities
 subroutine ekin_temprature(atoms,temp,vcm,rcm,totmass) 
     use mod_atoms, only: typ_atoms, update_ratp
     type(typ_atoms):: atoms
@@ -4142,30 +4093,6 @@ subroutine get_misc_parameters(file_ini,parini)
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
 end subroutine get_misc_parameters
-! ./src/parser_core.F90 :
-subroutine read_file_input(file_ini)
-    use mod_task, only: typ_file_ini
-    type(typ_file_ini), intent(inout):: file_ini
-end subroutine read_file_input
-subroutine get_header_location(file_ini,str_header)
-    use mod_task, only: typ_file_ini
-    type(typ_file_ini), intent(inout):: file_ini
-    character(*), intent(in):: str_header
-end subroutine get_header_location
-subroutine split_line(file_ini)
-    use mod_task, only: typ_file_ini
-    type(typ_file_ini), intent(inout):: file_ini
-end subroutine split_line
-subroutine get_one_param(file_ini,var_name,int_var,real_var,char_var,char_line_var,log_var)
-    use mod_task, only: typ_file_ini
-    type(typ_file_ini), intent(inout):: file_ini
-    character(*), intent(in):: var_name
-    integer, optional, intent(out):: int_var
-    real(8), optional, intent(out):: real_var
-    character(*), optional, intent(out):: char_var
-    character(*), optional, intent(out):: char_line_var
-    logical, optional, intent(out):: log_var
-end subroutine get_one_param
 ! ./src/parser_minhocao.F90 :
 subroutine params_read(parini)
 use mod_parini, only: typ_parini
@@ -5453,7 +5380,7 @@ end subroutine sort2_alborz
 subroutine genrandomconf(atoms,numb,conf)
     use mod_atoms, only: typ_atoms
     use mod_atoms, only: typ_atoms, typ_file_info, update_rat
-    integer ::mat,conf
+    integer ::mat,conf, itry
     character(2):: numb
     type(typ_atoms):: atoms 
 end subroutine genrandomconf

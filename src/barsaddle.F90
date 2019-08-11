@@ -73,6 +73,7 @@ subroutine bar_saddle(parini)
     use mod_atoms, only: typ_atoms, atom_deallocate, typ_atoms_arr
     use mod_atoms, only: atom_copy, get_rat
     use mod_potential, only: potential
+    use mod_yaml_conf, only: read_yaml_conf
     use bar_saddle_params
     implicit none
     type(typ_parini), intent(in):: parini

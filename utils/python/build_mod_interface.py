@@ -191,6 +191,10 @@ def get_files():
                    './src/barsaddle.F90',
                    './src/ann_mod.F90',
                    './src/io_acf.F90',
+                   './src/io_yaml_conf.F90',
+                   './src/io_bin.F90',
+                   './src/md_util.F90',
+                   './src/parser_core.F90',
                    ]
     
     for file in exclude_files:

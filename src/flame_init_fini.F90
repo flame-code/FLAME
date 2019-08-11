@@ -4,6 +4,7 @@ subroutine alborz_init(parini,parres,file_ini)
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: read_file_input
     use futile
 #ifndef __GFORTRAN__ 
     use ifport

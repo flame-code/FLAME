@@ -9,7 +9,7 @@ subroutine splined_saddle(parini)
   use mod_atoms, only: typ_atoms, atom_deallocate, typ_atoms_arr
   use mod_atoms, only: atom_copy, get_rat
   use mod_potential, only: potential
-
+  use mod_yaml_conf, only: read_yaml_conf
   !as a general policy, we'll have "implicit none" by assuming the same
   !name convention as "implicit real(kind=8) (a-h,o-z)"
 
@@ -138,6 +138,7 @@ subroutine givemesaddle(parini,epot_sp,ratsp,fatsp,ifile,nproc,iproc,atoms,ncoun
     use minimization_sp, only:parameterminimization_sp  !Reza
     use modulesplinedsaddle, only:parametersplinedsaddle
     use dictionaries
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use dynamic_memory
     use mod_atoms, only: typ_atoms, update_ratp, set_rat, update_rat, typ_file_info
     use mod_atoms, only: get_rat, typ_atoms_arr, atom_deallocate

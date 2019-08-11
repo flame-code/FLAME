@@ -150,6 +150,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
         beta1, beta2, beta3, eref, etoler, minter, mdmin, nsoften, nrandoff
     use mod_processors, only: nproc, iproc, imaster, mpi_comm_abz, parallel
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy, set_ndof
+    use mod_yaml_conf, only: read_yaml_conf
     use mod_opt, only: typ_paropt
     use mod_potential, only: potential
     use yaml_output
@@ -854,6 +855,7 @@ subroutine mdescape(parini,atoms_hopp)
     use mod_parini, only: typ_parini
     use mod_minhopp, only: av_ekinetic, mdmin, dt, ekin, istep, count_md, count_md_tot, istep
     use mod_processors, only: iproc, nproc
+    use mod_bin, only: write_bin_conf
     use mod_atoms, only: typ_atoms, typ_file_info, update_rat, update_ratp
     use mod_potential, only: fcalls
     use yaml_output
@@ -1326,6 +1328,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     use mod_potential, only: fcalls
     use mod_minhopp, only: lprint, alpha_soften, istep
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate, atom_copy
+    use mod_bin, only: write_bin_conf
     use mod_atoms, only: update_ratp, update_rat
     use yaml_output
     implicit none
@@ -1471,6 +1474,7 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
     use mod_atoms, only: typ_atoms_arr, typ_file_info
     use mod_processors, only: iproc, imaster
     use mod_minhopp, only: nlmin_old, nlmin, earr, etoler
+    use mod_yaml_conf, only: write_yaml_conf
     use yaml_output
     implicit none
     type(typ_atoms_arr), intent(inout):: atoms_allproc, atoms_locmin
@@ -1699,6 +1703,7 @@ subroutine new_minimum(atoms_hopp)
     use mod_minhopp, only: newmin, istep_new, ekin, beta3, kerathopp, nlminx, earr, egap, &
         re_sm,nlmin, etoler, dt
     use mod_processors, only:iproc
+    use mod_bin, only: write_bin_conf
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_minhopp, only: ibest
     use yaml_output

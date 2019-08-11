@@ -1,4 +1,10 @@
 !*****************************************************************************************
+module mod_parser_ini
+    implicit none
+    private
+    public:: read_file_input, get_header_location, split_line, get_one_param
+contains
+!*****************************************************************************************
 subroutine read_file_input(file_ini)
     use mod_task, only: typ_file_ini
     implicit none
@@ -161,4 +167,6 @@ subroutine get_one_param(file_ini,var_name,int_var,real_var,char_var,char_line_v
         file_ini%stat_line_is_read(file_ini%iline)=.true.
     endif
 end subroutine get_one_param
+!*****************************************************************************************
+end module mod_parser_ini
 !*****************************************************************************************

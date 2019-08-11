@@ -7,6 +7,7 @@ subroutine geopt(parini)
     use mod_potential, only: fcalls, perfstatus, potential
     use mod_acf, only: acf_read_new, acf_write
     use mod_processors, only: iproc, nproc
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_const, only: ang2bohr, bohr2ang, ev2ha
     use yaml_output
     implicit none
