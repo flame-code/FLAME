@@ -360,16 +360,17 @@ subroutine invertmat_alborz(a,ainv)
 end subroutine invertmat_alborz
 !*****************************************************************************************
 subroutine invertmat_alborz_qp(a,ainv)
+    use mod_defs
     implicit none
-    real(16),intent(in):: a(3,3)
-    real(16),intent(out):: ainv(3,3)
+    real(kind=fqp),intent(in):: a(3,3)
+    real(kind=fqp),intent(out):: ainv(3,3)
     !local variables
     real(16):: div
     !integer:: ipiv(3), info, ldwork
     !real(8), allocatable:: WORK(:)
     div=(a(1,1)*a(2,2)*a(3,3)-a(1,1)*a(2,3)*a(3,2)-a(1,2)*a(2,1)*a(3,3)+ &
          a(1,2)*a(2,3)*a(3,1)+a(1,3)*a(2,1)*a(3,2)-a(1,3)*a(2,2)*a(3,1))
-    div=1.q0/div
+    div=1.0_fqp/div
     ainv(1,1) = (a(2,2)*a(3,3)-a(2,3)*a(3,2))*div
     ainv(1,2) =-(a(1,2)*a(3,3)-a(1,3)*a(3,2))*div
     ainv(1,3) = (a(1,2)*a(2,3)-a(1,3)*a(2,2))*div

@@ -13,7 +13,7 @@ AM_CPPFLAGS = -DQSC_STANDALONE
 
 SRC_ = $(SRC_F)
 
-SRC_ += task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
+SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
 		constants_mod.F90 \
 		spline_mod.F90 \
 		shortrange_mod.F90 \

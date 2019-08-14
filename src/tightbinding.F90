@@ -67,9 +67,9 @@ subroutine gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
     call set_typat(atoms) !exists in basic_atoms.F90 file
     call set_indorb(partb,atoms)
     !rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
-    !ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
+    !ggocc=f_malloc([1.to.partb%norb],id='ggocc')
     allocate(rho(partb%norb,partb%norb))
-    allocate(ggocc(partb%norbcut))
+    allocate(ggocc(partb%norb))
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
     call gammamat(pia_arr,linked_lists,partb,atoms,natsi,0,pplocal) 
     !do iorb=1,partb%norb
@@ -300,17 +300,17 @@ subroutine forcediagonalizeg(partb)
     !write(*,*)
     !write(*,*) size(partb%eval)
     !write(*,'(a,6i5)') 'FFFFF ',icall,n,size(a),nc,size(partb%eval),size(partb%evec)
-    if(nc==n) then
+!    if(nc==n) then
         call DSYEV('V','L',n,a,n,partb%eval,work,lwork,ierr)
         do i=1,n
             do j=1,n
                 partb%evec(i,j)=a(i,j)
             enddo
         enddo
-    else
-        call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
-             isuppz,work,lwork,iwork,liwork,ierr)
-    endif
+!    else
+!        call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
+!             isuppz,work,lwork,iwork,liwork,ierr)
+!    endif
     !write(*,'(8es14.5)') (partb%evec(1,j),j=1,8)
     !write(*,'(8es14.5)') (partb%evec(2,j),j=1,8)
     !write(*,'(8es14.5)') (partb%evec(3,j),j=1,8)

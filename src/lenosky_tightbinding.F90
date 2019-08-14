@@ -113,7 +113,7 @@ subroutine lenoskytb_init(partb,atoms,natsi,linked_lists)
     allocate(partb%indat(atoms%nat))
     allocate(partb%norbat(atoms%nat))
     allocate(partb%tbmat(partb%norb,partb%norb))
-    allocate(partb%evec(partb%norb,partb%norbcut))
+    allocate(partb%evec(partb%norb,partb%norb))
     if(lenosky) then
         !partb%dhgenall0=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall0')
         !partb%dhgenall1=f_malloc([1.to.atoms%nat,1.to.atoms%nat],id='partb%dhgenall1')
@@ -132,10 +132,10 @@ subroutine lenoskytb_init(partb,atoms,natsi,linked_lists)
         allocate(partb%dhgenall2(linked_lists%maxbound_rad),source=0.d0)
         allocate(partb%dhgenall3(linked_lists%maxbound_rad),source=0.d0)
     endif
-    !partb%eval=f_malloc([1.to.partb%norbcut],id='partb%eval')
-    !partb%focc=f_malloc([1.to.partb%norbcut],id='partb%focc')
-    allocate(partb%eval(partb%norbcut))
-    allocate(partb%focc(partb%norbcut))
+    !partb%eval=f_malloc([1.to.partb%norb],id='partb%eval')
+    !partb%focc=f_malloc([1.to.partb%norb],id='partb%focc')
+    allocate(partb%eval(partb%norb))
+    allocate(partb%focc(partb%norb))
     !call f_release_routine()
 end subroutine lenoskytb_init
 !*****************************************************************************************
