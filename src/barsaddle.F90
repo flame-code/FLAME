@@ -64,7 +64,6 @@ contains
 end module
 
 subroutine bar_saddle(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use dictionaries
     use dynamic_memory
@@ -240,7 +239,6 @@ subroutine init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
 !normalized to dbar.
 !Given this bar_cm, we will create a bar at bar_cm in the direction of dir of
 !length dbar 
-    use mod_interface, norm_func => norm
     use bar_saddle_params, only: restart
 implicit none
 integer::ndim,n_anchor,i
@@ -263,7 +261,6 @@ subroutine init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
 !normalized to dbar.
 !Given this bar_cm, we will create a bar at bar_cm in the direction of dir of
 !length dbar 
-    use mod_interface, norm_func => norm
     use bar_saddle_params, only: restart
 implicit none
 integer::ndim,n_anchor,i
@@ -280,7 +277,6 @@ bar_vec=bar_vec/sqrt(dot_product(bar_vec,bar_vec))*dbar
 end subroutine
 !*****************************************************************************************
 subroutine find_saddle(n_dim,bar_vec,bar_cm,fxyz,etot,emax,bar_max,alpha_bar,bar_tol,atoms,parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use dictionaries
     use dynamic_memory
@@ -503,7 +499,6 @@ contains
 subroutine move_bar(n_dim,bar_vec,bar_cm,fbar_para,fbar_perp,fbar_tot,etot,alpha)
 !This subroutine will move the bar according to the forces at both endpoints, 
 !including a shift along the bar given by the parallel forces of the CM
-use mod_interface, norm_func => norm
 use bar_saddle_params, only:dbar
 implicit none
 integer:: n_dim
@@ -838,7 +833,6 @@ end subroutine
 !*****************************************************************************************
 end subroutine find_saddle
 subroutine write_atomic_file(filename,etot,pos,atoms,comment,forces)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(in) :: atoms
@@ -880,7 +874,6 @@ subroutine forcebar_decomp(n_dim,bar_vec,bar_cm,fbar_para,fbar_perp,fbar_tot,eto
 !force on the CM in a part parallel to the bar and perpendicular to the bar.
 !all arrays: etot(1)=bar_cm-bar_vec,etot(2)=bar_cm,etot(3)=bar_cm+bar_vec
 use mod_parini, only: typ_parini
-use mod_interface, norm_func => norm
 use mod_atoms, only: typ_atoms
 implicit none
 !Bigdft Variables
@@ -1314,7 +1307,6 @@ function time_energy(tt,nproc,iproc,atoms,parini,ncount_bigdft)
 !at the time parameter tt(0:1), and outputs the energy value at the interpolated
 !point. 
 use spline_params
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
 implicit none

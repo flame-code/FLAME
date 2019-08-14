@@ -39,7 +39,6 @@
 !
 ! THIS WORK WAS SUPPORTED BY  C.N.R. , ITALY.
 subroutine hung(N,A,F,Z)
-    use mod_interface, except_this_one=>hung
     implicit none
       integer:: n
       real(8)::  A(n,n),Z,U(n),V(n)

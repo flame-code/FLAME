@@ -1,5 +1,4 @@
 subroutine dielec_potener_forces(parini,poisson,atoms,epot_dielec)
-    use mod_interface, except_this_one=>dielec_potener_forces
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_potential, only: potential 
@@ -64,7 +63,6 @@ subroutine dielec_potener_forces(parini,poisson,atoms,epot_dielec)
 end subroutine dielec_potener_forces
 !*******************************************************************************************
 subroutine sollaplaceq_dielctric(parini,poisson,hz,cell)
-    use mod_interface, except_this_one=>sollaplaceq_dielctric
     use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
     implicit none

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine set_tosifumi(atoms,tosifumi)
-    use mod_interface, except_this_one=>set_tosifumi
     use mod_atoms, only: typ_atoms
     use mod_shortrange, only: typ_tosifumi
     implicit none
@@ -59,7 +58,6 @@ subroutine set_tosifumi(atoms,tosifumi)
 end subroutine set_tosifumi
 !*****************************************************************************************
 subroutine coulomb_free_direct(atoms)
-    use mod_interface, except_this_one=>coulomb_free_direct
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_shortrange, only: typ_tosifumi
     implicit none
@@ -109,7 +107,6 @@ subroutine coulomb_free_direct(atoms)
 end subroutine coulomb_free_direct
 !*****************************************************************************************
 subroutine calenergyforces(atoms,tosifumi)
-    use mod_interface, except_this_one=>calenergyforces
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_shortrange, only: typ_tosifumi
     implicit none
@@ -170,7 +167,6 @@ subroutine calenergyforces(atoms,tosifumi)
 end subroutine calenergyforces
 !*****************************************************************************************
 subroutine tosifumi_parameters(s,p)
-    use mod_interface, except_this_one=>tosifumi_parameters
     implicit none
     character(6), intent(out):: s(10)
     real(8), intent(out):: p(5,10)

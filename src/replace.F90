@@ -2,7 +2,6 @@ subroutine replace(nlminx,nlmin,fp_len,nat,kid,e_wpos,ent_wpos,fp_wpos,wpos_red,
   &wpos_latvec,spg_wpos,spgtol_wpos,fdos_wpos,&
   &e_arr,ent_arr,fp_arr,pl_arr,lat_arr,spg_arr,spgtol_arr,dos_arr,ct_arr,findsym)
 !Replace the structure kid with wpos, only if the symmetry index is higher in wpos
-  use mod_interface, except_this_one=>replace
   implicit none
   integer:: fp_len,ct_arr(nlminx),spg_arr(nlminx),nat,iat,spg_wpos
   integer:: k, nlmin,nlminx,i,kid

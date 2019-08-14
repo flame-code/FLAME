@@ -1,7 +1,6 @@
 subroutine winter(parini,nat,units,ent_pos,e_pos,pos_red,pos_latvec,pos_fcart,pos_strten,nlminx,nlmin,npminx,& 
    &ent_arr,e_arr,ct_arr,spg_arr,spgtol_arr,dos_arr,pl_arr,lat_arr,f_arr,str_arr,fp_arr,fp_len,ent_delta,fp_delta,& 
    &eref,ediff,ekinetic,ekinetic_max,dt,nsoften,char_type,ntypat,typat,fixat,fixlat,pressure)
-  use mod_interface, except_this_one=>winter
   use mod_parini, only: typ_parini
   use yaml_output
   implicit none
@@ -101,7 +100,6 @@ END SUBROUTINE winter
 !**********************************************************************************************
 
 subroutine wtioput(ediff,ekinetic,ekinetic_max,nsoften)
-  use mod_interface, except_this_one=>wtioput
   implicit none
   integer:: nsoften
   real(8):: ediff, ekinetic,ekinetic_max

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
-    use mod_interface, except_this_one=>symmetry_functions
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc

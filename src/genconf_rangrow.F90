@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine rangrow(parini,genconf)
-    use mod_interface, except_this_one=>rangrow
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
     use mod_atoms, only: set_rcov, determinexyzminmax, set_rat_atoms

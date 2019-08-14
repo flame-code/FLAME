@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,paropt)
-    use mod_interface, except_this_one=>dimmethimproved
     use mod_parini, only: typ_parini
     use mod_saddle, only: dimsep, nit, epotprime, &
         do_elim_trans, do_elim_rot, dmconverged, beta
@@ -109,7 +108,6 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
 end subroutine dimmethimproved
 !*****************************************************************************************
 subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,maxitlc,curv0,curv,nw)
-    use mod_interface, except_this_one=>lowestcurvature
     use mod_parini, only: typ_parini
     use mod_saddle, only:nit,do_elim_trans,do_elim_rot
     use mod_atoms, only: typ_atoms, atom_ddot, atom_normalizevector
@@ -181,7 +179,6 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
 end subroutine lowestcurvature
 !*****************************************************************************************
 subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm)
-    use mod_interface, except_this_one=>rotatedimer
     use mod_parini, only: typ_parini
     use mod_saddle, only: do_elim_rot, do_elim_trans, dimsep
     use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_normalizevector

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine miscellaneous_task(parini)
-    use mod_interface, except_this_one=>miscellaneous_task
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini

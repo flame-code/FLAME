@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine test_free_bps(parini)
-    use mod_interface, except_this_one=>test_free_bps
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, update_ratp, get_rat

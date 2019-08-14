@@ -1,5 +1,4 @@
  subroutine correct_latvec_oganov(latvec,pos_red,nat,iproc)
- use mod_interface, except_this_one=>correct_latvec_oganov
  !use cell_utils
  !This subroutine will use the algorithm proposed by oganov and glass (J.Phys,Cond.Mat 20,2008) to perform a transformation of the lattice vectors into an equivalent
  !system where the length of all cell vectors are similar (no nasty angles).

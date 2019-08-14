@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
-    use mod_interface, except_this_one=>symmetry_functions_driver_bond
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -18,6 +17,7 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     integer:: isat, jsat, ksat, ib, ia, ibij, ibik, istat
     integer:: jat
     real(8):: rij, drij(3), fcij, fcdij
+    real(8):: cutoff_function, cutoff_function_der
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
@@ -95,7 +95,6 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
 end subroutine symmetry_functions_driver_bond
 !**********************************************************************************************
 subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
-    use mod_interface, except_this_one=>symmetry_functions_driver_bond_tmp
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms, get_rat
     implicit none
@@ -108,6 +107,7 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
     real(8):: fcij, fcik, fcdij, fcdik, fcjk, fcdjk
     real(8):: rij, rik, rjk, rc, en, eta1, eta2, zeta, vij, rs
     real(8):: eval(3)
+    real(8):: cutoff_function, cutoff_function_der
     integer, parameter::lwork=100
     integer :: info
     real(8), dimension(lwork) :: work
@@ -159,7 +159,6 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
 end subroutine symmetry_functions_driver_bond_tmp
 !**********************************************************************************************
 subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
-    use mod_interface, except_this_one=>symmetry_functions_g01_bond
     use mod_linked_lists, only: typ_pia
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -198,7 +197,6 @@ subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
 end subroutine symmetry_functions_g01_bond
 !******************************************************************************************
 subroutine symmetry_functions_g02_bond(ann_arr,iat,jat,rij,drij,fcij,fcdij,rik,drik,fcik,fcdik,rjk,drjk,fcjk,fcdjk)
-    use mod_interface, except_this_one=>symmetry_functions_g02_bond
     use mod_ann, only: typ_ann_arr
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -242,7 +240,6 @@ subroutine symmetry_functions_g02_bond(ann_arr,iat,jat,rij,drij,fcij,fcdij,rik,d
 end subroutine symmetry_functions_g02_bond
 !*****************************************************************************************
 subroutine symmetry_functions_g04_bond(ann_arr,iat,jat,rij,drij,fcij,fcdij,rik,drik,fcik,fcdik,rjk,drjk,fcjk,fcdjk)
-    use mod_interface, except_this_one=>symmetry_functions_g04_bond
     use mod_ann, only: typ_ann_arr
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr

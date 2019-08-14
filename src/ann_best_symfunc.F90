@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine ann_best_symfunc(parini)
-    use mod_interface, except_this_one=>ann_best_symfunc
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     use mod_symfunc, only: typ_symfunc_arr
@@ -90,7 +89,6 @@ subroutine ann_best_symfunc(parini)
 end subroutine ann_best_symfunc
 !*****************************************************************************************
 subroutine cal_symfunc_diversity(n_tot,his,ann,disparity)
-    use mod_interface, except_this_one=>cal_symfunc_diversity
     use mod_ann, only: typ_ann
     implicit none
     integer, intent(in):: n_tot
@@ -117,7 +115,6 @@ subroutine cal_symfunc_diversity(n_tot,his,ann,disparity)
 end subroutine cal_symfunc_diversity
 !*****************************************************************************************
 subroutine gbounds_distro(ann,atoms_arr,strmess)
-    use mod_interface, except_this_one=>gbounds_distro
     use mod_atoms, only: typ_atoms_arr
     use mod_ann, only: typ_ann
     use mod_processors, only: iproc

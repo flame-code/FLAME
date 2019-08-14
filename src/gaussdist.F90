@@ -1,7 +1,6 @@
 !Various methods to initialize the velocities for the MD part of Minima Hopping
 !GAUSSIAN DISTRIBUTION**********************************************************
       subroutine gausdist(nat,vxyz,amass)
-      use mod_interface, except_this_one=>gausdist
 !generates 3*nat random numbers distributed according to  exp(-.5*vxyz**2)
       implicit none!real*8 (a-h,o-z)
       real:: s1,s2
@@ -34,7 +33,6 @@
 
 !GAUSSIAN DISTRIBUTION FOR THE CELL VECTORS***************************************
       subroutine gausdist_cell(latvec,vlat)
-      use mod_interface, except_this_one=>gausdist_cell
 ! generates 3*3 random numbers distributed according to  exp(-.5*vxyz**2) for the cell vectors
       implicit none
       integer:: i

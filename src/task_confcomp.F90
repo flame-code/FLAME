@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine conf_comp(parini)
-    use mod_interface, except_this_one=>conf_comp
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_all, atom_all_allocate, atom_all_deallocate, set_rcov
     use mod_acf, only: acf_read
@@ -54,7 +53,6 @@ subroutine conf_comp(parini)
 end subroutine conf_comp
 !*****************************************************************************************
 subroutine set_fpall_ann(atoms_all)
-    use mod_interface, except_this_one=>set_fpall_ann
     use mod_atoms, only: typ_atoms_all, set_rat
     use dynamic_memory
     implicit none
@@ -201,7 +199,6 @@ subroutine set_fpall_ann(atoms_all)
 end subroutine set_fpall_ann
 !*****************************************************************************************
 subroutine set_fpall_angle(atoms_all)
-    use mod_interface, except_this_one=>set_fpall_angle
     use mod_atoms, only: typ_atoms_all, set_rat
     use dynamic_memory
     implicit none
@@ -286,7 +283,6 @@ subroutine set_fpall_angle(atoms_all)
 end subroutine set_fpall_angle
 !*****************************************************************************************
 subroutine set_fpall_distance(atoms_all)
-    use mod_interface, except_this_one=>set_fpall_distance
     use mod_atoms, only: typ_atoms_all, set_rat
     use dynamic_memory
     implicit none
@@ -371,7 +367,6 @@ subroutine set_fpall_distance(atoms_all)
 end subroutine set_fpall_distance
 !*****************************************************************************************
 subroutine build_images(atoms,natpmax,natp,ratp)
-    use mod_interface, except_this_one=>build_images
     use mod_atoms, only: typ_atoms, get_rat
     implicit none
     type(typ_atoms), intent(in):: atoms

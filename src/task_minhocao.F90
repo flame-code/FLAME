@@ -1,5 +1,4 @@
 subroutine task_minhocao(parini,parres)
- use mod_interface, except_this_one=>task_minhocao
  use global
  use defs_basis
  !use cell_utils

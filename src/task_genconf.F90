@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine task_genconf(parini)
-    use mod_interface, except_this_one=>task_genconf
     use mod_genconf, only: typ_genconf
     use mod_parini, only: typ_parini
     implicit none

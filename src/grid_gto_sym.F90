@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
-    use mod_interface, except_this_one=>put_gto_sym
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -124,7 +123,6 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,r
 end subroutine put_gto_sym
 !*****************************************************************************************
 subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad)
-    use mod_interface, except_this_one=>rqgrad_gto_sym
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -262,7 +260,6 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,
 end subroutine rqgrad_gto_sym
 !*****************************************************************************************
 subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
-    use mod_interface, except_this_one=>force_gto_sym
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -397,7 +394,6 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,p
 end subroutine force_gto_sym
 !*****************************************************************************************
 subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad,agrad)
-    use mod_interface, except_this_one=>gwrqgrad_gto_sym
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -545,7 +541,6 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgri
 end subroutine gwrqgrad_gto_sym
 !*****************************************************************************************
 subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
-    use mod_interface, except_this_one=>rhograd_gto_sym
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory

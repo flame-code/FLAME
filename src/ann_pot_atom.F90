@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
-    use mod_interface, except_this_one=>cal_ann_atombased
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, convert_ann_epotd

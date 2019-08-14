@@ -1,5 +1,4 @@
  subroutine soften_pos(parini,parres,latvec,pos_red0,ddcart,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use mod_interface, except_this_one=>soften_pos
  use global, only: units
  use defs_basis
  use interface_code
@@ -226,7 +225,6 @@ call yaml_mapping_close()
 !************************************************************************************
 
  subroutine soften_lat(parini,parres,latvec,pos_red0,ddlat,curv0,curv,res,pressure,count_soft,amass,nsoft,folder)
- use mod_interface, except_this_one=>soften_lat
  use global, only: units
  use defs_basis
  use interface_code

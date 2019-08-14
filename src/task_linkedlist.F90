@@ -1,5 +1,4 @@
 subroutine  linkedlist_test(parini)
-    use mod_interface, except_this_one=>linkedlist_test
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, type_pairs, typ_file_info, atom_deallocate_old
     use mod_atoms, only: atom_allocate, atom_allocate_old, update_ratp
@@ -192,7 +191,6 @@ write(*,*) "*************************************  end   ***********************
 end subroutine linkedlist_test
 !**************************************************************************************************************
 subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
-    use mod_interface, except_this_one=>callinkedlist
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, type_pairs, update_ratp
     use mod_const, only: bohr2ang
@@ -380,7 +378,6 @@ subroutine sort2_alborz(i ,j ,k,conf,num)
 end subroutine sort2_alborz
 !*******************************************************************************************************
 subroutine genrandomconf(atoms,numb,conf)
-    use mod_interface, except_this_one=>genrandomconf
     use mod_atoms, only: typ_atoms
     use mod_atoms, only: typ_atoms, typ_file_info, update_rat
     use mod_acf, only: acf_write

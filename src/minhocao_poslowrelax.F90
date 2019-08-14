@@ -1,5 +1,4 @@
 subroutine poslowrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol)
- use mod_interface, except_this_one=>poslowrelax
  use global, only: units
  use defs_basis
  use interface_code

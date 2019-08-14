@@ -1,5 +1,4 @@
 subroutine fragments(parini,latvec,xred,nfrag,xcart,fragarr,fragsize)
-use mod_interface, except_this_one=>fragments
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -119,7 +118,6 @@ end subroutine
 !************************************************************************************
 
 subroutine make_linked_list(fragarr,fragsize,lhead,llist,nat,nmol)
-use mod_interface, except_this_one=>make_linked_list
 !This subroutine will create a linked list to represent molecules.
 !lhead is an array of length nat, of which only nmol will be significant. Their entries point to a
 !position in array lhead, the first atom in the molecule, 
@@ -168,7 +166,6 @@ end subroutine
 !************************************************************************************
 
 subroutine get_inertia_tensor(parini,intens,inprin,inaxis,cmass,xcart,amass,lhead,llist,nat,nmol)
-use mod_interface, except_this_one=>get_inertia_tensor
 use mod_parini, only: typ_parini
 !This routine will compute the intertia tensors of all molecules involved
 !given the center of mass and atomic masses, the principle  moments of inertia inprin,
@@ -179,6 +176,7 @@ integer:: nat,nmol,iat,ifrag,i,j,llist(nat),lhead(nmol),LWORK,info
 real(8):: xcart(3,nat),amass(nat),cmass(3,nmol),intens(3,3,nmol),dist2,xtmp(3)
 real(8):: inprin(3,nmol),inaxis(3,3,nmol),diag_inert(3,3),tmp_vec(3),tmp_val
 real(8),allocatable:: work(:),eval(:)
+real(8):: delta_kronecker
 !Compute the tensor of intertia
 do ifrag=1,nmol
    iat=lhead(ifrag)
@@ -235,7 +233,6 @@ end subroutine
 !************************************************************************************
 
 subroutine get_fcm_torque(fcm,torque,fcart,quat,xcart_mol,lhead,llist,nat,nmol)
-use mod_interface, except_this_one=>get_fcm_torque
 !Computes the total force on molecules and the torques,assuming xcart_mol has molecules with CM at origin
 implicit none
 integer:: nat,nmol,iat,ifrag,llist(nat),lhead(nmol)
@@ -259,7 +256,6 @@ end subroutine
 !************************************************************************************
 
 subroutine init_cm_mol(parini,latvec,xred,xcart_shifted,xred_cm,quat,amass,masstot,intens,inprin,inaxis,lhead,llist,nat,nmol)
-use mod_interface, except_this_one=>init_cm_mol
 use mod_parini, only: typ_parini
 !This routine will get the cm and shift all molecular units into xcart_shifted
 !and write, for each molecule, an xyz file containing the shifted molecular unit

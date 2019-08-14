@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine md_nvt_langevin(parini,atoms)
-    use mod_interface, except_this_one=>md_nvt_langevin
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info
@@ -186,7 +185,6 @@ subroutine md_nvt_langevin(parini,atoms)
 end subroutine md_nvt_langevin
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_cp(parini,atoms)
-    use mod_interface, except_this_one=>md_nvt_nose_hoover_cp
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_rat, get_rat, update_ratp
@@ -382,7 +380,6 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
 end subroutine md_nvt_nose_hoover_cp
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_chain(parini,atoms)
-    use mod_interface, except_this_one=>md_nvt_nose_hoover_chain
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, get_rat, update_ratp, update_rat
@@ -734,7 +731,6 @@ subroutine plane_repulsion(atoms)
 end subroutine plane_repulsion
 !*************************************************************************************************************
 subroutine thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-    use mod_interface, except_this_one=>thermostat_evolution
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_dynamics, only: dt, nmd
     implicit none
@@ -1033,7 +1029,6 @@ subroutine get_atomic_mass(atoms,totmass)
 end subroutine get_atomic_mass
 !*****************************************************************************************
 subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
-    use mod_interface, except_this_one=>write_trajectory_velocity
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, update_ratp
     use mod_acf, only: acf_write

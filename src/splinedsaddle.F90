@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine splined_saddle(parini)
-  use mod_interface, except_this_one=>splined_saddle
   use mod_parini, only: typ_parini
   use dictionaries
   use dynamic_memory
@@ -133,7 +132,6 @@ subroutine splined_saddle(parini)
 end subroutine splined_saddle
 !*****************************************************************************************
 subroutine givemesaddle(parini,epot_sp,ratsp,fatsp,ifile,nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>givemesaddle
     use mod_parini, only: typ_parini
     use minimization_sp, only:parameterminimization_sp  !Reza
     use modulesplinedsaddle, only:parametersplinedsaddle
@@ -420,7 +418,6 @@ subroutine givemesaddle(parini,epot_sp,ratsp,fatsp,ifile,nproc,iproc,atoms,ncoun
 end subroutine givemesaddle
 !*****************************************************************************************
 subroutine change_np(n,np1,x1,atoms,np2,x2)
-    use mod_interface, except_this_one=>change_np
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     !use modulesplinedsaddle, only:parametersplinedsaddle
     !use energyandforces, only:calenergyforces
@@ -562,7 +559,6 @@ end subroutine change_np
 !!  end subroutine improvepeak
 !*****************************************************************************************
 subroutine pickbestanchors2(parini,n,np,x,fends,pnow,nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>pickbestanchors2
     use mod_parini, only: typ_parini
     use modulesplinedsaddle, only:parametersplinedsaddle
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
@@ -698,7 +694,6 @@ subroutine pickbestanchors2(parini,n,np,x,fends,pnow,nproc,iproc,atoms,ncount_bi
 end subroutine pickbestanchors2
 !*****************************************************************************************
 subroutine pickbestanchors(parini,n,np,x,fends,pnow,nproc,iproc,atoms,             ncount_bigdft)
-    use mod_interface, except_this_one=>pickbestanchors
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     use modulesplinedsaddle, only:parametersplinedsaddle
@@ -757,7 +752,6 @@ subroutine pickbestanchors(parini,n,np,x,fends,pnow,nproc,iproc,atoms,          
 end subroutine pickbestanchors
 !*****************************************************************************************
 subroutine readinputsplsad(iproc,np,np_neb,parmin,parmin_neb,pnow)
-    use mod_interface, except_this_one=>readinputsplsad
     use minimization_sp, only:parameterminimization_sp
     use modulesplinedsaddle, only:parametersplinedsaddle
     implicit none
@@ -908,7 +902,6 @@ subroutine readinputsplsad(iproc,np,np_neb,parmin,parmin_neb,pnow)
 end subroutine readinputsplsad
 !*****************************************************************************************
 subroutine neb(parini,n,nr,np,x,f,parmin,pnow,nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>neb
     use mod_parini, only: typ_parini
     use minimization_sp, only:parameterminimization_sp
     use modulesplinedsaddle, only:parametersplinedsaddle
@@ -1149,7 +1142,6 @@ subroutine neb(parini,n,nr,np,x,f,parmin,pnow,nproc,iproc,atoms,ncount_bigdft)
 end subroutine neb
 !*****************************************************************************************
 subroutine atomic_copymoving_forward_ss(atoms,n,x,nr,xa)
-    use mod_interface, except_this_one=>atomic_copymoving_forward_ss
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     implicit none
     type(typ_atoms), intent(inout) :: atoms
@@ -1168,7 +1160,6 @@ subroutine atomic_copymoving_forward_ss(atoms,n,x,nr,xa)
 end subroutine atomic_copymoving_forward_ss
 !*****************************************************************************************
 subroutine atomic_copymoving_backward_ss(atoms,nr,xa,n,x)
-    use mod_interface, except_this_one=>atomic_copymoving_backward_ss
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     implicit none
     type(typ_atoms), intent(inout) :: atoms
@@ -1187,7 +1178,6 @@ subroutine atomic_copymoving_backward_ss(atoms,nr,xa,n,x)
 end subroutine atomic_copymoving_backward_ss
 !*****************************************************************************************
 subroutine calmaxforcecomponentsub(atoms,f,fnrm,fspmax)
-    use mod_interface, except_this_one=>calmaxforcecomponentsub
     !use module_type
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     implicit none
@@ -1208,7 +1198,6 @@ subroutine calmaxforcecomponentsub(atoms,f,fnrm,fspmax)
 end subroutine calmaxforcecomponentsub
 !*****************************************************************************************
 subroutine calmaxforcecomponentanchors(atoms,np,f,fnrm,fspmax)
-    use mod_interface, except_this_one=>calmaxforcecomponentanchors
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout) :: atoms
@@ -1244,7 +1233,6 @@ end subroutine calmaxforcecomponentanchors
 !end subroutine testwrite
 !*****************************************************************************************
 subroutine nebforce(parini,n,np,x,f,fnrmtot,pnow,nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>nebforce
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_rat !, update_ratp
     use modulesplinedsaddle, only:parametersplinedsaddle
@@ -1339,7 +1327,6 @@ end subroutine nebforce
 !*****************************************************************************************
 subroutine splinedsaddle(parini,n,nr,np,x,etmax,f,xtmax,parmin,fends,pnow,nproc, &
     iproc,atoms,ncount_bigdft,fatsp)
-    use mod_interface, except_this_one=>splinedsaddle
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     use minimization_sp, only:parameterminimization_sp
@@ -1609,7 +1596,6 @@ subroutine splinedsaddle(parini,n,nr,np,x,etmax,f,xtmax,parmin,fends,pnow,nproc,
 end subroutine splinedsaddle
 !*****************************************************************************************
 subroutine bfgs_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
-    use mod_interface, except_this_one=>bfgs_splsad
     !use minimization, only:parameterminimization
     use minimization_sp, only:parameterminimization_sp
     use yaml_output
@@ -1621,6 +1607,8 @@ subroutine bfgs_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
     real(8)::DDOT,DNRM2,tt1,tt2,de,fnrm,fmax,beta
     real(8)::tt3,tt4,tt5,tt6
     real(8), save::epotold,alpha,alphamax,zeta
+    real(8):: calnorm_ss
+    real(8):: calmaxforcecomponent_ss
     logical, save::reset
     integer, save::isatur
     if(nwork/=nr*nr+3*nr+3*nr*nr+3*nr) then
@@ -1772,7 +1760,6 @@ subroutine bfgs_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
 end subroutine bfgs_splsad
 !*****************************************************************************************
 subroutine dfp_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
-    use mod_interface, except_this_one=>dfp_splsad
     !use minimization, only:parameterminimization
     use dynamic_memory
     use minimization_sp, only:parameterminimization_sp
@@ -1784,6 +1771,8 @@ subroutine dfp_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
     type(parameterminimization_sp)::parmin
     real(8)::DDOT,tt1,tt2,de,fnrm,fmax,dx
     real(8), save::epotold,alpha,alphamax,zeta,zetaold
+    real(8):: calnorm_ss
+    real(8):: calmaxforcecomponent_ss
     logical, save::reset
     if(nwork/=nr*nr+3*nr+3*nr*nr+2*nr) then
         stop 'ERROR: size of work array is insufficient.'
@@ -1913,7 +1902,6 @@ subroutine dfp_splsad(iproc,nr,x,epot,f,nwork,work,parmin)
 end subroutine dfp_splsad
 !*****************************************************************************************
 subroutine reportcalvmaxanchorforces(iproc,icall,n,np,x,etmax,fspnrm,fspmax,pnow,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>reportcalvmaxanchorforces
     use modulesplinedsaddle, only:parametersplinedsaddle
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     use yaml_output
@@ -1963,7 +1951,6 @@ subroutine testparmin(iproc,it,parmin,str)
 end subroutine testparmin
 !*****************************************************************************************
 subroutine perpendicularforce(parini,n,np,x,f,pnow,nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>perpendicularforce
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_rat !, update_ratp, update_rat
     use modulesplinedsaddle, only:parametersplinedsaddle
@@ -2028,7 +2015,6 @@ end subroutine perpendicularforce
 !*****************************************************************************************
 subroutine calvmaxanchorforces(parini,istep,n,np,x,xold,fends,etmax,f,xtmax,pnow,pold,ftmax, &
     nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>calvmaxanchorforces
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_rat !, update_ratp, update_rat
     use minimization_sp, only:parameterminimization_sp
@@ -2207,7 +2193,6 @@ end subroutine checkpathway
 !*****************************************************************************************
 subroutine caltmax2(parini,istep,n,np,x,xold,fends,epot,xt,ft,pnow,pold,nproc,iproc,atoms, &
         ncount_bigdft)
-    use mod_interface, except_this_one=>caltmax2
     use mod_parini, only: typ_parini
     use modulesplinedsaddle, only:parametersplinedsaddle
     !use bigdft_run
@@ -2494,7 +2479,6 @@ subroutine polish_sv(npv,pnow)
 end subroutine polish_sv
 !*****************************************************************************************
 subroutine write_v_of_t(iproc,istep,npv,pnow,icall,fn)
-    use mod_interface, except_this_one=>write_v_of_t
     use modulesplinedsaddle, only:parametersplinedsaddle
     implicit none
     integer::iproc,istep,npv,mpv,ipv
@@ -2526,7 +2510,6 @@ subroutine write_v_of_t(iproc,istep,npv,pnow,icall,fn)
 end subroutine write_v_of_t
 !*****************************************************************************************
 subroutine ffdfdd_hermite(n,s,h,e,ed,t,m,v,vd,vdd)
-    use mod_interface, except_this_one=>ffdfdd_hermite
     implicit none
     integer::n,m
     real(8)::s(0:n),h(n),e(0:n),ed(0:n),t,v,vd,vdd
@@ -2544,7 +2527,6 @@ subroutine ffdfdd_hermite(n,s,h,e,ed,t,m,v,vd,vdd)
 end subroutine ffdfdd_hermite
 !*****************************************************************************************
 subroutine fdd_quadratic(n,s,h,e,t,m,vd,vdd)
-    use mod_interface, except_this_one=>fdd_quadratic
     implicit none
     integer::n,m
     real(8)::s(0:n),h(n),e(0:n),t,vd,vdd
@@ -2565,7 +2547,6 @@ subroutine fdd_quadratic(n,s,h,e,t,m,vd,vdd)
 end subroutine fdd_quadratic
 !*****************************************************************************************
 subroutine calv_quadratic(iproc,istep,npv,pnow,mpv,vdc,vddc)
-    use mod_interface, except_this_one=>calv_quadratic
     use modulesplinedsaddle, only:parametersplinedsaddle
     implicit none
     integer::iproc,istep,npv,mpv
@@ -2582,7 +2563,6 @@ subroutine calv_quadratic(iproc,istep,npv,pnow,mpv,vdc,vddc)
 end subroutine calv_quadratic
 !*****************************************************************************************
 subroutine calv_hermite(iproc,istep,npv,pnow,mpv,vc,vdc,vddc)
-    use mod_interface, except_this_one=>calv_hermite
     use modulesplinedsaddle, only:parametersplinedsaddle
     implicit none
     integer::iproc,istep,npv,mpv
@@ -2598,7 +2578,6 @@ subroutine calv_hermite(iproc,istep,npv,pnow,mpv,vc,vdc,vddc)
 end subroutine calv_hermite
 !*****************************************************************************************
 subroutine guessinitialtmax_hermite(npv,pnow)
-    use mod_interface, except_this_one=>guessinitialtmax_hermite
     use modulesplinedsaddle, only:parametersplinedsaddle
     use dynamic_memory
     implicit none
@@ -2693,7 +2672,6 @@ subroutine guessinitialtmax_hermite(npv,pnow)
 end subroutine guessinitialtmax_hermite
 !*****************************************************************************************
 subroutine calvcubic(iproc,istep,npv,pnow,mpv,vc,vdc,vddc)
-    use mod_interface, except_this_one=>calvcubic
     use modulesplinedsaddle, only:parametersplinedsaddle
     implicit none
     integer::iproc,istep,npv,mpv
@@ -2711,7 +2689,6 @@ subroutine calvcubic(iproc,istep,npv,pnow,mpv,vc,vdc,vddc)
 end subroutine calvcubic
 !*****************************************************************************************
 subroutine calvquintic(iproc,istep,npv,pnow,mpv,vq,vdq,vddq)
-    use mod_interface, except_this_one=>calvquintic
     use modulesplinedsaddle, only:parametersplinedsaddle
     implicit none
     integer::iproc,istep,npv,mpv
@@ -2729,7 +2706,6 @@ subroutine calvquintic(iproc,istep,npv,pnow,mpv,vq,vdq,vddq)
 end subroutine calvquintic
 !*****************************************************************************************
 subroutine fill_ex_exd(parini,istep,n,np,x,fends,npv,pnow,pold,xt,ft,nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>fill_ex_exd
     use mod_parini, only: typ_parini
     use modulesplinedsaddle, only:parametersplinedsaddle
     use dynamic_memory
@@ -2874,7 +2850,6 @@ subroutine fill_ex_exd(parini,istep,n,np,x,fends,npv,pnow,pold,xt,ft,nproc,iproc
 end subroutine fill_ex_exd
 !*****************************************************************************************
 subroutine estimate_sv(iproc,istep,np,npv,pnow,pold)
-    use mod_interface, except_this_one=>estimate_sv
     use modulesplinedsaddle, only:parametersplinedsaddle
     implicit none
     integer::iproc,istep,np,npv,ip,mp,icycle,ncycle
@@ -3236,7 +3211,6 @@ subroutine insertpoint(npv,epot,vd,mpv,np,pnow)
 end subroutine insertpoint
 !*****************************************************************************************
 subroutine guessinitialtmax_cubic(npv,pnow)
-    use mod_interface, except_this_one=>guessinitialtmax_cubic
     use modulesplinedsaddle, only:parametersplinedsaddle
     use dynamic_memory
     implicit none
@@ -3316,7 +3290,6 @@ subroutine guessinitialtmax_cubic(npv,pnow)
 end subroutine guessinitialtmax_cubic
 !*****************************************************************************************
 subroutine guessinitialtmax_quintic(npv,pnow,iproc)
-    use mod_interface, except_this_one=>guessinitialtmax_quintic
     use modulesplinedsaddle, only:parametersplinedsaddle
     use dynamic_memory
     implicit none
@@ -3398,7 +3371,6 @@ subroutine guessinitialtmax_quintic(npv,pnow,iproc)
 end subroutine guessinitialtmax_quintic
 !*****************************************************************************************
 subroutine factor_inter_quintic(n,h,y,d,a,b)
-    use mod_interface, except_this_one=>factor_inter_quintic
     use dynamic_memory
     implicit none
     integer::n,i,j,k,info
@@ -3549,7 +3521,6 @@ subroutine calindex(np,s,t,ip,strcall)
 end subroutine calindex
 !*****************************************************************************************
 subroutine prepdd(atoms,n,np,x,e1,e2,h,s,mp,tmax,dd)
-    use mod_interface, except_this_one=>prepdd
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     use dynamic_memory
     implicit none
@@ -3650,7 +3621,6 @@ subroutine prepdd(atoms,n,np,x,e1,e2,h,s,mp,tmax,dd)
 end subroutine prepdd
 !*****************************************************************************************
 subroutine prepcd3cd4(np,h,mp,ainv,i,j,yi,yj,cd1,cd2)
-    use mod_interface, except_this_one=>prepcd3cd4
     use dynamic_memory
     implicit none
     integer::np,mp,istat,i,j,ip,jp
@@ -3659,6 +3629,7 @@ subroutine prepcd3cd4(np,h,mp,ainv,i,j,yi,yj,cd1,cd2)
     real(8), allocatable::ainvd(:,:)
     real(8)::hip,hipp1,yip,yipp1,yipm1
     real(8)::ainvdmpip,ainvdmpipp1,ainvdmpipm1,ainvdmpm1ip,ainvdmpm1ipp1,ainvdmpm1ipm1
+    real(8):: delta_ss
     integer, parameter::ndeb1=0,ndeb2=0
     ainvd = f_malloc((/ 0.to.np, 0.to.np /),id='ainvd')
     ainvd(0:np,0:np)=0.d0
@@ -3723,7 +3694,6 @@ subroutine prepcd3cd4(np,h,mp,ainv,i,j,yi,yj,cd1,cd2)
 end subroutine prepcd3cd4
 !*****************************************************************************************
 subroutine prepcd1cd2(np,h,mp,yi,yj,cd1,cd2,ainv)
-    use mod_interface, except_this_one=>prepcd1cd2
     use dynamic_memory
     implicit none
     integer::np,mp,istat,ip,jp
@@ -3783,7 +3753,6 @@ subroutine prepcd1cd2(np,h,mp,yi,yj,cd1,cd2,ainv)
 end subroutine prepcd1cd2
 !*****************************************************************************************
 subroutine func_ss(parini,tt,epot,ett,n,np,x,pnow,mp,xt,ft,nproc,iproc,atoms,ncount_bigdft)
-    use mod_interface, except_this_one=>func_ss
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms,set_rat !, update_ratp, update_rat
     use modulesplinedsaddle, only:parametersplinedsaddle
@@ -3833,7 +3802,6 @@ subroutine func_ss(parini,tt,epot,ett,n,np,x,pnow,mp,xt,ft,nproc,iproc,atoms,nco
 end subroutine func_ss
 !*****************************************************************************************
 subroutine equalarclengthparametrization(atoms,n,np,x,s,h)
-    use mod_interface, except_this_one=>equalarclengthparametrization
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     implicit none
     type(typ_atoms), intent(in) :: atoms
@@ -3885,7 +3853,6 @@ subroutine inter_cubic(np,y,h,e1,e2,c)
 end subroutine inter_cubic
 !*****************************************************************************************
 subroutine qdq(np,s,mp,tmax,c,h,i,j,yi,yj,cd1,cd2,dd)
-    use mod_interface, except_this_one=>qdq
     use dynamic_memory
     implicit none
     integer::np,mp,i,j,ip,istat
@@ -3893,6 +3860,7 @@ subroutine qdq(np,s,mp,tmax,c,h,i,j,yi,yj,cd1,cd2,dd)
     real(8)::p0,p1,p2,p3,t1,t2,t3,t4,t5,t6,t7
     real(8), allocatable::sd1(:)
     real(8), allocatable::sd2(:)
+    real(8):: delta_ss
     integer, parameter::ndeb1=0,ndeb2=0
     sd1 = f_malloc(np-1,id='sd1')
     sd2 = f_malloc(np-1,id='sd2')
@@ -3949,7 +3917,6 @@ function delta_ss(i,j)
 end function delta_ss
 !*****************************************************************************************
 subroutine ffdfdd_cubic(np,y,s,mp,hmp,t,c,f,fd,fdd)
-    use mod_interface, except_this_one=>ffdfdd_cubic
     implicit none
     integer::np,mp
     real(8)::y(0:np),s(0:np),hmp,c(0:np),t,p0,p1,p2,p3,f,fd,fdd
@@ -3966,7 +3933,6 @@ subroutine ffdfdd_cubic(np,y,s,mp,hmp,t,c,f,fd,fdd)
 end subroutine ffdfdd_cubic
 !*****************************************************************************************
 subroutine caltangentupwind(n,np,x,ex,tang)
-    use mod_interface, except_this_one=>caltangentupwind
     implicit none
     integer::n,np,ip
     real(8)::x(n,0:np),ex(0:np),tang(n,0:np)
@@ -4007,7 +3973,6 @@ subroutine normalizevector2(n,v)
 end subroutine normalizevector2
 !*****************************************************************************************
 subroutine initminimize_ss(parmin)
-    use mod_interface, except_this_one=>initminimize_ss
     use minimization_sp, only:parameterminimization_sp
     use dynamic_memory
     implicit none
@@ -4044,7 +4009,6 @@ subroutine initminimize_ss(parmin)
 end subroutine initminimize_ss
 !*******************************************************************************
 subroutine finalminimize_ss(parmin)
-    use mod_interface, except_this_one=>finalminimize_ss
     use minimization_sp, only:parameterminimization_sp
     use dynamic_memory
     implicit none
@@ -4064,7 +4028,6 @@ subroutine finalminimize_ss(parmin)
 end subroutine finalminimize_ss
 !*******************************************************************************
 subroutine checkconvergence(parmin,fspmax)
-    use mod_interface, except_this_one=>checkconvergence
     use minimization_sp, only:parameterminimization_sp
     implicit none
     !integer::iproc
@@ -4077,7 +4040,6 @@ end subroutine checkconvergence
 !*******************************************************************************
 !*******************************************************************************
 subroutine initsdminimum_ss(n,nr,x,parmin,nwork,work)
-    use mod_interface, except_this_one=>initsdminimum_ss
     use minimization_sp, only:parameterminimization_sp
     implicit none
     integer::n,nr,nwork
@@ -4112,7 +4074,6 @@ subroutine initsdminimum_ss(n,nr,x,parmin,nwork,work)
 end subroutine initsdminimum_ss
 !*******************************************************************************
 subroutine fire_splsad(iproc,nr,x,epot,f,work,parmin)
-    use mod_interface, except_this_one=>fire_splsad
     !use minimization, only:parameterminimization
     use minimization_sp, only:parameterminimization_sp
     implicit none
@@ -4121,6 +4082,8 @@ subroutine fire_splsad(iproc,nr,x,epot,f,work,parmin)
     real(8)::tt,vnrmmax
     real(8)::work(3*nr) !1:nr velocities, nr+1:2*nr previous force
     real(8), save::epotold,alpha
+    real(8):: calnorm_ss
+    real(8):: calmaxforcecomponent_ss
     integer, save::ndown
     type(parameterminimization_sp)::parmin
     if(parmin%iflag==0) then
@@ -4214,7 +4177,6 @@ subroutine fire_splsad(iproc,nr,x,epot,f,work,parmin)
   end subroutine fire_splsad
 !*****************************************************************************************
 subroutine sdminimum_ss(iproc,n,nr,x,f,epot,parmin,nwork,work)
-    use mod_interface, except_this_one=>sdminimum_ss
     use minimization_sp, only:parameterminimization_sp
     implicit none
     integer::iproc,n,nr,nwork
@@ -4222,6 +4184,8 @@ subroutine sdminimum_ss(iproc,n,nr,x,f,epot,parmin,nwork,work)
     type(parameterminimization_sp)::parmin
     real(8)::de1,de2,df1,df2
     logical::xmoved
+    real(8):: calnorm_ss
+    real(8):: calmaxforcecomponent_ss
     if(parmin%iflag==0) call initsdminimum_ss(n,nr,x,parmin,nwork,work)
     fnrm=calnorm_ss(nr,f);fmax=calmaxforcecomponent_ss(nr,f)
     de1=epot-parmin%epotitm1;de2=epot-2.d0*parmin%epotitm1+parmin%epotitm2
@@ -4320,7 +4284,6 @@ subroutine sdminimum_ss(iproc,n,nr,x,f,epot,parmin,nwork,work)
 end subroutine sdminimum_ss
 !*******************************************************************************
 subroutine diisminimum_ss(iproc,n,nr,x,epot,f,parmin,nwork,work)
-    use mod_interface, except_this_one=>diisminimum_ss
     use minimization_sp, only:parameterminimization_sp
     use wrapper_linalg, only: vcopy
     implicit none
@@ -4328,6 +4291,7 @@ subroutine diisminimum_ss(iproc,n,nr,x,epot,f,parmin,nwork,work)
     real(8)::x(n),f(n),epot,work(nwork),fnrm,dnrm2,ddot,fmax
     type(parameterminimization_sp)::parmin
     character(28), parameter::frt1='(a10,i4,e23.15,e11.3,2e12.5)'
+    real(8):: calmaxforcecomponent_ss
     if(parmin%iflag==0) then
         parmin%iflag=1;parmin%itdiis=0;parmin%epotitm1=epot
         parmin%emin=1.d100;parmin%fnrmlowest=1.d100;parmin%ld=0;parmin%nd=0
@@ -4440,7 +4404,6 @@ function calnorm_ss(n,v)
 end function calnorm_ss
 !*******************************************************************************
 subroutine writepathway(n,np,x,filename,atoms)
-    use mod_interface, except_this_one=>writepathway
     use mod_atoms, only: typ_atoms
     use dynamic_memory
     implicit none
@@ -4527,7 +4490,6 @@ subroutine writepathway(n,np,x,filename,atoms)
 end subroutine writepathway
 !*****************************************************************************************
 subroutine writeanchorpoints(n,np,x,filename,atoms)
-    use mod_interface, except_this_one=>writeanchorpoints
     use mod_atoms, only: typ_atoms
     implicit none
     integer::n,np,iat
@@ -4571,7 +4533,6 @@ subroutine writeanchorpoints(n,np,x,filename,atoms)
 end subroutine writeanchorpoints
 !*****************************************************************************************
 subroutine readanchorpoints(n,np,x,filename,units)
-    use mod_interface, except_this_one=>readanchorpoints
     implicit none
     integer::n,np,ip,iat,i
     real(8)::x(n,0:100),xyz(3)
@@ -4603,7 +4564,6 @@ subroutine readanchorpoints(n,np,x,filename,units)
 end subroutine readanchorpoints
 !*****************************************************************************************
 subroutine initializepoints(atoms,n,x1,x2,np,x)
-    use mod_interface, except_this_one=>initializepoints
     use mod_atoms, only: typ_atoms !, update_ratp, update_rat
     implicit none
     type(typ_atoms), intent(inout) :: atoms
@@ -4660,7 +4620,6 @@ subroutine atomic_dot(atoms,x,y,dot)
 end subroutine atomic_dot
 !*****************************************************************************************
 subroutine call_bigdft(nproc,iproc,atoms,rxyz,etot,fxyz,fnoise,infocode,parini)
-    use mod_interface, except_this_one=>call_bigdft
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_rat, get_rat !, update_ratp, update_rat
     !use dynamic_memory

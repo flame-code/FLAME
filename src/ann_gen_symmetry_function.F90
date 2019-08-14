@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine ann_gen_symmetry_function(parini)
-    use mod_interface, except_this_one=> ann_gen_symmetry_function
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, ann_arr_deallocate
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr

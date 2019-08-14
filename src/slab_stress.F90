@@ -1,5 +1,4 @@
 subroutine slab_stress(flat,fix_z)
-use mod_interface, except_this_one=>slab_stress
 !This routine will eliminate all z-components of the first two cell forces,
 !and all x-y-components of the last cell force 
 implicit none

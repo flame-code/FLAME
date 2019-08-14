@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine set_buckingham(atoms,tosifumi)
-    use mod_interface, except_this_one=>set_buckingham
     use mod_atoms, only: typ_atoms
     use mod_shortrange, only: typ_tosifumi
     implicit none

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine get_psolver_bps(poisson,atoms,ehartree)
-    use mod_interface, except_this_one=>get_psolver_bps
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
@@ -58,7 +57,6 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
 end subroutine get_psolver_bps
 !*****************************************************************************************
 subroutine init_psolver_bps(parini,atoms,poisson)
-    use mod_interface, except_this_one=>init_psolver_bps
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -139,7 +137,6 @@ subroutine init_psolver_bps(parini,atoms,poisson)
 end subroutine init_psolver_bps
 !*****************************************************************************************
 subroutine fini_psolver_bps(poisson)
-    use mod_interface, except_this_one=>fini_psolver_bps
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
     use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
@@ -156,7 +153,6 @@ subroutine fini_psolver_bps(poisson)
 end subroutine fini_psolver_bps
 !*****************************************************************************************
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
-    use mod_interface, except_this_one=>set_ngp_bps
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson

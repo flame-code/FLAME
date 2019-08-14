@@ -1,5 +1,4 @@
 subroutine varvol(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
- use mod_interface, except_this_one=>varvol
  use global, only: units
  use defs_basis
  use interface_code

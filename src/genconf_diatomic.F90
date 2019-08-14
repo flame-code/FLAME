@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine genconf_diatomic(parini,genconf)
-    use mod_interface, except_this_one=>genconf_diatomic
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_all, typ_file_info, atom_all_allocate, atom_all_deallocate
     use mod_atoms, only: atom_allocate_old, atom_deallocate_old, set_rat

@@ -261,7 +261,6 @@ do ii=1,3
 end subroutine bader_weight
 !*****************************************************************************************
   subroutine calc_weight(poisson, p,nat)
-      use mod_interface, except_this_one=>calc_weight
     use mod_poisson_weight, only: typ_poisson
     implicit none
     type(typ_poisson), intent(inout):: poisson
@@ -272,6 +271,8 @@ end subroutine bader_weight
     real(8) :: sum_top, sum_bottom, length, facet_a, r_
     real(8) :: new_weight, current_weight, wn
     real(8) :: facet_area
+    logical:: is_edge_weight
+    logical:: is_neighbor
     do i = 1,nat
       num_edge = 0
       do n1 = 1,poisson%ngp(1)
@@ -415,7 +416,6 @@ end subroutine bader_weight
   end subroutine ongrid_weight
 !*****************************************************************************************
 subroutine edag_refinement_weight (last_iter,iter,poisson,i_dist,car_lat)
-      use mod_interface, except_this_one=>edag_refinement_weight
     use mod_poisson_weight, only: typ_poisson
     implicit none
     logical, intent(out):: last_iter
@@ -425,6 +425,7 @@ subroutine edag_refinement_weight (last_iter,iter,poisson,i_dist,car_lat)
     integer::n_edge,n_check,n_ressign
     integer::nx,ny,nz,mx,my,mz,d(3),dp(3)
     integer::iirho,jirho, path_vol,pt(3),i
+    logical:: is_edge_weight, m_point_weight
     !first stage.............
     if(iter==0)then
         n_edge=0

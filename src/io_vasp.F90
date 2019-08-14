@@ -1,7 +1,6 @@
 !*****************************************************************************************
 !This routine will write the file "filename" in ascii file format
 subroutine write_poscar(filename,nat,rat,latvec,ntypat,natarr,comment,vasp5,comment2,atom_motion)
-    use mod_interface, except_this_one=>write_poscar
     implicit none
     integer:: nat, ntypat, natarr(128)
     character(*):: filename

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_hessian_4p(parini)
-    use mod_interface, except_this_one=>cal_hessian_4p
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_copy_old
     use mod_atoms, only: atom_copy, atom_deallocate, set_atomic_mass
@@ -252,7 +251,6 @@ subroutine cal_hessian_4p(parini)
 end subroutine cal_hessian_4p
 !*****************************************************************************************
 subroutine projectout_rotation(atoms,hess,rlarge)
-    use mod_interface, except_this_one=>projectout_rotation
     use mod_atoms, only: typ_atoms, update_ratp
     use dynamic_memory
     implicit none

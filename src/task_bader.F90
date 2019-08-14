@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine task_bader(parini)
-    use mod_interface, except_this_one=>task_bader
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini

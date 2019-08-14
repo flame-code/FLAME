@@ -6,7 +6,6 @@ module mod_bin
 contains
 !*****************************************************************************************
 subroutine read_bin_conf(parini,filename,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate
     use dynamic_memory
@@ -46,7 +45,6 @@ subroutine read_bin_conf(parini,filename,atoms_arr)
 end subroutine read_bin_conf
 !*****************************************************************************************
 subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, iatom_to_sat, atom_allocate, update_rat
     use dynamic_memory
@@ -204,7 +202,6 @@ subroutine read_bin_conf_v1(parini,filename,iunit,atoms_arr)
 end subroutine read_bin_conf_v1
 !*****************************************************************************************
 subroutine write_bin_conf(file_info,atoms,strkey)
-    use mod_interface
     use mod_atoms, only: typ_atoms, typ_file_info
     use dynamic_memory
     use futile
@@ -233,7 +230,6 @@ subroutine write_bin_conf(file_info,atoms,strkey)
 end subroutine write_bin_conf
 !*****************************************************************************************
 subroutine write_bin_conf_v1(filename,file_position,iunit,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, sat_to_iatom, get_rat
     use dynamic_memory

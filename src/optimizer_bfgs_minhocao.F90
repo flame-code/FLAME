@@ -1700,7 +1700,6 @@ end subroutine init_hessinv
 !************************************************************************************
 subroutine GEOPT_MBFGS_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use mod_interface, except_this_one=>GEOPT_MBFGS_MHM
  use global, only: units
  use defs_basis
  use minpar
@@ -1746,6 +1745,8 @@ character(4) ::fn4
 logical:: multiprec
 real(8):: tolmxf_switch,lambda,vol0,vol1,vol2 !,tolmxf0
 real(8), allocatable:: WORK(:)
+real(8):: vabs
+real(8):: outerprod
 type(typ_parini):: parini_tmp
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
@@ -2109,7 +2110,6 @@ END SUBROUTINE
 !************************************************************************************
 subroutine GEOPT_MBFGS_MHM_OLD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
 !subroutine bfgs_driver_atoms(latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,fmax_tol)
- use mod_interface, except_this_one=>GEOPT_MBFGS_MHM_OLD
  use global, only: units
  use defs_basis
  use minpar
@@ -2153,6 +2153,8 @@ character(40)::filename,folder
 character(4) ::fn4
 logical:: multiprec
 real(8):: tolmxf_switch 
+real(8):: vabs
+real(8):: outerprod
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
  multiprec=.true.

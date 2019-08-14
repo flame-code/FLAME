@@ -1,5 +1,4 @@
 subroutine init_rotvels(parini,nat,xred,latvec,temp,amass,vel)
-use mod_interface, except_this_one=>init_rotvels
 use mod_parini, only: typ_parini
 !This routine will first find the correct partitioning of the system into molecules, then assign
 !rotational and translational velocities to these molecules according to the tempereature temp
@@ -253,7 +252,6 @@ end subroutine
 !************************************************************************************
 
 subroutine assign_vel(nat,xcart,cmass,omega,vel)
-use mod_interface, except_this_one=>assign_vel
 !This routine will take the cartesian coordinates and the center of mass and compute the 
 !velocities of every atom in the system with nat atoms
 implicit none

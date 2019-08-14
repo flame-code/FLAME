@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine diisminimum(n,nr,x,epot,f,paropt,nwork,work)
-    use mod_interface, except_this_one=>diisminimum
     use mod_opt, only: typ_paropt
     implicit none
     integer:: n, nr, nwork, info, id, jd

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine alborz_init(parini,parres,file_ini)
-    use mod_interface, except_this_one=>alborz_init
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
@@ -112,7 +111,6 @@ subroutine alborz_initialize_timing_categories
 end subroutine alborz_initialize_timing_categories
 !*****************************************************************************************
 subroutine alborz_final(parini,file_ini)
-    use mod_interface, except_this_one=>alborz_final
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini, time_start, time_end
     use mod_processors, only: iproc
@@ -157,7 +155,6 @@ subroutine alborz_final(parini,file_ini)
 end subroutine alborz_final
 !*****************************************************************************************
 subroutine init_random_seed(parini)
-    use mod_interface, except_this_one=>init_random_seed
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_parini, only: typ_parini
     use yaml_output
@@ -218,7 +215,6 @@ subroutine init_random_seed(parini)
 end subroutine init_random_seed
 !*****************************************************************************************
 subroutine set_atomc_types_info(parini)
-    use mod_interface, except_this_one=>set_atomc_types_info
     use mod_parini, only: typ_parini
     use mod_atoms, only: sat_to_iatom
     use yaml_output
@@ -279,7 +275,6 @@ subroutine set_atomc_types_info(parini)
 end subroutine set_atomc_types_info
 !*****************************************************************************************
 subroutine flm_print_logo(parini)
-    use mod_interface, except_this_one=>flm_print_logo
     use mod_parini, only: typ_parini
     use futile
     implicit none

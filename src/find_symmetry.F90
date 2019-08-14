@@ -1,6 +1,5 @@
 subroutine find_symmetry(parini,nat,xred,latvec,typat,tolmin,tolmax,ntol,tolcur,spgcur)
 use mod_parini, only: typ_parini
-use mod_interface
 use tb_lj_params
 use void_lj_params, only: nat_atoms
 use yaml_output

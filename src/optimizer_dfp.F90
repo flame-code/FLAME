@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine mydfp(nr,x,epot,f,nwork,work,paropt)
-    use mod_interface, except_this_one=>mydfp
     use mod_opt, only: typ_paropt
     implicit none
     integer::nr,nwork,mf,my,ms,nrsq,iw1,iw2,iw3,info,i,j,l,mx

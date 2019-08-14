@@ -1,5 +1,4 @@
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use mod_interface, except_this_one=>MD_MHM
  use global, only: units
  use defs_basis
  use interface_code
@@ -660,7 +659,6 @@ end subroutine MD_MHM
 !**********************************************************************************************
 
 subroutine ekin_at_lat(amass,latmass,latvec,vpos,vlat,ekinat,ekinlat,f0,md_type,nat)
-use mod_interface, except_this_one=>ekin_at_lat
 implicit none
 integer:: iat,i,md_type,nat
 real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol
@@ -712,7 +710,6 @@ end subroutine
 !**********************************************************************************************
 
 subroutine stress_velocity(vpos,latvec,amass,nat,vpressure)
-use mod_interface, except_this_one=>stress_velocity
 implicit none
 real(8):: velmat(3,3),vpostmp(3),latvec(3,3),vpos(3,nat),vpressure,a(3,3),vol,amass(nat)
 integer:: iat,nat,i,j

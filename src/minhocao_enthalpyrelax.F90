@@ -1,5 +1,4 @@
 subroutine enthalpyrelax(parini,parres,latvec,xred,tolmin,tolmax,ntol,findsym)
- use mod_interface, except_this_one=>enthalpyrelax
  use global, only: units
  use defs_basis
  use interface_code

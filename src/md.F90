@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine dynamics(parini)
-    use mod_interface, except_this_one=>dynamics
     use mod_parini, only: typ_parini
     use mod_acf, only: acf_read, acf_write
     use mod_potential, only: potential, perfstatus
@@ -47,7 +46,6 @@ subroutine dynamics(parini)
 end subroutine dynamics
 !*****************************************************************************************
 subroutine md_nve(parini,atoms)
-    use mod_interface, except_this_one=>md_nve
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, set_atomic_mass
@@ -154,7 +152,6 @@ subroutine md_nve(parini,atoms)
 end subroutine md_nve
 !*****************************************************************************************
 subroutine md_nph(parini,atoms)
-    use mod_interface, except_this_one=>md_nph
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_rat, update_ratp, update_rat
@@ -360,7 +357,6 @@ subroutine md_nph(parini,atoms)
 end subroutine md_nph
 !*****************************************************************************************
 subroutine ekin_temprature(atoms,temp,vcm,rcm,totmass) 
-    use mod_interface, except_this_one=>ekin_temprature
     use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     type(typ_atoms):: atoms

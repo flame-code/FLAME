@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine minimize(parini,iproc,atoms,paropt)
-    use mod_interface, except_this_one=>minimize
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, update_ratp, update_rat
     use mod_opt, only: typ_paropt
@@ -353,7 +352,6 @@ subroutine minimize(parini,iproc,atoms,paropt)
 end subroutine minimize
 !*****************************************************************************************
 subroutine test_convergence(n,f,paropt)
-    use mod_interface, except_this_one=>test_convergence
     use mod_opt, only: typ_paropt
     implicit none
     integer, intent(in):: n
@@ -370,7 +368,6 @@ subroutine test_convergence(n,f,paropt)
 end subroutine test_convergence
 !*****************************************************************************************
 subroutine x_to_xr(n,x,f,bemoved,nr,xr,fr)
-    use mod_interface, except_this_one=>x_to_xr
     !use mod_atoms, only: 
     implicit none
     integer, intent(in):: n, nr
@@ -393,7 +390,6 @@ subroutine x_to_xr(n,x,f,bemoved,nr,xr,fr)
 end subroutine x_to_xr
 !*****************************************************************************************
 subroutine xr_to_x(nr,xr,n,bemoved,x)
-    use mod_interface, except_this_one=>xr_to_x
     !use mod_atoms, only: 
     implicit none
     integer, intent(in):: n, nr
@@ -415,7 +411,6 @@ subroutine xr_to_x(nr,xr,n,bemoved,x)
 end subroutine xr_to_x
 !*****************************************************************************************
 subroutine report_param(paropt)
-    use mod_interface, except_this_one=>report_param
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none
@@ -449,7 +444,6 @@ subroutine report_param(paropt)
 end subroutine report_param
 !*****************************************************************************************
 subroutine initminimize(paropt)
-    use mod_interface, except_this_one=>initminimize
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_paropt), intent(inout):: paropt
@@ -492,7 +486,6 @@ subroutine initminimize(paropt)
 end subroutine initminimize
 !*****************************************************************************************
 subroutine finalminimize(paropt)
-    use mod_interface, except_this_one=>finalminimize
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_paropt), intent(inout):: paropt

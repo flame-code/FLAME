@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
-    use mod_interface, except_this_one=>cal_ann_cent1
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
@@ -155,7 +154,6 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
 end subroutine cal_ann_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
-    use mod_interface, except_this_one=>get_qat_from_chi_cent1
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -217,7 +215,6 @@ subroutine get_qat_from_chi_cent1(parini,ann_arr,atoms,poisson,a)
 end subroutine get_qat_from_chi_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
-    use mod_interface, except_this_one=>get_qat_from_chi_dir
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -267,7 +264,6 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
 end subroutine get_qat_from_chi_dir
 !*****************************************************************************************
 subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
-    use mod_interface, except_this_one=>init_electrostatic_cent1
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
@@ -335,7 +331,6 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
 end subroutine init_electrostatic_cent1
 !*****************************************************************************************
 subroutine get_amat_cent1(atoms,ann_arr,a)
-    use mod_interface, except_this_one=>get_amat_cent1
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     implicit none
@@ -368,7 +363,6 @@ subroutine get_amat_cent1(atoms,ann_arr,a)
 end subroutine get_amat_cent1
 !*****************************************************************************************
 subroutine fini_electrostatic_cent1(parini,ann_arr,atoms,poisson)
-    use mod_interface, except_this_one=>fini_electrostatic_cent1
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -386,7 +380,6 @@ subroutine fini_electrostatic_cent1(parini,ann_arr,atoms,poisson)
 end subroutine fini_electrostatic_cent1
 !*****************************************************************************************
 subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
-    use mod_interface, except_this_one=>get_electrostatic_cent1
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -415,7 +408,6 @@ subroutine get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,a,poisson)
 end subroutine get_electrostatic_cent1
 !*****************************************************************************************
 subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
-    use mod_interface, except_this_one=>cal_electrostatic_ann
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
@@ -472,7 +464,6 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
 end subroutine cal_electrostatic_ann
 !*****************************************************************************************
 subroutine charge_analysis(parini,atoms,ann_arr)
-    use mod_interface, except_this_one=>charge_analysis
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -520,7 +511,6 @@ subroutine charge_analysis(parini,atoms,ann_arr)
 end subroutine charge_analysis
 !*****************************************************************************************
 subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
-    use mod_interface, except_this_one=>get_qat_from_chi_iter
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -584,7 +574,6 @@ subroutine get_qat_from_chi_iter(parini,ann_arr,atoms,a)
 end subroutine get_qat_from_chi_iter
 !*****************************************************************************************
 subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
-    use mod_interface, except_this_one=>get_ener_gradient_cent1
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms, update_ratp
@@ -633,7 +622,6 @@ subroutine get_ener_gradient_cent1(parini,poisson,ann_arr,atoms,g,qtot)
 end subroutine get_ener_gradient_cent1
 !*****************************************************************************************
 subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
-    use mod_interface, except_this_one=>get_qat_from_chi_operator
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms, set_qat, update_ratp

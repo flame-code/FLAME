@@ -14,7 +14,6 @@
 !letters indicate the number of atoms in periodic images.
 !*****************************************************************************************
 subroutine linkedlists_init(parini,atoms,cell,linked_lists)
-    use mod_interface, except_this_one=>linkedlists_init
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_electrostatics, only: typ_linked_lists
@@ -140,7 +139,6 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
 end subroutine linkedlists_init
 !*****************************************************************************************
 subroutine linkedlists_final(linked_lists)
-    use mod_interface, except_this_one=>linkedlists_final
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_electrostatics, only: typ_linked_lists
     implicit none
@@ -170,7 +168,6 @@ subroutine linkedlists_final(linked_lists)
 end subroutine linkedlists_final
 !*****************************************************************************************
 subroutine prepprimelast(atoms,linked_lists)
-    use mod_interface, except_this_one=>prepprimelast
     use mod_atoms, only: typ_atoms, get_rat, update_rat
     use mod_electrostatics, only: typ_linked_lists
     implicit none
@@ -298,7 +295,6 @@ end subroutine prepprimelast
 !head: heads of cells
 !list: lists of particles in cells
 subroutine make_list_new(parini,atoms,linked_lists,cell)
-    use mod_interface, except_this_one=>make_list_new
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, get_rat
     use mod_electrostatics, only: typ_linked_lists
@@ -456,7 +452,6 @@ end subroutine make_list_new
 !iz=0,mlimnb because we count only cell which are after the central cell
 !and all cells below the plane iz=0 are considered before the central cell.
 subroutine determine_sclimitsphere(linked_lists)
-    use mod_interface, except_this_one=>determine_sclimitsphere
     use mod_electrostatics, only: typ_linked_lists
     implicit none
     type(typ_linked_lists), intent(inout):: linked_lists
@@ -536,7 +531,6 @@ end subroutine determine_sclimitsphere
 !*****************************************************************************************
 !dbl_count if .true., bonds are double counted.
 subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
-    use mod_interface, except_this_one=>call_linkedlist
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, type_pairs, update_ratp
     use mod_const, only: bohr2ang

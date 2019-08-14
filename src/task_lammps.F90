@@ -6,7 +6,6 @@
 ! lammps_write should be changed in a way it does the rotation iteself.
 !-----------------------------------------------------------------------------------------
 subroutine lammps_task(parini)
-    use mod_interface, except_this_one=>lammps_task
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_copy, atom_deallocate, set_typat
     use mod_potential, only: potential
@@ -61,7 +60,6 @@ subroutine lammps_task(parini)
 end subroutine lammps_task
 !*****************************************************************************************
 subroutine lammps_write(parini,atoms)
-    use mod_interface, except_this_one=>lammps_write
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     implicit none

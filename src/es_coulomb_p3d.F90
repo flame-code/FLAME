@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine calculate_forces_energy(parini,poisson,atoms)
-    use mod_interface, except_this_one=>calculate_forces_energy
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, get_rat
     use mod_parini, only: typ_parini

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine single_point_task(parini)
-    use mod_interface, except_this_one=>single_point_task
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
     use mod_potential, only: fcalls, perfstatus, potential
@@ -89,7 +88,6 @@ subroutine single_point_task(parini)
 end subroutine single_point_task
 !*****************************************************************************************
 subroutine read_poscar_for_single_point(parini,atoms)
-    use mod_interface, except_this_one=>read_poscar_for_single_point
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_allocate_old, update_rat
     use global, only: units

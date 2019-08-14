@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
-    use mod_interface, except_this_one=>cal_ann_cent3
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
@@ -193,7 +192,6 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
 end subroutine cal_ann_cent3
 !*****************************************************************************************
 subroutine get_dqat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
-    use mod_interface, except_this_one=>get_dqat_from_chi_dir_cent3
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -253,7 +251,6 @@ subroutine get_dqat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
 end subroutine get_dqat_from_chi_dir_cent3
 !*****************************************************************************************
 subroutine get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
-    use mod_interface, except_this_one=>get_qat_from_chi_cent3
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -278,7 +275,6 @@ subroutine get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
 end subroutine get_qat_from_chi_cent3
 !*****************************************************************************************
 subroutine get_qat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
-    use mod_interface, except_this_one=>get_qat_from_chi_dir_cent3
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -367,7 +363,6 @@ subroutine get_qat_from_chi_dir_cent3(parini,ann_arr,atoms,cent,a)
 end subroutine get_qat_from_chi_dir_cent3
 !*****************************************************************************************
 subroutine get_qat_from_chi_operator_cent3(parini,ann_arr,atoms,cent)
-    use mod_interface, except_this_one=>get_qat_from_chi_operator_cent3
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -486,7 +481,6 @@ subroutine get_qat_from_chi_operator_cent3(parini,ann_arr,atoms,cent)
 end subroutine get_qat_from_chi_operator_cent3
 !*****************************************************************************************
 subroutine init_cent3(parini,ann_arr,atoms,cent)
-    use mod_interface, except_this_one=>init_cent3
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -563,7 +557,6 @@ subroutine init_cent3(parini,ann_arr,atoms,cent)
 end subroutine init_cent3
 !*****************************************************************************************
 subroutine final_cent3(cent)
-    use mod_interface, except_this_one=>final_cent3
     use mod_ann, only: typ_cent
     use dynamic_memory
     implicit none
@@ -582,7 +575,6 @@ subroutine final_cent3(cent)
 end subroutine final_cent3
 !*****************************************************************************************
 subroutine cent3_force(parini,ann_arr,atoms,cent)
-    use mod_interface, except_this_one=>cent3_force
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -619,7 +611,6 @@ subroutine cent3_force(parini,ann_arr,atoms,cent)
 end subroutine cent3_force
 !*****************************************************************************************
 subroutine cal_potential_cent3(parini,ann_arr,atoms,cent)
-    use mod_interface, except_this_one=>cal_potential_cent3
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -667,7 +658,6 @@ subroutine cal_potential_cent3(parini,ann_arr,atoms,cent)
 end subroutine cal_potential_cent3
 !*****************************************************************************************
 subroutine cal_cent3_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
-    use mod_interface, except_this_one=>cal_cent3_pot_pairsum
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -765,7 +755,6 @@ subroutine cal_cent3_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
 end subroutine cal_cent3_pot_pairsum
 !*****************************************************************************************
 subroutine cal_cent3_pairsum_force(parini,ann_arr,atoms,cent)
-    use mod_interface, except_this_one=>cal_cent3_pairsum_force
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -839,7 +828,6 @@ subroutine cal_cent3_pairsum_force(parini,ann_arr,atoms,cent)
 end subroutine cal_cent3_pairsum_force
 !*****************************************************************************************
 subroutine cal_cent3_pot_bps(parini,ann_arr,atoms,cent,epot_es)
-    use mod_interface, except_this_one=>cal_cent3_pot_bps
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -908,7 +896,6 @@ subroutine cal_cent3_pot_bps(parini,ann_arr,atoms,cent,epot_es)
 end subroutine cal_cent3_pot_bps
 !*****************************************************************************************
 subroutine put_cent3_gauss_to_grid(parini,atoms,cent)
-    use mod_interface, except_this_one=>put_cent3_gauss_to_grid
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent
@@ -947,7 +934,6 @@ subroutine put_cent3_gauss_to_grid(parini,atoms,cent)
 end subroutine put_cent3_gauss_to_grid
 !*****************************************************************************************
 subroutine cal_cent3_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
-    use mod_interface, except_this_one=>cal_cent3_shortrange_ewald
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -1078,7 +1064,6 @@ subroutine cal_cent3_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
 end subroutine cal_cent3_shortrange_ewald
 !*****************************************************************************************
 subroutine cal_shortrange_ewald_force_cent3(parini,ann_arr,atoms,cent)
-    use mod_interface, except_this_one=>cal_shortrange_ewald_force_cent3
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms

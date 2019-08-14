@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine dimer_method(parini)
-    use mod_interface, except_this_one=>dimer_method
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
     use mod_atoms, only: atom_copy_old, atom_deallocate, set_ndof, atom_calmaxforcecomponent
@@ -130,7 +129,6 @@ subroutine dimer_method(parini)
 end subroutine dimer_method
 !*****************************************************************************************
 subroutine read_input(atoms_s) !,paropt)
-    use mod_interface, except_this_one=>read_input
     use mod_saddle, only: dimsep, ampl, do_elim_trans, do_elim_rot, &
         maxitsd, maxitcg, sdconverged, cgconverged, &
         nmatr, moving_atoms_rand, str_moving_atoms_rand
@@ -184,7 +182,6 @@ subroutine read_input(atoms_s) !,paropt)
 end subroutine read_input
 !*****************************************************************************************
 subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
-    use mod_interface, except_this_one=>random_move_atoms
     use mod_saddle, only: ampl, moving_atoms_rand
     use mod_const, only: ang2bohr
     implicit none
@@ -231,7 +228,6 @@ subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
 end subroutine random_move_atoms
 !*****************************************************************************************
 subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot_m0)
-    use mod_interface, except_this_one=>find_minima
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate_old, atom_allocate_old
     use mod_atoms, only: atom_calmaxforcecomponent
@@ -324,7 +320,6 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
 end subroutine find_minima
 !*****************************************************************************************
 subroutine alongnegcurvature(iproc,atoms,uvn,c)
-    use mod_interface, except_this_one=>alongnegcurvature
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_saddle, only: dimsep
     use mod_atoms, only: atom_copy_old, update_rat, update_ratp

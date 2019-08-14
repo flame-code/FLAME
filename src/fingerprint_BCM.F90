@@ -3,7 +3,6 @@ subroutine get_fp_calypso(nat,rxyz,latvec,r_cut,kinds,nkinds,fp_dim,nl,fp)
 !Yanchao Wang in computer physics communications 183, 2063
 !The dimension of fp is a matrix with dimension of AB interactions and nl spherical harmonics (be careful: if nl=10 it means lmax=(nl-1)*2
 !fp_dim=ntypat*(ntypat+1)/2
-use mod_interface
 implicit none
 integer:: nl !Number of l components, here only even ones 
 integer:: fp_dim !Number of AB interactions, doublecounting eliminated

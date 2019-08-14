@@ -1,6 +1,5 @@
 subroutine identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
            &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
-use mod_interface, except_this_one=>identical
 use mod_parini, only: typ_parini
 use yaml_output
 implicit none

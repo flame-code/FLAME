@@ -1,6 +1,5 @@
 !*****************************************************************************************
 program alborz
-    use mod_interface
     use mod_task, only: typ_file_ini
     use mod_parini, only: typ_parini
     use mod_alborz_as_potential, only: parini_of_potential=>parini

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_hartree(parini,atoms,poisson,gausswidth)
-    use mod_interface, except_this_one=>init_hartree
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -62,7 +61,6 @@ subroutine init_hartree(parini,atoms,poisson,gausswidth)
 end subroutine init_hartree
 !*****************************************************************************************
 subroutine fini_hartree(parini,atoms,poisson)
-    use mod_interface, except_this_one=>fini_hartree
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -105,7 +103,6 @@ subroutine fini_hartree(parini,atoms,poisson)
 end subroutine fini_hartree
 !*****************************************************************************************
 subroutine init_hartree_bps(parini,atoms,poisson)
-    use mod_interface, except_this_one=>init_hartree_bps
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -228,7 +225,6 @@ subroutine init_hartree_bps(parini,atoms,poisson)
 end subroutine init_hartree_bps
 !*****************************************************************************************
 subroutine init_hartree_p3d(parini,atoms,poisson)
-    use mod_interface, except_this_one=>init_hartree_p3d
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -341,7 +337,6 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
 end subroutine init_hartree_p3d
 !*****************************************************************************************
 subroutine put_charge_density(parini,poisson)
-    use mod_interface, except_this_one=>put_charge_density
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use time_profiling
@@ -387,7 +382,6 @@ subroutine put_charge_density(parini,poisson)
 end subroutine put_charge_density
 !*****************************************************************************************
 subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
-    use mod_interface, except_this_one=>get_psolver
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -415,7 +409,6 @@ subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
 end subroutine get_psolver
 !*****************************************************************************************
 subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
-    use mod_interface, except_this_one=>get_hartree_grad_rho
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -458,7 +451,6 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
 end subroutine get_hartree_grad_rho
 !*****************************************************************************************
 subroutine get_hartree_force(parini,poisson,atoms)
-    use mod_interface, except_this_one=>get_hartree_force
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -502,7 +494,6 @@ subroutine get_hartree_force(parini,poisson,atoms)
 end subroutine get_hartree_force
 !*****************************************************************************************
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
-    use mod_interface, except_this_one=>get_hartree
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -556,7 +547,6 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
 end subroutine get_hartree
 !*****************************************************************************************
 subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
-    use mod_interface, except_this_one=>apply_external_field
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_poisson
@@ -766,7 +756,6 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
 end subroutine apply_external_field
 !*****************************************************************************************
 subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
-    use mod_interface, except_this_one=>real_part
     use mod_parini, only: typ_parini
     use mod_linked_lists, only: typ_linked_lists
     use mod_atoms, only: typ_atoms, update_ratp

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine read_input_ann_yaml(parini,iproc,ann_arr)
-    use mod_interface, except_this_one=>read_input_ann_yaml
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -39,7 +38,6 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
 end subroutine read_input_ann_yaml
 !*****************************************************************************************
 subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
-    use mod_interface, except_this_one=>get_symfunc_parameters_yaml
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     use dictionaries
@@ -267,7 +265,6 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
 end subroutine get_symfunc_parameters_yaml
 !*****************************************************************************************
 subroutine write_ann_all_yaml(parini,ann_arr,iter)
-    use mod_interface, except_this_one=>write_ann_all_yaml
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use yaml_output
@@ -310,7 +307,6 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
 end subroutine write_ann_all_yaml
 !*****************************************************************************************
 subroutine write_ann_yaml(parini,filename,ann,rcut)
-    use mod_interface, except_this_one=>write_ann_yaml
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
@@ -457,7 +453,6 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
 end subroutine write_ann_yaml
 !*****************************************************************************************
 subroutine read_ann_yaml(parini,ann_arr)
-    use mod_interface, except_this_one=>read_ann_yaml
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -521,7 +516,6 @@ subroutine read_ann_yaml(parini,ann_arr)
 end subroutine read_ann_yaml
 !*****************************************************************************************
 subroutine set_dict_ann(ann,fname,stypat)
-    use mod_interface, except_this_one=>set_dict_ann
     use dictionaries
     use yaml_parse
     use dynamic_memory
@@ -549,7 +543,6 @@ subroutine set_dict_ann(ann,fname,stypat)
 end subroutine set_dict_ann
 !*****************************************************************************************
 subroutine read_data_yaml(parini,filename_list,atoms_arr)
-    use mod_interface, except_this_one=>read_data_yaml
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
     use mod_atoms, only: atom_deallocate_old, set_rat_atoms

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine task_testforces(parini)
-    use mod_interface, except_this_one=>task_testforces
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -18,7 +17,6 @@ subroutine task_testforces(parini)
 end subroutine task_testforces
 !*****************************************************************************************
 subroutine testforces_fd(parini)
-    use mod_interface, except_this_one=>testforces_fd
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate
     use mod_atoms, only: get_rat_iat, set_rat_iat
@@ -138,7 +136,6 @@ subroutine testforces_fd(parini)
 end subroutine testforces_fd
 !*****************************************************************************************
 subroutine teststress_fd(parini)
-    use mod_interface, except_this_one=>teststress_fd
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_potential, only: potential
@@ -228,7 +225,6 @@ write(*,*) "------------------------------------------------------"
 end subroutine teststress_fd
 !*****************************************************************************************
 subroutine teststress_fd_cellvec(parini)
-    use mod_interface, except_this_one=>teststress_fd_cellvec
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_potential, only: potential

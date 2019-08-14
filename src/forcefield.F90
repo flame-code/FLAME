@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine forcefield_init(parini,atoms)
-    use mod_interface, except_this_one=>forcefield_init
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_typat, set_qat
     use mod_potential, only: poisson
@@ -11,7 +10,7 @@ subroutine forcefield_init(parini,atoms)
     type(typ_atoms), intent(inout):: atoms
     !local variables
     type(typ_poisson):: poisson_rough
-    integer:: ind
+    integer:: ind, flm_index
     real(8),allocatable :: gausswidth(:)
     !integer:: iat
     call set_typat(atoms)
@@ -70,7 +69,6 @@ subroutine forcefield_init(parini,atoms)
 end subroutine forcefield_init
 !*****************************************************************************************
 subroutine calculate_forces_energy_ff(parini,atoms)
-    use mod_interface, except_this_one=>calculate_forces_energy_ff
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
@@ -103,7 +101,6 @@ subroutine calculate_forces_energy_ff(parini,atoms)
 end subroutine calculate_forces_energy_ff
 !*****************************************************************************************
 subroutine forcefield_final(parini,atoms)
-    use mod_interface, except_this_one=>forcefield_final
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: poisson

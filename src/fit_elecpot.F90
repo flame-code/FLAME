@@ -1,5 +1,4 @@
 subroutine subtask_fit_elecpot(parini)
-    use mod_interface, except_this_one=>subtask_fit_elecpot
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -15,7 +14,6 @@ end subroutine subtask_fit_elecpot
 !/////////////////////////////////////////////////////////////////////////////////////////
 !/////////////////////////////////////////////////////////////////////////////////////////
 subroutine fit_elecpot(parini)
-    use mod_interface, except_this_one=>fit_elecpot
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, typ_atoms_arr, get_rat, set_rat, update_ratp

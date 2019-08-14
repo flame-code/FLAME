@@ -116,7 +116,6 @@
 !end subroutine
 
 subroutine init_confinement_parser(parini)
-use mod_interface, except_this_one=>init_confinement_parser
 use mod_parini, only: typ_parini
 use global, only: units
 use defs_basis, only: Bohr_Ang, Ha_eV
@@ -158,7 +157,6 @@ if(minval(parini%conf_av(:)).lt.1.or.maxval(parini%conf_av(:)).gt.2) stop "Wrong
 end subroutine
 
 subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
-use mod_interface, except_this_one=>confinement_energy_forces
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini

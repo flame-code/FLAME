@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_potential_forces_qsc(atoms_t)
-    use mod_interface, except_this_one=>init_potential_forces_qsc
     use mod_potential, only: l_atomic_num
     use mod_atoms, only: typ_atoms
     implicit none
@@ -44,7 +43,6 @@ subroutine init_potential_forces_qsc(atoms_t)
 end subroutine init_potential_forces_qsc
 !*****************************************************************************************
 subroutine cal_potential_forces_qsc(atoms)
-    use mod_interface, except_this_one=>cal_potential_forces_qsc
     use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_potential, only: l_atomic_num
     use mod_const, only: bohr2ang, ev2ha
@@ -80,7 +78,6 @@ subroutine cal_potential_forces_qsc(atoms)
 end subroutine cal_potential_forces_qsc
 !*****************************************************************************************
 subroutine final_potential_forces_qsc
-    use mod_interface, except_this_one=>final_potential_forces_qsc
     implicit none
     !if(allocated(l_atomic_num)) deallocate(l_atomic_num)
     call qsc_energy_forces_final();

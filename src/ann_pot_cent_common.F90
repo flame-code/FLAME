@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
-    use mod_interface, except_this_one=>cal_force_chi_part1
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -64,7 +63,6 @@ subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
 end subroutine cal_force_chi_part1
 !*****************************************************************************************
 subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
-    use mod_interface, except_this_one=>cal_force_chi_part2
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -123,7 +121,6 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
 end subroutine cal_force_chi_part2
 !*****************************************************************************************
 subroutine repulsive_potential_cent(parini,atoms,ann_arr)
-    use mod_interface, except_this_one=>repulsive_potential_cent
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr

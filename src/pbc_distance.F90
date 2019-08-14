@@ -1,5 +1,4 @@
 subroutine pbc_distance0(latvec,xred_1,xred_2,distance2,dxyz)
-use mod_interface, except_this_one=>pbc_distance0
 !This routine computes the distance of the reduced coordinates xred_1 and xred_2 and applies 
 !periodic boundary conditions to them and computes the squared distance
 implicit none
@@ -20,7 +19,6 @@ end subroutine
 !************************************************************************************
 
 subroutine pbc_distance1(latvec,xred_1,xred_2,distance2)
-use mod_interface, except_this_one=>pbc_distance1
 !This routine computes the distance of the reduced coordinates xred_1 and xred_2 and applies 
 !periodic boundary conditions to them and computes the squared distance. Minimal image convention
 implicit none
@@ -40,7 +38,6 @@ end subroutine
 !************************************************************************************
 
 subroutine pbc_distance2(latvec,xred_1,xcart_1,xred_2,xcart_2,distance2)
-use mod_interface, except_this_one=>pbc_distance2
 !This routine computes the distance of the reduced coordinates xred_1 and xred_2 and applies 
 !periodic boundary conditions to them and computes the squared distance
 implicit none

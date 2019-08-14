@@ -1,5 +1,4 @@
 subroutine init_vel(parini,parres,vel,vel_lat,vel_vol,latvec,pos_red,latmass,temp,nsoften,folder)
- use mod_interface, except_this_one=>init_vel
  use defs_basis
  use mod_parini, only: typ_parini
  use yaml_output

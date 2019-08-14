@@ -10,7 +10,6 @@
 !subroutine geopt(nat,wpos,etot,fout,fnrmtol,count,count_sd,displr)
 !subroutine sqnm(nproc,iproc,verbosity,ncount_bigdft,fail,nat)
 subroutine GEOPT_SD(parini,parres,latvec_in,xred_in,fcart_in,strten_in,etot_in,iprec,counter,folder)
- use mod_interface, except_this_one=>GEOPT_SD
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use steepest_descent
  use defs_basis

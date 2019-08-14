@@ -46,7 +46,6 @@ subroutine elim_moment_mass(nat,atomic_vector,atomic_mass)
 end subroutine elim_moment_mass
 !*****************************************************************************************
 subroutine calc_rotation_eigenvectors(nat,rat0,vrot)
-    use mod_interface, except_this_one=>calc_rotation_eigenvectors
   implicit none
   integer, intent(in) :: nat
   real(8), dimension(3*nat), intent(in) :: rat0
@@ -127,7 +126,6 @@ end subroutine calc_rotation_eigenvectors
 !! In fat, the rotational forces will be eliminated with respect to the center of mass. 
 !! All atoms are treated equally (same atomic mass) 
 subroutine elim_torque_reza_alborz(nat,rat0,fat)
-    use mod_interface, except_this_one=>elim_torque_reza_alborz
   implicit none
   integer, intent(in) :: nat
   real(8), dimension(3*nat), intent(in) :: rat0
@@ -293,7 +291,6 @@ subroutine calmaxforcecomponent(n,v,vmax)
 end subroutine calmaxforcecomponent
 !*****************************************************************************************
 subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
-    use mod_interface, except_this_one=>rxyz_cart2int_alborz
     !This subrouine will convert the internal coordinates into cartesian coordinates
     implicit none
     integer, intent(in):: nat
@@ -700,7 +697,6 @@ end subroutine
 !************************************************************************************
 
 subroutine elim_fixed_lat(parini,latvec,x)
-use mod_interface, except_this_one=>elim_fixed_lat
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
@@ -803,7 +799,6 @@ end subroutine
 !************************************************************************************
 
 subroutine elim_torque_cell(latvec0,vlat)
-use mod_interface, except_this_one=>elim_torque_cell
 implicit none
 real(8), intent(in)    :: latvec0(3,3)
 real(8), intent(inout) :: vlat(3,3)
@@ -868,7 +863,6 @@ end subroutine elim_torque_cell
 !************************************************************************************
 
 subroutine diagcomp(latvec,x)
-use mod_interface, except_this_one=>diagcomp
 implicit none
 real(8):: latvec(3,3),x(3,3),xnrm,latvect(3,3),latvecinv(3,3),sigma(3,3)
 real(8):: len1,len2,len3,tmp1,tmp2,tmp3,tmpvec(3),vol
@@ -906,7 +900,6 @@ real(8):: len1,len2,len3,tmp1,tmp2,tmp3,tmpvec(3),vol
 end subroutine
 
  subroutine backtocell(nat,latvec,rxyz_red)
- use mod_interface, except_this_one=>backtocell
  !This subroutine will transform back all atoms into the periodic cell
  !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
  implicit none
@@ -974,7 +967,6 @@ end subroutine
  subroutine backtocell_cart(nat,latvec,rxyz)
  !This subroutine will transform back all atoms into the periodic cell
  !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
- use mod_interface, except_this_one=>backtocell_cart
  implicit none
  integer:: nat,i,iat,j
  real(8) :: latvec(3,3), rxyz(3,nat), crossp(3),a(3),b(3), nvec(3,3), dist(6),eps,count

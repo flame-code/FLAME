@@ -2,7 +2,6 @@
  !This subroutine will calculate a the distance between a plane and a line in space
  !The point is 'point', 'ppoint1' and 'ppoint2' are arbitrary points on the line
  !and the output is the distance 'dist'  
- use mod_interface, except_this_one=>dist2line
  implicit none
  real(8), intent(in) :: point(3),ppoint1(3),ppoint2(3)
  real(8), intent(out):: dist
@@ -22,7 +21,6 @@
  !This subroutine will calculate  the distance between a plane and a point in space
  !The point is 'point', the normalized normal vector of the plane is 'nvec', 'ppoint' is an arbitrary point on the plane
  !and the output is the distance 'dist'  
- use mod_interface, except_this_one=>dist2plane
  implicit none
  real(8), intent(in) :: point(3),nvec(3),ppoint(3)
  real(8), intent(out):: dist
@@ -37,7 +35,6 @@
 !**********************************************************************************************
 
 subroutine dist_ang2latvec(dist_ang,latvec,pi)
-use mod_interface, except_this_one=>dist_ang2latvec
 !This subroutine will generate the lattice vector representation of the cell
 !from the length/angle representation
 implicit none
@@ -55,7 +52,6 @@ latvec(2,3)=(dist_ang(2)*dist_ang(3)*cos(convang*dist_ang(4))-latvec(1,2)*latvec
 latvec(3,3)=sqrt(dist_ang(3)**2-latvec(1,3)**2-latvec(2,3)**2)
 end subroutine
 subroutine dist_latvec2ang(dist_ang,latvec,pi)
-use mod_interface, except_this_one=>dist_latvec2ang
 !This subroutine will generate the angdeg represenation of the cell from the lattice vectors
 implicit none
 real(8):: dist_ang(6),latvec(3,3),pi,convang
@@ -71,7 +67,6 @@ end subroutine
 !**********************************************************************************************
 
  subroutine dproj2latvec(dproj,latvec)
- use mod_interface, except_this_one=>dproj2latvec
  !This subroutine will convert the distance and projective representation of 
  !a periodic cell (dxx,dyx,dyy,dzx,dzy,dzz) into a 
  !lattice vektor format (vec1(:,1),vec2(:,2),vec3(:,3)) with dxx oriented into x direction
@@ -91,7 +86,6 @@ end subroutine
 !**********************************************************************************************
 
  subroutine latvec2dproj(dproj,latvec,rotmat,rxyz,nat)
- use mod_interface, except_this_one=>latvec2dproj
  !This subroutine will convert the lattice vector representation of thei
  !periodic cell (vec1,vec2,vec3) into the projective representation (dxx,dyx,dyy,dzx,dzy,dzz)
  !The cell will thus be rotated. The rotational matrix is stored in rotmat as an operator rotmat
@@ -295,7 +289,6 @@ end subroutine
 !**********************************************************************************************
 
  subroutine rxyz_cart2int(latvec,rxyzint,rxyzcart,nat)
- use mod_interface, except_this_one=>rxyz_cart2int
  !This subrouine will convert the internal coordinates into cartesian coordinates
  implicit none
  real(8):: rxyzint(3,nat), rxyzcart(3,nat),latvec(3,3),latvecinv(3,3)
@@ -365,7 +358,6 @@ end subroutine
 !**********************************************************************************************
 
  subroutine strten2flat(strten,flat,latvec,press)
- use mod_interface, except_this_one=>strten2flat
  !flat is the force on the lettice vector per unit cell volume
  implicit none
  real(8):: strten(6),flat(3,3),latvec(3,3),press,pressmat(3,3),str_matrix(3,3),latvect(3,3),latvectinv(3,3),vol
@@ -398,7 +390,6 @@ end subroutine
 
 subroutine rotate_stresstensor(strten,rotmat)
 !This subroutine will rotate the stress tensor by rotmat according to rotmat*stress*rotmat^T
-use mod_interface, except_this_one=>rotate_stresstensor
 implicit none
 real(8):: strten(6),rotmat(3,3),stress(3,3)
         stress(1,1) =  strten(1) 
@@ -423,7 +414,6 @@ end subroutine
 
  subroutine find_kpt(k1, k2, k3, lat, gridden)
 ! This code will define the KPT mesh based on the desired grid density
-   use mod_interface, except_this_one=>find_kpt
    implicit none
    integer, intent(out) :: k1,k2,k3
    real(8), intent(in)  :: lat(3,3), gridden
@@ -497,7 +487,6 @@ subroutine rotmat_fcart_stress(latvec_init,latvec_trans,rotmat)
 !This subroutine will compute a rotation matrix, which transforms
 !fcart_trans into the original orientation forces fcart by fcart=matmul(rotmat,fcart_trans)
 !stress_trans into the original orientation stress by stress=rotmat*stress_trans*rotnat^T
-use mod_interface, except_this_one=>rotmat_fcart_stress
 implicit none
 real(8):: latvec_init(3,3),latvec_trans(3,3),latvec_trans_inv(3,3),rotmat(3,3)
 call invertmat(latvec_trans,latvec_trans_inv,3)
@@ -507,7 +496,6 @@ end subroutine
 !**********************************************************************************************
 
  subroutine updaterxyz(latvecold,latvecnew,rxyz,nat)
- use mod_interface, except_this_one=>updaterxyz
  !This subroutine will update the atomic positions in the cartesian coordinates after the cell shape has been changed according
  !to the change in the lattice vectors thus keeping the relative coordinates of all atoms constant
  implicit none

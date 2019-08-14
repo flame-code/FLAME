@@ -1,5 +1,4 @@
 subroutine print_logo()
-use mod_interface, except_this_one=>print_logo
 implicit none  
 !!!!     write(*,'(a,23x,a)')' #',' ____           _           _ _        __  __ _       _   _             '
 !!!!     write(*,'(a,23x,a)')' #','|  _ \ ___ _ __(_) ___   __| (_) ___  |  \/  (_)_ __ | | | | ___  _ __  '

@@ -31,7 +31,6 @@ end function delta_kronecker
 !This subroutine will transform back all atoms into the periodic cell
 !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
 subroutine backtocell_alborz(nat,latvec,rxyz_red)
-    use mod_interface, except_this_one=>backtocell_alborz
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: latvec(3,3)
@@ -87,7 +86,6 @@ end subroutine pbc_distance1_alborz
 !direction are necessary for the periodic boundary conditions
 !with for the given rcut. nec1,nec2,nec3 for latvec(:,1),latvec(:,2),latvec(:,3)
 subroutine n_rep_dim_alborz(cellvec,rcut,nec1,nec2,nec3)
-    use mod_interface, except_this_one=>n_rep_dim_alborz
     implicit none
     real(8), intent(in):: cellvec(3,3), rcut
     integer, intent(out):: nec1, nec2, nec3
@@ -109,7 +107,6 @@ end subroutine n_rep_dim_alborz
 !*****************************************************************************************
 !Will calculate the normalized normal vector to the 3 planes of the cell
 subroutine nveclatvec_alborz(cellvec,vn)
-    use mod_interface, except_this_one=>nveclatvec_alborz
     implicit none
     real(8), intent(in) :: cellvec(3,3)
     real(8), intent(out):: vn(3,3)
@@ -145,7 +142,6 @@ end subroutine dist2plane_alborz
 !So if units==angstroem, the file will be converted to angstroem
 !   if units==bohr, the positions will not be changed
 subroutine write_atomic_file_ascii_alborz(filename,nat,xred,latvec0,energy,pressure,printval1,printval2,kinds)
-    use mod_interface, except_this_one=>write_atomic_file_ascii_alborz
 implicit none
 integer:: nat,natin,iat
 character(40):: filename,units
@@ -229,7 +225,6 @@ end subroutine dproj2latvec_alborz
 !The cell will thus be rotated. The rotational matrix is stored in rotmat as an operator rotmat
 !and the atomic position rxyz are transformed into the new coordination sizstem as well
 subroutine latvec2dproj_alborz(dproj,latvec,rotmat,rxyz,nat)
-    use mod_interface, except_this_one=> latvec2dproj_alborz
     implicit none
     integer, intent(in):: nat
     real(8),intent(inout):: dproj(6), latvec(3,3), rotmat(3,3), rxyz(3,nat)
@@ -370,7 +365,6 @@ subroutine fxyz_cart2int_alborz(nat,v_cart,cv,v_int)
 end subroutine fxyz_cart2int_alborz
 !*****************************************************************************************
 subroutine fxyz_red2cart(nat,fint,cv,fcart)
-    use mod_interface, except_this_one=>fxyz_red2cart
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: fint(3,nat), cv(3,3)
