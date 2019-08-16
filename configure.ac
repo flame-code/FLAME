@@ -35,6 +35,10 @@ dnl Check for existence of other options
 AX_LAMMPS()
 AX_SPGLIB()
 AX_BPS()
+AX_MKL()
+
+AC_ARG_ENABLE(mkl, [AS_HELP_STRING([--enable-mkl],[enable MKL extensions.])], [use_mkl=$enable_mkl], [use_mkl=no])
+
 
 dnl pass the FUTILE variable to the Makefiles
 AC_ARG_VAR([FUTILE], [FUTILE root path])

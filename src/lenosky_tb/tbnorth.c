@@ -650,7 +650,11 @@ m_param = 0;
 lwork = 16*MMATOM*MMATOM+200*MMATOM - 1;
 liwork = 16*MMATOM*MMATOM + 200*MMATOM - 1; 
 
+#ifdef HAVE_MKL
 dsyevr(&jobz,&range,&uplo,&n,a,&lda,&vl,&vu,&il,&iu,&abstol,&m_param,eigen,z,&ldz,isuppz,work,&lwork,iwork,&liwork,&ierr);
+#else
+dsyevr_(&jobz,&range,&uplo,&n,a,&lda,&vl,&vu,&il,&iu,&abstol,&m_param,eigen,z,&ldz,isuppz,work,&lwork,iwork,&liwork,&ierr);
+#endif
 
 if (ierr != 0  && errcount < 250)
   {   
@@ -710,7 +714,11 @@ liwork = 16*MMATOM*MMATOM+200*MMATOM - 1;
 //zheev(&jobz,&uplo,&n,a,&lda,eigen,work,&lwork,rwork,&info);
 
 //NOTE zheevd is faster:in tests 2 routines agree to 14 digits
+#ifdef HAVE_MKL
 zheevd(&jobz,&uplo,&n,a,&lda,eigen,work,&lwork,rwork,&lrwork,iwork,&liwork,&info);
+#else
+zheevd_(&jobz,&uplo,&n,a,&lda,eigen,work,&lwork,rwork,&lrwork,iwork,&liwork,&info);
+#endif
 
 if (info != 0 && errcount < 250)
   {

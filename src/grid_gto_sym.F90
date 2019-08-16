@@ -104,7 +104,13 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,r
                     dmsq=dmx**2+dmy**2+dmz**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
+#ifdef HAVE_MKL
                 call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*expval(-iix:iix)
             enddo
         enddo
@@ -237,7 +243,13 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,
                     dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
-                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+#ifdef HAVE_MKL
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 do igx=-iix,iix
                     ttq=ttq+fac*expval(igx)*wa(igx+imgx,jgy,jgz)
                     tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
@@ -373,7 +385,13 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,p
                     dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
-                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+#ifdef HAVE_MKL
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 do igx=-iix,iix
                     tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
                     ttx=ttx+tt1*dmxarr(igx)
@@ -511,7 +529,13 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgri
                     dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
-                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+#ifdef HAVE_MKL
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 do igx=-iix,iix
                     ttq=ttq+fac*expval(igx)*wa(igx+imgx,jgy,jgz)
                     tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
@@ -630,7 +654,13 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
                     dmsq=dmx**2+dmy**2+dmz**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
+#ifdef HAVE_MKL
                 call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*expval(-iix:iix)
                 wb(imgx-iix:imgx+iix,jgy,jgz)=wb(imgx-iix:imgx+iix,jgy,jgz)+fac*expval(-iix:iix)
                 wc(imgx-iix:imgx+iix,jgy,jgz)=wc(imgx-iix:imgx+iix,jgy,jgz)+(-2.d0*exponentval(-iix:iix) - 3.d0)*gw_inv*facqiat*expval(-iix:iix)
