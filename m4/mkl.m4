@@ -10,7 +10,7 @@
 
 AC_DEFUN([AX_MKL],
 [dnl test for the presence of mkl
-  AC_ARG_ENABLE(mkl, AS_HELP_STRING([--with-mkl],
+  AC_ARG_WITH(mkl, AS_HELP_STRING([--with-mkl],
               [Give the path of the mkl libraries (example = /home/<username>/mkl/). Do not use the -L before the path(es), just give the plain path.]),
               ac_mkl_dir=$withval, ac_mkl_dir=)
   ax_have_mkl="no"
