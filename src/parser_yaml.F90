@@ -713,7 +713,7 @@ subroutine set_dict_parini_default(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
-    type(dictionary), pointer :: dict
+    type(dictionary), pointer :: dict=>null()
     external :: get_input_variables_definition
     call yaml_parse_database(dict,get_input_variables_definition)
     call dict_copy(parini%dict,dict//0)
@@ -729,7 +729,7 @@ subroutine set_dict_parini_user(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
-    type(dictionary), pointer :: dict
+    type(dictionary), pointer :: dict=>null()
     character, dimension(:), allocatable :: fbuf
     character(len=*), parameter:: fname="flame_in.yaml"
     integer(kind = 8) :: cbuf, cbuf_len
@@ -751,7 +751,7 @@ subroutine check_nonoptional_parameters(parini)
     implicit none
     type(typ_parini), intent(in):: parini
     !local variales
-    type(dictionary), pointer :: subdict_parini
+    type(dictionary), pointer :: subdict_parini=>null()
     !-------------------------------------------------------
     if(.not. has_key(parini%dict_user,"main")) then
         stop 'ERROR: flame_in.yaml must contain main block.'

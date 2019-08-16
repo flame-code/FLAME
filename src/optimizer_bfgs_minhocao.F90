@@ -1,3 +1,26 @@
+module mbfgs_interface
+!Module used for the geometry optimizer BFGS with ABINIT LINESEARCH
+interface
+   !subroutine unit_matrix(mat,ndim)
+   !  implicit none
+   !  real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
+   !  integer:: ndim
+   !end subroutine unit_matrix
+
+   function vabs(v) result(res)
+     implicit none
+     real(8),dimension(:):: v
+     real(8):: res
+   end function vabs
+
+   function outerprod(a,b)
+     real(8),dimension(:),intent(in)::a,b
+     real(8),dimension(size(a),size(b))::outerprod
+   end function outerprod
+end interface
+end module mbfgs_interface
+
+
 !>   Geometry optimization, parametrisation routine.
 subroutine geopt_init()
   use minpar
@@ -1619,26 +1642,6 @@ end subroutine
 !******************************************
 
 
-module mbfgs_interface
-!Module used for the geometry optimizer BFGS with ABINIT LINESEARCH
-!interface
-   !subroutine unit_matrix(mat)
-   !  implicit none
-   !  real(8),DIMENSION(:,:), INTENT(INOUT) :: mat
-   !end subroutine unit_matrix
-
-   !function vabs(v) result(res)
-   !  implicit none
-   !  real(8),dimension(:):: v
-   !  real(8):: res
-   !end function vabs
-
-   !function outerprod(a,b)
-   !  real(8),dimension(:),intent(in)::a,b
-   !  real(8),dimension(size(a),size(b))::outerprod
-   !end function outerprod
-!end interface
-end module mbfgs_interface
 
 !************************************************************************************
 subroutine init_hessinv(parini,hessin,latvec,omega,b0,lattdeg) 
@@ -1745,8 +1748,8 @@ character(4) ::fn4
 logical:: multiprec
 real(8):: tolmxf_switch,lambda,vol0,vol1,vol2 !,tolmxf0
 real(8), allocatable:: WORK(:)
-real(8):: vabs
-real(8):: outerprod
+!real(8):: vabs
+!real(8):: outerprod
 type(typ_parini):: parini_tmp
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
@@ -2153,8 +2156,8 @@ character(40)::filename,folder
 character(4) ::fn4
 logical:: multiprec
 real(8):: tolmxf_switch 
-real(8):: vabs
-real(8):: outerprod
+!real(8):: vabs
+!real(8):: outerprod
 !multiprec is hardcoded and, if true, starts a geopt with iprec==2, and then switches 
 !to iprec==1 when the fmax==tolmxf_switch. The switch only occurs once
  multiprec=.true.

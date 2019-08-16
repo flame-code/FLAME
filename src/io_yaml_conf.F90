@@ -31,7 +31,9 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     real(8):: cvax, cvay, cvaz
     real(8):: cvbx, cvby, cvbz
     real(8):: cvcx, cvcy, cvcz
-    type(dictionary), pointer :: confs_list, dict1, dict2
+    type(dictionary), pointer :: confs_list=>null()
+    type(dictionary), pointer :: dict1=>null()
+    type(dictionary), pointer :: dict2=>null()
     character, dimension(:), allocatable :: fbuf
     integer(kind = 8) :: cbuf, cbuf_len
     if(nconfmax<1) then
@@ -188,8 +190,11 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     real(8):: cvax, cvay, cvaz
     real(8):: cvbx, cvby, cvbz
     real(8):: cvcx, cvcy, cvcz
-    type(dictionary), pointer :: dict1, single_atom_list, coord_list
-    type(dictionary), pointer :: conf_dict, force_list
+    type(dictionary), pointer :: dict1=>null()
+    type(dictionary), pointer :: single_atom_list=>null()
+    type(dictionary), pointer :: coord_list=>null()
+    type(dictionary), pointer :: conf_dict=>null()
+    type(dictionary), pointer :: force_list=>null()
     real(8), allocatable:: rat(:,:)
     allocate(rat(3,atoms%nat))
 

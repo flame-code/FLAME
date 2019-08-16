@@ -53,8 +53,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     character(250):: tt, str1
     integer :: count1, count2, count3, count4, count5, count6
     character(5):: stypat
-    type(dictionary), pointer :: subdict_ann
-    type(dictionary), pointer :: dict_tmp
+    type(dictionary), pointer :: subdict_ann=>null()
+    type(dictionary), pointer :: dict_tmp=>null()
     character(50):: str_out_ann
     character(5):: str_out_ann_tt
     call set_dict_ann(ann,fname,stypat)
@@ -323,8 +323,8 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     character(5):: sat1, sat2
     character(8):: key1
     character(250):: str1
-    type(dictionary), pointer :: dict_ann
-    type(dictionary), pointer :: subdict_ann
+    type(dictionary), pointer :: dict_ann=>null()
+    type(dictionary), pointer :: subdict_ann=>null()
     dict_ann=>dict_new()
     !-------------------------------------------------------
     call set(dict_ann//"main","nodes")
@@ -522,7 +522,7 @@ subroutine set_dict_ann(ann,fname,stypat)
     use mod_ann, only: typ_ann
     implicit none
     !local variales
-    type(dictionary), pointer :: dict
+    type(dictionary), pointer :: dict=>null()
     type(typ_ann), intent(inout):: ann
     character, dimension(:), allocatable :: fbuf
     character(5):: stypat

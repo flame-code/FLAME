@@ -77,7 +77,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     real(kind=8):: hgrids(3), hx, hy, hz
     real(kind=8):: cv1(3), cv2(3), cv3(3), ang_bc, ang_ac, ang_ab
     real(kind=8):: alpha_bc,beta_ac, gamma_ab ,pi=4.d0*atan(1.d0)
-    type(dictionary), pointer :: dict_input
+    type(dictionary), pointer :: dict_input=>null()
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
     write(*,*) 'REZA-1'

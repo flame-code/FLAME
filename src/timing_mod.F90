@@ -4,7 +4,7 @@ module mod_timing
     use time_profiling
     use dictionaries
     implicit none
-    type(dictionary), pointer :: dict_timing_info
+    type(dictionary), pointer :: dict_timing_info=>null()
     !---------------------------------------------
     integer:: TCAT_ALBORZ_INIT_FINAL=TIMING_UNINITIALIZED
     !---------------------------------------------

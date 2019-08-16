@@ -18,6 +18,7 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     integer:: jat
     real(8):: rij, drij(3), fcij, fcdij
     real(8):: cutoff_function, cutoff_function_der
+    external cutoff_function, cutoff_function_der
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
@@ -108,6 +109,7 @@ subroutine symmetry_functions_driver_bond_tmp(ann_arr,atoms)
     real(8):: rij, rik, rjk, rc, en, eta1, eta2, zeta, vij, rs
     real(8):: eval(3)
     real(8):: cutoff_function, cutoff_function_der
+    external cutoff_function, cutoff_function_der
     integer, parameter::lwork=100
     integer :: info
     real(8), dimension(lwork) :: work

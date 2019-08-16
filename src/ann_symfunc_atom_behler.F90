@@ -17,6 +17,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     integer:: iat !, jat, kat
     type(typ_pia_arr):: pia_arr
     real(8):: cutoff_function, cutoff_function_der
+    external cutoff_function, cutoff_function_der
     !real(8):: rc, en
     !real(8):: eval(3)
     !integer, parameter::lwork=100

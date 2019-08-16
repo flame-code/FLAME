@@ -1,3 +1,16 @@
+module mod_md_rbmd
+implicit none
+interface
+function A_omega(omega)
+    implicit none
+    real(8),dimension(4,4):: A_omega
+    real(8)::omega(3)
+end function A_omega
+end interface
+end module mod_md_rbmd
+
+
+
 subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcart_in,strten_in,&
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
@@ -613,6 +626,7 @@ end subroutine
 !************************************************************************************
 
 subroutine rbmd_symasym_s4(Inprin,L_til_t5,quat_t,dt,quat_t10)
+    use mod_md_rbmd
 !J.Chem.Phys. 110,7,3291,Matubayasi
 !Symmetric top: we assume Ix=Iy
 !Fourth step: equations 3 and 9/10
@@ -625,7 +639,7 @@ real(8):: omega_til_t5(3),expmat(4,4),vnrm
 real(8):: ca,sa,angle
 !real(8),dimension(4,4):: A_omega
 !integer:: nmol,imol
-real(8):: A_omega
+!real(8):: A_omega
 
 !do imol=1,nmol
 !Construct omega according to equation 3
