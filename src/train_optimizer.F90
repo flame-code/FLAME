@@ -551,6 +551,7 @@ subroutine set_annweights(parini,opt_ann,ann_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, convert_ann_x
     use mod_processors, only: iproc, mpi_comm_abz
+    use mod_utils
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_opt_ann), intent(inout):: opt_ann
@@ -573,12 +574,20 @@ subroutine set_annweights(parini,opt_ann,ann_arr)
     !approach='type_dependent'
     if(iproc==0) then
         if(trim(approach)=='uniform') then
-            call random_number(opt_ann%x)
+            if(trim(parini%rng_type)=='only_for_tests') then
+                call random_number_generator_simple(opt_ann%n,opt_ann%x)
+            else
+                call random_number(opt_ann%x)
+            endif
             opt_ann%x(1:opt_ann%n)=(opt_ann%x(1:opt_ann%n)-0.5d0)*2.d0*parini%ampl_rand
         elseif(trim(approach)=='pure_electrostatic') then
             do i=1,opt_ann%n
                 if(i<=opt_ann%n/2) then
+                if(trim(parini%rng_type)=='only_for_tests') then
+                    call random_number_generator_simple(opt_ann%x(i))
+                else
                     call random_number(opt_ann%x(i))
+                endif
                     tt=-2.d0*parini%ampl_rand
                     opt_ann%x(i)=(opt_ann%x(i)-0.5d0)*tt
                 else
@@ -590,13 +599,21 @@ subroutine set_annweights(parini,opt_ann,ann_arr)
         elseif(trim(approach)=='type_dependent') then
             do i=1,opt_ann%n
                 if(i<=opt_ann%n/4) then
-                    call random_number(opt_ann%x(i))
+                    if(trim(parini%rng_type)=='only_for_tests') then
+                        call random_number_generator_simple(opt_ann%x(i))
+                    else
+                        call random_number(opt_ann%x(i))
+                    endif
                     tt=2.d0*parini%ampl_rand
                     opt_ann%x(i)=(opt_ann%x(i)-0.5d0)*tt
                 elseif(i<=opt_ann%n/2) then
                     opt_ann%x(i)=-opt_ann%x(i-opt_ann%n/4)
                 elseif(i<=3*opt_ann%n/4) then
-                    call random_number(opt_ann%x(i))
+                    if(trim(parini%rng_type)=='only_for_tests') then
+                        call random_number_generator_simple(opt_ann%x(i))
+                    else
+                        call random_number(opt_ann%x(i))
+                    endif
                     tt=2.d0*parini%ampl_rand
                     opt_ann%x(i)=-(opt_ann%x(i)-0.5d0)*tt
                 else

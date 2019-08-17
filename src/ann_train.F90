@@ -459,6 +459,7 @@ end subroutine fini_ann_train
 subroutine set_conf_inc_random(parini,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr
+    use mod_utils
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms_arr), intent(inout):: atoms_arr
@@ -479,7 +480,11 @@ subroutine set_conf_inc_random(parini,atoms_arr)
     irand=0
     do
         if(irand==atoms_arr%nconf_inc) exit
-        call random_number(tt)
+        if(trim(parini%rng_type)=='only_for_tests') then
+            call random_number_generator_simple(tt)
+        else
+            call random_number(tt)
+        endif
         tt=tt*real(atoms_arr%nconf)
         iconf=int(tt)+1
         if(atoms_arr%conf_inc(iconf)) cycle
