@@ -8,6 +8,7 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     use mod_atoms, only: atom_deallocate_old
     use mod_yaml_conf, only: write_yaml_conf
     use mod_atoms, only: atom_calnorm, set_rat
+    use mod_utils
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -42,7 +43,15 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     fat(1:3,1:atoms%nat)=atoms%fat(1:3,1:atoms%nat)
     epotprime=atoms%epot
     !-------------------------------
-    call random_number(uvn)
+    if(trim(parini%rng_type)=='only_for_tests') then
+        do iat=1,nat
+            call random_number_generator_simple(uvn(1,iat))
+            call random_number_generator_simple(uvn(2,iat))
+            call random_number_generator_simple(uvn(3,iat))
+        enddo
+    else
+        call random_number(uvn)
+    endif
     uvn(1:3,1:nat)=uvn(1:3,1:nat)-0.5d0
     call elim_moment_alborz(nat,uvn)
     call elim_torque_reza_alborz(nat,rat,uvn)

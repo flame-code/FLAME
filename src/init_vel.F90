@@ -62,7 +62,11 @@ if(parini%mol_soften) then
          end do
          endif
 !Now get some cell velocity
-         call gausdist_cell(latvec,vel_lat)
+        if(trim(parini%rng_type)=='only_for_tests') then
+            call gausdist_cell_simple(latvec,vel_lat)
+        else
+            call gausdist_cell(latvec,vel_lat)
+        endif
 !Soften the velocities of lattice
          if(.not.parini%fixlat(7)) then
          call soften_lat(parini,parres,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
@@ -71,7 +75,11 @@ if(parini%mol_soften) then
 else
 !Get random Gaussian distributed atomic velocities
          if(.not.(all(parini%fixat))) then
-           call gausdist(parini%nat,vel,amass)
+           if(trim(parini%rng_type)=='only_for_tests') then
+            call gausdist_simple(parini%nat,vel,amass)
+           else
+            call gausdist(parini%nat,vel,amass)
+           endif
 !Soften the velocities of atoms
            call soften_pos(parini,parres,latvec,pos_red,vel,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
 !Get rid of center-of-mass velocity, taking also into account fixed atoms (This has already been done in gausdist for all free atoms, but lets do it again...)
@@ -130,7 +138,11 @@ else
 
 !Now get some cell velocity
          if(.not.(all(parini%fixlat(1:6))).and.(.not.parini%fixlat(7)).and.parini%bc.ne.2) then
-           call gausdist_cell(latvec,vel_lat)
+           if(trim(parini%rng_type)=='only_for_tests') then
+               call gausdist_cell_simple(latvec,vel_lat)
+           else
+               call gausdist_cell(latvec,vel_lat)
+           endif
 !Soften the velocities of lattice
            call soften_lat(parini,parres,latvec,pos_red,vel_lat,curv0,curv,res,pressure,count_soft,amass,parini%nsoften_minhopp,folder)
            call elim_fixed_lat(parini,latvec,vel_lat)

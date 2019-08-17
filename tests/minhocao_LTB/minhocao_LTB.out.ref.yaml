@@ -301,7 +301,7 @@
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  1, Si:  1}
- random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ random number generator: {iproc:  0, seed:  [  2147483562,  2147483398 ]}
  Reading from                          : poscur.ascii
  initial minima hopping parameters:
    beta1                               :  1.1000E+00

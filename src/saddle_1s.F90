@@ -78,7 +78,7 @@ subroutine dimer_method(parini)
     call write_yaml_conf(file_info,atoms_s,strkey='posout')
     !---------------------------------------------------------------------------
     call update_ratp(atoms_s)
-    call random_move_atoms(atoms_s%nat,atoms_s%bemoved,atoms_s%cellvec,atoms_s%ratp)
+    call random_move_atoms(parini,atoms_s%nat,atoms_s%bemoved,atoms_s%cellvec,atoms_s%ratp)
     call update_rat(atoms_s)
     !call cal_potential_forces(parini,iproc,3*atoms_s%nat,atoms_s%rat,atoms_s%fat,epot_m0)
     !call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_s%fat,fmax_m0)
@@ -181,10 +181,13 @@ subroutine read_input(atoms_s) !,paropt)
     endif
 end subroutine read_input
 !*****************************************************************************************
-subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
+subroutine random_move_atoms(parini,nat,atom_motion,cellvec,rat)
+    use mod_parini, only: typ_parini
     use mod_saddle, only: ampl, moving_atoms_rand
     use mod_const, only: ang2bohr
+    use mod_utils
     implicit none
+    type(typ_parini), intent(in):: parini
     integer, intent(in):: nat
     logical, intent(in):: atom_motion(3,nat)
     real(8), intent(in):: cellvec(3,3)
@@ -214,7 +217,11 @@ subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
         !if(r>2.0d0) cycle 
         if(r<rc) then
             weight=ampl*(1.d0-(r/rc)**2)**4
-            call random_number(trand)
+            if(trim(parini%rng_type)=='only_for_tests') then
+                call random_number_generator_simple(3,trand)
+            else
+                call random_number(trand)
+            endif
             trand(1:3)=(trand(1:3)-0.5d0)*2.d0
         else
             !weight=0.d0

@@ -33,6 +33,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		electrostatics_mod.F90 \
 		ann_mod.F90 \
 		potential_mod.F90 \
+		basic_utilities.F90 \
 		train_optimizer.F90 \
 		symfunc_mod.F90 \
 		splinedsaddle_mod.F90 \
@@ -51,7 +52,6 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_cent3.F90 ann_pot_cent_common.F90 \
 		ann_pot_tb.F90 \
 		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
-		basic_utilities.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
 		md_util.F90 md.F90 md_NVT.F90\
 		phonon.F90 \

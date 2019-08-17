@@ -324,7 +324,11 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     cent%gwit= 0.d0
 
     do iat=1,atoms%nat
-        call random_number(ttrand)
+        !if(trim(parini%rng_type)=='only_for_tests') then
+        !    call random_number_generator_simple(3,ttrand)
+        !else
+        !    call random_number(ttrand)
+        !endif
         cent%rel(1:3,iat)=atoms%ratp(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
