@@ -185,7 +185,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     endif
     call print_minhopp_parameters
     !reading nlmin,nlminx,ediffarr,ekinarr,dtarr and !distribute among all proc.
-    call read_minhopp_parameters 
+    call read_minhopp_parameters(parini)
     if(iproc==imaster) then
         call yaml_comment('reading cellvec sizes and atomic positions from posinp.acf')
         !write(*,'(a)') 'reading cellvec sizes and atomic positions from posinp.acf'
@@ -624,13 +624,16 @@ subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
     call atom_copy(atoms_allproc%atoms(iproc+1),atoms_curr,'allproc%atoms(iproc+1)=>atoms_curr')
 end subroutine read_poscur_alborz
 !*****************************************************************************************
-subroutine read_minhopp_parameters 
+subroutine read_minhopp_parameters(parini)
+    use mod_parini, only: typ_parini
     use mod_processors, only: iproc, parallel, nproc, imaster, mpi_comm_abz
     use mod_atoms, only: atom_copy
     use mod_minhopp, only: nrandoff, ediff, ekin, dt, nlmin, nlminx, eref, etoler, ekinarr, &
         dtarr, ediffarr, nstep
+    use mod_utils
     use yaml_output
     implicit none
+    type(typ_parini), intent(in):: parini
     integer:: ios, i, mproc, k, jproc, ierr
     real(8):: tts
 #if defined(MPI)
@@ -697,7 +700,11 @@ subroutine read_minhopp_parameters
 #endif
     ediff=ediffarr(iproc);ekin=ekinarr(iproc);dt=dtarr(iproc)
     do  i=1,nrandoff+iproc*1000
-        call random_number(tts)
+        if(trim(parini%rng_type)=='only_for_tests') then
+            call random_number_generator_simple(tts)
+        else
+            call random_number(tts)
+        endif
     enddo
     call yaml_mapping_open('other minhopp parameters',flow=.true.)
     call yaml_map('iproc',iproc)
@@ -1167,7 +1174,7 @@ subroutine save_low_conf_alborz(atoms,atoms_locmin)
     implicit none
     type(typ_atoms), intent(in):: atoms
     type(typ_atoms_arr), intent(inout):: atoms_locmin
-    !local variavles
+    !local variables
     integer:: k, j
     if(atoms_locmin%nconf<atoms_locmin%nconfmax) then
         do k=1,atoms_locmin%nconf
@@ -1230,7 +1237,11 @@ subroutine velopt(parini,atoms)
     !real(8):: dx,dy, dz, r
     integer:: iat
     !call gausdist_alborz(3*nat,vat)
-    call randdist(0.15d0,3*atoms%nat,atoms%vat)
+    if(trim(parini%rng_type)=='only_for_tests') then
+        call randdist_simple(0.15d0,3*atoms%nat,atoms%vat)
+    else
+        call randdist(0.15d0,3*atoms%nat,atoms%vat)
+    endif
     !do iat=1,atoms%nat
     !    dx=atoms%rat(1,iat)-4.45819d0/0.529177d0
     !    dy=atoms%rat(2,iat)-4.45819d0/0.529177d0
@@ -1843,4 +1854,23 @@ subroutine MPI_atom_arr_copy(nat,atoms_arr)
     enddo
     deallocate(ratall,epotall,cvall)
 end subroutine MPI_atom_arr_copy
+!*****************************************************************************************
+subroutine hunt2(n,x,p,ip)
+    !p is in interval [x(ip),x(ip+1)[ ; x(0)=-Infinity ; x(n+1) = Infinity
+    use mod_minhopp, only: etoler
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: x(n), p
+    integer, intent(out):: ip
+    !local variables
+    integer:: i
+    do i=1,n
+        if(p<x(i)) exit
+    enddo
+    i=i-1
+    if(i/=n) then
+        if(abs(p-x(i+1))<etoler) i=i+1
+    endif
+    ip=i
+end subroutine hunt2
 !*****************************************************************************************

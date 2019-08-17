@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-11-13 16:01:20.575
+ Timestamp of this run                 : 2019-08-17 10:08:38.449
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : ann
@@ -26,6 +26,7 @@
    two_level_geopt                     : False
    verbosity                           : 1
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : 6296466
    nrun_lammps                         : 0
    nat                                 : 0
@@ -128,9 +129,35 @@
    dt_max                              : 80.0
    strfact                             : 100.0
  saddle:
+   method                              : unknown
    list_random_displace                : None
    dimsep                              : -1.0
    ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
  potential:
    potential                           : unknown
    cal_charge                          : False
@@ -224,6 +251,7 @@
    save_symfunc_force                  : False
    weight_hardness                     : 0.001
    save_symfunc_behnam                 : False
+   freeBC_direct                       : False
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -312,7 +340,7 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  2, Mg:  1, O:  2}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  6296466, seed2:  6296473}
+ random number generator: {iproc:  0, seed:  [  6296466,  6296473 ]}
  Number of configurations read: {filename: posinp_train.yaml, nconf:  6}
  Number of configurations read: {filename: posinp_valid.yaml, nconf:  5}
  Number of configurations read: {filename: posinp_smplx.yaml, nconf:  4}
@@ -1458,8 +1486,8 @@
                        nat:  22,          ibmax:  0, gmaxarr:  1.2080061211E+00, 
                    strmess: bounds_train,             fn_min: posinp_train.yaml, 
                  lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  3}
- TIMING evaluation symmetry functions for valid:  3.999999999999998E-002
- TIMING evaluation symmetry functions for train:  4.0000000000000036E-002
+ TIMING evaluation symmetry functions for valid:  3.6000000000000032E-002
+ TIMING evaluation symmetry functions for train:  4.7999999999999987E-002
  Initial total charges: {ionic:  2.0E+00, electronic: -2.0E+00, net:  0.0E+00}
  short range at cut-off                : -1.472910743134462
  Charge equilibration process:
@@ -5089,17 +5117,17 @@
       gnrm2:  4.176E-04,                    qtot:  1.000E+00}
   #Mg.ann.param.yaml
   #O.ann.param.yaml
- CPU time: {iproc:  0, hrs:  0.176E-02, min:  0.106E+00, sec:  0.633E+01}
+ CPU time: {iproc:  0, hrs:  0.196E-02, min:  0.117E+00, sec:  0.704E+01}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  2176
-   Tot. No. of Deallocations           :  2176
+   Tot. No. of Allocations             :  2191
+   Tot. No. of Deallocations           :  2191
    Remaining Memory (B)                :  0
    Memory occupation:
      Peak Value (MB)                   :  2.906
      for the array                     : symfunc%y0dr
      in the routine                    : symmetry_functions_driver
-     Memory Peak of process            : 255.908 MB
- Walltime since initialization         :  00:00:06.348514627
- Max No. of dictionaries used          :  1544 #( 185 still in use)
+     Memory Peak of process            : 269.860 MB
+ Walltime since initialization         :  00:00:07.068185000
+ Max No. of dictionaries used          :  1550 #( 185 still in use)
  Number of dictionary folders allocated:  1

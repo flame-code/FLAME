@@ -10,6 +10,7 @@ module mod_parini
         !parameters of [main]
         character(50):: task='unknown'
         character(256):: cwd='unknown'
+        character(50):: rng_type='intrinsic'
         logical:: two_level_geopt=.false.
         integer:: iverbose=0
         integer:: iseed=-2

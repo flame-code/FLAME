@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-07 14:07:40.017
+ Timestamp of this run                 : 2019-08-17 10:01:01.357
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -26,6 +26,7 @@
    two_level_geopt                     : False
    verbosity                           : 2
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : -2
    nrun_lammps                         : 0
    nat                                 : 0
@@ -128,9 +129,35 @@
    dt_max                              : 80.0
    strfact                             : 100.0
  saddle:
+   method                              : unknown
    list_random_displace                : None
    dimsep                              : -1.0
    ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
  potential:
    potential                           : ann
    cal_charge                          : False
@@ -212,6 +239,7 @@
    qgnrmtol                            : 5.E-4
    etol                                : 1.0
    dtol                                : 1.0
+   ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False
    prefit                              : False
@@ -224,6 +252,7 @@
    save_symfunc_force                  : False
    weight_hardness                     : 0.001
    save_symfunc_behnam                 : False
+   freeBC_direct                       : False
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -245,6 +274,8 @@
    dt_init                             : 20.0
    nit_per_min                         : 25
    encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
  bader:
    method                              : unknown
    filename                            : total_density.cube
@@ -278,6 +309,16 @@
    gaussian_width                      : -1.0
    boundcond                           : unknown
    posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
  fingerprint:
    method                              : OGANOV
    rcut                                : 15.0
@@ -300,10 +341,9 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  2, Ca:  1, F:  2}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
- Number of configurations read: {filename: posinp.acf, nconf:  1}
+ random number generator: {iproc:  0, seed:  [  2147483562,  2147483398 ]}
+ Number of configurations read: {filename: posinp.yaml, nconf:  1}
  number of ANN                         :  2
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ USER INPUT FILE
  main:
    nodes: [3, 3]
    rcut                                : 12.0
@@ -686,10 +726,8 @@
  - 3.077891578774066E-01
  - -2.221611970061196E-01
  - -7.957833452837898E-02
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  ANN architecture                      : 70-3-3-1
  symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ USER INPUT FILE
  main:
    nodes: [3, 3]
    rcut                                : 12.0
@@ -1072,7 +1110,6 @@
  - -1.897223361725366E-01
  - 1.216706544009089E-01
  - -2.645225395675557E-02
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  ANN architecture                      : 70-3-3-1
  symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
  epot of all configurations:
@@ -1099,7 +1136,7 @@
        stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.189, dpy: -14.189, 
             dpz: -14.189}
    - cep: {iter:  5, epot_es:  2.4367683054877E+00, de:  4.37E-02, gnrm:  1.727E-02, 
-       stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.318, dpy: -14.318, 
+       stepsize:  1.000E+00,                      qtot: -0.000, dpx: -14.318, dpy: -14.318, 
             dpz: -14.318}
    - cep: {iter:  6, epot_es:  2.4615995952439E+00, de:  2.48E-02, gnrm:  9.750E-03, 
        stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.391, dpy: -14.391, 
@@ -1114,31 +1151,31 @@
        stepsize:  1.000E+00,                      qtot:  0.000, dpx: -14.468, dpy: -14.468, 
             dpz: -14.468}
    - cep: {iter:  10, epot_es:  2.4906831447523E+00, de:  2.54E-03, gnrm:  9.905E-04, 
-       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.476, dpy: -14.476, 
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.476, dpy: -14.476, 
             dpz: -14.476}
    - cep: {iter:  11, epot_es:  2.4921196274662E+00, de:  1.44E-03, gnrm:  5.592E-04, 
-       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.480, dpy: -14.480, 
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.480, dpy: -14.480, 
             dpz: -14.480}
    - cep: {iter:  12, epot_es:  2.4929308052618E+00, de:  8.11E-04, gnrm:  3.157E-04, 
-       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.482, dpy: -14.482, 
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.482, dpy: -14.482, 
             dpz: -14.482}
    - cep: {iter:  13, epot_es:  2.4933888301230E+00, de:  4.58E-04, gnrm:  1.782E-04, 
-       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.484, dpy: -14.484, 
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.484, dpy: -14.484, 
             dpz: -14.484}
    - cep: {iter:  14, epot_es:  2.4936474357531E+00, de:  2.59E-04, gnrm:  1.006E-04, 
        stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.484, dpy: -14.484, 
             dpz: -14.484}
-   - cep: {iter:  15, epot_es:  2.4937934426296E+00, de:  1.46E-04, gnrm:  5.681E-05, 
-       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+   - cep: {iter:  15, epot_es:  2.4937934426295E+00, de:  1.46E-04, gnrm:  5.681E-05, 
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  16, epot_es:  2.4938758756045E+00, de:  8.24E-05, gnrm:  3.207E-05, 
        stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  17, epot_es:  2.4939224153824E+00, de:  4.65E-05, gnrm:  1.811E-05, 
-       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  18, epot_es:  2.4939486905317E+00, de:  2.63E-05, gnrm:  1.022E-05, 
-       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  19, epot_es:  2.4939635247512E+00, de:  1.48E-05, gnrm:  5.772E-06, 
        stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
@@ -1150,22 +1187,22 @@
        stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  22, epot_es:  2.4939792974259E+00, de:  2.67E-06, gnrm:  1.039E-06, 
-       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  23, epot_es:  2.4939808045106E+00, de:  1.51E-06, gnrm:  5.864E-07, 
        stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  24, epot_es:  2.4939816553655E+00, de:  8.51E-07, gnrm:  3.311E-07, 
-       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
+       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  25, epot_es:  2.4939821357326E+00, de:  4.80E-07, gnrm:  1.869E-07, 
        stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  26, epot_es:  2.4939824069334E+00, de:  2.71E-07, gnrm:  1.055E-07, 
-       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    - cep: {iter:  27, epot_es:  2.4939825600452E+00, de:  1.53E-07, gnrm:  5.957E-08, 
-       stepsize:  1.000E+00,                       qtot:  0.000, dpx: -14.485, dpy: -14.485, 
+       stepsize:  1.000E+00,                       qtot: -0.000, dpx: -14.485, dpy: -14.485, 
             dpz: -14.485}
    CEP: {iter:  27, epot_es:  2.4939825600452E+00, de:  1.53E-07, gnrm:  5.957E-08, 
      stepsize:  1.000E+00}
@@ -1173,12 +1210,12 @@
                      -0.70170, -0.70170, -0.70170, -0.70170, -0.70170]
    Timing of CENT1:
      initialize matrix                 :  0.0
-     calculation of symfunc            :  0.176
+     calculation of symfunc            :  0.152
      neural network process            :  0.0
-     linear equations solver           :  3.5999999999999976E-002
+     linear equations solver           :  3.6000000000000004E-002
      force (SR term)                   :  0.0
-     energy (SR+LR), force (LR)        :  4.0000000000000036E-003
-     total time                        :  0.216
+     energy (SR+LR), force (LR)        :  0.0
+     total time                        :  0.188
    linked list info-1:
      nat                               :  12
      scl                               :  3.325917985016777
@@ -1189,17 +1226,17 @@
    epot                                : -0.350917062052847E+04
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
- CPU time: {iproc:  0, hrs:  0.789E-04, min:  0.473E-02, sec:  0.284E+00}
+ CPU time: {iproc:  0, hrs:  0.722E-04, min:  0.433E-02, sec:  0.260E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  121
-   Tot. No. of Deallocations           :  121
+   Tot. No. of Allocations             :  115
+   Tot. No. of Deallocations           :  115
    Remaining Memory (B)                :  0
    Memory occupation:
      Peak Value (MB)                   :  6.213
      for the array                     : fat
      in the routine                    : get_hartree
-     Memory Peak of process            : 257.792 MB
- Walltime since initialization         :  00:00:00.298082439
- Max No. of dictionaries used          :  841 #( 185 still in use)
+     Memory Peak of process            : 240.796 MB
+ Walltime since initialization         :  00:00:00.275799175
+ Max No. of dictionaries used          :  855 #( 185 still in use)
  Number of dictionary folders allocated:  1

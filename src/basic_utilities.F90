@@ -1,4 +1,50 @@
 !*****************************************************************************************
+module mod_rng
+    implicit none
+    private
+    integer:: iseed=11
+interface random_number_generator_simple
+    module procedure random_number_generator_simple_single
+    module procedure random_number_generator_simple_array
+end interface random_number_generator_simple
+    public:: random_number_generator_simple
+contains
+subroutine random_number_generator_simple_single(rnd)
+    implicit none
+    real(8), intent(out):: rnd
+    !local variables
+    integer:: irnd1, irnd2, nlarge
+    real(8):: rlarge
+    nlarge=huge(1)
+    rlarge=real(nlarge,kind=8)
+    irnd1=modulo((57*iseed+1),nlarge)
+    irnd2=modulo((57*irnd1+1),nlarge)
+    iseed=irnd2
+    rnd=real(irnd2,kind=8)/rlarge
+end subroutine random_number_generator_simple_single
+subroutine random_number_generator_simple_array(n,rnd)
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(out):: rnd(n)
+    !local variables
+    integer:: i, irnd1, irnd2, nlarge
+    real(8):: rlarge
+    nlarge=huge(1)
+    rlarge=real(nlarge,kind=8)
+    do i=1,n
+        irnd1=modulo((57*iseed+1),nlarge)
+        irnd2=modulo((57*irnd1+1),nlarge)
+        iseed=irnd2
+        rnd(i)=real(irnd2,kind=8)/rlarge
+    enddo
+end subroutine random_number_generator_simple_array
+end module mod_rng
+!*****************************************************************************************
+module mod_utils
+    use mod_rng
+    implicit none
+end module mod_utils
+!*****************************************************************************************
 subroutine elim_moment_alborz(nat,atomic_vector)
   implicit none
   integer, intent(in):: nat
@@ -481,24 +527,22 @@ subroutine randdist(a,n,x)
     enddo
 end subroutine randdist
 !*****************************************************************************************
-subroutine hunt2(n,x,p,ip)
-    !p is in interval [x(ip),x(ip+1)[ ; x(0)=-Infinity ; x(n+1) = Infinity
-    use mod_minhopp, only: etoler
+subroutine randdist_simple(a,n,x)
+    !create a uniform random numbers in interval [-a,a]
+    use mod_utils
     implicit none
+    real(8), intent(in) :: a
     integer, intent(in):: n
-    real(8), intent(in):: x(n), p
-    integer, intent(out):: ip
+    real(8), intent(out) :: x(n)
     !local variables
     integer:: i
+    real(8):: tt1, tt2
+    tt1=a*2.d0
     do i=1,n
-        if(p<x(i)) exit
+        call random_number_generator_simple(tt2)
+        x(i)=(tt2-0.5d0)*tt1
     enddo
-    i=i-1
-    if(i/=n) then
-        if(abs(p-x(i+1))<etoler) i=i+1
-    endif
-    ip=i
-end subroutine hunt2
+end subroutine randdist_simple
 !*****************************************************************************************
 subroutine hpsort(n,ra)
     implicit real*8 (a-h,o-z)

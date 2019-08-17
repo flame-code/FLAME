@@ -2,6 +2,7 @@ main:
     task: minhopp
     two_level_geopt: True
     types: LJ
+    rng_type: only_for_tests #Do not use this value, only useful for developers
 
 potential:
     potential: lj

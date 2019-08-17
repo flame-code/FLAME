@@ -161,7 +161,7 @@ subroutine init_random_seed(parini)
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
-    integer:: istat, nseed, ierr
+    integer:: istat, nseed, ierr, i
     integer, allocatable:: iseed(:)
 #if defined(MPI)
     include 'mpif.h'
@@ -192,23 +192,9 @@ subroutine init_random_seed(parini)
     iseed(1:nseed)=iseed(1:nseed)+iproc*11
     call random_seed(put=iseed)
     call yaml_mapping_open('random number generator',flow=.true.)
-    if(nseed==1) then
-        call yaml_map('iproc',iproc,fmt='(i4)')
-        call yaml_map('seed1',iseed(1),fmt='(i12)')
-        !write(*,'(a,i4,i12)') 'iproc,seed ',iproc,iseed(1)
-    else if(nseed==2) then
-        call yaml_map('iproc',iproc,fmt='(i4)')
-        call yaml_map('seed1',iseed(1),fmt='(i12)')
-        call yaml_map('seed2',iseed(2),fmt='(i12)')
-        !write(*,'(a,i4,2i12)') 'iproc,seed ',iproc,iseed(1),iseed(2)
-    else if(nseed==3) then
-        call yaml_map('iproc',iproc,fmt='(i4)')
-        call yaml_map('seed1',iseed(1),fmt='(i12)')
-        call yaml_map('seed2',iseed(2),fmt='(i12)')
-        call yaml_map('seed3',iseed(3),fmt='(i12)')
-        !write(*,'(a,i4,3i12)') 'iproc,seed ',iproc,iseed(1),iseed(2),iseed(3)
-    else
-        stop 'ERROR: seed size greater than 3 not considered in Alborz.'
+    call yaml_map('iproc',iproc,fmt='(i4)')
+    if(trim(parini%rng_type)/='only_for_tests') then
+        call yaml_map('seed',iseed) !,fmt='(i12)')
     endif
     call yaml_mapping_close()
     deallocate(iseed)

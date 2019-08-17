@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-10-30 11:57:39.046
+ Timestamp of this run                 : 2019-08-17 10:08:36.801
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : ann
@@ -26,6 +26,7 @@
    two_level_geopt                     : False
    verbosity                           : 2
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : 6731916
    nrun_lammps                         : 0
    nat                                 : 0
@@ -128,9 +129,35 @@
    dt_max                              : 80.0
    strfact                             : 100.0
  saddle:
+   method                              : unknown
    list_random_displace                : None
    dimsep                              : -1.0
    ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
  potential:
    potential                           : ann
    cal_charge                          : False
@@ -211,6 +238,7 @@
    qgnrmtol                            : 5.E-4
    etol                                : 1.0
    dtol                                : 1.0
+   ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False
    prefit                              : False
@@ -223,6 +251,7 @@
    save_symfunc_force                  : False
    weight_hardness                     : 0.001
    save_symfunc_behnam                 : False
+   freeBC_direct                       : False
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -311,7 +340,9 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  2, Na:  1, Cl:  2}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  6731916, seed2:  6731923}
+ random number generator: {iproc:  0, seed:  [  6731916,  6731923 ]}
+ Number of configurations read: {filename: posinp_train.yaml, nconf:  6}
+ Number of configurations read: {filename: posinp_valid.yaml, nconf:  6}
  number of ann                         :  2
  ann input files:
  -  #Na.ann.input.yaml
@@ -493,8 +524,6 @@
    loc                                 :  392
    num                                 :  391
    n                                   :  782
- Number of configurations read: {filename: posinp_train.yaml, nconf:  6}
- Number of configurations read: {filename: posinp_valid.yaml, nconf:  6}
  number of ANN wights                  :  782
  number of training data points        :  6
  number of validating data points      :  6
@@ -1692,7 +1721,7 @@
                        nat:  10,          ibmax:  0, gmaxarr:  4.1736622339E-01, 
                    strmess: bounds_train,             fn_min: posinp_train.yaml, 
                  lconf_min:  6,          fn_max: posinp_train.yaml, lconf_max:  2}
- TIMING evaluation symmetry functions for valid:  1.2000000000000011E-002
+ TIMING evaluation symmetry functions for valid:  8.0000000000000071E-003
  TIMING evaluation symmetry functions for train:  1.2000000000000011E-002
   #Na.ann.param.yaml.00000
   #Cl.ann.param.yaml.00000
@@ -1758,12 +1787,12 @@
                    -0.55538,  0.52078, -0.50656, -0.50656,  0.52078]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  3.999999999999948E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  3.999999999999948E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -1828,10 +1857,10 @@
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  3.999999999999948E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  3.999999999999948E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -2017,10 +2046,10 @@
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  4.0000000000000036E-003
+   linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2032,12 +2061,12 @@
                    -0.49883,  0.51634, -0.48343]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -2066,9 +2095,9 @@
                    -0.57805,  0.54204, -0.52724, -0.52724,  0.54204]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
    total time                          :  4.0000000000000036E-003
@@ -2151,12 +2180,12 @@
                    -0.59937,  0.55949, -0.54544, -0.52205,  0.54253]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -2168,12 +2197,12 @@
                    -0.54937]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2185,12 +2214,12 @@
                    -0.47549,  0.51186, -0.51311]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -2202,12 +2231,12 @@
                     0.49166, -0.51937,  0.51603,  0.50884, -0.50796]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -2253,12 +2282,12 @@
                    -0.52747]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -2288,11 +2317,11 @@
  Timing of CENT1:
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
-   neural network process              :  0.0
+   neural network process              :  4.0000000000000036E-003
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2340,12 +2369,12 @@
                    -0.54104,  0.56003, -0.52433]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -2410,10 +2439,10 @@
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2442,12 +2471,12 @@
                    -0.58492]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -2459,12 +2488,12 @@
                    -0.65010,  0.60684, -0.59160, -0.56624,  0.58845]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -2476,12 +2505,12 @@
                    -0.59586]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2493,12 +2522,12 @@
                    -0.51572,  0.55516, -0.55653]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -2529,10 +2558,10 @@
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2648,12 +2677,12 @@
                    -0.60406,  0.62525, -0.58539]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -2716,12 +2745,12 @@
                    -0.66613,  0.64122, -0.56278]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  3.999999999999948E-003
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  3.999999999999948E-003
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2786,10 +2815,10 @@
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  3.999999999999948E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  3.999999999999948E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -2956,12 +2985,12 @@
                    -0.65459,  0.67756, -0.63437]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -3058,12 +3087,12 @@
                    -0.70767]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3092,12 +3121,12 @@
                    -0.72091]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -3264,12 +3293,12 @@
                    -0.67779,  0.70157, -0.65685]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -3366,12 +3395,12 @@
                    -0.73275]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3589,12 +3618,12 @@
                    -0.70839]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3606,12 +3635,12 @@
                    -0.79528,  0.74568, -0.72531, -0.72531,  0.74568]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3623,12 +3652,12 @@
                     0.70861, -0.74260,  0.73463,  0.72533, -0.73223]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -3657,12 +3686,12 @@
                    -0.73516,  0.71120, -0.63697]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -3674,12 +3703,12 @@
                    -0.74189]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3691,12 +3720,12 @@
                    -0.82459,  0.76972, -0.75039, -0.71822,  0.74638]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -3708,12 +3737,12 @@
                    -0.75577]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -3744,10 +3773,10 @@
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -3897,12 +3926,12 @@
                    -0.71146]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  3.9999999999998925E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  3.9999999999998925E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3914,12 +3943,12 @@
                    -0.79874,  0.74892, -0.72846, -0.72846,  0.74892]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3931,12 +3960,12 @@
                     0.71169, -0.74582,  0.73782,  0.72848, -0.73542]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -3965,12 +3994,12 @@
                    -0.73835,  0.71428, -0.63974]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -3982,12 +4011,12 @@
                    -0.74511]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -3999,12 +4028,12 @@
                    -0.82818,  0.77307, -0.75365, -0.72134,  0.74962]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -4016,12 +4045,12 @@
                    -0.75905]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4205,12 +4234,12 @@
                    -0.71255]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4222,12 +4251,12 @@
                    -0.79998,  0.75008, -0.72959, -0.72959,  0.75008]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4239,12 +4268,12 @@
                     0.71278, -0.74697,  0.73896,  0.72960, -0.73655]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4256,12 +4285,12 @@
                    -0.76121,  0.73276, -0.64311]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4273,12 +4302,12 @@
                    -0.73949,  0.71539, -0.64072]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -4290,12 +4319,12 @@
                    -0.74626]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4307,12 +4336,12 @@
                    -0.82946,  0.77426, -0.75482, -0.72245,  0.75078]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -4324,12 +4353,12 @@
                    -0.76022]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4513,12 +4542,12 @@
                    -0.71294]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4530,12 +4559,12 @@
                    -0.80044,  0.75050, -0.73000, -0.73000,  0.75050]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4547,12 +4576,12 @@
                     0.71317, -0.74739,  0.73938,  0.73002, -0.73697]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4564,12 +4593,12 @@
                    -0.76164,  0.73317, -0.64346]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4581,12 +4610,12 @@
                    -0.73989,  0.71578, -0.64107]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -4598,12 +4627,12 @@
                    -0.74667]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4615,12 +4644,12 @@
                    -0.82994,  0.77470, -0.75525, -0.72286,  0.75120]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -4632,12 +4661,12 @@
                    -0.76063]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4821,12 +4850,12 @@
                    -0.71305]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4838,12 +4867,12 @@
                    -0.80066,  0.75067, -0.73016, -0.73016,  0.75067]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -4855,12 +4884,12 @@
                     0.71328, -0.74755,  0.73954,  0.73018, -0.73714]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  3.9999999999998925E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  3.9999999999998925E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4889,12 +4918,12 @@
                    -0.74001,  0.71591, -0.64118]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -4923,12 +4952,12 @@
                    -0.83015,  0.77486, -0.75541, -0.72301,  0.75136]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -4940,12 +4969,12 @@
                    -0.76076]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -4974,12 +5003,12 @@
                     0.68082, -0.71923,  0.71461,  0.70467, -0.70346]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -5095,12 +5124,12 @@
                    -0.70727]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
@@ -5129,12 +5158,12 @@
                    -0.71300]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
@@ -5163,9 +5192,9 @@
                     0.71326, -0.74763,  0.73962,  0.73029, -0.73726]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
    total time                          :  4.0000000000000036E-003
@@ -5197,12 +5226,12 @@
                    -0.74000,  0.71592, -0.64117]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -5231,12 +5260,12 @@
                    -0.83033,  0.77494, -0.75551, -0.72308,  0.75146]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -5282,12 +5311,12 @@
                     0.68080, -0.71928,  0.71466,  0.70474, -0.70355]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -5316,12 +5345,12 @@
                    -0.69096,  0.71513, -0.66956]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
@@ -5362,7 +5391,7 @@
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -8.9619006937159643E-002
+ Lagrange                              : -8.9619006937159629E-002
  charge on atoms: [ 0.73249, -0.73071, -0.79000,  0.76450,  0.73814, -0.73403, -0.67758, 
                     0.71220, -0.74709,  0.73909,  0.72988, -0.73690]
  Timing of CENT1:
@@ -5379,7 +5408,7 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.5553492919125724E-002
+ Lagrange                              : -9.5553492919125696E-002
  charge on atoms: [ 0.75245, -0.78154,  0.73958, -0.77040,  0.76063, -0.72658,  0.69996, 
                    -0.76508,  0.73673, -0.64575]
  Timing of CENT1:
@@ -5398,24 +5427,24 @@
    mlimnb                              :  2
    cell: [ 19.39182150342416,  18.31347763445822,  19.85541100683455]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.2660371332509983E-002
+ Lagrange                              : -9.2660371332509803E-002
  charge on atoms: [ 0.73261, -0.77506,  0.73834, -0.66765,  0.70082, -0.75603,  0.73429, 
                    -0.70733]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  3.9999999999998925E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  3.9999999999998925E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 26.46531584381724,  19.93428061650652,  17.76136769004092]
  linked list info-2: {mx,my,mz:  [  4,  3,  2 ], total number of subcells:  24}
- Lagrange                              : -8.6699531282814324E-002
+ Lagrange                              : -8.6699531282814116E-002
  charge on atoms: [ 0.75594, -0.82633,  0.74387, -0.68179,  0.73327, -0.76835,  0.68829, 
                    -0.69038,  0.71427, -0.66880]
  Timing of CENT1:
@@ -5432,24 +5461,24 @@
    mlimnb                              :  2
    cell: [ 22.18205315380078,  17.32013175699687,  23.41065103691824]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.5099782347857561E-002
+ Lagrange                              : -8.5099782347857339E-002
  charge on atoms: [ 0.71196, -0.68640,  0.75913, -0.72670,  0.72239, -0.79548,  0.72708, 
                    -0.71198]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 16.62612983654379,  16.62612983654379,  20.93571830124733]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1003855287161255
+ Lagrange                              : -0.1003855287161253
  charge on atoms: [ 0.75116, -0.73042, -0.73042,  0.75116, -0.80226,  0.76078,  0.76078, 
                    -0.80226,  0.75116, -0.73042, -0.73042,  0.75116]
  Timing of CENT1:
@@ -5466,7 +5495,7 @@
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -8.9382330655686792E-002
+ Lagrange                              : -8.9382330655686543E-002
  charge on atoms: [ 0.73323, -0.73145, -0.79109,  0.76530,  0.73864, -0.73440, -0.67764, 
                     0.71254, -0.74777,  0.73980,  0.73061, -0.73777]
  Timing of CENT1:
@@ -5483,7 +5512,7 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.4945780656505885E-002
+ Lagrange                              : -9.4945780656505677E-002
  charge on atoms: [ 0.74917, -0.77824,  0.73633, -0.76698,  0.75731, -0.72337,  0.69690, 
                    -0.76173,  0.73348, -0.64287]
  Timing of CENT1:
@@ -5500,14 +5529,14 @@
    mlimnb                              :  2
    cell: [ 22.19768118887811,  20.94896528140356,  21.4086354928248]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -8.9595965358882868E-002
+ Lagrange                              : -8.9595965358882618E-002
  charge on atoms: [ 0.73590, -0.79785,  0.74245, -0.71964,  0.72279, -0.72860,  0.70936, 
                    -0.73931,  0.71548, -0.64058]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
    total time                          :  4.0000000000000036E-003
@@ -5517,7 +5546,7 @@
    mlimnb                              :  2
    cell: [ 18.07570473414757,  20.31564813609415,  17.68354120919153]
  linked list info-2: {mx,my,mz:  [  3,  3,  2 ], total number of subcells:  18}
- Lagrange                              : -9.1991372535812049E-002
+ Lagrange                              : -9.19913725358118E-002
  charge on atoms: [ 0.72051, -0.77907,  0.70442, -0.73106,  0.73247, -0.64962,  0.74878, 
                    -0.74644]
  Timing of CENT1:
@@ -5534,15 +5563,15 @@
    mlimnb                              :  2
    cell: [ 17.48154649365947,  16.92558528739362,  22.23841801501618]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1109038589214505
+ Lagrange                              : -0.1109038589214503
  charge on atoms: [ 0.73127, -0.67647, -0.64380,  0.74833, -0.85379,  0.75380,  0.72367, 
                    -0.83121,  0.77488, -0.75551, -0.72280,  0.75162]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
-   force (SR term)                     :  0.0
+   force (SR term)                     :  4.0000000000000036E-003
    energy (SR+LR), force (LR)          :  0.0
    total time                          :  4.0000000000000036E-003
  linked list info-1:
@@ -5551,7 +5580,7 @@
    mlimnb                              :  2
    cell: [ 18.67537152629835,  17.99789148138107,  23.84624802719679]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.4764462565961041E-002
+ Lagrange                              : -8.4764462565960805E-002
  charge on atoms: [ 0.71128, -0.77943,  0.73906, -0.69831,  0.71446, -0.68810,  0.76097, 
                    -0.75994]
  Timing of CENT1:
@@ -5568,7 +5597,7 @@
    mlimnb                              :  2
    cell: [ 20.08197216202867,  17.11056301914438,  24.15925092465717]
  linked list info-2: {mx,my,mz:  [  3,  2,  4 ], total number of subcells:  24}
- Lagrange                              : -8.6760584741246871E-002
+ Lagrange                              : -8.6760584741246677E-002
  charge on atoms: [ 0.75729, -0.74174,  0.72366, -0.77844,  0.71245, -0.77207,  0.75853, 
                    -0.65775,  0.70810, -0.71003]
  Timing of CENT1:
@@ -5585,24 +5614,24 @@
    mlimnb                              :  2
    cell: [ 16.55667862189303,  26.98022274995554,  16.62481647688494]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -7.420541098297341E-002
+ Lagrange                              : -7.4205410982973202E-002
  charge on atoms: [ 0.71158, -0.70784, -0.76948,  0.74678,  0.70904, -0.70629, -0.66037, 
                     0.68018, -0.71927,  0.71467,  0.70485, -0.70385]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 19.39182150342416,  18.31347763445822,  19.85541100683455]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.2660371332509983E-002
+ Lagrange                              : -9.2660371332509803E-002
  charge on atoms: [ 0.73261, -0.77506,  0.73834, -0.66765,  0.70082, -0.75603,  0.73429, 
                    -0.70733]
  Timing of CENT1:
@@ -5619,7 +5648,7 @@
    mlimnb                              :  2
    cell: [ 26.46531584381724,  19.93428061650652,  17.76136769004092]
  linked list info-2: {mx,my,mz:  [  4,  3,  2 ], total number of subcells:  24}
- Lagrange                              : -8.6878310771608389E-002
+ Lagrange                              : -8.687831077160818E-002
  charge on atoms: [ 0.75658, -0.82675,  0.74441, -0.68248,  0.73384, -0.76897,  0.68889, 
                    -0.69098,  0.71489, -0.66943]
  Timing of CENT1:
@@ -5636,7 +5665,7 @@
    mlimnb                              :  2
    cell: [ 22.18205315380078,  17.32013175699687,  23.41065103691824]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.4633787893430928E-002
+ Lagrange                              : -8.4633787893430679E-002
  charge on atoms: [ 0.70855, -0.68328,  0.75565, -0.72321,  0.71879, -0.79165,  0.72362, 
                    -0.70847]
  Timing of CENT1:
@@ -5670,7 +5699,7 @@
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -8.9378298389273414E-002
+ Lagrange                              : -8.9378298389273164E-002
  charge on atoms: [ 0.73310, -0.73164, -0.79178,  0.76538,  0.73633, -0.73123, -0.67350, 
                     0.70922, -0.74783,  0.73970,  0.73091, -0.73868]
  Timing of CENT1:
@@ -5687,7 +5716,7 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.8360454278724474E-002
+ Lagrange                              : -9.8360454278723072E-002
  charge on atoms: [ 0.75653, -0.78643,  0.74409, -0.77486,  0.76481, -0.73198,  0.70399, 
                    -0.76980,  0.74142, -0.64777]
  Timing of CENT1:
@@ -5706,7 +5735,7 @@
    mlimnb                              :  2
    cell: [ 19.39182150342416,  18.31347763445822,  19.85541100683455]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.4089096008270756E-002
+ Lagrange                              : -9.4089096008271478E-002
  charge on atoms: [ 0.73361, -0.77606,  0.73909, -0.66751,  0.70136, -0.75672,  0.73514, 
                    -0.70893]
  Timing of CENT1:
@@ -5723,7 +5752,7 @@
    mlimnb                              :  2
    cell: [ 26.46531584381724,  19.93428061650652,  17.76136769004092]
  linked list info-2: {mx,my,mz:  [  4,  3,  2 ], total number of subcells:  24}
- Lagrange                              : -8.7671466292491423E-002
+ Lagrange                              : -8.767146629249202E-002
  charge on atoms: [ 0.75474, -0.82224,  0.74247, -0.68058,  0.73272, -0.76928,  0.68817, 
                    -0.69059,  0.71269, -0.66809]
  Timing of CENT1:
@@ -5740,24 +5769,24 @@
    mlimnb                              :  2
    cell: [ 22.18205315380078,  17.32013175699687,  23.41065103691824]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.5843706084692203E-002
+ Lagrange                              : -8.5843706084692425E-002
  charge on atoms: [ 0.71053, -0.68526,  0.75722, -0.72498,  0.72067, -0.79336,  0.72528, 
                    -0.71010]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 16.62612983654379,  16.62612983654379,  20.93571830124733]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1022379352247687
+ Lagrange                              : -0.10223793522477
  charge on atoms: [ 0.75308, -0.73202, -0.73202,  0.75308, -0.80470,  0.76259,  0.76259, 
                    -0.80471,  0.75308, -0.73202, -0.73202,  0.75308]
  Timing of CENT1:
@@ -5774,7 +5803,7 @@
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -9.0840345948715484E-002
+ Lagrange                              : -9.0840345948716386E-002
  charge on atoms: [ 0.73494, -0.73361, -0.79322,  0.76650,  0.73837, -0.73303, -0.67606, 
                     0.71205, -0.74957,  0.74144,  0.73210, -0.73992]
  Timing of CENT1:
@@ -5791,7 +5820,7 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.6345503161614734E-002
+ Lagrange                              : -9.6345503161615609E-002
  charge on atoms: [ 0.74939, -0.77955,  0.73710, -0.76742,  0.75758, -0.72471,  0.69742, 
                    -0.76252,  0.73442, -0.64171]
  Timing of CENT1:
@@ -5808,7 +5837,7 @@
    mlimnb                              :  2
    cell: [ 22.19768118887811,  20.94896528140356,  21.4086354928248]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.0739935872159172E-002
+ Lagrange                              : -9.0739935872159783E-002
  charge on atoms: [ 0.73591, -0.79748,  0.74189, -0.71885,  0.72289, -0.72900,  0.70868, 
                    -0.73859,  0.71517, -0.64061]
  Timing of CENT1:
@@ -5825,7 +5854,7 @@
    mlimnb                              :  2
    cell: [ 18.07570473414757,  20.31564813609415,  17.68354120919153]
  linked list info-2: {mx,my,mz:  [  3,  3,  2 ], total number of subcells:  18}
- Lagrange                              : -9.3357214476058881E-002
+ Lagrange                              : -9.3357214476059644E-002
  charge on atoms: [ 0.72140, -0.77982,  0.70456, -0.73249,  0.73314, -0.64983,  0.74947, 
                    -0.74643]
  Timing of CENT1:
@@ -5842,24 +5871,24 @@
    mlimnb                              :  2
    cell: [ 17.48154649365947,  16.92558528739362,  22.23841801501618]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1121228077500366
+ Lagrange                              : -0.1121228077500376
  charge on atoms: [ 0.73172, -0.67546, -0.64484,  0.74818, -0.85036,  0.75248,  0.72151, 
                    -0.83239,  0.77429, -0.75535, -0.72179,  0.75202]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  3.9999999999998925E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  3.9999999999998925E-003
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 18.67537152629835,  17.99789148138107,  23.84624802719679]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.5573712033508637E-002
+ Lagrange                              : -8.557371203350897E-002
  charge on atoms: [ 0.71005, -0.77790,  0.73746, -0.69692,  0.71306, -0.68694,  0.75912, 
                    -0.75793]
  Timing of CENT1:
@@ -5876,7 +5905,7 @@
    mlimnb                              :  2
    cell: [ 20.08197216202867,  17.11056301914438,  24.15925092465717]
  linked list info-2: {mx,my,mz:  [  3,  2,  4 ], total number of subcells:  24}
- Lagrange                              : -8.7927266798270065E-002
+ Lagrange                              : -8.7927266798270703E-002
  charge on atoms: [ 0.75530, -0.74214,  0.72382, -0.77714,  0.71184, -0.77077,  0.75828, 
                    -0.65733,  0.70762, -0.70947]
  Timing of CENT1:
@@ -5893,24 +5922,24 @@
    mlimnb                              :  2
    cell: [ 16.55667862189303,  26.98022274995554,  16.62481647688494]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -7.5772926439976115E-002
+ Lagrange                              : -7.5772926439976934E-002
  charge on atoms: [ 0.71348, -0.71008, -0.77154,  0.74841,  0.70957, -0.70599, -0.65999, 
                     0.68059, -0.72144,  0.71661,  0.70667, -0.70630]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 19.39182150342416,  18.31347763445822,  19.85541100683455]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.4089096008270756E-002
+ Lagrange                              : -9.4089096008271478E-002
  charge on atoms: [ 0.73361, -0.77606,  0.73909, -0.66751,  0.70136, -0.75672,  0.73514, 
                    -0.70893]
  Timing of CENT1:
@@ -5927,7 +5956,7 @@
    mlimnb                              :  2
    cell: [ 26.46531584381724,  19.93428061650652,  17.76136769004092]
  linked list info-2: {mx,my,mz:  [  4,  3,  2 ], total number of subcells:  24}
- Lagrange                              : -8.7604241358346588E-002
+ Lagrange                              : -8.7604241358347282E-002
  charge on atoms: [ 0.75494, -0.82229,  0.74263, -0.68081,  0.73291, -0.76952,  0.68838, 
                    -0.69079,  0.71286, -0.66832]
  Timing of CENT1:
@@ -5944,7 +5973,7 @@
    mlimnb                              :  2
    cell: [ 22.18205315380078,  17.32013175699687,  23.41065103691824]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.7762546127567273E-002
+ Lagrange                              : -8.7762546127566551E-002
  charge on atoms: [ 0.70848, -0.68474,  0.75437, -0.72247,  0.71866, -0.78823,  0.72274, 
                    -0.70882]
  Timing of CENT1:
@@ -5961,7 +5990,7 @@
    mlimnb                              :  2
    cell: [ 16.62612983654379,  16.62612983654379,  20.93571830124733]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.104856279417377
+ Lagrange                              : -0.1048562794173778
  charge on atoms: [ 0.75311, -0.73417, -0.73417,  0.75311, -0.79920,  0.76132,  0.76132, 
                    -0.79921,  0.75311, -0.73417, -0.73417,  0.75311]
  Timing of CENT1:
@@ -5978,7 +6007,7 @@
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -9.3307389121710452E-002
+ Lagrange                              : -9.3307389121710854E-002
  charge on atoms: [ 0.73540, -0.73590, -0.79063,  0.76533,  0.73644, -0.72792, -0.67616, 
                     0.71072, -0.75141,  0.74202,  0.73178, -0.73967]
  Timing of CENT1:
@@ -5995,7 +6024,7 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.877670873562111E-002
+ Lagrange                              : -9.877670873561932E-002
  charge on atoms: [ 0.74984, -0.77248,  0.73690, -0.77036,  0.75629, -0.73019,  0.70159, 
                    -0.76546,  0.73529, -0.64143]
  Timing of CENT1:
@@ -6014,24 +6043,24 @@
    mlimnb                              :  2
    cell: [ 19.39182150342416,  18.31347763445822,  19.85541100683455]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.5341861980186238E-002
+ Lagrange                              : -9.5341861980185308E-002
  charge on atoms: [ 0.73374, -0.77305,  0.73934, -0.67197,  0.70273, -0.75602,  0.73740, 
                    -0.71217]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 26.46531584381724,  19.93428061650652,  17.76136769004092]
  linked list info-2: {mx,my,mz:  [  4,  3,  2 ], total number of subcells:  24}
- Lagrange                              : -8.7329975317499531E-002
+ Lagrange                              : -8.7329975317497741E-002
  charge on atoms: [ 0.75101, -0.79563,  0.73513, -0.68196,  0.72688, -0.77033,  0.68782, 
                    -0.68957,  0.70779, -0.67114]
  Timing of CENT1:
@@ -6048,7 +6077,7 @@
    mlimnb                              :  2
    cell: [ 22.18205315380078,  17.32013175699687,  23.41065103691824]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.5801730318312799E-002
+ Lagrange                              : -8.5801730318310621E-002
  charge on atoms: [ 0.70941, -0.68668,  0.75371, -0.72364,  0.71962, -0.78607,  0.72277, 
                    -0.70911]
  Timing of CENT1:
@@ -6065,7 +6094,7 @@
    mlimnb                              :  2
    cell: [ 16.62612983654379,  16.62612983654379,  20.93571830124733]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1028980546821168
+ Lagrange                              : -0.1028980546821169
  charge on atoms: [ 0.75211, -0.73358, -0.73358,  0.75211, -0.79450,  0.75745,  0.75745, 
                    -0.79450,  0.75211, -0.73359, -0.73359,  0.75211]
  Timing of CENT1:
@@ -6082,7 +6111,7 @@
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -9.231859688760749E-002
+ Lagrange                              : -9.231859688760706E-002
  charge on atoms: [ 0.73739, -0.73746, -0.79608,  0.76699,  0.73987, -0.73268, -0.67995, 
                     0.71481, -0.74982,  0.74272,  0.73218, -0.73799]
  Timing of CENT1:
@@ -6099,7 +6128,7 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.6567489189231179E-002
+ Lagrange                              : -9.6567489189230069E-002
  charge on atoms: [ 0.74624, -0.77045,  0.73428, -0.76720,  0.75337, -0.72637,  0.69890, 
                    -0.76339,  0.73249, -0.63788]
  Timing of CENT1:
@@ -6116,14 +6145,14 @@
    mlimnb                              :  2
    cell: [ 22.19768118887811,  20.94896528140356,  21.4086354928248]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.1392931608406669E-002
+ Lagrange                              : -9.1392931608405226E-002
  charge on atoms: [ 0.73500, -0.78644,  0.73825, -0.72150,  0.72199, -0.72670,  0.70976, 
                    -0.73853,  0.71430, -0.64613]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
    total time                          :  4.0000000000000036E-003
@@ -6133,7 +6162,7 @@
    mlimnb                              :  2
    cell: [ 18.07570473414757,  20.31564813609415,  17.68354120919153]
  linked list info-2: {mx,my,mz:  [  3,  3,  2 ], total number of subcells:  18}
- Lagrange                              : -9.3885964325011367E-002
+ Lagrange                              : -9.3885964325010077E-002
  charge on atoms: [ 0.72124, -0.77223,  0.70350, -0.73147,  0.73030, -0.65663,  0.74931, 
                    -0.74403]
  Timing of CENT1:
@@ -6150,24 +6179,24 @@
    mlimnb                              :  2
    cell: [ 17.48154649365947,  16.92558528739362,  22.23841801501618]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.107916458222152
+ Lagrange                              : -0.1079164582221498
  charge on atoms: [ 0.72547, -0.67144, -0.66275,  0.73982, -0.79423,  0.72561,  0.69598, 
                    -0.81313,  0.75315, -0.73302, -0.70144,  0.73598]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 18.67537152629835,  17.99789148138107,  23.84624802719679]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.5580052073148241E-002
+ Lagrange                              : -8.5580052073146243E-002
  charge on atoms: [ 0.70964, -0.77289,  0.73452, -0.69808,  0.71196, -0.68891,  0.75465, 
                    -0.75089]
  Timing of CENT1:
@@ -6184,7 +6213,7 @@
    mlimnb                              :  2
    cell: [ 20.08197216202867,  17.11056301914438,  24.15925092465717]
  linked list info-2: {mx,my,mz:  [  3,  2,  4 ], total number of subcells:  24}
- Lagrange                              : -8.8518467319668753E-002
+ Lagrange                              : -8.8518467319667435E-002
  charge on atoms: [ 0.74634, -0.73718,  0.72574, -0.77251,  0.71084, -0.76267,  0.75676, 
                    -0.66332,  0.70854, -0.71254]
  Timing of CENT1:
@@ -6201,24 +6230,24 @@
    mlimnb                              :  2
    cell: [ 16.55667862189303,  26.98022274995554,  16.62481647688494]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -8.0539990816343637E-002
+ Lagrange                              : -8.0539990816344331E-002
  charge on atoms: [ 0.72496, -0.72272, -0.78070,  0.75877,  0.72014, -0.71575, -0.67315, 
                     0.69245, -0.73280,  0.72811,  0.71700, -0.71631]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 19.39182150342416,  18.31347763445822,  19.85541100683455]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.5341861980186238E-002
+ Lagrange                              : -9.5341861980185308E-002
  charge on atoms: [ 0.73374, -0.77305,  0.73934, -0.67197,  0.70273, -0.75602,  0.73740, 
                    -0.71217]
  Timing of CENT1:
@@ -6235,24 +6264,24 @@
    mlimnb                              :  2
    cell: [ 26.46531584381724,  19.93428061650652,  17.76136769004092]
  linked list info-2: {mx,my,mz:  [  4,  3,  2 ], total number of subcells:  24}
- Lagrange                              : -8.6907047127955703E-002
+ Lagrange                              : -8.6907047127954162E-002
  charge on atoms: [ 0.75035, -0.79570,  0.73475, -0.68106,  0.72637, -0.76961,  0.68712, 
                    -0.68909,  0.70721, -0.67033]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 22.18205315380078,  17.32013175699687,  23.41065103691824]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.551575272802063E-002
+ Lagrange                              : -8.5515752728018243E-002
  charge on atoms: [ 0.70887, -0.68595,  0.75336, -0.72319,  0.71902, -0.78608,  0.72230, 
                    -0.70832]
  Timing of CENT1:
@@ -6269,24 +6298,24 @@
    mlimnb                              :  2
    cell: [ 16.62612983654379,  16.62612983654379,  20.93571830124733]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1026593741717893
+ Lagrange                              : -0.1026593741717887
  charge on atoms: [ 0.75158, -0.73276, -0.73276,  0.75158, -0.79492,  0.75729,  0.75729, 
                    -0.79493,  0.75158, -0.73276, -0.73276,  0.75158]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  12
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -9.2623900807104642E-002
+ Lagrange                              : -9.2623900807097634E-002
  charge on atoms: [ 0.73734, -0.73705, -0.79894,  0.76781,  0.74019, -0.73314, -0.67712, 
                     0.71414, -0.74949,  0.74263,  0.73267, -0.73905]
  Timing of CENT1:
@@ -6303,17 +6332,17 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.9129084479331886E-002
+ Lagrange                              : -9.9129084479325197E-002
  charge on atoms: [ 0.74646, -0.77480,  0.73516, -0.76704,  0.75399, -0.72737,  0.70016, 
                    -0.76511,  0.73336, -0.63482]
  Timing of CENT1:
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
    neural network process              :  0.0
-   linear equations solver             :  0.0
+   linear equations solver             :  4.0000000000000036E-003
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
   #Na.ann.param.yaml.00015
   #Cl.ann.param.yaml.00015
  linked list info-1:
@@ -6322,24 +6351,24 @@
    mlimnb                              :  2
    cell: [ 19.39182150342416,  18.31347763445822,  19.85541100683455]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.7856084355790449E-002
+ Lagrange                              : -9.7856084355782177E-002
  charge on atoms: [ 0.73343, -0.77372,  0.73893, -0.67133,  0.70305, -0.75517,  0.73773, 
                    -0.71290]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  0.0
+   calculation of symfunc              :  4.0000000000000036E-003
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  0.0
+   total time                          :  4.0000000000000036E-003
  linked list info-1:
    nat                                 :  10
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 26.46531584381724,  19.93428061650652,  17.76136769004092]
  linked list info-2: {mx,my,mz:  [  4,  3,  2 ], total number of subcells:  24}
- Lagrange                              : -8.9512390154339691E-002
+ Lagrange                              : -8.9512390154330296E-002
  charge on atoms: [ 0.75137, -0.80277,  0.73540, -0.67991,  0.72671, -0.76939,  0.68716, 
                    -0.68674,  0.70860, -0.67042]
  Timing of CENT1:
@@ -6356,7 +6385,7 @@
    mlimnb                              :  2
    cell: [ 22.18205315380078,  17.32013175699687,  23.41065103691824]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.7768795927224377E-002
+ Lagrange                              : -8.7768795927214857E-002
  charge on atoms: [ 0.70944, -0.68548,  0.75405, -0.72481,  0.71958, -0.78844,  0.72317, 
                    -0.70753]
  Timing of CENT1:
@@ -6373,7 +6402,7 @@
    mlimnb                              :  2
    cell: [ 16.62612983654379,  16.62612983654379,  20.93571830124733]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1065160240198775
+ Lagrange                              : -0.1065160240198706
  charge on atoms: [ 0.75361, -0.73239, -0.73239,  0.75361, -0.80178,  0.75934,  0.75934, 
                    -0.80178,  0.75361, -0.73239, -0.73239,  0.75361]
  Timing of CENT1:
@@ -6390,7 +6419,7 @@
    mlimnb                              :  2
    cell: [ 16.53084228627306,  26.62217823023785,  16.69562640462162]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -9.5552044642986819E-002
+ Lagrange                              : -9.5552044642978853E-002
  charge on atoms: [ 0.73891, -0.73785, -0.80404,  0.76979,  0.74297, -0.73725, -0.67813, 
                     0.71682, -0.74869,  0.74338,  0.73345, -0.73935]
  Timing of CENT1:
@@ -6407,9 +6436,26 @@
    mlimnb                              :  2
    cell: [ 21.45351081918286,  19.63293732925498,  21.08080769389143]
  linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.9108063874475863E-002
+ Lagrange                              : -9.9108063874467495E-002
  charge on atoms: [ 0.74574, -0.77418,  0.73445, -0.76634,  0.75322, -0.72659,  0.69960, 
                    -0.76441,  0.73271, -0.63420]
+ Timing of CENT1:
+   initialize matrix                   :  0.0
+   calculation of symfunc              :  0.0
+   neural network process              :  0.0
+   linear equations solver             :  4.0000000000000036E-003
+   force (SR term)                     :  0.0
+   energy (SR+LR), force (LR)          :  0.0
+   total time                          :  4.0000000000000036E-003
+ linked list info-1:
+   nat                                 :  10
+   scl                                 :  6.0
+   mlimnb                              :  2
+   cell: [ 22.19768118887811,  20.94896528140356,  21.4086354928248]
+ linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
+ Lagrange                              : -9.3801934099404599E-002
+ charge on atoms: [ 0.73510, -0.79089,  0.73876, -0.72143,  0.72194, -0.72549,  0.71023, 
+                   -0.73805,  0.71515, -0.64531]
  Timing of CENT1:
    initialize matrix                   :  0.0
    calculation of symfunc              :  0.0
@@ -6419,29 +6465,12 @@
    energy (SR+LR), force (LR)          :  0.0
    total time                          :  0.0
  linked list info-1:
-   nat                                 :  10
-   scl                                 :  6.0
-   mlimnb                              :  2
-   cell: [ 22.19768118887811,  20.94896528140356,  21.4086354928248]
- linked list info-2: {mx,my,mz:  [  3,  3,  3 ], total number of subcells:  27}
- Lagrange                              : -9.3801934099413564E-002
- charge on atoms: [ 0.73510, -0.79089,  0.73876, -0.72143,  0.72194, -0.72549,  0.71023, 
-                   -0.73805,  0.71515, -0.64531]
- Timing of CENT1:
-   initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
-   neural network process              :  0.0
-   linear equations solver             :  0.0
-   force (SR term)                     :  0.0
-   energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
- linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 18.07570473414757,  20.31564813609415,  17.68354120919153]
  linked list info-2: {mx,my,mz:  [  3,  3,  2 ], total number of subcells:  18}
- Lagrange                              : -9.6208940424539105E-002
+ Lagrange                              : -9.6208940424530473E-002
  charge on atoms: [ 0.72067, -0.77291,  0.70323, -0.73109,  0.72917, -0.65659,  0.74906, 
                    -0.74154]
  Timing of CENT1:
@@ -6458,24 +6487,24 @@
    mlimnb                              :  2
    cell: [ 17.48154649365947,  16.92558528739362,  22.23841801501618]
  linked list info-2: {mx,my,mz:  [  2,  2,  3 ], total number of subcells:  12}
- Lagrange                              : -0.1093792817784344
+ Lagrange                              : -0.1093792817784257
  charge on atoms: [ 0.72421, -0.66713, -0.66519,  0.73781, -0.78912,  0.72088,  0.69234, 
                    -0.81419,  0.74741, -0.72538, -0.69305,  0.73140]
  Timing of CENT1:
    initialize matrix                   :  0.0
-   calculation of symfunc              :  4.0000000000000036E-003
+   calculation of symfunc              :  0.0
    neural network process              :  0.0
    linear equations solver             :  0.0
    force (SR term)                     :  0.0
    energy (SR+LR), force (LR)          :  0.0
-   total time                          :  4.0000000000000036E-003
+   total time                          :  0.0
  linked list info-1:
    nat                                 :  8
    scl                                 :  6.0
    mlimnb                              :  2
    cell: [ 18.67537152629835,  17.99789148138107,  23.84624802719679]
  linked list info-2: {mx,my,mz:  [  3,  2,  3 ], total number of subcells:  18}
- Lagrange                              : -8.7672830409853464E-002
+ Lagrange                              : -8.7672830409844055E-002
  charge on atoms: [ 0.70994, -0.77569,  0.73508, -0.69660,  0.71204, -0.68763,  0.75502, 
                    -0.75215]
  Timing of CENT1:
@@ -6492,7 +6521,7 @@
    mlimnb                              :  2
    cell: [ 20.08197216202867,  17.11056301914438,  24.15925092465717]
  linked list info-2: {mx,my,mz:  [  3,  2,  4 ], total number of subcells:  24}
- Lagrange                              : -9.1064592259494079E-002
+ Lagrange                              : -9.1064592259485391E-002
  charge on atoms: [ 0.74695, -0.73751,  0.72629, -0.77209,  0.71174, -0.76516,  0.75713, 
                    -0.66266,  0.70933, -0.71401]
  Timing of CENT1:
@@ -6509,7 +6538,7 @@
    mlimnb                              :  2
    cell: [ 16.55667862189303,  26.98022274995554,  16.62481647688494]
  linked list info-2: {mx,my,mz:  [  2,  4,  2 ], total number of subcells:  16}
- Lagrange                              : -8.4659235911465874E-002
+ Lagrange                              : -8.4659235911458311E-002
  charge on atoms: [ 0.72950, -0.72626, -0.78928,  0.76411,  0.72544, -0.72220, -0.67469, 
                     0.69701, -0.73601,  0.73229,  0.72148, -0.72141]
  Timing of CENT1:
@@ -6522,17 +6551,17 @@
    total time                          :  0.0
   #Na.ann.param.yaml
   #Cl.ann.param.yaml
- CPU time: {iproc:  0, hrs:  0.249E-03, min:  0.149E-01, sec:  0.896E+00}
+ CPU time: {iproc:  0, hrs:  0.264E-03, min:  0.159E-01, sec:  0.952E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  745
-   Tot. No. of Deallocations           :  745
+   Tot. No. of Allocations             :  760
+   Tot. No. of Deallocations           :  760
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  0.922
+     Peak Value (MB)                   :  0.928
      for the array                     : symfunc%y0dr
      in the routine                    : symmetry_functions_driver
-     Memory Peak of process            : 330.192 MB
- Walltime since initialization         :  00:00:00.910379143
- Max No. of dictionaries used          :  1001 #( 185 still in use)
+     Memory Peak of process            : 269.900 MB
+ Walltime since initialization         :  00:00:00.964341417
+ Max No. of dictionaries used          :  1006 #( 185 still in use)
  Number of dictionary folders allocated:  1

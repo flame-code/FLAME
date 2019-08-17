@@ -83,6 +83,7 @@ subroutine yaml_get_main_parameters(parini)
     call set_atomc_types_info(parini)
     parini%two_level_geopt=parini%subdict//"two_level_geopt"
     parini%iverbose=parini%subdict//"verbosity"
+    parini%rng_type=parini%subdict//"rng_type"
     parini%iseed=parini%subdict//"seed"
     parini%nrun_lammps=parini%subdict//"nrun_lammps"
     parini%verb=parini%subdict//"verbose"

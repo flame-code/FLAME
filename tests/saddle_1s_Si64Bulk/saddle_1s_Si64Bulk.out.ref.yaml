@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2019-05-06 19:26:14.669
+ Timestamp of this run                 : 2019-08-17 10:06:13.711
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : saddle
@@ -26,6 +26,7 @@
    two_level_geopt                     : True
    verbosity                           : 0
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : 3
    nrun_lammps                         : 0
    nat                                 : 0
@@ -128,10 +129,35 @@
    dt_max                              : 80.0
    strfact                             : 100.0
  saddle:
+   method                              : dimer
    list_random_displace                : 1 57
    dimsep                              : 1.E-3
    ampl                                : 6.E-1
-   method                              : dimer
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
  potential:
    potential                           : ltb
    cal_charge                          : False
@@ -314,13 +340,13 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  1, Si:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  3, seed2:  10}
+ random number generator: {iproc:  0, seed:  [  3,  10 ]}
  Number of configurations read: {filename: posinp.yaml, nconf:  1}
  moving_atoms_rand                     :  [  57 ]
  LTB GAMMA POINT only                  : first call
   #Reading spline potential coeff.cls
  paircut                               :  9.9021649099E+00
- ENERGY_m0: {epot: -1.068109624012957E+01, fmax:  4.367E-16}
+ ENERGY_m0: {epot: -1.068109624012959E+01, fmax:  3.843E-16}
  dimsep                                :  0.00189
  do_elim_trans                         :  No
  do_elim_rot                           :  No
@@ -539,7 +565,7 @@
       cosangletol:  0.999962E+00,            fnrm:  0.543772E-03}
    - dimer: {itlc:  7, curv0: -3.597532E-02, curv: -3.598557E-02, cosangle:  0.999975E+00, 
       cosangletol:  0.999962E+00,            fnrm:  0.591756E-03}
-   lowestcurvatue                      : -3.5985566591220562E-002
+   lowestcurvatue                      : -3.5985566591115986E-002
    ENERGY_s: {epot: -1.057484829858586E+01, fmax:  1.134E-04}
    optimization parameters:
      method                            : SD
@@ -584,9 +610,9 @@
           fnrm:  5.549E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  14, epot: -1.064760272631E+01, de: -1.1E-02, fmax:  3.265E-02, 
           fnrm:  5.340E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  15, epot: -1.065754546337E+01, de: -9.9E-03, fmax:  2.875E-02, 
+   - SD: {iter:  15, epot: -1.065754546338E+01, de: -9.9E-03, fmax:  2.875E-02, 
           fnrm:  4.654E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
-   - SD: {iter:  16, epot: -1.066539465403E+01, de: -7.8E-03, fmax:  2.186E-02, 
+   - SD: {iter:  16, epot: -1.066539465404E+01, de: -7.8E-03, fmax:  2.186E-02, 
           fnrm:  3.592E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
    - SD: {iter:  17, epot: -1.067078563300E+01, de: -5.4E-03, fmax:  1.279E-02, 
           fnrm:  2.529E-02,           alpha/alphax:  0.2000E+01, isatur:  0, xmoved:  T}
@@ -966,10 +992,10 @@
        epot                            : -1.058580059145E+01
        fnrm                            :  1.00534E-04
        fmax                            :  1.91749E-05
-   ENERGY_m2: {epot: -1.058580059145339E+01, fmax:  1.134E-04}
+   ENERGY_m2: {epot: -1.058580059145338E+01, fmax:  1.134E-04}
    barriers: {bh0:  0.106, curv: -0.036, bh1:  0.106, bh2:  0.011}
    force_call                          :  289
-   CPU time: {iproc:  0, hrs:  0.282E-02, min:  0.169E+00, sec:  0.102E+02}
+   CPU time: {iproc:  0, hrs:  0.202E-02, min:  0.121E+00, sec:  0.726E+01}
    mpi finalized: {iproc_world:  0, nproc_world:  1}
    Memory Consumption Report:
      Tot. No. of Allocations           :  276
@@ -979,7 +1005,7 @@
        Peak Value (MB)                 :  0.025
        for the array                   : uvnphi1
        in the routine                  : rotatedimer
-       Memory Peak of process          : 55.120 MB
-   Walltime since initialization       :  00:01:02.249990935
-   Max No. of dictionaries used        :  801 #( 185 still in use)
+       Memory Peak of process          : 55.672 MB
+   Walltime since initialization       :  00:00:07.282519665
+   Max No. of dictionaries used        :  855 #( 185 still in use)
    Number of dictionary folders allocated:  1

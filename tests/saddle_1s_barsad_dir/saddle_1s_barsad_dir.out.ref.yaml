@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2019-07-13 13:47:53.726
+ Timestamp of this run                 : 2019-08-17 10:06:22.561
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : saddle
@@ -26,6 +26,7 @@
    two_level_geopt                     : True
    verbosity                           : 0
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : 3
    nrun_lammps                         : 0
    nat                                 : 0
@@ -339,7 +340,7 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  1, Si:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  3, seed2:  10}
+ random number generator: {iproc:  0, seed:  [  3,  10 ]}
  Number of configurations read: {filename: posinp.yaml, nconf:  2}
  LTB GAMMA POINT only                  : first call
   #Reading spline potential coeff.cls
@@ -497,7 +498,7 @@
  - BARSAD: {iter:  47, epot: -2.1890495E+00, xmax: -9.37E+01, fmax:  5.7340930E-04, 
             fnrm:  1.1985821E-03,           epotl: -2.1890488E+00, epotr: -2.1890501E+00, 
            alpha:  7.7303112E+00,            dbar:  1.0000000E-03}
- - BARSAD: {iter:  48, epot: -2.1890481E+00, xmax: -8.12E+01, fmax:  4.6661885E-04, 
+ - BARSAD: {iter:  48, epot: -2.1890481E+00, xmax: -8.12E+01, fmax:  4.6661884E-04, 
             fnrm:  1.1101529E-03,           epotl: -2.1890475E+00, epotr: -2.1890488E+00, 
            alpha:  8.1168268E+00,            dbar:  1.0000000E-03}
  - BARSAD: {iter:  49, epot: -2.1890473E+00, xmax: -7.00E+01, fmax:  5.2937758E-04, 
@@ -506,14 +507,14 @@
  - BARSAD: {iter:  50, epot: -2.1890469E+00, xmax: -5.99E+01, fmax:  4.4203370E-04, 
             fnrm:  1.0045789E-03,           epotl: -2.1890464E+00, epotr: -2.1890474E+00, 
            alpha:  8.9488015E+00,            dbar:  1.0000000E-03}
- - BARSAD: {iter:  51, epot: -2.1890466E+00, xmax: -5.08E+01, fmax:  6.1605029E-04, 
+ - BARSAD: {iter:  51, epot: -2.1890466E+00, xmax: -5.08E+01, fmax:  6.1605030E-04, 
             fnrm:  1.0224829E-03,           epotl: -2.1890462E+00, epotr: -2.1890471E+00, 
            alpha:  9.3962416E+00,            dbar:  1.0000000E-03}
    Reducing step size to               :  6.5773691E+00
  - BARSAD: {iter:  52, epot: -2.1890474E+00, xmax: -5.37E+01, fmax:  4.0397307E-04, 
             fnrm:  8.5242026E-04,           epotl: -2.1890469E+00, epotr: -2.1890478E+00, 
            alpha:  6.5773691E+00,            dbar:  1.0000000E-03}
- - BARSAD: {iter:  53, epot: -2.1890477E+00, xmax: -4.80E+01, fmax:  3.0165698E-04, 
+ - BARSAD: {iter:  53, epot: -2.1890477E+00, xmax: -4.80E+01, fmax:  3.0165699E-04, 
             fnrm:  7.6712949E-04,           epotl: -2.1890473E+00, epotr: -2.1890481E+00, 
            alpha:  6.9062376E+00,            dbar:  1.0000000E-03}
  - BARSAD: {iter:  54, epot: -2.1890480E+00, xmax: -4.26E+01, fmax:  2.8816833E-04, 
@@ -535,7 +536,7 @@
             fnrm:  4.8160977E-04,           epotl: -2.1890501E+00, epotr: -2.1890506E+00, 
            alpha:  9.2550189E+00,            dbar:  1.0000000E-03}
    BARSAD: Saddle point search converged
- CPU time: {iproc:  0, hrs:  0.261E-03, min:  0.157E-01, sec:  0.940E+00}
+ CPU time: {iproc:  0, hrs:  0.689E-04, min:  0.413E-02, sec:  0.248E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
    Tot. No. of Allocations             :  51
@@ -545,7 +546,7 @@
      Peak Value (MB)                   :  0.009
      for the array                     : at_out%itypat
      in the routine                    : Main_program
-     Memory Peak of process            : 43.480 MB
- Walltime since initialization         :  00:00:01.946236544
- Max No. of dictionaries used          :  853 #( 185 still in use)
+     Memory Peak of process            : 30.372 MB
+ Walltime since initialization         :  00:00:00.263351148
+ Max No. of dictionaries used          :  855 #( 185 still in use)
  Number of dictionary folders allocated:  1

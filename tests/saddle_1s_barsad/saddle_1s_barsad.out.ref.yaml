@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2019-07-13 15:13:09.597
+ Timestamp of this run                 : 2019-08-17 10:06:21.670
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : saddle
@@ -26,6 +26,7 @@
    two_level_geopt                     : True
    verbosity                           : 0
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : 3
    nrun_lammps                         : 0
    nat                                 : 0
@@ -339,7 +340,7 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  1, Si:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  3, seed2:  10}
+ random number generator: {iproc:  0, seed:  [  3,  10 ]}
  Number of configurations read: {filename: posinp.yaml, nconf:  1}
  LTB GAMMA POINT only                  : first call
   #Reading spline potential coeff.cls
@@ -537,7 +538,7 @@
             fnrm:  4.6221347E-02,           epotl: -2.1484020E+00, epotr: -2.1484357E+00, 
            alpha:  1.4576655E+01,            dbar:  1.0000000E-03}
    Reducing step size to               :  1.0203658E+01
- - BARSAD: {iter:  61, epot: -2.1534547E+00, xmax:  6.92E+02, fmax:  1.2844445E-02, 
+ - BARSAD: {iter:  61, epot: -2.1534547E+00, xmax:  6.93E+02, fmax:  1.2844445E-02, 
             fnrm:  3.2562281E-02,           epotl: -2.1534365E+00, epotr: -2.1534729E+00, 
            alpha:  1.0203658E+01,            dbar:  1.0000000E-03}
    Reducing step size to               :  7.1425608E+00
@@ -647,7 +648,7 @@
             fnrm:  9.4914054E-03,           epotl: -2.1446683E+00, epotr: -2.1446606E+00, 
            alpha:  1.0588320E+01,            dbar:  1.0000000E-03}
  - BARSAD: {iter:  96, epot: -2.1450594E+00, xmax:  2.23E+02, fmax:  3.4416481E-03, 
-            fnrm:  8.5491993E-03,           epotl: -2.1450635E+00, epotr: -2.1450553E+00, 
+            fnrm:  8.5491992E-03,           epotl: -2.1450635E+00, epotr: -2.1450553E+00, 
            alpha:  1.1117736E+01,            dbar:  1.0000000E-03}
  - BARSAD: {iter:  97, epot: -2.1452179E+00, xmax:  2.13E+02, fmax:  3.5050703E-03, 
             fnrm:  7.9288407E-03,           epotl: -2.1452217E+00, epotr: -2.1452141E+00, 
@@ -659,7 +660,7 @@
  - BARSAD: {iter:  99, epot: -2.1452971E+00, xmax:  1.97E+02, fmax:  2.7345389E-03, 
             fnrm:  6.9597235E-03,           epotl: -2.1453004E+00, epotr: -2.1452938E+00, 
            alpha:  8.5801124E+00,            dbar:  1.0000000E-03}
- - BARSAD: {iter:  100, epot: -2.1453737E+00, xmax:  1.71E+02, fmax:  2.8733364E-03, 
+ - BARSAD: {iter:  100, epot: -2.1453737E+00, xmax:  1.71E+02, fmax:  2.8733363E-03, 
             fnrm:  6.5644634E-03,            epotl: -2.1453765E+00, epotr: -2.1453709E+00, 
            alpha:  9.0091180E+00,             dbar:  1.0000000E-03}
  - BARSAD: {iter:  101, epot: -2.1454472E+00, xmax:  1.83E+02, fmax:  2.6162640E-03, 
@@ -721,7 +722,7 @@
  - BARSAD: {iter:  119, epot: -2.1462188E+00, xmax:  6.56E+00, fmax:  9.3368352E-04, 
             fnrm:  2.1318224E-03,            epotl: -2.1462190E+00, epotr: -2.1462187E+00, 
            alpha:  1.0118041E+01,             dbar:  1.0000000E-03}
- - BARSAD: {iter:  120, epot: -2.1462482E+00, xmax:  2.91E+00, fmax:  9.1507925E-04, 
+ - BARSAD: {iter:  120, epot: -2.1462482E+00, xmax:  2.91E+00, fmax:  9.1507926E-04, 
             fnrm:  2.4185442E-03,            epotl: -2.1462483E+00, epotr: -2.1462481E+00, 
            alpha:  1.0623943E+01,             dbar:  1.0000000E-03}
    Reducing step size to               :  7.4367602E+00
@@ -763,7 +764,7 @@
             fnrm:  1.1062549E-03,            epotl: -2.1464005E+00, epotr: -2.1464005E+00, 
            alpha:  8.4795891E+00,             dbar:  1.0000000E-03}
  - BARSAD: {iter:  133, epot: -2.1464108E+00, xmax: -3.76E-01, fmax:  4.9106431E-04, 
-            fnrm:  1.0576158E-03,            epotl: -2.1464108E+00, epotr: -2.1464108E+00, 
+            fnrm:  1.0576157E-03,            epotl: -2.1464108E+00, epotr: -2.1464108E+00, 
            alpha:  8.9035686E+00,             dbar:  1.0000000E-03}
  - BARSAD: {iter:  134, epot: -2.1464206E+00, xmax: -4.84E-01, fmax:  4.5595370E-04, 
             fnrm:  1.0155500E-03,            epotl: -2.1464206E+00, epotr: -2.1464206E+00, 
@@ -793,11 +794,11 @@
  - BARSAD: {iter:  142, epot: -2.1464652E+00, xmax: -5.73E-01, fmax:  3.2539503E-04, 
             fnrm:  8.0092514E-04,            epotl: -2.1464652E+00, epotr: -2.1464653E+00, 
            alpha:  9.2082381E+00,             dbar:  1.0000000E-03}
- - BARSAD: {iter:  143, epot: -2.1464697E+00, xmax: -1.19E+00, fmax:  2.9674499E-04, 
+ - BARSAD: {iter:  143, epot: -2.1464697E+00, xmax: -1.19E+00, fmax:  2.9674498E-04, 
             fnrm:  8.2542353E-04,            epotl: -2.1464697E+00, epotr: -2.1464698E+00, 
            alpha:  9.6686500E+00,             dbar:  1.0000000E-03}
  - BARSAD: {iter:  144, epot: -2.1464738E+00, xmax: -3.30E+00, fmax:  3.5140369E-04, 
-            fnrm:  9.1280414E-04,            epotl: -2.1464737E+00, epotr: -2.1464739E+00, 
+            fnrm:  9.1280415E-04,            epotl: -2.1464737E+00, epotr: -2.1464739E+00, 
            alpha:  1.0152083E+01,             dbar:  1.0000000E-03}
    Reducing step size to               :  7.1064578E+00
  - BARSAD: {iter:  145, epot: -2.1464732E+00, xmax:  1.74E-01, fmax:  2.9620384E-04, 
@@ -832,7 +833,7 @@
             fnrm:  4.8767027E-04,            epotl: -2.1464935E+00, epotr: -2.1464935E+00, 
            alpha:  7.3496323E+00,             dbar:  1.0000000E-03}
    BARSAD: Saddle point search converged
- CPU time: {iproc:  0, hrs:  0.289E-03, min:  0.173E-01, sec:  0.104E+01}
+ CPU time: {iproc:  0, hrs:  0.172E-03, min:  0.103E-01, sec:  0.620E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
    Tot. No. of Allocations             :  29
@@ -842,7 +843,7 @@
      Peak Value (MB)                   :  0.004
      for the array                     : at_out%itypat
      in the routine                    : Main_program
-     Memory Peak of process            : 30.388 MB
- Walltime since initialization         :  00:00:01.064794417
- Max No. of dictionaries used          :  853 #( 185 still in use)
+     Memory Peak of process            : 30.524 MB
+ Walltime since initialization         :  00:00:00.636792880
+ Max No. of dictionaries used          :  855 #( 185 still in use)
  Number of dictionary folders allocated:  1

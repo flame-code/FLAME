@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-27 12:36:36.127
+ Timestamp of this run                 : 2019-08-17 10:00:49.560
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : geopt
@@ -26,6 +26,7 @@
    two_level_geopt                     : True
    verbosity                           : 0
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : -2
    nrun_lammps                         : 0
    nat                                 : 0
@@ -128,9 +129,35 @@
    dt_max                              : 80.0
    strfact                             : 100.0
  saddle:
+   method                              : unknown
    list_random_displace                : None
    dimsep                              : -1.0
    ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
  potential:
    potential                           : ltb
    cal_charge                          : False
@@ -211,6 +238,7 @@
    qgnrmtol                            : 5.E-4
    etol                                : 1.0
    dtol                                : 1.0
+   ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False
    prefit                              : False
@@ -223,6 +251,7 @@
    save_symfunc_force                  : False
    weight_hardness                     : 0.001
    save_symfunc_behnam                 : False
+   freeBC_direct                       : False
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -279,6 +308,16 @@
    gaussian_width                      : -1.0
    boundcond                           : unknown
    posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
  fingerprint:
    method                              : OGANOV
    rcut                                : 15.0
@@ -301,7 +340,7 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  1, Si:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ random number generator: {iproc:  0, seed:  [  2147483562,  2147483398 ]}
  Number of configurations read: {filename: posinp.yaml, nconf:  1}
  LTB GAMMA POINT only                  : first call
   #Reading spline potential coeff.cls
@@ -688,7 +727,7 @@
  - FIRE: {iter:  113, epot: -2.609019997740E+00, de: -2.6E-08, fmax:  2.307E-05, 
           fnrm:  7.553E-05,                    vnrm:  7.173E-04, alpha:  0.5527E-01, 
             dt:  0.1000E+01,                  ndown:  63,     power:  0.2448E-07}
- - FIRE: {iter:  114, epot: -2.609020020575E+00, de: -2.3E-08, fmax:  2.373E-05, 
+ - FIRE: {iter:  114, epot: -2.609020020576E+00, de: -2.3E-08, fmax:  2.373E-05, 
           fnrm:  7.020E-05,                    vnrm:  7.130E-04, alpha:  0.5472E-01, 
             dt:  0.1000E+01,                  ndown:  64,     power:  0.2041E-07}
  - FIRE: {iter:  115, epot: -2.609020039328E+00, de: -1.9E-08, fmax:  2.422E-05, 
@@ -721,17 +760,17 @@
  task geopt:
    converged                           :  Yes
    total energy and force evaluations  :  126
- CPU time: {iproc:  0, hrs:  0.131E-03, min:  0.787E-02, sec:  0.472E+00}
+ CPU time: {iproc:  0, hrs:  0.744E-04, min:  0.447E-02, sec:  0.268E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  15
-   Tot. No. of Deallocations           :  15
+   Tot. No. of Allocations             :  18
+   Tot. No. of Deallocations           :  18
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  0.002
+     Peak Value (MB)                   :  0.003
      for the array                     : atoms%itypat
      in the routine                    : Main_program
-     Memory Peak of process            : 30.800 MB
- Walltime since initialization         :  00:00:00.489805723
- Max No. of dictionaries used          :  777 #( 185 still in use)
+     Memory Peak of process            : 30.948 MB
+ Walltime since initialization         :  00:00:00.283181618
+ Max No. of dictionaries used          :  855 #( 185 still in use)
  Number of dictionary folders allocated:  1

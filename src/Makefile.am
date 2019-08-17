@@ -51,6 +51,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_cent3.F90 ann_pot_cent_common.F90 \
 		ann_pot_tb.F90 \
 		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
+		basic_utilities.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
 		md_util.F90 md.F90 md_NVT.F90\
 		phonon.F90 \
@@ -68,7 +69,6 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		task_netsock.F90 task_lammps.F90 \
 		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
 		task_saddle.F90 \
-		basic_utilities.F90 \
 		io_utils.F90 \
 		bader_neargrid.F90 bader_ongrid.F90 bader_weight.F90 \
 		task_confcomp.F90 \
