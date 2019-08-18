@@ -28,7 +28,7 @@ silicons have 4 orbitals 4 electrons
 #define EXTRAEIGEN  10
 #define NC(nc) ((int) ( floor(nc*EIGENFRACT +EXTRAEIGEN) > nc ? nc : floor(nc*EIGENFRACT + EXTRAEIGEN) ))
 
-#define MMATOM 1000 /*Maximum number of atoms within cell, also set CLSMAXATOM and CLSMAXNEIGHB in defines.h*/
+#define MMATOM 100 /*Maximum number of atoms within cell, also set CLSMAXATOM and CLSMAXNEIGHB in defines.h*/
 #define MAXKPT 6000 //1728 /*12x12x12 grid with offset*/
 #define KPTEIGENSAVE 4 /*2x2x2 grid with offset -- save this many sets of eigenvectors to avoid recomputation*/
 
@@ -845,6 +845,12 @@ CELLSEARCH=*cellsearch;
 static int firstcall = 1;
 int i,j,k;
 
+if(*nat>100) {
+    printf("Due to improper large static arrays nat is limited to 100\n");
+    printf("You are running with nat=%d\n",nat);
+    printf("Stopping in C program in function lenoskytb_\n");
+    exit(0);
+}
 
 if (firstcall == 1)
   {
