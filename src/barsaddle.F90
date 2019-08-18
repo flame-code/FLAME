@@ -158,7 +158,7 @@ subroutine bar_saddle(parini)
     !Initiallize random bar, and get its energy at the center
     call read_bar_saddle_params(atoms%nat,parini)
     if (atoms_arr%nconf == 1) then
-        call init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
+        call init_bar_random(parini,ndim,rxyz1,dbar,bar_vec,bar_cm)
     elseif (atoms_arr%nconf == 2) then
         call init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
     endif
@@ -233,14 +233,17 @@ subroutine bar_saddle(parini)
     call atom_deallocate(atoms_2)
 end subroutine bar_saddle
 !*****************************************************************************************
-subroutine init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
+subroutine init_bar_random(parini,ndim,rxyz1,dbar,bar_vec,bar_cm)
 !This routine will determine where and how the initial bar should be placed
 !We will set bar_cm=rxyz1, and dir a random vector. Then, bar_vec=rxyz1+dir
 !normalized to dbar.
 !Given this bar_cm, we will create a bar at bar_cm in the direction of dir of
 !length dbar 
+use mod_parini, only: typ_parini
     use bar_saddle_params, only: restart
+    use mod_utils
 implicit none
+type(typ_parini), intent(in):: parini
 integer::ndim,n_anchor,i
 real(8),dimension(ndim):: bar_vec,bar_cm,rxyz1,rxyz2
 real(8):: dbar
@@ -248,7 +251,11 @@ logical:: file_exists
 character(40):: filename
 character(5):: fn
 bar_cm = rxyz1
+if(trim(parini%rng_type)=='only_for_tests') then
+call random_number_generator_simple(ndim,bar_vec)
+else
 call random_number(bar_vec)
+endif
 bar_vec = bar_vec*2.d0 - 1.d0
 !We still need to rescale the bar
 !Rescale
