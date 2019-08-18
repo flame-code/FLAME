@@ -50,7 +50,7 @@ call yaml_sequence_close()
 
 !write(*,'(a,i5,es15.7)') " # FINAL FINDSYM SPG, TOL: ",spgcur,tolcur
 call yaml_mapping_open('FINAL SPGLIB',flow=.true.)
-call yaml_map('SPG',spgcur2,fmt='(es15.7)')
+call yaml_map('SPG',spgcur2,fmt='(i8)')
 call yaml_map('TOL',tolcur2,fmt='(es15.7)')
 call yaml_mapping_close()
 !write(*,'(a,i5,es15.7)') " # FINAL SPGLIB  SPG, TOL: ",spgcur2,tolcur2

@@ -5,6 +5,10 @@ subroutine yaml_get_parameters(parini)
     use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini
+    !nullify(parini%dict_user)
+    !nullify(parini%dict)
+    !nullify(parini%subdict)
+    !nullify(parini%subsubdict)
     !-------------------------------------------------------
     call set_dict_parini_default(parini)
     !call yaml_comment('DEFAULT INPUT FILE ',hfill='~')
@@ -524,7 +528,7 @@ subroutine yaml_get_confinement_parameters(parini)
     integer:: iat, iconfine, nat_max, llen
     character(20):: strkey
     character(120):: strmess
-    return !TO_BE_CORRECTED
+    !return !TO_BE_CORRECTED
     if(dict_size(parini%subsubdict)<1) stop 'ERROR: confinement block in flame_in.yaml is empty.'
     parini%nconfine=parini%subsubdict//"nconfine"
     if(.not.allocated(parini%conf_dim))    then; allocate(parini%conf_dim    (parini%nconfine),source=0)            ; endif

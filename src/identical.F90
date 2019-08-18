@@ -19,7 +19,7 @@ newmin=.true.
 !!enddo
 call yaml_mapping_open('Check identical',flow=.true.)
 call yaml_map('ent_wpos',ent_wpos,fmt='(e24.17)')
-call yaml_map('k_e_wpos',k_e_wpos,fmt='(e24.17)')
+call yaml_map('k_e_wpos',k_e_wpos,fmt='(i8)')
 call yaml_mapping_close()
 !write(*,'(a,e24.17,i3,5(e24.17))') ' # ID: Check identical: ent_wpos,k_e_wpos ',ent_wpos,k_e_wpos!,(wfp(l),l=1,2)
 

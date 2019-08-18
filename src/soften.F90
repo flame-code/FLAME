@@ -135,7 +135,7 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot)
 if(parini%verb.gt.0) then
     call yaml_mapping_open('SOFTEN',flow=.true.)
     call yaml_map('res',res,fmt='(e13.5)')
-    call yaml_map('it',it,fmt='(e13.5)')
+    call yaml_map('it',it,fmt='(i8)')
     call yaml_mapping_close()
     !write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
 endif
@@ -382,7 +382,7 @@ call get_enthalpy(latvec_in,etot_in,pressure,etot)
 if(parini%verb.gt.0) then
     call yaml_mapping_open('SOFTEN',flow=.true.)
     call yaml_map('res',res,fmt='(e13.5)')
-    call yaml_map('it',it,fmt='(e13.5)')
+    call yaml_map('it',it,fmt='(i8)')
     call yaml_mapping_close()
     !write(*,'(a,(e13.5),i5)') ' # SOFTEN: ',res,it
 endif

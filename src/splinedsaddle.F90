@@ -208,8 +208,8 @@ subroutine givemesaddle(parini,epot_sp,ratsp,fatsp,ifile,nproc,iproc,atoms,ncoun
     if(iproc==0)    then
         !write(*,*) 'number of anchor points ',np
         !write(*,*) 'degree of freedom: n,nr ',n,nr
-        call yaml_map('number of anchor points',np,fmt='(i)')
-        call yaml_map('degree of freedom, n,nr',(/n,nr/),fmt='(i)')
+        call yaml_map('number of anchor points',np,fmt='(i8)')
+        call yaml_map('degree of freedom, n,nr',(/n,nr/),fmt='(i8)')
     endif
     !-----------------------------------------------------------
     !call default_input_variables(ll_inputs)
