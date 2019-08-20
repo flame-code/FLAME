@@ -104,6 +104,12 @@ subroutine yaml_get_main_parameters(parini)
     if(.not.allocated(parini%amu)  ) then ; allocate(parini%amu(parini%ntypat_global),source=0.d0) ; endif
     if(.not.allocated(parini%rcov)  ) then ; allocate(parini%rcov(parini%ntypat_global),source=0.d0) ; endif
     if(.not.allocated(parini%char_type)) then; allocate(parini%char_type(parini%ntypat_global),source="  ") ; endif
+    !if(.not.allocated(parini%char_type)) then
+    !    allocate(parini%char_type(parini%ntypat_global))
+    !    do itype=1,parini%ntypat_global
+    !        parini%char_type(itype)="  "
+    !    enddo
+    !endif
     if(.not.allocated(parini%typat_global)) then; allocate(parini%typat_global(parini%nat),source=0) ; endif
     if(.not.allocated(parini%fixat)) then; allocate(parini%fixat(parini%nat),source=.false.) ; endif
     if(.not.allocated(parini%fragarr)) then; allocate(parini%fragarr(parini%nat),source=0) ; endif
@@ -531,21 +537,23 @@ subroutine yaml_get_confinement_parameters(parini)
     !return !TO_BE_CORRECTED
     if(dict_size(parini%subsubdict)<1) stop 'ERROR: confinement block in flame_in.yaml is empty.'
     parini%nconfine=parini%subsubdict//"nconfine"
-    if(.not.allocated(parini%conf_dim))    then; allocate(parini%conf_dim    (parini%nconfine),source=0)            ; endif
-    if(.not.allocated(parini%conf_av))     then; allocate(parini%conf_av     (parini%nconfine),source=0)            ; endif
-    if(.not.allocated(parini%conf_exp))    then; allocate(parini%conf_exp    (parini%nconfine),source=0)            ; endif
-    if(.not.allocated(parini%conf_prefac)) then; allocate(parini%conf_prefac (parini%nconfine),source=0.d0)         ; endif
-    if(.not.allocated(parini%conf_cut))    then; allocate(parini%conf_cut    (parini%nconfine),source=0.d0)         ; endif
-    if(.not.allocated(parini%conf_eq))     then; allocate(parini%conf_eq     (parini%nconfine),source=0.d0)         ; endif
-    if(.not.allocated(parini%conf_nat))    then; allocate(parini%conf_nat    (parini%nconfine),source=0)            ; endif
-    if(.not.allocated(parini%conf_cartred))then; allocate(parini%conf_cartred(parini%nconfine),source="C")          ; endif
     parini%use_confine=parini%subsubdict//"confinement"
+    if(.not.allocated(parini%conf_dim) .and. parini%use_confine)    then; allocate(parini%conf_dim    (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_av) .and. parini%use_confine)     then; allocate(parini%conf_av     (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_exp) .and. parini%use_confine)    then; allocate(parini%conf_exp    (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_prefac) .and. parini%use_confine) then; allocate(parini%conf_prefac (parini%nconfine),source=0.d0)         ; endif
+    if(.not.allocated(parini%conf_cut) .and. parini%use_confine)    then; allocate(parini%conf_cut    (parini%nconfine),source=0.d0)         ; endif
+    if(.not.allocated(parini%conf_eq) .and. parini%use_confine)     then; allocate(parini%conf_eq     (parini%nconfine),source=0.d0)         ; endif
+    if(.not.allocated(parini%conf_nat) .and. parini%use_confine)    then; allocate(parini%conf_nat    (parini%nconfine),source=0)            ; endif
+    if(.not.allocated(parini%conf_cartred) .and. parini%use_confine)then; allocate(parini%conf_cartred(parini%nconfine),source="C")          ; endif
     strmess='ERROR: Provide confinement parameters either as a scalar ' &
         //'or an array of length nconfine: erroneous key= '
     strkey='cartred'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_cartred=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
@@ -553,7 +561,9 @@ subroutine yaml_get_confinement_parameters(parini)
     strkey='dim'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_dim=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
@@ -561,7 +571,9 @@ subroutine yaml_get_confinement_parameters(parini)
     strkey='exp'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_exp=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
@@ -569,7 +581,9 @@ subroutine yaml_get_confinement_parameters(parini)
     strkey='prefac'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_prefac=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
@@ -577,7 +591,9 @@ subroutine yaml_get_confinement_parameters(parini)
     strkey='cut'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_cut=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
@@ -585,7 +601,9 @@ subroutine yaml_get_confinement_parameters(parini)
     strkey='av'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_av=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
@@ -593,7 +611,9 @@ subroutine yaml_get_confinement_parameters(parini)
     strkey='eq'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_eq=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
@@ -601,11 +621,14 @@ subroutine yaml_get_confinement_parameters(parini)
     strkey='nat'
     llen=dict_len(parini%subsubdict//strkey)
     if(llen==0 .or. llen==parini%nconfine) then
+        if(parini%use_confine) then
         parini%conf_nat=parini%subsubdict//strkey
+        endif
     else
         write(*,'(a,1x,a)') trim(strmess),trim(strkey)
         stop
     endif
+    if(parini%use_confine) then
     nat_max=maxval(parini%conf_nat(1:parini%nconfine))
     if(.not.allocated(parini%conf_list))   then; allocate(parini%conf_list   (nat_max,parini%nconfine),source=0) ; endif
     if(trim(dict_value(parini%subsubdict//"atoms"))=='all') then
@@ -622,6 +645,7 @@ subroutine yaml_get_confinement_parameters(parini)
                 !write(*,*) parini%conf_list(iat,iconfine)
             enddo
         enddo
+    endif
     endif
 end subroutine yaml_get_confinement_parameters
 !*****************************************************************************************
