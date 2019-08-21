@@ -9,7 +9,7 @@ subroutine alborz_init(parini,parres,file_ini)
     use ifport
 #endif
     use time_profiling
-    use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
+    !use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
     use dynamic_memory
     use yaml_output
     implicit none
@@ -27,8 +27,8 @@ subroutine alborz_init(parini,parres,file_ini)
     endif
     call f_routine(id='alborz_init')
     !-----------------------------------------------------------------
-    call alborz_initialize_timing_categories()
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
+    !call alborz_initialize_timing_categories()
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
     !-----------------------------------------------------------------
     parini%iunit=f_get_free_unit(10**5)
     call yaml_set_stream(unit=parini%iunit,filename=trim(filename),&
@@ -83,32 +83,32 @@ subroutine alborz_init(parini,parres,file_ini)
     endif
     parres=parini
     !-----------------------------------------------------------------
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     call f_release_routine()
 end subroutine alborz_init
 !*****************************************************************************************
-subroutine alborz_initialize_timing_categories
-    use yaml_output
-    use time_profiling
-    use mod_timing, only: dict_timing_info, TCAT_PSOLVER, TCAT_SYMFUNC_COMPUT
-    use mod_timing, only: TCAT_ALBORZ_INIT_FINAL
-    use wrapper_mpi, only: mpi_initialize_timing_categories, wmpi_init_thread, mpifinalize
-    use wrapper_mpi, only: mpisize, mpirank
-    use mod_processors, only: iproc
-    implicit none
-    integer:: iverbose=3
-    character(len=*), parameter :: pscpt1='Alborz init-fin'
-    character(len=*), parameter :: pscpt2='potential'
-    call f_timing_category_group(pscpt1,'Alborz computations total time')
-    call f_timing_category_group(pscpt2,'potential computations total time')
-    !-----------------------------------------------------------------
-    call f_timing_category('Alborz initialize-finalize',pscpt1,'computation of init-fin',TCAT_ALBORZ_INIT_FINAL)
-    !-----------------------------------------------------------------
-    call f_timing_category('psolver',pscpt2,'computation of Psolver',TCAT_PSOLVER)
-    call f_timing_category('symfunc compute',pscpt2,'computation of symmetry functions',TCAT_SYMFUNC_COMPUT)
-    !-----------------------------------------------------------------
-    call f_timing_reset(filename='time.yaml',master=iproc==0,verbose_mode=iverbose>2)
-end subroutine alborz_initialize_timing_categories
+!subroutine alborz_initialize_timing_categories
+!    use yaml_output
+!    use time_profiling
+!    use mod_timing, only: dict_timing_info, TCAT_PSOLVER, TCAT_SYMFUNC_COMPUT
+!    use mod_timing, only: TCAT_ALBORZ_INIT_FINAL
+!    use wrapper_mpi, only: mpi_initialize_timing_categories, wmpi_init_thread, mpifinalize
+!    use wrapper_mpi, only: mpisize, mpirank
+!    use mod_processors, only: iproc
+!    implicit none
+!    integer:: iverbose=3
+!    character(len=*), parameter :: pscpt1='Alborz init-fin'
+!    character(len=*), parameter :: pscpt2='potential'
+!    call f_timing_category_group(pscpt1,'Alborz computations total time')
+!    call f_timing_category_group(pscpt2,'potential computations total time')
+!    !-----------------------------------------------------------------
+!    call f_timing_category('Alborz initialize-finalize',pscpt1,'computation of init-fin',TCAT_ALBORZ_INIT_FINAL)
+!    !-----------------------------------------------------------------
+!    call f_timing_category('psolver',pscpt2,'computation of Psolver',TCAT_PSOLVER)
+!    call f_timing_category('symfunc compute',pscpt2,'computation of symmetry functions',TCAT_SYMFUNC_COMPUT)
+!    !-----------------------------------------------------------------
+!    call f_timing_reset(filename='time.yaml',master=iproc==0,verbose_mode=iverbose>2)
+!end subroutine alborz_initialize_timing_categories
 !*****************************************************************************************
 subroutine alborz_final(parini,file_ini)
     use mod_parini, only: typ_parini
@@ -116,7 +116,7 @@ subroutine alborz_final(parini,file_ini)
     use mod_processors, only: iproc
     use yaml_output
     use time_profiling
-    use mod_timing , only: dict_timing_info, TCAT_ALBORZ_INIT_FINAL
+    !use mod_timing , only: dict_timing_info, TCAT_ALBORZ_INIT_FINAL
     use dynamic_memory
     implicit none
     type(typ_parini), intent(inout):: parini
@@ -125,7 +125,7 @@ subroutine alborz_final(parini,file_ini)
     call f_routine(id='alborz_final')
     call f_free(parini%qt)
     call f_free(parini%at)
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
     if(.not. parini%exists_yaml_file) then
         deallocate(file_ini%file_lines,file_ini%stat_line_is_read) !,comment_line)
     endif
@@ -143,8 +143,8 @@ subroutine alborz_final(parini,file_ini)
         call finalizeprocessors
     endif
     !-----------------------------------------------------------------
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
-    call f_timing_stop(dict_info=dict_timing_info)
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
+    !call f_timing_stop(dict_info=dict_timing_info)
     !-----------------------------------------------------------------
     call yaml_flush_document(unit=parini%iunit)
     !ASK LUIGI OR DAMIEN ABOUT THE PUZZLING ISSUE OF WHICH MUST COME FIRST:

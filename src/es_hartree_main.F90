@@ -340,7 +340,7 @@ subroutine put_charge_density(parini,poisson)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -413,7 +413,7 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -455,7 +455,7 @@ subroutine get_hartree_force(parini,poisson,atoms)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -498,7 +498,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -511,7 +511,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     integer:: ind
     real(8):: stress(3,3) !, talpha
     call f_routine(id='get_hartree')
-    call f_timing(TCAT_PSOLVER,'ON')
+    !call f_timing(TCAT_PSOLVER,'ON')
     
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8):: stress(3,3), kmax, c, vol, talpha
@@ -542,7 +542,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
         poisson%qgrad=poisson%qgrad+poisson%qgrad_real
     end if
 
-    call f_timing(TCAT_PSOLVER,'OF')
+    !call f_timing(TCAT_PSOLVER,'OF')
     call f_release_routine()
 end subroutine get_hartree
 !*****************************************************************************************

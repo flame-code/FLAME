@@ -4,7 +4,7 @@ subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

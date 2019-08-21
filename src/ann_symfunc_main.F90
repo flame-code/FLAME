@@ -5,7 +5,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
     use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use time_profiling
-    use mod_timing , only: TCAT_SYMFUNC_COMPUT
+    !use mod_timing , only: TCAT_SYMFUNC_COMPUT
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -17,7 +17,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
     integer:: i0, iat, jat, isat, i, ib, istat, ng, ig
     real(8):: gleft
     call f_routine(id='symmetry_functions')
-    call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
+    !call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
     !-----------------------------------------------------------------
     !first index of "y0d" is for number of symmetry function
     !second index of "y0d" is for x,y,z
@@ -89,7 +89,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
             endif
         enddo
     endif bondbased
-    call f_timing(TCAT_SYMFUNC_COMPUT,'OF')
+    !call f_timing(TCAT_SYMFUNC_COMPUT,'OF')
     call f_release_routine()
 end subroutine symmetry_functions
 !*****************************************************************************************
