@@ -161,7 +161,8 @@ do ii=1,3
     iter=0
     do
     write(*,*) "number of iteration:    ",iter+1
-    call edag_refinement (last_iter,iter,poisson,i_dist,car_lat)
+    stop 'call to edag_refinement is commented, you should fix it before usging it'
+    !call edag_refinement (last_iter,iter,poisson,i_dist,car_lat)
     if (last_iter) exit
     iter=iter+1
     write(*,*)""

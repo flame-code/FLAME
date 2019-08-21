@@ -12,6 +12,8 @@ Keys to ignore:
  - Memory Consumption Report
  - Tot. No. of Deallocations
  - random number generator
+ - mpi started
+ - mpi finalized
 
 Patterns to ignore:
  - Timestamp

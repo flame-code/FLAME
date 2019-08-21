@@ -336,7 +336,7 @@ if(parres%verb.gt.0) then
 !             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
-       units=units
+       !units=units
        !write(*,*) "# Writing the positions in MD:",filename
        call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
@@ -578,7 +578,7 @@ if(parres%verb.gt.0) then
         call yaml_mapping_close()
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
-       units=units
+       !units=units
        !write(*,*) "# Writing the positions in MD: ",filename
        call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
