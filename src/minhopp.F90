@@ -19,10 +19,6 @@ subroutine minimahopping(parini)
     type(typ_atoms_arr):: atoms_locmin
 #if defined(MPI)
     include 'mpif.h'
-#else
-    write(*,'(a)') 'ERROR: minhopp can now be compiled without MPI but I do not know '
-    write(*,'(a)') '       whether it works well without MPI-related minhopp routines.'
-    stop
 #endif
     call init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
     !if(iproc==0) call sleep(20)
@@ -284,13 +280,18 @@ subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_
     integer:: ierr, iconf
 #if defined(MPI)
     include 'mpif.h'
-    call write_minhopp(atoms_allproc,atoms_locmin)
     call MPI_REDUCE(fcalls        ,fcall_tot_all       ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     call MPI_REDUCE(count_md_tot    ,fcall_tot_all_md    ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     call MPI_REDUCE(count_opt_tot   ,fcall_tot_all_opt   ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     call MPI_REDUCE(count_soften_tot,fcall_tot_all_soften,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
+#else
+    fcall_tot_all       =fcalls          
+    fcall_tot_all_md    =count_md_tot    
+    fcall_tot_all_opt   =count_opt_tot   
+    fcall_tot_all_soften=count_soften_tot
 #endif
+    call write_minhopp(atoms_allproc,atoms_locmin)
     call print_final_statistics
     call deallocate_minhopp_arrays
     call atom_deallocate(atoms_curr)
