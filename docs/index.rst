@@ -5,17 +5,16 @@
 
 .. include:: flame.rst
 
-OTHER STUFF
-==================================
+.. include:: installation.rst
+
+.. include:: documentation.rst
 
 .. toctree::
    :hidden:
    :maxdepth: 2
 
-   documentation
-
    flame_in
-   minhopp
+   minhopp.rst
    main
    potential
    geopt
@@ -27,7 +26,7 @@ OTHER STUFF
    saddle_1s.rst
    saddle_1s_opt.rst
    testforces.rst
-
+   minhocao.rst
 .. Indices and tables
 .. ==================
 
