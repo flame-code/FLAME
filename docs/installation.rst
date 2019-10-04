@@ -81,23 +81,25 @@ directory than the source code.
    you can run:
 
    ``path_to_futile_source/Installer.py link futile``
+
 #. To compile FLAME, change into the main LAME directory and run:
 
    ``autoreconf -fi``
+
 #. Create a build directory for FLAME (e.g., ``mkdir build-FLAME ; cd build-FLAME``). 
-   Explicitly replace $FUTILE by the full path of the futile build-directory during ```configure'', 
+   Explicitly replace $FUTILE by the full path of the futile build-directory during ``configure``, 
    or define it as an environmental variable:
 
    ``export FUTILE=path_to_futile_build``
 
    Note that providing the FUTILE variable is required to compile FLAME and is not optional.
-   Then, run ```configure''. For Intel compilers and MPI parallelization:
+   Then, run ``configure``. For Intel compilers and MPI parallelization:
 
    ``path_to_flame_source/configure FC=mpif90 F77=mpif90 CXX=mpicc CC=mpicc \
    FCFLAGS="-I$FUTILE/install/include -shared-intel -mcmodel=large  -mkl=sequential" \
    CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/install/lib \
    -L/$MKLROOT/lib/intel64 -lfutile-1 -lmkl_rt \
-   -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm -lyaml -ldl -lrt -cxxlib"```
+   -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm -lyaml -ldl -lrt -cxxlib"``
 
 
    For GNU compilers without MKL:
@@ -105,7 +107,7 @@ directory than the source code.
    ``path_to_flame_source/configure FC=mpif90 F77=mpif90 CXX=mpicc CC=mpicc \
    FCFLAGS="-I$FUTILE/install/include -mcmodel=large" \
    CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/install/lib \
-   -lfutile-1 -lm -lyaml -llapack -lfftw3 -ldl -cxxlib"```
+   -lfutile-1 -lm -lyaml -llapack -lfftw3 -ldl -cxxlib"``
    
    To link with SPGLIB append
    ``--with-spglib SPGLIB_ROOT=path_to_spglib``
