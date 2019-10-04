@@ -4,16 +4,20 @@
 Optimizer parameters
 ==================================
 
-The optimizer parameters can be set in this block.
-Some of these parameters are used by all optimizers and
-some are only relevant to some of optimizers.
+The geometry optimizer parameters can be set in this block.
+Some parameters are used by all methods, while others
+apply only to specific optimizers.
 
-geopt options
-=================
 
-**method**: The optimization method for geometry optimization.
+geopt parameters
+======================
 
-    default: ``There is no default value.``
+general ``geopt`` parameters
+-----------------------------
+
+**method**: (string) Optimization method.
+
+    default: ``No default value.``
 
     options:
 
@@ -25,68 +29,130 @@ geopt options
 
         ``nlbfgs``: Nocedal's implementation of LBFGS.
 
+        ``qbfgs``: Quantum Espresso's version of BFGS for variable cell shapes.
+
         ``bfgs``: Ghasemi's implementation of BFGS in which the moves along soft
         modes are controlled.
 
-        ``fire``: The FIRE method.
+        ``fire``: The Fast Inertial Relaxation Engine method.
 
-**fmaxtol**: Maximum absolute value component of force vector.
-This parameter must be specified.
+**fmaxtol**: (real) Maximum absolute component of force vector. In units of Ha/Bohr.
+Must be specified.
 
-    default: ``There is no default value.``
+    default: ``No default value.``
 
-**alphax**: The standard step size used in most optimizers. It is system dependent.
+**alphax**: (real) Sandard step size used in most optimizers. Optimal value depends on the system and method.
 
-    default: ``There is no default value.``
+    default: ``No default value.``
 
-**condnum**: The condition number of the system as expected by the user. This value is
-used in Ghasemi's controlled BFGS.
 
-    default: ``10.0``
+**lprint**: (logical) Verbosity setting. If true, detailed information at each iteration is printed.
 
-**precaution**: In Ghasemi's controlled BFGS, moves are gradually affected by
-the quasi-Hessian rather than the beginning.
-The parameter *precaution* controls the rate of this gradual process.
+    default: ``False``
+
+**nit**: (integer) Maximum number of iterations.
+
+    default: ``1000``
+
+**dxmax**: (real) Maximum displacement for each atomic component. Units in Bohr. Not implemented in all methods yet.
+
+    default: ``1.d-1``
+
+**funits**: (real) Factor to scale energy and force units. 
+Currently only useful for Lennard-Jones potential, 
+where the units can be scaled to be comparable to
+other potentials.
+
+    default: ``1.d0``
+
+**cellrelax**: (logical) Activates variable cell shape relaxations.
+ If ``True``, a variable cell shape optimization is performed.
+
+    default: ``False``
+
+
+**strfact**: (real) The stress tensor scaled by this factor and treated like forces in the process of optimization.
+Only relevant if **cellrelax** is ``True``.
+
+    default: ``1.d2``
+
+**geoext**: (logical) Some atomic simulation packages (e.g., LAMMPS, GULP, etc.) come with their
+own implementations of geometry optimizers. If  ``True``, these  extrenal optimizers 
+will be used. Not implemented for all extrenal codes.
+
+    default: ``False``
+
+``bfgs`` parameters
+---------------------
+
+**condnum**: (real) Predicted condition number of the system.
+
+    default: ``1.d1``
+
+**precaution**: (string) Weighting of the quasi-Hessian. 
+In Ghasemi's controlled BFGS, moves are gradually affected by
+the quasi-Hessian instead of the initial, diagonal matrix.
+The parameter *precaution* controls the rate of this gradual transition.
 
     default: ``normal``
 
     options:
 
-        ``high``: A high precaution is employed and the quasi-Hessian affects are
+        ``high``: A high precaution is employed and the quasi-Hessian is
         applied with a high rate.
 
-        ``normal``: A  normal precaution is employed and the quasi-Hessian affects are
+        ``normal``: A  normal precaution is employed and the quasi-Hessian is
         applied with a medium rate.
 
-        ``low``: A  normal precaution is employed and the quasi-Hessian affects are
+        ``low``: A  normal precaution is employed and the quasi-Hessian is
         applied with a low rate.
 
-**lprint**: A logical variable. If it is set to true, information at each iteration is printed.
 
-    default: ``.false.``
+``fire`` parameters
+---------------------
 
-**dt_start**: The starting time step used in the FIRE method.
+**dt_start**: (real) Initial time step. Arbitrary units.
 
-    default: ``0.005``
+    default: ``No default value.``
 
-**nit**: The maximum number of iterations.
+**dt_min**: (real) Minimal time step. Arbitrary units. 
 
-    default: ``1000``
+    default: ``1.d0``
 
-**dxmax**: Maximum displacement for each component. It is not implemented in all methods yet.
+**dt_max**: (real) Maximal time step. Arbitrary units. 
 
-    default: ``0.1``
+    default: ``8.d1``
 
-**nsatur**: Number of saturation steps.
 
-    default: ``5``
+``qbfgs`` parameters
+---------------------
 
-**cellrelax**: A logical variable. If it is set to true, a variable cell shape optimization is performed.
+**qbfgsndim**: (integer) Number of old forces and displacements vectors used in the
+PULAY mixing of the residual vectors obtained on the basis
+of the inverse hessian matrix given by the BFGS algorithm.
+When bfgs_ndim = 1, the standard quasi-Newton BFGS method is
+used.
 
-    default: ``false``
+    default: ``1``
 
-**funits**: The factor which scales some parameters relevant in energy.
-Currently only useful for lennard-jones, since it is the only potential with different units.
+**qbfgstri**: (real) Initial ionic displacement in the structural relaxation.
 
-    default: ``1.0``
+    default: ``5.d-1``
+
+**qbfgstrmin**: (real) Minimum ionic displacement in the structural relaxation
+BFGS is reset when trust_radius < trust_radius_min.
+
+    default: ``1.d-3``
+
+**qbfgstrmax**: (real) Maximum ionic displacement in the structural relaxation.
+
+    default: ``8.d-1``
+
+**qbfgsw1**: (real) Parameters used in line search based on the Wolfe conditions.
+
+    default: ``1.d-2``
+
+**qbfgsw2**: (real) Parameters used in line search based on the Wolfe conditions.
+
+    default: ``5.d-1``
 

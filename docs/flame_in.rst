@@ -20,6 +20,7 @@ The list of blocks is as following:
    * :ref:`minhopp <minhopp>`
    * :ref:`geopt <geopt>`
    * :ref:`potential <potential>`
+   * :ref:`fingerprint <fingerprint>`
    * :ref:`dynamics <dynamics>`
    * :ref:`genconf <genconf>`
    * :ref:`conf_comp <conf_comp>`

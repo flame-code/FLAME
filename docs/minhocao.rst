@@ -63,59 +63,59 @@ The structures correspoding to the *nmin_cur* local minima are written into
 separate files, where *XXXXX* corresponds to the index *imin* in **earr.dat**.
 
 
-minhocao options
-=================
+``minhocao`` options
+======================
 
-**nsoften**: Number of softening iterations to eliminate the
-high-frequency modes from the initial MD velocities (integer).
+**nsoften**: (integer) Number of softening iterations to eliminate the
+high-frequency modes from the initial MD velocities.
 
     default: ``7``
 
-**alpha_at**: Stepsize for the softening algorithm on the atomic degrees of freedom (real). Arbitrary units.
+**alpha_at**: (real) Stepsize for the softening algorithm on the atomic degrees of freedom. Arbitrary units.
 
     default: ``5.d-1``
 
-**alpha_lat**: Stepsize for the softening algorithm on the lattice degrees of freedom (real). Arbitrary units.
+**alpha_lat**: (real) Stepsize for the softening algorithm on the lattice degrees of freedom. Arbitrary units.
 
     default: ``5.d-1``
 
-**auto_soften**: Choice of automatically adjusting the stepsize of the softening iterations based on 
-a gradient feedback (boolean). 
+**auto_soften**: (logical) Choice of automatically adjusting the stepsize of the softening iterations based on 
+a gradient feedback. 
 
     default: ``True``
 
-**eref**: Reference energy, minhopp will stop as soon as finds a minimum
-as low as *eref* (real). In units of Ha/cell.
+**eref**: (real) Reference energy, minhopp will stop as soon as finds a minimum
+as low as *eref*. In units of Ha/cell.
 
     default: ``-1.d50``
 
-**alpha1**: Feedback parameter to adjust *ediff* (real).
+**alpha1**: (real) Feedback parameter to adjust *ediff*.
 Reduces *ediff* whenever a minimum is accepted. alpha1 must be smaller than one.
 
-    default: ``1.0/1.02``
+    default: ``1.d0/1.02d0``
 
-**alpha2**: Feedback parameter to adjust *ediff* (real).
+**alpha2**: (real) Feedback parameter to adjust *ediff*.
 Increases *ediff* whenever a minimum is rejected. alpha1 must be larger than one.
 
     default: ``1.02d0``
 
-**beta1**: Feedback parameter to adjust the kinetic energy of the MD escape trials (real).
+**beta1**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
 Increases the kinetic energy whenever an MD escape trial fails.
 beta1 must be larger than one.
 
-    default: ``1.05``
+    default: ``1.05d0``
 
-**beta2**: Feedback parameter to adjust the kinetic energy of the MD escape trials (real).
+**beta2**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
 Increases the kintetic energy whenever an MD escape 
 step leads to a known structure.
 beta2 must be larger than one.
 
-    default: ``1.05``
+    default: ``1.05d0``
 
-**beta3**: Feedback parameter to adjust the kinetic energy of the MD escape trials (real).
+**beta3**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
 Reduces the kintetic energy whenever an MD escape succeeds
 and ends up into a new mimimum.
 beta3 must be smaller than one.
 
-    default: ``1.0/1.05``
+    default: ``1.d0/1.05d0``
 

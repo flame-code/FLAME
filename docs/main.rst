@@ -49,6 +49,9 @@ Options of section **main** in flame_in.yaml file.
 
         ``minhocao``: It solves poisson's equation for a charge density given
         in cube format.
+        
+        ``fingerprint``: It solves poisson's equation for a charge density given
+        in cube format.
 
 **two_level_geopt**: It specifies the geometry optimization should
 be in level or two. It it is .true., the block geopt_prec must be
