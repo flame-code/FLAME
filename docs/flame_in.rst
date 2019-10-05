@@ -20,6 +20,7 @@ The list of blocks is as following:
    * :ref:`minhopp <minhopp>`
    * :ref:`geopt <geopt>`
    * :ref:`potential <potential>`
+   * :ref:`fingerprint <fingerprint>`
    * :ref:`dynamics <dynamics>`
    * :ref:`genconf <genconf>`
    * :ref:`conf_comp <conf_comp>`
@@ -28,6 +29,7 @@ The list of blocks is as following:
    * :ref:`saddle_1s <saddle_1s>`
    * :ref:`geopt_prec <geopt_prec>`
    * :ref:`saddle_1s_opt <saddle_1s_opt>`
+   * :ref:`minhocao <minhocao>`
 
 Among all these block only block main must be present and the
 rest are optional.
