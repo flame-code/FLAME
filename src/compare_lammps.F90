@@ -1,5 +1,4 @@
 subroutine compare_lammps(parini,parres)
-use mod_interface
 use global
 use interface_code
 use defs_basis

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine elim_white_space(string)
-    use mod_interface
     implicit none
     character(256), intent(inout):: string
     !local variables 
@@ -18,7 +17,6 @@ subroutine elim_white_space(string)
 end subroutine elim_white_space
 !*****************************************************************************************
 function delta_kronecker(i,j) result(delta)
-    use mod_interface
     implicit none
     integer, intent(in):: i, j
     !local variables
@@ -33,7 +31,6 @@ end function delta_kronecker
 !This subroutine will transform back all atoms into the periodic cell
 !defined by the 3 lattice vectors in latvec=[v1.v2.v3]
 subroutine backtocell_alborz(nat,latvec,rxyz_red)
-    use mod_interface
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: latvec(3,3)
@@ -52,7 +49,6 @@ subroutine backtocell_alborz(nat,latvec,rxyz_red)
 end subroutine backtocell_alborz
 !*****************************************************************************************
 subroutine getvol_alborz(cellvec,vol)
-    use mod_interface
     implicit none
     real(8), intent(in):: cellvec(3,3)
     real(8), intent(out):: vol
@@ -65,7 +61,6 @@ end subroutine getvol_alborz
 !This routine computes the distance of the reduced coordinates xred_1 and xred_2 and applies 
 !periodic boundary conditions to them and computes the squared distance
 subroutine pbc_distance1_alborz(cellvec,xred_1,xred_2,distance2,dxyz)
-    use mod_interface
     implicit none
     real(8), intent(in):: cellvec(3,3), xred_1(3), xred_2(3)
     real(8), intent(inout):: distance2, dxyz(3)
@@ -91,7 +86,6 @@ end subroutine pbc_distance1_alborz
 !direction are necessary for the periodic boundary conditions
 !with for the given rcut. nec1,nec2,nec3 for latvec(:,1),latvec(:,2),latvec(:,3)
 subroutine n_rep_dim_alborz(cellvec,rcut,nec1,nec2,nec3)
-    use mod_interface
     implicit none
     real(8), intent(in):: cellvec(3,3), rcut
     integer, intent(out):: nec1, nec2, nec3
@@ -113,7 +107,6 @@ end subroutine n_rep_dim_alborz
 !*****************************************************************************************
 !Will calculate the normalized normal vector to the 3 planes of the cell
 subroutine nveclatvec_alborz(cellvec,vn)
-    use mod_interface
     implicit none
     real(8), intent(in) :: cellvec(3,3)
     real(8), intent(out):: vn(3,3)
@@ -133,7 +126,6 @@ end subroutine nveclatvec_alborz
 !The point is 'r1', the normalized normal vector of the plane is 'nvec', 
 !'r0' is an arbitrary point on the plane !and the output is the distance 'dist'  
 subroutine dist2plane_alborz(r1,vn,r0,dist)
-    use mod_interface
     implicit none
     real(8), intent(in):: r1(3), vn(3), r0(3)
     real(8), intent(out):: dist
@@ -150,7 +142,6 @@ end subroutine dist2plane_alborz
 !So if units==angstroem, the file will be converted to angstroem
 !   if units==bohr, the positions will not be changed
 subroutine write_atomic_file_ascii_alborz(filename,nat,xred,latvec0,energy,pressure,printval1,printval2,kinds)
-    use mod_interface
 implicit none
 integer:: nat,natin,iat
 character(40):: filename,units
@@ -220,7 +211,6 @@ end subroutine write_atomic_file_ascii_alborz
 !a periodic cell (dxx,dyx,dyy,dzx,dzy,dzz) into a 
 !lattice vektor format (vec1(:,1),vec2(:,2),vec3(:,3)) with dxx oriented into x direction
 subroutine dproj2latvec_alborz(dproj,cellvec)
-    use mod_interface
     implicit none
     real(8), intent(in):: dproj(6)
     real(8), intent(out):: cellvec(3,3)
@@ -235,13 +225,12 @@ end subroutine dproj2latvec_alborz
 !The cell will thus be rotated. The rotational matrix is stored in rotmat as an operator rotmat
 !and the atomic position rxyz are transformed into the new coordination sizstem as well
 subroutine latvec2dproj_alborz(dproj,latvec,rotmat,rxyz,nat)
-    use mod_interface, except_this_one=> norm
     implicit none
     integer, intent(in):: nat
     real(8),intent(inout):: dproj(6), latvec(3,3), rotmat(3,3), rxyz(3,nat)
     !local variables
     real(8):: tempvec(3), rotmat1(3,3), rotmat2(3,3), crossp(3), alpha, latvect(3,3)
-    real(8):: eps,axe(3), norm,rxyzt(3), rotmatt(3,3)
+    real(8):: eps,axe(3), anrm,rxyzt(3), rotmatt(3,3)
     integer:: iat,i
     eps=1.d-6
     !Calculating dxx
@@ -257,8 +246,8 @@ subroutine latvec2dproj_alborz(dproj,latvec,rotmat,rxyz,nat)
     !tempvec is the x-unit vector
     call cross_product_alborz(latvec(:,1),tempvec,crossp)
     if (abs(crossp(1)).lt.eps*1.d-1 .and. abs(crossp(2)).lt.eps*1.d-1 .and. abs(crossp(3)).lt.eps*1.d-1) goto 1001 !no rotation needed
-    norm=sqrt(crossp(1)*crossp(1)+crossp(2)*crossp(2)+crossp(3)*crossp(3))
-    axe(:)=crossp(:)/norm
+    anrm=sqrt(crossp(1)*crossp(1)+crossp(2)*crossp(2)+crossp(3)*crossp(3))
+    axe(:)=crossp(:)/anrm
     alpha=dacos(dot_product(tempvec,latvec(:,1))/dproj(1))
     call rotation_alborz(alpha,axe,rotmat1)
     latvec(:,:)=matmul(rotmat1(:,:),latvec(:,:))
@@ -281,12 +270,12 @@ subroutine latvec2dproj_alborz(dproj,latvec,rotmat,rxyz,nat)
     tempvec(1)=0.d0
     call cross_product_alborz(tempvec,(/0.d0,1.d0,0.d0/),axe)
     if (abs(axe(1)).lt.eps*1.d-1 .and. abs(axe(2)).lt.eps*1.d-1 .and. abs(axe(3)).lt.eps*1.d-1 .and. tempvec(2).gt.0.d0) goto 1002 !no rotation needed
-    norm=sqrt(axe(1)*axe(1)+axe(2)*axe(2)+axe(3)*axe(3))
-    axe=axe/norm
+    anrm=sqrt(axe(1)*axe(1)+axe(2)*axe(2)+axe(3)*axe(3))
+    axe=axe/anrm
     call cross_product_alborz(axe,latvec(:,2),crossp)
     if (abs(crossp(1)).lt.eps*1.d-1 .and. abs(crossp(2)).lt.eps*1.d-1 .and. crossp(3).gt.0.d0) goto 1002 !no rotation needed
-    norm=sqrt(tempvec(2)*tempvec(2)+tempvec(3)*tempvec(3))
-    alpha=dot_product((/0.d0,1.d0,0.d0/),tempvec(:))/norm
+    anrm=sqrt(tempvec(2)*tempvec(2)+tempvec(3)*tempvec(3))
+    alpha=dot_product((/0.d0,1.d0,0.d0/),tempvec(:))/anrm
     alpha=dacos(alpha)
     call rotation_alborz(alpha,axe,rotmat2)
     latvec(:,:)=matmul(rotmat2(:,:),latvec(:,:))
@@ -323,7 +312,6 @@ end subroutine latvec2dproj_alborz
 !*****************************************************************************************
 !a very simple implementation of the cross product
 subroutine cross_product_alborz(a,b,c)
-    use mod_interface
     implicit none
     real(8), intent(in):: a(3), b(3)
     real(8), intent(out):: c(3)
@@ -335,7 +323,6 @@ end subroutine cross_product_alborz
 !This subroutine will calculate the rotational matrix rotmat for a
 !3-dim vector around an axis 'axe' by the angle 'angle'.
 subroutine rotation_alborz(angle,axe,rotmat)
-    use mod_interface
     implicit none
     real(8), intent(in):: angle
     real(8), intent(in):: axe(3)
@@ -364,7 +351,6 @@ end subroutine rotation_alborz
 !This subrtouine will transform theforces initially in the cartesian system into the 
 !internal coordinates with respect to the cell vectors provided in the cv
 subroutine fxyz_cart2int_alborz(nat,v_cart,cv,v_int)
-    use mod_interface
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: v_cart(3,nat), cv(3,3)
@@ -379,7 +365,6 @@ subroutine fxyz_cart2int_alborz(nat,v_cart,cv,v_int)
 end subroutine fxyz_cart2int_alborz
 !*****************************************************************************************
 subroutine fxyz_red2cart(nat,fint,cv,fcart)
-    use mod_interface
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: fint(3,nat), cv(3,3)
@@ -396,7 +381,6 @@ subroutine fxyz_red2cart(nat,fint,cv,fcart)
 end subroutine fxyz_red2cart
 !*****************************************************************************************
 subroutine count_words(str,n)
-    use mod_interface
     implicit none
     character(*), intent(in):: str
     integer, intent(out):: n
@@ -423,7 +407,6 @@ subroutine count_words(str,n)
 end subroutine count_words
 !*****************************************************************************************
 subroutine count_substring(str1,str2,n)
-    use mod_interface
     implicit none
     character(*), intent(in) :: str1, str2
     integer, intent(out):: n

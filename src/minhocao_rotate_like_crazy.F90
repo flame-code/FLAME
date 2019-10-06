@@ -1,5 +1,4 @@
 subroutine rotate_like_crazy(parini,parres,latvec,xred,tolmin,tolmax,ntol)
- use mod_interface
  use global, only: units
  use defs_basis
  use interface_code

@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-09-06 17:44:21.860
+ Timestamp of this run                 : 2019-08-17 10:03:05.883
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -26,6 +26,7 @@
    two_level_geopt                     : False
    verbosity                           : 0
    verbose                             : 3
+   rng_type                            : intrinsic
    seed                                : -2
    nrun_lammps                         : 0
    nat                                 : 0
@@ -128,9 +129,35 @@
    dt_max                              : 80.0
    strfact                             : 100.0
  saddle:
+   method                              : unknown
    list_random_displace                : None
    dimsep                              : -1.0
    ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
  potential:
    potential                           : forcefield
    cal_charge                          : False
@@ -211,6 +238,7 @@
    qgnrmtol                            : 5.E-4
    etol                                : 1.0
    dtol                                : 1.0
+   ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False
    prefit                              : False
@@ -223,6 +251,7 @@
    save_symfunc_force                  : False
    weight_hardness                     : 0.001
    save_symfunc_behnam                 : False
+   freeBC_direct                       : False
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -244,6 +273,8 @@
    dt_init                             : 20.0
    nit_per_min                         : 25
    encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
  bader:
    method                              : unknown
    filename                            : total_density.cube
@@ -277,6 +308,16 @@
    gaussian_width                      : -1.0
    boundcond                           : unknown
    posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
  fingerprint:
    method                              : OGANOV
    rcut                                : 15.0
@@ -299,8 +340,8 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  2, Na:  1, Cl:  2}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
- Number of configurations read: {filename: posinp.acf, nconf:  1}
+ random number generator: {iproc:  0, seed:  [  2147483562,  2147483398 ]}
+ Number of configurations read: {filename: posinp.yaml, nconf:  1}
  grid info: {ngpx:  46, ngpy:  46, ngpz:  57, ngptot:  120612, nbgpx:  19, nbgpy:  19, 
             nbgpz:  20,  hxx:  0.6901608467,     hyx:  0.0000000000, hzx:  0.0000000000, 
               hxy:  0.0000000000,   hyy:  0.6901608467,          hzy:  0.0000000000, 
@@ -308,28 +349,28 @@
  delta in build_spline                 : -6.01057719598567E-01
  hsp                                   :  1.50000000000000E-03
  epot of all configurations:
- - inside get_beta_grid                :  0.38205922810964545E+02
+ - inside get_beta_grid                :  0.38205922810964594E+02
    epotfixed                           :  1.436192209445158E+01
    epotlong                            :  3.388047218743885E+00
    epotplane                           :  0.000000000000000E+00
    epottotal                           : -1.097387487570769E+01
    hsp in shortenergy                  :  6.66666666666667E+02
-   epotshort                           : -3.49932286760157E-01
+   epotshort                           : -3.49932286760156E-01
    conf. number                        :  000001
    epot                                : -0.113238071624678E+02
    diff w.r.t. first conf              :  0.0000000
    diff w.r.t. prev. conf              :  0.0000000
- CPU time: {iproc:  0, hrs:  0.300E-04, min:  0.180E-02, sec:  0.108E+00}
+ CPU time: {iproc:  0, hrs:  0.267E-04, min:  0.160E-02, sec:  0.960E-01}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  46
-   Tot. No. of Deallocations           :  46
+   Tot. No. of Allocations             :  40
+   Tot. No. of Deallocations           :  40
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  5.125
+     Peak Value (MB)                   :  5.127
      for the array                     : vz
      in the routine                    : force_gto_sym_ortho
-     Memory Peak of process            : 55.680 MB
- Walltime since initialization         :  00:00:00.119526694
- Max No. of dictionaries used          :  773 #( 185 still in use)
+     Memory Peak of process            : 40.316 MB
+ Walltime since initialization         :  00:00:00.111128820
+ Max No. of dictionaries used          :  994 #( 185 still in use)
  Number of dictionary folders allocated:  1

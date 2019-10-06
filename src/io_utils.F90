@@ -9,7 +9,9 @@ subroutine read_list_files_yaml(fname,nfiles_max,fn_list,nfiles)
     character(len=256), intent(out):: fn_list(nfiles_max)
     integer, intent(out):: nfiles
     !local variales
-    type(dictionary), pointer :: dict, subdict, subsubdict
+    type(dictionary), pointer :: dict=>null()
+    type(dictionary), pointer :: subdict=>null()
+    type(dictionary), pointer :: subsubdict=>null()
     character, dimension(:), allocatable :: fbuf
     integer(kind = 8) :: cbuf, cbuf_len
     integer:: ifile

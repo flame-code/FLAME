@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
@@ -168,7 +167,6 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
 end subroutine cal_ann_cent2
 !*****************************************************************************************
 subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -295,7 +293,6 @@ subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
 end subroutine get_qat_from_chi_cent2
 !*****************************************************************************************
 subroutine init_cent2(parini,ann_arr,atoms,cent)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -327,7 +324,11 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     cent%gwit= 0.d0
 
     do iat=1,atoms%nat
-        call random_number(ttrand)
+        !if(trim(parini%rng_type)=='only_for_tests') then
+        !    call random_number_generator_simple(3,ttrand)
+        !else
+        !    call random_number(ttrand)
+        !endif
         cent%rel(1:3,iat)=atoms%ratp(1:3,iat) !+(ttrand(1:3)-0.5d0)*2.d0*1.d-2
     enddo
 
@@ -372,7 +373,6 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
 end subroutine init_cent2
 !*****************************************************************************************
 subroutine final_cent2(cent)
-    use mod_interface
     use mod_ann, only: typ_cent
     use dynamic_memory
     implicit none
@@ -391,7 +391,6 @@ subroutine final_cent2(cent)
 end subroutine final_cent2
 !*****************************************************************************************
 subroutine cent2_force(parini,ann_arr,atoms,cent)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -428,7 +427,6 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
 end subroutine cent2_force
 !*****************************************************************************************
 subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -478,7 +476,6 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
 end subroutine cal_potential_cent2
 !*****************************************************************************************
 subroutine cal_cent2_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -576,7 +573,6 @@ subroutine cal_cent2_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
 end subroutine cal_cent2_pot_pairsum
 !*****************************************************************************************
 subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -650,7 +646,6 @@ subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
 end subroutine cal_cent2_pairsum_force
 !*****************************************************************************************
 subroutine cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -719,7 +714,6 @@ subroutine cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
 end subroutine cal_cent2_pot_bps
 !*****************************************************************************************
 subroutine put_cent2_gauss_to_grid(parini,atoms,cent)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent
@@ -758,7 +752,6 @@ subroutine put_cent2_gauss_to_grid(parini,atoms,cent)
 end subroutine put_cent2_gauss_to_grid
 !*****************************************************************************************
 subroutine cal_cent2_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -889,7 +882,6 @@ subroutine cal_cent2_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
 end subroutine cal_cent2_shortrange_ewald
 !*****************************************************************************************
 subroutine cal_shortrange_ewald_force_cent2(parini,ann_arr,atoms,cent)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -1023,7 +1015,6 @@ subroutine erf_over_r_taylor(r,funcval,funcval_der)
 end subroutine erf_over_r_taylor
 !*****************************************************************************************
 subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1092,7 +1083,6 @@ subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
 end subroutine calc_multipoles_cent2
 !*****************************************************************************************
 subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson

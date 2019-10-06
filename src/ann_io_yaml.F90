@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine read_input_ann_yaml(parini,iproc,ann_arr)
-    use mod_interface
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -39,7 +38,6 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
 end subroutine read_input_ann_yaml
 !*****************************************************************************************
 subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     use dictionaries
@@ -55,8 +53,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     character(250):: tt, str1
     integer :: count1, count2, count3, count4, count5, count6
     character(5):: stypat
-    type(dictionary), pointer :: subdict_ann
-    type(dictionary), pointer :: dict_tmp
+    type(dictionary), pointer :: subdict_ann=>null()
+    type(dictionary), pointer :: dict_tmp=>null()
     character(50):: str_out_ann
     character(5):: str_out_ann_tt
     call set_dict_ann(ann,fname,stypat)
@@ -267,7 +265,6 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
 end subroutine get_symfunc_parameters_yaml
 !*****************************************************************************************
 subroutine write_ann_all_yaml(parini,ann_arr,iter)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use yaml_output
@@ -310,7 +307,6 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
 end subroutine write_ann_all_yaml
 !*****************************************************************************************
 subroutine write_ann_yaml(parini,filename,ann,rcut)
-    use mod_interface
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
@@ -327,8 +323,8 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     character(5):: sat1, sat2
     character(8):: key1
     character(250):: str1
-    type(dictionary), pointer :: dict_ann
-    type(dictionary), pointer :: subdict_ann
+    type(dictionary), pointer :: dict_ann=>null()
+    type(dictionary), pointer :: subdict_ann=>null()
     dict_ann=>dict_new()
     !-------------------------------------------------------
     call set(dict_ann//"main","nodes")
@@ -457,7 +453,6 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
 end subroutine write_ann_yaml
 !*****************************************************************************************
 subroutine read_ann_yaml(parini,ann_arr)
-    use mod_interface
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -521,14 +516,13 @@ subroutine read_ann_yaml(parini,ann_arr)
 end subroutine read_ann_yaml
 !*****************************************************************************************
 subroutine set_dict_ann(ann,fname,stypat)
-    use mod_interface
     use dictionaries
     use yaml_parse
     use dynamic_memory
     use mod_ann, only: typ_ann
     implicit none
     !local variales
-    type(dictionary), pointer :: dict
+    type(dictionary), pointer :: dict=>null()
     type(typ_ann), intent(inout):: ann
     character, dimension(:), allocatable :: fbuf
     character(5):: stypat
@@ -549,10 +543,11 @@ subroutine set_dict_ann(ann,fname,stypat)
 end subroutine set_dict_ann
 !*****************************************************************************************
 subroutine read_data_yaml(parini,filename_list,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
     use mod_atoms, only: atom_deallocate_old, set_rat_atoms
+    use mod_yaml_conf, only: read_yaml_conf
+    use mod_bin, only: read_bin_conf
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

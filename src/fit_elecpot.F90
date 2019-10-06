@@ -1,5 +1,4 @@
 subroutine subtask_fit_elecpot(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -15,12 +14,12 @@ end subroutine subtask_fit_elecpot
 !/////////////////////////////////////////////////////////////////////////////////////////
 !/////////////////////////////////////////////////////////////////////////////////////////
 subroutine fit_elecpot(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, typ_atoms_arr, get_rat, set_rat, update_ratp
     use mod_atoms, only: atom_copy_old, atom_deallocate, set_rcov, get_rat_iat
     use mod_ann, only: typ_cent, typ_ann_arr
+    use mod_yaml_conf, only: read_yaml_conf
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini

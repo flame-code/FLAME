@@ -25,6 +25,7 @@
    two_level_geopt: False
    verbosity: 0
    verbose: 3
+   rng_type: intrinsic
    seed: -2
    nrun_lammps: 0
    nat: 0

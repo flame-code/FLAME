@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cube_read(filename,atoms,poisson)
-    use mod_interface
     use mod_atoms, only: typ_atoms, iatom_to_sat, atom_allocate_old, update_rat
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
@@ -109,7 +108,6 @@ subroutine cube_read(filename,atoms,poisson)
 end subroutine cube_read
 !*****************************************************************************************
 subroutine cube_write(filename,atoms,poisson,rho_or_pot)
-    use mod_interface
     use mod_atoms, only: typ_atoms, sat_to_iatom, get_rat
     use mod_electrostatics, only: typ_poisson
     implicit none

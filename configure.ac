@@ -35,6 +35,7 @@ dnl Check for existence of other options
 AX_LAMMPS()
 AX_SPGLIB()
 AX_BPS()
+AX_MKL()
 
 dnl pass the FUTILE variable to the Makefiles
 AC_ARG_VAR([FUTILE], [FUTILE root path])

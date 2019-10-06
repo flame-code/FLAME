@@ -1,9 +1,10 @@
 !*****************************************************************************************
 subroutine single_point_task(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
     use mod_potential, only: fcalls, perfstatus, potential
+    use mod_acf, only: acf_read_new, acf_write
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr
     use yaml_output
@@ -87,7 +88,6 @@ subroutine single_point_task(parini)
 end subroutine single_point_task
 !*****************************************************************************************
 subroutine read_poscar_for_single_point(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_allocate_old, update_rat
     use global, only: units

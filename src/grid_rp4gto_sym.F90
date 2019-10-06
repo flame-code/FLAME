@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine put_rp4gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory

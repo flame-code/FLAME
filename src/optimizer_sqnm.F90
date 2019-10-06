@@ -8,7 +8,6 @@
 
 !*****************************************************************************************
 subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
-    use mod_interface
    !use module_base
    !use bigdft_run!module_types
    !use yaml_output
@@ -119,7 +118,7 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    call f_routine(id='sqnm')
    call yaml_sequence_open('SQNM optimization iterations')
    call yaml_sequence(advance='no')
-   associate(nat=>atoms%nat)
+   nat=atoms%nat
     call cal_potential_forces(parini,atoms)
 
    !f_info=f_tree_new()
@@ -611,14 +610,12 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    call f_free(iconnect)
    !call f_tree_free(f_info)
    !call deallocate_state_properties(outs)
-   end associate
    call f_release_routine()
 end subroutine sqnm
 !*****************************************************************************************
 !subroutine minenergyandforces_alborz(iproc,nproc,eeval,imode,outs,nat,rat,fat,fstretch,&
 subroutine minenergyandforces_alborz(parini,iproc,nproc,eeval,imode,atoms,nat,rat,fat,fstretch,fxyzraw,epot,iconnect,nbond_,wold,alpha_stretch0,alpha_stretch,infocode)
     use mod_parini, only: typ_parini
-    use mod_interface
     use mod_atoms, only: typ_atoms, set_rat
     !use bigdft_run!module_types
     !use module_sqn
@@ -686,7 +683,6 @@ subroutine minenergyandforces_alborz(parini,iproc,nproc,eeval,imode,atoms,nat,ra
 end subroutine minenergyandforces_alborz
 !*****************************************************************************************
 subroutine give_rcov_sqnm(iproc,atoms,rcov)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     implicit none
     integer, intent(in) :: iproc
@@ -886,7 +882,6 @@ subroutine give_rcov_sqnm(iproc,atoms,rcov)
 end subroutine give_rcov_sqnm
 !*****************************************************************************************
 subroutine getSubSpaceEvecEval(label,iproc,verbosity,nat,nhist,nhistx,ndim,cutoffratio,lwork,work,idx,rxyz,fxyz,aa,rr,ff,rrr,fff,eval,res,success)
-    use mod_interface
     !use module_base
     !use yaml_output
     !hard-coded parameters:
@@ -1058,7 +1053,6 @@ subroutine getSubSpaceEvecEval(label,iproc,verbosity,nat,nhist,nhistx,ndim,cutof
 end subroutine getSubSpaceEvecEval
 !*****************************************************************************************
 subroutine modify_gradient(nat,ndim,rrr,eval,res,fxyz,alpha,dd)
-    use mod_interface
     !use module_base
     implicit none
     !parameters
@@ -1116,7 +1110,6 @@ end subroutine modify_gradient
 !*****************************************************************************************
 !has to be called before findsad (if operating in biomolecule mode)
 subroutine findbonds(label,iproc,verbosity,atoms,rcov,nbond,iconnect)
-    use mod_interface
     use mod_atoms, only: typ_atoms, get_rat
     implicit none
     integer, intent(in) :: iproc,verbosity
@@ -1156,7 +1149,6 @@ subroutine findbonds(label,iproc,verbosity,atoms,rcov,nbond,iconnect)
 end subroutine findbonds
 !*****************************************************************************************
 subroutine projectbond(nat,nbond,rat,fat,fstretch,iconnect,wold,alpha_stretch0,alpha_stretch)
-    use mod_interface
     !use module_base, only: gp
     implicit none
     integer, intent(in) :: nat

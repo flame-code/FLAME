@@ -64,7 +64,6 @@ contains
 end module
 
 subroutine bar_saddle(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use dictionaries
     use dynamic_memory
@@ -73,6 +72,7 @@ subroutine bar_saddle(parini)
     use mod_atoms, only: typ_atoms, atom_deallocate, typ_atoms_arr
     use mod_atoms, only: atom_copy, get_rat
     use mod_potential, only: potential
+    use mod_yaml_conf, only: read_yaml_conf
     use bar_saddle_params
     implicit none
     type(typ_parini), intent(in):: parini
@@ -158,7 +158,7 @@ subroutine bar_saddle(parini)
     !Initiallize random bar, and get its energy at the center
     call read_bar_saddle_params(atoms%nat,parini)
     if (atoms_arr%nconf == 1) then
-        call init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
+        call init_bar_random(parini,ndim,rxyz1,dbar,bar_vec,bar_cm)
     elseif (atoms_arr%nconf == 2) then
         call init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
     endif
@@ -233,15 +233,17 @@ subroutine bar_saddle(parini)
     call atom_deallocate(atoms_2)
 end subroutine bar_saddle
 !*****************************************************************************************
-subroutine init_bar_random(ndim,rxyz1,dbar,bar_vec,bar_cm)
+subroutine init_bar_random(parini,ndim,rxyz1,dbar,bar_vec,bar_cm)
 !This routine will determine where and how the initial bar should be placed
 !We will set bar_cm=rxyz1, and dir a random vector. Then, bar_vec=rxyz1+dir
 !normalized to dbar.
 !Given this bar_cm, we will create a bar at bar_cm in the direction of dir of
 !length dbar 
-    use mod_interface, norm_func => norm
+use mod_parini, only: typ_parini
     use bar_saddle_params, only: restart
+    use mod_utils
 implicit none
+type(typ_parini), intent(in):: parini
 integer::ndim,n_anchor,i
 real(8),dimension(ndim):: bar_vec,bar_cm,rxyz1,rxyz2
 real(8):: dbar
@@ -249,7 +251,11 @@ logical:: file_exists
 character(40):: filename
 character(5):: fn
 bar_cm = rxyz1
+if(trim(parini%rng_type)=='only_for_tests') then
+call random_number_generator_simple(ndim,bar_vec)
+else
 call random_number(bar_vec)
+endif
 bar_vec = bar_vec*2.d0 - 1.d0
 !We still need to rescale the bar
 !Rescale
@@ -262,7 +268,6 @@ subroutine init_bar_dir(ndim,rxyz1,rxyz2,dbar,bar_vec,bar_cm)
 !normalized to dbar.
 !Given this bar_cm, we will create a bar at bar_cm in the direction of dir of
 !length dbar 
-    use mod_interface, norm_func => norm
     use bar_saddle_params, only: restart
 implicit none
 integer::ndim,n_anchor,i
@@ -279,7 +284,6 @@ bar_vec=bar_vec/sqrt(dot_product(bar_vec,bar_vec))*dbar
 end subroutine
 !*****************************************************************************************
 subroutine find_saddle(n_dim,bar_vec,bar_cm,fxyz,etot,emax,bar_max,alpha_bar,bar_tol,atoms,parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use dictionaries
     use dynamic_memory
@@ -502,7 +506,6 @@ contains
 subroutine move_bar(n_dim,bar_vec,bar_cm,fbar_para,fbar_perp,fbar_tot,etot,alpha)
 !This subroutine will move the bar according to the forces at both endpoints, 
 !including a shift along the bar given by the parallel forces of the CM
-use mod_interface, norm_func => norm
 use bar_saddle_params, only:dbar
 implicit none
 integer:: n_dim
@@ -837,7 +840,6 @@ end subroutine
 !*****************************************************************************************
 end subroutine find_saddle
 subroutine write_atomic_file(filename,etot,pos,atoms,comment,forces)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(in) :: atoms
@@ -879,7 +881,6 @@ subroutine forcebar_decomp(n_dim,bar_vec,bar_cm,fbar_para,fbar_perp,fbar_tot,eto
 !force on the CM in a part parallel to the bar and perpendicular to the bar.
 !all arrays: etot(1)=bar_cm-bar_vec,etot(2)=bar_cm,etot(3)=bar_cm+bar_vec
 use mod_parini, only: typ_parini
-use mod_interface, norm_func => norm
 use mod_atoms, only: typ_atoms
 implicit none
 !Bigdft Variables
@@ -1100,9 +1101,9 @@ end subroutine
         yt=y
         ytp1=-yp1
         ytpn=-ypn
-        call spline(xt,yt,n,ytp1,ytpn,y2)
+        call spline_barsaddle(xt,yt,n,ytp1,ytpn,y2)
       else
-        call spline(x,y,n,yp1,ypn,y2)
+        call spline_barsaddle(x,y,n,yp1,ypn,y2)
       endif
       end subroutine
       
@@ -1126,7 +1127,7 @@ end subroutine
       endif
       end subroutine
 
-      subroutine spline(x,y,n,yp1,ypn,y2)  
+      subroutine spline_barsaddle(x,y,n,yp1,ypn,y2)  
 !From numerical recipes
 !Given arrays x[1..n] and y[1..n] containing a tabulated function, i.e., yi= f(xi), with
 !x1 < x2 < : : :  < xN , and given values yp1 and ypn for the first derivative of the interpolating
@@ -1203,7 +1204,7 @@ end subroutine
 !taken from brent.f90
 !**********************************************************
 
-      function brent(ax,bx,cx,f,tol,xmin,nbrent,nproc,iproc,atoms,parini,ncount_bigdft)  
+      function brent_barsaddle(ax,bx,cx,f,tol,xmin,nbrent,nproc,iproc,atoms,parini,ncount_bigdft)  
 !Given a function f, and given a bracketing triplet of abscissas ax, bx, cx (such that bx is
 !between ax and cx, and f(bx) is less than both f(ax) and f(cx)), this routine isolates
 !the minimum to a fractional precision of about tol using Brent's method. The abscissa of
@@ -1219,7 +1220,7 @@ implicit none
     type(typ_atoms):: atoms
 
       INTEGER ITMAX,nbrent,ncount_bigdft
-      REAL(8):: brent,ax,bx,cx,tol,xmin,CGOLD,ZEPS  
+      REAL(8):: brent_barsaddle,ax,bx,cx,tol,xmin,CGOLD,ZEPS  
       REAL(8),EXTERNAL:: f  
       PARAMETER (CGOLD=.3819660,ZEPS=1.0d-10)  
       INTEGER:: iter  
@@ -1302,7 +1303,7 @@ implicit none
 11    continue  
       stop 'brent exceed maximum iterations'  
 3     xmin=x  
-      brent=fx  
+      brent_barsaddle=fx  
       return  
       END  
  
@@ -1313,7 +1314,6 @@ function time_energy(tt,nproc,iproc,atoms,parini,ncount_bigdft)
 !at the time parameter tt(0:1), and outputs the energy value at the interpolated
 !point. 
 use spline_params
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
 implicit none

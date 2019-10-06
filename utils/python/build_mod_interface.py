@@ -188,7 +188,13 @@ def get_files():
                    './src/train_optimizer.F90',
                    './src/ann_train.F90',
                    './src/atoms_mod.F90',
+                   './src/barsaddle.F90',
                    './src/ann_mod.F90',
+                   './src/io_acf.F90',
+                   './src/io_yaml_conf.F90',
+                   './src/io_bin.F90',
+                   './src/md_util.F90',
+                   './src/parser_core.F90',
                    ]
     
     for file in exclude_files:
@@ -276,6 +282,7 @@ def make_interface_routines(lines,routines,iline_routines,fout):
         nline_arg=iline_arg_end-iline_routines[iroutine]+1
         for iline in range(nline_arg):
             fout.write("%s\n" % lines[iline_routines[iroutine]+iline])
+        #fout.write("    use mod_defs\n")
         arg_list=get_arguments(oneline_arg)
         if iroutine==len(routines)-1:
             nline_routine=len(lines)-iline_routines[iroutine]-1
@@ -348,7 +355,8 @@ for file in files:
         iline+=1
         str_line=str(line).lower()
         i_sub=str_line.find('subroutine')
-        i_fun=str_line.find('function')
+        #i_fun=str_line.find('function') commented not to add functions to the interface
+        i_fun=-1
         if i_sub>-1 or i_fun>-1:
             check_routine=is_routine(line)
             if check_routine:

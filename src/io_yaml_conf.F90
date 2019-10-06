@@ -1,12 +1,18 @@
 !*****************************************************************************************
+module mod_yaml_conf
+    implicit none
+    private
+    public:: read_yaml_conf, write_yaml_conf
+contains
+!*****************************************************************************************
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate, update_rat
     use mod_const, only: bohr2ang, ha2ev
     use dictionaries
     use yaml_parse
     use dynamic_memory
+    use mod_acf, only: str_motion2bemoved
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -25,7 +31,9 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     real(8):: cvax, cvay, cvaz
     real(8):: cvbx, cvby, cvbz
     real(8):: cvcx, cvcy, cvcz
-    type(dictionary), pointer :: confs_list, dict1, dict2
+    type(dictionary), pointer :: confs_list=>null()
+    type(dictionary), pointer :: dict1=>null()
+    type(dictionary), pointer :: dict2=>null()
     character, dimension(:), allocatable :: fbuf
     integer(kind = 8) :: cbuf, cbuf_len
     if(nconfmax<1) then
@@ -160,7 +168,6 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
 end subroutine read_yaml_conf
 !*****************************************************************************************
 subroutine write_yaml_conf(file_info,atoms,strkey)
-    use mod_interface
     use mod_atoms, only: typ_file_info, typ_atoms, update_ratp, get_rat
     use mod_const, only: bohr2ang, ha2ev
     use dictionaries
@@ -183,8 +190,11 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     real(8):: cvax, cvay, cvaz
     real(8):: cvbx, cvby, cvbz
     real(8):: cvcx, cvcy, cvcz
-    type(dictionary), pointer :: dict1, single_atom_list, coord_list
-    type(dictionary), pointer :: conf_dict, force_list
+    type(dictionary), pointer :: dict1=>null()
+    type(dictionary), pointer :: single_atom_list=>null()
+    type(dictionary), pointer :: coord_list=>null()
+    type(dictionary), pointer :: conf_dict=>null()
+    type(dictionary), pointer :: force_list=>null()
     real(8), allocatable:: rat(:,:)
     allocate(rat(3,atoms%nat))
 
@@ -281,4 +291,6 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     !write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
     deallocate(rat)
 end subroutine write_yaml_conf
+!*****************************************************************************************
+end module mod_yaml_conf
 !*****************************************************************************************

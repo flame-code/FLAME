@@ -1,6 +1,5 @@
 !******************************************************************************************************
 subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc

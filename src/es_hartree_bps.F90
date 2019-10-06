@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine get_psolver_bps(poisson,atoms,ehartree)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
@@ -58,7 +57,6 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
 end subroutine get_psolver_bps
 !*****************************************************************************************
 subroutine init_psolver_bps(parini,atoms,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -79,7 +77,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     real(kind=8):: hgrids(3), hx, hy, hz
     real(kind=8):: cv1(3), cv2(3), cv3(3), ang_bc, ang_ac, ang_ab
     real(kind=8):: alpha_bc,beta_ac, gamma_ab ,pi=4.d0*atan(1.d0)
-    type(dictionary), pointer :: dict_input
+    type(dictionary), pointer :: dict_input=>null()
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
     write(*,*) 'REZA-1'
@@ -139,7 +137,6 @@ subroutine init_psolver_bps(parini,atoms,poisson)
 end subroutine init_psolver_bps
 !*****************************************************************************************
 subroutine fini_psolver_bps(poisson)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
     use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
@@ -156,7 +153,6 @@ subroutine fini_psolver_bps(poisson)
 end subroutine fini_psolver_bps
 !*****************************************************************************************
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson

@@ -10,6 +10,7 @@ module mod_parini
         !parameters of [main]
         character(50):: task='unknown'
         character(256):: cwd='unknown'
+        character(50):: rng_type='intrinsic'
         logical:: two_level_geopt=.false.
         integer:: iverbose=0
         integer:: iseed=-2
@@ -326,10 +327,10 @@ module mod_parini
         real(8):: pot_rmse_tol
         logical:: cutoff_fit_elecpot
         !-----------------------------------------------------------------------
-        type(dictionary), pointer :: dict_user
-        type(dictionary), pointer :: dict
-        type(dictionary), pointer :: subdict
-        type(dictionary), pointer :: subsubdict
+        type(dictionary), pointer :: dict_user=>null()
+        type(dictionary), pointer :: dict=>null()
+        type(dictionary), pointer :: subdict=>null()
+        type(dictionary), pointer :: subsubdict=>null()
     end type typ_parini
 end module mod_parini
 !*****************************************************************************************

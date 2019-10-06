@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_cal_potential_forces_siesta(atoms_t)
-    use mod_interface
     use mod_processorsm only: iproc, nproc
     use mod_potential, only: path1, path2, icount, perfstatus, cellvec
     use mod_atoms, only: typ_atoms
@@ -159,7 +158,6 @@ subroutine init_cal_potential_forces_siesta(atoms_t)
 end subroutine init_cal_potential_forces_siesta
 !*****************************************************************************************
 subroutine cal_potential_forces_siesta(atoms)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_potential, only: path1, path2, icount, perfstatus
     use m_siesta_init
@@ -216,7 +214,6 @@ subroutine cal_potential_forces_siesta(atoms)
 end subroutine cal_potential_forces_siesta
 !*****************************************************************************************
 subroutine final_potential_forces_siesta
-    use mod_interface
     use mod_potential, only: path1, path2
     use m_siesta_init
     !use m_siesta_analysis

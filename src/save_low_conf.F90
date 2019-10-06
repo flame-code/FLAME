@@ -1,6 +1,5 @@
 subroutine save_low_conf(nat,npmin,npminx,ent_wpos,e_wpos,pos,latvec,spg,spgtol,fdos,elocmin,poslocmin,latlocmin)
 !save configuration if it is among the lowest ones in energy
-  use mod_interface
 !  implicit real*8 (a-h,o-z)
   implicit none
   integer:: iat,nat, npmin, npminx, kmax, k 

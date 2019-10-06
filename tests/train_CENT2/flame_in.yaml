@@ -3,6 +3,7 @@ main:
     seed        : 6296466
     types       : Mg O
     verbosity   : 1
+    rng_type: only_for_tests #Do not use this value, only useful for developers
 
 ann:
     subtask       : train

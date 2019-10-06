@@ -9,11 +9,14 @@ bin_PROGRAMS = flame
 SRC_F = minpack/dpmpar.f minpack/enorm.f  minpack/lmder.f minpack/lmpar.f minpack/qrfac.f minpack/qrsolv.f
 
 AM_FCFLAGS = -DMPI 
+if HAVE_MKL
+AM_FCFLAGS += -DHAVE_MKL
+endif
 AM_CPPFLAGS = -DQSC_STANDALONE
 
 SRC_ = $(SRC_F)
 
-SRC_ += task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
+SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
 		constants_mod.F90 \
 		spline_mod.F90 \
 		shortrange_mod.F90 \
@@ -30,14 +33,17 @@ SRC_ += task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
 		electrostatics_mod.F90 \
 		ann_mod.F90 \
 		potential_mod.F90 \
+		basic_utilities.F90 \
 		train_optimizer.F90 \
 		symfunc_mod.F90 \
 		splinedsaddle_mod.F90 \
 		interface_mod.F90 \
+		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		flame_init_fini.F90 processors.F90 \
 		mpi_utilities.F90 \
-		parser_core.F90 parser_all.F90 parser_yaml.F90 \
 		lmder_modified.F90 \
+		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
+		io_yaml_conf.F90 io_bin.F90 \
 		ann_process.F90 ann_io.F90 ann_io_yaml.F90 ann_best_symfunc.F90 \
 		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
 		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
@@ -47,7 +53,7 @@ SRC_ += task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
 		ann_pot_tb.F90 \
 		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
-		md.F90 md_NVT.F90\
+		md_util.F90 md.F90 md_NVT.F90\
 		phonon.F90 \
 		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 \
 		es_coulomb_p3d_bias.F90 \
@@ -63,10 +69,7 @@ SRC_ += task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
 		task_netsock.F90 task_lammps.F90 \
 		saddle_1s_pot.F90 saddle_1s.F90 saddle_1s_dimer.F90 saddle_1s_optimizer.F90 \
 		task_saddle.F90 \
-		basic_utilities.F90 \
-		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
 		io_utils.F90 \
-		io_yaml_conf.F90 io_bin.F90 \
 		bader_neargrid.F90 bader_ongrid.F90 bader_weight.F90 \
 		task_confcomp.F90 \
 		task_bader.F90 \

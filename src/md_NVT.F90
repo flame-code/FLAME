@@ -1,10 +1,11 @@
 !*****************************************************************************************
 subroutine md_nvt_langevin(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_atoms, only: get_rat, update_ratp, update_rat, set_rat
+    use mod_acf, only: acf_write
+    use mod_velocity, only: set_velocities
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -184,10 +185,11 @@ subroutine md_nvt_langevin(parini,atoms)
 end subroutine md_nvt_langevin
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_cp(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_rat, get_rat, update_ratp
+    use mod_velocity, only: set_velocities
+    use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -378,10 +380,11 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
 end subroutine md_nvt_nose_hoover_cp
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_chain(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_potential, only: potential, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, get_rat, update_ratp, update_rat
+    use mod_velocity, only: set_velocities
+    use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
     !use mod_potential, only: bias 
@@ -408,7 +411,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: r, dx(3) , rsq, msd1, msd2, msd3
     real(8):: nof, enhc 
     real(8):: dt2, dt4, dt8 
-    integer:: jj(3,atoms%nat), vfile
+    integer:: vfile
     real(8):: temp1, temp2
     real(8):: sumf1, sumf2, sumf3
     real(8):: tau, time_unit
@@ -444,8 +447,12 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     dt8 = 0.5d0*dt4
 
     kt = aboltzmann*temp_trget
-    jj=atoms%bemoved
-    nof= (-sum(jj))
+    nof=0
+    do iat=1,atoms%nat
+        if(atoms%bemoved(1,iat)) nof=nof+1
+        if(atoms%bemoved(2,iat)) nof=nof+1
+        if(atoms%bemoved(3,iat)) nof=nof+1
+    enddo
     !nof = (3.d0*atoms%nat)
     !nof = (3.d0*atoms%nat+ntherm)
     !ekin_target=0.5d0*nof*aboltzmann*parini%init_temp_dynamics
@@ -724,7 +731,6 @@ subroutine plane_repulsion(atoms)
 end subroutine plane_repulsion
 !*************************************************************************************************************
 subroutine thermostat_evolution(atoms,zeta_next,zeta,zeta_prev,dzeta,mass_q,kt,ntherm,imd)
-    use mod_interface
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_dynamics, only: dt, nmd
     implicit none
@@ -1023,9 +1029,9 @@ subroutine get_atomic_mass(atoms,totmass)
 end subroutine get_atomic_mass
 !*****************************************************************************************
 subroutine write_trajectory_velocity(parini,atoms,file_info,rat_init,imd,ntherm,zeta,dzeta)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, update_ratp
+    use mod_acf, only: acf_write
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables

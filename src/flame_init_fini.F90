@@ -1,12 +1,15 @@
 !*****************************************************************************************
 subroutine alborz_init(parini,parres,file_ini)
-    use mod_interface, except_this_one=> alborz_init
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
+    use mod_parser_ini, only: read_file_input
     use futile
+#ifndef __GFORTRAN__ 
+    use ifport
+#endif
     use time_profiling
-    use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
+    !use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
     use dynamic_memory
     use yaml_output
     implicit none
@@ -24,8 +27,8 @@ subroutine alborz_init(parini,parres,file_ini)
     endif
     call f_routine(id='alborz_init')
     !-----------------------------------------------------------------
-    call alborz_initialize_timing_categories()
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
+    !call alborz_initialize_timing_categories()
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
     !-----------------------------------------------------------------
     parini%iunit=f_get_free_unit(10**5)
     call yaml_set_stream(unit=parini%iunit,filename=trim(filename),&
@@ -80,41 +83,40 @@ subroutine alborz_init(parini,parres,file_ini)
     endif
     parres=parini
     !-----------------------------------------------------------------
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     call f_release_routine()
 end subroutine alborz_init
 !*****************************************************************************************
-subroutine alborz_initialize_timing_categories
-    use yaml_output
-    use time_profiling
-    use mod_timing, only: dict_timing_info, TCAT_PSOLVER, TCAT_SYMFUNC_COMPUT
-    use mod_timing, only: TCAT_ALBORZ_INIT_FINAL
-    use wrapper_mpi, only: mpi_initialize_timing_categories, wmpi_init_thread, mpifinalize
-    use wrapper_mpi, only: mpisize, mpirank
-    use mod_processors, only: iproc
-    implicit none
-    integer:: iverbose=3
-    character(len=*), parameter :: pscpt1='Alborz init-fin'
-    character(len=*), parameter :: pscpt2='potential'
-    call f_timing_category_group(pscpt1,'Alborz computations total time')
-    call f_timing_category_group(pscpt2,'potential computations total time')
-    !-----------------------------------------------------------------
-    call f_timing_category('Alborz initialize-finalize',pscpt1,'computation of init-fin',TCAT_ALBORZ_INIT_FINAL)
-    !-----------------------------------------------------------------
-    call f_timing_category('psolver',pscpt2,'computation of Psolver',TCAT_PSOLVER)
-    call f_timing_category('symfunc compute',pscpt2,'computation of symmetry functions',TCAT_SYMFUNC_COMPUT)
-    !-----------------------------------------------------------------
-    call f_timing_reset(filename='time.yaml',master=iproc==0,verbose_mode=iverbose>2)
-end subroutine alborz_initialize_timing_categories
+!subroutine alborz_initialize_timing_categories
+!    use yaml_output
+!    use time_profiling
+!    use mod_timing, only: dict_timing_info, TCAT_PSOLVER, TCAT_SYMFUNC_COMPUT
+!    use mod_timing, only: TCAT_ALBORZ_INIT_FINAL
+!    use wrapper_mpi, only: mpi_initialize_timing_categories, wmpi_init_thread, mpifinalize
+!    use wrapper_mpi, only: mpisize, mpirank
+!    use mod_processors, only: iproc
+!    implicit none
+!    integer:: iverbose=3
+!    character(len=*), parameter :: pscpt1='Alborz init-fin'
+!    character(len=*), parameter :: pscpt2='potential'
+!    call f_timing_category_group(pscpt1,'Alborz computations total time')
+!    call f_timing_category_group(pscpt2,'potential computations total time')
+!    !-----------------------------------------------------------------
+!    call f_timing_category('Alborz initialize-finalize',pscpt1,'computation of init-fin',TCAT_ALBORZ_INIT_FINAL)
+!    !-----------------------------------------------------------------
+!    call f_timing_category('psolver',pscpt2,'computation of Psolver',TCAT_PSOLVER)
+!    call f_timing_category('symfunc compute',pscpt2,'computation of symmetry functions',TCAT_SYMFUNC_COMPUT)
+!    !-----------------------------------------------------------------
+!    call f_timing_reset(filename='time.yaml',master=iproc==0,verbose_mode=iverbose>2)
+!end subroutine alborz_initialize_timing_categories
 !*****************************************************************************************
 subroutine alborz_final(parini,file_ini)
-    use mod_interface, except_this_one=> alborz_finale
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini, time_start, time_end
     use mod_processors, only: iproc
     use yaml_output
     use time_profiling
-    use mod_timing , only: dict_timing_info, TCAT_ALBORZ_INIT_FINAL
+    !use mod_timing , only: dict_timing_info, TCAT_ALBORZ_INIT_FINAL
     use dynamic_memory
     implicit none
     type(typ_parini), intent(inout):: parini
@@ -123,7 +125,7 @@ subroutine alborz_final(parini,file_ini)
     call f_routine(id='alborz_final')
     call f_free(parini%qt)
     call f_free(parini%at)
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
     if(.not. parini%exists_yaml_file) then
         deallocate(file_ini%file_lines,file_ini%stat_line_is_read) !,comment_line)
     endif
@@ -141,8 +143,8 @@ subroutine alborz_final(parini,file_ini)
         call finalizeprocessors
     endif
     !-----------------------------------------------------------------
-    call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
-    call f_timing_stop(dict_info=dict_timing_info)
+    !call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
+    !call f_timing_stop(dict_info=dict_timing_info)
     !-----------------------------------------------------------------
     call yaml_flush_document(unit=parini%iunit)
     !ASK LUIGI OR DAMIEN ABOUT THE PUZZLING ISSUE OF WHICH MUST COME FIRST:
@@ -153,14 +155,13 @@ subroutine alborz_final(parini,file_ini)
 end subroutine alborz_final
 !*****************************************************************************************
 subroutine init_random_seed(parini)
-    use mod_interface, except_this_one=> alborz_finale
     use mod_processors, only: iproc, mpi_comm_abz, imaster
     use mod_parini, only: typ_parini
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
-    integer:: istat, nseed, ierr
+    integer:: istat, nseed, ierr, i
     integer, allocatable:: iseed(:)
 #if defined(MPI)
     include 'mpif.h'
@@ -191,30 +192,15 @@ subroutine init_random_seed(parini)
     iseed(1:nseed)=iseed(1:nseed)+iproc*11
     call random_seed(put=iseed)
     call yaml_mapping_open('random number generator',flow=.true.)
-    if(nseed==1) then
-        call yaml_map('iproc',iproc,fmt='(i4)')
-        call yaml_map('seed1',iseed(1),fmt='(i12)')
-        !write(*,'(a,i4,i12)') 'iproc,seed ',iproc,iseed(1)
-    else if(nseed==2) then
-        call yaml_map('iproc',iproc,fmt='(i4)')
-        call yaml_map('seed1',iseed(1),fmt='(i12)')
-        call yaml_map('seed2',iseed(2),fmt='(i12)')
-        !write(*,'(a,i4,2i12)') 'iproc,seed ',iproc,iseed(1),iseed(2)
-    else if(nseed==3) then
-        call yaml_map('iproc',iproc,fmt='(i4)')
-        call yaml_map('seed1',iseed(1),fmt='(i12)')
-        call yaml_map('seed2',iseed(2),fmt='(i12)')
-        call yaml_map('seed3',iseed(3),fmt='(i12)')
-        !write(*,'(a,i4,3i12)') 'iproc,seed ',iproc,iseed(1),iseed(2),iseed(3)
-    else
-        stop 'ERROR: seed size greater than 3 not considered in Alborz.'
+    call yaml_map('iproc',iproc,fmt='(i4)')
+    if(trim(parini%rng_type)/='only_for_tests') then
+        call yaml_map('seed',iseed) !,fmt='(i12)')
     endif
     call yaml_mapping_close()
     deallocate(iseed)
 end subroutine init_random_seed
 !*****************************************************************************************
 subroutine set_atomc_types_info(parini)
-    use mod_interface, except_this_one=> set_atomc_types_info
     use mod_parini, only: typ_parini
     use mod_atoms, only: sat_to_iatom
     use yaml_output
@@ -275,7 +261,6 @@ subroutine set_atomc_types_info(parini)
 end subroutine set_atomc_types_info
 !*****************************************************************************************
 subroutine flm_print_logo(parini)
-    use mod_interface, except_this_one=> flm_print_logo
     use mod_parini, only: typ_parini
     use futile
     implicit none

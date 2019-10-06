@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_tightbinding, only: typ_partb
     use mod_potl, only: potl_typ
@@ -160,7 +159,6 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
 end subroutine cal_ann_tb
 !*****************************************************************************************
 subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,count_md)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -234,7 +232,6 @@ subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,c
 end subroutine lenoskytb_ann
 !*****************************************************************************************
 subroutine fit_hgen(parini,ann_arr,opt_ann)
-    use mod_interface
     use mod_parini, only: typ_parini
     !use mod_tightbinding, only: typ_partb
     !use mod_potl, only: potl_typ

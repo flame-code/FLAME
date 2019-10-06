@@ -41,7 +41,6 @@
 !!END MODULE String_Utility 
 
 subroutine params_read(parini)
-use mod_interface
 use mod_parini, only: typ_parini
 use String_Utility
 use defs_basis
@@ -629,7 +628,6 @@ call params_check(parini)
 end subroutine
 !************************************************************************************
 subroutine params_read_for_yaml(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_fire,   only: dtmin, dtmax
     use minpar, only: parmin_bfgs
@@ -723,7 +721,6 @@ calls=calls+1
 end subroutine params_read_for_yaml
 !************************************************************************************
 subroutine params_defaults(parini,mdmin_in,dtion_md_in,alpha_lat_in,alpha_at_in,read_poscur)
-use mod_interface
 use defs_basis
 use mod_fire,   only:dtmin, dtmax
 use minpar, only:parmin_bfgs

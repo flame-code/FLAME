@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine alborz_as_potential_init(nat,sat)
-    use mod_interface
     use mod_alborz_as_potential, only: parini, parres, file_ini, atoms
     use mod_potential, only: potential
     use mod_atoms, only: atom_allocate_old
@@ -22,7 +21,6 @@ subroutine alborz_as_potential_init(nat,sat)
 end subroutine alborz_as_potential_init
 !*****************************************************************************************
 subroutine alborz_as_potential_get(boundcond,nat,cellvec,rat,sat,fat,epot,stress)
-    use mod_interface
     use mod_alborz_as_potential, only: parini, atoms
     use mod_atoms, only: set_rat
     implicit none
@@ -50,7 +48,6 @@ subroutine alborz_as_potential_get(boundcond,nat,cellvec,rat,sat,fat,epot,stress
 end subroutine alborz_as_potential_get
 !*****************************************************************************************
 subroutine alborz_as_potential_final
-    use mod_interface
     use mod_alborz_as_potential, only: parini, file_ini, atoms
     use mod_atoms, only: atom_deallocate_old
     implicit none

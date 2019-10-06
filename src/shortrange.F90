@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine shortrange_init(atoms,shortrange,linked_lists,spline)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_shortrange, only: typ_shortrange
     use mod_linked_lists, only: typ_linked_lists
@@ -21,7 +20,6 @@ subroutine shortrange_init(atoms,shortrange,linked_lists,spline)
 end subroutine shortrange_init
 !*****************************************************************************************
 subroutine shortrange_final(linked_lists,spline)
-    use mod_interface
     use mod_linked_lists, only: typ_linked_lists
     use mod_spline, only: typ_spline
     implicit none
@@ -40,7 +38,6 @@ subroutine shortrange_final(linked_lists,spline)
 end subroutine shortrange_final
 !*****************************************************************************************
 subroutine set_interaction(atoms,shortrange)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_shortrange, only: typ_shortrange
     implicit none
@@ -88,7 +85,6 @@ subroutine set_interaction(atoms,shortrange)
 end subroutine set_interaction
 !*****************************************************************************************
 subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cell,epot_short)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_shortrange, only: typ_shortrange
     use mod_linked_lists, only: typ_linked_lists

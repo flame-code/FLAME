@@ -1,5 +1,4 @@
 subroutine init_rotvels(parini,nat,xred,latvec,temp,amass,vel)
-use mod_interface
 use mod_parini, only: typ_parini
 !This routine will first find the correct partitioning of the system into molecules, then assign
 !rotational and translational velocities to these molecules according to the tempereature temp
@@ -253,7 +252,6 @@ end subroutine
 !************************************************************************************
 
 subroutine assign_vel(nat,xcart,cmass,omega,vel)
-use mod_interface
 !This routine will take the cartesian coordinates and the center of mass and compute the 
 !velocities of every atom in the system with nat atoms
 implicit none
@@ -268,7 +266,6 @@ end subroutine
 !************************************************************************************
 
 subroutine rot_ener(omega,intens,erot)
-use mod_interface
 !This routine computes the rotational kinetic energy of a system with known tensor of intertia and a given 
 !angular velocity omega, based on its orientation and magnitude
 implicit none

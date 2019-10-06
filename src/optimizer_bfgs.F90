@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine mybfgs(iproc,nr,x,epot,f,nwork,work,paropt)
-    use mod_interface
     use mod_opt, only: typ_paropt, frmt_base
     use yaml_output
     implicit none
@@ -228,7 +227,6 @@ subroutine mybfgs(iproc,nr,x,epot,f,nwork,work,paropt)
 end subroutine mybfgs
 !*****************************************************************************************
 subroutine init_mybfgs(paropt,epot,fmax)
-    use mod_interface
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none

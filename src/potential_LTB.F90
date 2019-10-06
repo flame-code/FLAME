@@ -35,7 +35,6 @@ subroutine init_lenosky_tb(atoms_t)
 end subroutine init_lenosky_tb
 !*****************************************************************************************
 subroutine lenosky_tb(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_potential, only: cell, natsi

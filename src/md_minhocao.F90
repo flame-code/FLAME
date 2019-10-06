@@ -1,5 +1,4 @@
 subroutine MD_MHM   (parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use mod_interface
  use global, only: units
  use defs_basis
  use interface_code
@@ -337,7 +336,7 @@ if(parres%verb.gt.0) then
 !             &itime,enthalpy,pressure*vol,ekinatom,ekinlat,nummax,nummin,parres%mdmin
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
-       units=units
+       !units=units
        !write(*,*) "# Writing the positions in MD:",filename
        call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
@@ -579,7 +578,7 @@ if(parres%verb.gt.0) then
         call yaml_mapping_close()
        write(fn4,'(i4.4)') itime
        filename=trim(folder)//"posmd."//fn4//".ascii"
-       units=units
+       !units=units
        !write(*,*) "# Writing the positions in MD: ",filename
        call yaml_map('Writing the positions in MD',trim(filename))
        call write_atomic_file_ascii(parres,filename,parini%nat,units,xred_in,latvec_in,fcart_in,strten_in,&
@@ -660,7 +659,6 @@ end subroutine MD_MHM
 !**********************************************************************************************
 
 subroutine ekin_at_lat(amass,latmass,latvec,vpos,vlat,ekinat,ekinlat,f0,md_type,nat)
-use mod_interface
 implicit none
 integer:: iat,i,md_type,nat
 real(8):: latvec(3,3),vpos(3,nat),vlat(3,3),ekinat,ekinlat,rkin,vposcurtmp(3),crossp(3),f0(3,3),vol
@@ -712,7 +710,6 @@ end subroutine
 !**********************************************************************************************
 
 subroutine stress_velocity(vpos,latvec,amass,nat,vpressure)
-use mod_interface
 implicit none
 real(8):: velmat(3,3),vpostmp(3),latvec(3,3),vpos(3,nat),vpressure,a(3,3),vol,amass(nat)
 integer:: iat,nat,i,j

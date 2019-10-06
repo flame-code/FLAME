@@ -49,7 +49,6 @@
 !!!end program
 
 !subroutine init_confinement(nat,filename)
-!use mod_interface
 !use confinement, only: nconfine,conf_dim,conf_av,conf_exp,conf_prefac,conf_cut,conf_eq,conf_nat,conf_list,conf_cartred
 !use global, only: units
 !use defs_basis, only: Bohr_Ang, Ha_eV
@@ -117,7 +116,6 @@
 !end subroutine
 
 subroutine init_confinement_parser(parini)
-use mod_interface
 use mod_parini, only: typ_parini
 use global, only: units
 use defs_basis, only: Bohr_Ang, Ha_eV
@@ -159,7 +157,6 @@ if(minval(parini%conf_av(:)).lt.1.or.maxval(parini%conf_av(:)).gt.2) stop "Wrong
 end subroutine
 
 subroutine confinement_energy_forces(parini,nat,xred,latvec,energy,forces,strten)
-use mod_interface
 use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini

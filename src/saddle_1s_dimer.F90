@@ -1,13 +1,14 @@
 !*****************************************************************************************
 subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,paropt)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_saddle, only: dimsep, nit, epotprime, &
         do_elim_trans, do_elim_rot, dmconverged, beta
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, atom_normalizevector
     use mod_atoms, only: atom_deallocate_old
+    use mod_yaml_conf, only: write_yaml_conf
     use mod_atoms, only: atom_calnorm, set_rat
+    use mod_utils
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -42,7 +43,15 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     fat(1:3,1:atoms%nat)=atoms%fat(1:3,1:atoms%nat)
     epotprime=atoms%epot
     !-------------------------------
-    call random_number(uvn)
+    if(trim(parini%rng_type)=='only_for_tests') then
+        do iat=1,nat
+            call random_number_generator_simple(uvn(1,iat))
+            call random_number_generator_simple(uvn(2,iat))
+            call random_number_generator_simple(uvn(3,iat))
+        enddo
+    else
+        call random_number(uvn)
+    endif
     uvn(1:3,1:nat)=uvn(1:3,1:nat)-0.5d0
     call elim_moment_alborz(nat,uvn)
     call elim_torque_reza_alborz(nat,rat,uvn)
@@ -108,7 +117,6 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
 end subroutine dimmethimproved
 !*****************************************************************************************
 subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,maxitlc,curv0,curv,nw)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_saddle, only:nit,do_elim_trans,do_elim_rot
     use mod_atoms, only: typ_atoms, atom_ddot, atom_normalizevector
@@ -180,7 +188,6 @@ subroutine lowestcurvature(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,angletol,ma
 end subroutine lowestcurvature
 !*****************************************************************************************
 subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_saddle, only: do_elim_rot, do_elim_trans, dimsep
     use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_normalizevector
@@ -300,7 +307,6 @@ subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm
 end subroutine rotatedimer
 !*****************************************************************************************
 !subroutine escapeconvex(iproc,n,nr,x,uvn,f,curv0,curv)
-!    use mod_interface
 !    use mod_saddle, only: nit, epotprime, ecconverged, maxitec
 !    implicit none
 !    integer::n,nr,istat,itec,i,j,nj,iproc

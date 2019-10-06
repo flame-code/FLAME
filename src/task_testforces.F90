@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine task_testforces(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -18,13 +17,14 @@ subroutine task_testforces(parini)
 end subroutine task_testforces
 !*****************************************************************************************
 subroutine testforces_fd(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate
     use mod_atoms, only: get_rat_iat, set_rat_iat
     use mod_potential, only: potential
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
+    use mod_acf, only: acf_read
+    use mod_yaml_conf, only: read_yaml_conf
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -136,11 +136,11 @@ subroutine testforces_fd(parini)
 end subroutine testforces_fd
 !*****************************************************************************************
 subroutine teststress_fd(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_potential, only: potential
     use mod_processors, only: iproc
+    use mod_acf, only: acf_read
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -225,11 +225,11 @@ write(*,*) "------------------------------------------------------"
 end subroutine teststress_fd
 !*****************************************************************************************
 subroutine teststress_fd_cellvec(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp, update_rat
     use mod_potential, only: potential
     use mod_processors, only: iproc
+    use mod_acf, only: acf_read
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables

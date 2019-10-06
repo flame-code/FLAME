@@ -1,10 +1,10 @@
 !*****************************************************************************************
 subroutine test_free_bps(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, update_ratp, get_rat
     use dynamic_memory
+    use mod_acf, only: acf_read
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_poisson):: poisson_grd

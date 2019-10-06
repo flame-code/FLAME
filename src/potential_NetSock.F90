@@ -16,7 +16,6 @@
 
 !  subroutine evaluate_msock(iproc,nat,latvec, xred, fcart, strten, energy, ka, kb, kc, iprec)
   subroutine cal_potential_forces_netsock(atoms)
-  use mod_interface
 !  use defs_basis
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
@@ -66,12 +65,11 @@ endif
     write(*,*) "Energy: ", energy
     write(*,*) "Forces: "
     do iat=1,atoms%nat
-      write(*,'(3(pe20.12))') fcart(:,iat)
+      write(*,'(3(es20.12))') fcart(:,iat)
     enddo
   end subroutine
 
   subroutine init_netsock(parini)
-  use mod_interface
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_parini, only: typ_parini
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
@@ -87,7 +85,6 @@ endif
   end subroutine
   
   subroutine send_data(pos,latvec,nat,repid,msg,nmsg,latvec_rot)
-  use mod_interface, except_this_one=> send_data
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   implicit none
@@ -163,7 +160,6 @@ endif
   end subroutine
 
   subroutine get_data(etot,fcart,strten,latvec,latvec_rot,nat)
-  use mod_interface, except_this_one=> get_data
   USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
   use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string
   implicit none
@@ -237,7 +233,6 @@ endif
        !This subroutine will compute a rotation matrix, which transforms
        !fcart_trans into the original orientation forces fcart by fcart=matmul(rotmat,fcart_trans)
        !stress_trans into the original orientation stress by stress=rotmat*stress_trans*rotnat^T
-       use mod_interface , except_this_one=> rotmat_fcart_stress_other
        implicit none
        real(8):: latvec_init(3,3),latvec_trans(3,3),latvec_trans_inv(3,3),rotmat(3,3)
 !       call invertmat_alborz(latvec_trans,latvec_trans_inv,3)

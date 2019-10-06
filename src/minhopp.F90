@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine minimahopping(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_task, only: time_exceeded
     use mod_minhopp, only: nstep, nlmin, nlminx, ekin, istep, ihopp, kerathopp, ediff, etoler, re_sm, &
@@ -20,10 +19,6 @@ subroutine minimahopping(parini)
     type(typ_atoms_arr):: atoms_locmin
 #if defined(MPI)
     include 'mpif.h'
-#else
-    write(*,'(a)') 'ERROR: minhopp can now be compiled without MPI but I do not know '
-    write(*,'(a)') '       whether it works well without MPI-related minhopp routines.'
-    stop
 #endif
     call init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
     !if(iproc==0) call sleep(20)
@@ -47,9 +42,9 @@ subroutine minimahopping(parini)
     re_sm=min(atoms_curr%epot,earr(1))
     call yaml_map('re_sm',re_sm,fmt='(es20.12)')
     !call yaml_mapping_open('?????')
-    !call yaml_map('iproc',iproc,fmt='(i)')
-    !call yaml_map('istep',istep,fmt='(i)')
-    !call yaml_map('ihopp',ihopp,fmt='(i)')
+    !call yaml_map('iproc',iproc,fmt='(i8)')
+    !call yaml_map('istep',istep,fmt='(i8)')
+    !call yaml_map('ihopp',ihopp,fmt='(i8)')
     !call yaml_map('epot',atoms_curr%epot,fmt='(es20.12)')
     !call yaml_map('ediff',,fmt='()')
     !call yaml_map('',,fmt='()')
@@ -144,12 +139,12 @@ subroutine minimahopping(parini)
 end subroutine minimahopping
 !*****************************************************************************************
 subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_minhopp, only: nlmin, alpha_soften, npminx, nstep, alpha1, alpha2, &
         beta1, beta2, beta3, eref, etoler, minter, mdmin, nsoften, nrandoff
     use mod_processors, only: nproc, iproc, imaster, mpi_comm_abz, parallel
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy, set_ndof
+    use mod_yaml_conf, only: read_yaml_conf
     use mod_opt, only: typ_paropt
     use mod_potential, only: potential
     use yaml_output
@@ -186,7 +181,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     endif
     call print_minhopp_parameters
     !reading nlmin,nlminx,ediffarr,ekinarr,dtarr and !distribute among all proc.
-    call read_minhopp_parameters 
+    call read_minhopp_parameters(parini)
     if(iproc==imaster) then
         call yaml_comment('reading cellvec sizes and atomic positions from posinp.acf')
         !write(*,'(a)') 'reading cellvec sizes and atomic positions from posinp.acf'
@@ -268,7 +263,6 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
 end subroutine init_minimahopping
 !*****************************************************************************************
 subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_minhopp, only: count_md_tot, count_opt_tot, count_soften_tot, &
         fcall_tot_all, fcall_tot_all_md, fcall_tot_all_opt, fcall_tot_all_soften
@@ -286,13 +280,18 @@ subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_
     integer:: ierr, iconf
 #if defined(MPI)
     include 'mpif.h'
-    call write_minhopp(atoms_allproc,atoms_locmin)
     call MPI_REDUCE(fcalls        ,fcall_tot_all       ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     call MPI_REDUCE(count_md_tot    ,fcall_tot_all_md    ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     call MPI_REDUCE(count_opt_tot   ,fcall_tot_all_opt   ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     call MPI_REDUCE(count_soften_tot,fcall_tot_all_soften,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
     if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
+#else
+    fcall_tot_all       =fcalls          
+    fcall_tot_all_md    =count_md_tot    
+    fcall_tot_all_opt   =count_opt_tot   
+    fcall_tot_all_soften=count_soften_tot
 #endif
+    call write_minhopp(atoms_allproc,atoms_locmin)
     call print_final_statistics
     call deallocate_minhopp_arrays
     call atom_deallocate(atoms_curr)
@@ -318,7 +317,6 @@ subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_
 end subroutine final_minimahopping
 !*****************************************************************************************
 subroutine set_amass(atoms_hopp)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_processors, only: iproc, imaster
     implicit none
@@ -344,7 +342,6 @@ subroutine set_amass(atoms_hopp)
 end subroutine set_amass
 !*****************************************************************************************
 subroutine relax_minhopp(parini,atoms,paropt_prec,paropt)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_minhopp, only: die, count_opt, count_opt_tot, istep
     use mod_opt, only: typ_paropt
@@ -411,7 +408,6 @@ subroutine relax_minhopp(parini,atoms,paropt_prec,paropt)
 end subroutine relax_minhopp
 !*****************************************************************************************
 subroutine print_minhopp_parameters
-    use mod_interface
     use mod_task, only: time_start
     use mod_minhopp, only: beta1, beta2, beta3, alpha1, alpha2, mdmin, minter, npminx
     !use mod_atoms, only:
@@ -432,9 +428,9 @@ subroutine print_minhopp_parameters
         call yaml_map('p1',p1,fmt='(es11.3)')
         call yaml_map('p2',p2,fmt='(es11.3)')
         call yaml_map('critical ratio (.ge. 1)',tt,fmt='(es12.4)')
-        call yaml_map('mdmin',mdmin,fmt='(i)')
-        call yaml_map('npminx',npminx,fmt='(i)')
-        call yaml_map('minter',minter,fmt='(i)')
+        call yaml_map('mdmin',mdmin,fmt='(i8)')
+        call yaml_map('npminx',npminx,fmt='(i8)')
+        call yaml_map('minter',minter,fmt='(i8)')
         call yaml_mapping_close()
         !write(*,'(a,3f20.5)') 'beta1,beta2,beta3',beta1,beta2,beta3
         !write(*,'(a,2f20.5)') 'alpha1,alpha2',alpha1,alpha2
@@ -447,7 +443,6 @@ subroutine print_minhopp_parameters
 end subroutine print_minhopp_parameters
 !*****************************************************************************************
 subroutine read_earr
-    use mod_interface
     use mod_minhopp, only: nlmin, nlminx, nbuf, earr, nvisit
     use mod_processors, only: iproc, parallel, imaster, mpi_comm_abz
     implicit none
@@ -476,7 +471,6 @@ subroutine read_earr
 end subroutine read_earr
 !*****************************************************************************************
 subroutine readnat(atoms_curr)
-    use mod_interface
     use mod_minhopp, only: nlmin
     use mod_processors, only: iproc, parallel, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms
@@ -503,7 +497,6 @@ subroutine readnat(atoms_curr)
 end subroutine readnat
 !*****************************************************************************************
 subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
-    use mod_interface
     !use mod_minhopp, only: eratallproc
     use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
@@ -632,14 +625,16 @@ subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
     call atom_copy(atoms_allproc%atoms(iproc+1),atoms_curr,'allproc%atoms(iproc+1)=>atoms_curr')
 end subroutine read_poscur_alborz
 !*****************************************************************************************
-subroutine read_minhopp_parameters 
-    use mod_interface
+subroutine read_minhopp_parameters(parini)
+    use mod_parini, only: typ_parini
     use mod_processors, only: iproc, parallel, nproc, imaster, mpi_comm_abz
     use mod_atoms, only: atom_copy
     use mod_minhopp, only: nrandoff, ediff, ekin, dt, nlmin, nlminx, eref, etoler, ekinarr, &
         dtarr, ediffarr, nstep
+    use mod_utils
     use yaml_output
     implicit none
+    type(typ_parini), intent(in):: parini
     integer:: ios, i, mproc, k, jproc, ierr
     real(8):: tts
 #if defined(MPI)
@@ -706,7 +701,11 @@ subroutine read_minhopp_parameters
 #endif
     ediff=ediffarr(iproc);ekin=ekinarr(iproc);dt=dtarr(iproc)
     do  i=1,nrandoff+iproc*1000
-        call random_number(tts)
+        if(trim(parini%rng_type)=='only_for_tests') then
+            call random_number_generator_simple(tts)
+        else
+            call random_number(tts)
+        endif
     enddo
     call yaml_mapping_open('other minhopp parameters',flow=.true.)
     call yaml_map('iproc',iproc)
@@ -718,7 +717,6 @@ subroutine read_minhopp_parameters
 end subroutine read_minhopp_parameters
 !*****************************************************************************************
 subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
-    use mod_interface
     use mod_minhopp, only: nlmin, nlmin_l, earr, nvisit
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
@@ -740,7 +738,6 @@ subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
 end subroutine minhopp_newrun_initialization
 !*****************************************************************************************
 subroutine read_poslow(atoms_locmin)
-    use mod_interface
     use mod_processors, only: iproc, nproc, imaster, parallel, mpi_comm_abz
     use mod_minhopp, only: nlmin
     use mod_atoms, only: typ_atoms_arr
@@ -790,7 +787,6 @@ subroutine read_poslow(atoms_locmin)
 end subroutine read_poslow
 !*****************************************************************************************
 subroutine send_minimum_to_all(atoms_curr)
-    use mod_interface
     use mod_minhopp, only: nbuf, abufall, mtagarr1
     use mod_processors, only: nproc, iproc, mpi_comm_abz
     use mod_atoms, only: typ_atoms, get_rat
@@ -819,7 +815,6 @@ subroutine send_minimum_to_all(atoms_curr)
 end subroutine send_minimum_to_all
 !*****************************************************************************************
 subroutine send_minhopp_parameters_to_all(atoms_curr)
-    use mod_interface
     use mod_minhopp, only: nbuf, abufall, mtagarr2, ediff, ekin, dt
     use mod_processors, only: nproc, iproc, mpi_comm_abz
     use mod_atoms, only: typ_atoms, get_rat
@@ -850,10 +845,10 @@ subroutine send_minhopp_parameters_to_all(atoms_curr)
 end subroutine send_minhopp_parameters_to_all
 !*****************************************************************************************
 subroutine mdescape(parini,atoms_hopp)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_minhopp, only: av_ekinetic, mdmin, dt, ekin, istep, count_md, count_md_tot, istep
     use mod_processors, only: iproc, nproc
+    use mod_bin, only: write_bin_conf
     use mod_atoms, only: typ_atoms, typ_file_info, update_rat, update_ratp
     use mod_potential, only: fcalls
     use yaml_output
@@ -985,7 +980,6 @@ end subroutine mdescape
 !MPI_IRECV(BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, REQUEST, IERROR)
 !MPI_RECV (BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, STATUS, IERROR) 
 subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_locmin)
-    use mod_interface
     use mod_processors, only: parallel, iproc
     use mod_minhopp, only: ekinarr, ediffarr, dtarr, dt, ekin, ediff
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
@@ -1017,7 +1011,6 @@ subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_
 end subroutine collect_data_from_all_processors
 !*****************************************************************************************
 subroutine request_receive(atoms_allproc)
-    use mod_interface
     use mod_processors, only: iproc, nproc, mpi_comm_abz
     use mod_minhopp, only: mtagarr1, mtagarr2, abuf1, abuf2, do_req1, do_req2, ireqarr1, ireqarr2
     use mod_atoms, only: typ_atoms_arr
@@ -1051,7 +1044,6 @@ subroutine request_receive(atoms_allproc)
 end subroutine request_receive
 !*****************************************************************************************
 subroutine test_receive(atoms_allproc,atoms_locmin)
-    use mod_interface
     use mod_processors, only: iproc, nproc
     use mod_minhopp, only: nlmin, nlminx, abuf1, abuf2, etoler, earr, re_sm, abuf, mtagarr1, mtagarr2, &
         nvisit, do_req1, do_req2, ireqarr1, ireqarr2, nbuf, ekinarr, ediffarr, dtarr
@@ -1128,7 +1120,6 @@ end subroutine test_receive
 !*****************************************************************************************
 !MPI_CANCEL(REQUEST, IERROR)
 subroutine cancel_excessive_irecv
-    use mod_interface
     use mod_processors, only: iproc, nproc
     use mod_minhopp, only: mtagarr1, mtagarr2, do_req1, do_req2, ireqarr1, ireqarr2
     implicit none
@@ -1161,7 +1152,6 @@ subroutine cancel_excessive_irecv
 end subroutine cancel_excessive_irecv
 !*****************************************************************************************
 subroutine insert_alborz(kepos,epos)
-    use mod_interface
     !inserts the energy epos at position kepos and shifts up all other energies
     use mod_minhopp, only: nbuf, nlmin, earr, nvisit
     implicit none
@@ -1178,7 +1168,6 @@ subroutine insert_alborz(kepos,epos)
 end subroutine insert_alborz
 !*****************************************************************************************
 subroutine save_low_conf_alborz(atoms,atoms_locmin)
-    use mod_interface
     !save configuration if it is among the lowest ones in energy
     use mod_minhopp, only: etoler
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
@@ -1186,7 +1175,7 @@ subroutine save_low_conf_alborz(atoms,atoms_locmin)
     implicit none
     type(typ_atoms), intent(in):: atoms
     type(typ_atoms_arr), intent(inout):: atoms_locmin
-    !local variavles
+    !local variables
     integer:: k, j
     if(atoms_locmin%nconf<atoms_locmin%nconfmax) then
         do k=1,atoms_locmin%nconf
@@ -1237,7 +1226,6 @@ subroutine save_low_conf_alborz(atoms,atoms_locmin)
 end subroutine save_low_conf_alborz
 !*****************************************************************************************
 subroutine velopt(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     !assigns velocities according to boltzmann distribution
     use mod_minhopp, only: ekin, ekin, dt, count_soften, count_soften_tot, nsoften !, vdamp
@@ -1250,7 +1238,11 @@ subroutine velopt(parini,atoms)
     !real(8):: dx,dy, dz, r
     integer:: iat
     !call gausdist_alborz(3*nat,vat)
-    call randdist(0.15d0,3*atoms%nat,atoms%vat)
+    if(trim(parini%rng_type)=='only_for_tests') then
+        call randdist_simple(0.15d0,3*atoms%nat,atoms%vat)
+    else
+        call randdist(0.15d0,3*atoms%nat,atoms%vat)
+    endif
     !do iat=1,atoms%nat
     !    dx=atoms%rat(1,iat)-4.45819d0/0.529177d0
     !    dy=atoms%rat(2,iat)-4.45819d0/0.529177d0
@@ -1320,12 +1312,12 @@ subroutine velopt(parini,atoms)
 end subroutine velopt
 !*****************************************************************************************
 subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_processors, only: iproc
     use mod_potential, only: fcalls
     use mod_minhopp, only: lprint, alpha_soften, istep
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate, atom_copy
+    use mod_bin, only: write_bin_conf
     use mod_atoms, only: update_ratp, update_rat
     use yaml_output
     implicit none
@@ -1467,10 +1459,10 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
 end subroutine soften
 !*****************************************************************************************
 subroutine write_minhopp(atoms_allproc,atoms_locmin)
-    use mod_interface
     use mod_atoms, only: typ_atoms_arr, typ_file_info
     use mod_processors, only: iproc, imaster
     use mod_minhopp, only: nlmin_old, nlmin, earr, etoler
+    use mod_yaml_conf, only: write_yaml_conf
     use yaml_output
     implicit none
     type(typ_atoms_arr), intent(inout):: atoms_allproc, atoms_locmin
@@ -1537,7 +1529,6 @@ subroutine write_minhopp(atoms_allproc,atoms_locmin)
 end subroutine write_minhopp
 !*****************************************************************************************
 subroutine write_minhopp_parameters
-    use mod_interface
     use mod_processors, only: iproc, nproc, imaster
     use mod_minhopp, only: nlmin, ekinarr, dtarr, ediffarr, eref
     use yaml_output
@@ -1548,7 +1539,7 @@ subroutine write_minhopp_parameters
     if(iproc==imaster) then
         open(unit=11,file='input.minhopp',status='replace',iostat=ios)
         if(ios/=0) stop 'ERROR: failure openning input.minhopp'
-        write(11,'(i,1x,a)') nlmin,'number of minima already found'
+        write(11,'(i8,1x,a30)') nlmin,'number of minima already found'
         !write(11,'(i,1x,a)') 2*nlmin,'number of minima to be found in consecutive run'
         do jproc=0,nproc-1
             tt=dtarr(jproc) !/41.34137333656d0
@@ -1561,7 +1552,6 @@ subroutine write_minhopp_parameters
 end subroutine write_minhopp_parameters
 !*****************************************************************************************
 subroutine write_earr
-    use mod_interface
     use mod_minhopp, only: earr, nvisit, nlmin, nlminx, nbuf, eref
     use yaml_output
     implicit none
@@ -1581,7 +1571,6 @@ subroutine write_earr
 end subroutine write_earr
 !*****************************************************************************************
 subroutine escape_failed(parini,erat,erathopp)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_minhopp, only: istep_sam, esep, ekin, beta1, ihopp, istep, ediff, istep_old, &
         istep_new, dt, count_md, count_opt
@@ -1602,7 +1591,6 @@ subroutine escape_failed(parini,erat,erathopp)
 end subroutine escape_failed
 !*****************************************************************************************
 subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
-    use mod_interface
     use mod_minhopp, only: istep_sam, ekin, ihopp, istep, ediff, istep_old, istep_new, dt, &
         nlmin, nlmin_l, ihopp_acc, alpha1, nvisit, nbuf, kerathopp, newmin, av_ediff, count_md, count_opt
     use mod_processors, only: parallel, iproc
@@ -1638,7 +1626,6 @@ subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
 end subroutine local_minimum_accepted
 !*****************************************************************************************
 subroutine local_minimum_rejected(atoms_hopp)
-    use mod_interface
     use mod_minhopp, only: istep_sam, ekin, ihopp, istep, ediff, istep_old, istep_new, &
         alpha2, nvisit, newmin, ihopp_rej, dt, count_md, count_opt
     use mod_processors, only: iproc
@@ -1657,7 +1644,6 @@ subroutine local_minimum_rejected(atoms_hopp)
 end subroutine local_minimum_rejected
 !*****************************************************************************************
 subroutine report_minhopp_iteration_info(atoms_curr)
-    use mod_interface
     use mod_minhopp, only: istep, ihopp, nlmin, escaped, accepted
     use mod_processors, only: iproc
     use mod_atoms, only: typ_atoms, typ_atoms_arr
@@ -1668,10 +1654,10 @@ subroutine report_minhopp_iteration_info(atoms_curr)
     !local variables
 
     call yaml_mapping_open('minhopp iteration info',flow=.true.)
-    call yaml_map('iproc',iproc,fmt='(i)')
-    call yaml_map('istep',istep,fmt='(i)')
-    call yaml_map('ihopp',ihopp,fmt='(i)')
-    call yaml_map('nlmin',nlmin,fmt='(i)')
+    call yaml_map('iproc',iproc,fmt='(i8)')
+    call yaml_map('istep',istep,fmt='(i8)')
+    call yaml_map('ihopp',ihopp,fmt='(i8)')
+    call yaml_map('nlmin',nlmin,fmt='(i8)')
     call yaml_map('escaped',escaped)
     call yaml_map('accepted',accepted)
     call yaml_map('epot',atoms_curr%epot,fmt='(es20.12)')
@@ -1679,7 +1665,6 @@ subroutine report_minhopp_iteration_info(atoms_curr)
 end subroutine report_minhopp_iteration_info
 !*****************************************************************************************
 subroutine already_visited_minimum(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_minhopp, only: newmin, istep_old, ekin, beta2, nvisit, kerathopp , dt, ediff, alpha3
     implicit none
@@ -1695,10 +1680,10 @@ subroutine already_visited_minimum(parini)
 end subroutine already_visited_minimum
 !*****************************************************************************************
 subroutine new_minimum(atoms_hopp)
-    use mod_interface
     use mod_minhopp, only: newmin, istep_new, ekin, beta3, kerathopp, nlminx, earr, egap, &
         re_sm,nlmin, etoler, dt
     use mod_processors, only:iproc
+    use mod_bin, only: write_bin_conf
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_minhopp, only: ibest
     use yaml_output
@@ -1740,7 +1725,6 @@ subroutine new_minimum(atoms_hopp)
 end subroutine new_minimum
 !*****************************************************************************************
 subroutine print_final_statistics
-    use mod_interface
     use mod_processors, only: iproc
     use mod_task, only: time_start
     use mod_minhopp, only: nlmin_l, nlmin, istep_sam, istep_old, istep_new, &
@@ -1841,7 +1825,6 @@ subroutine print_final_statistics
 end subroutine print_final_statistics
 !*****************************************************************************************
 subroutine MPI_atom_arr_copy(nat,atoms_arr)
-    use mod_interface
     use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
     use mod_atoms, only: typ_atoms, typ_atoms_arr, get_rat, set_rat
     implicit none
@@ -1872,4 +1855,23 @@ subroutine MPI_atom_arr_copy(nat,atoms_arr)
     enddo
     deallocate(ratall,epotall,cvall)
 end subroutine MPI_atom_arr_copy
+!*****************************************************************************************
+subroutine hunt2(n,x,p,ip)
+    !p is in interval [x(ip),x(ip+1)[ ; x(0)=-Infinity ; x(n+1) = Infinity
+    use mod_minhopp, only: etoler
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(in):: x(n), p
+    integer, intent(out):: ip
+    !local variables
+    integer:: i
+    do i=1,n
+        if(p<x(i)) exit
+    enddo
+    i=i-1
+    if(i/=n) then
+        if(abs(p-x(i+1))<etoler) i=i+1
+    endif
+    ip=i
+end subroutine hunt2
 !*****************************************************************************************

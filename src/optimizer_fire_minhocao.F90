@@ -1,5 +1,4 @@
 subroutine GEOPT_FIRE_MHM(parini,parres,latvec_in,xred_in,fcart_in,strten_in,vel_in,vel_lat_in,vvol_in,etot_in,iprec,counter,folder)
- use mod_interface
  use global, only: units,max_kpt,ka1,kb1,kc1,confine
  use defs_basis
  use mod_fire
@@ -832,7 +831,6 @@ end subroutine GEOPT_FIRE_MHM
 !**********************************************************************************************
 
 subroutine acceleration_fire(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
-use mod_interface
 implicit none
 integer:: iat,i,j,md_type,nat
 real(8),dimension(3,nat):: accpos,vpos,fcart,fpos

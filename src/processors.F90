@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine initprocessors
-    use mod_interface
     use mod_processors, only: parallel, nproc, iproc, iproc_world, nproc_world, imaster, &
         iproc_type_all, iproc_list_abz, mpi_group_world, mpi_group_abz, mpi_comm_abz
     use yaml_output
@@ -70,7 +69,6 @@ subroutine initprocessors
 end subroutine initprocessors
 !*****************************************************************************************
 subroutine finalizeprocessors
-    use mod_interface
     use mod_processors, only: parallel, mpi_comm_abz, mpi_group_abz, mpi_group_world, &
         iproc_world, nproc_world
     use yaml_output

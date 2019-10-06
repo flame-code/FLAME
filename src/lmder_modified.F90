@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_lmder_modified(parlm,m,ldfjac)
-    !use mod_interface
     use mod_parlm, only: typ_parlm
     implicit none
     type(typ_parlm), intent(inout):: parlm
@@ -24,7 +23,6 @@ subroutine init_lmder_modified(parlm,m,ldfjac)
 end subroutine init_lmder_modified
 !*****************************************************************************************
 subroutine final_lmder_modified(parlm)
-    !use mod_interface
     use mod_parlm, only: typ_parlm
     implicit none
     type(typ_parlm), intent(inout):: parlm
@@ -41,7 +39,6 @@ subroutine final_lmder_modified(parlm)
 end subroutine final_lmder_modified
 !*****************************************************************************************
 subroutine lmder_modified(parlm,m,ldfjac)
-    !use mod_interface
     use mod_parlm, only: typ_parlm
     implicit none
       type(typ_parlm), intent(inout):: parlm

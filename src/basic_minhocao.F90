@@ -1,5 +1,4 @@
  subroutine cross_product(a,b,crossp)
- use mod_interface
  !a very simple implementation of the cross product
  implicit none
  real(8)::a(3),b(3)
@@ -13,7 +12,6 @@
 !**********************************************************************************************
 
  subroutine dot_p(a,b,dotp)
- use mod_interface
  !a very simple implementation of the dot product
  implicit none
  real(8)::a(3),b(3)
@@ -25,7 +23,6 @@
 !**********************************************************************************************
 
 subroutine bin_write(filename,array,n)
-use mod_interface
 implicit none
 integer:: n
 real(8):: array(n)
@@ -41,7 +38,6 @@ end subroutine
 !**********************************************************************************************
 
 subroutine bin_read(filename,array,n)
-use mod_interface
 implicit none
 integer:: n
 real(8):: array(n)
@@ -61,7 +57,6 @@ function round(enerd,accur)
   return
 end function round
  subroutine rotation(rotmat,angle,axe)
- use mod_interface
  !This subroutine will calculate the rotational matrix rotmat for a
  !3-dim vector around an axis 'axe' by the angle 'angle'.
  implicit none
@@ -96,7 +91,6 @@ end function round
 !**********************************************************************************************
 
  subroutine invertmat(mat,matinv,n)
- use mod_interface
  implicit none
  real(8),intent(in) :: mat(n,n)
  integer               :: n
@@ -138,7 +132,6 @@ end function round
 !**********************************************************************************************
 
 subroutine hunt(xx,n,x,jlo)
-  use mod_interface
   implicit none
   !C x is in interval [xx(jlo),xx(jlow+1)[ ; xx(0)=-Infinity ; xx(n+1) = Infinity
   !Arguments

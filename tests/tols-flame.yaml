@@ -11,6 +11,9 @@ Keys to ignore:
  - Max No. of dictionaries used
  - Memory Consumption Report
  - Tot. No. of Deallocations
+ - random number generator
+ - mpi started
+ - mpi finalized
 
 Patterns to ignore:
  - Timestamp
@@ -108,31 +111,39 @@ minhopp_LJ:
 saddle_1s_Si64Bulk:
  Keys to ignore:
   - iproc
- Epsilon: 1.e-11
+ Epsilon: 1.e-9
  alphax: 1.e-5
  fmaxtol: 1.e-5
  dxmax: 1.e-5
  condnum: 1.e-5
  fnrmtolsatur: 1.e-5
- epot: 1.e-11
- fnrm: 1.e-11
- fmax: 1.e-11
- ndim: 1.e-11
- curv0: 1.e-11
- curv: 1.e-11
- cosangle: 1.e-11
- cosangletol: 1.e-11
- bh0: 1.e-11
- bh1: 1.e-11
- bh2: 1.e-11
+ epot: 1.e-7
+ fnrm: 5.e-7
+ fmax: 5.e-7
+ ndim: 1.e-9
+ curv0: 5.e-7
+ curv: 5.e-7
+ cosangle: 2.e-6
+ cosangletol: 1.e-9
+ bh0: 1.e-9
+ bh1: 1.e-9
+ bh2: 1.e-9
+
+posmin1.ref.yaml:
+ Epsilon: 1.e-9
+ coord: 5.e-9
+
+posmin2.ref.yaml:
+ Epsilon: 1.e-9
+ coord: 5.e-9
 
 saddle_1s_barsad:
  Keys to ignore:
   - iproc
   - xmax
  Epsilon: 1.e-11
- fmax: 1.e-9
- fnrm: 1.e-9
+ fmax: 5.e-8
+ fnrm: 5.e-8
 
 saddle_1s_barsad_dir:
  Keys to ignore:

@@ -1,7 +1,19 @@
+module mod_md_rbmd
+implicit none
+interface
+function A_omega(omega)
+    implicit none
+    real(8),dimension(4,4):: A_omega
+    real(8)::omega(3)
+end function A_omega
+end interface
+end module mod_md_rbmd
+
+
+
 subroutine MD_MHM_ROT(parini,parres,latvec_in,xred_in,xred_cm_in,xcart_mol,quat_in,fcart_in,strten_in,&
                       &vel_in,vel_cm_in,vel_lat_in,l_in,vvol_in,etot_in,&
                       &masstot,intens,inprin,inaxis,lhead,llist,nmol,iprec,counter,folder)
- use mod_interface
  use global, only: units
  use defs_basis
  use interface_code
@@ -567,7 +579,6 @@ end subroutine
 
 
 subroutine rbmd_symasym_s1(T_t,L_t,dt,L_til_t)
-use mod_interface
 !J.Chem.Phys. 110,7,3291,Matubayasi
 !Symmetric top: we assume Ix=Iy
 !First step: equation 15
@@ -590,7 +601,6 @@ subroutine rbmd_sym_s23(Inprin,L_til_t,dt,L_til_t5,L_til_t10)
 !We construct the vector of L^tilde at T=t+0.5dt: L_til_t5
 !Then, We construct the vector of L^tilde at T=t+dt: L_til_t10
 !Input is the principal inertia tensor Inprin, symmetric Ix=Iz, and L^tilde at T=t, L_til_t
-use mod_interface
 implicit none
 real(8),intent(in) :: Inprin(3), L_til_t(3),dt
 real(8),intent(out):: L_til_t10(3),L_til_t5(3)
@@ -616,19 +626,20 @@ end subroutine
 !************************************************************************************
 
 subroutine rbmd_symasym_s4(Inprin,L_til_t5,quat_t,dt,quat_t10)
+    use mod_md_rbmd
 !J.Chem.Phys. 110,7,3291,Matubayasi
 !Symmetric top: we assume Ix=Iy
 !Fourth step: equations 3 and 9/10
 !We construct the new quaternion at time T=t+dt: quat_t10
 !We thus need to first obtain omega_tilde at T=t+0.5*dt by using L_tilde at T=t+0.5*dt
-use mod_interface, except_this_one=>norm
 implicit none
 real(8),intent(in) :: Inprin(3),L_til_t5(3),dt,quat_t(4)
 real(8),intent(out):: quat_t10(4)
-real(8):: omega_til_t5(3),expmat(4,4),norm
+real(8):: omega_til_t5(3),expmat(4,4),vnrm
 real(8):: ca,sa,angle
 !real(8),dimension(4,4):: A_omega
 !integer:: nmol,imol
+!real(8):: A_omega
 
 !do imol=1,nmol
 !Construct omega according to equation 3
@@ -637,15 +648,15 @@ real(8):: ca,sa,angle
   omega_til_t5(3)=L_til_t5(3)/Inprin(3)
 !Do the crazy stuff at equation 10
   expmat=0.d0
-  norm=sqrt(omega_til_t5(1)+omega_til_t5(2)+omega_til_t5(3))  
-  angle=0.5d0*dt*norm
+  vnrm=sqrt(omega_til_t5(1)+omega_til_t5(2)+omega_til_t5(3))  
+  angle=0.5d0*dt*vnrm
   ca=cos(angle)
   sa=sin(angle)
   expmat(1,1)=ca
   expmat(2,2)=ca
   expmat(3,3)=ca
   expmat(4,4)=ca
-  expmat=expmat+sa/norm*A_omega(omega_til_t5(1:3))
+  expmat=expmat+sa/vnrm*A_omega(omega_til_t5(1:3))
   quat_t10(:)=matmul(expmat,quat_t)
 !enddo
 end subroutine rbmd_symasym_s4
@@ -679,7 +690,6 @@ subroutine rbmd_symasym_s5(T_t10,L_til_t10,dt,L_t10)
 !Fifth  step, fourth step according to the manuscript: equation 19
 !We construct the vector of L at T=t+dt: L_t10
 !Input is the L_til_t10 (L^tilde at T=t+dt) and the torque at T=t+dt: T_t10
-use mod_interface
 implicit none
 real(8),intent(in) :: T_t10(3), L_til_t10(3),dt
 real(8),intent(out):: L_t10(3)
@@ -731,7 +741,6 @@ end subroutine
 subroutine rbmd_driver(quat_t,T_t,L_t,quat_t10,T_t10,L_t10,dt,inprin,&
            &fragsize,symtop,nmol)
 !Currently implemented only to propagate the assymtric tops with fragsize.ge.3
-use mod_interface
 implicit none
 real(8),intent(in) :: inprin(3,nmol),L_t(3,nmol),T_t(3,nmol),quat_t(4,nmol),dt,T_t10(3,nmol)
 integer,intent(in) :: nmol,fragsize(nmol)
@@ -752,7 +761,6 @@ end subroutine
 !************************************************************************************
 
 subroutine expand_rigid(latvec,xred_cm,quat,xcart_mol,lhead,llist,nat,nmol,xred_in)
-use mod_interface
 !This routine will produce the desired, expanded form of xred_in which can be directly fed into 
 !the single point energy routine. Input are quat and the xred_cm, the center of masses of each molecule
 !in the cell

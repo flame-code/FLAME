@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine genconf_diatomic(parini,genconf)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_all, typ_file_info, atom_all_allocate, atom_all_deallocate
     use mod_atoms, only: atom_allocate_old, atom_deallocate_old, set_rat
@@ -8,6 +7,7 @@ subroutine genconf_diatomic(parini,genconf)
     use mod_processors, only: iproc
     use mod_potential, only: potential
     use mod_const, only: bohr2ang
+    use mod_acf, only: acf_write
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_genconf), intent(in):: genconf
