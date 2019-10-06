@@ -35,9 +35,9 @@ The BigDFT package can be found here:
 http://bigdft.org/
 
 
-Installation of python is required. Currently, the
-only python 2.7 is supported. Future versions of FLAME will
-support python3
+Installation of python is required. Currently,
+only python 2.7 is supported. Future releases of FLAME will
+support python 3
 
 =========================
 Installing FLAME on Linux

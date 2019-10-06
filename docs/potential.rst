@@ -46,25 +46,25 @@ general ``potential`` parameters
 
          External codes that can be linked to FLAME:
             
-            ``tinker``: TINKER molecular mechanics code.
+            ``tinker``: TINKER molecular mechanics code :cite:`Tinker`.
     
-            ``lammps``: LAMMPS molecular mechanics code.
+            ``lammps``: LAMMPS molecular mechanics code :cite:`Lammps`.
             
-            ``mopac``: MOPAC molecular mechanics code.
+            ``mopac``: MOPAC molecular mechanics code :cite:`Mopac`.
     
-            ``dftb``: Density functional tight binding as implemented in dftb+.
+            ``dftb``: Density functional tight binding as implemented in dftb+ :cite:`Dftb`.
     
-            ``bigdft``: BigDFT wavelet DFT code.
+            ``bigdft``: BigDFT wavelet DFT code :cite:`Bigdft`.
     
-            ``vasp``: Plane wave VASP code.
+            ``vasp``: Plane wave VASP code :cite:`Vasp`.
     
-            ``abinit``: Plane wave Abinit code.
+            ``abinit``: Plane wave Abinit code :cite:`Abinit`.
     
-            ``espresso``: Plane wave Quantum Espresso code as implemented in pw.x.
+            ``espresso``: Plane wave Quantum Espresso code, pw.x :cite:`Espresso`.
     
-            ``siesta``: Siesta DFT code.
+            ``siesta``: Siesta DFT code :cite:`Siesta`.
     
-            ``cp2k``: CP2K DFT/QM/MM code.
+            ``cp2k``: CP2K DFT/QM/MM code :cite:`Cp2k`.
     
 **potential_sec**: (string) Secondary interatomic potential, usually used to perform a preliminary relaxations
 or to evaluate an approximate Hessian matrix.
@@ -145,7 +145,9 @@ Given as a list of length **nconfine** if more than one confinement potential is
    default: ``C``
 
    options: 
+
       ``C``: Cartesian coordinates
+       
       ``R``: Reduced coordinates
 
 **dim**: (integer) Axis along which the confinement potential is applied.

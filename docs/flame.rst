@@ -1,5 +1,7 @@
 
 
+Dummy title
+========================
 
 Welcome to FLAME
 ========================
@@ -25,11 +27,24 @@ as well as of nano structures, including surfaces, interfaces,
 and two-dimensional materials.
 
 
+The FLAME software is available on the flame website http://flame-code.org, and the
+latest development version can be found on GitHub https://github.com/flame-code.
+
+
+
 The FLAME team
 ===============
 
-The FLAME software is available on the flame website http://flame-code.org, and the
-latest development version can be found on GitHub https://github.com/flame-code.
+The development of FLAME started back in 2010 in
+Basel, Switzerland, with the
+implementation of various atomistic simulation tasks in 
+different software packages. These tasks were later merged into two
+main codes (Alborz and Minhocao), which were independently maintained and
+developed by S Alireza Ghasemi and Maximilian Amsler. 
+In 2018, the FLAME code evolved as a streamlined integration 
+of these two codes into a single package to 
+facilitate atomistic simulation workflows.
+
 
 
 The core developer team consists of:
@@ -49,8 +64,13 @@ Following contributors are greatefully acknowledged:
 * Li Zhu
 * Miguel Marques
 
+License and citing
+====================
 
-Please cite reference :cite:`amsler_flame_2019` when publishing results based on using FLAME.
+FLAME is distributed under the GPLv3 license. 
+
+Please cite reference :cite:`amsler_flame_2019` when publishing results based on using FLAME,
+which describes the main functionalities of the code.
 
 
 Additionally, consider citing the following publications when using
@@ -60,4 +80,10 @@ specific portions of the FLAME code:
 * Minima hopping method: :cite:`goedecker_minima_2004,amsler_2010_crystal,amsler_minima_2018`.
 * SQNM optimizer: :cite:`schaefer_stabilized_2015`.
 * Saddle point searches: :cite:`ghasemi_an_2011,schaefer_minima_2014`.
+* Structural fingerprints: :cite:`sadeghi_metrics_2013,li_fingerprint_2016`.
+* Electrostatic particle-particle, particle-density method: :cite:`ghasemi_particle_2007`.
 
+
+When FLAME is used in conjunction with external (quantum) engines
+it is the responsibility of the user to
+follow the respective licensing terms.

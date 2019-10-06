@@ -1,8 +1,8 @@
 .. _ann:
 
-==================================
+========================================
 Artificial Neural Network Potentials
-==================================
+========================================
 
 Artificial neural network (ANN) potentials are
 a class of machine learning interatomic potentials.

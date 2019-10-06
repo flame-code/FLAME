@@ -27,14 +27,14 @@ general ``geopt`` parameters
 
         ``sddiis``: steepest descent method followed by DIIS method.
 
-        ``nlbfgs``: Nocedal's implementation of LBFGS.
+        ``nlbfgs``: Nocedal's implementation of LBFGS :cite:`Nocedal`.
 
-        ``qbfgs``: Quantum Espresso's version of BFGS for variable cell shapes.
+        ``qbfgs``: Quantum Espresso's version of BFGS for variable cell shapes :cite:`Espresso`.
 
         ``bfgs``: Ghasemi's implementation of BFGS in which the moves along soft
         modes are controlled.
 
-        ``fire``: The Fast Inertial Relaxation Engine method.
+        ``fire``: The Fast Inertial Relaxation Engine method :cite:`bitzek_structurel_2006`.
 
 **fmaxtol**: (real) Maximum absolute component of force vector. In units of Ha/Bohr.
 Must be specified.
