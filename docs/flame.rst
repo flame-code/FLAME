@@ -59,5 +59,5 @@ specific portions of the FLAME code:
 * Neural network potential (CENT): :cite:`ghasemi_interatomic_2015`
 * Minima hopping method: :cite:`goedecker_minima_2004,amsler_2010_crystal,amsler_minima_2018`.
 * SQNM optimizer: :cite:`schaefer_stabilized_2015`.
-* Saddle point searches: :cite:`ghasemi_an_2011,schaefer_minima_2014,`.
+* Saddle point searches: :cite:`ghasemi_an_2011,schaefer_minima_2014`.
 
