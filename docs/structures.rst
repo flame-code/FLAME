@@ -1,8 +1,8 @@
-.. _structures:
+.. _structure:
 
-===========
-Structures
-===========
+========================
+Atomic structure files
+========================
 
 FLAME can handle various forms of atomic structure
 file formats. The preferred format is ``yaml``,
@@ -12,7 +12,9 @@ scripts to convert structural data from wealth input formats
 to a ``yaml`` file.
 
 
-``yaml`` structure format
+.. _structure_yaml:
+
+``yaml`` format
 =================================
 
 Keyword-based structural information format.
@@ -93,7 +95,7 @@ Calcium fluoride in a crystal lattice.
 
 
 
-``ascii`` structure format
+``ascii``  format
 =================================
 
 The ascii format is described in detail here: http://inac.cea.fr/sp2m/L_Sim/V_Sim/sample.html#sample_ascii
@@ -114,8 +116,9 @@ and ``b`` lies within the ``x-y`` plane.
 
 **line 3**: (real, real, real) dzx dzy dzz values
 
-**lines 4 -- n**: Lines starting with ``#keyword:`` are read and interpreted accordingly.
-The  ``#keyword:`` tag must be followed by the following options.
+**lines 4 -- n**: Only lines starting with ``#keyword:`` are alowed 
+and read/interpreted accordingly.
+The ``#keyword:`` tag must be followed by the following options.
 
    ``reduced``: the atomic coordinates are treated reduced coordinates, i.e., with respect to the cell vectors.
 

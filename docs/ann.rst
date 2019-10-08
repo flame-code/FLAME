@@ -54,7 +54,7 @@ general ``ann`` parameters
 
    options: 
    
-      ``rivals`` Well tested and stable optimizer based on a modification of extended Kalman filter.
+      ``rivals``: Well tested and stable optimizer based on a modification of extended Kalman filter.
 
 **nstep_opt**: (integer) Number of extended Kalman filter steps
 
@@ -77,11 +77,13 @@ is treated.
 
    default: ``only_calculate``
 
-      options: ``only_calculate`` values are stored in memory only
+   options: 
+   
+      ``only_calculate``: values are stored in memory only
 
-      options: ``write`` values are written to disk
+      ``write``: values are written to disk
 
-      options: ``read``  values are read from disk from a previous run
+      ``read``:  values are read from disk from a previous run
 
 
 
@@ -94,9 +96,9 @@ to solve the system of linear equations for the CEP.
 
    options: 
    
-      ``direct`` direct approach, e.g., Gaussian elemination
+      ``direct``: direct approach, e.g., Gaussian elemination
 
-      ``operator`` iterative approach
+      ``operator``: iterative approach
 
 **nstep_cep**: (integer) Maximum number of steps in self-consistent
 charge equilibration process (CEP) required by the

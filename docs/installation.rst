@@ -1,6 +1,17 @@
 
-Installation
+Download and Installation
 ==================================
+
+=================
+Download
+=================
+
+The FLAME software is available on the flame website http://flame-code.org, and the
+latest development version can be found on GitHub https://github.com/flame-code.
+
+Download the current version of FLAME with 
+
+``git clone https://github.com/flame-code/FLAME.git``
 
 =================
 Prerequisites
@@ -40,8 +51,12 @@ only python 2.7 is supported. Future releases of FLAME will
 support python 3
 
 =========================
-Installing FLAME on Linux
+Installing FLAME 
 =========================
+
+
+On Linux
+----------------
 
 It is recommended to install FLAME in a different
 directory than the source code.

@@ -1,4 +1,4 @@
-.. _saddle_1s:
+.. _saddle:
 
 ===========
 Saddle

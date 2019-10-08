@@ -2,8 +2,15 @@
 Documentation
 =============
 
-FLAME is based on only one executable named *flame*
-by which all implemented algorithms can be run.
-The input file :ref:`flame_in.yaml <flame_in>` must be present
-in all FLAME runs.
+Running FLAME
+---------------
 
+FLAME consists of a single executable
+named ``flame```, which will reside in the ``src``
+directory upon successful compilation.
+The main input file :ref:`flame_in.yaml <flame_in>` must be provided
+in all FLAME runs and contains the simulation directives.
+Most simulation tasks require additonal input files, 
+like the input structure (commonly :ref:`posinp.yaml <structure_yaml>`), parameter files 
+for atomic potentials, or run scripts to
+call external codes.

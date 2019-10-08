@@ -27,9 +27,6 @@ as well as of nano structures, including surfaces, interfaces,
 and two-dimensional materials.
 
 
-The FLAME software is available on the flame website http://flame-code.org, and the
-latest development version can be found on GitHub https://github.com/flame-code.
-
 
 
 The FLAME team

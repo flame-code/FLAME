@@ -16,9 +16,8 @@
    :maxdepth: 2
 
    flame_in
-   structures.rst
-   minhopp.rst
    main
+   minhopp.rst
    potential
    fingerprint.rst
    geopt
@@ -31,6 +30,7 @@
    saddle_1s_opt.rst
    testforces.rst
    minhocao.rst
+   structures.rst
 .. Indices and tables
 .. ==================
 

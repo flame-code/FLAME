@@ -1,17 +1,17 @@
 .. _flame_in:
 
-=========================
-Contents of flame_in.yaml
-=========================
+============================
+The ``flame_in.yaml`` file
+============================
 
-Contents of *flame_in.yaml* are arranged in blocks and in each
-block a set of parameters can be assigned the desired value. 
-The label of each block appears in square bracket and the
-block continues to the begining of next block.
-Each parameter must be followed by an equal sign.
-Notice that flame_in.yaml is case sensitive.
+Contents of *flame_in.yaml* is arranged in blocks
+with associated labels.
+Python-style indentation is used to indicate nesting,
+including keyword--parameter pairs, 
+as well as subblocks.
 
-The list of blocks is as following:
+
+Following top-level blocks are available.
 
 .. hlist::
    :columns: 1
@@ -25,12 +25,10 @@ The list of blocks is as following:
    * :ref:`genconf <genconf>`
    * :ref:`conf_comp <conf_comp>`
    * :ref:`testforces <testforces>`
-   * :ref:`ann <ann>`
-   * :ref:`saddle_1s <saddle_1s>`
+   * :ref:`ann** <ann>`
+   * :ref:`saddle <saddle>`
    * :ref:`geopt_prec <geopt_prec>`
    * :ref:`saddle_1s_opt <saddle_1s_opt>`
    * :ref:`minhocao <minhocao>`
 
-Among all these block only block main must be present and the
-rest are optional.
-
+Only the *main* block must be present in every FLAME run.

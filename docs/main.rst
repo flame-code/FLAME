@@ -1,69 +1,100 @@
 .. _main:
 
-====
-Main
-====
+=============
+Main Block
+=============
 
-Options of section **main** in flame_in.yaml file.
+Options of the **main** block in the *flame_in.yaml* file determines the 
+overall task to be performed in FLAME and sets up the 
+atomistic simulation environment.
 
-**task**: The task which is supposed to be executed by Alborz.
+**task**: (task) Determines the main FLAME task. 
 
-    default: There is no default value. One must select one from the list below.
+   default: ``No default value.``
 
-    options:
+   options:
 
-        ``minhopp``: It performs a global optimization calculation based on the
+        ``minhopp``: Perform a global optimization calculation based on the
         minima hopping method. The parameters of this task can be set within
         the block :ref:`minhopp <minhopp>`.
 
-        ``geopt``: It performs a geometry optimization run. The parameters of this
+        ``geopt``: Local geometry optimization. The parameters of this
         task can be set within the block :ref:`geopt <geopt>`.
 
-        ``saddle_1s``: It performs a saddle point search calculation.
+        ``saddle``: Saddle point search.
         The parameters of this task can be set within the
-        block :ref:`saddle_1s <saddle_1s>`.
+        block :ref:`saddle <saddle>`.
 
-        ``dynamics``: It performs a Molecular dynamics simulation.
+        ``dynamics``: Molecular dynamics simulation.
         The parameters of this task can be set within the
         block :ref:`dynamics <dynamics>`.
 
-        ``conf_comp``: It compares configurations for similarities and
+        ``conf_comp``: Compare atomic structures to determine their similarities and
         dissimilarities. The parameters of this task can be set within the
         block :ref:`conf_comp <conf_comp>`.
 
-        ``ann``: This task can perform several type of calculations
-        relevant to Artificial Neural Network based on subtask chosen in
+        ``ann``: All tasks related to the training and evaluation of 
+        relevant to artificial neural networks. Subtasks can be selected in
         the block :ref:`ann <ann>`.
 
-        ``genconf``: This task can generate configurations based on
+        ``genconf``: Generate configurations based on
         subtask chosen in the block :ref:`genconf <genconf>`.
 
-        ``testforces``: It examines atomic forces based on selected method
-        which can be set :ref:`testforces <testforces>`.
+        ``single_point``: Perform a single point calculation
+        to evaluate the energy, forces, and stresses for one or more configurations.
 
-        ``single_point``: It performs single point calculation
-        (energy and forces) for one or more configurations.
-
-        ``misc``: It solves poisson's equation for a charge density given
-        in cube format.
-
-        ``minhocao``: It solves poisson's equation for a charge density given
-        in cube format.
+        ``minhocao``:  Perform a global optimization calculation based on the
+        minima hopping method. The parameters of this task can be set within
+        the block :ref:`minhocao <minhocao>`.
         
-        ``fingerprint``: It solves poisson's equation for a charge density given
-        in cube format.
+**two_level_geopt**: (logical) Determines if geometry optimizations
+are performed with two accoracy levels.
+If ``True``, the block **geopt_prec** must
+be present in *flame_in.yaml*.
 
-**two_level_geopt**: It specifies the geometry optimization should
-be in level or two. It it is .true., the block geopt_prec must be
-provided in addition to block geopt.
+    default: ``False``
 
-    default: ``.false.``
-
-**verbosity**: The verbosity of information printed in screen.
-It is an integer value which the smaller value means more information
-on screen. The smallest possible is 0 and the largest value may vary
-in future.
+**verbosity**: (integer) Verbosity of output data.
 
     default: ``0``
 
+    options: ``0, 1, 2, 3`` Increasing number for higher verbosity.
 
+**verbose**: (integer) Verbosity of output data.
+
+    default: ``0``
+
+    options: ``0, 1, 2, 3`` Increasing number for higher verbosity.
+
+**types**: (list of string) Character of the atoms involved in the simulation.
+
+   default: ``No default value.``
+
+**nat**: (integer) Number of atoms involved in the simulation.
+
+   default: ``0``
+
+
+**findsym**: (logical) Activates symmetry detection of crystalline solids.
+FLAME must be compiled and linked with SpgLib.
+
+    default: ``False``
+
+**rng_type**: (string)
+
+   default: ``intrinsic``
+
+**seed**: (integer) Seed value to initialze the random number generator.
+
+   default: ``-2``
+
+**pressure**: (real) External pressure. In units of GPa
+
+   default: ``0.d0``
+
+..   nrun_lammps                         : 0
+..   nat                                 : 0
+..   pressure                            : 0.0
+..   findsym                             : False
+..   finddos                             : False
+..   params_new                          : False
