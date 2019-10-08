@@ -16,6 +16,7 @@
    :maxdepth: 2
 
    flame_in
+   structures.rst
    minhopp.rst
    main
    potential
@@ -37,5 +38,5 @@
 .. * :ref:`modindex`
 .. * :ref:`search`
 .. bibliography:: references.bib
-    :cited:
+    :all:
     :style: unsrt

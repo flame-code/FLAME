@@ -94,7 +94,7 @@ to solve the system of linear equations for the CEP.
 
    options: 
    
-      ``direct`` direct approach
+      ``direct`` direct approach, e.g., Gaussian elemination
 
       ``operator`` iterative approach
 

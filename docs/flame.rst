@@ -81,7 +81,7 @@ specific portions of the FLAME code:
 * SQNM optimizer: :cite:`schaefer_stabilized_2015`.
 * Saddle point searches: :cite:`ghasemi_an_2011,schaefer_minima_2014`.
 * Structural fingerprints: :cite:`sadeghi_metrics_2013,li_fingerprint_2016`.
-* Electrostatic particle-particle, particle-density method: :cite:`ghasemi_particle_2007`.
+* Electrostatic particle-particle, particle-density method: :cite:`ghasemi_particle_2007,Rostami2016`.
 
 
 When FLAME is used in conjunction with external (quantum) engines
