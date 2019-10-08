@@ -61,10 +61,12 @@ E.g., ``[0., 0., 0., Si, TTT]`` is a silicon atom at the origin, free to move in
 while ``[1., 1., 1., C, TFF]`` is a carbon atomot at ``(1, 1, 1)`` only allowed to move along the ``x``
 direcion.
 
-   default: ``No default value.``
 
-Example: bulk calcium fluoride
+Example
 ----------------------------------
+
+Calcium fluoride in a crystal lattice.
+
 .. code-block:: yaml
 
     conf:
@@ -93,6 +95,65 @@ Example: bulk calcium fluoride
 
 ``ascii`` structure format
 =================================
+
+The ascii format is described in detail here: http://inac.cea.fr/sp2m/L_Sim/V_Sim/sample.html#sample_ascii
+It is the native format of the **task** ``minhocao`` and the only format 
+that corrently supports the constraint of individual lattice parameters.
+Periodic cell vectors have to be provided to describe the simulation cell.
+The cell consisting of the cell vectors ``a, b, c`` 
+has to be rotated such that ``a`` points along the ``x`` direction, 
+and ``b`` lies within the ``x-y`` plane.
+
+.. image:: repere-ascii.png
+   :scale: 50 %
+   :align: center
+
+**line 1**: (integer) Number of atoms in the system, ``Nat``.
+
+**line 2**: (real, real, real) dxx dyx dyy values
+
+**line 3**: (real, real, real) dzx dzy dzz values
+
+**lines 4 -- n**: Lines starting with ``#keyword:`` are read and interpreted accordingly.
+The  ``#keyword:`` tag must be followed by the following options.
+
+   ``reduced``: the atomic coordinates are treated reduced coordinates, i.e., with respect to the cell vectors.
+
+   ``fixlat :math:`a b c \alpha \beta \gamma vol``: specific components of the lattice vectors can be fixed. A ``True`` value
+   fixes the degree of freedom. The last parameter (``vol``) is used for fixed-cell-shape-variable-volume simulations.
+   I.e., ``#keyword: fixlat  F F T T T F F`` allows the length of the ``a`` and ``b`` vectors to change, while keeping the 
+   length of the ``c`` vector constant. At the same time, only the angle between ``a`` and ``b`` is allowed to change.
+   This setting is particularly useful for simulations of 2D materials or surfaces.
+
+**lines n+1 -- Nat**: ``Nat`` lines with the coordinates of every atom of the form ``x y z AT c``.
+The ``x, y, z`` coordintes, followed by the chemical symbol ``AT``, and optionally ``f`` for fixed atom.
+Note that the reduced coordinates will be fixed instead of the Cartesian one if the
+system is periodic
+
+Example
+----------------------------------
+
+Calcium fluoride in a crystal lattice, with selectively fixed lattice parameters.
+The Ca atoms are not allowed to move.
+
+.. code-block:: none
+      
+   12
+   5.4620E+00   0.0000E+00   5.4620E+00
+   0.0000E+00   0.0000E+00   5.4620E+00
+   #keywords: fixlat F F T T T F F 
+   0.0000E+00   0.0000E+00   0.0000E+00   Ca f
+   2.7310E+00   2.7310E+00   0.0000E+00   Ca f
+   2.7310E+00   0.0000E+00   2.7310E+00   Ca f
+   0.0000E+00   2.7310E+00   2.7310E+00   Ca f
+   1.3655E+00   1.3655E+00   1.3655E+00    F 
+   4.0965E+00   1.3655E+00   1.3655E+00    F 
+   1.3655E+00   4.0965E+00   1.3655E+00    F 
+   4.0965E+00   4.0965E+00   1.3655E+00    F 
+   1.3655E+00   1.3655E+00   4.0965E+00    F 
+   4.0965E+00   1.3655E+00   4.0965E+00    F 
+   1.3655E+00   4.0965E+00   4.0965E+00    F 
+   4.0965E+00   4.0965E+00   4.0965E+00    F 
 
 
 
