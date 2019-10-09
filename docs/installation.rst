@@ -17,12 +17,15 @@ Download the current version of FLAME with
 Prerequisites
 =================
 
-FLAME requires **autoconf** and *automake* to be installed.
-Note that currently only **automake** up to version  1.15.1
-is supported due to changes introduced in later versions.
+FLAME requires **autoconf** and **automake**.
+IMPORTANT: note that currently only **automake** up to version 1.15.1
+is supported due to changes introduced in later versions
+that break the Makefile structure.
+
 
 Any Fortran and C compiler should work for compiling FLAME.
 However, we recommend using the Intel Fortran and C compiler.
+
 
 FLAME has to be linked to Blas, LaPack, and FFT libraries.  
 They can be obtained as part of the Intel Math Kernel Library, 
@@ -30,10 +33,11 @@ which is the recommended route. In principle, other
 implementations of the libraries should also work.
 
 
-Linking to Togo's spglib is rocommended. Currently supported
+Linking to Atsushi Togo's spglib is rocommended. The currently supported
 and well tested version is 1.6.x and can be found here:
 
 https://sourceforge.net/projects/spglib/files/spglib/
+
 
 Linking to LAMMPS requires the installation of LAMMPS with 
 the desired potentials. Supported and tested version is
@@ -50,6 +54,7 @@ Installation of python is required. Currently,
 only python 2.7 is supported. Future releases of FLAME will
 support python 3
 
+
 =========================
 Installing FLAME 
 =========================
@@ -65,9 +70,7 @@ directory than the source code.
    a set of utilities from the BigDFT project.
    Preferably, use the version provided with
    FLAME to avoid conflicts.
-   You do NOT need different installations of futile
-   for multiple installations of FLAME.
-   Untar the included futile-suite.tar.gz, then 
+   Untar the included futile-suite.tar.gz (``tar -zxvf futile-suite.tar.gz``), then 
    create a new build directory (e.g., ``mkdir futile-build ; cd futile-build``), and from there run
 
    for GNU compilers:
@@ -91,23 +94,25 @@ directory than the source code.
       CC=mpicc CXX=mpicxx FC=mpif90 F77=mpif90``
 
    follwed by ```make build`` if necessary.
-   After the installation of futile, we need to link with FLAME
-   To get more help on how to link correctly,  
-   you can run:
+   Make sure to adapt the library locations and
+   the linking flags appropriately.
+   After the installation of futile, we need to link it
+   with FLAME.
+   To display details on the general linking procedure, run:
 
    ``path_to_futile_source/Installer.py link futile``
 
-#. To compile FLAME, change into the main LAME directory and run:
+#. To compile FLAME, change into the main FLAME directory and run:
 
    ``autoreconf -fi``
 
 #. Create a build directory for FLAME (e.g., ``mkdir build-FLAME ; cd build-FLAME``). 
-   Explicitly replace $FUTILE by the full path of the futile build-directory during ``configure``, 
+   Explicitly replace $FUTILE with the full path of the futile build-directory during ``configure``, 
    or define it as an environmental variable:
 
    ``export FUTILE=path_to_futile_build``
 
-   Note that providing the FUTILE variable is required to compile FLAME and is not optional.
+   Note that providing the FUTILE variable is required to successfully compile FLAME, and is not optional.
    Then, run ``configure``. For Intel compilers and MPI parallelization:
 
    ``path_to_flame_source/configure FC=mpif90 F77=mpif90 CXX=mpicc CC=mpicc \
@@ -124,13 +129,14 @@ directory than the source code.
    CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/install/lib \
    -lfutile-1 -lm -lyaml -llapack -lfftw3 -ldl -cxxlib"``
    
-   To link with SPGLIB append
+   To link with SPGLIB, append
    ``--with-spglib SPGLIB_ROOT=path_to_spglib``
 
-   To link with the BigDFT PSolver append
+   To link with the BigDFT PSolver, append
    ``--with-bps BDIR=path_to_bigdft_root``
 
-   To link with the LAMMPS append
+   To link with LAMMPS, append
    ``--with-lammps LAMMPS_ROOT=path_to_lammps_root``
+
 #. Run ``make`` to compile the code. 
    Upon successful compilation, the executable can be found in ``src/flame``

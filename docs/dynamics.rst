@@ -9,10 +9,6 @@ EXPLAIN Dynamics
 dynamics options
 ==================
 
-**nstep**: Number of molecular dynamics steps
-
-   default: ``1``
-
 **nfreq**: (integer) 
 
    default: ``0``

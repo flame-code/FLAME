@@ -1,7 +1,7 @@
 .. _geopt:
 
 ==================================
-Optimizer parameters
+Optimizer
 ==================================
 
 The geometry optimizer parameters can be set in this block.
@@ -31,12 +31,13 @@ general ``geopt`` parameters
 
         ``qbfgs``: Quantum Espresso's version of BFGS for variable cell shapes :cite:`Espresso`.
 
-        ``bfgs``: Ghasemi's implementation of BFGS in which the moves along soft
-        modes are controlled.
+        ``bfgs``: Ghasemi's implementation of BFGS with preferential moves along soft
+        modes.
 
         ``fire``: The Fast Inertial Relaxation Engine method :cite:`bitzek_structurel_2006`.
 
-**fmaxtol**: (real) Maximum absolute component of force vector. In units of Ha/Bohr.
+**fmaxtol**: (real) Convergence parameter. The opimization will terminate 
+as soon as the maximum absolute component of force vector falls below this value. In units of Ha/Bohr.
 Must be specified.
 
     default: ``No default value.``

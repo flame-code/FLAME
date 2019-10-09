@@ -11,24 +11,23 @@
 
 .. include:: documentation.rst
 
+.. include:: input.rst
+
 .. toctree::
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 3
 
    flame_in
    main
-   minhopp.rst
    potential
    fingerprint.rst
    geopt
    dynamics.rst
    ann.rst
-   conf_comp.rst
-   genconf.rst
    geopt_prec.rst
+   single_point.rst
    saddle_1s.rst
    saddle_1s_opt.rst
-   testforces.rst
    minhocao.rst
    structures.rst
 .. Indices and tables

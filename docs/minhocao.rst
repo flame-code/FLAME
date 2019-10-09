@@ -1,7 +1,7 @@
 .. _minhocao:
 
 =================================================
-Minima hopping for crystal structure optimization
+Minima Hopping for Crystal Structure Optimization
 =================================================
 
 The minima hopping method implements a 
@@ -84,8 +84,8 @@ a gradient feedback.
 
     default: ``True``
 
-**eref**: (real) Reference energy, minhopp will stop as soon as finds a minimum
-as low as *eref*. In units of Ha/cell.
+**eref**: (real) Reference energy, MHM run will stop as soon a minimum
+with an energy/enthlapy less than *eref* is found. In units of Ha/cell.
 
     default: ``-1.d50``
 
@@ -118,4 +118,6 @@ and ends up into a new mimimum.
 beta3 must be smaller than one.
 
     default: ``1.d0/1.05d0``
+
+
 

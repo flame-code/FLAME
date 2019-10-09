@@ -1,12 +1,10 @@
 
-Documentation
-=============
 
 Running FLAME
----------------
+=============
 
 FLAME consists of a single executable
-named ``flame```, which will reside in the ``src``
+named ``flame``, which resides in the ``src``
 directory upon successful compilation.
 The main input file :ref:`flame_in.yaml <flame_in>` must be provided
 in all FLAME runs and contains the simulation directives.

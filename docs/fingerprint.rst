@@ -18,29 +18,24 @@ general ``fingerprint`` parameters
 
     options:
 
-       ``gauss``:  Gaussion orbital overlap matrix method for clusters and molecules.
+       ``gauss``:  Gaussian orbital overlap matrix method for clusters and molecules.
         
-       ``gom``: Gaussion orbital overlap matrix method for crystalline system.
+       ``gom``: Gaussian orbital overlap matrix method for crystalline system.
     
-       ``molgom``: Gaussion orbital overlap matrix method for molecular crystals.
+       ``molgom``: Gaussian orbital overlap matrix method for molecular crystals.
 
        ``oganov``: Oganov's fingerprint method for crystalline system based on radial distribution functions.
 
        ``coganov``: Continuous version of  Oganov's fingerprint, without histogram discretization along the radial direction.
     
-       ``bcm``: Bond characterization matrix method for crystalline system based on the Calypso code.
+       ``bcm``: Bond characterization matrix method for crystalline system based on the Calypso method.
     
        ``atorb``: Atomic orbitals overlap method for crystalline system.
     
     
-**rcut**: (real) Cutoff distance of the fingerprints, in units of Angstrom.  Only relevant for periodic, crystalline systems.
+**rcut**: (real) Cutoff distance of the fingerprint, in units of Angstrom.  Only relevant for periodic, crystalline systems.
 
     default: ``15.d0``
-
-
-
-
-
 
 ``oganov`` parameters
 ----------------------
@@ -96,7 +91,7 @@ general ``fingerprint`` parameters
    default: ``1.d0``
 
 
-**widthover**: (real) Characteristic width of the molecular overlap orbitals, which will be scaled by the van der Vaals radii.
+**widthover**: (real) Characteristic width of the molecular overlap orbitals, which will be scaled by the Van der Waals radii.
 
    default: ``1.d0``
 

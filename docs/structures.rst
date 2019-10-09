@@ -1,7 +1,7 @@
 .. _structure:
 
 ========================
-Atomic structure files
+Atomic Structure Files
 ========================
 
 FLAME can handle various forms of atomic structure
