@@ -10,6 +10,13 @@ any chemical system.
 
 Input/Output files
 ==================
+
+In addition to the standard *flame_in.yaml* file, further input files are
+required to start a MHM run. Also, important information
+will be written into output files other than *flame_log.yaml*
+
+
+
 **poscur.ascii/poscur.vasp**: starting or current configuration of a MHM run
 either in the *ascii* or *vasp* format, in Angstrom. Will be 
 overwritten continuously as the simulation progresses with the 
@@ -18,8 +25,8 @@ current local minimum structure.
 
 **ioput**: contains parameter values which are read and continuously updated throughout an MHM run.
 In one line, 3 real numbers must be provided, which correspond to
-*ediff* (in Ha/cell), *temperature* (in K and scaled based on the atomic masses), 
-*maximum temperature*  (in K and scaled based on the atomic masses).
+*ediff* (in Ha/cell), *temperature* (in K and scaled based on the atomic masses ``amass``), 
+*maximum temperature*  (in K and scaled based on the atomic masses ``amass``).
 
    Suggested initial choice is ``1.d-2 5.d2 1.d5`` (for a system with around 16 atoms)
 
@@ -35,8 +42,11 @@ The first two lines must be always provided:
 and *nmin_max* is the maximal number of minima to be found in
 the next MHM run. *nmin_max* must always be larger than 
 *nmin_max*. Every new MHM run must start with *nmin_cur: 0*
+In a restart run *nmin_cur*, corresponds to the number of 
+local minima found in the previous run(s).
 
-*delta_enthalpy*  (units of Ha/cell) and *delta_enthalpy* are the 
+
+*delta_enthalpy*  (units of Ha/cell) and *delta_fingerprint* are the 
 minimal enthalpy and structural fingerprint tolerances, respectively,
 below which two structures will be considered identical.
 

@@ -104,7 +104,7 @@ of the atomic types from 1 to number of atomic types.
    default: ``No default value.``
 
 **findsym**: (logical) Activates symmetry detection of crystalline solids.
-FLAME must be compiled and linked with SpgLib.
+FLAME must be compiled and linked with SPGLIB.
 
     default: ``False``
 

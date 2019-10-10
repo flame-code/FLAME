@@ -43,7 +43,7 @@ general ``potential`` parameters
             ``coulomb``: Coulomb potential (electrostatic interations).
 
 
-         External codes that can be linked to FLAME:
+        External codes that can be linked to FLAME:
             
             ``tinker``: TINKER molecular mechanics code :cite:`Tinker`.
     
@@ -65,19 +65,19 @@ general ``potential`` parameters
     
             ``cp2k``: CP2K DFT/QM/MM code :cite:`Cp2k`.
 
-            ``msock``: Network socket interface. Uses the i-Pi protocol to interact with extrenal codes.
+            ``msock``: Network socket interface. Uses the i-Pi protocol to interact with extrenal codes :cite:`ceriotti_i-pi:_2014`.
 
 ..  warning:: mpmd seems identical to lj, which one to select?
 
 
 
-**potential_sec**: (string) Secondary interatomic potential, usually used to perform a preliminary relaxations
-or to evaluate an approximate Hessian matrix. All available options identical to  **potential**.
+**potential_sec**: (string) Secondary interatomic potential, usually used to perform a preliminary relaxation
+or to evaluate an approximate Hessian matrix. All available options are identical to  **potential**.
 
     default: None
 
-**core_rep**: (logical) If selected, adds a repulsive potential to the **potential** method based on the
-atomic radii. Some potentials (like PAW DFT) tend to cause issues if atoms get too close to each other
+**core_rep**: (logical) If selected, a repulsive potential to the **potential** method is added based on the
+atomic type. Some potentials (like PAW DFT) tend to cause issues if atoms get too close to each other
 and the core regions start to overlap. To avoid atoms from getting too close, a repulsive
 :math:`\frac{1}{r^{12}}` term is added.
 
@@ -99,7 +99,7 @@ density. Only relevant for periodic electronic structure codes.
 
 **kptden**: (list of two reals)
 Desired k-points density along every dimension for the fine and the coarse potential settings. 
-In units of the reciprocal lattice vectors, :math:`2\pi/\textrm{Bohr}`.  Recommended value are 
+In units of the reciprocal lattice vectors, :math:`2\pi/\textrm{Bohr}`.  Recommended values are 
 in the range of ``0.015`` and ``0.040`` for metals and insulators, respectively
 Only relevant for periodic electronic structure codes. 
 
@@ -122,12 +122,12 @@ Only relevant for periodic electronic structure codes.
 
    default: ``3141``
 
-**sockhost**: (string) Socket address. If **sockinet** is 0, a string with the sockhost name will be
-created in a temporary directory. Otherwise, a valid IP address must be provided (127.0.0.1 for localhost).
+**sockhost**: (string) Socket address. If **sockinet** is ``0``, a string with the **sockhost** name will be
+created in a temporary directory. Otherwise, a valid IP address must be provided (`127.0.0.1` for localhost).
     
     default: ``mh-driver``
 
-**sockcutwf**: (list of reals) Plane wave cutoff energies for the fine and coarse settings sent along 
+**sockcutwf**: (list of two reals) Plane wave cutoff energies for the fine and coarse settings sent along 
 with the i-Pi protocol. Only relevant for plane wave DFT codes that support this feature (like Quantum Espresso).
 
     default: ``[1.d0, 1.d0]``
@@ -135,8 +135,9 @@ with the i-Pi protocol. Only relevant for plane wave DFT codes that support this
 
 ``confine`` parameters
 --------------------------
-**confinement**: (logical) Determines if one or more 2D confinement potentials will be imposed based on polynomic
-functions. The general form of the potential is :math:`P = A(|e-\textbf{r}_i^\alpha|-r_c)^n`.
+**confinement**: (logical) Determines if one or more 2D confinement potentials will be imposed based 
+on polynomial functions. The general form of the potential 
+is :math:`P = A(|e-\textbf{r}_i^\alpha|-r_c)^n`.
 Where :math:`A` is the amplitude, :math:`e` is the equilibrium position along the
 dimension :math:`\alpha`, :math:`r_c` is the cutoff distance, 
 and :math:`i` runs over all atoms that interact with the potential :math:`P`.
@@ -189,12 +190,12 @@ Given as a list of length **nconfine** if more than one confinement potential is
    
    options: 
       
-      ``1``: with respect to a predetermined value along the dimension :math:`\alpha` set in **dim**
+      ``1``: The equilibrium position is set once during initiallization with respect to a predetermined value along the dimension :math:`\alpha` set in **dim**
 
-      ``2``: with respect to the average value of all involved atoms along the dimension :math:`\alpha` set in **dim**
+      ``2``: The equilibrium position is set dynamically with respect to the average value of all involved atoms along the dimension :math:`\alpha` set in **dim**
 
 **eq**: (real) Equilibrium position :math:`e_i` of the potential. 
-Only relevant if **av** is 1.
+Only relevant if **av** is set to ``1``.
 The unit depends on the choice of **cartred**: Angstrom for ``C``, in reduced units if ``R``.
 Given as a list of length **nconfine** if more than one confinement potential is imposed.
 
@@ -206,7 +207,7 @@ Given as a list of length **nconfine** if more than one confinement potential is
    default: ``0``
 
 **nat**: (list of integers and/or strings) The indices of the atoms that are subjected to the potential.
-If all atoms are affected by the potential, the string "all" can be used instead of listing all atomic indices.
+If all atoms are affected by the potential, the string ``all`` can be used instead of listing all atomic indices.
 Given as a list of length **nconfine** (list of lists) if more than one confinement potential is imposed.
 
    default: ``all``
@@ -216,3 +217,8 @@ Given as a list of length **nconfine** (list of lists) if more than one confinem
       ``all``: all atoms aresubjected to the potential 
 
       ``[...]``: list of atomic indices
+
+
+..  warning:: major part on the ann is still missing
+
+..  warning:: major part on the electrostatic interactions is missing

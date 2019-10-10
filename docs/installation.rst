@@ -33,7 +33,7 @@ which is the recommended route. In principle, other
 implementations of the libraries should also work.
 
 
-Linking to Atsushi Togo's spglib is rocommended. The currently supported
+Linking to Atsushi Togo's SPGLIB is rocommended. The currently supported
 and well tested version is 1.6.x and can be found here:
 
 https://sourceforge.net/projects/spglib/files/spglib/

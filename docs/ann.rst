@@ -4,16 +4,14 @@
 Artificial Neural Network Potentials
 ========================================
 
-Artificial neural network (ANN) potentials are
-a class of machine learning interatomic potentials.
+FLAME implements a range of artificial neural network (ANN) potentials.
 In high dimensional ANN potentials, the total
 energy is decomposed into atomic energies.
-The output values of ANNs are considered as atomic energies.
-In order to use such an approach in FLAME,
-see below :ref:`approach <ref-ann-approach>`.
-The equilibration via neural network
-technique (CENT) is another method implemented
-in the FLAME code.
+The output values of ANNs are considered as atomic energies
+in the original Behler-Parrinello approach, while
+the charge equilibration via neural network
+technique (CENT) 
+includes long-range electrostatic interactions.
 The parameters related to ANN must be set
 in the block ``ann`` described below.
 
@@ -33,14 +31,15 @@ general ``ann`` parameters
 
 .. _ref-ann-approach:
 
+..  warning:: Other methods are missing
 
-**approach**: (string) Determines the ANN technuque to be employed.
+**approach**: (string) Determines the ANN technique to be employed.
 
    default: ``atombased``
     
    options: 
 
-      ``atombased``: total energy is the sum of atomic energies
+      ``atombased``: total energy is the sum of atomic energies, the original Behler-Parrinello method
        
       ``cent1``: charge equilibration via neural network :cite:`ghasemi_interatomic_2015`
 
@@ -56,6 +55,8 @@ general ``ann`` parameters
    
       ``rivals``: Well tested and stable optimizer based on a modification of extended Kalman filter.
 
+..  warning:: Other methods are missing
+
 **nstep_opt**: (integer) Number of extended Kalman filter steps
 
     default: ``100``
@@ -68,7 +69,7 @@ output.
     default: ``0``
 
 **ampl_rand**: (real) The amplitude of random numbers used
-as the initial values for ANN weights.
+as the initial values of the ANN weights.
 
     default: ``1.d0``
 
@@ -98,7 +99,7 @@ to solve the system of linear equations for the CEP.
    
       ``direct``: direct approach, e.g., Gaussian elemination
 
-      ``operator``: iterative approach
+      ``operator``: iterative approach by convex optimization
 
 **nstep_cep**: (integer) Maximum number of steps in self-consistent
 charge equilibration process (CEP) required by the
@@ -111,7 +112,7 @@ CENT approach.
     default: ``1.d0``
 
 **qgnrmtol**: (real) Convergence criterion for the norm of the gradient
-in CEP when **syslinsolver**  is ``operator``.
+in CEP when **syslinsolver**  is set top  ``operator``.
 Tight values, e.g. ``1.d-5``, may be required for accurate forces.
 
     default: ``5.d-4``

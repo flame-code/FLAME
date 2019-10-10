@@ -22,14 +22,16 @@
    potential
    fingerprint.rst
    geopt
+   geopt_prec.rst
    dynamics.rst
    ann.rst
-   geopt_prec.rst
    single_point.rst
    saddle_1s.rst
    saddle_1s_opt.rst
    minhocao.rst
-   structures.rst
+
+.. include:: structures.rst
+
 .. Indices and tables
 .. ==================
 
@@ -37,5 +39,5 @@
 .. * :ref:`modindex`
 .. * :ref:`search`
 .. bibliography:: references.bib
-    :all:
-    :style: unsrt
+    :cited:
+    :style: alpha

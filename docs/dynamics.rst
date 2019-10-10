@@ -4,10 +4,23 @@
 Dynamics
 ========
 
-EXPLAIN Dynamics
+The details of molecular dynamics simulations are specified here. Not all
+keywords apply to all available method. 
+Note that there is a fundamental difference in using dynamics
+to either sample free energies,
+or as a means to escape local minima in the minima hopping method.
+For the former, the goal is an accurate and unbiased sampling,
+while for the latter it is the efficient escape from a catchment basin
+of the PES.
+Hence, the available parameters and their suggested values 
+differ significanly between these two classes of dynamics.
 
 dynamics options
 ==================
+
+**nmd**: (integer)  Number of molecular dynamics steps.
+
+   default:  ``300``
 
 **nfreq**: (integer) 
 
@@ -47,16 +60,11 @@ dynamics options
 
    default: ``False``
 
+..  warning:: Some of above parameters have to be explained. Not yet done.
 
 Parameters specifically for the MD escape trials in **task** ``minhocao``
 ------------------------------------------------------------------------------
-
-**nmd**: (integer)  Number of molecular dynamics steps specifically for
-the escape trials in the **task** ``minhocao``.
-
-   default:  ``300``
-
-**algo**: (integer)  Variable cell shape algorithm. 
+**algo**: (integer)  Choice of variable cell shape algorithms. 
 
    default: ``1``
 
@@ -68,7 +76,7 @@ the escape trials in the **task** ``minhocao``.
 
       ``3``: Wentzcovitch
 
-      ``4``: Andersen (variable cell volume)
+      ``4``: Andersen (variable cell volume only, fixed cell shape)
 
 **integrator**: (integer) Integrator for the variable cell shape
 MD equations of motion.
@@ -89,11 +97,12 @@ can lead to the cell expanding
 significantly beyond the equlibrium volume. 
 To counteract this thermal expansing,
 a bias pressure can be imposed during the MD run.
+In units of GPa.
 
    default: ``0.d0``
 
 **cellmass**: (real) Fictitious cell mass for all variable
-cell shape MD tasks.
+cell shape MD tasks. Arbitrary units.
 
    default: ``1.d0``
 
@@ -128,7 +137,7 @@ timestep ``dt`` in **task** ``minhocao``. For clusters, ``dt`` is adjusted
 such that the totoal energy is conserved to within 1 %,
 and has to be accompanied by setting **encon** to ``True``.
 For peridic systems, 
-``dt`` is aiondjusted such that the number of sampling points 
+``dt`` is adjusted such that the number of sampling points 
 per oscillation in the energy/enthalpy along an MD trajectory is close to the
 target value **nit_per_min**.
 

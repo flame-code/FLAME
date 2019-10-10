@@ -4,7 +4,11 @@
 Saddle
 ===========
 
-The structural fingerprint parameters are set in this block.  Some parameters are used by all methods, while others apply only to specific fingerprints.  
+One and two-sided saddle point search methods 
+are implemented in FLAME. Note that not all 
+parameters apply to 
+all available saddle point serach methods
+when **task** is set to ``saddle``.
 
 
 saddle parameters
@@ -23,6 +27,11 @@ general ``saddle`` parameters
     
          ``dimer```:
     
+..  warning:: Options and their descriptions are missing
+
+
+..  warning:: Sections for other methods need to be added
+
 
 ``bar_saddle`` parameters
 -----------------------------------
@@ -46,13 +55,12 @@ The contraction occurs gradually over **nstep_contract** iterations.
 
    default: ``True``
 
-**dbar_contracted**: (real) The final bar size after contraction.
+**dbar_contracted**: (real) The final bar size after contraction. In units of Bohr in configurational space.
 
    default: ``1.d-3``
 
 **nstep_contract**: (integer) Number of iterations to contract the bar from the
-initial value **dbar** to the final lenght **dbar_contracted**. 
-In units of Bohr in configurational space.
+initial value **dbar** to the final length **dbar_contracted**. 
 
    default: ``40``
 
@@ -66,6 +74,8 @@ for the convergence of the final, contracted bar. Units in Ha/Bohr.
 
    default: ``5.d-4``
 
+
+..  warning:: Following parameters not yet assigned
 
 Not yet assigned
 --------------------

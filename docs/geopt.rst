@@ -36,8 +36,10 @@ general ``geopt`` parameters
 
         ``fire``: The Fast Inertial Relaxation Engine method :cite:`bitzek_structurel_2006`.
 
-**fmaxtol**: (real) Convergence parameter. The opimization will terminate 
-as soon as the maximum absolute component of force vector falls below this value. In units of Ha/Bohr.
+..  warning:: How is fire selected from minhocao, and the one from alborz?
+
+**fmaxtol**: (real) Convergence parameter. The optimization will terminate 
+as soon as the maximum absolute value of all force vector components falls below this threshold. In units of Ha/Bohr.
 Must be specified.
 
     default: ``No default value.``
@@ -47,7 +49,7 @@ Must be specified.
     default: ``No default value.``
 
 
-**lprint**: (logical) Verbosity setting. If true, detailed information at each iteration is printed.
+**lprint**: (logical) Verbosity setting. If ``True``, detailed information at each iteration is printed.
 
     default: ``False``
 
@@ -55,38 +57,36 @@ Must be specified.
 
     default: ``1000``
 
-**dxmax**: (real) Maximum displacement for each atomic component. Units in Bohr. Not implemented in all methods yet.
+**dxmax**: (real) Maximum displacement for each atomic component. Units in Bohr. Not yet implemented in all methods.
 
     default: ``1.d-1``
 
-**funits**: (real) Factor to scale energy and force units. 
-Currently only useful for Lennard-Jones potential, 
-where the units can be scaled to be comparable to
-other potentials.
+**funits**: (real) Factor to scale energy and force units. Currently only useful for Lennard-Jones potential, where the units can be scaled to be comparable to other potentials.  
 
     default: ``1.d0``
 
 **cellrelax**: (logical) Activates variable cell shape relaxations.
- If ``True``, a variable cell shape optimization is performed.
+ If ``True``, a variable cell shape optimization is performed. Not yet implemented in all methods.
 
     default: ``False``
 
 
-**strfact**: (real) The stress tensor scaled by this factor and treated like forces in the process of optimization.
-Only relevant if **cellrelax** is ``True``.
+**strfact**: (real) The stress tensor is scaled by this factor and treated like forces in the process of optimization.
+Note that internally the unit of the stress tensor is :math:`{\textrm{Ha}}/{\textrm{Bohr}^{3}}`.
+Only relevant for variable cell shape relaxations.
 
     default: ``1.d2``
 
 **geoext**: (logical) Some atomic simulation packages (e.g., LAMMPS, GULP, etc.) come with their
 own implementations of geometry optimizers. If  ``True``, these  extrenal optimizers 
-will be used. Not implemented for all extrenal codes.
+will be used. Not yet implemented for all extrenal codes.
 
     default: ``False``
 
 ``bfgs`` parameters
 ---------------------
 
-**condnum**: (real) Predicted condition number of the system.
+**condnum**: (real) Predetermined condition number of the system.
 
     default: ``1.d1``
 
@@ -128,7 +128,7 @@ The parameter *precaution* controls the rate of this gradual transition.
 ``qbfgs`` parameters
 ---------------------
 
-**qbfgsndim**: (integer) Number of old forces and displacements vectors used in the
+**qbfgsndim**: (integer) Number of old forces and displacements vector used in the
 PULAY mixing of the residual vectors obtained on the basis
 of the inverse hessian matrix given by the BFGS algorithm.
 When bfgs_ndim = 1, the standard quasi-Newton BFGS method is
@@ -140,8 +140,8 @@ used.
 
     default: ``5.d-1``
 
-**qbfgstrmin**: (real) Minimum ionic displacement in the structural relaxation
-BFGS is reset when trust_radius < trust_radius_min.
+**qbfgstrmin**: (real) Minimum ionic displacement in the structural relaxation.
+BFGS is reset when *trust_radius* < *trust_radius_min*.
 
     default: ``1.d-3``
 
@@ -149,11 +149,11 @@ BFGS is reset when trust_radius < trust_radius_min.
 
     default: ``8.d-1``
 
-**qbfgsw1**: (real) Parameters used in line search based on the Wolfe conditions.
+**qbfgsw1**: (real) Parameter used in line search based on the Wolfe conditions.
 
     default: ``1.d-2``
 
-**qbfgsw2**: (real) Parameters used in line search based on the Wolfe conditions.
+**qbfgsw2**: (real) Parameter used in line search based on the Wolfe conditions.
 
     default: ``5.d-1``
 

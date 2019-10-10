@@ -4,7 +4,7 @@
 Singlepoint
 ===========
 
-The single point task performs a simple energy and force evaluation
+The single point task performs a sole energy and force evaluation
 given a ``posinp.yaml`` atomic structure file.
 This task is especially useful to establish  
 a simple interface between an external 
@@ -13,29 +13,19 @@ which require energy/force evaluation given a atomic
 structure file. 
 A prominent example for such an application is
 the computation of force sets of displaced 
-supercell structures in phonon calculations, e.g., using Phonopy.
+supercell structures in phonon calculations, e.g., using Phonopy
+or ShengBTE.
 Further, this task allows to use a potential implemented in 
 the FLAME code as a black-box engine, either by directly 
 linking to the flame library,
 or by using the socket i-Pi interface.
 
+..  warning:: Add instructions to link with FLAME
 
 ``single_point`` parameters
 =================================
 
 
-
- single_point:
-   print_force                         : False
-   format                              : unknown
-   usesocket                           : no
-   sockinet                            : 0
-   sockport                            : 0
-   sockhost                            : 0
-
-
-``print_forces`` parameters
----------------------------------
 
 **print_force**: (logical) The forces will be written into a separate output file if set to ``True``.
 
@@ -45,15 +35,14 @@ or by using the socket i-Pi interface.
 
     default: ``No default value.``
 
+
 **usesocket**: (logical) Activates the communication scheme over unix or TCP sockets. The i-Pi protocol is used.
-    Note: the server side of the socket communication has to be initiallized first before 
-    FLAME can connect to the socket.
+Note: the server side of the socket communication has to be initiallized first before 
+FLAME can connect to the socket.
 
     default: ``False``
 
-**sockinet**: (integer) Activates the communication scheme over unix or TCP sockets. The i-Pi protocol is used.
-    Note: the server side of the socket communication has to be initiallized first before 
-    FLAME can connect to the socket.
+**sockinet**: (integer) Selects Unix socket or internet (TCP) socket.
 
     default: ``0``
 
@@ -67,8 +56,8 @@ or by using the socket i-Pi interface.
 
    default: ``0``
 
-**sockhost**: (string) Socket address. If **sockinet** is 0, a string with the sockhost name will be
-created in a temporary directory. Otherwise, a valid IP addres must be provided (127.0.0.1 for localhost).
-    
-    default: ``0``
 
+**sockhost**: (string) Socket address. If **sockinet** is ``0``, a string with the **sockhost** name will be
+created in a temporary directory. Otherwise, a valid IP address must be provided (`127.0.0.1` for localhost).
+
+    default: ``0``

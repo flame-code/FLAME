@@ -1,24 +1,24 @@
 .. _structure:
 
-========================
+=================================
 Atomic Structure Files
-========================
+=================================
 
-FLAME can handle various forms of atomic structure
+FLAME can handle various atomic structure
 file formats. The preferred format is ``yaml``,
 but other formats are supported as well.
 The subdirectory ``utils/python/`` contains
-scripts to convert structural data from wealth input formats
+scripts to convert structural data from a wealth of input formats
 to a ``yaml`` file.
 
 
 .. _structure_yaml:
 
 ``yaml`` format
-=================================
+-----------------------------
 
 Keyword-based structural information format.
-Must start with the keyword **conf**, followed by
+Must start with a block with keyword **conf**, followed by
 the following parameters.
 
 **bc**: (string) Boundary condition.
@@ -27,11 +27,11 @@ the following parameters.
 
    options:
 
-       ``free``: Free boundary conditions for molecules and clusters.
+       ``free``: Free boundary conditions for molecules and clusters
 
-       ``slab``: Slab boundary conditions for surfaces or interfaces.
+       ``slab``: Slab boundary conditions for surfaces, interfaces, and 2D materials
         
-       ``bulk``: Periodic boundary conditions for crystals and solids.
+       ``bulk``: Periodic boundary conditions for crystals and solids
     
 **cell**: (list of 3 lists) Three cell vectors.
 
@@ -51,7 +51,7 @@ the following parameters.
 
       ``atomic```: units in Bohr
 
-**coord**: (list of lists)  For every atom in the system,
+**coord**: (list of ``nat`` lists)  For every atom in the system,
 a list of the form
 ``[x, y, z, AT, CCC]`` must be given. ``x, y, z`` are the cartesian 
 coordinates of  the atom, while ``AT`` is the symbol of the particular atomic type,
@@ -63,9 +63,10 @@ E.g., ``[0., 0., 0., Si, TTT]`` is a silicon atom at the origin, free to move in
 while ``[1., 1., 1., C, TFF]`` is a carbon atomot at ``(1, 1, 1)`` only allowed to move along the ``x``
 direcion.
 
+..  warning:: add option for reduced coordinate with the corresponding keywor
 
 Example
-----------------------------------
+**********************************
 
 Calcium fluoride in a crystal lattice.
 
@@ -96,15 +97,18 @@ Calcium fluoride in a crystal lattice.
 
 
 ``ascii``  format
-=================================
+-----------------------------
 
-The ascii format is described in detail here: http://inac.cea.fr/sp2m/L_Sim/V_Sim/sample.html#sample_ascii
+The ascii format is described here in detail: http://inac.cea.fr/sp2m/L_Sim/V_Sim/sample.html#sample_ascii
 It is the native format of the **task** ``minhocao`` and the only format 
-that corrently supports the constraint of individual lattice parameters.
+that currently supports the constraint of individual lattice parameters.
 Periodic cell vectors have to be provided to describe the simulation cell.
 The cell consisting of the cell vectors ``a, b, c`` 
 has to be rotated such that ``a`` points along the ``x`` direction, 
 and ``b`` lies within the ``x-y`` plane.
+See below figure for the orientation of the cell
+and the projections ``dxx``, ``dyx``, ``dyy``, ``dzx``, ``dzy``, and ``dzz``.
+
 
 .. image:: repere-ascii.png
    :scale: 50 %
@@ -112,29 +116,31 @@ and ``b`` lies within the ``x-y`` plane.
 
 **line 1**: (integer) Number of atoms in the system, ``Nat``.
 
-**line 2**: (real, real, real) dxx dyx dyy values
+**line 2**: (real, real, real) ``dxx`` ``dyx`` ``dyy`` values
 
-**line 3**: (real, real, real) dzx dzy dzz values
+**line 3**: (real, real, real) ``dzx`` ``dzy`` ``dzz`` values
 
-**lines 4 -- n**: Only lines starting with ``#keyword:`` are alowed 
+**lines 4 -- n**: Only lines starting with ``#keyword:`` are allowed 
 and read/interpreted accordingly.
 The ``#keyword:`` tag must be followed by the following options.
 
-   ``reduced``: the atomic coordinates are treated reduced coordinates, i.e., with respect to the cell vectors.
+   ``reduced``: the atomic coordinates are treated as reduced coordinates, i.e., with respect to the cell vectors.
 
-   ``fixlat :math:`a b c \alpha \beta \gamma vol``: specific components of the lattice vectors can be fixed. A ``True`` value
-   fixes the degree of freedom. The last parameter (``vol``) is used for fixed-cell-shape-variable-volume simulations.
+   ``fixlat a b c alpha beta gamma vol``: specific components of the lattice vectors can be fixed. 
+   A ``True`` (or ``T``) value
+   fixes the degree of freedom, while ``False`` (or ``F``) does not fix it.
+   The last parameter (``vol``) is used for fixed-cell-shape-variable-volume simulations.
    I.e., ``#keyword: fixlat  F F T T T F F`` allows the length of the ``a`` and ``b`` vectors to change, while keeping the 
    length of the ``c`` vector constant. At the same time, only the angle between ``a`` and ``b`` is allowed to change.
    This setting is particularly useful for simulations of 2D materials or surfaces.
 
-**lines n+1 -- Nat**: ``Nat`` lines with the coordinates of every atom of the form ``x y z AT c``.
+**lines n+1 -- Nat**: ``Nat`` lines with the coordinates of every atom of the form ``x, y, z, AT, c``.
 The ``x, y, z`` coordintes, followed by the chemical symbol ``AT``, and optionally ``f`` for fixed atom.
 Note that the reduced coordinates will be fixed instead of the Cartesian one if the
 system is periodic
 
 Example
-----------------------------------
+**********************************
 
 Calcium fluoride in a crystal lattice, with selectively fixed lattice parameters.
 The Ca atoms are not allowed to move.

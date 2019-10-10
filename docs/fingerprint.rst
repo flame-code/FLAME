@@ -4,7 +4,8 @@
 Fingerprint
 ===========
 
-The structural fingerprint parameters are set in this block.  Some parameters are used by all methods, while others apply only to specific fingerprints.  
+The structural fingerprint parameters are set in this block.  
+Some parameters are used by all methods, while others apply only to specific fingerprints.  
 
 
 fingerprint parameters
@@ -18,17 +19,17 @@ general ``fingerprint`` parameters
 
     options:
 
-       ``gauss``:  Gaussian orbital overlap matrix method for clusters and molecules.
-        
-       ``gom``: Gaussian orbital overlap matrix method for crystalline system.
-    
-       ``molgom``: Gaussian orbital overlap matrix method for molecular crystals.
+       ``oganov``: Oganov's fingerprint method for crystalline system based on radial distribution functions :cite:`oganov_how_2009`.
 
-       ``oganov``: Oganov's fingerprint method for crystalline system based on radial distribution functions.
+       ``gauss``:  Gaussian orbital overlap matrix method for clusters and molecules :cite:`sadeghi_metrics_2013`.
+        
+       ``gom``: Gaussian orbital overlap matrix method for crystalline system :cite:`li_fingerprint_2016`.
+    
+       ``molgom``: Gaussian orbital overlap matrix method for molecular crystals :cite:`li_fingerprint_2016`.
 
        ``coganov``: Continuous version of  Oganov's fingerprint, without histogram discretization along the radial direction.
     
-       ``bcm``: Bond characterization matrix method for crystalline system based on the Calypso method.
+       ``bcm``: Bond characterization matrix method for crystalline system based on the Calypso method :cite:`wang_calypso_2012`.
     
        ``atorb``: Atomic orbitals overlap method for crystalline system.
     
@@ -40,14 +41,14 @@ general ``fingerprint`` parameters
 ``oganov`` parameters
 ----------------------
 
-**dbin**: (real) Bin size for the discretization of the Oganov fingperprint, in units of Angstrom.
+**dbin**: (real) Bin size for the discretization of the Oganov fingerprint, in units of Angstrom.
 
    default: ``5.d-2``
 
 ``coganov`` parameters
 ---------------------------
 
-**atnmax**: (integer) Maximum number of neighboring atoms to consider.
+**atnmax**: (integer) Maximum number of neighboring atoms to take into account. Only used to allocate temporary arrays.
 
    default: ``10000``
 
@@ -64,7 +65,6 @@ general ``fingerprint`` parameters
 **nl**: (integer) Maximum degree :math:`l` of the spherical harmics to include.
 
    default: ``6``
-
 
 ``molgom`` parameters
 ----------------------
@@ -100,7 +100,7 @@ general ``fingerprint`` parameters
 ``gom`` & ``molgom`` parameters
 --------------------------------
 
-**natx**: (integer) Maximum number of neighboring atoms allowed in the cutoff shell per atom.
+**natx**: (integer) Maximum number of neighboring atoms allowed in the cutoff shell, per atom.
 
    default: ``75``
 
@@ -117,3 +117,5 @@ general ``fingerprint`` parameters
         ``S``: s-type orbitals
 
         ``P``: p-type orbitals
+
+..  warning:: Currently only the fingerprints that are part of minhocao are described here!
