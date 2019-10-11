@@ -80,88 +80,104 @@ for the convergence of the final, contracted bar. Units in Ha/Bohr.
 Not yet assigned
 --------------------
 
-**list_random_displace**: (...)
+**list_random_displace**: List of atoms to be displaced randomly before initiating
+the saddle optimization in dimer method.
 
    default: ``No default value.``
 
-   options: 
-
-**dimsep**: (real)                           
-
-   default: ``No default value.``
-
-**ampl**: (real)
+**dimsep**: The dimer separation in the dimer method. It has no default value
+and it must be set if dimer method is invoked.
 
    default: ``No default value.``
 
-**np_splsad**: (integer)
+**ampl**: The amplitude of random displacement applied to atoms listed by
+the key **list_random_displace**.
+
+   default: ``No default value.``
+
+**np_splsad**: np_splsad-1 is the number of moving anchor points in the splined saddle method.
+Having the default value set, the splined saddle will run with only one moving achor point.
 
    default: ``2``
 
-**np_neb**: (integer)
+**np_neb**: np_neb-1 is the number of moving images in the nudged elastic band (NEB) method.
+Having the default value set, NEB will run with only one moving image.
 
    default: ``2``
 
-**ns2**: (integer)
+**ns2**: Number of extra points to be added to the number of anchor points in order to
+assist the maximization process, the inner loop in the splined saddle method.
 
    default: ``0``
 
-**vdtol**: (real)
+**vdtol**: The convergence criterion in the maximization process in
+the inner loop in the splined saddle method.
 
    default: ``1.d-1``
 
-**dt**: (real) 
-
-   default: ``3.d-2``
-
-**htol**:  (real)
+**htol**: The smallest value of the normalized pathway parameter between
+two neighboring points in the maximization process of the splined saddle method.
 
    default: ``2.d-2``
 
-**alphax**: (real)
+**alphax**: The step size of the optimizer in the NEB and splined saddle methods.
 
    default: ``5.d-1``
 
-**hybrid**: ()
+**docineb**: if ``yes``, it does climbing image NEB.
 
-   default: no
+   default: ``no``
 
-**docineb**: ()
+**doneb**: if ``yes``, it performs an NEB calculations. No default value so
+it must be set by ``yes`` or ``no``.
 
-   default: no
+   default: ``No default value.``
 
-**doneb**: ()
+**pickbestanchorpoints**: If ``no``, anchor points are distributed uniformly
+in the beginning of simulation. If ``yes``, anchor points are initially
+selected to favor higher energy points based on estimates obtained
+by an interpolation. This is not well tested and we recommend you to set it
+to ``no``.
 
-   default: unknown
+   default: ``No default value.``
 
-**pickbestanchorpoints**: ()
-
-   default: unknown
-
-**runstat**: ()
+**runstat**: It determines whether it is a new run or a restart of a previous run.
 
    default: new
+   options:
 
-**typintpol**: (string)
+         ``new``: A new run so NEB images or splined saddle anchor points set at the beginning of the run.
+         ``restart``: A restart run so NEB images or splined saddle anchor points to be read from a file,
+         not tested yet, so we do not recommend it for now.
+
+**typintpol**: The type of interpolation in the maximization process in the splined saddle method.
 
    default: ``cubic``
+   options:
 
-**fcalls_max**: (integer)
+         ``cubic``: Natural cubic splines
+         ``quintic``: A spline using fifth-order polynomial. This is unstable except for simple pathways.
+
+**fcalls_max**: The maximum number of calls to force evaluation.
 
    default: ``100``
 
-**fmaxtol_splsad**: (real)
+**fmaxtol_splsad**: The convergence criterion for the saddle optimization
+in the splined saddle method.
 
    default: ``2.d-4``
 
-**fmaxtol_neb**: (real)
+**fmaxtol_neb**: The convergence criterion for the saddle optimization
+in the NEB method.
 
    default: ``2.d-2``
 
-**opt_method**: (string) 
+**opt_method**: The optimization method used in the saddle point search
+when using NEB or the splined saddle method.
 
    default: ``SD``
-
    options:
 
-      ``SD``
+         ``SD``: The steepest descent method.
+         ``BFGS``: The Broyden–Fletcher–Goldfarb–Shanno (BFGS) method.
+

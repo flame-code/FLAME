@@ -196,7 +196,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'flame.tex', u'FLAME Documentation',
-   u'Maximilian Amsler', 'manual'),
+   ur'Maximilian Amsler \\ S. Alireza Ghasemi', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -229,7 +229,7 @@ extensions = ['sphinxcontrib.bibtex']
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'flame', u'FLAME Documentation',
-     [u'Maximilian Amsler'], 1)
+     [u'Maximilian Amsler',u'S. Alireza Ghasemi'], 1)
 ]
 
 # If true, show URL addresses after external links.
