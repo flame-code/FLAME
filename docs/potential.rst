@@ -30,7 +30,7 @@ general ``potential`` parameters
     
             ``blj``: Binary Lennard-Jones.
     
-            ``mlj``: Multicomponent Lennard-Jones with arbiratry number of species.
+            ``mlj``: Multicomponent Lennard-Jones with arbitrary number of species.
     
             ``ltb``: Lenosky's Tight-Binding method for silicon.
     
@@ -40,7 +40,7 @@ general ``potential`` parameters
     
             ``ann``: Artificial neural network potential.
     
-            ``coulomb``: Coulomb potential (electrostatic interations).
+            ``coulomb``: Coulomb potential (electrostatic interactions).
 
 
         External codes that can be linked to FLAME:
@@ -65,7 +65,7 @@ general ``potential`` parameters
     
             ``cp2k``: CP2K DFT/QM/MM code :cite:`Cp2k`.
 
-            ``msock``: Network socket interface. Uses the i-Pi protocol to interact with extrenal codes :cite:`ceriotti_i-pi:_2014`.
+            ``msock``: Network socket interface. Uses the i-Pi protocol to interact with external codes :cite:`ceriotti_i-pi:_2014`.
 
 ..  warning:: mpmd seems identical to lj, which one to select?
 
@@ -84,7 +84,7 @@ and the core regions start to overlap. To avoid atoms from getting too close, a 
     default: ``False``
 
 **kptmesh**: (list of three integers)
-Desired k-points mesh. Will be overruled if **auto_kpt** is ``True``.
+Desired k-points mesh. It will be overruled if **auto_kpt** is ``True``.
 Only relevant for periodic electronic structure codes. 
 
 
@@ -190,7 +190,7 @@ Given as a list of length **nconfine** if more than one confinement potential is
    
    options: 
       
-      ``1``: The equilibrium position is set once during initiallization with respect to a predetermined value along the dimension :math:`\alpha` set in **dim**
+      ``1``: The equilibrium position is set once during initialization with respect to a predetermined value along the dimension :math:`\alpha` set in **dim**
 
       ``2``: The equilibrium position is set dynamically with respect to the average value of all involved atoms along the dimension :math:`\alpha` set in **dim**
 
@@ -214,11 +214,64 @@ Given as a list of length **nconfine** (list of lists) if more than one confinem
 
    options: 
 
-      ``all``: all atoms aresubjected to the potential 
+      ``all``: all atoms are subjected to the potential 
 
       ``[...]``: list of atomic indices
 
 
 ..  warning:: major part on the ann is still missing
 
-..  warning:: major part on the electrostatic interactions is missing
+**ewald**: If electrostatics is a part of interactions in FLAME potentials, e.g. as
+it is if CENT potentials are used, then ``ewald`` key can be used to set parameters
+relevant to electrostatics.
+    **ewald**: The subkey that determines whether the invokes the Ewald method.
+
+        default: ``False``
+                
+        options: 
+                
+            ``False``: no Ewald method
+
+            ``True``: Apply the Ewald method. This speeds up the calculations
+            whenever the calculations involve localized charge densities,
+            e.g. when Gaussian width of atomic charge densities in CENT are small.
+
+    **psolver**: It determines the Poisson solver.
+
+        default: ``No default value.``
+                
+        options: 
+                
+            ``p3d``: The P3D method is used, applicable only when the boundary condition is slab.
+
+            ``kwald``: Fourier summation, applicable only in the CENT potential and when the boundary condition is bulk.
+
+            ``bigdft``: The BigDFT PSolver is invoked if FLAME is linked with the BigDFT PSolver.
+            Currently, only applicable for bulk and free boundary conditions.
+
+    **cell_ortho**: If ``True``, then efficient subroutines are called to put Gaussian
+    charge densities on the grid. ``True`` can be used only when the simulation cell
+    is orthogonal and the type of simulation does not change the cell variables.
+    If ``False``, then generic subroutines are called to put Gaussian charge densities on the grid.
+
+        default: ``False``
+
+    **ecut**: The cutoff that specifies how dense basis set is when solving the Poisson's equation.
+    The value is used for every non-pairwise method available in FLAME. There is no default value
+    and it must be set.
+
+        default: ``No default value.``
+
+    **ecutz**: The cutoff that specifies how dense basis set is in the z-direction when solving the Poisson's equation.
+    The value is used only when the P3D method is used. There is no default value and it must be set.
+
+        default: ``No default value.``
+
+    **rgcut**: The cutoff radius beyond which the atomic Gaussian charge densities are assumed to
+    vanish. This parameter is indeed not the actual cutoff radius but it is a unitless parameter that
+    is multiplied by the Gaussian width value. There is no default value and it must be set.
+    Typically ``6.0`` is a reasonable value and for a very high accuracy one may use values
+    up yo ``9.0``.
+
+        default: ``No default value.``
+

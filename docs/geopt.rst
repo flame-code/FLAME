@@ -23,7 +23,7 @@ general ``geopt`` parameters
 
         ``sd``: steepest descent method with energy feedback.
 
-        ``sdcg``: steepest descent method followed by conjugate gradient method.
+        ``sdcg``: steepest descent method followed by the conjugate gradient method.
 
         ``sddiis``: steepest descent method followed by DIIS method.
 
@@ -78,8 +78,8 @@ Only relevant for variable cell shape relaxations.
     default: ``1.d2``
 
 **geoext**: (logical) Some atomic simulation packages (e.g., LAMMPS, GULP, etc.) come with their
-own implementations of geometry optimizers. If  ``True``, these  extrenal optimizers 
-will be used. Not yet implemented for all extrenal codes.
+own implementations of geometry optimizers. If  ``True``, these  external optimizers 
+will be used. Not yet implemented for all external codes.
 
     default: ``False``
 

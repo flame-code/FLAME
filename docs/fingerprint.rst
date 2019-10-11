@@ -29,12 +29,12 @@ general ``fingerprint`` parameters
 
        ``coganov``: Continuous version of  Oganov's fingerprint, without histogram discretization along the radial direction.
     
-       ``bcm``: Bond characterization matrix method for crystalline system based on the Calypso method :cite:`wang_calypso_2012`.
+       ``bcm``: Bond characterization matrix method for the crystalline system based on the Calypso method :cite:`wang_calypso_2012`.
     
-       ``atorb``: Atomic orbitals overlap method for crystalline system.
+       ``atorb``: Atomic orbitals overlap method for the crystalline system.
     
     
-**rcut**: (real) Cutoff distance of the fingerprint, in units of Angstrom.  Only relevant for periodic, crystalline systems.
+**rcut**: (real) Cutoff distance of the fingerprint, in units of Angstrom.  Only relevant for periodic, the crystalline systems.
 
     default: ``15.d0``
 
@@ -62,7 +62,7 @@ general ``fingerprint`` parameters
 ``bcm`` & ``atorb`` parameters
 --------------------------------
 
-**nl**: (integer) Maximum degree :math:`l` of the spherical harmics to include.
+**nl**: (integer) Maximum degree :math:`l` of the spherical harmonics to include.
 
    default: ``6``
 
@@ -77,7 +77,7 @@ general ``fingerprint`` parameters
 
    default: ``1``
 
-**expa**: (integer) Number of neighoring cells to be considered when computing the fingerprint. 
+**expa**: (integer) Number of neighboring cells to be considered when computing the fingerprint. 
 
    default: ``1``
 

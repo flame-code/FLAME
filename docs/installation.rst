@@ -33,8 +33,8 @@ which is the recommended route. In principle, other
 implementations of the libraries should also work.
 
 
-Linking to Atsushi Togo's SPGLIB is rocommended. The currently supported
-and well tested version is 1.6.x and can be found here:
+Linking to Atsushi Togo's SPGLIB is recommended. The currently supported
+and well-tested version is 1.6.x and can be found here:
 
 https://sourceforge.net/projects/spglib/files/spglib/
 
@@ -66,7 +66,7 @@ On Linux
 It is recommended to install FLAME in a different
 directory than the source code.
 
-#. First install futile which is
+#. First, install futile which is
    a set of utilities from the BigDFT project.
    Preferably, use the version provided with
    FLAME to avoid conflicts.

@@ -1,7 +1,7 @@
 .. _saddle_opt:
 
 =================================================
-Optimzer Parameters for Saddle Point Searches
+Optimizer Parameters for Saddle Point Searches
 =================================================
 
 The parameters in this block are essentially identical to the

@@ -11,7 +11,7 @@ Welcome to FLAME
 
 FLAME is a software package to perform a wide range of atomistic simulations
 for exploring the potential energy surfaces (PES) of complex condensed matter systems.
-The range of methods include molecular dynamics simulations to sample free energy landscapes, 
+The range of methods includes molecular dynamics simulations to sample free energy landscapes, 
 saddle point searches to identify transition states, and gradient relaxations
 to find dynamically stable geometries.
 In addition to such common tasks, FLAME implements a structure prediction algorithm
@@ -20,7 +20,7 @@ structure of any system given solely the chemical composition, and a
 framework to train a neural network potential to
 reproduce the PES from *ab initio* calculations.
 The combination of neural network potentials
-with the MHM in FLAME allows a highly
+with the MHM in FLAME allows highly
 efficient and reliable identification of the ground state
 as well as metastable structures  of molecules and crystals, 
 as well as of nano structures, including surfaces, interfaces, 

@@ -147,6 +147,7 @@ to ``no``.
    options:
 
          ``new``: A new run so NEB images or splined saddle anchor points set at the beginning of the run.
+
          ``restart``: A restart run so NEB images or splined saddle anchor points to be read from a file,
          not tested yet, so we do not recommend it for now.
 
@@ -156,6 +157,7 @@ to ``no``.
    options:
 
          ``cubic``: Natural cubic splines
+
          ``quintic``: A spline using fifth-order polynomial. This is unstable except for simple pathways.
 
 **fcalls_max**: The maximum number of calls to force evaluation.
@@ -179,5 +181,6 @@ when using NEB or the splined saddle method.
    options:
 
          ``SD``: The steepest descent method.
+
          ``BFGS``: The Broyden–Fletcher–Goldfarb–Shanno (BFGS) method.
 
