@@ -137,6 +137,16 @@ posmin2.ref.yaml:
  Epsilon: 1.e-9
  coord: 5.e-9
 
+saddle_2s_splsad:
+ Keys to ignore:
+  - iproc
+ Epsilon: 1.e-11
+
+saddle_2s_neb:
+ Keys to ignore:
+  - iproc
+ Epsilon: 1.e-11
+
 saddle_1s_barsad:
  Keys to ignore:
   - iproc

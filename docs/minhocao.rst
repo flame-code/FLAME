@@ -99,35 +99,35 @@ with an energy/enthlapy less than *eref* is found. In units of Ha/cell.
 
     default: ``-1.d50``
 
-**alpha1**: (real) Feedback parameter to adjust *ediff*.
-Reduces *ediff* whenever a minimum is accepted. alpha1 must be smaller than one.
-
-    default: ``1.d0/1.02d0``
-
-**alpha2**: (real) Feedback parameter to adjust *ediff*.
-Increases *ediff* whenever a minimum is rejected. alpha1 must be larger than one.
-
-    default: ``1.02d0``
-
-**beta1**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
-Increases the kinetic energy whenever an MD escape trial fails.
-beta1 must be larger than one.
-
-    default: ``1.05d0``
-
-**beta2**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
-Increases the kintetic energy whenever an MD escape 
-step leads to a known structure.
-beta2 must be larger than one.
-
-    default: ``1.05d0``
-
-**beta3**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
-Reduces the kintetic energy whenever an MD escape succeeds
-and ends up into a new mimimum.
-beta3 must be smaller than one.
-
-    default: ``1.d0/1.05d0``
+..  **alpha1**: (real) Feedback parameter to adjust *ediff*.
+..  Reduces *ediff* whenever a minimum is accepted. alpha1 must be smaller than one.
+..  
+..      default: ``1.d0/1.02d0``
+..  
+..  **alpha2**: (real) Feedback parameter to adjust *ediff*.
+..  Increases *ediff* whenever a minimum is rejected. alpha1 must be larger than one.
+..  
+..      default: ``1.02d0``
+..  
+..  **beta1**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
+..  Increases the kinetic energy whenever an MD escape trial fails.
+..  beta1 must be larger than one.
+..  
+..      default: ``1.05d0``
+..  
+..  **beta2**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
+..  Increases the kintetic energy whenever an MD escape 
+..  step leads to a known structure.
+..  beta2 must be larger than one.
+..  
+..      default: ``1.05d0``
+..  
+..  **beta3**: (real) Feedback parameter to adjust the kinetic energy of the MD escape trials.
+..  Reduces the kintetic energy whenever an MD escape succeeds
+..  and ends up into a new mimimum.
+..  beta3 must be smaller than one.
+..  
+..      default: ``1.d0/1.05d0``
 
 
 

@@ -20,7 +20,9 @@ SHORT_TESTDIRS = testforces_FD \
 				 vibfreq_fourpoints \
 				 train_atombased \
 				 train_CENT1 \
-				 train_CENT2
+				 train_CENT2 \
+				 saddle_2s_splsad \
+				 saddle_2s_neb
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
