@@ -26,8 +26,8 @@
    dynamics.rst
    ann.rst
    single_point.rst
-   saddle_1s.rst
-   saddle_1s_opt.rst
+   saddle.rst
+   saddle_opt.rst
    minhocao.rst
 
 .. include:: structures.rst

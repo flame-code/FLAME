@@ -1,4 +1,4 @@
-.. _saddle_1s_opt:
+.. _saddle_opt:
 
 =================================================
 Optimzer Parameters for Saddle Point Searches

@@ -20,7 +20,7 @@ Following top-level blocks are available.
    * :ref:`geopt_prec <geopt_prec>`
    * :ref:`dynamics <dynamics>`
    * :ref:`saddle <saddle>`
-   * :ref:`saddle_1s_opt <saddle_1s_opt>`
+   * :ref:`saddle_opt <saddle_opt>`
    * :ref:`minhocao <minhocao>`
    * :ref:`fingerprint <fingerprint>`
 
