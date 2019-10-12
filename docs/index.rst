@@ -5,32 +5,32 @@
 .. role:: raw-tex(raw)
     :format: latex html
 
-.. include:: flame.rst
+.. include:: 01_flame.rst
 
-.. include:: installation.rst
+.. include:: 02_installation.rst
 
-.. include:: documentation.rst
+.. include:: 03_documentation.rst
 
-.. include:: input.rst
+.. include:: 04_input.rst
 
 .. toctree::
    :hidden:
    :maxdepth: 3
 
-   flame_in
-   main
-   potential
-   fingerprint.rst
-   geopt
-   geopt_prec.rst
-   dynamics.rst
-   ann.rst
-   single_point.rst
-   saddle.rst
-   saddle_opt.rst
-   minhocao.rst
+   05_flame_in.rst
+   06_main.rst
+   07_potential.rst
+   08_fingerprint.rst
+   09_geopt.rst
+   10_geopt_prec.rst
+   11_dynamics.rst
+   12_ann.rst
+   13_single_point.rst
+   14_saddle.rst
+   15_saddle_opt.rst
+   16_minhocao.rst
 
-.. include:: structures.rst
+.. include:: 17_structures.rst
 
 .. Indices and tables
 .. ==================
@@ -40,4 +40,4 @@
 .. * :ref:`search`
 .. bibliography:: references.bib
     :cited:
-    :style: alpha
+    :style: unsrt

@@ -65,7 +65,7 @@ general ``potential`` parameters
     
             ``cp2k``: CP2K DFT/QM/MM code :cite:`Cp2k`.
 
-            ``msock``: Network socket interface. Uses the i-Pi protocol to interact with external codes :cite:`ceriotti_i-pi:_2014`.
+            ``msock``: Network socket interface. Uses the i-Pi protocol to interact with external codes :cite:`ceriotti_i-pi_2014`.
 
 ..  warning:: mpmd seems identical to lj, which one to select?
 
