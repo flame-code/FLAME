@@ -25,14 +25,10 @@ general ``saddle`` parameters
         
          ``bar_saddle``:  The bar-saddle method based from Ref.:cite:`schaefer_minima_2014`.
     
-         ``dimer```:
+         ``dimer``: The dimer method.
     
-..  warning:: Options and their descriptions are missing
-
-
-..  warning:: Sections for other methods need to be added
-
-
+         ``splined_saddle``: The splined saddle method Ref.:cite:`ghasemi_an_2011`.
+    
 ``bar_saddle`` parameters
 -----------------------------------
 
@@ -75,10 +71,8 @@ for the convergence of the final, contracted bar. Units in Ha/Bohr.
    default: ``5.d-4``
 
 
-..  warning:: Following parameters not yet assigned
-
-Not yet assigned
---------------------
+``dimer`` parameters
+-----------------------------------
 
 **list_random_displace**: List of atoms to be displaced randomly before initiating
 the saddle optimization in dimer method.
@@ -94,6 +88,10 @@ and it must be set if dimer method is invoked.
 the key **list_random_displace**.
 
    default: ``No default value.``
+
+
+``splined_saddle`` parameters
+-----------------------------------
 
 **np_splsad**: np_splsad-1 is the number of moving anchor points in the splined saddle method.
 Having the default value set, the splined saddle will run with only one moving achor point.

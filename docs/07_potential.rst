@@ -67,8 +67,6 @@ general ``potential`` parameters
 
             ``msock``: Network socket interface. Uses the i-Pi protocol to interact with external codes :cite:`ceriotti_i-pi_2014`.
 
-..  warning:: mpmd seems identical to lj, which one to select?
-
 
 
 **potential_sec**: (string) Secondary interatomic potential, usually used to perform a preliminary relaxation
@@ -218,8 +216,6 @@ Given as a list of length **nconfine** (list of lists) if more than one confinem
 
       ``[...]``: list of atomic indices
 
-
-..  warning:: major part on the ann is still missing
 
 **ewald**: If electrostatics is a part of interactions in FLAME potentials, e.g. as
 it is if CENT potentials are used, then ``ewald`` key can be used to set parameters

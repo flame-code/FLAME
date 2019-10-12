@@ -118,4 +118,3 @@ general ``fingerprint`` parameters
 
         ``P``: p-type orbitals
 
-..  warning:: Currently only the fingerprints that are part of minhocao are described here!

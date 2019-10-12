@@ -20,8 +20,6 @@ the FLAME code as a black-box engine, either by directly
 linking to the flame library,
 or by using the socket i-Pi interface.
 
-..  warning:: Add instructions to link with FLAME
-
 ``single_point`` parameters
 =================================
 

@@ -63,8 +63,6 @@ E.g., ``[0., 0., 0., Si, TTT]`` is a silicon atom at the origin, free to move in
 while ``[1., 1., 1., C, TFF]`` is a carbon atomot at ``(1, 1, 1)`` only allowed to move along the ``x``
 direcion.
 
-..  warning:: add option for reduced coordinate with the corresponding keywor
-
 Example
 **********************************
 

@@ -31,8 +31,6 @@ general ``ann`` parameters
 
 .. _ref-ann-approach:
 
-..  warning:: Other methods are missing
-
 **approach**: (string) Determines the ANN technique to be employed.
 
    default: ``atombased``
@@ -54,8 +52,6 @@ general ``ann`` parameters
    options: 
    
       ``rivals``: Well tested and stable optimizer based on a modification of extended Kalman filter.
-
-..  warning:: Other methods are missing
 
 **nstep_opt**: (integer) Number of extended Kalman filter steps
 

@@ -50,13 +50,11 @@ atomistic simulation environment.
 
 
 **two_level_geopt**: (logical) Determines if geometry optimizations
-are performed with two accoracy levels.
+are performed with two accuracy levels.
 If ``True``, the block **geopt_prec** must
 be present in *flame_in.yaml*.
 
     default: ``False``
-
-.. warning:: This keyword should not be in the main block, but in the geopt block
 
 **verbosity**: (integer) Verbosity of output data.
 
@@ -70,8 +68,6 @@ be present in *flame_in.yaml*.
     default: ``0``
 
     options: ``0, 1, 2, 3`` Increasing number for higher verbosity.
-
-.. warning:: This keyword is almost identical to verbosity. Which one should be documented/used?
 
 **nat**: (integer) Number of atoms involved in the simulation.
 
@@ -108,13 +104,10 @@ FLAME must be compiled and linked with SPGLIB.
 
     default: ``False``
 
-**rng_type**: (string)
+**rng_type**: Do not use this key! It is only useful for developers
+and regression tests.
 
-   default: ``intrinsic``
-
-.. warning:: What is this keyword?
-
-**seed**: (integer) Seed value to initialze the random number generator.
+**seed**: (integer) Seed value to initialize the random number generator.
 
    default: ``-2``
 
