@@ -13,54 +13,53 @@ For the former, the goal is an accurate and unbiased sampling,
 while for the latter it is the efficient escape from a catchment basin
 of the PES.
 Hence, the available parameters and their suggested values 
-differ significanly between these two classes of dynamics.
+differ significantly between these two classes of dynamics.
 
 dynamics options
 ==================
 
-**nmd**: (integer)  Number of molecular dynamics steps.
+**nmd**: (integer)  Number of MD steps.
 
    default:  ``300``
 
 **nfreq**: (integer) 
 
    default: ``0``
+   samare :: this parameter is used in nve part ... It would be the frequency of writing output file.
 
-**dt**: (real) 
+**dt**: (real)  The time step.
 
    default: ``No default value.``
 
-**temp**: (real)
+**temp**: (real)  The target temperature.
 
-   default: 0.0``
+   default: ``0.0``
 
-**init_temp**: (real)
+**init_temp**: (real) Initial temperature.
 
-   default: 0.0``
+   default: ``0``
 
-**highest_freq**: (real)   
+**highest_freq**: (real)  The highest frequency of of the system.
 
    default: ``1.d1``
 
-**ntherm**: (integer)   
+**ntherm**: (integer) Number of thermostats used for chain nose-hoover thermostat.
 
    default: ``2``
 
-**md_method**: (string) 
+**md_method**: (string) The type of MD simulation.
 
    default: ``No default value.``
 
    options: 
+        ``nvt_nose``:   Nose-Hoover-chain thermostat 
+        ``nvt_langev``:  Langevin thermostat (under development)
 
-**print_force**: (logical)
+
+**restart**: (logical) Start from previous interrupted run. 
 
    default: ``False``
 
-**restart**: (logical)
-
-   default: ``False``
-
-..  warning:: Some of above parameters have to be explained. Not yet done.
 
 Parameters specifically for the MD escape trials in **task** ``minhocao``
 ------------------------------------------------------------------------------
