@@ -59,3 +59,6 @@ FLAME can connect to the socket.
 created in a temporary directory. Otherwise, a valid IP address must be provided (`127.0.0.1` for localhost).
 
     default: ``0``
+
+
+.. warning: other methods to link with flame?

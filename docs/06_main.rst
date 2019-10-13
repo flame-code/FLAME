@@ -69,6 +69,8 @@ be present in *flame_in.yaml*.
 
     options: ``0, 1, 2, 3`` Increasing number for higher verbosity.
 
+.. warning:: This keyword is almost identical to verbosity. Which one should be documented/used?
+
 **nat**: (integer) Number of atoms involved in the simulation.
 
    default: ``0``

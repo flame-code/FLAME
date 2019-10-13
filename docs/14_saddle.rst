@@ -23,11 +23,11 @@ general ``saddle`` parameters
 
     options:
         
-         ``bar_saddle``:  The bar-saddle method based from Ref.:cite:`schaefer_minima_2014`.
+         ``bar_saddle``:  The bar-saddle method from Ref. :cite:`schaefer_minima_2014`.
     
-         ``dimer``: The dimer method.
+         ``dimer``: The dimer method from Ref. :cite:`henkelman_dimer_1999`.
     
-         ``splined_saddle``: The splined saddle method Ref.:cite:`ghasemi_an_2011`.
+         ``splined_saddle``: The splined saddle method from Ref. :cite:`ghasemi_an_2011`.
     
 ``bar_saddle`` parameters
 -----------------------------------
@@ -74,18 +74,19 @@ for the convergence of the final, contracted bar. Units in Ha/Bohr.
 ``dimer`` parameters
 -----------------------------------
 
-**list_random_displace**: List of atoms to be displaced randomly before initiating
-the saddle optimization in dimer method.
+**list_random_displace**: (list of integers) List of atomic indices that are 
+displaced randomly before initiating
+the saddle optimization in the dimer method.
 
    default: ``No default value.``
 
-**dimsep**: The dimer separation in the dimer method. It has no default value
-and it must be set if dimer method is invoked.
+**ampl**: (real) The amplitude of the random displacement applied to 
+the atoms listed by the key **list_random_displace**.
 
    default: ``No default value.``
 
-**ampl**: The amplitude of random displacement applied to atoms listed by
-the key **list_random_displace**.
+**dimsep**: (real) The dimer separation in the dimer method. 
+No default value given, must be set when the dimer method is invoked.
 
    default: ``No default value.``
 
@@ -93,82 +94,104 @@ the key **list_random_displace**.
 ``splined_saddle`` parameters
 -----------------------------------
 
-**np_splsad**: np_splsad-1 is the number of moving anchor points in the splined saddle method.
-Having the default value set, the splined saddle will run with only one moving achor point.
+**np_splsad**: (integer) Number of anchor points.
+**np_splsad**-1 is the number of moving anchor points in the splined saddle method.
+Note: with the default value of ``2``, the splined saddle will only have one moving achor point.
 
    default: ``2``
 
-**np_neb**: np_neb-1 is the number of moving images in the nudged elastic band (NEB) method.
-Having the default value set, NEB will run with only one moving image.
+**np_neb**: (intger) Number of NEB images. 
+**np_neb**-1 is the number of moving images in the nudged elastic band (NEB) method.
+Note: with the default value of ``2``, the NEB will run with only one moving image.
 
    default: ``2``
 
-**ns2**: Number of extra points to be added to the number of anchor points in order to
-assist the maximization process, the inner loop in the splined saddle method.
+**ns2**: (integer) Number of extra points added to the number of anchor points in order to
+assist the maximization process, the inner loop of the splined saddle method.
 
    default: ``0``
 
-**vdtol**: The convergence criterion in the maximization process in
-the inner loop in the splined saddle method.
+**vdtol**: (real) The convergence criterion in the maximization process in
+the inner loop of the splined saddle method. In units of Ha.
 
    default: ``1.d-1``
 
-**htol**: The smallest value of the normalized pathway parameter between
+**htol**: (real) The smallest value of the normalized pathway parameter between
 two neighboring points in the maximization process of the splined saddle method.
+Arbitrary units.
+
 
    default: ``2.d-2``
 
-**alphax**: The step size of the optimizer in the NEB and splined saddle methods.
+**alphax**: (real) The step size of the optimizer in the NEB and splined saddle methods.
+Arbitrary units.
 
    default: ``5.d-1``
 
-**docineb**: if ``yes``, it does climbing image NEB.
+**docineb**: (string) Activates the climbing image NEB.
 
    default: ``no``
 
-**doneb**: if ``yes``, it performs an NEB calculations. No default value so
-it must be set by ``yes`` or ``no``.
+   options: 
+
+         ``no``: NEB without climbing image
+
+         ``yes``: NEB with climbing image
+
+**doneb**: (string) Activates NEB calculations.
 
    default: ``No default value.``
 
-**pickbestanchorpoints**: If ``no``, anchor points are distributed uniformly
-in the beginning of simulation. If ``yes``, anchor points are initially
-selected to favor higher energy points based on estimates obtained
-by an interpolation. This is not well tested and we recommend you to set it
-to ``no``.
+   options: 
+
+         ``no``: No NEB calcualtion is performed
+
+         ``yes``: NEB calculation is performed
+
+**pickbestanchorpoints**: (string) Activates an automated selection of favored anchor points. 
+This feature is not well tested and we recommend you set this parameter to ``no``.
 
    default: ``No default value.``
 
-**runstat**: It determines whether it is a new run or a restart of a previous run.
+   options: 
 
-   default: new
+         ``no``: anchor points are distributed uniformly in the beginning of simulation
+
+         ``yes``: anchor points are initially selected to favor higher energy points based on estimates obtained by an interpolation.
+
+
+**runstat**: (string) It determines whether a new or a restart run is performed.
+
+   default: ``new``
+
    options:
 
-         ``new``: A new run so NEB images or splined saddle anchor points set at the beginning of the run.
+         ``new``: New run, hence the NEB images or splined saddle anchor points initiallized at the beginning of the run.
 
-         ``restart``: A restart run so NEB images or splined saddle anchor points to be read from a file,
-         not tested yet, so we do not recommend it for now.
+         ``restart``: Restart run, hence the NEB images or splined saddle anchor points are read from a file. Restart runs have not yet been well tested,
+         so we do not recommend it for now.
 
-**typintpol**: The type of interpolation in the maximization process in the splined saddle method.
+**typintpol**: (string) The type of interpolation in the maximization process of the splined saddle method.
 
    default: ``cubic``
+
    options:
 
-         ``cubic``: Natural cubic splines
+         ``cubic``: Natural cubic splines.
 
          ``quintic``: A spline using fifth-order polynomial. This is unstable except for simple pathways.
 
-**fcalls_max**: The maximum number of calls to force evaluation.
+**fcalls_max**: (integer) The maximum number of calls to force evaluation.
 
    default: ``100``
 
-**fmaxtol_splsad**: The convergence criterion for the saddle optimization
-in the splined saddle method.
+**fmaxtol_splsad**: (real) The convergence criterion for the saddle optimization
+in the splined saddle method. Units in Ha/Bohr.
 
    default: ``2.d-4``
 
-**fmaxtol_neb**: The convergence criterion for the saddle optimization
-in the NEB method.
+**fmaxtol_neb**: (real) The convergence criterion for the saddle optimization
+in the NEB method. Units in Ha/Bohr.
 
    default: ``2.d-2``
 
@@ -176,6 +199,7 @@ in the NEB method.
 when using NEB or the splined saddle method.
 
    default: ``SD``
+
    options:
 
          ``SD``: The steepest descent method.

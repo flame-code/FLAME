@@ -29,6 +29,8 @@ general ``ann`` parameters
 
       ``train``: routines to perform an ANN training.
 
+..  warning:: Other methods?
+
 .. _ref-ann-approach:
 
 **approach**: (string) Determines the ANN technique to be employed.
@@ -52,6 +54,8 @@ general ``ann`` parameters
    options: 
    
       ``rivals``: Well tested and stable optimizer based on a modification of extended Kalman filter.
+
+..  warning:: Other methods?
 
 **nstep_opt**: (integer) Number of extended Kalman filter steps
 

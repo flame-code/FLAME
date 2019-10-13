@@ -5,7 +5,7 @@ Dynamics
 ========
 
 The details of molecular dynamics simulations are specified here. Not all
-keywords apply to all available method. 
+keywords apply to every available method. 
 Note that there is a fundamental difference in using dynamics
 to either sample free energies,
 or as a means to escape local minima in the minima hopping method.
@@ -18,51 +18,58 @@ differ significantly between these two classes of dynamics.
 dynamics options
 ==================
 
-**nmd**: (integer)  Number of MD steps.
-
-   default:  ``300``
-
-**nfreq**: (integer) 
-
-   default: ``0``
-   samare :: this parameter is used in nve part ... It would be the frequency of writing output file.
-
-**dt**: (real)  The time step.
-
-   default: ``No default value.``
-
-**temp**: (real)  The target temperature.
-
-   default: ``0.0``
-
-**init_temp**: (real) Initial temperature.
-
-   default: ``0``
-
-**highest_freq**: (real)  The highest frequency of of the system.
-
-   default: ``1.d1``
-
-**ntherm**: (integer) Number of thermostats used for chain nose-hoover thermostat.
-
-   default: ``2``
-
-**md_method**: (string) The type of MD simulation.
+**md_method**: (string) Type of MD simulation enseble.
 
    default: ``No default value.``
 
    options: 
-        ``nvt_nose``:   Nose-Hoover-chain thermostat 
-        ``nvt_langev``:  Langevin thermostat (under development)
+
+        ``nvt_nose``:   NVT ensemble with the Nose-Hoover chain thermostat.
+
+        ``nvt_langev``:  NVT ensemble with the Langevin thermostat (under development).
+
+        ``nve``:   NVE ensemble.
 
 
-**restart**: (logical) Start from previous interrupted run. 
+**nmd**: (integer)  Number of MD steps.
+
+   default:  ``300``
+
+**nfreq**: (integer) The requency at which detailed output is written to disk.
+
+   default: ``0``
+
+**dt**: (real)  Time step size. In atomic units???
+
+   default: ``No default value.``
+
+.. warning: units?
+
+**temp**: (real)  Target temperature. In units of Kelvin.
+
+   default: ``0.d0``
+
+**init_temp**: (real) Initial temperature. In units of Kelvin.
+
+   default: ``0.d0``
+
+**highest_freq**: (real)  The highest frequency of the system.
+
+   default: ``1.d1``
+
+.. warning: units? what is the meaning?
+
+**ntherm**: (integer) Number of thermostats used for the Nose-Hoover thermostat chain.
+
+   default: ``2``
+
+**restart**: (logical) Activates a restart from a previously interrupted MD run.
 
    default: ``False``
 
-
 Parameters specifically for the MD escape trials in **task** ``minhocao``
 ------------------------------------------------------------------------------
+
 **algo**: (integer)  Choice of variable cell shape algorithms. 
 
    default: ``1``

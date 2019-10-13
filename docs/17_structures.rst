@@ -1,4 +1,3 @@
-.. _structure:
 
 =================================
 Atomic Structure Files
@@ -12,7 +11,7 @@ scripts to convert structural data from a wealth of input formats
 to a ``yaml`` file.
 
 
-.. _structure_yaml:
+.. _yamlstructure:
 
 ``yaml`` format
 -----------------------------

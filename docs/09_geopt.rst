@@ -36,6 +36,9 @@ general ``geopt`` parameters
 
         ``fire``: The Fast Inertial Relaxation Engine method :cite:`bitzek_structurel_2006`.
 
+
+..  warning:: How is fire selected from minhocao, and the one from alborz?
+
 **fmaxtol**: (real) Convergence parameter. The optimization will terminate 
 as soon as the maximum absolute value of all force vector components falls below this threshold. In units of Ha/Bohr.
 Must be specified.

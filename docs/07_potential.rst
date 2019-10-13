@@ -68,6 +68,7 @@ general ``potential`` parameters
             ``msock``: Network socket interface. Uses the i-Pi protocol to interact with external codes :cite:`ceriotti_i-pi_2014`.
 
 
+..  warning:: mpmd seems identical to lj, which one to select?
 
 **potential_sec**: (string) Secondary interatomic potential, usually used to perform a preliminary relaxation
 or to evaluate an approximate Hessian matrix. All available options are identical to  **potential**.
@@ -133,94 +134,99 @@ with the i-Pi protocol. Only relevant for plane wave DFT codes that support this
 
 ``confine`` parameters
 --------------------------
-**confinement**: (logical) Determines if one or more 2D confinement potentials will be imposed based 
+
+**confine**: One or more 2D confinement potentials can be imposed based 
 on polynomial functions. The general form of the potential 
 is :math:`P = A(|e-\textbf{r}_i^\alpha|-r_c)^n`.
 Where :math:`A` is the amplitude, :math:`e` is the equilibrium position along the
 dimension :math:`\alpha`, :math:`r_c` is the cutoff distance, 
 and :math:`i` runs over all atoms that interact with the potential :math:`P`.
 
-   default: ``False``
 
-
-**nconfine**: (integer) Number of confinement potentials.
-
-   default: ``0``
-
-**cartred**: (string) Choice of Cartesian or reduced coordinates for setting up the confinement potential.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``C``
-
-   options: 
-
-      ``C``: Cartesian coordinates
-       
-      ``R``: Reduced coordinates
-
-**dim**: (integer) Axis along which the confinement potential is applied.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``1``
-
-   options: ``1``, ``2``, ``3`` for the x, y and z directions, respectively.
-
-**exp**: (integer) Exponent *n* of the potential.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``4``
-
-**prefac**: (real) Prefactor or the amplitude *A* of the potential, in units of eV.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``1.d-2``
-
-
-**cut**: (real) Cutoff distance :math:`r_c` of the potential, in units of Angstrom.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``1.d0``
-
-**av**: (integer) Method of defining the equilibrium position :math:`r_c` of the potential.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``2``
+   **confinement**: (logical) Determines if one or more 2D confinement potentials will be imposed.
    
-   options: 
+      default: ``False``
+   
+   **nconfine**: (integer) Number of confinement potentials.
+   
+      default: ``0``
+   
+   **cartred**: (string) Choice of Cartesian or reduced coordinates for setting up the confinement potential.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``C``
+   
+      options: 
+   
+         ``C``: Cartesian coordinates
+          
+         ``R``: Reduced coordinates
+   
+   **dim**: (integer) Axis along which the confinement potential is applied.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``1``
+   
+      options: ``1``, ``2``, ``3`` for the x, y and z directions, respectively.
+   
+   **exp**: (integer) Exponent *n* of the potential.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``4``
+   
+   **prefac**: (real) Prefactor or the amplitude *A* of the potential, in units of eV.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``1.d-2``
+   
+   
+   **cut**: (real) Cutoff distance :math:`r_c` of the potential, in units of Angstrom.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``1.d0``
+   
+   **av**: (integer) Method of defining the equilibrium position :math:`r_c` of the potential.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``2``
       
-      ``1``: The equilibrium position is set once during initialization with respect to a predetermined value along the dimension :math:`\alpha` set in **dim**
+      options: 
+         
+         ``1``: The equilibrium position is set once during initialization with respect to a predetermined value along the dimension :math:`\alpha` set in **dim**
+   
+         ``2``: The equilibrium position is set dynamically with respect to the average value of all involved atoms along the dimension :math:`\alpha` set in **dim**
+   
+   **eq**: (real) Equilibrium position :math:`e_i` of the potential. 
+   Only relevant if **av** is set to ``1``.
+   The unit depends on the choice of **cartred**: Angstrom for ``C``, in reduced units if ``R``.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``0.d0``
+   
+   **nat**: (integer) Number of atoms that are subjected to the potential.
+   Given as a list of length **nconfine** if more than one confinement potential is imposed.
+   
+      default: ``0``
+   
+   **nat**: (list of integers and/or strings) The indices of the atoms that are subjected to the potential.
+   If all atoms are affected by the potential, the string ``all`` can be used instead of listing all atomic indices.
+   Given as a list of length **nconfine** (list of lists) if more than one confinement potential is imposed.
+   
+      default: ``all``
+   
+      options: 
+   
+         ``all``: all atoms are subjected to the potential 
+   
+         ``[...]``: list of atomic indices
+   
+``ewald`` parameters
+--------------------------
+   
+**ewald**: If electrostatics is a part of the interactions in any FLAME potential, e.g., 
+in the CENT potential, then the ``ewald`` key can be used to set the relevant parameters.
 
-      ``2``: The equilibrium position is set dynamically with respect to the average value of all involved atoms along the dimension :math:`\alpha` set in **dim**
-
-**eq**: (real) Equilibrium position :math:`e_i` of the potential. 
-Only relevant if **av** is set to ``1``.
-The unit depends on the choice of **cartred**: Angstrom for ``C``, in reduced units if ``R``.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``0.d0``
-
-**nat**: (integer) Number of atoms that are subjected to the potential.
-Given as a list of length **nconfine** if more than one confinement potential is imposed.
-
-   default: ``0``
-
-**nat**: (list of integers and/or strings) The indices of the atoms that are subjected to the potential.
-If all atoms are affected by the potential, the string ``all`` can be used instead of listing all atomic indices.
-Given as a list of length **nconfine** (list of lists) if more than one confinement potential is imposed.
-
-   default: ``all``
-
-   options: 
-
-      ``all``: all atoms are subjected to the potential 
-
-      ``[...]``: list of atomic indices
-
-
-**ewald**: If electrostatics is a part of interactions in FLAME potentials, e.g. as
-it is if CENT potentials are used, then ``ewald`` key can be used to set parameters
-relevant to electrostatics.
-    **ewald**: The subkey that determines whether the invokes the Ewald method.
+    **ewald**: (logical) This subkey determines whether the Ewald method is invoked.
 
         default: ``False``
                 
@@ -230,44 +236,45 @@ relevant to electrostatics.
 
             ``True``: Apply the Ewald method. This speeds up the calculations
             whenever the calculations involve localized charge densities,
-            e.g. when Gaussian width of atomic charge densities in CENT are small.
+            e.g., when the Gaussian width of atomic charge densities in CENT are small.
 
-    **psolver**: It determines the Poisson solver.
+    **psolver**: (string) Determines the method for the Poisson solver.
 
         default: ``No default value.``
                 
         options: 
                 
-            ``p3d``: The P3D method is used, applicable only when the boundary condition is slab.
+            ``p3d``: The P3D method is used, applicable only for slab boundary conditions.
 
-            ``kwald``: Fourier summation, applicable only in the CENT potential and when the boundary condition is bulk.
+            ``kwald``: Fourier summation, applicable only in the CENT potential and for bulk boundary condition.
 
             ``bigdft``: The BigDFT PSolver is invoked if FLAME is linked with the BigDFT PSolver.
             Currently, only applicable for bulk and free boundary conditions.
 
-    **cell_ortho**: If ``True``, then efficient subroutines are called to put Gaussian
+    **cell_ortho**: (logical) Activates efficient subroutines to place Gaussian
     charge densities on the grid. ``True`` can be used only when the simulation cell
     is orthogonal and the type of simulation does not change the cell variables.
     If ``False``, then generic subroutines are called to put Gaussian charge densities on the grid.
 
         default: ``False``
 
-    **ecut**: The cutoff that specifies how dense basis set is when solving the Poisson's equation.
+    **ecut**: (real) The cutoff energy that specifies how dense the basis set is when solving the Poisson's equation.
     The value is used for every non-pairwise method available in FLAME. There is no default value
-    and it must be set.
+    and it must be set. In units of Ha.
 
         default: ``No default value.``
 
-    **ecutz**: The cutoff that specifies how dense basis set is in the z-direction when solving the Poisson's equation.
-    The value is used only when the P3D method is used. There is no default value and it must be set.
+    **ecutz**: (real) The cutoff energy that specifies how dense the basis set is in the *z*-direction when solving the Poisson's equation.
+    The value is used only when the ``p3d`` method is selected. There is no default value and it must be set.
+    In units of Ha.
 
         default: ``No default value.``
 
-    **rgcut**: The cutoff radius beyond which the atomic Gaussian charge densities are assumed to
+    **rgcut**: (real) The cutoff radius beyond which the atomic Gaussian charge densities are assumed to
     vanish. This parameter is indeed not the actual cutoff radius but it is a unitless parameter that
     is multiplied by the Gaussian width value. There is no default value and it must be set.
-    Typically ``6.0`` is a reasonable value and for a very high accuracy one may use values
-    up yo ``9.0``.
+    Typically, ``6.0`` is a reasonable choice, and for very high accuracy one may use values
+    up to ``9.0``. Arbitrary units.
 
         default: ``No default value.``
 
