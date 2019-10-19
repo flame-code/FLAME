@@ -84,10 +84,14 @@ subroutine md_nvt_langevin(parini,atoms)
     call cal_potential_forces(parini,atoms)
 
     write(*,'(a,2e20.10)') 'epotold,epot',epotold,atoms%epot
-    file_info%filename_positions='posout.acf'
-    file_info%file_position='new'
-    file_info%print_force=parini%print_force_dynamics
-    call acf_write(file_info,atoms=atoms,strkey='posout')
+    file_info%filename_positions='trajectory.acf'
+    if (parini%restart_dynamics )then
+        file_info%file_position='append'
+    else
+        file_info%file_position='new'
+        file_info%print_force=parini%print_force_dynamics
+        call acf_write(file_info,atoms=atoms,strkey='trajectory')
+    endif
     !____________________________________________________________________
     call set_langevin_randforce(eta,atoms%nat)
     if (parini%restart_dynamics )then
@@ -248,10 +252,10 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     call init_potential_forces(parini,atoms)
     open(unit=1000,file="velocity",status='replace')
     open(unit=1111,file="displacement.dat",status='replace')
-    file_info%filename_positions='posout.acf'
+    file_info%filename_positions='trajectory.acf'
     file_info%file_position='new'
     file_info%print_force=parini%print_force_dynamics
-    call acf_write(file_info,atoms=atoms,strkey='posout')
+    call acf_write(file_info,atoms=atoms,strkey='trajectory')
 
     !  ___________parameters_______________________________________
     ntherm=3
@@ -370,7 +374,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
        ! call back_to_cell(atoms)
         if(mod(imd,100)==0) then
             file_info%file_position='append'
-            call acf_write(file_info,atoms=atoms,strkey='posout')
+            call acf_write(file_info,atoms=atoms,strkey='trajectory')
             write(1111,*) '#'
             write(1111,*) '#    imd = ',imd, parini%time_dynamics
             write(1111,*) '#'
@@ -463,9 +467,13 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     endif
 
     file_info%filename_positions='trajectory.acf'
-    file_info%file_position='new'
-    file_info%print_force=parini%print_force_dynamics
-    call acf_write(file_info,atoms=atoms,strkey='trajectory')
+    if (parini%restart_dynamics )then
+        file_info%file_position='append'
+    else
+        file_info%file_position='new'
+        file_info%print_force=parini%print_force_dynamics
+        call acf_write(file_info,atoms=atoms,strkey='trajectory')
+    endif
 
     !  ___________parameters_______________________________________
     ntherm = parini%ntherm
