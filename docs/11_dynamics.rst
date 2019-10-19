@@ -26,20 +26,20 @@ dynamics options
 
         ``nvt_nose``:   NVT ensemble with the Nose-Hoover chain thermostat.
 
-        ``nvt_langev``:  NVT ensemble with the Langevin thermostat (under development).
+        ``nvt_langev``:  NVT ensemble with the Langevin thermostat.
 
-        ``nve``:   NVE ensemble.
+        ``nve``:   NVE ensemble (under development).
 
 
 **nmd**: (integer)  Number of MD steps.
 
    default:  ``300``
 
-**nfreq**: (integer) The requency at which detailed output is written to disk.
+**nfreq**: (integer) The frequency at which detailed output is written to disk.
 
    default: ``0``
 
-**dt**: (real)  Time step size. In atomic units???
+**dt**: (real)  Time step size. In units of fs.
 
    default: ``No default value.``
 
