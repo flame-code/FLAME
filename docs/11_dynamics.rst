@@ -140,7 +140,7 @@ Used for the MD escape steps in **task** ``minhocao`` and if **auto_mdmin** is `
 
 **auto_mddt**: (logical) Activates the dynamical adjustment of the MD
 timestep ``dt`` in **task** ``minhocao``. For clusters, ``dt`` is adjusted
-such that the totoal energy is conserved to within 1 %,
+such that the total energy is conserved to within 1 %,
 and has to be accompanied by setting **encon** to ``True``.
 For peridic systems, 
 ``dt`` is adjusted such that the number of sampling points 

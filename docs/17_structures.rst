@@ -42,13 +42,13 @@ the following parameters.
 
 **units_length**: (string) Length units used in the structure.
 
-   default: ``angstrom``
+   default: ``atomic``
 
    options:
 
-      ``angstrom```: units in Angstrom
+      ``angstrom``: units in Angstrom
 
-      ``atomic```: units in Bohr
+      ``atomic``: units in Bohr
 
 **coord**: (list of ``nat`` lists)  For every atom in the system,
 a list of the form

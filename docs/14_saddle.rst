@@ -32,7 +32,7 @@ general ``saddle`` parameters
 ``bar_saddle`` parameters
 -----------------------------------
 
-**dbar**: (real) The legth of the bar/dimer in the bar-saddle method. In units of Bohr in configurational space.
+**dbar**: (real) The length of the bar/dimer in the bar-saddle method. In units of Bohr in configurational space.
 
    default: ``1.d-1``
 
