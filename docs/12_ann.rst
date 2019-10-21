@@ -130,13 +130,13 @@ periodic and molecular configurations.
 extra files required by ann train
 ======================================
 
-**list_posinp_train.yaml**: It contains list of files in which
+**list_posinp_train.yaml**: Contains list of files in which
 configurations of the ANN train task are stored.
 The file must contain the key ``files`` whose value
 is a list of YAML structure files containing the structures.
 For more information on YAML structure file format, see :ref:`yamlstructure`.
 
-**list_posinp_valid.yaml**: It contains list of files in which
+**list_posinp_valid.yaml**: Contains list of files in which
 configurations for the validation of the ANN train task are stored.
 The file must contain the key ``files`` whose value
 is a list of YAML structure files containing the structures.
