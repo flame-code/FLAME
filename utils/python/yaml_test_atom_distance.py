@@ -5,6 +5,8 @@ import math
 #import numpy as np
 from acf import *
 from io_yaml import *
+from cellutils import *
+
 if len(sys.argv) < 2:
     print ""
     print "usage: acf_test_atom_distance.py input_filename dmin output_filename dmax(optional)"
@@ -32,6 +34,8 @@ nconf2=-1
 for atoms in atoms_all:
     nconf+=1
     test = 1
+    if atoms_all[nconf].boundcond=='bulk':
+        atoms.rat = backtocell(atoms.nat,atoms.cellvec,atoms.rat)
     for iat in range(int(atoms_all[nconf].nat)):
         if (test<1) :
             break
@@ -81,5 +85,5 @@ for atoms in atoms_all:
         atoms_all_sel.append(Atoms())
         atoms_all_sel[-1]=copy.copy(atoms)
 
-write_yaml(atoms_all_sel,ofilename)
+if len(atoms_all_sel)>0: write_yaml(atoms_all_sel,ofilename)
 print "total number of conf = ",nconf+1,"       the number of files deleted = ",nconf-nconf2

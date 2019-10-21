@@ -20,6 +20,7 @@ subroutine task_minhocao(parini,parres)
 !Minima Hopping Variables
   real(8), parameter :: beta1=1.10d0,beta2=1.10d0,beta3=1.d0/1.10d0
   real(8), parameter :: alpha1=1.d0/1.10d0,alpha2=1.10d0
+  !real(8):: beta1, beta2, beta3, alpha1, alpha2
   integer :: npminx=100        !Number of posloc files to be saved for verbosity 0
   integer :: nwrite_inter=100  !Number of structures to be found until intermediate files are written, only for verbosity 0
 !  real(8),parameter :: HaBohr2GPA = 29421.033d0
@@ -150,6 +151,12 @@ subroutine task_minhocao(parini,parres)
 call system_clock(count=clock_start)     !Start Timer
 call system_clock(count_rate=clock_rate) !Find the time rate
 call system_clock(count_max=clock_max)   !Find the time max
+
+  !alpha1=parini%alpha1_minhopp !CORRECT_IT
+  !alpha2=parini%alpha2_minhopp !CORRECT_IT
+  !beta1=parini%beta1_minhopp !CORRECT_IT
+  !beta2=parini%beta2_minhopp !CORRECT_IT
+  !beta3=parini%beta3_minhopp !CORRECT_IT
 
 
 !!  !Define the boundary condition: 1: periodic, 2:free, 3:surface/slab
@@ -401,7 +408,6 @@ call system_clock(count_max=clock_max)   !Find the time max
        call rotate_like_crazy(parini,parres,pos_latvec,pos_red,tolmin,tolmax,ntol)
        goto 3001
   endif
-
 
 
 !Write initial parameters to global.out

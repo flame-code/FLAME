@@ -15,6 +15,7 @@ subroutine dynamics(parini)
     potential=trim(parini%potential_potential)
     md_method=trim(parini%md_method_dynamics)
     dt=parini%dt_dynamics
+    dt=dt*41.341373336493 ! convert fs to atomic unit
     nmd=parini%nmd_dynamics
     nfreq=parini%nfreq_dynamics
     

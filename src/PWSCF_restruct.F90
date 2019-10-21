@@ -81,7 +81,7 @@ end program
    enddo
 29 continue
    close(32)
-!Allocate the shit
+!Allocate arrays
    allocate(fix(3,nat),fcart(3,nat),xred(3,nat),xcart(3,nat),char_type(ntypat),amu(ntypat),typat_char(nat))
 
   energy=1.d10

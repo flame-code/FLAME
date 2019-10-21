@@ -312,7 +312,7 @@ do imol=1,nmol
    rot_all=matmul(rot_c,transpose(inaxis(:,:,imol)))
    call rotmat2quat(rot_all,quat_tmp) 
    call qinv(quat_tmp,quat(:,imol))
-  !Rotate tha shit
+  !Rotate it all
   !do imol=1,nmol
    inaxis(:,:,imol)=matmul(rot_c,inaxis(:,:,imol))
    inaxis(:,:,imol)=matmul(inaxis(:,:,imol),transpose(inaxis(:,:,imol)))
