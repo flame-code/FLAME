@@ -36,7 +36,8 @@ or by using the socket i-Pi interface.
 
 **usesocket**: (logical) Activates the communication scheme over unix or TCP sockets. The i-Pi protocol is used.
 Note: the server side of the socket communication has to be initiallized first before 
-FLAME can connect to the socket.
+FLAME can connect to the socket. A *posing.yaml* must be provided that coincides
+in terms of composition with the system run at the i-Pi host.
 
     default: ``False``
 
