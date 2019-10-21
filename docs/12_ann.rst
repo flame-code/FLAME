@@ -53,9 +53,7 @@ general ``ann`` parameters
 
    options: 
    
-      ``rivals``: Well tested and stable optimizer based on a modification of extended Kalman filter.
-
-..  warning:: Other methods?
+      ``rivals``: Currently the only available method, based on a modification of the extended Kalman filter.
 
 **nstep_opt**: (integer) Number of extended Kalman filter steps
 

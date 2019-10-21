@@ -24,8 +24,6 @@ general ``potential`` parameters
         
         Methods implemented in FLAME:
 
-            ``mpmd``: Lennard-Jones. 
-    
             ``lj``: Lennard-Jones.
     
             ``blj``: Binary Lennard-Jones.
@@ -66,9 +64,6 @@ general ``potential`` parameters
             ``cp2k``: CP2K DFT/QM/MM code :cite:`Cp2k`.
 
             ``msock``: Network socket interface. Uses the i-Pi protocol to interact with external codes :cite:`ceriotti_i-pi_2014`.
-
-
-..  warning:: mpmd seems identical to lj, which one to select?
 
 **potential_sec**: (string) Secondary interatomic potential, usually used to perform a preliminary relaxation
 or to evaluate an approximate Hessian matrix. All available options are identical to  **potential**.

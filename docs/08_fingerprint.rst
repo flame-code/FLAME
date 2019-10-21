@@ -6,6 +6,8 @@ Fingerprint
 
 The structural fingerprint parameters are set in this block.  
 Some parameters are used by all methods, while others apply only to specific fingerprints.  
+Note that the fingerprint methods discussed here are used in
+conjunction with the ```minhocao`` task.
 
 
 fingerprint parameters
@@ -117,5 +119,3 @@ general ``fingerprint`` parameters
         ``S``: s-type orbitals
 
         ``P``: p-type orbitals
-
-..  warning:: Currently only the fingerprints that are part of minhocao are described here!
