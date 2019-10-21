@@ -485,9 +485,6 @@ call system_clock(count_max=clock_max)   !Find the time max
          if(any(parini%fixlat)) write(*,*) "# FIXLAT: a,b,c,alpha,beta,gamma,shape ", parini%fixlat
   endif
 
-  !Upcase the geopt parameter:
-  parini%paropt_geopt%approach = StrUpCase ( parini%paropt_geopt%approach )
-
   if(parini%fixlat(7).and.trim(parini%paropt_geopt%approach).ne."FIRE") stop "Fixed cell shape only implemented in FIRE"
 
 !Put all the atoms back into the cell

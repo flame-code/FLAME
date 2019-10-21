@@ -91,6 +91,7 @@ subroutine yaml_get_main_parameters(parini)
     parini%iseed=parini%subdict//"seed"
     parini%nrun_lammps=parini%subdict//"nrun_lammps"
     parini%verb=parini%subdict//"verbose"
+!    parini%verb=parini%subdict//"verbosity_mh"
     parini%params_new=parini%subdict//"params_new"
     parini%nat=parini%subdict//"nat"
     if(trim(parini%task)=='minhocao' .and. parini%nat<1) then

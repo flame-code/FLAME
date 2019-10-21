@@ -634,10 +634,18 @@ subroutine params_read_for_yaml(parini)
     use steepest_descent, only: sd_beta_lat,sd_beta_at
     use interface_ipi
     use interface_msock
+    use String_Utility
     implicit none
     type(typ_parini), intent(inout):: parini
     integer, save:: calls=0
     integer:: iat, n_lj
+
+    !Upcase important parameter:
+    parini%paropt_geopt%approach = StrUpCase ( parini%paropt_geopt%approach )
+    parini%fp_method_ch = StrUpCase ( parini%fp_method_ch )
+    parini%fp_17_orbital = StrUpCase ( parini%fp_17_orbital )
+    parini%fp_18_orbital = StrUpCase ( parini%fp_18_orbital )
+
 !Post Processing
 !KPT
   if(parini%auto_kpt) then
@@ -717,6 +725,8 @@ calls=calls+1
 
     !call params_echo(parini)
     !Check range of parameters
+
+
     call params_check(parini)
 end subroutine params_read_for_yaml
 !************************************************************************************
