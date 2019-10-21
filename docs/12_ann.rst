@@ -5,15 +5,15 @@ Artificial Neural Network Potentials
 ========================================
 
 FLAME implements a range of artificial neural network (ANN) potentials.
-In high dimensional ANN potentials, the total
-energy is decomposed into atomic energies.
-The output values of ANNs are considered as atomic energies
-in the original Behler-Parrinello approach, while
-the charge equilibration via neural network
-technique (CENT) 
-includes long-range electrostatic interactions.
-The parameters related to ANN must be set
-in the block ``ann`` described below.
+In the original Behler-Parrinello approach,
+the output values of ANNs are considered as atomic energies
+which sum up to the total enery of a system.
+In the charge equilibration via neural network
+technique (CENT),
+the ANN serve as an intemediate step 
+to include long-range electrostatic interactions.
+The parameters related to an ANN must be set
+in the block ``ann``, as described below.
 
 ann options
 =================
@@ -39,14 +39,14 @@ general ``ann`` parameters
     
    options: 
 
-      ``atombased``: total energy is the sum of atomic energies, the original Behler-Parrinello method
+      ``atombased``: the original Behler-Parrinello method, where the total energy is the sum of atomic energies :cite:`Behler2011`
        
-      ``cent1``: charge equilibration via neural network :cite:`ghasemi_interatomic_2015`
+      ``cent1``: the charge equilibration via neural network technique :cite:`ghasemi_interatomic_2015`
 
 ``train`` parameters
 --------------------------------
 
-**optimizer**: (string) Method for the optimization during the ANN training process.
+**optimizer**: (string) Method for the optimization during an ANN training process.
 
 
    default: ``No default value.``
@@ -69,7 +69,7 @@ output.
     default: ``0``
 
 **ampl_rand**: (real) The amplitude of random numbers used
-as the initial values of the ANN weights.
+as the initial values of the ANN weights. Arbitrary units.
 
     default: ``1.d0``
 
@@ -112,71 +112,71 @@ CENT approach.
     default: ``1.d0``
 
 **qgnrmtol**: (real) Convergence criterion for the norm of the gradient
-in CEP when **syslinsolver**  is set top  ``operator``.
+in CEP when **syslinsolver**  is set to  ``operator``.
 Tight values, e.g. ``1.d-5``, may be required for accurate forces.
 
     default: ``5.d-4``
 
-**freeBC_direct**: (logical) Selectively selects the
+**freeBC_direct**: (logical) Selectively employs the
 ``direct`` method for the **syslinsolver** 
 for cluster structures only 
-during the CEP. This is important when reference (training
+during the CEP. This is important when the reference (training
 or validation) data set contains both
 periodic and molecular configurations.
 
    default: ``False``
       
 
-extra files required by ann train
-======================================
+Additional files required for **ann**: ``train``
+================================================
 
-**list_posinp_train.yaml**: Contains a list of files in which
-configurations of the ANN train task are stored.
-The file must contain the key ``files`` whose value
-is a list of YAML structure files containing the structures.
-For more information on YAML structure file format, see :ref:`yamlstructure`.
+**list_posinp_train.yaml**: Contains a single keyword, **files**, with
+a list of configurations for training the ANN.
 
-**list_posinp_valid.yaml**: Contains a list of files in which
-configurations for the validation of the ANN train task are stored.
-The file must contain the key ``files`` whose value
-is a list of YAML structure files containing the structures.
-For more information on YAML structure file format, see :ref:`yamlstructure`.
+   **files**: (list of strings) List of filenames of the atomic structure files in ``yaml`` format.
+   For more information on YAML structure file format, see :ref:`yamlstructure`.
 
-**SE.ann.input.yaml**: SE is the symbol of the element.
-This file must exist for each type of atom in this system.
-It contains element based parameters of ANN potential as well as
+**list_posinp_valid.yaml**: Contains a single keyword, **files**, with
+a list of configurations for validating the ANN.
+
+   **files**: (list of strings) List of filenames of the atomic structure files in ``yaml`` format.
+   For more information on YAML structure file format, see :ref:`yamlstructure`.
+
+**SE.ann.input.yaml**: ANN parameter files for every chemical element ``SE``
+in the system.
+They contain element-based parameters of the ANN potential as well as
 parameters of the symmetry functions.
-It has two keys, ``main`` and ``symfunc``.
+They contain two keys, ``main`` and ``symfunc`` (see below).
 All paramters are in atomic units.
 
 ``main`` parameters
 --------------------------------
 
-**nodes**: Determines the architecture of the ANN.
-It is a list of integers, for example [3,5] means
-the ANN will have two hidden layers with
+**nodes**: (list of integers) Determines the architecture of the ANN.
+For example, ``[3, 5]`` means
+that the ANN has two hidden layers (number of elements) with
 three and five nodes, respectively.
 Currently, architectures with only one or two hidden
-layers are implemented where the latter is well tested
+layers are implemented, where the latter is well tested
 and employed in several different applications.
 
    default: ``No default value.``
 
-**rcut**: (real) The cutoff radius used for the symmetry functions.
+**rcut**: (real) The cutoff radius used for the symmetry functions. Units in Bohr.
 
    default: ``No default value.``
 
 **ampl_chi**: (real) Determines the amplitude of the
-hyperbolic tangent function used to map the value of ANN output node
+hyperbolic tangent function used to map the value of the ANN output nodes
 to the atomic electronegativity.
-We recommend to use 1.0 and smaller values are strongly discouraged.
+We recommend to use ``1.d0``, and smaller values are strongly discouraged.
 
    default: ``No default value.``
 
 **prefactor_chi**: (real) Determines the prefactor of the argument of the
-hyperbolic tangent function used to map the value of ANN output node
+hyperbolic tangent function used to map the value of the ANN output nodes
 to the atomic electronegativity.
-We recommend to use 1.0.
+We recommend to use  ``1.d0``.
 
    default: ``No default value.``
 
@@ -188,27 +188,28 @@ ANN trains indeed the formation energies.
 
 **gausswidth**: (real) Determines the width of the Gaussian function
 representing the atomic charge density in CENT.
-We recommend you to try different values in the range
-between 1.0 and 3.0 which most atomic radii are.
+We recommend to try different values in the range
+between ``1.d0`` and ``3.d0``, which correspond to 
+most atomic radii. Units in Bohr.
 
    default: ``No default value.``
 
 **hardness**: (real) Determines the atomic hardness by which
-you can control how much charge, approximately, you expect to be
+to control how much charge, approximately, to expect to be
 collected by this type of atom.
-Similar to ``gausswidth``, we recommend you to fine tune for
-an optimal value around physically meaningful values given
-in textbooks.
+Similar to **gausswidth**, we recommend you to use
+an optimal value in the range of physically meaningful values given
+in textbooks. Units in :math:`{\textrm{Ha}}/{\textrm{Bohr}^{3}}`.
 
    default: ``No default value.``
 
-**chi0**: (real) Determines the offset for atomic electronegativity.
+**chi0**: (real) Determines the offset of atomic electronegativity. Arbitrary units.
 
    default: ``No default value.``
 
 **method**: (string) Determines the type of symmetry function
 to be used as the atomic environment descriptor.
-Currently, only symmetry functions of type ``behler`` are functional.
+Currently, only symmetry functions of type ``behler`` are implemented.
 
    default: ``No default value.``
 
@@ -218,28 +219,34 @@ Currently, only symmetry functions of type ``behler`` are functional.
 
 ``symfunc`` parameters
 --------------------------------
-Two types of symmetry functions, one radial and one angular, are implemented FLAME.
+Two types of symmetry functions, radial and angular, are implemented in FLAME.
 A complete description and comparison between these symmetry functions is
-given in :cite:`Behler2011`.
-The radial symmetry function in FLAME is `g02` which has two parameters,
+given in Ref.:cite:`Behler2011`.
+In the parameter file, this information is provided
+line by line, in a specific format:
+
+The radial symmetry function in FLAME is `g02`, which has two parameters,
 the exponent to control the broadness of the Gaussian function and
 the offset that determines the center of the Gaussian function.
 The offset is not well tested and we recommend to set it to zero.
-A `g02` symmetry functions is defined by key `g02_` appended by
+A `g02` symmetry function is defined by the key `g02_` appended by
 a zero-padded enumeration, e.g. `g02_001`.
-The value of the key is exponent, offset, 0.0, 0.0, and atom type
+The value of the key is exponent, offset, 0.0, 0.0, and atom type,
 all separated by spaces.
 The two zeros are the lower and upper bounds of the symmetry function
 for all training data set.
 The zeros cannot be ignored.
-The last item is the atom type of the surrounding atom.
+The last item is the atomic species of the surrounding atom.
+
+
+
 The angular symmetry function is of type `g05` which contains three parameters.
 The exponent of the Gaussian function is similar to that of `g02`.
 The next two parameters are the prefactor of the cosine function
 and the value of the power.
 Similar to `g02`, the parameters must be followed by two zero.
-In the last, two atom types indicating the types of the two atoms
-surrounding the center atom.
+The last two entries per line indicate the two 
+atomic species surrounding the center atom.
 An example of an ANN parameter file for type Na in sodium chloride
 system is given below:
 
