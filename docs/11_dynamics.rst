@@ -4,7 +4,7 @@
 Dynamics
 ========
 
-The details of molecular dynamics simulations are specified here. Not all
+The details of molecular dynamics (MD) simulations are specified here. Not all
 keywords apply to every available method. 
 Note that there is a fundamental difference in using dynamics
 to either sample free energies,
@@ -18,7 +18,7 @@ differ significantly between these two classes of dynamics.
 dynamics options
 ==================
 
-**md_method**: (string) Type of MD simulation enseble.
+**md_method**: (string) Type of MD simulation ensemble.
 
    default: ``No default value.``
 
@@ -39,11 +39,9 @@ dynamics options
 
    default: ``0``
 
-**dt**: (real)  Time step size. In units of fs.
+**dt**: (real)  Time step size. Units in fs.
 
    default: ``No default value.``
-
-.. warning: units?
 
 **temp**: (real)  Target temperature. In units of Kelvin.
 
@@ -53,11 +51,9 @@ dynamics options
 
    default: ``0.d0``
 
-**highest_freq**: (real)  The highest frequency of the system.
+**highest_freq**: (real)  Coupling constant to the extended system. Units in :math:`{\textrm{Ha}}/{\textrm{THz}^{2}}`.
 
    default: ``1.d1``
-
-.. warning: units? what is the meaning?
 
 **ntherm**: (integer) Number of thermostats used for the Nose-Hoover thermostat chain.
 

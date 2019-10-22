@@ -9,9 +9,9 @@ Some parameters are used by all methods, while others
 apply only to specific interatomic potentials.
 
 
-potential parameters
-=========================
 
+potential parameters
+==================================
 
 general ``potential`` parameters
 ------------------------------------------
@@ -30,11 +30,11 @@ general ``potential`` parameters
     
             ``mlj``: Multicomponent Lennard-Jones with arbitrary number of species.
     
-            ``ltb``: Lenosky's Tight-Binding method for silicon.
+            ``ltb``: Lenosky's Tight-Binding method for silicon :cite:`ghasemi_energy_2010`.
     
-            ``edip``: Bazant's  Environment-Dependent Interatomic Potential for silicon.
+            ``edip``: Bazant's  Environment-Dependent Interatomic Potential for silicon :cite:`ghasemi_energy_2010`.
     
-            ``tersoff``: Tersoff's potential for silicon and sp3 carbon.
+            ``tersoff``: Tersoff's potential for silicon and sp3 carbon :cite:`ghasemi_energy_2010`.
     
             ``ann``: Artificial neural network potential.
     
@@ -94,7 +94,7 @@ density. Only relevant for periodic electronic structure codes.
 **kptden**: (list of two reals)
 Desired k-points density along every dimension for the fine and the coarse potential settings. 
 In units of the reciprocal lattice vectors, :math:`2\pi/\textrm{Bohr}`.  Recommended values are 
-in the range of ``0.015`` and ``0.040`` for metals and insulators, respectively
+in the range of ``0.015`` and ``0.040`` for metals and insulators, respectively.
 Only relevant for periodic electronic structure codes. 
 
     default: ``[4.d-2, 6.d-2]``
@@ -180,7 +180,7 @@ and :math:`i` runs over all atoms that interact with the potential :math:`P`.
    
       default: ``1.d0``
    
-   **av**: (integer) Method of defining the equilibrium position :math:`r_c` of the potential.
+   **av**: (integer) Method of defining the equilibrium position :math:`e` of the potential.
    Given as a list of length **nconfine** if more than one confinement potential is imposed.
    
       default: ``2``
@@ -222,16 +222,11 @@ and :math:`i` runs over all atoms that interact with the potential :math:`P`.
 in the CENT potential, then the ``ewald`` key can be used to set the relevant parameters.
 
     **ewald**: (logical) This subkey determines whether the Ewald method is invoked.
+    If ``True``, the Ewald approach is used up
+    to speed up the calculations, especially when the calculations involve localized charge densities,
+    e.g., when the Gaussian width of atomic charge densities in CENT are small.
 
         default: ``False``
-                
-        options: 
-                
-            ``False``: no Ewald method
-
-            ``True``: Apply the Ewald method. This speeds up the calculations
-            whenever the calculations involve localized charge densities,
-            e.g., when the Gaussian width of atomic charge densities in CENT are small.
 
     **psolver**: (string) Determines the method for the Poisson solver.
 
@@ -255,18 +250,18 @@ in the CENT potential, then the ``ewald`` key can be used to set the relevant pa
 
     **ecut**: (real) The cutoff energy that specifies how dense the basis set is when solving the Poisson's equation.
     The value is used for every non-pairwise method available in FLAME. There is no default value
-    and it must be set. In units of Ha.
+    and it must be set. Units in Ha.
 
         default: ``No default value.``
 
     **ecutz**: (real) The cutoff energy that specifies how dense the basis set is in the *z*-direction when solving the Poisson's equation.
-    The value is used only when the ``p3d`` method is selected. There is no default value and it must be set.
-    In units of Ha.
+    The value is used only when the ``p3d`` method is selected in **psolver**. There is no default value and it must be set.
+    Units in Ha.
 
         default: ``No default value.``
 
     **rgcut**: (real) The cutoff radius beyond which the atomic Gaussian charge densities are assumed to
-    vanish. This parameter is indeed not the actual cutoff radius but it is a unitless parameter that
+    vanish. This parameter is  *not* the actual cutoff radius but is a unitless parameter that
     is multiplied by the Gaussian width value. There is no default value and it must be set.
     Typically, ``6.0`` is a reasonable choice, and for very high accuracy one may use values
     up to ``9.0``. Arbitrary units.

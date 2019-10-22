@@ -7,7 +7,7 @@ Saddle
 One and two-sided saddle point search methods 
 are implemented in FLAME. Note that not all 
 parameters apply to 
-all available saddle point serach methods
+all available saddle point search methods
 when **task** is set to ``saddle``.
 
 
@@ -36,7 +36,7 @@ general ``saddle`` parameters
 
    default: ``1.d-1``
 
-**nstep**: (integer) Maximal number of steps in for the saddle search.
+**nstep**: (integer) Maximal number of steps for the saddle search.
 
    default: ``1000``
 
@@ -61,7 +61,7 @@ initial value **dbar** to the final length **dbar_contracted**.
    default: ``40``
 
 **fnrmtol_coarse**: (real)  The force norm tolerance that has to be
-reached to initiallize the contraction of the bar. Units in Ha/Bohr.
+reached to commence the contraction of the bar. Units in Ha/Bohr.
 
    default: ``1.d-2``
 
@@ -81,12 +81,13 @@ the saddle optimization in the dimer method.
    default: ``No default value.``
 
 **ampl**: (real) The amplitude of the random displacement applied to 
-the atoms listed by the key **list_random_displace**.
+the atoms listed by the key **list_random_displace**. In units of Bohr in configurational space.
 
    default: ``No default value.``
 
 **dimsep**: (real) The dimer separation in the dimer method. 
 No default value given, must be set when the dimer method is invoked.
+In units of Bohr in configurational space.
 
    default: ``No default value.``
 
@@ -100,7 +101,7 @@ Note: with the default value of ``2``, the splined saddle will only have one mov
 
    default: ``2``
 
-**np_neb**: (intger) Number of NEB images. 
+**np_neb**: (integer) Number of NEB images. 
 **np_neb**-1 is the number of moving images in the nudged elastic band (NEB) method.
 Note: with the default value of ``2``, the NEB will run with only one moving image.
 
@@ -112,7 +113,7 @@ assist the maximization process, the inner loop of the splined saddle method.
    default: ``0``
 
 **vdtol**: (real) The convergence criterion in the maximization process in
-the inner loop of the splined saddle method. In units of Ha.
+the inner loop of the splined saddle method. Units in Ha.
 
    default: ``1.d-1``
 
@@ -149,7 +150,7 @@ Arbitrary units.
          ``yes``: NEB calculation is performed
 
 **pickbestanchorpoints**: (string) Activates an automated selection of favored anchor points. 
-This feature is not well tested and we recommend you set this parameter to ``no``.
+This feature is not well tested and we recommend setting this parameter to ``no``.
 
    default: ``No default value.``
 
@@ -160,16 +161,16 @@ This feature is not well tested and we recommend you set this parameter to ``no`
          ``yes``: anchor points are initially selected to favor higher energy points based on estimates obtained by an interpolation.
 
 
-**runstat**: (string) It determines whether a new or a restart run is performed.
+**runstat**: (string) Determines whether a new or a restart run is performed.
 
    default: ``new``
 
    options:
 
-         ``new``: New run, hence the NEB images or splined saddle anchor points initiallized at the beginning of the run.
+         ``new``: New run, the NEB images or splined saddle anchor points are initialized at the beginning of the run.
 
-         ``restart``: Restart run, hence the NEB images or splined saddle anchor points are read from a file. Restart runs have not yet been well tested,
-         so we do not recommend it for now.
+         ``restart``: Restart run, the NEB images or splined saddle anchor points are read from a file. Restart runs have not yet been well tested,
+         so we currently do not recommend using it.
 
 **typintpol**: (string) The type of interpolation in the maximization process of the splined saddle method.
 
@@ -179,7 +180,7 @@ This feature is not well tested and we recommend you set this parameter to ``no`
 
          ``cubic``: Natural cubic splines.
 
-         ``quintic``: A spline using fifth-order polynomial. This is unstable except for simple pathways.
+         ``quintic``: A spline using fifth-order polynomials. Rather unstable except for simple pathways.
 
 **fcalls_max**: (integer) The maximum number of calls to force evaluation.
 

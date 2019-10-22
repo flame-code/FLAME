@@ -1,10 +1,11 @@
 .. _geopt_prec:
 
 =====================================
-Parameters of the Precursor Optimizer
+Precursor Optimizer
 =====================================
 
-These parameters for this block are the same as those in
-The input file :ref:`geopt <geopt>` must be present
-but are used for the precursor optimizer which precedes
+The parameters available in this block are the same as those in
+:ref:`geopt <geopt>`.
+The parameters specified here are used
+during the precursor optimiziation which precedes
 the main optimizer.

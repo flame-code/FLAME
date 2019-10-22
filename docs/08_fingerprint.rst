@@ -7,7 +7,7 @@ Fingerprint
 The structural fingerprint parameters are set in this block.  
 Some parameters are used by all methods, while others apply only to specific fingerprints.  
 Note that the fingerprint methods discussed here are used in
-conjunction with the ```minhocao`` task.
+conjunction with the ``minhocao`` task.
 
 
 fingerprint parameters
@@ -21,7 +21,7 @@ general ``fingerprint`` parameters
 
     options:
 
-       ``oganov``: Oganov's fingerprint method for crystalline system based on radial distribution functions :cite:`oganov_how_2009`.
+       ``oganov``: Oganov's fingerprint method for crystalline systems based on radial distribution functions :cite:`oganov_how_2009`.
 
        ``gauss``:  Gaussian orbital overlap matrix method for clusters and molecules :cite:`sadeghi_metrics_2013`.
         
@@ -31,12 +31,12 @@ general ``fingerprint`` parameters
 
        ``coganov``: Continuous version of  Oganov's fingerprint, without histogram discretization along the radial direction.
     
-       ``bcm``: Bond characterization matrix method for the crystalline system based on the Calypso method :cite:`wang_calypso_2012`.
+       ``bcm``: Bond characterization matrix method for crystalline systems based on the Calypso method :cite:`wang_calypso_2012`.
     
-       ``atorb``: Atomic orbitals overlap method for the crystalline system.
+       ``atorb``: Atomic orbitals overlap method for crystalline systems.
     
     
-**rcut**: (real) Cutoff distance of the fingerprint, in units of Angstrom.  Only relevant for periodic, the crystalline systems.
+**rcut**: (real) Cutoff distance of the fingerprint, in units of Angstrom. Only relevant for periodic, crystalline systems.
 
     default: ``15.d0``
 
@@ -88,7 +88,7 @@ general ``fingerprint`` parameters
    default: ``50``
 
 
-**widthcut:**: (real) Characteristic length scale of the spherical molecular cutoff function.
+**widthcut:**: (real) Characteristic length scale of the spherical molecular cutoff function. Arbitrary units, scaling factor.
 
    default: ``1.d0``
 

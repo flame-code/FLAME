@@ -32,7 +32,7 @@ atomistic simulation environment.
 
         ``single_point``: Perform a single point calculation
         to evaluate the energy, forces, and stresses for one or more configurations.
-        Allows linking to external sampling codes. The parameters for this
+        Allows linking to external sampling codes. The parameters for this taks
         can be specified in the block :ref:`single_point <single_point>`.
 
         ``minhocao``:  Perform a global optimization calculation based on the
@@ -69,7 +69,6 @@ be present in *flame_in.yaml*.
 
     options: ``0, 1, 2, 3`` Increasing number for higher verbosity.
 
-.. warning:: This keyword is almost identical to verbosity. Which one should be documented/used?
 
 **nat**: (integer) Number of atoms involved in the simulation.
 
@@ -96,7 +95,7 @@ minima hopping runs.
 
    default: ``No default value.``
 
-**typat**: (list of integers of length[number of atoms]) Indexes
+**typat**: (list of integers of length **nat**) Indexes
 of the atomic types from 1 to number of atomic types.
 
    default: ``No default value.``
@@ -106,7 +105,7 @@ FLAME must be compiled and linked with SPGLIB.
 
     default: ``False``
 
-**rng_type**: Do not use this key! It is only useful for developers
+**rng_type**:  (string) Not used for production runs, only used for development
 and regression tests.
 
 **seed**: (integer) Seed value to initialize the random number generator.
@@ -119,7 +118,7 @@ and regression tests.
 
 **params_new**: (logical) Enables parsing the ``params_new.in`` for
 the **task** ``minhocao`` runs. This functionality is available to allow backwards
-compatibility with earlier version of ``minhocao``.
+compatibility with earlier versions of ``minhocao``.
 This option will be removed in the future.
 
     default: ``False``

@@ -5,7 +5,7 @@ Singlepoint
 ===========
 
 The single point task performs a sole energy and force evaluation
-given a ``posinp.yaml`` atomic structure file.
+given a ``posinp.yaml`` atomic structure file without changing the atomic positions.
 This task is especially useful to establish  
 a simple interface between an external 
 sampling code and FLAME,
@@ -18,7 +18,7 @@ or ShengBTE.
 Further, this task allows to use a potential implemented in 
 the FLAME code as a black-box engine, either by directly 
 linking to the flame library,
-or by using the socket i-Pi interface.
+or by using the socket i-Pi interface :cite:`ceriotti_i-pi_2014`.
 
 ``single_point`` parameters
 =================================
@@ -35,9 +35,9 @@ or by using the socket i-Pi interface.
 
 
 **usesocket**: (logical) Activates the communication scheme over unix or TCP sockets. The i-Pi protocol is used.
-Note: the server side of the socket communication has to be initiallized first before 
-FLAME can connect to the socket. A *posing.yaml* must be provided that coincides
-in terms of composition with the system run at the i-Pi host.
+Note: the server side of the socket communication has to be initialized first before 
+FLAME can connect to the socket. A *posinp.yaml* must be provided that coincides
+in terms of composition and ordering of the elements with the system run at the i-Pi host.
 
     default: ``False``
 
@@ -62,4 +62,4 @@ created in a temporary directory. Otherwise, a valid IP address must be provided
     default: ``0``
 
 
-.. warning: other methods to link with flame?
+.. warning:: other methods to link with flame? In fact, how to link by compiling with library. Is there a subroutine that has to be called?

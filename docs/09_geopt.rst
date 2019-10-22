@@ -25,16 +25,16 @@ general ``geopt`` parameters
 
         ``sdcg``: steepest descent method followed by the conjugate gradient method.
 
-        ``sddiis``: steepest descent method followed by DIIS method.
+        ``sddiis``: steepest descent method followed by the direct inversion in the iterative subspace (DIIS) method.
 
-        ``nlbfgs``: Nocedal's implementation of LBFGS :cite:`Nocedal`.
+        ``nlbfgs``: Nocedal's implementation of the limited momory Broyden–Fletcher–Goldfarb–Shanno (LBFGS) method :cite:`Nocedal`.
 
-        ``bfgs``: Ghasemi's implementation of BFGS with preferential moves along soft
+        ``bfgs``: Ghasemi's implementation the BFGS method with preferential moves along soft
         modes.
 
         ``qbfgs``: (only withing **task** ``minhocao``) Quantum Espresso's version of BFGS for variable cell shapes :cite:`Espresso`.
 
-        ``fire``: (only withing **task** ``minhocao``) The Fast Inertial Relaxation Engine method :cite:`bitzek_structurel_2006`.
+        ``fire``: (only withing **task** ``minhocao``) The Fast Inertial Relaxation Engine (FIRE) method :cite:`bitzek_structurel_2006`.
 
 
 **fmaxtol**: (real) Convergence parameter. The optimization will terminate 
@@ -56,7 +56,7 @@ Must be specified.
 
     default: ``1000``
 
-**dxmax**: (real) Maximum displacement for each atomic component. Units in Bohr. Not yet implemented in all methods.
+**dxmax**: (real) Maximum displacement for each atomic component. Units in Bohr. Not yet implemented for all **methods**.
 
     default: ``1.d-1``
 
@@ -64,8 +64,7 @@ Must be specified.
 
     default: ``1.d0``
 
-**cellrelax**: (logical) Activates variable cell shape relaxations.
- If ``True``, a variable cell shape optimization is performed. Not yet implemented in all methods.
+**cellrelax**: (logical) Activates variable cell shape relaxations if set to ``True``. Not yet implemented in all **methods**.
 
     default: ``False``
 

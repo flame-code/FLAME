@@ -7,7 +7,7 @@ Artificial Neural Network Potentials
 FLAME implements a range of artificial neural network (ANN) potentials.
 In the original Behler-Parrinello approach,
 the output values of ANNs are considered as atomic energies
-which sum up to the total enery of a system.
+which sum up to the total energy of a system.
 In the charge equilibration via neural network
 technique (CENT),
 the ANN serve as an intemediate step 
@@ -28,8 +28,6 @@ general ``ann`` parameters
    options:
 
       ``train``: routines to perform an ANN training.
-
-..  warning:: Other methods?
 
 .. _ref-ann-approach:
 
@@ -55,7 +53,7 @@ general ``ann`` parameters
    
       ``rivals``: Currently the only available method, based on a modification of the extended Kalman filter.
 
-**nstep_opt**: (integer) Number of extended Kalman filter steps
+**nstep_opt**: (integer) Number of extended Kalman filter steps.
 
     default: ``100``
 
@@ -85,11 +83,10 @@ is treated.
       ``read``:  values are read from disk from a previous run
 
 
-
 ``cent1`` parameters
 --------------------------------
 **syslinsolver**: (string) Determines what method to use
-to solve the system of linear equations for the CEP.
+to solve the system of linear equations for the charge equilibration process (CEP).
 
    default: ``direct``
 
@@ -99,19 +96,19 @@ to solve the system of linear equations for the CEP.
 
       ``operator``: iterative approach by convex optimization
 
-**nstep_cep**: (integer) Maximum number of steps in self-consistent
-charge equilibration process (CEP) required by the
-CENT approach.
+**nstep_cep**: (integer) Maximum number of steps allowed in the self-consistent CEP
+required by the CENT approach.
 
     default: ``200``
 
-**alphax_q**: (real) Stepsize in CEP optimization.
+**alphax_q**: (real) Stepsize in the CEP optimization.
 
     default: ``1.d0``
 
 **qgnrmtol**: (real) Convergence criterion for the norm of the gradient
-in CEP when **syslinsolver**  is set to  ``operator``.
+in the CEP when **syslinsolver**  is set to  ``operator``.
 Tight values, e.g. ``1.d-5``, may be required for accurate forces.
+Units in Ha/Bohr.
 
     default: ``5.d-4``
 
@@ -156,7 +153,7 @@ that the ANN has two hidden layers (number of elements) with
 three and five nodes, respectively.
 Currently, architectures with only one or two hidden
 layers are implemented, where the latter is well tested
-and employed in several different applications.
+and has been employed in several applications.
 
    default: ``No default value.``
 
@@ -167,18 +164,18 @@ and employed in several different applications.
 **ampl_chi**: (real) Determines the amplitude of the
 hyperbolic tangent function used to map the value of the ANN output nodes
 to the atomic electronegativity.
-We recommend to use ``1.d0``, and smaller values are strongly discouraged.
+We recommend to employ ``1.d0``, and using smaller values is strongly discouraged.
 
    default: ``No default value.``
 
 **prefactor_chi**: (real) Determines the prefactor of the argument of the
 hyperbolic tangent function used to map the value of the ANN output nodes
 to the atomic electronegativity.
-We recommend to use  ``1.d0``.
+We recommend using ``1.d0``.
 
    default: ``No default value.``
 
-**ener_ref**: (real) Determines the reference values for energy.
+**ener_ref**: (real) Determines the reference energy value.
 We recommend to set it to the energy of an isolated atom so that
 ANN trains indeed the formation energies.
 
@@ -195,8 +192,8 @@ most atomic radii. Units in Bohr.
 **hardness**: (real) Determines the atomic hardness by which
 to control how much charge, approximately, to expect to be
 collected by this type of atom.
-Similar to **gausswidth**, we recommend you to use
-an optimal value in the range of physically meaningful values given
+Similar to **gausswidth**, we recommend using
+a value in a physically meaningful range given
 in textbooks. Units in :math:`{\textrm{Ha}}/{\textrm{Bohr}^{3}}`.
 
    default: ``No default value.``
@@ -205,8 +202,8 @@ in textbooks. Units in :math:`{\textrm{Ha}}/{\textrm{Bohr}^{3}}`.
 
    default: ``No default value.``
 
-**method**: (string) Determines the type of symmetry function
-to be used as the atomic environment descriptor.
+**method**: (string) Determines the type of symmetry functions
+used as the atomic environment descriptor.
 Currently, only symmetry functions of type ``behler`` are implemented.
 
    default: ``No default value.``
@@ -223,24 +220,22 @@ given in Ref.:cite:`Behler2011`.
 In the parameter file, this information is provided
 line by line, in a specific format:
 
-The radial symmetry function in FLAME is `g02`, which has two parameters,
-the exponent to control the broadness of the Gaussian function and
+The radial symmetry function in FLAME is called `g02` and has two parameters,
+the exponent to control the broadness of the Gaussian function, and
 the offset that determines the center of the Gaussian function.
-The offset is not well tested and we recommend to set it to zero.
+Using a finite offset is not well tested and we recommend to set it to zero.
 A `g02` symmetry function is defined by the key `g02_` appended by
 a zero-padded enumeration, e.g. `g02_001`.
 The value of the key is exponent, offset, 0.0, 0.0, and atom type,
 all separated by spaces.
-The two zeros are the lower and upper bounds of the symmetry function
-for all training data set.
-The zeros cannot be ignored.
+The two zeros at position 2 and 3 are the lower and upper bounds of the symmetry function
+for all training data sets.
+The zeros cannot be omitted.
 The last item is the atomic species of the surrounding atom.
 
-
-
-The angular symmetry function is of type `g05` which contains three parameters.
-The exponent of the Gaussian function is similar to that of `g02`.
-The next two parameters are the prefactor of the cosine function
+The angular symmetry function is of type `g05` and contains three parameters.
+The first parameter, the exponent of the Gaussian function, is similar to that of `g02`.
+The other two parameters are the prefactor of the cosine function
 and the value of the power.
 Similar to `g02`, the parameters must be followed by two zero.
 The last two entries per line indicate the two 

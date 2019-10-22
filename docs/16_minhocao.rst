@@ -5,19 +5,20 @@ Minima Hopping for Crystal Structure Optimization
 =================================================
 
 The minima hopping method implements a 
-a global optimization technique to identify the ground state structure of
+global optimization technique to identify the ground state structure of
 any chemical system. 
 
 Input/Output files
 ==================
 
 In addition to the standard *flame_in.yaml* file, further input files are
-required to start a MHM run. Also, important the information
-will be written into output files other than *flame_log.yaml*
+required to start a MHM run. Also, important information
+will be written into output files other than *flame_log.yaml*, e.g., 
+*earr.dat* and *global.mon*.
 
 
 
-**poscur.ascii/poscur.vasp**: starting or current configuration of a MHM run
+**poscur.ascii/poscur.vasp**: intitial or current configuration of a MHM run
 either in the *ascii* or *vasp* format, in Angstrom. It will be 
 overwritten continuously as the simulation progresses with the 
 current local minimum structure.
@@ -41,8 +42,8 @@ The first two lines must be always provided:
 *nmin_cur* is the currently known number of local minima,
 and *nmin_max* is the maximal number of minima to be found in
 the next MHM run. *nmin_max* must always be larger than 
-*nmin_max*. Every new MHM run must start with *nmin_cur: 0*
-In a restart run *nmin_cur*, corresponds to the number of 
+*nmin_cur*. Every new MHM run must start with *nmin_cur: 0*
+In a restart run, *nmin_cur* corresponds to the number of 
 local minima found in the previous run(s).
 
 

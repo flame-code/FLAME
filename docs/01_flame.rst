@@ -79,6 +79,8 @@ specific portions of the FLAME code:
 * Saddle point searches: :cite:`ghasemi_an_2011,schaefer_minima_2014`
 * Structural fingerprints: :cite:`sadeghi_metrics_2013,li_fingerprint_2016`
 * Electrostatic particle-particle, particle-density method: :cite:`ghasemi_particle_2007,Rostami2016`
+* Interatimic potentials for silicon: :cite:`ghasemi_energy_2010`
+
 
 
 It is the responsibility of the user to

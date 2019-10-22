@@ -32,7 +32,7 @@ the following parameters.
         
        ``bulk``: Periodic boundary conditions for crystals and solids
     
-**cell**: (list of 3 lists) Three cell vectors.
+**cell**: (list of three lists) Three cell vectors.
 
    default: ``No default value.``
 
@@ -59,8 +59,8 @@ change during the simulation.
 
 
 E.g., ``[0., 0., 0., Si, TTT]`` is a silicon atom at the origin, free to move in all dimensions,
-while ``[1., 1., 1., C, TFF]`` is a carbon atomot at ``(1, 1, 1)`` only allowed to move along the ``x``
-direcion.
+while ``[1., 1., 1., C, TFF]`` is a carbon atom at ``(1, 1, 1)``, only allowed to move along the ``x``
+direction.
 
 Example
 **********************************
