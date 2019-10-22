@@ -63,9 +63,9 @@ be present in *flame_in.yaml*.
     options: ``0, 1, 2, 3`` Increasing number for higher verbosity.
 
 
-**verbose**: (integer) Verbosity of output data.
+**verbosity_mh**: (integer) Verbosity of the output related to the task ``minhocao``.
 
-    default: ``0``
+    default: ``3``
 
     options: ``0, 1, 2, 3`` Increasing number for higher verbosity.
 
