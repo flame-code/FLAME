@@ -13,7 +13,7 @@ to a ``yaml`` file.
 
 .. _yamlstructure:
 
-``yaml`` format
+``yaml`` Format
 -----------------------------
 
 Keyword-based structural information format.
@@ -93,7 +93,7 @@ Calcium fluoride in a crystal lattice.
 
 
 
-``ascii``  format
+``ascii``  Format
 -----------------------------
 
 The ascii format is described here in detail: http://inac.cea.fr/sp2m/L_Sim/V_Sim/sample.html#sample_ascii

@@ -1,6 +1,6 @@
 
 
 ==================
-Input parameters
+Input Parameters
 ==================
 

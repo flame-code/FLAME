@@ -9,9 +9,10 @@ Welcome to FLAME
 
 
 
-FLAME is a software package to perform a wide range of atomistic simulations
+FLAME -- a library of atomistic modeling environments --
+is a software package to perform a wide range of atomistic simulations
 for exploring the potential energy surfaces (PES) of complex condensed matter systems.
-The range of methods includes molecular dynamics simulations to sample free energy landscapes, 
+Available methods includes molecular dynamics simulations to sample free energy landscapes, 
 saddle point searches to identify transition states, and gradient relaxations
 to find dynamically stable geometries.
 In addition to such common tasks, FLAME implements a structure prediction algorithm
@@ -29,7 +30,7 @@ and two-dimensional materials.
 
 
 
-The FLAME team
+The FLAME Team
 ===============
 
 The development of FLAME started back in 2010 in

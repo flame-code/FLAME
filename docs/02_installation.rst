@@ -18,17 +18,16 @@ Prerequisites
 =================
 
 FLAME requires **autoconf** and **automake**.
-IMPORTANT: note that currently only **automake** up to version 1.15.1
+IMPORTANT NOTE:currently only **automake** up to version 1.15.1
 is supported due to changes introduced in later versions
 that break the Makefile structure.
-
 
 Any Fortran and C compiler should work for compiling FLAME.
 However, we recommend using the Intel Fortran and C compiler.
 
 
 FLAME has to be linked to Blas, LaPack, and FFT libraries.  
-They can be obtained as part of the Intel Math Kernel Library, 
+They can be obtained as part of the Intel Math Kernel Library (MKL), 
 which is the recommended route. In principle, other
 implementations of the libraries should also work.
 
@@ -40,8 +39,8 @@ https://sourceforge.net/projects/spglib/files/spglib/
 
 
 Linking to LAMMPS requires the installation of LAMMPS with 
-the desired potentials. Supported and tested version is
-r12824
+the desired potentials. The best upported and well tested version is
+r12824:
 
 http://lammps.sandia.gov
 
