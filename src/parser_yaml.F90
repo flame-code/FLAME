@@ -75,12 +75,12 @@ end subroutine yaml_get_parameters
 !*****************************************************************************************
 subroutine yaml_get_main_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use dictionaries, dict_set => set
     use defs_basis, only: HaBohr3_GPA
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
-    integer:: itype
+    integer:: itype, verbosity_mh
     if(dict_size(parini%subdict)<1) stop 'ERROR: main block in flame_in.yaml is empty.'
     parini%task=parini%subdict//"task"
     parini%types_main=parini%subdict//"types"
@@ -90,8 +90,11 @@ subroutine yaml_get_main_parameters(parini)
     parini%rng_type=parini%subdict//"rng_type"
     parini%iseed=parini%subdict//"seed"
     parini%nrun_lammps=parini%subdict//"nrun_lammps"
+    if(has_key(parini%subdict,"verbosity_mh")) then
+        verbosity_mh=parini%subdict//"verbosity_mh"
+        call dict_set(parini%subdict//"verbose",verbosity_mh)
+    endif
     parini%verb=parini%subdict//"verbose"
-!    parini%verb=parini%subdict//"verbosity_mh"
     parini%params_new=parini%subdict//"params_new"
     parini%nat=parini%subdict//"nat"
     if(trim(parini%task)=='minhocao' .and. parini%nat<1) then
