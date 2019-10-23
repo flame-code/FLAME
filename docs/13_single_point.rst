@@ -61,5 +61,3 @@ created in a temporary directory. Otherwise, a valid IP address must be provided
 
     default: ``0``
 
-
-.. warning:: other methods to link with flame? In fact, how to link by compiling with library. Is there a subroutine that has to be called?
