@@ -10,40 +10,90 @@
 
 [FLAME](flame-code.org) is a highly modular open source software package to perform atomistic simulations using a variety of techniques.
 
-## Installation
 
-* FLAME requires `autoconf` and `automake` to be installed.
+## Prerequisites
 
-* It is recommended to install FLAME in a directory different from the source.
+FLAME requires `autoconf` and `automake`.
+IMPORTANT NOTE:currently only `automake` up to version 1.15.1
+is supported due to changes introduced in later versions
+that break the Makefile structure.
 
-### Steps to install FLAME
+Any Fortran and C compiler should in principle work for compiling FLAME.
+However, we recommend using the Intel Fortran and C compiler.
 
-* You first need to install `futile` which is
-a set of utilities from the [BigDFT](http://bigdft.org) suite.
-It is highly recommended to use the tar file of futile given inside the
-FLAME to avoid possible inconsistency.
 
-* You do NOT need different installation of futile
-for multiple installations of FLAME.
+FLAME has to be linked to Blas, LaPack, and FFT libraries.  
+They can be obtained as part of the Intel Math Kernel Library (MKL), 
+which is the recommended route. In principle, other
+implementations of the libraries should also work.
+
+
+Linking to Atsushi Togo's [SPGLIB](https://sourceforge.net/projects/spglib/files/spglib/) is recommended. 
+The currently supported
+and well-tested version is 1.6.x and can be found here:
+
+https://sourceforge.net/projects/spglib/files/spglib/
+
+
+Linking to LAMMPS requires the installation of [LAMMPS](http://lammps.sandia.gov) with 
+the desired potentials. The best upported and well tested version is
+r12824:
+
+http://lammps.sandia.gov
+
+Futile is required, a library of tools developed as part of the [BigDFT](http://bigdft.org/) project.
+
+http://bigdft.org/
+
+Installation of python is required. Currently,
+only python 2.7 is supported. Future releases of FLAME will
+support python 3
+
+
+### Installing FLAME on Linux
+
+* It is recommended to install FLAME in a different
+directory than the source code.
 
 #### Here are steps:
 
-1. `Untar` the futile inside the FLAME, then in order to build futile,
-make a directory somewhere and from there run the following:
+1. First, install futile which is
+   a set of utilities from the BigDFT project.
+   Preferably, use the version provided with
+   FLAME to avoid conflicts.
+   Untar the included futile-suite.tar.gz (`tar -zxvf futile-suite.tar.gz`), then 
+   create a new build directory (e.g., `mkdir futile-build ; cd futile-build`), and from there run
 
-   - `path_to_futile_source/Installer.py build futile -c "FCFLAGS=-O2" 
-     "--with-ext-linalg=-L/opt/intel/composer_xe_2013.2.146/mkl/lib/intel64
-     -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm"
-     "CC=mpicc" "CXX=mpicxx" "FC=mpif90" "F77=mpif90" "FCLIBS= "`
+   - for GNU compilers:
 
-   - Of course, the setting is given for a particular version and
-installation of `MKL`, you must need to modify it according to your machine.
+      `path_to_futile_source/Installer.py build futile -c 
+      CC=gcc CXX=g++ FC=gfortran F77=gfortran \
+      --with-ext-linalg="-llapack -lblas"`
 
-   - After installation, you may need to find out how to link with
-the build futile, however, in the subsequent steps you see an
-example. In case, you want to know how to link you can run:
+   - for Intel compilers:
 
-   - `path_to_futile_source/Installer.py link futile`
+      `path_to_futile_source/Installer.py build futile -c FCFLAGS=-O2 \
+      --with-ext-linalg="-L$MKLROOT/lib/intel64 \
+      -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm" \
+      CC=icc CXX=icpc FC=ifort F77=ifort`
+
+   - for parallel compilation use the corresponding MPI wrappers:
+
+      `path_to_futile_source/Installer.py build futile -c FCFLAGS=-O2 \
+      --with-ext-linalg="-L$MKLROOT/lib/intel64 \
+      -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm" \
+      CC=mpicc CXX=mpicxx FC=mpif90 F77=mpif90`
+
+   follwed by `make build` if necessary.
+   Make sure to adapt the library locations and
+   the linking flags appropriately.
+   After the installation of futile, we need to link it
+   with FLAME.
+   To display details on the general linking procedure, run:
+
+   `path_to_futile_source/Installer.py link futile`
+
+
 
 2. in FLAME source directory run:
 

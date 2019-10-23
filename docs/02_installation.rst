@@ -91,7 +91,7 @@ directory than the source code.
       -lmkl_rt -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm" \
       CC=mpicc CXX=mpicxx FC=mpif90 F77=mpif90``
 
-   follwed by ```make build`` if necessary.
+   follwed by ``make build`` if necessary.
    Make sure to adapt the library locations and
    the linking flags appropriately.
    After the installation of futile, we need to link it
