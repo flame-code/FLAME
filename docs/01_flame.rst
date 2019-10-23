@@ -33,8 +33,7 @@ and two-dimensional materials.
 The FLAME Team
 ===============
 
-The development of FLAME started back in 2010 in
-Basel, Switzerland, with the
+The development of methods implemented in FLAME started back in 2007 in Basel, Switzerland, with the
 implementation of various atomistic simulation tasks in 
 different software packages. These tasks were later merged into two
 main codes (Alborz and Minhocao), which were independently maintained and

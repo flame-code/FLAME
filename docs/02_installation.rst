@@ -22,7 +22,7 @@ IMPORTANT NOTE:currently only **automake** up to version 1.15.1
 is supported due to changes introduced in later versions
 that break the Makefile structure.
 
-Any Fortran and C compiler should work for compiling FLAME.
+Any Fortran and C compiler should in principle work for compiling FLAME.
 However, we recommend using the Intel Fortran and C compiler.
 
 
@@ -44,10 +44,9 @@ r12824:
 
 http://lammps.sandia.gov
 
-The BigDFT package can be found here:
+Futile is required, a library of tools developed as part of the BigDFT project.
 
 http://bigdft.org/
-
 
 Installation of python is required. Currently,
 only python 2.7 is supported. Future releases of FLAME will

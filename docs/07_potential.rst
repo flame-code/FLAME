@@ -268,25 +268,25 @@ in the CENT potential, then the ``ewald`` key can be used to set the relevant pa
 
         default: ``No default value.``
 
-    **bias_type** It used when charged point particles are confined along the non-periodic direction by 
-                  two parallel metallic plates at two different electric potentials or 
-                  are in the presence of an external electric field, 
-                  applicable only when the boundary condition is slab and the ``p3d`` method is selected..
+    **bias_type** (string) Select schemes to treat external fields or special boundary conditions
+    if the ``p3d`` method is used.
 
         default: ``no``
                 
         options: 
-            ``p3d_bias``:  The P3D-bias is used for conditions in which ionic material sandwiched between
-                           two parallel metallic plates at two different electric potentials.
+
+            ``p3d_bias``:  For modeling conditions in which an ionic material is confined between
+                           two parallel metallic plates at two different electric potentials.  
                            For more information see :cite:`Rostami2016`.
-            ``fixed_efield``: It is used when an external uniform electric field applied along the z-direction.
 
-    **plane_voltageu** The voltage of upper plate used for P3D_bias method. In atomic units. 
+            ``fixed_efield``: An external uniform electric field is applied along the non-periodic *z*-direction.
+
+    **plane_voltageu** (real) Voltage of the upper plate used if ``p3d_bias`` is selected for  **bias_type**. Units in Ha/e. 
         default: ``0.d0``
 
-    **plane_voltagel** The voltage of lower plate used for P3D_bias method. In atomic units.
+    **plane_voltagel** (real) Voltage of the lower plate used if ``p3d_bias`` is selected for  **bias_type**. Units in Ha/e.
         default: ``0.d0``
 
-    **external_field** The uniform electric field used for fixed_efield. In atomic units.
+    **external_field** (real) Uniform electric field used if ``fixed_efield`` is selected for **bias_type**. Units in Ha/e/Bohr.
         default: ``0.d0``
 
