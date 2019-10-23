@@ -94,38 +94,44 @@ directory than the source code.
    `path_to_futile_source/Installer.py link futile`
 
 
-
-2. in FLAME source directory run:
+2. To compile FLAME, change into the main FLAME directory and run:
 
    - `autoreconf -fi`
 
-3. make a directory to build flame and then replace `$FUTILE` by the
-full path of futile built directory or define it as an environment variable:
+3. Create a build directory for FLAME (e.g., `mkdir build-FLAME ; cd build-FLAME`). 
+   Explicitly replace `$FUTILE` with the full path of the futile build-directory during `configure`, 
+   or define it as an environmental variable:
 
-   - `export FUTILE=path_to_built_futile_directory`
+   - `export FUTILE=path_to_futile_build`
 
-   - IMPORTANT: exporting FUTILE variable is required, not optional.
+   Note that providing the `FUTILE` variable is required to successfully compile FLAME, and is not optional.
+   Then, run `configure`. 
+    
+   - For Intel compilers and MPI parallelization:
 
-4. `path_to_flame_source/configure FC=mpif90 F77=mpif90 CXX=mpicc CC=mpicc 
-FCFLAGS="-I$FUTILE/install/include -shared-intel -mcmodel=large  -mkl=sequential" 
-CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/install/lib 
--L/opt/intel/composer_xe_2013.2.146/mkl/lib/intel64 -lfutile-1 -lmkl_rt 
--lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm -lyaml -ldl -lrt -cxxlib"`
+       `path_to_flame_source/configure FC=mpif90 F77=mpif90 CXX=mpicc CC=mpicc \
+       FCFLAGS="-I$FUTILE/install/include -shared-intel -mcmodel=large  -mkl=sequential" \
+       CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/install/lib \
+       -L/$MKLROOT/lib/intel64 -lfutile-1 -lmkl_rt \
+       -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -liomp5 -lm -lyaml -ldl -lrt -cxxlib"`
 
-   Linking to exterior packages:
 
-   - if you want to link with [SPGLIB](https://atztogo.github.io/spglib/) then add
+   - For GNU compilers without MKL:
 
-     `--with-spglib SPGLIB_ROOT=path_to_spglib`
+       `path_to_flame_source/configure FC=mpif90 F77=mpif90 CXX=mpicc CC=mpicc \
+       FCFLAGS="-I$FUTILE/install/include -mcmodel=large" \
+       CFLAGS=-mcmodel=large "LIBS=-L$FUTILE/install/lib \
+       -lfutile-1 -lm -lyaml -llapack -lfftw3 -ldl -cxxlib"`
+   
+   - To link with [SPGLIB](https://atztogo.github.io/spglib/), append
+   `--with-spglib SPGLIB_ROOT=path_to_spglib`
 
-   - if you want to link with [BigDFT](http://bigdft.org) PSolver then add
+   - To link with the [BigDFT](http://bigdft.org) PSolver, append
+   `--with-bps BDIR=path_to_bigdft_root`
 
-     `--with-bps BDIR=path_to_bigdft_root`
+   - To link with [LAMMPS](https://lammps.sandia.gov), append
+   `--with-lammps LAMMPS_ROOT=path_to_lammps_root`
 
-   - if you want to link with [LAMMPS](https://lammps.sandia.gov) then add
+4. Run `make` to compile the code. 
+   Upon successful compilation, the executable can be found in `src/flame`.
 
-     `--with-lammps LAMMPS_ROOT=path_to_lammps_root`
-
-4. `make`
-
-   You should be ready to use FLAME, the executable is at `src/flame`
