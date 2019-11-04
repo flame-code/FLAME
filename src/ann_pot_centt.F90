@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
+subroutine cal_ann_centt(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
@@ -19,7 +19,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
     real(8),allocatable :: gausswidth(:)
-    call f_routine(id='cal_ann_cent2')
+    call f_routine(id='cal_ann_centt')
     call update_ratp(atoms)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -82,7 +82,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     !This msut be here otherwise it will zero forces which were calculated by kwald.
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(parini%iverbose>=2) call cpu_time(time4)
-    call get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
+    call get_qat_from_chi_centt(parini,ann_arr,atoms,cent)
     if(parini%iverbose>=3) then
         do iat=1,atoms%nat
             write(82,'(i5,1x,a,1x,2f8.3)') iat,trim(atoms%sat(iat)), &
@@ -99,13 +99,13 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     !call cal_electrostatic_eem2(parini,'calculate',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) then
         call cpu_time(time7)
-        !write(*,'(a,f8.3)') 'Timing:cent2: initialize matrix          ',time2-time1
-        !write(*,'(a,f8.3)') 'Timing:cent2: calculation of symfunc     ',time3-time2
-        !write(*,'(a,f8.3)') 'Timing:cent2: neural network process     ',time4-time3
-        !write(*,'(a,f8.3)') 'Timing:cent2: linear equations solver    ',time5-time4
-        !write(*,'(a,f8.3)') 'Timing:cent2: force (SR term)            ',time6-time5
-        !write(*,'(a,f8.3)') 'Timing:cent2: energy (SR+LR), force (LR) ',time7-time6
-        !write(*,'(a,f8.3)') 'Timing:cent2: total time                 ',time7-time1
+        !write(*,'(a,f8.3)') 'Timing:centt: initialize matrix          ',time2-time1
+        !write(*,'(a,f8.3)') 'Timing:centt: calculation of symfunc     ',time3-time2
+        !write(*,'(a,f8.3)') 'Timing:centt: neural network process     ',time4-time3
+        !write(*,'(a,f8.3)') 'Timing:centt: linear equations solver    ',time5-time4
+        !write(*,'(a,f8.3)') 'Timing:centt: force (SR term)            ',time6-time5
+        !write(*,'(a,f8.3)') 'Timing:centt: energy (SR+LR), force (LR) ',time7-time6
+        !write(*,'(a,f8.3)') 'Timing:centt: total time                 ',time7-time1
     endif !end of if for printing out timing.
     !atoms%epot=epot_c
     if(trim(ann_arr%event)=='evalu') then
@@ -164,9 +164,9 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
         write(*,'(a,3es14.5)') 'NET FORCE ',fnet(1),fnet(2),fnet(3)
     endif
     call f_release_routine()
-end subroutine cal_ann_cent2
+end subroutine cal_ann_centt
 !*****************************************************************************************
-subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
+subroutine get_qat_from_chi_centt(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -186,7 +186,7 @@ subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
     real(8), allocatable:: rgrad_old(:,:)
     real(8), allocatable:: qat_old(:)
     real(8), allocatable:: rel_old(:,:)
-    call init_cent2(parini,ann_arr,atoms,cent)
+    call init_centt(parini,ann_arr,atoms,cent)
     allocate(qgrad_old(atoms%nat),rgrad_old(3,atoms%nat))
     allocate(qat_old(atoms%nat),rel_old(3,atoms%nat))
     alpha_q=2.d-1*parini%alphax_q
@@ -196,7 +196,7 @@ subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
         if(parini%iverbose>=2) then
             call yaml_sequence(advance='no')
         endif
-        call cal_potential_cent2(parini,ann_arr,atoms,cent)
+        call cal_potential_centt(parini,ann_arr,atoms,cent)
         gnrm=sqrt(sum(cent%rgrad**2))
         gtot=sum(cent%qgrad(1:atoms%nat))
         cent%qgrad(1:atoms%nat)=cent%qgrad(1:atoms%nat)-gtot/atoms%nat
@@ -283,16 +283,16 @@ subroutine get_qat_from_chi_cent2(parini,ann_arr,atoms,cent)
     !                    cent%rel(1:3,51)-atoms%rat(1:3,70), &
     !                    atoms%rat(1:3,51)-atoms%rat(1:3,70)
 
-    call cent2_force(parini,ann_arr,atoms,cent)
+    call centt_force(parini,ann_arr,atoms,cent)
 
     call charge_analysis(parini,atoms,ann_arr)
-    call final_cent2(cent)
+    call final_centt(cent)
     if(parini%iverbose>=2) then
         call yaml_map('charge on atoms',atoms%zat(1:atoms%nat)+atoms%qat(1:atoms%nat),fmt='(f10.5)')
     endif
-end subroutine get_qat_from_chi_cent2
+end subroutine get_qat_from_chi_centt
 !*****************************************************************************************
-subroutine init_cent2(parini,ann_arr,atoms,cent)
+subroutine init_centt(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -370,9 +370,9 @@ subroutine init_cent2(parini,ann_arr,atoms,cent)
     call yaml_map('short range at cut-off',error_erfc_over_r) !CORRECT_IT
     !cent%poisson%rgcut=8.d0/0.529d0 !parini%rgcut_ewald*poisson%alpha !CORRECT_IT
     cent%poisson%rgcut=sqrt(-log(1.d-8))*alpha_largest
-end subroutine init_cent2
+end subroutine init_centt
 !*****************************************************************************************
-subroutine final_cent2(cent)
+subroutine final_centt(cent)
     use mod_ann, only: typ_cent
     use dynamic_memory
     implicit none
@@ -388,9 +388,9 @@ subroutine final_cent2(cent)
     deallocate(cent%gwi)
     deallocate(cent%gwe)
     deallocate(cent%gwit)
-end subroutine final_cent2
+end subroutine final_centt
 !*****************************************************************************************
-subroutine cent2_force(parini,ann_arr,atoms,cent)
+subroutine centt_force(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -411,9 +411,9 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
         cent%poisson%gw(1:cent%poisson%nat)=cent%gwit(1:atoms%nat)
         cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%ratp(1:3,1:atoms%nat)
         call get_hartree_force(parini,cent%poisson,atoms)
-        call cal_shortrange_ewald_force_cent2(parini,ann_arr,atoms,cent)
+        call cal_shortrange_ewald_force_centt(parini,ann_arr,atoms,cent)
     else
-        call cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
+        call cal_centt_pairsum_force(parini,ann_arr,atoms,cent)
     endif
     do iat=1,atoms%nat !summation over ions/electrons
         dx=cent%rel(1,iat)-atoms%ratp(1,iat)
@@ -424,9 +424,9 @@ subroutine cent2_force(parini,ann_arr,atoms,cent)
         atoms%fat(2,iat)=atoms%fat(2,iat)+spring_const*dy
         atoms%fat(3,iat)=atoms%fat(3,iat)+spring_const*dz
     enddo
-end subroutine cent2_force
+end subroutine centt_force
 !*****************************************************************************************
-subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
+subroutine cal_potential_centt(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -440,7 +440,7 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
     real(8):: epot_es, dx, dy, dz
     real(8):: hardness, spring_const
     !if(trim(atoms%boundcond)/='bulk') then
-    !    write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
+    !    write(*,*) 'ERROR: CENTT is ready only for bulk BC.'
     !    stop
     !endif
     ann_arr%ener_ref=0.d0
@@ -465,17 +465,17 @@ subroutine cal_potential_cent2(parini,ann_arr,atoms,cent)
         cent%rgrad(3,iat)=cent%rgrad(3,iat)+spring_const*dz
     enddo
     if(trim(parini%psolver)=='pairsum') then
-        call cal_cent2_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
+        call cal_centt_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
     else
         !write(*,*) 'AAAAAAAAAAAAA'
         !stop
-        call cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
+        call cal_centt_pot_bps(parini,ann_arr,atoms,cent,epot_es)
     endif
     atoms%epot=atoms%epot+epot_es
     atoms%epot=atoms%epot+ann_arr%ener_ref !CORRECT_IT
-end subroutine cal_potential_cent2
+end subroutine cal_potential_centt
 !*****************************************************************************************
-subroutine cal_cent2_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
+subroutine cal_centt_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -570,9 +570,9 @@ subroutine cal_cent2_pot_pairsum(parini,ann_arr,atoms,cent,epot_es)
     enddo
     !-------------------------------------------------------
     !epot=epot+ener_ref
-end subroutine cal_cent2_pot_pairsum
+end subroutine cal_centt_pot_pairsum
 !*****************************************************************************************
-subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
+subroutine cal_centt_pairsum_force(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -643,9 +643,9 @@ subroutine cal_cent2_pairsum_force(parini,ann_arr,atoms,cent)
     enddo
     !-------------------------------------------------------
     !epot=epot+ener_ref
-end subroutine cal_cent2_pairsum_force
+end subroutine cal_centt_pairsum_force
 !*****************************************************************************************
-subroutine cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
+subroutine cal_centt_pot_bps(parini,ann_arr,atoms,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr, typ_cent
@@ -674,7 +674,7 @@ subroutine cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
     !    gw_ion_t=gw_ion
     !endif
     call cpu_time(time1)
-    call put_cent2_gauss_to_grid(parini,atoms,cent)
+    call put_centt_gauss_to_grid(parini,atoms,cent)
     call cpu_time(time2)
     ehartree=0.d0
     allocate(gausswidth(atoms%nat))
@@ -702,7 +702,7 @@ subroutine cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
     cent%qgrad(1:cent%poisson%nat)=cent%qgrad(1:cent%poisson%nat)+cent%poisson%qgrad(1:cent%poisson%nat)
 
     !if(ewald) then
-    call cal_cent2_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
+    call cal_centt_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     !endif
     !gw_ion_t
 
@@ -711,9 +711,9 @@ subroutine cal_cent2_pot_bps(parini,ann_arr,atoms,cent,epot_es)
     !    write(61,'(i4,4f10.5)') iat,rgrad(1,iat),rgrad(2,iat),rgrad(3,iat),qgrad(iat)
     !enddo
     !stop 'TESTING EWALD'
-end subroutine cal_cent2_pot_bps
+end subroutine cal_centt_pot_bps
 !*****************************************************************************************
-subroutine put_cent2_gauss_to_grid(parini,atoms,cent)
+subroutine put_centt_gauss_to_grid(parini,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_cent
@@ -728,7 +728,7 @@ subroutine put_cent2_gauss_to_grid(parini,atoms,cent)
     ny=cent%poisson%ngpy
     nz=cent%poisson%ngpz
     if(.not. cent%poisson%initialized) then
-        stop 'ERROR: put_cent2_gauss_to_grid: poisson is not initialized!'
+        stop 'ERROR: put_centt_gauss_to_grid: poisson is not initialized!'
     endif
     cent%poisson%reset_rho=.true.
     cent%poisson%nat=atoms%nat
@@ -739,7 +739,7 @@ subroutine put_cent2_gauss_to_grid(parini,atoms,cent)
     cent%poisson%rcart(1:3,1:cent%poisson%nat)=atoms%ratp(1:3,1:atoms%nat)
     call put_charge_density(parini,cent%poisson)
     if(.not. cent%poisson%initialized) then
-        stop 'ERROR: put_cent2_gauss_to_grid: poisson is not initialized!'
+        stop 'ERROR: put_centt_gauss_to_grid: poisson is not initialized!'
     endif
     cent%poisson%reset_rho=.false.
     cent%poisson%nat=atoms%nat
@@ -749,9 +749,9 @@ subroutine put_cent2_gauss_to_grid(parini,atoms,cent)
     cent%poisson%gw(1:cent%poisson%nat)=cent%gwe(1:atoms%nat)
     cent%poisson%rcart(1:3,1:cent%poisson%nat)=cent%rel(1:3,1:atoms%nat)
     call put_charge_density(parini,cent%poisson)
-end subroutine put_cent2_gauss_to_grid
+end subroutine put_centt_gauss_to_grid
 !*****************************************************************************************
-subroutine cal_cent2_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
+subroutine cal_centt_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -879,9 +879,9 @@ subroutine cal_cent2_shortrange_ewald(parini,ann_arr,atoms,cent,epot_es)
         cent%qgrad(jat)=cent%qgrad(jat)+shift
     enddo
     epot_es=epot_es+epot_short
-end subroutine cal_cent2_shortrange_ewald
+end subroutine cal_centt_shortrange_ewald
 !*****************************************************************************************
-subroutine cal_shortrange_ewald_force_cent2(parini,ann_arr,atoms,cent)
+subroutine cal_shortrange_ewald_force_centt(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
@@ -988,7 +988,7 @@ subroutine cal_shortrange_ewald_force_cent2(parini,ann_arr,atoms,cent)
         atoms%fat(2,jat)=atoms%fat(2,jat)+(tt21+tt22)*dy
         atoms%fat(3,jat)=atoms%fat(3,jat)+(tt21+tt22)*dz
     enddo
-end subroutine cal_shortrange_ewald_force_cent2
+end subroutine cal_shortrange_ewald_force_centt
 !*****************************************************************************************
 subroutine erf_over_r_taylor(r,funcval,funcval_der)
     implicit none
@@ -1014,7 +1014,7 @@ subroutine erf_over_r_taylor(r,funcval,funcval_der)
                 (1.d1*a5+rsq*(1.2d1*a6+rsq*(1.4d1*a7+rsq*a8*1.6d1)))))))
 end subroutine erf_over_r_taylor
 !*****************************************************************************************
-subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
+subroutine calc_multipoles_centt(parini,atoms,poisson,rel)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1080,9 +1080,9 @@ subroutine calc_multipoles_cent2(parini,atoms,poisson,rel)
     !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxx,qpxy,qpxz
     !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxy,qpyy,qpyz
     !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxz,qpyz,qpzz
-end subroutine calc_multipoles_cent2
+end subroutine calc_multipoles_centt
 !*****************************************************************************************
-subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
+subroutine calc_multipoles_grid_centt(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1163,5 +1163,5 @@ subroutine calc_multipoles_grid_cent2(parini,atoms,poisson)
     !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxx,qpxy,qpxz
     !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxy,qpyy,qpyz
     !write(*,'(a,3f8.4)') 'Quadrupole moments',qpxz,qpyz,qpzz
-end subroutine calc_multipoles_grid_cent2
+end subroutine calc_multipoles_grid_centt
 !*****************************************************************************************

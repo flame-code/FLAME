@@ -224,7 +224,7 @@
  ann:
    subtask                             : train
    optimizer                           : rivals
-   approach                            : cent2
+   approach                            : centt
    symfunc                             : only_calculate
    nstep_opt                           : 10
    nstep_cep                           : 200
@@ -242,7 +242,7 @@
    normalization                       : False
    bondbased                           : False
    prefit                              : False
-   prefit_cent2                        : True
+   prefit_centt                        : True
    read_forces                         : True
    restart_param                       : False
    restart_iter                        : 0

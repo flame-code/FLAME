@@ -365,7 +365,7 @@ subroutine yaml_get_ann_parameters(parini)
     parini%normalization_ann=parini%subdict//"normalization"
     parini%bondbased_ann=parini%subdict//"bondbased"
     parini%prefit_ann=parini%subdict//"prefit"
-    parini%prefit_cent2_ann=parini%subdict//"prefit_cent2"
+    parini%prefit_centt_ann=parini%subdict//"prefit_centt"
     parini%read_forces_ann=parini%subdict//"read_forces"
     parini%restart_param=parini%subdict//"restart_param"
     parini%restart_iter=parini%subdict//"restart_iter"

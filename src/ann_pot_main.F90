@@ -23,7 +23,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
         iconf=idp
     elseif(trim(ann_arr%approach)=='cent1') then
         iconf=idp
-    elseif(trim(ann_arr%approach)=='cent2') then
+    elseif(trim(ann_arr%approach)=='centt') then
         iconf=idp
     elseif(trim(ann_arr%approach)=='cent3') then
         iconf=int((idp-1)/3)+1
@@ -52,7 +52,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
             enddo
         enddo
         call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-    elseif(trim(ann_arr%approach)=='cent2') then
+    elseif(trim(ann_arr%approach)=='centt') then
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
             do j=1,ann_arr%nweight_max
@@ -105,8 +105,8 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr)
-    elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_cent2(parini,atoms,symfunc,ann_arr)
+    elseif(trim(ann_arr%approach)=='centt') then
+        call cal_ann_centt(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent3') then
         call cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='tb') then
@@ -254,7 +254,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
             do iat=1,atoms%nat
                 if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
                     qnet=atoms%qat(iat)
-                elseif(trim(ann_arr%approach)=='cent2') then
+                elseif(trim(ann_arr%approach)=='centt') then
                     qnet=atoms%zat(iat)+atoms%qat(iat)
                 else
                     write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)

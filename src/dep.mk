@@ -147,7 +147,7 @@
 ./potential_flame.o : ./potential_flame.F90 ./parini_mod.o 
 ./envelope.o : ./envelope.F90 
 ./fit_elecpot.o : ./fit_elecpot.F90 ./ann_mod.o ./atoms_mod.o ./electrostatics_mod.o ./parini_mod.o ./interface_mod.o 
-./ann_pot_cent2.o : ./ann_pot_cent2.F90 ./electrostatics_mod.o ./linked_lists_mod.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
+./ann_pot_centt.o : ./ann_pot_centt.F90 ./electrostatics_mod.o ./linked_lists_mod.o ./symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./interface_mod.o 
 ./saddle_1s_optimizer.o : ./saddle_1s_optimizer.F90 ./saddle_mod.o ./atoms_mod.o ./potential_mod.o ./opt_mod.o ./parini_mod.o ./interface_mod.o 
 ./gaussdist.o : ./gaussdist.F90 ./interface_mod.o 
 ./grid_gto_sym.o : ./grid_gto_sym.F90 ./parini_mod.o ./atoms_mod.o ./interface_mod.o 

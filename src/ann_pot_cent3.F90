@@ -94,7 +94,7 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
 
     call get_qat_from_chi_cent3(parini,ann_arr,atoms,cent)
     
-    call calc_multipoles_cent2(parini,atoms,cent%poisson,cent%rel)
+    call calc_multipoles_centt(parini,atoms,cent%poisson,cent%rel)
     atoms%dpm(1)=cent%poisson%dpm(1)
     atoms%dpm(2)=cent%poisson%dpm(2)
     atoms%dpm(3)=cent%poisson%dpm(3)
@@ -624,7 +624,7 @@ subroutine cal_potential_cent3(parini,ann_arr,atoms,cent)
     real(8):: epot_es, dx, dy, dz
     real(8):: hardness, spring_const
     !if(trim(atoms%boundcond)/='bulk') then
-    !    write(*,*) 'ERROR: CENT2 is ready only for bulk BC.'
+    !    write(*,*) 'ERROR: CENTT is ready only for bulk BC.'
     !    stop
     !endif
     ann_arr%ener_ref=0.d0

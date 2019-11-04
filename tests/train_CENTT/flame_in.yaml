@@ -8,14 +8,14 @@ main:
 ann:
     subtask       : train
     optimizer     : rivals
-    approach      : cent2
+    approach      : centt
     nstep_opt     : 10
     nconf_rmse     : 1000
     ampl_rand     :   0.020
     syslinsolver  : operator
     symfunc       : only_calculate
     #prefit        : True
-    prefit_cent2  : True
+    prefit_centt  : True
    # restart_param : True
    # restart_iter  : 18
     print_energy  : True
