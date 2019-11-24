@@ -15,9 +15,9 @@ def xyz_read(filename,style):
         if iline==1:
             atoms.nat=int(line.split()[0])
             units=line.split()[1]
-            atoms.epot=float(line.split()[2])
+            #atoms.epot=float(line.split()[2])
             #if units=='atomicd0' or units=='atomic':
-            atoms.epot=atoms.epot*27.211385 #in bigdft energy is in Ha disregarding units of position
+            #atoms.epot=atoms.epot*27.211385 #in bigdft energy is in Ha disregarding units of position
         if iline==2:
             if style=='mine':
                 atoms.boundcond=line.split()[0]
