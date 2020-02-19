@@ -2,6 +2,7 @@ main:
    nodes: [5, 5]
    rcut: 9.0
    method: behler
+   ener_ref: 0.0
 
 symfunc:
   g02_001:   0.0010  0.0000  0.0000  0.0000  B 

@@ -79,11 +79,11 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     !endif
     rcut               =  subdict_ann//"rcut"
     ann%method         =  subdict_ann//"method"
+    ann%ener_ref       =  subdict_ann//"ener_ref" 
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
         trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
         ann%ampl_chi       =  subdict_ann//"ampl_chi" 
         ann%prefactor_chi  =  subdict_ann//"prefactor_chi" 
-        ann%ener_ref       =  subdict_ann//"ener_ref" 
         ann%gausswidth     =  subdict_ann//"gausswidth" 
         ann%hardness       =  subdict_ann//"hardness" 
         ann%chi0           =  subdict_ann//"chi0" 
@@ -94,9 +94,9 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
         ann%spring_const   =  subdict_ann//"spring_const"
     endif
-    if(trim(parini%approach_ann)=='tb') then
-        ann%ener_ref       =  subdict_ann//"ener_ref" 
-    endif
+    !if(trim(parini%approach_ann)=='tb') then
+    !    ann%ener_ref       =  subdict_ann//"ener_ref" 
+    !endif
     !ann%rionic    = subdict_ann//"rionic"
     nullify(subdict_ann)
     !---------------------------------------------
@@ -335,11 +335,11 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     enddo
     call set(subdict_ann//"rcut",rcut)
     call set(subdict_ann//"method",ann%method)
+    call set(subdict_ann//"ener_ref",ann%ener_ref)
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
         trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"ampl_chi",ann%ampl_chi)
         call set(subdict_ann//"prefactor_chi",ann%prefactor_chi)
-        call set(subdict_ann//"ener_ref",ann%ener_ref)
         call set(subdict_ann//"gausswidth",ann%gausswidth)
         call set(subdict_ann//"hardness",ann%hardness)
         call set(subdict_ann//"chi0",ann%chi0)
@@ -350,10 +350,10 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
         call set(subdict_ann//"gausswidth_ion",ann%gausswidth_ion)
         call set(subdict_ann//"spring_const",ann%spring_const)
     endif
-    if(trim(parini%approach_ann)=='tb') then
-        !ann%ener_ref       =  subdict_ann//"ener_ref" 
-        call set(subdict_ann//"ener_ref",ann%ener_ref)
-    endif
+    !if(trim(parini%approach_ann)=='tb') then
+    !    !ann%ener_ref       =  subdict_ann//"ener_ref" 
+    !    call set(subdict_ann//"ener_ref",ann%ener_ref)
+    !endif
     nullify(subdict_ann)
     !-------------------------------------------------------
     subdict_ann=>dict_ann//"symfunc"

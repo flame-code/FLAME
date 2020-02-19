@@ -28,6 +28,10 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     if(parini%save_symfunc_behnam) then
         ann_arr%cal_force=.false.
     endif
+    ann_arr%ener_ref=0.d0
+    do iat=1,atoms%nat
+        ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
+    enddo
     i=1
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
@@ -86,6 +90,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
         endif
         atoms%epot=atoms%epot+epoti
     enddo over_iat
+    atoms%epot=atoms%epot+ann_arr%ener_ref
     call cell_vol(atoms%nat,atoms%cellvec,vol)
     vol=vol*real(atoms%nat,8)
     atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)/vol
