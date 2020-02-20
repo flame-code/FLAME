@@ -226,7 +226,9 @@ end subroutine teststress_fd
 !*****************************************************************************************
 subroutine teststress_fd_cellvec(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, update_ratp, update_rat
+    use mod_atoms, only: typ_atoms, typ_atoms_arr
+    use mod_atoms, only: update_ratp, update_rat, atom_copy_old, atom_deallocate
+    use mod_yaml_conf, only: read_yaml_conf
     use mod_potential, only: potential
     use mod_processors, only: iproc
     use mod_acf, only: acf_read
@@ -235,6 +237,7 @@ subroutine teststress_fd_cellvec(parini)
     !local variables
     integer :: i,j,k
     type(typ_atoms):: atoms 
+    type(typ_atoms_arr):: atoms_arr
     real(8):: hij,vol, tt
     real(8), allocatable::rat_int(:,:)
     real(8):: stress(3,3),stress_center(3,3),Ed(3,3)
@@ -243,7 +246,14 @@ subroutine teststress_fd_cellvec(parini)
     real(8):: ener(-m:m), c(-m:m)=(/-1.d0,9.d0,-45.d0,0.d0,45.d0,-9.d0,1.d0/)
     potential=trim(parini%potential_potential)
    
-    call acf_read(parini,'posinp.acf',1,atoms=atoms) !Cartezy
+    !call acf_read(parini,'posinp.acf',1,atoms=atoms)
+
+    call read_yaml_conf(parini,'posinp.yaml',1,atoms_arr)
+    if(atoms_arr%nconf/=1) stop 'ERROR: atoms_arr%nconf/=1 in testforces_fd'
+    call atom_copy_old(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms_s')
+    call atom_deallocate(atoms_arr%atoms(1))
+    deallocate(atoms_arr%atoms)
+
     allocate(rat_int(3,atoms%nat))
     call update_ratp(atoms)
     call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,rat_int)
