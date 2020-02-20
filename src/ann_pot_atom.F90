@@ -34,11 +34,11 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     do iat=1,atoms%nat
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
     enddo
-    i=1
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
     atoms%stress(1:3,1:3)=0.d0
     over_iat: do iat=1,atoms%nat
+        i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
         !if(ann_arr%compute_symfunc) then
         !    ann_arr%ann(i)%y(1:ng,0)=ann_arr%yall(1:ng,iat)
