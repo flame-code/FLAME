@@ -277,4 +277,4 @@ train_CENTT:
  Keys to ignore:
   - TIMING evaluation symmetry functions for train
   - TIMING evaluation symmetry functions for valid
- Epsilon: 1.e-10
+ Epsilon: 5.e-10

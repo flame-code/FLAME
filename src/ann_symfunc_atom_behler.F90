@@ -263,14 +263,14 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         etaj=ann_arr%ann(jsat)%g5eta(ig)
         etak=ann_arr%ann(ksat)%g5eta(ig)
         zzz=2.d0**(1.d0-zeta)
-        ui=(1.d0+alam*cos_theta_i)**zeta
+        ui=(1.0000000000001d0+alam*cos_theta_i)**zeta
         vi=exp(-(etaj*rijsq+etak*riksq))*factor
         ttei=zzz*ui*vi*fcj_fck
         ss1=vi*fcj_fck
         ss2=ui*fcj_fck
         ss3=ui*vi*piaik%fc
         ss4=ui*vi*piaij%fc
-        tt1=zeta*alam*(1.d0+alam*cos_theta_i)**(zeta-1)*ss1
+        tt1=zeta*alam*(1.0000000000001d0+alam*cos_theta_i)**(zeta-1)*ss1
         tt2=tt1*one_rijk
         ttj=2.d0*etaj*vi*ss2 !HERE etaj must be checked
         ttk=2.d0*etak*vi*ss2 !HERE etaj must be checked
