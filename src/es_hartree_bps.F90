@@ -29,7 +29,14 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
     !however, I can check or make it to be allocated as (ngpx,ngpy,ngpz), if
     !BPS is used.
     !stress_t(1:6)=0.d0
-    call H_POTENTIAL('G',poisson%pkernel,poisson%rho, &
+    do igpz=1,poisson%ngpz
+    do igpy=1,poisson%ngpy
+    do igpx=1,poisson%ngpx
+        poisson%pot(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
+    enddo
+    enddo
+    enddo
+    call H_POTENTIAL('G',poisson%pkernel,poisson%pot, &
         pot_ion,ehartree,0.d0,.false.,stress_tensor=stress_t) !,quiet='yes')
     !write(*,'(a,6es14.5)') 'STRESS ',stress_t(1:6)
     !ordering from BigDFT ---> (11,22,33,23,13,12)
@@ -42,13 +49,6 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
     atoms%stress(3,2)=stress_t(4)
     atoms%stress(3,1)=stress_t(5)
     atoms%stress(2,1)=stress_t(6)
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        poisson%pot(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
     call f_free(pot_ion)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
