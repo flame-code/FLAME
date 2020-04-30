@@ -54,12 +54,12 @@ subroutine init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,
         xred=ratred(1,iat)
         yred=ratred(2,iat)
         zred=ratred(3,iat)
-        if(xred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(yred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(zred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
-        if(.not. (xred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
-        if(.not. (yred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
-        if(.not. (zred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
+        ! if(xred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
+        ! if(yred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
+        ! if(zred<0.d0) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
+        ! if(.not. (xred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sx ',iat,xred
+        ! if(.not. (yred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sy ',iat,yred
+        ! if(.not. (zred<1.d0)) write(*,*) 'ATOM OUTSIDE: iat,sz ',iat,zred
     enddo
 
     !reciprocal lattice to be used to determine the distance of corners of

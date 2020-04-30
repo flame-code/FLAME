@@ -381,7 +381,7 @@ subroutine put_charge_density(parini,poisson)
     end select
 end subroutine put_charge_density
 !*****************************************************************************************
-subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
+subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree,method)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -393,13 +393,19 @@ subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
+    character(5),optional::method 
     !local variables
     select case(trim(parini%psolver))
         case('kwald')
             call get_psolver_fourier(parini,poisson,atoms,gausswidth, &
                 ehartree,poisson%qgrad)
         case('bigdft')
-            call get_psolver_bps(poisson,atoms,ehartree)
+            if (method=='kwald')then
+                call get_psolver_fourier(parini,poisson,atoms,gausswidth, &
+                    ehartree,poisson%qgrad)
+            else
+                call get_psolver_bps(poisson,atoms,ehartree)
+            endif
         case('p3d')
                 call get_psolver_p3d(parini,poisson,poisson%cell,poisson%hgrid(1,1),poisson%hgrid(2,2),poisson%hgrid(3,3),ehartree)
         case default
@@ -450,7 +456,7 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     end select
 end subroutine get_hartree_grad_rho
 !*****************************************************************************************
-subroutine get_hartree_force(parini,poisson,atoms)
+subroutine get_hartree_force(parini,poisson,atoms,method)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -464,18 +470,23 @@ subroutine get_hartree_force(parini,poisson,atoms)
     real(8):: ehartree
     !local variables
     integer:: iat
+    character(5),optional::method 
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
         case('bigdft')
-            if(parini%cell_ortho) then
-                call force_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart, &
-                    poisson%q,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
-                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
+            if (method=='kwald')then
+                continue
             else
-                call force_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart, &
-                    poisson%q,poisson%gw,poisson%rgcut,poisson%lda,poisson%ngpx, &
-                    poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
+                if(parini%cell_ortho) then
+                    call force_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart, &
+                        poisson%q,poisson%gw_ewald,poisson%rgcut,poisson%lda,poisson%ngpx, &
+                        poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
+                else
+                    call force_gto_sym(parini,poisson%bc,poisson%nat,poisson%rcart, &
+                        poisson%q,poisson%gw,poisson%rgcut,poisson%lda,poisson%ngpx, &
+                        poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%pot,atoms%fat)
+                endif
             endif
         case('p3d')
             if(parini%cell_ortho) then
@@ -493,7 +504,7 @@ subroutine get_hartree_force(parini,poisson,atoms)
     end select
 end subroutine get_hartree_force
 !*****************************************************************************************
-subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
+subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,method)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -510,6 +521,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     real(8):: epotreal !, pi
     integer:: ind
     real(8):: stress(3,3) !, talpha
+    character(5),optional::method 
     call f_routine(id='get_hartree')
     !call f_timing(TCAT_PSOLVER,'ON')
     
@@ -532,7 +544,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     !-----------------------------------------------------------------
     !Even if cal_poisson is false, get_psolver_fourier must be called
     !once more because fat is set to zero after dU/dq=0 in CENT
-    call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree)
+    call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree,method)
     !-----------------------------------------------------------------
     if(parini%ewald .and. (trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1')) then
         epotreal=0.d0

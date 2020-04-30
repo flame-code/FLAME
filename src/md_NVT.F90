@@ -30,13 +30,15 @@ subroutine md_nvt_langevin(parini,atoms)
     real(8):: langev(atoms%nat), forces_langevin(3,atoms%nat)
     real(8):: rat_next(3,atoms%nat), vat_old(3,atoms%nat)
     real(8):: rat_init(3,atoms%nat)
-    real(8):: r, dx(3) , rsq, msd1, msd2, msd3,pi,dipole
+    real(8):: r, dx(3) , rsq, msd1, msd2, msd3,pi,dipole,dy(3,atoms%nat)
     pi=4.d0*atan(1.d0)
+    dy=0.d0
 
     call random_seed() 
     call get_rat(atoms,rat_init)
     !  ___________parameters_______________________________________
-    gama=1.d-3
+    gama=1.d-2
+    !omega = parini%highest_frequency ! THz
     aboltzmann= 3.1668139952584056d-06
     temp_trget = parini%temp_dynamics
     kt = aboltzmann*temp_trget
@@ -66,7 +68,13 @@ subroutine md_nvt_langevin(parini,atoms)
         do iat=1,atoms%nat
             read(1003,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
         enddo
+        read(1003,*) 
+        read(1003,*) 
+        do iat=1,atoms%nat
+            read(1003,'(3es25.17)') dy(1,iat),dy(2,iat),dy(3,iat)
+        enddo
         close(1003)
+        rat_init(:,:)=atoms%ratp(:,:) 
         call update_rat(atoms,upall=.true.)
         call update_ratp(atoms)
         write(21,"(a,i8,a)") "#   *********************** restart from imd:",rmd,"  **************************"
@@ -163,6 +171,17 @@ subroutine md_nvt_langevin(parini,atoms)
         call update_ratp(atoms)
         atoms%vat = (rat_next - atoms%ratp )/dt
         call set_rat(atoms,rat_next,setall=.true.)
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+        do iat=1,atoms%nat
+            dx(1:3)=atoms%ratp(:,iat)-rat_init(:,iat)+dy(:,iat)
+            rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
+            r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
+            msd1 = msd1 + rsq                !all directions
+            msd2 = msd2 + dx(1)**2+dx(2)**2  !x,y directions
+            msd3 = msd3 + dx(3)**2           !z   direction
+        enddo
+        write(100,*) imd, parini%time_dynamics, msd1/atoms%nat
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
         if(mod(imd,nfreq)==0) then
             file_info%file_position='append'
             call acf_write(file_info,atoms=atoms,strkey='trajectory')
@@ -179,7 +198,6 @@ subroutine md_nvt_langevin(parini,atoms)
                     write(1003,'(3es25.17)') atoms%vat(1,iat),atoms%vat(2,iat),atoms%vat(3,iat)
                 enddo
             write(1003,*) "ENER:" ,  atoms%epot
-            close(1003)
 
 
 
@@ -194,8 +212,10 @@ subroutine md_nvt_langevin(parini,atoms)
             msd2= 0.d0
             msd3= 0.d0
             call update_ratp(atoms)
+            write(1003,*) "dx:" 
             do iat=1,atoms%nat
-                dx(1:3)=atoms%ratp(:,iat)-rat_init(:,iat)
+                dx(1:3)=atoms%ratp(:,iat)-rat_init(:,iat)+dy(:,iat)
+                write(1003,'(3es25.17)') dx
                 rsq=(dx(1)**2+dx(2)**2+dx(3)**2)
                 r=sqrt(dx(1)**2+dx(2)**2+dx(3)**2)
                 msd1 = msd1 + rsq                !all directions
@@ -208,6 +228,7 @@ subroutine md_nvt_langevin(parini,atoms)
             write(1111,*) '  MSD_z  = ', msd3/atoms%nat 
             write(1111,*) '# -----------------------------------------------'
 
+            close(1003)
         endif
         etotold=etot
     enddo !end of loop over imd
