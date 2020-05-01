@@ -204,6 +204,7 @@
      frequency: 0.0
      gnrmtol: 1.E-7
      psolver: unknown
+     bigdft_kwald: True
      ewald: False
      cell_ortho: False
      ewald_tol: 1.E-6

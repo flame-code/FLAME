@@ -509,6 +509,7 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%efield=parini%subsubdict//"external_field"
     parini%bias_type=parini%subsubdict//"bias_type"
     parini%psolver=parini%subsubdict//"psolver"
+    parini%bigdft_kwald=parini%subsubdict//"bigdft_kwald"
     parini%cell_ortho=parini%subsubdict//"cell_ortho"
     parini%dielec_const=parini%subsubdict//"dielec_const"
     parini%dielec_const1=parini%subsubdict//"dielec_const1"

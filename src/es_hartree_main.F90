@@ -471,11 +471,22 @@ subroutine get_hartree_force(parini,poisson,atoms,method)
     !local variables
     integer:: iat
     character(5),optional::method 
+    character(5)::method2
+    if ( present(method)) then
+        if (trim(method)=='kwald') then
+            method2 = method
+        else
+            method2 = "bigdf"
+        endif
+    else
+        method2 = "bigdf"
+    endif
+
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
         case('bigdft')
-            if (method=='kwald')then
+            if (method2=='kwald')then
                 continue
             else
                 if(parini%cell_ortho) then
@@ -521,8 +532,18 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,method)
     real(8):: epotreal !, pi
     integer:: ind
     real(8):: stress(3,3) !, talpha
-    character(5),optional::method 
+    character(5),intent(in),optional::method 
+    character(5)::method2
     call f_routine(id='get_hartree')
+    if ( present(method)) then
+        if (method=='kwald') then
+            method2 = method
+        else
+            method2 = "bigdf"
+        endif
+    else
+        method2 = "bigdf"
+    endif
     !call f_timing(TCAT_PSOLVER,'ON')
     
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
@@ -544,7 +565,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,method)
     !-----------------------------------------------------------------
     !Even if cal_poisson is false, get_psolver_fourier must be called
     !once more because fat is set to zero after dU/dq=0 in CENT
-    call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree,method)
+    call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree,method2)
     !-----------------------------------------------------------------
     if(parini%ewald .and. (trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1')) then
         epotreal=0.d0
