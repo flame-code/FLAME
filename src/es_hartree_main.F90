@@ -471,22 +471,11 @@ subroutine get_hartree_force(parini,poisson,atoms,method)
     !local variables
     integer:: iat
     character(5),optional::method 
-    character(5)::method2
-    if ( present(method)) then
-        if (trim(method)=='kwald') then
-            method2 = method
-        else
-            method2 = "bigdf"
-        endif
-    else
-        method2 = "bigdf"
-    endif
-
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
         case('bigdft')
-            if (method2=='kwald')then
+            if (parini%bigdft_kwald)then
                 continue
             else
                 if(parini%cell_ortho) then
@@ -532,17 +521,17 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,method)
     real(8):: epotreal !, pi
     integer:: ind
     real(8):: stress(3,3) !, talpha
-    character(5),intent(in),optional::method 
+    character(5),optional::method 
     character(5)::method2
     call f_routine(id='get_hartree')
-    if ( present(method)) then
+    if ( parini%bigdft_kwald .and. present(method)) then
         if (method=='kwald') then
             method2 = method
         else
-            method2 = "bigdf"
+            method2 = "defau"
         endif
     else
-        method2 = "bigdf"
+        method2 = "defau"
     endif
     !call f_timing(TCAT_PSOLVER,'ON')
     

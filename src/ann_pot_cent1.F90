@@ -424,6 +424,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     real(8):: tt2, tt3, ttf, gama, pi
     real(8):: dx, dy, dz, r, beta_iat, beta_jat, ehartree_t
     real(8), allocatable:: gausswidth(:)
+    character(5)::method="defau"
     allocate(gausswidth(1:atoms%nat))
     if(trim(atoms%boundcond)=='free') then
         pi=4.d0*atan(1.d0)
@@ -453,17 +454,15 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         enddo
         ann_arr%epot_es=tt2+tt3
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
+
         if (parini%bigdft_kwald) then 
-            gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-            call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t,"kwald")
-            poisson%gw(1:poisson%nat)=poisson%gw_ewald(1:poisson%nat)
-            call get_hartree_force(parini,poisson,atoms,"kwald")
-        else
-            gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-            call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
-            poisson%gw(1:poisson%nat)=poisson%gw_ewald(1:poisson%nat)
-            call get_hartree_force(parini,poisson,atoms)
+            method = "kwald"
         endif
+            gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+            call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t,method)
+            poisson%gw(1:poisson%nat)=poisson%gw_ewald(1:poisson%nat)
+            call get_hartree_force(parini,poisson,atoms,method)
+
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
     endif
