@@ -25,7 +25,7 @@ def write_yaml(atoms_all,filename):
     for atoms in atoms_all:
         dict_atoms=atoms2dict(atoms)
         output_stream.write("---\n")
-        yaml.dump(dict_atoms,output_stream)
+        yaml.dump(dict_atoms,output_stream,default_flow_style=None)
         del dict_atoms
     output_stream.close()
 #*****************************************************************************************

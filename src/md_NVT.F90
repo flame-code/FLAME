@@ -646,8 +646,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     file_info%print_force=parini%print_force_dynamics
-    call acf_write(file_info,atoms=atoms,strkey='posout')
+    call acf_write(file_info,atoms,strkey='posout')
     close(1003)
+    !call write_yaml_conf(file_info,atoms,'posout.yaml')
 
     call final_potential_forces(parini,atoms)
 end subroutine md_nvt_nose_hoover_chain
