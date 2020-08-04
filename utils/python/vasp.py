@@ -204,7 +204,7 @@ def xdatcar_read():
     f.closed
     return atoms_all
 #*****************************************************************************************
-def poscar_read(filename):
+def poscar_read(filename): #,keepDirect=False):
     f=open(filename,"r")
     atoms=[]
     iline=0
