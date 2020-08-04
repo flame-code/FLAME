@@ -1,18 +1,17 @@
 #!/usr/bin/env python
+import sys
 import argparse
 import atoms
 import numpy as np
 from io_yaml import *
-
-str1 = "This script adds margin to a structure."
+#rzx
+str1 = "This script reads yaml atomic configuration file and sets its margins."
 parser = argparse.ArgumentParser(description=str1)
-parser.add_argument('fn_inp', action='store' ,type=str, help="Name of the input file")
-parser.add_argument('fn_out', action='store' ,type=str, help="Name of the output file")
-parser.add_argument('margin', type=float, help="""Warning: If margin is not set, default
-        value (=3.0 Ang) will be used""", nargs='?', const=1, default=3.0)
+parser.add_argument('fn_inp', action='store' ,type=str, help="Name of the input file in yaml format")
+parser.add_argument('fn_out', action='store' ,type=str, help="Name of the output file in yaml format")
+parser.add_argument('margin', action='store' ,type=float, help="Margin size.")
 args=parser.parse_args()
-margin=args.margin
-
+margin=float(args.margin)
 atoms_all=read_yaml(args.fn_inp)
 nconf=-1
 for atoms in atoms_all:
