@@ -65,6 +65,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: pkernel_init, pkernel_set
+    use at_domain, only: domain, domain_new, ATOMIC_UNITS, geocode_to_bc_enum
 #endif
     implicit none
     type(typ_parini), intent(in):: parini
@@ -80,6 +81,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     type(dictionary), pointer :: dict_input=>null()
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
+    type(domain) :: dom
     write(*,*) 'REZA-1'
     !call f_lib_initialize() 
     write(*,*) 'REZA-2'
@@ -125,7 +127,9 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     beta_ac = abs(ang_ac)!+pi/2.d0
     gamma_ab = abs(ang_ab)!+pi/2.d0
     !write(*,*) iproc,nproc,geocode,ndims, hgrids,alpha_bc,beta_ac,gamma_ab
-    poisson%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
+    dom=domain_new(units=ATOMIC_UNITS,bc=geocode_to_bc_enum(geocode), &
+                    alpha_bc=alpha_bc,beta_ac=beta_ac,gamma_ab=gamma_ab,acell=ndims*hgrids)
+    poisson%pkernel=pkernel_init(iproc,nproc,dict_input,dom,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
     call dict_free(dict_input)
     write(*,*) 'REZA-4'
     call pkernel_set(poisson%pkernel,verbose=.true.)

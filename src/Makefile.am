@@ -159,7 +159,7 @@ spglib_f08.f90:
 endif
 
 if HAVE_BPS
-override LIBS := -L$(BDIR)/install/lib/ -lPSolver-1 $(LIBS)
+override LIBS := -L$(BDIR)/install/lib/ -lPSolver-1 -latlab-1 $(LIBS)
 AM_FCFLAGS += -I$(BDIR)/install/include
 AM_FCFLAGS += -DHAVE_BPS
 endif
