@@ -195,6 +195,7 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     type(dictionary), pointer :: coord_list=>null()
     type(dictionary), pointer :: conf_dict=>null()
     type(dictionary), pointer :: force_list=>null()
+    type(dictionary), pointer :: stress_list=>null()
     real(8), allocatable:: rat(:,:)
     allocate(rat(3,atoms%nat))
 
@@ -260,6 +261,19 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
             nullify(single_atom_list)
         enddo
         nullify(force_list)
+        if(trim(atoms%boundcond)=='bulk') then
+            stress_list=>conf_dict//'stress'
+            call set(stress_list,(/atoms%stress(1,1), &
+                                   atoms%stress(2,1), &
+                                   atoms%stress(3,1), &
+                                   atoms%stress(1,2), &
+                                   atoms%stress(2,2), &
+                                   atoms%stress(3,2), &
+                                   atoms%stress(1,3), &
+                                   atoms%stress(2,3), &
+                                   atoms%stress(3,3)/))
+            nullify(stress_list)
+        endif
     endif
 
     iunit=f_get_free_unit(10**5)
