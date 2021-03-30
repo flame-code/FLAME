@@ -1,0 +1,47 @@
+#ifndef FUTILE_CST_H
+#define FUTILE_CST_H
+
+/* GLib support. */
+@GLIB_TRUE@
+#include <glib.h>
+#include <glib-object.h>
+@GLIB_END_TRUE@
+/* No GLib support, use same conventions. */
+@GLIB_FALSE@
+#include <stdlib.h>
+#define TRUE 1
+#define FALSE 0
+#define gboolean int
+#define g_malloc(A) malloc(A)
+#define g_malloc0(A) malloc(A)
+#define g_free(A)   free(A)
+#define gint int
+#define guint unsigned int
+#define gchar char
+#define gpointer void*
+#define GQuark int
+typedef struct _GArray {gchar *data; guint len;} GArray;
+typedef struct _GError {char *message;} GError;
+#define GType  int
+#define g_array_index(A, T, I) (((T*)(A->data))[I])
+GArray* g_array_sized_new(gboolean zero, gboolean nullify, guint ele_size, guint n_ele);
+#define g_array_set_size(A, N) A->len = N
+#define g_array_unref(A) free(A->data)
+#define G_BEGIN_DECLS
+#define G_END_DECLS
+typedef struct _GObject {guint ref_count;} GObject;
+#define G_OBJECT(O) ((GObject*)O)
+#define g_object_ref(O) {O->ref_count += 1;}
+#define g_object_unref(O) {O->ref_count -= 1;}
+#define g_strdup(S) strdup(S)
+#define g_strndup(S,N) strndup(S,N)
+@GLIB_END_FALSE@
+
+/* Internal types for Fortran datatypes. */
+/* Basic types, used for minimal bindings only. */
+#define F_TYPE(T) (T.add)
+
+#define F_DEFINE_TYPE(T) typedef void f90_ ## T;                        \
+ typedef struct {f90_ ## T *add; char buf[64];} f90_ ## T ## _pointer
+
+#endif

@@ -1,0 +1,6 @@
+if HAVE_MPI2
+then
+endif
+  logical, parameter :: have_mpi2 = .true.  !< Flag to use in the code to switch between MPI1 and MPI2
+  integer :: MPI_IN_PLACE               !< Fake MPI_IN_PLACE variable to allow compilation in sumrho.
+  logical, parameter :: have_mpi2 = .false. !< Flag to use in the code to switch between MPI1 and MPI2

@@ -1,0 +1,51 @@
+---
+ Commandline options provided:
+   ndim                                : 30
+   geocode                             : P
+   angdeg                              : 90.0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  0
+   Tot. No. of Deallocations           :  0
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.000
+     for the array                     : null
+     in the routine                    : null
+     Memory Peak of process            : 9.556 MB
+ Walltime since initialization         : 00:00:00.000947694
+ Max No. of dictionaries used          :  243 #( 169 still in use)
+ Number of dictionary folders allocated:  1
+---
+ Commandline options provided:
+   ndim                                : 100
+   geocode                             : P
+   angdeg                              : 90.0
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  0
+   Tot. No. of Deallocations           :  0
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.000
+     for the array                     : null
+     in the routine                    : null
+     Memory Peak of process            : 9.556 MB
+ Walltime since initialization         : 00:00:00.000977046
+ Max No. of dictionaries used          :  243 #( 169 still in use)
+ Number of dictionary folders allocated:  1
+---
+ Commandline options provided:
+   ndim                                : 100
+   geocode                             : P
+   angdeg: [89, 90, 90]
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  0
+   Tot. No. of Deallocations           :  0
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.000
+     for the array                     : null
+     in the routine                    : null
+     Memory Peak of process            : 9.556 MB
+ Walltime since initialization         : 00:00:00.001278140
+ Max No. of dictionaries used          :  243 #( 169 still in use)
+ Number of dictionary folders allocated:  1

@@ -1,0 +1,7 @@
+/*! @file
+@brief README about the overlap point-to-point (OP2P) tests.
+
+@dir
+@brief Tests about the communication point to point in order to calculate the overlap matrix.
+
+*/

@@ -1,0 +1,518 @@
+<?xml version="1.0"?><!--*- mode: nxml; indent-tabs-mode: nil -*-->
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<!-- vim:set ts=2 expandtab: -->
+<moduleset>
+
+  <!-- Official repositories, not used by default, using provided tars instead. -->
+  <repository type="tarball" name="libyaml" href="http://pyyaml.org/download/libyaml/"/>
+  <repository type="svn" name="libxc" href="http://www.tddft.org/svn/"/>
+  <repository type="bzr" name="bigdft" href="lp:/"/>
+  <repository type="tarball" name="wannier"
+              href="http://www.wannier.org/code/"/>
+  <repository type="tarball" name="unidata"
+              href="ftp://ftp.unidata.ucar.edu/pub/"/>
+  <repository type="tarball" name="etsf" href="http://www.etsf.eu/system/files/"/>
+
+  <repository type="tarball" name="simgrid" href="https://framagit.org/simgrid/simgrid/uploads/b086147968e111e7b7d7e27e8c4b11c5/"/>
+  <repository type="git" name="simgrid-dev" href="https://framagit.org/"/>
+  <repository type="tarball" name="ntpoly" href="https://github.com/william-dawson/NTPoly/archive/"/>
+  <repository type="tarball" name="openbabel" href="https://github.com/openbabel/openbabel/archive/"/>
+  <repository type="tarball" name="eigen3" href="https://gitlab.com/libeigen/eigen/-/archive/"/>
+  <repository type="tarball" name="rdkit" href="https://github.com/rdkit/rdkit/archive/"/>
+  <repository type="tarball" name="boost" href="https://dl.bintray.com/boostorg/release/1.72.0/source/"/>
+  <repository type="tarball" name="biopython" href="http://biopython.org/DIST/"/>
+  <repository type="tarball" name="ase" href="https://pypi.org/packages/source/a/ase/"/>
+  <repository type="tarball" name="mpi4py" href="https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-3.0.3.tar.gz"/>
+  <repository type="git" name="pyyaml" href="https://github.com/dcaliste/"/>
+  <repository type="git" name="openmm" href="https://github.com/openmm/" />
+  <repository type="git" name="sphinx" href="https://github.com/rowanG077/"/>
+  <repository type="git" name="esl" href="https://gitlab.e-cam2020.eu/esl/"/>
+  <repository type="git" name="ninja" href="https://github.com/ninja-build/ninja/releases/tag/v1.0.0/"/>
+  <repository type="tarball" name="spglib" href="https://github.com/atztogo/spglib/archive/"/>
+  <repository type="tarball" name="swig" href="http://prdownloads.sourceforge.net/swig/"/>
+  <repository type="git" name="L_Sim" href="https://gitlab.com/l_sim/"/>
+
+  <repository type="tarball" name="metis"
+              href="http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/"/>
+  <repository type="tarball" name="cmake-rep"
+              href="https://cmake.org/files/v3.3/"/>
+  <repository type="tarball" name="netlib"
+              href="http://www.netlib.org/lapack/"/>
+
+  <repository type="tarball" name="local" href="./"/>
+  <repository type="tarball" name="local-optional" href="./"/>
+  <repository type="tarball" name="simtk" href="./openmm/python/"/>
+  <repository type="tarball" name="pyfutile" href="./futile/python/"/>
+
+  <include href="gnome.modules"/>
+
+  <autotools id="libxc" check-target="false" autogen-sh="autoreconf">
+    <!--<branch repo="libxc" checkoutdir="libxc-2.0.x"/>-->
+    <branch repo="local" module="libxc-2.2.2.tar.gz" version="2.2.2" checkoutdir="libxc">
+            <!-- <patch file="libxc-2.0.x.patch" />-->
+    </branch>
+  </autotools>
+
+  <autotools id="v_sim-dev" autogen-sh="autogen.sh+configure" autogenargs="--with-abinit --with-archives --with-openbabel --with-cube --without-strict-cflags">
+    <!-- <branch repo="local-optional" module="v_sim-dev.tar.bz2" -->
+    <branch repo="L_Sim" module="v_sim"
+            version="3.99" checkoutdir="v_sim-dev">
+      <patch file="v_sim-dev.patch" />
+    </branch>
+    <dependencies>
+      <dep package="PyYAML"/>
+      <dep package="openbabel"/>
+      <dep package="intltool"/>
+      <dep package="libglu1-mesa-dev"/>
+      <if condition-set="python">
+        <dep package="pygobject"/>
+        <dep package="gobject-introspection"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <cmake id="ntpoly" use-ninja="no">
+    <branch repo="ntpoly" module="ntpoly-v2.5.tar.gz" version="2.5" checkoutdir="ntpoly"/>
+    <cmakeargs value="-DFORTRAN_ONLY=Yes"/>
+  </cmake>
+
+  <distutils id="sphinx-fortran">
+    <branch repo="L_Sim" module="sphinx-fortran" revision="lsim" />
+    <dependencies>
+      <dep package="lsim-f2py"/>
+    </dependencies>
+  </distutils>
+
+  <distutils id="lsim-f2py">
+    <branch repo="L_Sim" module="f2py" />
+  </distutils>
+
+
+  <distutils id="sphinx-multibuild">
+    <branch repo="sphinx" module="sphinx-multibuild" revision="1.2.0" />
+  </distutils>
+
+  <autotools id="libyaml" autogen-sh="autoreconf">
+    <!--<branch repo="libyaml" module="yaml-0.1.4.tar.gz" version="0.1.4"/>-->
+    <branch repo="local" module="yaml-0.1.6.tar.gz" version="0.1.6" checkoutdir="yaml" >
+      <patch file="yaml-doxygen.patch" />
+      <patch file="yaml-doxygen-in.patch" />
+    </branch>
+  </autotools>
+
+  <cmake id="openbabel-old" use-ninja="no">
+    <branch repo="local-optional" module="openbabel-2.4.1.tar.gz" version="2.4.1" checkoutdir="openbabel"/>
+  </cmake>
+
+  <cmake id="openbabel" use-ninja="no">
+    <branch repo="openbabel" module="openbabel-3-0-0.tar.gz" version="3.0.0" checkoutdir="openbabel"/>
+    <cmakeargs value="-DPYTHON_BINDINGS=Yes"/>
+    <dependencies>
+      <dep package="eigen3"/>
+      <if condition-set="oldmachine">
+        <dep package="swig"/>
+        <dep package="cmake-local"/>
+      </if>
+    </dependencies>
+  </cmake>
+
+  <cmake id="eigen3" use-ninja="no">
+    <branch repo="eigen3" module="3.3.7.tar.bz2" version="3.3.7" checkoutdir="eigen3"/>
+  </cmake>
+
+  <cmake id="lapack" use-ninja="no">
+    <branch repo="netlib" module="lapack-3.7.0.tgz" version="3.7.0" checkoutdir="lapack"/>
+  </cmake>
+
+  <autotools id="pspio" autogen-sh="autogen.sh+configure" autogenargs="--enable-fortran">
+    <!--<branch repo="esl" module="pspio" version="0.2.0"/>-->
+    <branch repo="esl" module="pspio" revision="recpot"/>
+  </autotools>
+
+  <distutils id="PyYAML">
+    <!--<branch repo="libyaml" module="PyYAML-3.10.tar.gz" version="3.10"/>-->
+    <!--<branch repo="local" module="PyYAML-3.11.tar.gz" version="3.11" checkoutdir="PyYAML"/>-->
+    <branch repo="local" module="PyYAML-5.1.2.tar.gz" version="5.1.2" checkoutdir="PyYAML"/>
+    <!--<branch repo="pyyaml"  module="pyyaml" checkoutdir="PyYAML"/>-->
+    <dependencies>
+      <dep package="libyaml"/>
+      <!--<dep package="cython"/>-->
+    </dependencies>
+  </distutils>
+
+  <autotools id="libABINIT" check-target="false" autogen-sh="autoreconf">
+    <branch repo="local" module="libABINIT-6.8+12.tar.gz" version="6.8+12" checkoutdir="libABINIT">
+      <!-- <patch file="libABINIT.patch" /> -->
+    </branch>
+    <dependencies>
+      <dep package="futile"/>
+      <if condition-unset="no_upstream">
+         <dep package="libxc"/>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <autotools id="GaIn">
+    <branch repo="local" module="GaIn-1.0.tar.gz"
+            version="1.0"/>
+  </autotools>
+
+  <autotools id="futile" autogen-sh="autoreconf">
+    <branch repo="local" module="futile-1.9.1.tar.gz" version="1.9.1" checkoutdir="futile"/>
+    <dependencies>
+      <if condition-unset="no_upstream">
+         <dep package="libyaml"/>
+         <if condition-set="testing">
+           <dep package="PyYAML"/>
+         </if>
+      <if condition-set="python">
+        <dep package="pygobject"/>
+        <dep package="gobject-introspection"/>
+      </if>
+      <if condition-set="simulation">
+        <dep package="simgrid-dev"/>
+      </if>
+      <if condition-set="devdoc">
+        <dep package="sphinx-fortran"/>
+      </if>
+    </if>
+    </dependencies>
+  </autotools>
+
+  <distutils id="pyfutile">
+    <branch repo="pyfutile" module="futile-1.8.tar.gz" version="1.8.0"
+       checkoutdir="futile/python"/>
+    <dependencies>
+      <dep package="PyYAML"/>
+      <if condition-set="devdoc">
+        <dep package="sphinx-fortran"/>
+      </if>
+    </dependencies>
+  </distutils>
+
+  <autotools id="swig" autogen-sh="autogen.sh+configure" >
+    <branch repo="swig" module="swig-4.0.1.tar.gz" version="4.0.1"/>
+  </autotools>
+
+  <autotools id="psolver" autogen-sh="autoreconf">
+    <branch repo="local" module="psolver-1.8.tar.gz" version="1.8.0" checkoutdir="psolver"/>
+    <dependencies>
+      <dep package="futile"/>
+      <dep package="atlab"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="atlab" autogen-sh="autoreconf">
+    <branch repo="local" module="atlab-1.0.tar.gz" version="1.0.0" checkoutdir="atlab"/>
+    <dependencies>
+      <dep package="futile"/>
+      <if condition-set="babel">
+        <if condition-unset="no_upstream">
+          <dep package="openbabel"/>
+        </if>
+      </if>
+    </dependencies>
+  </autotools>
+
+  <autotools id="chess" autogen-sh="autoreconf">
+    <branch repo="local" module="CheSS-0.2.4.tar.gz" version="0.2.4" checkoutdir="chess"/>
+    <dependencies>
+      <dep package="futile"/>
+      <dep package="atlab"/>
+      <if condition-set="ntpoly">
+        <if condition-unset="no_upstream">
+          <dep package="ntpoly"/>
+        </if>
+      </if>
+    </dependencies>
+    <if condition-set="ntpoly">
+      <autogenargs value="--enable-ntpoly"/>
+    </if>
+  </autotools>
+
+  <autotools id="bigdft" autogen-sh="autoreconf">
+    <!--<branch repo="bigdft" module="bigdft" version="1.7.5"/>-->
+    <branch repo="local" module="bigdft-1.9.1.tar.gz" version="1.9.1" checkoutdir="bigdft"/>
+    <dependencies>
+      <dep package="futile"/>
+      <dep package="atlab"/>
+      <dep package="chess"/>
+      <if condition-unset="no_upstream">
+         <dep package="libxc"/>
+         <dep package="GaIn"/>
+      </if>
+      <dep package="psolver"/>
+      <dep package="libABINIT"/>
+      <if condition-set="testing">
+        <dep package="PyBigDFT"/>
+      </if>
+      <if condition-set="vsim">
+        <if condition-unset="no_upstream">
+          <dep package="v_sim-dev"/>
+        </if>
+      </if>
+    </dependencies>
+    <if condition-set="ntpoly">
+      <autogenargs value="--enable-ntpoly"/>
+    </if>
+  </autotools>
+
+  <autotools id="spred" autogen-sh="autoreconf">
+    <branch repo="local" module="spred-1.8.tar.gz" version="1.8.0" checkoutdir="spred"/>
+    <dependencies>
+      <dep package="futile"/>
+      <dep package="psolver"/>
+      <dep package="bigdft"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="pseudo" autogen-sh="autoreconf">
+    <!--<branch repo="bigdft" module="pseudo" version="1.7.5"/>-->
+    <branch repo="local" module="pseudo-1.7.5.tar.gz" version="1.7.5" checkoutdir="pseudo"/>
+    <dependencies>
+      <dep package="libxc"/>
+    </dependencies>
+  </autotools>
+
+  <makesys id="wannier90">
+    <branch repo="wannier" module="wannier90-2.0.0.tar.gz" version="2.0.0">
+      <patch file="wannier90-2.0.0.patch" />
+    </branch>
+  </makesys>
+
+  <autotools id="netcdf" autogenargs="--disable-netcdf-4">
+    <branch repo="unidata" module="netcdf/netcdf-4.3.3.tar.gz"
+            version="4.3.3"/>
+  </autotools>
+
+  <autotools id="netcdff">
+    <branch repo="unidata" module="netcdf/netcdf-fortran-4.4.1.tar.gz"
+            version="4.4.1"/>
+    <dependencies>
+      <dep package="netcdf"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="etsf_io">
+    <branch repo="etsf" module="etsf_io-1.0.4.tar.gz"
+            version="1.0.4"/>
+    <dependencies>
+      <dep package="netcdff"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="cmake-local">
+    <branch repo="cmake-rep" module="cmake-3.3.2.tar.gz"
+            version="3.3.2">
+    <patch file="cmake3.3.2.patch" />
+    </branch>
+  </autotools>
+
+  <distutils id="pdbfixer">
+    <branch repo="openmm" module="pdbfixer" version="1.6" checkoutdir="pdbfixer" />
+    <dependencies>
+      <dep package="simtk"/>
+    </dependencies>
+  </distutils>
+
+  <distutils id="simtk" supports-non-srcdir-builds='no' >
+    <branch repo="simtk" module="simtk-7.5.0.tar.gz"
+            version="7.5.0" checkoutdir="openmm/python"/>
+    <dependencies>
+      <dep package="openmm"/>
+    </dependencies>
+  </distutils>
+
+  <cmake id="openmm" use-ninja="no" supports-non-srcdir-builds='no' force-non-srcdir-builds='no'>
+    <branch repo="openmm" module="openmm" />
+    <dependencies>
+      <dep package="doxygen"/>
+      <dep package="swig"/>
+    </dependencies>
+  </cmake>
+
+  <cmake id="rdkit" use-ninja="no">
+    <branch repo="rdkit" module="Release_2020_03_1.tar.gz" version="2020.03.1"
+      checkoutdir="rdkit" />
+    <dependencies>
+      <dep package="eigen3"/>
+      <dep package="swig"/>
+      <dep package="boost"/>
+    </dependencies>
+    <cmakeargs value="-DPYTHON_EXECUTABLE=python3"/> <!-- -DRDK_INSTALL_INTREE=OFF"/-->
+  </cmake>
+
+  <autotools id="boost" autogen-sh="bootstrap.sh"
+          autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s --with-libraries=python,serialization"
+          makeargs='|| ./b2 install'
+          supports-non-srcdir-builds='no'
+          force-non-srcdir-builds='no' skip-install='yes'>
+    <branch repo="boost" module="boost_1_72_0.tar.bz2" version="1.72.0"
+      checkoutdir="boost" />
+  </autotools>
+
+
+  <cmake id="simgrid" use-ninja="no">
+    <branch repo="simgrid" module="SimGrid-3.22.tar.gz"
+            version="3.22"/>
+  </cmake>
+
+  <cmake id="simgrid-dev" use-ninja="no">
+    <branch repo="simgrid-dev"  module="simgrid/simgrid"
+            checkoutdir="simgrid-dev"/>
+    <dependencies>
+      <dep package="libboost-dev"/>
+    </dependencies>
+  </cmake>
+
+  <distutils id="spglib">
+    <branch repo="spglib" module="v1.12.2.tar.gz" version="1.12.2" checkoutdir="spglib">
+      <patch file="spglib.patch" strip="1" />
+    </branch>
+  </distutils>
+
+  <distutils id="biopython">
+    <branch repo="biopython" module="biopython-1.76.tar.gz" version="1.76" checkoutdir="biopython">
+    </branch>
+  </distutils>
+
+  <distutils id="ase">
+    <branch repo="ase" module="ase-3.20.1.tar.gz" version="3.20.1" checkoutdir="ase">
+    </branch>
+  </distutils>
+
+  <distutils id="mpi4py">
+    <branch repo="mpi4py" module="mpi4py-3.0.3.tar.gz" version="3.0.3" checkoutdir="mpi4py">
+    </branch>
+  </distutils>
+
+  <distutils id="PyBigDFT">
+    <branch repo="local" module="PyBigDFT-0.9.tar.gz" version="0.9" checkoutdir="PyBigDFT"/>
+    <dependencies>
+      <if condition-set="bio">
+        <if condition-unset="no_upstream">
+          <dep package="biopython"/>
+          <dep package="pdbfixer"/>
+          <dep package="rdkit"/>
+        </if>
+      </if>
+      <if condition-set="ase">
+        <if condition-unset="no_upstream">
+          <dep package="ase"/>
+        </if>
+      </if>
+      <if condition-set="mpi4py">
+        <if condition-unset="no_upstream">
+          <dep package="mpi4py"/>
+        </if>
+      </if>
+      <if condition-unset="no_upstream">
+        <dep package="PyYAML"/>
+      </if>
+    </dependencies>
+  </distutils>
+
+  <makesys id="parmetis">
+    <branch repo="metis" module="parmetis-4.0.2.tar.gz"
+            version="4.0.2"/>
+<!--    <dependencies>
+      <dep package="cmake-dev"/>
+    </dependencies> -->
+  </makesys>
+
+  <metamodule id="upstream-suite">
+    <dependencies>
+      <if condition-set="vsim">
+        <dep package="v_sim-dev"/>
+      </if>
+      <dep package="libxc"/>
+      <dep package="GaIn"/>
+      <dep package="PyYAML"/>
+      <if condition-set="simulation">
+        <dep package="simgrid-dev"/>
+      </if>
+      <if condition-set="devdoc">
+        <dep package="sphinx-fortran"/>
+      </if>
+      <if condition-set="babel">
+        <dep package="openbabel"/>
+      </if>
+      <if condition-set="ase">
+        <dep package="ase"/>
+      </if>
+      <if condition-set="mpi4py">
+        <dep package="mpi4py"/>
+      </if>
+      <if condition-set="ntpoly">
+        <dep package="ntpoly"/>
+      </if>
+    </dependencies>
+  </metamodule>
+
+  <systemmodule id="intltool">
+    <branch repo="system"/>
+    <systemdependencies>
+      <dep type="path" name="intltool-extract"/>
+    </systemdependencies>
+  </systemmodule>
+
+  <systemmodule id="doxygen">
+    <branch repo="system"/>
+    <systemdependencies>
+      <dep type="path" name="doxygen"/>
+    </systemdependencies>
+  </systemmodule>
+
+
+  <systemmodule id="libglu1-mesa-dev">
+    <branch repo="system"/>
+    <systemdependencies>
+      <dep type="c_include" name="GL/gl.h"/>
+    </systemdependencies>
+  </systemmodule>
+
+  <metamodule id="bigdft-suite">
+    <dependencies>
+      <dep package="bigdft"/>
+      <dep package="PyBigDFT"/>
+      <dep package="PyYAML"/>
+    </dependencies>
+  </metamodule>
+
+  <metamodule id="bigdft-client">
+    <dependencies>
+      <if condition-set="devdoc">
+        <dep package="sphinx-multibuild"/>
+      </if>
+      <dep package="PyBigDFT"/>
+      <dep package="ase"/>
+      <dep package="pyfutile"/>
+    </dependencies>
+  </metamodule>
+
+
+  <metamodule id="spred-suite">
+    <dependencies>
+      <dep package="spred"/>
+      <dep package="bigdft-suite"/>
+    </dependencies>
+  </metamodule>
+
+  <metamodule id="chess-suite">
+    <dependencies>
+      <dep package="chess"/>
+    </dependencies>
+  </metamodule>
+
+  <repository type="system" name="system"/>
+
+  <systemmodule id="cython">
+    <branch repo="system"/>
+    <systemdependencies>
+      <dep type="path" name="cython"/>
+    </systemdependencies>
+  </systemmodule>
+
+
+</moduleset>

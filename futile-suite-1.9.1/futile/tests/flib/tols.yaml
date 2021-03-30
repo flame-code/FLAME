@@ -1,0 +1,60 @@
+---
+Default tolerances:
+ Epsilon: 1.1e-11
+ 
+Keys to ignore:
+ - Compilation options
+ - MPI task*
+ - Timings for root process
+ - Maximal OpenMP threads per MPI task
+ - OpenMP threads per task
+ - OpenMP parallelization
+ - Material acceleration
+ - Iostat for format
+ - Tot. No. of Allocations
+ - Tot. No. of Deallocations
+ - Version Number
+ - accel
+ - Max No. of dictionaries used
+ - Number of dictionary folders allocated
+ - number of taskgroups
+ - taskgroups overview
+ - Walltime since initialization
+ - Timestamp
+ - memory
+ - Routine dictionary
+ - Calling sequence of Main program (routines with * are not closed yet)
+
+yaml_test:
+ Tax: 1.8e-6
+ Total: 2.0e-5
+ Keys to ignore:
+   - Error code
+   - Address*
+   - date
+   - Id
+   - Summary
+   - ERR_ALLOCATE
+   - Errors found while (de)allocating ab and b
+   - Additional Info
+   - Something to use b
+   - Something to use ab
+   - Entering Thread No.
+   - Elapsed time (ns)
+   - Elapsed time (mus)
+   - Test for pid
+   - loc of address and metadata
+   - Actual address of first element of ptr1
+   - Predicted address for the starting point of ptr1
+   - address of first element vs address of objects
+   - Timings for search
+ Patterns to ignore:
+   - errcode
+   - Time
+   - Global dictionary
+   - time
+   - Count
+
+f_allocations:
+  Keys to ignore:
+    - Timestamp of Profile initialization
