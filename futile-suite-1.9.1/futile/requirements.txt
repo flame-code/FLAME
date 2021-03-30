@@ -1,0 +1,5 @@
+sphinx==1.6.7
+numpy
+matplotlib
+pyyaml
+sphinx_bootstrap_theme

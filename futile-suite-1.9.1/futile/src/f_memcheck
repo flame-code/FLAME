@@ -1,0 +1,33 @@
+#!/bin/sh
+#\
+if test -f libfmalloc-1.so ; then
+    LD_PRELOAD=./libfmalloc-1.so
+fi
+distdir=$(dirname $0)/../lib
+if test -f $distdir/libfmalloc-1.so ; then
+    LD_PRELOAD=$distdir/libfmalloc-1.so
+fi
+#\
+FUTILE_MALLOC_NAN_PADDING=2
+#\
+MALLOC_PERTURB_=256
+#\
+export LD_PRELOAD FUTILE_MALLOC_NAN_PADDING MALLOC_PERTURB_
+#\
+echo "#Executing f_memcheck utility"
+#\
+echo "#LD_PRELOAD=" $LD_PRELOAD
+#\
+echo "#FUTILE_MALLOC_NAN_PADDING=" $FUTILE_MALLOC_NAN_PADDING
+# \
+LOGFILE="f_memcheck.out"
+#\
+ERRFILE="f_memcheck.err"
+#\
+echo "#Executable command: " "$@"
+#\
+"$@"
+#\
+echo "#End of f_memcheck utility"
+#\
+exec tclsh "$0" "$@"

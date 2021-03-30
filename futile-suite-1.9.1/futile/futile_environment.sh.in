@@ -1,0 +1,7 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+. "@bindir@/unienv.sh"
+unienv LD_LIBRARY_PATH @libdir@
+unienv PYTHONPATH @AX_PYYAML_PATH@
+unienv FUTILE_SOURCES @abs_top_srcdir@
+unienv PKG_CONFIG_PATH @libdir@/pkgconfig

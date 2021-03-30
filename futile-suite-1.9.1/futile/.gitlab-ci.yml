@@ -1,0 +1,104 @@
+image: ubuntu:latest
+
+before_script:
+  - apt update && apt -y install autoconf make libpython2.7-dev python-yaml python-numpy liblapack-dev libblas-dev gfortran libyaml-dev libopenmpi-dev openssh-client python-pytest python-pip wget
+  - wget http://fr.archive.ubuntu.com/ubuntu/pool/universe/p/pyyaml/python-yaml_5.1.2-1_amd64.deb
+  - dpkg -i python-yaml_5.1.2-1_amd64.deb
+  - pip install nbval
+  - export OMPI_MCA_btl_vader_single_copy_mechanism=none
+
+stages:
+  - build
+  - package
+  - deploy
+
+parallel:
+  stage: build
+  script:
+    - autoreconf -fi
+    - mkdir tmp
+    - cd tmp/
+    - ../configure FC=mpif90 FCFLAGS="-g -O2 -fbounds-check -fopenmp"
+    - make -j$(nproc)
+    - OMP_NUM_THREADS=2 run_parallel="mpirun -np 3 --allow-run-as-root --oversubscribe" make check
+
+serial:
+  stage: build
+  script:
+    - autoreconf -fi
+    - mkdir tmp
+    - cd tmp/
+    - ../configure FCFLAGS="-g -O2 -fbounds-check -fopenmp"
+    - make -j$(nproc)
+    - make dist-bzip2
+    - OMP_NUM_THREADS=2 make check
+  artifacts:
+    when: always
+    paths:
+      - "tmp/futile*.tar.bz2"
+
+dynamic:
+  stage: build
+  script:
+    - autoreconf -fi
+    - mkdir tmp
+    - cd tmp/
+    - ../configure FC=mpif90 FCFLAGS="-g -O2 -fbounds-check -fopenmp" --enable-dynamic-libraries
+    - make -j$(nproc)
+    - OMP_NUM_THREADS=2 run_parallel="mpirun -np 3 --allow-run-as-root --oversubscribe" make check
+
+coverage:
+  stage: build
+  script:
+    - apt -y install lcov
+    - autoreconf -fi
+    - ./configure FCFLAGS="-g -O0 --coverage -fopenmp"
+    - make -j$(nproc)
+    - OMP_NUM_THREADS=2 make check
+    - lcov -d dicts -d src -d flib -d wrappers -c -o report.info
+    - genhtml -o report report.info
+  artifacts:
+    paths:
+      - "report"
+
+sphinx:
+  stage: build
+  before_script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt update && apt -y install make python-sphinx python-sphinx-bootstrap-theme python-numpy python-matplotlib python-future git
+    - git clone https://gitlab.com/l_sim/sphinx-fortran
+    - cd sphinx-fortran
+    - git checkout lsim
+    - cd -
+  script:
+    - PYTHONPATH=$PWD/sphinx-fortran make -f Makefile-sphinx html
+  artifacts:
+    paths:
+      - "build/html"
+
+debian:
+  stage: package
+  before_script:
+    - apt update && apt -y install debhelper fakeroot autoconf make libpython2.7-dev python-yaml python-numpy liblapack-dev libblas-dev gfortran libyaml-dev libopenmpi-dev
+  script:
+    - tar -xf tmp/futile*.tar.bz2
+    - cp tmp/futile-*.tar.bz2 $(echo $(ls tmp/futile-*.tar.bz2) | sed "s;tmp/futile-\(.*\).tar.bz2;futile_\1.orig.tar.bz2;")
+    - cp -rp debian/ futile-*
+    - cd futile-*
+    - dpkg-buildpackage -rfakeroot
+  artifacts:
+    paths:
+      - "libfutile*.deb"
+
+pages:
+  stage: deploy
+  before_script:
+    - echo -n
+  script:
+    - mv build/html/ ${CI_PROJECT_DIR}/public/
+    - mv tmp/futile*.tar.bz2 ${CI_PROJECT_DIR}/public/
+    - mv libfutile*.deb ${CI_PROJECT_DIR}/public/
+    - mv report/ ${CI_PROJECT_DIR}/public/
+  artifacts:
+    paths:
+      - public
