@@ -1,0 +1,29 @@
+---
+Default tolerances:
+ Epsilon: 1.e-13
+
+Keys to ignore:
+ - Code logo
+ - Timestamp of this run
+ - CPU time
+ - Walltime since initialization
+ - Tot. No. of Allocations
+ - Max No. of dictionaries used
+ - Memory Consumption Report
+ - Tot. No. of Deallocations
+ - random number generator
+ - mpi started
+ - mpi finalized
+
+Patterns to ignore:
+ - Timestamp
+ - memory
+ - FLAGS
+ - input_guess
+
+ascii2yaml:
+ Epsilon: 1.e-13
+
+poscar2yaml:
+ Epsilon: 1.e-13
+

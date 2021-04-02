@@ -52,6 +52,7 @@ Makefile
 src/Makefile
 src/lenosky_tb/Makefile
 tests/Makefile
+tests-scripts/Makefile
 ])
 
 AC_OUTPUT
