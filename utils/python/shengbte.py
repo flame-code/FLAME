@@ -71,12 +71,12 @@ def sheng_write(atoms,filename):
         print "    %s %24.15E%24.15E%24.15E" % ("lattvec(:,3)= ", 0.1*atoms.cellvec[2][0],0.1*atoms.cellvec[2][1],0.1*atoms.cellvec[2][2])
         for itype in range(ntypes):
             str_line+=" %s," % ("'"+atom_types[itype].replace(' ','')+"'")
-        print     "%s %s" % ("    elements=  ", str_line)
+        print     "%s %s" % ("    elements= ", str_line)
         str_line=""
         for itype in range(ntypes):
             for icount in range(atom_nn[itype]):
-                str_line+=" %d, " % (itype+1)
-        print     "%s %s" % ("    types=  ", str_line)
+                str_line+=" %d," % (itype+1)
+        print     "%s %s" % ("    types=", str_line)
         for iat in range(atoms.nat):
             istr=str(iat+1)
             x=float(xred[iat][0])
@@ -93,9 +93,9 @@ def sheng_write(atoms,filename):
 
         print "&flags"
         print "    onlyharmonic=.FALSE."
-        print "    isotopes=.FALSE.    "
-        print "    nonanalytic=.FALSE. "
-        print "    nanowires=.FALSE.   "
+        print "    isotopes=.FALSE."
+        print "    nonanalytic=.FALSE."
+        print "    nanowires=.FALSE."
         print "&end"
     else:
         str_line=""

@@ -9,7 +9,9 @@ SHORT_TESTDIRS = ascii2yaml \
 				 bin2ascii \
 				 bin2yaml \
 				 geometry2yaml \
-				 geometry2ascii
+				 geometry2ascii \
+				 poscar2geometry \
+				 poscar2shengbte
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
