@@ -54,3 +54,9 @@ geometry2yaml:
 geometry2ascii:
  Epsilon: 1.e-13
 
+poscar2geometry:
+ Epsilon: 1.e-13
+
+poscar2shengbte:
+ Epsilon: 1.e-13
+
