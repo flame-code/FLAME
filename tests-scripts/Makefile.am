@@ -3,7 +3,9 @@ SHORT_TESTDIRS = ascii2yaml \
 				 poscar2yaml \
 				 poscar2ascii \
 				 geometry2poscar \
-				 aims2yaml
+				 aims2yaml \
+				 ascii2findsym \
+				 bdft2yaml
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 

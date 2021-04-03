@@ -35,3 +35,10 @@ geometry2poscar:
 
 aims2yaml:
  Epsilon: 1.e-13
+
+ascii2findsym:
+ Epsilon: 1.e-13
+
+bdft2yaml:
+ Epsilon: 1.e-13
+
