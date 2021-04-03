@@ -42,3 +42,9 @@ ascii2findsym:
 bdft2yaml:
  Epsilon: 1.e-13
 
+bin2ascii:
+ Epsilon: 1.e-13
+
+bin2yaml:
+ Epsilon: 1.e-13
+
