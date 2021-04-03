@@ -30,3 +30,8 @@ poscar2yaml:
 poscar2ascii:
  Epsilon: 1.e-13
 
+geometry2poscar:
+ Epsilon: 1.e-13
+
+aims2yaml:
+ Epsilon: 1.e-13
