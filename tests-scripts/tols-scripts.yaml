@@ -27,3 +27,6 @@ ascii2yaml:
 poscar2yaml:
  Epsilon: 1.e-13
 
+poscar2ascii:
+ Epsilon: 1.e-13
+
