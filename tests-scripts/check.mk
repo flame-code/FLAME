@@ -125,15 +125,15 @@ $(INS): in_message
 	@name=`basename $@ .out.out`; \
 	if [ "$$name" == "" ] ; then name="input" ; fi ; \
 	if test -n "${LD_LIBRARY_PATH}" ; then export LD_LIBRARY_PATH=${LD_LIBRARY_PATH} ; fi ; \
-	echo "Running $(srcdir)/../utils/python/$$name.py $$name.input $$name.out.yaml > $@" ; \
-	$(srcdir)/../utils/python/$$name.py $$name.input $$name.out.yaml > $@ ; \
+	echo "Running bash ./run.sh $(srcdir)/../utils/python $$name > $@" ; \
+	bash ./run.sh $(srcdir)/../utils/python $$name > $@ ; \
 	name=`basename $@ .out`
 
 %.report.yaml: %.ref.yaml
 	@name=`basename $< .out.ref.yaml | sed "s/[^_]*_\?\(.*\)$$/\1/" | sed "s/output\(.*\)$$//"`; \
 	tols=`basename $< .out.ref.yaml` ;\
 	if test -n "$$name" ; then log=flame_log.yaml ; else log=`basename $< .ref.yaml`.yaml ; fi ;\
-	echo "python $(pythondir)/fldiff_yaml.py -r $< -d $$log -t $(abs_top_srcdir)/tests/tols-scripts.yaml --label=$$tols -o $@" ; \
+	echo "python $(pythondir)/fldiff_yaml.py -r $< -d $$log -t $(abs_top_srcdir)/tests-scripts/tols-scripts.yaml --label=$$tols -o $@" ; \
 	python $(pythondir)/fldiff_yaml.py \
 		-r $< -d $$log -t $(abs_top_srcdir)/tests-scripts/tols-scripts.yaml --label=$$tols -o $@ 
 

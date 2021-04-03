@@ -1,6 +1,7 @@
 # Give here the list of existing tests-scripts
 SHORT_TESTDIRS = ascii2yaml \
-				 poscar2yaml
+				 poscar2yaml \
+				 poscar2ascii
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
