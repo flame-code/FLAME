@@ -48,3 +48,9 @@ bin2ascii:
 bin2yaml:
  Epsilon: 1.e-13
 
+geometry2yaml:
+ Epsilon: 1.e-13
+
+geometry2ascii:
+ Epsilon: 1.e-13
+

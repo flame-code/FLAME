@@ -7,7 +7,9 @@ SHORT_TESTDIRS = ascii2yaml \
 				 ascii2findsym \
 				 bdft2yaml \
 				 bin2ascii \
-				 bin2yaml
+				 bin2yaml \
+				 geometry2yaml \
+				 geometry2ascii
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
