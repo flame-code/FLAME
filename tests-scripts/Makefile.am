@@ -16,7 +16,10 @@ SHORT_TESTDIRS = ascii2yaml \
 				 yaml2geometry \
 				 yaml2poscar \
 				 ascii2poscar \
-				 yaml2xyz
+				 yaml2xyz \
+				 yaml_rep \
+				 yaml_scale_single \
+				 yaml_set_cell_cm
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
