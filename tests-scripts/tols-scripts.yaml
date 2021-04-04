@@ -60,3 +60,17 @@ poscar2geometry:
 poscar2shengbte:
  Epsilon: 1.e-13
 
+yaml2ascii:
+ Epsilon: 1.e-13
+
+yaml2geometry:
+ Epsilon: 1.e-13
+
+yaml2poscar:
+ Epsilon: 1.e-13
+
+ascii2poscar:
+ Epsilon: 1.e-13
+
+yaml2xyz:
+ Epsilon: 1.e-13
