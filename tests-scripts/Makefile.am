@@ -13,10 +13,10 @@ SHORT_TESTDIRS = ascii2yaml \
 				 poscar2geometry \
 				 poscar2shengbte \
 				 yaml2ascii \
-                 yaml2geometry \
-                 yaml2poscar \
-                 ascii2poscar \
-                 yaml2xyz
+				 yaml2geometry \
+				 yaml2poscar \
+				 ascii2poscar \
+				 yaml2xyz
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
