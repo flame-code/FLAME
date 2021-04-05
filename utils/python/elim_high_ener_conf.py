@@ -4,7 +4,7 @@ import atoms
 from acf import *
 
 if len(sys.argv) < 5:
-    print "usage: elim_high_ener_conf.py input_filename output_filename epot_base ener_ubound"
+    print("usage: elim_high_ener_conf.py input_filename output_filename epot_base ener_ubound")
     exit()
 else:
     filename_in = sys.argv[1]
@@ -47,8 +47,8 @@ nconf_diff=len(atoms_all)-len(atoms_all_sel)
 #print "Number of configurations in %s %6d" % (filename_in,len(atoms_all))
 #print "Number of configurations too high in energy %6d" % nconf_diff
 #print "Number of configurations written in %s %6d" % (filename_out,len(atoms_all_sel))
-print "%40s -> total=%6d  elim=%6d  kept=%6d" % \
-(filename_in,len(atoms_all),nconf_diff,len(atoms_all_sel))
+print("%40s -> total=%6d  elim=%6d  kept=%6d" % \
+(filename_in,len(atoms_all),nconf_diff,len(atoms_all_sel)))
 
 
 #writing atomic forces

@@ -47,9 +47,9 @@ for i_path in range(0, len(pp)):
     count2=0
     size=len(pp_l)
     if i_path>0:
-	    i = pp_l[0]
-	    if j != i: 
-                print (str(keyword[tp]), "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", str(np),j , i, file=f)
+        i = pp_l[0]
+        if j != i: 
+            print (str(keyword[tp]), "  ".join(map(str, kk[j])) , "  ", "  ".join(map(str, kk[i])) , "  ", str(np),j , i, file=f)
     for i in pp_l[:size-1]:
       if iold != i :
           iold=i

@@ -52,11 +52,11 @@ for i_path in range(0, len(pp)):
     count2=0
     size=len(pp_l)
     if i_path>0:
-	    i = pp_l[0]
-	    if j != i: 
-                print ("  ".join(map(str, kk[j])) , "                !", j, file=f)
-                print ("  ".join(map(str, kk[i])) , "                !", i, file=f) 
-                print (" ", file=f)
+        i = pp_l[0]
+        if j != i: 
+            print ("  ".join(map(str, kk[j])) , "                !", j, file=f)
+            print ("  ".join(map(str, kk[i])) , "                !", i, file=f) 
+            print (" ", file=f)
     for i in pp_l[:size-1]:
       if iold != i :
           print (i, file=g)

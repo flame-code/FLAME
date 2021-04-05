@@ -7,11 +7,11 @@ from acf import *
 
 rotaxis=[]
 if len(sys.argv) < 5:
-    print ""
-    print "usage: acf_rotate.py input_filename axis(x y z) angle(degrees)"
-    print ""
-    print "example: acf_rotate.py posinp.acf 1 0 0 45 "
-    print ""
+    print("")
+    print("usage: acf_rotate.py input_filename axis(x y z) angle(degrees)")
+    print("")
+    print("example: acf_rotate.py posinp.acf 1 0 0 45 ")
+    print("")
     exit()
 else:
     filename = sys.argv[1]

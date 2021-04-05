@@ -60,8 +60,8 @@ def bin_write_v1(atoms_all,filename):
         elif atoms_all[iconf].boundcond=='bulk':
             ibc=3
         else:
-            print "ERROR: unknown boundary conditions in bin_write_v1, boundcond=" % \
-                    atoms_all[iconf].boundcond
+            print("ERROR: unknown boundary conditions in bin_write_v1, boundcond=" % \
+                    atoms_all[iconf].boundcond)
             exit()
         wa.append(float(ibc))
         wa.append(float(atoms_all[iconf].nat))
@@ -111,7 +111,7 @@ def bin_write(atoms_all,filename,iver):
     if iver==1:
         bin_write_v1(atoms_all,filename)
     else:
-        print "ERROR: writing to binary ready only for version=1"
+        print("ERROR: writing to binary ready only for version=1")
 #*****************************************************************************************
 def bin_read_v1(filename,wa):
     nconf=int(wa[1])
@@ -144,7 +144,7 @@ def bin_read_v1(filename,wa):
         elif ibc==3:
             atoms_all[iconf].boundcond='bulk'
         else:
-            print "ERROR: invalid coding for boundcond in bin_read_v1, ibc=" % ibc
+            print("ERROR: invalid coding for boundcond in bin_read_v1, ibc=" % ibc)
             exit()
         iwa+=1
         atoms_all[-1].nat=int(wa[iwa])
@@ -200,7 +200,7 @@ def bin_read_v1(filename,wa):
                 iwa+=1
                 ibm=int(wa[iwa])
                 if ibm<0 or ibm>7:
-                    print "ERROR: invalid coding for ibm in bin_read_v1 , ibm=%d" % ibm
+                    print("ERROR: invalid coding for ibm in bin_read_v1 , ibm=%d" % ibm)
                     exit()
                 atoms_all[-1].bemoved.append(bm_list[ibm])
         if atoms_all[-1].vat_present:
@@ -229,7 +229,7 @@ def bin_read(filename):
     if iver==1:
         atoms_all=bin_read_v1(filename,wa)
     else:
-        print "ERROR: writing to binary ready only for version=1"
+        print("ERROR: writing to binary ready only for version=1")
     del wa
     return atoms_all
 #*****************************************************************************************

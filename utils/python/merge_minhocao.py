@@ -20,7 +20,7 @@ def genfield(directory):
 #*****************************read all earr.dat files of each run* and sort by energy value
 for file in np.sort(glob.glob("run*/")):
     file=file[:-1]
-    print file
+    print(file)
     #os.chdir(file)
     
     #with open("earr.dat","r") as ifile:
@@ -69,7 +69,7 @@ with open('earr_total.txt', 'a') as f:
 #f.sort(key=lambda s:(s['2'],s['5']))
 f.closed
 shutil.move('earr_total.txt','final-earr')
-print "finish"
+print("finish")
     
 #ifile=open("earr.dat","r")
 #ofile.write(data)

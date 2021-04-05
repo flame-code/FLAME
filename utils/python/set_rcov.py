@@ -197,10 +197,10 @@ def setrcov (sat):
     elif sat=='Cm':
         rcov=1.69
     else :
-        print 'ERROR: no covalent radius stored for atomtype=',sat
+        print('ERROR: no covalent radius stored for atomtype=',sat)
     return rcov
 
 if __name__ == '__main__':
-    print ( 'test: radius of covalent bond of "H" is: ', setrcov('H')  )
+    print(( 'test: radius of covalent bond of "H" is: ', setrcov('H')  ))
 else: 
     print('name is not main')

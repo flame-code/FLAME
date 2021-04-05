@@ -5,7 +5,7 @@ from aims import *
 from vasp import *
 
 if len(sys.argv) < 2:
-    print "usage: aims2poscar.py input_filename"
+    print("usage: aims2poscar.py input_filename")
     exit()
 else:
     filename = sys.argv[1]

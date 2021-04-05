@@ -96,7 +96,7 @@ while True:
                 dd0=(dx**2+dy**2+dz**2)**0.5
                 if (dd0<md): t="True"; break    
             if t=="True": break    
-        if t=="True": ntry=ntry+1;print 'i=',i,"vc=",vc;continue;    
+        if t=="True": ntry=ntry+1;print('i=',i,"vc=",vc);continue;    
     
     
     

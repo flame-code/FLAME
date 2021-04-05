@@ -18,7 +18,7 @@ def read_posinps(posinp_dir,fn_list):
             atoms_all.append(Atoms())
             atoms_all[-1]=copy.deepcopy(atoms)
         del atoms_all_tmp
-    print "number of configurations read %d " % len(atoms_all)
+    print("number of configurations read %d " % len(atoms_all))
     #for atoms in atoms_all:
     #    atoms.epot/=27.211385
     return atoms_all
@@ -62,7 +62,7 @@ def report_result(atoms_all,epot_list,iter_list,success_list):
     de_diff_min=1.E10
     de_diff_max=0.0
     for iatoms in range(1,len(atoms_all)):
-        if iatoms==0: print "ERROR: iatoms=0"
+        if iatoms==0: print("ERROR: iatoms=0")
         natp=atoms_all[iatoms-1].nat
         nat=atoms_all[iatoms].nat
         epot_per_atom=float(atoms_all[iatoms].epot)/float(nat)
@@ -98,7 +98,7 @@ def report_result_form_ener(atoms_all,form_ener_all,form_ener_all_cent,iter_list
     de_diff_min=1.E10
     de_diff_max=0.0
     for iconf in range(1,len(atoms_all)):
-        if iconf==0: print "ERROR: iconf=0"
+        if iconf==0: print("ERROR: iconf=0")
         natp=atoms_all[iconf-1].nat
         nat=atoms_all[iconf].nat
         epot_per_atom=float(form_ener_all[iconf])/float(nat)
@@ -137,8 +137,8 @@ def run_flame(directory,exe):
     #print "    %s" % com
     p=subprocess.Popen(com,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     out, err = p.communicate()
-    if out!='': print out
-    if err!='': print err
+    if out!='': print(out)
+    if err!='': print(err)
 #*****************************************************************************************
 def get_nat_per_type(atoms_all,types):
     nat_per_type_all=[]
@@ -247,8 +247,8 @@ for irun in range(len(dict_runs['runs'])):
         iter_list.append(sqnm_finished['iter'])
         #print sqnm_finished['iter']
         success_list.append(sqnm_finished['success'])
-        print dict_runs['runs'][irun][0],dict_runs['runs'][irun][1], \
-                dict_runs['confs'][iatoms]," done."
+        print(dict_runs['runs'][irun][0],dict_runs['runs'][irun][1], \
+                dict_runs['confs'][iatoms]," done.")
         #print "%r %d %f" % (success,iterations,epot)
         fe=0.0
         for i in range(len(nat_per_type_all[iconf])):
@@ -262,8 +262,8 @@ for irun in range(len(dict_runs['runs'])):
     #print ener_ref_cent
     #dict_res=report_result(atoms_all,epot_list,iter_list,success_list)
     dict_res=report_result_form_ener(atoms_all,form_ener_all,form_ener_all_cent,iter_list,success_list,dict_runs['confs'])
-    print "run,epoch,RMSE: %7s %3d %8.4f" % \
-            (dict_runs['runs'][irun][0],dict_runs['runs'][irun][1],dict_res['rmse'])
+    print("run,epoch,RMSE: %7s %3d %8.4f" % \
+            (dict_runs['runs'][irun][0],dict_runs['runs'][irun][1],dict_res['rmse']))
     del epot_list
     del iter_list
     del success_list

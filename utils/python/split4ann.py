@@ -6,7 +6,7 @@ from xyz import *
 import random
 
 if len(sys.argv) < 3:
-    print "usage: split4ann.py input_filename percentage"
+    print("usage: split4ann.py input_filename percentage")
     exit()
 else:
     filename = sys.argv[1]
@@ -32,4 +32,4 @@ if nt>0:
 if nv>0:
     fnout="valid_%s" % filename
     acf_write(atoms_valid,fnout)
-print "number of configurations selected for training and validation: %6d and %6d   from %s" % (nt,nv,filename)
+print("number of configurations selected for training and validation: %6d and %6d   from %s" % (nt,nv,filename))

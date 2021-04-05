@@ -7,7 +7,7 @@ boltzmannconstant=3.16680965e-6
 #boltzmannconstant=1
 #***********************************************************************
 if len(sys.argv) < 4:
-    print "usage: entropic_effects.py input_filename number_of_atoms epot"
+    print("usage: entropic_effects.py input_filename number_of_atoms epot")
     exit()
 else:
     filename = sys.argv[1]
@@ -41,6 +41,6 @@ for itemp in range(1,500,2):
             tt2=freq[i]/tt1
         fenergy+=math.log(1.- math.exp(-tt2))
     fenergy=zpe+epot/27.2114+tt1*fenergy
-    print temp, fenergy*27.2114
+    print(temp, fenergy*27.2114)
 f.closed
 #********************************************************************** 

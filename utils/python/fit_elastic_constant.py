@@ -4,7 +4,7 @@ from numpy import linalg as LA
 import sys
 
 if len(sys.argv) < 3:
-    print "usage: fit_elastic_constant.py input_filename"
+    print("usage: fit_elastic_constant.py input_filename")
     exit()
 else:
     filename1 = sys.argv[1]
@@ -43,7 +43,7 @@ for line in f.readlines():
 
 f.closed
 if n!=len(x11):
-    print "ERROR: "
+    print("ERROR: ")
     exit()
 
 f=open(filename2,"r")
@@ -74,8 +74,8 @@ coeff, residues, rank, singval = numpy.linalg.lstsq(v.T, z)
 #print "f(x,y)=(%s) + (%s) x + (%s) y + " % (coeff[0], coeff[1], coeff[2])
 #print "       (%s) x^2 + (%s) xy + (%s) y^2\n" % (coeff[3], coeff[4], coeff[5])
 
-print "residues= ", residues[0], "\n"
-print "rank= ", rank, "\n"
+print("residues= ", residues[0], "\n")
+print("rank= ", rank, "\n")
 #print singval
 
 c=numpy.empty([6,6])
@@ -88,22 +88,22 @@ c[3][0]=coeff[3];c[3][1]=coeff[ 8];c[3][2]=coeff[12];c[3][3]=coeff[15];
 c[4][0]=coeff[4];c[4][1]=coeff[ 9];c[4][2]=coeff[13];c[4][3]=coeff[16];c[4][4]=coeff[18];                  
 c[5][0]=coeff[5];c[5][1]=coeff[10];c[5][2]=coeff[14];c[5][3]=coeff[17];c[5][4]=coeff[19];c[5][5]=coeff[20];
 
-print "%8.2f"                          % (c[0][0]                                        )
-print "%8.2f%8.2f"                     % (c[1][0],c[1][1]                                )
-print "%8.2f%8.2f%8.2f"                % (c[2][0],c[2][1],c[2][2]                        )
-print "%8.2f%8.2f%8.2f%8.2f"           % (c[3][0],c[3][1],c[3][2],c[3][3]                )
-print "%8.2f%8.2f%8.2f%8.2f%8.2f"      % (c[4][0],c[4][1],c[4][2],c[4][3],c[4][4]        )
-print "%8.2f%8.2f%8.2f%8.2f%8.2f%8.2f" % (c[5][0],c[5][1],c[5][2],c[5][3],c[5][4],c[5][5])
+print("%8.2f"                          % (c[0][0]                                        ))
+print("%8.2f%8.2f"                     % (c[1][0],c[1][1]                                ))
+print("%8.2f%8.2f%8.2f"                % (c[2][0],c[2][1],c[2][2]                        ))
+print("%8.2f%8.2f%8.2f%8.2f"           % (c[3][0],c[3][1],c[3][2],c[3][3]                ))
+print("%8.2f%8.2f%8.2f%8.2f%8.2f"      % (c[4][0],c[4][1],c[4][2],c[4][3],c[4][4]        ))
+print("%8.2f%8.2f%8.2f%8.2f%8.2f%8.2f" % (c[5][0],c[5][1],c[5][2],c[5][3],c[5][4],c[5][5]))
 
-print "\n"
+print("\n")
 
 c_lambda=(c[1][0]+c[2][0]+c[2][1])/3.0
 c_mu=((c[0][0]+c[1][1]+c[2][2])/3.0-c_lambda)/2.0
 c_BulkModulus=((c[0][0]+c[1][1]+c[2][2])/3.0-c_lambda)/3.0+c_lambda
 c_mut=(c[3][3]+c[4][4]+c[5][5])/3.0
-print "K (Bulk Modulus)=    %12.4f" % c_BulkModulus
-print "mu=                  %12.4f" % c_mu
-print "mut (Shear Modulus)= %12.4f" % c_mut
+print("K (Bulk Modulus)=    %12.4f" % c_BulkModulus)
+print("mu=                  %12.4f" % c_mu)
+print("mut (Shear Modulus)= %12.4f" % c_mut)
 
 for i in range(6):
     for j in range(6):
@@ -112,7 +112,7 @@ for i in range(6):
         
 carr = numpy.array(c)
 w, v = LA.eig(carr)
-print "Eigenvalues: ", w
+print("Eigenvalues: ", w)
 #print "Eigenvectors: ", v
 
 #for i in range(n):

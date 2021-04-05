@@ -5,11 +5,11 @@ import math
 
 rotaxis=[]
 if len(sys.argv) < 3:
-    print ""
-    print "usage: make_symfunc_input.py atom method "
-    print ""
-    print "example: make_symfunc_input.py Na new "
-    print ""
+    print("")
+    print("usage: make_symfunc_input.py atom method ")
+    print("")
+    print("example: make_symfunc_input.py Na new ")
+    print("")
     exit()
 else:
     atom_name = sys.argv[1]
@@ -265,7 +265,7 @@ elif(atom_name=='Am') :
 elif(atom_name=='Cm') :
     factor=1.69
 else :
-    print 'ERROR: no covalent radius stored for atomtype=',atom_name
+    print('ERROR: no covalent radius stored for atomtype=',atom_name)
 
 
 #***********  ionic *******************         
@@ -314,13 +314,13 @@ for i in range((len(list_new))):
     #list_new[i][1]*= (factorH/factor)
     list_new[i][1]*= (factor_ion_Li/factor_ion)**2*2 
 fact=factor_ion*0.85
-print "ionic radii" , fact
+print("ionic radii" , fact)
 
 #-----------------------------------------------------------------------------------
 
 filename=atom_name
 filename+=".ann.input.yaml"
-print filename
+print(filename)
 f= open(filename,"w")
 f.write ( '''main:
     nodes: [5, 5]

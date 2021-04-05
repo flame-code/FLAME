@@ -7,7 +7,7 @@ from ascii import *
 from cellutils import *
 #************************************************************************#main program
 if len(sys.argv) < 3:
-     print "usage: ascii2findsym.py input_filename tolerance"
+     print("usage: ascii2findsym.py input_filename tolerance")
      exit()
 else:
     filename = sys.argv[1]
