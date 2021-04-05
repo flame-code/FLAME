@@ -5,11 +5,11 @@ import math
 #import numpy as np
 from acf import *
 if len(sys.argv) < 2:
-    print ""
-    print "usage: acf_test_atom_distance.py input_filename dmin output_filename dmax(optional)"
-    print " dmin :  minimum distance between 2 atoms."
-    print " dmax :  maximum distance between atoms and their nearest neighbour(for free BC). "
-    print ""
+    print("")
+    print("usage: acf_test_atom_distance.py input_filename dmin output_filename dmax(optional)")
+    print(" dmin :  minimum distance between 2 atoms.")
+    print(" dmax :  maximum distance between atoms and their nearest neighbour(for free BC). ")
+    print("")
     exit()
 else:
     filename = sys.argv[1]
@@ -41,7 +41,7 @@ for atoms in atoms_all:
                 ttz=atoms.rat[iat][2]-atoms.rat[jat][2]
                 distance=math.sqrt(ttx*ttx+tty*tty+ttz*ttz)
                 if distance<dmin:
-                    print "too close atoms: iconf,iat,jat,distance:  " ,nconf+1,iat+1,jat+1,distance
+                    print("too close atoms: iconf,iat,jat,distance:  " ,nconf+1,iat+1,jat+1,distance)
                     test=0
                     break
         if atoms_all[nconf].boundcond=='bulk':
@@ -54,7 +54,7 @@ for atoms in atoms_all:
                             ttz=atoms.rat[iat][2]-(atoms.rat[jat][2]+n3*atoms.cellvec[2][2])
                             distance=math.sqrt(ttx*ttx+tty*tty+ttz*ttz)
                             if distance<dmin:
-                                print "too close atoms: iconf,iat,jat,distance:  " ,nconf+1,iat+1,jat+1,distance,n1,n2,n3
+                                print("too close atoms: iconf,iat,jat,distance:  " ,nconf+1,iat+1,jat+1,distance,n1,n2,n3)
                                 test=0
                                 break
 
@@ -72,7 +72,7 @@ for atoms in atoms_all:
                     if  iat!=jat:
                          min_iat = distance
             if  min_iat >dmax:
-                print "too far atom: iconf,iat,distance:  " ,nconf+1,iat+1, min_iat
+                print("too far atom: iconf,iat,distance:  " ,nconf+1,iat+1, min_iat)
                 test=0
                 break
     if (test>0) :
@@ -81,4 +81,4 @@ for atoms in atoms_all:
         atoms_all_sel[-1]=copy.copy(atoms)
 
 acf_write(atoms_all_sel,ofilename)
-print "total number of conf = ",nconf+1,"       the number of files deleted = ",nconf-nconf2
+print("total number of conf = ",nconf+1,"       the number of files deleted = ",nconf-nconf2)

@@ -71,16 +71,16 @@ def xyz_write(atoms_all,frmt):
         else:
             first="%d" % atoms.nat
             second=''
-        print first
-        print second
+        print(first)
+        print(second)
         for i in range(atoms.nat):
             x=atoms.rat[i][0]
             y=atoms.rat[i][1]
             z=atoms.rat[i][2]
             if frmt=='bigdft':
-                print "%5s  %23.14E%23.14E%23.14E" % (atoms.sat[i],x,y,z)
+                print("%5s  %23.14E%23.14E%23.14E" % (atoms.sat[i],x,y,z))
             else:
-                print "%5s  %23.14E%23.14E%23.14E%5s" % (atoms.sat[i],x,y,z,atoms.bemoved[i])
+                print("%5s  %23.14E%23.14E%23.14E%5s" % (atoms.sat[i],x,y,z,atoms.bemoved[i]))
 #*****************************************************************************************
 def xyz_write_b(atoms_all,frmt,filename):
     f= open(filename,"w")

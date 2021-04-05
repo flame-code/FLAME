@@ -6,7 +6,7 @@ from aims import *
 from acf import *
 
 if len(sys.argv) < 2:
-    print "usage: geometry2acf.py input_filename"
+    print("usage: geometry2acf.py input_filename")
     exit()
 else:
     filename = sys.argv[1]

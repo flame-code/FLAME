@@ -20,7 +20,7 @@ def replicate(na,nb,nc,atoms):
                         atoms_out.sat.append(atoms.sat[i]) 
                         atoms_out.bemoved.append(atoms.bemoved[i])
     else:
-        print "ERROR: Input structure is not BULK."
+        print("ERROR: Input structure is not BULK.")
     atoms_out.cellvec[0][0]=atoms.cellvec[0][0]*na 
     atoms_out.cellvec[0][1]=atoms.cellvec[0][1]*na 
     atoms_out.cellvec[0][2]=atoms.cellvec[0][2]*na 

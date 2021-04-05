@@ -22,7 +22,7 @@ def replicate(na,nb,nc,atoms):
                         atoms_out.sat.append(atoms.sat[i]) 
                         atoms_out.bemoved.append(atoms.bemoved[i])
     else:
-        print "ERROR: boundary condition is not BULK."
+        print("ERROR: boundary condition is not BULK.")
         exit()
     atoms_out.cellvec[0][0]=atoms.cellvec[0][0]*na 
     atoms_out.cellvec[0][1]=atoms.cellvec[0][1]*na 
@@ -49,7 +49,7 @@ args=parser.parse_args()
 atoms_all=read_yaml(args.fn_inp)
 nconf = len(atoms_all)
 if (nconf!=1):
-    print "ERROR : Number of configurations in the input file is %d" %nconf
+    print("ERROR : Number of configurations in the input file is %d" %nconf)
     exit()
 atoms=copy.copy(atoms_all[-1])
 n1 = args.n1

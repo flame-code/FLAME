@@ -52,7 +52,7 @@ def Max_val(a,b):
 #*********************************************************************************************
 # Reading input via input.conf file
 if len(sys.argv) < 2:
-    print "usage: genconf.py output_filename.acf"
+    print("usage: genconf.py output_filename.acf")
     exit()
 else:
     filename = sys.argv[1]
@@ -75,7 +75,7 @@ for line in f.readlines():
     elif iline==4:
         for i in line.split():
             m.sat.append(i)
-        print m.sat
+        print(m.sat)
         m.sat=[] 
     elif iline==5:
         comment4=line
@@ -96,19 +96,19 @@ for line in f.readlines():
     elif iline==atoms.nat+10:
         iline=0
         atoms_all.append(Atoms())
-        print atoms_all[-1].nat
+        print(atoms_all[-1].nat)
         atoms_all[-1]=copy.copy(m)
         #print atoms_all[-1].nat
-        print len(atoms_all[-1].rat)
+        print(len(atoms_all[-1].rat))
         #print
         #atoms.kill()
         #print len(atoms_all[-1].rat)
         #print
 for iat in range(m.nat):
-    print m.rat[iat][0]
+    print(m.rat[iat][0])
     #print m.rat[iat][1]
 f.closed
-print atoms.nmolecule
+print(atoms.nmolecule)
 #return atoms_all
 #********************************************************************************************
 atoms.rat.append(m.rat)
@@ -118,14 +118,14 @@ for im in range(atoms.nmolecule):
     x_cm=y_cm=z_cm=0.0
     d=[0.0, 0.0, 0.0]
     for iat in range(m.nat):
-        print m.sat[iat], setrcov(m.sat[iat])
+        print(m.sat[iat], setrcov(m.sat[iat]))
         #comparing with "rcov"s the following line is determined 
         rcov_max=setrcov(m.sat[0])
         x_cm+=m.rat[iat][0]/m.nat  
         y_cm+=m.rat[iat][1]/m.nat
         z_cm+=m.rat[iat][2]/m.nat
         d[iat]=math.sqrt((m.rat[iat][0]-x_cm)**2+(m.rat[iat][1]-y_cm)**2+(m.rat[iat][2]-z_cm)**2)
-        print d[iat]
+        print(d[iat])
         m.rat.append([])
         m.bemoved.append("TTT")
     #print x_cm, y_cm, z_cm
@@ -135,7 +135,7 @@ for im in range(atoms.nmolecule):
         m.rat[-1-iat].append(x_cm+d[iat])
         m.rat[-1-iat].append(y_cm+d[iat])
         m.rat[-1-iat].append(z_cm+d[iat])
-        print m.rat[iat+1][0]
+        print(m.rat[iat+1][0])
         m.bemoved.append("TTT")
     #print m.rat[2][0]
 atoms.rat.append(m.rat)
@@ -143,7 +143,7 @@ atoms.bemoved.append(m.bemoved)
 atoms_all=[]
 atoms_all.append(Atoms())
 atoms_all[-1]=copy.copy(m)
-print "writing to file %20s" % filename
+print("writing to file %20s" % filename)
 #xyz_write(atoms_all,'bigdft')
 #ascii_write(atoms,filename)
 acf_write(atoms_all,filename)

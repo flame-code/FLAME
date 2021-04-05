@@ -90,11 +90,11 @@ types=dict_input['types']
 #print types
 
 if len(runs)==0:
-    print "ERROR: runs is empty in %s " % args.fn_input
+    print("ERROR: runs is empty in %s " % args.fn_input)
     exit()
 
 if len(epochs)==0:
-    print "ERROR: epochs is empty in %s " % args.fn_input
+    print("ERROR: epochs is empty in %s " % args.fn_input)
     exit()
 
 #fd=open('crashed_runs', 'w')
@@ -111,45 +111,45 @@ for run in runs:
         if len(train_output['training iterations'])<epoch+1: continue
     
         if train_output['training iterations'][epoch]!=None:
-            print "%s" % run,
-            print "%3d" % epoch,
+            print("%s" % run, end=' ')
+            print("%3d" % epoch, end=' ')
             ann_params={}
             for typ in types:
                 ann_params[typ]=read_ann_param(run,typ)
             flame_in=read_flame_in(run)
             if gausswidth:
                 for typ in types:
-                    print "%5.2f" % ann_params[typ]['main']['gausswidth'],
+                    print("%5.2f" % ann_params[typ]['main']['gausswidth'], end=' ')
             if hardness:
                 for typ in types:
-                    print "%5.2f" % ann_params[typ]['main']['hardness'],
+                    print("%5.2f" % ann_params[typ]['main']['hardness'], end=' ')
             if chi0:
                 for typ in types:
-                    print "%5.2f" % ann_params[typ]['main']['chi0'],
+                    print("%5.2f" % ann_params[typ]['main']['chi0'], end=' ')
             if chiavg:
                 for typ in types:
                     str1="chi_%s" % typ
-                    print "%6.3f" % train_output['training iterations'][epoch][str1]['chiavg'],
+                    print("%6.3f" % train_output['training iterations'][epoch][str1]['chiavg'], end=' ')
             if chivar:
                 for typ in types:
                     str1="chi_%s" % typ
-                    print "%6.3f" % train_output['training iterations'][epoch][str1]['chivar'],
+                    print("%6.3f" % train_output['training iterations'][epoch][str1]['chivar'], end=' ')
             if rmse:
                 if train_output['training iterations'][epoch]['valid']:
-                    print "%8.3f" % train_output['training iterations'][epoch]['train']['rmse'],
-                    print "%8.3f" % train_output['training iterations'][epoch]['valid']['rmse'],
+                    print("%8.3f" % train_output['training iterations'][epoch]['train']['rmse'], end=' ')
+                    print("%8.3f" % train_output['training iterations'][epoch]['valid']['rmse'], end=' ')
             if frmse:
                 if train_output['training iterations'][epoch]['valid']:
-                    print "%6.3f" % train_output['training iterations'][epoch]['train']['frmse'],
-                    print "%6.3f" % train_output['training iterations'][epoch]['valid']['frmse'],
+                    print("%6.3f" % train_output['training iterations'][epoch]['train']['frmse'], end=' ')
+                    print("%6.3f" % train_output['training iterations'][epoch]['valid']['frmse'], end=' ')
             if qavg:
                 for typ in types:
                     str1="charge_%s" % typ
-                    print "%6.3f" % train_output['training iterations'][epoch][str1]['qavg'],
+                    print("%6.3f" % train_output['training iterations'][epoch][str1]['qavg'], end=' ')
             if qvar:
                 for typ in types:
                     str1="charge_%s" % typ
-                    print "%6.3f" % train_output['training iterations'][epoch][str1]['qvar'],
+                    print("%6.3f" % train_output['training iterations'][epoch][str1]['qvar'], end=' ')
             if qratio:
                 for typ in types:
                     str1="charge_%s" % typ
@@ -157,9 +157,9 @@ for run in runs:
                     tt2=train_output['training iterations'][epoch][str1]['qavg']
                     #print type(tt1)
                     #print type(tt2)
-                    print "%6.3f" % abs(tt1/tt2),
+                    print("%6.3f" % abs(tt1/tt2), end=' ')
             if aself:
-                print "%6.3f%5.2f" % (flame_in['main']['aself'][1], flame_in['main']['aself'][2]),
+                print("%6.3f%5.2f" % (flame_in['main']['aself'][1], flame_in['main']['aself'][2]), end=' ')
         #else:
         #    print 'None',
                 #exit()
@@ -169,7 +169,7 @@ for run in runs:
         #ann_param.append(yaml.load(stream))
         #stream.close()
         #del stream
-            print ""
+            print("")
         else:
             #print >> fd, run
             continue

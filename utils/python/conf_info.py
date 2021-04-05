@@ -6,7 +6,7 @@ from atoms import *
 from acf import *
 
 if len(sys.argv) < 2:
-    print "usage: acf2ascii.py input_filename"
+    print("usage: acf2ascii.py input_filename")
     exit()
 else:
     filename = sys.argv[1]
@@ -32,9 +32,9 @@ for atoms in atoms_all:
     amargin=min(amargin,atoms.cellvec[0][0]-dx)
     amargin=min(amargin,atoms.cellvec[1][1]-dy)
     amargin=min(amargin,atoms.cellvec[2][2]-dz)
-    print "%6.1f%6.1f%6.1f%6.1f" % (dx,dy,dz,amargin)
+    print("%6.1f%6.1f%6.1f%6.1f" % (dx,dy,dz,amargin))
     if amargin<6.0:
         stat=False
         #break
-print "STAT: %50s   " % filename,stat
+print("STAT: %50s   " % filename,stat)
 

@@ -13,14 +13,14 @@ def aims_write(atoms,filename):
         #print "%d" % atoms.nat
         #print "%s" % atoms.boundcond
         if atoms.boundcond=='bulk':
-            print "lattice_vector  %24.15E%24.15E%24.15E" % (ax,ay,az)
-            print "lattice_vector  %24.15E%24.15E%24.15E" % (bx,by,bz)
-            print "lattice_vector  %24.15E%24.15E%24.15E" % (cx,cy,cz)
+            print("lattice_vector  %24.15E%24.15E%24.15E" % (ax,ay,az))
+            print("lattice_vector  %24.15E%24.15E%24.15E" % (bx,by,bz))
+            print("lattice_vector  %24.15E%24.15E%24.15E" % (cx,cy,cz))
         for i in range(atoms.nat):
             x=atoms.rat[i][0]
             y=atoms.rat[i][1]
             z=atoms.rat[i][2]
-            print "atom  %24.15E%24.15E%24.15E%5s" % (x,y,z,atoms.sat[i])
+            print("atom  %24.15E%24.15E%24.15E%5s" % (x,y,z,atoms.sat[i]))
     else:
         f= open(filename,"w")
         #f.write("%d\n" % atoms.nat)
@@ -70,7 +70,7 @@ def aims_read(filename):
             #print "%16.8f%16.8f%16.8f" % (atoms.rat[-1][0],atoms.rat[-1][1],atoms.rat[-1][2])
     if i_lattice_vector==-1:
         atoms.boundcond="free"
-	atoms.cellvec,atoms.rat=set_cell(atoms)
+        atoms.cellvec,atoms.rat=set_cell(atoms)
     else:
         atoms.boundcond="bulk"
     f.closed
