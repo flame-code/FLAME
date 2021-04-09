@@ -1,0 +1,261 @@
+## Definitions of the input variables
+##inputvar: #name of the variable as declared in the code
+## DESCRIPTION: Extended description of the variable to be used for documentation
+## COMMENT: This is the description of the variable as will appear in the logfile
+## RANGE: [from,to] #always put two numbers (also .inf can be put)
+## EXCLUSIVE: #here follows a mapping of allowed values (either RANGE or EXCLUSIVE)
+##  Value1:  comments of value1
+##  Value2:  comment of value2
+##  Alternatively, it follows a list of the allowed values without comments
+## (to be considered in the case of self-explanatory values, e.g. list of integers)
+##  [ Val1, Val2, Val3 ]
+## CONDITION: #here the conditions for which the variable makes sense are written
+##   MASTER_KEY: foo #this means that inputvar makes sense only if foo is specified
+##   WHEN: #provide a list of allowed values of foo for which inputvar is meaningful
+##     - fooval1
+##     - fooval2
+##   WHEN_NOT: #provide a list of forbidden values
+##     - fooval3
+##     - fooval4
+## PROFILE_FROM: foo #inputvar inherit the profile from the one specified by foo variable
+###then the profiles follows, which gives to the variables the allowed name
+## default: value of the default, written as a string 
+## profile1: value1 # if the user specifies inputvar: profile1 then inputvars will be value1
+## profile2: value2
+##
+## DO NOT USE the character ':' and "" in the COMMENT of DESCRIPTION
+############################################
+ #geometry parameters, to be provided as a single structure
+ #ndims: 100
+ #hgrids: 0.3
+ #BC: free
+ #angrad: 90.0
+ kernel:
+  DESCRIPTION: Parameters of  the Coulomb Kernel
+  screening: 
+    COMMENT: Mu screening parameter
+    DESCRIPTION: Activates the exponential (Yukawa-like) screening in the coulomb kernel
+    RANGE: [0.0, .inf] #.inf might be implemented in the range detection
+    default: 0
+  isf_order: 
+    COMMENT: Order of the Interpolating Scaling Function family
+    DESCRIPTION: Fixes the order of the ISF family that is used for the discretization of the kernel
+    default: 16
+    EXCLUSIVE: [ 2, 4, 6, 8, 14, 16, 20, 24, 30, 40, 50, 60, 100]
+  stress_tensor: 
+    COMMENT: Triggers the calculation of the stress tensor
+    DESCRIPTION: It calculates the derivative of the hartree energy with respect to the deformation. It makes sense only for a vacuum-like calculation
+    default: Yes
+ environment:
+  DESCRIPTION: Parameters of the environment, triggers the generalised Poisson Equation solver
+  cavity: 
+    COMMENT: Type of the cavity
+    DESCRIPTION: When not none, a cavity around the density is fixed
+    EXCLUSIVE: 
+      none: No cavity, traditional vacuum treatment
+      soft-sphere: PCM-like cavity, fixed by some distance from the external atoms
+      sccs: Self-Consistent determination of the cavity from the charge density
+    default: none
+  epsilon: 
+    COMMENT: Dielectric constant of the exterior region
+    RANGE: [1.0, .inf ]
+    default: water
+    water: 78.36
+    vacuum: 1.0
+    CONDITION: 
+      MASTER_KEY: cavity
+      WHEN_NOT: [none] 
+    PROFILE_FROM: cavity
+  edensmaxmin: 
+    COMMENT: Extremum values of the charge density, for the definition of the transition region
+    default: [ 1.0e-4, 5.0e-3]
+    CONDITION:
+      MASTER_KEY: cavity
+      WHEN: [sccs]
+  radii_set:
+    COMMENT: Set of vdW radii used by default in the setter function
+    default: UFF
+    EXCLUSIVE:
+      UFF: Unified Force Field
+      Bondi: Bondi collection
+      Pauling: Pauling collection
+    CONDITION:
+      MASTER_KEY: cavity
+      WHEN: [soft-sphere]
+  atomic_radii:
+    COMMENT: Mapping of the radii that have to be used for each atomic species
+    default: 0
+    CONDITION:
+      MASTER_KEY: cavity
+      WHEN: [soft-sphere]
+  delta: 
+    COMMENT: Amplitude of the transition region in the soft-sphere cavity (AU)
+    default: 0.5
+    CONDITION:
+      MASTER_KEY: cavity
+      WHEN: [soft-sphere]
+    PROFILE_FROM: cavity
+  cavitation: 
+    COMMENT: Triggers the evaluation of the extra cavitation terms
+    default: Yes
+    CONDITION:
+      MASTER_KEY: cavity
+      WHEN_NOT: [none]
+  fact_rigid: 
+    COMMENT: Multiplying factor for the whole soft-sphere cavity
+    default: 1.12
+    CONDITION:
+      MASTER_KEY: cavity
+      WHEN: [soft-sphere]
+    PROFILE_FROM: cavity
+  gammaS: 
+    COMMENT: Cavitation term, surface tension of the solvent [dyn/cm]
+    default: water
+    water: 72.0
+    vacuum: 0.0
+    CONDITION: 
+      MASTER_KEY: cavitation
+      WHEN: [Yes]
+    PROFILE_FROM: epsilon
+  alphaS: 
+    COMMENT: Proportionality of repulsion free energy in term of the surface integral [dyn/cm]
+    default: water
+    water: -22.0
+    vacuum: 0.0
+    CONDITION: 
+      MASTER_KEY: cavitation
+      WHEN: [Yes]
+    PROFILE_FROM: epsilon
+  betaV: 
+    COMMENT: Proportionality of dispersion free energy in term of volume integral [GPa]
+    default: water
+    water: -0.35
+    vacuum: 0.0
+    CONDITION: 
+      MASTER_KEY: cavitation
+      WHEN: [Yes]
+    PROFILE_FROM: epsilon
+  gps_algorithm:
+    COMMENT: Algorithm for the Generalised Poisson Equation
+    default: PCG
+    EXCLUSIVE:
+      SC: Self-Consistent method
+      PCG: Preconditioned Conjugate Gradient
+    CONDITION: 
+      MASTER_KEY: cavity
+      WHEN_NOT: [none]
+    PROFILE_FROM: cavity
+  pi_eta: 
+    COMMENT: Mixing parameter of the SC algorithm
+    RANGE: [0.0, 1.0]
+    default: 0.6
+    CONDITION: 
+      MASTER_KEY: gps_algorithm
+      WHEN: [SC]
+    PROFILE_FROM: gps_algorithm
+  input_guess: 
+    COMMENT: Triggers the input guess procedure of gps_algorithm
+    default: Yes
+    CONDITION: 
+      MASTER_KEY: cavity
+      WHEN_NOT: [none]
+  fd_order: 
+    COMMENT: Order of the Finite-difference derivatives for the GPS solver
+    default: 16
+    EXCLUSIVE: [ 2, 4, 6, 8, 16 ]
+  itermax: 
+    COMMENT: Maximum number of iterations of the GPS outer loop
+    default: 200
+  minres: 
+    COMMENT: Convergence threshold of the loop
+    default: 1.e-8
+  pb_method:
+    COMMENT: Defines the method for the Poisson Boltzmann Equation
+    default: none
+    EXCLUSIVE: 
+      none: No PBe, only GPe equation
+      linear: Linearized PBe
+      standard: PBe Equation, Gouy-Chapmann method
+      modified: Bikermann-type modified expression
+  pb_minres:
+    COMMENT: Convergence criterion of the PBe loop
+    RANGE: [0.0, .inf ]
+    default: 1.e-10
+    CONDITION:
+      MASTER_KEY: pb_method
+      WHEN_NOT: [none]
+  pb_input_guess:
+    COMMENT: Triggers the input guess procedure of PBe loop
+    default: Yes
+    CONDITION:
+      MASTER_KEY: pb_method
+      WHEN_NOT: [none]
+  pb_eta: 
+    COMMENT: Mixing parameter of the PBe loop
+    RANGE: [0.0, 1.0]
+    default: 1.0
+    CONDITION:
+      MASTER_KEY: pb_method
+      WHEN_NOT: [none]
+  pb_itermax: 
+    COMMENT: Maximum number of iterations of the PBe loop
+    default: 50
+    CONDITION:
+      MASTER_KEY: pb_method
+      WHEN_NOT: [none]
+  pb_t:
+    COMMENT: Temperature in Kelvin of the electrolytic solution
+    RANGE: [0.0, .inf]
+    default: 300.0
+    CONDITION:
+      MASTER_KEY: pb_method
+      WHEN_NOT: [none]
+  pb_ions:
+    COMMENT: List of the ions of the PBe environment
+    default: nacl
+    nacl: #case for monotytic ionic solvent, parameters
+      - {z: 1, c: 100.0, rad: 3.0}
+      - {z: -1, c: 100.0, rad: 3.0}
+    CONDITION:
+      MASTER_KEY: pb_method
+      WHEN_NOT: [none]
+ setup:
+  DESCRIPTION: Define the computational parameters of the run
+  accel: 
+    COMMENT: Material Acceleration
+    EXCLUSIVE:
+      none: CPU Solver
+      CUDA: CUFFT-based solver
+    default: none
+  keep_gpu_memory: 
+    COMMENT: Do not deallocate GPU memory at each call of the (G)PS routine
+    default: Yes
+    CONDITION: 
+      MASTER_KEY: accel
+      WHEN: [CUDA]
+  use_gpu_direct: 
+    COMMENT: Force (or not) the usage of GPUdirect communication, if available
+    default: Yes
+    CONDITION: 
+      MASTER_KEY: accel
+      WHEN: [CUDA]
+  taskgroup_size: 
+    COMMENT: Size of the taskgroups of the Poisson Solver
+    default: 0
+  global_data: 
+    COMMENT: Charge density and Electrostatic potential are given by global arrays
+    default: No
+  verbose: 
+    COMMENT: Verbosity switch
+    default: Yes
+  output: 
+    COMMENT: Quantities to be plotted after the main solver routine
+    DESCRIPTION: Might be a list containing kewywords like cavity, potential or density
+    default: none
+--- #here starts the document of possible profiles, that have to be evoked with the 'import' keyword
+water:
+ COMMENT: Solvation in water
+ environment:
+  cavity: sccs
+  epsilon: water
+  cavitation: Yes 

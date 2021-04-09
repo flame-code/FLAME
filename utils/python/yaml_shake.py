@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import random
-from cStringIO import StringIO
+from io import StringIO
 from io_yaml import *
 import math
 

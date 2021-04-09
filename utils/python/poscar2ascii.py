@@ -6,7 +6,7 @@ from vasp import *
 from ascii import *
 
 if len(sys.argv) < 2:
-    print "usage: poscar2ascii.py input_filename"
+    print("usage: poscar2ascii.py input_filename")
     exit()
 else:
     filename = sys.argv[1]

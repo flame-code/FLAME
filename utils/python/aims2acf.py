@@ -24,7 +24,7 @@ try:
     lines=f.readlines()
     f.close()
 except IOError:
-    print "ERROR: Failed to open file %s - check file name and try again." % (args.fn_input)
+    print("ERROR: Failed to open file %s - check file name and try again." % (args.fn_input))
     sys.exit(0)
 atoms_all=[]
 conf_complete=False
@@ -81,7 +81,7 @@ for iline,line in enumerate(lines):
         epot_corrected=float(line.split()[5])
         ediff=abs(1000.0*(epot_corrected-epot_uncorrected)/float(nat))
         if ediff>1.0:
-            print "WARNING: difference between energy and free energy in meV/atom: %6.3f" % ediff
+            print("WARNING: difference between energy and free energy in meV/atom: %6.3f" % ediff)
         atoms.epot=epot_uncorrected
         continue
     #-------------------------------------------------------

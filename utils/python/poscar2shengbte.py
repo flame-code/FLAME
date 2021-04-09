@@ -6,7 +6,7 @@ from vasp import *
 from shengbte import *
 
 if len(sys.argv) < 2:
-    print "usage: poscar2shengbte.py input_filename"
+    print("usage: poscar2shengbte.py input_filename")
     exit()
 else:
     filename = sys.argv[1]

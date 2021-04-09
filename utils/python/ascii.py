@@ -4,15 +4,15 @@ from atoms import *
 #*****************************************************************************************
 def ascii_write(atoms,filename):
     if filename=="screen":
-        print "%d" % atoms.nat
+        print("%d" % atoms.nat)
         #print "%s" % atoms.boundcond
-        print "%24.15E%24.15E%24.15E" % (atoms.cellvec[0][0],atoms.cellvec[1][0],atoms.cellvec[1][1])
-        print "%24.15E%24.15E%24.15E" % (atoms.cellvec[2][0],atoms.cellvec[2][1],atoms.cellvec[2][2])
+        print("%24.15E%24.15E%24.15E" % (atoms.cellvec[0][0],atoms.cellvec[1][0],atoms.cellvec[1][1]))
+        print("%24.15E%24.15E%24.15E" % (atoms.cellvec[2][0],atoms.cellvec[2][1],atoms.cellvec[2][2]))
         for i in range(atoms.nat):
             x=atoms.rat[i][0]
             y=atoms.rat[i][1]
             z=atoms.rat[i][2]
-            print "%24.15E%24.15E%24.15E%5s" % (x,y,z,atoms.sat[i])
+            print("%24.15E%24.15E%24.15E%5s" % (x,y,z,atoms.sat[i]))
     else:
         f= open(filename,"w")
         f.write("%d\n" % atoms.nat)

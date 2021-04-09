@@ -1,0 +1,12 @@
+Source: futile
+Section: libs
+Priority: optional
+Maintainer: Damien Caliste <damien.caliste@cea.fr>
+Build-Depends: debhelper (>=9), autoconf, make, libpython2.7-dev, python-yaml, python-numpy, liblapack-dev, libblas-dev, gfortran, libyaml-dev, libopenmpi-dev
+Standards-Version: 4.3.0
+
+Package: libfutile
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Description: Fortran utility library
+ A library to provide to Fortran useful utilities.

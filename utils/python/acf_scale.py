@@ -5,7 +5,7 @@ from acf import *
 import copy
 
 if len(sys.argv) < 6:
-    print "usage: acf_scale.py filename scale_min scale_max nconf_min nconf_max"
+    print("usage: acf_scale.py filename scale_min scale_max nconf_min nconf_max")
     exit()
 else:
     filename=sys.argv[1]
@@ -16,8 +16,8 @@ else:
 
 atoms_all=acf_read(filename)
 if len(atoms_all)>1:
-    print "WARNING: There are more than one configuration in input file,"
-    print "         scaling is applied only to the first one."
+    print("WARNING: There are more than one configuration in input file,")
+    print("         scaling is applied only to the first one.")
 atoms_all_out=[]
 
 #print atoms_all[0].rat[0][0]

@@ -48,7 +48,7 @@ choice = parser.parse_args()
 #print "epocho:    ",choice.epocho
 #-----------------------------------------------------------------------------------------
 if len(sys.argv) < 3:
-    print "usage: getgoodparam.py -h"
+    print("usage: getgoodparam.py -h")
     exit()
 
 #~~~~~~~Functions to Read data from different files~~~~~~~~~~~~~~~~~~~~~~
@@ -341,9 +341,9 @@ for irun in range(len(nrun)):
             for itype in range(len(types)):
                 fout.write("%8.3f " %(data_ann_k[irun][itype]))
         if choice.case13:
-            print "Sorry! The script doesn't work for this option now." 
+            print("Sorry! The script doesn't work for this option now.") 
         if choice.case14:
-            print "Sorry! The script doesn't work for this option now." 
+            print("Sorry! The script doesn't work for this option now.") 
         if choice.case9:
             for itype in range(len(types)):
                 fout.write("%8.3f " %(data_chi[irun][itype][i][1]))

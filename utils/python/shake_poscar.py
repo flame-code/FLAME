@@ -2,11 +2,11 @@
 from ase.io.vasp import read_vasp,write_vasp
 import random
 import sys
-from cStringIO import StringIO
+from io import StringIO
 import math
 
 if len(sys.argv) < 3:
-    print "usage: shake_poscar.py input_filename amplitude"
+    print("usage: shake_poscar.py input_filename amplitude")
     exit()
 else:
     filename = sys.argv[1]
@@ -42,5 +42,5 @@ for iat in range(nat):
 #write_vasp('POSCAR2',atoms,symbol_count=None,vasp5=True)
 output=StringIO()
 write_vasp(output,atoms,symbol_count=None,vasp5=True)
-print output.getvalue().rstrip()
+print(output.getvalue().rstrip())
 output.close()

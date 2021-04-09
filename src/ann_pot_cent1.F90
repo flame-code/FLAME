@@ -676,7 +676,9 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     else
         alphax=1.d0*parini%alphax_q
     endif
-    call yaml_sequence_open('Charge equilibration process')
+    if(parini%iverbose>=2) then
+        call yaml_sequence_open('Charge equilibration process')
+    endif
     alpha=1.d-1*alphax
     do iter=0,parini%nstep_cep
         if(parini%iverbose>=2) then
@@ -714,7 +716,9 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         if(gnrm<1.d-7) then
             !write(*,'(a,i5,es24.15,3es14.5)') 'CEP converged: ', &
             !    iter,ann_arr%epot_es,de,gnrm,alpha/alphax
-            call yaml_sequence_close()
+            if(parini%iverbose>=2) then
+                call yaml_sequence_close()
+            endif
             call yaml_mapping_open('CEP',flow=.true.)
             call yaml_map('iter',iter,fmt='(i5)')
             call yaml_map('epot_es',ann_arr%epot_es,fmt='(es22.13)')
@@ -746,7 +750,9 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
         enddo
     enddo
     if(.not. (gnrm<1.d-7)) then
-        call yaml_sequence_close()
+        if(parini%iverbose>=2) then
+            call yaml_sequence_close()
+        endif
     endif
     !do iat=1,atoms%nat
     !    write(*,'(i5,4f10.3)') iat,atoms%qat(iat),atoms%rat(1,iat),atoms%rat(2,iat),atoms%rat(3,iat)

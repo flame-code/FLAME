@@ -15,8 +15,8 @@ atoms_all=xdatcar_read()
 if len(atoms_all)==1:
     ascii_write(atoms_all[0],"screen")
 else:
-    print "\nATTENTION: The are more than one configuration in XDATCAR file."
-    prefix=raw_input("Please provide a prefix to generate files enumeratedly: ")
+    print("\nATTENTION: The are more than one configuration in XDATCAR file.")
+    prefix=input("Please provide a prefix to generate files enumeratedly: ")
     nconf=0
     for atoms in atoms_all:
         nconf+=1

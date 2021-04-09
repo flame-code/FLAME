@@ -21,8 +21,8 @@ if force:
     fn_force="force_%s" % args.fn_inp
     forces=read_forces(atoms.nat,fn_force)
     if len(forces)!=len(atoms_all):
-        print "ERROR: len(forces) force_%s does not match %s, number of confs." \
-                % (args.fn_inp,args.fn_inp)
+        print("ERROR: len(forces) force_%s does not match %s, number of confs." \
+                % (args.fn_inp,args.fn_inp))
         exit()
     for iconf in range(len(forces)):
         for iat in range(atoms.nat):

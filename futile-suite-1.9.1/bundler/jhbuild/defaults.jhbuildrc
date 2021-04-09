@@ -1,0 +1,261 @@
+# -*- mode: python -*-
+# This file holds the default values for the ~/.config/jhbuildrc file.
+# Do not copy this to ~/.config/jhbuildrc
+
+import os, sys, tempfile
+
+if 'GTK_PATH' in os.environ.keys():
+    del os.environ['GTK_PATH']
+
+# module directory
+modulesets_dir = SRCDIR
+
+# what modules to build?
+moduleset = 'bigdft'
+modules = [ 'bigdft' ]
+
+def basic_configuration():
+    return os.environ.get("BIGDFT_CONFIGURE_FLAGS")
+
+# policy for modules to build, options are:
+#  - all: build everything requested
+#  - updated: build only modules that have changed
+#  - updated-deps: build modules that have changed, or their dependencies
+#    have changed.
+build_policy = 'updated-deps'
+
+# If True, ignore tarball modules already installed while building
+partial_build = True
+
+# Skip modules installed more recently than the specified relative time.
+# min_age can only be specified via the command-line. Setting min_age within
+# the configuration file has no effect.
+min_age = None
+
+# modules to skip during dependency expansion
+skip = []
+# tags used as module filters
+tags = []
+
+# directories
+if os.path.exists('/opt/gnome'):
+    # /opt/gnome has been the default for a long time, and we keep on using it
+    # if it exists
+    prefix = '/opt/gnome'
+else:
+    prefix = os.path.join(os.getcwd(), "install")
+
+top_builddir = '_jhbuild'  # If a relative path, prefix will be prepended
+
+if os.path.exists(os.path.expanduser('~/checkout/gnome')):
+    checkoutroot = '~/checkout/gnome/'
+else:
+    checkoutroot = SRCDIR
+
+xdg_cache_home = os.environ.get('XDG_CACHE_HOME',
+                                os.path.join(os.path.expanduser('~'),
+                                             '.cache'))
+tarballdir = SRCDIR
+
+# Set to None to perform builds within the source trees.
+if os.path.samefile(SRCDIR, os.getcwd()):
+  buildroot = os.path.join(os.getcwd(), 'build')
+else:
+  buildroot = os.getcwd()
+
+# When using srcdir!=builddir builds, this key allows you to use a
+# different builddir name.  Some people like this because it reduces
+# the chance of mixing the two up.  In the pattern, '%s' will be
+# substituted with the srcdir base component.
+builddir_pattern = '%s'
+
+## @jobs: This value will be used as "X" in "make -jX" for modules
+## which support parallel builds.  Note that if you set "makeargs"
+## to include a -j option, that will take precedence.
+try:
+    import multiprocessing
+    jobs = multiprocessing.cpu_count() + 1
+except ImportError as _e:
+    try:
+        jobs = os.sysconf('SC_NPROCESSORS_ONLN') + 1
+    except (OSError, AttributeError, ValueError):
+        jobs = 2
+
+# override environment variables, command line arguments, etc
+autogenargs = ''
+cmakeargs = ''
+mesonargs = '--buildtype=debugoptimized'
+makeargs = ''
+ninjaargs = ''
+cflags = ''
+
+# a alternative install program to use
+installprog = None
+
+# override cvs roots, branch tags, etc
+repos = {}
+cvsroots = {}
+svnroots = {}
+branches = {}
+module_autogenargs = {}
+module_cmakeargs = {}
+module_mesonargs = {}
+module_makeargs = {}
+module_ninjaargs = {}
+module_extra_env = {}
+module_makecheck = {}
+module_nopoison = {}
+
+# Specific autogenargs by default
+module_autogenargs['PyYAML'] = "build_ext -I%(prefix)s/include -L%(prefix)s/lib --rpath=%(prefix)s/lib " % {"prefix": prefix}
+module_autogenargs['PyBigDFT'] = ''
+module_autogenargs['sphinx-fortran'] = ''
+module_autogenargs['sphinx-multibuild'] = ''
+module_autogenargs['spglib'] = ''
+module_cmakeargs['rdkit'] = "-DCMAKE_INSTALL_PREFIX=%(prefix)s -DBoost_IOSTREAMS_LIBRARY:FILEPATH=%(prefix)s/lib -DBoost_SYSTEM_LIBRARY:FILEPATH=%(prefix)s/lib -DBoost_NO_BOOST_CMAKE=TRUE -DBoost_NO_SYSTEM_PATHS=TRUE -DBOOST_ROOT:PATHNAME=%(prefix)s -DBoost_LIBRARY_DIRS:FILEPATH=%(prefix)s/lib " % {"prefix": prefix}
+module_autogenargs['etsf_io'] = "--with-moduledir=%(prefix)s/include " % {"prefix": prefix}
+module_extra_env['simtk'] = {"OPENMM_INCLUDE_PATH": "%(prefix)s/include" % {"prefix": prefix},
+                             "OPENMM_LIB_PATH": "%(prefix)s/lib" % {"prefix": prefix} }
+autogen_packages=['libyaml','GaIn','libxc','chess','bigdft','libABINIT','futile','psolver','spred']
+
+if basic_configuration() is not None:
+    for pkg in autogen_packages:
+        module_autogenargs[pkg] = basic_configuration()
+    del(pkg)
+
+del(autogen_packages)
+
+# control parts of the build process
+nonetwork     = False  # never touch the network
+alwaysautogen = False  # always call autogen.sh
+nobuild       = False  # don't actually build the packages
+noinstall     = False  # don't install the packages
+makeclean     = False  # run make clean before building
+makedistclean = False  # run git clean -dfx before building
+makecheck     = False  # run make check after building
+makedist      = False  # run make dist after building
+makedistcheck = False  # run make distcheck after building
+trycheckout   = False  # try to force checkout and autogen on failure
+nopoison      = False  # don't poison modules on failure
+forcecheck    = False  # run make check even when not building
+
+build_targets = ['install','test']
+
+makecheck_advisory = False # whether to pass over 'make check' failures
+
+interact      = True   # whether to interact with the user.
+exit_on_error = False  # whether to immediately exit when a build fails, most useful for noninteractive mode
+quiet_mode    = False  # whether to display running commands output
+progress_bar  = True   # whether to display a progress bar when running in quiet mode
+
+# Run a static analyzer by prepending the command to the configure and build command lines.
+# Defaults to the Clang Static Analyzer (scan-build)
+static_analyzer = False
+module_static_analyzer = {}
+static_analyzer_template = 'scan-build -v -o %(outputdir)s/%(module)s'
+static_analyzer_outputdir = os.path.join(tempfile.gettempdir(), 'jhbuild_static_analyzer')
+
+# checkout modes. For VCS directories, it specifies how the checkout
+# is done. We can also specify checkout modes for specific modules
+checkout_mode = 'update'
+module_checkout_mode = {}
+
+# in case we use the copy checkout mode, we can set up a copy dir. Defaults to
+# checkout dir
+copy_dir = None
+
+# in case we use the export checkout mode, we can set up a export dir. Defaults
+# to checkout dir
+export_dir = None
+
+# attempt to detect the system library path
+extra_prefixes = []
+try:
+    # Debian-style multiarch
+    system_libdirs = ['/usr/lib/' + sys._multiarch, '/usr/lib']
+
+except AttributeError:
+    # Check the python path and make some reasonable guesses
+    system_libdirs = []
+    for path in sys.path:
+        if path.startswith('/usr/local/lib/') and not '/usr/local/lib' in system_libdirs:
+            system_libdirs.append('/usr/local/lib')
+            extra_prefixes = ['/usr/local']
+
+        elif path.startswith('/usr/lib64/') and not '/usr/lib64' in system_libdirs:
+            system_libdirs.append('/usr/lib64')
+    del path
+
+    # Make sure we have at least one of /usr/lib64 or /usr/lib, but not both
+    if not '/usr/lib64' in system_libdirs:
+        system_libdirs.append('/usr/lib')
+
+# default buildscript.  You should probably leave this as the default.
+# In particular, don't set it to 'gtk'.
+buildscript = 'terminal'
+
+# If True, run builds under "chrt --idle 0" on Linux ("nice" on other Unix)
+# This can dramatically improve desktop interactivity for builds with make -j X while
+# having only a tiny impact on build throughput.
+nice_build = True
+
+# where to put tinderbox output
+tinderbox_outputdir = None
+
+# sticky date to perform historic checkouts
+sticky_date = None
+
+# whether to try and pretty print the output
+pretty_print = True
+
+# program to use for subversion support (supports svn or bzr)
+svn_program = 'svn'
+
+# program to use for cvs
+cvs_program = 'cvs'
+
+# try and use mirrors?
+mirror_policy = ""
+module_mirror_policy = {}
+
+# whether not to emit notifications through the notification daemon
+# notifications are persistent in GNOME 3, therefore off by default
+nonotify = True
+# Show a tray icon using zenity
+notrayicon = True
+
+# whether to run tests in real X and not in Xvfb
+noxvfb = False
+
+# arguments to pass to xvfb
+xvfbargs = ''
+
+# whether to use a local copy of modulesets (instead of fetching them from svn)
+use_local_modulesets = True
+
+# whether to ignore soft dependencies
+ignore_suggests = False
+
+# local directory for DVCS mirror (git only atm)
+dvcs_mirror_dir = None
+# If true, use --depth=1 to git and bzr checkout --light
+shallow_clone = False
+
+# A string displayed before JHBuild executes a command. String may contain the
+# variables %(command)s, %(cwd)s
+print_command_pattern = '%(command)s'
+
+# Check system dependencies. If not dependencies not met, raise error
+check_sysdeps = False
+
+# system_prefix used when searching for files within available packages
+# during 'sysdeps --install'
+system_prefix = '/usr'
+
+# A tuple of website name and URL. This is displayed in tinderbox output. URL
+# String may contain the variable %(module)s
+help_website = ('BigDFT Live!',
+                'http://bigdft.org/Wiki/JhbuildIssues/%(module)s')
+
+# Whether '--disable-Werror' should be passed to automake modules
+disable_Werror = True

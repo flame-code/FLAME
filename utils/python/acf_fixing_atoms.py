@@ -7,7 +7,7 @@ import numpy as np
 from acf import *
 
 if len(sys.argv) < 2:
-    print "usage: acf_fixing_atoms.py input_filename margin"
+    print("usage: acf_fixing_atoms.py input_filename margin")
     exit()
 else:
     filename = sys.argv[1]
@@ -20,7 +20,7 @@ nconf=-1
 #-----Finding the minimum and maximum of coordinates:---------------------------------------
 for atoms in atoms_all:
     nconf+=1
-    columns =zip (*atoms_all[nconf].rat)
+    columns =list(zip (*atoms_all[nconf].rat))
     minimum= []
     maximum= []
     for i, co in enumerate (columns):
@@ -48,6 +48,6 @@ for atoms in atoms_all:
             if (atoms_all[nconf].rat[i][2] >lmin_x and atoms_all[nconf].rat[i][2] <lmax_x):
                 atoms_all[nconf].bemoved[i]="FFF"
     else :
-        print "ERROR: unknown boundary condition"
+        print("ERROR: unknown boundary condition")
 
 acf_write(atoms_all,"screen")
