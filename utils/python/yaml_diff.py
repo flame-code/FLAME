@@ -5,7 +5,7 @@ import yaml
 from dict_diff import *
 
 if len(sys.argv) < 3:
-    print "usage: yaml_diff.py filename1 filename2"
+    print("usage: yaml_diff.py filename1 filename2")
     exit()
 else:
     filename1 = sys.argv[1]
@@ -17,7 +17,7 @@ dict1=yaml.load(stream)
 stream=open(filename2,"r")
 dict2=yaml.load(stream)
 if dict1==dict2:
-    print "The two files are identical."
+    print("The two files are identical.")
 else:
     difference=dict_diff(dict1,dict2)
-    print difference
+    print(difference)

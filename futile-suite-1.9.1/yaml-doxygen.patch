@@ -1,0 +1,12 @@
+--- include/Makefile.am	2014-03-26 19:54:02.000000000 +0100
++++ include/Makefile.am	2018-12-10 11:15:44.238092682 +0100
+@@ -13,5 +13,9 @@
+ maintainer-clean-local:
+ 	-rm -rf $(top_builddir)/doc/html
+
++if DOXYGEN
++
+ dist-hook: html
+ 	cp -a $(top_builddir)/doc/html $(top_distdir)/doc
++
++endif

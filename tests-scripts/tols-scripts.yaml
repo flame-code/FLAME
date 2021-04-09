@@ -1,0 +1,85 @@
+---
+Default tolerances:
+ Epsilon: 1.e-13
+
+Keys to ignore:
+ - Code logo
+ - Timestamp of this run
+ - CPU time
+ - Walltime since initialization
+ - Tot. No. of Allocations
+ - Max No. of dictionaries used
+ - Memory Consumption Report
+ - Tot. No. of Deallocations
+ - random number generator
+ - mpi started
+ - mpi finalized
+
+Patterns to ignore:
+ - Timestamp
+ - memory
+ - FLAGS
+ - input_guess
+
+ascii2yaml:
+ Epsilon: 1.e-13
+
+poscar2yaml:
+ Epsilon: 1.e-13
+
+poscar2ascii:
+ Epsilon: 1.e-13
+
+geometry2poscar:
+ Epsilon: 1.e-13
+
+aims2yaml:
+ Epsilon: 1.e-13
+
+ascii2findsym:
+ Epsilon: 1.e-13
+
+bdft2yaml:
+ Epsilon: 1.e-13
+
+bin2ascii:
+ Epsilon: 1.e-13
+
+bin2yaml:
+ Epsilon: 1.e-13
+
+geometry2yaml:
+ Epsilon: 1.e-13
+
+geometry2ascii:
+ Epsilon: 1.e-13
+
+poscar2geometry:
+ Epsilon: 1.e-13
+
+poscar2shengbte:
+ Epsilon: 1.e-13
+
+yaml2ascii:
+ Epsilon: 1.e-13
+
+yaml2geometry:
+ Epsilon: 1.e-13
+
+yaml2poscar:
+ Epsilon: 1.e-13
+
+ascii2poscar:
+ Epsilon: 1.e-13
+
+yaml2xyz:
+ Epsilon: 1.e-13
+
+yaml_rep:
+ Epsilon: 1.e-13
+
+yaml_scale_single:
+ Epsilon: 1.e-13
+
+yaml_set_cell_cm:
+ Epsilon: 1.e-13

@@ -57,4 +57,4 @@ for atoms in atoms_all:
                 if d_test>=args.dkpt:
                     kpt[i]=kpt[i]+j
                     d_test=float(g[i]/(kpt[i]*2.0*pi))
-    print "%s iconf: %5.5d %6d %6d %6d" % (args.fn_inp,iconf,kpt[0],kpt[1],kpt[2]) 
+    print("%s iconf: %5.5d %6d %6d %6d" % (args.fn_inp,iconf,kpt[0],kpt[1],kpt[2])) 

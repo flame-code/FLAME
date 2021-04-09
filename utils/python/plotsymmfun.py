@@ -35,12 +35,12 @@ def read_symf(filename):
     sym5=[]
     rcut=dict_list['main']['rcut']
     for i in range(len(dict_list['symfunc'])):
-        if dict_list['symfunc'].keys()[i].startswith('g02'):
-            gg2 = dict_list['symfunc'].keys()[i]
+        if list(dict_list['symfunc'].keys())[i].startswith('g02'):
+            gg2 = list(dict_list['symfunc'].keys())[i]
             inp = dict_list['symfunc'][gg2].split()
             sym2.append([float(inp[0]), float(inp[1]), float(rcut)])
-        if dict_list['symfunc'].keys()[i].startswith('g05'):
-            gg5 = dict_list['symfunc'].keys()[i]
+        if list(dict_list['symfunc'].keys())[i].startswith('g05'):
+            gg5 = list(dict_list['symfunc'].keys())[i]
             inp = dict_list['symfunc'][gg5].split()
             sym5.append([float(inp[0]), float(inp[1]), float(inp[2]), float(rcut)])
     return sym2, sym5

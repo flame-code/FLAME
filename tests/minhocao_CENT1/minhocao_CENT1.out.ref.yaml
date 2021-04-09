@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2019-08-18 10:22:26.368
+ Timestamp of this run                 : 2021-03-30 17:46:48.592
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : minhocao
@@ -365,8 +365,7 @@
  symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
  ANN architecture                      : 70-3-3-1
  symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
- Charge equilibration process:
- CEP: {iter:  27, epot_es:  2.3991637872512E+00, de:  1.80E-07, gnrm:  7.398E-08, 
+ CEP: {iter:  27, epot_es:  2.3991637872508E+00, de:  1.80E-07, gnrm:  7.398E-08, 
    stepsize:  1.000E+00}
  Input structure already relaxed: {ent_pos: -3.508471047047E+03, e_pos: -3.509074226747E+03}
  SPGLIB space group iterations:
@@ -423,13 +422,11 @@
    Entering SOFTENING routine for ATOMS, nsoft:  20
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Automatic softening activated
    KPT mesh set up as follows          :  [  5,  3,  3 ]
-   Charge equilibration process:
-   CEP: {iter:  27, epot_es:  2.3991637872512E+00, de:  1.80E-07, gnrm:  7.398E-08, 
+   CEP: {iter:  27, epot_es:  2.3991637872508E+00, de:  1.80E-07, gnrm:  7.398E-08, 
      stepsize:  1.000E+00}
    SOFTEN atomic iterations:
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3874765274433E+00, de:  1.80E-07, gnrm:  7.425E-08, 
+     CEP: {iter:  27, epot_es:  2.3874765274429E+00, de:  1.80E-07, gnrm:  7.425E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.90371E-03, it:  1}
      SOFTEN init atomic: {it:  1, fnrm:  0.57332E-01, res:  0.30062E-01, curv:  0.97638E-01, 
@@ -437,134 +434,115 @@
      SOFTEN: {it:  1, fnrm:  0.57332E-01, res:  0.30062E-01, curv:  0.97638E-01, 
              fd2:  0.95442E-01,            de:  0.1193024275E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3882972395252E+00, de:  1.80E-07, gnrm:  7.416E-08, 
+     CEP: {iter:  27, epot_es:  2.3882972395248E+00, de:  1.80E-07, gnrm:  7.416E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.82303E-03, it:  2}
      SOFTEN: {it:  2, fnrm:  0.53561E-01, res:  0.28689E-01, curv:  0.90459E-01, 
              fd2:  0.88739E-01,            de:  0.1109236915E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3890470170217E+00, de:  1.80E-07, gnrm:  7.405E-08, 
+     CEP: {iter:  27, epot_es:  2.3890470170212E+00, de:  1.80E-07, gnrm:  7.405E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.74102E-03, it:  3}
      SOFTEN: {it:  3, fnrm:  0.50020E-01, res:  0.27222E-01, curv:  0.83927E-01, 
              fd2:  0.82628E-01,            de:  0.1032843797E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3897243072292E+00, de:  1.80E-07, gnrm:  7.393E-08, 
+     CEP: {iter:  27, epot_es:  2.3897243072288E+00, de:  1.80E-07, gnrm:  7.393E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.66167E-03, it:  4}
      SOFTEN: {it:  4, fnrm:  0.46742E-01, res:  0.25723E-01, curv:  0.78056E-01, 
              fd2:  0.77118E-01,            de:  0.9639719736E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3903312042511E+00, de:  1.79E-07, gnrm:  7.380E-08, 
+     CEP: {iter:  27, epot_es:  2.3903312042507E+00, de:  1.79E-07, gnrm:  7.380E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.58775E-03, it:  5}
      SOFTEN: {it:  5, fnrm:  0.43745E-01, res:  0.24244E-01, curv:  0.72825E-01, 
              fd2:  0.72190E-01,            de:  0.9023763442E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3908723172531E+00, de:  1.79E-07, gnrm:  7.367E-08, 
+     CEP: {iter:  27, epot_es:  2.3908723172527E+00, de:  1.79E-07, gnrm:  7.367E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.52082E-03, it:  6}
      SOFTEN: {it:  6, fnrm:  0.41028E-01, res:  0.22821E-01, curv:  0.68189E-01, 
              fd2:  0.67805E-01,            de:  0.8475575137E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3913536755264E+00, de:  1.79E-07, gnrm:  7.354E-08, 
+     CEP: {iter:  27, epot_es:  2.3913536755260E+00, de:  1.79E-07, gnrm:  7.354E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.46144E-03, it:  7}
      SOFTEN: {it:  7, fnrm:  0.38580E-01, res:  0.21481E-01, curv:  0.64092E-01, 
              fd2:  0.63910E-01,            de:  0.7988749837E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3917818344238E+00, de:  1.79E-07, gnrm:  7.341E-08, 
+     CEP: {iter:  27, epot_es:  2.3917818344234E+00, de:  1.79E-07, gnrm:  7.341E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.40949E-03, it:  8}
      SOFTEN: {it:  8, fnrm:  0.36383E-01, res:  0.20236E-01, curv:  0.60472E-01, 
              fd2:  0.60451E-01,            de:  0.7556390215E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3921632437865E+00, de:  1.78E-07, gnrm:  7.329E-08, 
+     CEP: {iter:  27, epot_es:  2.3921632437860E+00, de:  1.78E-07, gnrm:  7.329E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.36439E-03, it:  9}
      SOFTEN: {it:  9, fnrm:  0.34413E-01, res:  0.19089E-01, curv:  0.57267E-01, 
              fd2:  0.57374E-01,            de:  0.7171751236E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3925038669347E+00, de:  1.78E-07, gnrm:  7.317E-08, 
+     CEP: {iter:  27, epot_es:  2.3925038669342E+00, de:  1.78E-07, gnrm:  7.317E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.32535E-03, it:  10}
      SOFTEN: {it:  10, fnrm:  0.32646E-01, res:  0.18038E-01, curv:  0.54420E-01, 
              fd2:  0.54629E-01,             de:  0.6828625198E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3928089962826E+00, de:  1.78E-07, gnrm:  7.306E-08, 
+     CEP: {iter:  27, epot_es:  2.3928089962822E+00, de:  1.78E-07, gnrm:  7.306E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.29154E-03, it:  11}
      SOFTEN: {it:  11, fnrm:  0.31057E-01, res:  0.17075E-01, curv:  0.51884E-01, 
              fd2:  0.52172E-01,             de:  0.6521524193E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3930832059237E+00, de:  1.78E-07, gnrm:  7.297E-08, 
+     CEP: {iter:  27, epot_es:  2.3930832059232E+00, de:  1.78E-07, gnrm:  7.297E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.26217E-03, it:  12}
      SOFTEN: {it:  12, fnrm:  0.29624E-01, res:  0.16192E-01, curv:  0.49614E-01, 
              fd2:  0.49966E-01,             de:  0.6245722231E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3933303876634E+00, de:  1.77E-07, gnrm:  7.288E-08, 
+     CEP: {iter:  27, epot_es:  2.3933303876630E+00, de:  1.77E-07, gnrm:  7.288E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.23652E-03, it:  13}
      SOFTEN: {it:  13, fnrm:  0.28326E-01, res:  0.15379E-01, curv:  0.47576E-01, 
              fd2:  0.47978E-01,             de:  0.5997212481E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3935538294429E+00, de:  1.77E-07, gnrm:  7.280E-08, 
+     CEP: {iter:  27, epot_es:  2.3935538294424E+00, de:  1.77E-07, gnrm:  7.280E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.21401E-03, it:  14}
      SOFTEN: {it:  14, fnrm:  0.27148E-01, res:  0.14629E-01, curv:  0.45738E-01, 
              fd2:  0.46181E-01,             de:  0.5772621942E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3937563087055E+00, de:  1.77E-07, gnrm:  7.273E-08, 
+     CEP: {iter:  27, epot_es:  2.3937563087050E+00, de:  1.77E-07, gnrm:  7.273E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.19413E-03, it:  15}
      SOFTEN: {it:  15, fnrm:  0.26073E-01, res:  0.13933E-01, curv:  0.44076E-01, 
              fd2:  0.44553E-01,             de:  0.5569111708E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3939401838865E+00, de:  1.77E-07, gnrm:  7.267E-08, 
+     CEP: {iter:  27, epot_es:  2.3939401838860E+00, de:  1.77E-07, gnrm:  7.267E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.17649E-03, it:  16}
      SOFTEN: {it:  16, fnrm:  0.25090E-01, res:  0.13285E-01, curv:  0.42569E-01, 
              fd2:  0.43074E-01,             de:  0.5384279989E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3941074755550E+00, de:  1.77E-07, gnrm:  7.262E-08, 
+     CEP: {iter:  27, epot_es:  2.3941074755546E+00, de:  1.77E-07, gnrm:  7.262E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.16078E-03, it:  17}
      SOFTEN: {it:  17, fnrm:  0.24189E-01, res:  0.12680E-01, curv:  0.41198E-01, 
              fd2:  0.41729E-01,             de:  0.5216076440E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3942599339122E+00, de:  1.77E-07, gnrm:  7.257E-08, 
+     CEP: {iter:  27, epot_es:  2.3942599339117E+00, de:  1.77E-07, gnrm:  7.257E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.14673E-03, it:  18}
      SOFTEN: {it:  18, fnrm:  0.23361E-01, res:  0.12113E-01, curv:  0.39950E-01, 
              fd2:  0.40502E-01,             de:  0.5062731059E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3943990924410E+00, de:  1.77E-07, gnrm:  7.253E-08, 
+     CEP: {iter:  27, epot_es:  2.3943990924406E+00, de:  1.77E-07, gnrm:  7.253E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.13416E-03, it:  19}
      SOFTEN: {it:  19, fnrm:  0.22599E-01, res:  0.11583E-01, curv:  0.38809E-01, 
              fd2:  0.39382E-01,             de:  0.4922697738E-02}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3945263089192E+00, de:  1.77E-07, gnrm:  7.250E-08, 
+     CEP: {iter:  27, epot_es:  2.3945263089188E+00, de:  1.77E-07, gnrm:  7.250E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.12289E-03, it:  20}
      SOFTEN: {it:  20, fnrm:  0.21897E-01, res:  0.11086E-01, curv:  0.37766E-01, 
@@ -588,13 +566,11 @@
    Entering SOFTENING routine for LATTICE, nsoft:  20
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Automatic softening activated
    KPT mesh set up as follows          :  [  5,  3,  3 ]
-   Charge equilibration process:
-   CEP: {iter:  27, epot_es:  2.3991637872512E+00, de:  1.80E-07, gnrm:  7.398E-08, 
+   CEP: {iter:  27, epot_es:  2.3991637872508E+00, de:  1.80E-07, gnrm:  7.398E-08, 
      stepsize:  1.000E+00}
    SOFTEN lattice iterations:
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  28, epot_es:  2.2523693173815E+00, de:  1.42E-07, gnrm:  6.271E-08, 
+     CEP: {iter:  28, epot_es:  2.2523693173808E+00, de:  1.42E-07, gnrm:  6.271E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.35735E-01, it:  1}
      SOFTEN init lattice: {it:  1, fnrm:  0.26290E+00, res:  0.18904E+00, curv:  0.18270E+00, 
@@ -602,134 +578,115 @@
      SOFTEN: {it:  1, fnrm:  0.26290E+00, res:  0.18904E+00, curv:  0.18270E+00, 
              fd2:  0.16116E+00,            de:  0.8057841423E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.2998007421341E+00, de:  2.21E-07, gnrm:  9.499E-08, 
+     CEP: {iter:  27, epot_es:  2.2998007421336E+00, de:  2.21E-07, gnrm:  9.499E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.15847E-01, it:  2}
      SOFTEN: {it:  2, fnrm:  0.16989E+00, res:  0.12589E+00, curv:  0.11409E+00, 
              fd2:  0.10258E+00,            de:  0.5128919476E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3260299571055E+00, de:  2.02E-07, gnrm:  8.547E-08, 
+     CEP: {iter:  27, epot_es:  2.3260299571051E+00, de:  2.02E-07, gnrm:  8.547E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.76406E-02, it:  3}
      SOFTEN: {it:  3, fnrm:  0.12045E+00, res:  0.87410E-01, curv:  0.82871E-01, 
              fd2:  0.76037E-01,            de:  0.3801873638E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3414790468555E+00, de:  1.89E-07, gnrm:  7.895E-08, 
+     CEP: {iter:  27, epot_es:  2.3414790468551E+00, de:  1.89E-07, gnrm:  7.895E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.41233E-02, it:  4}
      SOFTEN: {it:  4, fnrm:  0.92860E-01, res:  0.64213E-01, curv:  0.67080E-01, 
              fd2:  0.62920E-01,            de:  0.3145992849E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3511352109057E+00, de:  1.79E-07, gnrm:  7.465E-08, 
+     CEP: {iter:  27, epot_es:  2.3511352109054E+00, de:  1.79E-07, gnrm:  7.465E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.25613E-02, it:  5}
      SOFTEN: {it:  5, fnrm:  0.77087E-01, res:  0.50609E-01, curv:  0.58147E-01, 
              fd2:  0.55621E-01,            de:  0.2781053456E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3575114031633E+00, de:  1.73E-07, gnrm:  7.182E-08, 
+     CEP: {iter:  27, epot_es:  2.3575114031630E+00, de:  1.73E-07, gnrm:  7.182E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.18337E-02, it:  6}
      SOFTEN: {it:  6, fnrm:  0.67708E-01, res:  0.42822E-01, curv:  0.52446E-01, 
              fd2:  0.50935E-01,            de:  0.2546738437E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3619273151623E+00, de:  1.69E-07, gnrm:  6.998E-08, 
+     CEP: {iter:  27, epot_es:  2.3619273151620E+00, de:  1.69E-07, gnrm:  6.998E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.14727E-02, it:  7}
      SOFTEN: {it:  7, fnrm:  0.61737E-01, res:  0.38376E-01, curv:  0.48361E-01, 
              fd2:  0.47481E-01,            de:  0.2374038732E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3651159038035E+00, de:  1.67E-07, gnrm:  6.880E-08, 
+     CEP: {iter:  27, epot_es:  2.3651159038032E+00, de:  1.67E-07, gnrm:  6.880E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.12753E-02, it:  8}
      SOFTEN: {it:  8, fnrm:  0.57560E-01, res:  0.35711E-01, curv:  0.45142E-01, 
              fd2:  0.44650E-01,            de:  0.2232489317E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3675050542560E+00, de:  1.65E-07, gnrm:  6.805E-08, 
+     CEP: {iter:  27, epot_es:  2.3675050542557E+00, de:  1.65E-07, gnrm:  6.805E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.11512E-02, it:  9}
      SOFTEN: {it:  9, fnrm:  0.54331E-01, res:  0.33929E-01, curv:  0.42434E-01, 
              fd2:  0.42169E-01,            de:  0.2108462074E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3693559188898E+00, de:  1.64E-07, gnrm:  6.759E-08, 
+     CEP: {iter:  27, epot_es:  2.3693559188894E+00, de:  1.64E-07, gnrm:  6.759E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.10596E-02, it:  10}
      SOFTEN: {it:  10, fnrm:  0.51617E-01, res:  0.32551E-01, curv:  0.40059E-01, 
              fd2:  0.39917E-01,             de:  0.1995856468E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3708337476480E+00, de:  1.64E-07, gnrm:  6.734E-08, 
+     CEP: {iter:  27, epot_es:  2.3708337476477E+00, de:  1.64E-07, gnrm:  6.734E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.98213E-03, it:  11}
      SOFTEN: {it:  11, fnrm:  0.49201E-01, res:  0.31339E-01, curv:  0.37929E-01, 
              fd2:  0.37840E-01,             de:  0.1891976302E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3720463569675E+00, de:  1.64E-07, gnrm:  6.722E-08, 
+     CEP: {iter:  27, epot_es:  2.3720463569672E+00, de:  1.64E-07, gnrm:  6.722E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.91094E-03, it:  12}
      SOFTEN: {it:  12, fnrm:  0.46974E-01, res:  0.30182E-01, curv:  0.35995E-01, 
              fd2:  0.35913E-01,             de:  0.1795646009E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3730657480316E+00, de:  1.64E-07, gnrm:  6.718E-08, 
+     CEP: {iter:  27, epot_es:  2.3730657480313E+00, de:  1.64E-07, gnrm:  6.718E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.84284E-03, it:  13}
      SOFTEN: {it:  13, fnrm:  0.44885E-01, res:  0.29032E-01, curv:  0.34231E-01, 
              fd2:  0.34127E-01,             de:  0.1706340732E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3739408854015E+00, de:  1.64E-07, gnrm:  6.719E-08, 
+     CEP: {iter:  27, epot_es:  2.3739408854012E+00, de:  1.64E-07, gnrm:  6.719E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.77689E-03, it:  14}
      SOFTEN: {it:  14, fnrm:  0.42907E-01, res:  0.27873E-01, curv:  0.32621E-01, 
              fd2:  0.32476E-01,             de:  0.1623784196E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3747056085100E+00, de:  1.64E-07, gnrm:  6.724E-08, 
+     CEP: {iter:  27, epot_es:  2.3747056085097E+00, de:  1.64E-07, gnrm:  6.724E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.71315E-03, it:  15}
      SOFTEN: {it:  15, fnrm:  0.41033E-01, res:  0.26705E-01, curv:  0.31153E-01, 
              fd2:  0.30955E-01,             de:  0.1547763063E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3753836057570E+00, de:  1.64E-07, gnrm:  6.731E-08, 
+     CEP: {iter:  27, epot_es:  2.3753836057567E+00, de:  1.64E-07, gnrm:  6.731E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.65194E-03, it:  16}
      SOFTEN: {it:  16, fnrm:  0.39256E-01, res:  0.25533E-01, curv:  0.29817E-01, 
              fd2:  0.29561E-01,             de:  0.1478049592E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3759915967336E+00, de:  1.64E-07, gnrm:  6.738E-08, 
+     CEP: {iter:  27, epot_es:  2.3759915967333E+00, de:  1.64E-07, gnrm:  6.738E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.59371E-03, it:  17}
      SOFTEN: {it:  17, fnrm:  0.37575E-01, res:  0.24366E-01, curv:  0.28604E-01, 
              fd2:  0.28288E-01,             de:  0.1414379280E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3765416173310E+00, de:  1.64E-07, gnrm:  6.745E-08, 
+     CEP: {iter:  27, epot_es:  2.3765416173307E+00, de:  1.64E-07, gnrm:  6.745E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.53882E-03, it:  18}
      SOFTEN: {it:  18, fnrm:  0.35991E-01, res:  0.23212E-01, curv:  0.27506E-01, 
              fd2:  0.27129E-01,             de:  0.1356445791E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3770425520538E+00, de:  1.65E-07, gnrm:  6.751E-08, 
+     CEP: {iter:  27, epot_es:  2.3770425520535E+00, de:  1.65E-07, gnrm:  6.751E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.48751E-03, it:  19}
      SOFTEN: {it:  19, fnrm:  0.34504E-01, res:  0.22080E-01, curv:  0.26514E-01, 
              fd2:  0.26078E-01,             de:  0.1303908211E-01}
    - KPT mesh set up as follows        :  [  5,  3,  3 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3775011521429E+00, de:  1.65E-07, gnrm:  6.757E-08, 
+     CEP: {iter:  27, epot_es:  2.3775011521426E+00, de:  1.65E-07, gnrm:  6.757E-08, 
        stepsize:  1.000E+00}
      SOFTEN: {res:  0.43989E-03, it:  20}
      SOFTEN: {it:  20, fnrm:  0.33110E-01, res:  0.20974E-01, curv:  0.25620E-01, 
@@ -767,552 +724,497 @@
      MD: {iter:  0, enth: -3.508471047047E+03, pV:  6.032E-01, ekinatom:  5.700E-01, 
        ekinlat:  1.425E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0000.ascii
-     Velocity of CM                    :  1.0059970E-14
-     Torquenrm info: {Torquenrm:  1.1236971E-14, Ekin:  5.8427744E-01, 
+     Velocity of CM                    :  1.6987705E-14
+     Torquenrm info: {Torquenrm:  1.1243865E-14, Ekin:  5.8427744E-01, 
                        Enthalpy: -3.5084710E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3980477683798E+00, de:  1.76E-07, gnrm:  7.235E-08, 
+     CEP: {iter:  27, epot_es:  2.3980477683794E+00, de:  1.76E-07, gnrm:  7.235E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  1, enth: -3.508469472421E+03, pV:  6.035E-01, ekinatom:  5.692E-01, 
        ekinlat:  1.479E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0001.ascii
-     Velocity of CM                    :  5.7241291E-15
+     Velocity of CM                    :  1.5130124E-14
      Torquenrm info: {Torquenrm:  1.9659677E-06, Ekin:  5.8397734E-01, 
                        Enthalpy: -3.5084695E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3955679277179E+00, de:  1.68E-07, gnrm:  6.895E-08, 
+     CEP: {iter:  27, epot_es:  2.3955679277175E+00, de:  1.68E-07, gnrm:  6.895E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  2, enth: -3.508464835661E+03, pV:  6.055E-01, ekinatom:  5.620E-01, 
        ekinlat:  1.735E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0002.ascii
-     Velocity of CM                    :  8.9303969E-15
+     Velocity of CM                    :  1.4858854E-14
      Torquenrm info: {Torquenrm:  1.9447222E-06, Ekin:  5.7933037E-01, 
                        Enthalpy: -3.5084648E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3916323548717E+00, de:  1.57E-07, gnrm:  6.411E-08, 
+     CEP: {iter:  27, epot_es:  2.3916323548713E+00, de:  1.57E-07, gnrm:  6.411E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  3, enth: -3.508457149307E+03, pV:  6.090E-01, ekinatom:  5.502E-01, 
        ekinlat:  2.144E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0003.ascii
-     Velocity of CM                    :  1.1219880E-14
+     Velocity of CM                    :  1.8843256E-14
      Torquenrm info: {Torquenrm:  1.8639039E-06, Ekin:  5.7161603E-01, 
                        Enthalpy: -3.5084571E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3858955960947E+00, de:  1.43E-07, gnrm:  5.825E-08, 
+     CEP: {iter:  27, epot_es:  2.3858955960943E+00, de:  1.43E-07, gnrm:  5.825E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  4, enth: -3.508446232009E+03, pV:  6.137E-01, ekinatom:  5.343E-01, 
        ekinlat:  2.635E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0004.ascii
-     Velocity of CM                    :  1.4083897E-14
+     Velocity of CM                    :  2.4203896E-14
      Torquenrm info: {Torquenrm:  1.7697512E-06, Ekin:  5.6066508E-01, 
                        Enthalpy: -3.5084462E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3779107601312E+00, de:  2.24E-07, gnrm:  9.119E-08, 
+     CEP: {iter:  26, epot_es:  2.3779107601308E+00, de:  2.24E-07, gnrm:  9.119E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  5, enth: -3.508431851624E+03, pV:  6.196E-01, ekinatom:  5.150E-01, 
        ekinlat:  3.126E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0005.ascii
-     Velocity of CM                    :  2.3028766E-14
+     Velocity of CM                    :  3.3172871E-14
      Torquenrm info: {Torquenrm:  1.6941520E-06, Ekin:  5.4624075E-01, 
                        Enthalpy: -3.5084319E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3673034963068E+00, de:  1.95E-07, gnrm:  7.973E-08, 
+     CEP: {iter:  26, epot_es:  2.3673034963065E+00, de:  1.95E-07, gnrm:  7.973E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  6, enth: -3.508413884655E+03, pV:  6.263E-01, ekinatom:  4.928E-01, 
        ekinlat:  3.540E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0006.ascii
-     Velocity of CM                    :  7.7206413E-15
+     Velocity of CM                    :  4.0888815E-14
      Torquenrm info: {Torquenrm:  1.6611119E-06, Ekin:  5.2822147E-01, 
                        Enthalpy: -3.5084139E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3539313425616E+00, de:  1.67E-07, gnrm:  6.837E-08, 
+     CEP: {iter:  26, epot_es:  2.3539313425613E+00, de:  1.67E-07, gnrm:  6.837E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  7, enth: -3.508392461570E+03, pV:  6.336E-01, ekinatom:  4.686E-01, 
        ekinlat:  3.817E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0007.ascii
-     Velocity of CM                    :  1.3271810E-14
+     Velocity of CM                    :  3.1076777E-14
      Torquenrm info: {Torquenrm:  1.6859777E-06, Ekin:  5.0673575E-01, 
                        Enthalpy: -3.5083925E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3380049487313E+00, de:  1.38E-07, gnrm:  5.740E-08, 
+     CEP: {iter:  26, epot_es:  2.3380049487311E+00, de:  1.38E-07, gnrm:  5.740E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  8, enth: -3.508368072538E+03, pV:  6.413E-01, ekinatom:  4.431E-01, 
        ekinlat:  3.923E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0008.ascii
-     Velocity of CM                    :  1.7969929E-14
+     Velocity of CM                    :  2.6787682E-14
      Torquenrm info: {Torquenrm:  1.7760223E-06, Ekin:  4.8227730E-01, 
                        Enthalpy: -3.5083681E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.3201362618796E+00, de:  1.98E-07, gnrm:  8.332E-08, 
+     CEP: {iter:  25, epot_es:  2.3201362618794E+00, de:  1.98E-07, gnrm:  8.332E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  9, enth: -3.508341603357E+03, pV:  6.490E-01, ekinatom:  4.173E-01, 
        ekinlat:  3.847E-02,                nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0009.ascii
-     Velocity of CM                    :  1.3238333E-14
+     Velocity of CM                    :  3.1747380E-14
      Torquenrm info: {Torquenrm:  1.9317757E-06, Ekin:  4.5573033E-01, 
                        Enthalpy: -3.5083416E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.3012888649643E+00, de:  1.55E-07, gnrm:  6.625E-08, 
+     CEP: {iter:  25, epot_es:  2.3012888649641E+00, de:  1.55E-07, gnrm:  6.625E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  10, enth: -3.508313903743E+03, pV:  6.566E-01, ekinatom:  3.921E-01, 
        ekinlat:  3.604E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0010.ascii
-     Velocity of CM                    :  1.5692385E-14
+     Velocity of CM                    :  1.9550351E-14
      Torquenrm info: {Torquenrm:  2.1479865E-06, Ekin:  4.2809707E-01, 
                        Enthalpy: -3.5083139E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2827916426574E+00, de:  2.09E-07, gnrm:  9.053E-08, 
+     CEP: {iter:  24, epot_es:  2.2827916426572E+00, de:  2.09E-07, gnrm:  9.053E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  11, enth: -3.508286551358E+03, pV:  6.638E-01, ekinatom:  3.684E-01, 
        ekinlat:  3.226E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0011.ascii
-     Velocity of CM                    :  6.6576689E-15
+     Velocity of CM                    :  3.0711542E-14
      Torquenrm info: {Torquenrm:  2.4541944E-06, Ekin:  4.0064250E-01, 
                        Enthalpy: -3.5082866E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2658506823743E+00, de:  1.52E-07, gnrm:  6.754E-08, 
+     CEP: {iter:  24, epot_es:  2.2658506823741E+00, de:  1.52E-07, gnrm:  6.754E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  12, enth: -3.508261637200E+03, pV:  6.707E-01, ekinatom:  3.480E-01, 
        ekinlat:  2.763E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0012.ascii
-     Velocity of CM                    :  8.9543892E-15
+     Velocity of CM                    :  2.9908561E-14
      Torquenrm info: {Torquenrm:  2.7563748E-06, Ekin:  3.7562771E-01, 
                        Enthalpy: -3.5082616E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  23, epot_es:  2.2510560008053E+00, de:  1.92E-07, gnrm:  8.862E-08, 
+     CEP: {iter:  23, epot_es:  2.2510560008051E+00, de:  1.92E-07, gnrm:  8.862E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  13, enth: -3.508240212610E+03, pV:  6.769E-01, ekinatom:  3.314E-01, 
        ekinlat:  2.277E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0013.ascii
-     Velocity of CM                    :  2.9234989E-14
+     Velocity of CM                    :  3.6972969E-14
      Torquenrm info: {Torquenrm:  3.0468860E-06, Ekin:  3.5416207E-01, 
                        Enthalpy: -3.5082402E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  23, epot_es:  2.2382258382443E+00, de:  1.31E-07, gnrm:  6.487E-08, 
+     CEP: {iter:  23, epot_es:  2.2382258382441E+00, de:  1.31E-07, gnrm:  6.487E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  14, enth: -3.508221874983E+03, pV:  6.825E-01, ekinatom:  3.176E-01, 
        ekinlat:  1.828E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0014.ascii
-     Velocity of CM                    :  3.5654757E-14
+     Velocity of CM                    :  3.5010069E-14
      Torquenrm info: {Torquenrm:  3.3163656E-06, Ekin:  3.3585907E-01, 
                        Enthalpy: -3.5082219E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  22, epot_es:  2.2267274113089E+00, de:  1.51E-07, gnrm:  8.794E-08, 
+     CEP: {iter:  22, epot_es:  2.2267274113087E+00, de:  1.51E-07, gnrm:  8.794E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  15, enth: -3.508205452453E+03, pV:  6.873E-01, ekinatom:  3.049E-01, 
        ekinlat:  1.465E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0015.ascii
-     Velocity of CM                    :  2.3866438E-14
+     Velocity of CM                    :  3.0140050E-14
      Torquenrm info: {Torquenrm:  3.5555649E-06, Ekin:  3.1950655E-01, 
                        Enthalpy: -3.5082055E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  22, epot_es:  2.2159722925484E+00, de:  8.54E-08, gnrm:  6.839E-08, 
+     CEP: {iter:  22, epot_es:  2.2159722925482E+00, de:  8.54E-08, gnrm:  6.839E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  16, enth: -3.508190330986E+03, pV:  6.912E-01, ekinatom:  2.921E-01, 
        ekinlat:  1.225E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0016.ascii
-     Velocity of CM                    :  1.9990181E-14
+     Velocity of CM                    :  3.7485444E-14
      Torquenrm info: {Torquenrm:  3.7594280E-06, Ekin:  3.0436182E-01, 
                        Enthalpy: -3.5081903E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  22, epot_es:  2.2057146639747E+00, de:  3.49E-08, gnrm:  5.720E-08, 
+     CEP: {iter:  22, epot_es:  2.2057146639746E+00, de:  3.49E-08, gnrm:  5.720E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  17, enth: -3.508176690470E+03, pV:  6.942E-01, ekinatom:  2.794E-01, 
        ekinlat:  1.132E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0017.ascii
-     Velocity of CM                    :  2.0734734E-14
+     Velocity of CM                    :  2.2939475E-14
      Torquenrm info: {Torquenrm:  3.9185792E-06, Ekin:  2.9074359E-01, 
                        Enthalpy: -3.5081767E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  22, epot_es:  2.1959384319021E+00, de: -3.28E-09, gnrm:  5.238E-08, 
+     CEP: {iter:  22, epot_es:  2.1959384319019E+00, de: -3.28E-09, gnrm:  5.238E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  18, enth: -3.508164533544E+03, pV:  6.963E-01, ekinatom:  2.666E-01, 
        ekinlat:  1.198E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0018.ascii
-     Velocity of CM                    :  2.7918522E-14
+     Velocity of CM                    :  2.9042891E-14
      Torquenrm info: {Torquenrm:  4.0032183E-06, Ekin:  2.7861781E-01, 
                        Enthalpy: -3.5081645E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  21, epot_es:  2.1867837007929E+00, de: -5.77E-08, gnrm:  9.900E-08, 
+     CEP: {iter:  21, epot_es:  2.1867837007928E+00, de: -5.77E-08, gnrm:  9.900E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  19, enth: -3.508153989526E+03, pV:  6.975E-01, ekinatom:  2.539E-01, 
        ekinlat:  1.424E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0019.ascii
-     Velocity of CM                    :  3.3244460E-14
+     Velocity of CM                    :  3.8201998E-14
      Torquenrm info: {Torquenrm:  4.0101675E-06, Ekin:  2.6810366E-01, 
                        Enthalpy: -3.5081540E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  21, epot_es:  2.1784792902708E+00, de: -8.68E-08, gnrm:  9.902E-08, 
+     CEP: {iter:  21, epot_es:  2.1784792902706E+00, de: -8.68E-08, gnrm:  9.902E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  20, enth: -3.508145249286E+03, pV:  6.979E-01, ekinatom:  2.414E-01, 
        ekinlat:  1.801E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0020.ascii
-     Velocity of CM                    :  3.2467143E-14
+     Velocity of CM                    :  3.6545061E-14
      Torquenrm info: {Torquenrm:  3.9436114E-06, Ekin:  2.5939554E-01, 
                        Enthalpy: -3.5081452E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  21, epot_es:  2.1713332170514E+00, de: -9.58E-08, gnrm:  9.869E-08, 
+     CEP: {iter:  21, epot_es:  2.1713332170512E+00, de: -9.58E-08, gnrm:  9.869E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  21, enth: -3.508138541554E+03, pV:  6.974E-01, ekinatom:  2.296E-01, 
        ekinlat:  2.310E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0021.ascii
-     Velocity of CM                    :  3.3309651E-14
+     Velocity of CM                    :  3.4032999E-14
      Torquenrm info: {Torquenrm:  3.8110317E-06, Ekin:  2.5266702E-01, 
                        Enthalpy: -3.5081385E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  21, epot_es:  2.1658131338151E+00, de: -8.17E-08, gnrm:  9.791E-08, 
+     CEP: {iter:  21, epot_es:  2.1658131338150E+00, de: -8.17E-08, gnrm:  9.791E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  22, enth: -3.508133343923E+03, pV:  6.963E-01, ekinatom:  2.185E-01, 
        ekinlat:  2.925E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0022.ascii
-     Velocity of CM                    :  3.8796219E-14
+     Velocity of CM                    :  4.2225855E-14
      Torquenrm info: {Torquenrm:  3.6367629E-06, Ekin:  2.4772849E-01, 
                        Enthalpy: -3.5081333E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  21, epot_es:  2.1629065252216E+00, de: -3.57E-08, gnrm:  9.863E-08, 
+     CEP: {iter:  21, epot_es:  2.1629065252214E+00, de: -3.57E-08, gnrm:  9.863E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  23, enth: -3.508130345558E+03, pV:  6.945E-01, ekinatom:  2.086E-01, 
        ekinlat:  3.617E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0023.ascii
-     Velocity of CM                    :  3.5729178E-14
+     Velocity of CM                    :  4.2902328E-14
      Torquenrm info: {Torquenrm:  3.5479468E-06, Ekin:  2.4476041E-01, 
                        Enthalpy: -3.5081303E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  22, epot_es:  2.1638842784627E+00, de:  3.21E-08, gnrm:  5.752E-08, 
+     CEP: {iter:  22, epot_es:  2.1638842784625E+00, de:  3.21E-08, gnrm:  5.752E-08, 
        stepsize:  1.000E+00}
-     MD: {iter:  24, enth: -3.508131644346E+03, pV:  6.924E-01, ekinatom:  2.024E-01, 
+     MD: {iter:  24, enth: -3.508131644345E+03, pV:  6.924E-01, ekinatom:  2.024E-01, 
        ekinlat:  4.365E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0024.ascii
-     Velocity of CM                    :  3.4427656E-14
+     Velocity of CM                    :  4.8604950E-14
      Torquenrm info: {Torquenrm:  3.3245022E-06, Ekin:  2.4608857E-01, 
                        Enthalpy: -3.5081316E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  22, epot_es:  2.1695061012365E+00, de:  1.17E-07, gnrm:  7.674E-08, 
+     CEP: {iter:  22, epot_es:  2.1695061012363E+00, de:  1.17E-07, gnrm:  7.674E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  25, enth: -3.508139428644E+03, pV:  6.901E-01, ekinatom:  2.024E-01, 
        ekinlat:  5.142E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0025.ascii
-     Velocity of CM                    :  4.0703871E-14
+     Velocity of CM                    :  4.0655997E-14
      Torquenrm info: {Torquenrm:  2.9324123E-06, Ekin:  2.5385092E-01, 
                        Enthalpy: -3.5081394E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  23, epot_es:  2.1789086711558E+00, de:  1.31E-07, gnrm:  6.356E-08, 
+     CEP: {iter:  23, epot_es:  2.1789086711555E+00, de:  1.31E-07, gnrm:  6.356E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  26, enth: -3.508153137357E+03, pV:  6.878E-01, ekinatom:  2.086E-01, 
        ekinlat:  5.907E-02,                 nummax:  0, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0026.ascii
-     Velocity of CM                    :  3.8422219E-14
+     Velocity of CM                    :  3.9355214E-14
      Torquenrm info: {Torquenrm:  2.5361832E-06, Ekin:  2.6763181E-01, 
                        Enthalpy: -3.5081531E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  23, epot_es:  2.1894205907731E+00, de:  2.05E-07, gnrm:  9.176E-08, 
+     CEP: {iter:  23, epot_es:  2.1894205907728E+00, de:  2.05E-07, gnrm:  9.176E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  27, enth: -3.508168802962E+03, pV:  6.854E-01, ekinatom:  2.175E-01, 
        ekinlat:  6.600E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0027.ascii
-     Velocity of CM                    :  4.2289006E-14
+     Velocity of CM                    :  4.9402929E-14
      Torquenrm info: {Torquenrm:  2.1990489E-06, Ekin:  2.8347483E-01, 
                        Enthalpy: -3.5081688E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.1976835945824E+00, de:  1.54E-07, gnrm:  6.727E-08, 
+     CEP: {iter:  24, epot_es:  2.1976835945822E+00, de:  1.54E-07, gnrm:  6.727E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  28, enth: -3.508181309944E+03, pV:  6.832E-01, ekinatom:  2.246E-01, 
        ekinlat:  7.146E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0028.ascii
-     Velocity of CM                    :  3.9576453E-14
+     Velocity of CM                    :  4.8879200E-14
      Torquenrm info: {Torquenrm:  2.0071079E-06, Ekin:  2.9606264E-01, 
                        Enthalpy: -3.5081813E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2013508977162E+00, de:  1.83E-07, gnrm:  8.002E-08, 
+     CEP: {iter:  24, epot_es:  2.2013508977160E+00, de:  1.83E-07, gnrm:  8.002E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  29, enth: -3.508185574379E+03, pV:  6.810E-01, ekinatom:  2.264E-01, 
        ekinlat:  7.452E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0029.ascii
-     Velocity of CM                    :  4.4153390E-14
+     Velocity of CM                    :  5.6060876E-14
      Torquenrm info: {Torquenrm:  2.0900928E-06, Ekin:  3.0088182E-01, 
                        Enthalpy: -3.5081856E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2013101891100E+00, de:  2.00E-07, gnrm:  8.894E-08, 
+     CEP: {iter:  24, epot_es:  2.2013101891098E+00, de:  2.00E-07, gnrm:  8.894E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  30, enth: -3.508182257862E+03, pV:  6.792E-01, ekinatom:  2.232E-01, 
        ekinlat:  7.452E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0030.ascii
-     Velocity of CM                    :  4.7194796E-14
+     Velocity of CM                    :  6.3791371E-14
      Torquenrm info: {Torquenrm:  3.2925235E-06, Ekin:  2.9774870E-01, 
                        Enthalpy: -3.5081823E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2017480223951E+00, de:  2.15E-07, gnrm:  9.683E-08, 
+     CEP: {iter:  24, epot_es:  2.2017480223948E+00, de:  2.15E-07, gnrm:  9.683E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  31, enth: -3.508179534345E+03, pV:  6.780E-01, ekinatom:  2.224E-01, 
        ekinlat:  7.248E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0031.ascii
-     Velocity of CM                    :  4.9278397E-14
+     Velocity of CM                    :  5.9229332E-14
      Torquenrm info: {Torquenrm:  4.8265020E-06, Ekin:  2.9485784E-01, 
                        Enthalpy: -3.5081795E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2066223874133E+00, de:  1.33E-07, gnrm:  5.963E-08, 
+     CEP: {iter:  25, epot_es:  2.2066223874131E+00, de:  1.33E-07, gnrm:  5.963E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  32, enth: -3.508185803950E+03, pV:  6.776E-01, ekinatom:  2.309E-01, 
        ekinlat:  6.998E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0032.ascii
-     Velocity of CM                    :  4.7908664E-14
+     Velocity of CM                    :  6.0425922E-14
      Torquenrm info: {Torquenrm:  6.0116236E-06, Ekin:  3.0087183E-01, 
                        Enthalpy: -3.5081858E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2156338495624E+00, de:  1.44E-07, gnrm:  6.445E-08, 
+     CEP: {iter:  25, epot_es:  2.2156338495622E+00, de:  1.44E-07, gnrm:  6.445E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  33, enth: -3.508199716037E+03, pV:  6.781E-01, ekinatom:  2.468E-01, 
        ekinlat:  6.807E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0033.ascii
-     Velocity of CM                    :  5.5494384E-14
+     Velocity of CM                    :  6.1060651E-14
      Torquenrm info: {Torquenrm:  6.0723859E-06, Ekin:  3.1491218E-01, 
                        Enthalpy: -3.5081997E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2248812649223E+00, de:  1.49E-07, gnrm:  6.671E-08, 
+     CEP: {iter:  25, epot_es:  2.2248812649220E+00, de:  1.49E-07, gnrm:  6.671E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  34, enth: -3.508212411822E+03, pV:  6.792E-01, ekinatom:  2.612E-01, 
        ekinlat:  6.666E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0034.ascii
-     Velocity of CM                    :  4.4053336E-14
+     Velocity of CM                    :  5.4866616E-14
      Torquenrm info: {Torquenrm:  5.0288479E-06, Ekin:  3.2781310E-01, 
                        Enthalpy: -3.5082124E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2309848402853E+00, de:  1.45E-07, gnrm:  6.573E-08, 
+     CEP: {iter:  25, epot_es:  2.2309848402851E+00, de:  1.45E-07, gnrm:  6.573E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  35, enth: -3.508217997858E+03, pV:  6.809E-01, ekinatom:  2.683E-01, 
        ekinlat:  6.519E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0035.ascii
-     Velocity of CM                    :  4.8282960E-14
+     Velocity of CM                    :  5.3604920E-14
      Torquenrm info: {Torquenrm:  3.6380685E-06, Ekin:  3.3343788E-01, 
                        Enthalpy: -3.5082180E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2329493886885E+00, de:  1.34E-07, gnrm:  6.245E-08, 
+     CEP: {iter:  25, epot_es:  2.2329493886883E+00, de:  1.34E-07, gnrm:  6.245E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  36, enth: -3.508217826097E+03, pV:  6.828E-01, ekinatom:  2.692E-01, 
        ekinlat:  6.336E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0036.ascii
-     Velocity of CM                    :  5.1443954E-14
+     Velocity of CM                    :  5.7994463E-14
      Torquenrm info: {Torquenrm:  2.6586395E-06, Ekin:  3.3259638E-01, 
                        Enthalpy: -3.5082178E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2313973685325E+00, de:  1.20E-07, gnrm:  5.810E-08, 
+     CEP: {iter:  25, epot_es:  2.2313973685324E+00, de:  1.20E-07, gnrm:  5.810E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  37, enth: -3.508213768540E+03, pV:  6.851E-01, ekinatom:  2.672E-01, 
        ekinlat:  6.123E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0037.ascii
-     Velocity of CM                    :  5.2834020E-14
+     Velocity of CM                    :  5.2495707E-14
      Torquenrm info: {Torquenrm:  2.4106976E-06, Ekin:  3.2843532E-01, 
                        Enthalpy: -3.5082138E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2273298089162E+00, de:  1.85E-07, gnrm:  9.614E-08, 
+     CEP: {iter:  24, epot_es:  2.2273298089161E+00, de:  1.85E-07, gnrm:  9.614E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  38, enth: -3.508206892964E+03, pV:  6.875E-01, ekinatom:  2.626E-01, 
        ekinlat:  5.891E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0038.ascii
-     Velocity of CM                    :  4.7115333E-14
+     Velocity of CM                    :  4.9877071E-14
      Torquenrm info: {Torquenrm:  2.2863687E-06, Ekin:  3.2146662E-01, 
                        Enthalpy: -3.5082069E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2218034305150E+00, de:  1.55E-07, gnrm:  8.971E-08, 
+     CEP: {iter:  24, epot_es:  2.2218034305149E+00, de:  1.55E-07, gnrm:  8.971E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  39, enth: -3.508198301623E+03, pV:  6.903E-01, ekinatom:  2.563E-01, 
        ekinlat:  5.651E-02,                 nummax:  1, nummin:  0, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0039.ascii
-     Velocity of CM                    :  4.1772510E-14
+     Velocity of CM                    :  4.9692496E-14
      Torquenrm info: {Torquenrm:  2.2433923E-06, Ekin:  3.1280243E-01, 
                        Enthalpy: -3.5081983E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2158132196984E+00, de:  1.26E-07, gnrm:  8.556E-08, 
+     CEP: {iter:  24, epot_es:  2.2158132196983E+00, de:  1.26E-07, gnrm:  8.556E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  40, enth: -3.508189019332E+03, pV:  6.932E-01, ekinatom:  2.493E-01, 
        ekinlat:  5.413E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0040.ascii
-     Velocity of CM                    :  5.0412225E-14
+     Velocity of CM                    :  4.2909159E-14
      Torquenrm info: {Torquenrm:  2.2330407E-06, Ekin:  3.0346562E-01, 
                        Enthalpy: -3.5081890E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2102088081661E+00, de:  9.98E-08, gnrm:  8.408E-08, 
+     CEP: {iter:  24, epot_es:  2.2102088081660E+00, de:  9.98E-08, gnrm:  8.408E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  41, enth: -3.508179849090E+03, pV:  6.964E-01, ekinatom:  2.424E-01, 
        ekinlat:  5.186E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0041.ascii
-     Velocity of CM                    :  4.6639939E-14
+     Velocity of CM                    :  4.0926140E-14
      Torquenrm info: {Torquenrm:  2.2105877E-06, Ekin:  2.9429043E-01, 
                        Enthalpy: -3.5081798E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2060792451124E+00, de:  7.79E-08, gnrm:  8.506E-08, 
+     CEP: {iter:  24, epot_es:  2.2060792451122E+00, de:  7.79E-08, gnrm:  8.506E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  42, enth: -3.508171445509E+03, pV:  6.999E-01, ekinatom:  2.361E-01, 
        ekinlat:  4.984E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0042.ascii
-     Velocity of CM                    :  4.8179586E-14
+     Velocity of CM                    :  4.8087398E-14
      Torquenrm info: {Torquenrm:  2.2104306E-06, Ekin:  2.8592500E-01, 
                        Enthalpy: -3.5081714E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2043167692691E+00, de:  6.21E-08, gnrm:  8.708E-08, 
+     CEP: {iter:  24, epot_es:  2.2043167692689E+00, de:  6.21E-08, gnrm:  8.708E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  43, enth: -3.508165078975E+03, pV:  7.036E-01, ekinatom:  2.314E-01, 
        ekinlat:  4.809E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0043.ascii
-     Velocity of CM                    :  4.9712708E-14
+     Velocity of CM                    :  5.0215965E-14
      Torquenrm info: {Torquenrm:  2.2060305E-06, Ekin:  2.7950699E-01, 
                        Enthalpy: -3.5081651E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2055144780072E+00, de:  5.38E-08, gnrm:  8.860E-08, 
+     CEP: {iter:  24, epot_es:  2.2055144780070E+00, de:  5.38E-08, gnrm:  8.860E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  44, enth: -3.508161942478E+03, pV:  7.077E-01, ekinatom:  2.299E-01, 
        ekinlat:  4.641E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0044.ascii
-     Velocity of CM                    :  4.2840225E-14
+     Velocity of CM                    :  4.9535857E-14
      Torquenrm info: {Torquenrm:  2.0909887E-06, Ekin:  2.7632145E-01, 
                        Enthalpy: -3.5081619E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2095925674526E+00, de:  5.31E-08, gnrm:  8.877E-08, 
+     CEP: {iter:  24, epot_es:  2.2095925674523E+00, de:  5.31E-08, gnrm:  8.877E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  45, enth: -3.508162178659E+03, pV:  7.120E-01, ekinatom:  2.320E-01, 
        ekinlat:  4.457E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0045.ascii
-     Velocity of CM                    :  5.2965900E-14
+     Velocity of CM                    :  4.7080264E-14
      Torquenrm info: {Torquenrm:  1.8999708E-06, Ekin:  2.7654283E-01, 
                        Enthalpy: -3.5081622E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2158138104555E+00, de:  5.88E-08, gnrm:  8.779E-08, 
+     CEP: {iter:  24, epot_es:  2.2158138104552E+00, de:  5.88E-08, gnrm:  8.779E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  46, enth: -3.508164784253E+03, pV:  7.165E-01, ekinatom:  2.368E-01, 
        ekinlat:  4.241E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0046.ascii
-     Velocity of CM                    :  4.8078682E-14
+     Velocity of CM                    :  4.0333961E-14
      Torquenrm info: {Torquenrm:  1.6872271E-06, Ekin:  2.7916746E-01, 
                        Enthalpy: -3.5081648E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2231284411165E+00, de:  6.90E-08, gnrm:  8.644E-08, 
+     CEP: {iter:  24, epot_es:  2.2231284411162E+00, de:  6.90E-08, gnrm:  8.644E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  47, enth: -3.508168286781E+03, pV:  7.210E-01, ekinatom:  2.428E-01, 
        ekinlat:  3.992E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0047.ascii
-     Velocity of CM                    :  4.8168840E-14
+     Velocity of CM                    :  4.5947677E-14
      Torquenrm info: {Torquenrm:  1.5029617E-06, Ekin:  2.8269296E-01, 
                        Enthalpy: -3.5081683E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2305580239549E+00, de:  8.21E-08, gnrm:  8.544E-08, 
+     CEP: {iter:  24, epot_es:  2.2305580239546E+00, de:  8.21E-08, gnrm:  8.544E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  48, enth: -3.508171640096E+03, pV:  7.253E-01, ekinatom:  2.488E-01, 
        ekinlat:  3.727E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0048.ascii
-     Velocity of CM                    :  5.6420306E-14
+     Velocity of CM                    :  6.0853186E-14
      Torquenrm info: {Torquenrm:  1.3779239E-06, Ekin:  2.8604513E-01, 
                        Enthalpy: -3.5081716E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2374251170842E+00, de:  9.69E-08, gnrm:  8.518E-08, 
+     CEP: {iter:  24, epot_es:  2.2374251170839E+00, de:  9.69E-08, gnrm:  8.518E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  49, enth: -3.508174622337E+03, pV:  7.294E-01, ekinatom:  2.542E-01, 
        ekinlat:  3.475E-02,                 nummax:  1, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0049.ascii
-     Velocity of CM                    :  5.4635608E-14
+     Velocity of CM                    :  5.0111291E-14
      Torquenrm info: {Torquenrm:  1.3214602E-06, Ekin:  2.8899117E-01, 
                        Enthalpy: -3.5081746E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2432463567272E+00, de:  1.13E-07, gnrm:  8.575E-08, 
+     CEP: {iter:  24, epot_es:  2.2432463567270E+00, de:  1.13E-07, gnrm:  8.575E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  50, enth: -3.508176827562E+03, pV:  7.333E-01, ekinatom:  2.587E-01, 
        ekinlat:  3.249E-02,                 nummax:  2, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0050.ascii
-     Velocity of CM                    :  5.5822915E-14
+     Velocity of CM                    :  4.7829872E-14
      Torquenrm info: {Torquenrm:  1.2992033E-06, Ekin:  2.9119523E-01, 
                        Enthalpy: -3.5081768E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2476579810934E+00, de:  1.29E-07, gnrm:  8.707E-08, 
+     CEP: {iter:  24, epot_es:  2.2476579810932E+00, de:  1.29E-07, gnrm:  8.707E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  51, enth: -3.508177926712E+03, pV:  7.368E-01, ekinatom:  2.617E-01, 
        ekinlat:  3.057E-02,                 nummax:  2, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0051.ascii
-     Velocity of CM                    :  5.4500078E-14
+     Velocity of CM                    :  4.6125458E-14
      Torquenrm info: {Torquenrm:  1.2980575E-06, Ekin:  2.9229417E-01, 
                        Enthalpy: -3.5081779E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2503869715102E+00, de:  1.44E-07, gnrm:  8.892E-08, 
+     CEP: {iter:  24, epot_es:  2.2503869715100E+00, de:  1.44E-07, gnrm:  8.892E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  52, enth: -3.508177667390E+03, pV:  7.399E-01, ekinatom:  2.630E-01, 
        ekinlat:  2.906E-02,                 nummax:  2, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0052.ascii
-     Velocity of CM                    :  5.4527211E-14
+     Velocity of CM                    :  5.3888721E-14
      Torquenrm info: {Torquenrm:  1.3121239E-06, Ekin:  2.9203770E-01, 
                        Enthalpy: -3.5081777E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2512427720984E+00, de:  1.59E-07, gnrm:  9.099E-08, 
+     CEP: {iter:  24, epot_es:  2.2512427720983E+00, de:  1.59E-07, gnrm:  9.099E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  53, enth: -3.508175865669E+03, pV:  7.427E-01, ekinatom:  2.622E-01, 
        ekinlat:  2.799E-02,                 nummax:  2, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0053.ascii
-     Velocity of CM                    :  5.5757518E-14
+     Velocity of CM                    :  4.2477313E-14
      Torquenrm info: {Torquenrm:  1.3388756E-06, Ekin:  2.9024218E-01, 
                        Enthalpy: -3.5081759E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2501292243523E+00, de:  1.71E-07, gnrm:  9.296E-08, 
+     CEP: {iter:  24, epot_es:  2.2501292243522E+00, de:  1.71E-07, gnrm:  9.296E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  54, enth: -3.508172419216E+03, pV:  7.451E-01, ekinatom:  2.594E-01, 
        ekinlat:  2.741E-02,                 nummax:  2, nummin:  1, parres%mdmin:  2}
      Writing the positions in MD       : posmd.0054.ascii
-     Velocity of CM                    :  4.8201583E-14
+     Velocity of CM                    :  4.0529071E-14
      Torquenrm info: {Torquenrm:  1.3780507E-06, Ekin:  2.8680435E-01, 
                        Enthalpy: -3.5081724E+03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2470716414979E+00, de:  1.81E-07, gnrm:  9.450E-08, 
+     CEP: {iter:  24, epot_es:  2.2470716414978E+00, de:  1.81E-07, gnrm:  9.450E-08, 
        stepsize:  1.000E+00}
      MD: {iter:  55, enth: -3.508167336822E+03, pV:  7.472E-01, ekinatom:  2.544E-01, 
        ekinlat:  2.732E-02,                 nummax:  2, nummin:  2, parres%mdmin:  2}
@@ -1322,12 +1224,12 @@
                upper boundary:  3.67E+01}
    EXIT MD: {itime:  55, enthalpy: -3508.167336821954, etot_in: -3508.914496492277}
    Cell changed: {latvec: [
- [ 5.857273167827E+00,  6.194168220941E-02,  1.782032900143E+00], 
- [-2.453993583604E+00, -5.050530336140E+00,  1.252025438911E+01], 
- [ 3.247426030149E+00, -1.373060338604E+01, -1.327772864557E-02]], latvec0: [
- [ 5.857273167827E+00,  6.194168220941E-02,  1.782032900143E+00], 
- [-3.247426030149E+00,  1.373060338604E+01,  1.327772864557E-02], 
- [-2.453993583604E+00, -5.050530336140E+00,  1.252025438911E+01]]}
+ [ 5.857273167828E+00,  6.194168220912E-02,  1.782032900141E+00], 
+ [-2.453993583605E+00, -5.050530336140E+00,  1.252025438911E+01], 
+ [ 3.247426030149E+00, -1.373060338604E+01, -1.327772864566E-02]], latvec0: [
+ [ 5.857273167828E+00,  6.194168220912E-02,  1.782032900141E+00], 
+ [-3.247426030149E+00,  1.373060338604E+01,  1.327772864566E-02], 
+ [-2.453993583605E+00, -5.050530336140E+00,  1.252025438911E+01]]}
    After exiting MD: {energy: -3508.914496492277, enthalpy: -3508.167336821954}
    Counter of MD updated               :  55
    atoms info in FIRE:
@@ -1348,8 +1250,7 @@
    GEOPT Algorithm                     :  1
    MD Integrator                       :  3
    KPT mesh set up as follows          :  [  5,  2,  2 ]
-   Charge equilibration process:
-   CEP: {iter:  24, epot_es:  2.2470716414979E+00, de:  1.81E-07, gnrm:  9.450E-08, 
+   CEP: {iter:  24, epot_es:  2.2470716414978E+00, de:  1.81E-07, gnrm:  9.450E-08, 
      stepsize:  1.000E+00}
     #MINHOP start FIRE
    Pressure                            :  6.7978629741124118E-004
@@ -1360,8 +1261,7 @@
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -3.5081673E+03, ekinlat:  0.0000000E+00}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2471027908915E+00, de:  1.81E-07, gnrm:  9.454E-08, 
+     CEP: {iter:  24, epot_es:  2.2471027908914E+00, de:  1.81E-07, gnrm:  9.454E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0001.ascii
      FIRE: {iter:  1, enth: -3.508167418274E+03, fmax:  5.468E-02, nstep:  0, iprec:  2, 
@@ -1369,11 +1269,10 @@
             rkin:  0.00E+00,                        P:  0.0E+00,    P_at:  0.0E+00, 
            P_lat:  0.0E+00}
    - Velocity of CM                    :  1.4662782E-01
-     Torquenrm info: {Torquenrm:  1.2785429E-19, Ekin:  6.3491775E-05, 
+     Torquenrm info: {Torquenrm:  5.4210109E-20, Ekin:  6.3491775E-05, 
                        Enthalpy: -3.5081674E+03, ekinlat:  3.4313986E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2472105058397E+00, de:  1.81E-07, gnrm:  9.466E-08, 
+     CEP: {iter:  24, epot_es:  2.2472105058396E+00, de:  1.81E-07, gnrm:  9.466E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0002.ascii
      FIRE: {iter:  2, enth: -3.508167676990E+03, fmax:  5.465E-02, nstep:  1, iprec:  2, 
@@ -1381,11 +1280,10 @@
             rkin:  9.78E-05,                        P:  1.4E-05,    P_at:  2.0E-07, 
            P_lat:  1.4E-05}
    - Velocity of CM                    :  4.1078078E-01
-     Torquenrm info: {Torquenrm:  8.2783684E-13, Ekin:  2.8424981E-04, 
+     Torquenrm info: {Torquenrm:  8.2783676E-13, Ekin:  2.8424981E-04, 
                        Enthalpy: -3.5081677E+03, ekinlat:  1.3694339E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2474058529727E+00, de:  1.82E-07, gnrm:  9.485E-08, 
+     CEP: {iter:  24, epot_es:  2.2474058529726E+00, de:  1.82E-07, gnrm:  9.485E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0003.ascii
      FIRE: {iter:  3, enth: -3.508168123973E+03, fmax:  5.460E-02, nstep:  2, iprec:  2, 
@@ -1393,11 +1291,10 @@
             rkin:  4.21E-04,                        P:  2.8E-05,    P_at:  4.4E-07, 
            P_lat:  2.7E-05}
    - Velocity of CM                    :  7.6941124E-01
-     Torquenrm info: {Torquenrm:  8.1313909E-12, Ekin:  7.0241190E-04, 
+     Torquenrm info: {Torquenrm:  8.1313911E-12, Ekin:  7.0241190E-04, 
                        Enthalpy: -3.5081681E+03, ekinlat:  3.0733997E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2476972008894E+00, de:  1.83E-07, gnrm:  9.513E-08, 
+     CEP: {iter:  24, epot_es:  2.2476972008893E+00, de:  1.83E-07, gnrm:  9.513E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0004.ascii
      FIRE: {iter:  4, enth: -3.508168767390E+03, fmax:  5.455E-02, nstep:  3, iprec:  2, 
@@ -1405,11 +1302,10 @@
             rkin:  1.01E-03,                        P:  4.2E-05,    P_at:  7.1E-07, 
            P_lat:  4.1E-05}
    - Velocity of CM                    :  1.2042673E+00
-     Torquenrm info: {Torquenrm:  2.6137575E-11, Ekin:  1.3504787E-03, 
+     Torquenrm info: {Torquenrm:  2.6137574E-11, Ekin:  1.3504787E-03, 
                        Enthalpy: -3.5081688E+03, ekinlat:  5.4487725E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2480906036852E+00, de:  1.84E-07, gnrm:  9.548E-08, 
+     CEP: {iter:  24, epot_es:  2.2480906036851E+00, de:  1.84E-07, gnrm:  9.548E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0005.ascii
      FIRE: {iter:  5, enth: -3.508169612967E+03, fmax:  5.449E-02, nstep:  4, iprec:  2, 
@@ -1420,8 +1316,7 @@
      Torquenrm info: {Torquenrm:  5.7445331E-11, Ekin:  2.2532736E-03, 
                        Enthalpy: -3.5081696E+03, ekinlat:  8.4885898E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2485900986427E+00, de:  1.85E-07, gnrm:  9.591E-08, 
+     CEP: {iter:  24, epot_es:  2.2485900986426E+00, de:  1.85E-07, gnrm:  9.591E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0006.ascii
      FIRE: {iter:  6, enth: -3.508170664299E+03, fmax:  5.443E-02, nstep:  5, iprec:  2, 
@@ -1432,8 +1327,7 @@
      Torquenrm info: {Torquenrm:  1.0366789E-10, Ekin:  3.4283693E-03, 
                        Enthalpy: -3.5081707E+03, ekinlat:  1.2185217E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2491979439503E+00, de:  1.87E-07, gnrm:  9.643E-08, 
+     CEP: {iter:  24, epot_es:  2.2491979439502E+00, de:  1.87E-07, gnrm:  9.643E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0007.ascii
      FIRE: {iter:  7, enth: -3.508171923092E+03, fmax:  5.435E-02, nstep:  6, iprec:  2, 
@@ -1444,8 +1338,7 @@
      Torquenrm info: {Torquenrm:  1.6569426E-10, Ekin:  4.8867240E-03, 
                        Enthalpy: -3.5081719E+03, ekinlat:  1.6530327E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2499893404473E+00, de:  1.89E-07, gnrm:  9.710E-08, 
+     CEP: {iter:  24, epot_es:  2.2499893404472E+00, de:  1.89E-07, gnrm:  9.710E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0008.ascii
      FIRE: {iter:  8, enth: -3.508173544231E+03, fmax:  5.427E-02, nstep:  7, iprec:  2, 
@@ -1456,8 +1349,7 @@
      Torquenrm info: {Torquenrm:  2.8974818E-10, Ekin:  6.7508472E-03, 
                        Enthalpy: -3.5081735E+03, ekinlat:  2.2053123E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2510007297593E+00, de:  1.92E-07, gnrm:  9.795E-08, 
+     CEP: {iter:  24, epot_es:  2.2510007297592E+00, de:  1.92E-07, gnrm:  9.795E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0009.ascii
      FIRE: {iter:  9, enth: -3.508175604749E+03, fmax:  5.417E-02, nstep:  8, iprec:  2, 
@@ -1468,8 +1360,7 @@
      Torquenrm info: {Torquenrm:  5.1997328E-10, Ekin:  9.1027492E-03, 
                        Enthalpy: -3.5081756E+03, ekinlat:  2.9012389E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  24, epot_es:  2.2522732983544E+00, de:  1.95E-07, gnrm:  9.904E-08, 
+     CEP: {iter:  24, epot_es:  2.2522732983543E+00, de:  1.95E-07, gnrm:  9.904E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0010.ascii
      FIRE: {iter:  10, enth: -3.508178194662E+03, fmax:  5.404E-02, nstep:  9, iprec:  2, 
@@ -1480,8 +1371,7 @@
      Torquenrm info: {Torquenrm:  9.3381864E-10, Ekin:  1.2037158E-02, 
                        Enthalpy: -3.5081782E+03, ekinlat:  3.7714185E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2538524320225E+00, de:  1.12E-07, gnrm:  5.595E-08, 
+     CEP: {iter:  25, epot_es:  2.2538524320223E+00, de:  1.12E-07, gnrm:  5.595E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0011.ascii
      FIRE: {iter:  11, enth: -3.508181417669E+03, fmax:  5.388E-02, nstep:  10, iprec:  2, 
@@ -1492,8 +1382,7 @@
      Torquenrm info: {Torquenrm:  1.6629360E-09, Ekin:  1.5661903E-02, 
                        Enthalpy: -3.5081814E+03, ekinlat:  4.8515868E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2557858224628E+00, de:  1.15E-07, gnrm:  5.696E-08, 
+     CEP: {iter:  25, epot_es:  2.2557858224627E+00, de:  1.15E-07, gnrm:  5.696E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0012.ascii
      FIRE: {iter:  12, enth: -3.508185391125E+03, fmax:  5.367E-02, nstep:  11, iprec:  2, 
@@ -1504,8 +1393,7 @@
      Torquenrm info: {Torquenrm:  2.9300786E-09, Ekin:  2.0098356E-02, 
                        Enthalpy: -3.5081854E+03, ekinlat:  6.1827435E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2581215289937E+00, de:  1.19E-07, gnrm:  5.826E-08, 
+     CEP: {iter:  25, epot_es:  2.2581215289935E+00, de:  1.19E-07, gnrm:  5.826E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0013.ascii
      FIRE: {iter:  13, enth: -3.508190244774E+03, fmax:  5.338E-02, nstep:  12, iprec:  2, 
@@ -1516,8 +1404,7 @@
      Torquenrm info: {Torquenrm:  5.1110091E-09, Ekin:  2.5482449E-02, 
                        Enthalpy: -3.5081902E+03, ekinlat:  7.8106990E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2609033536801E+00, de:  1.24E-07, gnrm:  5.992E-08, 
+     CEP: {iter:  25, epot_es:  2.2609033536799E+00, de:  1.24E-07, gnrm:  5.992E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0014.ascii
      FIRE: {iter:  14, enth: -3.508196117561E+03, fmax:  5.298E-02, nstep:  13, iprec:  2, 
@@ -1528,8 +1415,7 @@
      Torquenrm info: {Torquenrm:  8.8380499E-09, Ekin:  3.1967622E-02, 
                        Enthalpy: -3.5081961E+03, ekinlat:  9.7845102E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2641647131665E+00, de:  1.30E-07, gnrm:  6.205E-08, 
+     CEP: {iter:  25, epot_es:  2.2641647131664E+00, de:  1.30E-07, gnrm:  6.205E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0015.ascii
      FIRE: {iter:  15, enth: -3.508203151575E+03, fmax:  5.243E-02, nstep:  14, iprec:  2, 
@@ -1540,8 +1426,7 @@
      Torquenrm info: {Torquenrm:  1.5182927E-08, Ekin:  3.9732526E-02, 
                        Enthalpy: -3.5082032E+03, ekinlat:  1.2152924E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2679200590951E+00, de:  1.38E-07, gnrm:  6.480E-08, 
+     CEP: {iter:  25, epot_es:  2.2679200590949E+00, de:  1.38E-07, gnrm:  6.480E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0016.ascii
      FIRE: {iter:  16, enth: -3.508211481999E+03, fmax:  5.166E-02, nstep:  15, iprec:  2, 
@@ -1552,8 +1437,7 @@
      Torquenrm info: {Torquenrm:  2.5974994E-08, Ekin:  4.8998909E-02, 
                        Enthalpy: -3.5082115E+03, ekinlat:  1.4957373E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2721542015861E+00, de:  1.48E-07, gnrm:  6.834E-08, 
+     CEP: {iter:  25, epot_es:  2.2721542015858E+00, de:  1.48E-07, gnrm:  6.834E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0017.ascii
      FIRE: {iter:  17, enth: -3.508221221829E+03, fmax:  5.057E-02, nstep:  16, iprec:  2, 
@@ -1564,8 +1448,7 @@
      Torquenrm info: {Torquenrm:  4.4366385E-08, Ekin:  6.0071254E-02, 
                        Enthalpy: -3.5082212E+03, ekinlat:  1.8219120E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2768114666767E+00, de:  1.60E-07, gnrm:  7.294E-08, 
+     CEP: {iter:  25, epot_es:  2.2768114666765E+00, de:  1.60E-07, gnrm:  7.294E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0018.ascii
      FIRE: {iter:  18, enth: -3.508232440684E+03, fmax:  4.904E-02, nstep:  17, iprec:  2, 
@@ -1576,8 +1459,7 @@
      Torquenrm info: {Torquenrm:  7.5800751E-08, Ekin:  7.3422261E-02, 
                        Enthalpy: -3.5082324E+03, ekinlat:  2.1916134E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2817908685092E+00, de:  1.76E-07, gnrm:  7.888E-08, 
+     CEP: {iter:  25, epot_es:  2.2817908685089E+00, de:  1.76E-07, gnrm:  7.888E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0019.ascii
      FIRE: {iter:  19, enth: -3.508245139034E+03, fmax:  4.691E-02, nstep:  18, iprec:  2, 
@@ -1588,8 +1470,7 @@
      Torquenrm info: {Torquenrm:  1.2977901E-07, Ekin:  8.9859706E-02, 
                        Enthalpy: -3.5082451E+03, ekinlat:  2.5940929E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2869682854354E+00, de:  1.96E-07, gnrm:  8.656E-08, 
+     CEP: {iter:  25, epot_es:  2.2869682854352E+00, de:  1.96E-07, gnrm:  8.656E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0020.ascii
      FIRE: {iter:  20, enth: -3.508259229048E+03, fmax:  4.399E-02, nstep:  19, iprec:  2, 
@@ -1600,8 +1481,7 @@
      Torquenrm info: {Torquenrm:  2.2319157E-07, Ekin:  1.1077598E-01, 
                        Enthalpy: -3.5082592E+03, ekinlat:  3.0021702E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  25, epot_es:  2.2922914345856E+00, de:  2.21E-07, gnrm:  9.636E-08, 
+     CEP: {iter:  25, epot_es:  2.2922914345853E+00, de:  2.21E-07, gnrm:  9.636E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0021.ascii
      FIRE: {iter:  21, enth: -3.508274548790E+03, fmax:  4.008E-02, nstep:  20, iprec:  2, 
@@ -1612,8 +1492,7 @@
      Torquenrm info: {Torquenrm:  3.8466773E-07, Ekin:  1.3812977E-01, 
                        Enthalpy: -3.5082745E+03, ekinlat:  3.3567118E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.2980256267271E+00, de:  1.43E-07, gnrm:  6.151E-08, 
+     CEP: {iter:  26, epot_es:  2.2980256267267E+00, de:  1.43E-07, gnrm:  6.151E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0022.ascii
      FIRE: {iter:  22, enth: -3.508290951809E+03, fmax:  3.505E-02, nstep:  21, iprec:  2, 
@@ -1624,8 +1503,7 @@
      Torquenrm info: {Torquenrm:  6.5882204E-07, Ekin:  1.7183564E-01, 
                        Enthalpy: -3.5082910E+03, ekinlat:  3.5480823E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3050965985814E+00, de:  1.64E-07, gnrm:  6.980E-08, 
+     CEP: {iter:  26, epot_es:  2.3050965985811E+00, de:  1.64E-07, gnrm:  6.980E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0023.ascii
      FIRE: {iter:  23, enth: -3.508308423387E+03, fmax:  3.512E-02, nstep:  22, iprec:  2, 
@@ -1636,8 +1514,7 @@
      Torquenrm info: {Torquenrm:  1.0884923E-06, Ekin:  2.0332187E-01, 
                        Enthalpy: -3.5083084E+03, ekinlat:  3.4859037E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3147743784663E+00, de:  1.86E-07, gnrm:  7.843E-08, 
+     CEP: {iter:  26, epot_es:  2.3147743784660E+00, de:  1.86E-07, gnrm:  7.843E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0024.ascii
      FIRE: {iter:  24, enth: -3.508326827884E+03, fmax:  3.221E-02, nstep:  23, iprec:  2, 
@@ -1648,8 +1525,7 @@
      Torquenrm info: {Torquenrm:  1.6108361E-06, Ekin:  2.2288598E-01, 
                        Enthalpy: -3.5083268E+03, ekinlat:  3.2909831E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3273736385648E+00, de:  2.06E-07, gnrm:  8.590E-08, 
+     CEP: {iter:  26, epot_es:  2.3273736385645E+00, de:  2.06E-07, gnrm:  8.590E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0025.ascii
      FIRE: {iter:  25, enth: -3.508345375117E+03, fmax:  2.680E-02, nstep:  24, iprec:  2, 
@@ -1660,8 +1536,7 @@
      Torquenrm info: {Torquenrm:  1.8714495E-06, Ekin:  2.3331643E-01, 
                        Enthalpy: -3.5083454E+03, ekinlat:  3.1778037E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3409157516337E+00, de:  2.18E-07, gnrm:  9.030E-08, 
+     CEP: {iter:  26, epot_es:  2.3409157516334E+00, de:  2.18E-07, gnrm:  9.030E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0026.ascii
      FIRE: {iter:  26, enth: -3.508361848299E+03, fmax:  2.011E-02, nstep:  25, iprec:  2, 
@@ -1672,8 +1547,7 @@
      Torquenrm info: {Torquenrm:  1.3728969E-06, Ekin:  2.4075013E-01, 
                        Enthalpy: -3.5083618E+03, ekinlat:  3.2403599E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3513619314571E+00, de:  2.22E-07, gnrm:  9.118E-08, 
+     CEP: {iter:  26, epot_es:  2.3513619314569E+00, de:  2.22E-07, gnrm:  9.118E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0027.ascii
      FIRE: {iter:  27, enth: -3.508373493602E+03, fmax:  2.394E-02, nstep:  26, iprec:  2, 
@@ -1684,8 +1558,7 @@
      Torquenrm info: {Torquenrm:  8.8588835E-07, Ekin:  2.2931838E-01, 
                        Enthalpy: -3.5083735E+03, ekinlat:  3.1991958E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3568193065473E+00, de:  2.23E-07, gnrm:  9.109E-08, 
+     CEP: {iter:  26, epot_es:  2.3568193065469E+00, de:  2.23E-07, gnrm:  9.109E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0028.ascii
      FIRE: {iter:  28, enth: -3.508382606030E+03, fmax:  4.527E-02, nstep:  27, iprec:  2, 
@@ -1696,8 +1569,7 @@
      Torquenrm info: {Torquenrm:  2.7209389E-06, Ekin:  2.1426453E-01, 
                        Enthalpy: -3.5083826E+03, ekinlat:  2.8314901E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3599228045328E+00, de:  2.25E-07, gnrm:  9.200E-08, 
+     CEP: {iter:  26, epot_es:  2.3599228045325E+00, de:  2.25E-07, gnrm:  9.200E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0029.ascii
      FIRE: {iter:  29, enth: -3.508393918973E+03, fmax:  3.568E-02, nstep:  28, iprec:  2, 
@@ -1708,8 +1580,7 @@
      Torquenrm info: {Torquenrm:  3.5636786E-06, Ekin:  1.9931785E-01, 
                        Enthalpy: -3.5083939E+03, ekinlat:  2.4346973E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3569675739560E+00, de:  2.30E-07, gnrm:  9.448E-08, 
+     CEP: {iter:  26, epot_es:  2.3569675739557E+00, de:  2.30E-07, gnrm:  9.448E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0030.ascii
      FIRE: {iter:  30, enth: -3.508402109896E+03, fmax:  2.239E-02, nstep:  29, iprec:  2, 
@@ -1720,8 +1591,7 @@
      Torquenrm info: {Torquenrm:  2.6972718E-06, Ekin:  1.5782021E-01, 
                        Enthalpy: -3.5084021E+03, ekinlat:  1.9274410E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3513424192285E+00, de:  2.33E-07, gnrm:  9.614E-08, 
+     CEP: {iter:  26, epot_es:  2.3513424192282E+00, de:  2.33E-07, gnrm:  9.614E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0031.ascii
      FIRE: {iter:  31, enth: -3.508405549049E+03, fmax:  2.348E-02, nstep:  30, iprec:  2, 
@@ -1732,8 +1602,7 @@
      Torquenrm info: {Torquenrm:  2.6281999E-06, Ekin:  1.1694944E-01, 
                        Enthalpy: -3.5084055E+03, ekinlat:  1.4793546E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3492978582436E+00, de:  2.29E-07, gnrm:  9.499E-08, 
+     CEP: {iter:  26, epot_es:  2.3492978582434E+00, de:  2.29E-07, gnrm:  9.499E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0032.ascii
      FIRE: {iter:  32, enth: -3.508407613282E+03, fmax:  3.367E-02, nstep:  31, iprec:  2, 
@@ -1744,8 +1613,7 @@
      Torquenrm info: {Torquenrm:  3.2458721E-06, Ekin:  8.6600766E-02, 
                        Enthalpy: -3.5084076E+03, ekinlat:  1.2486988E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3533811902162E+00, de:  2.22E-07, gnrm:  9.189E-08, 
+     CEP: {iter:  26, epot_es:  2.3533811902160E+00, de:  2.22E-07, gnrm:  9.189E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0033.ascii
      FIRE: {iter:  33, enth: -3.508411588717E+03, fmax:  4.524E-02, nstep:  32, iprec:  2, 
@@ -1756,8 +1624,7 @@
      Torquenrm info: {Torquenrm:  4.3783451E-06, Ekin:  6.7163615E-02, 
                        Enthalpy: -3.5084116E+03, ekinlat:  1.2138959E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3611508383289E+00, de:  2.21E-07, gnrm:  9.099E-08, 
+     CEP: {iter:  26, epot_es:  2.3611508383287E+00, de:  2.21E-07, gnrm:  9.099E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0034.ascii
      FIRE: {iter:  34, enth: -3.508418703379E+03, fmax:  3.035E-02, nstep:  33, iprec:  2, 
@@ -1768,8 +1635,7 @@
      Torquenrm info: {Torquenrm:  6.8580232E-06, Ekin:  5.3103199E-02, 
                        Enthalpy: -3.5084187E+03, ekinlat:  1.3371094E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3641120142190E+00, de:  2.29E-07, gnrm:  9.408E-08, 
+     CEP: {iter:  26, epot_es:  2.3641120142186E+00, de:  2.29E-07, gnrm:  9.408E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0035.ascii
      FIRE: {iter:  35, enth: -3.508423052985E+03, fmax:  1.839E-02, nstep:  34, iprec:  2, 
@@ -1780,8 +1646,7 @@
      Torquenrm info: {Torquenrm:  6.3937885E-06, Ekin:  3.8109928E-02, 
                        Enthalpy: -3.5084231E+03, ekinlat:  1.4691435E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3702586395511E+00, de:  2.37E-07, gnrm:  9.731E-08, 
+     CEP: {iter:  26, epot_es:  2.3702586395505E+00, de:  2.37E-07, gnrm:  9.731E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0036.ascii
      FIRE: {iter:  36, enth: -3.508428334564E+03, fmax:  2.358E-02, nstep:  35, iprec:  2, 
@@ -1792,8 +1657,7 @@
      Torquenrm info: {Torquenrm:  6.4865810E-06, Ekin:  5.1353231E-02, 
                        Enthalpy: -3.5084283E+03, ekinlat:  1.2955883E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  26, epot_es:  2.3882386688229E+00, de:  2.44E-07, gnrm:  9.959E-08, 
+     CEP: {iter:  26, epot_es:  2.3882386688226E+00, de:  2.44E-07, gnrm:  9.959E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0037.ascii
      FIRE: {iter:  37, enth: -3.508442114999E+03, fmax:  1.878E-02, nstep:  36, iprec:  2, 
@@ -1804,7 +1668,6 @@
      Torquenrm info: {Torquenrm:  1.1426363E-05, Ekin:  6.2366945E-02, 
                        Enthalpy: -3.5084421E+03, ekinlat:  1.0016122E-02}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
      CEP: {iter:  27, epot_es:  2.3816446104201E+00, de:  1.61E-07, gnrm:  6.600E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0038.ascii
@@ -1816,7 +1679,6 @@
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -3.5084438E+03, ekinlat:  0.0000000E+00}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
      CEP: {iter:  27, epot_es:  2.3832490109882E+00, de:  1.60E-07, gnrm:  6.572E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0039.ascii
@@ -1825,11 +1687,10 @@
             rkin:  0.00E+00,                         P: -1.2E-05,    P_at: -1.9E-06, 
            P_lat: -1.1E-05}
    - Velocity of CM                    :  2.9168149E-01
-     Torquenrm info: {Torquenrm:  2.2351400E-19, Ekin:  1.1289725E-03, 
+     Torquenrm info: {Torquenrm:  1.6263033E-19, Ekin:  1.1289725E-03, 
                        Enthalpy: -3.5084446E+03, ekinlat:  9.3000461E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3867608647033E+00, de:  1.59E-07, gnrm:  6.528E-08, 
+     CEP: {iter:  27, epot_es:  2.3867608647031E+00, de:  1.59E-07, gnrm:  6.528E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0040.ascii
      FIRE: {iter:  40, enth: -3.508446690879E+03, fmax:  1.565E-02, nstep:  2, iprec:  2, 
@@ -1840,8 +1701,7 @@
      Torquenrm info: {Torquenrm:  1.7490232E-08, Ekin:  4.4622804E-03, 
                        Enthalpy: -3.5084467E+03, ekinlat:  2.1465798E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3906608499319E+00, de:  1.59E-07, gnrm:  6.526E-08, 
+     CEP: {iter:  27, epot_es:  2.3906608499317E+00, de:  1.59E-07, gnrm:  6.526E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0041.ascii
      FIRE: {iter:  41, enth: -3.508449405518E+03, fmax:  1.139E-02, nstep:  3, iprec:  2, 
@@ -1852,8 +1712,7 @@
      Torquenrm info: {Torquenrm:  1.0285248E-07, Ekin:  7.7005045E-03, 
                        Enthalpy: -3.5084494E+03, ekinlat:  2.5968684E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3929745673876E+00, de:  1.62E-07, gnrm:  6.617E-08, 
+     CEP: {iter:  27, epot_es:  2.3929745673873E+00, de:  1.62E-07, gnrm:  6.617E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0042.ascii
      FIRE: {iter:  42, enth: -3.508451830422E+03, fmax:  8.337E-03, nstep:  4, iprec:  2, 
@@ -1864,8 +1723,7 @@
      Torquenrm info: {Torquenrm:  2.0327026E-07, Ekin:  8.9345475E-03, 
                        Enthalpy: -3.5084518E+03, ekinlat:  3.4234552E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3931321409665E+00, de:  1.65E-07, gnrm:  6.791E-08, 
+     CEP: {iter:  27, epot_es:  2.3931321409662E+00, de:  1.65E-07, gnrm:  6.791E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0043.ascii
      FIRE: {iter:  43, enth: -3.508453474016E+03, fmax:  6.435E-03, nstep:  5, iprec:  2, 
@@ -1876,8 +1734,7 @@
      Torquenrm info: {Torquenrm:  1.7911145E-07, Ekin:  9.0695332E-03, 
                        Enthalpy: -3.5084535E+03, ekinlat:  5.0643655E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3918579269805E+00, de:  1.70E-07, gnrm:  6.999E-08, 
+     CEP: {iter:  27, epot_es:  2.3918579269802E+00, de:  1.70E-07, gnrm:  6.999E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0044.ascii
      FIRE: {iter:  44, enth: -3.508454449959E+03, fmax:  7.041E-03, nstep:  6, iprec:  2, 
@@ -1888,8 +1745,7 @@
      Torquenrm info: {Torquenrm:  2.3477296E-08, Ekin:  8.8095625E-03, 
                        Enthalpy: -3.5084544E+03, ekinlat:  5.5691068E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3912471904443E+00, de:  1.73E-07, gnrm:  7.134E-08, 
+     CEP: {iter:  27, epot_es:  2.3912471904441E+00, de:  1.73E-07, gnrm:  7.134E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0045.ascii
      FIRE: {iter:  45, enth: -3.508455417140E+03, fmax:  6.210E-03, nstep:  7, iprec:  2, 
@@ -1900,8 +1756,7 @@
      Torquenrm info: {Torquenrm:  2.0091257E-07, Ekin:  8.0043119E-03, 
                        Enthalpy: -3.5084554E+03, ekinlat:  4.9189023E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3925051645120E+00, de:  1.73E-07, gnrm:  7.142E-08, 
+     CEP: {iter:  27, epot_es:  2.3925051645118E+00, de:  1.73E-07, gnrm:  7.142E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0046.ascii
      FIRE: {iter:  46, enth: -3.508456651996E+03, fmax:  5.895E-03, nstep:  8, iprec:  2, 
@@ -1912,8 +1767,7 @@
      Torquenrm info: {Torquenrm:  2.8922364E-07, Ekin:  8.1009097E-03, 
                        Enthalpy: -3.5084567E+03, ekinlat:  5.1907320E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3950226117452E+00, de:  1.73E-07, gnrm:  7.104E-08, 
+     CEP: {iter:  27, epot_es:  2.3950226117450E+00, de:  1.73E-07, gnrm:  7.104E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0047.ascii
      FIRE: {iter:  47, enth: -3.508458231693E+03, fmax:  4.996E-03, nstep:  9, iprec:  2, 
@@ -1924,8 +1778,7 @@
      Torquenrm info: {Torquenrm:  1.5855054E-07, Ekin:  8.4798669E-03, 
                        Enthalpy: -3.5084582E+03, ekinlat:  5.9442620E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3969096971031E+00, de:  1.75E-07, gnrm:  7.179E-08, 
+     CEP: {iter:  27, epot_es:  2.3969096971029E+00, de:  1.75E-07, gnrm:  7.179E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0048.ascii
      FIRE: {iter:  48, enth: -3.508460016507E+03, fmax:  4.214E-03, nstep:  10, iprec:  2, 
@@ -1936,8 +1789,7 @@
      Torquenrm info: {Torquenrm:  1.0517062E-07, Ekin:  8.8869009E-03, 
                        Enthalpy: -3.5084600E+03, ekinlat:  7.9417180E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.3978529952283E+00, de:  1.79E-07, gnrm:  7.378E-08, 
+     CEP: {iter:  27, epot_es:  2.3978529952281E+00, de:  1.79E-07, gnrm:  7.378E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0049.ascii
      FIRE: {iter:  49, enth: -3.508461718760E+03, fmax:  4.821E-03, nstep:  11, iprec:  2, 
@@ -1948,8 +1800,7 @@
      Torquenrm info: {Torquenrm:  1.4703521E-07, Ekin:  9.2542659E-03, 
                        Enthalpy: -3.5084617E+03, ekinlat:  1.0911677E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4005861741260E+00, de:  1.83E-07, gnrm:  7.547E-08, 
+     CEP: {iter:  27, epot_es:  2.4005861741258E+00, de:  1.83E-07, gnrm:  7.547E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0050.ascii
      FIRE: {iter:  50, enth: -3.508463563806E+03, fmax:  4.813E-03, nstep:  12, iprec:  2, 
@@ -1960,8 +1811,7 @@
      Torquenrm info: {Torquenrm:  4.6822786E-07, Ekin:  9.6840588E-03, 
                        Enthalpy: -3.5084636E+03, ekinlat:  1.5021463E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4050850742150E+00, de:  1.84E-07, gnrm:  7.597E-08, 
+     CEP: {iter:  27, epot_es:  2.4050850742147E+00, de:  1.84E-07, gnrm:  7.597E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0051.ascii
      FIRE: {iter:  51, enth: -3.508465409006E+03, fmax:  4.866E-03, nstep:  13, iprec:  2, 
@@ -1972,8 +1822,7 @@
      Torquenrm info: {Torquenrm:  5.0579444E-07, Ekin:  1.0708987E-02, 
                        Enthalpy: -3.5084654E+03, ekinlat:  1.7831144E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4056737565020E+00, de:  1.90E-07, gnrm:  7.839E-08, 
+     CEP: {iter:  27, epot_es:  2.4056737565017E+00, de:  1.90E-07, gnrm:  7.839E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0052.ascii
      FIRE: {iter:  52, enth: -3.508467323155E+03, fmax:  4.063E-03, nstep:  14, iprec:  2, 
@@ -1984,8 +1833,7 @@
      Torquenrm info: {Torquenrm:  8.5985758E-07, Ekin:  1.1512999E-02, 
                        Enthalpy: -3.5084673E+03, ekinlat:  1.9718037E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4080206987523E+00, de:  1.89E-07, gnrm:  7.811E-08, 
+     CEP: {iter:  27, epot_es:  2.4080206987522E+00, de:  1.89E-07, gnrm:  7.811E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0053.ascii
      FIRE: {iter:  53, enth: -3.508469224251E+03, fmax:  4.140E-03, nstep:  15, iprec:  2, 
@@ -1996,8 +1844,7 @@
      Torquenrm info: {Torquenrm:  3.5327096E-07, Ekin:  1.1369167E-02, 
                        Enthalpy: -3.5084692E+03, ekinlat:  2.1225853E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4076991121585E+00, de:  1.94E-07, gnrm:  8.001E-08, 
+     CEP: {iter:  27, epot_es:  2.4076991121581E+00, de:  1.94E-07, gnrm:  8.001E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0054.ascii
      FIRE: {iter:  54, enth: -3.508471465677E+03, fmax:  6.130E-03, nstep:  16, iprec:  2, 
@@ -2008,8 +1855,7 @@
      Torquenrm info: {Torquenrm:  1.0142054E-06, Ekin:  1.1873349E-02, 
                        Enthalpy: -3.5084715E+03, ekinlat:  2.4130320E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4144959193285E+00, de:  1.94E-07, gnrm:  7.974E-08, 
+     CEP: {iter:  27, epot_es:  2.4144959193286E+00, de:  1.94E-07, gnrm:  7.974E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0055.ascii
      FIRE: {iter:  55, enth: -3.508475075904E+03, fmax:  6.537E-03, nstep:  17, iprec:  2, 
@@ -2020,8 +1866,7 @@
      Torquenrm info: {Torquenrm:  1.6577261E-06, Ekin:  1.4233390E-02, 
                        Enthalpy: -3.5084751E+03, ekinlat:  2.6236960E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4115577378403E+00, de:  2.19E-07, gnrm:  9.071E-08, 
+     CEP: {iter:  27, epot_es:  2.4115577378396E+00, de:  2.19E-07, gnrm:  9.071E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0056.ascii
      FIRE: {iter:  56, enth: -3.508480421750E+03, fmax:  1.118E-02, nstep:  18, iprec:  2, 
@@ -2032,8 +1877,7 @@
      Torquenrm info: {Torquenrm:  4.7363694E-06, Ekin:  1.6140941E-02, 
                        Enthalpy: -3.5084804E+03, ekinlat:  2.6944618E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4315195845216E+00, de:  2.06E-07, gnrm:  8.424E-08, 
+     CEP: {iter:  27, epot_es:  2.4315195845212E+00, de:  2.06E-07, gnrm:  8.424E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0057.ascii
      FIRE: {iter:  57, enth: -3.508486490207E+03, fmax:  1.284E-02, nstep:  19, iprec:  2, 
@@ -2044,8 +1888,7 @@
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -3.5084865E+03, ekinlat:  0.0000000E+00}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4282037250234E+00, de:  2.15E-07, gnrm:  8.784E-08, 
+     CEP: {iter:  27, epot_es:  2.4282037250230E+00, de:  2.15E-07, gnrm:  8.784E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0058.ascii
      FIRE: {iter:  58, enth: -3.508487482454E+03, fmax:  8.377E-03, nstep:  1, iprec:  2, 
@@ -2053,11 +1896,10 @@
             rkin:  0.00E+00,                         P: -4.8E-06,    P_at:  7.0E-07, 
            P_lat: -5.5E-06}
    - Velocity of CM                    :  1.2700549E-01
-     Torquenrm info: {Torquenrm:  3.9091465E-19, Ekin:  4.2441024E-04, 
+     Torquenrm info: {Torquenrm:  4.8486995E-19, Ekin:  4.2441024E-04, 
                        Enthalpy: -3.5084875E+03, ekinlat:  7.5142005E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4215045741401E+00, de:  2.30E-07, gnrm:  9.470E-08, 
+     CEP: {iter:  27, epot_es:  2.4215045741397E+00, de:  2.30E-07, gnrm:  9.470E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0059.ascii
      FIRE: {iter:  59, enth: -3.508488559668E+03, fmax:  1.059E-02, nstep:  2, iprec:  2, 
@@ -2068,8 +1910,7 @@
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -3.5084886E+03, ekinlat:  0.0000000E+00}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4219073880569E+00, de:  2.29E-07, gnrm:  9.444E-08, 
+     CEP: {iter:  27, epot_es:  2.4219073880565E+00, de:  2.29E-07, gnrm:  9.444E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0060.ascii
      FIRE: {iter:  60, enth: -3.508488645980E+03, fmax:  1.052E-02, nstep:  1, iprec:  2, 
@@ -2077,11 +1918,10 @@
             rkin:  0.00E+00,                         P: -3.1E-06,    P_at:  1.7E-07, 
            P_lat: -3.3E-06}
    - Velocity of CM                    :  4.7269200E-02
-     Torquenrm info: {Torquenrm:  1.8433430E-19, Ekin:  8.3446092E-05, 
+     Torquenrm info: {Torquenrm:  4.2856854E-20, Ekin:  8.3446092E-05, 
                        Enthalpy: -3.5084886E+03, ekinlat:  3.2209425E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4228543788790E+00, de:  2.28E-07, gnrm:  9.387E-08, 
+     CEP: {iter:  27, epot_es:  2.4228543788786E+00, de:  2.28E-07, gnrm:  9.387E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0061.ascii
      FIRE: {iter:  61, enth: -3.508488868413E+03, fmax:  1.030E-02, nstep:  2, iprec:  2, 
@@ -2092,8 +1932,7 @@
      Torquenrm info: {Torquenrm:  4.1685379E-10, Ekin:  3.5338440E-04, 
                        Enthalpy: -3.5084889E+03, ekinlat:  9.8621005E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4241681479378E+00, de:  2.27E-07, gnrm:  9.312E-08, 
+     CEP: {iter:  27, epot_es:  2.4241681479374E+00, de:  2.27E-07, gnrm:  9.312E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0062.ascii
      FIRE: {iter:  62, enth: -3.508489220293E+03, fmax:  9.944E-03, nstep:  3, iprec:  2, 
@@ -2104,8 +1943,7 @@
      Torquenrm info: {Torquenrm:  2.7259392E-09, Ekin:  8.8627898E-04, 
                        Enthalpy: -3.5084892E+03, ekinlat:  1.7397327E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4255698056927E+00, de:  2.25E-07, gnrm:  9.243E-08, 
+     CEP: {iter:  27, epot_es:  2.4255698056923E+00, de:  2.25E-07, gnrm:  9.243E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0063.ascii
      FIRE: {iter:  63, enth: -3.508489700433E+03, fmax:  9.531E-03, nstep:  4, iprec:  2, 
@@ -2116,8 +1954,7 @@
      Torquenrm info: {Torquenrm:  6.9159251E-09, Ekin:  1.6123709E-03, 
                        Enthalpy: -3.5084897E+03, ekinlat:  2.4159658E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4267561609461E+00, de:  2.24E-07, gnrm:  9.208E-08, 
+     CEP: {iter:  27, epot_es:  2.4267561609457E+00, de:  2.24E-07, gnrm:  9.208E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0064.ascii
      FIRE: {iter:  64, enth: -3.508490307233E+03, fmax:  9.184E-03, nstep:  5, iprec:  2, 
@@ -2128,8 +1965,7 @@
      Torquenrm info: {Torquenrm:  1.1014697E-08, Ekin:  2.3861609E-03, 
                        Enthalpy: -3.5084903E+03, ekinlat:  3.1811607E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4275597081842E+00, de:  2.25E-07, gnrm:  9.219E-08, 
+     CEP: {iter:  27, epot_es:  2.4275597081838E+00, de:  2.25E-07, gnrm:  9.219E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0065.ascii
      FIRE: {iter:  65, enth: -3.508491035309E+03, fmax:  8.985E-03, nstep:  6, iprec:  2, 
@@ -2140,8 +1976,7 @@
      Torquenrm info: {Torquenrm:  1.1837405E-08, Ekin:  3.2387851E-03, 
                        Enthalpy: -3.5084910E+03, ekinlat:  4.3002903E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4280194342628E+00, de:  2.26E-07, gnrm:  9.282E-08, 
+     CEP: {iter:  27, epot_es:  2.4280194342624E+00, de:  2.26E-07, gnrm:  9.282E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0066.ascii
      FIRE: {iter:  66, enth: -3.508491968240E+03, fmax:  8.944E-03, nstep:  7, iprec:  2, 
@@ -2152,8 +1987,7 @@
      Torquenrm info: {Torquenrm:  9.9521021E-09, Ekin:  4.4318493E-03, 
                        Enthalpy: -3.5084920E+03, ekinlat:  6.0132811E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4282569679550E+00, de:  2.29E-07, gnrm:  9.392E-08, 
+     CEP: {iter:  27, epot_es:  2.4282569679546E+00, de:  2.29E-07, gnrm:  9.392E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0067.ascii
      FIRE: {iter:  67, enth: -3.508493144987E+03, fmax:  9.028E-03, nstep:  8, iprec:  2, 
@@ -2164,8 +1998,7 @@
      Torquenrm info: {Torquenrm:  1.2079754E-08, Ekin:  6.1666782E-03, 
                        Enthalpy: -3.5084931E+03, ekinlat:  8.1548684E-04}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4287179269378E+00, de:  2.32E-07, gnrm:  9.516E-08, 
+     CEP: {iter:  27, epot_es:  2.4287179269374E+00, de:  2.32E-07, gnrm:  9.516E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0068.ascii
      FIRE: {iter:  68, enth: -3.508494618411E+03, fmax:  9.065E-03, nstep:  9, iprec:  2, 
@@ -2176,8 +2009,7 @@
      Torquenrm info: {Torquenrm:  3.3125128E-08, Ekin:  8.2404258E-03, 
                        Enthalpy: -3.5084946E+03, ekinlat:  1.0450855E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4300147281364E+00, de:  2.34E-07, gnrm:  9.601E-08, 
+     CEP: {iter:  27, epot_es:  2.4300147281360E+00, de:  2.34E-07, gnrm:  9.601E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0069.ascii
      FIRE: {iter:  69, enth: -3.508496436339E+03, fmax:  8.809E-03, nstep:  10, iprec:  2, 
@@ -2188,8 +2020,7 @@
      Torquenrm info: {Torquenrm:  5.8578280E-08, Ekin:  1.0568851E-02, 
                        Enthalpy: -3.5084964E+03, ekinlat:  1.3401059E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4323008725291E+00, de:  2.35E-07, gnrm:  9.630E-08, 
+     CEP: {iter:  27, epot_es:  2.4323008725287E+00, de:  2.35E-07, gnrm:  9.630E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0070.ascii
      FIRE: {iter:  70, enth: -3.508498614495E+03, fmax:  8.149E-03, nstep:  11, iprec:  2, 
@@ -2200,8 +2031,7 @@
      Torquenrm info: {Torquenrm:  5.9921903E-08, Ekin:  1.3334018E-02, 
                        Enthalpy: -3.5084986E+03, ekinlat:  1.7430604E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4347679035113E+00, de:  2.36E-07, gnrm:  9.667E-08, 
+     CEP: {iter:  27, epot_es:  2.4347679035109E+00, de:  2.36E-07, gnrm:  9.667E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0071.ascii
      FIRE: {iter:  71, enth: -3.508501120283E+03, fmax:  7.275E-03, nstep:  12, iprec:  2, 
@@ -2212,8 +2042,7 @@
      Torquenrm info: {Torquenrm:  5.0109951E-08, Ekin:  1.6005365E-02, 
                        Enthalpy: -3.5085011E+03, ekinlat:  2.2031285E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4361704054854E+00, de:  2.39E-07, gnrm:  9.800E-08, 
+     CEP: {iter:  27, epot_es:  2.4361704054851E+00, de:  2.39E-07, gnrm:  9.800E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0072.ascii
      FIRE: {iter:  72, enth: -3.508503816627E+03, fmax:  6.418E-03, nstep:  13, iprec:  2, 
@@ -2224,8 +2053,7 @@
      Torquenrm info: {Torquenrm:  1.0468124E-07, Ekin:  1.9011712E-02, 
                        Enthalpy: -3.5085038E+03, ekinlat:  2.7650213E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4367162360097E+00, de:  2.43E-07, gnrm:  9.971E-08, 
+     CEP: {iter:  27, epot_es:  2.4367162360094E+00, de:  2.43E-07, gnrm:  9.971E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0073.ascii
      FIRE: {iter:  73, enth: -3.508506373668E+03, fmax:  4.999E-03, nstep:  14, iprec:  2, 
@@ -2236,8 +2064,7 @@
      Torquenrm info: {Torquenrm:  1.2138332E-07, Ekin:  2.0987231E-02, 
                        Enthalpy: -3.5085064E+03, ekinlat:  3.1814237E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4383062577671E+00, de:  2.42E-07, gnrm:  9.935E-08, 
+     CEP: {iter:  27, epot_es:  2.4383062577667E+00, de:  2.42E-07, gnrm:  9.935E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0074.ascii
      FIRE: {iter:  74, enth: -3.508508149642E+03, fmax:  2.671E-03, nstep:  15, iprec:  2, 
@@ -2248,8 +2075,7 @@
      Torquenrm info: {Torquenrm:  2.2065019E-07, Ekin:  1.8969321E-02, 
                        Enthalpy: -3.5085081E+03, ekinlat:  3.2689914E-03}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4378198519099E+00, de:  2.43E-07, gnrm:  9.962E-08, 
+     CEP: {iter:  27, epot_es:  2.4378198519097E+00, de:  2.43E-07, gnrm:  9.962E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0075.ascii
      FIRE: {iter:  75, enth: -3.508508663704E+03, fmax:  4.283E-03, nstep:  16, iprec:  2, 
@@ -2260,8 +2086,7 @@
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -3.5085087E+03, ekinlat:  0.0000000E+00}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4379526267477E+00, de:  2.43E-07, gnrm:  9.954E-08, 
+     CEP: {iter:  27, epot_es:  2.4379526267475E+00, de:  2.43E-07, gnrm:  9.954E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0076.ascii
      FIRE: {iter:  76, enth: -3.508508692019E+03, fmax:  4.143E-03, nstep:  1, iprec:  2, 
@@ -2269,11 +2094,10 @@
             rkin:  0.00E+00,                         P: -1.1E-08,    P_at: -2.7E-08, 
            P_lat:  1.6E-08}
    - Velocity of CM                    :  4.2591476E-02
-     Torquenrm info: {Torquenrm:  9.4382430E-20, Ekin:  3.0154017E-05, 
+     Torquenrm info: {Torquenrm:  6.0037848E-20, Ekin:  3.0154017E-05, 
                        Enthalpy: -3.5085087E+03, ekinlat:  6.6679538E-06}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4382488377471E+00, de:  2.43E-07, gnrm:  9.936E-08, 
+     CEP: {iter:  27, epot_es:  2.4382488377468E+00, de:  2.43E-07, gnrm:  9.936E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0077.ascii
      FIRE: {iter:  77, enth: -3.508508763198E+03, fmax:  3.785E-03, nstep:  2, iprec:  2, 
@@ -2284,8 +2108,7 @@
      Torquenrm info: {Torquenrm:  5.1507108E-10, Ekin:  1.1705547E-04, 
                        Enthalpy: -3.5085088E+03, ekinlat:  2.0513065E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4386125617935E+00, de:  2.42E-07, gnrm:  9.918E-08, 
+     CEP: {iter:  27, epot_es:  2.4386125617931E+00, de:  2.42E-07, gnrm:  9.918E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0078.ascii
      FIRE: {iter:  78, enth: -3.508508868782E+03, fmax:  3.236E-03, nstep:  3, iprec:  2, 
@@ -2296,8 +2119,7 @@
      Torquenrm info: {Torquenrm:  3.2257674E-09, Ekin:  2.6774040E-04, 
                        Enthalpy: -3.5085089E+03, ekinlat:  3.6638874E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4389139760164E+00, de:  2.42E-07, gnrm:  9.911E-08, 
+     CEP: {iter:  27, epot_es:  2.4389139760161E+00, de:  2.42E-07, gnrm:  9.911E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0079.ascii
      FIRE: {iter:  79, enth: -3.508508995134E+03, fmax:  2.555E-03, nstep:  4, iprec:  2, 
@@ -2308,8 +2130,7 @@
      Torquenrm info: {Torquenrm:  7.4713738E-09, Ekin:  4.6928016E-04, 
                        Enthalpy: -3.5085090E+03, ekinlat:  5.0683339E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4390525652502E+00, de:  2.42E-07, gnrm:  9.921E-08, 
+     CEP: {iter:  27, epot_es:  2.4390525652499E+00, de:  2.42E-07, gnrm:  9.921E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0080.ascii
      FIRE: {iter:  80, enth: -3.508509125854E+03, fmax:  2.327E-03, nstep:  5, iprec:  2, 
@@ -2320,8 +2141,7 @@
      Torquenrm info: {Torquenrm:  1.0434019E-08, Ekin:  7.1189029E-04, 
                        Enthalpy: -3.5085091E+03, ekinlat:  6.0113867E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4390334606339E+00, de:  2.43E-07, gnrm:  9.946E-08, 
+     CEP: {iter:  27, epot_es:  2.4390334606335E+00, de:  2.43E-07, gnrm:  9.946E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0081.ascii
      FIRE: {iter:  81, enth: -3.508509246675E+03, fmax:  2.140E-03, nstep:  6, iprec:  2, 
@@ -2332,8 +2152,7 @@
      Torquenrm info: {Torquenrm:  9.8580308E-09, Ekin:  9.6590266E-04, 
                        Enthalpy: -3.5085092E+03, ekinlat:  6.0358992E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4390058492057E+00, de:  2.43E-07, gnrm:  9.971E-08, 
+     CEP: {iter:  27, epot_es:  2.4390058492054E+00, de:  2.43E-07, gnrm:  9.971E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0082.ascii
      FIRE: {iter:  82, enth: -3.508509356726E+03, fmax:  1.805E-03, nstep:  7, iprec:  2, 
@@ -2344,8 +2163,7 @@
      Torquenrm info: {Torquenrm:  8.5874094E-09, Ekin:  1.0238240E-03, 
                        Enthalpy: -3.5085094E+03, ekinlat:  5.1856111E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4391521778509E+00, de:  2.43E-07, gnrm:  9.974E-08, 
+     CEP: {iter:  27, epot_es:  2.4391521778506E+00, de:  2.43E-07, gnrm:  9.974E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0083.ascii
      FIRE: {iter:  83, enth: -3.508509440564E+03, fmax:  1.343E-03, nstep:  8, iprec:  2, 
@@ -2356,8 +2174,7 @@
      Torquenrm info: {Torquenrm:  9.4894429E-09, Ekin:  9.2238675E-04, 
                        Enthalpy: -3.5085094E+03, ekinlat:  4.7321370E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4393994487089E+00, de:  2.43E-07, gnrm:  9.961E-08, 
+     CEP: {iter:  27, epot_es:  2.4393994487086E+00, de:  2.43E-07, gnrm:  9.961E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0084.ascii
      FIRE: {iter:  84, enth: -3.508509497039E+03, fmax:  1.019E-03, nstep:  9, iprec:  2, 
@@ -2368,8 +2185,7 @@
      Torquenrm info: {Torquenrm:  9.8731463E-09, Ekin:  7.7127327E-04, 
                        Enthalpy: -3.5085095E+03, ekinlat:  4.7970095E-05}
      KPT mesh set up as follows        :  [  3,  2,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394893413684E+00, de:  2.43E-07, gnrm:  9.957E-08, 
+     CEP: {iter:  27, epot_es:  2.4394893413681E+00, de:  2.43E-07, gnrm:  9.957E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0085.ascii
      FIRE: {iter:  85, enth: -3.508509536622E+03, fmax:  9.961E-04, nstep:  10, iprec:  2, 
@@ -2377,18 +2193,17 @@
             rkin:  8.19E-04,                         P:  1.4E-07,    P_at:  1.6E-08, 
            P_lat:  1.2E-07}
      Cell changed: {latvec: [
- [-6.100242415288E+00,  1.158694390818E+00, -1.364028898165E+00], 
- [ 2.694184846821E+00,  2.133453083434E+00, -1.030372894139E+01], 
- [-1.738254393389E+00, -1.244627191361E+01, -3.037222294596E+00]], latvec0: [
- [ 6.100242415288E+00, -1.158694390818E+00,  1.364028898165E+00], 
- [-2.694184846821E+00, -2.133453083434E+00,  1.030372894139E+01], 
+ [-6.100242415289E+00,  1.158694390818E+00, -1.364028898165E+00], 
+ [ 2.694184846822E+00,  2.133453083434E+00, -1.030372894139E+01], 
+ [-1.738254393389E+00, -1.244627191361E+01, -3.037222294597E+00]], latvec0: [
+ [ 6.100242415289E+00, -1.158694390818E+00,  1.364028898165E+00], 
+ [-2.694184846822E+00, -2.133453083434E+00,  1.030372894139E+01], 
  [ 4.361988021900E+00, -1.360496630443E+01, -1.673193396432E+00]]}
    - Velocity of CM                    :  0.0000000E+00
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -3.5085095E+03, ekinlat:  0.0000000E+00}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394734721436E+00, de:  2.43E-07, gnrm:  9.954E-08, 
+     CEP: {iter:  27, epot_es:  2.4394734721433E+00, de:  2.43E-07, gnrm:  9.954E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0086.ascii
      FIRE: {iter:  86, enth: -3.508509519549E+03, fmax:  9.791E-04, nstep:  1, iprec:  1, 
@@ -2396,11 +2211,10 @@
             rkin:  0.00E+00,                         P:  9.8E-08,    P_at:  8.5E-09, 
            P_lat:  9.0E-08}
    - Velocity of CM                    :  8.6719244E-03
-     Torquenrm info: {Torquenrm:  1.9333887E-20, Ekin:  1.3723421E-06, 
+     Torquenrm info: {Torquenrm:  7.5760930E-21, Ekin:  1.3723421E-06, 
                        Enthalpy: -3.5085095E+03, ekinlat:  1.7634476E-07}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394756033264E+00, de:  2.43E-07, gnrm:  9.954E-08, 
+     CEP: {iter:  27, epot_es:  2.4394756033261E+00, de:  2.43E-07, gnrm:  9.954E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0087.ascii
      FIRE: {iter:  87, enth: -3.508509522624E+03, fmax:  9.524E-04, nstep:  2, iprec:  1, 
@@ -2411,8 +2225,7 @@
      Torquenrm info: {Torquenrm:  4.7755512E-12, Ekin:  5.3019590E-06, 
                        Enthalpy: -3.5085095E+03, ekinlat:  5.6709156E-07}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394786901005E+00, de:  2.43E-07, gnrm:  9.954E-08, 
+     CEP: {iter:  27, epot_es:  2.4394786901002E+00, de:  2.43E-07, gnrm:  9.954E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0088.ascii
      FIRE: {iter:  88, enth: -3.508509527571E+03, fmax:  9.708E-04, nstep:  3, iprec:  1, 
@@ -2423,8 +2236,7 @@
      Torquenrm info: {Torquenrm:  6.0194334E-12, Ekin:  1.2359246E-05, 
                        Enthalpy: -3.5085095E+03, ekinlat:  1.1305552E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394825643716E+00, de:  2.43E-07, gnrm:  9.954E-08, 
+     CEP: {iter:  27, epot_es:  2.4394825643713E+00, de:  2.43E-07, gnrm:  9.954E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0089.ascii
      FIRE: {iter:  89, enth: -3.508509534198E+03, fmax:  9.875E-04, nstep:  4, iprec:  1, 
@@ -2435,8 +2247,7 @@
      Torquenrm info: {Torquenrm:  1.2708965E-11, Ekin:  2.2977575E-05, 
                        Enthalpy: -3.5085095E+03, ekinlat:  1.7977464E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394868440964E+00, de:  2.43E-07, gnrm:  9.953E-08, 
+     CEP: {iter:  27, epot_es:  2.4394868440962E+00, de:  2.43E-07, gnrm:  9.953E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0090.ascii
      FIRE: {iter:  90, enth: -3.508509542194E+03, fmax:  9.964E-04, nstep:  5, iprec:  1, 
@@ -2447,8 +2258,7 @@
      Torquenrm info: {Torquenrm:  2.2110378E-11, Ekin:  3.7453166E-05, 
                        Enthalpy: -3.5085095E+03, ekinlat:  2.4945661E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394908834820E+00, de:  2.43E-07, gnrm:  9.952E-08, 
+     CEP: {iter:  27, epot_es:  2.4394908834817E+00, de:  2.43E-07, gnrm:  9.952E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0091.ascii
      FIRE: {iter:  91, enth: -3.508509551171E+03, fmax:  9.904E-04, nstep:  6, iprec:  1, 
@@ -2459,8 +2269,7 @@
      Torquenrm info: {Torquenrm:  3.1447674E-11, Ekin:  5.5820173E-05, 
                        Enthalpy: -3.5085096E+03, ekinlat:  3.1510641E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394939440755E+00, de:  2.43E-07, gnrm:  9.950E-08, 
+     CEP: {iter:  27, epot_es:  2.4394939440752E+00, de:  2.43E-07, gnrm:  9.950E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0092.ascii
      FIRE: {iter:  92, enth: -3.508509561620E+03, fmax:  9.591E-04, nstep:  7, iprec:  1, 
@@ -2471,8 +2280,7 @@
      Torquenrm info: {Torquenrm:  4.7236986E-11, Ekin:  7.8708215E-05, 
                        Enthalpy: -3.5085096E+03, ekinlat:  3.7772314E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394940044687E+00, de:  2.43E-07, gnrm:  9.948E-08, 
+     CEP: {iter:  27, epot_es:  2.4394940044684E+00, de:  2.43E-07, gnrm:  9.948E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0093.ascii
      FIRE: {iter:  93, enth: -3.508509573059E+03, fmax:  8.890E-04, nstep:  8, iprec:  1, 
@@ -2483,8 +2291,7 @@
      Torquenrm info: {Torquenrm:  7.8483013E-11, Ekin:  1.0460893E-04, 
                        Enthalpy: -3.5085096E+03, ekinlat:  4.3015419E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394884521332E+00, de:  2.43E-07, gnrm:  9.946E-08, 
+     CEP: {iter:  27, epot_es:  2.4394884521329E+00, de:  2.43E-07, gnrm:  9.946E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0094.ascii
      FIRE: {iter:  94, enth: -3.508509584734E+03, fmax:  7.670E-04, nstep:  9, iprec:  1, 
@@ -2495,8 +2302,7 @@
      Torquenrm info: {Torquenrm:  1.4837832E-10, Ekin:  1.2840945E-04, 
                        Enthalpy: -3.5085096E+03, ekinlat:  4.6658760E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394758530024E+00, de:  2.43E-07, gnrm:  9.943E-08, 
+     CEP: {iter:  27, epot_es:  2.4394758530021E+00, de:  2.43E-07, gnrm:  9.943E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0095.ascii
      FIRE: {iter:  95, enth: -3.508509595762E+03, fmax:  5.910E-04, nstep:  10, iprec:  1, 
@@ -2507,8 +2313,7 @@
      Torquenrm info: {Torquenrm:  2.7760736E-10, Ekin:  1.4066530E-04, 
                        Enthalpy: -3.5085096E+03, ekinlat:  4.8549029E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394593222605E+00, de:  2.43E-07, gnrm:  9.940E-08, 
+     CEP: {iter:  27, epot_es:  2.4394593222602E+00, de:  2.43E-07, gnrm:  9.940E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0096.ascii
      FIRE: {iter:  96, enth: -3.508509605537E+03, fmax:  3.851E-04, nstep:  11, iprec:  1, 
@@ -2519,8 +2324,7 @@
      Torquenrm info: {Torquenrm:  4.4403648E-10, Ekin:  1.3713352E-04, 
                        Enthalpy: -3.5085096E+03, ekinlat:  4.9431676E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394462020498E+00, de:  2.42E-07, gnrm:  9.937E-08, 
+     CEP: {iter:  27, epot_es:  2.4394462020495E+00, de:  2.42E-07, gnrm:  9.937E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0097.ascii
      FIRE: {iter:  97, enth: -3.508509614181E+03, fmax:  3.265E-04, nstep:  12, iprec:  1, 
@@ -2531,8 +2335,7 @@
      Torquenrm info: {Torquenrm:  5.5104272E-10, Ekin:  1.2601537E-04, 
                        Enthalpy: -3.5085096E+03, ekinlat:  5.0113719E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394406780752E+00, de:  2.42E-07, gnrm:  9.934E-08, 
+     CEP: {iter:  27, epot_es:  2.4394406780749E+00, de:  2.42E-07, gnrm:  9.934E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0098.ascii
      FIRE: {iter:  98, enth: -3.508509622169E+03, fmax:  3.139E-04, nstep:  13, iprec:  1, 
@@ -2543,8 +2346,7 @@
      Torquenrm info: {Torquenrm:  4.8635836E-10, Ekin:  1.1753580E-04, 
                        Enthalpy: -3.5085096E+03, ekinlat:  4.8701852E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394371262461E+00, de:  2.42E-07, gnrm:  9.933E-08, 
+     CEP: {iter:  27, epot_es:  2.4394371262458E+00, de:  2.42E-07, gnrm:  9.933E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0099.ascii
      FIRE: {iter:  99, enth: -3.508509629173E+03, fmax:  2.588E-04, nstep:  14, iprec:  1, 
@@ -2555,8 +2357,7 @@
      Torquenrm info: {Torquenrm:  2.5403712E-10, Ekin:  1.1368550E-04, 
                        Enthalpy: -3.5085096E+03, ekinlat:  3.7333214E-06}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394253316720E+00, de:  2.42E-07, gnrm:  9.934E-08, 
+     CEP: {iter:  27, epot_es:  2.4394253316717E+00, de:  2.42E-07, gnrm:  9.934E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0100.ascii
      FIRE: {iter:  100, enth: -3.508509633331E+03, fmax:  1.286E-04, nstep:  15, iprec:  1, 
@@ -2567,8 +2368,7 @@
      Torquenrm info: {Torquenrm:  0.0000000E+00, Ekin:  0.0000000E+00, 
                        Enthalpy: -3.5085096E+03, ekinlat:  0.0000000E+00}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394260007108E+00, de:  2.42E-07, gnrm:  9.934E-08, 
+     CEP: {iter:  27, epot_es:  2.4394260007105E+00, de:  2.42E-07, gnrm:  9.934E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0101.ascii
      FIRE: {iter:  101, enth: -3.508509633360E+03, fmax:  1.273E-04, nstep:  1, iprec:  1, 
@@ -2576,11 +2376,10 @@
             rkin:  0.00E+00,                          P: -4.1E-09,    P_at:  6.3E-10, 
            P_lat: -4.7E-09}
    - Velocity of CM                    :  1.3280378E-03
-     Torquenrm info: {Torquenrm:  1.4401117E-21, Ekin:  2.9880308E-08, 
+     Torquenrm info: {Torquenrm:  2.2108209E-21, Ekin:  2.9880308E-08, 
                        Enthalpy: -3.5085096E+03, ekinlat:  6.9918716E-09}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394275782789E+00, de:  2.42E-07, gnrm:  9.934E-08, 
+     CEP: {iter:  27, epot_es:  2.4394275782787E+00, de:  2.42E-07, gnrm:  9.934E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0102.ascii
      FIRE: {iter:  102, enth: -3.508509633434E+03, fmax:  1.241E-04, nstep:  2, iprec:  1, 
@@ -2588,11 +2387,10 @@
             rkin:  3.69E-08,                          P:  3.2E-10,    P_at:  1.9E-11, 
            P_lat:  3.1E-10}
    - Velocity of CM                    :  3.4935975E-03
-     Torquenrm info: {Torquenrm:  5.1709368E-14, Ekin:  1.1347171E-07, 
+     Torquenrm info: {Torquenrm:  5.1709369E-14, Ekin:  1.1347171E-07, 
                        Enthalpy: -3.5085096E+03, ekinlat:  2.3279821E-08}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394298171367E+00, de:  2.42E-07, gnrm:  9.934E-08, 
+     CEP: {iter:  27, epot_es:  2.4394298171364E+00, de:  2.42E-07, gnrm:  9.934E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0103.ascii
      FIRE: {iter:  103, enth: -3.508509633551E+03, fmax:  1.189E-04, nstep:  3, iprec:  1, 
@@ -2603,8 +2401,7 @@
      Torquenrm info: {Torquenrm:  3.5861839E-13, Ekin:  2.5590367E-07, 
                        Enthalpy: -3.5085096E+03, ekinlat:  4.7136027E-08}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394323471542E+00, de:  2.42E-07, gnrm:  9.933E-08, 
+     CEP: {iter:  27, epot_es:  2.4394323471539E+00, de:  2.42E-07, gnrm:  9.933E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0104.ascii
      FIRE: {iter:  104, enth: -3.508509633699E+03, fmax:  1.114E-04, nstep:  4, iprec:  1, 
@@ -2615,8 +2412,7 @@
      Torquenrm info: {Torquenrm:  9.9842108E-13, Ekin:  4.5198064E-07, 
                        Enthalpy: -3.5085096E+03, ekinlat:  7.6036315E-08}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394347563743E+00, de:  2.42E-07, gnrm:  9.933E-08, 
+     CEP: {iter:  27, epot_es:  2.4394347563740E+00, de:  2.42E-07, gnrm:  9.933E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0105.ascii
      FIRE: {iter:  105, enth: -3.508509633865E+03, fmax:  1.017E-04, nstep:  5, iprec:  1, 
@@ -2627,8 +2423,7 @@
      Torquenrm info: {Torquenrm:  1.8740462E-12, Ekin:  6.8694796E-07, 
                        Enthalpy: -3.5085096E+03, ekinlat:  1.0720702E-07}
      KPT mesh set up as follows        :  [  4,  3,  2 ]
-     Charge equilibration process:
-     CEP: {iter:  27, epot_es:  2.4394367219679E+00, de:  2.42E-07, gnrm:  9.933E-08, 
+     CEP: {iter:  27, epot_es:  2.4394367219676E+00, de:  2.42E-07, gnrm:  9.933E-08, 
        stepsize:  1.000E+00}
      Writing the positions in FIRE     : posgeopt.0106.ascii
      FIRE: {iter:  106, enth: -3.508509634037E+03, fmax:  9.344E-05, nstep:  6, iprec:  1, 
@@ -2661,15 +2456,15 @@
      space_group                       :  62
      space_group                       :  62
    FINAL SPGLIB: {SPG:  62, TOL:  1.9905358E-02}
-   After exiting GEOPT: {e_wpos: -3.509116363540400E+03, ent_wpos: -3.508509634036971E+03}
+   After exiting GEOPT: {e_wpos: -3.509116363540400E+03, ent_wpos: -3.508509634036970E+03}
    Wrote file: {filename: poslocm_00001.ascii, a:  6.3566146E+00, b:  1.0848286E+01, 
                        c:  1.2943023E+01,  alpha:  9.0003486E+01, beta:  9.0015365E+01, 
                    gamma:  8.9996328E+01}
-   Suggested minimal cutoff radius for Oganov FP:  19.25621375610812
+   Suggested minimal cutoff radius for Oganov FP:  19.25621375610954
    Creating expansion for periodic: {method: Oganov, nec:  [  9,  6,  5 ]}
-   some results: {nlmin:  1, ent_wpos: -3508.509634036971, ent_pos: -3508.471047046683, 
+   some results: {nlmin:  1, ent_wpos: -3508.50963403697, ent_pos: -3508.471047046683, 
                  e_wpos: -3509.1163635404, e_pos: -3509.07422674704}
-   Check identical: {ent_wpos: -0.35085096340369705E+04, k_e_wpos:  0}
+   Check identical: {ent_wpos: -0.35085096340369701E+04, k_e_wpos:  0}
     #ID: there is no minimum in the given enthalpy range
    wpos is a new minimum               :  Yes
    k_e_wpos,kid                        :  0
@@ -2687,7 +2482,7 @@
          ratio_old:  0.00,                      ratio_new:  1.00,       escaped:  Yes, 
             status: S,                             nvisit:  1}
     #WINTER
-   wrote poscur.ascii for RESTART: {ent_pos: -3508.509634036971}
+   wrote poscur.ascii for RESTART: {ent_pos: -3508.50963403697}
    wrote poslow files                  :  2
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
@@ -2695,7 +2490,7 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ writing final results
  total minima found                    :  2
  minima accepeted                      :  2
- wrote poscur.ascii for RESTART: {ent_pos: -3508.509634036971}
+ wrote poscur.ascii for RESTART: {ent_pos: -3508.50963403697}
  wrote poslow files                    :  2
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote earr.dat for  RESTART
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ wrote ioput for  RESTART
@@ -2711,16 +2506,16 @@
    number of configurations for which atoms escaped:  0
  about minima: {most frequent visits:  1., avg. num. visits per minimum:  1.000E+00, 
            minimum energy separation:  0.00E+00}
- CPU time: {iproc:  0, hrs:  0.104E-01, min:  0.626E+00, sec:  0.376E+02}
+ CPU time: {iproc:  0, hrs:  0.642E-02, min:  0.385E+00, sec:  0.231E+02}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  18769
-   Tot. No. of Deallocations           :  18769
+   Tot. No. of Allocations             :  18766
+   Tot. No. of Deallocations           :  18766
    Remaining Memory (B)                :  0
    Memory occupation:
      Peak Value (MB)                   :  8.403
      for the array                     : fat
      in the routine                    : get_hartree
-     Memory Peak of process            : 454.100 MB
- Walltime since initialization         :  00:00:37.566810634
- Max No. of dictionaries used          :  855 #( 185 still in use)
+     Memory Peak of process            : 108.832 MB
+ Walltime since initialization         :  00:00:23.105103756
+ Max No. of dictionaries used          :  841 #( 171 still in use)
  Number of dictionary folders allocated:  1

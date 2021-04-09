@@ -1,0 +1,25 @@
+/*! @file
+@brief List of the contributors for the different versions of futile library
+
+@page AUTHORS Contributors for the different version of futile library created by Luigi Genovese.
+
+<!-- This file is written in the MediaWiki syntax, to be published on http://bigdft.org -->
+
+<h2> Contributors (v1.8) </h2>
+<!-- Name              Initials  Email                         Institution -->
+<ul>
+<li> Damien Caliste          DC  Damien.Caliste@cea.fr         INAC, CEA-Grenoble, France </li>
+<li> Thierry Deutsch         TD  Thierry.Deutsch@cea.fr        INAC, CEA-Grenoble, France </li>
+<li> Luigi Genovese          LG  Luigi.Genovese@esrf.fr        INAC, CEA-Grenoble, France </li>
+</ul>
+
+
+<h2> Contributors (v1.7) </h2>
+<!-- Name              Initials  Email                         Institution -->
+<ul>
+<li> Damien Caliste          DC  Damien.Caliste@cea.fr         INAC, CEA-Grenoble, France </li>
+<li> Thierry Deutsch         TD  Thierry.Deutsch@cea.fr        INAC, CEA-Grenoble, France </li>
+<li> Luigi Genovese          LG  Luigi.Genovese@esrf.fr        INAC, CEA-Grenoble, France </li>
+</ul>
+
+*/

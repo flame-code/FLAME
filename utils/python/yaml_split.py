@@ -29,5 +29,5 @@ for iconf in range(nconf):
         atoms_all_conf=[]
 
 if mod!=0:
-    print """WARNING: The remainder from the division of nconf=%d by nfiles=%d is %d. 
-    The extra conf(s) will be written in the %dth file""" %(nconf, args.nfiles, mod, args.nfiles+1)
+    print("""WARNING: The remainder from the division of nconf=%d by nfiles=%d is %d. 
+    The extra conf(s) will be written in the %dth file""" %(nconf, args.nfiles, mod, args.nfiles+1))

@@ -1,0 +1,9 @@
+---
+Default tolerances:
+ Epsilon: 1.1e-11
+ 
+Keys to ignore:
+ - Memory* 
+ - Walltime since initialization
+ - Max No. of dictionaries used
+ - Number of dictionary folders allocated

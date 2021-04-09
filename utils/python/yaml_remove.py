@@ -21,22 +21,22 @@ output_stream=open(args.fn_out,"w")
 del_list = yaml.load(stream)
 for i,d in enumerate(del_list):
     del_list[i]=int(d)-1
-    print(del_list[i]),
-    print('\n'),
+    print((del_list[i]), end=' ')
+    print(('\n'), end=' ')
 
 dict_list = list(yaml.load_all(stream_2, Loader=Loader))
 conf_list=list(range(len(dict_list)))
 
-print('\n'),
-print('\n'),
-print('\n'),
+print(('\n'), end=' ')
+print(('\n'), end=' ')
+print(('\n'), end=' ')
 
 conf_keep_list=list(set(conf_list) - set(del_list))
 #print(conf_keep_list)
 
 for i in conf_keep_list:
-    print(i),
-    print('\n'),
+    print((i), end=' ')
+    print(('\n'), end=' ')
 
 for conf in conf_keep_list:
     output_stream.write('---\n')

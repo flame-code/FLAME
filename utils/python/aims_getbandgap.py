@@ -11,10 +11,10 @@ import os,sys
 
 ########################
 
-print "============================"
-print
+print("============================")
+print()
 
-print "Reading lattice vectors from geometry.in ..."
+print("Reading lattice vectors from geometry.in ...")
 
 latvec = []
 pl.rc('font', family='serif')
@@ -26,17 +26,17 @@ for line in file("geometry.in"):
     if words[0] == "lattice_vector":
         if len(words) != 4:
             raise Exception("geometry.in: Syntax error in line '"+line+"'")
-        latvec += [ array(map(float,words[1:4])) ]
+        latvec += [ array(list(map(float,words[1:4]))) ]
 
 if len(latvec) != 3:
     raise Exception("geometry.in: Must contain exactly 3 lattice vectors")
 
 latvec = asarray(latvec)
 
-print "Lattice vectors:"
+print("Lattice vectors:")
 for i in range(3):
-    print latvec[i,:]
-print
+    print(latvec[i,:])
+print()
 
 #Calculate reciprocal lattice vectors                                                                                                
 rlatvec = []
@@ -47,14 +47,14 @@ rlatvec.append(array(2*pi*cross(latvec[0,:],latvec[1,:])/volume))
 rlatvec = asarray(rlatvec)
 
 #rlatvec = inv(latvec) Old way to calculate lattice vectors
-print "Reciprocal lattice vectors:"
+print("Reciprocal lattice vectors:")
 for i in range(3):
-    print rlatvec[i,:]
-print
+    print(rlatvec[i,:])
+print()
 
 ########################
 
-print "Reading information from control.in ..."
+print("Reading information from control.in ...")
 species = []
 
 max_spin_channel = 1
@@ -72,8 +72,8 @@ for line in file("control.in"):
         if len(words) < 9 or len(words) > 11:
             raise Exception("control.in: Syntax error in line '"+line+"'")
         PLOT_BANDS = True
-        start = array(map(float,words[2:5]))
-        end = array(map(float,words[5:8]))
+        start = array(list(map(float,words[2:5])))
+        end = array(list(map(float,words[5:8])))
         length = norm(dot(rlatvec,end) - dot(rlatvec,start))
         band_totlength += length
         npoint = int(words[8])
@@ -117,9 +117,9 @@ for start,end,length,npoint,startname,endname in band_segments:
         for line in file(fname):
             words = line.split()
             idx += [ int(words[0]) ]
-            kvec += [ map(float,words[1:4]) ]
-            band_occupations += [ map(float,words[4::2]) ]
-            band_energies += [ map(float,words[5::2]) ]
+            kvec += [ list(map(float,words[1:4])) ]
+            band_occupations += [ list(map(float,words[4::2])) ]
+            band_energies += [ list(map(float,words[5::2])) ]
         assert(npoint) == len(idx)
         merged1 = list(itertools.chain(*band_energies))
         band_energies = asarray(band_energies)
@@ -131,8 +131,8 @@ merged.sort()
 valb = max([n for n in merged if n<0]) 
 conb = min([n for n in merged if n>0])
 egap = conb - valb
-print
-print "the top of the valence band :", valb
-print "the bottom of the conduction band:", conb
-print "The band gap of this structure is equal to : %10.3f (eV)" % egap
-print "============================"
+print()
+print("the top of the valence band :", valb)
+print("the bottom of the conduction band:", conb)
+print("The band gap of this structure is equal to : %10.3f (eV)" % egap)
+print("============================")

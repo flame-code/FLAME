@@ -1,0 +1,84 @@
+<?xml version="1.0"?><!--*- mode: nxml; indent-tabs-mode: nil -*-->
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<!-- vim:set ts=2 expandtab: -->
+<moduleset>
+
+  <repository type="tarball" name="gnome.org" href="http://ftp.gnome.org/pub/GNOME/sources/"/>
+  <repository type="tarball" name="sourceware" href="http://mirrors.kernel.org/sources.redhat.com/"/>
+
+  <autotools id="pygobject" autogenargs="--disable-cairo" autogen-sh="configure">
+    <branch repo="gnome.org" version="3.28" module="pygobject/3.28/pygobject-3.28.2.tar.xz" />
+    <dependencies>
+      <dep package="glib"/>
+      <!--<dep package="python-devel"/>-->
+      <dep package="gobject-introspection"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gobject-introspection" autogen-sh="configure">
+    <branch repo="gnome.org" version="1.56" module="gobject-introspection/1.56/gobject-introspection-1.56.0.tar.xz" />
+    <dependencies>
+      <dep package="bison"/>
+      <dep package="flex"/>
+      <dep package="glib"/>
+      <!--<dep package="python2-devel"/>-->
+    </dependencies>
+  </autotools>
+
+  <autotools id="glib" autogen-sh="configure">
+    <branch repo="gnome.org" version="2.56" module="glib/2.56/glib-2.56.0.tar.xz" >
+    <!-- <branch repo="gnome.org" version="2.40" module="glib/2.40/glib-2.40.0.tar.xz" > -->
+      <patch file="glib.patch"  strip="0"/>
+      <!-- <patch file="glib2.patch" strip="0"/> -->
+      <patch file="glib3.patch" strip="0"/>
+    </branch>
+    <dependencies>
+      <dep package="libffi"/>
+      <dep package="libmount-dev"/>
+    </dependencies>
+    <!--<after>
+      <dep package="shared-mime-info"/>
+    </after>-->
+  </autotools>
+
+  <autotools id="libffi" autogen-sh="configure">
+    <branch repo="sourceware" module="libffi/libffi-3.0.13.tar.gz" version="3.0.13"
+            size="845747" hash="sha256:1dddde1400c3bcb7749d398071af88c3e4754058d2d4c0b3696c2f82dc5cf11c">
+      <patch file="libffi-toolexeclibdir.patch" strip="0"/>
+    </branch>
+  </autotools>
+
+  <repository type="system" name="system"/>
+
+  <systemmodule id="bison">
+    <branch repo="system" version="2.0"/>
+    <systemdependencies>
+      <dep type="path" name="bison"/>
+    </systemdependencies>
+  </systemmodule>
+
+  <systemmodule id="flex">
+    <branch repo="system" version="2.0"/>
+    <systemdependencies>
+      <dep type="path" name="flex"/>
+    </systemdependencies>
+  </systemmodule>
+
+  <systemmodule id="libmount-dev">
+    <branch repo="system"/>
+    <systemdependencies>
+      <!-- <dep type="path" name="libmount-dev"/> -->
+      <dep type="c_include" name="libmount/libmount.h"/>
+    </systemdependencies>
+  </systemmodule>
+
+  <systemmodule id="libboost-dev">
+    <branch repo="system" version="1.48"/>
+    <systemdependencies>
+      <dep type="c_include" name="boost.h"/>
+    </systemdependencies>
+  </systemmodule>
+
+
+</moduleset>

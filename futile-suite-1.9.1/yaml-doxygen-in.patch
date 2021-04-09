@@ -1,0 +1,13 @@
+--- include/Makefile.in	2014-03-26 19:54:16.000000000 +0100
++++ include/Makefile.in	2018-12-13 10:21:21.237417475 +0100
+@@ -473,8 +473,8 @@
+ maintainer-clean-local:
+ 	-rm -rf $(top_builddir)/doc/html
+ 
+-dist-hook: html
+-	cp -a $(top_builddir)/doc/html $(top_distdir)/doc
++@DOXYGEN_TRUE@dist-hook: html
++@DOXYGEN_TRUE@	cp -a $(top_builddir)/doc/html $(top_distdir)/doc
+ 
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.

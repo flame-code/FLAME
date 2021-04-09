@@ -5,7 +5,7 @@ import numpy as np
 from acf import *
 
 if len(sys.argv) < 2:
-    print "usage: acf2cell.py input_filename margin"
+    print("usage: acf2cell.py input_filename margin")
     exit()
 else:
     filename = sys.argv[1]
@@ -17,7 +17,7 @@ atoms_all=acf_read(filename)
 nconf=-1
 for atoms in atoms_all:
     nconf+=1
-    columns =zip (*atoms_all[nconf].rat)
+    columns =list(zip (*atoms_all[nconf].rat))
     minimum= []
     maximum= []
     for i, co in enumerate (columns):
@@ -66,7 +66,7 @@ for atoms in atoms_all:
             atoms_all[nconf].rat[i][1]=atoms_all[nconf].rat[i][1]%atoms_all[nconf].cellvec[1][1]
             atoms_all[nconf].rat[i][2]=atoms_all[nconf].rat[i][2]%atoms_all[nconf].cellvec[2][2]
     else :
-        print "ERROR: unknown boundary condition"
+        print("ERROR: unknown boundary condition")
 
 acf_write(atoms_all,"screen")
 

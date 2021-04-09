@@ -59,7 +59,7 @@ def latvec2dproj(cellvec,rxyz,nat):
         cellvec=matmul(rotmat1,cellvec)
     #1001
     if (cellvec[0][1]>eps) or (cellvec[0][2]>eps):
-        print "Error in 1. rotation",cellvec[0][1],cellvec[0][2]
+        print("Error in 1. rotation",cellvec[0][1],cellvec[0][2])
         sys.exit("error")
     #Calculate the second rotation to align the second axis in xy plane------------------------
     rotmat2=np.zeros((3,3))
@@ -86,10 +86,10 @@ def latvec2dproj(cellvec,rxyz,nat):
         cellvec=matmul(rotmat2,cellvec)
     #1002 continue
     if cellvec[1][2]>eps:
-        print "Error in 2. rotation"
+        print("Error in 2. rotation")
         sys.exit("error") 
     if cellvec[2][2]<0.0:
-        print "ERROR: in orientation of the cell"
+        print("ERROR: in orientation of the cell")
         sys.exit("error") 
     
     #The total rotational matrix:-------------------------------------------------------------
@@ -131,7 +131,7 @@ def matmul(a,b):
     rows_a = len(a); cols_a = len(a[0])
     rows_b = len(b); cols_b = len(b[0])
     if cols_a != rows_b:
-      print "Cannot multiply the two matrices. Incorrect dimensions."
+      print("Cannot multiply the two matrices. Incorrect dimensions.")
       return
     c=[[0 for row in range(cols_b)] for col in range(rows_a)]
     for i in range(rows_a):
@@ -179,4 +179,4 @@ elif "acf" in args.fn_output:
     atoms_all[-1]=copy.copy(atoms)
     acf_write(atoms_all,args.fn_output)
 else:
-    print 'ERROR : please define the type of output file (ascii or acf)'
+    print('ERROR : please define the type of output file (ascii or acf)')

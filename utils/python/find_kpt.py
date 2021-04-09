@@ -3,7 +3,7 @@ import sys
 import math
 
 if len(sys.argv) < 3:
-    print "usage: find_kpt.py input_filename(in acf format) dkpt"
+    print("usage: find_kpt.py input_filename(in acf format) dkpt")
     exit()
 else:
     filename=sys.argv[1]
@@ -46,4 +46,4 @@ for i in range(0,3):
             if d_test>=dkpt:
                 kpt[i]=kpt[i]+j
                 d_test=float(g[i]/(kpt[i]*2.0*pi))
-print "%s %6d %6d %6d" % (filename,kpt[0],kpt[1],kpt[2]) 
+print("%s %6d %6d %6d" % (filename,kpt[0],kpt[1],kpt[2])) 

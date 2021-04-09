@@ -31,6 +31,9 @@ AC_FC_WRAPPERS()
 AC_PROG_CC()
 AC_PROG_CXX()
 
+dnl Check for python
+AM_PATH_PYTHON([2.3], , [:])
+
 dnl Check for existence of other options
 AX_LAMMPS()
 AX_SPGLIB()
@@ -49,6 +52,7 @@ Makefile
 src/Makefile
 src/lenosky_tb/Makefile
 tests/Makefile
+tests-scripts/Makefile
 ])
 
 AC_OUTPUT

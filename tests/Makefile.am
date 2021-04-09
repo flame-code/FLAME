@@ -28,6 +28,6 @@ LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
 EXTRA_DIST = 
 
-pythondir = $(FUTILE)/install/lib/python2.7/site-packages
+pythondir = $(FUTILE)/install/lib/python$(PYTHON_VERSION)/site-packages
 
 include $(srcdir)/check.mk

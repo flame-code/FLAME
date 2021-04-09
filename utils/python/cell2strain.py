@@ -4,9 +4,9 @@ from numpy import linalg as LA
 import sys
 
 if len(sys.argv) < 2:
-    print "usage: cell2strain.py filename"
-    print "WARNING: Notice that the components of reference cell"
-    print "         vectors must be in 1st line."
+    print("usage: cell2strain.py filename")
+    print("WARNING: Notice that the components of reference cell")
+    print("         vectors must be in 1st line.")
     exit()
 else:
     filename = sys.argv[1]
@@ -35,6 +35,6 @@ for line in f.readlines():
         e[1][0]/=2.0
         e[2][0]/=2.0
         e[2][1]/=2.0
-        print "%14.8f%14.8f%14.8f%14.8f%14.8f%14.8f" % (e[0][0],e[1][0],e[1][1],e[2][0],e[2][1],e[2][2])
+        print("%14.8f%14.8f%14.8f%14.8f%14.8f%14.8f" % (e[0][0],e[1][0],e[1][1],e[2][0],e[2][1],e[2][2]))
 
 f.closed

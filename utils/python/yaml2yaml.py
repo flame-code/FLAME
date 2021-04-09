@@ -29,10 +29,10 @@ for iconf in range(len(atoms_all)):
         if atoms_all[iconf].boundcond == 'bulk':
             S_atoms_all_bulk.append(atoms_all[iconf])
             i_bulk=i_bulk+1
-print "number of total structures with %d number of atoms is: %d"%(args.S_nat,i)
-print "number of free structures with %d number of atoms is: %d"%(args.S_nat,i_free)
-print "number of slab structures with %d number of atoms is: %d"%(args.S_nat,i_slab)
-print "number of bulk structures with %d number of atoms is: %d"%(args.S_nat,i_bulk)
+print("number of total structures with %d number of atoms is: %d"%(args.S_nat,i))
+print("number of free structures with %d number of atoms is: %d"%(args.S_nat,i_free))
+print("number of slab structures with %d number of atoms is: %d"%(args.S_nat,i_slab))
+print("number of bulk structures with %d number of atoms is: %d"%(args.S_nat,i_bulk))
 free_name = args.fn_out.strip('.yaml')+'_free.yaml'
 slab_name = args.fn_out.strip('.yaml')+'_slab.yaml'
 bulk_name = args.fn_out.strip('.yaml')+'_bulk.yaml'

@@ -14,7 +14,7 @@ def get_atomic_symbol(iatom):
         if iatom==201:
             sat='LJ'
         else:
-            print "ERROR: unknown atomic number in get_atomic_symbol %5d" % iatom
+            print("ERROR: unknown atomic number in get_atomic_symbol %5d" % iatom)
             exit()
     else:
         sat=elemens[iatom-1]
@@ -132,8 +132,8 @@ def get_atomic_number(sat):
               'Mt':109,\
               'Ds':110,\
               'LJ':201}
-    if not sat_dict.has_key(sat):
-        print "ERROR: no atomic number stored for atomtype= %s" % sat
+    if sat not in sat_dict:
+        print("ERROR: no atomic number stored for atomtype= %s" % sat)
         exit()
     isat=sat_dict[sat]
     return isat
