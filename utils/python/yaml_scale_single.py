@@ -60,7 +60,7 @@ for iconf in range(len(atoms_all_out)):
         ycmref=atoms_all_out[iconf].cellvec[1][1]/2.0
         zcmref=zcmref/atoms_all[0].nat
     else:
-        print "ERROR: unknow boundary conditions"
+        print("ERROR: unknow boundary conditions")
     xcm=0.0
     ycm=0.0
     zcm=0.0

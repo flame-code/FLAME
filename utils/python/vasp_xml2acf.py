@@ -6,13 +6,13 @@ from acf import *
 #*****************************************************************************************
 lastconf=False
 if len(sys.argv) < 3:
-    print "usage: vasp_xml2acf.py vasprun.xml output_filename"
+    print("usage: vasp_xml2acf.py vasprun.xml output_filename")
     exit()
 elif len(sys.argv)==4:
     if sys.argv[1]=='-last':
         lastconf=True
     else:
-        print "ERROR: wrong command option: %s" % sys.argv[1]
+        print("ERROR: wrong command option: %s" % sys.argv[1])
         exit()
     finp = sys.argv[2]
     fout = sys.argv[3]
@@ -20,7 +20,7 @@ elif len(sys.argv)==3:
     finp = sys.argv[1]
     fout = sys.argv[2]
 else:
-    print "ERROR: only two command options are allowed."
+    print("ERROR: only two command options are allowed.")
     exit()
 
 f=open(finp,"r")
@@ -124,7 +124,7 @@ for line in f.readlines():
         atoms.epot=float(line.split()[2])
         ediff=abs(1000.0*(e_fr_energy-atoms.epot)/float(nat))
         if ediff>1.0:
-            print "WARNING: Difference between energy and free energy in (meV/atom): %6.3f" % ediff
+            print("WARNING: Difference between energy and free energy in (meV/atom): %6.3f" % ediff)
         conf_complete=True
     #-------------------------------------------------------
     if conf_complete:

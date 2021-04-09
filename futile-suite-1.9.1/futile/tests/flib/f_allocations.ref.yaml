@@ -1,0 +1,445 @@
+---
+ Logical buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Logical buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Logical buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Byte buffer, kind1, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Byte buffer, kind1, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Int buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Int buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Int buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Int buffer, kind4, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Long buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Long buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Long buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Long buffer, kind8, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Float buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Float buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Float buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Float buffer, kind4, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Double buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double buffer, kind8, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double buffer, kind8, rank5:
+   Shape                               :  [  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double buffer, kind8, rank6:
+   Shape                               :  [  5,  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double buffer, kind8, rank7:
+   Shape                               :  [  5,  5,  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double Complex buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Double Complex buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Logical_ptr buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Logical_ptr buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Logical_ptr buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Int_ptr buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Int_ptr buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Int_ptr buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Int_ptr buffer, kind4, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Long_ptr buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Double_ptr buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double_ptr buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double_ptr buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double_ptr buffer, kind8, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double_ptr buffer, kind8, rank5:
+   Shape                               :  [  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Double_ptr buffer, kind8, rank6:
+   Shape                               :  [  5,  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Status of the database: #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Database status
+   Calling sequence of Main program (routines with * are not closed yet):
+   - Main_program: [ 5.329E-03,  1, ~*]
+   Routine dictionary:
+     30191680:
+       [ d1_ptr_exotic, Main_program,  288,  1, {Type: SHARED} ]
+   Global dictionary (size 2):
+     Timestamp of Profile initialization:
+       2017-05-13 21:43:49.010
+     Process Id:
+       0
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  44
+   Tot. No. of Deallocations           :  44
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.596
+     for the array                     : d7
+     in the routine                    : Main_program
+     Memory Peak of process            : 8.708 MB
+ Walltime since initialization         :  00:00:00.004799900
+ Max No. of dictionaries used          :  215 #( 170 still in use)
+ Number of dictionary folders allocated:  1
+#Executing f_memcheck utility
+#LD_PRELOAD= /local/binaries/gfortran-fpe-1.8/install/lib/libfmalloc-1.so
+#FUTILE_MALLOC_NAN_PADDING= 2
+#Executable command:  ./f_allocations
+---
+ Logical buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Logical buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Logical buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Byte buffer, kind1, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Byte buffer, kind1, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Int buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Int buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Int buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Int buffer, kind4, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Long buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Long buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Long buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Long buffer, kind8, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Float buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Float buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Float buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Float buffer, kind4, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Double buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double buffer, kind8, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double buffer, kind8, rank5:
+   Shape                               :  [  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double buffer, kind8, rank6:
+   Shape                               :  [  5,  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double buffer, kind8, rank7:
+   Shape                               :  [  5,  5,  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double Complex buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Double Complex buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Logical_ptr buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Logical_ptr buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Logical_ptr buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Int_ptr buffer, kind4, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Int_ptr buffer, kind4, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Int_ptr buffer, kind4, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Int_ptr buffer, kind4, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Long_ptr buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Double_ptr buffer, kind8, rank1:
+   Shape                               :  [  5 ]
+   Lbound                              :  [  1 ]
+   Ubound                              :  [  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double_ptr buffer, kind8, rank2:
+   Shape                               :  [  5,  5 ]
+   Lbound                              :  [  1,  1 ]
+   Ubound                              :  [  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double_ptr buffer, kind8, rank3:
+   Shape                               :  [  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double_ptr buffer, kind8, rank4:
+   Shape                               :  [  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double_ptr buffer, kind8, rank5:
+   Shape                               :  [  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Double_ptr buffer, kind8, rank6:
+   Shape                               :  [  5,  5,  5,  5,  5,  5 ]
+   Lbound                              :  [  1,  1,  1,  1,  1,  1 ]
+   Ubound                              :  [  5,  5,  5,  5,  5,  5 ]
+ Initial value                         :  0.0
+ Official Final value                  :  0.0
+ Next value                            :  NaN
+ Status of the database: #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Database status
+   Calling sequence of Main program (routines with * are not closed yet):
+   - Main_program: [ 1.117E-02,  1, ~*]
+   Routine dictionary:
+     7391872:
+       [ d1_ptr_exotic, Main_program,  288,  1, {Type: SHARED} ]
+   Global dictionary (size 2):
+     Timestamp of Profile initialization:
+       2017-05-13 21:43:49.226
+     Process Id:
+       0
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  44
+   Tot. No. of Deallocations           :  44
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.596
+     for the array                     : d7
+     in the routine                    : Main_program
+     Memory Peak of process            : 9.580 MB
+ Walltime since initialization         :  00:00:00.009533586
+ Max No. of dictionaries used          :  215 #( 170 still in use)
+ Number of dictionary folders allocated:  1
+#End of f_memcheck utility

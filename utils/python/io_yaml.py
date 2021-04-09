@@ -92,25 +92,25 @@ def dict2atoms(dict_atoms):
     atoms.nat             = dict_atoms['conf']['nat']
     atoms.boundcond       = dict_atoms['conf']['bc']
 
-    if dict_atoms['conf'].has_key('units_length'):
+    if 'units_length' in dict_atoms['conf']:
         atoms.units_length_io = dict_atoms['conf']['units_length']
-    if dict_atoms['conf'].has_key('epot'):
+    if 'epot' in dict_atoms['conf']:
         atoms.epot_present=True
         atoms.epot = dict_atoms['conf']['epot']
-    if dict_atoms['conf'].has_key('qtot'):
+    if 'qtot' in dict_atoms['conf']:
         atoms.qtot_present=True
         atoms.qtot = dict_atoms['conf']['qtot']
-    if dict_atoms['conf'].has_key('force'):
+    if 'force' in dict_atoms['conf']:
         atoms.fat_present=True
         for i in range(int(atoms.nat)):
             fr = dict_atoms['conf']['force'][i]
             atoms.fat.append(fr)
-    if dict_atoms['conf'].has_key('cell'):
+    if 'cell' in dict_atoms['conf']:
         atoms.cell_present=True
         atoms.cellvec[0] = dict_atoms['conf']['cell'][0]
         atoms.cellvec[1] = dict_atoms['conf']['cell'][1]
         atoms.cellvec[2] = dict_atoms['conf']['cell'][2]
-    if dict_atoms['conf'].has_key('velocity'):
+    if 'velocity' in dict_atoms['conf']:
         atoms.vat_present=True
         for i in range(int(atoms.nat)):
             vx = dict_atoms['conf']['velocity'][i][0]

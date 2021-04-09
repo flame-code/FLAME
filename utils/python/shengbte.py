@@ -57,46 +57,46 @@ def sheng_write(atoms,filename):
     sc3=4
     if filename=="screen":
         str_line=""
-        print "&allocations"
-        print "    %s %d" % ("nelements= ", len(atom_nn))
-        print "    %s %d" % ("natoms= ", atoms.nat)
-        print "    %s %d %d %d" % ("ngrid(:)= ", 15, 15, 15)
-        print "    %s %d" % ("norientations= ", 0)
-        print "&end"
+        print("&allocations")
+        print("    %s %d" % ("nelements= ", len(atom_nn)))
+        print("    %s %d" % ("natoms= ", atoms.nat))
+        print("    %s %d %d %d" % ("ngrid(:)= ", 15, 15, 15))
+        print("    %s %d" % ("norientations= ", 0))
+        print("&end")
 
-        print "&crystal"
-        print "    %s %24.15E" % ("lfactor= ", 1.0)
-        print "    %s %24.15E%24.15E%24.15E" % ("lattvec(:,1)= ", 0.1*atoms.cellvec[0][0],0.1*atoms.cellvec[0][1],0.1*atoms.cellvec[0][2])
-        print "    %s %24.15E%24.15E%24.15E" % ("lattvec(:,2)= ", 0.1*atoms.cellvec[1][0],0.1*atoms.cellvec[1][1],0.1*atoms.cellvec[1][2])
-        print "    %s %24.15E%24.15E%24.15E" % ("lattvec(:,3)= ", 0.1*atoms.cellvec[2][0],0.1*atoms.cellvec[2][1],0.1*atoms.cellvec[2][2])
+        print("&crystal")
+        print("    %s %24.15E" % ("lfactor= ", 1.0))
+        print("    %s %24.15E%24.15E%24.15E" % ("lattvec(:,1)= ", 0.1*atoms.cellvec[0][0],0.1*atoms.cellvec[0][1],0.1*atoms.cellvec[0][2]))
+        print("    %s %24.15E%24.15E%24.15E" % ("lattvec(:,2)= ", 0.1*atoms.cellvec[1][0],0.1*atoms.cellvec[1][1],0.1*atoms.cellvec[1][2]))
+        print("    %s %24.15E%24.15E%24.15E" % ("lattvec(:,3)= ", 0.1*atoms.cellvec[2][0],0.1*atoms.cellvec[2][1],0.1*atoms.cellvec[2][2]))
         for itype in range(ntypes):
             str_line+=" %s," % ("'"+atom_types[itype].replace(' ','')+"'")
-        print     "%s %s" % ("    elements=  ", str_line)
+        print("%s %s" % ("    elements= ", str_line))
         str_line=""
         for itype in range(ntypes):
             for icount in range(atom_nn[itype]):
-                str_line+=" %d, " % (itype+1)
-        print     "%s %s" % ("    types=  ", str_line)
+                str_line+=" %d," % (itype+1)
+        print("%s %s" % ("    types=", str_line))
         for iat in range(atoms.nat):
             istr=str(iat+1)
             x=float(xred[iat][0])
             y=float(xred[iat][1])
             z=float(xred[iat][2])
-            print  "    %s %24.15E%24.15E%24.15E" % ("positions(:,"+istr+")= ",x,y,z)
-        print "    %s %d %d %d" % ("scell(:)= ",sc1,sc2,sc3)
-        print "&end"
+            print("    %s %24.15E%24.15E%24.15E" % ("positions(:,"+istr+")= ",x,y,z))
+        print("    %s %d %d %d" % ("scell(:)= ",sc1,sc2,sc3))
+        print("&end")
 
-        print "&parameters"
-        print "    T=300"
-        print "    scalebroad=0.2"
-        print "&end"
+        print("&parameters")
+        print("    T=300")
+        print("    scalebroad=0.2")
+        print("&end")
 
-        print "&flags"
-        print "    onlyharmonic=.FALSE."
-        print "    isotopes=.FALSE.    "
-        print "    nonanalytic=.FALSE. "
-        print "    nanowires=.FALSE.   "
-        print "&end"
+        print("&flags")
+        print("    onlyharmonic=.FALSE.")
+        print("    isotopes=.FALSE.")
+        print("    nonanalytic=.FALSE.")
+        print("    nanowires=.FALSE.")
+        print("&end")
     else:
         str_line=""
         for itype in range(ntypes):

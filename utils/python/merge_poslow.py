@@ -13,7 +13,7 @@ def test_identical(atoms1,atoms2,etol,dist,dtol,i1=-1,i2=-1):
         same=False
     if same and len(dist)>0:
         #print "sadfasdfdasf"
-        if i1==-1 or i2==-1: print "ERROR: i1,i2= %7d%7d" % (i1,i2)
+        if i1==-1 or i2==-1: print("ERROR: i1,i2= %7d%7d" % (i1,i2))
         #print "DIST %19.10E" % dist[i1][i2]
         if dist[i1][i2]>dtol:
             same=False
@@ -31,7 +31,7 @@ def merge_poslows(poslow,poslow_all,etol,dist=[],dtol=-1.0):
     i1=0
     i2=0
     for i in range(n1+n2):
-        print i,i1,i2,n1,n2 #,poslow[i1].epot,poslow_all[i2].epot
+        print(i,i1,i2,n1,n2) #,poslow[i1].epot,poslow_all[i2].epot
         if not i1==n1 and (i2==n2 or poslow[i1].epot<poslow_all[i2].epot):
             #if i==0 or not abs(poslow[i1].epot-poslow_t[-1].epot)<etol:
             if i!=0: same=test_identical(poslow[i1],poslow_t[-1],etol,dist,dtol,i1,ind_poslow_t[-1])
@@ -80,7 +80,7 @@ def read_distall():
 #*****************************************************************************************
 #*****************************************************************************************
 if len(sys.argv) < 3:
-    print "usage: merge_poslow.py output_filename tolerance [-dist dtol]" 
+    print("usage: merge_poslow.py output_filename tolerance [-dist dtol]") 
     exit() 
 #print "%s" % sys.argv[1]
 #print "%s" % sys.argv[2]
@@ -95,7 +95,7 @@ if len(sys.argv)==5:
         #filename=sys.argv[2]
         dtol=float(sys.argv[4])
 if len(sys.argv)==4 or len(sys.argv)>5:
-    print "ERROR: wrong command option."
+    print("ERROR: wrong command option.")
     exit()
 
 etol*=27.211385
@@ -107,7 +107,7 @@ for line in f.readlines():
     nfiles+=1
     if len(sys.argv)==5:
         if nfiles>1:
-            print "ERROR: when fingerprints are used, only one file is allowed in list_poslow"
+            print("ERROR: when fingerprints are used, only one file is allowed in list_poslow")
             exit()
         dist=read_distall()
     filename=line.split()[0]

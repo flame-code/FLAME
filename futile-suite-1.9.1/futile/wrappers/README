@@ -1,0 +1,10 @@
+/*! @file
+@brief README of the directory wrappers
+
+@dir ./wrappers
+@brief Contains routines wrapping FFT and linear algebra routines
+
+@dir ./wrappers/fft
+@brief Contains the Goedecker FFT (Fast-Fourier Transform) routines
+
+ */

@@ -4,7 +4,7 @@ from xyz import *
 from acf import *
 
 if len(sys.argv) < 2:
-    print "usage: xyz2acf.py input_filename -qtot qtot"
+    print("usage: xyz2acf.py input_filename -qtot qtot")
     exit()
 else:
     qtot=0.0

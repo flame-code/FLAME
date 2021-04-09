@@ -116,7 +116,7 @@ for line in f.readlines():
         atoms.epot=float(line.split()[2])/Ehar
         ediff=abs(1000.0*(e_fr_energy-atoms.epot*Ehar)/float(nat))
         if ediff>1.0:
-            print "WARNING: Difference between energy and free energy in (meV/atom): %6.3f" % ediff
+            print("WARNING: Difference between energy and free energy in (meV/atom): %6.3f" % ediff)
         conf_complete=True
     #-------------------------------------------------------
     if conf_complete:

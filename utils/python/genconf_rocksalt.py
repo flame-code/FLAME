@@ -46,7 +46,7 @@ def put_at_center(atoms,amargin,xmin,ymin,zmin):
         atoms.rat[iat][2]=atoms.rat[iat][2]-zmin+amargin
 #*****************************************************************************************
 if len(sys.argv) < 5:
-    print "usage: gen_rocksalt.py nat nx ny alat filename -bc boundcond"
+    print("usage: gen_rocksalt.py nat nx ny alat filename -bc boundcond")
     exit()
 else:
     nat=int(sys.argv[1])
@@ -71,10 +71,10 @@ else:
 
 #print boundcond
 if nat%2!=0:
-    print "ERROR: unacceptable number of atoms, nat must be an even number"
+    print("ERROR: unacceptable number of atoms, nat must be an even number")
     exit()
 if nat<2*nx*ny:
-    print "ERROR: improper arguments, nat<2*nx*ny"
+    print("ERROR: improper arguments, nat<2*nx*ny")
     exit()
 nz=int(math.ceil(float(nat)/float(2*nx*ny)))
 #print nz
@@ -134,7 +134,7 @@ elif boundcond=='bulk':
     amargin=(nx*alat-xmax+xmin)*0.5
     put_at_center(atoms,amargin,xmin,ymin,zmin)
 else:
-    print 'ERROR: improper boundary conditions'
+    print('ERROR: improper boundary conditions')
 
 atoms.boundcond=boundcond
 #print atoms.nat,len(atoms.sat),len(atoms.rat)
@@ -142,7 +142,7 @@ atoms.boundcond=boundcond
 atoms_all=[]
 atoms_all.append(Atoms())
 atoms_all[-1]=copy.copy(atoms)
-print "writing to file %20s" % filename
+print("writing to file %20s" % filename)
 #xyz_write(atoms_all,'bigdft')
 #ascii_write(atoms,filename)
 acf_write(atoms_all,filename)

@@ -1,0 +1,1491 @@
+ Parsed options:
+   test:
+     default                           : All
+     shorthelp                         : Decide what to test (--help for more info)
+     shortname                         : t
+     help:
+       Usage:
+         Specify, as a yaml list, the functionalities which have to be tested
+       Allowed values:
+       - yaml
+       - yaml_extras
+       - yaml_parse
+       - exceptions
+       - trees
+       - trees_extras
+       - utils
+       - allocations
+   test2:
+     default                           : 1
+     shorthelp                         : this is another test option
+     shortname                         : s
+   test3:
+     default                           : None
+     shorthelp                         : this is a test option
+     shortname                         : T
+     help:
+       Usage:
+         Unused option3, just for testing the command line parser, also the long help lines 
+         have to be tested in order to understand if it works
+     conflicts: [test2, test]
+   test_mp:
+     default                           : None
+     shorthelp                         : sandbox to test the I/O of point multipoles
+     shortname                         : m
+     help:
+       Usage                           : Just to test the format of the multipoles
+ Parsed info:
+   test                                : All
+   test2                               : 1
+ Multipole list found                  :  No
+  #AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  #BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+  #B
+  #CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+  #CC
+  #DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+  #DDD
+---
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Yaml Output Module Test
+ Test:
+   Short sentence                      :  Yes
+   Foo: {one:  1, two:  2}
+   toto: {one:  1, two:  2}
+ Is 1.0 a real string                  :  Yes
+ Is 1.0 a integer string               :  No
+ Is 1.0 a logical string               :  No
+ Is 1 a real string                    :  Yes
+ Is 1 a integer string                 :  Yes
+ Is 1 a logical string                 :  No
+ Is Yes a real string                  :  No
+ Is Yes a integer string               :  No
+ Is Yes a logical string               :  Yes
+ Is No a real string                   :  No
+ Is No a integer string                :  No
+ Is No a logical string                :  Yes
+ Is ./ a real string                   :  No
+ Is ./ a integer string                :  No
+ Is ./ a logical string                :  No
+ Is 0. a real string                   :  Yes
+ Is 0. a integer string                :  No
+ Is 0.000000000E+00 a real string      :  Yes
+ Is 0.000000000E+00 a integer string   :  No
+ Is 1.5 a real string                  :  Yes
+ Is 1.5 with spaces a real string      :  Yes
+ Is 1.5 a integer string               :  No
+ Is 1.5 with spaces a integer string   :  No
+ Is 1 a real string                    :  Yes
+ Is 1 with spaces a real string        :  Yes
+ Is 1 a integer string                 :  Yes
+ Is 1 with spaces a integer string     :  Yes
+---
+ Test:
+   I have a very long sentence in order to test if yaml_output fails to print that:  Yes
+   Foo: {one:  1, two:  2}
+   toto: {one:  1, two:  2}
+   Build Configure line:
+     $(top_builddir)/src/flib/libflib.a -labinit -lxc   -lOpenCL -lm -lstdc++ -letsf_io_utils 
+     -letsf_io -lnetcdff -lnetcdf -lscalapack-openmpi -lblacs-openmpi -lblacsF77init-openmpi 
+     -llapack -lblas -larchive   -lyaml -pthread -lgthread-2.0 -lrt -lgio-2.0 -lgobject-2.0 
+     -lglib-2.0   -lgio-2.0 -lgobject-2.0 -lglib-2.0
+   Build Configure line again:
+     FC=/opt/openmpi-1.6.1/bin/mpif90 FCFLAGS=-O2 -i_dynamic -msse4.2 -heap-arrays 1024 
+     -openmp 
+     --with-ext-linalg=/opt/intel/composer_xe_2011_sp1.11.339/mkl/lib/intel64/libmkl_scalapack_l
+     p64.a  -Wl,--start-group  
+     /opt/intel/composer_xe_2011_sp1.11.339/mkl/lib/intel64/libmkl_cdft_core.a 
+     /opt/intel/composer_xe_2011_sp1.11.339/mkl/lib/intel64/libmkl_intel_lp64.a 
+     /opt/intel/composer_xe_2011_sp1.11.339/mkl/lib/intel64/libmkl_intel_thread.a 
+     /opt/intel/composer_xe_2011_sp1.11.339/mkl/lib/intel64/libmkl_core.a 
+     /opt/intel/composer_xe_2011_sp1.11.339/mkl/lib/intel64/libmkl_blacs_openmpi_lp64.a 
+     -Wl,--end-group -openmp -lpthread -lm
+   Long string array: [compiler, compiler, compiler, compiler, compiler, compiler, compiler, 
+                       compiler, compiler, compiler]
+  #WARNING: Test warning 1
+  #WARNING: Test warning 1, should not be repeated again
+  #WARNING: Test warning 2
+  #WARNING: Test warning 1, should not be repeated again
+ Test buffer_string (back=.true.)      : X-----------------------------
+ Position                              :  3
+ Test buffer_string (back=.false.)     : X--X--------------------------
+ Position                              :  4
+  #----------------------------------- Warnings obtained during the run, check their relevance!
+ WARNINGS:
+ - Test warning 1
+ - Test warning 1, should not be repeated again
+ - Test warning 2
+---
+ Vector of characters                  :  []
+ Vector of integers                    :  []
+ Matrix of integers:
+ -  [ 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+                                                                                  2,  2,  2, 
+                                                                                  2,  2,  2, 
+                                                                                  2,  2]
+ -  [ 4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
+                                                                                  4,  4,  4, 
+                                                                                  4,  4,  4, 
+                                                                                  4,  4]
+ -  [ 6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+                                                                                  6,  6,  6, 
+                                                                                  6,  6,  6, 
+                                                                                  6,  6]
+ -  [ 8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 
+                                                                                  8,  8,  8, 
+                                                                                  8,  8,  8, 
+                                                                                  8,  8]
+ -  [ 10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 
+      10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10]
+ Is it OK?: {Maybe:  Yes, Maybe:  No}
+ Vector of double: [ 3.00000E+00,  3.00000E+00,  3.00000E+00,  3.00000E+00,  3.00000E+00, 
+                     3.00000E+00,  3.00000E+00,  3.00000E+00,  3.00000E+00,  3.00000E+00, 
+                     3.00000E+00]
+ Vector of real(kind=8): [ 3.,  3.,  3.,  3.,  3.,  3.,  3.,  3.,  3.,  3.,  3.]
+ Matrix of entries (almost) one:
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+ -  [ 0.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, 
+      1.0,  1.0,  1.0,  1.0,  1.0,  0.0]
+---
+  #This document checks the call yaml_comment().
+  # [  1.0000000000,  1.0000000000,  1.0000000000,  1.0000000000,  1.0000000000 ]
+  #See if this very long comment is correctly treated: [  1.0000000000,  1.0000000000,  
+  #1.0000000000,  1.0000000000,  1.0000000000 ]
+ Map:
+   One                                 :  1
+    #No blank 
+    #charactersxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #
+    #yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+    #yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+    #yyyyyyyyyyyyyy
+    #     yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+    #     yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+    #     yyyyyyyyyyyyyyyyyyyyyyyy
+ Check long sequences:
+ - Length= 0
+ - 
+ - Length=90
+ - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+ - Length=91
+ - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+ - Length=92
+ - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+ - Length=92+label
+ -  &label aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+   aaaaaa-
+ - Length=93
+ - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
+ - Length=300
+ - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+   aaaaaaaaaaaaaaaaaaaaaaaaaaa-
+ - bbbbbbbbbbbbbbbbbbbb
+ -           
+ -  &l1      
+ -          a
+ -  &l2     a
+---
+  #----------------------------------------------------------------------- Yaml Invoice Example
+ invoice                               :  34843
+ date                                  :  2015-11-21
+ bill-to: &id001
+   given                               : Chris
+   address:
+     lines:
+       458 Walkman Dr.
+       Suite #292
+ ship_to                               : *id001
+ product:
+ - sku                                 : BL394D
+   quantity                            :  4
+   description                         : Basketball
+   price                               :  450.00
+ - sku                                 : BL4438H
+   quantity                            :  1
+   description                         : Super Hoop
+   price                               :  2392.00
+ tax                                   :  251.42
+ total                                 :  4443.520000000000
+ comments:
+   Late afternoon is best. Backup contact is Nancy Billsmer @ 338-4338.
+---
+  #--------------------------------------------------- Yaml Invoice Example, using dictionaries
+ Retrieve the price value              :  2392.0
+ invoice                               : 34843
+ date                                  :  2015-11-21
+ bill-to:
+   given                               : Chris
+   family                              : Dumars
+   address:
+     lines                             : 458 Walkman Dr. Suite #292
+     city                              : Royal Oak
+     state                             : MI
+     postal                            : 48046
+ Product:
+ - sku                                 : BL34D
+   quantity                            : 4
+   description                         : Basketball
+   price                               : 4.5E+02
+ - sku                                 : BL4438
+   quantity                            : 1
+   description                         : Super Hoop
+   price                               : 2.392E+03
+ Tax                                   : 2.514199982E+02
+ Total                                 : 4.44352002E+03
+ Comments:
+   Late afternoon is best. Backup contact is Nancy Billsmer @ 338-4338
+---
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Error Handling Module Test
+ Raising the TOTO error, errcode       :  28
+ ERR_TOTO:
+   Id                                  : 28
+   Message:
+     This is the error message for the error of kind 1 and it is written extensively on 
+     purpose to see whether yaml module prints it
+   Action:
+     For this error, contact the routine developer at mail at univ dot gov
+   Callback Procedure Address          : 4213104
+ Additional Info                       : Extra message added
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOTO
+ Print the error ID                    :  28
+ Raising the TOTO error, by name, without condition: ERR_TOTO
+ ERR_TOTO:
+   Id                                  : 28
+   Message:
+     This is the error message for the error of kind 1 and it is written extensively on 
+     purpose to see whether yaml module prints it
+   Action:
+     For this error, contact the routine developer at mail at univ dot gov
+   Callback Procedure Address          : 4213104
+ Additional Info                       : Extra message added again
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOTO
+ Callback done, errcode                :  28
+ GENERIC_ERROR:
+   Id                                  : 1
+   Message                             : UNSPECIFIED
+   Action                              : UNKNOWN
+ Additional Info                       : Generic error raised, some message here
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Aie
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Error list
+ List of errors defined so far:
+ - SUCCESS:
+     Id                                : 0
+     Message                           : Operation has succeeded
+     Action                            : No action
+ - GENERIC_ERROR:
+     Id                                : 1
+     Message                           : UNSPECIFIED
+     Action                            : UNKNOWN
+ - ERR_NOT_DEFINED:
+     Id                                : 2
+     Message                           : The error id or name is invalid
+     Action                            : Control if the err id exists
+ - DICT_KEY_ABSENT:
+     Id                                : 3
+     Message                           : The dictionary has no key
+     Action                            : Internal error, contact developers
+ - DICT_ITEM_NOT_VALID:
+     Id                                : 4
+     Message                           : The item of this list is not correct
+     Action                            : Internal error, contact developers
+ - DICT_VALUE_ABSENT:
+     Id                                : 5
+     Message                           : The value for this key/value is absent
+ - DICT_INVALID:
+     Id                                : 6
+     Message                           : Dictionary is not associated
+ - DICT_INVALID_LIST:
+     Id                                : 7
+     Message                           : Current node is not a list
+ - DICT_CONVERSION_ERROR:
+     Id                                : 8
+     Message                           : Conversion error of the dictionary value
+     Action                            : Check the nature of the conversion
+ - INPUT_OUTPUT_ERROR:
+     Id                                : 9
+     Message:
+       Some of intrinsic I/O fortran routines returned an error code.
+     Action:
+       Check if you have correct file system permission in I/O library or check the fortran 
+       runtime library.
+ - YAML_INVALID:
+     Id                                : 10
+     Message                           : Generic error of yaml module, invalid operation
+ - YAML_STREAM_ALREADY_PRESENT:
+     Id                                : 11
+     Message                           : The stream is already present
+ - YAML_STREAM_NOT_FOUND:
+     Id                                : 12
+     Message                           : The stream has not been found
+ - YAML_UNIT_INCONSISTENCY:
+     Id                                : 13
+     Message:
+       The array of the units is not in agreement with the array of the streams
+     Action:
+       This is an internal error of yaml_output module, contact developers
+ - YAML_PARSE_ERROR:
+     Id                                : 14
+     Message                           : YAML parse error.
+     Action                            : Modify your inputs.
+ - YAML_PARSE_UNSUPPORTED:
+     Id                                : 15
+     Message                           : YAML standard not supported.
+     Action                            : kindly ask developers to finish implementation.
+ - ERROR_YAML_COMMAND_LINE_PARSER:
+     Id                                : 16
+     Message                           : Error in yaml parsing of the command line
+     Action                            : Check the allowed options and their values (--help).
+ - ERR_REFERENCE_COUNTERS:
+     Id                                : 17
+     Message                           : Error in the usage of the reference counter
+     Action:
+       When a reference counter is present each pointer association should be tracked, check 
+       for it
+ - ERR_ALLOCATE:
+     Id                                : 18
+     Message                           : Allocation error
+     Action:
+       Control the order of the allocation or if the memory limit has been reached
+     Callback Procedure Address        : 4783968
+ - ERR_DEALLOCATE:
+     Id                                : 19
+     Message                           : Deallocation error
+     Action:
+       Control the order of the allocation or if the memory limit has been reached
+     Callback Procedure Address        : 4783968
+ - ERR_MEMLIMIT:
+     Id                                : 20
+     Message                           : Memory limit reached
+     Action:
+       Control the size of the arrays needed for this run with bigdft-tool program
+     Callback Procedure Address        : 4783968
+ - ERR_INVALID_COPY:
+     Id                                : 21
+     Message                           : Copy not allowed
+     Action:
+       A f_memcpy command failed, probably invalid sizes: check sizes of arrays at runtime
+     Callback Procedure Address        : 4783968
+ - ERR_INVALID_MALLOC:
+     Id                                : 22
+     Message                           : Invalid specification of f_malloc
+     Action                            : Put coherent data for the memory space allocation
+     Callback Procedure Address        : 4783968
+ - ERR_MALLOC_INTERNAL:
+     Id                                : 23
+     Message                           : Internal error of memory profiler
+     Action:
+       An invalid operation occurs, submit bug report to developers
+     Callback Procedure Address        : 4783968
+ - TIMING_INVALID:
+     Id                                : 24
+     Message                           : Error in timing routines
+ 
+     Action                            : Control the running conditions of f_timing routines called
+     Callback Procedure Address        : 5182544
+ - INPUT_VAR_NOT_IN_LIST:
+     Id                                : 25
+     Message                           : given value not in allowed list.
+     Action                            : choose a value from the list below.
+     Callback Procedure Address        : 5281184
+ - INPUT_VAR_NOT_IN_RANGE:
+     Id                                : 26
+     Message                           : given value not in allowed range.
+     Action                            : adjust the given value.
+ - INPUT_VAR_ILLEGAL:
+     Id                                : 27
+     Message                           : provided variable is not allowed in this context.
+     Action                            : correct or remove the input variable.
+     Callback Procedure Address        : 5281168
+ - ERR_TOTO:
+     Id                                : 28
+     Message:
+       This is the error message for the error of kind 1 and it is written extensively on 
+       purpose to see whether yaml module prints it
+     Action:
+       For this error, contact the routine developer at mail at univ dot gov
+     Callback Procedure Address        : 4213104
+ - ERR_TITI:
+     Id                                : 29
+     Message                           : test2
+     Callback Procedure Address        : 4213168
+     Callback Procedure Data Address   : 140720763340560
+ - ERR_GRAVE:
+     Id                                : 30
+     Message                           : test2
+     Callback Procedure Address        : 4484448
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of error list
+ Additional Info                       : This is the list of the errors
+ ERR_TITI:
+   Id                                  : 29
+   Message                             : test2
+   Callback Procedure Address          : 4213168
+   Callback Procedure Data Address     : 140720763340560
+ Additional Info                       : Now TITI error has been raised
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TITI
+ Callback done                         :  Yes
+ Error check value                     :  Yes
+ Error check code                      :  No
+ Error check code2                     :  Yes
+ Error check code, name                :  No
+ Error check code, name                :  Yes
+  #Test open try
+ Error check value before try          :  No
+ Number of errors(1)                   :  1
+ Number of errors(2)                   :  0
+ ID                                    :  28
+ MSG                                   : two
+ ERR_TOTO:
+   Id                                  : 28
+   Message:
+     This is the error message for the error of kind 1 and it is written extensively on 
+     purpose to see whether yaml module prints it
+   Action:
+     For this error, contact the routine developer at mail at univ dot gov
+   Callback Procedure Address          : 4213104
+ Number of errors(3)                   :  1
+ Error check value after try           :  No
+---
+  #Now we test dictionaries inside yaml.
+ ival not existing, fake value         :  0
+ An error has been raised              :  Yes
+ Its error id is                       :  5
+ DICT_VALUE_ABSENT:
+   Id                                  : 5
+   Message                             : The value for this key/value is absent
+ Additional Info                       : The key is "Toto"
+ Error pipe is still full              :  No
+ 1.0 index                             :  2
+ 1.1 index                             :  2
+ Toto                                  : null
+ toto                                  : 1
+ titi                                  : 1.0
+ tutu: [1, 2]
+ List: [a: 0, 4, 1.0]
+ New key: {Example: 4}
+ List length                           :  3
+ Dictionary size                       :  6
+ Key1                                  : One
+ Key2                                  : Two
+ Key3                                  : Three
+ Length and size before                :  [  0,  0 ]
+ There was a hidden problem here:
+   hgrid:
+   - new
+ Value of dict1//hgrid                 : __list__
+ Value retrieved with equal sign       : null
+ Value explicitly written in the dictionary: null
+ Length and size after                 :  [  1,  0 ]
+ test2 index                           :  1
+ hgrid index                           :  0
+  #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST Improper testing of index function
+ Length and size before                :  [  0,  2 ]
+ Hidden problem here:
+   hgrid:
+   - new
+ Value of dict1//hgrid                 : __list__
+ Value retrieved with equal sign       : null
+ Verify that the child is still associated:  Yes
+ Length and size after                 :  [  1,  0 ]
+ Entered dict:
+   key                                 : scalar0
+ Length                                :  0
+ Entered dict:
+   key: [one, two, thr]
+ Length                                :  3
+ Entered dict:
+   key                                 : scalar
+ Length                                :  0
+ Entered dict:
+   key: [One, Two, Thr]
+ Length                                :  3
+---
+ List:
+ - 1
+ - 2
+ - 3
+---
+ Dictionary length                     :  3
+ Dictionary size                       :  0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Fortran Dictionary Test
+ Number of Groups                      : 1
+ First: {One: 1, Two: 2, Three: 3, Threeb: 3b}
+ Size before removing                  :  4
+ First removal:
+   Two                                 : 2
+   Three                               : 3
+   Threeb                              : 3b
+ Second removal:
+   Three                               : 3
+   Threeb                              : 3b
+ After pop:
+   Number of Groups                    : 1
+   First:
+     Three                             : 3
+     Threeb                            : 3b
+     Four                              : 4
+ Key found                             :  No
+ Second try, Key found                 :  Yes
+ Value found                           :  1
+ Alternative way                       :  2
+ Search for "First" key:
+   Three                               : 3
+   Threeb                              : 3b
+   Four                                : 4
+ Extracted value                       :  2
+ Size after popping                    :  1
+ Size after popping again              : -1
+ Complete pop:
+   Status of association               :  No
+   Size after popping                  : -1
+   Present status                      : <nullified dictionary>
+ DictA is associated                   :  Yes
+ DictA is now of size                  :  3
+ DictA is now:
+   Three                               : 3
+   Threeb                              : 3b
+   Four                                : 4
+ DictA key                             : First
+ Dictionary associated before last pop :  No
+ Total dict:
+   head:
+     onlyone: [1.0, 1.0, 1.0]
+ Nowdict:
+ - 1.0
+ - 1.0
+ - 1.0
+ Dict popped:
+   head                                : null
+ Stack:
+ - 5
+ - 4
+ - 2
+ - Test1:
+     Toto                              : 5
+     Titi                              : 6
+ Stack2: [1, 2, 3]
+ Stack3: [4, AQ, 3g]
+ Stack4                                : 12
+ Matrix:
+ -  [1.0, 1.0, 1.0]
+ -  [1.0, 1.0, 1.0]
+ -  [1.0, 0.0, 1.0]
+ Values retrieved from the dict        :  [  1.0000,  2.0000,  3.0000 ]
+ Lenght zero                           :  4
+ Dict extracted:
+ - 5
+ - 4
+ - 2
+ - Test1:
+     Toto                              : 5
+     Titi                              : 6
+ Lenght first                          :  3
+ Lenght second                         :  2
+ Stack: [5, 4]
+ Stack2: [1, 2, 3]
+ Stack3: [4, AQ, 3g]
+ Stack4                                : 12
+ Matrix:
+ -  [1.0, 1.0, 1.0]
+ -  [1.0, 1.0, 1.0]
+ -  [1.0, 0.0, 1.0]
+ Two values from Stack key             :  [  5.0000,  4.0000,  3.0000 ]
+ Array filled with a scalar            :  [  5.0000,  5.0000,  5.0000 ]
+ Small matrix:
+ -  [ 1.0,  1.0,  1.0]
+ -  [ 1.0,  1.0,  1.0]
+ -  [ 1.0,  0.0,  1.0]
+ Original matrix:
+ -  [ 1.0,  1.0,  1.0]
+ -  [ 1.0,  1.0,  1.0]
+ -  [ 1.0,  0.0,  1.0]
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prepend dictionary example
+ Size of dict A                        :  5
+ Dict A:
+   Stack: [5, 4]
+   Stack2: [1, 2, 3]
+   Stack3: [4, AQ, 3g]
+   Stack4                              : 12
+   Matrix:
+   -  [1.0, 1.0, 1.0]
+   -  [1.0, 1.0, 1.0]
+   -  [1.0, 0.0, 1.0]
+ Size of dict 2                        :  2
+ Dict 2:
+   Test1:
+     Toto                              : 5
+     Titi                              : 6
+   Test2:
+     Toto                              : 4
+     Titi                              : 2
+ Test1 and and Test2 are equal         :  No
+ Corrected version:
+   Test1:
+     Toto                              : 4
+     Titi                              : 2
+   Test2:
+     Toto                              : 4
+     Titi                              : 2
+ Test1 and and Test2 are equal         :  Yes
+ Added version:
+   Test1:
+     Toto                              : 4
+     Titi                              : 2
+     Tutu                              : 4.00000E+00
+   Test2:
+     Toto                              : 4
+     Titi                              : 2
+     Tutu                              : 4.d0
+ Test1 and and Test2 are equal         :  Yes
+ List of list of zeroes, first version:
+ -  [0.0000000000000000, 0.0000000000000000, 0.0000000000000000]
+ List of list of zeroes, second version:
+ -  [0., 0., 0.]
+ Zero1 and and Zero2 are equal         :  Yes
+ Keys of first dict                    :  [ Stack, Stack2, Stack3, Stack4, Matrix ]
+ Keys of second dict                   :  [ Test1, Test2 ]
+ Size of prepended                     :  7
+ Prepended:
+   Test1:
+     Toto                              : 4
+     Titi                              : 2
+     Tutu                              : 4.00000E+00
+   Test2:
+     Toto                              : 4
+     Titi                              : 2
+     Tutu                              : 4.d0
+   Stack: [5, 4]
+   Stack2: [1, 2, 3]
+   Stack3: [4, AQ, 3g]
+   Stack4                              : 12
+   Matrix:
+   -  [1.0, 1.0, 1.0]
+   -  [1.0, 1.0, 1.0]
+   -  [1.0, 0.0, 1.0]
+ Keys of prepended dict: [Test1, Test2, Stack, Stack2, Stack3, Stack4, Matrix]
+ Iterating in dictA                    :  Yes
+ Key of dictA                          : Test1
+ Value of dictA                        : __dict__
+ Iterating in dictA                    :  Yes
+ Key of dictA                          : Test2
+ Value of dictA                        : __dict__
+ Iterating in dictA                    :  Yes
+ Key of dictA                          : Stack
+ Value of dictA                        : __list__
+ Iterating in dictA                    :  Yes
+ Key of dictA                          : Stack2
+ Value of dictA                        : __list__
+ Iterating in dictA                    :  Yes
+ Key of dictA                          : Stack3
+ Value of dictA                        : __list__
+ Iterating in dictA                    :  Yes
+ Key of dictA                          : Stack4
+ Value of dictA                        : 12
+ Iterating in dictA                    :  Yes
+ Key of dictA                          : Matrix
+ Value of dictA                        : __list__
+ Iterating in dictA, again             :  Yes
+ Key of dictA, again                   : Test1
+ Value of dictA, again                 : __dict__
+ Iterating in dictA, again             :  Yes
+ Key of dictA, again                   : Test2
+ Value of dictA, again                 : __dict__
+ Iterating in dictA, again             :  Yes
+ Key of dictA, again                   : Stack
+ Value of dictA, again                 : __list__
+ Iterating in dictA, again             :  Yes
+ Key of dictA, again                   : Stack2
+ Value of dictA, again                 : __list__
+ Iterating in dictA, again             :  Yes
+ Key of dictA, again                   : Stack3
+ Value of dictA, again                 : __list__
+ Iterating in dictA, again             :  Yes
+ Key of dictA, again                   : Stack4
+ Value of dictA, again                 : 12
+ Iterating in dictA, again             :  Yes
+ Key of dictA, again                   : Matrix
+ Value of dictA, again                 : __list__
+ Iterating in dictA, compact form      :  Yes
+ Key of dictA, again (CF)              : nolocks
+ Value of dictA, again (CF)            : true
+ Test of the iterator over a provided sequence:
+   Provided list:
+   - xyz
+   - ascii
+   - int
+   - yaml
+   Extension probed                    : xyz
+   Extension probed                    : ascii
+   Extension probed                    : int
+   Extension probed                    : yaml
+ Item of dictA                         :  0
+ Value of dictA                        : Value1
+ Item of dictA                         :  1
+ Value of dictA                        : Value2
+ Item of dictA                         :  2
+ Value of dictA                        : Value3
+ Item of dictA                         :  3
+ Value of dictA                        : Value4
+ Item of dictA                         :  4
+ Value of dictA                        : Value5
+ Item of dictA                         :  5
+ Value of dictA                        : Value6
+ Item of dictA                         :  6
+ Value of dictA                        : Value7
+ Item of dictA                         :  7
+ Value of dictA                        : Value8
+ Item of dictA                         :  8
+ Value of dictA                        : Value9
+ Item of dictA                         :  9
+ Value of dictA                        : Value10
+ List in a list:
+    #call yaml_sequence("5,unit=0")
+    #call yaml_sequence("6,unit=0")
+    #call yaml_sequence(advance="no,unit=0")
+    #call yaml_sequence_open("",flow=.true.,unit=0)
+    #call yaml_sequence("55,unit=0")
+    #call yaml_sequence("66,unit=0")
+    #call yaml_sequence_close(unit=0)
+ - 5
+ - 6
+ - - 55
+   - 66
+    #call yaml_sequence("5,unit=0")
+    #call yaml_sequence("6,unit=0")
+    #call yaml_sequence(advance="no,unit=0")
+    #call yaml_sequence_open("",flow=.true.,unit=0)
+    #call yaml_sequence("55,unit=0")
+    #call yaml_sequence("66,unit=0")
+    #call yaml_sequence_close(unit=0)
+ - 5
+ - 6
+ -  [55, 66]
+ Item of dictA                         :  0
+ Key of dictA                          : null
+ Value of dictA                        : 5
+ Item of dictA                         :  1
+ Key of dictA                          : null
+ Value of dictA                        : 6
+ Item of dictA                         :  2
+ Key of dictA                          : null
+ Value of dictA                        : __list__
+ Dictionary now:
+ - atom: [5.0, 5.0, 5.0]
+ Dictionary now2:
+ - atom: [6.0, 6.0, 6.0]
+ Dictionary now3:
+ - atom: [ 7.0,  7.0,  7.0]
+ Dictionary now3:
+ - atom: [ 8.0,  8.0,  8.0]
+ Dictionary:
+ -  8.0
+ -  8.0
+ -  8.0
+ i=1:
+    8.0
+ i=2:
+    8.0
+ i=3:
+    8.0
+ i2=1:
+    8.0
+ i2=2:
+    8.0
+ i2=3:
+    8.0
+---
+ Time for razero                       :  0.201688496
+ Total sum                             :  0
+ Time for initialization               :  0.210876688
+ Total sum                             :  1000000
+ Time for memset                       :  0.21015175
+ Total sum                             :  0
+ Time for setzero                      :  0.184278204
+ Total sum                             :  0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Routine-Tree creation example
+  #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST testing aliasing on pointer sections
+ Ptr1 Lbound                           :  [  1 ]
+ Ptr1 Ubound                           :  [  6 ]
+ Ptr1 Size                             :  6
+ data in original position: [ 0,  0,  0,  0,  0,  3,  3,  3,  3,  3,  3,  0,  0,  0,  0,  0]
+ Predicted address for the starting point of ptr1:  38750084
+ Actual address of first element of ptr1:  38750084
+ address of first element vs address of objects:  [  38749888,  38749888 ]
+ address of first element vs address of objects:  [  38750084,  38750084 ]
+ Address differences                   :  196
+ Address of first element              :  256
+ Associated                            :  [  No,  No ]
+ Associated                            :  [  Yes,  Yes ]
+ Address of first element              :  256
+ Address of first element, explicit (1):  256
+ Address of first element, explicit (2):  256
+ Associated                            :  [  Yes,  No,  Yes ]
+  #debug 1
+  #debug 2
+ Source vector: [ 25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39, 
+                  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54, 
+                  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69, 
+                  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84, 
+                  85,  86,  87]
+ Its shape                             :  [  63 ]
+ Its rank                              :  1
+ Vector difference: [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+                      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+                                                                          0,  0,  0,  0]
+ Source pointer: [ 790,  791,  792,  793,  794,  795,  796,  797,  798,  799,  800,  801, 
+                   802,  803,  804,  805,  806,  807,  808,  809,  810,  811,  812,  813, 
+                   814,  815,  816,  817,  818,  819,  820,  821,  822,  823]
+ Its shape                             :  [  34 ]
+ Its rank                              :  1
+ Pointer difference: [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+                       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+ Pointer difference again (should be -1): [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+                                           -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+                                           -1, -1, -1, -1, -1, -1, -1, -1]
+ Pointer difference again (should be 0): [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+                                           0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+                                           0,  0,  0,  0,  0,  0,  0,  0]
+ Src Pointer allocated                 :  Yes
+ Size                                  :  3
+ Lbounds                               :  [ -4 ]
+ Ubounds                               :  [ -2 ]
+ Pointer difference again (should be 0):  [  0,  0,  0 ]
+ Associations, first                   :  [  Yes,  Yes ]
+ Associations, second                  :  [  Yes,  No ]
+ Associations, third                   :  [  No,  No ]
+ String array values: [hello, arr 1, hello, arr 2, hello, arr 3, hello, arr 4]
+ loc of address and metadata           :  [  38749920,  38749920,  38749920 ]
+ String pointer values: [hello, ptr 1, hello, ptr 2, hello, ptr 3, hello, ptr 4]
+ loc of address and metadata           :  [  38749920,  38749920,  38749920 ]
+ Calling sequence of Main program (routines with * are not closed yet):
+ - Main_program: [ 0.840,  1, ~*]
+   Subroutines:
+   - PS_Check: [ 2.201E-02,  1,  2.62%*]
+     Subroutines:
+     - Routine D: [ 2.315E-02,  1,  105.19%*]
+       Subroutines:
+       - SubCase 3: [ 1.426E-02,  1,  61.60%*]
+       - Subcase 2: [ 9.513E-03,  1,  41.09%]
+         Subroutines:
+         - SubSubcase1: [ 3.178E-03,  1,  33.40%]
+       - SubCase 1: [ 3.112E-03,  1,  13.44%]
+     - Routine A: [ 1.262E-03,  1,  5.74%]
+     - Routine 0: [ 1.216E-03,  1,  5.52%]
+ Routine dictionary:
+   38749888:
+     [ weight, SubCase 3,  4,  3]
+   38817552:
+     [ orbital_id, SubCase 3,  28,  4]
+ Global dictionary (size 4):
+   38749376:
+     [ density, Routine 0,  48,  1]
+   38750496:
+     [ potential, Routine 0,  24,  1]
+   Timestamp of Profile initialization:
+     2015-11-21 21:05:51.831
+   Process Id:
+     0
+  #Test for debug
+  #End test for debug
+  #End test for debug2
+ Calling sequence of Main program (routines with * are not closed yet):
+ - Main_program: [ 0.863,  1, ~*]
+   Subroutines:
+   - PS_Check: [ 4.545E-02,  1,  5.27%*]
+     Subroutines:
+     - Routine D: [ 3.421E-02,  1,  75.26%]
+       Subroutines:
+       - SubCase 3: [ 2.147E-02,  1,  62.75%]
+       - Subcase 2: [ 9.513E-03,  1,  27.81%]
+         Subroutines:
+         - SubSubcase1: [ 3.178E-03,  1,  33.40%]
+       - SubCase 1: [ 3.112E-03,  1,  9.10%]
+     - Routine F: [ 1.157E-02,  1,  25.46%*]
+     - Routine A: [ 1.262E-03,  1,  2.78%]
+     - Routine 0: [ 1.216E-03,  1,  2.67%]
+     - Routine E: [ 6.658E-04,  1,  1.46%]
+     - PS_Check: [ 7.251E-05,  2,  0.16%]
+ Routine dictionary:
+   38817488:
+     [ xc_pot, Routine F,  48,  1]
+   38817408:
+     [ rhopot, Routine F,  48,  1]
+ Global dictionary (size 3):
+   38750496:
+     [ potential, Routine 0,  24,  1]
+   Timestamp of Profile initialization:
+     2015-11-21 21:05:51.831
+   Process Id:
+     0
+ ERR_INVALID_MALLOC:
+   Id                                  : 22
+   Message                             : Invalid specification of f_malloc
+   Action                              : Put coherent data for the memory space allocation
+   Callback Procedure Address          : 4783968
+ Additional Info:
+   Rank specified by f_malloc (2,routine_id=Routine F,id=rhopot) is not coherent with the one 
+   of the array (1)
+ ERR_INVALID_MALLOC:
+   Id                                  : 22
+   Message                             : Invalid specification of f_malloc
+   Action                              : Put coherent data for the memory space allocation
+   Callback Procedure Address          : 4783968
+ Additional Info:
+   Rank specified by f_malloc (1,routine_id=Routine F,id=cpot) is not coherent with the one of 
+   the array (2)
+ ERR_ALLOCATE:
+   Id                                  : 18
+   Message                             : Allocation error
+   Action:
+     Control the order of the allocation or if the memory limit has been reached
+   Callback Procedure Address          : 4783968
+ Additional Info:
+   Allocation problem (routine_id=Routine F,id=cpot), error code  151
+ Parsed string:
+ -  [elem1, 1.d0, elem2, 3.d0]
+ Associated after pop                  :  No
+ Loaded string:
+ - elem1
+ - 1.d0
+ - elem2
+ - 3.d0
+ Calling sequence of Main program (routines with * are not closed yet):
+ - Main_program: [ 0.903,  1, ~*]
+   Subroutines:
+   - PS_Check: [ 8.498E-02,  1,  9.41%*]
+     Subroutines:
+     - Routine F: [ 5.114E-02,  1,  60.18%*]
+     - Routine D: [ 3.421E-02,  1,  40.25%]
+       Subroutines:
+       - SubCase 3: [ 2.147E-02,  1,  62.75%]
+       - Subcase 2: [ 9.513E-03,  1,  27.81%]
+         Subroutines:
+         - SubSubcase1: [ 3.178E-03,  1,  33.40%]
+       - SubCase 1: [ 3.112E-03,  1,  9.10%]
+     - Routine A: [ 1.262E-03,  1,  1.49%]
+     - Routine 0: [ 1.216E-03,  1,  1.43%]
+     - Routine E: [ 6.658E-04,  1,  0.78%]
+     - PS_Check: [ 7.251E-05,  2,  0.09%]
+ Routine dictionary:
+   38817488:
+     [ xc_pot, Routine F,  48,  1]
+ Global dictionary (size 3):
+   38750496:
+     [ potential, Routine 0,  24,  1]
+   Timestamp of Profile initialization:
+     2015-11-21 21:05:51.831
+   Process Id:
+     0
+  #---------------------------------------------------- Entering in OpenMP section if available
+ Entering Thread No.                   :  0
+ Address of metadata                   :  8686016
+ Entering Thread No.                   :  1
+ Address of metadata                   :  47340802523008
+ Something to use ab                   :  200.0
+ Errors found while (de)allocating ab and b:  2
+ ERR_ALLOCATE:
+   Id                                  : 18
+   Message                             : Allocation error
+   Action:
+     Control the order of the allocation or if the memory limit has been reached
+   Callback Procedure Address          : 4783968
+ Additional Info:
+   Allocation problem (routine_id=Routine F,id=b), error code  151
+ ERR_ALLOCATE:
+   Id                                  : 18
+   Message                             : Allocation error
+   Action:
+     Control the order of the allocation or if the memory limit has been reached
+   Callback Procedure Address          : 4783968
+ Additional Info:
+   Allocation problem (routine_id=Routine F,id=b), error code  151
+ Calling sequence of Main program (routines with * are not closed yet):
+ - Main_program: [ 0.926,  1, ~*]
+   Subroutines:
+   - PS_Check: [ 0.103,  1,  11.10%]
+     Subroutines:
+     - Routine F: [ 6.496E-02,  1,  63.07%]
+     - Routine D: [ 3.421E-02,  1,  33.21%]
+       Subroutines:
+       - SubCase 3: [ 2.147E-02,  1,  62.75%]
+       - Subcase 2: [ 9.513E-03,  1,  27.81%]
+         Subroutines:
+         - SubSubcase1: [ 3.178E-03,  1,  33.40%]
+       - SubCase 1: [ 3.112E-03,  1,  9.10%]
+     - Routine A: [ 1.373E-03,  4,  1.33%]
+     - Routine 0: [ 1.216E-03,  1,  1.18%]
+     - Routine E: [ 6.658E-04,  1,  0.65%]
+     - PS_Check: [ 7.251E-05,  2,  0.07%]
+ Global dictionary (size 2):
+   Timestamp of Profile initialization:
+     2015-11-21 21:05:51.831
+   Process Id:
+     0
+ Summary:
+ - Main_program: [ 0.945,  1, ~*]
+   Subroutines:
+   - PS_Check: [ 0.103,  1,  10.88%]
+     Subroutines:
+     - Routine F: [ 6.496E-02,  1,  63.07%]
+     - Routine D: [ 3.421E-02,  1,  33.21%]
+       Subroutines:
+       - SubCase 3: [ 2.147E-02,  1,  62.75%]
+       - Subcase 2: [ 9.513E-03,  1,  27.81%]
+         Subroutines:
+         - SubSubcase1: [ 3.178E-03,  1,  33.40%]
+       - SubCase 1: [ 3.112E-03,  1,  9.10%]
+     - Routine A: [ 1.373E-03,  4,  1.33%]
+     - Routine 0: [ 1.216E-03,  1,  1.18%]
+     - Routine E: [ 6.658E-04,  1,  0.65%]
+     - PS_Check: [ 7.251E-05,  2,  0.07%]
+ Test for pid                          :  30523
+---
+ test dict_copy:
+   original:
+     __comment__                       : Grid shifts
+     __cond__:
+       __master_key__                  : kpt_method
+       __when__:
+       - MPGrid
+     __default__: [0., 0., 0.]
+   copy:
+     __comment__                       : Grid shifts
+     __cond__:
+       __master_key__                  : kpt_method
+       __when__:
+       - MPGrid
+     __default__: [0., 0., 0.]
+ new method:
+   __comment__                         : Grid shifts
+   __cond__:
+     __master_key__                    : kpt_method
+     __when__:
+     - MPGrid
+   __default__: [0.0, 0.0, 0.0]
+   dicts are equal                     :  Yes
+ test dict_update:
+   additional:
+     __exclusive__:
+       123                             : operation 123
+       456                             : operation 456
+     __default__: [1., 2., 3.]
+   after merge:
+     __comment__                       : Grid shifts
+     __cond__:
+       __master_key__                  : kpt_method
+       __when__:
+       - MPGrid
+     __default__: [1., 2., 3.]
+     __exclusive__:
+       123                             : operation 123
+       456                             : operation 456
+---
+ Initialized tree:
+   Key1                                : val1
+ Test of dump:
+   Key1                                : val1
+  #------------------------------------------------------------------------------- Yaml parsing
+---
+ Key1                                  : field1
+ Key2:
+   Subkey2-1                           : ciao
+   Subkey2-2: [0, hello, 2]
+ Key3: [One, Two, Three]
+---
+ inputvars:
+   COMMENT:
+     This is the description of the variable as will appear in the logfile
+   RANGE: [from, to]
+   EXCLUSIVE:
+   - Value1                            : comments of value1
+   - Value2                            : comment of value2
+   CONDITION:
+     MASTER_KEY                        : foo
+     WHEN: [fooval1, fooval2]
+   default                             : value of the default, written as a string
+   profile1                            : value1
+   profile2                            : value2
+---
+ Atomic structure:
+   Cell: [ 20.34575271606445,  20.34575271606445,  20.34575271606445]
+   Positions:
+   - Si: [ 0.2516085125E-05,  0.5826606155E-05,  20.34574212] # [  0.00,  0.00,  40.00 ] 1
+   - Si: [ 5.094032326,  5.153107111,  0.3047989908E-01] # [  13.52,  10.13,  0.06 ] 2
+   - Si: [ 0.3049344014E-01,  5.153107972,  5.094018600] # [  0.08,  10.13,  10.01 ] 3
+ Test clean_zeroes                     : 20
+ Retest clean_zeroes                   : 20.0
+ Real without format                   : 0.2
+ Real with format (1pe25.17)           :  5.0E-01
+ Real with format (1pe24.16)           :  5.0000000000000000E-01
+ Tiny with wrong format (1pe24.16)     :  2.2250738585072014E-308
+ Iostat for format                     :  0
+ Huge with wrong format (1pe24.16)     : -1.7976931348623157E+308
+ Iostat for format                     :  0
+ Integer with too little format (i3)   :  10000
+ Iostat for format                     :  63
+ Float with too little format (f3.2)   :  1.000400024E+03
+ Real as integer (f3.0)                :  10.
+ Iostat for format                     :  63
+ Double with too little format (f3.2)  :  1000.400000000000
+ Float with too little format again (f3.2):  1.044559956E+01
+ Iostat for format                     :  63
+ Real with format (es23.16)            :  5.0000000000000000E-01
+ Real with format (es24.17)            :  5.00000000000000000E-01
+ Real with format (es25.18)            :  5.000000000000000000E-01
+ Real with format (es26.19)            :  5.0000000000000022204E-01
+ Real with format (es27.20)            :  4.99999999999999777955E-01
+ Real with format (es26.19)            :  2.2204460492503130808E-16
+ Real with format (es27.20)            : -2.22044604925031308085E-16
+ Timings for search: {No. of items:  1, Elapsed time (ns):  3.38}
+ Timings for search: {No. of items:  10001, Elapsed time (ns):  1.92}
+ Timings for search: {No. of items:  20001, Elapsed time (ns):  1.93}
+ Timings for search: {No. of items:  30001, Elapsed time (ns):  1.91}
+ Timings for search: {No. of items:  40001, Elapsed time (ns):  1.90}
+ Timings for search: {No. of items:  50001, Elapsed time (ns):  1.91}
+ Timings for search: {No. of items:  60001, Elapsed time (ns):  1.88}
+ Timings for search: {No. of items:  70001, Elapsed time (ns):  1.89}
+ Timings for search: {No. of items:  80001, Elapsed time (ns):  1.88}
+ Timings for search: {No. of items:  90001, Elapsed time (ns):  1.88}
+ Timings for search: {No. of items:  100001, Elapsed time (ns):  1.91}
+ Some value                            :  1111033000
+ Timings for search: {No. of items:  1, Elapsed time (mus):  5.21}
+ Timings for search: {No. of items:  5001, Elapsed time (mus):  44.96}
+ Timings for search: {No. of items:  10001, Elapsed time (mus):  83.90}
+ Timings for search: {No. of items:  15001, Elapsed time (mus):  123.25}
+ Timings for search: {No. of items:  20001, Elapsed time (mus):  172.41}
+ Other value                           :  2000000.0
+ Long Integer kind                     :  8
+ Normal Integer kind                   :  4
+ Short Integer kind                    :  2
+ Quadruple precision Real kind         :  16
+ Double precision Real kind            :  4
+ Single precision Real kind            :  2
+ Kinds of reals                        :  [  4,  8,  16 ]
+ Kinds of complex                      :  [  8,  16,  32 ]
+ Kinds of integer                      :  [  2,  4,  8 ]
+ Kinds of logicals                     :  [  1,  4 ]
+ Enum1 char                            : Ciao
+ Enum1 int                             :  1
+ Enum1 check                           :  Yes
+ Greetings 1a                          :  Yes
+ Greetings 1b                          :  Yes
+ Greetings 1c                          :  Yes
+ Greetings 2a                          :  Yes
+ Greetings 2b                          :  Yes
+ Greetings 2c                          :  Yes
+ Greetings 3a                          :  No
+ Greetings 3b                          :  No
+ Greetings 3c                          :  No
+ Greetings 3a-2                        :  Yes
+ Greetings 3b-2                        :  Yes
+ Greetings 3c-2                        :  Yes
+ Absolute time before pause (since epoch): 45y 335d 20:05:57.715887187
+ Time spent after pause (s)            : 00:00:01.000015615
+ First unit which can be opened        :  7
+ Opened file in unit                   :  7
+ Second unit which can be opened       :  8
+ Opened file in unit                   :  8
+ Third unit which can be opened        :  7
+ Bastian test:
+   First file                          :  7
+   First file opened                   :  7
+   Second file                         :  8
+   Second file opened                  :  8
+   Third file                          :  9
+   Third file opened                   :  9
+ If this value is 7 then all files have been correctly closed:  7
+ Count (ns)                            :  [  10000000,  41 ]
+ Count f_increment (ns)                :  [  10000000,  19927629 ]
+ Count omp (ns)                        :  [  10000000,  13820 ]
+ Count f_increment omp (ns)            :  [  7368713,  25249214 ]
+  #:):):):):):):):):):):):):):):):):):):):):):):):):):):):):) Test of input variables retrieval
+ Initial input variables:
+   dft:
+     DESCRIPTION                       : Density Functional Theory parameters
+     hgrids:
+       COMMENT                         : Grid spacing in the three directions (bohr)
+       DESCRIPTION: [Grid spacing in three directions (Bohr units) of the coarse mesh., 
+ A scalar can also be given as 0.45.]
+       RANGE: [0., 2.]
+       default: [0.45, 0.45, 0.45]
+       fast: [0.55, 0.55, 0.55]
+       accurate: [0.30, 0.30, 0.30]
+     ixc:
+       COMMENT                         : Exchange-correlation parameter (LDA=1,PBE=11)
+       DESCRIPTION                     : Determine the exchange-correlation functional.
+       default                         : 1
+       EXCLUSIVE:
+       - 1
+       - 11
+       - -20
+       - -101130
+       - -406
+       - -170
+       - -402
+       - 100
+       LDA (ABINIT)                    : 1
+       PBE (ABINIT)                    : 11
+       LDA                             : -20
+       PBE                             : -101130
+       PBE0                            : -406
+       B97-D                           : -170
+       B3LYP                           : -402
+       HF                              : 100
+     eta:
+       COMMENT                         : Test parameter to understand the condition
+       default                         : 0.5
+       B3LYP                           : 0.4
+       CONDITION:
+         MASTER_KEY                    : ixc
+         WHEN: [LDA, B3LYP]
+       PROFILE_FROM                    : ixc
+     gps_algorithm:
+       COMMENT                         : Algorithm for the Generalised Poisson Equation
+       default                         : PCG
+       EXCLUSIVE:
+         PI                            : Polarization Iteration method
+         PCG                           : Preconditioned Conjugate Gradient
+     pi_eta:
+       COMMENT                         : Mixing parameter of the PI algorithm
+       RANGE: [0.0, 1.0]
+       default                         : 0.6
+       CONDITION:
+         MASTER_KEY                    : gps_algorithm
+         WHEN:
+         - PI
+       PROFILE_FROM                    : gps_algorithm
+   geopt:
+     DESCRIPTION:
+       Parameters for the geometry relaxation and molecular dynamics
+     method:
+       COMMENT                         : Geometry optimisation method
+       EXCLUSIVE:
+         none                          : No geometry optimization
+ 
+         SDCG                          : A combination of Steepest Descent and Conjugate Gradient
+         VSSD                          : Variable Stepsize Steepest Descent method
+         NEB                           : Nudged Elastic Band
+         DIIS                          : Direct Inversion Iterative Subspace
+         SBFGS                         : SQNM minimizer
+       default                         : none
+     ncount_cluster_x:
+       COMMENT                         : Maximum number of force evaluations
+       RANGE: [0, 2000]
+       PROFILE_FROM                    : method
+       default                         : 50
+       none                            : 1
+     betax:
+       COMMENT                         : Stepsize for the geometry optimization
+       CONDITION:
+         MASTER_KEY                    : method
+         WHEN: [SDCG, VSSD, NEB, SBFGS]
+         WHEN_NOT:
+         - none
+       PROFILE_FROM                    : method
+       RANGE: [0., .inf]
+       default                         : 4.
+       DIIS                            : 2.
+       NEB                             : 0.5
+ User input file:
+   dft:
+     hgrids                            : 0.45
+     ixc                               : B3LYP
+     bidon                             : 2
+     gps_algorithm                     : PI
+   geopt:
+     betax                             : 2.e+40
+     method                            : none
+  #WARNING: Input file, section "dft"; invalid key "bidon".
+ Allowed keys:
+ - hgrids
+ - ixc
+ - eta
+ - gps_algorithm
+ - pi_eta
+ INPUT_VAR_ILLEGAL:
+   Id                                  : 27
+   Message                             : provided variable is not allowed in this context.
+   Action                              : correct or remove the input variable.
+   Callback Procedure Address          : 5281168
+ Additional Info:
+   An invalid key (bidon) has been found in section "dft". Check above the allowed keys.
+ INPUT_VAR_ILLEGAL:
+   Id                                  : 27
+   Message                             : provided variable is not allowed in this context.
+   Action                              : correct or remove the input variable.
+   Callback Procedure Address          : 5281168
+ Additional Info                       : geopt/betax is not allowed in this context.
+ Completed input file:
+   dft:
+     hgrids                            : 0.45
+     ixc                               : -402
+     gps_algorithm                     : PI
+     hgrids_attributes:
+       COMMENT                         : Grid spacing in the three directions (bohr)
+       USER_DEFINED                    : Yes
+     ixc_attributes:
+       COMMENT                         : Exchange-correlation parameter (LDA=1,PBE=11)
+       USER_DEFINED                    : Yes
+       PROFILE_FROM                    : B3LYP
+     eta                               : 0.4
+     eta_attributes:
+       COMMENT                         : Test parameter to understand the condition
+       PROFILE_FROM                    : B3LYP
+       USER_DEFINED                    : Yes
+     gps_algorithm_attributes:
+       COMMENT                         : Algorithm for the Generalised Poisson Equation
+       USER_DEFINED                    : Yes
+     pi_eta                            : 0.6
+     pi_eta_attributes:
+       COMMENT                         : Mixing parameter of the PI algorithm
+       USER_DEFINED                    : Yes
+   geopt:
+     betax                             : 2.e+40
+     method                            : none
+     method_attributes:
+       COMMENT                         : Geometry optimisation method
+       USER_DEFINED                    : Yes
+     ncount_cluster_x                  : 1
+     ncount_cluster_x_attributes:
+       COMMENT                         : Maximum number of force evaluations
+       PROFILE_FROM                    : none
+       USER_DEFINED                    : Yes
+  #--------------------------------------------------------------------------- Input parameters
+ dft:
+   hgrids                              : 0.45 #   Grid spacing in the three directions (bohr)
+   ixc                                 : -402 #   Exchange-correlation parameter (LDA=1,PBE=11)
+   gps_algorithm                       : PI #     Algorithm for the Generalised Poisson Equation
+   eta                                 : 0.4 #    Test parameter to understand the condition
+   pi_eta                              : 0.6 #    Mixing parameter of the PI algorithm
+ geopt:
+   betax                               : 2.e+40
+   method                              : none #   Geometry optimisation method
+   ncount_cluster_x                    : 1 #      Maximum number of force evaluations
+  #--------------------------------------------------------------------------- Input parameters
+ dft:
+   hgrids                              : 0.45 #   Grid spacing in the three directions (bohr)
+   ixc                                 : B3LYP #  Exchange-correlation parameter (LDA=1,PBE=11)
+   gps_algorithm                       : PI #     Algorithm for the Generalised Poisson Equation
+   eta                                 : B3LYP #  Test parameter to understand the condition
+   pi_eta                              : 0.6 #    Mixing parameter of the PI algorithm
+ geopt:
+   betax                               : 2.e+40
+   method                              : none #   Geometry optimisation method
+   ncount_cluster_x                    : none #   Maximum number of force evaluations
+ Input minimal:
+   dft:
+     ixc                               : B3LYP
+     eta                               : B3LYP
+     gps_algorithm                     : PI
+   geopt:
+     betax                             : 2.e+40
+ Completed minimal input file:
+   dft:
+     ixc                               : -402
+     eta                               : 0.4
+     gps_algorithm                     : PI
+     hgrids: [0.45, 0.45, 0.45]
+     hgrids_attributes:
+       COMMENT                         : Grid spacing in the three directions (bohr)
+     ixc_attributes:
+       COMMENT                         : Exchange-correlation parameter (LDA=1,PBE=11)
+       USER_DEFINED                    : Yes
+       PROFILE_FROM                    : B3LYP
+     eta_attributes:
+       COMMENT                         : Test parameter to understand the condition
+       USER_DEFINED                    : Yes
+       PROFILE_FROM                    : B3LYP
+     gps_algorithm_attributes:
+       COMMENT                         : Algorithm for the Generalised Poisson Equation
+       USER_DEFINED                    : Yes
+     pi_eta                            : 0.6
+     pi_eta_attributes:
+       COMMENT                         : Mixing parameter of the PI algorithm
+   geopt:
+     betax                             : 2.e+40
+     method                            : none
+     method_attributes:
+       COMMENT                         : Geometry optimisation method
+     ncount_cluster_x                  : 1
+     ncount_cluster_x_attributes:
+       COMMENT                         : Maximum number of force evaluations
+       PROFILE_FROM                    : none
+ User input file 2:
+   import: [geopt, simple]
+ Completed input file 2:
+   geopt:
+     method                            : DIIS
+     method_attributes:
+       COMMENT                         : Geometry optimisation method
+       USER_DEFINED                    : Yes
+     ncount_cluster_x                  : 50
+     ncount_cluster_x_attributes:
+       COMMENT                         : Maximum number of force evaluations
+   dft:
+     hgrids                            : 0.45
+     ixc                               : -20
+     hgrids_attributes:
+       COMMENT                         : Grid spacing in the three directions (bohr)
+       USER_DEFINED                    : Yes
+     ixc_attributes:
+       COMMENT                         : Exchange-correlation parameter (LDA=1,PBE=11)
+       USER_DEFINED                    : Yes
+       PROFILE_FROM                    : LDA
+     eta                               : 0.5
+     eta_attributes:
+       COMMENT                         : Test parameter to understand the condition
+     gps_algorithm                     : PCG
+     gps_algorithm_attributes:
+       COMMENT                         : Algorithm for the Generalised Poisson Equation
+   import: [geopt, simple]
+  #--------------------------------------------------------------------------- Input parameters
+ geopt:
+   method                              : DIIS #   Geometry optimisation method
+   ncount_cluster_x                    : 50 #     Maximum number of force evaluations
+ dft:
+   hgrids                              : 0.45 #   Grid spacing in the three directions (bohr)
+   ixc                                 : -20 #    Exchange-correlation parameter (LDA=1,PBE=11)
+   eta                                 : 0.5 #    Test parameter to understand the condition
+   gps_algorithm                       : PCG #    Algorithm for the Generalised Poisson Equation
+ import: [geopt, simple]
+ Input minimal 2:
+   dft:
+     ixc                               : LDA
+   geopt:
+     method                            : DIIS
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  111
+   Tot. No. of Deallocations           :  111
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  3.815
+     for the array                     : i1_ptr
+     in the routine                    : Main_program
+     Memory Peak of process            : 21.344 MB
+ Walltime since initialization         : 00:00:06.935635477
+ Max No. of dictionaries used          :  25255 #( 189 still in use)
+ Number of dictionary folders allocated:  3

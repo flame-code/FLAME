@@ -4,9 +4,9 @@ from numpy import linalg as LA
 import sys
 
 if len(sys.argv) < 2:
-    print "usage: prepare_stress.py filename"
-    print "WARNING: Notice that the components of reference "
-    print "         stress tensor must be in 1st line."
+    print("usage: prepare_stress.py filename")
+    print("WARNING: Notice that the components of reference ")
+    print("         stress tensor must be in 1st line.")
     exit()
 else:
     filename = sys.argv[1]
@@ -35,6 +35,6 @@ for line in f.readlines():
         #            s[i][j]=0.0
         #print "%8.2f%8.2f%8.2f%8.2f%8.2f%8.2f" % (s[0][0],s[1][0],s[1][1],s[2][0],s[2][1],s[2][2])
         #print "%9.3f%9.3f%9.3f%9.3f%9.3f%9.3f" % (s[0][0],s[1][0],s[1][1],s[2][0],s[2][1],s[2][2])
-        print "%14.8f%14.8f%14.8f%14.8f%14.8f%14.8f" % (s[0][0],s[1][0],s[1][1],s[2][0],s[2][1],s[2][2])
+        print("%14.8f%14.8f%14.8f%14.8f%14.8f%14.8f" % (s[0][0],s[1][0],s[1][1],s[2][0],s[2][1],s[2][2]))
 
 f.closed

@@ -5,7 +5,7 @@ from acf import *
 from xyz import *
 
 if len(sys.argv) < 5:
-    print "usage: acf_translate.py input_filename tx ty tz"
+    print("usage: acf_translate.py input_filename tx ty tz")
     exit()
 else:
     filename=sys.argv[1]
@@ -25,5 +25,5 @@ for atoms in atoms_all:
         atoms.rat[iat][2]+=tz
 
 filename_out="trans_"+filename
-print "\nWriting translated configurations to %s\n" % filename_out
+print("\nWriting translated configurations to %s\n" % filename_out)
 acf_write(atoms_all,filename_out)

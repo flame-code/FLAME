@@ -1,0 +1,9 @@
+!> This file has been processed by configure, do not change it.
+!! The source file is ${Futile sources}/src/configure.inc.in.
+
+!>Convenience variables.
+character(len = *), parameter, public :: package_name      = "@PACKAGE_NAME@"
+character(len = *), parameter, public :: package_tarname   = "@PACKAGE_TARNAME@"
+character(len = *), parameter, public :: package_version   = "@PACKAGE_VERSION@"
+character(len = *), parameter, public :: package_string    = "@PACKAGE_STRING@"
+character(len = *), parameter, public :: package_bugreport = "@PACKAGE_BUGREPORT@"

@@ -1,0 +1,17 @@
+setup:
+  taskgroup_size        : 1 #                Size of the taskgroups of the Poisson Solver
+  accel                 : none #             Material Acceleration
+  global_data           : No #               Charge density and Electrostatic potential are given by global arrays
+  verbose               : Yes #              Verbosity switch
+  output                : none #             Quantities to be plotted after the main solver routine
+kernel:
+  screening             : 0 #                Mu screening parameter
+  isf_order             : 16 #               Order of the Interpolating Scaling Function family
+  stress_tensor         : Yes #              Triggers the calculation of the stress tensor
+environment:
+  cavity                : none #             Type of the cavity
+  input_guess           : Yes #              Triggers the input guess procedure of gps_algorithm
+  fd_order              : 16 #               Order of the Finite-difference derivatives for the GPS solver
+  itermax               : 0 #               Maximum number of iterations of the GPS outer loop
+  minres                : 1.e-8 #            Convergence threshold of the loop
+  pb_method             : none #             Defines the method for the Poisson Boltzmann Equation

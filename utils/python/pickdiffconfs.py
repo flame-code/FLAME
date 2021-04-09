@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-import commands
+import subprocess
 import string
 import re
 import sys

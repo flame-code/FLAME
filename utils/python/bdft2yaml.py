@@ -16,7 +16,7 @@ def bdft_read(filename):
     atoms_all[0].fat=[[-1 for i in range(3)] for j in range(atoms_all[0].nat)] 
     atoms_all[0].sat=['##' for i in range(atoms_all[0].nat)]
     for i in range(atoms_all[0].nat):
-        sat = docs["posinp"]["positions"][i].keys()
+        sat = list(docs["posinp"]["positions"][i].keys())
         atoms_all[0].sat[i]=sat[0]
         for j in range(3):
             atoms_all[0].rat[i][j]=docs["posinp"]["positions"][i][atoms_all[0].sat[i]][j]

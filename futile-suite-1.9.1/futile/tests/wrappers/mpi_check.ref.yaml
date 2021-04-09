@@ -1,0 +1,13 @@
+ Performing mpi_alltoallv benchmarks:
+ - Local number of elements            :  107
+   Local size send/receive buffer      :  0GB 0MB 0kB 856B
+   Timings:
+   - Algorithm                         : mpi_get
+     Result correct                    :  Yes
+     All measurements: [ 5.131E-04,  1.099E-04,  9.298E-05,  8.988E-05,  8.798E-05]
+     Min/Max/Median                    :  [  8.798E-05,  5.131E-04,  9.298E-05 ]
+   - Algorithm                         : native
+     Result correct                    :  Yes
+     All measurements: [ 9.060E-06,  9.537E-07,  0.000E+00,  0.000E+00,  0.000E+00]
+     Min/Max/Median                    :  [  0.0E+00,  9.060E-06,  0.000E+00 ]
+ MPI Test succeeded                    :  Yes

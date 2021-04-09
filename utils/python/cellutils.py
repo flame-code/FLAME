@@ -29,7 +29,7 @@ def latvec2dist_ang(cellvec):
 
     for i in range(3,6):
         if np.isnan(dist_ang[i]):
-            print '%d %.10f %.10f %.10' %(i,dist_ang_tmp[i],dist_ang[i],np.acos(dist_ang[i]))
+            print('%d %.10f %.10f %.10' %(i,dist_ang_tmp[i],dist_ang[i],np.acos(dist_ang[i])))
     return dist_ang
 #********************************************************************#
 def invertmat(mat):
@@ -87,7 +87,7 @@ def backtocell(nat,cellvec,rat):
                     rat2[iat][:] = np.array(rat[iat][:]) - np.array(cellvec[k3][:])
                     necessary = True
         if count > 1.0e+6:
-            print "Too many iterations in back-to-cell"
+            print("Too many iterations in back-to-cell")
         else:
             break
     return rat2

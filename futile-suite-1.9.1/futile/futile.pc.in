@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+linalglibs=@LINALG_LIBS@
+pythondir=@pythondir@
+
+Name: libfutile
+Description: library for Fortran utilities.
+Requires: @GLIB_PKG@
+Version: @VERSION@
+Libs: -L${libdir} @LIB_FUTILE_LIBS@
+Cflags: -I${includedir}

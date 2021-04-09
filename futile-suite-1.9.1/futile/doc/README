@@ -1,0 +1,58 @@
+/*! @file
+@brief README about the documentation of BigDFT and especially the main rules to develop it.
+
+@dir
+@brief Contains some documentations about BigDFT
+
+@page DOCUMENTATION Developing the BigDFT documentation and some coding rules
+
+At the beginning of each Fortran file, it is important to add the following lines:
+@verbatim
+!> @file
+!! WHAT THIS FILE SHOULD PROVIDE
+!! @author
+!!    Copyright (C) 2015-2015 BigDFT group
+!!    This file is distributed under the terms of the
+!!    GNU General Public License, see ~/COPYING file
+!!    or http://www.gnu.org/copyleft/gpl.txt .
+!!    For the list of contributors, see ~/AUTHORS
+@endverbatim
+
+Then before each routine or module inside the corresponding file, you add some lines of comment as:
+@code{.f90}
+!> Main program to calculate electronic structures
+program BigDFT
+@endcode
+
+We recommend STRONGLY to use implicit none.
+
+It is better to comment each argument of the routine in the same line of their declaration as:
+@code{.f90}
+   character(len=1), intent(in) :: geocode  !< @copydoc poisson_solver::doc::geocode
+   character(len=1), intent(in) :: datacode !< @copydoc poisson_solver::doc::datacode
+   integer, intent(in) :: iproc        !< Process Id
+   integer, intent(in) :: nproc        !< Number of processes
+   integer, intent(in) :: n01,n02,n03  !< Dimensions of the real space grid to be hit with the Poisson Solver
+   logical, intent(in) :: use_gradient !< .true. if functional is using the gradient.
+   logical, intent(in) :: use_wb_corr  !< .true. if functional is using WB corrections.
+@endcode
+
+In order to avoid the duplication, we define dummy structure as doc in order to specify the usual name used as
+arguments. Then you can insert as in the following example only 
+@verbatim@copydoc poisson_solver::doc::geocode@endverbatim
+This means that doxygen will insert the documentation of the member geocode of the structure doc from the module
+poisson_solver.
+
+All variables and routines inside the modules should be commented.
+
+Finally in the README file, you find the different pages related to the documentation of BigDFT.
+
+@section Tips Some tips for doxygen
+- Add @verbatim @file @endverbatim following by @verbatim @brief short description@endverbatim in the second line 
+  at the beginning of each file without specifying the name in order to permit to
+  doxygen to determine automatically the name. 
+- In the same way, add in the README file of a directory the command @verbatim @dir @endverbatim (without name also)
+  with a short description in the second line (as @verbatim @brief @endverbatim).
+- do not use @verbatim@param@endverbatim to comment the parameters of the subroutines but add comment before or in the
+  same line of the argument declaration.
+*/

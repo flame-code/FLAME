@@ -20,12 +20,12 @@ try:
     #lines=f.readlines()
     f.close()
 except IOError:
-    print "ERROR: Failed to open file %s - check file name and try again." % (args.fn_input)
+    print("ERROR: Failed to open file %s - check file name and try again." % (args.fn_input))
     sys.exit(0)
 
-print 'Reading configurations from file %s ... ' % args.fn_input, 
+print('Reading configurations from file %s ... ' % args.fn_input, end=' ') 
 atoms_all=acf_read(args.fn_input)
-print 'done.'
+print('done.')
 #-------------------------------------------------------------------------------
 random.seed()
 atoms_all_out=[]
@@ -43,7 +43,7 @@ for atoms in atoms_all:
         #print "%5s %5s %s" % (atoms_t.sat[iat],atoms_t.sat[iat],(correct_types_1 or correct_types_2))
         if(not (correct_types_1 or correct_types_2)): continue
         #print "%5s %5s" % (atoms_t.sat[iat],atoms_t.sat[jat])
-        print "Exchanging atomic positions, itry=%6d     %5s:%5d    %5s:%5d " % (itry,atoms_t.sat[iat],iat,atoms_t.sat[jat],jat)
+        print("Exchanging atomic positions, itry=%6d     %5s:%5d    %5s:%5d " % (itry,atoms_t.sat[iat],iat,atoms_t.sat[jat],jat))
         #print "Exchanging atomic positions, %10f    %10f   %10f " % (atoms_t.rat[iat][0],atoms_t.rat[iat][1],atoms_t.rat[iat][2])
         #print "Exchanging atomic positions, %10f    %10f   %10f " % (atoms_t.rat[jat][0],atoms_t.rat[jat][1],atoms_t.rat[jat][2])
         #print "-------------------------------------------------"
@@ -65,6 +65,6 @@ for atoms in atoms_all:
     del atoms_t
 
 #-------------------------------------------------------------------------------
-print 'Writing configurations to file %s ... ' % args.fn_output, 
+print('Writing configurations to file %s ... ' % args.fn_output, end=' ') 
 acf_write(atoms_all_out,args.fn_output,labelpatt=args.label)
-print 'done.'
+print('done.')

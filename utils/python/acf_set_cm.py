@@ -5,10 +5,10 @@ import numpy as np
 from acf import *
 
 if len(sys.argv) < 2:
-    print "usage: set_cm.py input_filename cm_x cm_y cm_z "
+    print("usage: set_cm.py input_filename cm_x cm_y cm_z ")
     exit()
 elif len(sys.argv) < 5:
-    print "usage: cm is set to the center of box "
+    print("usage: cm is set to the center of box ")
     filename = sys.argv[1]
 else:
     filename = sys.argv[1]
@@ -29,7 +29,7 @@ for atoms in atoms_all:
         cm_x_ref = atoms_all[nconf].cellvec[0][0]/2.0
         cm_y_ref = atoms_all[nconf].cellvec[1][1]/2.0
         cm_z_ref = atoms_all[nconf].cellvec[2][2]/2.0
-        print "cm_x =%20.15f    cm_y =%20.15f   cm_z =%20.15f  " %(cm_x_ref ,cm_y_ref,cm_z_ref)
+        print("cm_x =%20.15f    cm_y =%20.15f   cm_z =%20.15f  " %(cm_x_ref ,cm_y_ref,cm_z_ref))
     sumx = 0
     sumy = 0
     sumz = 0
