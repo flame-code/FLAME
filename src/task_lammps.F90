@@ -41,7 +41,7 @@ subroutine lammps_task(parini)
     if(parini%nrun_lammps<1) then
         stop 'ERROR: parini%nrun_lammps<1 in lammps_task'
     endif
-    write(str_run,'(a,1x,i)') 'run',parini%nrun_lammps
+    write(str_run,'(1a,1x,1i8)') 'run',parini%nrun_lammps
     !lammps_command is the LAMMPS function that does the
     !task we have asked, e.g. molecular dynamics,
     !therefore, lammps_command will not be left until
@@ -93,6 +93,7 @@ subroutine lammps_write(parini,atoms)
     do iat= 1,atoms%nat
         write(10,'(i8,i3,3es24.15)') iat, id_type(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat)
     enddo
+    close(10)
     deallocate(id_type)
 end subroutine lammps_write
 !*****************************************************************************************
