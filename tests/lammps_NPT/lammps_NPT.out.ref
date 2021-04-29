@@ -1,0 +1,61 @@
+LAMMPS (8 Apr 2021)
+Reading data file ...
+  triclinic box = (0.0000000 0.0000000 0.0000000) to (10.357929 10.357929 10.357929) with tilt (0.56691784 0.18897261 0.37794523)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  12 atoms
+  read_data CPU = 0.001 seconds
+4 atoms in group Ca
+8 atoms in group F
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 0
+  ghost atom cutoff = 0
+  binsize = 11.11382, bins = 1 1 1
+  0 neighbor lists, perpetual/occasional/extra = 0 0 0
+Setting up Verlet run ...
+  Unit style    : electron
+  Current step  : 0
+  Time step     : 1
+WARNING: Communication cutoff is 0.0. No ghost atoms will be generated. Atoms may get lost. (../comm_brick.cpp:167)
+Per MPI rank memory allocation (min/avg/max) = 4.692 | 4.692 | 4.692 Mbytes
+Step PotEng KinEng Press Xhi Yhi Zhi Xy Xz Yz Temp 
+       0   -3509.1689  0.015675736 5.8177193e+08    10.357929    10.357929    10.357929   0.56691784   0.18897261   0.37794523          300 
+       1   -3509.1689  0.015653622 5.5345042e+08    10.357927    10.357926    10.357926    0.5668988   0.18896863   0.37793312    299.57678 
+       2   -3509.1687  0.015510905 5.3197565e+08    10.357918    10.357915    10.357917    0.5668424   0.18895574   0.37789682    296.84549 
+       3   -3509.1685  0.015250984 5.1734695e+08    10.357902    10.357896    10.357901   0.56674935   0.18893299   0.37783638    291.87116 
+       4   -3509.1681  0.014879473 5.0946105e+08     10.35788    10.357868    10.357878   0.56662037   0.18889943   0.37775194    284.76124 
+       5   -3509.1676  0.014404063 5.0811714e+08    10.357851    10.357833    10.357848   0.56645613   0.18885409   0.37764364    275.66291 
+       6    -3509.167  0.013834334 5.1302359e+08    10.357815    10.357788    10.357811   0.56625733   0.18879599   0.37751169     264.7595 
+       7   -3509.1664  0.013181528 5.2380578e+08    10.357772    10.357736    10.357767   0.56602465   0.18872418   0.37735633     252.2662 
+       8   -3509.1657  0.012458301 5.4001523e+08    10.357722    10.357674    10.357717   0.56575876   0.18863768   0.37717787    238.42519 
+       9   -3509.1649  0.011678443 5.6113952e+08    10.357666    10.357604    10.357661   0.56546034   0.18853557   0.37697662    223.50037 
+      10   -3509.1641  0.010856578 5.8661306e+08    10.357604    10.357526      10.3576   0.56513006   0.18841692   0.37675295    207.77164 
+Loop time of 3.62453 on 1 procs for 10 steps with 12 atoms
+
+Performance: 238375.525 fs/day, 0.000 hours/fs, 2.759 timesteps/s
+99.9% CPU use with 1 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 1.5974e-05 | 1.5974e-05 | 1.5974e-05 |   0.0 |  0.00
+Output  | 0.00065827 | 0.00065827 | 0.00065827 |   0.0 |  0.02
+Modify  | 3.6238     | 3.6238     | 3.6238     |   0.0 | 99.98
+Other   |            | 2.241e-05  |            |       |  0.00
+
+Nlocal:        12.0000 ave          12 max          12 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 0
+Ave neighs/atom = 0.0000000
+Neighbor list builds = 0
+Dangerous builds = 0
+Total wall time: 0:00:04
