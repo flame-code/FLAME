@@ -28,7 +28,8 @@ SHORT_TESTDIRS += minhocao_CENT1 \
 endif
 
 if HAVE_LAMMPS
-SHORT_TESTDIRS += lammps_NPT
+SHORT_TESTDIRS += lammps_NVT \
+				  lammps_NPT
 endif
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
