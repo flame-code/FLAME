@@ -1,5 +1,4 @@
 subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
     use mod_potential, only: potential 
@@ -141,7 +140,6 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
 end subroutine bias_potener_forces
 !*****************************************************************************************
 subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_linked_lists
@@ -289,7 +287,6 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
 end subroutine erfc_surface_zero
 !*****************************************************************************************
 subroutine sollaplaceq(poisson,hz,cell,vl,vu)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
     include 'fftw3.f'
@@ -559,7 +556,6 @@ subroutine sollaplaceq(poisson,hz,cell,vl,vu)
 end subroutine sollaplaceq
 !*****************************************************************************************
  subroutine calculate_force_ener_plane(atoms,poisson,epot,nbgpz)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, update_ratp
     use yaml_output
@@ -846,7 +842,6 @@ end subroutine surface_charge
 !*****************************************************************************************
 !This subroutine determines the limits of grids in a sphere.
 subroutine determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_poisson), intent(inout):: poisson
@@ -896,7 +891,6 @@ subroutine determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
 end subroutine determine_limitsphere
 !***********************************************************************************************************************
 subroutine bias_field_potener_forces(parini,poisson,atoms,epotplane)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_parini, only: typ_parini

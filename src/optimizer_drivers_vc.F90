@@ -1,9 +1,9 @@
 !*****************************************************************************************
 subroutine vc_minimize(parini,iproc,atoms,paropt)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_atoms, only: update_ratp, update_rat, set_rat, get_rat
+    use mod_acf, only: acf_write
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_parini), intent(in):: parini
@@ -135,7 +135,6 @@ subroutine vc_minimize(parini,iproc,atoms,paropt)
 end subroutine vc_minimize
 !*****************************************************************************************
 subroutine vc_test_convergence(n,f,paropt)
-    use mod_interface
     use mod_opt, only: typ_paropt
     implicit none
     integer, intent(in):: n
@@ -152,7 +151,6 @@ subroutine vc_test_convergence(n,f,paropt)
 end subroutine vc_test_convergence
 !*****************************************************************************************
 subroutine vc_x_to_xr(atoms,nr,xr,fr)
-    use mod_interface
     use mod_atoms, only: typ_atoms, get_rat
     implicit none
     type(typ_atoms), intent(in):: atoms
@@ -192,7 +190,6 @@ subroutine vc_x_to_xr(atoms,nr,xr,fr)
 end subroutine vc_x_to_xr
 !*****************************************************************************************
 subroutine vc_xr_to_x(nr,xr,atoms)
-    use mod_interface
     use mod_atoms, only: typ_atoms, update_rat
     implicit none
     integer, intent(in):: nr
@@ -225,7 +222,6 @@ subroutine vc_xr_to_x(nr,xr,atoms)
 end subroutine vc_xr_to_x
 !*****************************************************************************************
 subroutine vc_report_param(paropt)
-    use mod_interface
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_paropt), intent(inout):: paropt

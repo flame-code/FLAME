@@ -5,7 +5,7 @@ import atoms
 import numpy as np
 from io_yaml import *
 #rzx
-str1 = "This script read yaml dictionary and sets its margins."
+str1 = "This script reads yaml atomic configuration file and sets its margins."
 parser = argparse.ArgumentParser(description=str1)
 parser.add_argument('fn_inp', action='store' ,type=str, help="Name of the input file in yaml format")
 parser.add_argument('fn_out', action='store' ,type=str, help="Name of the output file in yaml format")
@@ -16,7 +16,7 @@ atoms_all=read_yaml(args.fn_inp)
 nconf=-1
 for atoms in atoms_all:
     nconf+=1
-    columns =zip (*atoms_all[nconf].rat)
+    columns =list(zip (*atoms_all[nconf].rat))
     minimum= []
     maximum= []
     for i, co in enumerate (columns):
@@ -65,6 +65,6 @@ for atoms in atoms_all:
             atoms_all[nconf].rat[i][1]=atoms_all[nconf].rat[i][1]%atoms_all[nconf].cellvec[1][1]
             atoms_all[nconf].rat[i][2]=atoms_all[nconf].rat[i][2]%atoms_all[nconf].cellvec[2][2]
     else :
-        print "ERROR: unknown boundary condition"
+        print("ERROR: unknown boundary condition")
 
 write_yaml(atoms_all,args.fn_out)

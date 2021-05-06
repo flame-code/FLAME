@@ -14,7 +14,6 @@
 !letters indicate the number of atoms in periodic images.
 !*****************************************************************************************
 subroutine linkedlists_init(parini,atoms,cell,linked_lists)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_electrostatics, only: typ_linked_lists
@@ -140,7 +139,6 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
 end subroutine linkedlists_init
 !*****************************************************************************************
 subroutine linkedlists_final(linked_lists)
-    use mod_interface
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_electrostatics, only: typ_linked_lists
     implicit none
@@ -170,7 +168,6 @@ subroutine linkedlists_final(linked_lists)
 end subroutine linkedlists_final
 !*****************************************************************************************
 subroutine prepprimelast(atoms,linked_lists)
-    use mod_interface
     use mod_atoms, only: typ_atoms, get_rat, update_rat
     use mod_electrostatics, only: typ_linked_lists
     implicit none
@@ -298,7 +295,6 @@ end subroutine prepprimelast
 !head: heads of cells
 !list: lists of particles in cells
 subroutine make_list_new(parini,atoms,linked_lists,cell)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, get_rat
     use mod_electrostatics, only: typ_linked_lists
@@ -456,7 +452,6 @@ end subroutine make_list_new
 !iz=0,mlimnb because we count only cell which are after the central cell
 !and all cells below the plane iz=0 are considered before the central cell.
 subroutine determine_sclimitsphere(linked_lists)
-    use mod_interface
     use mod_electrostatics, only: typ_linked_lists
     implicit none
     type(typ_linked_lists), intent(inout):: linked_lists
@@ -536,7 +531,6 @@ end subroutine determine_sclimitsphere
 !*****************************************************************************************
 !dbl_count if .true., bonds are double counted.
 subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, type_pairs, update_ratp
     use mod_const, only: bohr2ang
@@ -569,10 +563,10 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
         !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
         !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)
     !else
-        allocate(bound_rad(1:nmax,1:linked_lists%nat))
-        allocate(bound_dist(1:4,1:nmax,1:linked_lists%nat))
-        allocate(linked_lists%prime_bound(1:linked_lists%nat+1))
-        allocate(neighbor(1:linked_lists%nat))
+        allocate(bound_rad(1:nmax,1:atoms%nat))
+        allocate(bound_dist(1:4,1:nmax,1:atoms%nat))
+        allocate(linked_lists%prime_bound(1:atoms%nat+1))
+        allocate(neighbor(1:atoms%nat))
     !endif
 
     rcutsq=linked_lists%rcut**2
@@ -652,7 +646,7 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
     njat=0
     ibr=0
     iat=0
-    do iat=1,linked_lists%nat
+    do iat=1,atoms%nat
         linked_lists%prime_bound(iat)=ibr+1
         do njat=1,neighbor(iat)
             !The following if added to avoid double counting for bond based linked list
@@ -687,18 +681,18 @@ subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
         write(*,'(a,2i8)') 'ERROR: in number of bonds ',ibr,linked_lists%maxbound_rad
         stop
     endif
-    linked_lists%prime_bound(linked_lists%nat+1)=linked_lists%maxbound_rad+1
+    linked_lists%prime_bound(atoms%nat+1)=linked_lists%maxbound_rad+1
     deallocate(bound_rad)
     deallocate(bound_dist)
     ntot=0
-    do iat=1,linked_lists%nat
+    do iat=1,atoms%nat
         n=linked_lists%prime_bound(iat+1)-linked_lists%prime_bound(iat)
         ntot=ntot+(n*(n-1))/2.d0
     enddo
     linked_lists%maxbound_ang=ntot
     allocate(linked_lists%bound_ang(1:2,1:linked_lists%maxbound_ang))
     maxnba=0
-    do iat=1,linked_lists%nat
+    do iat=1,atoms%nat
         do inbr=linked_lists%prime_bound(iat),linked_lists%prime_bound(iat+1)-1
         do jnbr=inbr+1,linked_lists%prime_bound(iat+1)-1
             maxnba=maxnba+1

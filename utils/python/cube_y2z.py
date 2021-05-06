@@ -12,7 +12,7 @@ from poisson import *
 from cube import *
 #*****************************************************************************************
 if len(sys.argv) < 2:
-    print "usage: cube_y2z.py input_filename"
+    print("usage: cube_y2z.py input_filename")
     exit()
 else:
     filename = sys.argv[1]
@@ -46,6 +46,6 @@ for iat in range(atoms.nat):
 frmt1="%5d%24.15E%24.15E%24.15E\n"
 frmt2="%14.6E"
 fnout="y2z_%s" % filename
-print "writing transformed cube file into %s" % fnout
+print("writing transformed cube file into %s" % fnout)
 cube_write(fnout,atoms,poisson.ngpx,poisson.ngpy,poisson.ngpz,poisson.rho,poisson.hx,poisson.hy,poisson.hz,frmt1,frmt2)
 #*****************************************************************************************

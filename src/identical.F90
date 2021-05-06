@@ -1,6 +1,5 @@
 subroutine identical(parini,nlminx,nlmin,fp_method,fp_len,ent_wpos,fp_wpos,ent_arr,fp_arr,&
            &ent_delta,fp_delta,newmin,kid,fp_dist_min,k_e_wpos,n_unique,n_nonuni,lid,nid)
-use mod_interface
 use mod_parini, only: typ_parini
 use yaml_output
 implicit none
@@ -20,7 +19,7 @@ newmin=.true.
 !!enddo
 call yaml_mapping_open('Check identical',flow=.true.)
 call yaml_map('ent_wpos',ent_wpos,fmt='(e24.17)')
-call yaml_map('k_e_wpos',k_e_wpos,fmt='(e24.17)')
+call yaml_map('k_e_wpos',k_e_wpos,fmt='(i8)')
 call yaml_mapping_close()
 !write(*,'(a,e24.17,i3,5(e24.17))') ' # ID: Check identical: ent_wpos,k_e_wpos ',ent_wpos,k_e_wpos!,(wfp(l),l=1,2)
 

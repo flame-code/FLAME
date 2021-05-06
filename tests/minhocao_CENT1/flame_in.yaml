@@ -9,6 +9,7 @@ main:
     znucl: [20.0,9.0]
     amass: [4.0,2.0]
     findsym: True
+    rng_type: only_for_tests #Do not use this value, only useful for developers
 
 potential:
     potential: ann

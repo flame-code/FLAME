@@ -1,0 +1,235 @@
+#!/usr/bin/env python
+# -*- coding: us-ascii -*-
+#----------------------------------------------------------------------------
+# Build the final report (read *.report from fldiff.py)
+# Date: 20/11/2015
+#----------------------------------------------------------------------------
+
+import fnmatch
+import os
+import re
+import sys
+
+#Hack for non-system installations.
+PyYAML_path = "@AX_PYYAML_PATH@"
+if not PyYAML_path == "system":
+  sys.path.insert(0, PyYAML_path)
+sys.path.insert(0, "@abs_srcdir@")
+  
+import yaml
+import yaml_hl
+
+#Regular expressions
+re_discrepancy = re.compile("Max [dD]iscrepancy[^:]*:[ ]+([^ ]+)[ ]+\(([^ ]+)")
+re_time = re.compile("-- time[ ]+([0-9.]+)")
+
+# path of the script (to find default yaml highlights)
+# path = os.path.dirname(sys.argv[0])
+# path of the script
+path = "@abs_srcdir@"
+
+class Pouet:
+    """Class used to define options in order to hightlight the YAML output by mean of yaml_hl"""
+    def __init__(self, config="yaml_hl.cfg", input="report_input"):
+        # Define a temporary file
+        self.input = input
+        self.output = None
+        self.style = "ascii"
+        self.config = os.path.join(path, config)
+
+
+# Color options: one for the general text
+options = Pouet()
+# Create style (need to be in __main__)
+Style = yaml_hl.Style
+
+def highlight_iftty(yaml_tree):
+    "Highlight a yaml tree"
+    global options
+    newreport = open(options.input, "w")
+    newreport.write(
+        yaml.dump(yaml_tree, default_flow_style=False, explicit_start=True))
+    newreport.close()
+    hl = yaml_hl.YAMLHighlight(options)
+    if os.isatty(hl.output.fileno()):
+        hl.highlight()
+    else:
+        hl.output.write(hl.input.read())
+
+#List of files
+files = []
+for root, dirs, dirfiles in os.walk("."):
+    for file in dirfiles:
+        if file.endswith(".report"):
+            files.append(os.path.join(root,file))
+#Sort files
+files.sort()
+
+#List of files (yaml case)
+yaml_files = []
+for root, dirs, dirfiles in os.walk("."):
+    for file in dirfiles:
+        if file.endswith(".report.yaml"):
+            yaml_files.append(os.path.join(root,file))
+#Sort files
+yaml_files.sort()
+
+#Check if the output is a tty to print in colour
+if sys.stdout.isatty():
+    start_fail = "\033[0;31m"
+    start_success = "\033[0;32m"
+    start_pass = "\033[0;33m"
+    end = "\033[m"
+else:
+    start_fail = ""
+    start_success = ""
+    start_pass = ""
+    end = ""
+
+#Error code
+Exit = 0
+
+#Total time for the tests
+totime=0
+
+#Number of succeeded and failed files
+tofail = 0
+tosucc = 0
+toyfail = 0
+toysucc = 0
+
+#We use a string to display the report after the suggestions.
+text = "Final report for writings in stdout ('passed' means all significant floats are correct):\n"
+for file in files:
+    dirc = os.path.normpath(os.path.dirname(file))
+    fic = "%s" % os.path.basename(file)
+    dirfic = ("%-35s %-30s" % (dirc.replace('-test',''),fic.replace('.report',''))).strip()
+    #Max value
+    try:
+        max_discrepancy = float(open(file).readline()[16:24])
+        line = open(file).read()
+        discrepancy = re_discrepancy.findall(line)
+    except:
+        discrepancy = False
+    if not discrepancy:
+        try:
+            should_compare=open(file).read()
+            empty_file=("No output as reference" in should_compare)
+        except:
+            empty_file=False
+    if discrepancy:
+        #If nan gives nan (not a number and all comparisons are false)
+        diff = float(discrepancy[0][0])
+        if diff < max_discrepancy:
+            #Four cases: 
+            if discrepancy[0][1] == "failed-memory":
+                #The test is OK but the memory remaining is not 0
+                start = start_fail
+                state = "remaining memory != 0B failed"
+                Exit = 1
+            elif discrepancy[0][1] == "passed":
+                #passed: significant numbers (more than 5 digits) are < max_discrepancy
+                start = start_pass
+                state = "Passed    %7.1e < (%7.1e)" % (diff,max_discrepancy)
+            elif discrepancy[0][1] == "passed":
+                #passed: significant numbers (more than 5 digits) are < max_discrepancy
+                start = start_pass
+                state = "Passed    %7.1e < (%7.1e)" % (diff,max_discrepancy)
+            else:
+                #All numbers even with only 5 digits or less
+                start = start_success
+                state = "Succeeded %7.1e < (%7.1e)" % (diff,max_discrepancy)
+        else:
+            start = start_fail
+            state =     "Failed    %7.1e > (%7.1e)" % (diff,max_discrepancy)
+            Exit = 1
+        #Test if time is present
+        time = re_time.findall(line)
+        if time:
+            totime += float(time[0])
+            time = "%8ss" % time[0]
+        else:
+            time = ""
+        if "Failed" in state:
+            tofail += 1
+        else:
+            tosucc += 1
+        text += "%s%-67s%s%s%s\n" % (start,dirfic,state,time,end)
+    else:
+        if not empty_file:
+            tofail +=1
+            start = start_fail
+            state = "can not parse file.    failed"
+            text+= "%s%-74s%s%s\n" % (start,dirfic,state,end)
+
+suggestions={}
+sugg_key=None            
+text += "Final report for yaml outputs: if succeeded %53s" % "max diff (significant epsilon)\n"
+for file in yaml_files:
+    dirc = os.path.normpath(os.path.dirname(file))
+    fic = ("%s" % os.path.basename(file)).replace('.report.yaml','')
+    dirfic = ("%-35s %-30s" % (dirc.replace('-test',''),fic.replace('.out',''))).strip()
+    documents=[a for a in yaml.load_all(open(file, "r").read(), Loader = yaml.CLoader)]
+    #find whether all the tests have passed (look at last part)
+    thedoc=-1
+    if "Test succeeded" in documents[-1]:
+        thedoc=-1
+    elif "Test succeeded" in documents[-2]:
+        thedoc=-2
+        #assume that the second dictionary has only one key (which is loong and tedious to remember)
+        if sugg_key is None:
+            sugg_key=list(documents[-1].keys())[0]
+            suggestions[sugg_key]={}
+        suggestions[sugg_key].update(documents[-1][sugg_key])
+    try:
+        discrepancy=documents[thedoc]["Test succeeded"]
+        #test failes
+        if not discrepancy:
+            Exit = 1
+            start = start_fail
+            state = "Failed:    %7.1e > %7.1e (%s)" % \
+                    (documents[thedoc]["Maximum discrepancy"], \
+                     documents[thedoc]["Maximum tolerance applied"], \
+                     documents[thedoc]["Failure reason"])
+        else:
+            start = start_success
+            state = "Succeeded: %7.1e (%7.1e) " % \
+                    (documents[thedoc]["Maximum discrepancy"], \
+                     documents[thedoc]["Maximum tolerance applied"])
+        #Test if time is present
+        time = documents[thedoc]["Seconds needed for the test"]
+        totime += time
+        text +=  "%s%-66s %s%8.2fs%s\n" % (start,dirfic,state,time,end)
+    except Exception as e:
+        text += e
+        start = start_fail
+        state = "Failed: Can not parse file!"
+        text += "%s%-66s %s%s\n" % (start,dirfic,state,end)
+    if "Failed" in state:
+        toyfail += 1
+    else:
+        toysucc += 1
+
+
+#Number of tests
+tosucc += toysucc
+tofail += toyfail
+totest = tosucc + tofail
+#Hours, minutes and seconds
+totimeh = int(totime/3600)
+totimem = int(totime-totimeh*3600)/60
+totimes = totime-totimem*60-totimeh*3600
+p_time  = "%sh %sm %ss" % (totimeh,totimem,totimes)
+text += 105*"-"+"\n"
+text += 63*" "+"Time Needed for timed tests:%14s%s\n" % (p_time,end)
+if Exit == 0:
+    text += "Test set (%d tests) succeeded!\n" % totest
+else:
+    if len(suggestions) > 0:
+        highlight_iftty(suggestions)
+        #sys.stdout.write(yaml.dump(suggestions, default_flow_style=False, explicit_start=True))
+    text += "Test set failed (%d failed, %d succeeded), check the above report!\n" % (tofail,tosucc)
+
+print (text)
+#Error code
+sys.exit(Exit)

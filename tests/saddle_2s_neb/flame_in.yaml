@@ -1,0 +1,26 @@
+main:
+    task: saddle
+    verbosity: 1
+    types: Mg O
+    two_level_geopt: True
+
+potential:
+    potential: ann
+    ewald:
+        ewald: False
+
+ann:
+    approach: cent1
+
+saddle:
+    method: splined_saddle
+    runstat: new
+    np_neb: 4
+    alphax: 2.0
+    fcalls_max: 1000
+    fmaxtol_neb: 1.E-3
+    opt_method: BFGS
+    doneb: yes
+    docineb: yes
+    pickbestanchorpoints: no
+

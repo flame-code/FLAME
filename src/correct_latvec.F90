@@ -1,5 +1,4 @@
 subroutine correct_latvec(latvec,pos_red,nat,correctalg,iout)
-use mod_interface
 use yaml_output
 implicit none
 integer:: correctalg,nat,iproc,iout

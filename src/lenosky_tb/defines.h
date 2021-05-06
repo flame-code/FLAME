@@ -33,7 +33,7 @@ defines.h: file for vector type defintions,etc.
 #define GAMMATYPE float /*Either float or double, data type for gammas in new powell routine*/
 #define NSPMAX 20 /*Maximum number of spline points*/
 
-#define CLSMAXATOM  4000
+#define CLSMAXATOM  100
 #define CLSMAXNEIGHB  100
 
 typedef struct {

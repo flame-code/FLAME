@@ -1,0 +1,26 @@
+main:
+    task        : ann
+    seed        : 6296466
+    types       : Mg O
+    verbosity   : 1
+    rng_type: only_for_tests #Do not use this value, only useful for developers
+
+ann:
+    subtask       : train
+    optimizer     : rivals
+    approach      : centt
+    nstep_opt     : 10
+    nconf_rmse     : 1000
+    ampl_rand     :   0.020
+    syslinsolver  : operator
+    symfunc       : only_calculate
+    #prefit        : True
+    prefit_centt  : True
+   # restart_param : True
+   # restart_iter  : 18
+    print_energy  : True
+    ftol: 0.1
+
+potential:
+    ewald:
+        psolver       : pairsum

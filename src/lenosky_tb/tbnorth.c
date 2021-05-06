@@ -28,7 +28,7 @@ silicons have 4 orbitals 4 electrons
 #define EXTRAEIGEN  10
 #define NC(nc) ((int) ( floor(nc*EIGENFRACT +EXTRAEIGEN) > nc ? nc : floor(nc*EIGENFRACT + EXTRAEIGEN) ))
 
-#define MMATOM 1000 /*Maximum number of atoms within cell, also set CLSMAXATOM and CLSMAXNEIGHB in defines.h*/
+#define MMATOM 100 /*Maximum number of atoms within cell, also set CLSMAXATOM and CLSMAXNEIGHB in defines.h*/
 #define MAXKPT 6000 //1728 /*12x12x12 grid with offset*/
 #define KPTEIGENSAVE 4 /*2x2x2 grid with offset -- save this many sets of eigenvectors to avoid recomputation*/
 
@@ -650,7 +650,11 @@ m_param = 0;
 lwork = 16*MMATOM*MMATOM+200*MMATOM - 1;
 liwork = 16*MMATOM*MMATOM + 200*MMATOM - 1; 
 
+#ifdef HAVE_MKL
 dsyevr(&jobz,&range,&uplo,&n,a,&lda,&vl,&vu,&il,&iu,&abstol,&m_param,eigen,z,&ldz,isuppz,work,&lwork,iwork,&liwork,&ierr);
+#else
+dsyevr_(&jobz,&range,&uplo,&n,a,&lda,&vl,&vu,&il,&iu,&abstol,&m_param,eigen,z,&ldz,isuppz,work,&lwork,iwork,&liwork,&ierr);
+#endif
 
 if (ierr != 0  && errcount < 250)
   {   
@@ -710,7 +714,11 @@ liwork = 16*MMATOM*MMATOM+200*MMATOM - 1;
 //zheev(&jobz,&uplo,&n,a,&lda,eigen,work,&lwork,rwork,&info);
 
 //NOTE zheevd is faster:in tests 2 routines agree to 14 digits
+#ifdef HAVE_MKL
 zheevd(&jobz,&uplo,&n,a,&lda,eigen,work,&lwork,rwork,&lrwork,iwork,&liwork,&info);
+#else
+zheevd_(&jobz,&uplo,&n,a,&lda,eigen,work,&lwork,rwork,&lrwork,iwork,&liwork,&info);
+#endif
 
 if (info != 0 && errcount < 250)
   {
@@ -837,6 +845,12 @@ CELLSEARCH=*cellsearch;
 static int firstcall = 1;
 int i,j,k;
 
+if(*nat>100) {
+    printf("Due to improper large static arrays nat is limited to 100\n");
+    printf("You are running with nat=%d\n",nat);
+    printf("Stopping in C program in function lenoskytb_\n");
+    exit(0);
+}
 
 if (firstcall == 1)
   {

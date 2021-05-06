@@ -76,24 +76,24 @@ def acf_write(atoms_all,filename,labelpatt='none'):
     if filename=="screen":
         for atoms in atoms_all:
             nconf+=1
-            print "#1st line comment"
-            print "#2nd line comment"
-            print "#3rd line comment"
-            print ""
-            print ""
-            print "c5=bemoved"
+            print("#1st line comment")
+            print("#2nd line comment")
+            print("#3rd line comment")
+            print("")
+            print("")
+            print("c5=bemoved")
             if labelpatt=='none': label=''
             else: label='label= %s%5.5d' % (labelpatt,nconf)
-            print acf_7th_line(atoms,label)
-            print "%6d  %s  %d" % (int(atoms.nat),atoms.boundcond,nconf)
-            print "%24.15E%24.15E%24.15E" % (atoms.cellvec[0][0],atoms.cellvec[1][0],atoms.cellvec[1][1])
-            print "%24.15E%24.15E%24.15E" % (atoms.cellvec[2][0],atoms.cellvec[2][1],atoms.cellvec[2][2])
+            print(acf_7th_line(atoms,label))
+            print("%6d  %s  %d" % (int(atoms.nat),atoms.boundcond,nconf))
+            print("%24.15E%24.15E%24.15E" % (atoms.cellvec[0][0],atoms.cellvec[1][0],atoms.cellvec[1][1]))
+            print("%24.15E%24.15E%24.15E" % (atoms.cellvec[2][0],atoms.cellvec[2][1],atoms.cellvec[2][2]))
             for i in range(int(atoms.nat)):
                 x=atoms.rat[i][0]
                 y=atoms.rat[i][1]
                 z=atoms.rat[i][2]
                 atoms.bemoved.append("TTT")
-                print "%5s  %23.14E%23.14E%23.14E%5s" % (atoms.sat[i],x,y,z,atoms.bemoved[i])
+                print("%5s  %23.14E%23.14E%23.14E%5s" % (atoms.sat[i],x,y,z,atoms.bemoved[i]))
     else:
         f= open(filename,"w")
         for atoms in atoms_all:

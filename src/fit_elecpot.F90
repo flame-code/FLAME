@@ -1,5 +1,4 @@
 subroutine subtask_fit_elecpot(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -15,12 +14,12 @@ end subroutine subtask_fit_elecpot
 !/////////////////////////////////////////////////////////////////////////////////////////
 !/////////////////////////////////////////////////////////////////////////////////////////
 subroutine fit_elecpot(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, typ_atoms_arr, get_rat, set_rat, update_ratp
     use mod_atoms, only: atom_copy_old, atom_deallocate, set_rcov, get_rat_iat
     use mod_ann, only: typ_cent, typ_ann_arr
+    use mod_yaml_conf, only: read_yaml_conf
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -57,7 +56,7 @@ subroutine fit_elecpot(parini)
 !//////////////////////////////////////READING INPUT PARAMETERS///////////////////////////
     call cube_read('electronic_density.cube',atoms,poisson_dft)
     poisson_dft%rho=-1.d0*poisson_dft%rho
-    call calc_multipoles_grid_cent2(parini,atoms,poisson_dft)
+    call calc_multipoles_grid_centt(parini,atoms,poisson_dft)
     call yaml_map('DFT electric dpm',poisson_dft%dpm,fmt='(f10.4)')
     call yaml_map('DFT electric qpm',poisson_dft%qpm(1:3,1:3),fmt='(f10.4)')
     allocate(at_rat(3,atoms%nat),rat(3,atoms%nat),cv_temp(3,3),zat_temp(1:atoms%nat))
@@ -263,7 +262,7 @@ subroutine fit_elecpot(parini)
         do iat=1,atoms%nat
             atoms%qat(iat)=sum(Q(1:lcn,iat))
         enddo
-        call calc_multipoles_cent2(parini,atoms,poisson_cent,rat)
+        call calc_multipoles_centt(parini,atoms,poisson_cent,rat)
         call yaml_map('CENT electric dpm',poisson_cent%dpm,fmt='(f10.4)')
         call yaml_map('CENT electric qpm',poisson_cent%qpm(1:3,1:3),fmt='(f10.4)')
         dpm_err(1:3)=poisson_cent%dpm(1:3)-poisson_dft%dpm(1:3)
@@ -448,7 +447,7 @@ subroutine fit_elecpot(parini)
     do iat=1,atoms%nat
         atoms%qat(iat)=sum(Q(1:lcn,iat))
     enddo
-    call calc_multipoles_cent2(parini,atoms,poisson_cent,rat)
+    call calc_multipoles_centt(parini,atoms,poisson_cent,rat)
     call yaml_map('CENT electric dpm (FINAL)',poisson_cent%dpm,fmt='(f10.4)')
     call yaml_map('CENT electric qpm (FINAL)',poisson_cent%qpm(1:3,1:3),fmt='(f10.4)')
     dpm_err(1:3)=poisson_cent%dpm(1:3)-poisson_dft%dpm(1:3)

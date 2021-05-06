@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+ 2 Upstream-Name: futile
+ 3 Upstream-Contact: Damien Caliste <damien.caliste@cea.fr>
+ 5
+ 6 Files: *
+ 7 Copyright: 1998-2010 Emil Brink <emil@obsession.se>
+ 8 License: GPL-2+

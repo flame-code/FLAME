@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine netsock_task(parini)
-    !use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, update_rat
     use mod_potential, only: fcalls, perfstatus, potential
@@ -8,14 +7,17 @@ subroutine netsock_task(parini)
     use mod_const, only: ev2ha, ang2bohr, bohr2ang
     USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
     use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
+    use mod_acf, only: acf_read_new
+    use mod_yaml_conf, only: read_yaml_conf
     implicit none
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini
     !local variables
     type(typ_atoms_arr):: atoms_arr
     type(typ_file_info):: file_info
     real(8):: tt1, tt2, fxyz(3)
     integer:: iconf, iat
     logical:: hasdata,isinit
+    logical:: yaml_exists,acf_exists,vasp_exists
     character(len=MSGLEN):: header
     character(len=60)::     msg
     integer :: nmsg,repid,str_index,PsiId,nat_get
@@ -31,7 +33,24 @@ subroutine netsock_task(parini)
        sock_host = TRIM(sock_host)//achar(0)
        call open_socket(sock_socket, sock_inet, sock_port, sock_host )
     endif
-    call acf_read_new(parini,'posinp.acf',1000,atoms_arr)
+!----------------------------
+    inquire(file='posinp.yaml',exist=yaml_exists)
+    inquire(file='posinp.acf',exist=acf_exists)
+    inquire(file='POSCUR',exist=vasp_exists)
+    if(yaml_exists) then
+        call read_yaml_conf(parini,'posinp.yaml',10000,atoms_arr)
+    elseif(acf_exists) then
+        call acf_read_new(parini,'posinp.acf',10000,atoms_arr)
+    elseif(vasp_exists) then
+        atoms_arr%nconf=1
+        allocate(atoms_arr%atoms(atoms_arr%nconf))
+        call read_poscar_for_single_point(parini,atoms_arr%atoms(1))
+    else
+        stop "A structure file of the atomic configuration, &
+            &including types,&
+            &must be provided when FLAME is run as a socket client"
+    endif
+!----------------------------
 !If sockets are use, only run if a single configuration is present
     if(parini%usesocket.and.atoms_arr%nconf.gt.1) stop "Only single configurations allowed with socket communication"
 !If sockets are used and netsock is the potential the code will bomb
@@ -56,7 +75,7 @@ subroutine netsock_task(parini)
 !receive-send iteration
         if(parini%usesocket) then 
             call readbuffer(sock_socket, header, MSGLEN)
-            write(*,'(i,a,a)') iproc, ' # SOCKET SLAVE: header received ',trim(header)
+            write(*,'(i6,a33,a100)') iproc, ' # SOCKET SLAVE: header received ',trim(header)
             if (trim(header) == "STATUS") then 
                 call send_status(header, MSGLEN, isinit)
             else if (trim(header) == "INIT") then 
@@ -224,5 +243,59 @@ contains
     string(i:i)=strarr(i)
   enddo
   end subroutine
+!*****************************************************************************************
+subroutine read_poscar_for_single_point(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, atom_allocate_old, update_rat
+    use global, only: units
+    implicit none
+    type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
+    !so parini can be intent(in) in future.
+    type(typ_atoms):: atoms
+    !local variables
+    real(8), allocatable:: xred(:,:)
+    real(8), allocatable:: fcart(:,:)
+    logical, allocatable:: fixat(:)
+    integer, allocatable:: fragarr(:)
+    real(8):: strten(6), printval1, printval2
+    logical:: fixlat(7), readfix, readfrag
+    integer:: iat
+    character(40):: filename
+    logical:: file_exists
+    filename='posinp.vasp'
+    inquire(file=trim(filename),exist=file_exists)
+    if (.not. file_exists) then
+        filename='POSCAR'
+        inquire(file=trim(filename),exist=file_exists)
+        if (.not. file_exists) stop "VASP file not found"
+    endif
+    write (*,*) "Reading structure from ",trim(filename)
+
+    call poscar_getsystem(parini,trim(filename))
+    allocate(xred(3,parini%nat),source=0.d0)
+    allocate(fcart(3,parini%nat),source=0.d0)
+    if(.not.allocated(fixat)) allocate(fixat(parini%nat),source=.false.)
+    if(.not.allocated(fragarr)) allocate(fragarr(parini%nat),source=0)
+    atoms%nat=parini%nat
+    atoms%boundcond='bulk'
+    call atom_allocate_old(atoms,parini%nat,0,0)
+    call read_atomic_file_poscar(filename,atoms%nat,units,xred,atoms%cellvec,fcart,strten, &
+        fixat,fixlat,readfix,fragarr,readfrag,printval1,printval2)
+    call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,xred,atoms%ratp)
+    call update_rat(atoms,upall=.true.)
+    do iat=1,parini%nat
+        atoms%sat(iat)=trim(parini%char_type(parini%typat_global(iat)))
+    enddo
+    deallocate(fixat)
+    deallocate(xred)
+    deallocate(fcart)
+    deallocate(fragarr)
+    if(allocated(parini%znucl)) deallocate(parini%znucl)
+    if(allocated(parini%char_type)) deallocate(parini%char_type)
+    if(allocated(parini%amu)) deallocate(parini%amu)
+    if(allocated(parini%rcov)) deallocate(parini%rcov)
+    if(allocated(parini%typat_global)) deallocate(parini%typat_global)
+end subroutine read_poscar_for_single_point
+!*****************************************************************************************
 end subroutine netsock_task
 !************************************************************************************

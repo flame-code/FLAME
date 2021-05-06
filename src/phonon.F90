@@ -1,12 +1,12 @@
 !*****************************************************************************************
 subroutine cal_hessian_4p(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_copy_old
     use mod_atoms, only: atom_copy, atom_deallocate, set_atomic_mass
     use mod_atoms, only: update_ratp, update_rat, set_rat, set_rat_iat, get_rat
     use mod_processors, only: iproc
     use mod_potential, only: potential
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use futile
     use dynamic_memory
     use yaml_output
@@ -251,7 +251,6 @@ subroutine cal_hessian_4p(parini)
 end subroutine cal_hessian_4p
 !*****************************************************************************************
 subroutine projectout_rotation(atoms,hess,rlarge)
-    use mod_interface
     use mod_atoms, only: typ_atoms, update_ratp
     use dynamic_memory
     implicit none

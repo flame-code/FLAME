@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine get_psolver_bps(poisson,atoms,ehartree)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
@@ -30,7 +29,14 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
     !however, I can check or make it to be allocated as (ngpx,ngpy,ngpz), if
     !BPS is used.
     !stress_t(1:6)=0.d0
-    call H_POTENTIAL('G',poisson%pkernel,poisson%rho, &
+    do igpz=1,poisson%ngpz
+    do igpy=1,poisson%ngpy
+    do igpx=1,poisson%ngpx
+        poisson%pot(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
+    enddo
+    enddo
+    enddo
+    call H_POTENTIAL('G',poisson%pkernel,poisson%pot, &
         pot_ion,ehartree,0.d0,.false.,stress_tensor=stress_t) !,quiet='yes')
     !write(*,'(a,6es14.5)') 'STRESS ',stress_t(1:6)
     !ordering from BigDFT ---> (11,22,33,23,13,12)
@@ -43,13 +49,6 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
     atoms%stress(3,2)=stress_t(4)
     atoms%stress(3,1)=stress_t(5)
     atoms%stress(2,1)=stress_t(6)
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        poisson%pot(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
     call f_free(pot_ion)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
@@ -58,7 +57,6 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
 end subroutine get_psolver_bps
 !*****************************************************************************************
 subroutine init_psolver_bps(parini,atoms,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -67,6 +65,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: pkernel_init, pkernel_set
+    use at_domain, only: domain, domain_new, ATOMIC_UNITS, geocode_to_bc_enum
 #endif
     implicit none
     type(typ_parini), intent(in):: parini
@@ -79,9 +78,10 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     real(kind=8):: hgrids(3), hx, hy, hz
     real(kind=8):: cv1(3), cv2(3), cv3(3), ang_bc, ang_ac, ang_ab
     real(kind=8):: alpha_bc,beta_ac, gamma_ab ,pi=4.d0*atan(1.d0)
-    type(dictionary), pointer :: dict_input
+    type(dictionary), pointer :: dict_input=>null()
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
+    type(domain) :: dom
     write(*,*) 'REZA-1'
     !call f_lib_initialize() 
     write(*,*) 'REZA-2'
@@ -127,7 +127,9 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     beta_ac = abs(ang_ac)!+pi/2.d0
     gamma_ab = abs(ang_ab)!+pi/2.d0
     !write(*,*) iproc,nproc,geocode,ndims, hgrids,alpha_bc,beta_ac,gamma_ab
-    poisson%pkernel=pkernel_init(iproc,nproc,dict_input,geocode,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
+    dom=domain_new(units=ATOMIC_UNITS,bc=geocode_to_bc_enum(geocode), &
+                    alpha_bc=alpha_bc,beta_ac=beta_ac,gamma_ab=gamma_ab,acell=ndims*hgrids)
+    poisson%pkernel=pkernel_init(iproc,nproc,dict_input,dom,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
     call dict_free(dict_input)
     write(*,*) 'REZA-4'
     call pkernel_set(poisson%pkernel,verbose=.true.)
@@ -139,7 +141,6 @@ subroutine init_psolver_bps(parini,atoms,poisson)
 end subroutine init_psolver_bps
 !*****************************************************************************************
 subroutine fini_psolver_bps(poisson)
-    use mod_interface
     use mod_electrostatics, only: typ_poisson
 #if defined(HAVE_BPS)
     use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
@@ -156,7 +157,6 @@ subroutine fini_psolver_bps(poisson)
 end subroutine fini_psolver_bps
 !*****************************************************************************************
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson

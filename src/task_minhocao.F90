@@ -1,5 +1,4 @@
 subroutine task_minhocao(parini,parres)
- use mod_interface
  use global
  use defs_basis
  !use cell_utils
@@ -21,6 +20,7 @@ subroutine task_minhocao(parini,parres)
 !Minima Hopping Variables
   real(8), parameter :: beta1=1.10d0,beta2=1.10d0,beta3=1.d0/1.10d0
   real(8), parameter :: alpha1=1.d0/1.10d0,alpha2=1.10d0
+  !real(8):: beta1, beta2, beta3, alpha1, alpha2
   integer :: npminx=100        !Number of posloc files to be saved for verbosity 0
   integer :: nwrite_inter=100  !Number of structures to be found until intermediate files are written, only for verbosity 0
 !  real(8),parameter :: HaBohr2GPA = 29421.033d0
@@ -151,6 +151,13 @@ subroutine task_minhocao(parini,parres)
 call system_clock(count=clock_start)     !Start Timer
 call system_clock(count_rate=clock_rate) !Find the time rate
 call system_clock(count_max=clock_max)   !Find the time max
+
+  !alpha1=parini%alpha1_minhopp !CORRECT_IT
+  !alpha2=parini%alpha2_minhopp !CORRECT_IT
+  !beta1=parini%beta1_minhopp !CORRECT_IT
+  !beta2=parini%beta2_minhopp !CORRECT_IT
+  !beta3=parini%beta3_minhopp !CORRECT_IT
+
 
 
 !!  !Define the boundary condition: 1: periodic, 2:free, 3:surface/slab
@@ -404,7 +411,6 @@ call system_clock(count_max=clock_max)   !Find the time max
   endif
 
 
-
 !Write initial parameters to global.out
   ratio=0.d0
 !  open(unit=67,file='global.out')
@@ -478,6 +484,7 @@ call system_clock(count_max=clock_max)   !Find the time max
          write(*,'(A)') " # Anderson MD selected, switching FIXLAT"
          if(any(parini%fixlat)) write(*,*) "# FIXLAT: a,b,c,alpha,beta,gamma,shape ", parini%fixlat
   endif
+
   if(parini%fixlat(7).and.trim(parini%paropt_geopt%approach).ne."FIRE") stop "Fixed cell shape only implemented in FIRE"
 
 !Put all the atoms back into the cell
@@ -498,7 +505,7 @@ call system_clock(count_max=clock_max)   !Find the time max
   call yaml_map('ediff',ediff,fmt='(es11.3)')
   call yaml_map('temperature',ekinetic,fmt='(es11.3)')
   call yaml_map('maximum temperature',ekinetic_max,fmt='(es11.3)')
-  call yaml_map('nsoften',parini%nsoften_minhopp,fmt='(es11.3)')
+  call yaml_map('nsoften',parini%nsoften_minhopp,fmt='(i8)')
   call yaml_mapping_close()
   !write(*,'(a,1x,3(1x,e10.3),1x,i4)') ' # In :ediff,temperature,maximum temperature,nsoften',&
   !      &ediff,ekinetic,ekinetic_max,parini%nsoften_minhopp
@@ -882,7 +889,7 @@ endif
     call yaml_map('de',ent_pos-eref,fmt='(es21.14)')
     call yaml_map('ediff',ediff,fmt='(es10.3)')
     call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
-    call yaml_map('spg_pos',spg_pos,fmt='(i)')
+    call yaml_map('spg_pos',spg_pos,fmt='(i8)')
     call yaml_map('fdos_pos',fdos_pos,fmt='(es10.3)')
     call yaml_mapping_close()
      !write(*,'(a,(1x,f10.0),1x,1pe21.14,2(1x,1pe10.3),i5,1x,1pe10.3)')" #global: ",&
@@ -1147,7 +1154,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
     call yaml_map('de',ent_wpos-eref,fmt='(es21.14)')
     call yaml_map('ediff',ediff,fmt='(es10.3)')
     call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
-    call yaml_map('spg_pos',spg_wpos,fmt='(i)')
+    call yaml_map('spg_pos',spg_wpos,fmt='(i8)')
     call yaml_map('fdos_pos',fdos_wpos,fmt='(es10.3)')
     call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
     call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')
@@ -1316,7 +1323,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
         call yaml_map('de',ent_hop-eref,fmt='(es21.14)')
         call yaml_map('ediff',ediff,fmt='(es10.3)')
         call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
-        call yaml_map('spg_pos',spg_hop,fmt='(i)')
+        call yaml_map('spg_pos',spg_hop,fmt='(i8)')
         call yaml_map('fdos_pos',fdos_hop,fmt='(es10.3)')
         call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
         call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')
@@ -1342,7 +1349,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
         call yaml_map('de',ent_wpos-eref,fmt='(es21.14)')
         call yaml_map('ediff',ediff,fmt='(es10.3)')
         call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
-        call yaml_map('spg_pos',spg_wpos,fmt='(i)')
+        call yaml_map('spg_pos',spg_wpos,fmt='(i8)')
         call yaml_map('fdos_pos',fdos_wpos,fmt='(es10.3)')
         call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
         call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')
@@ -1359,7 +1366,7 @@ if(.not.(any(parini%fixlat).or.any(parini%fixat).or.confine.ge.1)) call correct_
         call yaml_map('de',ent_hop-eref,fmt='(es21.14)')
         call yaml_map('ediff',ediff,fmt='(es10.3)')
         call yaml_map('ekinetic',ekinetic,fmt='(es10.3)')
-        call yaml_map('spg_pos',spg_hop,fmt='(i)')
+        call yaml_map('spg_pos',spg_hop,fmt='(i8)')
         call yaml_map('fdos_pos',fdos_hop,fmt='(es10.3)')
         call yaml_map('ratio_sam',escape_sam/escape,fmt='(f5.2)')
         call yaml_map('ratio_old',escape_old/escape,fmt='(f5.2)')

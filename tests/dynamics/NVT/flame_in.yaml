@@ -12,15 +12,17 @@ potential:
         ewald: True
         ecut : 5.0
         ecutz : 7.0
-        rgcut     : 5.0 
+        rgcut : 5.0 
         alpha: 2.26767135342053
         rcut: 15.684726861158667
         nsp : 10000
 
 dynamics:
     md_method : nvt_nose
-    #md_method : nvt_longev
-    dt : 82             # ~2 fs
+    #md_method : nvt_langev
+    #restart : .true.
+    nfreq : 100
+    dt : 2             #  fs
     nmd : 10000
     temp : 300          # K
     init_temp : 300     # K

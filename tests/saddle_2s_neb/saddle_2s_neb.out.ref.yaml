@@ -1,0 +1,491 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2019-05-15 01:40:14.260
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : saddle
+   types                               : Mg O
+   two_level_geopt                     : True
+   verbosity                           : 1
+   verbose                             : 3
+   seed                                : -2
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle:
+   method                              : splined_saddle
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 4
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 2.0
+   hybrid                              : no
+   docineb                             : yes
+   doneb                               : yes
+   pickbestanchorpoints                : no
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 1000
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 1.E-3
+   opt_method                          : BFGS
+ potential:
+   potential                           : ann
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     ecut_auto                         : False
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : cent1
+   symfunc                             : only_calculate
+   nstep_opt                           : 100
+   nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   ftol                                : 1.E-4
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_centt                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+   freeBC_direct                       : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  2, Mg:  1, O:  2}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ Number of configurations read: {filename: posinp.yaml, nconf:  2}
+ number of ANN                         :  2
+ ANN architecture                      : 70-5-5-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
+ ANN architecture                      : 70-5-5-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
+ number of anchor points               :  4
+ degree of freedom, n,nr               :  [  78,  3 ]
+ Number of configurations read: {filename: posinp.yaml, nconf:  2}
+ ENDs: {epot1: -3.5860719264E+03, fnrm1:  9.6E-05, epot2: -3.5860635078E+03, fnrm2:  1.3E-04}
+ NEB optimization iterations:
+ - NEB: {epotci: -3.585841972342350E+03, fnrm:  5.79778E-02, fspmax:  5.79756E-02, mp:  2}
+   BFGS: {iter:  0, epot:  1.239409510943825E-01, de:  0.00000E+00, fnrm:  7.45974E-02, 
+          fmax:  5.74699E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585842715134393E+03, fnrm:  5.93533E-02, fspmax:  5.93478E-02, mp:  2}
+   BFGS: {iter:  1, epot:  1.268627781618217E-01, de:  2.92183E-03, fnrm:  7.63408E-02, 
+          fmax:  5.88801E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585842884864259E+03, fnrm:  5.96618E-02, fspmax:  5.96554E-02, mp:  2}
+   BFGS: {iter:  2, epot:  1.275192185315814E-01, de:  6.56440E-04, fnrm:  7.67326E-02, 
+          fmax:  5.91956E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585843073610353E+03, fnrm:  6.00025E-02, fspmax:  5.99950E-02, mp:  2}
+   BFGS: {iter:  3, epot:  1.282444867828561E-01, de:  7.25268E-04, fnrm:  7.71654E-02, 
+          fmax:  5.95438E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585844115622897E+03, fnrm:  6.18373E-02, fspmax:  6.18238E-02, mp:  2}
+   BFGS: {iter:  4, epot:  1.321587228452248E-01, de:  3.91424E-03, fnrm:  7.95016E-02, 
+          fmax:  6.14121E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585845335890229E+03, fnrm:  6.38918E-02, fspmax:  6.38702E-02, mp:  2}
+   BFGS: {iter:  5, epot:  1.365644561024876E-01, de:  4.40573E-03, fnrm:  8.21296E-02, 
+          fmax:  6.34992E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585846772279579E+03, fnrm:  6.61879E-02, fspmax:  6.61561E-02, mp:  2}
+   BFGS: {iter:  6, epot:  1.415210058739070E-01, de:  4.95655E-03, fnrm:  8.50832E-02, 
+          fmax:  6.58270E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585855635704392E+03, fnrm:  7.78698E-02, fspmax:  7.77851E-02, mp:  2}
+   BFGS: {iter:  7, epot:  1.675412195422152E-01, de:  2.60202E-02, fnrm:  1.00490E-01, 
+          fmax:  7.75989E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585869911856225E+03, fnrm:  8.97461E-02, fspmax:  8.96004E-02, mp:  2}
+   BFGS: {iter:  8, epot:  1.973100182020206E-01, de:  2.97688E-02, fnrm:  1.17676E-01, 
+          fmax:  8.95413E-02,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585895973591626E+03, fnrm:  1.06194E-01, fspmax:  1.05993E-01, mp:  2}
+   BFGS: {iter:  9, epot:  2.345876395047990E-01, de:  3.72776E-02, fnrm:  1.39722E-01, 
+          fmax:  1.06027E-01,                   zeta:  1.00000}
+ - NEB: {epotci: -3.585944554329969E+03, fnrm:  1.11640E-01, fspmax:  1.11397E-01, mp:  2}
+   BFGS: {iter:  10, epot:  2.509949595563945E-01, de:  1.64073E-02, fnrm:  1.48907E-01, 
+          fmax:  1.11547E-01,                    zeta:  1.00000}
+ - NEB: {epotci: -3.585990993741655E+03, fnrm:  4.85298E-02, fspmax:  4.85248E-02, mp:  2}
+   BFGS: {iter:  11, epot:  7.852683388020103E-02, de: -1.72468E-01, fnrm:  5.32287E-02, 
+          fmax:  4.82203E-02,                    zeta:  1.00000}
+ - NEB: {epotci: -3.585997990739624E+03, fnrm:  4.31995E-02, fspmax:  4.31799E-02, mp:  2}
+   BFGS: {iter:  12, epot:  6.020687003898508E-02, de: -1.83200E-02, fnrm:  4.50767E-02, 
+          fmax:  4.28684E-02,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586007155709685E+03, fnrm:  3.07866E-02, fspmax:  3.07034E-02, mp:  2}
+   BFGS: {iter:  13, epot:  3.567661196355950E-02, de: -2.45303E-02, fnrm:  3.09912E-02, 
+          fmax:  3.03720E-02,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586010988994168E+03, fnrm:  2.05296E-02, fspmax:  2.03352E-02, mp:  2}
+   BFGS: {iter:  14, epot:  3.018679967307341E-02, de: -5.48981E-03, fnrm:  2.17642E-02, 
+          fmax:  1.99733E-02,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012443516936E+03, fnrm:  1.35504E-02, fspmax:  1.31895E-02, mp:  2}
+   BFGS: {iter:  15, epot:  2.553690433954916E-02, de: -4.64990E-03, fnrm:  1.60812E-02, 
+          fmax:  1.27968E-02,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586013043666338E+03, fnrm:  8.50449E-03, fspmax:  7.85715E-03, mp:  2}
+   BFGS: {iter:  16, epot:  2.012996306645878E-02, de: -5.40694E-03, fnrm:  1.19020E-02, 
+          fmax:  7.44040E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586013255294786E+03, fnrm:  5.02642E-03, fspmax:  3.79116E-03, mp:  2}
+   BFGS: {iter:  17, epot:  1.482368888221919E-02, de: -5.30627E-03, fnrm:  8.62209E-03, 
+          fmax:  3.61066E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586013278477435E+03, fnrm:  3.37302E-03, fspmax:  2.30544E-03, mp:  2}
+   BFGS: {iter:  18, epot:  1.072494637959118E-02, de: -4.09874E-03, fnrm:  6.28125E-03, 
+          fmax:  2.97412E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586013225926234E+03, fnrm:  3.31279E-03, fspmax:  2.22873E-03, mp:  2}
+   BFGS: {iter:  19, epot:  8.411634212835075E-03, de: -2.31331E-03, fnrm:  5.09892E-03, 
+          fmax:  2.48359E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586013154240632E+03, fnrm:  3.62911E-03, fspmax:  2.11326E-03, mp:  2}
+   BFGS: {iter:  20, epot:  7.457525999079297E-03, de: -9.54108E-04, fnrm:  4.98028E-03, 
+          fmax:  2.46422E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586013079790479E+03, fnrm:  3.69835E-03, fspmax:  2.45693E-03, mp:  2}
+   BFGS: {iter:  21, epot:  8.890327876641369E-03, de:  1.43280E-03, fnrm:  5.44385E-03, 
+          fmax:  3.44623E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586013001704101E+03, fnrm:  3.30606E-03, fspmax:  2.21945E-03, mp:  2}
+   BFGS: {iter:  22, epot:  1.038856215834734E-02, de:  1.49823E-03, fnrm:  6.07826E-03, 
+          fmax:  4.21389E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012919698223E+03, fnrm:  2.34834E-03, fspmax:  1.44963E-03, mp:  2}
+   BFGS: {iter:  23, epot:  1.094996360437486E-02, de:  5.61401E-04, fnrm:  6.53231E-03, 
+          fmax:  3.92437E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012839169391E+03, fnrm:  1.78365E-03, fspmax:  1.19982E-03, mp:  2}
+   BFGS: {iter:  24, epot:  1.064173983857230E-02, de: -3.08224E-04, fnrm:  6.51264E-03, 
+          fmax:  3.11944E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012760287258E+03, fnrm:  2.61897E-03, fspmax:  2.17672E-03, mp:  2}
+   BFGS: {iter:  25, epot:  1.079405182290017E-02, de:  1.52312E-04, fnrm:  6.34650E-03, 
+          fmax:  2.81397E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012712298540E+03, fnrm:  3.14547E-03, fspmax:  2.87617E-03, mp:  2}
+   BFGS: {iter:  26, epot:  1.081822096861183E-02, de:  2.41691E-05, fnrm:  6.27173E-03, 
+          fmax:  2.87296E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012690787039E+03, fnrm:  2.91672E-03, fspmax:  2.75517E-03, mp:  2}
+   BFGS: {iter:  27, epot:  1.054306173142085E-02, de: -2.75159E-04, fnrm:  6.13308E-03, 
+          fmax:  3.89446E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012696480525E+03, fnrm:  1.83281E-03, fspmax:  1.80830E-03, mp:  2}
+   BFGS: {iter:  28, epot:  9.434553411043541E-03, de: -1.10851E-03, fnrm:  5.68168E-03, 
+          fmax:  3.46422E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012727239907E+03, fnrm:  6.75858E-04, fspmax:  4.09604E-04, mp:  2}
+   BFGS: {iter:  29, epot:  6.878669612639966E-03, de: -2.55588E-03, fnrm:  4.44050E-03, 
+          fmax:  2.11336E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012738274441E+03, fnrm:  1.13309E-03, fspmax:  6.68138E-04, mp:  2}
+   BFGS: {iter:  30, epot:  4.832019801211914E-03, de: -2.04665E-03, fnrm:  2.86618E-03, 
+          fmax:  1.38871E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012723152367E+03, fnrm:  1.19145E-03, fspmax:  9.21090E-04, mp:  2}
+   BFGS: {iter:  31, epot:  3.416705316705119E-03, de: -1.41531E-03, fnrm:  2.08701E-03, 
+          fmax:  1.57068E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012713634632E+03, fnrm:  5.40515E-04, fspmax:  4.78832E-04, mp:  2}
+   BFGS: {iter:  32, epot:  3.126202490860961E-03, de: -2.90503E-04, fnrm:  1.98724E-03, 
+          fmax:  1.25889E-03,                    zeta:  1.00000}
+ - NEB: {epotci: -3.586012713772667E+03, fnrm:  1.50954E-04, fspmax:  1.14363E-04, mp:  2}
+   BFGS: {iter:  33, epot:  2.149853082700946E-03, de: -9.76349E-04, fnrm:  1.47400E-03, 
+          fmax:  8.76818E-04,                    zeta:  1.00000}
+   BFGS converged: {iter:  33, epot:  2.149853082700946E-03, fnrm:  1.47400E-03, 
+                    fmax:  8.76818E-04}
+ barrier heights in eV: {barrier1:  1.61126, barrier2:  1.38218}
+ Forces (saddle point):
+ -  [ 6.69962E-03,  6.69962E-03,  7.22622E-03]
+ -  [-1.70895E-03, -7.92627E-03, -9.14971E-03]
+ -  [-6.22343E-03,  1.10941E-02,  1.15976E-02]
+ -  [-7.92627E-03, -1.70895E-03, -9.14971E-03]
+ -  [ 2.81083E-03,  2.81083E-03, -1.66688E-02]
+ -  [ 6.45974E-03, -3.16545E-03, -1.06056E-02]
+ -  [ 1.10941E-02, -6.22343E-03,  1.15976E-02]
+ -  [-3.16545E-03,  6.45974E-03, -1.06056E-02]
+ -  [-5.38915E-03, -5.38915E-03,  2.91140E-03]
+ -  [-8.51541E-03, -8.51541E-03, -8.33828E-04]
+ -  [ 2.86431E-03, -1.44593E-02,  4.75377E-03]
+ -  [ 7.01620E-03, -1.01699E-02, -2.54117E-03]
+ -  [-1.44593E-02,  2.86431E-03,  4.75377E-03]
+ -  [ 3.19331E-03,  3.19331E-03,  1.07244E-02]
+ -  [ 1.76031E-02,  1.22780E-04,  1.88959E-03]
+ -  [-1.01699E-02,  7.01620E-03, -2.54117E-03]
+ -  [ 1.22780E-04,  1.76031E-02,  1.88959E-03]
+ -  [ 7.84200E-03,  7.84200E-03, -1.00450E-02]
+ -  [ 1.03705E-02,  1.03705E-02, -8.20642E-03]
+ -  [-3.36081E-03, -8.60834E-03,  9.89159E-03]
+ -  [-4.29003E-03,  2.34236E-03, -7.17045E-03]
+ -  [-8.60834E-03, -3.36081E-03,  9.89159E-03]
+ -  [ 5.09067E-06,  5.09067E-06,  9.62258E-05]
+ -  [ 6.67445E-03, -1.12813E-02,  8.73220E-03]
+ -  [ 2.34236E-03, -4.29003E-03, -7.17045E-03]
+ -  [-1.12813E-02,  6.67445E-03,  8.73220E-03]
+ CPU time: {iproc:  0, hrs:  0.484E-03, min:  0.291E-01, sec:  0.174E+01}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  433
+   Tot. No. of Deallocations           :  433
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  3.892
+     for the array                     : symfunc%y0dr
+     in the routine                    : symmetry_functions_driver
+     Memory Peak of process            : 97.824 MB
+ Walltime since initialization         :  00:00:01.766894262
+ Max No. of dictionaries used          :  1168 #( 185 still in use)
+ Number of dictionary folders allocated:  1

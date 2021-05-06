@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2018-10-30 08:14:08.046
+ Timestamp of this run                 : 2020-02-19 16:09:20.901
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : ann
@@ -26,6 +26,7 @@
    two_level_geopt                     : False
    verbosity                           : 1
    verbose                             : 3
+   rng_type                            : only_for_tests
    seed                                : 234511
    nrun_lammps                         : 0
    nat                                 : 0
@@ -128,9 +129,35 @@
    dt_max                              : 80.0
    strfact                             : 100.0
  saddle:
+   method                              : unknown
    list_random_displace                : None
    dimsep                              : -1.0
    ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
  potential:
    potential                           : ann
    cal_charge                          : False
@@ -211,10 +238,11 @@
    qgnrmtol                            : 5.E-4
    etol                                : 1.0
    dtol                                : 1.0
+   ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False
    prefit                              : False
-   prefit_cent2                        : False
+   prefit_centt                        : False
    read_forces                         : True
    restart_param                       : False
    restart_iter                        : 0
@@ -223,6 +251,7 @@
    save_symfunc_force                  : False
    weight_hardness                     : 0.001
    save_symfunc_behnam                 : False
+   freeBC_direct                       : False
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -311,7 +340,9 @@
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  system info: {ntypat:  1, B:  1}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0, seed1:  234511, seed2:  234518}
+ random number generator: {iproc:  0}
+ Number of configurations read: {filename: posinp_train.yaml, nconf:  6}
+ Number of configurations read: {filename: posinp_valid.yaml, nconf:  3}
  number of ann                         :  1
  ann input files:
  -  #B.ann.input.yaml
@@ -322,8 +353,6 @@
    loc                                 :  1
    num                                 :  136
    n                                   :  136
- Number of configurations read: {filename: posinp_train.yaml, nconf:  6}
- Number of configurations read: {filename: posinp_valid.yaml, nconf:  3}
  number of ANN wights                  :  136
  number of training data points        :  6
  number of validating data points      :  3
@@ -481,8 +510,8 @@
                        nat:  14,          ibmax:  0, gmaxarr:  6.5173349479E-01, 
                    strmess: bounds_train,             fn_min: posinp_train.yaml, 
                  lconf_min:  4,          fn_max: posinp_train.yaml, lconf_max:  6}
- TIMING evaluation symmetry functions for valid:  8.0000000000000071E-003
- TIMING evaluation symmetry functions for train:  7.9999999999999793E-003
+ TIMING evaluation symmetry functions for valid:  4.0000000000000036E-003
+ TIMING evaluation symmetry functions for train:  1.2000000000000011E-002
   #B.ann.param.yaml.00000
   #B.ann.param.yaml.00001
   #B.ann.param.yaml.00002
@@ -505,17 +534,17 @@
   #B.ann.param.yaml.00019
   #B.ann.param.yaml.00020
   #B.ann.param.yaml
- CPU time: {iproc:  0, hrs:  0.153E-03, min:  0.920E-02, sec:  0.552E+00}
+ CPU time: {iproc:  0, hrs:  0.164E-03, min:  0.987E-02, sec:  0.592E+00}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  696
-   Tot. No. of Deallocations           :  696
+   Tot. No. of Allocations             :  705
+   Tot. No. of Deallocations           :  705
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  0.336
+     Peak Value (MB)                   :  0.337
      for the array                     : symfunc%y0dr
      in the routine                    : symmetry_functions_driver
-     Memory Peak of process            : 308.180 MB
- Walltime since initialization         :  00:00:00.572249371
- Max No. of dictionaries used          :  1141 #( 185 still in use)
+     Memory Peak of process            : 270.300 MB
+ Walltime since initialization         :  00:00:00.599701857
+ Max No. of dictionaries used          :  1132 #( 171 still in use)
  Number of dictionary folders allocated:  1

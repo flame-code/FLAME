@@ -23,7 +23,6 @@ module mod_train
 contains
 !*****************************************************************************************
 subroutine ann_train(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
@@ -61,7 +60,7 @@ subroutine ann_train(parini)
     else
         call read_data_old(parini,'list_posinp_valid',atoms_valid)
     endif
-    if(trim(parini%approach_ann)=='cent2') then
+    if(trim(parini%approach_ann)=='centt') then
         call read_data_yaml(parini,'list_posinp_smplx.yaml',atoms_smplx)
     endif
     call init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
@@ -102,19 +101,19 @@ subroutine ann_train(parini)
     !endif
     !-------------------------------------------------------------------------------------
     call set_annweights(parini,opt_ann,ann_arr)
-    if(trim(parini%approach_ann)=='cent2') then
+    if(trim(parini%approach_ann)=='centt') then
         call set_single_atom_energy(parini,ann_arr,opt_ann)
     endif
 
     ann_arr%compute_symfunc=.false.
-    !if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent2') then
+    !if(parini%prefit_ann .and. trim(parini%approach_ann)=='centt') then
     if(parini%prefit_ann ) then
         !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
         call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     endif
 
-    if(trim(parini%approach_ann)=='cent2' .and. parini%prefit_cent2_ann) then
-        call cent2_simplex(parini,ann_arr,atoms_smplx,opt_ann)
+    if(trim(parini%approach_ann)=='centt' .and. parini%prefit_centt_ann) then
+        call centt_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     endif
     atoms_train_t=>atoms_train
     atoms_valid_t=>atoms_valid
@@ -145,7 +144,6 @@ subroutine ann_train(parini)
 end subroutine ann_train
 !*****************************************************************************************
 subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
@@ -194,8 +192,7 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     call atom_deallocate_old(atoms)
 end subroutine set_single_atom_energy
 !*****************************************************************************************
-subroutine cent2_simplex(parini,ann_arr,atoms_smplx,opt_ann)
-    !use mod_interface
+subroutine centt_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann
@@ -211,8 +208,8 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     real(8):: vertices(10,11), fval(11)
     real(8):: step, ftol
     integer:: ndim, iter, i
-    !external:: cal_rmse_force_cent2
-    !external:: cal_rmse_energy_cent2
+    !external:: cal_rmse_force_centt
+    !external:: cal_rmse_energy_centt
     ndim=10
     ftol=parini%ftol_ann
     step=0.d0
@@ -248,12 +245,11 @@ subroutine cent2_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     parini_t=>parini
     ann_arr_t=>ann_arr
     opt_ann_t=>opt_ann
-    !call simplex(vertices,fval,step,ndim,ftol,cal_rmse_force_cent2,iter)
-    call simplex(vertices,fval,step,ndim,ftol,cal_rmse_energy_cent2,iter)
-end subroutine cent2_simplex
+    !call simplex(vertices,fval,step,ndim,ftol,cal_rmse_force_centt,iter)
+    call simplex(vertices,fval,step,ndim,ftol,cal_rmse_energy_centt,iter)
+end subroutine centt_simplex
 !*****************************************************************************************
-subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
-    use mod_interface
+subroutine cal_rmse_force_centt(ndim,vertex,rmse_force_centt)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
     use mod_atoms, only: typ_atoms, atom_copy_old 
@@ -261,7 +257,7 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
     implicit none
     integer, intent(in) :: ndim
     real(8), intent(in) :: vertex(ndim)
-    real(8), intent(out) :: rmse_force_cent2
+    real(8), intent(out) :: rmse_force_centt
     !local variables
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
@@ -303,12 +299,11 @@ subroutine cal_rmse_force_cent2(ndim,vertex,rmse_force_cent2)
         enddo
         nat_tot=nat_tot+atoms%nat
     enddo
-    rmse_force_cent2=sqrt(rmse/real(3*nat_tot,8))
-    write(*,*) 'rmse_force_cent2 ',rmse_force_cent2
-end subroutine cal_rmse_force_cent2
+    rmse_force_centt=sqrt(rmse/real(3*nat_tot,8))
+    write(*,*) 'rmse_force_centt ',rmse_force_centt
+end subroutine cal_rmse_force_centt
 !*****************************************************************************************
-subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
-    use mod_interface
+subroutine cal_rmse_energy_centt(ndim,vertex,rmse_energy_centt)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
     use mod_atoms, only: typ_atoms, atom_copy_old
@@ -316,7 +311,7 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
     implicit none
     integer, intent(in) :: ndim
     real(8), intent(in) :: vertex(ndim)
-    real(8), intent(out) :: rmse_energy_cent2
+    real(8), intent(out) :: rmse_energy_centt
     !local variables
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
@@ -361,12 +356,11 @@ subroutine cal_rmse_energy_cent2(ndim,vertex,rmse_energy_cent2)
             rmse=rmse+(atoms%epot-atoms_smplx%atoms(iconf)%epot)**2
         enddo
     enddo
-    rmse_energy_cent2=sqrt(rmse/real(atoms_smplx%nconf,8))
-    write(*,*) 'rmse_energy_cent2 ',rmse_energy_cent2
-end subroutine cal_rmse_energy_cent2
+    rmse_energy_centt=sqrt(rmse/real(atoms_smplx%nconf,8))
+    write(*,*) 'rmse_energy_centt ',rmse_energy_centt
+end subroutine cal_rmse_energy_centt
 !*****************************************************************************************
 subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, set_number_of_ann, init_ann_arr
     use mod_atoms, only: typ_atoms_arr
@@ -422,7 +416,6 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
 end subroutine init_ann_train
 !*****************************************************************************************
 subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, fini_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
@@ -464,9 +457,9 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc
 end subroutine fini_ann_train
 !*****************************************************************************************
 subroutine set_conf_inc_random(parini,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr
+    use mod_utils
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms_arr), intent(inout):: atoms_arr
@@ -487,7 +480,11 @@ subroutine set_conf_inc_random(parini,atoms_arr)
     irand=0
     do
         if(irand==atoms_arr%nconf_inc) exit
-        call random_number(tt)
+        if(trim(parini%rng_type)=='only_for_tests') then
+            call random_number_generator_simple(tt)
+        else
+            call random_number(tt)
+        endif
         tt=tt*real(atoms_arr%nconf)
         iconf=int(tt)+1
         if(atoms_arr%conf_inc(iconf)) cycle
@@ -497,7 +494,6 @@ subroutine set_conf_inc_random(parini,atoms_arr)
 end subroutine set_conf_inc_random
 !*****************************************************************************************
 subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
@@ -538,7 +534,6 @@ subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
 end subroutine apply_gbounds_atom
 !*****************************************************************************************
 subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
@@ -586,7 +581,6 @@ subroutine apply_gbounds_bond(parini,ann_arr,atoms_arr,symfunc_arr)
 end subroutine apply_gbounds_bond
 !*****************************************************************************************
 subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms_arr, update_ratp, update_rat
@@ -620,7 +614,6 @@ subroutine prepare_atoms_arr(parini,ann_arr,atoms_arr)
 end subroutine prepare_atoms_arr
 !*****************************************************************************************
 subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
@@ -1101,7 +1094,6 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
 end subroutine save_gbounds
 !*****************************************************************************************
 subroutine randomize_data_order(atoms_arr)
-    use mod_interface
     use mod_atoms, only: typ_atoms_arr, typ_atoms, atom_copy_old, atom_deallocate_old
     implicit none
     type(typ_atoms_arr), intent(inout):: atoms_arr

@@ -6,13 +6,13 @@
 ! lammps_write should be changed in a way it does the rotation iteself.
 !-----------------------------------------------------------------------------------------
 subroutine lammps_task(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_copy, atom_deallocate, set_typat
     use mod_potential, only: potential
 #if defined(HAVE_LAMMPS)
     use mpi
     use LAMMPS
+    use mod_acf, only: acf_read_new
     use callback !, only: atoms
     use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int, C_FUNPTR
 #endif
@@ -60,7 +60,6 @@ subroutine lammps_task(parini)
 end subroutine lammps_task
 !*****************************************************************************************
 subroutine lammps_write(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     implicit none

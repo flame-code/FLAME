@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -105,7 +104,13 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,r
                     dmsq=dmx**2+dmy**2+dmz**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
+#ifdef HAVE_MKL
                 call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*expval(-iix:iix)
             enddo
         enddo
@@ -124,7 +129,6 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,r
 end subroutine put_gto_sym
 !*****************************************************************************************
 subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -239,7 +243,13 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,
                     dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
-                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+#ifdef HAVE_MKL
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 do igx=-iix,iix
                     ttq=ttq+fac*expval(igx)*wa(igx+imgx,jgy,jgz)
                     tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
@@ -262,7 +272,6 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,
 end subroutine rqgrad_gto_sym
 !*****************************************************************************************
 subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -376,7 +385,13 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,p
                     dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
-                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+#ifdef HAVE_MKL
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 do igx=-iix,iix
                     tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
                     ttx=ttx+tt1*dmxarr(igx)
@@ -397,7 +412,6 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,p
 end subroutine force_gto_sym
 !*****************************************************************************************
 subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,rgrad,qgrad,agrad)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -515,7 +529,13 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgri
                     dmsq=dmxarr(igx)**2+dmyarr(igx)**2+dmzarr(igx)**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
-                call vdexp( 2*iix+1, exponentval(-iix), expval(-iix) )
+#ifdef HAVE_MKL
+                call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 do igx=-iix,iix
                     ttq=ttq+fac*expval(igx)*wa(igx+imgx,jgy,jgz)
                     tt1=facqiat*expval(igx)*wa(igx+imgx,jgy,jgz)*(2.d0*gwsq_inv)
@@ -545,7 +565,6 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgri
 end subroutine gwrqgrad_gto_sym
 !*****************************************************************************************
 subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,rho,rho_q_par,rho_a_par)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_parini, only: typ_parini
     use dynamic_memory
@@ -635,7 +654,13 @@ subroutine rhograd_gto_sym(parini,bc,reset,nat,rxyz,cv,qat,gw,rgcut,ngx,ngy,ngz,
                     dmsq=dmx**2+dmy**2+dmz**2
                     exponentval(igx)=-dmsq*gwsq_inv
                 enddo
+#ifdef HAVE_MKL
                 call vdexp(2*iix+1,exponentval(-iix),expval(-iix))
+#else
+                do igx=-iix,iix
+                    expval(igx)=exp(exponentval(igx))
+                enddo
+#endif
                 wa(imgx-iix:imgx+iix,jgy,jgz)=wa(imgx-iix:imgx+iix,jgy,jgz)+facqiat*expval(-iix:iix)
                 wb(imgx-iix:imgx+iix,jgy,jgz)=wb(imgx-iix:imgx+iix,jgy,jgz)+fac*expval(-iix:iix)
                 wc(imgx-iix:imgx+iix,jgy,jgz)=wc(imgx-iix:imgx+iix,jgy,jgz)+(-2.d0*exponentval(-iix:iix) - 3.d0)*gw_inv*facqiat*expval(-iix:iix)

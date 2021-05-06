@@ -6,6 +6,8 @@ SHORT_TESTDIRS = testforces_FD \
 				 geopt_SQNM \
 				 minhopp_LJ \
 				 saddle_1s_Si64Bulk \
+				 saddle_1s_barsad \
+				 saddle_1s_barsad_dir \
 				 SP_CENT1_bulk \
 				 SP_CENT1_free \
 				 SP_CENT1_slab \
@@ -18,12 +20,14 @@ SHORT_TESTDIRS = testforces_FD \
 				 vibfreq_fourpoints \
 				 train_atombased \
 				 train_CENT1 \
-				 train_CENT2
+				 train_CENTT \
+				 saddle_2s_splsad \
+				 saddle_2s_neb
 
 LONG_TESTDIRS = $(SHORT_TESTDIRS)
 
 EXTRA_DIST = 
 
-pythondir = $(FUTILE)/install/lib/python2.7/site-packages
+pythondir = $(FUTILE)/install/lib/python$(PYTHON_VERSION)/site-packages
 
 include $(srcdir)/check.mk

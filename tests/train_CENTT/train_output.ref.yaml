@@ -1,0 +1,111 @@
+ training iterations:
+ - train: {iter:  0, rmse:  2.521, ttn:  0.001, tta: -0.537, frmse:  0.041, errmax:  5.353, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  0, rmse:  3.731, ttn:  0.001, tta: -0.437, frmse:  0.043, errmax:  4.800, 
+        ierrmax:  3,  nat:  22,             ilarge1:  0,   ilarge2:  5, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  3}
+   charge_Mg: {iter:  0, qavg:  1.106, qmin:  0.912, qmax:  1.280, qvar:  0.368}
+   chi_Mg: {iter:  0, chiavg: -0.295, chimin: -0.295, chimax: -0.295, chivar:  0.000}
+   charge_O: {iter:  0, qavg: -1.012, qmin: -1.191, qmax: -0.783, qvar:  0.408}
+   chi_O: {iter:  0, chiavg:  0.285, chimin:  0.285, chimax:  0.285, chivar:  0.000}
+ - train: {iter:  1, rmse:  1.775, ttn:  0.001, tta: -0.538, frmse:  0.041, errmax:  4.158, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  1, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  1, rmse:  3.715, ttn:  0.001, tta: -0.437, frmse:  0.043, errmax:  5.738, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  1, qavg:  1.109, qmin:  0.914, qmax:  1.284, qvar:  0.369}
+   chi_Mg: {iter:  1, chiavg: -0.296, chimin: -0.296, chimax: -0.296, chivar:  0.000}
+   charge_O: {iter:  1, qavg: -1.015, qmin: -1.195, qmax: -0.786, qvar:  0.409}
+   chi_O: {iter:  1, chiavg:  0.286, chimin:  0.286, chimax:  0.286, chivar:  0.000}
+ - train: {iter:  2, rmse:  1.619, ttn:  0.001, tta: -0.538, frmse:  0.041, errmax:  3.582, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  3, ilarge3:  5, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  2, rmse:  3.838, ttn:  0.001, tta: -0.437, frmse:  0.044, errmax:  6.324, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  2, qavg:  1.111, qmin:  0.916, qmax:  1.286, qvar:  0.370}
+   chi_Mg: {iter:  2, chiavg: -0.297, chimin: -0.297, chimax: -0.297, chivar:  0.000}
+   charge_O: {iter:  2, qavg: -1.016, qmin: -1.196, qmax: -0.787, qvar:  0.409}
+   chi_O: {iter:  2, chiavg:  0.286, chimin:  0.286, chimax:  0.286, chivar:  0.000}
+ - train: {iter:  3, rmse:  1.608, ttn:  0.001, tta: -0.539, frmse:  0.041, errmax:  3.338, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  3, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  3, rmse:  3.906, ttn:  0.001, tta: -0.438, frmse:  0.044, errmax:  6.562, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  3, qavg:  1.111, qmin:  0.916, qmax:  1.286, qvar:  0.370}
+   chi_Mg: {iter:  3, chiavg: -0.297, chimin: -0.297, chimax: -0.297, chivar:  0.000}
+   charge_O: {iter:  3, qavg: -1.017, qmin: -1.197, qmax: -0.788, qvar:  0.409}
+   chi_O: {iter:  3, chiavg:  0.286, chimin:  0.286, chimax:  0.286, chivar:  0.000}
+ - train: {iter:  4, rmse:  1.607, ttn:  0.001, tta: -0.541, frmse:  0.041, errmax:  3.221, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  3, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  4, rmse:  3.922, ttn:  0.001, tta: -0.439, frmse:  0.044, errmax:  6.649, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  4, qavg:  1.111, qmin:  0.916, qmax:  1.286, qvar:  0.370}
+   chi_Mg: {iter:  4, chiavg: -0.298, chimin: -0.298, chimax: -0.298, chivar:  0.000}
+   charge_O: {iter:  4, qavg: -1.017, qmin: -1.197, qmax: -0.788, qvar:  0.409}
+   chi_O: {iter:  4, chiavg:  0.286, chimin:  0.286, chimax:  0.286, chivar:  0.000}
+ - train: {iter:  5, rmse:  1.596, ttn:  0.001, tta: -0.547, frmse:  0.041, errmax:  3.122, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  3, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  5, rmse:  3.898, ttn:  0.001, tta: -0.444, frmse:  0.044, errmax:  6.671, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  5, qavg:  1.111, qmin:  0.916, qmax:  1.286, qvar:  0.370}
+   chi_Mg: {iter:  5, chiavg: -0.300, chimin: -0.300, chimax: -0.300, chivar:  0.000}
+   charge_O: {iter:  5, qavg: -1.017, qmin: -1.197, qmax: -0.788, qvar:  0.409}
+   chi_O: {iter:  5, chiavg:  0.284, chimin:  0.284, chimax:  0.284, chivar:  0.000}
+ - train: {iter:  6, rmse:  1.579, ttn:  0.001, tta: -0.560, frmse:  0.041, errmax:  2.982, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  3, ilarge3:  5, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  6, rmse:  3.833, ttn:  0.001, tta: -0.455, frmse:  0.044, errmax:  6.660, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  6, qavg:  1.111, qmin:  0.916, qmax:  1.286, qvar:  0.370}
+   chi_Mg: {iter:  6, chiavg: -0.303, chimin: -0.303, chimax: -0.303, chivar:  0.000}
+   charge_O: {iter:  6, qavg: -1.016, qmin: -1.197, qmax: -0.787, qvar:  0.409}
+   chi_O: {iter:  6, chiavg:  0.281, chimin:  0.281, chimax:  0.281, chivar:  0.000}
+ - train: {iter:  7, rmse:  1.575, ttn:  0.001, tta: -0.585, frmse:  0.041, errmax:  2.801, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  3, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  7, rmse:  3.744, ttn:  0.001, tta: -0.477, frmse:  0.044, errmax:  6.631, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  4, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  7, qavg:  1.110, qmin:  0.915, qmax:  1.285, qvar:  0.370}
+   chi_Mg: {iter:  7, chiavg: -0.307, chimin: -0.307, chimax: -0.307, chivar:  0.000}
+   charge_O: {iter:  7, qavg: -1.016, qmin: -1.196, qmax: -0.787, qvar:  0.409}
+   chi_O: {iter:  7, chiavg:  0.276, chimin:  0.276, chimax:  0.276, chivar:  0.000}
+ - train: {iter:  8, rmse:  1.593, ttn:  0.001, tta: -0.627, frmse:  0.041, errmax:  2.644, 
+        ierrmax:  4,  nat:  22,             ilarge1:  0,   ilarge2:  2, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  4}
+   valid: {iter:  8, rmse:  3.668, ttn:  0.001, tta: -0.514, frmse:  0.044, errmax:  6.603, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  8, qavg:  1.110, qmin:  0.915, qmax:  1.285, qvar:  0.370}
+   chi_Mg: {iter:  8, chiavg: -0.311, chimin: -0.311, chimax: -0.311, chivar:  0.000}
+   charge_O: {iter:  8, qavg: -1.015, qmin: -1.195, qmax: -0.786, qvar:  0.409}
+   chi_O: {iter:  8, chiavg:  0.272, chimin:  0.272, chimax:  0.272, chivar:  0.000}
+ - train: {iter:  9, rmse:  1.612, ttn:  0.001, tta: -0.676, frmse:  0.041, errmax:  2.772, 
+        ierrmax:  5,  nat:  16,             ilarge1:  0,   ilarge2:  2, ilarge3:  6, 
+     fn_ierrmax: posinp_train.yaml,   lconf_ierrmax:  5}
+   valid: {iter:  9, rmse:  3.624, ttn:  0.001, tta: -0.559, frmse:  0.043, errmax:  6.583, 
+        ierrmax:  2,  nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,   lconf_ierrmax:  2}
+   charge_Mg: {iter:  9, qavg:  1.109, qmin:  0.915, qmax:  1.284, qvar:  0.369}
+   chi_Mg: {iter:  9, chiavg: -0.313, chimin: -0.313, chimax: -0.313, chivar:  0.000}
+   charge_O: {iter:  9, qavg: -1.015, qmin: -1.195, qmax: -0.786, qvar:  0.409}
+   chi_O: {iter:  9, chiavg:  0.269, chimin:  0.269, chimax:  0.270, chivar:  0.000}
+ - train: {iter:  10, rmse:  1.618, ttn:  0.001, tta: -0.456, frmse:  0.041, errmax:  2.807, 
+        ierrmax:  5,   nat:  16,             ilarge1:  0,   ilarge2:  2, ilarge3:  5, 
+     fn_ierrmax: posinp_train.yaml,    lconf_ierrmax:  5}
+   valid: {iter:  10, rmse:  3.592, ttn:  0.001, tta: -0.354, frmse:  0.043, errmax:  6.537, 
+        ierrmax:  2,   nat:  22,             ilarge1:  0,   ilarge2:  4, ilarge3:  5, 
+     fn_ierrmax: posinp_valid.yaml,    lconf_ierrmax:  2}
+   charge_Mg: {iter:  10, qavg:  1.109, qmin:  0.914, qmax:  1.284, qvar:  0.370}
+   chi_Mg: {iter:  10, chiavg: -0.314, chimin: -0.314, chimax: -0.314, chivar:  0.000}
+   charge_O: {iter:  10, qavg: -1.015, qmin: -1.195, qmax: -0.786, qvar:  0.409}
+   chi_O: {iter:  10, chiavg:  0.268, chimin:  0.268, chimax:  0.268, chivar:  0.000}

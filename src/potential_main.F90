@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_potential_forces(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: fcalls, potential
@@ -46,9 +45,8 @@ subroutine init_potential_forces(parini,atoms)
 end subroutine init_potential_forces
 !*****************************************************************************************
 subroutine cal_potential_forces(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, get_rat, update_ratp, set_rat
+    use mod_atoms, only: typ_atoms, get_rat, update_ratp, set_rat, update_rat
     use mod_potential, only: potential, fcalls
     use mod_processors, only: iproc
     use dynamic_memory
@@ -67,6 +65,7 @@ subroutine cal_potential_forces(parini,atoms)
         call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,ratred)
         call backtocell_alborz(atoms%nat,atoms%cellvec,ratred)
         call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%ratp)
+        call update_rat(atoms,upall=.true.)
         deallocate(ratred)
     elseif(trim(atoms%boundcond)=='slab') then
         allocate(ratred(3,atoms%nat))
@@ -76,6 +75,7 @@ subroutine cal_potential_forces(parini,atoms)
             ratred(2,iat)=modulo(modulo(ratred(2,iat),1.d0),1.d0)
         enddo
         call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%ratp)
+        call update_rat(atoms,upall=.true.)
         deallocate(ratred)
     endif
     do iat=1,atoms%nat
@@ -134,7 +134,6 @@ subroutine cal_potential_forces(parini,atoms)
 end subroutine cal_potential_forces
 !*****************************************************************************************
 subroutine final_potential_forces(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: potential
@@ -175,7 +174,6 @@ subroutine final_potential_forces(parini,atoms)
 end subroutine final_potential_forces
 !*****************************************************************************************
 subroutine remove_drift(atoms)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms

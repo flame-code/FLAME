@@ -1,5 +1,4 @@
 subroutine pathintegral(parini,parres,latvec,xred)
- use mod_interface
  use global, only: units
  use defs_basis
  use interface_code

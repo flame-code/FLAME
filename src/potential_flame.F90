@@ -4,7 +4,6 @@ module interface_alborz
     character(5):: sat(1000)
 end module interface_alborz
 subroutine call_to_alborz_init(parini,nat)
-    !use mod_interface
     use mod_parini, only: typ_parini
     use interface_alborz
     implicit none
@@ -17,7 +16,6 @@ subroutine call_to_alborz_init(parini,nat)
     call alborz_as_potential_init(nat,sat)
 end subroutine call_to_alborz_init
 subroutine call_to_alborz_get(boundcond,nat,latvec,xred,fcart,energy,strten)
-    !use mod_interface
     use interface_alborz
     implicit none
     character(*), intent(in):: boundcond

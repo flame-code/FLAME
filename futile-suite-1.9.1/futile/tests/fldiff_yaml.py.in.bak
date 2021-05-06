@@ -1,0 +1,670 @@
+#!/usr/bin/env python
+# -*- coding: us-ascii -*-
+#----------------------------------------------------------------------------
+
+#> @file
+## Check yaml output for tests
+## @author
+##    Copyright (C) 2012-2015 BigDFT group
+##    This file is distributed under the terms of the
+##    GNU General Public License, see ~/COPYING file
+##    or http://www.gnu.org/copyleft/gpl.txt .
+##    For the list of contributors, see ~/AUTHORS
+
+
+import math
+import sys
+import os
+import copy
+import optparse
+
+#Hack for non-system installations.
+PyYAML_path = "@AX_PYYAML_PATH@"
+if not PyYAML_path == "system":
+  sys.path.insert(0, PyYAML_path)
+sys.path.insert(0, "@abs_srcdir@")
+
+# path of the script
+#path = "@abs_srcdir@" corrected
+path = os.path.dirname(os.path.abspath(__file__))
+#yaml_folder = '/local/gigi/binaries/ifort-OMP-OCL-CUDA-gC/PyYAML-3.10/lib'
+# if yaml_folder not in sys.path:
+#  sys.path.insert(0,'/local/gigi/binaries/ifort-OMP-OCL-CUDA-gC/PyYAML-3.10/lib')
+
+# Check the version of python
+version = sys.version_info
+if version <= (2, 5, 0):
+    sys.stdout.write(70 * "-" + " Fatal error, Compatibility Problem!\n")
+    sys.stdout.write("Detected version %d.%d.%d\n" % tuple(version[:3]))
+    sys.stdout.write(
+        "Due to PyYaml, minimal required version is python 2.5.0\n")
+    sys.stdout.write('Solution: ' + 30 * "-" + ' Try to use a newer version of Python! (Python 2.5.0: Early 2007)\n')
+    sys.exit(1)
+
+
+import yaml
+
+# from yaml_hl import *
+# start_fail = "<fail>" #"\033[0;31m"
+# start_fail_esc = "\033[0;31m "
+# start_success = "\033[0;32m "
+# start_pass = "<pass>"
+# end = "</end>" #"\033[m"
+# end_esc = "\033[m "
+
+
+def ignore_key(key):
+    "Return True if the key has to be ignored."
+    ret = key in keys_to_ignore
+    if not ret:
+        for p in patterns_to_ignore:
+            if str(key).find(p) > -1:
+                ret = True
+                exit
+    return ret
+
+def combine_dicts(dest,src):
+    res=dest
+    res["Path"].append(src["Path"])
+    for key in src:
+        if key!="Path":
+            val = src[key]
+            if key in res:
+                try:
+                    valnew = max(val,dest[key])
+                except:
+                    valnew=val
+                res[key]=valnew
+            else:
+                res[key]=val
+    return res
+
+def get_mantissa_and_exp(val):
+  """
+  Get the mantissa and the exponent of a floating point
+  """
+  import math
+  if val == 0.0: return 0.0,1
+  sign= 1.0 if val >= 0 else -1.0
+  exponent = math.log(sign*val)/math.log(10)
+  if float(int(exponent)) != exponent: exponent = int(exponent)-1
+  exponent = int(exponent)
+  mantissa = val/10**(exponent)
+  assert( abs(mantissa*10**exponent - val) < 10.e-12)
+  return mantissa,exponent
+
+def excess_round_float(val,digits):
+  """
+  Round a floating point number to a given number of digits
+  """
+  mant,exp=get_mantissa_and_exp(val)
+  return float(str(round(mant,digits)+10**(-digits))+'e'+str(exp)) #*(10**exp)
+
+def number_of_significative_digits(scl,ref):
+  """
+  Identify the number of significative digits that are preserved in both the values
+  """
+  import math
+  #first check the sign
+  if (scl >=0) != (ref >=0): return 0
+  rel_diff=abs(float(scl)/ref-1.0)
+  digits=math.log(rel_diff)/math.log(10)
+  return 1-int(digits)
+
+def suggestion_for_tolerances(remarks):
+    res={}
+    if "FAILURE" in remarks:
+        for key in remarks["FAILURE"]:
+            res[key]=excess_round_float(remarks["FAILURE"][key]["diff"],3)
+    return res
+
+def compare(data, ref, tols=None, always_fails=False,keyword=[]):
+    """Generic document comparison routine
+       descend recursively in the dictionary until a scalar is found
+       a tolerance value might be passed"""
+    #  if tols is not None:
+    #  if (discrepancy > 1.85e-9):
+    #  print 'test',data,ref,tols,discrepancy
+    if data is None:
+        return (True, None)
+    elif isinstance(ref,dict):
+        # for a floating point the reference is set for all the lower levels
+        if isinstance(tols, str):
+            tols = float(tols)
+        if isinstance(tols,float) or isinstance(tols,int):
+            neweps = tols
+            tols = {}
+            for key in ref:
+              tols[key] = def_tols.get(key,neweps)
+              #if key in def_tols:
+              #   tols[key] = def_tols[key]
+              #else:
+              #   tols[key] = neweps
+            # print neweps,tols,def_tols
+        ret = compare_map(data, ref, tols, always_fails,keyword)
+    elif isinstance(ref,list):
+        if isinstance(tols, str):
+            tols = float(tols)
+        if isinstance(tols,float) or isinstance(tols,int):
+            neweps = tols
+            tols = []
+            tols.append(neweps)
+        ret = compare_seq(data, ref, tols, always_fails,keyword)
+    else:
+        #This is a scalar
+        ret = compare_scl(data, ref, tols, always_fails,keyword)
+    return ret
+
+def fetch_val(seq,i):
+    if type(seq) == type([1,2,3]):
+        return seq[i]
+    else:
+        return seq
+
+def compare_seq(seq, ref, tols, always_fails=False,keyword=[]):
+    "Sequence comparison routine"
+    global failed_checks, remarks
+    if tols is not None:
+        if len(ref) == len(seq):
+            for i in range(len(ref)):
+                # print 'here',ref[i],seq[i],tols[0]
+                if len(keyword) == 0:
+                    ktmp=[[i]]
+                else:
+                    ktmp=[ j for j in keyword]
+                    ktmp.append([i])
+                (failed, newtols) = compare(seq[i], ref[i], tols[0], always_fails,
+                                            ktmp)#"%s[%d]" % (keyword,i))
+                # Add to the tolerance dictionary a failed result
+                if failed:
+                    # and type(tols) == type({}):
+                    if isinstance(newtols,dict):
+                        # print
+                        # seq,ref,'tols',tols,'newtols',newtols,type(tols)
+                        if not isinstance(tols[0],float):
+                            tols[0].update(newtols)
+                    elif isinstance(newtols,list):
+                        tols[0] = newtols
+                    else:
+                        tols[0] = max(newtols, tols[0])
+        else:
+            #print 'compare sequence: problem with length 1'
+            #remarks += "%s Compare sequence: problem with length 1\n" % keyword
+            if "problem with length 1" in remarks:
+                remarks["problem with length 1"].append(keyword)
+            else:
+                remarks["problem with length 1"]=[keyword]
+            failed_checks += 1
+            if len(tols) == 0:
+                tols.append("NOT SAME LENGTH")
+            else:
+                tols[0] = "NOT SAME LENGTH"
+    else:
+        tols = []
+        #find if the objects can be compared
+        checkit=False
+        if type(seq) == type([1,2,3]):
+            checkit= len(ref) == len(seq)
+        else:
+            checkit= type(seq) == type(1.0) or type(seq) == type(1)
+        if checkit:
+            for i in range(len(ref)):
+                if len(keyword) == 0:
+                    ktmp=[[i]]
+                else:
+                    ktmp=[ j for j in keyword]
+                    ktmp.append([i])
+                if len(tols) == 0:
+                    (failed, newtols) = compare(fetch_val(seq,i), ref[i], always_fails=always_fails,
+                                                keyword=ktmp)#"%s[%d]" % (keyword,i))
+                    #  add to the tolerance dictionary a failed result
+                    if failed:
+                        tols.append(newtols)
+                else:
+                    (failed, newtols) = compare(fetch_val(seq,i), ref[i], tols[0], always_fails=always_fails,
+                                                keyword=ktmp)#"%s[%d]" % (keyword,i))
+                    if failed:
+                        tols[0] = newtols
+        else:
+            #print 'compare sequence: problem with length 2'
+            #remarks += '%s Compare sequence: problem with length 2\n' % keyword
+            if "problem with length 2" in remarks:
+                remarks["problem with length 2"].append(keyword)
+            else:
+                remarks["problem with length 2"]=[keyword]
+            failed_checks += 1
+            if len(tols) == 0:
+                tols.append("NOT SAME LENGTH")
+            else:
+                tols[0] = "NOT SAME LENGTH"
+    return (len(tols) > 0, tols)
+
+
+def compare_map(map, ref, tols, always_fails=False, keyword=[]):
+    "Comparison of maps"
+    global docmiss, docmiss_it, remarks
+    if tols is None:
+        tols = {}
+    for key in ref:
+        #Initialize always_fails for each key
+        always_f = always_fails
+        if not ignore_key(key):
+            if not isinstance(map,dict) or not (key in map):
+                docmiss += 1
+                docmiss_it.append(key)
+                #print "WARNING!!", key, "not found", ref[key]
+                #remarks += "KEY NOT FOUND: %s'%s' with value=%s\n" % (keyword,key,ref[key])
+                datatmp={key: ref[key], "Path":keyword}
+                if "KEY NOT FOUND" in remarks:
+                    remarks["KEY NOT FOUND"].append(datatmp)
+                else:
+                    remarks["KEY NOT FOUND"]=[datatmp]
+                always_f = True
+                #value = ref[key]
+                value = None
+            else:
+                value = map[key]
+            if isinstance(tols,dict) and key in tols:
+                tol = tols[key]
+            # def tols is rigorously a one-level only dictionary
+            elif key in def_tols:
+                tol = def_tols[key]
+            else:
+                tol = None
+            #(failed, newtols) = compare(value, ref[key], tol, always_f, keyword="%s'%s'" % (keyword,key))
+            if len(keyword)==0:
+                ktmp=[key]
+            else:
+                ktmp=[j for j in keyword]
+                ktmp.append(key)
+            (failed, newtols) = compare(value, ref[key], tol, always_f, keyword=ktmp)
+            # add to the tolerance dictionary a failed result
+            if failed:
+                if isinstance(tols,dict) and key in tols:
+                    if isinstance(newtols,dict):
+                        if isinstance(tols[key],dict):
+                            tols[key].update(newtols)
+                        else:
+                            tols[key] = newtols
+                    elif isinstance(newtols,list):
+                        tols[key] = newtols
+                    else:
+                        tols[key] = max(newtols, tols[key])
+                elif isinstance(tols,dict):
+                    tols[key] = newtols
+    return (len(tols) > 0, tols)
+
+
+def compare_scl(scl, ref, tols, always_fails=False, keyword=[]):
+    "Compare the scalars and return the tolerance if the results are ok"
+    global failed_checks, discrepancy, biggest_tol, remarks
+    failed = always_fails
+    ret = (failed, None)
+    #  print scl,ref,tols, type(ref), type(scl)
+    # eliminate the character variables
+    diff = None
+    if isinstance(ref,str):
+        if not (scl == ref):
+            ret = (True, tols)
+    elif not always_fails:
+        # infinity case
+        if scl == ref:
+            failed = False
+            diff = 0.
+        else:
+          try:
+              truetol=epsilon if tols is None else tols
+              diff = math.fabs(scl - ref)
+              ret_diff = diff
+              if isinstance(truetol,int):
+                failed = number_of_significative_digits(scl,ref) < truetol
+              else:
+                failed = not (diff <= truetol)
+          except TypeError:
+              ret_diff = "NOT SAME KIND"
+              diff = 0.
+              failed = True
+        discrepancy = max(discrepancy, diff)
+        #  if (discrepancy > 1.85e-6):
+        #      print 'test',scl,ref,tols,discrepancy,failed
+        #      sys.exit(1)
+        if not failed:
+            if tols is None:
+                ret = (always_fails, None)
+            else:
+                ret = (True, tols)
+        else:
+            ret = (True, ret_diff)
+            if tols is not None:
+                biggest_tol = max(biggest_tol, math.fabs(tols))
+    else:
+        # So already failed: In this case we calculate only diff
+        # To avoid infinity case
+        if scl == ref:
+            diff = 0.
+        else:
+            diff = math.fabs(scl - ref)
+    if failed:
+        if failed_checks < 20 or True:
+            #print 'fldiff_failure: val, ref, tol, diff, bigtol', scl, ref, tols, discrepancy, biggest_tol
+            #remarks += 'FAILURE %s:\n  [ val: %s, ref: %s, diff: %s, tol: %s, bigtol: %s]\n' % \
+            #        (keyword,str(scl), str(ref), str(diff), str(tols), str(biggest_tol))
+            list_tmp={"Path": [keyword], "val":scl, "ref":ref, "diff": diff, "tols":tols,"bigtol":biggest_tol}
+            item=keyword[-1]
+            it=-1
+            while type(item) == type([]):
+                it -= 1
+                item=keyword[it]
+            if "FAILURE" not in remarks:
+                remarks["FAILURE"]={item: list_tmp}
+            elif type(item) != type(1) and item not in remarks["FAILURE"]:
+                remarks["FAILURE"].update({item: list_tmp})
+            else:
+                dict0=remarks["FAILURE"][item]
+                res=combine_dicts(dict0,list_tmp)
+                remarks["FAILURE"][item]=res
+            failed_checks += 1
+    return ret
+
+
+def document_report(hostname, tol, biggest_disc, nchecks, leaks, nmiss, miss_it, timet,
+                    message="",final = False):
+    "Report about the document"
+    global tols,remarks
+    results = {}
+    if (nchecks > 0 or leaks > 0) and not final:
+        results["All tolerances"] = tols
+    failure_reason = None
+    #  disc=biggest_disc
+    if nchecks > 0 or leaks != 0 or nmiss > 0:
+        if leaks != 0:
+            failure_reason = "Memory Leak"
+        elif nmiss > 0:
+            failure_reason = "Missing Keys"
+        elif tol == -1 and "No such file" in message:
+            failure_reason = "Missing File"
+        elif tol == -1 and "while parsing" in message:
+            failure_reason = "Yaml Standard"
+        elif tol == 0 and biggest_disc == 0 and timet == 0:
+            failure_reason = "Yaml Standard"
+        elif hostname == "None":
+            failure_reason = "Crash"
+        else:
+            failure_reason = "Difference"
+    if failure_reason is not None:
+        results["Failure reason"] = failure_reason
+    results["Maximum discrepancy"] = biggest_disc
+    results["Maximum tolerance applied"] = tol
+    if (nmiss > 0):
+        results["Missed Reference Items"] = miss_it
+    results["Platform"] = hostname
+    results["Seconds needed for the test"] = round(timet,2)
+    results["Test succeeded"] = (nchecks == 0 and nmiss == 0 and leaks == 0)
+    #
+    return results
+
+
+import yaml_hl
+
+
+class Pouet:
+    """Class used to define options in order to hightlight the YAML output by mean of yaml_hl"""
+    def __init__(self, config="yaml_hl.cfg", input="report"):
+        # Define a temporary file
+        self.input = input
+        self.output = None
+        self.style = "ascii"
+        self.config = os.path.join(os.path.dirname(yaml_hl.__file__), config)
+
+# Color options: one for the general text
+options = Pouet()
+#The second one for the remarks.
+options_remarks = Pouet(input="report_remarks",config="yaml_hl_remarks.cfg")
+# Create style (need to be in __main__)
+Style = yaml_hl.Style
+
+def parse_arguments():
+    "Parse the arguments"
+    parser = optparse.OptionParser(
+        "This script is used to compare two yaml outputs with respect to a tolerance file given. usage: fldiff_yaml.py <options>")
+    parser.add_option('-r', '--reference', dest='ref', default=None,  # sys.argv[1],
+                      help="reference yaml stream", metavar='REFERENCE')
+    parser.add_option('-d', '--data', dest='data', default=None,  # sys.argv[2],
+                      help="yaml stream to be compared with reference", metavar='DATA')
+    parser.add_option('-t', '--tolerances', dest='tols', default=None,  # sys.argv[3],
+                      help="File of the tolerances used for comparison", metavar='TOLS')
+    parser.add_option('-o', '--output', dest='output', default="/dev/null",  # sys.argv[4],
+                      help="set the output file (default: /dev/null)", metavar='FILE')
+    parser.add_option('-l', '--label', dest='label', default=None,
+                      help="Define the label to be used in the tolerance file to override the default", metavar='LABEL')
+    # Return the parsing
+    return parser
+
+def highlight_iftty(options):
+    hl = yaml_hl.YAMLHighlight(options)
+    if os.isatty(hl.output.fileno()):
+        hl.highlight()
+    else:
+        hl.output.write(hl.input.read())
+
+
+def fatal_error(reports, message='Error in reading datas, Yaml Standard violated or missing file'):
+    "Fatal Error: exit after writing the report, assume that the report file is already open)"
+    global options
+    print (message)
+    final_results = document_report('None', -1., 0., 1, 0, 0, 0, 0,message=message,final=True)
+    reports.write(
+        yaml.dump(final_results, default_flow_style=False, explicit_start=True))
+    newreport = open(options.input, "w")
+    newreport.write(
+        yaml.dump(final_results, default_flow_style=False, explicit_start=True))
+    newreport.close()
+    highlight_iftty(options)
+    #hl = yaml_hl.YAMLHighlight(options)
+    #hl.highlight()
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    parser = parse_arguments()
+    (args, argtmp) = parser.parse_args()
+
+
+# args=parse_arguments()
+# print args.ref,args.data,args.output
+#datas      = [a for a in yaml.load_all(open(args.data, "r"), Loader = yaml.CLoader)]
+try:
+    references = [a for a in yaml.load_all(
+        open(args.ref, "r").read(), Loader=yaml.CLoader)]
+except Exception as e:
+    reports = open(args.output, "w")
+    fatal_error(reports, message="In reference file: " + str(e))
+
+try:
+    datas = [a for a in yaml.load_all(
+        open(args.data, "r").read(), Loader=yaml.CLoader)]
+except Exception as e:
+    reports = open(args.output, "w")
+    fatal_error(reports, message="In data file: " + str(e))
+
+if args.tols:
+    try:
+        orig_tols = yaml.load(open(args.tols, "r").read(), Loader=yaml.CLoader)
+    except Exception as e:
+        reports = open(args.output, "w")
+        fatal_error(reports, message=str(e))
+else:
+    orig_tols = dict()
+
+# take default value for the tolerances
+try:
+    def_tols = orig_tols["Default tolerances"]
+    try:
+        keys_to_ignore = orig_tols["Keys to ignore"]
+    except:
+        keys_to_ignore = []
+    try:
+        patterns_to_ignore = orig_tols["Patterns to ignore"]
+    except:
+        patterns_to_ignore = []
+except:
+    def_tols = {}
+    keys_to_ignore = []
+    patterns_to_ignore = []
+
+# override the default tolerances with the values which are written in the label
+extra_tols = {}
+if args.label is not None and args.label is not '':
+    try:
+        extra_tols = orig_tols[args.label]
+        # adding new keys to ignore
+        try:
+            keys_to_ignore += extra_tols["Keys to ignore"]
+            del extra_tols["Keys to ignore"]
+        except:
+            print ('Label "%s": No new keys to ignore' % args.label)
+        # adding new patterns to ignore
+        try:
+            patterns_to_ignore += extra_tols["Patterns to ignore"]
+            del extra_tols["Patterns to ignore"]
+        except:
+            print ('Label "%s": No new patterns to ignore' % args.label)
+        # adding new tolerances and override default ones
+        try:
+            def_tols.update(extra_tols)
+        except:
+            print ('Label "%s": No new tolerances' % args.label)
+        # eliminate particular case
+        del orig_tols[args.label]
+    except:
+        print ('Label "%s" not found in tolerance file' % args.label)
+
+# determine generic tolerance
+try:
+    epsilon = orig_tols["Default tolerances"]["Epsilon"]
+except:
+    epsilon = 0
+
+
+poplist = []
+for k in range(len(keys_to_ignore)):
+    if keys_to_ignore[k].find('*') > -1:
+        poplist.append(k)
+        patterns_to_ignore.append(keys_to_ignore[k].partition('*')[0])
+# print poplist
+ipopped = 0
+for k in poplist:
+    keys_to_ignore.pop(k - ipopped)
+    ipopped += 1
+
+if len(patterns_to_ignore) > 0:
+    orig_tols["Patterns to ignore"] = patterns_to_ignore
+
+# print 'Epsilon tolerance',epsilon
+# print 'Ignore',keys_to_ignore,'Patterns',patterns_to_ignore
+
+failed_documents = 0
+reports = open(args.output, "w")
+max_discrepancy = 0.
+leak_memory = 0
+total_misses = 0
+total_missed_items = []
+time = 0.
+biggest_tol = epsilon
+try:
+    hostname = datas[0]["Root process Hostname"]
+except:
+    hostname = 'unknown'
+
+if len(references) != len(datas):
+    fatal_error(reports,
+                message='Error, number of documents differ between reference (%d) and data (%d)' % (len(references), len(datas)))
+
+for i in range(len(references)):
+    tols = {}  # copy.deepcopy(orig_tols)
+    #global variable!
+    failed_checks = 0
+    docmiss = 0
+    docmiss_it = []
+    discrepancy = 0.
+    reference = references[i]
+    remarks = {} #""
+    # this executes the fldiff procedure
+    # compare(datas[i], reference, tols)
+    try:
+        data = datas[i]
+        if data is not None:
+            compare(data, reference, tols)
+        else:
+            fatal_error(reports, message='Empty document!')
+    except Exception as e:
+        print ('remarks "%s" (%s)' % (remarks,str(e)))
+        fatal_error(reports, message=str(e))
+    try:
+        #doctime = data["Timings for root process"]["Elapsed time (s)"]
+        doctime = data["Walltime since initialization"]
+    except:
+        doctime = 0
+    try:
+        docleaks = data["Memory Consumption Report"]["Remaining Memory (B)"]
+    except:
+        docleaks = 0
+    #  print "failed checks",failed_checks,"max diff",discrepancy
+    max_discrepancy = max(discrepancy, max_discrepancy)
+    # print total time
+    time += doctime
+    # print remaining memory
+    leak_memory += docleaks
+    total_misses += docmiss
+    #Add missed items for all documents
+    total_missed_items.extend(docmiss_it)
+    newreport = open(options.input, "w")
+    if failed_checks > 0 or docleaks > 0:
+        failed_documents += 1
+    #remarks += "{Document: %d, Failed_checks: %d, Max_Diff: %.2e, Missed_items: %d, Memory_leaks (B): %d, Elapsed Time (s): %.2f}\n" % \
+    #                 (i, failed_checks, discrepancy, docmiss, docleaks, doctime)
+    remarks["Report"]={"Document":i,"Failed_checks":failed_checks, "Max_Diff": discrepancy, "Missed_items": docmiss, "Memory_leaks (B)": docleaks,
+                        "Elapsed Time (s)": doctime}
+    newreport.write(yaml.dump(document_report(hostname, biggest_tol, discrepancy, failed_checks,
+                                              docleaks, docmiss, docmiss_it, doctime),
+                          default_flow_style=False, explicit_start=True))
+    newreport.close()
+    reports.write(open(options.input, "r").read())
+    highlight_iftty(options)
+    if len(remarks)>0:
+        newreport = open(options_remarks.input, "w")
+        if args.label is not None:
+            labl=" ("+args.label+")"
+        else:
+            labl=''
+        #newreport.write(yaml.dump({"Remarks"+labl: remarks}, default_style="|", explicit_start=False))
+        newreport.write(yaml.dump({"Remarks"+labl: remarks}))
+        sugg=suggestion_for_tolerances(remarks)
+        if len(sugg) > 0:
+            newreport.write(yaml.dump({"Suggestion for tolerances (WARNING! Beware of too high values)": {args.label: sugg}},
+                                      default_flow_style=False,explicit_start=True))
+        newreport.close()
+        reports.write(open(options_remarks.input, "r").read())
+        highlight_iftty(options_remarks)
+    #highlight report file if possible
+    #sys.stdout.write("#Document: %2d, failed_checks: %d, Max. Diff.: %10.2e, missed_items: %d memory_leaks (B): %d, Elapsed Time (s): %7.2f\n" %
+    #                 (i, failed_checks, discrepancy, docmiss, docleaks, doctime))
+
+
+# Create dictionary for the final report
+if len(references) > 1:
+    final_results = document_report(hostname, biggest_tol, max_discrepancy,
+                             failed_documents, leak_memory, total_misses, total_missed_items, time,
+                                   final=True)
+    final_results['Document number'] = len(references)
+    newreport = open(options.input, "w")
+    newreport.write(
+        yaml.dump(final_results, default_flow_style=False, explicit_start=True))
+    newreport.close()
+    reports.write(open(options.input, "r").read())
+    highlight_iftty(options)
+
+# Then remove the file "report" (temporary file)
+os.remove("report")
+
+sys.exit(0)

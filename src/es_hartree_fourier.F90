@@ -1,11 +1,10 @@
 !*****************************************************************************************
 subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -63,7 +62,6 @@ subroutine get_psolver_fourier(parini,poisson,atoms,gausswidth,ehartree,g)
 end subroutine get_psolver_fourier
 !*****************************************************************************************
 subroutine get_psolver_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,ehartree,fat,eqd,stress,celldv)
-    use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
     real(8), intent(in):: rat(3,nat), qat(nat)
@@ -278,7 +276,6 @@ subroutine get_psolver_fourier_various(iverbose,nat,rat,ratred,qat,cv,gwsq,ecut,
 end subroutine get_psolver_fourier_various
 !*****************************************************************************************
 subroutine get_psolver_fourier_identical(iverbose,nat,rat,ratred,qat,cv,alphasq,ecut,ehartree,fat,eqd,stress,celldv)
-    use mod_interface
     implicit none
     integer, intent(in):: iverbose, nat
     real(8), intent(in):: rat(3,nat), qat(nat)

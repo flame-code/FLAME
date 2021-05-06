@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_hartree(parini,atoms,poisson,gausswidth)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -62,7 +61,6 @@ subroutine init_hartree(parini,atoms,poisson,gausswidth)
 end subroutine init_hartree
 !*****************************************************************************************
 subroutine fini_hartree(parini,atoms,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -105,7 +103,6 @@ subroutine fini_hartree(parini,atoms,poisson)
 end subroutine fini_hartree
 !*****************************************************************************************
 subroutine init_hartree_bps(parini,atoms,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -185,10 +182,10 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     poisson%lda=ngpx !To be corrected for BCs other than bulk, e.g. +2 for slab+P3D
     ngptot=ngpx*ngpy*ngpz
     call yaml_mapping_open('grid info',flow=.true.)
-    call yaml_map('ngpx',ngpx,fmt='(4i)')
-    call yaml_map('ngpy',ngpy,fmt='(4i)')
-    call yaml_map('ngpz',ngpz,fmt='(4i)')
-    call yaml_map('ngptot',ngptot,fmt='(4i)')
+    call yaml_map('ngpx',ngpx,fmt='(i8)')
+    call yaml_map('ngpy',ngpy,fmt='(i8)')
+    call yaml_map('ngpz',ngpz,fmt='(i8)')
+    call yaml_map('ngptot',ngptot,fmt='(i8)')
     call yaml_map('hxx',poisson%hgrid(1,1),fmt='(f20.10)')
     call yaml_map('hyx',poisson%hgrid(2,1),fmt='(f20.10)')
     call yaml_map('hzx',poisson%hgrid(3,1),fmt='(f20.10)')
@@ -228,7 +225,6 @@ subroutine init_hartree_bps(parini,atoms,poisson)
 end subroutine init_hartree_bps
 !*****************************************************************************************
 subroutine init_hartree_p3d(parini,atoms,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -293,13 +289,13 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     ngpz=ngpz+2*nbgpz
     ngptot=ngpx*ngpy*ngpz
     call yaml_mapping_open('grid info',flow=.true.)
-    call yaml_map('ngpx',ngpx,fmt='(4i)')
-    call yaml_map('ngpy',ngpy,fmt='(4i)')
-    call yaml_map('ngpz',ngpz,fmt='(4i)')
-    call yaml_map('ngptot',ngptot,fmt='(4i)')
-    call yaml_map('nbgpx',nbgpx,fmt='(4i)')
-    call yaml_map('nbgpy',nbgpy,fmt='(4i)')
-    call yaml_map('nbgpz',nbgpz,fmt='(4i)')
+    call yaml_map('ngpx',ngpx,fmt='(i8)')
+    call yaml_map('ngpy',ngpy,fmt='(i8)')
+    call yaml_map('ngpz',ngpz,fmt='(i8)')
+    call yaml_map('ngptot',ngptot,fmt='(i8)')
+    call yaml_map('nbgpx',nbgpx,fmt='(i8)')
+    call yaml_map('nbgpy',nbgpy,fmt='(i8)')
+    call yaml_map('nbgpz',nbgpz,fmt='(i8)')
     call yaml_map('hxx',poisson%hgrid(1,1),fmt='(f20.10)')
     call yaml_map('hyx',poisson%hgrid(2,1),fmt='(f20.10)')
     call yaml_map('hzx',poisson%hgrid(3,1),fmt='(f20.10)')
@@ -341,11 +337,10 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
 end subroutine init_hartree_p3d
 !*****************************************************************************************
 subroutine put_charge_density(parini,poisson)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -387,7 +382,6 @@ subroutine put_charge_density(parini,poisson)
 end subroutine put_charge_density
 !*****************************************************************************************
 subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -415,12 +409,11 @@ subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree)
 end subroutine get_psolver
 !*****************************************************************************************
 subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -458,12 +451,11 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
 end subroutine get_hartree_grad_rho
 !*****************************************************************************************
 subroutine get_hartree_force(parini,poisson,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -502,12 +494,11 @@ subroutine get_hartree_force(parini,poisson,atoms)
 end subroutine get_hartree_force
 !*****************************************************************************************
 subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use time_profiling
-    use mod_timing , only: TCAT_PSOLVER
+    !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -520,7 +511,7 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     integer:: ind
     real(8):: stress(3,3) !, talpha
     call f_routine(id='get_hartree')
-    call f_timing(TCAT_PSOLVER,'ON')
+    !call f_timing(TCAT_PSOLVER,'ON')
     
     !real(8), allocatable:: gwsq(:), ratred(:,:), gg(:) 
     !real(8):: stress(3,3), kmax, c, vol, talpha
@@ -551,12 +542,11 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
         poisson%qgrad=poisson%qgrad+poisson%qgrad_real
     end if
 
-    call f_timing(TCAT_PSOLVER,'OF')
+    !call f_timing(TCAT_PSOLVER,'OF')
     call f_release_routine()
 end subroutine get_hartree
 !*****************************************************************************************
 subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_poisson
@@ -766,7 +756,6 @@ subroutine apply_external_field(parini,atoms,poisson,ehartree,g,flag)
 end subroutine apply_external_field
 !*****************************************************************************************
 subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_linked_lists, only: typ_linked_lists
     use mod_atoms, only: typ_atoms, update_ratp

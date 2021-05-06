@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-import commands
+import subprocess
 import string
 import re
 #*****************************************************************************************
@@ -43,18 +43,18 @@ def check_var_define(line):
             stat_line='use'
     if i_comment==0:
         if not stat_line=='unknown':
-            print 'ERROR: comment or ',stat_line
+            print('ERROR: comment or ',stat_line)
         else:
             stat_line='comment'
     if i_implicit==0:
         if not stat_line=='unknown':
-            print 'ERROR: implicit or ',stat_line
+            print('ERROR: implicit or ',stat_line)
         else:
             stat_line='implicit'
     if (i_integer==0 or i_real==0 or i_complex==0 or i_character==0 or \
             i_logical==0 or i_type==0 or i_external==0):
         if not stat_line=='unknown':
-            print 'ERROR: definition or ',stat_line
+            print('ERROR: definition or ',stat_line)
         else:
             stat_line='definition'
     if stat_line=='unknown': stat_line='command'
@@ -124,7 +124,7 @@ def get_subroutine_name(line):
 #*****************************************************************************************
 def get_files():
     cmd='find . -not -path "./futile-suite/*" -iname "*.F90" | LC_COLLATE=en_US.UTF-8 sort'
-    str_files=commands.getoutput(cmd)
+    str_files=subprocess.getoutput(cmd)
     files=str_files.splitlines()
     exclude_files=['./src/interface_mod.F90',
                    './wrappers/energyandforces_siesta.f90',
@@ -188,13 +188,19 @@ def get_files():
                    './src/train_optimizer.F90',
                    './src/ann_train.F90',
                    './src/atoms_mod.F90',
+                   './src/barsaddle.F90',
                    './src/ann_mod.F90',
+                   './src/io_acf.F90',
+                   './src/io_yaml_conf.F90',
+                   './src/io_bin.F90',
+                   './src/md_util.F90',
+                   './src/parser_core.F90',
                    ]
     
     for file in exclude_files:
         if file in files: files.remove(file)
     
-    str_interfaced=commands.getoutput('grep -i subroutine ./src/interface_mod.F90')
+    str_interfaced=subprocess.getoutput('grep -i subroutine ./src/interface_mod.F90')
     routine_interfaced=str_interfaced.splitlines()
     return files
 #*****************************************************************************************
@@ -254,7 +260,7 @@ def routines_missing_use_interface(file,lines,routines,iline_routines):
             nline_routine=iline_routines[iroutine+1]-iline_routines[iroutine]-1
         uses_modinterface=False
         for iline in range(nline_routine):
-	    tt=str(lines[iline_routines[iroutine]+iline]).strip()
+            tt=str(lines[iline_routines[iroutine]+iline]).strip()
             tt=tt.lower()
             tt=tt.replace(" ","")
             i_modinterface=tt.find('usemod_interface')
@@ -265,10 +271,9 @@ def routines_missing_use_interface(file,lines,routines,iline_routines):
                 break
         if not uses_modinterface:
             if not filename_printed:
-                print \
-                "\nRoutines in file %s do not use mod_interface!" % file
+                print("\nRoutines in file %s do not use mod_interface!" % file)
                 filename_printed=True
-            print routines[iroutine]
+            print(routines[iroutine])
 #*****************************************************************************************
 def make_interface_routines(lines,routines,iline_routines,fout):
     for iroutine in range(len(routines)):
@@ -276,6 +281,7 @@ def make_interface_routines(lines,routines,iline_routines,fout):
         nline_arg=iline_arg_end-iline_routines[iroutine]+1
         for iline in range(nline_arg):
             fout.write("%s\n" % lines[iline_routines[iroutine]+iline])
+        #fout.write("    use mod_defs\n")
         arg_list=get_arguments(oneline_arg)
         if iroutine==len(routines)-1:
             nline_routine=len(lines)-iline_routines[iroutine]-1
@@ -339,7 +345,7 @@ fout.write("    implicit none\n")
 fout.write("interface\n")
 files=get_files()
 for file in files:
-    allcontent=commands.getoutput('cat '+file)
+    allcontent=subprocess.getoutput('cat '+file)
     lines=allcontent.splitlines()
     routines=[]
     iline_routines=[]
@@ -348,7 +354,8 @@ for file in files:
         iline+=1
         str_line=str(line).lower()
         i_sub=str_line.find('subroutine')
-        i_fun=str_line.find('function')
+        #i_fun=str_line.find('function') commented not to add functions to the interface
+        i_fun=-1
         if i_sub>-1 or i_fun>-1:
             check_routine=is_routine(line)
             if check_routine:

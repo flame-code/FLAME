@@ -10,6 +10,7 @@ module mod_parini
         !parameters of [main]
         character(50):: task='unknown'
         character(256):: cwd='unknown'
+        character(50):: rng_type='intrinsic'
         logical:: two_level_geopt=.false.
         integer:: iverbose=0
         integer:: iseed=-2
@@ -93,7 +94,7 @@ module mod_parini
         real(8):: weight_hardness
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
-        logical:: prefit_cent2_ann=.false.
+        logical:: prefit_centt_ann=.false.
         logical:: read_forces_ann
         logical:: restart_param=.false. 
         integer:: restart_iter=0  
@@ -109,6 +110,14 @@ module mod_parini
         character(256):: str_moving_atoms_rand_saddle
         real(8):: dimsep_saddle=-1.d0
         real(8):: ampl_saddle=-1.d0
+        real(8):: dbar
+        real(8):: alphax_bs
+        real(8):: fnrmtol_coarse
+        real(8):: contr_dbar
+        real(8):: fnrmtol_contracted
+        logical:: bar_contract
+        integer:: nstep_contract
+        integer:: nstep_bs
         integer:: np_splsad !np-1 is the number of movable anchor points
         integer:: np_neb
         integer:: ns2_splsad !number of extra points along the path, beginning of maximization
@@ -318,10 +327,10 @@ module mod_parini
         real(8):: pot_rmse_tol
         logical:: cutoff_fit_elecpot
         !-----------------------------------------------------------------------
-        type(dictionary), pointer :: dict_user
-        type(dictionary), pointer :: dict
-        type(dictionary), pointer :: subdict
-        type(dictionary), pointer :: subsubdict
+        type(dictionary), pointer :: dict_user=>null()
+        type(dictionary), pointer :: dict=>null()
+        type(dictionary), pointer :: subdict=>null()
+        type(dictionary), pointer :: subsubdict=>null()
     end type typ_parini
 end module mod_parini
 !*****************************************************************************************

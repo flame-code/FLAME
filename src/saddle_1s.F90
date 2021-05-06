@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine dimer_method(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
     use mod_atoms, only: atom_copy_old, atom_deallocate, set_ndof, atom_calmaxforcecomponent
@@ -8,6 +7,7 @@ subroutine dimer_method(parini)
     use mod_potential, only: potential, fcalls
     use mod_saddle, only: dmconverged, str_moving_atoms_rand, dimsep, ampl
     use mod_opt, only: typ_paropt
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_processors, only: iproc
     use mod_const, only: ang2bohr
     use dynamic_memory
@@ -78,7 +78,7 @@ subroutine dimer_method(parini)
     call write_yaml_conf(file_info,atoms_s,strkey='posout')
     !---------------------------------------------------------------------------
     call update_ratp(atoms_s)
-    call random_move_atoms(atoms_s%nat,atoms_s%bemoved,atoms_s%cellvec,atoms_s%ratp)
+    call random_move_atoms(parini,atoms_s%nat,atoms_s%bemoved,atoms_s%cellvec,atoms_s%ratp)
     call update_rat(atoms_s)
     !call cal_potential_forces(parini,iproc,3*atoms_s%nat,atoms_s%rat,atoms_s%fat,epot_m0)
     !call atom_calmaxforcecomponent(atoms_s%nat,atoms_s%bemoved,atoms_s%fat,fmax_m0)
@@ -129,7 +129,6 @@ subroutine dimer_method(parini)
 end subroutine dimer_method
 !*****************************************************************************************
 subroutine read_input(atoms_s) !,paropt)
-    use mod_interface
     use mod_saddle, only: dimsep, ampl, do_elim_trans, do_elim_rot, &
         maxitsd, maxitcg, sdconverged, cgconverged, &
         nmatr, moving_atoms_rand, str_moving_atoms_rand
@@ -182,11 +181,13 @@ subroutine read_input(atoms_s) !,paropt)
     endif
 end subroutine read_input
 !*****************************************************************************************
-subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
-    use mod_interface
+subroutine random_move_atoms(parini,nat,atom_motion,cellvec,rat)
+    use mod_parini, only: typ_parini
     use mod_saddle, only: ampl, moving_atoms_rand
     use mod_const, only: ang2bohr
+    use mod_utils
     implicit none
+    type(typ_parini), intent(in):: parini
     integer, intent(in):: nat
     logical, intent(in):: atom_motion(3,nat)
     real(8), intent(in):: cellvec(3,3)
@@ -216,7 +217,11 @@ subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
         !if(r>2.0d0) cycle 
         if(r<rc) then
             weight=ampl*(1.d0-(r/rc)**2)**4
-            call random_number(trand)
+            if(trim(parini%rng_type)=='only_for_tests') then
+                call random_number_generator_simple(3,trand)
+            else
+                call random_number(trand)
+            endif
             trand(1:3)=(trand(1:3)-0.5d0)*2.d0
         else
             !weight=0.d0
@@ -230,11 +235,11 @@ subroutine random_move_atoms(nat,atom_motion,cellvec,rat)
 end subroutine random_move_atoms
 !*****************************************************************************************
 subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot_m0)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate_old, atom_allocate_old
     use mod_atoms, only: atom_calmaxforcecomponent
     use mod_atoms, only: atom_copy_old, get_rat, update_rat
+    use mod_yaml_conf, only: write_yaml_conf
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none
@@ -322,7 +327,6 @@ subroutine find_minima(parini,iproc,atoms_s,paropt_m,paropt_m_prec,uvn,curv,epot
 end subroutine find_minima
 !*****************************************************************************************
 subroutine alongnegcurvature(iproc,atoms,uvn,c)
-    use mod_interface
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_saddle, only: dimsep
     use mod_atoms, only: atom_copy_old, update_rat, update_ratp

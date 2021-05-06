@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
-    use mod_interface
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -156,7 +155,6 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
 end subroutine put_gto_sym_ortho
 !*****************************************************************************************
 subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
-    use mod_interface
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -297,7 +295,6 @@ subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,h
 end subroutine qgrad_gto_sym_ortho
 !*****************************************************************************************
 subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
-    use mod_interface
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none

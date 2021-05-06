@@ -1,8 +1,7 @@
 !*****************************************************************************************
 subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia_arr
@@ -18,7 +17,9 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     real(8):: epoti, tt,vol
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
+    real(8):: hinv(3,3)
     call f_routine(id='cal_ann_atombased')
+    call update_ratp(atoms)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     else
@@ -29,10 +30,15 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     if(parini%save_symfunc_behnam) then
         ann_arr%cal_force=.false.
     endif
-    i=1
+    ann_arr%ener_ref=0.d0
+    do iat=1,atoms%nat
+        ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
+    enddo
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
+    atoms%stress(1:3,1:3)=0.d0
     over_iat: do iat=1,atoms%nat
+        i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
         !if(ann_arr%compute_symfunc) then
         !    ann_arr%ann(i)%y(1:ng,0)=ann_arr%yall(1:ng,iat)
@@ -87,9 +93,14 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
         endif
         atoms%epot=atoms%epot+epoti
     enddo over_iat
-    call cell_vol(atoms%nat,atoms%cellvec,vol)
-    vol=vol*real(atoms%nat,8)
-    atoms%stress(1:3,1:3)=atoms%stress(1:3,1:3)/vol
+    atoms%epot=atoms%epot+ann_arr%ener_ref
+    call getvol_alborz(atoms%cellvec,vol)
+    call invertmat_alborz(atoms%cellvec,hinv)
+    do i=1,3
+    do j=1,3
+        atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
+    enddo
+    enddo
 !    tt=(ann_arr%ann(1)%ebounds(2)-ann_arr%ann(1)%ebounds(1))/2.d0
 !    !opt_ann%epot=(opt_ann%epot*atoms%nat+1.d0)*tt+ann_arr%ann(1)%ebounds(1)
 !    opt_ann%epot=((opt_ann%epot+1.d0)*tt+ann_arr%ann(1)%ebounds(1))

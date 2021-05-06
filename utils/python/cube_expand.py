@@ -12,7 +12,7 @@ from poisson import *
 from cube import *
 #*****************************************************************************************
 if len(sys.argv) < 4:
-    print "usage: cube_expand.py input_filename ngpz_bot ngpz_top"
+    print("usage: cube_expand.py input_filename ngpz_bot ngpz_top")
     exit()
 else:
     filename = sys.argv[1]
@@ -42,6 +42,6 @@ for iat in range(atoms.nat):
 frmt1="%5d%24.15E%24.15E%24.15E\n"
 frmt2="%14.6E"
 fnout="expanded_%s" % filename
-print "writing expanded cube file into %s" % fnout
+print("writing expanded cube file into %s" % fnout)
 cube_write(fnout,atoms,poisson.ngpx,poisson.ngpy,poisson.ngpz,poisson.rho,poisson.hx,poisson.hy,poisson.hz,frmt1,frmt2)
 #*****************************************************************************************

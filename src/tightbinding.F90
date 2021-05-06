@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine set_indorb(partb,atoms)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_tightbinding, only: typ_partb
     implicit none
@@ -44,7 +43,6 @@ end subroutine set_indorb
 !for a coordinate system with lattice vectors latt.  Nonorthogonal case is assumed.
 !ADDS to the forces in array force[], which are already present from pair term.
 subroutine gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
-    use mod_interface
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_atoms, only: typ_atoms, set_typat
     use mod_potl, only: potl_typ
@@ -67,9 +65,9 @@ subroutine gammaenergy(pia_arr,linked_lists,partb,atoms,natsi,pplocal)
     call set_typat(atoms) !exists in basic_atoms.F90 file
     call set_indorb(partb,atoms)
     !rho=f_malloc([1.to.partb%norb,1.to.partb%norb],id='rho')
-    !ggocc=f_malloc([1.to.partb%norbcut],id='ggocc')
+    !ggocc=f_malloc([1.to.partb%norb],id='ggocc')
     allocate(rho(partb%norb,partb%norb))
-    allocate(ggocc(partb%norbcut))
+    allocate(ggocc(partb%norb))
     !Build the TB Hamiltonian and diagonalize it to obtain eigenvalues/vectors
     call gammamat(pia_arr,linked_lists,partb,atoms,natsi,0,pplocal) 
     !do iorb=1,partb%norb
@@ -175,7 +173,6 @@ end subroutine gammaenergy
 !Note hgen and dhgen are arrays used to store values of splines and
 !their derivatives for each atom pair.
 subroutine gammamat(pia_arr,linked_lists,partb,atoms,natsi,flag2,pplocal)
-    use mod_interface
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use mod_tightbinding, only: typ_partb
     use mod_atoms, only: typ_atoms
@@ -243,7 +240,6 @@ end subroutine gammamat
 !routine diagonalize.  m is H and is real, nc by nc
 !matrix.  Eigen is the list of eval, and evec is the list of eigenvectors.
 subroutine forcediagonalizeg(partb)
-    use mod_interface
     use mod_tightbinding, only: typ_partb
     use dynamic_memory
     implicit none
@@ -300,17 +296,17 @@ subroutine forcediagonalizeg(partb)
     !write(*,*)
     !write(*,*) size(partb%eval)
     !write(*,'(a,6i5)') 'FFFFF ',icall,n,size(a),nc,size(partb%eval),size(partb%evec)
-    if(nc==n) then
+!    if(nc==n) then
         call DSYEV('V','L',n,a,n,partb%eval,work,lwork,ierr)
         do i=1,n
             do j=1,n
                 partb%evec(i,j)=a(i,j)
             enddo
         enddo
-    else
-        call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
-             isuppz,work,lwork,iwork,liwork,ierr)
-    endif
+!    else
+!        call dsyevr('V','I','L',n,a,n,0.d0,0.d0,1,nc,abstol,m,partb%eval,partb%evec,n, &
+!             isuppz,work,lwork,iwork,liwork,ierr)
+!    endif
     !write(*,'(8es14.5)') (partb%evec(1,j),j=1,8)
     !write(*,'(8es14.5)') (partb%evec(2,j),j=1,8)
     !write(*,'(8es14.5)') (partb%evec(3,j),j=1,8)
@@ -321,7 +317,7 @@ subroutine forcediagonalizeg(partb)
     !write(*,'(8es14.5)') (partb%evec(8,j),j=1,8)
     !write(*,'(a,7f10.3)') 'FFFFF ',partb%eval(1),partb%eval(2),partb%eval(3),partb%eval(4),partb%eval(5),partb%eval(6),partb%eval(5)-partb%eval(4)
     if(ierr/= 0  .and. errcount < 250) then
-        write(*,'(a,2i,a)') 'TBNORTH WARNING: ierr , errcount == ',ierr,errcount,' from dsygv diagonalize'
+        write(*,'(a36,2i8,a23)') 'TBNORTH WARNING: ierr , errcount == ',ierr,errcount,' from dsygv diagonalize'
         write(*,'(a)') 'Will not print this message when errcount exceeds 250'
         errcount=errcount+1
     endif
@@ -339,7 +335,6 @@ end subroutine forcediagonalizeg
 !README: There are too many arguments setting intents of variables postponed
 !after putting some variables in new derived types.
 subroutine gammacoupling(pia,ib,partb,atoms,flag2,atomtypei,atomtypej,pplocal,rem)
-    use mod_interface
     use mod_linked_lists, only: typ_pia !, typ_linked_lists
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_atoms, only: typ_atoms
@@ -430,7 +425,6 @@ end subroutine gammacoupling
 !flag2 is 0 for normal case, 1 for x derivative, 2 for y, 3 for z, where
 !u = (x,y,z) / sqrt(x^2+y^2+z^2)...
 subroutine slatercoupling(u,r,hgen,dhgen,flag2,mat)
-    use mod_interface
     implicit none
     real(8), intent(in):: r, u(3)
     real(8), intent(in):: hgen(4), dhgen(4)
@@ -511,7 +505,6 @@ end subroutine slatercoupling
 !eigenvalues must be sorted on entry.
 !Number of electrons nel must be even.  <-- Is this true?
 subroutine yfdocclocal(partb)
-    use mod_interface
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_const, only: ha2ev
     implicit none
@@ -568,7 +561,6 @@ subroutine yfdocclocal(partb)
 end subroutine yfdocclocal
 !*****************************************************************************************
 subroutine Hamiltonian_der(u,flag2,mat)
-    use mod_interface
     implicit none
     real(8), intent(in):: u(3)
     integer, intent(in):: flag2

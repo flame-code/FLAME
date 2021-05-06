@@ -1,11 +1,11 @@
 !*****************************************************************************************
 subroutine rangrow(parini,genconf)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_file_info, atom_allocate_old, atom_deallocate_old
     use mod_atoms, only: set_rcov, determinexyzminmax, set_rat_atoms
     use mod_genconf, only: typ_genconf
     use mod_const, only: ang2bohr
+    use mod_acf, only: acf_read, acf_write
     implicit none
     type(typ_parini), intent(inout):: parini
     type(typ_genconf), intent(in):: genconf

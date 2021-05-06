@@ -66,7 +66,7 @@ if(.not.allocated(parini%rcov)) allocate(parini%rcov(parini%ntypat_global))
              !Get the chemical character from the first line
              read(firstline,*) parini%char_type(:)
      endif
-!Compute total number of atoms and types and shit
+!Compute total number of atoms and types and all
 parini%nat=0
 do i=1,parini%ntypat_global
       parini%nat=parini%nat+nitype(i)

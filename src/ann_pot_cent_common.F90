@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -64,7 +63,6 @@ subroutine cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
 end subroutine cal_force_chi_part1
 !*****************************************************************************************
 subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -83,7 +81,7 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
             jat=symfunc%linked_lists%bound_rad(2,ib)
             if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
                 qnet=atoms%qat(iat)
-            elseif(trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3') then
+            elseif(trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3') then
                 qnet=atoms%zat(iat)+atoms%qat(iat)
             else
                 write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
@@ -123,7 +121,6 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
 end subroutine cal_force_chi_part2
 !*****************************************************************************************
 subroutine repulsive_potential_cent(parini,atoms,ann_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr

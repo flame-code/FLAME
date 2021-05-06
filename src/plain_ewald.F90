@@ -1,6 +1,5 @@
 !****************************************************************************************************
 subroutine plain_ewald(atoms,en)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms
@@ -36,7 +35,6 @@ subroutine plain_ewald(atoms,en)
 end subroutine
 !****************************************************************************************************
 subroutine structur_factor_comput(atoms,kx,ky,kz,s1,s2,sfactor_norm)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     implicit none
     type(typ_atoms), intent(inout):: atoms

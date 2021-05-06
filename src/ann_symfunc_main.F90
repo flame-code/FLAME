@@ -1,12 +1,11 @@
 !*****************************************************************************************
 subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use time_profiling
-    use mod_timing , only: TCAT_SYMFUNC_COMPUT
+    !use mod_timing , only: TCAT_SYMFUNC_COMPUT
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -18,7 +17,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
     integer:: i0, iat, jat, isat, i, ib, istat, ng, ig
     real(8):: gleft
     call f_routine(id='symmetry_functions')
-    call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
+    !call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
     !-----------------------------------------------------------------
     !first index of "y0d" is for number of symmetry function
     !second index of "y0d" is for x,y,z
@@ -36,7 +35,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
                     enddo
                 endif
                 if(ann_arr%ann(1)%nn(0)/=ann_arr%ann(1)%ng1+ann_arr%ann(1)%ng2+ann_arr%ann(1)%ng3+ann_arr%ann(1)%ng4) then
-                    write(*,'(a,2i)') 'ERROR: inconsistency between # of input nodes and # of symmetry functions:', &
+                    write(*,'(a74,2i7)') 'ERROR: inconsistency between # of input nodes and # of symmetry functions:', &
                     ann_arr%ann(1)%nn(0),ann_arr%ann(1)%ng1+ann_arr%ann(1)%ng2+ann_arr%ann(1)%ng3+ann_arr%ann(1)%ng4
                     stop
                 endif
@@ -82,7 +81,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
             ng=ann_arr%ann(isat)%nn(0)
             if(ng/=ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ann_arr%ann(isat)%ng3+ &
                 ann_arr%ann(isat)%ng4+ann_arr%ann(isat)%ng5+ann_arr%ann(isat)%ng6) then
-                write(*,'(a,2i)') &
+                write(*,'(a74,2i7)') &
                     'ERROR: inconsistency between # of input nodes and # of symmetry functions:', &
                     ann_arr%ann(isat)%nn(0),ann_arr%ann(isat)%ng1+ann_arr%ann(isat)%ng2+ &
                     ann_arr%ann(isat)%ng3+ann_arr%ann(isat)%ng4+ann_arr%ann(isat)%ng5+ann_arr%ann(isat)%ng6
@@ -90,7 +89,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
             endif
         enddo
     endif bondbased
-    call f_timing(TCAT_SYMFUNC_COMPUT,'OF')
+    !call f_timing(TCAT_SYMFUNC_COMPUT,'OF')
     call f_release_routine()
 end subroutine symmetry_functions
 !*****************************************************************************************

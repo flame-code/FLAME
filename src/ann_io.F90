@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine read_input_ann(parini,iproc,ann_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     implicit none
@@ -46,7 +45,6 @@ subroutine read_input_ann(parini,iproc,ann_arr)
 end subroutine read_input_ann
 !*****************************************************************************************
 subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     implicit none
@@ -71,7 +69,7 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
         call elim_white_space(strline)
         if(strline(1:1)=='#') exit
         read(strline,*,iostat=ios) ann%nn(icol)
-        write(*,'(i,5x,a)') ios,trim(strline)
+        write(*,'(i8,5x,a)') ios,trim(strline)
         if(ios<0) then
             exit
         else
@@ -209,7 +207,6 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
 end subroutine read_symmetry_functions
 !*****************************************************************************************
 subroutine set_radial_atomtype(parini,sat1,ityp)
-    use mod_interface
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -233,7 +230,6 @@ subroutine set_radial_atomtype(parini,sat1,ityp)
 end subroutine set_radial_atomtype
 !*****************************************************************************************
 subroutine set_angular_atomtype(parini,sat1,sat2,ityp)
-    use mod_interface
     use mod_parini, only: typ_parini
     implicit none
     type(typ_parini), intent(in):: parini
@@ -259,7 +255,6 @@ subroutine set_angular_atomtype(parini,sat1,sat2,ityp)
 end subroutine set_angular_atomtype
 !*****************************************************************************************
 subroutine write_ann_all(parini,ann_arr,iter)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     implicit none
@@ -286,19 +281,18 @@ subroutine write_ann_all(parini,ann_arr,iter)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
+    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt') then
         do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
     else
-        stop 'ERROR: writing ANN parameters is only for cent1,cent2,tb'
+        stop 'ERROR: writing ANN parameters is only for cent1,centt,tb'
     endif
 end subroutine write_ann_all
 !*****************************************************************************************
 subroutine write_ann(parini,filename,ann)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     implicit none
@@ -378,7 +372,6 @@ subroutine write_ann(parini,filename,ann)
 end subroutine write_ann
 !*****************************************************************************************
 subroutine read_ann(parini,ann_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_processors, only: iproc
@@ -402,10 +395,10 @@ subroutine read_ann(parini,ann_arr)
             write(fn_tt,'(i1)') iann
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
-        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2') then
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
-            stop 'ERROR: reading ANN parameters is only for cent1,cent2,tb'
+            stop 'ERROR: reading ANN parameters is only for cent1,centt,tb'
         endif
         open(unit=1,file=trim(filename),status='old',iostat=ios)
         if(ios/=0) then
@@ -456,10 +449,10 @@ subroutine read_ann(parini,ann_arr)
 end subroutine read_ann
 !*****************************************************************************************
 subroutine read_data_old(parini,filename_list,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_copy_old, set_rat_atoms
     use mod_atoms, only: atom_allocate_old, atom_deallocate, atom_deallocate_old
+    use mod_acf, only: acf_read_new
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

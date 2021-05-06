@@ -128,7 +128,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
         r0=10.d0
         alpha=100.d-2
         rf=1.d-6
-    elseif(trim(parini%approach_ann)=='cent2') then
+    elseif(trim(parini%approach_ann)=='centt') then
         r0=10.d0
         alpha=100.d-2
         rf=1.d-6
@@ -146,9 +146,9 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
         !r0=1.d0
         !alpha=5.d-1
         !rf=1.d-8
-        r0=10.d0
+        r0=100.d0
         alpha=100.d-2
-        rf=1.d-10
+        rf=1.d-6
     endif
     if(parini%fit_hoppint) then
         call fit_hgen(parini,ann_arr,opt_ann)
@@ -255,7 +255,7 @@ subroutine analyze_epoch_init(parini,ann_arr)
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
     if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
-        .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3')) return
+        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3')) return
     ann_arr%natsum(1:10)=0
     ann_arr%qmin(1:10)=huge(1.d0)
     ann_arr%qmax(1:10)=-huge(1.d0)
@@ -280,7 +280,7 @@ subroutine analyze_epoch_print(parini,iter,ann_arr)
     character(50):: fn_charge, fn_chi
     character(20):: str_key
     if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
-        .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3')) return
+        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3')) return
     do i=1,parini%ntypat
         !fn_charge='charge.'//trim(parini%stypat(i))
         !fn_chi='chi.'//trim(parini%stypat(i))
@@ -524,7 +524,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     icall=icall+1
     !opt_ann%x(1:n)=x(1:n)
     !call convert_opt_x_ann_arr(opt_ann,ann_arr)
-    write(*,'(a,i,a,i,a)') '**************** icall= ',icall,'  iflag= ',iflag,'  ************'
+    write(*,'(a24,i8,a9,i8,a14)') '**************** icall= ',icall,'  iflag= ',iflag,'  ************'
     if(iflag==1) then
         ann_arr%event='evalu'
         do iconf=1,atoms_train%nconf
@@ -551,6 +551,7 @@ subroutine set_annweights(parini,opt_ann,ann_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, convert_ann_x
     use mod_processors, only: iproc, mpi_comm_abz
+    use mod_utils
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_opt_ann), intent(inout):: opt_ann
@@ -573,12 +574,20 @@ subroutine set_annweights(parini,opt_ann,ann_arr)
     !approach='type_dependent'
     if(iproc==0) then
         if(trim(approach)=='uniform') then
-            call random_number(opt_ann%x)
+            if(trim(parini%rng_type)=='only_for_tests') then
+                call random_number_generator_simple(opt_ann%n,opt_ann%x)
+            else
+                call random_number(opt_ann%x)
+            endif
             opt_ann%x(1:opt_ann%n)=(opt_ann%x(1:opt_ann%n)-0.5d0)*2.d0*parini%ampl_rand
         elseif(trim(approach)=='pure_electrostatic') then
             do i=1,opt_ann%n
                 if(i<=opt_ann%n/2) then
+                if(trim(parini%rng_type)=='only_for_tests') then
+                    call random_number_generator_simple(opt_ann%x(i))
+                else
                     call random_number(opt_ann%x(i))
+                endif
                     tt=-2.d0*parini%ampl_rand
                     opt_ann%x(i)=(opt_ann%x(i)-0.5d0)*tt
                 else
@@ -590,13 +599,21 @@ subroutine set_annweights(parini,opt_ann,ann_arr)
         elseif(trim(approach)=='type_dependent') then
             do i=1,opt_ann%n
                 if(i<=opt_ann%n/4) then
-                    call random_number(opt_ann%x(i))
+                    if(trim(parini%rng_type)=='only_for_tests') then
+                        call random_number_generator_simple(opt_ann%x(i))
+                    else
+                        call random_number(opt_ann%x(i))
+                    endif
                     tt=2.d0*parini%ampl_rand
                     opt_ann%x(i)=(opt_ann%x(i)-0.5d0)*tt
                 elseif(i<=opt_ann%n/2) then
                     opt_ann%x(i)=-opt_ann%x(i-opt_ann%n/4)
                 elseif(i<=3*opt_ann%n/4) then
-                    call random_number(opt_ann%x(i))
+                    if(trim(parini%rng_type)=='only_for_tests') then
+                        call random_number_generator_simple(opt_ann%x(i))
+                    else
+                        call random_number(opt_ann%x(i))
+                    endif
                     tt=2.d0*parini%ampl_rand
                     opt_ann%x(i)=-(opt_ann%x(i)-0.5d0)*tt
                 else

@@ -4,7 +4,7 @@ from numpy import linalg as LA
 import sys
 
 if len(sys.argv) < 2:
-    print "usage: fitparabola2d.py input_filename"
+    print("usage: fitparabola2d.py input_filename")
     exit()
 else:
     filename = sys.argv[1]
@@ -28,7 +28,7 @@ for line in f.readlines():
 f.closed
 
 npt=len(arr)
-print "\nThere are %d data points in file %s.\n" % (npt,filename)
+print("\nThere are %d data points in file %s.\n" % (npt,filename))
 
 xt = numpy.array([row[:][0] for row in arr])
 yt = numpy.array([row[:][1] for row in arr])
@@ -52,16 +52,16 @@ for i in range(npt):
         ytt.append(yt[i])
         ztt.append(zt[i])
 
-print "data bounds:"
-print "xmin,xmax %15.5f%15.5f" % (xmin,xmax)
-print "ymin,ymax %15.5f%15.5f" % (ymin,ymax)
-print "zmin,zmax %15.5f%15.5f" % (zmin,zmax)
+print("data bounds:")
+print("xmin,xmax %15.5f%15.5f" % (xmin,xmax))
+print("ymin,ymax %15.5f%15.5f" % (ymin,ymax))
+print("zmin,zmax %15.5f%15.5f" % (zmin,zmax))
 
 x=numpy.array(xtt)
 y=numpy.array(ytt)
 z=numpy.array(ztt)
 np=len(x)
-print "\nThere are %d data points after filtering.\n" % np
+print("\nThere are %d data points after filtering.\n" % np)
 #print "len(x) %d %s" % (len(x),zmaxtol)
 #exit()
 
@@ -70,12 +70,12 @@ v = numpy.array([eval(i) for i in var])
 
 coefficients, residues, rank, singval = numpy.linalg.lstsq(v.T, z)
 
-print "Fitting process completed."
-print "f(x,y)=(%s) + (%s) x + (%s) y + " % (coefficients[0], coefficients[1], coefficients[2])
-print "       (%s) x^2 + (%s) xy + (%s) y^2\n" % (coefficients[3], coefficients[4], coefficients[5])
+print("Fitting process completed.")
+print("f(x,y)=(%s) + (%s) x + (%s) y + " % (coefficients[0], coefficients[1], coefficients[2]))
+print("       (%s) x^2 + (%s) xy + (%s) y^2\n" % (coefficients[3], coefficients[4], coefficients[5]))
 
-print "residues= ", residues[0], "\n"
-print "rank= ", rank, "\n"
+print("residues= ", residues[0], "\n")
+print("rank= ", rank, "\n")
 #print singval
 
 for i in range(np):
@@ -96,21 +96,21 @@ for i in range(np):
 #
 #print "MY: residue: %f\n" % res_my
 
-print "--------------------------------------------------"
+print("--------------------------------------------------")
 a = [[2*coefficients[3], coefficients[4]], [coefficients[4], 2*coefficients[5]]]
 #print a
 b = numpy.array(a)
 w, v = LA.eig(b)
-print "Eigenvalues: ", w
-print "Eigenvectors: ", v
-print "--------------------------------------------------"
-print "To plot in gnuplot use the following: \n"
-print "f(x,y)=c0_xy + c1_x * x + c1_y * y + c2_x *x*x + c1_xy *x*y + c2_y * y*y"
-print "c0_xy=%20.10f" % float(coefficients[0])
-print "c1_x =%20.10f" % float(coefficients[1])
-print "c1_y =%20.10f" % float(coefficients[2])
-print "c2_x =%20.10f" % float(coefficients[3])
-print "c1_xy=%20.10f" % float(coefficients[4])
-print "c2_y =%20.10f" % float(coefficients[5])
-print "%7s%s%18s" % ("splot '",filename, "' u 1:2:3 , f(x,y)")
-print "--------------------------------------------------"
+print("Eigenvalues: ", w)
+print("Eigenvectors: ", v)
+print("--------------------------------------------------")
+print("To plot in gnuplot use the following: \n")
+print("f(x,y)=c0_xy + c1_x * x + c1_y * y + c2_x *x*x + c1_xy *x*y + c2_y * y*y")
+print("c0_xy=%20.10f" % float(coefficients[0]))
+print("c1_x =%20.10f" % float(coefficients[1]))
+print("c1_y =%20.10f" % float(coefficients[2]))
+print("c2_x =%20.10f" % float(coefficients[3]))
+print("c1_xy=%20.10f" % float(coefficients[4]))
+print("c2_y =%20.10f" % float(coefficients[5]))
+print("%7s%s%18s" % ("splot '",filename, "' u 1:2:3 , f(x,y)"))
+print("--------------------------------------------------")

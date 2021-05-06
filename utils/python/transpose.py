@@ -2,7 +2,7 @@
 import sys
 
 if len(sys.argv) < 2:
-    print "usage: transpose.py input_filename"
+    print("usage: transpose.py input_filename")
     exit()
 else:
     filename = sys.argv[1]
@@ -20,7 +20,7 @@ for line in f.readlines():
     nrow+=1
 f.closed
 
-at=map(list,zip(*a))
+at=list(map(list,list(zip(*a))))
 #at=[]
 #transpose a to at
 #for i in range(len(a)):
@@ -31,4 +31,4 @@ for row in at:
     str_out=""
     for col in row:
         str_out+= "%7s" % col
-    print str_out
+    print(str_out)

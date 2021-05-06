@@ -1,0 +1,19 @@
+ Tests:
+ - Creator                             : succeed
+ - Equality                            : succeed
+ - Inequality                          : succeed
+ - Conversion to an integer            : succeed
+ - Conversion to a string              : succeed
+ - Attributes                          : succeed
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  0
+   Tot. No. of Deallocations           :  0
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.000
+     for the array                     : null
+     in the routine                    : null
+     Memory Peak of process            : 12.532 MB
+ Walltime since initialization         :  00:00:00.000466124
+ Max No. of dictionaries used          :  228 #( 170 still in use)
+ Number of dictionary folders allocated:  1

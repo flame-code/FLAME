@@ -6,7 +6,7 @@ from cif import *
 from ascii import *
 
 if len(sys.argv) < 2:
-    print "usage: ascii2cif.py input_filename"
+    print("usage: ascii2cif.py input_filename")
     exit()
 else:
     filename = sys.argv[1]

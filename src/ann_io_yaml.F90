@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine read_input_ann_yaml(parini,iproc,ann_arr)
-    use mod_interface
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -39,7 +38,6 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
 end subroutine read_input_ann_yaml
 !*****************************************************************************************
 subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
     use dictionaries
@@ -55,8 +53,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     character(250):: tt, str1
     integer :: count1, count2, count3, count4, count5, count6
     character(5):: stypat
-    type(dictionary), pointer :: subdict_ann
-    type(dictionary), pointer :: dict_tmp
+    type(dictionary), pointer :: subdict_ann=>null()
+    type(dictionary), pointer :: dict_tmp=>null()
     character(50):: str_out_ann
     character(5):: str_out_ann_tt
     call set_dict_ann(ann,fname,stypat)
@@ -81,24 +79,24 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     !endif
     rcut               =  subdict_ann//"rcut"
     ann%method         =  subdict_ann//"method"
+    ann%ener_ref       =  subdict_ann//"ener_ref" 
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
-        trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
+        trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
         ann%ampl_chi       =  subdict_ann//"ampl_chi" 
         ann%prefactor_chi  =  subdict_ann//"prefactor_chi" 
-        ann%ener_ref       =  subdict_ann//"ener_ref" 
         ann%gausswidth     =  subdict_ann//"gausswidth" 
         ann%hardness       =  subdict_ann//"hardness" 
         ann%chi0           =  subdict_ann//"chi0" 
         ann%qinit          =  subdict_ann//"qinit"
     endif
-    if(trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
+    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
         ann%zion           =  subdict_ann//"zion" 
         ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
         ann%spring_const   =  subdict_ann//"spring_const"
     endif
-    if(trim(parini%approach_ann)=='tb') then
-        ann%ener_ref       =  subdict_ann//"ener_ref" 
-    endif
+    !if(trim(parini%approach_ann)=='tb') then
+    !    ann%ener_ref       =  subdict_ann//"ener_ref" 
+    !endif
     !ann%rionic    = subdict_ann//"rionic"
     nullify(subdict_ann)
     !---------------------------------------------
@@ -267,7 +265,6 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
 end subroutine get_symfunc_parameters_yaml
 !*****************************************************************************************
 subroutine write_ann_all_yaml(parini,ann_arr,iter)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use yaml_output
@@ -297,7 +294,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
-        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3') then
+        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3') then
         do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             !write(*,'(a)') trim(filename)
@@ -305,12 +302,11 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     else
-        stop 'ERROR: writing ANN parameters is only for cent1,cent2,cent3,tb'
+        stop 'ERROR: writing ANN parameters is only for cent1,centt,cent3,tb'
     endif
 end subroutine write_ann_all_yaml
 !*****************************************************************************************
 subroutine write_ann_yaml(parini,filename,ann,rcut)
-    use mod_interface
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann
@@ -327,8 +323,8 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     character(5):: sat1, sat2
     character(8):: key1
     character(250):: str1
-    type(dictionary), pointer :: dict_ann
-    type(dictionary), pointer :: subdict_ann
+    type(dictionary), pointer :: dict_ann=>null()
+    type(dictionary), pointer :: subdict_ann=>null()
     dict_ann=>dict_new()
     !-------------------------------------------------------
     call set(dict_ann//"main","nodes")
@@ -339,25 +335,25 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     enddo
     call set(subdict_ann//"rcut",rcut)
     call set(subdict_ann//"method",ann%method)
+    call set(subdict_ann//"ener_ref",ann%ener_ref)
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
-        trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
+        trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"ampl_chi",ann%ampl_chi)
         call set(subdict_ann//"prefactor_chi",ann%prefactor_chi)
-        call set(subdict_ann//"ener_ref",ann%ener_ref)
         call set(subdict_ann//"gausswidth",ann%gausswidth)
         call set(subdict_ann//"hardness",ann%hardness)
         call set(subdict_ann//"chi0",ann%chi0)
         call set(subdict_ann//"qinit",ann%qinit)
     endif
-    if(trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
+    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"zion",ann%zion)
         call set(subdict_ann//"gausswidth_ion",ann%gausswidth_ion)
         call set(subdict_ann//"spring_const",ann%spring_const)
     endif
-    if(trim(parini%approach_ann)=='tb') then
-        !ann%ener_ref       =  subdict_ann//"ener_ref" 
-        call set(subdict_ann//"ener_ref",ann%ener_ref)
-    endif
+    !if(trim(parini%approach_ann)=='tb') then
+    !    !ann%ener_ref       =  subdict_ann//"ener_ref" 
+    !    call set(subdict_ann//"ener_ref",ann%ener_ref)
+    !endif
     nullify(subdict_ann)
     !-------------------------------------------------------
     subdict_ann=>dict_ann//"symfunc"
@@ -457,7 +453,6 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
 end subroutine write_ann_yaml
 !*****************************************************************************************
 subroutine read_ann_yaml(parini,ann_arr)
-    use mod_interface
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -487,10 +482,10 @@ subroutine read_ann_yaml(parini,ann_arr)
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
         elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. &
-            trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3' .or. trim(ann_arr%approach)=='atombased') then
+            trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' .or. trim(ann_arr%approach)=='atombased') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
-            stop 'ERROR: reading ANN parameters is only for cent1,cent2,cent3,tb'
+            stop 'ERROR: reading ANN parameters is only for cent1,centt,cent3,tb'
         endif
         !-------------------------------------------------------
         call get_symfunc_parameters_yaml(parini,iproc,filename,ann_arr%ann(iann),rcut)
@@ -521,14 +516,13 @@ subroutine read_ann_yaml(parini,ann_arr)
 end subroutine read_ann_yaml
 !*****************************************************************************************
 subroutine set_dict_ann(ann,fname,stypat)
-    use mod_interface
     use dictionaries
     use yaml_parse
     use dynamic_memory
     use mod_ann, only: typ_ann
     implicit none
     !local variales
-    type(dictionary), pointer :: dict
+    type(dictionary), pointer :: dict=>null()
     type(typ_ann), intent(inout):: ann
     character, dimension(:), allocatable :: fbuf
     character(5):: stypat
@@ -549,10 +543,11 @@ subroutine set_dict_ann(ann,fname,stypat)
 end subroutine set_dict_ann
 !*****************************************************************************************
 subroutine read_data_yaml(parini,filename_list,atoms_arr)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
     use mod_atoms, only: atom_deallocate_old, set_rat_atoms
+    use mod_yaml_conf, only: read_yaml_conf
+    use mod_bin, only: read_bin_conf
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

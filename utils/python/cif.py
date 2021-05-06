@@ -12,28 +12,28 @@ def cif_write(atoms,filename):
     beta =mt.acos(np.dot(np.array(atoms.cellvec[2][:]),np.array(atoms.cellvec[0][:]))/(c*a))*180./mt.pi
     gamma=mt.acos(np.dot(np.array(atoms.cellvec[0][:]),np.array(atoms.cellvec[1][:]))/(a*b))*180./mt.pi
     if filename=="screen":
-        print "%s %10.15f" % ("_cell_length_a",a)
-        print "%s %10.15f" % ("_cell_length_b",b)
-        print "%s %10.15f" % ("_cell_length_c",c)
-        print ""
-        print "%s %10.15f" % ("_cell_angle_alpha", alpha)
-        print "%s %10.15f" % ("_cell_angle_beta ", beta )
-        print "%s %10.15f" % ("_cell_angle_gamma", gamma)
-        print ""
-        print "_symmetry_space_group_name_H-M    'P 1'"
-        print "_symmetry_int_tables_number        1"
-        print ""
-        print "loop_"
-        print "  _symmetry_equiv_pos_as_xyz"
-        print "  'x, y, z'"
-        print ""
-        print "loop_"
-        print "  _atom_site_label"
-        print "  _atom_site_type_symbol"
-        print "  _atom_site_occupancy"
-        print "  _atom_site_fract_x"
-        print "  _atom_site_fract_y"
-        print "  _atom_site_fract_z"
+        print("%s %10.15f" % ("_cell_length_a",a))
+        print("%s %10.15f" % ("_cell_length_b",b))
+        print("%s %10.15f" % ("_cell_length_c",c))
+        print("")
+        print("%s %10.15f" % ("_cell_angle_alpha", alpha))
+        print("%s %10.15f" % ("_cell_angle_beta ", beta ))
+        print("%s %10.15f" % ("_cell_angle_gamma", gamma))
+        print("")
+        print("_symmetry_space_group_name_H-M    'P 1'")
+        print("_symmetry_int_tables_number        1")
+        print("")
+        print("loop_")
+        print("  _symmetry_equiv_pos_as_xyz")
+        print("  'x, y, z'")
+        print("")
+        print("loop_")
+        print("  _atom_site_label")
+        print("  _atom_site_type_symbol")
+        print("  _atom_site_occupancy")
+        print("  _atom_site_fract_x")
+        print("  _atom_site_fract_y")
+        print("  _atom_site_fract_z")
         latinv=np.matrix('1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0')
         if(atoms.coordinates=="Cartesian"):
             latmat=np.asmatrix(atoms.cellvec)
@@ -50,7 +50,7 @@ def cif_write(atoms,filename):
             y=xred.item(1)
             z=xred.item(2)
             elind = str(atoms.sat[i])+str(ind)
-            print "%5s %s %0.2f %10.15f %10.15f %10.15f" % (elind,atoms.sat[i],1.,x,y,z)
+            print("%5s %s %0.2f %10.15f %10.15f %10.15f" % (elind,atoms.sat[i],1.,x,y,z))
     else:
         f= open(filename,"w")
         f.write( "%s %10.15f\n" % ("_cell_length_a",a))

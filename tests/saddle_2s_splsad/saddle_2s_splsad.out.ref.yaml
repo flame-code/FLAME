@@ -1,0 +1,979 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : To Be Added Later.
+ Timestamp of this run                 : 2019-05-15 01:37:17.583
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : saddle
+   types                               : Mg O
+   two_level_geopt                     : True
+   verbosity                           : 1
+   verbose                             : 3
+   seed                                : -2
+   nrun_lammps                         : 0
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle:
+   method                              : splined_saddle
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 2
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.01
+   alphax                              : 2.0
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : no
+   pickbestanchorpoints                : no
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 1000
+   fmaxtol_splsad                      : 1.E-3
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : BFGS
+ potential:
+   potential                           : ann
+   cal_charge                          : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     ecut_auto                         : False
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     ewald                             : False
+     cell_ortho                        : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : cent1
+   symfunc                             : only_calculate
+   nstep_opt                           : 100
+   nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   ftol                                : 1.E-4
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_centt                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+   freeBC_direct                       : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : unknown
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  2, Mg:  1, O:  2}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0, seed1:  2147483562, seed2:  2147483398}
+ Number of configurations read: {filename: posinp.yaml, nconf:  2}
+ number of ANN                         :  2
+ ANN architecture                      : 70-5-5-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
+ ANN architecture                      : 70-5-5-1
+ symfunc numbers from input: {ng1:  0, ng2:  16, ng3:  0, ng4:  0, ng5:  54, ng6:  0}
+ number of anchor points               :  2
+ degree of freedom, n,nr               :  [  78,  3 ]
+ Number of configurations read: {filename: posinp.yaml, nconf:  2}
+ ENDs: {epot1: -3.5860719264E+03, fnrm1:  9.6E-05, epot2: -3.5860635078E+03, fnrm2:  1.3E-04}
+ SPLSAD optimization iterations:
+ - anchorpoints: {istep:  0, s:  [  0.0E+00,  2.63936E+00,  5.27871E+00 ], h: [ 2.63936E+00, 
+  2.63936E+00]}
+   checkpathway:
+     istep                             :  0
+     dmax                              :  0.00000E+00
+   after:
+     istep                             :  0
+     sv: [ 0.00000E+00,  8.79785E-01,  1.75957E+00,  2.65641E+00,  3.51914E+00,  4.39893E+00, 
+           5.27871E+00]
+     tmax                              :  2.65641E+00
+     ex: [-3.586071926367950E+03, -3.586022799788096E+03, -3.585906043089578E+03, 
+          -3.585841938312175E+03, -3.585901964917818E+03, -3.586019339002930E+03, 
+          -3.586063507796084E+03]
+     epot                              : -3.585841938312175E+03
+     exd: [-4.000341497960776E-07,  1.081540615793906E-01,  1.279083265278506E-01, 
+            4.009490309794285E-04, -1.261936808007147E-01, -1.065150299699734E-01, 
+            1.218399554119355E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  0, iter:  0, npv:  6, epot: -3.585841938312175E+03, vd: -4.00949E-04, 
+            vdd: -1.60330E-01,          fnrm:  5.79463E-02, alpha:  3.11857E+00, 
+           tmax:  2.65641E+00, tmax fraction:  5.03232E-01}
+   SP: {iter:  0, fcalls:  7, cbh1 (eV):  6.25829, cbh2 (eV):  6.02921, fspmax:  5.78291E-02, 
+      fspnrm:  5.79463E-02}
+   BFGS: {iter:  0, epot: -3.585841938312175E+03, de:  0.00000E+00, fnrm:  5.79413E-02, 
+          fmax:  5.77972E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  1, s:  [  0.0E+00,  2.63939E+00,  5.27877E+00 ], h: [ 2.63939E+00, 
+  2.63939E+00]}
+   checkpathway:
+     istep                             :  1
+     dmax                              :  1.27154E-02
+   after:
+     istep                             :  1
+     sv: [ 0.00000E+00,  1.79905E+00,  2.65992E+00,  3.55027E+00,  5.27877E+00]
+     tmax                              :  2.65992E+00
+     ex: [-3.586071926367950E+03, -3.585901542115398E+03, -3.585842685648302E+03, 
+          -3.585906450186579E+03, -3.586063507796084E+03]
+     epot                              : -3.585842685648302E+03
+     exd: [-1.099065025853509E-06,  1.239571032582974E-01, -2.927334968239343E-04, 
+           -1.286285204069884E-01,  1.222283075498419E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  1, iter:  0, npv:  4, epot: -3.585842685648302E+03, vd:  2.92733E-04, 
+            vdd: -1.59873E-01,          fnrm:  5.93481E-02, alpha:  3.12748E+00, 
+           tmax:  2.65992E+00, tmax fraction:  5.03889E-01}
+   SP: {iter:  1, fcalls:  11, cbh1 (eV):  6.23796, cbh2 (eV):  6.00888, fspmax:  5.91787E-02, 
+      fspnrm:  5.93481E-02}
+   BFGS: {iter:  1, epot: -3.585842685648302E+03, de: -7.47336E-04, fnrm:  5.93406E-02, 
+          fmax:  5.91929E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  2, s:  [  0.0E+00,  2.63940E+00,  5.27880E+00 ], h: [ 2.63940E+00, 
+  2.63940E+00]}
+   checkpathway:
+     istep                             :  2
+     dmax                              :  2.86218E-03
+   after:
+     istep                             :  2
+     sv: [ 0.00000E+00,  1.79906E+00,  2.65993E+00,  3.55029E+00,  5.27880E+00]
+     tmax                              :  2.65993E+00
+     ex: [-3.586071926367950E+03, -3.585901542115398E+03, -3.585842856365899E+03, 
+          -3.585906450186579E+03, -3.586063507796084E+03]
+     epot                              : -3.585842856365899E+03
+     exd: [-1.099065025853509E-06,  1.239571032582974E-01, -3.026971725570808E-04, 
+           -1.286285204069884E-01,  1.222283075498419E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  2, iter:  0, npv:  4, epot: -3.585842856365899E+03, vd:  3.02697E-04, 
+            vdd: -1.59426E-01,          fnrm:  5.96593E-02, alpha:  3.13626E+00, 
+           tmax:  2.65993E+00, tmax fraction:  5.03889E-01}
+   SP: {iter:  2, fcalls:  12, cbh1 (eV):  6.23331, cbh2 (eV):  6.00423, fspmax:  5.94882E-02, 
+      fspnrm:  5.96593E-02}
+   BFGS: {iter:  2, epot: -3.585842856365899E+03, de: -1.70718E-04, fnrm:  5.96512E-02, 
+          fmax:  5.95027E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  3, s:  [  0.0E+00,  2.63942E+00,  5.27884E+00 ], h: [ 2.63942E+00, 
+  2.63942E+00]}
+   checkpathway:
+     istep                             :  3
+     dmax                              :  6.02714E-03
+   after:
+     istep                             :  3
+     sv: [ 0.00000E+00,  1.82119E+00,  2.64977E+00,  3.45765E+00,  5.27884E+00]
+     tmax                              :  2.64977E+00
+     ex: [-3.586071926367950E+03, -3.585899058127211E+03, -3.585843052605549E+03, 
+          -3.585895205556455E+03, -3.586063507796084E+03]
+     epot                              : -3.585843052605549E+03
+     exd: [-1.430391575476191E-06,  1.216337250111776E-01,  1.575373302599988E-03, 
+           -1.192979061586670E-01,  1.224113877277462E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  3, iter:  0, npv:  4, epot: -3.585843052605549E+03, vd: -1.57537E-03, 
+            vdd: -1.61505E-01,          fnrm:  5.99792E-02, alpha:  3.09588E+00, 
+           tmax:  2.64977E+00, tmax fraction:  5.01960E-01}
+   SP: {iter:  3, fcalls:  16, cbh1 (eV):  6.22797, cbh2 (eV):  5.99889, fspmax:  5.99202E-02, 
+      fspnrm:  5.99792E-02}
+   BFGS: {iter:  3, epot: -3.585843052605549E+03, de: -1.96240E-04, fnrm:  5.99685E-02, 
+          fmax:  5.98193E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  4, s:  [  0.0E+00,  2.63960E+00,  5.27920E+00 ], h: [ 2.63960E+00, 
+  2.63960E+00]}
+   checkpathway:
+     istep                             :  4
+     dmax                              :  1.71764E-02
+   after:
+     istep                             :  4
+     sv: [ 0.00000E+00,  1.84630E+00,  2.66020E+00,  3.50531E+00,  5.27920E+00]
+     tmax                              :  2.66020E+00
+     ex: [-3.586071926367950E+03, -3.585896744908312E+03, -3.585844095251387E+03, 
+          -3.585901722187095E+03, -3.586063507796084E+03]
+     epot                              : -3.585844095251387E+03
+     exd: [-2.374491839998359E-06,  1.185193268307391E-01, -3.853885435059282E-04, 
+           -1.235990436619702E-01,  1.229295701465863E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  4, iter:  0, npv:  4, epot: -3.585844095251387E+03, vd:  3.85389E-04, 
+            vdd: -1.60188E-01,          fnrm:  6.18540E-02, alpha:  3.12134E+00, 
+           tmax:  2.66020E+00, tmax fraction:  5.03903E-01}
+   SP: {iter:  4, fcalls:  20, cbh1 (eV):  6.19960, cbh2 (eV):  5.97052, fspmax:  6.16703E-02, 
+      fspnrm:  6.18540E-02}
+   BFGS: {iter:  4, epot: -3.585844095251387E+03, de: -1.04265E-03, fnrm:  6.18417E-02, 
+          fmax:  6.16875E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  5, s:  [  0.0E+00,  2.63994E+00,  5.27988E+00 ], h: [ 2.63994E+00, 
+  2.63994E+00]}
+   checkpathway:
+     istep                             :  5
+     dmax                              :  1.94153E-02
+   after:
+     istep                             :  5
+     sv: [ 0.00000E+00,  1.82155E+00,  2.64984E+00,  3.45833E+00,  5.27988E+00]
+     tmax                              :  2.64984E+00
+     ex: [-3.586071926367950E+03, -3.585900523642311E+03, -3.585845324802545E+03, 
+          -3.585896861632266E+03, -3.586063507796084E+03]
+     epot                              : -3.585845324802545E+03
+     exd: [-3.441345386453184E-06,  1.202815072567697E-01,  1.502573893211393E-03, 
+           -1.180477294936863E-01,  1.235088993963420E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  5, iter:  0, npv:  4, epot: -3.585845324802545E+03, vd: -1.50257E-03, 
+            vdd: -1.59322E-01,          fnrm:  6.38887E-02, alpha:  3.13831E+00, 
+           tmax:  2.64984E+00, tmax fraction:  5.01876E-01}
+   SP: {iter:  5, fcalls:  24, cbh1 (eV):  6.16614, cbh2 (eV):  5.93706, fspmax:  6.38174E-02, 
+      fspnrm:  6.38887E-02}
+   BFGS: {iter:  5, epot: -3.585845324802545E+03, de: -1.22955E-03, fnrm:  6.39017E-02, 
+          fmax:  6.37425E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  6, s:  [  0.0E+00,  2.64050E+00,  5.28099E+00 ], h: [ 2.64050E+00, 
+  2.64049E+00]}
+   checkpathway:
+     istep                             :  6
+     dmax                              :  2.20952E-02
+   after:
+     istep                             :  6
+     sv: [ 0.00000E+00,  1.84692E+00,  2.66050E+00,  3.50650E+00,  5.28099E+00]
+     tmax                              :  2.66050E+00
+     ex: [-3.586071926367950E+03, -3.585898491350675E+03, -3.585846760147909E+03, 
+          -3.585903572504684E+03, -3.586063507796084E+03]
+     epot                              : -3.585846760147909E+03
+     exd: [-4.654807528214136E-06,  1.169306095561230E-01, -4.129129734654034E-04, 
+           -1.220270440536765E-01,  1.241598016636045E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  6, iter:  0, npv:  4, epot: -3.585846760147909E+03, vd:  4.12913E-04, 
+            vdd: -1.57557E-01,          fnrm:  6.62213E-02, alpha:  3.17345E+00, 
+           tmax:  2.66050E+00, tmax fraction:  5.03788E-01}
+   SP: {iter:  6, fcalls:  28, cbh1 (eV):  6.12708, cbh2 (eV):  5.89800, fspmax:  6.60228E-02, 
+      fspnrm:  6.62213E-02}
+   BFGS: {iter:  6, epot: -3.585846760147909E+03, de: -1.43535E-03, fnrm:  6.62018E-02, 
+          fmax:  6.60361E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  7, s:  [  0.0E+00,  2.64714E+00,  5.29410E+00 ], h: [ 2.64714E+00, 
+  2.64696E+00]}
+   checkpathway:
+     istep                             :  7
+     dmax                              :  1.23778E-01
+   after:
+     istep                             :  7
+     sv: [ 0.00000E+00,  1.82646E+00,  2.65530E+00,  3.46765E+00,  5.29410E+00]
+     tmax                              :  2.65530E+00
+     ex: [-3.586071926367950E+03, -3.585907099289467E+03, -3.585855733681808E+03, 
+          -3.585904159679999E+03, -3.586063507796084E+03]
+     epot                              : -3.585855733681808E+03
+     exd: [-1.142857392759719E-05,  1.135806735439173E-01,  1.176205308025592E-03, 
+           -1.117419480572064E-01,  1.276357957994737E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  7, iter:  0, npv:  4, epot: -3.585855733681808E+03, vd: -1.17621E-03, 
+            vdd: -1.48168E-01,          fnrm:  7.79908E-02, alpha:  3.37456E+00, 
+           tmax:  2.65530E+00, tmax fraction:  5.01558E-01}
+   SP: {iter:  7, fcalls:  32, cbh1 (eV):  5.88290, cbh2 (eV):  5.65382, fspmax:  7.78680E-02, 
+      fspnrm:  7.79908E-02}
+   BFGS: {iter:  7, epot: -3.585855733681808E+03, de: -8.97353E-03, fnrm:  7.80715E-02, 
+          fmax:  7.78765E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  8, s:  [  0.0E+00,  2.66623E+00,  5.33213E+00 ], h: [ 2.66623E+00, 
+  2.66589E+00]}
+   checkpathway:
+     istep                             :  8
+     dmax                              :  1.74283E-01
+   after:
+     istep                             :  8
+     sv: [ 0.00000E+00,  1.86481E+00,  2.68174E+00,  3.54045E+00,  5.33213E+00]
+     tmax                              :  2.68174E+00
+     ex: [-3.586071926367950E+03, -3.585913876340899E+03, -3.585870508092565E+03, 
+          -3.585919268502142E+03, -3.586063507796084E+03]
+     epot                              : -3.585870508092565E+03
+     exd: [-2.083248072625039E-05,  1.007908082139313E-01, -5.730081513549718E-04, 
+           -1.058094020992306E-01,  1.320146646872182E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  8, iter:  0, npv:  4, epot: -3.585870508092565E+03, vd:  5.73008E-04, 
+            vdd: -1.31137E-01,          fnrm:  9.01398E-02, alpha:  3.81279E+00, 
+           tmax:  2.68174E+00, tmax fraction:  5.02940E-01}
+   SP: {iter:  8, fcalls:  36, cbh1 (eV):  5.48087, cbh2 (eV):  5.25179, fspmax:  8.98554E-02, 
+      fspnrm:  9.01398E-02}
+   BFGS: {iter:  8, epot: -3.585870508092565E+03, de: -1.47744E-02, fnrm:  9.00502E-02, 
+          fmax:  8.98199E-02,                   zeta:  1.00000}
+ - anchorpoints: {istep:  9, s:  [  0.0E+00,  2.72740E+00,  5.45376E+00 ], h: [ 2.72740E+00, 
+  2.72636E+00]}
+   checkpathway:
+     istep                             :  9
+     dmax                              :  3.08096E-01
+   after:
+     istep                             :  9
+     sv: [ 0.00000E+00,  1.93114E+00,  2.73728E+00,  3.59835E+00,  5.45376E+00]
+     tmax                              :  2.73728E+00
+     ex: [-3.586071926367950E+03, -3.585932461724759E+03, -3.585901236411550E+03, 
+          -3.585937491403331E+03, -3.586063507796084E+03]
+     epot                              : -3.585901236411550E+03
+     exd: [-3.676165167939205E-05,  7.536130378864934E-02, -4.689885358519280E-04, 
+           -8.021842066632037E-02,  1.382115055093134E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  9, iter:  0, npv:  4, epot: -3.585901236411550E+03, vd:  4.68989E-04, 
+            vdd: -9.69759E-02,          fnrm:  1.08671E-01, alpha:  5.15592E+00, 
+           tmax:  2.73728E+00, tmax fraction:  5.01908E-01}
+   SP: {iter:  9, fcalls:  40, cbh1 (eV):  4.64471, cbh2 (eV):  4.41563, fspmax:  1.08341E-01, 
+      fspnrm:  1.08671E-01}
+   BFGS: {iter:  9, epot: -3.585901236411550E+03, de: -3.07283E-02, fnrm:  1.08547E-01, 
+          fmax:  1.08266E-01,                   zeta:  1.00000}
+ - anchorpoints: {istep:  10, s:  [  0.0E+00,  2.88166E+00,  5.76111E+00 ], h: [ 2.88166E+00, 
+  2.87945E+00]}
+   checkpathway:
+     istep                             :  10
+     dmax                              :  4.67319E-01
+   after:
+     istep                             :  10
+     sv: [ 0.00000E+00,  2.01483E+00,  2.86000E+00,  2.92006E+00,  3.82529E+00,  5.76111E+00]
+     tmax                              :  2.86000E+00
+     ex: [-3.586071926367950E+03, -3.585968751544340E+03, -3.585953816922707E+03, 
+          -3.585953895232353E+03, -3.585972938394360E+03, -3.586063507796084E+03]
+     epot                              : -3.585953816922707E+03
+     exd: [-5.833783813597765E-05,  3.800152922645120E-02, -2.304905951589914E-04, 
+           -2.379404425107546E-03, -4.163457212114562E-02,  1.439579085125714E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  10, iter:  0, npv:  5, epot: -3.585953816922707E+03, vd:  2.30491E-04, 
+            vdd: -4.19221E-02, fnrm:  1.07999E-01, alpha:  1.19269E+01, tmax:  2.86000E+00, 
+  tmax fraction:  4.96433E-01}
+   SP: {iter:  10, fcalls:  44, cbh1 (eV):  3.21392, cbh2 (eV):  2.98484, 
+      fspmax:  1.07782E-01,        fspnrm:  1.07999E-01}
+   BFGS: {iter:  10, epot: -3.585953816922707E+03, de: -5.25805E-02, fnrm:  1.07897E-01, 
+          fmax:  1.07655E-01,                    zeta:  1.00000}
+ - anchorpoints: {istep:  11, s:  [  0.0E+00,  7.56032E+00,  1.51236E+01 ], h: [ 7.56032E+00, 
+  7.56328E+00]}
+   checkpathway:
+     istep                             :  11
+     dmax                              :  5.91800E+00
+   after:
+     istep                             :  11
+     sv: [ 0.00000E+00,  5.22220E+00,  7.52877E+00,  1.01062E+01,  1.51236E+01]
+     tmax                              :  7.52877E+00
+     ex: [-3.586071926367950E+03, -3.585842187107603E+03, -3.585822656125494E+03, 
+          -3.585844650658969E+03, -3.586063507796084E+03]
+     epot                              : -3.585822656125494E+03
+     exd: [-1.357861105877040E-04,  1.905958775400813E-02,  2.684787445292774E-04, 
+           -1.980856637981283E-02,  1.182418286917378E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  11, iter:  0, npv:  4, epot: -3.585822656125494E+03, vd: -2.68479E-04, 
+            vdd: -6.96195E-03, fnrm:  1.71784E-02, alpha:  7.18190E+01, tmax:  7.52877E+00, 
+  tmax fraction:  4.97816E-01}
+   SP: {iter:  11, fcalls:  48, cbh1 (eV):  6.78299, cbh2 (eV):  6.55391, 
+      fspmax:  1.71225E-02,        fspnrm:  1.71784E-02}
+   BFGS: {iter:  11, epot: -3.585822656125494E+03, de:  1.31161E-01, fnrm:  1.69270E-02, 
+          fmax:  1.68754E-02,                    zeta:  1.00000}
+ - anchorpoints: {istep:  12, s:  [  0.0E+00,  2.88435E+00,  5.76655E+00 ], h: [ 2.88435E+00, 
+  2.88219E+00]}
+   checkpathway:
+     istep                             :  12
+     dmax                              :  5.91124E+00
+   after:
+     istep                             :  12
+     sv: [ 0.00000E+00,  1.96529E+00,  2.86266E+00,  2.92181E+00,  3.87833E+00,  5.76655E+00]
+     tmax                              :  2.86266E+00
+     ex: [-3.586071926367950E+03, -3.585971232293103E+03, -3.585954547066729E+03, 
+          -3.585954623991909E+03, -3.585975500105241E+03, -3.586063507796084E+03]
+     epot                              : -3.585954547066729E+03
+     exd: [-5.862291388159897E-05,  4.011786361953167E-02, -2.660084512153419E-04, 
+           -2.337020310255403E-03, -4.338003797279423E-02,  1.440117568630626E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  12, iter:  0, npv:  5, epot: -3.585954547066729E+03, vd:  2.66008E-04, 
+            vdd: -4.15968E-02, fnrm:  1.07643E-01, alpha:  1.20202E+01, tmax:  2.86266E+00, 
+  tmax fraction:  4.96426E-01}
+   SP: {iter:  12, fcalls:  52, cbh1 (eV):  3.19405, cbh2 (eV):  2.96497, 
+      fspmax:  1.07424E-01,        fspnrm:  1.07643E-01}
+   BFGS: {iter:  12, epot: -3.585954547066729E+03, de: -7.30144E-04, fnrm:  1.07526E-01, 
+          fmax:  1.07285E-01,                    zeta:  0.10000}
+ - anchorpoints: {istep:  13, s:  [  0.0E+00,  2.88762E+00,  5.77314E+00 ], h: [ 2.88762E+00, 
+  2.88552E+00]}
+   checkpathway:
+     istep                             :  13
+     dmax                              :  8.14828E-03
+   after:
+     istep                             :  13
+     sv: [ 0.00000E+00,  1.99347E+00,  2.86408E+00,  2.92566E+00,  3.85784E+00,  5.77314E+00]
+     tmax                              :  2.86408E+00
+     ex: [-3.586071926367950E+03, -3.585970777964685E+03, -3.585955423738144E+03, 
+          -3.585955503565843E+03, -3.585974989741749E+03, -3.586063507796084E+03]
+     epot                              : -3.585955423738144E+03
+     exd: [-5.896559363908171E-05,  3.816951223473003E-02, -2.466134254213359E-04, 
+           -2.347478774721632E-03, -4.159051090422476E-02,  1.440756737480233E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  13, iter:  0, npv:  5, epot: -3.585955423738144E+03, vd:  2.46613E-04, 
+            vdd: -4.06198E-02, fnrm:  1.07192E-01, alpha:  1.23093E+01, tmax:  2.86408E+00, 
+  tmax fraction:  4.96104E-01}
+   SP: {iter:  13, fcalls:  56, cbh1 (eV):  3.17020, cbh2 (eV):  2.94112, 
+      fspmax:  1.06982E-01,        fspnrm:  1.07192E-01}
+   BFGS: {iter:  13, epot: -3.585955423738144E+03, de: -8.76671E-04, fnrm:  1.07080E-01, 
+          fmax:  1.06844E-01,                    zeta:  0.11000}
+ - anchorpoints: {istep:  14, s:  [  0.0E+00,  2.89158E+00,  5.78114E+00 ], h: [ 2.89158E+00, 
+  2.88955E+00]}
+   checkpathway:
+     istep                             :  14
+     dmax                              :  9.81887E-03
+   after:
+     istep                             :  14
+     sv: [ 0.00000E+00,  1.98316E+00,  2.86413E+00,  3.87574E+00,  5.78114E+00]
+     tmax                              :  2.86413E+00
+     ex: [-3.586071926367950E+03, -3.585971953197251E+03, -3.585956474828394E+03, 
+          -3.585976172639444E+03, -3.586063507796084E+03]
+     epot                              : -3.585956474828394E+03
+     exd: [-5.937698160100477E-05,  3.807989632458077E-02, -1.714253591977169E-04, 
+           -4.138461130706499E-02,  1.441512576310477E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  14, iter:  0, npv:  4, epot: -3.585956474828394E+03, vd:  1.71425E-04, 
+            vdd: -3.91438E-02, fnrm:  1.06624E-01, alpha:  1.27734E+01, tmax:  2.86413E+00, 
+  tmax fraction:  4.95427E-01}
+   SP: {iter:  14, fcalls:  60, cbh1 (eV):  3.14160, cbh2 (eV):  2.91252, 
+      fspmax:  1.06432E-01,        fspnrm:  1.06624E-01}
+   BFGS: {iter:  14, epot: -3.585956474828394E+03, de: -1.05109E-03, fnrm:  1.06536E-01, 
+          fmax:  1.06307E-01,                    zeta:  0.12100}
+ - anchorpoints: {istep:  15, s:  [  0.0E+00,  2.89638E+00,  5.79084E+00 ], h: [ 2.89638E+00, 
+  2.89446E+00]}
+   checkpathway:
+     istep                             :  15
+     dmax                              :  1.18212E-02
+   after:
+     istep                             :  15
+     sv: [ 0.00000E+00,  1.99958E+00,  2.86903E+00,  2.93463E+00,  3.86967E+00,  5.79084E+00]
+     tmax                              :  2.86903E+00
+     ex: [-3.586071926367950E+03, -3.585972277116384E+03, -3.585957733701619E+03, 
+          -3.585957818091876E+03, -3.585976455878639E+03, -3.586063507796084E+03]
+     epot                              : -3.585957733701619E+03
+     exd: [-5.987003033830349E-05,  3.653049152087333E-02, -2.445422683080923E-04, 
+           -2.328640887238307E-03, -3.989236974864658E-02,  1.442402213878561E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  15, iter:  0, npv:  5, epot: -3.585957733701619E+03, vd:  2.44542E-04, 
+            vdd: -3.85302E-02, fnrm:  1.05933E-01, alpha:  1.29768E+01, tmax:  2.86903E+00, 
+  tmax fraction:  4.95442E-01}
+   SP: {iter:  15, fcalls:  64, cbh1 (eV):  3.10734, cbh2 (eV):  2.87826, 
+      fspmax:  1.05738E-01,        fspnrm:  1.05933E-01}
+   BFGS: {iter:  15, epot: -3.585957733701619E+03, de: -1.25887E-03, fnrm:  1.05816E-01, 
+          fmax:  1.05588E-01,                    zeta:  0.13310}
+ - anchorpoints: {istep:  16, s:  [  0.0E+00,  2.90220E+00,  5.80260E+00 ], h: [ 2.90220E+00, 
+  2.90041E+00]}
+   checkpathway:
+     istep                             :  16
+     dmax                              :  1.42069E-02
+   after:
+     istep                             :  16
+     sv: [ 0.00000E+00,  1.99053E+00,  2.87025E+00,  3.89014E+00,  5.80260E+00]
+     tmax                              :  2.87025E+00
+     ex: [-3.586071926367950E+03, -3.585973723449897E+03, -3.585959234360214E+03, 
+          -3.585977904314475E+03, -3.586063507796084E+03]
+     epot                              : -3.585959234360214E+03
+     exd: [-6.045929620016026E-05,  3.611653006974590E-02, -1.872571371857607E-04, 
+           -3.935005448296239E-02,  1.443441116442881E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  16, iter:  0, npv:  4, epot: -3.585959234360214E+03, vd:  1.87257E-04, 
+            vdd: -3.66138E-02, fnrm:  1.05045E-01, alpha:  1.36560E+01, tmax:  2.87025E+00, 
+  tmax fraction:  4.94648E-01}
+   SP: {iter:  16, fcalls:  68, cbh1 (eV):  3.06651, cbh2 (eV):  2.83742, 
+      fspmax:  1.04870E-01,        fspnrm:  1.05045E-01}
+   BFGS: {iter:  16, epot: -3.585959234360214E+03, de: -1.50066E-03, fnrm:  1.04943E-01, 
+          fmax:  1.04725E-01,                    zeta:  0.14641}
+ - anchorpoints: {istep:  17, s:  [  0.0E+00,  2.90924E+00,  5.81688E+00 ], h: [ 2.90924E+00, 
+  2.90764E+00]}
+   checkpathway:
+     istep                             :  17
+     dmax                              :  1.70498E-02
+   after:
+     istep                             :  17
+     sv: [ 0.00000E+00,  1.98244E+00,  2.87636E+00,  2.94731E+00,  3.91218E+00,  5.81688E+00]
+     tmax                              :  2.87636E+00
+     ex: [-3.586071926367950E+03, -3.585975328653944E+03, -3.585961019121352E+03, 
+          -3.585961109877087E+03, -3.585979506444481E+03, -3.586063507796084E+03]
+     epot                              : -3.585961019121352E+03
+     exd: [-6.116180274381033E-05,  3.548466700601031E-02, -2.666867257642234E-04, 
+           -2.289962417569263E-03, -3.858159598892858E-02,  1.444646171464170E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  17, iter:  0, npv:  5, epot: -3.585961019121352E+03, vd:  2.66687E-04, 
+            vdd: -3.58326E-02, fnrm:  1.03945E-01, alpha:  1.39538E+01, tmax:  2.87636E+00, 
+  tmax fraction:  4.94486E-01}
+   SP: {iter:  17, fcalls:  72, cbh1 (eV):  3.01794, cbh2 (eV):  2.78886, 
+      fspmax:  1.03770E-01,        fspnrm:  1.03945E-01}
+   BFGS: {iter:  17, epot: -3.585961019121352E+03, de: -1.78476E-03, fnrm:  1.03809E-01, 
+          fmax:  1.03594E-01,                    zeta:  0.16105}
+ - anchorpoints: {istep:  18, s:  [  0.0E+00,  2.91777E+00,  5.83417E+00 ], h: [ 2.91777E+00, 
+  2.91641E+00]}
+   checkpathway:
+     istep                             :  18
+     dmax                              :  2.04075E-02
+   after:
+     istep                             :  18
+     sv: [ 0.00000E+00,  2.01455E+00,  2.87918E+00,  2.95659E+00,  3.89863E+00,  5.83417E+00]
+     tmax                              :  2.87918E+00
+     ex: [-3.586071926367950E+03, -3.585975798637203E+03, -3.585963128399179E+03, 
+          -3.585963226522171E+03, -3.585979904443065E+03, -3.586063507796084E+03]
+     epot                              : -3.585963128399179E+03
+     exd: [-6.199585946573618E-05,  3.274612613107045E-02, -2.400891565629386E-04, 
+           -2.291338367885679E-03, -3.596230438894988E-02,  1.446027811625751E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  18, iter:  0, npv:  5, epot: -3.585963128399179E+03, vd:  2.40089E-04, 
+            vdd: -3.38022E-02, fnrm:  1.02533E-01, alpha:  1.47920E+01, tmax:  2.87918E+00, 
+  tmax fraction:  4.93503E-01}
+   SP: {iter:  18, fcalls:  76, cbh1 (eV):  2.96054, cbh2 (eV):  2.73146, 
+      fspmax:  1.02379E-01,        fspnrm:  1.02533E-01}
+   BFGS: {iter:  18, epot: -3.585963128399179E+03, de: -2.10928E-03, fnrm:  1.02396E-01, 
+          fmax:  1.02194E-01,                    zeta:  0.17716}
+ - anchorpoints: {istep:  19, s:  [  0.0E+00,  2.92807E+00,  5.85513E+00 ], h: [ 2.92807E+00, 
+  2.92706E+00]}
+   checkpathway:
+     istep                             :  19
+     dmax                              :  2.43592E-02
+   after:
+     istep                             :  19
+     sv: [ 0.00000E+00,  2.00855E+00,  2.88223E+00,  2.94778E+00,  3.92535E+00,  5.85513E+00]
+     tmax                              :  2.88223E+00
+     ex: [-3.586071926367950E+03, -3.585977842607919E+03, -3.585965606586335E+03, 
+          -3.585965673395265E+03, -3.585981939908018E+03, -3.586063507796084E+03]
+     epot                              : -3.585965606586335E+03
+     exd: [-6.298181598420131E-05,  3.164409875295311E-02, -2.213882167845784E-04, 
+           -1.807448038738882E-03, -3.470196628466483E-02,  1.447593933244773E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  19, iter:  0, npv:  5, epot: -3.585965606586335E+03, vd:  2.21388E-04, 
+            vdd: -3.19926E-02, fnrm:  1.00740E-01, alpha:  1.56286E+01, tmax:  2.88223E+00, 
+  tmax fraction:  4.92258E-01}
+   SP: {iter:  19, fcalls:  80, cbh1 (eV):  2.89311, cbh2 (eV):  2.66403, 
+      fspmax:  1.00610E-01,        fspnrm:  1.00740E-01}
+   BFGS: {iter:  19, epot: -3.585965606586335E+03, de: -2.47819E-03, fnrm:  1.00594E-01, 
+          fmax:  1.00407E-01,                    zeta:  0.19487}
+ - anchorpoints: {istep:  20, s:  [  0.0E+00,  2.94049E+00,  5.88047E+00 ], h: [ 2.94049E+00, 
+  2.93998E+00]}
+   checkpathway:
+     istep                             :  20
+     dmax                              :  2.89595E-02
+   after:
+     istep                             :  20
+     sv: [ 0.00000E+00,  2.01724E+00,  2.88608E+00,  2.96054E+00,  3.94234E+00,  5.88047E+00]
+     tmax                              :  2.88608E+00
+     ex: [-3.586071926367950E+03, -3.585979726147530E+03, -3.585968493064139E+03, 
+          -3.585968570918891E+03, -3.585983787784305E+03, -3.586063507796084E+03]
+     epot                              : -3.585968493064139E+03
+     exd: [-6.414037189290832E-05,  2.964827089517267E-02, -2.339536128546367E-04, 
+           -1.843477259680595E-03, -3.262086457311519E-02,  1.449341177133707E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  20, iter:  0, npv:  5, epot: -3.585968493064139E+03, vd:  2.33954E-04, 
+            vdd: -2.96289E-02, fnrm:  9.84665E-02, alpha:  1.68754E+01, tmax:  2.88608E+00, 
+  tmax fraction:  4.90791E-01}
+   SP: {iter:  20, fcalls:  84, cbh1 (eV):  2.81456, cbh2 (eV):  2.58548, 
+      fspmax:  9.83611E-02,        fspnrm:  9.84665E-02}
+   BFGS: {iter:  20, epot: -3.585968493064139E+03, de: -2.88648E-03, fnrm:  9.82931E-02, 
+          fmax:  9.81235E-02,                    zeta:  0.21436}
+ - anchorpoints: {istep:  21, s:  [  0.0E+00,  2.95540E+00,  5.91102E+00 ], h: [ 2.95540E+00, 
+  2.95561E+00]}
+   checkpathway:
+     istep                             :  21
+     dmax                              :  3.42439E-02
+   after:
+     istep                             :  21
+     sv: [ 0.00000E+00,  2.06799E+00,  2.87952E+00,  3.03502E+00,  4.00205E+00,  5.91102E+00]
+     tmax                              :  2.87952E+00
+     ex: [-3.586071926367950E+03, -3.585980843932253E+03, -3.585971814371160E+03, 
+          -3.585972053966681E+03, -3.585987149700815E+03, -3.586063507796084E+03]
+     epot                              : -3.585971814371160E+03
+     exd: [-6.549128128653142E-05,  2.562721538536117E-02, -6.675152056212193E-05, 
+           -2.998639109586950E-03, -3.176957503794312E-02,  1.451251111247420E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  21, iter:  0, npv:  5, epot: -3.585971814371160E+03, vd:  6.67515E-05, 
+            vdd: -2.61985E-02, fnrm:  9.55389E-02, alpha:  1.90850E+01, tmax:  2.87952E+00, 
+  tmax fraction:  4.87145E-01}
+   SP: {iter:  21, fcalls:  88, cbh1 (eV):  2.72419, cbh2 (eV):  2.49511, 
+      fspmax:  9.54870E-02,        fspnrm:  9.55389E-02}
+   BFGS: {iter:  21, epot: -3.585971814371160E+03, de: -3.32131E-03, fnrm:  9.53633E-02, 
+          fmax:  9.52296E-02,                    zeta:  0.23579}
+ - anchorpoints: {istep:  22, s:  [  0.0E+00,  2.97311E+00,  5.94769E+00 ], h: [ 2.97311E+00, 
+  2.97458E+00]}
+   checkpathway:
+     istep                             :  22
+     dmax                              :  4.02131E-02
+   after:
+     istep                             :  22
+     sv: [ 0.00000E+00,  2.04030E+00,  2.88741E+00,  2.99438E+00,  3.98740E+00,  5.94769E+00]
+     tmax                              :  2.88741E+00
+     ex: [-3.586071926367950E+03, -3.585984414666424E+03, -3.585975581744744E+03, 
+          -3.585975700203908E+03, -3.585988391218180E+03, -3.586063507796084E+03]
+     epot                              : -3.585975581744744E+03
+     exd: [-6.705183338882578E-05,  2.483448940040688E-02, -2.453996215960519E-04, 
+           -1.935110886773278E-03, -2.757938380522001E-02,  1.453296765502735E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  22, iter:  0, npv:  5, epot: -3.585975581744744E+03, vd:  2.45400E-04, 
+            vdd: -2.41793E-02, fnrm:  9.19228E-02, alpha:  2.06789E+01, tmax:  2.88741E+00, 
+  tmax fraction:  4.85468E-01}
+   SP: {iter:  22, fcalls:  92, cbh1 (eV):  2.62167, cbh2 (eV):  2.39259, 
+      fspmax:  9.18840E-02,        fspnrm:  9.19228E-02}
+   BFGS: {iter:  22, epot: -3.585975581744744E+03, de: -3.76737E-03, fnrm:  9.16388E-02, 
+          fmax:  9.15234E-02,                    zeta:  0.25937}
+ - anchorpoints: {istep:  23, s:  [  0.0E+00,  3.45747E+00,  6.94442E+00 ], h: [ 3.45747E+00, 
+  3.48694E+00]}
+   checkpathway:
+     istep                             :  23
+     dmax                              :  8.84941E-01
+   after:
+     istep                             :  23
+     sv: [ 0.00000E+00,  2.36672E+00,  2.88101E+00,  3.51861E+00,  4.67051E+00,  6.94442E+00]
+     tmax                              :  2.88101E+00
+     ex: [-3.586071926367950E+03, -3.586014034051582E+03, -3.586012671526187E+03, 
+          -3.586013558689931E+03, -3.586019424251189E+03, -3.586063507796084E+03]
+     epot                              : -3.586012671526187E+03
+     exd: [-9.448314205200338E-05,  5.050244967610046E-03,  6.668665026891231E-04, 
+           -3.379295974651034E-03, -5.918229754009623E-03,  1.454107181093984E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  23, iter:  0, npv:  5, epot: -3.586012671526187E+03, vd: -6.66867E-04, 
+            vdd: -7.01578E-03, fnrm:  3.00876E-03, alpha:  7.12679E+01, tmax:  2.88101E+00, 
+  tmax fraction:  4.14867E-01}
+   - SS: {istep:  23, iter:  1, npv:  5, epot: -3.586012647373399E+03, vd: -3.50419E-04, 
+            vdd: -6.96695E-03, fnrm:  3.58611E-03, alpha:  1.43535E+02, tmax:  2.92854E+00, 
+  tmax fraction:  4.21711E-01}
+   SP: {iter:  23, fcalls:  97, cbh1 (eV):  1.61306, cbh2 (eV):  1.38398, 
+      fspmax:  3.53947E-03,        fspnrm:  3.58611E-03}
+   BFGS: {iter:  23, epot: -3.586012647373399E+03, de: -3.70656E-02, fnrm:  3.22804E-03, 
+          fmax:  3.21116E-03,                    zeta:  0.28531}
+ - anchorpoints: {istep:  24, s:  [  0.0E+00,  3.44065E+00,  6.90972E+00 ], h: [ 3.44065E+00, 
+  3.46907E+00]}
+   checkpathway:
+     istep                             :  24
+     dmax                              :  2.67800E-02
+   after:
+     istep                             :  24
+     sv: [ 0.00000E+00,  2.32280E+00,  2.82917E+00,  3.45332E+00,  4.67801E+00,  6.90972E+00]
+     tmax                              :  2.82917E+00
+     ex: [-3.586071926367950E+03, -3.586014095261272E+03, -3.586012737253817E+03, 
+          -3.586013541401119E+03, -3.586019406664958E+03, -3.586063507796084E+03]
+     epot                              : -3.586012737253817E+03
+     exd: [-9.382950916030322E-05,  5.243033874071429E-03,  6.344234242596921E-04, 
+           -3.090304845811010E-03, -5.813381754318266E-03,  1.454950290685677E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  24, iter:  0, npv:  5, epot: -3.586012737253817E+03, vd: -6.34423E-04, 
+            vdd: -7.02375E-03, fnrm:  7.71597E-04, alpha:  7.11871E+01, tmax:  2.82917E+00, 
+  tmax fraction:  4.09448E-01}
+   - SS: {istep:  24, iter:  1, npv:  5, epot: -3.586012715385542E+03, vd: -3.35456E-04, 
+            vdd: -6.95000E-03, fnrm:  7.20015E-04, alpha:  1.43885E+02, tmax:  2.87433E+00, 
+  tmax fraction:  4.15984E-01}
+   - SS: {istep:  24, iter:  2, npv:  5, epot: -3.586012706727781E+03, vd: -2.46229E-05, 
+            vdd: -6.87775E-03, fnrm:  1.24730E-03, alpha:  1.45396E+02, tmax:  2.92260E+00, 
+  tmax fraction:  4.22969E-01}
+   SP: {iter:  24, fcalls:  103, cbh1 (eV):  1.61145, cbh2 (eV):  1.38237, 
+      fspmax:  1.20866E-03,         fspnrm:  1.24730E-03}
+   BFGS: {iter:  24, epot: -3.586012706727781E+03, de: -5.93544E-05, fnrm:  1.15555E-03, 
+          fmax:  1.14564E-03,                    zeta:  0.31384}
+ - anchorpoints: {istep:  25, s:  [  0.0E+00,  3.43235E+00,  6.89256E+00 ], h: [ 3.43235E+00, 
+  3.46021E+00]}
+   checkpathway:
+     istep                             :  25
+     dmax                              :  1.33126E-02
+   after:
+     istep                             :  25
+     sv: [ 0.00000E+00,  2.36339E+00,  2.82752E+00,  3.51367E+00,  4.71090E+00,  6.89256E+00]
+     tmax                              :  2.82752E+00
+     ex: [-3.586071926367950E+03, -3.586013798903901E+03, -3.586012729769896E+03, 
+          -3.586013808927603E+03, -3.586019549218644E+03, -3.586063507796084E+03]
+     epot                              : -3.586012729769896E+03
+     exd: [-9.350078555748298E-05,  4.570823877983277E-03,  4.622763310320414E-04, 
+           -3.413943902712693E-03, -5.941266104522079E-03,  1.455350692622118E-04]
+   SPLSAD maximization iterations:
+   - SS: {istep:  25, iter:  0, npv:  5, epot: -3.586012729769896E+03, vd: -4.62276E-04, 
+            vdd: -6.73978E-03, fnrm:  1.33579E-03, alpha:  7.41863E+01, tmax:  2.82752E+00, 
+  tmax fraction:  4.10228E-01}
+   - SS: {istep:  25, iter:  1, npv:  5, epot: -3.586012717789965E+03, vd: -2.37339E-04, 
+            vdd: -6.68182E-03, fnrm:  7.65766E-04, alpha:  1.49660E+02, tmax:  2.86182E+00, 
+  tmax fraction:  4.15204E-01}
+   - SS: {istep:  25, iter:  2, npv:  5, epot: -3.586012713412091E+03, vd: -1.00588E-05, 
+            vdd: -6.62527E-03, fnrm:  2.19848E-04, alpha:  1.50937E+02, tmax:  2.89734E+00, 
+  tmax fraction:  4.20357E-01}
+   SP: {iter:  25, fcalls:  109, cbh1 (eV):  1.61127, cbh2 (eV):  1.38219, 
+      fspmax:  2.07403E-04,         fspnrm:  2.19848E-04}
+   BFGS: {iter:  25, epot: -3.586012713412091E+03, de: -6.68431E-06, fnrm:  2.05858E-04, 
+          fmax:  2.03127E-04,                    zeta:  0.34523}
+   BFGS converged: {iter:  25, epot: -3.586012713412091E+03, fnrm:  2.05858E-04, 
+                    fmax:  2.03127E-04}
+ barrier heights in eV: {barrier1:  1.61127, barrier2:  1.38219}
+ Forces (saddle point):
+ -  [ 6.69962E-03,  6.69962E-03,  7.22622E-03]
+ -  [-1.70895E-03, -7.92627E-03, -9.14971E-03]
+ -  [-6.22343E-03,  1.10941E-02,  1.15976E-02]
+ -  [-7.92627E-03, -1.70895E-03, -9.14971E-03]
+ -  [ 2.81083E-03,  2.81083E-03, -1.66688E-02]
+ -  [ 6.45974E-03, -3.16545E-03, -1.06056E-02]
+ -  [ 1.10941E-02, -6.22343E-03,  1.15976E-02]
+ -  [-3.16545E-03,  6.45974E-03, -1.06056E-02]
+ -  [-5.38915E-03, -5.38915E-03,  2.91140E-03]
+ -  [-8.51541E-03, -8.51541E-03, -8.33828E-04]
+ -  [ 2.86431E-03, -1.44593E-02,  4.75377E-03]
+ -  [ 7.01620E-03, -1.01699E-02, -2.54117E-03]
+ -  [-1.44593E-02,  2.86431E-03,  4.75377E-03]
+ -  [ 3.19331E-03,  3.19331E-03,  1.07244E-02]
+ -  [ 1.76031E-02,  1.22780E-04,  1.88959E-03]
+ -  [-1.01699E-02,  7.01620E-03, -2.54117E-03]
+ -  [ 1.22780E-04,  1.76031E-02,  1.88959E-03]
+ -  [ 7.84200E-03,  7.84200E-03, -1.00450E-02]
+ -  [ 1.03705E-02,  1.03705E-02, -8.20642E-03]
+ -  [-3.36081E-03, -8.60834E-03,  9.89159E-03]
+ -  [-4.29003E-03,  2.34236E-03, -7.17045E-03]
+ -  [-8.60834E-03, -3.36081E-03,  9.89159E-03]
+ -  [ 5.09067E-06,  5.09067E-06,  9.62258E-05]
+ -  [ 6.67445E-03, -1.12813E-02,  8.73220E-03]
+ -  [ 2.34236E-03, -4.29003E-03, -7.17045E-03]
+ -  [-1.12813E-02,  6.67445E-03,  8.73220E-03]
+ CPU time: {iproc:  0, hrs:  0.606E-03, min:  0.363E-01, sec:  0.218E+01}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  1688
+   Tot. No. of Deallocations           :  1688
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  3.931
+     for the array                     : symfunc%y0dr
+     in the routine                    : symmetry_functions_driver
+     Memory Peak of process            : 100.020 MB
+ Walltime since initialization         :  00:00:02.201098049
+ Max No. of dictionaries used          :  1168 #( 185 still in use)
+ Number of dictionary folders allocated:  1

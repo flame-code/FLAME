@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine writexyz(filename,fn_position,nat,rat,bemoved,sat,cellvec,boundcond,comment)
-    use mod_interface
     !use charges, only:nzx
     !use interactions, only: imass
     !use mod_atoms, only:
@@ -42,7 +41,6 @@ subroutine writexyz(filename,fn_position,nat,rat,bemoved,sat,cellvec,boundcond,c
 end subroutine writexyz
 !*****************************************************************************************
 subroutine readxyznat(filename,nat)
-    use mod_interface
     implicit none
     integer:: nat
     character(*):: filename
@@ -55,7 +53,6 @@ subroutine readxyznat(filename,nat)
 end subroutine readxyznat
 !*****************************************************************************************
 subroutine readxyz(filename,nat,rat,sat,comment1,comment2,atom_motion)
-    use mod_interface
     implicit none
     integer:: nat
     real(8):: rat(3,nat)

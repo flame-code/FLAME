@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import random
 import sys
-from cStringIO import StringIO
+from io import StringIO
 from acf import *
 import math
 
 if len(sys.argv) < 3:
-    print "usage: acf_shake.py input_filename amplitude"
+    print("usage: acf_shake.py input_filename amplitude")
     exit()
 else:
     filename = sys.argv[1]

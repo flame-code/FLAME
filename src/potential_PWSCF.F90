@@ -615,7 +615,6 @@ contains
 !!      endif
 !!     enddo
 !!     close(99)
-!!  !Allocate the shit
 !!     allocate(fix(3,nat),fcart(3,nat),xred(3,nat),xcart(3,nat),char_type(ntypat),amu(ntypat),typat_char(nat))
 !!  
 !!  

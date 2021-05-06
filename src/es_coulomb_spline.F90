@@ -72,9 +72,9 @@
 !end program erf_rinv_spline
 !*****************************************************************************************
 subroutine build_shortrange_spline(shortrange,spline,rcut,a)
-    use mod_interface
     use mod_shortrange, only: typ_shortrange
     use mod_spline, only: typ_spline
+    use mod_defs
     use yaml_output
     implicit none
     type(typ_shortrange), intent(in):: shortrange
@@ -98,13 +98,14 @@ subroutine build_shortrange_spline(shortrange,spline,rcut,a)
     real(16):: aq, rcutq, qq, tt
     real(16):: a2, a3, a4, a5
     integer:: itypinter, isp
+    external erf_over_r, one_over_r6, one_over_r8, exp_ar
     associate(nsp=>spline%nsp)
     rcutq=real(rcut,16)
     aq=real(a,16)
     hspq=rcutq/real(nsp,16)
     call build_spline(erf_over_r,rcutq,hspq,aq,nsp,fspq_1,fdspq_1)
     if(spline%do_tosifumi) then
-        tt=1.q0 !will not be used
+        tt=1.0_fqp !will not be used
         call build_spline(one_over_r6,rcutq,hspq,tt,nsp,fspq_2,fdspq_2)
         call build_spline(one_over_r8,rcutq,hspq,tt,nsp,fspq_3,fdspq_3)
     endif
@@ -117,8 +118,8 @@ subroutine build_shortrange_spline(shortrange,spline,rcut,a)
             a3=shortrange%tosifumi%ddd(itypinter)
             a4=shortrange%tosifumi%aaa(itypinter)
             a5=shortrange%tosifumi%bbb(itypinter)
-            fdspq_4=0.q0
-            fspq_4=0.q0
+            fdspq_4=0.0_fqp
+            fspq_4=0.0_fqp
             call build_spline(exp_ar,rcutq,hspq,a5,nsp,fspq_4,fdspq_4)
             fdspq(0:3,0:nsp)=fdspq(0:3,0:nsp)+a2*fdspq_2(0:3,0:nsp)+a3*fdspq_3(0:3,0:nsp)-a4*fdspq_4(0:3,0:nsp)
             fspq(0:4,0:nsp-1)=fspq(0:4,0:nsp-1)+a2*fspq_2(0:4,0:nsp-1)+a3*fspq_3(0:4,0:nsp-1)-a4*fspq_4(0:4,0:nsp-1)
@@ -144,8 +145,8 @@ end subroutine build_shortrange_spline
             !fspq(0:4,0:nsp-1)=fspq(0:4,0:nsp-1)+a4*fspq_4(0:4,0:nsp-1)
 !*****************************************************************************************
 subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
-    use mod_interface
     use mod_spline, only: typ_spline
+    use mod_defs
     use yaml_output
     implicit none
     external:: cal_f_fd_fdd
@@ -164,9 +165,9 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
     real(16):: r, fd0, fsd0, fd1, fsd1
     real(16):: f_tmp, fd_tmp, fsd_tmp, f_rcut
     integer:: isp
-    pi=4.q0*atan(1.q0)
-    onethird=1.q0/3.q0
-    r=0.q0
+    pi=4.0_fqp*atan(1.0_fqp)
+    onethird=1.0_fqp/3.0_fqp
+    r=0.0_fqp
     call cal_f_fd_fdd(r,aq,hspq,f_tmp,fd0,fsd0)
     do isp=0,nsp
         r=hspq*real((isp+1),16)
@@ -174,13 +175,13 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
         !write(501,'(3es25.10)') r,fd1,fsd1
         fdspq(0,isp)=fd0
         fdspq(1,isp)=fsd0
-        fdspq(2,isp)=3.q0*(-fd0+fd1)-2.q0*fsd0-fsd1
-        fdspq(3,isp)=2.q0*( fd0-fd1)+     fsd0+fsd1
+        fdspq(2,isp)=3.0_fqp*(-fd0+fd1)-2.0_fqp*fsd0-fsd1
+        fdspq(3,isp)=2.0_fqp*( fd0-fd1)+     fsd0+fsd1
         fd0=fd1
         fsd0=fsd1
     enddo
     !for the time being assume that the potential starts from this value
-    fsp_int=1.q0 
+    fsp_int=1.0_fqp 
     do isp=0,nsp-1
         !the zeroth coefficient is the value of the integral
         fspq(0,isp)=fsp_int
@@ -204,7 +205,7 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
 end subroutine build_spline 
 !*****************************************************************************************
 subroutine erf_over_r(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_defs
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a
@@ -222,29 +223,29 @@ subroutine erf_over_r(r,a,hsp,func,funcder,funcsecder)
     !evaluating second derivative of function at r
     !funcsecder=-a*funcder*hsp
     !----------------------------------------------------------------
-    twosqrtinv=1.q0/sqrt(2.q0)
-    pi=4.q0*atan(1.q0)
-    if(r/a<1.q-10) then
+    twosqrtinv=1.0_fqp/sqrt(2.0_fqp)
+    pi=4.0_fqp*atan(1.0_fqp)
+    if(r/a<1.e-10_fqp) then
         !evaluating function at r=0
-        func=sqrt(2.q0/pi)/a
+        func=sqrt(2.0_fqp/pi)/a
         !evaluating first derivative of function at r=0
-        funcder=0.q0
+        funcder=0.0_fqp
         !evaluating second derivative of function at r=0
-        funcsecder=-func/(3.q0*a**2)*hsp
+        funcsecder=-func/(3.0_fqp*a**2)*hsp
     else
         !evaluating function at r/=0
         func=erf(r*twosqrtinv/a)/r
         !evaluating first derivative of function at r/=0
-        funcder=(sqrt(2.q0/pi)*exp(-r**2/a**2*0.5q0)/a-func)/r
+        funcder=(sqrt(2.0_fqp/pi)*exp(-r**2/a**2*0.5q0)/a-func)/r
         !evaluating second derivative of function at r/=0
-        funcsecder=(-sqrt(2.q0/pi)*exp(-r**2/a**2*0.5q0)*(2.q0*a**2+r*r)/a**3+2.q0*func)/(r*r)*hsp
+        funcsecder=(-sqrt(2.0_fqp/pi)*exp(-r**2/a**2*0.5q0)*(2.0_fqp*a**2+r*r)/a**3+2.0_fqp*func)/(r*r)*hsp
     endif
 end subroutine erf_over_r
 !*****************************************************************************************
-!funcder=12.q0*exp(-r12)/(sqrt(pi)*r)-(6.q0*erf(r6))/r**7
-!funcsecder=-144.q0*exp(-r12)/(sqrt(pi)*r2)+exp(-r12)*(5.q0*r4-144.q0*r**16)/(sqrt(pi)*r6)+(42.q0*erf(r6))/r8
+!funcder=12.0_fqp*exp(-r12)/(sqrt(pi)*r)-(6.0_fqp*erf(r6))/r**7
+!funcsecder=-144.0_fqp*exp(-r12)/(sqrt(pi)*r2)+exp(-r12)*(5.0_fqp*r4-144.0_fqp*r**16)/(sqrt(pi)*r6)+(42.0_fqp*erf(r6))/r8
 subroutine one_over_r6(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_defs
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a
@@ -255,14 +256,14 @@ subroutine one_over_r6(r,a,hsp,func,funcder,funcsecder)
     !local variables
     real(16):: pi, r2, r4, r6, r8, r12
     !----------------------------------------------------------------
-    pi=4.q0*atan(1.q0)
-    if(r<5.q-1) then
+    pi=4.0_fqp*atan(1.0_fqp)
+    if(r<5.e-1_fqp) then
         !evaluating function at r=0
-        func=2.q0/sqrt(pi)
+        func=2.0_fqp/sqrt(pi)
         !evaluating first derivative of function at r=0
-        funcder=0.q0
+        funcder=0.0_fqp
         !evaluating second derivative of function at r=0
-        funcsecder=0.q0
+        funcsecder=0.0_fqp
     else
         !evaluating function at r/=0
         r2=r**2
@@ -272,15 +273,15 @@ subroutine one_over_r6(r,a,hsp,func,funcder,funcsecder)
         r12=r6**2
         func=erf(r6)/r6
         !evaluating first derivative of function at r/=0
-        funcder=12.q0*exp(-r12)/(sqrt(pi)*r)-(6.q0*erf(r6))/r**7
+        funcder=12.0_fqp*exp(-r12)/(sqrt(pi)*r)-(6.0_fqp*erf(r6))/r**7
         !evaluating second derivative of function at r/=0
-        funcsecder=(-144.q0*exp(-r12)/(sqrt(pi)*r2)+ &
-                   exp(-r12)*(5.q0*r4-144.q0*r**16)/(sqrt(pi)*r6)+(42.q0*erf(r6))/r8)*hsp
+        funcsecder=(-144.0_fqp*exp(-r12)/(sqrt(pi)*r2)+ &
+                   exp(-r12)*(5.0_fqp*r4-144.0_fqp*r**16)/(sqrt(pi)*r6)+(42.0_fqp*erf(r6))/r8)*hsp
     endif
 end subroutine one_over_r6
 !*****************************************************************************************
 subroutine one_over_r8(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_defs
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a
@@ -291,14 +292,14 @@ subroutine one_over_r8(r,a,hsp,func,funcder,funcsecder)
     !local variables
     real(16):: pi, r2, r4, r8, r9, r10, r16
     !----------------------------------------------------------------
-    pi=4.q0*atan(1.q0)
-    if(r<5.q-1) then
+    pi=4.0_fqp*atan(1.0_fqp)
+    if(r<5.e-1_fqp) then
         !evaluating function at r=0
-        func=2.q0/sqrt(pi)
+        func=2.0_fqp/sqrt(pi)
         !evaluating first derivative of function at r=0
-        funcder=0.q0
+        funcder=0.0_fqp
         !evaluating second derivative of function at r=0
-        funcsecder=0.q0
+        funcsecder=0.0_fqp
     else
         !evaluating function at r/=0
         r2=r**2
@@ -309,16 +310,16 @@ subroutine one_over_r8(r,a,hsp,func,funcder,funcsecder)
         r16=r8**2
         func=erf(r8)/r8
         !evaluating first derivative of function at r/=0
-        funcder=16.q0*exp(-r16)/(sqrt(pi)*r)-(8.q0*erf(r8))/r9
+        funcder=16.0_fqp*exp(-r16)/(sqrt(pi)*r)-(8.0_fqp*erf(r8))/r9
         !evaluating second derivative of function at r/=0
-        funcsecder=((-144.q0*exp(-r16)/r2-256.q0/r16)/sqrt(pi)+(72.q0*erf(r8))/r10)*hsp
+        funcsecder=((-144.0_fqp*exp(-r16)/r2-256.0_fqp/r16)/sqrt(pi)+(72.0_fqp*erf(r8))/r10)*hsp
     endif
 end subroutine one_over_r8
-!16.q0*exp(-r16)/(sqrt(pi)*r)-(8.q0*erf(r8))/r9
-!(-144.q0*exp(-r16)/r2-256.q0/r16)/sqrt(pi)+(72*erf(r8))/r10
+!16.0_fqp*exp(-r16)/(sqrt(pi)*r)-(8.0_fqp*erf(r8))/r9
+!(-144.0_fqp*exp(-r16)/r2-256.0_fqp/r16)/sqrt(pi)+(72*erf(r8))/r10
 !*****************************************************************************************
 subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
-    use mod_interface
+    use mod_defs
     implicit none 
     real(16), intent(in):: r
     real(16), intent(in):: a
@@ -328,9 +329,9 @@ subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
     real(16), intent(out):: funcsecder
     !local variables
     !----------------------------------------------------------------
-    if(r<1.q-5) then
+    if(r<1.e-5_fqp) then
         !evaluating function at r=0
-        func=1.q0
+        func=1.0_fqp
         !evaluating first derivative of function at r=0
         funcder=-a
         !evaluating second derivative of function at r=0

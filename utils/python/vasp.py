@@ -53,22 +53,22 @@ def poscar_write(atoms,filename):
         str_line=""
         for itype in range(ntypes):
             str_line+=" %s" % atom_types[itype]
-        print str_line
-        print "1.0"
-        print "%24.15E%24.15E%24.15E" % (atoms.cellvec[0][0],atoms.cellvec[0][1],atoms.cellvec[0][2])
-        print "%24.15E%24.15E%24.15E" % (atoms.cellvec[1][0],atoms.cellvec[1][1],atoms.cellvec[1][2])
-        print "%24.15E%24.15E%24.15E" % (atoms.cellvec[2][0],atoms.cellvec[2][1],atoms.cellvec[2][2])
-        print str_line
+        print(str_line)
+        print("1.0")
+        print("%24.15E%24.15E%24.15E" % (atoms.cellvec[0][0],atoms.cellvec[0][1],atoms.cellvec[0][2]))
+        print("%24.15E%24.15E%24.15E" % (atoms.cellvec[1][0],atoms.cellvec[1][1],atoms.cellvec[1][2]))
+        print("%24.15E%24.15E%24.15E" % (atoms.cellvec[2][0],atoms.cellvec[2][1],atoms.cellvec[2][2]))
+        print(str_line)
         str_line=""
         for itype in range(ntypes):
             str_line+=" %d" % atom_nn[itype]
-        print str_line
-        print atoms.coordinates
+        print(str_line)
+        print(atoms.coordinates)
         for iat in range(atoms.nat):
             x=float(rat[iat][0])
             y=float(rat[iat][1])
             z=float(rat[iat][2])
-            print "%24.15E%24.15E%24.15E" % (x,y,z)
+            print("%24.15E%24.15E%24.15E" % (x,y,z))
     else:
         str_line=""
         for itype in range(ntypes):
@@ -143,7 +143,7 @@ def xdatcar_read():
                     atoms.nat+=int(i)
                     ncol+=1
                 if ncol!=ntypes:
-                    print "ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol
+                    print("ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol)
                 for itype in range(ntypes):
                     for iat in range(atom_nn[itype]): 
                          atoms.sat.append(atom_types[itype])
@@ -157,7 +157,7 @@ def xdatcar_read():
                 atoms.nat+=int(i)
                 ncol+=1
             if ncol!=ntypes:
-                print "ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol
+                print("ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol)
             for itype in range(ntypes):
                 for iat in range(atom_nn[itype]): 
                     atoms.sat.append(atom_types[itype])
@@ -167,7 +167,7 @@ def xdatcar_read():
             elif line.strip().split()[0][0]=="C" or line.strip().split()[0][0]=="c" or line.strip().split()[0][0]=="K" or line.strip().split()[0][0]=="k":
                 atoms.coordinates="Cartesian"
             else:
-                print "ERROR: unknown coordinates"
+                print("ERROR: unknown coordinates")
         elif iline>8:
             if (iline-8)%(atoms.nat+1)>=1:
                 atoms.rat.append([]) 
@@ -194,7 +194,7 @@ def xdatcar_read():
                     atoms.posred[-1].append(yred)
                     atoms.posred[-1].append(zred)
                 else:
-                    print "ERROR: unknown coordinates"
+                    print("ERROR: unknown coordinates")
             if (iline-8)%(atoms.nat+1)==0:
                 atoms_all.append(Atoms())
                 atoms_all[-1]=copy.copy(atoms)
@@ -204,7 +204,7 @@ def xdatcar_read():
     f.closed
     return atoms_all
 #*****************************************************************************************
-def poscar_read(filename):
+def poscar_read(filename): #,keepDirect=False):
     f=open(filename,"r")
     atoms=[]
     iline=0
@@ -261,7 +261,7 @@ def poscar_read(filename):
                     atoms.nat+=int(i)
                     ncol+=1
                 if ncol!=ntypes:
-                    print "ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol
+                    print("ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol)
                 for itype in range(ntypes):
                     for iat in range(atom_nn[itype]): 
                          atoms.sat.append(atom_types[itype])
@@ -275,7 +275,7 @@ def poscar_read(filename):
                 atoms.nat+=int(i)
                 ncol+=1
             if ncol!=ntypes:
-                print "ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol
+                print("ERROR: in lines 6 and 7, number of columns differ: %3d%3d",ntypes,ncol)
             for itype in range(ntypes):
                 for iat in range(atom_nn[itype]): 
                     atoms.sat.append(atom_types[itype])
@@ -285,7 +285,7 @@ def poscar_read(filename):
             elif line.strip().split()[0][0]=="C" or line.strip().split()[0][0]=="c" or line.strip().split()[0][0]=="K" or line.strip().split()[0][0]=="k":
                 atoms.coordinates="Cartesian"
             else:
-                print "ERROR: unknown coordinates"
+                print("ERROR: unknown coordinates")
         elif iline>8 and iline<=atoms.nat+8:
             atoms.rat.append([])
             atoms.posred.append([])
@@ -308,7 +308,7 @@ def poscar_read(filename):
                 n = 1
                 posred=rxyz_cart2int(atoms.cellvec,poscart,n)
             else:
-                print "ERROR: unknown coordinates"
+                print("ERROR: unknown coordinates")
             atoms.rat[-1].append(x)
             atoms.rat[-1].append(y)
             atoms.rat[-1].append(z)

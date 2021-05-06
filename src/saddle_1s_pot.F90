@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine pot_initialize(parini,atoms,paropt,paropt_m)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_opt, only: typ_paropt
@@ -26,7 +25,6 @@ subroutine pot_initialize(parini,atoms,paropt,paropt_m)
         !two_level_geopt=.true.
         perfstatus='normal'
     endif
-!    use mod_interface
 !    use mod_atoms, only: typ_atoms
 !#if defined(HAVE_VASP)
 !    use potential_forces, only: init_potential_forces, fcalls, perfstatus, single_point_calculation

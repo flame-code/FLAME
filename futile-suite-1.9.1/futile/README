@@ -1,0 +1,164 @@
+/*! @file
+@brief README of the flib library.
+
+@dir flib
+@brief This directory contains the flib library (memory allocation, dictionaries, ...).
+
+@dir flib/src
+@brief Directory source of the flib library
+@details
+The <tt>src</tt> directory contains the different routine of the flib library:
+- Dictionaries (see @ref dictionaries.f90)
+- Dynamic memory management (see @ref dynamic_memory.f90)
+- Yaml output  (see @ref yaml_strings.f90 and @ref yaml_output.f90)
+- Exception Handling (see @ref error_handling.f90)
+
+
+@dir flib/tests
+@brief Contains some tests for the flib library
+@details
+The <tt>tests</tt> directory contains some useful examples and tests.
+
+
+@defgroup FLIB    The Flib library
+@brief Low-level library used by BigDFT (memory allocation, timers, dictionaries, exception handling and yaml output)
+@details
+  The flib library is a low-level library used by BigDFT in order to do some low-level operations as:
+  - Define the dictionary type: In order to handle the yaml components (list and sequence), we define a type dictionary
+    which is a cousin of a python dictionary (see @ref FLIB_DICTIONARY)
+  - Error handling: The goal is to manage the errors for the input variables, during the runtime and also for the MPI
+    calls (see @ref FLIB_ERROR)
+  - Memory allocations and memory profiling: all the allocations and de-allocations are managed in ordee to detect the
+    memory leak and have a good trace of the memory peak (see @ref FLIB_MEMORY)
+  - Timers
+  - Routines to handle yaml output in order to build lists and sequences. This is important for the pre and post
+    processing of all files related to BigDFT (see @ref FLIB_YAML)
+
+
+@defgroup FLIB_ERROR  Error Handling (flib)
+@ingroup FLIB
+@brief flib error handling routines
+@details
+The flib library provides routines to handle the exceptions and the errors with a mechanism of callback routines
+
+We specify the use of the @ref dictionaries module:
+@snippet errs.f90 Use
+
+First, we define an error using the routine @ref f_err_define as:
+@snippet errs.f90 Error Define
+
+The optional argument <tt>err_id</tt> is optional and is the way to have the id of the associated error.
+The module dictionary contains the dictionary type and also the error handling routines.
+Then, we can raise an exception use @ref f_err_throw as:
+@code{.f90}
+call f_err_throw('We raise the error ERROR_ONE',err_name='ERROR_ONE')
+@endcode
+or
+@code{.f90}
+call f_err_throw('We raise the error ERROR_ONE',err_id=error_one)
+@endcode
+if the variable <tt>err_one</tt> does exist in the same scope.
+
+We can test also a condition and raise the error using the function @ref f_err_raise:
+@code{.f90}
+if (f_err_raise(x<=0,'X has to be strictly positive',err_name='ERROR_ONE')) return
+@endcode
+
+Finally, it is possible to try a call and check if an exception occured as:
+@code{.f90}
+call f_err_open_try()
+call f_err_throw(error,'Something is wrong',err_id=ERROR)
+if (f_err_pop()) print *,'An error occured'
+call f_err_close_try()
+@endcode
+
+Nested trys are allowed. When the f_err_close_try is done, the error stack of the corresponding try is lost.
+
+It is also possible to check using the routine @ref f_err_check.
+
+Here are many examples from the file @ref errs.f90.
+
+
+@defgroup FLIB_DICTIONARY   Dictionary type and methods (flib)
+@ingroup FLIB
+@brief Flib dictionary type and its associated methods
+@details
+flib provides an object called dictionary which is strictly speaking not only a dictionary and is more polymorphic.
+It can be a list or a dictionary as in python language.
+The other difference is that it keeps the order of the element which is very useful to have the same yaml output.
+These dictionaries are used in the other parts of the flib library.
+The fortran type is dictionary and we can build a dict as:
+@code{.f90}
+use dictionary
+type(dictionary), pointer :: d
+d=>dict_new()
+call set(d//'toto',1)
+v = d//'toto'
+call set(d//'h',dict_new( (/ '1' .is. 'one', '2' .is. 'two' /) )
+call dict_free(d)
+@endcode
+
+The corresponding example in python is:
+@code{.py}
+d = dict()
+d['toto'] = 1
+v = d['toto']
+del(d)
+@endcode
+
+It is also possible to dump a dictionary in yaml format:
+@code{.f90}
+use yaml_output
+call yaml_dict_dump(d)
+@endcode
+
+We can also define an iterator from a dictionary. The order is preserved:
+@code{.f90}
+!perform an iterator on dictA
+type(dictionary), pointer :: dictA,dict_tmp
+dict_tmp=>dict_iter(dictA)
+do while(associated(dict_tmp))
+   call yaml_map('Iterating in dictA',.true.)
+   call yaml_map('Key of dictA',dict_key(dict_tmp))
+   call yaml_map('Value of dictA',dict_value(dict_tmp))
+   dict_tmp=>dict_next(dict_tmp)
+end do
+@endcode
+In this example, the functions dict_key and dict_value are used to get respectively the key and the value.
+
+There are many examples in the file @ref dicts.f90 as:
+
+@snippet dicts.f90 Creation
+
+@defgroup FLIB_YAML  Routines to write YAML output (flib)
+@ingroup FLIB
+@brief Flib yaml output routines
+@details
+The flib library provides routines to display YAML output.
+There are many examples in the files yaml_test.f90 and yaml_invoice.f90.
+
+
+@defgroup FLIB_MEMORY  Dynamic Memory Management (flib)
+@ingroup FLIB
+@brief flib dynamic memory management
+@details
+flib provides routines to allocate, deallocate and trace the dynamic memory.
+There are many examples in the file dynmem.f90
+The goal is to trace all the memory allocation indicating keeping also the location where the allocation is done.
+
+@code{.f90}
+use dynamic_memory
+real(kind=8), dimension(:,:), allocatable :: ab, weight
+integer,dimension(:,:,:),allocatable :: weight
+integer, dimension(:), pointer :: i1_ptr
+call f_routine(id='Routine a')
+ab = f_malloc((/ 10, 10 /),id='ab')
+weight=f_malloc((/1.to.8,1.to.8,2.to.4/),id='weight')
+i1_ptr=f_malloc_ptr(34,id='i1_ptr')
+i1_ptr=(/(i+789,i=1,size(i1_ptr))/)
+call f_free(i1_ptr)
+call f_free(weight)
+call f_free(ab)
+@endcode
+*/
+

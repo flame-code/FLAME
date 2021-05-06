@@ -10,7 +10,7 @@ from cellutils import *
 
 
 if len(sys.argv) < 2:
-    print "usage: acf_analyze.py input_filename"
+    print("usage: acf_analyze.py input_filename")
     exit()
 else:
     filename = sys.argv[1]
@@ -18,7 +18,7 @@ else:
 atoms_all=acf_read(filename=filename)
 
 if len(atoms_all)>1:
-    print "ERROR: only one configuration in a file is allowed: %6d" % len(atoms_all)
+    print("ERROR: only one configuration in a file is allowed: %6d" % len(atoms_all))
     exit()
 
 for atoms in atoms_all:
@@ -43,4 +43,4 @@ for atoms in atoms_all:
                         rmin=min(rmin,r)
     break #assumed one configuration in the file.
 
-print "%50s%10.5f" % (filename,rmin)
+print("%50s%10.5f" % (filename,rmin))

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt, frmt_base
     use yaml_output
@@ -138,7 +137,6 @@ subroutine sdminimum(parini,iproc,nr,x,f,epot,paropt,nwork,work)
 end subroutine sdminimum
 !*****************************************************************************************
 subroutine init_sdminimum(paropt,nr,x,nwork,work)
-    use mod_interface
     use mod_opt, only: typ_paropt
     use yaml_output
     implicit none
@@ -188,7 +186,6 @@ subroutine init_sdminimum(paropt,nr,x,nwork,work)
 end subroutine init_sdminimum
 !*****************************************************************************************
 subroutine what_is_condition_of_feedback(paropt,de1,df1,feedbackcondition)
-    use mod_interface
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_paropt), intent(in):: paropt
@@ -212,7 +209,6 @@ subroutine what_is_condition_of_feedback(paropt,de1,df1,feedbackcondition)
 end subroutine what_is_condition_of_feedback
 !*****************************************************************************************
 subroutine test_saturation(paropt,de1,de2,df2,fnrm)
-    use mod_interface
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_paropt), intent(inout):: paropt
@@ -248,7 +244,6 @@ subroutine test_saturation(paropt,de1,de2,df2,fnrm)
 end subroutine test_saturation
 !*****************************************************************************************
 subroutine final_sdminimum(paropt)
-    use mod_interface
     use mod_opt, only: typ_paropt
     implicit none
     type(typ_paropt), intent(inout):: paropt

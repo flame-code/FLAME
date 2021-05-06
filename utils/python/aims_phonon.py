@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from pylab import *
 #**********************************************read file: phonopy-FHI-aims-band_structure.dat
 if len(sys.argv) < 2:
-    print "usage: bandstr.py input_filename"
+    print("usage: bandstr.py input_filename")
     exit()
 else:
     filename = sys.argv[1]
@@ -56,11 +56,11 @@ for line in f.readlines():
             #print line.split()
         # print line.rstrip("=")
         iline+=1
-print S1
-print S2
-print E1
-print E2
-print nb
+print(S1)
+print(S2)
+print(E1)
+print(E2)
+print(nb)
 f.closed
 #**************************************************plot by gnuplot
 g = Gnuplot.Gnuplot()
@@ -84,7 +84,7 @@ for s in E2:
     g('set arrow from '+s+' ,graph(0,0) to ' +s+' ,graph (1,1) nohead')
 #g('set xtics("'+S1[0]+'"'+S2[0]+')')
 l = []
-for j in xrange(len(E1)):
+for j in range(len(E1)):
     s = '"'+E1[j]+'" '+E2[j]+''
     l.append(s)
     #print l

@@ -10,7 +10,7 @@ module mod_ann
     public:: convert_x_ann, convert_ann_x, convert_x_ann_arr
     public:: convert_ann_epotd
     type, public:: typ_ann
-        type(dictionary), pointer :: dict
+        type(dictionary), pointer :: dict=>null()
         integer:: nl !number of hidden layer plus one
         integer:: nn(0:10)
         !integer:: n0=-1

@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine optimizer_saddle(parini,iproc,atoms_s,n,nr,x,f,epot,paropt,uvn)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
     use mod_potential, only: fcalls
@@ -91,7 +90,6 @@ subroutine optimizer_saddle(parini,iproc,atoms_s,n,nr,x,f,epot,paropt,uvn)
 end subroutine optimizer_saddle
 !*****************************************************************************************
 subroutine cal_potential_forces_modified(parini,iproc,atoms_s,n,x,f,epot,nr,uvn,feff,curv0,curv,fold,paropt)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_saddle, only: beta
     use mod_opt, only: typ_paropt
@@ -137,7 +135,6 @@ subroutine cal_potential_forces_modified(parini,iproc,atoms_s,n,x,f,epot,nr,uvn,
 end subroutine cal_potential_forces_modified
 !*****************************************************************************************
 subroutine test_convergence_saddle(n,f,curv,paropt)
-    use mod_interface
     use mod_opt, only: typ_paropt
     implicit none
     integer, intent(in):: n

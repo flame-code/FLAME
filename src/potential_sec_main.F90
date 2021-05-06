@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine init_potential_forces_sec(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: fcalls_sec, potential_sec
@@ -35,7 +34,6 @@ subroutine init_potential_forces_sec(parini,atoms)
 end subroutine init_potential_forces_sec
 !*****************************************************************************************
 subroutine cal_potential_forces_sec(parini,atoms)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: potential_sec, fcalls_sec
@@ -70,7 +68,6 @@ subroutine cal_potential_forces_sec(parini,atoms)
 end subroutine cal_potential_forces_sec
 !*****************************************************************************************
 subroutine final_potential_forces_sec(atoms)
-    use mod_interface
     use mod_atoms, only: typ_atoms
     use mod_potential, only: potential_sec
     implicit none

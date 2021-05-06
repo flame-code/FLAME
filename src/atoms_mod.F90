@@ -1114,9 +1114,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(sat)) then ; prsnt=sat ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%sat)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:1)=shape(at_out%sat)
-            if(allocated(at_out%sat) .and. at_inp%nat/=ishape(1)) then
-                call atom_deallocate_old(at_out,sat=.true.)
+            if(allocated(at_out%sat)) then
+                ishape(1:1)=shape(at_out%sat)
+                if(at_inp%nat/=ishape(1)) then
+                    call atom_deallocate_old(at_out,sat=.true.)
+                endif
             endif
             if(.not. allocated(at_out%sat)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,sat=.true.)
@@ -1182,9 +1184,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(ratim)) then ; prsnt=ratim ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%ratim)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:2)=shape(at_out%ratim)
-            if(allocated(at_out%ratim) .and. at_inp%natim/=ishape(2)) then
-                call atom_deallocate_old(at_out,ratim=.true.)
+            if(allocated(at_out%ratim)) then
+                ishape(1:2)=shape(at_out%ratim)
+                if(at_inp%natim/=ishape(2)) then
+                    call atom_deallocate_old(at_out,ratim=.true.)
+                endif
             endif
             if(.not. allocated(at_out%ratim)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp)
@@ -1206,9 +1210,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(vat)) then ; prsnt=vat ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%vat)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:2)=shape(at_out%vat)
-            if(allocated(at_out%vat) .and. at_inp%nat/=ishape(2)) then
-                call atom_deallocate_old(at_out,vat=.true.)
+            if(allocated(at_out%vat)) then
+                ishape(1:2)=shape(at_out%vat)
+                if(at_inp%nat/=ishape(2)) then
+                    call atom_deallocate_old(at_out,vat=.true.)
+                endif
             endif
             if(.not. allocated(at_out%vat)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,vat=.true.)
@@ -1230,9 +1236,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(amass)) then ; prsnt=amass ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%amass)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:1)=shape(at_out%amass)
-            if(allocated(at_out%amass) .and. at_inp%nat/=ishape(1)) then
-                call atom_deallocate_old(at_out,amass=.true.)
+            if(allocated(at_out%amass)) then
+                ishape(1:1)=shape(at_out%amass)
+                if(at_inp%nat/=ishape(1)) then
+                    call atom_deallocate_old(at_out,amass=.true.)
+                endif
             endif
             if(.not. allocated(at_out%amass)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,amass=.true.)
@@ -1252,9 +1260,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(fat)) then ; prsnt=fat ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%fat)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:2)=shape(at_out%fat)
-            if(allocated(at_out%fat) .and. at_inp%nat/=ishape(2)) then
-                call atom_deallocate_old(at_out,fat=.true.)
+            if(allocated(at_out%fat)) then
+                ishape(1:2)=shape(at_out%fat)
+                if(at_inp%nat/=ishape(2)) then
+                    call atom_deallocate_old(at_out,fat=.true.)
+                endif
             endif
             if(.not. allocated(at_out%fat)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,fat=.true.)
@@ -1276,9 +1286,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(bemoved)) then ; prsnt=bemoved ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%bemoved)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:2)=shape(at_out%bemoved)
-            if(allocated(at_out%bemoved) .and. at_inp%nat/=ishape(2)) then
-                call atom_deallocate_old(at_out,bemoved=.true.)
+            if(allocated(at_out%bemoved)) then
+                ishape(1:2)=shape(at_out%bemoved)
+                if(at_inp%nat/=ishape(2)) then
+                    call atom_deallocate_old(at_out,bemoved=.true.)
+                endif
             endif
             if(.not. allocated(at_out%bemoved)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,bemoved=.true.)
@@ -1300,9 +1312,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(qat)) then ; prsnt=qat ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%qat)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:1)=shape(at_out%qat)
-            if(allocated(at_out%qat) .and. at_inp%nat/=ishape(1)) then
-                call atom_deallocate_old(at_out,qat=.true.)
+            if(allocated(at_out%qat)) then
+                ishape(1:1)=shape(at_out%qat)
+                if(at_inp%nat/=ishape(1)) then
+                    call atom_deallocate_old(at_out,qat=.true.)
+                endif
             endif
             if(.not. allocated(at_out%qat)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,qat=.true.)
@@ -1322,9 +1336,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(zat)) then ; prsnt=zat ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%zat)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:1)=shape(at_out%zat)
-            if(allocated(at_out%zat) .and. at_inp%nat/=ishape(1)) then
-                call atom_deallocate_old(at_out,zat=.true.)
+            if(allocated(at_out%zat)) then
+                ishape(1:1)=shape(at_out%zat)
+                if(at_inp%nat/=ishape(1)) then
+                    call atom_deallocate_old(at_out,zat=.true.)
+                endif
             endif
             if(.not. allocated(at_out%zat)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,zat=.true.)
@@ -1344,9 +1360,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(rcov)) then ; prsnt=rcov ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%rcov)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:1)=shape(at_out%rcov)
-            if(allocated(at_out%rcov) .and. at_inp%nat/=ishape(1)) then
-                call atom_deallocate_old(at_out,rcov=.true.)
+            if(allocated(at_out%rcov)) then
+                ishape(1:1)=shape(at_out%rcov)
+                if(at_inp%nat/=ishape(1)) then
+                    call atom_deallocate_old(at_out,rcov=.true.)
+                endif
             endif
             if(.not. allocated(at_out%rcov)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,rcov=.true.)
@@ -1366,9 +1384,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(fp)) then ; prsnt=fp ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%fp)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:1)=shape(at_out%fp)
-            if(allocated(at_out%fp) .and. at_inp%nat/=ishape(1)) then
-                call atom_deallocate_old(at_out,fp=.true.)
+            if(allocated(at_out%fp)) then
+                ishape(1:1)=shape(at_out%fp)
+                if(at_inp%nat/=ishape(1)) then
+                    call atom_deallocate_old(at_out,fp=.true.)
+                endif
             endif
             if(.not. allocated(at_out%fp)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp)
@@ -1388,9 +1408,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     if(present(typat)) then ; prsnt=typat ; else ; prsnt=.false. ;  endif
     if(allocated(at_inp%itypat)) then
         if(all_of_them .or. prsnt) then
-            ishape(1:1)=shape(at_out%itypat)
-            if(allocated(at_out%itypat) .and. at_inp%nat/=ishape(1)) then
-                call atom_deallocate_old(at_out,typat=.true.)
+            if(allocated(at_out%itypat)) then
+                ishape(1:1)=shape(at_out%itypat)
+                if(at_inp%nat/=ishape(1)) then
+                    call atom_deallocate_old(at_out,typat=.true.)
+                endif
             endif
             if(.not. allocated(at_out%itypat)) then
                 call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,typat=.true.)
@@ -2703,15 +2725,15 @@ subroutine iatom_to_sat(iatom,sat)
     character(*), intent(out) :: sat
     !local variables
     character(5):: elements(1:109)=(/ &
-      'H','He','Li','Be','B','C','N','O','F','Ne','Na',       &
-      'Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti',    &
-      'V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As',  &
-      'Se','Br','Kr','Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru',  &
-      'Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe','Cs',  &
+      ' H','He','Li','Be',' B',' C',' N',' O',' F','Ne','Na',       &
+      'Mg','Al','Si',' P',' S','Cl','Ar',' K','Ca','Sc','Ti',    &
+      ' V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As',  &
+      'Se','Br','Kr','Rb','Sr',' Y','Zr','Nb','Mo','Tc','Ru',  &
+      'Rh','Pd','Ag','Cd','In','Sn','Sb','Te',' I','Xe','Cs',  &
       'Ba','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy', &
-      'Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re','Os','Ir',  &
+      'Ho','Er','Tm','Yb','Lu','Hf','Ta',' W','Re','Os','Ir',  &
       'Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn','Fr','Ra', &
-      'Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es',  &
+      'Ac','Th','Pa',' U','Np','Pu','Am','Cm','Bk','Cf','Es',  &
       'Fm','Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt'      /)
 
     if(iatom<1 .or. iatom>109) then

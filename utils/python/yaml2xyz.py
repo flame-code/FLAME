@@ -17,8 +17,8 @@ atoms_all=read_yaml(args.fn_inp)
 if len(atoms_all)==1 or args.all_conf==True:
     xyz_write_b(atoms_all,'bigdft', args.fn_out)
 else:
-    print "\nATTENTION: The are more than one configuration in YAML file. The given name for the output is ignored!"
-    prefix=raw_input("Please provide a prefix to generate files enumeratedly: [Default=tt]")
+    print("\nATTENTION: The are more than one configuration in YAML file. The given name for the output is ignored!")
+    prefix=input("Please provide a prefix to generate files enumeratedly: [Default=tt]")
     if prefix=="": prefix="tt"
     nconf=0
     for atoms in atoms_all:

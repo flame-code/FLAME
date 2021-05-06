@@ -1,6 +1,5 @@
 !*****************************************************************************************
 subroutine ann_gen_symmetry_function(parini)
-    use mod_interface
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, ann_arr_deallocate
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
@@ -67,7 +66,7 @@ subroutine ann_gen_symmetry_function(parini)
     close(1)
     !----------------------------------------------------------   
     if(iproc==0) then
-        write(*,'(a,i)') 'number of generating data points:   ',atoms_gen%nconf
+        write(*,'(a36,i8)') 'number of generating data points:   ',atoms_gen%nconf
     endif
     do iconf=1,atoms_gen%nconf
         do iat=1,atoms_gen%atoms(iconf)%nat
