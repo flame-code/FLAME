@@ -312,7 +312,7 @@ subroutine init_electrostatic_cent1(parini,atoms,ann_arr,a,poisson)
         endif
         call get_amat_cent1(atoms,ann_arr,a)
     elseif(trim(ann_arr%syslinsolver)=='operator') then
-        if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab') then
+        if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='free') then
             allocate(gausswidth(atoms%nat))
             gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
             poisson%task_finit="alloc_rho:set_ngp"
@@ -425,7 +425,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     real(8):: dx, dy, dz, r, beta_iat, beta_jat, ehartree_t
     real(8), allocatable:: gausswidth(:)
     allocate(gausswidth(1:atoms%nat))
-    if(trim(atoms%boundcond)=='free') then
+    if(trim(atoms%boundcond)=='free' .and. trim(ann_arr%syslinsolver)/='operator') then
         pi=4.d0*atan(1.d0)
         tt2=0.d0
         tt3=0.d0
@@ -452,7 +452,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
             enddo
         enddo
         ann_arr%epot_es=tt2+tt3
-    elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
+    elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='free') then
         gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
         call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
         poisson%gw(1:poisson%nat)=poisson%gw_ewald(1:poisson%nat)
@@ -651,7 +651,7 @@ subroutine get_qat_from_chi_operator(parini,poisson,ann_arr,atoms)
     !    read(1358,*) tt,atoms%qat(iat)
     !enddo
     !close(1358)
-    if(abs(atoms%qtot)>1.d-10) then
+    if(abs(atoms%qtot)>1.d-6 .and. trim(atoms%boundcond)/='free') then
         write(*,'(a)') 'ERROR: Operator approach not ready for ionized systems.'
         write(*,'(a)') '       Correct the initial guess of atomic charge assignment.'
         stop

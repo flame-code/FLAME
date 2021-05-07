@@ -1184,6 +1184,10 @@ subroutine ann_evaluate_all(parini,iter,ann_arr)
     integer, intent(in):: iter
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
+    if(trim(parini%approach_ann)=='cent2') then
+    if (.not. allocated(ann_arr%ann_amat_train)) allocate(ann_arr%ann_amat_train(atoms_train%nconf))
+    if (.not. allocated(ann_arr%ann_amat_valid)) allocate(ann_arr%ann_amat_valid(atoms_valid%nconf))
+    endif
     call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
     call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
 end subroutine ann_evaluate_all
@@ -1209,8 +1213,10 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
     type(typ_opt_ann):: opt_ann
-    real(8):: rmse, errmax, tt, pi
+    real(8):: dpmrmse, rmse, errmax, tt, pi
     real(8):: frmse, ttx, tty, ttz, ppx, ppy, ppz, tt1, tt2, tt3, ttn, tta
+    real(8):: dpx,dpy,dpz
+    real(8):: dpx_ref,dpy_ref,dpz_ref
     integer:: iconf, ierrmax, iat, nat_tot, nconf_force
     real(8):: time1=0.d0
     real(8):: time2=0.d0
@@ -1228,6 +1234,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     call cpu_time(time1)
     pi=4.d0*atan(1.d0)
     rmse=0.d0
+    dpmrmse=0.d0
     frmse=0.d0
     ttn=0.d0
     tta=0.d0
@@ -1264,7 +1271,45 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         if(parini%save_symfunc_behnam) then
             call cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr,opt_ann)
         else
+            if(trim(parini%approach_ann)=='cent2') then
+                if (allocated(ann_arr%a)) deallocate(ann_arr%a)
+                if(trim(data_set)=="train") then
+                    if(.not. allocated(ann_arr%ann_amat_train(iconf)%amat)) then 
+                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
+                        allocate(ann_arr%ann_amat_train(iconf)%amat((atoms%nat+1)*(atoms%nat+1)))
+                        ann_arr%ann_amat_train(iconf)%amat=0.d0
+                        ann_arr%a=0.d0
+                        ann_arr%amat_initiated=.false.
+                    else
+                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
+                        ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
+                        ann_arr%amat_initiated=.true.
+                    end if 
+                elseif(trim(data_set)=="valid") then
+                    if(.not. allocated(ann_arr%ann_amat_valid(iconf)%amat)) then 
+                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
+                        allocate(ann_arr%ann_amat_valid(iconf)%amat((atoms%nat+1)*(atoms%nat+1)))
+                        ann_arr%ann_amat_valid(iconf)%amat=0.d0
+                        ann_arr%a=0.d0
+                        ann_arr%amat_initiated=.false.
+                    else
+                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
+                        ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_valid(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
+                        ann_arr%amat_initiated=.true.
+                    end if 
+                endif
+            endif
             call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
+            if(trim(parini%approach_ann)=='cent2') then
+            if(.not. ann_arr%amat_initiated) then
+                if(trim(data_set)=="train") then
+                    ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
+                elseif(trim(data_set)=="valid") then
+                    ann_arr%ann_amat_valid(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
+                endif
+            end if
+            deallocate(ann_arr%a)
+            end if
         endif
         !if(iter==parini%nstep_opt_ann) then
         !    write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
@@ -1284,6 +1329,14 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
             ierrmax=iconf
         endif
         rmse=rmse+tt**2
+        dpx_ref=atoms_arr%atoms(iconf)%dpm(1)
+        dpy_ref=atoms_arr%atoms(iconf)%dpm(2)
+        dpz_ref=atoms_arr%atoms(iconf)%dpm(3)
+        dpx=atoms%dpm(1)
+        dpy=atoms%dpm(2)
+        dpz=atoms%dpm(3)
+        dpmrmse=dpmrmse+(dpx_ref-dpx)**2+(dpy_ref-dpy)**2+(dpz_ref-dpz)**2
+        !write(1391,'(3es18.8,a3,3es18.8,a3,es18.8)')dpx,dpy,dpz,' | ',dpx_ref,dpy_ref,dpz_ref,' | ',dpmrmse
         !if(tt>1.d-2) then
         !    atoms_arr%inclusion(iconf)=0
         !else
@@ -1313,6 +1366,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         !endif
     enddo configuration
     rmse=sqrt(rmse/real(atoms_arr%nconf_inc,8))
+    dpmrmse=sqrt(dpmrmse/real(3*atoms_arr%nconf_inc,8))
     if(nconf_force==0) nconf_force=1
     ttn=ttn/real(nconf_force,8)
     tta=tta/real(nconf_force,8)
@@ -1338,6 +1392,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         call yaml_map('ttn',ttn,fmt=trim(fmt_main),unit=ann_arr%iunit)
         call yaml_map('tta',tta,fmt=trim(fmt_main),unit=ann_arr%iunit)
         call yaml_map('frmse',frmse,fmt=trim(fmt_main),unit=ann_arr%iunit)
+        call yaml_map('dpmrmse',dpmrmse,fmt=trim(fmt_main),unit=ann_arr%iunit)
         call yaml_map('errmax',errmax,fmt=trim(fmt_main),unit=ann_arr%iunit)
         call yaml_map('ierrmax',ierrmax,unit=ann_arr%iunit)
         call yaml_map('nat',atoms_arr%atoms(ierrmax)%nat,unit=ann_arr%iunit)

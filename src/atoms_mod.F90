@@ -60,6 +60,10 @@ module mod_atoms
         real(8), allocatable, public:: zat(:) !ionic charges
         real(8), allocatable, public:: rcov(:) !covalent radii
         real(8), allocatable, public:: fp(:) !fingerprint
+        real(8), allocatable, public:: trial_ref_energy(:) 
+        real(8), allocatable, public:: trial_ref_disp(:,:) 
+        integer, allocatable, public:: trial_ref_nat(:) 
+        integer, public:: ntrial
         integer, allocatable, public:: itypat(:) !The type of each atom is set in this array
         !contains
         !procedure:: atoms_assign
@@ -268,11 +272,12 @@ subroutine swap_rat(atoms,iat,jat)
     atoms%rat(3,jat)=xyz(3)
 end subroutine swap_rat
 !*****************************************************************************************
-subroutine atom_allocate(atoms,nat,natim,nfp)
+subroutine atom_allocate(atoms,nat,natim,nfp,ntrial)
     use dynamic_memory
     implicit none
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: nat, natim, nfp
+    integer,optional,intent(in) :: ntrial
     !local variables
     integer:: iat !, ifp
     integer:: ind, ind_all
@@ -280,6 +285,8 @@ subroutine atom_allocate(atoms,nat,natim,nfp)
     !if(atoms%natim>0 .and. trim(atoms%boundcond)=='free') then
     !    write(*,'(a)') 'WARNING: Do you really need atoms of periodic images with free BC'
     !endif
+    if(present(ntrial)) then
+    end if
     if(nat<1) stop 'ERROR: in atom_allocate: nat must be larger than zero'
     ind_all=index(atoms%alloclist,'all')
     !-----------------------------------------------------------------
@@ -355,6 +362,16 @@ subroutine atom_allocate(atoms,nat,natim,nfp)
         if(allocated(atoms%itypat)) stop 'ERROR: qat is already allocated'
         atoms%itypat=f_malloc0([1.to.nat],id='atoms%itypat')
     endif
+    ind=index(atoms%alloclist,'trial_ref_energy')
+    if((ind_all>0 .or. ind>0) .and. present(ntrial)) then
+        if(allocated(atoms%trial_ref_energy)) stop 'ERROR: trial_ref_energy is already allocated'
+        if(allocated(atoms%trial_ref_disp)) stop 'ERROR: trial_ref_disp is already allocated'
+        if(allocated(atoms%trial_ref_nat)) stop 'ERROR: trial_ref_nat is already allocated'
+        atoms%trial_ref_energy=f_malloc0([1.to.ntrial],id='atoms%trial_ref_energy')
+        atoms%trial_ref_nat=f_malloc0([1.to.ntrial],id='atoms%trial_ref_nat')
+        atoms%trial_ref_disp=f_malloc0([1.to.3,1.to.ntrial],id='atoms%trial_ref_disp')
+    endif
+    if(present(ntrial)) atoms%ntrial=ntrial
     atoms%nat=nat
     atoms%natim=natim
     atoms%nfp=nfp
@@ -473,27 +490,58 @@ subroutine atom_deallocate(atoms)
             call f_free(atoms%itypat)
         endif
     endif
+    ind=index(atoms%alloclist,'trial_ref_energy')
+    if((ind_all>0 .and. allocated(atoms%trial_ref_energy)) .or. ind>0) then
+        if(.not. allocated(atoms%trial_ref_energy)) then
+            stop 'ERROR: trial_ref_energy is not allocated'
+        else
+            call f_free(atoms%trial_ref_energy)
+        endif
+    endif
+    ind=index(atoms%alloclist,'trial_ref_disp')
+    if((ind_all>0 .and. allocated(atoms%trial_ref_disp)) .or. ind>0) then
+        if(.not. allocated(atoms%trial_ref_disp)) then
+            stop 'ERROR: trial_ref_disp is not allocated'
+        else
+            call f_free(atoms%trial_ref_disp)
+        endif
+    endif
+    ind=index(atoms%alloclist,'trial_ref_nat')
+    if((ind_all>0 .and. allocated(atoms%trial_ref_nat)) .or. ind>0) then
+        if(.not. allocated(atoms%trial_ref_nat)) then
+            stop 'ERROR: trial_ref_disp is not allocated'
+        else
+            call f_free(atoms%trial_ref_nat)
+        endif
+    endif
 end subroutine atom_deallocate
 !*****************************************************************************************
-subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,zat,rcov,typat)
+subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,zat,rcov,typat&
+                            ,ntrial,trial_ref_energy,trial_ref_nat,trial_ref_disp)
     implicit none
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: nat, natim, nfp
+    integer, optional, intent(in):: ntrial
     logical, optional, intent(in):: sat, vat, amass
     logical, optional, intent(in):: fat, bemoved, qat, zat, rcov, typat
+    logical, optional, intent(in):: trial_ref_energy,trial_ref_nat,trial_ref_disp
     !local variables
-    logical:: all_of_them, l_arg(9)
+    logical:: all_of_them, l_arg(12)
     !integer:: iat, ifp
     !write(*,*) 'in atom_allocate_old: HERE'
     atoms%nat=nat
     atoms%natim=natim
     atoms%nfp=nfp
+    if (present(ntrial)) then
+        atoms%ntrial=ntrial
+    end if
     !if(atoms%natim>0 .and. trim(atoms%boundcond)=='free') then
     !    write(*,'(a)') 'WARNING: Do you really need atoms of periodic images with free BC'
     !endif
     if(atoms%nat<1) stop 'ERROR: in atom_allocate_old: nat must be larger than zero'
     l_arg=(/present(sat),present(vat),present(amass),present(fat), &
-        present(bemoved),present(qat),present(zat),present(rcov),present(typat)/)
+        present(bemoved),present(qat),present(zat),present(rcov),present(typat), &
+        present(trial_ref_energy),present(trial_ref_nat),present(trial_ref_disp)/)
     if(any(l_arg)) then
         all_of_them=.false.
     else
@@ -543,23 +591,41 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,z
     if(nfp>0 .and. .not. allocated(atoms%fp)) then
         allocate(atoms%fp(atoms%nfp),source=0.d0)
     endif
+    !if(atoms%nat>0 .and. .not. allocated(atoms%trial_ref_energy)) then
+    !    allocate(atoms%trial_ref_energy(1:atoms%nat),source=0.d0)
+    !endif
     if((all_of_them .and. .not. allocated(atoms%itypat)) .or. (present(typat) .and. typat)) then
-        if(allocated(atoms%itypat)) stop 'ERROR: qat is already allocated'
+        if(allocated(atoms%itypat)) stop 'ERROR: itypat is already allocated'
         allocate(atoms%itypat(atoms%nat),source=0)
+    endif
+    if((all_of_them .and. .not. allocated(atoms%trial_ref_energy)) .or. (present(trial_ref_energy) .and. trial_ref_energy)) then
+        if(allocated(atoms%trial_ref_energy)) stop 'ERROR: trial_ref_energy is already allocated'
+        allocate(atoms%trial_ref_energy(atoms%ntrial),source=0.d0)
+    endif
+    if((all_of_them .and. .not. allocated(atoms%trial_ref_disp)) .or. (present(trial_ref_disp) .and. trial_ref_disp)) then
+        if(allocated(atoms%trial_ref_disp)) stop 'ERROR: trial_ref_disp is already allocated'
+        allocate(atoms%trial_ref_disp(3,atoms%ntrial),source=0.d0)
+    endif
+    if((all_of_them .and. .not. allocated(atoms%trial_ref_nat)) .or. (present(trial_ref_nat) .and. trial_ref_nat)) then
+        if(allocated(atoms%trial_ref_nat)) stop 'ERROR: trial_ref_nat is already allocated'
+        allocate(atoms%trial_ref_nat(atoms%ntrial),source=0)
     endif
 end subroutine atom_allocate_old
 !*****************************************************************************************
-subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat)
+subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat,&
+                               trial_ref_energy,trial_ref_nat, trial_ref_disp)
     implicit none
     type(typ_atoms), intent(inout):: atoms
     logical, optional, intent(in):: sat, rat, ratim, vat, amass
     logical, optional, intent(in):: fat, bemoved, qat, zat, rcov, fp, typat
+    logical, optional, intent(in):: trial_ref_energy, trial_ref_nat, trial_ref_disp
     !local variables
-    logical:: all_of_them, l_arg(12)
+    logical:: all_of_them, l_arg(15)
     !integer::
     l_arg=(/present(sat),present(rat),present(vat),present(amass),present(fat), &
         present(ratim),present(bemoved),present(qat),present(zat),present(rcov),&
-        present(fp), present(typat)/)
+        present(fp), present(typat), &
+        present(trial_ref_energy),present(trial_ref_nat), present(trial_ref_disp)/)
     if(any(l_arg)) then
         all_of_them=.false.
     else
@@ -680,6 +746,33 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             endif
         else
             deallocate(atoms%itypat)
+        endif
+    endif
+    if(all_of_them .or. (present(trial_ref_energy) .and. trial_ref_energy)) then
+        if(.not. allocated(atoms%trial_ref_energy)) then
+            if(.not. all_of_them) then
+                stop 'ERROR: trial_ref_energy is not allocated'
+            endif
+        else
+            deallocate(atoms%trial_ref_energy)
+        endif
+    endif
+    if(all_of_them .or. (present(trial_ref_nat) .and. trial_ref_nat)) then
+        if(.not. allocated(atoms%trial_ref_nat)) then
+            if(.not. all_of_them) then
+                stop 'ERROR: trial_ref_nat is not allocated'
+            endif
+        else
+            deallocate(atoms%trial_ref_nat)
+        endif
+    endif
+    if(all_of_them .or. (present(trial_ref_disp) .and. trial_ref_disp)) then
+        if(.not. allocated(atoms%trial_ref_disp)) then
+            if(.not. all_of_them) then
+                stop 'ERROR: trial_ref_disp is not allocated'
+            endif
+        else
+            deallocate(atoms%trial_ref_disp)
         endif
     endif
 end subroutine atom_deallocate_old
@@ -1054,17 +1147,19 @@ subroutine atom_copy(at_inp,at_out,str_message)
     endif
 end subroutine atom_copy
 !*****************************************************************************************
-subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat)
+subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat,rcov,fp,typat, &
+                         trial_ref_energy,trial_ref_nat,trial_ref_disp)
     implicit none
     type(typ_atoms), intent(in):: at_inp
     type(typ_atoms), intent(inout):: at_out
     character(*):: str_message
     logical, optional, intent(in):: sat, rat, ratim, vat, amass
     logical, optional, intent(in):: fat, bemoved, qat, zat, rcov, fp, typat
+    logical, optional, intent(in):: trial_ref_energy, trial_ref_nat, trial_ref_disp
     !local variables
     integer:: iat, ishape(2), ifp
     logical:: prsnt
-    logical:: all_of_them, l_arg(12)
+    logical:: all_of_them, l_arg(15)
     character(100):: err_mess
     !write(*,*) 'in atom_copy_old: HERE'
     if(at_inp%nat<1) stop 'ERROR: atoms%nat must be larger than zero'
@@ -1075,7 +1170,8 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
     !endif
     l_arg=(/present(sat),present(rat),present(vat),present(amass),present(fat), &
         present(ratim),present(bemoved),present(qat),present(zat),present(rcov),&
-        present(fp), present(typat)/)
+        present(fp), present(typat), &
+        present(trial_ref_energy), present(trial_ref_nat), present(trial_ref_disp)/)
     if(any(l_arg)) then
         all_of_them=.false.
     else
@@ -1423,6 +1519,80 @@ subroutine atom_copy_old(at_inp,at_out,str_message,sat,rat,ratim,vat,amass,fat,b
         endif
     else
         err_mess='ERROR: cannot copy typ_atoms%itypat when source is not allocated:'
+        if(prsnt) then
+            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
+            stop
+        endif
+    endif
+    !copying array at_inp%trial_ref_energy to at_out%trial_ref_energy
+    if(present(trial_ref_energy)) then ; prsnt=trial_ref_energy ; else ; prsnt=.false. ;  endif
+    if(allocated(at_inp%trial_ref_energy)) then
+        if(all_of_them .or. prsnt) then
+            if(allocated(at_out%trial_ref_energy)) then
+                ishape(1:1)=shape(at_out%trial_ref_energy)
+                if(at_inp%ntrial/=ishape(1)) then
+                    call atom_deallocate_old(at_out,trial_ref_energy=.true.)
+                endif
+            endif
+            if(.not. allocated(at_out%trial_ref_energy)) then
+                call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,ntrial=at_inp%ntrial,trial_ref_energy=.true.)
+            endif
+            do iat=1,at_inp%ntrial
+                at_out%trial_ref_energy(iat)=at_inp%trial_ref_energy(iat)
+            enddo
+        endif
+    else
+        err_mess='ERROR: cannot copy typ_atoms%trial_ref_energy when source is not allocated:'
+        if(prsnt) then
+            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
+            stop
+        endif
+    endif
+    !copying array at_inp%trial_ref_disp to at_out%trial_ref_disp
+    if(present(trial_ref_disp)) then ; prsnt=trial_ref_disp ; else ; prsnt=.false. ;  endif
+    if(allocated(at_inp%trial_ref_disp)) then
+        if(all_of_them .or. prsnt) then
+            if(allocated(at_out%trial_ref_disp)) then
+                ishape(1:2)=shape(at_out%trial_ref_disp)
+                if(at_inp%ntrial/=ishape(1)) then
+                    call atom_deallocate_old(at_out,trial_ref_disp=.true.)
+                endif
+            endif
+            if(.not. allocated(at_out%trial_ref_disp)) then
+                call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,ntrial=at_inp%ntrial,trial_ref_disp=.true.)
+            endif
+            do iat=1,at_inp%ntrial
+                at_out%trial_ref_disp(1,iat)=at_inp%trial_ref_disp(1,iat)
+                at_out%trial_ref_disp(2,iat)=at_inp%trial_ref_disp(2,iat)
+                at_out%trial_ref_disp(3,iat)=at_inp%trial_ref_disp(3,iat)
+            enddo
+        endif
+    else
+        err_mess='ERROR: cannot copy typ_atoms%trial_ref_disp when source is not allocated:'
+        if(prsnt) then
+            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
+            stop
+        endif
+    endif
+    !copying array at_inp%trial_ref_nat to at_out%trial_ref_nat
+    if(present(trial_ref_nat)) then ; prsnt=trial_ref_nat ; else ; prsnt=.false. ;  endif
+    if(allocated(at_inp%trial_ref_nat)) then
+        if(all_of_them .or. prsnt) then
+            if(allocated(at_out%trial_ref_nat)) then
+                ishape(1:1)=shape(at_out%trial_ref_nat)
+                if(at_inp%ntrial/=ishape(1)) then
+                    call atom_deallocate_old(at_out,trial_ref_nat=.true.)
+                endif
+            endif
+            if(.not. allocated(at_out%trial_ref_nat)) then
+                call atom_allocate_old(at_out,at_inp%nat,at_inp%natim,at_inp%nfp,ntrial=at_inp%ntrial,trial_ref_nat=.true.)
+            endif
+            do iat=1,at_inp%ntrial
+                at_out%trial_ref_nat(iat)=at_inp%trial_ref_nat(iat)
+            enddo
+        endif
+    else
+        err_mess='ERROR: cannot copy typ_atoms%trial_ref_nat when source is not allocated:'
         if(prsnt) then
             write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
             stop
@@ -2740,7 +2910,7 @@ subroutine iatom_to_sat(iatom,sat)
         write(*,*) 'ERROR: no symbol stored for atomic number=',iatom
         stop
     else
-        sat=trim(elements(iatom))
+        sat=adjustl(elements(iatom))
     endif
 end subroutine iatom_to_sat
 !*****************************************************************************************

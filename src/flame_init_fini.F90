@@ -284,7 +284,7 @@ subroutine flm_print_logo(parini)
     call yaml_scalar('    MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE')     
     call yaml_scalar('________________________________________ www.flame-code.org   "')
     call yaml_mapping_close()
-    call yaml_map('Reference Paper','To Be Added Later.')
+    call yaml_map('Reference Paper','https://doi.org/10.1016/j.cpc.2020.107415')
     !call yaml_map('Version Number',package_version)
     call yaml_map('Timestamp of this run',yaml_date_and_time_toa())
 end subroutine flm_print_logo

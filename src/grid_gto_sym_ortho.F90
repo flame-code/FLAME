@@ -89,12 +89,21 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
     wa=0.d0
     do iat=1,nat
         !shift the gaussian centers
-        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
-        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
-        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
-        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
-        zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        if(parini%cell_ortho_noshift) then
+            iatox=nint(rxyz(1,iat)*hgxinv)+1
+            iatoy=nint(rxyz(2,iat)*hgyinv)+1
+            iatoz=nint(rxyz(3,iat)*hgzinv)+1
+            xat=rxyz(1,iat)-(iatox-1)*hx
+            yat=rxyz(2,iat)-(iatoy-1)*hy
+            zat=rxyz(3,iat)-(iatoz-1)*hz
+        else
+            iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+            iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+            iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+            xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+            yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+            zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        endif
         !construct the one-dimensional gaussians
 
         width=gw(iat)
@@ -388,12 +397,27 @@ subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,h
     !initialize the density 
     do iat=1,nat  
         !shift the Gaussian centers
-        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
-        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
-        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
-        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
-        zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        if(parini%cell_ortho_noshift) then
+            iatox=nint(rxyz(1,iat)*hgxinv)+1
+            iatoy=nint(rxyz(2,iat)*hgyinv)+1
+            iatoz=nint(rxyz(3,iat)*hgzinv)+1
+            xat=rxyz(1,iat)-(iatox-1)*hx
+            yat=rxyz(2,iat)-(iatoy-1)*hy
+            zat=rxyz(3,iat)-(iatoz-1)*hz
+        else
+            iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+            iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+            iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+            xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+            yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+            zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        endif
+        !iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        !iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+        !iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+        !xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        !yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+        !zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
         width=gw(iat)
         width_inv=1.d0/width
         fac=2.d0/(width*(width*sqrt(pi))**3)

@@ -83,6 +83,7 @@ subroutine testforces_fd(parini)
         !write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
         call yaml_map('iat',iat)
         call yaml_map('F_x',atoms_center%fat(1,iat))
+        call yaml_map('Fd_x',fd)
         call yaml_map('err_x',fd-atoms_center%fat(1,iat),fmt='(f20.12)')
         !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_x error of atom ',iat,' is', &
         !    fd-atoms_center%fat(1,iat),atoms_center%fat(1,iat)
@@ -104,6 +105,7 @@ subroutine testforces_fd(parini)
         call yaml_map('epot_diff_y',epot_r-epot_l)
         !write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
         call yaml_map('F_y',atoms_center%fat(2,iat))
+        call yaml_map('Fd_y',fd)
         call yaml_map('err_y',fd-atoms_center%fat(2,iat),fmt='(f20.12)')
         !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_y error of atom ',iat,' is', &
         !    fd-atoms_center%fat(2,iat),atoms_center%fat(2,iat)
@@ -125,6 +127,7 @@ subroutine testforces_fd(parini)
         call yaml_map('epot_diff_z',epot_r-epot_l)
         !write(*,'(a,2es24.15,es14.5)') 'EPOTs: ',epot_l,epot_r,epot_r-epot_l
         call yaml_map('F_z',atoms_center%fat(3,iat))
+        call yaml_map('Fd_z',fd)
         call yaml_map('err_z',fd-atoms_center%fat(3,iat),fmt='(f20.12)')
         !write(*,'(a,i,a,es11.2,2x,es19.10)') 'F_z error of atom ',iat,' is', &
         !    fd-atoms_center%fat(3,iat),atoms_center%fat(3,iat)
@@ -233,7 +236,7 @@ subroutine teststress_fd_cellvec(parini)
     use mod_processors, only: iproc
     use mod_acf, only: acf_read
     implicit none
-    type(typ_parini), intent(in):: parini
+    type(typ_parini), intent(inout):: parini
     !local variables
     integer :: i,j,k
     type(typ_atoms):: atoms 

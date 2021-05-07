@@ -281,7 +281,8 @@ subroutine write_ann_all(parini,ann_arr,iter)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt') then
+    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' &
+        .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='centt') then
         do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
@@ -395,7 +396,8 @@ subroutine read_ann(parini,ann_arr)
             write(fn_tt,'(i1)') iann
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
-        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt') then
+        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' &
+            .or. trim(ann_arr%approach)=='cent2'.or. trim(ann_arr%approach)=='centt') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
             stop 'ERROR: reading ANN parameters is only for cent1,centt,tb'

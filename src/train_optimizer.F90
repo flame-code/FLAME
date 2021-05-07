@@ -128,6 +128,10 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
         r0=10.d0
         alpha=100.d-2
         rf=1.d-6
+    elseif(trim(parini%approach_ann)=='cent2') then
+        r0=10.d0
+        alpha=100.d-2
+        rf=1.d-6
     elseif(trim(parini%approach_ann)=='centt') then
         r0=10.d0
         alpha=100.d-2
@@ -184,6 +188,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
        ! endif
         rinv=1.d0/r
         write(31,'(i6,es14.5)') iter,r
+        ann_arr%dpm_rmse=0
         do idp=1,opt_ann%ndp_train
             ann_arr%event='train'
             !The following is allocated with ann_arr%num(1), this means number of
@@ -192,6 +197,10 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
             !g_per_atom=f_malloc([1.to.ann_arr%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
             call convert_opt_x_ann_arr(opt_ann,ann_arr)
             call get_fcn_ann(parini,idp,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
+            ann_arr%dpm_rmse=ann_arr%dpm_rmse+ann_arr%dpm_err
+            if(parini%iverbose>=2) then 
+                write(1370,'(2i4,2es18.8)') iter,idp,ann_arr%dpm_err, ann_arr%dpm_rmse
+            end if
             if(trim(parini%approach_ann)=='tb') then
                 do j=1,opt_ann%n
                     opt_ann%g(j)=opt_ann%g(j)+parini%weight_hardness*opt_ann%x(j)
@@ -221,6 +230,8 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
             dtime5=dtime5+time2-time1
             dtime6=dtime6+time3-time2
         enddo
+        ann_arr%dpm_rmse=sqrt(ann_arr%dpm_rmse/(3.d0*opt_ann%ndp_train))
+        write(88,'(i4,es18.8)') iter,ann_arr%dpm_rmse
         call cpu_time(time_e)
         dtime=time_e-time_s
         !dtime=dtime1+dtime2+dtime3+dtime4+dtime5+dtime6
@@ -255,7 +266,8 @@ subroutine analyze_epoch_init(parini,ann_arr)
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
     if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
-        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3')) return
+        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' &
+        .or. trim(ann_arr%approach)=='cent2')) return
     ann_arr%natsum(1:10)=0
     ann_arr%qmin(1:10)=huge(1.d0)
     ann_arr%qmax(1:10)=-huge(1.d0)
@@ -280,7 +292,8 @@ subroutine analyze_epoch_print(parini,iter,ann_arr)
     character(50):: fn_charge, fn_chi
     character(20):: str_key
     if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
-        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3')) return
+        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' &
+        .or. trim(ann_arr%approach)=='cent2' )) return
     do i=1,parini%ntypat
         !fn_charge='charge.'//trim(parini%stypat(i))
         !fn_chi='chi.'//trim(parini%stypat(i))
