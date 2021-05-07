@@ -212,6 +212,7 @@ module mod_parini
         !parameters of [misc]
         logical:: avail_misc=.false.
         character(50):: subtask_misc='unknown'
+        real(8):: gaussian_width=-1.d0
         real(8):: gaussian_width_Mg=-1.d0
         real(8):: gaussian_width_O=-1.d0
         real(8):: pen_coeff=0.d0

@@ -548,6 +548,7 @@ subroutine get_misc_parameters(file_ini,parini)
         if(file_ini%stat_line_is_read(file_ini%iline)) cycle
         call split_line(file_ini)
         call get_one_param(file_ini,'subtask',char_var=parini%subtask_misc)
+        call get_one_param(file_ini,'gaussian_width',real_var=parini%gaussian_width)
         call get_one_param(file_ini,'gaussian_width_Mg',real_var=parini%gaussian_width_Mg)
         call get_one_param(file_ini,'gaussian_width_O',real_var=parini%gaussian_width_O)
         call get_one_param(file_ini,'pen_coeff',real_var=parini%pen_coeff)

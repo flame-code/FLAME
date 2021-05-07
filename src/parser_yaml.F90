@@ -534,6 +534,9 @@ subroutine yaml_get_misc_parameters(parini)
     if(has_key(parini%subdict,"gaussian_width_O")) then
         parini%gaussian_width_O=parini%subdict//"gaussian_width_O"
     end if
+    if(has_key(parini%subdict,"gaussian_width")) then
+        parini%gaussian_width=parini%subdict//"gaussian_width"
+    end if
     if(has_key(parini%subdict,"pen_coeff")) then
         parini%pen_coeff=parini%subdict//"pen_coeff"
     end if
