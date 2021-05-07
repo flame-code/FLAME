@@ -81,7 +81,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     ann%method         =  subdict_ann//"method"
     ann%ener_ref       =  subdict_ann//"ener_ref" 
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
-        trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
+         trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' &
+        .or. trim(parini%approach_ann)=='cent3') then
         ann%ampl_chi       =  subdict_ann//"ampl_chi" 
         ann%prefactor_chi  =  subdict_ann//"prefactor_chi" 
         ann%gausswidth     =  subdict_ann//"gausswidth" 
@@ -89,7 +90,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         ann%chi0           =  subdict_ann//"chi0" 
         ann%qinit          =  subdict_ann//"qinit"
     endif
-    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
+    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
         ann%zion           =  subdict_ann//"zion" 
         ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
         ann%spring_const   =  subdict_ann//"spring_const"
@@ -294,7 +295,8 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
-        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3') then
+        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt' &
+        .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3') then
         do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             !write(*,'(a)') trim(filename)
@@ -482,7 +484,8 @@ subroutine read_ann_yaml(parini,ann_arr)
             filename=trim(parini%stypat(1))//fn_tt//trim(fn)
             write(*,'(a)') trim(filename)
         elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. &
-            trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' .or. trim(ann_arr%approach)=='atombased') then
+            trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' .or. &
+            trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='atombased') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
             stop 'ERROR: reading ANN parameters is only for cent1,centt,cent3,tb'
@@ -595,7 +598,12 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             if(atoms_arr_t%nconf>nconfmax) then
                 stop 'ERROR: too many configurations, change parameter nconfmax.'
             endif
-            call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0)
+            if(atoms_arr_of%atoms(iconf)%ntrial>0) then
+                call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0, &
+                    ntrial=atoms_arr_of%atoms(iconf)%ntrial)
+            else
+                call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0)
+            endif
             atoms_arr_t%atoms(atoms_arr_t%nconf)%epot=atoms_arr_of%atoms(iconf)%epot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%qtot=atoms_arr_of%atoms(iconf)%qtot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%dpm(1:3)=atoms_arr_of%atoms(iconf)%dpm(1:3)
@@ -603,6 +611,13 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             !if(parini%read_forces_ann) read(2,*)
+            do iat=1,atoms_arr_of%atoms(iconf)%ntrial
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_energy(iat)=atoms_arr_of%atoms(iconf)%trial_ref_energy(iat)
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_nat(iat)=atoms_arr_of%atoms(iconf)%trial_ref_nat(iat)
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_disp(1,iat)=atoms_arr_of%atoms(iconf)%trial_ref_disp(1,iat)
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_disp(2,iat)=atoms_arr_of%atoms(iconf)%trial_ref_disp(2,iat)
+                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_disp(3,iat)=atoms_arr_of%atoms(iconf)%trial_ref_disp(3,iat)
+            end do
             call set_rat_atoms(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf),setall=.true.)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)

@@ -68,13 +68,13 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         endif
     enddo
     !-------------------------------------------------------------------------------------
-    if(parini%iverbose>2) then
-    do iat=1,atoms%nat
-    do ig=1,ann_arr%ann(1)%nn(0)
-        write(77,'(2i4,es24.15)') ig,iat,symfunc%y(ig,iat)
-    enddo
-    enddo
-    endif
+    !if(parini%iverbose>2) then
+    !do iat=1,atoms%nat
+    !do ig=1,ann_arr%ann(1)%nn(0)
+    !    write(77,'(2i4,es24.15)') ig,iat,symfunc%y(ig,iat)
+    !enddo
+    !enddo
+    !endif
    ! do iat=1,atoms%nat
    ! do jat=1,atoms%nat
    ! do ig=1,ann_arr%ann(1)%nn(0)

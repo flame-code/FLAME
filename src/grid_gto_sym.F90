@@ -45,7 +45,7 @@ subroutine put_gto_sym(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,r
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     !-------------------------------------------------------
     ibcz=0
-    if(trim(bc)=='bulk') then
+    if(trim(bc)=='bulk' .or. trim(bc)=='free') then
         !variables already are set to correct value
     elseif(trim(bc)=='slab') then
         ibcz=1
@@ -176,7 +176,7 @@ subroutine rqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     !-------------------------------------------------------
     ibcz=0
-    if(trim(bc)=='bulk') then
+    if(trim(bc)=='bulk' .or. trim(bc)=='free') then
         !variables already are set to correct value
     elseif(trim(bc)=='slab') then
         ibcz=1
@@ -319,7 +319,7 @@ subroutine force_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,p
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     !-------------------------------------------------------
     ibcz=0
-    if(trim(bc)=='bulk') then
+    if(trim(bc)=='bulk' .or. trim(bc)=='free') then
         !variables already are set to correct value
     elseif(trim(bc)=='slab') then
         ibcz=1
@@ -459,7 +459,7 @@ subroutine gwrqgrad_gto_sym(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgri
     call init_grid_param(nat,rxyz,cv,rgcut,ngx,ngy,ngz,ratred,vol,nlimsq,nagx,nagy,nagz,nbgx,nbgy,nbgz)
     !-------------------------------------------------------
     ibcz=0
-    if(trim(bc)=='bulk') then
+    if(trim(bc)=='bulk' .or. trim(bc)=='free') then
         !variables already are set to correct value
     elseif(trim(bc)=='slab') then
         ibcz=1

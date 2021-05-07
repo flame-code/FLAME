@@ -162,6 +162,7 @@
  potential:
    potential: unknown
    cal_charge: False
+   cal_scn: False
    potential_sec: unknown
    boundary: 1
    ann_boundcheck: none
@@ -197,6 +198,8 @@
      ecut_auto: False
      rcut: -1.0
      rgcut: -1.0
+     screening_factor: 0.0
+     free_space: 0.0
      nsp: -1
      plane_voltageu: 0.0
      plane_voltagel: 0.0
@@ -206,6 +209,7 @@
      psolver: unknown
      ewald: False
      cell_ortho: False
+     cell_ortho_noshift: False
      ewald_tol: 1.E-6
      bias_type: no
      external_field: 0.0
@@ -310,6 +314,8 @@
  misc:
    subtask: unknown
    gaussian_width: -1.0
+   pen_coeff : 0.0
+   q_avg_target : 0.0
    boundcond: unknown
    posinp: unknown
  fit_elecpot:

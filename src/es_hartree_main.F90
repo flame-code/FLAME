@@ -82,8 +82,8 @@ subroutine fini_hartree(parini,atoms,poisson)
     call f_free(poisson%q)
     call f_free(poisson%gw)
     call f_free(poisson%gw_ewald)
-    if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk') then
-        if(trim(atoms%boundcond)=='bulk') then
+    if(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='free') then
+        if(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='free') then
             if(trim(parini%psolver)=='bigdft') then
                 call fini_psolver_bps(poisson)
             endif
@@ -126,7 +126,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     pi=4.d0*atan(1.d0)
     ind=index(poisson%task_finit,'set_ngp')
     if(ind>0) then
-    write(*,*) 'ECUT',parini%ecut_ewald
+    !write(*,*) 'ECUT',parini%ecut_ewald
     poisson_rough%hx=pi/sqrt(2.d0*parini%ecut_ewald)
     poisson_rough%hy=pi/sqrt(2.d0*parini%ecut_ewald)
     poisson_rough%hz=pi/sqrt(2.d0*parini%ecut_ewald)
@@ -151,7 +151,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
         !write(*,*) 'BBBBBBBBBBBB'
         !write(*,*) ngpx,ngpy,ngpz
         !stop
-    if(trim(atoms%boundcond)=='bulk') then
+    if(trim(atoms%boundcond)=='bulk' ) then
     poisson%hgrid(1,1)=atoms%cellvec(1,1)/ngpx ; poisson%hgrid(2,1)=atoms%cellvec(2,1)/ngpx ; poisson%hgrid(3,1)=atoms%cellvec(3,1)/ngpx
     poisson%hgrid(1,2)=atoms%cellvec(1,2)/ngpy ; poisson%hgrid(2,2)=atoms%cellvec(2,2)/ngpy ; poisson%hgrid(3,2)=atoms%cellvec(3,2)/ngpy
     poisson%hgrid(1,3)=atoms%cellvec(1,3)/ngpz ; poisson%hgrid(2,3)=atoms%cellvec(2,3)/ngpz ; poisson%hgrid(3,3)=atoms%cellvec(3,3)/ngpz
@@ -534,7 +534,8 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     !once more because fat is set to zero after dU/dq=0 in CENT
     call get_psolver(parini,poisson,atoms,poisson%gw_ewald,ehartree)
     !-----------------------------------------------------------------
-    if(parini%ewald .and. (trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1')) then
+    if(parini%ewald .and. (trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
+        .or. trim(parini%approach_ann)=='cent2')) then
         epotreal=0.d0
         call real_part(parini,atoms,gausswidth,poisson%alpha,epotreal,poisson%qgrad_real,stress)
         atoms%stress=atoms%stress+stress
