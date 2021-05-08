@@ -1336,7 +1336,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         dpy=atoms%dpm(2)
         dpz=atoms%dpm(3)
         dpmrmse=dpmrmse+(dpx_ref-dpx)**2+(dpy_ref-dpy)**2+(dpz_ref-dpz)**2
-        !write(1391,'(3es18.8,a3,3es18.8,a3,es18.8)')dpx,dpy,dpz,' | ',dpx_ref,dpy_ref,dpz_ref,' | ',dpmrmse
+        write(1391,'(3es18.8,a3,3es18.8,a3,es18.8)')dpx,dpy,dpz,' | ',dpx_ref,dpy_ref,dpz_ref,' | ',dpmrmse
         !if(tt>1.d-2) then
         !    atoms_arr%inclusion(iconf)=0
         !else
