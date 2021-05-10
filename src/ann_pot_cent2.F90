@@ -54,7 +54,6 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
         allocate(ann_arr%stresspq(1:3,1:3,1:symfunc%linked_lists%maxbound_rad))
     endif
     if(parini%iverbose>=2) call cpu_time(time3)
-    atoms%fat(1:3,1:atoms%nat)=0.d0
     over_iat: do iat=1,atoms%nat
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
@@ -91,6 +90,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time5)
     if(parini%iverbose>=2) write(*,*) 'cent2_g_per_time: ' , time5-timet1
     atoms%stress(1:3,1:3)=0.d0
+    atoms%fat(1:3,1:atoms%nat)=0.d0
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
@@ -622,7 +622,6 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
         nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
         nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
         nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
-        hgp=1.d-3
         poisson%pot(:,:,:)=0.d0
         do iat=1,atoms%nat
             do igx = 1 , poisson%ngpx
