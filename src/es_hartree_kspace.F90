@@ -19,12 +19,15 @@ subroutine get_psolver_kspace_exprnscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,npow,po
     pi=4.d0*atan(1.d0)
     fourpi=4.d0*pi
     hmin=min(hgrid(1,1),hgrid(2,2),hgrid(3,3))
-    nadd=floor((-log(1.d-8))**(1.d0/real(npow,kind=8))/(sf*hmin))
-    if(mod(nadd,2)/=0) nadd=nadd+1
+    nadd=floor((-log(1.d-4))**(1.d0/real(npow,kind=8))/(sf*hmin))
+    !if(mod(nadd,2)/=0) nadd=nadd+1
     write(*,*) 'nadd= ',nadd
-    ngpx_ext=ngpx+nadd
-    ngpy_ext=ngpy+nadd
-    ngpz_ext=ngpz+nadd
+    ngpx_ext=ngpx+2*nadd
+    ngpy_ext=ngpy+2*nadd
+    ngpz_ext=ngpz+2*nadd
+    if(mod(ngpx_ext,2)/=0) ngpx_ext=ngpx_ext+1
+    if(mod(ngpy_ext,2)/=0) ngpy_ext=ngpy_ext+1
+    if(mod(ngpz_ext,2)/=0) ngpz_ext=ngpz_ext+1
     call greenf_kspace%init_greenf_kspace(npow,'numeric')
     allocate(pot_ext(ngpx_ext+2,ngpy_ext,ngpz_ext),rho_ext(ngpx_ext,ngpy_ext,ngpz_ext))
     call dfftw_plan_dft_r2c_3d(planf,ngpx_ext,ngpy_ext,ngpz_ext,rho_ext(1,1,1),pot_ext(1,1,1),fftw_estimate)
@@ -33,7 +36,7 @@ subroutine get_psolver_kspace_exprnscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,npow,po
     do igpz=1,ngpz
     do igpy=1,ngpy
     do igpx=1,ngpx
-        rho_ext(igpx,igpy,igpz)=rho(igpx,igpy,igpz)
+        rho_ext(nadd+igpx,nadd+igpy,nadd+igpz)=rho(igpx,igpy,igpz)
     enddo
     enddo
     enddo
@@ -61,7 +64,7 @@ subroutine get_psolver_kspace_exprnscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,npow,po
     do igpz=1,ngpz
     do igpy=1,ngpy
     do igpx=1,ngpx
-        pot(igpx,igpy,igpz)=pot_ext(igpx,igpy,igpz)*tt1
+        pot(igpx,igpy,igpz)=pot_ext(nadd+igpx,nadd+igpy,nadd+igpz)*tt1
     enddo
     enddo
     enddo
