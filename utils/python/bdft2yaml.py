@@ -42,7 +42,7 @@ def bdft_read(filename):
         atoms_all[0].units_length_io='angstrom'
     elif (docs["posinp"]["units"]=='Atomic'):
         atoms_all[0].units_length_io='bohr'
-    atoms_all[0].epot = docs["Input Hamiltonian"]["Energies"]["Epot"]
+    atoms_all[0].epot = docs['Energy (Hartree)']#docs["Input Hamiltonian"]["Energies"]["Epot"]
     atoms_all[0].qtot = -1.0*(docs["Input Hamiltonian"]["Total electronic charge"]+docs["Total ionic charge"])
     if abs(atoms_all[0].qtot)< 1.E-6:
         atoms_all[0].qtot=0.E+00

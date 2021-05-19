@@ -446,6 +446,9 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
         stop
     endif
     atoms%qat(1:nat)=ann_arr%qq(1:nat)
+    do iat=1,nat
+        write(20,'(a3,4es18.6)') atoms%sat(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat),atoms%qat(iat)+atoms%zat(iat)
+    end do
     call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>1) then
         call yaml_map('Lagrange',ann_arr%qq(nat+1))

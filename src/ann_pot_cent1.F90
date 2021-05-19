@@ -233,7 +233,7 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     !local variables
-    integer:: info !, iat
+    integer:: info , iat
     associate(nat=>atoms%nat)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%ipiv(1:nat+1))
@@ -259,6 +259,9 @@ subroutine get_qat_from_chi_dir(parini,ann_arr,atoms,a)
         stop
     endif
     atoms%qat(1:nat)=ann_arr%qq(1:nat)
+    do iat=1,nat
+        write(20,'(a3,4es18.6)') atoms%sat(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat),atoms%qat(iat)
+    end do
     call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>1) then
         call yaml_map('Lagrange',ann_arr%qq(nat+1))

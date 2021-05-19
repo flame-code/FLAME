@@ -254,6 +254,7 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
         call set(conf_dict//'qtot',atoms%qtot)
     endif
     call set(conf_dict//'epot',atoms%epot)
+    call set(conf_dict//'dpm',(/atoms%dpm(1),atoms%dpm(2),atoms%dpm(3)/))
     call set(conf_dict//'coord',list_new(.item. "it will be overwritten"))
     coord_list=>conf_dict//'coord'
     call get_rat(atoms,rat)
