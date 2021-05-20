@@ -476,7 +476,6 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
     integer:: agpx, agpy, agpz
     real(8):: dx, dy, dz, dr, hgp, tt
     real(8):: E_par(1:atoms%nat), rhs(1:atoms%nat+1)
-    real(8):: q_chi_par(1:atoms%nat,1:atoms%nat)
     real(8):: rho_val 
     real(8):: a(atoms%nat+1,atoms%nat+1)
     associate(nat=>atoms%nat)
@@ -527,28 +526,30 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
         end do
         E_par(iat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
     end do !iat
-    call DGETRF(nat+1,nat+1,a,nat+1,ann_arr%ipiv,info)
-    if(info/=0) then
-        write(*,'(a19,i8)') 'ERROR: DGETRF info=',info
-        stop
-    endif
-    do jat=1, nat
-        rhs(1:nat+1)=0.d0
-        rhs(jat)=-1.d0
-        call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,rhs,nat+1,info)
+    if(.not. ann_arr%chiQPar_initiated) then
+        call DGETRF(nat+1,nat+1,a,nat+1,ann_arr%ipiv,info)
         if(info/=0) then
-            write(*,'(a19,i8)') 'ERROR: DGETRS info=',info
+            write(*,'(a19,i8)') 'ERROR: DGETRF info=',info
             stop
         endif
-        do iat=1, nat
-            q_chi_par(iat,jat)=rhs(iat)
+        do jat=1, nat
+            rhs(1:nat+1)=0.d0
+            rhs(jat)=-1.d0
+            call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,rhs,nat+1,info)
+            if(info/=0) then
+                write(*,'(a19,i8)') 'ERROR: DGETRS info=',info
+                stop
+            endif
+            do iat=1, nat
+                ann_arr%Xq(iat,jat)=rhs(iat)
+            end do
         end do
-    end do
+    end if
     do kat=1,ann_arr%num(1)
         do jat=1, nat
             tt=0.d0
             do iat=1, nat
-                tt=tt+E_par(iat)*q_chi_par(iat,jat)*ann_arr%g_per_atom(kat,jat)
+                tt=tt+E_par(iat)*ann_arr%Xq(iat,jat)*ann_arr%g_per_atom(kat,jat)
             end do
             ann_arr%g_per_atom(kat,jat)=tt
         end do

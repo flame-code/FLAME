@@ -77,6 +77,10 @@ module mod_ann
     type, public:: typ_ann_amat
         real(8), allocatable :: amat(:)
     end type typ_ann_amat
+    
+    type, public:: typ_ann_chiQPar
+        real(8), allocatable :: chiQPar(:,:)
+    end type typ_ann_chiQPar
 
     type, public:: typ_ann_arr
         logical:: exists_yaml_file = .false.
@@ -87,6 +91,7 @@ module mod_ann
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
         logical:: amat_initiated=.false.
+        logical:: chiQPar_initiated=.false.
         logical:: linear_rho_pot_initiated=.false. 
         character(30):: event='unknown'
         character(50):: approach='unknown'
@@ -120,6 +125,7 @@ module mod_ann
         real(8), allocatable:: linear_pot_e(:,:)
         real(8), allocatable:: linear_pot_n(:,:)
         real(8), allocatable:: a(:)
+        real(8), allocatable:: Xq(:,:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
@@ -133,6 +139,7 @@ module mod_ann
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
         type(typ_ann_amat), allocatable:: ann_amat_train(:), ann_amat_valid(:)
+        type(typ_ann_chiQPar), allocatable:: ann_chiQPar_train(:), ann_chiQPar_valid(:)
     end type typ_ann_arr
     type, public:: typ_cent
         real(8), allocatable:: gwi(:)

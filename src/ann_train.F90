@@ -1187,6 +1187,8 @@ subroutine ann_evaluate_all(parini,iter,ann_arr)
     if(trim(parini%approach_ann)=='cent2') then
     if (.not. allocated(ann_arr%ann_amat_train)) allocate(ann_arr%ann_amat_train(atoms_train%nconf))
     if (.not. allocated(ann_arr%ann_amat_valid)) allocate(ann_arr%ann_amat_valid(atoms_valid%nconf))
+    if (.not. allocated(ann_arr%ann_chiQPar_train)) allocate(ann_arr%ann_chiQPar_train(atoms_train%nconf))
+    if (.not. allocated(ann_arr%ann_chiQPar_valid)) allocate(ann_arr%ann_chiQPar_valid(atoms_valid%nconf))
     endif
     call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
     call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
@@ -1285,6 +1287,17 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
                         ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
                         ann_arr%amat_initiated=.true.
                     end if 
+                    if(.not. allocated(ann_arr%ann_chiQPar_train(iconf)%chiQPar)) then 
+                        allocate(ann_arr%Xq((atoms%nat),(atoms%nat)))
+                        allocate(ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat)))
+                        ann_arr%ann_chiQPar_train(iconf)%chiQPar=0.d0
+                        ann_arr%Xq=0.d0
+                        ann_arr%chiQPar_initiated=.false.
+                    else
+                        allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
+                        ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
+                        ann_arr%chiQPar_initiated=.true.
+                    end if 
                 elseif(trim(data_set)=="valid") then
                     if(.not. allocated(ann_arr%ann_amat_valid(iconf)%amat)) then 
                         allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
@@ -1297,18 +1310,37 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
                         ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_valid(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
                         ann_arr%amat_initiated=.true.
                     end if 
+                    if(.not. allocated(ann_arr%ann_chiQPar_valid(iconf)%chiQPar)) then 
+                        allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
+                        allocate(ann_arr%ann_chiQPar_valid(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat)))
+                        ann_arr%ann_chiQPar_valid(iconf)%chiQPar=0.d0
+                        ann_arr%Xq=0.d0
+                        ann_arr%chiQPar_initiated=.false.
+                    else
+                        allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
+                        ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_valid(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
+                        ann_arr%chiQPar_initiated=.true.
+                    end if 
                 endif
             endif
             call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
             if(trim(parini%approach_ann)=='cent2') then
-            if(.not. ann_arr%amat_initiated) then
-                if(trim(data_set)=="train") then
-                    ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
-                elseif(trim(data_set)=="valid") then
-                    ann_arr%ann_amat_valid(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
-                endif
-            end if
-            deallocate(ann_arr%a)
+                if(.not. ann_arr%amat_initiated) then
+                    if(trim(data_set)=="train") then
+                        ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
+                    elseif(trim(data_set)=="valid") then
+                        ann_arr%ann_amat_valid(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
+                    endif
+                end if
+                deallocate(ann_arr%a)
+                if(.not. ann_arr%chiQPar_initiated) then
+                    if(trim(data_set)=="train") then
+                        ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))=ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))
+                    elseif(trim(data_set)=="valid") then
+                        ann_arr%ann_chiQPar_valid(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))=ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))
+                    endif
+                end if
+                deallocate(ann_arr%Xq)
             end if
         endif
         !if(iter==parini%nstep_opt_ann) then
