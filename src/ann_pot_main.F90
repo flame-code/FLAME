@@ -60,6 +60,18 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
             ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
             ann_arr%chiQPar_initiated=.true.
         end if 
+        if (allocated(ann_arr%EP)) deallocate(ann_arr%EP)
+        if(.not. allocated(ann_arr%ann_EPar_train(iconf)%EPar)) then 
+            allocate(ann_arr%EP(1:atoms%nat))
+            allocate(ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat)))
+            ann_arr%ann_EPar_train(iconf)%EPar=0.d0
+            ann_arr%EP=0.d0
+            ann_arr%EPar_initiated=.false.
+        else
+            allocate(ann_arr%EP(1:(atoms%nat)))
+            ann_arr%EP(1:(atoms%nat))=ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat))
+            ann_arr%EPar_initiated=.true.
+        end if 
     end if 
     call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
     if(trim(ann_arr%approach)=='cent2') then
@@ -71,6 +83,10 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
             ann_arr%ann_chiQPar_train(iconf)%chiQPar=ann_arr%Xq
         end if
         deallocate(ann_arr%Xq)
+        if(.not. ann_arr%EPar_initiated) then
+            ann_arr%ann_EPar_train(iconf)%EPar=ann_arr%EP
+        end if
+        deallocate(ann_arr%EP)
     end if
     !-----------------------------------------------------------------
     allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)

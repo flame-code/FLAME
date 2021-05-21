@@ -1189,6 +1189,8 @@ subroutine ann_evaluate_all(parini,iter,ann_arr)
     if (.not. allocated(ann_arr%ann_amat_valid)) allocate(ann_arr%ann_amat_valid(atoms_valid%nconf))
     if (.not. allocated(ann_arr%ann_chiQPar_train)) allocate(ann_arr%ann_chiQPar_train(atoms_train%nconf))
     if (.not. allocated(ann_arr%ann_chiQPar_valid)) allocate(ann_arr%ann_chiQPar_valid(atoms_valid%nconf))
+    if (.not. allocated(ann_arr%ann_EPar_train)) allocate(ann_arr%ann_EPar_train(atoms_train%nconf))
+    if (.not. allocated(ann_arr%ann_EPar_valid)) allocate(ann_arr%ann_EPar_valid(atoms_valid%nconf))
     endif
     call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
     call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
@@ -1298,6 +1300,17 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
                         ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
                         ann_arr%chiQPar_initiated=.true.
                     end if 
+                    if(.not. allocated(ann_arr%ann_EPar_train(iconf)%EPar)) then 
+                        allocate(ann_arr%EP((atoms%nat)))
+                        allocate(ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat)))
+                        ann_arr%ann_EPar_train(iconf)%EPar=0.d0
+                        ann_arr%EP=0.d0
+                        ann_arr%EPar_initiated=.false.
+                    else
+                        allocate(ann_arr%EP(1:(atoms%nat)))
+                        ann_arr%EP(1:(atoms%nat))=ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat))
+                        ann_arr%EPar_initiated=.true.
+                    end if 
                 elseif(trim(data_set)=="valid") then
                     if(.not. allocated(ann_arr%ann_amat_valid(iconf)%amat)) then 
                         allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
@@ -1321,6 +1334,17 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
                         ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_valid(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
                         ann_arr%chiQPar_initiated=.true.
                     end if 
+                    if(.not. allocated(ann_arr%ann_EPar_valid(iconf)%EPar)) then 
+                        allocate(ann_arr%EP(1:(atoms%nat)))
+                        allocate(ann_arr%ann_EPar_valid(iconf)%EPar(1:(atoms%nat)))
+                        ann_arr%ann_EPar_valid(iconf)%EPar=0.d0
+                        ann_arr%EP=0.d0
+                        ann_arr%EPar_initiated=.false.
+                    else
+                        allocate(ann_arr%EP(1:(atoms%nat)))
+                        ann_arr%EP(1:(atoms%nat))=ann_arr%ann_EPar_valid(iconf)%EPar(1:(atoms%nat))
+                        ann_arr%EPar_initiated=.true.
+                    end if 
                 endif
             endif
             call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
@@ -1341,6 +1365,14 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
                     endif
                 end if
                 deallocate(ann_arr%Xq)
+                if(.not. ann_arr%EPar_initiated) then
+                    if(trim(data_set)=="train") then
+                        ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat))=ann_arr%EP(1:(atoms%nat))
+                    elseif(trim(data_set)=="valid") then
+                        ann_arr%ann_EPar_valid(iconf)%EPar(1:(atoms%nat))=ann_arr%EP(1:(atoms%nat))
+                    endif
+                end if
+                deallocate(ann_arr%EP)
             end if
         endif
         !if(iter==parini%nstep_opt_ann) then
@@ -1349,6 +1381,10 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         !        (atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         !endif
         tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
+        write(*,*) 'ts',atoms%epot,atoms_arr%atoms(iconf)%epot
+        !if(trim(parini%approach_ann)=='cent2') then
+        !    tt=abs(atoms%epot-atoms_arr%atoms(iconf)%trial_ref_energy(1))/atoms_arr%atoms(iconf)%nat
+        !endif
         !HERE
         if(parini%print_energy) then
             write(iunit,'(i7,es14.5,a40,i6,a)') iconf,tt,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
