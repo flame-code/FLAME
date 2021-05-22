@@ -1,4 +1,4 @@
-!*****************************************************************************************
+!****************************************************************************************
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -110,11 +110,12 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
         call yaml_map('total time',time7-time1)
         call yaml_mapping_close()
     endif !end of if for printing out timing.
-    if(trim(ann_arr%event)=='potential' )then!
+    if(trim(ann_arr%event)=='potential' )then
         atoms%epot=epot_c
-    elseif(trim(ann_arr%event)=='train'.or. trim(ann_arr%event)=='evalu') then
-        !atoms%epot=ann_arr%epot_es
+    elseif(trim(ann_arr%event)=='train') then
         atoms%epot=ann_arr%epot_trial
+    elseif(trim(ann_arr%event)=='evalu') then
+        atoms%epot=ann_arr%epot_es
     end if
     !if(trim(ann_arr%event)=='evalu') then
     !    tt1=0.d0
@@ -536,7 +537,7 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
         trial_gw=0.8d0
         call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
                 poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
-        write(*,*) 'trial_rho',maxval(trial_rho),maxloc(trial_rho)
+        !write(*,*) 'trial_rho',maxval(trial_rho),maxloc(trial_rho)
         do iat=1, nat
             tt=0.d0
             !agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
@@ -546,8 +547,8 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
             !    do igy = agpy-nbgy,agpy+nbgy
             !        do igz = agpz-nbgz,agpz+nbgz
             do igx=1,poisson%ngpx
-                do igy=1,poisson%ngpx
-                    do igz=1,poisson%ngpx
+                do igy=1,poisson%ngpy
+                    do igz=1,poisson%ngpz
                         dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
                         dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
                         dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
@@ -732,6 +733,7 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
         end do
     !end do !iat
     ann_arr%epot_trial=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    if(trim(ann_arr%event)=='potential' )then
     !Force
     poisson%rcart=atoms%ratp
     poisson_force=poisson
@@ -770,6 +772,7 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
     !    poisson_local%rcart,poisson_local%q,poisson_local%gw,poisson_local%rgcut, &
     !    poisson_local%ngpx,poisson_local%ngpy,poisson_local%ngpz,poisson_local%hgrid,poisson_local%rho)
     !call get_hartree(parini,poisson_local,atoms,poisson_local%gw,ehartree)
+    endif
 
 end subroutine cal_electrostatic_ann_cent2
 !*****************************************************************************************

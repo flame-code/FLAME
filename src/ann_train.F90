@@ -1381,10 +1381,10 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         !        (atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         !endif
         tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
-        write(*,*) 'ts',atoms%epot,atoms_arr%atoms(iconf)%epot
-        !if(trim(parini%approach_ann)=='cent2') then
-        !    tt=abs(atoms%epot-atoms_arr%atoms(iconf)%trial_ref_energy(1))/atoms_arr%atoms(iconf)%nat
-        !endif
+        if(trim(parini%approach_ann)=='cent2') then
+            tt=abs(atoms%epot-atoms_arr%atoms(iconf)%trial_ref_energy(1))/atoms_arr%atoms(iconf)%nat
+            write(*,*) 'ENERGIES_EHSAN',atoms%epot,atoms_arr%atoms(iconf)%trial_ref_energy(1)
+        endif
         !HERE
         if(parini%print_energy) then
             write(iunit,'(i7,es14.5,a40,i6,a)') iconf,tt,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
