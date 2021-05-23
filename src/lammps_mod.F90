@@ -18,7 +18,6 @@
        type (C_ptr), value :: lmp
        integer(C_int64_t), intent(in), value :: timestep
        integer(C_int), intent(in), value :: nlocal
-       real (C_double), dimension(:,:), pointer :: x
        type(c_ptr) :: c_pos, c_fext, c_ids
        double precision, pointer :: fext(:,:), pos(:,:)
        integer, intent(in) :: ids(nlocal)
@@ -47,9 +46,10 @@
        call lammps_extract_global(boxxy, lmp, 'xy')
        call lammps_extract_global(boxxz, lmp, 'xz')
        call lammps_extract_global(boxyz, lmp, 'yz')
-       if(boxxlo/=0.d0) stop 'ERROR: boxxlo/=0.d0'
-       if(boxylo/=0.d0) stop 'ERROR: boxylo/=0.d0'
-       if(boxzlo/=0.d0) stop 'ERROR: boxzlo/=0.d0'
+       !if(boxxlo/=0.d0) stop 'ERROR: boxxlo/=0.d0'
+       !if(boxylo/=0.d0) stop 'ERROR: boxylo/=0.d0'
+       !if(boxzlo/=0.d0) stop 'ERROR: boxzlo/=0.d0'
+       !write(*,'(1a,9f12.6)') 'BOX ',boxxlo,boxylo,boxzlo,boxxhi,boxyhi,boxzhi,boxxy,boxxz,boxyz
        lx = boxxhi - boxxlo
        ly = boxyhi - boxylo
        lz = boxzhi - boxzlo
@@ -74,12 +74,15 @@
        !    atoms%rat(2,iat)=pos(2,iat)-boxylo
        !    atoms%rat(3,iat)=pos(3,iat)-boxzlo
        !enddo
-       atoms%cellvec(1,1) = boxxhi
-       atoms%cellvec(1,2) = boxxy 
-       atoms%cellvec(2,2) = boxyhi
-       atoms%cellvec(1,3) = boxxz 
-       atoms%cellvec(2,3) = boxyz 
-       atoms%cellvec(3,3) = boxzhi
+       atoms%cellvec(1,1) = lx
+       atoms%cellvec(2,1) = 0.d0
+       atoms%cellvec(3,1) = 0.d0
+       atoms%cellvec(1,2) = boxxy
+       atoms%cellvec(2,2) = ly
+       atoms%cellvec(3,2) = 0.d0
+       atoms%cellvec(1,3) = boxxz
+       atoms%cellvec(2,3) = boxyz
+       atoms%cellvec(3,3) = lz
        call getvol_alborz(atoms%cellvec,volume)
        call set_rat(atoms,pos,setall=.true.)
        call cal_potential_forces(parini_lammps,atoms)
@@ -92,12 +95,13 @@
        !The unit of stress in FLAME is Ha/bohr^3
        ! 1Ha/bohr^3 = 29421.02648438959 GPa 
        ! virial_LAMMPS = -stress_FLAME*convert_to_Pascals
-       virial(1) = atoms%stress(1,1)*-1.d0/volume !*29421.02648438959d9
-       virial(2) = atoms%stress(2,2)*-1.d0/volume !*29421.02648438959d9
-       virial(3) = atoms%stress(3,3)*-1.d0/volume !*29421.02648438959d9
-       virial(4) = atoms%stress(1,2)*-1.d0/volume !*29421.02648438959d9
-       virial(5) = atoms%stress(1,3)*-1.d0/volume !*29421.02648438959d9
-       virial(6) = atoms%stress(2,3)*-1.d0/volume !*29421.02648438959d9
+       virial(1) = atoms%stress(1,1)
+       virial(2) = atoms%stress(2,2)
+       virial(3) = atoms%stress(3,3)
+       virial(4) = atoms%stress(1,2)
+       virial(5) = atoms%stress(1,3)
+       virial(6) = atoms%stress(2,3)
+       !write(*,'(1a,6es14.5)') 'STR ',virial(1),virial(2),virial(3),virial(4),virial(5),virial(6)
        !write(*,'(a,f20.10)') 'VOL',volume
        !write(*,*) 'STRESSS',virial(1)
        !write(*,'(a,3es24.15)') 'STRESS ',atoms%stress(1,1),atoms%stress(2,1),atoms%stress(3,1)

@@ -278,3 +278,9 @@ train_CENTT:
   - TIMING evaluation symmetry functions for train
   - TIMING evaluation symmetry functions for valid
  Epsilon: 5.e-10
+
+lammps_NVT:
+ Epsilon: 1.e-10
+
+lammps_NPT:
+ Epsilon: 5.e-7
