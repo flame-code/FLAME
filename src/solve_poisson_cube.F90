@@ -130,7 +130,7 @@ subroutine solve_poisson_cube_bigdft(parini)
     integer:: istat, igpx, igpy, igpz, iat
     real(8):: epot, rgcut_a, qtot, pi!, qtot_e, qtot_i
     real(8):: epot_scn, ehartree_scn_excl, tt1, tt2
-!    real(8):: xyz(3), dxyz(3)
+    real(8):: xyz(3), dxyz(3), epot_trial
     real(8),allocatable::  gausswidth(:)
     integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
     !real(8) :: xyz(3)
@@ -216,7 +216,7 @@ subroutine solve_poisson_cube_bigdft(parini)
             do igpx=1,poisson%ngpx
     !            qtot_e=qtot_e+poisson%rho(igpx,igpy,igpz)
     !            qtot_i=qtot_i+poisson_ion%rho(igpx,igpy,igpz)
-                poisson%rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)-poisson_ion%rho(igpx,igpy,igpz)
+                poisson%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)-poisson%rho(igpx,igpy,igpz)
                 qtot=qtot+poisson%rho(igpx,igpy,igpz)
             enddo
         enddo
@@ -228,55 +228,55 @@ subroutine solve_poisson_cube_bigdft(parini)
     write(*,*) 'qtot= ',qtot
     !write(*,*) 'qtot_e= ',qtot_e
     !write(*,*) 'qtot_i= ',qtot_i
-    call fini_hartree(parini,atoms,poisson_ion)
     !-------------------------------------------------------
     call update_ratp(atoms)
     call get_hartree(parini,poisson,atoms,gausswidth,epot)
-!    write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',epot,poisson%screening_factor
-!    !-------------------------------------------------------
-!    do iat=1,atoms%nat
-!        do iz=0,6
-!        do iy=0,6
-!        do ix=0,6
-!        dxyz(1)=ix*0.3d0
-!        dxyz(2)=iy*0.3d0
-!        dxyz(3)=iz*0.3d0
-!        if(ix>3) dxyz(1)=(ix-7)*0.3d0
-!        if(iy>3) dxyz(2)=(iy-7)*0.3d0
-!        if(iz>3) dxyz(3)=(iz-7)*0.3d0
-!        poisson_ion%q(1:poisson_ion%nat)=0.d0
-!        poisson_ion%q(iat)=1.d0
-!        poisson_ion%rho=0.d0
-!        xyz(1:3)=poisson_ion%rcart(1:3,iat)
-!        poisson_ion%rcart(1,iat)=xyz(1)+dxyz(1)
-!        poisson_ion%rcart(2,iat)=xyz(2)+dxyz(2)
-!        poisson_ion%rcart(3,iat)=xyz(3)+dxyz(3)
-!        call put_charge_density(parini,poisson_ion)
-!        poisson_ion%rcart(1:3,iat)=xyz(1:3)
-!        epot_trial=0.d0
-!        do igpz=1,poisson%ngpz
-!        do igpy=1,poisson%ngpy
-!        do igpx=1,poisson%ngpx
-!            epot_trial=epot_trial+poisson_ion%rho(igpx,igpy,igpz)*poisson%pot(igpx,igpy,igpz)
-!        enddo
-!        enddo
-!        enddo
-!        epot_trial=epot_trial*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-!        !if(ix==0 .and. iy==0 .and. iz==0) then
-!        !    epot_trial0=epot_trial
-!        !    !write(*,'(a,i5,es24.15,es14.5)') 'iat,epot_trial ',iat,epot_trial,poisson%screening_factor
-!        !else
-!        !    write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial-epot_trial0,poisson%screening_factor
-!            write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial,poisson%screening_factor
-!        !endif
-!        enddo
-!        enddo
-!        enddo
-!    enddo
+     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',epot,poisson%screening_factor
     !-------------------------------------------------------
-    write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',epot,poisson%screening_factor
+    poisson_ion%gw(1:poisson_ion%nat)=1.d0
+    do iat=1,atoms%nat
+        do iz=-1,1
+        do iy=-1,1
+        do ix=-1,1
+        dxyz(1)=ix*0.9d0
+        dxyz(2)=iy*0.9d0
+        dxyz(3)=iz*0.9d0
+        !if(ix>3) dxyz(1)=(ix-7)*0.3d0
+        !if(iy>3) dxyz(2)=(iy-7)*0.3d0
+        !if(iz>3) dxyz(3)=(iz-7)*0.3d0
+        poisson_ion%q(1:poisson_ion%nat)=0.d0
+        poisson_ion%q(iat)=1.d0
+        poisson_ion%rho=0.d0
+        xyz(1:3)=poisson_ion%rcart(1:3,iat)
+        poisson_ion%rcart(1,iat)=xyz(1)+dxyz(1)
+        poisson_ion%rcart(2,iat)=xyz(2)+dxyz(2)
+        poisson_ion%rcart(3,iat)=xyz(3)+dxyz(3)
+        call put_charge_density(parini,poisson_ion)
+        poisson_ion%rcart(1:3,iat)=xyz(1:3)
+        epot_trial=0.d0
+        do igpz=1,poisson%ngpz
+        do igpy=1,poisson%ngpy
+        do igpx=1,poisson%ngpx
+            epot_trial=epot_trial+poisson_ion%rho(igpx,igpy,igpz)*poisson%pot(igpx,igpy,igpz)
+        enddo
+        enddo
+        enddo
+        epot_trial=epot_trial*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
+        !if(ix==0 .and. iy==0 .and. iz==0) then
+        !    epot_trial0=epot_trial
+        !    !write(*,'(a,i5,es24.15,es14.5)') 'iat,epot_trial ',iat,epot_trial,poisson%screening_factor
+        !else
+        !    write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial-epot_trial0,poisson%screening_factor
+            write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial,poisson%screening_factor
+        !endif
+        enddo
+        enddo
+        enddo
+    enddo
+    !-------------------------------------------------------
     !call cube_write('total_rho.cube',atoms,poisson,'rho')
     !call cube_write('total_pot.cube',atoms,poisson,'pot')
     call fini_hartree(parini,atoms,poisson)
+    call fini_hartree(parini,atoms,poisson_ion)
 end subroutine solve_poisson_cube_bigdft
 !*****************************************************************************************
