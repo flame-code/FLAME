@@ -8,6 +8,8 @@
 subroutine lammps_task(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_copy, atom_deallocate, set_typat
+    use mod_atoms, only: get_rat, set_rat
+    use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_potential, only: potential
 #if defined(HAVE_LAMMPS)
     use mpi
@@ -24,11 +26,27 @@ subroutine lammps_task(parini)
     character(100):: str_run
     integer:: iconf
     type(typ_atoms_arr):: atoms_arr
+    logical:: acf_exists, yaml_exists
+    real(8), allocatable:: rat(:,:)
+    real(8):: dproj(6), rotmat(3,3)
     !-------------------------------------------------------
     potential=trim(parini%potential_potential)
     !-------------------------------------------------------
     call copy_parini_for_lammps(parini)
-    call acf_read_new(parini,'posinp.acf',10000,atoms_arr)
+    inquire(file='posinp.yaml',exist=yaml_exists)
+    inquire(file='posinp.acf',exist=acf_exists)
+    if(yaml_exists) then
+        call read_yaml_conf(parini,'posinp.yaml',1000,atoms_arr)
+        allocate(rat(3,atoms_arr%atoms(1)%nat))
+        call get_rat(atoms_arr%atoms(1),rat)
+        call latvec2dproj(dproj,atoms_arr%atoms(1)%cellvec,rotmat,rat,atoms_arr%atoms(1)%nat)
+        call set_rat(atoms_arr%atoms(1),rat,setall=.true.)
+        deallocate(rat)
+    elseif(acf_exists) then
+        call acf_read_new(parini,'posinp.acf',1000,atoms_arr)
+    else
+        stop 'ERROR: this task reads only yaml and acf.'
+    endif
     call atom_copy(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(1)->atoms')
     call set_typat(atoms)
     call init_potential_forces(parini,atoms)
@@ -41,7 +59,7 @@ subroutine lammps_task(parini)
     if(parini%nrun_lammps<1) then
         stop 'ERROR: parini%nrun_lammps<1 in lammps_task'
     endif
-    write(str_run,'(a,1x,i)') 'run',parini%nrun_lammps
+    write(str_run,'(1a,1x,1i8)') 'run',parini%nrun_lammps
     !lammps_command is the LAMMPS function that does the
     !task we have asked, e.g. molecular dynamics,
     !therefore, lammps_command will not be left until
@@ -93,6 +111,7 @@ subroutine lammps_write(parini,atoms)
     do iat= 1,atoms%nat
         write(10,'(i8,i3,3es24.15)') iat, id_type(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat)
     enddo
+    close(10)
     deallocate(id_type)
 end subroutine lammps_write
 !*****************************************************************************************
