@@ -87,6 +87,9 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(timet1)
     if(parini%iverbose>=2) write(*,*) 'qet_qat_time: ' , timet1-time4
     if(.not. trim(ann_arr%event)=='potential') call cent2_g_per_atom(parini,ann_arr,atoms,poisson,ann_arr%a)
+    if(parini%prefit_ann) then
+        call prefit_cent2(parini,ann_arr,atoms,poisson)
+    endif
     if(parini%iverbose>=2) call cpu_time(time5)
     if(parini%iverbose>=2) write(*,*) 'cent2_g_per_time: ' , time5-timet1
     atoms%stress(1:3,1:3)=0.d0
@@ -534,7 +537,7 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
         allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
         trial_qat(:)=0.d0
         trial_qat(atoms%trial_ref_nat(1))=1.d0
-        trial_gw=0.8d0
+        trial_gw=1.d0
         call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
                 poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
         !write(*,*) 'trial_rho',maxval(trial_rho),maxloc(trial_rho)
@@ -719,7 +722,7 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
     allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
     trial_qat(:)=0.d0
     trial_qat(atoms%trial_ref_nat(1))=1.d0
-    trial_gw=0.8d0
+    trial_gw=1.d0
     call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
             poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
     tt=0.d0
@@ -888,3 +891,648 @@ subroutine set_weight(ngp,rrad,weight)
     enddo
     weight(ngp)=(rrad(ngp)-rrad(ngp-1))*0.5d0
 end subroutine set_weight
+!*****************************************************************************************
+subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    !local variables
+    integer:: itrial, iat, jat, kat, ix, iy, iz, iq, istep, nstep, ii
+    integer:: agpx, agpy, agpz
+    integer:: nbgx, nbgy, nbgz, linearGridNumber
+    real(8):: xyz(3), dx, dy, dz, dr, hgp, tt, rho_val, q, cf, rmse, err_U_SRS
+    real(8):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
+    real(8):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
+    real(8):: g_Mg, g_O
+    real(8):: alpha, alphax, alphat, t1, t2, t3, y0, y1, DDOT, rlambda, pi
+    real(8), allocatable:: EP(:,:), rhs(:), trial_rho(:,:,:)
+    real(8), allocatable:: E_all(:), g(:), gt(:), h(:), chi_old(:)
+    real(8), allocatable:: rho_ion(:,:,:)
+    real(8), allocatable:: linear_rho_t(:)
+    real(8):: gausswidth(80)
+    logical, save:: done=.false.
+    if(done) return
+    hgp=1.d-3
+    pi=4.d0*atan(1.d0)
+    associate(nat=>atoms%nat)
+    !write(*,*) 'YES ',atoms%ntrial !atoms%trial_ref_nat(1)
+    !do itrial=1,atoms%ntrial
+    !    write(*,'(i3,3f8.3,es24.15)') atoms%trial_ref_nat(itrial), &
+    !        atoms%trial_ref_disp(1,itrial),atoms%trial_ref_disp(2,itrial), &
+    !        atoms%trial_ref_disp(3,itrial),atoms%trial_ref_energy(itrial)
+    !enddo
+    allocate(linear_rho_t(0:poisson%ngp))
+    do ii=0,poisson%ngp
+        tt= ii*hgp
+        if (tt>(10.d0*1.d0)) then
+            linear_rho_t(ii) = 0.d0
+        else
+            linear_rho_t(ii) = 1.d0/((pi**1.5d0)*(1.d0**3))*Exp(-1.d0*(tt**2/1.d0**2))
+        endif
+    enddo
+    !write(*,'(a,3f20.10)') 'SSS ',atoms%ratp(1,1),atoms%ratp(2,1),atoms%ratp(3,1)
+    !write(*,'(a,3f20.10)') 'HHH ',poisson%hgrid(1,1),poisson%hgrid(2,2),poisson%hgrid(3,3)
+    !write(*,*) 'NGP ',poisson%ngpx,poisson%ngpy,poisson%ngpz
+    allocate(E_all(atoms%ntrial+1))
+    allocate(g(atoms%nat),gt(atoms%nat),h(atoms%nat),chi_old(atoms%nat))
+    allocate(EP(atoms%nat,atoms%ntrial))
+    allocate(rhs(atoms%nat+1))
+    nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
+    nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
+    nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
+    write(*,*) 'RGCUT ',poisson%rgcut,nbgx,nbgy,nbgz
+    !-----------------------------------------------------------------
+    !allocate(rho_ion(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    !rho_ion=0.d0
+    !do iat=1, atoms%nat
+    !    agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
+    !    agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
+    !    agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
+    !    do ix = agpx-nbgx,agpx+nbgx
+    !        do iy = agpy-nbgy,agpy+nbgy
+    !            do iz = agpz-nbgz,agpz+nbgz
+    !                dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+    !                dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+    !                dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+    !                dr = sqrt(dx**2+dy**2+dz**2)
+    !                linearGridNumber=floor(dr/hgp)
+    !                rho_ion(ix,iy,iz)=rho_ion(ix,iy,iz)+atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
+    !                    (poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber+1)&
+    !                    -poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))&
+    !                    +poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))
+    !            end do
+    !        end do
+    !    end do
+    !end do !iat
+    !poisson%rho=rho_ion
+    !gausswidth=0.8d0
+    !call get_hartree(parini,poisson,atoms,gausswidth,tt)
+    !poisson%pot_ion=poisson%pot
+
+    !call get_psolver_kspace_exprnscreening(poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+    !        poisson%hgrid,rho_ion,poisson%screening_factor,4,pot_scn)
+    !-----------------------------------------------------------------
+    allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
+    !allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
+    !if(.not. ann_arr%EPar_initiated) then
+        !trial_qat(:)=0.d0
+        !trial_qat(atoms%trial_ref_nat(1))=1.d0
+        !trial_gw=0.8d0
+        !write(*,*) 'trial_rho',maxval(trial_rho),maxloc(trial_rho)
+        do iat=1, nat
+            !agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
+            !agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
+            !agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
+            !do igx = agpx-nbgx,agpx+nbgx
+            !    do igy = agpy-nbgy,agpy+nbgy
+            !        do igz = agpz-nbgz,agpz+nbgz
+            do ix=1,poisson%ngpx
+                do iy=1,poisson%ngpy
+                    do iz=1,poisson%ngpz
+                        dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                        dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                        dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                        dr = sqrt(dx**2+dy**2+dz**2)
+                        linearGridNumber=floor(dr/hgp)
+                        poisson%pot(ix,iy,iz)=(dr/hgp-linearGridNumber)*&
+                            (poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)&
+                            -poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
+                            +poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber)
+                    end do
+                end do
+            end do
+            do itrial=1,atoms%ntrial
+                xyz(1:3)=atoms%ratp(1:3,atoms%trial_ref_nat(itrial))+atoms%trial_ref_disp(1:3,itrial)
+                !call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
+                !    poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
+        agpx=int(xyz(1)/poisson%hgrid(1,1))+nbgx
+        agpy=int(xyz(2)/poisson%hgrid(2,2))+nbgy
+        agpz=int(xyz(3)/poisson%hgrid(3,3))+nbgz
+        trial_rho=0.d0
+        do ix = agpx-nbgx,agpx+nbgx
+            do iy = agpy-nbgy,agpy+nbgy
+                do iz = agpz-nbgz,agpz+nbgz
+                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-xyz(1)
+                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-xyz(2)
+                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-xyz(3)
+                    dr = sqrt(dx**2+dy**2+dz**2)
+                    linearGridNumber=floor(dr/hgp)
+                    trial_rho(ix,iy,iz)=1.d0*((dr/hgp-linearGridNumber)*&
+                        (linear_rho_t(linearGridNumber+1)&
+                        -linear_rho_t(linearGridNumber))&
+                        +linear_rho_t(linearGridNumber))
+                end do
+            end do
+        end do
+                tt=0.d0
+                do ix=1,poisson%ngpx
+                do iy=1,poisson%ngpy
+                do iz=1,poisson%ngpz
+                    tt=tt+poisson%pot(ix,iy,iz)*trial_rho(ix,iy,iz)
+                enddo
+                enddo
+                enddo
+                EP(iat,itrial)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+            enddo
+        end do !iat
+    !endif
+    !-----------------------------------------------------------------
+    !-----------------------------------------------------------------
+    ann_arr%chi_o( 1)= -0.43 !-0.47d0
+    ann_arr%chi_o( 2)=  0.52 ! 0.53d0
+    ann_arr%chi_o( 3)= -0.49 !-0.49d0
+    ann_arr%chi_o( 4)=  0.53 ! 0.52d0
+    ann_arr%chi_o( 5)= -0.45 !-0.48d0
+    ann_arr%chi_o( 6)=  0.54 ! 0.52d0
+    ann_arr%chi_o( 7)= -0.51 !-0.51d0
+    ann_arr%chi_o( 8)=  0.46 ! 0.47d0
+    ann_arr%chi_o( 9)= -0.51 !-0.49d0
+    ann_arr%chi_o(10)=  0.53 ! 0.54d0
+    ann_arr%chi_o(11)= -0.50 !-0.50d0
+    ann_arr%chi_o(12)=  0.43 ! 0.46d0
+    ann_arr%chi_o(13)= -0.55 !-0.53d0
+    ann_arr%chi_o(14)=  0.50 ! 0.54d0
+    ann_arr%chi_o(15)= -0.45 !-0.46d0
+    ann_arr%chi_o(16)=  0.54 ! 0.52d0
+    ann_arr%chi_o(17)= -0.50 !-0.50d0
+    ann_arr%chi_o(18)=  0.49 ! 0.50d0
+    ann_arr%chi_o(19)= -0.44 !-0.46d0
+    ann_arr%chi_o(20)=  0.59 ! 0.55d0
+    ann_arr%chi_o(21)=  0.54 ! 0.53d0
+    ann_arr%chi_o(22)= -0.51 !-0.49d0
+    ann_arr%chi_o(23)=  0.48 ! 0.50d0
+    ann_arr%chi_o(24)= -0.50 !-0.50d0
+    ann_arr%chi_o(25)=  0.53 ! 0.52d0
+    ann_arr%chi_o(26)= -0.49 !-0.49d0
+    ann_arr%chi_o(27)=  0.46 ! 0.45d0
+    ann_arr%chi_o(28)= -0.54 !-0.57d0
+    ann_arr%chi_o(29)=  0.45 ! 0.44d0
+    ann_arr%chi_o(30)= -0.50 !-0.49d0
+    ann_arr%chi_o(31)=  0.47 ! 0.50d0
+    ann_arr%chi_o(32)= -0.59 !-0.57d0
+    ann_arr%chi_o(33)=  0.38 ! 0.37d0
+    ann_arr%chi_o(34)= -0.56 !-0.55d0
+    ann_arr%chi_o(35)=  0.49 ! 0.52d0
+    ann_arr%chi_o(36)= -0.45 !-0.48d0
+    ann_arr%chi_o(37)=  0.47 ! 0.50d0
+    ann_arr%chi_o(38)= -0.53 !-0.53d0
+    ann_arr%chi_o(39)=  0.53 ! 0.52d0
+    ann_arr%chi_o(40)= -0.43 !-0.46d0
+    ann_arr%chi_o(41)= -0.47 !-0.48d0
+    ann_arr%chi_o(42)=  0.49 ! 0.51d0
+    ann_arr%chi_o(43)= -0.53 !-0.52d0
+    ann_arr%chi_o(44)=  0.48 ! 0.50d0
+    ann_arr%chi_o(45)= -0.48 !-0.48d0
+    ann_arr%chi_o(46)=  0.52 ! 0.53d0
+    ann_arr%chi_o(47)= -0.51 !-0.52d0
+    ann_arr%chi_o(48)=  0.46 ! 0.41d0
+    ann_arr%chi_o(49)= -0.55 !-0.55d0
+    ann_arr%chi_o(50)=  0.48 ! 0.51d0
+    ann_arr%chi_o(51)= -0.49 !-0.48d0
+    ann_arr%chi_o(52)=  0.44 ! 0.45d0
+    ann_arr%chi_o(53)= -0.60 !-0.61d0
+    ann_arr%chi_o(54)=  0.40 ! 0.42d0
+    ann_arr%chi_o(55)= -0.52 !-0.50d0
+    ann_arr%chi_o(56)=  0.54 ! 0.54d0
+    ann_arr%chi_o(57)= -0.49 !-0.49d0
+    ann_arr%chi_o(58)=  0.45 ! 0.46d0
+    ann_arr%chi_o(59)= -0.51 !-0.51d0
+    ann_arr%chi_o(60)=  0.49 ! 0.51d0
+    ann_arr%chi_o(61)=  0.58 ! 0.53d0
+    ann_arr%chi_o(62)= -0.45 !-0.48d0
+    ann_arr%chi_o(63)=  0.50 ! 0.51d0
+    ann_arr%chi_o(64)= -0.47 !-0.48d0
+    ann_arr%chi_o(65)=  0.57 ! 0.53d0
+    ann_arr%chi_o(66)= -0.45 !-0.47d0
+    ann_arr%chi_o(67)=  0.53 ! 0.53d0
+    ann_arr%chi_o(68)= -0.51 !-0.52d0
+    ann_arr%chi_o(69)=  0.50 ! 0.51d0
+    ann_arr%chi_o(70)= -0.47 !-0.48d0
+    ann_arr%chi_o(71)=  0.53 ! 0.54d0
+    ann_arr%chi_o(72)= -0.51 !-0.49d0
+    ann_arr%chi_o(73)=  0.43 ! 0.45d0
+    ann_arr%chi_o(74)= -0.52 !-0.50d0
+    ann_arr%chi_o(75)=  0.53 ! 0.53d0
+    ann_arr%chi_o(76)= -0.44 !-0.47d0
+    ann_arr%chi_o(77)=  0.52 ! 0.53d0
+    ann_arr%chi_o(78)= -0.52 !-0.50d0
+    ann_arr%chi_o(79)=  0.50 ! 0.51d0
+    ann_arr%chi_o(80)= -0.46 !-0.48d0
+    do iat=1,nat
+        call random_number(tt)
+        ann_arr%chi_o(iat)=ann_arr%ann(atoms%itypat(iat))%chi0+2.d-2*(tt-0.5d0)
+    enddo
+    !-----------------------------------------------------------------
+    nstep=100
+    do istep=0,nstep
+        !do iq=1,1
+        !q=0.5d0+0.1d0*iq
+        !do iat=1,nat
+        !    if(trim(atoms%sat(iat))=='Mg') atoms%qat(iat)=-atoms%zat(iat)+q
+        !    if(trim(atoms%sat(iat))=='O' ) atoms%qat(iat)=-atoms%zat(iat)-q
+        !enddo
+        call prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,linear_rho_t,hgp,.true.,EP,cf,rmse,E_all,g)
+        call prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
+        err_U_SRS=1.d3*(E_all(atoms%ntrial+1)-atoms%epot)/nat
+        !write(*,'(a,i6,2f10.5,es14.5,8f6.2)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
+        write(*,'(a,i6,2f10.3,es14.5,8f6.2)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
+            qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O
+        if(istep==0) then
+            do itrial=1,atoms%ntrial
+                write(*,'(a,i3,2es24.15)') 'ETS ',atoms%trial_ref_nat(itrial),E_all(itrial),atoms%trial_ref_energy(itrial)
+            enddo
+            !stop 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'
+        endif
+
+        !if(istep<100) then
+        !    g_Mg=0.d0
+        !    g_O=0.d0
+        !    do iat=1,nat
+        !        if(trim(atoms%sat(iat))=='Mg') g_Mg=g_Mg+g(iat)
+        !        if(trim(atoms%sat(iat))=='O' ) g_O=g_O+g(iat)
+        !    enddo
+        !    do iat=1,nat
+        !        if(trim(atoms%sat(iat))=='Mg') g(iat)=g_Mg
+        !        if(trim(atoms%sat(iat))=='O' ) g(iat)=g_O
+        !    enddo
+        !endif
+        if((rmse<10.d0) .or. istep==nstep) exit
+        do iat=1,nat
+            tt=abs(1.d-3*g(iat))
+            ann_arr%chi_o(iat)=ann_arr%chi_o(iat)-sign(min(1.d-2,tt),g(iat))
+        enddo
+    enddo !end of loop over istep SD
+    alphax=2.d-3
+    alphat=2.d0*alphax
+    alpha=0.d0
+    nstep=1000
+    do istep=0,nstep
+        call prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,linear_rho_t,hgp,.false.,EP,cf,rmse,E_all,g)
+        call prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
+        err_U_SRS=1.d3*(E_all(atoms%ntrial+1)-atoms%epot)/nat
+        write(*,'(a,i6,2f10.3,es14.5,9f6.2)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
+            qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O,alpha/alphax
+        if((rmse<0.01d0 .and. abs(err_U_SRS)<0.1d0) .or. istep==nstep) then
+            write(*,'(a,i6,2f10.3,es14.5,9f6.2)') 'FIN ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
+                qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O,alpha/alphax
+            do itrial=1,atoms%ntrial
+                write(*,'(a,i3,2es24.15)') 'ETE ',atoms%trial_ref_nat(itrial),E_all(itrial),atoms%trial_ref_energy(itrial)
+            enddo
+            exit
+        endif
+        if(istep==0) then
+            h=-g
+        else
+            rlambda=(t1-t2)/t3
+            t1=DDOT(nat,g,1,g,1)
+            t2=DDOT(nat,gt,1,g,1)
+            t3=DDOT(nat,gt,1,gt,1)
+            rlambda=(t1-t2)/t3
+            h=-g+rlambda*h
+
+        endif
+        do iat=1,nat
+            chi_old(iat)=ann_arr%chi_o(iat)
+            ann_arr%chi_o(iat)=ann_arr%chi_o(iat)+alphat*h(iat)
+        enddo
+        call prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,linear_rho_t,hgp,.false.,EP,cf,rmse,E_all,gt)
+        y0=DDOT(nat,g,1,h,1)
+        y1=DDOT(nat,gt,1,h,1)
+        tt=y0/(y0-y1)
+        !write(*,'(a,2(1x,e10.3),2x,e12.5)')  'y0,y1,y0/(y0-y1)',y0,y1,tt
+        alpha=alphat*max(min(tt,2.d0),-0.1d0)
+        do iat=1,nat
+            ann_arr%chi_o(iat)=chi_old(iat)+alpha*h(iat)
+        enddo
+        !hold=h
+        gt=g
+    enddo !end of loop over istep CG
+    do iat=1,nat
+        write(*,'(a,i4,2f7.3)') 'CHI ',iat,ann_arr%chi_o(iat),atoms%zat(iat)+atoms%qat(iat)
+    enddo
+    done=.true.
+    end associate
+end subroutine prefit_cent2
+!*****************************************************************************************
+subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,linear_rho_t,hgp,applychi,EP,cf,rmse,E_all,g)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
+    integer, intent(in):: nbgx, nbgy, nbgz
+    real(8), intent(in):: hgp
+    logical, intent(in):: applychi
+    real(8), intent(in):: linear_rho_t(0:poisson%ngp)
+    real(8), intent(in):: EP(atoms%nat,atoms%ntrial)
+    real(8), intent(inout):: cf, rmse, g(atoms%nat), E_all(atoms%ntrial+1)
+    !local variables
+    integer:: iat, jat, itrial, ix, iy, iz
+    integer:: agpx, agpy, agpz
+    integer:: linearGridNumber
+    real(8):: tt, U_SRS, rho_val
+    real(8):: xyz(3), dx, dy, dz, dr, coeff
+    real(8), allocatable:: E_par(:), trial_rho(:,:,:)
+    allocate(E_par(atoms%nat))
+    allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
+    call get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
+    !atoms%qat( 1)=-1.50000    !-0.90000
+    !atoms%qat( 2)=-6.60000    !-6.90000
+    !atoms%qat( 3)=-1.40000    !-1.10000
+    !atoms%qat( 4)=-6.50000    !-7.10000
+    !atoms%qat( 5)=-1.50000    !-0.90000
+    !atoms%qat( 6)=-6.60000    !-6.90000
+    !atoms%qat( 7)=-1.40000    !-1.10000
+    !atoms%qat( 8)=-6.50000    !-7.10000
+    !atoms%qat( 9)=-1.50000    !-0.90000
+    !atoms%qat(10)=-6.60000    !-6.90000
+    !atoms%qat(11)=-1.40000    !-1.10000
+    !atoms%qat(12)=-6.50000    !-7.10000
+    !atoms%qat(13)=-1.50000    !-0.90000
+    !atoms%qat(14)=-6.60000    !-6.90000
+    !atoms%qat(15)=-1.40000    !-1.10000
+    !atoms%qat(16)=-6.50000    !-7.10000
+    !atoms%qat(17)=-1.50000    !-0.90000
+    !atoms%qat(18)=-6.60000    !-6.90000
+    !atoms%qat(19)=-1.40000    !-1.10000
+    !atoms%qat(20)=-6.50000    !-7.10000
+    !atoms%qat(21)=-6.60000    !-6.90000
+    !atoms%qat(22)=-1.50000    !-0.90000
+    !atoms%qat(23)=-6.50000    !-7.10000
+    !atoms%qat(24)=-1.40000    !-1.10000
+    !atoms%qat(25)=-6.60000    !-6.90000
+    !atoms%qat(26)=-1.50000    !-0.90000
+    !atoms%qat(27)=-6.50000    !-7.10000
+    !atoms%qat(28)=-1.40000    !-1.10000
+    !atoms%qat(29)=-6.60000    !-6.90000
+    !atoms%qat(30)=-1.50000    !-0.90000
+    !atoms%qat(31)=-6.50000    !-7.10000
+    !atoms%qat(32)=-1.40000    !-1.10000
+    !atoms%qat(33)=-6.60000    !-6.90000
+    !atoms%qat(34)=-1.50000    !-0.90000
+    !atoms%qat(35)=-6.50000    !-7.10000
+    !atoms%qat(36)=-1.40000    !-1.10000
+    !atoms%qat(37)=-6.60000    !-6.90000
+    !atoms%qat(38)=-1.50000    !-0.90000
+    !atoms%qat(39)=-6.50000    !-7.10000
+    !atoms%qat(40)=-1.40000    !-1.10000
+    !atoms%qat(41)=-1.50000    !-0.90000
+    !atoms%qat(42)=-6.60000    !-6.90000
+    !atoms%qat(43)=-1.40000    !-1.10000
+    !atoms%qat(44)=-6.50000    !-7.10000
+    !atoms%qat(45)=-1.50000    !-0.90000
+    !atoms%qat(46)=-6.60000    !-6.90000
+    !atoms%qat(47)=-1.40000    !-1.10000
+    !atoms%qat(48)=-6.50000    !-7.10000
+    !atoms%qat(49)=-1.50000    !-0.90000
+    !atoms%qat(50)=-6.60000    !-6.90000
+    !atoms%qat(51)=-1.40000    !-1.10000
+    !atoms%qat(52)=-6.50000    !-7.10000
+    !atoms%qat(53)=-1.50000    !-0.90000
+    !atoms%qat(54)=-6.60000    !-6.90000
+    !atoms%qat(55)=-1.40000    !-1.10000
+    !atoms%qat(56)=-6.50000    !-7.10000
+    !atoms%qat(57)=-1.50000    !-0.90000
+    !atoms%qat(58)=-6.60000    !-6.90000
+    !atoms%qat(59)=-1.40000    !-1.10000
+    !atoms%qat(60)=-6.50000    !-7.10000
+    !atoms%qat(61)=-6.60000    !-6.90000
+    !atoms%qat(62)=-1.50000    !-0.90000
+    !atoms%qat(63)=-6.50000    !-7.10000
+    !atoms%qat(64)=-1.40000    !-1.10000
+    !atoms%qat(65)=-6.60000    !-6.90000
+    !atoms%qat(66)=-1.50000    !-0.90000
+    !atoms%qat(67)=-6.50000    !-7.10000
+    !atoms%qat(68)=-1.40000    !-1.10000
+    !atoms%qat(69)=-6.60000    !-6.90000
+    !atoms%qat(70)=-1.50000    !-0.90000
+    !atoms%qat(71)=-6.50000    !-7.10000
+    !atoms%qat(72)=-1.40000    !-1.10000
+    !atoms%qat(73)=-6.60000    !-6.90000
+    !atoms%qat(74)=-1.50000    !-0.90000
+    !atoms%qat(75)=-6.50000    !-7.10000
+    !atoms%qat(76)=-1.40000    !-1.10000
+    !atoms%qat(77)=-6.60000    !-6.90000
+    !atoms%qat(78)=-1.50000    !-0.90000
+    !atoms%qat(79)=-6.50000    !-7.10000
+    !atoms%qat(80)=-1.40000    !-1.10000
+    !do iat=1,atoms%nat
+    !    if(trim(atoms%sat(iat))=='Mg') atoms%qat(iat)=-1.d0
+    !    if(trim(atoms%sat(iat))=='O' ) atoms%qat(iat)=-7.d0
+    !enddo
+
+    poisson%pot(:,:,:)=0.d0
+    do iat=1, atoms%nat
+        do ix = 1 , poisson%ngpx
+            do iy = 1 , poisson%ngpy
+                do iz = 1 , poisson%ngpz
+                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dr = sqrt(dx**2+dy**2+dz**2)
+                    linearGridNumber=floor(dr/hgp)
+                    poisson%pot(ix,iy,iz)=poisson%pot(ix,iy,iz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
+                        (poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)&
+                        -poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
+                        +poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))
+                end do
+            end do
+        end do
+    end do !iat
+    poisson%pot=poisson%pot+poisson%pot_ion
+    do iat=1, atoms%nat
+        tt=0.d0
+        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
+        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
+        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
+        do ix = agpx-nbgx,agpx+nbgx
+            do iy = agpy-nbgy,agpy+nbgy
+                do iz = agpz-nbgz,agpz+nbgz
+                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dr = sqrt(dx**2+dy**2+dz**2)
+                    linearGridNumber=floor(dr/hgp)
+                    rho_val=(dr/hgp-linearGridNumber)*&
+                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
+                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
+                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber)
+                    tt=tt+rho_val*poisson%pot(ix,iy,iz)
+                end do
+            end do
+        end do
+        E_par(iat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    end do !iat
+    tt=0.d0
+    do iat=1, atoms%nat
+        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
+        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
+        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
+        do ix = agpx-nbgx,agpx+nbgx
+            do iy = agpy-nbgy,agpy+nbgy
+                do iz = agpz-nbgz,agpz+nbgz
+                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dr = sqrt(dx**2+dy**2+dz**2)
+                    linearGridNumber=floor(dr/hgp)
+                    rho_val=atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
+                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
+                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
+                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
+                        +atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
+                        (poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber+1)&
+                        -poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))&
+                        +poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))
+                    tt=tt+rho_val*poisson%pot(ix,iy,iz)
+                end do
+            end do
+        end do
+    end do !iat
+    U_SRS=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    E_all(atoms%ntrial+1)=U_SRS
+    !write(*,'(a,2es24.15)') 'USRS ',U_SRS,atoms%epot
+    do itrial=1,atoms%ntrial
+        xyz(1:3)=atoms%ratp(1:3,atoms%trial_ref_nat(itrial))+atoms%trial_ref_disp(1:3,itrial)
+        !call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
+        !    poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
+        agpx=int(xyz(1)/poisson%hgrid(1,1))+nbgx
+        agpy=int(xyz(2)/poisson%hgrid(2,2))+nbgy
+        agpz=int(xyz(3)/poisson%hgrid(3,3))+nbgz
+        trial_rho=0.d0
+        do ix = agpx-nbgx,agpx+nbgx
+            do iy = agpy-nbgy,agpy+nbgy
+                do iz = agpz-nbgz,agpz+nbgz
+                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-xyz(1)
+                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-xyz(2)
+                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-xyz(3)
+                    dr = sqrt(dx**2+dy**2+dz**2)
+                    linearGridNumber=floor(dr/hgp)
+                    trial_rho(ix,iy,iz)=1.d0*((dr/hgp-linearGridNumber)*&
+                        (linear_rho_t(linearGridNumber+1)&
+                        -linear_rho_t(linearGridNumber))&
+                        +linear_rho_t(linearGridNumber))
+                end do
+            end do
+        end do
+        tt=0.d0
+        do ix=1,poisson%ngpx
+        do iy=1,poisson%ngpy
+        do iz=1,poisson%ngpz
+            tt=tt+poisson%pot(ix,iy,iz)*trial_rho(ix,iy,iz)
+        enddo
+        enddo
+        enddo
+        tt=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+        !write(*,'(i3,2es24.15)') atoms%trial_ref_nat(itrial),tt,atoms%trial_ref_energy(itrial)
+        E_all(itrial)=tt
+    enddo
+    cf=0.d0
+    do itrial=1,atoms%ntrial
+        cf=cf+(E_all(itrial)-atoms%trial_ref_energy(itrial))**2
+    enddo
+    rmse=1.d3*sqrt(cf/atoms%ntrial)
+    coeff=0.5d0
+    !cf=cf+coeff*(E_all(atoms%ntrial+1)-atoms%epot)**2
+    if(applychi) then
+    do iat=1,atoms%nat
+        cf=cf+1.d-2*(ann_arr%chi_o(iat)-ann_arr%ann(atoms%itypat(iat))%chi0)**2
+    enddo
+    endif
+    g=0.d0
+    do iat=1,atoms%nat
+        do itrial=1,atoms%ntrial
+            tt=0.d0
+            do jat=1,atoms%nat
+                tt=tt+EP(jat,itrial)*ann_arr%Xq(jat,iat)
+            enddo
+            g(iat)=g(iat)+2.d0*tt*(E_all(itrial)-atoms%trial_ref_energy(itrial))
+        enddo
+    enddo
+    !do iat=1,atoms%nat
+    !    tt=0.d0
+    !    do jat=1,atoms%nat
+    !        tt=tt+E_par(jat)*ann_arr%Xq(jat,iat)
+    !    enddo
+    !    g(iat)=g(iat)+coeff*2.d0*tt*(E_all(atoms%ntrial+1)-atoms%epot)
+    !enddo
+    if(applychi) then
+    do iat=1,atoms%nat
+        g(iat)=g(iat)+1.d-2*2.d0*(ann_arr%chi_o(iat)-ann_arr%ann(atoms%itypat(iat))%chi0)
+    enddo
+    endif
+end subroutine prefit_cent2_gradient
+!*****************************************************************************************
+subroutine prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use dynamic_memory
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(inout):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
+    real(8), intent(inout):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
+    !local variables
+    integer:: itrial, iat, jat, kat, ix, iy, iz, iq, istep, nstep
+    integer:: agpx, agpy, agpz
+    integer:: nbgx, nbgy, nbgz, linearGridNumber
+    real(8):: xyz(3), dx, dy, dz, dr, hgp, tt, rho_val, q, cf, rmse, err_U_SRS
+    real(8):: qmax_Mg, qmin_Mg, qmax_O, qmin_O
+    real(8):: cmax_Mg, cmin_Mg, cmax_O, cmin_O
+    qavg_Mg=0.d0
+    qavg_O=0.d0
+    qmax_Mg=-huge(1.d0)
+    qmax_O=-huge(1.d0)
+    qmin_Mg=huge(1.d0)
+    qmin_O=huge(1.d0)
+    cavg_Mg=0.d0
+    cavg_O=0.d0
+    cmax_Mg=-huge(1.d0)
+    cmax_O=-huge(1.d0)
+    cmin_Mg=huge(1.d0)
+    cmin_O=huge(1.d0)
+    do iat=1,atoms%nat
+        if(trim(atoms%sat(iat))=='Mg') then
+            q=atoms%zat(iat)+atoms%qat(iat)
+            qavg_Mg=qavg_Mg+q
+            qmax_Mg=max(qmax_Mg,q)
+            qmin_Mg=min(qmin_Mg,q)
+            cavg_Mg=cavg_Mg+ann_arr%chi_o(iat)
+            cmax_Mg=max(cmax_Mg,ann_arr%chi_o(iat))
+            cmin_Mg=min(cmin_Mg,ann_arr%chi_o(iat))
+
+        endif
+        if(trim(atoms%sat(iat))=='O') then
+            q=atoms%zat(iat)+atoms%qat(iat)
+            qavg_O=qavg_O+q
+            qmax_O=max(qmax_O,q)
+            qmin_O=min(qmin_O,q)
+            cavg_O=cavg_O+ann_arr%chi_o(iat)
+            cmax_O=max(cmax_O,ann_arr%chi_o(iat))
+            cmin_O=min(cmin_O,ann_arr%chi_o(iat))
+        endif
+    enddo
+    qavg_Mg=qavg_Mg/(atoms%nat/2.d0)
+    qavg_O=qavg_O/(atoms%nat/2.d0)
+    qvar_Mg=qmax_Mg-qmin_Mg
+    qvar_O=qmax_O-qmin_O
+    cavg_Mg=cavg_Mg/(atoms%nat/2.d0)
+    cavg_O=cavg_O/(atoms%nat/2.d0)
+    cvar_Mg=cmax_Mg-cmin_Mg
+    cvar_O=cmax_O-cmin_O
+end subroutine prefit_cent2_output
+!*****************************************************************************************

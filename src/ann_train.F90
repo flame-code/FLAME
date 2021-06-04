@@ -107,7 +107,7 @@ subroutine ann_train(parini)
 
     ann_arr%compute_symfunc=.false.
     !if(parini%prefit_ann .and. trim(parini%approach_ann)=='centt') then
-    if(parini%prefit_ann ) then
+    if(parini%prefit_ann .and. trim(parini%approach_ann)=='cent1') then
         !call prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
         call prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     endif
