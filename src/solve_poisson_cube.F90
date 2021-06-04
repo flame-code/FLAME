@@ -251,7 +251,8 @@ subroutine solve_poisson_cube_bigdft(parini)
         poisson_ion%rcart(1,iat)=xyz(1)+dxyz(1)
         poisson_ion%rcart(2,iat)=xyz(2)+dxyz(2)
         poisson_ion%rcart(3,iat)=xyz(3)+dxyz(3)
-        call put_charge_density(parini,poisson_ion)
+        call put_gto_sym_ortho(parini,poisson_ion%bc,.true.,1,poisson_ion%rcart(1,iat),1.d0,1.d0, &
+            6.d0,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz,poisson_ion%hgrid,poisson_ion%rho)
         poisson_ion%rcart(1:3,iat)=xyz(1:3)
         epot_trial=0.d0
         do igpz=1,poisson%ngpz
