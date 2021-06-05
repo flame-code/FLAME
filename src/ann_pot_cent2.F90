@@ -906,7 +906,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     !local variables
     integer:: itrial, iat, jat, kat, ix, iy, iz, iq, istep, nstep, ii
     integer:: agpx, agpy, agpz
-    integer:: nbgx, nbgy, nbgz, linearGridNumber
+    integer:: nbgx, nbgy, nbgz, linearGridNumber, info
     real(8):: xyz(3), dx, dy, dz, dr, hgp, tt, rho_val, q, cf, rmse, err_U_SRS
     real(8):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
     real(8):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
@@ -916,6 +916,9 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     real(8), allocatable:: E_all(:), g(:), gt(:), h(:), chi_old(:)
     real(8), allocatable:: rho_ion(:,:,:)
     real(8), allocatable:: linear_rho_t(:)
+    real(8), allocatable:: amat(:,:), amat_t(:,:)
+    real(8), allocatable :: real_eigenval(:), work(:)
+    real(8), allocatable :: EP_n(:)
     real(8):: gausswidth(80)
     logical, save:: done=.false.
     if(done) return
@@ -928,6 +931,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     !        atoms%trial_ref_disp(1,itrial),atoms%trial_ref_disp(2,itrial), &
     !        atoms%trial_ref_disp(3,itrial),atoms%trial_ref_energy(itrial)
     !enddo
+    allocate(EP_n(atoms%ntrial))
     allocate(linear_rho_t(0:poisson%ngp))
     do ii=0,poisson%ngp
         tt= ii*hgp
@@ -1040,10 +1044,61 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
                 enddo
                 enddo
                 EP(iat,itrial)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+                if(iat==1) then
+                    tt=0.d0
+                    do ix=1,poisson%ngpx
+                    do iy=1,poisson%ngpy
+                    do iz=1,poisson%ngpz
+                        tt=tt+poisson%pot_ion(ix,iy,iz)*trial_rho(ix,iy,iz)
+                    enddo
+                    enddo
+                    enddo
+                    EP_n(itrial)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+                endif
             enddo
         end do !iat
     !endif
     !-----------------------------------------------------------------
+    allocate(amat(atoms%nat,atoms%nat))
+    allocate(amat_t(atoms%nat+1,atoms%nat+1))
+    allocate(real_eigenval(1:atoms%nat),work(atoms%nat*atoms%nat))
+    amat=0.d0
+    amat_t=0.d0
+    do iat=1,atoms%nat
+        do jat=1,atoms%nat
+            tt=0.d0
+            do itrial=1,atoms%ntrial
+                tt=tt+2.d0*EP(iat,itrial)*EP(jat,itrial)
+            enddo
+            amat(iat,jat)=tt
+            amat_t(iat,jat)=tt
+        enddo
+    enddo
+    call DSYEV('N','U',atoms%nat,amat,atoms%nat,real_eigenval,work,atoms%nat**2,info)
+    do iat=1,atoms%nat
+        write(*,'(a,i6,es14.5)') 'EVAL ',iat,real_eigenval(iat)
+    enddo
+    amat_t(1:atoms%nat,atoms%nat+1)=1.d0
+    amat_t(atoms%nat+1,1:atoms%nat)=1.d0
+    amat_t(atoms%nat+1,atoms%nat+1)=0.d0
+    call DGETRF(nat+1,nat+1,amat_t,nat+1,ann_arr%ipiv,info)
+    ann_arr%qq(nat+1)=-sum(atoms%zat)
+    do iat=1,nat
+        tt=0.d0
+        do itrial=1,atoms%ntrial
+            tt=tt+2.d0*EP(iat,itrial)*(atoms%trial_ref_energy(itrial)-EP_n(itrial))
+        enddo
+        ann_arr%qq(iat)=tt
+    enddo
+    call DGETRS('N',nat+1,1,amat_t,nat+1,ann_arr%ipiv,ann_arr%qq,nat+1,info)
+    do iat=1,atoms%nat
+        write(*,'(a,i6,f7.3)') 'QQQ ',iat,atoms%zat(iat)+ann_arr%qq(iat)
+    enddo
+    deallocate(EP_n)
+    deallocate(amat)
+    deallocate(amat_t)
+    deallocate(real_eigenval,work)
+    stop 'EEEEEEEEEEEEEE'
     !-----------------------------------------------------------------
     ann_arr%chi_o( 1)= -0.43 !-0.47d0
     ann_arr%chi_o( 2)=  0.52 ! 0.53d0
