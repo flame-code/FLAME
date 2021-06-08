@@ -1098,7 +1098,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     deallocate(amat)
     deallocate(amat_t)
     deallocate(real_eigenval,work)
-    stop 'EEEEEEEEEEEEEE'
+    !stop 'EEEEEEEEEEEEEE'
     !-----------------------------------------------------------------
     ann_arr%chi_o( 1)= -0.43 !-0.47d0
     ann_arr%chi_o( 2)=  0.52 ! 0.53d0
@@ -1196,6 +1196,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
         call prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,linear_rho_t,hgp,.true.,EP,cf,rmse,E_all,g)
         call prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
         err_U_SRS=1.d3*(E_all(atoms%ntrial+1)-atoms%epot)/nat
+        write(*,'(a,2es24.15)') 'USRS ',E_all(atoms%ntrial+1),atoms%epot
         !write(*,'(a,i6,2f10.5,es14.5,8f6.2)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
         write(*,'(a,i6,2f10.3,es14.5,8f6.2)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
             qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O
@@ -1203,7 +1204,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
             do itrial=1,atoms%ntrial
                 write(*,'(a,i3,2es24.15)') 'ETS ',atoms%trial_ref_nat(itrial),E_all(itrial),atoms%trial_ref_energy(itrial)
             enddo
-            !stop 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'
+            stop 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'
         endif
 
         !if(istep<100) then
@@ -1303,86 +1304,87 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
     allocate(E_par(atoms%nat))
     allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
     call get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
-    !atoms%qat( 1)=-1.50000    !-0.90000
-    !atoms%qat( 2)=-6.60000    !-6.90000
-    !atoms%qat( 3)=-1.40000    !-1.10000
-    !atoms%qat( 4)=-6.50000    !-7.10000
-    !atoms%qat( 5)=-1.50000    !-0.90000
-    !atoms%qat( 6)=-6.60000    !-6.90000
-    !atoms%qat( 7)=-1.40000    !-1.10000
-    !atoms%qat( 8)=-6.50000    !-7.10000
-    !atoms%qat( 9)=-1.50000    !-0.90000
-    !atoms%qat(10)=-6.60000    !-6.90000
-    !atoms%qat(11)=-1.40000    !-1.10000
-    !atoms%qat(12)=-6.50000    !-7.10000
-    !atoms%qat(13)=-1.50000    !-0.90000
-    !atoms%qat(14)=-6.60000    !-6.90000
-    !atoms%qat(15)=-1.40000    !-1.10000
-    !atoms%qat(16)=-6.50000    !-7.10000
-    !atoms%qat(17)=-1.50000    !-0.90000
-    !atoms%qat(18)=-6.60000    !-6.90000
-    !atoms%qat(19)=-1.40000    !-1.10000
-    !atoms%qat(20)=-6.50000    !-7.10000
-    !atoms%qat(21)=-6.60000    !-6.90000
-    !atoms%qat(22)=-1.50000    !-0.90000
-    !atoms%qat(23)=-6.50000    !-7.10000
-    !atoms%qat(24)=-1.40000    !-1.10000
-    !atoms%qat(25)=-6.60000    !-6.90000
-    !atoms%qat(26)=-1.50000    !-0.90000
-    !atoms%qat(27)=-6.50000    !-7.10000
-    !atoms%qat(28)=-1.40000    !-1.10000
-    !atoms%qat(29)=-6.60000    !-6.90000
-    !atoms%qat(30)=-1.50000    !-0.90000
-    !atoms%qat(31)=-6.50000    !-7.10000
-    !atoms%qat(32)=-1.40000    !-1.10000
-    !atoms%qat(33)=-6.60000    !-6.90000
-    !atoms%qat(34)=-1.50000    !-0.90000
-    !atoms%qat(35)=-6.50000    !-7.10000
-    !atoms%qat(36)=-1.40000    !-1.10000
-    !atoms%qat(37)=-6.60000    !-6.90000
-    !atoms%qat(38)=-1.50000    !-0.90000
-    !atoms%qat(39)=-6.50000    !-7.10000
-    !atoms%qat(40)=-1.40000    !-1.10000
-    !atoms%qat(41)=-1.50000    !-0.90000
-    !atoms%qat(42)=-6.60000    !-6.90000
-    !atoms%qat(43)=-1.40000    !-1.10000
-    !atoms%qat(44)=-6.50000    !-7.10000
-    !atoms%qat(45)=-1.50000    !-0.90000
-    !atoms%qat(46)=-6.60000    !-6.90000
-    !atoms%qat(47)=-1.40000    !-1.10000
-    !atoms%qat(48)=-6.50000    !-7.10000
-    !atoms%qat(49)=-1.50000    !-0.90000
-    !atoms%qat(50)=-6.60000    !-6.90000
-    !atoms%qat(51)=-1.40000    !-1.10000
-    !atoms%qat(52)=-6.50000    !-7.10000
-    !atoms%qat(53)=-1.50000    !-0.90000
-    !atoms%qat(54)=-6.60000    !-6.90000
-    !atoms%qat(55)=-1.40000    !-1.10000
-    !atoms%qat(56)=-6.50000    !-7.10000
-    !atoms%qat(57)=-1.50000    !-0.90000
-    !atoms%qat(58)=-6.60000    !-6.90000
-    !atoms%qat(59)=-1.40000    !-1.10000
-    !atoms%qat(60)=-6.50000    !-7.10000
-    !atoms%qat(61)=-6.60000    !-6.90000
-    !atoms%qat(62)=-1.50000    !-0.90000
-    !atoms%qat(63)=-6.50000    !-7.10000
-    !atoms%qat(64)=-1.40000    !-1.10000
-    !atoms%qat(65)=-6.60000    !-6.90000
-    !atoms%qat(66)=-1.50000    !-0.90000
-    !atoms%qat(67)=-6.50000    !-7.10000
-    !atoms%qat(68)=-1.40000    !-1.10000
-    !atoms%qat(69)=-6.60000    !-6.90000
-    !atoms%qat(70)=-1.50000    !-0.90000
-    !atoms%qat(71)=-6.50000    !-7.10000
-    !atoms%qat(72)=-1.40000    !-1.10000
-    !atoms%qat(73)=-6.60000    !-6.90000
-    !atoms%qat(74)=-1.50000    !-0.90000
-    !atoms%qat(75)=-6.50000    !-7.10000
-    !atoms%qat(76)=-1.40000    !-1.10000
-    !atoms%qat(77)=-6.60000    !-6.90000
-    !atoms%qat(78)=-1.50000    !-0.90000
-    !atoms%qat(79)=-6.50000    !-7.10000
-    !atoms%qat(80)=-1.40000    !-1.10000
+    atoms%qat(1:atoms%nat)=ann_arr%qq(1:atoms%nat)
+    !atoms%qat( 1)=  0.941-atoms%zat( 1) !-1.50000    !-0.90000
+    !atoms%qat( 2)= -0.895-atoms%zat( 2) !-6.60000    !-6.90000
+    !atoms%qat( 3)=  0.899-atoms%zat( 3) !-1.40000    !-1.10000
+    !atoms%qat( 4)= -0.879-atoms%zat( 4) !-6.50000    !-7.10000
+    !atoms%qat( 5)=  0.852-atoms%zat( 5) !-1.50000    !-0.90000
+    !atoms%qat( 6)= -0.850-atoms%zat( 6) !-6.60000    !-6.90000
+    !atoms%qat( 7)=  0.681-atoms%zat( 7) !-1.40000    !-1.10000
+    !atoms%qat( 8)= -0.757-atoms%zat( 8) !-6.50000    !-7.10000
+    !atoms%qat( 9)=  0.738-atoms%zat( 9) !-1.50000    !-0.90000
+    !atoms%qat(10)= -0.868-atoms%zat(10) !-6.60000    !-6.90000
+    !atoms%qat(11)=  0.801-atoms%zat(11) !-1.40000    !-1.10000
+    !atoms%qat(12)= -0.733-atoms%zat(12) !-6.50000    !-7.10000
+    !atoms%qat(13)=  0.781-atoms%zat(13) !-1.50000    !-0.90000
+    !atoms%qat(14)= -0.851-atoms%zat(14) !-6.60000    !-6.90000
+    !atoms%qat(15)=  1.080-atoms%zat(15) !-1.40000    !-1.10000
+    !atoms%qat(16)= -0.881-atoms%zat(16) !-6.50000    !-7.10000
+    !atoms%qat(17)=  0.878-atoms%zat(17) !-1.50000    !-0.90000
+    !atoms%qat(18)= -0.839-atoms%zat(18) !-6.60000    !-6.90000
+    !atoms%qat(19)=  0.890-atoms%zat(19) !-1.40000    !-1.10000
+    !atoms%qat(20)= -0.987-atoms%zat(20) !-6.50000    !-7.10000
+    !atoms%qat(21)= -0.972-atoms%zat(21) !-6.60000    !-6.90000
+    !atoms%qat(22)=  0.929-atoms%zat(22) !-1.50000    !-0.90000
+    !atoms%qat(23)= -0.794-atoms%zat(23) !-6.50000    !-7.10000
+    !atoms%qat(24)=  0.850-atoms%zat(24) !-1.40000    !-1.10000
+    !atoms%qat(25)= -0.869-atoms%zat(25) !-6.60000    !-6.90000
+    !atoms%qat(26)=  0.870-atoms%zat(26) !-1.50000    !-0.90000
+    !atoms%qat(27)= -0.668-atoms%zat(27) !-6.50000    !-7.10000
+    !atoms%qat(28)=  0.586-atoms%zat(28) !-1.40000    !-1.10000
+    !atoms%qat(29)= -0.740-atoms%zat(29) !-6.60000    !-6.90000
+    !atoms%qat(30)=  0.870-atoms%zat(30) !-1.50000    !-0.90000
+    !atoms%qat(31)= -0.775-atoms%zat(31) !-6.50000    !-7.10000
+    !atoms%qat(32)=  0.710-atoms%zat(32) !-1.40000    !-1.10000
+    !atoms%qat(33)= -0.578-atoms%zat(33) !-6.60000    !-6.90000
+    !atoms%qat(34)=  0.680-atoms%zat(34) !-1.50000    !-0.90000
+    !atoms%qat(35)= -0.921-atoms%zat(35) !-6.50000    !-7.10000
+    !atoms%qat(36)=  0.895-atoms%zat(36) !-1.40000    !-1.10000
+    !atoms%qat(37)= -0.806-atoms%zat(37) !-6.60000    !-6.90000
+    !atoms%qat(38)=  0.707-atoms%zat(38) !-1.50000    !-0.90000
+    !atoms%qat(39)= -0.793-atoms%zat(39) !-6.50000    !-7.10000
+    !atoms%qat(40)=  0.945-atoms%zat(40) !-1.40000    !-1.10000
+    !atoms%qat(41)=  1.056-atoms%zat(41) !-1.50000    !-0.90000
+    !atoms%qat(42)= -0.893-atoms%zat(42) !-6.60000    !-6.90000
+    !atoms%qat(43)=  0.870-atoms%zat(43) !-1.40000    !-1.10000
+    !atoms%qat(44)= -0.854-atoms%zat(44) !-6.50000    !-7.10000
+    !atoms%qat(45)=  0.873-atoms%zat(45) !-1.50000    !-0.90000
+    !atoms%qat(46)= -0.786-atoms%zat(46) !-6.60000    !-6.90000
+    !atoms%qat(47)=  0.419-atoms%zat(47) !-1.40000    !-1.10000
+    !atoms%qat(48)= -0.610-atoms%zat(48) !-6.50000    !-7.10000
+    !atoms%qat(49)=  0.659-atoms%zat(49) !-1.50000    !-0.90000
+    !atoms%qat(50)= -0.744-atoms%zat(50) !-6.60000    !-6.90000
+    !atoms%qat(51)=  0.723-atoms%zat(51) !-1.40000    !-1.10000
+    !atoms%qat(52)= -0.627-atoms%zat(52) !-6.50000    !-7.10000
+    !atoms%qat(53)=  0.405-atoms%zat(53) !-1.50000    !-0.90000
+    !atoms%qat(54)= -0.607-atoms%zat(54) !-6.60000    !-6.90000
+    !atoms%qat(55)=  0.885-atoms%zat(55) !-1.40000    !-1.10000
+    !atoms%qat(56)= -0.861-atoms%zat(56) !-6.50000    !-7.10000
+    !atoms%qat(57)=  0.797-atoms%zat(57) !-1.50000    !-0.90000
+    !atoms%qat(58)= -0.733-atoms%zat(58) !-6.60000    !-6.90000
+    !atoms%qat(59)=  0.752-atoms%zat(59) !-1.40000    !-1.10000
+    !atoms%qat(60)= -0.897-atoms%zat(60) !-6.50000    !-7.10000
+    !atoms%qat(61)= -1.009-atoms%zat(61) !-6.60000    !-6.90000
+    !atoms%qat(62)=  0.970-atoms%zat(62) !-1.50000    !-0.90000
+    !atoms%qat(63)= -0.886-atoms%zat(63) !-6.50000    !-7.10000
+    !atoms%qat(64)=  0.980-atoms%zat(64) !-1.40000    !-1.10000
+    !atoms%qat(65)= -0.882-atoms%zat(65) !-6.60000    !-6.90000
+    !atoms%qat(66)=  1.004-atoms%zat(66) !-1.50000    !-0.90000
+    !atoms%qat(67)= -0.852-atoms%zat(67) !-6.50000    !-7.10000
+    !atoms%qat(68)=  0.744-atoms%zat(68) !-1.40000    !-1.10000
+    !atoms%qat(69)= -0.785-atoms%zat(69) !-6.60000    !-6.90000
+    !atoms%qat(70)=  0.674-atoms%zat(70) !-1.50000    !-0.90000
+    !atoms%qat(71)= -0.866-atoms%zat(71) !-6.50000    !-7.10000
+    !atoms%qat(72)=  0.735-atoms%zat(72) !-1.40000    !-1.10000
+    !atoms%qat(73)= -0.685-atoms%zat(73) !-6.60000    !-6.90000
+    !atoms%qat(74)=  0.661-atoms%zat(74) !-1.50000    !-0.90000
+    !atoms%qat(75)= -0.779-atoms%zat(75) !-6.50000    !-7.10000
+    !atoms%qat(76)=  0.937-atoms%zat(76) !-1.40000    !-1.10000
+    !atoms%qat(77)= -0.849-atoms%zat(77) !-6.60000    !-6.90000
+    !atoms%qat(78)=  0.926-atoms%zat(78) !-1.50000    !-0.90000
+    !atoms%qat(79)= -0.909-atoms%zat(79) !-6.50000    !-7.10000
+    !atoms%qat(80)=  0.916-atoms%zat(80) !-1.40000    !-1.10000
     !do iat=1,atoms%nat
     !    if(trim(atoms%sat(iat))=='Mg') atoms%qat(iat)=-1.d0
     !    if(trim(atoms%sat(iat))=='O' ) atoms%qat(iat)=-7.d0

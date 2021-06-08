@@ -127,11 +127,15 @@ subroutine solve_poisson_cube_bigdft(parini)
     type(typ_poisson):: poisson_scn
     type(typ_poisson):: poisson_ion
     type(typ_atoms):: atoms
-    integer:: istat, igpx, igpy, igpz, iat
+    integer:: istat, igpx, igpy, igpz, iat, ntrial, itrial, nsegx, nsegy, nsegz
+    integer:: jgpx, jgpy, jgpz
     real(8):: epot, rgcut_a, qtot, pi!, qtot_e, qtot_i
     real(8):: epot_scn, ehartree_scn_excl, tt1, tt2
-    real(8):: xyz(3), dxyz(3), epot_trial
-    real(8),allocatable::  gausswidth(:)
+    real(8):: xyz(3), dxyz(3), epot_trial, gwt
+    real(8):: dx, dy, dz, r2, coeff, rloc, c1, c2
+    real(8):: xmin, ymin, zmin, xmax, ymax, zmax
+    real(8), allocatable::  gausswidth(:)
+    real(8), allocatable::  rat_trial(:,:)
     integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
     !real(8) :: xyz(3)
     !integer:: ny,nz
@@ -185,7 +189,67 @@ subroutine solve_poisson_cube_bigdft(parini)
     poisson_ion%q(1:poisson_ion%nat)=atoms%zat(1:atoms%nat)
     poisson_ion%gw(1:poisson_ion%nat)=gausswidth(1:atoms%nat)
     call get_rat(atoms,poisson_ion%rcart)
-    call put_charge_density(parini,poisson_ion)
+    !call put_charge_density(parini,poisson_ion)
+    nbgpx=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(1,1))+2
+    nbgpy=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(2,2))+2
+    nbgpz=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(3,3))+2
+    poisson_ion%rho=0.d0
+    do iat=1,atoms%nat
+    !if(trim(atoms%sat(iat))=='Mg') gwt=0.6d0
+    !if(trim(atoms%sat(iat))=='O' ) gwt=0.3d0
+    gwt=gausswidth(iat)
+    coeff=atoms%zat(iat)/(gwt**3*pi**1.5d0)
+    !coeff=atoms%zat(iat)*2.d0/(3.d0*gwt**5*pi**1.5d0)
+    !coeff=atoms%zat(iat)*4.d0/(15.d0*gwt**7*pi**1.5d0)
+    if(trim(atoms%sat(iat))=='Mg') then
+        !0.65406138674  2 -5.223929095  0.913704167481045 rloc nloc c1 .. cnloc
+        rloc=0.65406138674d0
+        c1=-5.223929095d0
+        c2=0.913704167481045d0
+    endif
+    if(trim(atoms%sat(iat))=='O') then
+        !0.3454999999    2 -11.7435870154  1.90653967947 rloc nloc c1 .. cnloc
+        rloc=0.3454999999d0
+        c1=-11.7435870154d0
+        c2=1.90653967947d0
+    endif
+    !c1=-c1
+    !c2=-c2
+    jgpx=int(poisson_ion%rcart(1,iat)/poisson%hgrid(1,1))
+    jgpy=int(poisson_ion%rcart(2,iat)/poisson%hgrid(2,2))
+    jgpz=int(poisson_ion%rcart(3,iat)/poisson%hgrid(3,3))
+    do igpz=jgpz-nbgpz,jgpz+nbgpz
+    do igpy=jgpy-nbgpy,jgpy+nbgpy
+    do igpx=jgpx-nbgpx,jgpx+nbgpx
+        dx=(igpx-1)*poisson%hgrid(1,1)-poisson_ion%rcart(1,iat)
+        dy=(igpy-1)*poisson%hgrid(2,2)-poisson_ion%rcart(2,iat)
+        dz=(igpz-1)*poisson%hgrid(3,3)-poisson_ion%rcart(3,iat)
+        r2=dx**2+dy**2+dz**2
+        if(r2<10.d0**2*gwt**2) then
+        !if(r2<10.d0**2*rloc**2) then
+            poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*exp(-r2/gwt**2)
+            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2*exp(-r2/gwt**2)
+            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2**2*exp(-r2/gwt**2)
+            !tt1=exp(-r2/(2.d0*rloc**2))
+            !tt2=-3.d0*rloc**4*(c1-2.d0*c2)+rloc**2*(c1-7.d0*c2)*r2+c2*r2**2+rloc**3*sqrt(2.d0/pi)*atoms%zat(iat)
+            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+tt1*tt2/(4.d0*rloc**6*pi)
+        endif
+    enddo
+    enddo
+    enddo
+    enddo
+    tt1=0.d0
+    do igpz=1,poisson%ngpz
+    do igpy=1,poisson%ngpy
+    do igpx=1,poisson%ngpx
+        tt1=tt1+poisson_ion%rho(igpx,igpy,igpz)
+        !write(33,'(3i5,f8.5)') igpx,igpy,igpz,poisson_ion%rho(igpx,igpy,igpz)
+    enddo
+    enddo
+    enddo
+    tt1=tt1*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
+    write(*,*) 'TT1 ',tt1
+    !stop 'WWWWWWWWWWWWWWW'
     !-------------------------------------------------------
     !call get_rat_iat(atoms,1,xyz)
     !ny=int(xyz(2)/poisson%hgrid(2,2)) 
@@ -217,6 +281,7 @@ subroutine solve_poisson_cube_bigdft(parini)
     !            qtot_e=qtot_e+poisson%rho(igpx,igpy,igpz)
     !            qtot_i=qtot_i+poisson_ion%rho(igpx,igpy,igpz)
                 poisson%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)-poisson%rho(igpx,igpy,igpz)
+                !poisson%rho(igpx,igpy,igpz)=-poisson%rho(igpx,igpy,igpz)
                 qtot=qtot+poisson%rho(igpx,igpy,igpz)
             enddo
         enddo
@@ -234,26 +299,59 @@ subroutine solve_poisson_cube_bigdft(parini)
      write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',epot,poisson%screening_factor
     !-------------------------------------------------------
     poisson_ion%gw(1:poisson_ion%nat)=1.d0
+    xmin= huge(1.d0)
+    ymin= huge(1.d0)
+    zmin= huge(1.d0)
+    xmax=-huge(1.d0)
+    ymax=-huge(1.d0)
+    zmax=-huge(1.d0)
     do iat=1,atoms%nat
-        do iz=-1,1
-        do iy=-1,1
-        do ix=-1,1
-        dxyz(1)=ix*0.9d0
-        dxyz(2)=iy*0.9d0
-        dxyz(3)=iz*0.9d0
-        !if(ix>3) dxyz(1)=(ix-7)*0.3d0
-        !if(iy>3) dxyz(2)=(iy-7)*0.3d0
-        !if(iz>3) dxyz(3)=(iz-7)*0.3d0
-        poisson_ion%q(1:poisson_ion%nat)=0.d0
-        poisson_ion%q(iat)=1.d0
-        poisson_ion%rho=0.d0
-        xyz(1:3)=poisson_ion%rcart(1:3,iat)
-        poisson_ion%rcart(1,iat)=xyz(1)+dxyz(1)
-        poisson_ion%rcart(2,iat)=xyz(2)+dxyz(2)
-        poisson_ion%rcart(3,iat)=xyz(3)+dxyz(3)
-        call put_gto_sym_ortho(parini,poisson_ion%bc,.true.,1,poisson_ion%rcart(1,iat),1.d0,1.d0, &
+        if(poisson_ion%rcart(1,iat)<xmin) xmin=poisson_ion%rcart(1,iat)
+        if(poisson_ion%rcart(2,iat)<ymin) ymin=poisson_ion%rcart(2,iat)
+        if(poisson_ion%rcart(3,iat)<zmin) zmin=poisson_ion%rcart(3,iat)
+        if(poisson_ion%rcart(1,iat)>xmax) xmax=poisson_ion%rcart(1,iat)
+        if(poisson_ion%rcart(2,iat)>ymax) ymax=poisson_ion%rcart(2,iat)
+        if(poisson_ion%rcart(3,iat)>zmax) zmax=poisson_ion%rcart(3,iat)
+    enddo
+    dxyz(1)=1.5d0
+    dxyz(2)=1.5d0
+    dxyz(3)=1.5d0
+    nsegx=int((poisson%hgrid(1,1)*poisson%ngpx-16.d0)/dxyz(1))+1
+    nsegy=int((poisson%hgrid(2,2)*poisson%ngpy-16.d0)/dxyz(2))+1
+    nsegz=int((poisson%hgrid(3,3)*poisson%ngpz-16.d0)/dxyz(3))+1
+    dxyz(1)=(poisson%hgrid(1,1)*poisson%ngpx-16.d0)/real(nsegx,kind=8)
+    dxyz(2)=(poisson%hgrid(2,2)*poisson%ngpy-16.d0)/real(nsegy,kind=8)
+    dxyz(3)=(poisson%hgrid(3,3)*poisson%ngpz-16.d0)/real(nsegz,kind=8)
+    !nseg=10
+    !ntrial=(nseg+1)**3
+    ntrial=(nsegx+1)*(nsegy+1)*(nsegz+1)
+    write(*,'(a,3i3,i6)') 'nsegx,nsegy,nsegz,ntrial ',nsegx,nsegy,nsegz,ntrial
+    !ntrial=atoms%nat
+    allocate(rat_trial(3,ntrial))
+    itrial=0
+    do iz=0,nsegz
+    do iy=0,nsegy
+    do ix=0,nsegx
+        itrial=itrial+1
+        rat_trial(1,itrial)=8.d0+dxyz(1)*ix
+        rat_trial(2,itrial)=8.d0+dxyz(2)*iy
+        rat_trial(3,itrial)=8.d0+dxyz(3)*iz
+    enddo
+    enddo
+    enddo
+    !itrial=0
+    !do iat=1,atoms%nat
+    !    itrial=itrial+1
+    !    rat_trial(1,itrial)=poisson_ion%rcart(1,iat)
+    !    rat_trial(2,itrial)=poisson_ion%rcart(2,iat)
+    !    rat_trial(3,itrial)=poisson_ion%rcart(3,iat)
+    !enddo
+    do itrial=1,ntrial
+        xyz(1)=rat_trial(1,itrial)-poisson_ion%rcart(1,1)
+        xyz(2)=rat_trial(2,itrial)-poisson_ion%rcart(2,1)
+        xyz(3)=rat_trial(3,itrial)-poisson_ion%rcart(3,1)
+        call put_gto_sym_ortho(parini,poisson_ion%bc,.true.,1,rat_trial(1,itrial),1.d0,1.d0, &
             6.d0,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz,poisson_ion%hgrid,poisson_ion%rho)
-        poisson_ion%rcart(1:3,iat)=xyz(1:3)
         epot_trial=0.d0
         do igpz=1,poisson%ngpz
         do igpy=1,poisson%ngpy
@@ -268,12 +366,14 @@ subroutine solve_poisson_cube_bigdft(parini)
         !    !write(*,'(a,i5,es24.15,es14.5)') 'iat,epot_trial ',iat,epot_trial,poisson%screening_factor
         !else
         !    write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial-epot_trial0,poisson%screening_factor
-            write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial,poisson%screening_factor
+            write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',1,xyz(1),xyz(2),xyz(3),epot_trial,poisson%screening_factor
+            write(71,'(a,i3,4(a2,es24.15),a)') '  - [',1,', ',xyz(1),', ',xyz(2),', ',xyz(3),', ',epot_trial,']'
         !endif
-        enddo
-        enddo
-        enddo
     enddo
+    write(*,'(a,6f8.1)') 'MINMAX ',xmin,ymin,zmin,xmax,ymax,zmax
+    write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(1,1)*poisson%ngpx
+    write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(2,2)*poisson%ngpy
+    write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(3,3)*poisson%ngpz
     !-------------------------------------------------------
     !call cube_write('total_rho.cube',atoms,poisson,'rho')
     !call cube_write('total_pot.cube',atoms,poisson,'pot')
