@@ -296,7 +296,15 @@ subroutine solve_poisson_cube_bigdft(parini)
     !-------------------------------------------------------
     call update_ratp(atoms)
     call get_hartree(parini,poisson,atoms,gausswidth,epot)
-     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',epot,poisson%screening_factor
+    write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',epot,poisson%screening_factor
+    atoms%fat=0.d0
+    call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
+        poisson_ion%q,gausswidth,6.d0, &
+        poisson_ion%ngpx,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
+        poisson_ion%hgrid,poisson%pot,atoms%fat)
+    do iat=1,atoms%nat
+        write(*,'(a,i4,3es19.10)') 'FAT ',iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
+    enddo
     !-------------------------------------------------------
     poisson_ion%gw(1:poisson_ion%nat)=1.d0
     xmin= huge(1.d0)
