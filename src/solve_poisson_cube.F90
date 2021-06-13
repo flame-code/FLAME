@@ -176,6 +176,7 @@ subroutine solve_poisson_cube_bigdft(parini)
     poisson_ion%hgrid(1,1)=poisson%hgrid(1,1)
     poisson_ion%hgrid(2,2)=poisson%hgrid(2,2)
     poisson_ion%hgrid(3,3)=poisson%hgrid(3,3)
+    poisson_ion%xyz111=poisson%xyz111
     rgcut_a=parini%rgcut_ewald*maxval(gausswidth) !parini%gaussian_width !3.d0
     nbgpx=int(rgcut_a/poisson_ion%hgrid(1,1))+2
     nbgpy=int(rgcut_a/poisson_ion%hgrid(2,2))+2
@@ -299,7 +300,7 @@ subroutine solve_poisson_cube_bigdft(parini)
     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',epot,poisson%screening_factor
     atoms%fat=0.d0
     call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
-        poisson_ion%q,gausswidth,6.d0, &
+        poisson_ion%q,gausswidth,6.d0,poisson_ion%xyz111, &
         poisson_ion%ngpx,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
         poisson_ion%hgrid,poisson%pot,atoms%fat)
     do iat=1,atoms%nat
@@ -359,7 +360,7 @@ subroutine solve_poisson_cube_bigdft(parini)
         xyz(2)=rat_trial(2,itrial)-poisson_ion%rcart(2,1)
         xyz(3)=rat_trial(3,itrial)-poisson_ion%rcart(3,1)
         call put_gto_sym_ortho(parini,poisson_ion%bc,.true.,1,rat_trial(1,itrial),1.d0,1.d0, &
-            6.d0,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz,poisson_ion%hgrid,poisson_ion%rho)
+            6.d0,poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz,poisson_ion%hgrid,poisson_ion%rho)
         epot_trial=0.d0
         do igpz=1,poisson%ngpz
         do igpy=1,poisson%ngpy
@@ -375,7 +376,7 @@ subroutine solve_poisson_cube_bigdft(parini)
         !else
         !    write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial-epot_trial0,poisson%screening_factor
             write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',1,xyz(1),xyz(2),xyz(3),epot_trial,poisson%screening_factor
-            write(71,'(a,i3,4(a2,es24.15),a)') '  - [',1,', ',xyz(1),', ',xyz(2),', ',xyz(3),', ',epot_trial,']'
+            write(71,'(a,i3,4(a2,es24.15),a,es14.5,a)') '  - [',1,', ',xyz(1),', ',xyz(2),', ',xyz(3),', ',epot_trial,', ',poisson%screening_factor,']'
         !endif
     enddo
     write(*,'(a,6f8.1)') 'MINMAX ',xmin,ymin,zmin,xmax,ymax,zmax

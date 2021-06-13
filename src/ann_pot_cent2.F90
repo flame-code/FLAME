@@ -298,9 +298,9 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
             do igx = 1 , poisson%ngpx
                 do igy = 1 , poisson%ngpy
                     do igz = 1 , poisson%ngpz
-                        dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                        dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                        dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                        dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         poisson%pot_ion(igx,igy,igz)=poisson%pot_ion(igx,igy,igz)+atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
@@ -358,9 +358,9 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
         do igz=agpz-nbgz,agpz+nbgz
         do igy=agpy-nbgy,agpy+nbgy
         do igx=agpx-nbgx,agpx+nbgx
-            dx=(-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-            dy=(-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-            dz=(-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+            dx=poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+            dy=poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+            dz=poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
             dr=sqrt(dx**2+dy**2+dz**2)
             linearGridNumber=floor(dr/hgp)
             rho_e_p1=poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)
@@ -374,9 +374,9 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
         do igz=1,poisson%ngpz
         do igy=1,poisson%ngpy
         do igx=1,poisson%ngpx
-            dx=(-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-            dy=(-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-            dz=(-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+            dx=poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+            dy=poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+            dz=poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
             dr=sqrt(dx**2+dy**2+dz**2)
             linearGridNumber=floor(dr/hgp)
             pot_e_p1=poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)
@@ -507,9 +507,9 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
         do igx = agpx-nbgx,agpx+nbgx
             do igy = agpy-nbgy,agpy+nbgy
                 do igz = agpz-nbgz,agpz+nbgz
-                    dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=(dr/hgp-linearGridNumber)*&
@@ -573,9 +573,9 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
         do igx = 1 , poisson%ngpx
             do igy = 1 , poisson%ngpy
                 do igz = 1 , poisson%ngpz
-                    dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     poisson%pot(igx,igy,igz)=poisson%pot(igx,igy,igz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
@@ -617,7 +617,7 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
         trial_qat(atoms%trial_ref_nat(1))=1.d0
         trial_gw=1.d0
         call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
-                poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
+                poisson%rgcut,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
         !write(*,*) 'trial_rho',maxval(trial_rho),maxloc(trial_rho)
         do iat=1, nat
             tt=0.d0
@@ -630,9 +630,9 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
             do igx=1,poisson%ngpx
                 do igy=1,poisson%ngpy
                     do igz=1,poisson%ngpz
-                        dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                        dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                        dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                        dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         pot_val=(dr/hgp-linearGridNumber)*&
@@ -751,9 +751,9 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
             do igx = 1 , poisson%ngpx
                 do igy = 1 , poisson%ngpy
                     do igz = 1 , poisson%ngpz
-                        dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                        dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                        dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                        dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         poisson%pot(igx,igy,igz)=poisson%pot(igx,igy,igz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
@@ -777,9 +777,9 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
         do igx = agpx-nbgx,agpx+nbgx
             do igy = agpy-nbgy,agpy+nbgy
                 do igz = agpz-nbgz,agpz+nbgz
-                    dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
@@ -802,7 +802,7 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
     trial_qat(atoms%trial_ref_nat(1))=1.d0
     trial_gw=1.d0
     call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
-            poisson%rgcut,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
+            poisson%rgcut,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
     tt=0.d0
     !do iat=1, atoms%nat
         do igx =1,poisson%ngpx 
@@ -823,13 +823,15 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
     poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
     !atoms%fat=0.d0
     call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%lda,poisson_force%ngpx, &
+        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
+        poisson_force%lda,poisson_force%ngpx, &
         poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,atoms%fat)
     poisson_force%q(:)=atoms%zat(:)
     poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
     poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
     call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%lda,poisson_force%ngpx, &
+        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
+        poisson_force%lda,poisson_force%ngpx, &
         poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,atoms%fat)
     !write(*,*) maxval(poisson_force%pot),minval(poisson_force%pot)
     !write(*,*) poisson_force%q
@@ -1078,9 +1080,9 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
             do ix=1,poisson%ngpx
                 do iy=1,poisson%ngpy
                     do iz=1,poisson%ngpz
-                        dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                        dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                        dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                        dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         poisson%pot(ix,iy,iz)=(dr/hgp-linearGridNumber)*&
@@ -1101,9 +1103,9 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
         do ix = agpx-nbgx,agpx+nbgx
             do iy = agpy-nbgy,agpy+nbgy
                 do iz = agpz-nbgz,agpz+nbgz
-                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-xyz(1)
-                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-xyz(2)
-                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-xyz(3)
+                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
+                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
+                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     trial_rho(ix,iy,iz)=1.d0*((dr/hgp-linearGridNumber)*&
@@ -1474,9 +1476,9 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
         do ix = 1 , poisson%ngpx
             do iy = 1 , poisson%ngpy
                 do iz = 1 , poisson%ngpz
-                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     poisson%pot(ix,iy,iz)=poisson%pot(ix,iy,iz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
@@ -1491,7 +1493,7 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
     gausswidth=0.5d0
     atoms%fat=0.d0
     call force_gto_sym_ortho(parini,atoms%boundcond,atoms%nat,atoms%ratp, &
-        atoms%zat,gausswidth,6.d0, &
+        atoms%zat,gausswidth,6.d0,poisson%xyz111, &
         poisson%ngpx,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
         poisson%hgrid,poisson%pot,atoms%fat)
     do iat=1,atoms%nat
@@ -1506,9 +1508,9 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
         do ix = agpx-nbgx,agpx+nbgx
             do iy = agpy-nbgy,agpy+nbgy
                 do iz = agpz-nbgz,agpz+nbgz
-                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=(dr/hgp-linearGridNumber)*&
@@ -1529,9 +1531,9 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
         do ix = agpx-nbgx,agpx+nbgx
             do iy = agpy-nbgy,agpy+nbgy
                 do iz = agpz-nbgz,agpz+nbgz
-                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
@@ -1561,9 +1563,9 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
         do ix = agpx-nbgx,agpx+nbgx
             do iy = agpy-nbgy,agpy+nbgy
                 do iz = agpz-nbgz,agpz+nbgz
-                    dx = (-nbgx+ix)*poisson%hgrid(1,1)-xyz(1)
-                    dy = (-nbgy+iy)*poisson%hgrid(2,2)-xyz(2)
-                    dz = (-nbgz+iz)*poisson%hgrid(3,3)-xyz(3)
+                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
+                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
+                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     trial_rho(ix,iy,iz)=1.d0*((dr/hgp-linearGridNumber)*&

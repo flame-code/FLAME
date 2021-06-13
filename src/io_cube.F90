@@ -21,7 +21,7 @@ subroutine cube_read(filename,atoms,poisson)
     if(ios/=0) then;write(*,'(2a)') 'ERROR: failure openning ',trim(filename);stop;endif
     read(1358,*)
     read(1358,*)
-    read(1358,*) nat
+    read(1358,*) nat,poisson%xyz111(1),poisson%xyz111(2),poisson%xyz111(3)
     call atom_allocate_old(atoms,nat,0,0)
     read(1358,*) poisson%ngpx,poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
     read(1358,*) poisson%ngpy,poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
@@ -127,7 +127,7 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     write(*,'(2a)') 'writing ',trim(filename)
     write(1358,'(a)') ''
     write(1358,'(a)') ''
-    write(1358,'(i5,3f13.6)') atoms%nat,0.d0,0.d0,0.d0
+    write(1358,'(i5,3f13.6)') atoms%nat,poisson%xyz111(1),poisson%xyz111(2),poisson%xyz111(3)
     write(1358,'(i5,3f13.6)') poisson%ngpx,poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
     write(1358,'(i5,3f13.6)') poisson%ngpy,poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
     write(1358,'(i5,3f13.6)') poisson%ngpz,poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
