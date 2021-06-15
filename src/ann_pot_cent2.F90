@@ -1384,7 +1384,11 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
     real(8), allocatable:: E_par(:), trial_rho(:,:,:)
     allocate(E_par(atoms%nat))
     allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
+    call reverseCEP(parini,ann_arr,atoms,poisson,ann_arr%a)
     !call get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
+    !do iat=1,atoms%nat
+    !    write(*,'(a,i6,f7.3)') 'qqq ',iat,atoms%zat(iat)+ann_arr%qq(iat)
+    !enddo
     atoms%qat(1:atoms%nat)=ann_arr%qq(1:atoms%nat)
     !atoms%qat( 1)=  0.941-atoms%zat( 1) !-1.50000    !-0.90000
     !atoms%qat( 2)= -0.895-atoms%zat( 2) !-6.60000    !-6.90000
@@ -1497,7 +1501,8 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
         poisson%ngpx,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
         poisson%hgrid,poisson%pot,atoms%fat)
     do iat=1,atoms%nat
-        write(*,'(a,i4,3es19.10)') 'FAT ',iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
+        !write(*,'(a,i4,3es19.10)') 'FAT ',iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
+        write(61,'(a,i3,3(a2,es24.15),a)') '  - [',iat,', ',atoms%fat(1,iat),', ',atoms%fat(2,iat),', ',atoms%fat(3,iat),']'
     enddo
 
     do iat=1, atoms%nat
@@ -1683,4 +1688,69 @@ subroutine prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_
     cvar_Mg=cmax_Mg-cmin_Mg
     cvar_O=cmax_O-cmin_O
 end subroutine prefit_cent2_output
+!*****************************************************************************************
+subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use yaml_output
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(in):: poisson
+    real(8), intent(in):: amat(atoms%nat+1,atoms%nat+1)
+    !local variables
+    integer:: info , iat, jat
+    integer:: linearGridNumber
+    integer:: nbgx, nbgy, nbgz
+    integer:: igx, igy, igz
+    integer:: agpx, agpy, agpz
+    real(8):: dx, dy, dz, dr
+    real(8):: hgp, tt
+    !real(8) :: grid_rho(poisson%ngpx,poisson%ngpy,poisson%ngpz)
+    real(8) ::rho_val 
+    real(8) :: ww(400)
+    associate(nat=>atoms%nat)
+    hgp=1.d-3
+    nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
+    nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
+    nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
+    do iat=1, atoms%nat
+        tt=0.d0
+        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
+        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
+        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
+        do igx = agpx-nbgx,agpx+nbgx
+            do igy = agpy-nbgy,agpy+nbgy
+                do igz = agpz-nbgz,agpz+nbgz
+                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                    dr = sqrt(dx**2+dy**2+dz**2)
+                    linearGridNumber=floor(dr/hgp)
+                    rho_val=(dr/hgp-linearGridNumber)*&
+                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
+                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
+                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber)
+                    tt=tt+rho_val*poisson%pot_ion(igx,igy,igz)
+                end do
+            end do
+        end do
+        ww(iat)=-atoms%zat(iat)*ann_arr%ann(atoms%itypat(iat))%hardness-tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    end do !iat
+    do iat=1,atoms%nat
+        tt=0.d0
+        do jat=1,atoms%nat
+            tt=tt+amat(iat,jat)*ann_arr%qq(jat)
+        enddo
+        ann_arr%chi_o(iat)=-tt+ww(iat)
+    enddo
+    do iat=1,nat
+        !write(*,'(a,i4,2f7.3)') 'CHI ',iat,ann_arr%chi_o(iat),atoms%zat(iat)+ann_arr%qq(iat)
+        write(51,'(a,i3,a,es19.10,a)') '  - [',iat,', ',ann_arr%chi_o(iat),']'
+    enddo
+    end associate
+end subroutine reverseCEP
 !*****************************************************************************************

@@ -88,9 +88,9 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ng
     hgzinv=1.d0/hz
     !1+nbg?*ibc? gives the index of grid point whose ? coordinate is zero (?=x,y,z)
     wa=0.d0
-    write(*,*) 'HX ',hx,xyz111(1)
-    write(*,*) 'HY ',hy,xyz111(2)
-    write(*,*) 'HZ ',hz,xyz111(3)
+    !write(*,*) 'HX ',hx,xyz111(1)
+    !write(*,*) 'HY ',hy,xyz111(2)
+    !write(*,*) 'HZ ',hz,xyz111(3)
     do iat=1,nat
         !shift the gaussian centers
         !if(parini%cell_ortho_noshift) then
