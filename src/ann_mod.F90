@@ -5,10 +5,11 @@ module mod_ann
     use mod_electrostatics, only: typ_poisson
     implicit none
     private
-    public:: ann_arr_allocate, ann_arr_deallocate, set_number_of_ann
+    public:: ann_arr_allocate, ann_arr_deallocate
     public:: init_ann_arr, fini_ann_arr
     public:: convert_x_ann, convert_ann_x, convert_x_ann_arr
     public:: convert_ann_epotd
+    public:: typ_ann_arr
     type, public:: typ_ann
         type(dictionary), pointer :: dict=>null()
         integer:: nl !number of hidden layer plus one
@@ -85,7 +86,7 @@ module mod_ann
         real(8), allocatable :: EPar(:)
     end type typ_ann_EPar
 
-    type, public:: typ_ann_arr
+    type:: typ_ann_arr
         logical:: exists_yaml_file = .false.
         integer:: iunit
         integer:: nann=-1
@@ -147,6 +148,8 @@ module mod_ann
         type(typ_ann_amat), allocatable:: ann_amat_train(:), ann_amat_valid(:)
         type(typ_ann_chiQPar), allocatable:: ann_chiQPar_train(:), ann_chiQPar_valid(:)
         type(typ_ann_EPar), allocatable:: ann_EPar_train(:), ann_EPar_valid(:)
+        contains
+        procedure, public, pass(self):: set_number_of_ann
     end type typ_ann_arr
     type, public:: typ_cent
         real(8), allocatable:: gwi(:)
@@ -159,16 +162,12 @@ module mod_ann
     end type typ_cent
 contains
 !*****************************************************************************************
-subroutine set_number_of_ann(parini,ann_arr)
-    use mod_parini, only: typ_parini
+subroutine set_number_of_ann(self,nann)
     implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
+    class(typ_ann_arr), intent(inout):: self
+    integer, intent(in):: nann
     !local variables
-    ann_arr%nann=parini%ntypat
-    if(parini%bondbased_ann) then
-        ann_arr%nann=4
-    endif
+    self%nann=nann
 end subroutine set_number_of_ann
 !*****************************************************************************************
 subroutine init_ann_arr(ann_arr)
