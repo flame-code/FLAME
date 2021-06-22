@@ -339,6 +339,7 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     call set(subdict_ann//"method",ann%method)
     call set(subdict_ann//"ener_ref",ann%ener_ref)
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
+       trim(parini%approach_ann)=='cent2' .or. &
         trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"ampl_chi",ann%ampl_chi)
         call set(subdict_ann//"prefactor_chi",ann%prefactor_chi)
@@ -347,7 +348,8 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
         call set(subdict_ann//"chi0",ann%chi0)
         call set(subdict_ann//"qinit",ann%qinit)
     endif
-    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
+    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' .or. &
+        trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"zion",ann%zion)
         call set(subdict_ann//"gausswidth_ion",ann%gausswidth_ion)
         call set(subdict_ann//"spring_const",ann%spring_const)

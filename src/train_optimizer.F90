@@ -11,7 +11,6 @@ module mod_opt_ann
         integer, public:: n=-1
         integer:: ndp_train=-1
         real(8), allocatable:: x(:)
-        real(8), allocatable:: epotd(:)
         real(8), allocatable:: g(:) !gradient of neural artificial neural network output
     end type typ_opt_ann
 contains
@@ -119,7 +118,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
     real(8):: time_s, time_e, time1, time2, time3 !, time4
     real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
     real(8):: tt1, tt2, tt3, tt4, tt5, tt6
-    allocate(f(opt_ann%n),p(opt_ann%n,opt_ann%n),v1(opt_ann%n),opt_ann%epotd(ann_arr%num(1)))
+    allocate(f(opt_ann%n),p(opt_ann%n,opt_ann%n),v1(opt_ann%n))
     p(1:opt_ann%n,1:opt_ann%n)=0.d0
     do i=1,opt_ann%n
         p(i,i)=1.d-2
@@ -255,7 +254,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
     enddo
     close(41)
     close(42)
-    deallocate(f,p,v1,opt_ann%epotd)
+    deallocate(f,p,v1)
 end subroutine ekf_rivals
 !*****************************************************************************************
 subroutine analyze_epoch_init(parini,ann_arr)
@@ -372,7 +371,7 @@ subroutine ekf_behler(parini,ann_arr,opt_ann)
     real(8):: time_s, time_e, time1, time2, time3 !, time4
     real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
     real(8):: tt1, tt2, tt3, tt4, tt5, tt6
-    allocate(f(opt_ann%n),p(opt_ann%n,opt_ann%n),v1(opt_ann%n),opt_ann%epotd(ann_arr%num(1)))
+    allocate(f(opt_ann%n),p(opt_ann%n,opt_ann%n),v1(opt_ann%n))
     p(1:opt_ann%n,1:opt_ann%n)=0.d0
     do i=1,opt_ann%n
         p(i,i)=1.d-2
@@ -457,7 +456,7 @@ subroutine ekf_behler(parini,ann_arr,opt_ann)
     enddo
     close(41)
     close(42)
-    deallocate(f,p,v1,opt_ann%epotd)
+    deallocate(f,p,v1)
 end subroutine ekf_behler
 !*****************************************************************************************
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
