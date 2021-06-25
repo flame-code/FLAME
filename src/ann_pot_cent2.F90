@@ -78,7 +78,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     call get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
     if(parini%iverbose>=2)  then
         do iat=1,atoms%nat
-            write(99,*) iat,atoms%sat(iat),atoms%qat(iat),atoms%zat(iat)
+            write(99,'(i4,a3,3f6.2)') iat,trim(atoms%sat(iat)),atoms%qat(iat),atoms%zat(iat),atoms%zat(iat)+atoms%qat(iat)
         end do
         write(99,*) '==='
         write(99,*) sum(atoms%qat),sum(atoms%zat)
@@ -796,6 +796,7 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
         end do
     end do !iat
     ann_arr%epot_es=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    if(trim(ann_arr%event)/='potential' ) then
     allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
     allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
     trial_qat(:)=0.d0
@@ -814,6 +815,7 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
         end do
     !end do !iat
     ann_arr%epot_trial=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    endif
     if(trim(ann_arr%event)=='potential' )then
     !Force
     poisson%rcart=atoms%ratp
@@ -1180,86 +1182,86 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     deallocate(real_eigenval,work)
     !stop 'EEEEEEEEEEEEEE'
     !-----------------------------------------------------------------
-    ann_arr%chi_o( 1)= -0.43 !-0.47d0
-    ann_arr%chi_o( 2)=  0.52 ! 0.53d0
-    ann_arr%chi_o( 3)= -0.49 !-0.49d0
-    ann_arr%chi_o( 4)=  0.53 ! 0.52d0
-    ann_arr%chi_o( 5)= -0.45 !-0.48d0
-    ann_arr%chi_o( 6)=  0.54 ! 0.52d0
-    ann_arr%chi_o( 7)= -0.51 !-0.51d0
-    ann_arr%chi_o( 8)=  0.46 ! 0.47d0
-    ann_arr%chi_o( 9)= -0.51 !-0.49d0
-    ann_arr%chi_o(10)=  0.53 ! 0.54d0
-    ann_arr%chi_o(11)= -0.50 !-0.50d0
-    ann_arr%chi_o(12)=  0.43 ! 0.46d0
-    ann_arr%chi_o(13)= -0.55 !-0.53d0
-    ann_arr%chi_o(14)=  0.50 ! 0.54d0
-    ann_arr%chi_o(15)= -0.45 !-0.46d0
-    ann_arr%chi_o(16)=  0.54 ! 0.52d0
-    ann_arr%chi_o(17)= -0.50 !-0.50d0
-    ann_arr%chi_o(18)=  0.49 ! 0.50d0
-    ann_arr%chi_o(19)= -0.44 !-0.46d0
-    ann_arr%chi_o(20)=  0.59 ! 0.55d0
-    ann_arr%chi_o(21)=  0.54 ! 0.53d0
-    ann_arr%chi_o(22)= -0.51 !-0.49d0
-    ann_arr%chi_o(23)=  0.48 ! 0.50d0
-    ann_arr%chi_o(24)= -0.50 !-0.50d0
-    ann_arr%chi_o(25)=  0.53 ! 0.52d0
-    ann_arr%chi_o(26)= -0.49 !-0.49d0
-    ann_arr%chi_o(27)=  0.46 ! 0.45d0
-    ann_arr%chi_o(28)= -0.54 !-0.57d0
-    ann_arr%chi_o(29)=  0.45 ! 0.44d0
-    ann_arr%chi_o(30)= -0.50 !-0.49d0
-    ann_arr%chi_o(31)=  0.47 ! 0.50d0
-    ann_arr%chi_o(32)= -0.59 !-0.57d0
-    ann_arr%chi_o(33)=  0.38 ! 0.37d0
-    ann_arr%chi_o(34)= -0.56 !-0.55d0
-    ann_arr%chi_o(35)=  0.49 ! 0.52d0
-    ann_arr%chi_o(36)= -0.45 !-0.48d0
-    ann_arr%chi_o(37)=  0.47 ! 0.50d0
-    ann_arr%chi_o(38)= -0.53 !-0.53d0
-    ann_arr%chi_o(39)=  0.53 ! 0.52d0
-    ann_arr%chi_o(40)= -0.43 !-0.46d0
-    ann_arr%chi_o(41)= -0.47 !-0.48d0
-    ann_arr%chi_o(42)=  0.49 ! 0.51d0
-    ann_arr%chi_o(43)= -0.53 !-0.52d0
-    ann_arr%chi_o(44)=  0.48 ! 0.50d0
-    ann_arr%chi_o(45)= -0.48 !-0.48d0
-    ann_arr%chi_o(46)=  0.52 ! 0.53d0
-    ann_arr%chi_o(47)= -0.51 !-0.52d0
-    ann_arr%chi_o(48)=  0.46 ! 0.41d0
-    ann_arr%chi_o(49)= -0.55 !-0.55d0
-    ann_arr%chi_o(50)=  0.48 ! 0.51d0
-    ann_arr%chi_o(51)= -0.49 !-0.48d0
-    ann_arr%chi_o(52)=  0.44 ! 0.45d0
-    ann_arr%chi_o(53)= -0.60 !-0.61d0
-    ann_arr%chi_o(54)=  0.40 ! 0.42d0
-    ann_arr%chi_o(55)= -0.52 !-0.50d0
-    ann_arr%chi_o(56)=  0.54 ! 0.54d0
-    ann_arr%chi_o(57)= -0.49 !-0.49d0
-    ann_arr%chi_o(58)=  0.45 ! 0.46d0
-    ann_arr%chi_o(59)= -0.51 !-0.51d0
-    ann_arr%chi_o(60)=  0.49 ! 0.51d0
-    ann_arr%chi_o(61)=  0.58 ! 0.53d0
-    ann_arr%chi_o(62)= -0.45 !-0.48d0
-    ann_arr%chi_o(63)=  0.50 ! 0.51d0
-    ann_arr%chi_o(64)= -0.47 !-0.48d0
-    ann_arr%chi_o(65)=  0.57 ! 0.53d0
-    ann_arr%chi_o(66)= -0.45 !-0.47d0
-    ann_arr%chi_o(67)=  0.53 ! 0.53d0
-    ann_arr%chi_o(68)= -0.51 !-0.52d0
-    ann_arr%chi_o(69)=  0.50 ! 0.51d0
-    ann_arr%chi_o(70)= -0.47 !-0.48d0
-    ann_arr%chi_o(71)=  0.53 ! 0.54d0
-    ann_arr%chi_o(72)= -0.51 !-0.49d0
-    ann_arr%chi_o(73)=  0.43 ! 0.45d0
-    ann_arr%chi_o(74)= -0.52 !-0.50d0
-    ann_arr%chi_o(75)=  0.53 ! 0.53d0
-    ann_arr%chi_o(76)= -0.44 !-0.47d0
-    ann_arr%chi_o(77)=  0.52 ! 0.53d0
-    ann_arr%chi_o(78)= -0.52 !-0.50d0
-    ann_arr%chi_o(79)=  0.50 ! 0.51d0
-    ann_arr%chi_o(80)= -0.46 !-0.48d0
+    !ann_arr%chi_o( 1)= -0.43 !-0.47d0
+    !ann_arr%chi_o( 2)=  0.52 ! 0.53d0
+    !ann_arr%chi_o( 3)= -0.49 !-0.49d0
+    !ann_arr%chi_o( 4)=  0.53 ! 0.52d0
+    !ann_arr%chi_o( 5)= -0.45 !-0.48d0
+    !ann_arr%chi_o( 6)=  0.54 ! 0.52d0
+    !ann_arr%chi_o( 7)= -0.51 !-0.51d0
+    !ann_arr%chi_o( 8)=  0.46 ! 0.47d0
+    !ann_arr%chi_o( 9)= -0.51 !-0.49d0
+    !ann_arr%chi_o(10)=  0.53 ! 0.54d0
+    !ann_arr%chi_o(11)= -0.50 !-0.50d0
+    !ann_arr%chi_o(12)=  0.43 ! 0.46d0
+    !ann_arr%chi_o(13)= -0.55 !-0.53d0
+    !ann_arr%chi_o(14)=  0.50 ! 0.54d0
+    !ann_arr%chi_o(15)= -0.45 !-0.46d0
+    !ann_arr%chi_o(16)=  0.54 ! 0.52d0
+    !ann_arr%chi_o(17)= -0.50 !-0.50d0
+    !ann_arr%chi_o(18)=  0.49 ! 0.50d0
+    !ann_arr%chi_o(19)= -0.44 !-0.46d0
+    !ann_arr%chi_o(20)=  0.59 ! 0.55d0
+    !ann_arr%chi_o(21)=  0.54 ! 0.53d0
+    !ann_arr%chi_o(22)= -0.51 !-0.49d0
+    !ann_arr%chi_o(23)=  0.48 ! 0.50d0
+    !ann_arr%chi_o(24)= -0.50 !-0.50d0
+    !ann_arr%chi_o(25)=  0.53 ! 0.52d0
+    !ann_arr%chi_o(26)= -0.49 !-0.49d0
+    !ann_arr%chi_o(27)=  0.46 ! 0.45d0
+    !ann_arr%chi_o(28)= -0.54 !-0.57d0
+    !ann_arr%chi_o(29)=  0.45 ! 0.44d0
+    !ann_arr%chi_o(30)= -0.50 !-0.49d0
+    !ann_arr%chi_o(31)=  0.47 ! 0.50d0
+    !ann_arr%chi_o(32)= -0.59 !-0.57d0
+    !ann_arr%chi_o(33)=  0.38 ! 0.37d0
+    !ann_arr%chi_o(34)= -0.56 !-0.55d0
+    !ann_arr%chi_o(35)=  0.49 ! 0.52d0
+    !ann_arr%chi_o(36)= -0.45 !-0.48d0
+    !ann_arr%chi_o(37)=  0.47 ! 0.50d0
+    !ann_arr%chi_o(38)= -0.53 !-0.53d0
+    !ann_arr%chi_o(39)=  0.53 ! 0.52d0
+    !ann_arr%chi_o(40)= -0.43 !-0.46d0
+    !ann_arr%chi_o(41)= -0.47 !-0.48d0
+    !ann_arr%chi_o(42)=  0.49 ! 0.51d0
+    !ann_arr%chi_o(43)= -0.53 !-0.52d0
+    !ann_arr%chi_o(44)=  0.48 ! 0.50d0
+    !ann_arr%chi_o(45)= -0.48 !-0.48d0
+    !ann_arr%chi_o(46)=  0.52 ! 0.53d0
+    !ann_arr%chi_o(47)= -0.51 !-0.52d0
+    !ann_arr%chi_o(48)=  0.46 ! 0.41d0
+    !ann_arr%chi_o(49)= -0.55 !-0.55d0
+    !ann_arr%chi_o(50)=  0.48 ! 0.51d0
+    !ann_arr%chi_o(51)= -0.49 !-0.48d0
+    !ann_arr%chi_o(52)=  0.44 ! 0.45d0
+    !ann_arr%chi_o(53)= -0.60 !-0.61d0
+    !ann_arr%chi_o(54)=  0.40 ! 0.42d0
+    !ann_arr%chi_o(55)= -0.52 !-0.50d0
+    !ann_arr%chi_o(56)=  0.54 ! 0.54d0
+    !ann_arr%chi_o(57)= -0.49 !-0.49d0
+    !ann_arr%chi_o(58)=  0.45 ! 0.46d0
+    !ann_arr%chi_o(59)= -0.51 !-0.51d0
+    !ann_arr%chi_o(60)=  0.49 ! 0.51d0
+    !ann_arr%chi_o(61)=  0.58 ! 0.53d0
+    !ann_arr%chi_o(62)= -0.45 !-0.48d0
+    !ann_arr%chi_o(63)=  0.50 ! 0.51d0
+    !ann_arr%chi_o(64)= -0.47 !-0.48d0
+    !ann_arr%chi_o(65)=  0.57 ! 0.53d0
+    !ann_arr%chi_o(66)= -0.45 !-0.47d0
+    !ann_arr%chi_o(67)=  0.53 ! 0.53d0
+    !ann_arr%chi_o(68)= -0.51 !-0.52d0
+    !ann_arr%chi_o(69)=  0.50 ! 0.51d0
+    !ann_arr%chi_o(70)= -0.47 !-0.48d0
+    !ann_arr%chi_o(71)=  0.53 ! 0.54d0
+    !ann_arr%chi_o(72)= -0.51 !-0.49d0
+    !ann_arr%chi_o(73)=  0.43 ! 0.45d0
+    !ann_arr%chi_o(74)= -0.52 !-0.50d0
+    !ann_arr%chi_o(75)=  0.53 ! 0.53d0
+    !ann_arr%chi_o(76)= -0.44 !-0.47d0
+    !ann_arr%chi_o(77)=  0.52 ! 0.53d0
+    !ann_arr%chi_o(78)= -0.52 !-0.50d0
+    !ann_arr%chi_o(79)=  0.50 ! 0.51d0
+    !ann_arr%chi_o(80)= -0.46 !-0.48d0
     do iat=1,nat
         call random_number(tt)
         ann_arr%chi_o(iat)=ann_arr%ann(atoms%itypat(iat))%chi0+2.d-2*(tt-0.5d0)
