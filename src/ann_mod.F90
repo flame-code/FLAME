@@ -248,8 +248,8 @@ subroutine ann_arr_allocate(ann_arr)
     allocate(ann_arr%dqat_weights(ann_arr%nweight_max,ann_arr%natmax))
     allocate(ann_arr%g_per_atom(ann_arr%nweight_max,ann_arr%natmax))
     !symfunc%linked_lists%maxbound_rad is assumed 10000
-    allocate(ann_arr%fatpq(1:3,1:10000))
-    allocate(ann_arr%stresspq(1:3,1:3,1:10000))
+    allocate(ann_arr%fatpq(1:3,1:20000))
+    allocate(ann_arr%stresspq(1:3,1:3,1:20000))
     allocate(ann_arr%ipiv(1:ann_arr%natmax+1))
     allocate(ann_arr%qq(1:ann_arr%natmax+1))
 end subroutine ann_arr_allocate

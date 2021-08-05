@@ -1629,9 +1629,15 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     enddo
     !do idp=1,ndp_train
     !    do ig=1,ann_arr%ann(1)%nn(0)
-    !        write(23,'(es14.5)') features_train(ig,idp)
+    !        write(ita*100+1,'(es14.5)') features_train(ig,idp)
     !    enddo
-    !    write(24,'(es14.5)') chi_ref(idp)
+    !    write(ita*100+3,'(es14.5)') chi_ref_train(idp)
+    !enddo
+    !do idp=1,ndp_valid
+    !    do ig=1,ann_arr%ann(1)%nn(0)
+    !        write(ita*100+2,'(es14.5)') features_valid(ig,idp)
+    !    enddo
+    !    write(ita*100+4,'(es14.5)') chi_ref_valid(idp)
     !enddo
     !stop 'PPPPPPPPPPPPPPPP'
     tt1=0.d0

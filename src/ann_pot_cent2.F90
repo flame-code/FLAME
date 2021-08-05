@@ -1002,6 +1002,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     real(8), allocatable :: real_eigenval(:), work(:)
     real(8), allocatable :: EP_n(:)
     real(8):: gausswidth(400)
+    real(8):: hh_Mg, hh_O, hh, qtarget_Mg, qtarget_O, qtarget
     logical, save:: done=.false.
     if(done) return
     hgp=1.d-3
@@ -1158,11 +1159,32 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     enddo
     call DSYEV('N','U',atoms%nat,amat,atoms%nat,real_eigenval,work,atoms%nat**2,info)
     do iat=1,atoms%nat
+        do jat=1,atoms%nat
+            amat(iat,jat)=amat_t(iat,jat)
+        enddo
+    enddo
+    !hh_Mg=40.d-2
+    !hh_O=40.d-2
+    hh_Mg=2.d-4*real_eigenval(atoms%nat)
+    hh_O=2.d-4*real_eigenval(atoms%nat)
+    do iat=1,atoms%nat
+        if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
+        if(trim(atoms%sat(iat))=='O' ) hh=hh_O
+        amat(iat,iat)=amat(iat,iat)+hh
+        amat_t(iat,iat)=amat_t(iat,iat)+hh
+    enddo
+    call DSYEV('N','U',atoms%nat,amat,atoms%nat,real_eigenval,work,atoms%nat**2,info)
+    do iat=1,atoms%nat
         write(*,'(a,i6,es14.5)') 'EVAL ',iat,real_eigenval(iat)
     enddo
     amat_t(1:atoms%nat,atoms%nat+1)=1.d0
     amat_t(atoms%nat+1,1:atoms%nat)=1.d0
     amat_t(atoms%nat+1,atoms%nat+1)=0.d0
+    !do jat=1,atoms%nat+1
+    !    do iat=1,atoms%nat+1
+    !        write(49,'(es19.10)') amat_t(iat,jat)
+    !    enddo
+    !enddo
     call DGETRF(nat+1,nat+1,amat_t,nat+1,ann_arr%ipiv,info)
     ann_arr%qq(nat+1)=-sum(atoms%zat)
     do iat=1,nat
@@ -1172,10 +1194,31 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
         enddo
         ann_arr%qq(iat)=tt
     enddo
+    qtarget_Mg=-2.d0+ann_arr%ann(1)%spring_const
+    qtarget_O =-4.d0-ann_arr%ann(1)%spring_const
+    do iat=1,atoms%nat
+        if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
+        if(trim(atoms%sat(iat))=='O' ) hh=hh_O
+        if(trim(atoms%sat(iat))=='Mg') qtarget=qtarget_Mg
+        if(trim(atoms%sat(iat))=='O' ) qtarget=qtarget_O
+        ann_arr%qq(iat)=ann_arr%qq(iat)+hh*qtarget
+    enddo
+    !do iat=1,atoms%nat
+    !    write(49,'(es19.10,a5)') ann_arr%qq(iat),trim(atoms%sat(iat))
+    !enddo
+    !write(49,'(es19.10)') ann_arr%qq(nat+1)
     call DGETRS('N',nat+1,1,amat_t,nat+1,ann_arr%ipiv,ann_arr%qq,nat+1,info)
     do iat=1,atoms%nat
         write(*,'(a,i6,f7.3)') 'QQQ ',iat,atoms%zat(iat)+ann_arr%qq(iat)
     enddo
+    !do itrial=1,atoms%ntrial
+    !    write(49,'(2es19.10)') atoms%trial_ref_energy(itrial),EP_n(itrial)
+    !enddo
+    !do itrial=1,atoms%ntrial
+    !    do iat=1,nat
+    !        write(49,'(es19.10)') EP(iat,itrial)
+    !    enddo
+    !enddo
     deallocate(EP_n)
     deallocate(amat)
     deallocate(amat_t)
@@ -1280,7 +1323,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
         err_U_SRS=1.d3*(E_all(atoms%ntrial+1)-atoms%epot)/nat
         write(*,'(a,2es24.15)') 'USRS ',E_all(atoms%ntrial+1),atoms%epot
         !write(*,'(a,i6,2f10.5,es14.5,8f6.2)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
-        write(*,'(a,i6,2f10.3,es14.5,8f6.2)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
+        write(*,'(a,i6,2f10.3,es14.5,8f7.3)') 'OPT ',istep,rmse,err_U_SRS,sqrt(sum(g(1:nat)**2)), &
             qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O
         if(istep==0) then
             do itrial=1,atoms%ntrial
@@ -1710,7 +1753,7 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
     integer:: igx, igy, igz
     integer:: agpx, agpy, agpz
     real(8):: dx, dy, dz, dr
-    real(8):: hgp, tt
+    real(8):: hgp, tt, tt1, tt2
     !real(8) :: grid_rho(poisson%ngpx,poisson%ngpy,poisson%ngpz)
     real(8) ::rho_val 
     real(8) :: ww(400)
@@ -1749,6 +1792,13 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
         enddo
         ann_arr%chi_o(iat)=-tt+ww(iat)
     enddo
+    tt1=0.d0
+    tt2=0.d0
+    do iat=1,atoms%nat
+        tt1=tt1+ann_arr%chi_o(iat)*(ann_arr%qq(iat)+atoms%zat(iat))
+        tt2=tt2+(ann_arr%qq(iat)+atoms%zat(iat))**2*0.5d0*ann_arr%ann(atoms%itypat(iat))%hardness
+    enddo
+    write(*,'(a,3f10.3)') 'ECH ',tt1,tt2,tt1+tt2
     do iat=1,nat
         !write(*,'(a,i4,2f7.3)') 'CHI ',iat,ann_arr%chi_o(iat),atoms%zat(iat)+ann_arr%qq(iat)
         write(51,'(a,i3,a,es19.10,a)') '  - [',iat,', ',ann_arr%chi_o(iat),']'
