@@ -257,10 +257,10 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
             allocate(ann_arr%linear_pot_e(parini%ntypat,0:poisson%ngp))
             allocate(ann_arr%linear_pot_n(parini%ntypat,0:poisson%ngp))
             do itype=1,parini%ntypat
-                !subroutine get_scf_pot_cent2(cv,ngp,rgcut,gw,scf,rho,pot)
-                call get_scf_pot_cent2(atoms%cellvec,poisson%ngp,poisson%rgcut,ann_arr%ann(itype)%gausswidth,&
+                !subroutine get_scf_pot_cent2_onegauss(cv,ngp,rgcut,gw,scf,rho,pot)
+                call get_scf_pot_cent2_twogauss(atoms%cellvec,poisson%ngp,poisson%rgcut,ann_arr%ann(itype)%gausswidth,&
                                        parini%screening_factor,poisson%linear_rho_e(itype,0:poisson%ngp),poisson%linear_pot_e(itype,0:poisson%ngp))
-                call get_scf_pot_cent2(atoms%cellvec,poisson%ngp,poisson%rgcut,ann_arr%ann(itype)%gausswidth_ion,&
+                call get_scf_pot_cent2_onegauss(atoms%cellvec,poisson%ngp,poisson%rgcut,ann_arr%ann(itype)%gausswidth_ion,&
                                        parini%screening_factor,poisson%linear_rho_n(itype,0:poisson%ngp),poisson%linear_pot_n(itype,0:poisson%ngp))
                 ann_arr%linear_rho_e(itype,0:poisson%ngp)=poisson%linear_rho_e(itype,0:poisson%ngp)
                 ann_arr%linear_rho_n(itype,0:poisson%ngp)=poisson%linear_rho_n(itype,0:poisson%ngp)
@@ -875,7 +875,8 @@ subroutine fini_electrostatic_cent2(parini,ann_arr,atoms,poisson)
     call fini_hartree(parini,atoms,poisson)
 end subroutine fini_electrostatic_cent2
 !*****************************************************************************************
-subroutine get_scf_pot_cent2(cv,ngp,rgcut,gw,scf,rho,pot)
+subroutine get_scf_pot_cent2_onegauss(cv,ngp,rgcut,gw,scf,rho,pot)
+    implicit none
     integer, intent(in) :: ngp
     real(8), intent(in) :: cv(1:3,1:3)
     real(8), intent(in) :: rgcut,gw,scf
@@ -907,7 +908,66 @@ subroutine get_scf_pot_cent2(cv,ngp,rgcut,gw,scf,rho,pot)
     do igp = 0 , ngp
         pot(igp)=pot(igp)-pot_scn(igp)
     end do
-end subroutine
+end subroutine get_scf_pot_cent2_onegauss
+!*****************************************************************************************
+subroutine get_scf_pot_cent2_twogauss(cv,ngp,rgcut,gw,scf,rho,pot)
+    implicit none
+    integer, intent(in) :: ngp
+    real(8), intent(in) :: cv(1:3,1:3)
+    real(8), intent(in) :: rgcut,gw,scf
+    real(8), intent(out):: rho(0:ngp)
+    real(8), intent(out):: pot(0:ngp)
+    !Local Variables!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    integer :: igp
+    real(8) :: den_coeff, hgp
+    real(8) :: rrad(0:ngp), weight(0:ngp)
+    real(8) :: pi, gw_t, alpha, beta !, tt
+    real(8), allocatable:: pot_scn(:), pot_scn_t(:)
+    pi = 4.d0*atan(1.d0)
+    allocate(pot_scn(0:ngp),pot_scn_t(0:ngp))
+    den_coeff = 1.d0/((pi**1.5d0)*(gw**3))
+    hgp=1.d-3
+    rho=0.d0
+    pot=0.d0
+    do igp = 0 , ngp
+        rrad(igp)= igp*hgp
+        if (rrad(igp)>(10.d0*gw)) then
+            rho(igp) = 0.d0
+        else
+            rho(igp)=den_coeff*exp(-1.d0*(rrad(igp)**2/gw**2)) ! Charge density with Q=1
+        endif
+    enddo
+    gw_t=0.95d0*gw
+    alpha=gw**3/(gw**3-gw_t**3)
+    beta=-gw_t**3/(gw**3-gw_t**3)
+    do igp=0,ngp
+        rho(igp)=alpha*rho(igp)
+    enddo
+    den_coeff = 1.d0/((pi**1.5d0)*(gw_t**3))
+    do igp = 0 , ngp
+        !rrad(igp)= igp*hgp
+        if (rrad(igp)>(10.d0*gw_t)) then
+            !rho(igp) = 0.d0
+        else
+            rho(igp)=rho(igp)+beta*den_coeff*exp(-1.d0*(rrad(igp)**2/gw_t**2)) ! Charge density with Q=1
+        endif
+    enddo
+    if(scf>0.d0) then
+        call set_weight(ngp,rrad,weight)
+        call cal_powern_screened_poisson_gaussian(ngp,rrad,weight,1.d0,gw,scf,4,pot_scn)
+        call cal_powern_screened_poisson_gaussian(ngp,rrad,weight,1.d0,gw_t,scf,4,pot_scn_t)
+    end if
+    !tt=0.d0
+    !do igp=0,ngp
+    !    tt=tt+rrad(igp)**2*rho(igp)*weight(igp)
+    !enddo
+    !tt=tt*(4.d0*pi)
+    !write(*,*) 'RHO ',tt
+    call cal_pot_hartree(ngp,rrad,rho,pot)
+    do igp = 0 , ngp
+        pot(igp)=pot(igp)-(alpha*pot_scn(igp)+beta*pot_scn_t(igp))
+    end do
+end subroutine get_scf_pot_cent2_twogauss
 !*****************************************************************************************
 subroutine get_eigenval(atoms,amat)
     use mod_atoms, only: typ_atoms
