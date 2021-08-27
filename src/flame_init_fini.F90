@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine alborz_init(parini,parres,file_ini)
-    use mod_processors, only: iproc, mpi_comm_abz, imaster
+    use mod_processors, only: iproc, imaster
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
     use mod_parser_ini, only: read_file_input
@@ -75,9 +75,9 @@ subroutine alborz_init(parini,parres,file_ini)
         call get_ewald_parameters(file_ini,parini)
         call get_misc_parameters(file_ini,parini)
     endif
-    if(trim(parini%task)/='minhocao') then
-        call initprocessors !start MPI in parallel version.
-    endif
+    !if(trim(parini%task)/='minhocao') then
+        call initprocessors(parini%mpi_env) !start MPI in parallel version.
+    !endif
     if(trim(parini%task)/='potential') then
         call init_random_seed(parini)
     endif
@@ -139,9 +139,9 @@ subroutine alborz_final(parini,file_ini)
     !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(hrs)',iproc,(time_end-time_start)/3600.d0
     !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(min)',iproc,(time_end-time_start)/60.d0
     !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(sec)',iproc,(time_end-time_start)
-    if(trim(parini%task)/='minhocao') then
-        call finalizeprocessors
-    endif
+    !if(trim(parini%task)/='minhocao') then
+        call finalizeprocessors(parini%mpi_env)
+    !endif
     !-----------------------------------------------------------------
     !call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     !call f_timing_stop(dict_info=dict_timing_info)
@@ -155,7 +155,7 @@ subroutine alborz_final(parini,file_ini)
 end subroutine alborz_final
 !*****************************************************************************************
 subroutine init_random_seed(parini)
-    use mod_processors, only: iproc, mpi_comm_abz, imaster
+    use mod_processors, only: iproc, imaster
     use mod_parini, only: typ_parini
     use yaml_output
     implicit none
@@ -185,8 +185,8 @@ subroutine init_random_seed(parini)
     endif
 #if defined(MPI)
     if(trim(parini%task)/='minhocao') then 
-         call MPI_BARRIER(mpi_comm_abz,ierr)
-         call MPI_BCAST(iseed,nseed,MPI_INTEGER,imaster,mpi_comm_abz,ierr)
+         call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+         call MPI_BCAST(iseed,nseed,MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
     endif
 #endif
     iseed(1:nseed)=iseed(1:nseed)+iproc*11

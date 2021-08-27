@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine cal_matvec_mpi(n,p,g,v1)
-    use mod_processors, only: iproc, nproc, mpi_comm_abz
+    use mod_processors, only: iproc, nproc
     integer, intent(in):: n
     real(8), intent(in):: p(n,n), g(n)
     real(8), intent(out):: v1(n)
@@ -10,11 +10,13 @@ subroutine cal_matvec_mpi(n,p,g,v1)
     real(8), allocatable:: v2(:)
     integer, save:: narr(2,0:99), ni(2), nlarr(0:99), nnarr(0:99)
     integer, save:: icall=0
+    integer:: mpi_comm
     !real(8):: time1, time2, time3
     !real(8), save:: dtime1=0.d0, dtime2=0.d0
 #if defined(MPI)
     include 'mpif.h'
     !integer:: status_mpi(MPI_STATUS_SIZE)
+    stop 'ERROR: mpi_comm unknow: mpi_comm should be added to the list of arguments'
     associate(MPI_DP=>MPI_DOUBLE_PRECISION)
     icall=icall+1
     if(icall==1) then
@@ -27,7 +29,7 @@ subroutine cal_matvec_mpi(n,p,g,v1)
             ni(2)=ni(2)+1
         endif
     endif
-    call MPI_ALLGATHER(ni,2,MPI_INTEGER,narr,2,MPI_INTEGER,mpi_comm_abz,ierr)
+    call MPI_ALLGATHER(ni,2,MPI_INTEGER,narr,2,MPI_INTEGER,mpi_comm,ierr)
     nlarr(0:nproc-1)=narr(1,0:nproc-1)-1
     nnarr(0:nproc-1)=narr(2,0:nproc-1)
     endif
@@ -50,7 +52,7 @@ subroutine cal_matvec_mpi(n,p,g,v1)
         v2(j)=tt
     enddo
     !call cpu_time(time2)
-    call MPI_ALLGATHERV(v2(ni(1)),ni(2),MPI_DP,v1,nnarr,nlarr,MPI_DP,mpi_comm_abz,ierr)
+    call MPI_ALLGATHERV(v2(ni(1)),ni(2),MPI_DP,v1,nnarr,nlarr,MPI_DP,mpi_comm,ierr)
     !call cpu_time(time3)
     !dtime1=dtime1+time2-time1
     !dtime2=dtime2+time3-time2

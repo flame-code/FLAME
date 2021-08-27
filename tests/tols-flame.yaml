@@ -108,6 +108,10 @@ minhopp_LJ:
  fmax: 1.e-11
  en0000: 1.e-5
 
+poslow.ref.yaml:
+ Epsilon: 1.e-12
+ coord: 1.e-010
+
 saddle_1s_Si64Bulk:
  Keys to ignore:
   - iproc

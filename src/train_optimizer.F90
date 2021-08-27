@@ -102,7 +102,7 @@ end subroutine convert_opt_x_ann_arr
 subroutine ekf_rivals(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_processors, only: iproc, mpi_comm_abz
+    use mod_processors, only: iproc
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -356,7 +356,7 @@ end subroutine analyze_epoch_print
 subroutine ekf_behler(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_processors, only: iproc, mpi_comm_abz
+    use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -562,7 +562,7 @@ end subroutine fcn_epot
 subroutine set_annweights(parini,opt_ann,ann_arr)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, convert_ann_x
-    use mod_processors, only: iproc, mpi_comm_abz
+    use mod_processors, only: iproc
     use mod_utils
     implicit none
     type(typ_parini), intent(in):: parini
@@ -638,7 +638,7 @@ subroutine set_annweights(parini,opt_ann,ann_arr)
 
     endif
 #if defined(MPI)
-    call MPI_BCAST(opt_ann%x,opt_ann%n,MPI_DOUBLE_PRECISION,0,mpi_comm_abz,ierr)
+    call MPI_BCAST(opt_ann%x,opt_ann%n,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
 #endif
 end subroutine set_annweights
 !*****************************************************************************************

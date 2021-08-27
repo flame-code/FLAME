@@ -3,7 +3,7 @@ module mod_processors
     implicit none
     integer:: mpi_group_world
     integer:: mpi_group_abz
-    integer:: mpi_comm_abz
+    !integer:: mpi_comm_abz
     integer:: nproc_world=1 !number of processors, default is set for serial.
     integer:: iproc_world=0 !index of the current processor, default is set for serial.
     integer:: nproc_pot=-1

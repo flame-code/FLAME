@@ -1495,7 +1495,7 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann, get_opt_ann_x
-    use mod_processors, only: iproc, mpi_comm_abz
+    use mod_processors, only: iproc
     use yaml_output
     use futile
     implicit none

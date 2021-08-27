@@ -2,10 +2,12 @@
 module mod_parini
     use dictionaries
     use mod_opt, only: typ_paropt
+    use wrapper_MPI, only: mpi_environment
     implicit none
     type typ_parini
         logical:: exists_yaml_file
         integer:: iunit
+        type(mpi_environment), public :: mpi_env
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'

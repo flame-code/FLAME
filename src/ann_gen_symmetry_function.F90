@@ -4,7 +4,7 @@ subroutine ann_gen_symmetry_function(parini)
     use mod_ann, only: typ_ann_arr, ann_arr_deallocate
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
-    use mod_processors, only: iproc, mpi_comm_abz
+    use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
