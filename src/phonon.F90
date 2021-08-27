@@ -5,7 +5,7 @@ subroutine cal_hessian_4p(parini)
     use mod_atoms, only: atom_copy, atom_deallocate, set_atomic_mass
     use mod_atoms, only: update_ratp, update_rat, set_rat, set_rat_iat, get_rat
     use mod_processors, only: iproc
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use futile
     use dynamic_memory
@@ -30,7 +30,7 @@ subroutine cal_hessian_4p(parini)
     call atom_copy(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(1)->atoms')
     call atom_deallocate(atoms_arr%atoms(1))
     deallocate(atoms_arr%atoms)
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     !logical, allocatable:: yes(:)
     allocate(hess(3*atoms%nat,3*atoms%nat),stat=istat)
     allocate(rat_center(3*atoms%nat),stat=istat)

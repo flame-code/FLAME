@@ -1,7 +1,7 @@
 subroutine dielec_potener_forces(parini,poisson,atoms,epot_dielec)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: potential 
+    use mod_potential, only: potcode 
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -43,7 +43,7 @@ subroutine dielec_potener_forces(parini,poisson,atoms,epot_dielec)
     poisson%npu=poisson%npu+nlayer2
     allocate(pots_layer(1:poisson%ngpx,1:poisson%ngpy,1:2,1:nlayer)) 
     pots_layer = 0.d0
-    if(.not. (trim(potential)=='ann')) then
+    if(.not. (trim(potcode)=='ann')) then
         call erfc_surface_zero(parini,atoms,poisson,nlayer) 
         pots_layer(1:ngpx,1:ngpy,1,:)=poisson%pots(1:ngpx,1:ngpy,npl-nlayer2:npl+nlayer2) 
         pots_layer(1:ngpx,1:ngpy,2,:)=poisson%pots(1:ngpx,1:ngpy,npu+nlayer2:npu-nlayer2:-1)

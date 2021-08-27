@@ -2,13 +2,13 @@
 subroutine init_potential_forces(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: fcalls, potential
+    use mod_potential, only: fcalls, potcode
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     !local variables
     fcalls=0.d0
-    select case(trim(potential))
+    select case(trim(potcode))
         case('netsock')
             call init_netsock(parini)
         case('lj')
@@ -47,7 +47,7 @@ end subroutine init_potential_forces
 subroutine cal_potential_forces(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, get_rat, update_ratp, set_rat, update_rat
-    use mod_potential, only: potential, fcalls
+    use mod_potential, only: potcode, fcalls
     use mod_processors, only: iproc
     use dynamic_memory
     implicit none
@@ -83,7 +83,7 @@ subroutine cal_potential_forces(parini,atoms)
         atoms%fat(2,iat)=0.d0
         atoms%fat(3,iat)=0.d0
     enddo
-    select case(trim(potential))
+    select case(trim(potcode))
         case('netsock')
             call cal_potential_forces_netsock(atoms)
         case('lj')
@@ -136,12 +136,12 @@ end subroutine cal_potential_forces
 subroutine final_potential_forces(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     !local variables
-    select case(trim(potential))
+    select case(trim(potcode))
         case('netsock')
             call final_netsock
         case('lj')

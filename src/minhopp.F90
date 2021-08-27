@@ -146,7 +146,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy, set_ndof
     use mod_yaml_conf, only: read_yaml_conf
     use mod_opt, only: typ_paropt
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -172,7 +172,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     beta2=parini%beta2_minhopp
     beta3=parini%beta3_minhopp
     nstep=max(1,nstep/nproc) !nstep in input.ini is considered to be for all processors.
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     paropt=parini%paropt_geopt
     call initminimize(paropt)
     if(parini%two_level_geopt) then

@@ -3,7 +3,7 @@ subroutine geopt(parini)
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
-    use mod_potential, only: fcalls, perfstatus, potential
+    use mod_potential, only: fcalls, perfstatus, potcode
     use mod_acf, only: acf_read_new, acf_write
     use mod_processors, only: iproc, nproc
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
@@ -33,7 +33,7 @@ subroutine geopt(parini)
     endif
     do iconf=1,atoms_arr%nconf
         call set_ndof(atoms_arr%atoms(iconf))
-        potential=trim(parini%potential_potential)
+        potcode=trim(parini%potential_potential)
         call init_geopt(parini,paropt,paropt_prec)
         paropt%trajectory=parini%paropt_geopt%trajectory
         paropt%filename='traj_mgo.bin'

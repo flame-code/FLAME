@@ -4,7 +4,7 @@ subroutine dimer_method(parini)
     use mod_atoms, only: typ_atoms, typ_atoms_arr, typ_file_info, atom_deallocate_old
     use mod_atoms, only: atom_copy_old, atom_deallocate, set_ndof, atom_calmaxforcecomponent
     use mod_atoms, only: update_ratp, update_rat
-    use mod_potential, only: potential, fcalls
+    use mod_potential, only: potcode, fcalls
     use mod_saddle, only: dmconverged, str_moving_atoms_rand, dimsep, ampl
     use mod_opt, only: typ_paropt
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
@@ -30,7 +30,7 @@ subroutine dimer_method(parini)
     !character(256):: comment1, comment2
     call f_routine(id='dimer_method')
     !----------------------------------------------------------------
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     paropt_m=parini%paropt_geopt
     if(parini%two_level_geopt) then
         paropt_m_prec=parini%paropt_geopt_prec

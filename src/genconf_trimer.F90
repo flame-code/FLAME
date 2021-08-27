@@ -5,7 +5,7 @@ subroutine genconf_trimer(parini,genconf)
     use mod_atoms, only: atom_allocate_old, atom_deallocate_old, set_rcov
     use mod_genconf, only: typ_genconf
     use mod_processors, only: iproc
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_acf, only: acf_write
     implicit none
     type(typ_parini), intent(in):: parini
@@ -36,7 +36,7 @@ subroutine genconf_trimer(parini,genconf)
     atoms_all%atoms%cellvec(3,3)=10.d0
     !initialize potential if it must be calculated
     if(trim(genconf%cal_pot)=='yes') then
-        potential=trim(parini%potential_potential)
+        potcode=trim(parini%potential_potential)
         call init_potential_forces(parini,atoms_all%atoms)
     endif
     !write(*,'(a,i6)') 'nat ',atoms%nat

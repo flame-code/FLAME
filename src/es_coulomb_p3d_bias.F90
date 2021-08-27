@@ -1,7 +1,7 @@
 subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: potential 
+    use mod_potential, only: potcode 
     use mod_parini, only: typ_parini
     use dynamic_memory
     use yaml_output
@@ -78,7 +78,7 @@ subroutine bias_potener_forces(parini,poisson,atoms,epotplane)
             allocate(pots_layer(1:poisson%ngpx,1:poisson%ngpy,1:2,1:nlayer))
         endif
         pots_layer = 0.d0
-        if(.not. (trim(potential)=='ann')) then
+        if(.not. (trim(potcode)=='ann')) then
             call erfc_surface_zero(parini,atoms,poisson,nlayer)
             if (parini%cal_charge) then
                 pots_layer(1:ngpx,1:ngpy,1,:)=poisson%pots(1:ngpx,1:ngpy,npl:npl+nlayer-1)

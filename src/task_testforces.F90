@@ -20,7 +20,7 @@ subroutine testforces_fd(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate
     use mod_atoms, only: get_rat_iat, set_rat_iat
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_processors, only: iproc
     use mod_const, only: bohr2ang
     use mod_acf, only: acf_read
@@ -40,7 +40,7 @@ subroutine testforces_fd(parini)
     call atom_copy_old(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms_s')
     call atom_deallocate(atoms_arr%atoms(1))
     deallocate(atoms_arr%atoms)
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     call init_potential_forces(parini,atoms)
     call cal_potential_forces(parini,atoms)
     call calnorm(3*atoms%nat,atoms%fat,fnrm)
@@ -141,7 +141,7 @@ end subroutine testforces_fd
 subroutine teststress_fd(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_processors, only: iproc
     use mod_acf, only: acf_read
     implicit none
@@ -155,7 +155,7 @@ subroutine teststress_fd(parini)
     integer, parameter:: m=3
     real(8), parameter:: h=5.d-5
     real(8):: ener(-m:m), c(-m:m)=(/-1.d0,9.d0,-45.d0,0.d0,45.d0,-9.d0,1.d0/)
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
    
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     allocate(rat_int(3,atoms%nat))
@@ -232,7 +232,7 @@ subroutine teststress_fd_cellvec(parini)
     use mod_atoms, only: typ_atoms, typ_atoms_arr
     use mod_atoms, only: update_ratp, update_rat, atom_copy_old, atom_deallocate
     use mod_yaml_conf, only: read_yaml_conf
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_processors, only: iproc
     use mod_acf, only: acf_read
     implicit none
@@ -247,7 +247,7 @@ subroutine teststress_fd_cellvec(parini)
     integer, parameter:: m=3
     real(8), parameter:: h=5.d-5
     real(8):: ener(-m:m), c(-m:m)=(/-1.d0,9.d0,-45.d0,0.d0,45.d0,-9.d0,1.d0/)
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
    
     !call acf_read(parini,'posinp.acf',1,atoms=atoms)
 

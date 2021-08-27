@@ -10,7 +10,7 @@ subroutine lammps_task(parini)
     use mod_atoms, only: typ_atoms_arr, atom_copy, atom_deallocate, set_typat
     use mod_atoms, only: get_rat, set_rat
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
 #if defined(HAVE_LAMMPS)
     use mpi
     use LAMMPS
@@ -30,7 +30,7 @@ subroutine lammps_task(parini)
     real(8), allocatable:: rat(:,:)
     real(8):: dproj(6), rotmat(3,3)
     !-------------------------------------------------------
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     !-------------------------------------------------------
     call copy_parini_for_lammps(parini)
     inquire(file='posinp.yaml',exist=yaml_exists)

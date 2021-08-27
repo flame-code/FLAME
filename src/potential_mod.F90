@@ -8,7 +8,7 @@ module mod_potential
     !all potentials
     real(8):: fcalls
     real(8):: fcalls_sec
-    character(50):: potential='unknown'
+    character(50):: potcode='unknown'
     character(50):: potential_sec='unknown'
     !selected potentials
     real(8):: cell(3)

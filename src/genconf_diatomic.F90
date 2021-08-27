@@ -5,7 +5,7 @@ subroutine genconf_diatomic(parini,genconf)
     use mod_atoms, only: atom_allocate_old, atom_deallocate_old, set_rat
     use mod_genconf, only: typ_genconf
     use mod_processors, only: iproc
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_const, only: bohr2ang
     use mod_acf, only: acf_write
     implicit none
@@ -31,7 +31,7 @@ subroutine genconf_diatomic(parini,genconf)
     cv(3,3)=11.d0
     atoms_all%atoms%cellvec(1:3,1:3)=cv(1:3,1:3)/bohr2ang
     if(trim(genconf%cal_pot)=='yes') then
-        potential=trim(parini%potential_potential)
+        potcode=trim(parini%potential_potential)
         call init_potential_forces(parini,atoms_all%atoms)
     endif
 

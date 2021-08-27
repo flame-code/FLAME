@@ -7,7 +7,7 @@ subroutine splined_saddle(parini)
   use mod_processors, only: nproc, iproc
   use mod_atoms, only: typ_atoms, atom_deallocate, typ_atoms_arr
   use mod_atoms, only: atom_copy, get_rat
-  use mod_potential, only: potential
+  use mod_potential, only: potcode
   use mod_yaml_conf, only: read_yaml_conf
   !as a general policy, we'll have "implicit none" by assuming the same
   !name convention as "implicit real(kind=8) (a-h,o-z)"
@@ -36,7 +36,7 @@ subroutine splined_saddle(parini)
   !call MPI_COMM_RANK(MPI_COMM_WORLD,iproc,ierr)
   !call MPI_COMM_SIZE(MPI_COMM_WORLD,nproc,ierr)
 
-  potential=trim(parini%potential_potential)
+  potcode=trim(parini%potential_potential)
 
         !do iconfig=1,nconfig
         !   read(54,*) arr_posinp(iconfig)

@@ -1,7 +1,7 @@
 !*****************************************************************************************
 subroutine md_nvt_langevin(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_potential, only: potential, perfstatus
+    use mod_potential, only: potcode, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_atoms, only: get_rat, update_ratp, update_rat, set_rat
     use mod_acf, only: acf_write
@@ -253,7 +253,7 @@ end subroutine md_nvt_langevin
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_cp(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_potential, only: potential, perfstatus
+    use mod_potential, only: potcode, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_rat, get_rat, update_ratp
     use mod_velocity, only: set_velocities
     use mod_acf, only: acf_write
@@ -455,7 +455,7 @@ end subroutine md_nvt_nose_hoover_cp
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_potential, only: potential, perfstatus
+    use mod_potential, only: potcode, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, get_rat, update_ratp, update_rat
     use mod_velocity, only: set_velocities
     use mod_acf, only: acf_write

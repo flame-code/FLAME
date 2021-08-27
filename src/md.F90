@@ -2,7 +2,7 @@
 subroutine dynamics(parini)
     use mod_parini, only: typ_parini
     use mod_acf, only: acf_read, acf_write
-    use mod_potential, only: potential, perfstatus
+    use mod_potential, only: potcode, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_ndof, atom_deallocate_old
     use mod_dynamics, only: dt, nmd,nfreq,md_method
     use mod_processors, only: iproc
@@ -12,7 +12,7 @@ subroutine dynamics(parini)
     type(typ_atoms):: atoms
     character(56):: comment
     
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     md_method=trim(parini%md_method_dynamics)
     dt=parini%dt_dynamics
     dt=dt*41.341373336493 ! convert fs to atomic unit
@@ -48,7 +48,7 @@ end subroutine dynamics
 !*****************************************************************************************
 subroutine md_nve(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_potential, only: potential, perfstatus
+    use mod_potential, only: potcode, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, atom_copy_old, set_atomic_mass
     use mod_atoms, only: atom_deallocate_old, update_ratp, update_rat
     use mod_acf, only: acf_write
@@ -154,7 +154,7 @@ end subroutine md_nve
 !*****************************************************************************************
 subroutine md_nph(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_potential, only: potential, perfstatus
+    use mod_potential, only: potcode, perfstatus
     use mod_atoms, only: typ_atoms, typ_file_info, set_rat, update_ratp, update_rat
     use mod_acf, only: acf_write
     use mod_velocity, only: set_velocities

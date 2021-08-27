@@ -60,7 +60,7 @@ end subroutine init_potential_ann
 subroutine cal_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_deallocate_old, get_rat
-    use mod_potential, only: ann_arr, fcalls, fcalls_sec, potential, potential_sec, ann_boundcheck
+    use mod_potential, only: ann_arr, fcalls, fcalls_sec, potcode, potential_sec, ann_boundcheck
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
     implicit none
@@ -71,7 +71,7 @@ subroutine cal_potential_ann(parini,atoms)
     real(8):: epoti, fcalls_t
     type(typ_symfunc):: symfunc
     type(typ_opt_ann):: opt_ann
-    if(trim(potential)=='ann') then
+    if(trim(potcode)=='ann') then
         fcalls_t=fcalls
     elseif(trim(potential_sec)=='ann') then
         fcalls_t=fcalls_sec
