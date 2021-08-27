@@ -92,7 +92,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 if HAVE_LAMMPS
 SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90 lammps_mod.F90
 AM_FCFLAGS += -DHAVE_LAMMPS
-AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src
+AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src -DOMPI_SKIP_MPICXX=1 -DMPICH_SKIP_MPICXX -DLAMMPS_LIB_MPI
 LIBS += $(LAMMPS_ROOT)/src/liblammps_mpi.a
 endif
 
