@@ -78,6 +78,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     call get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
     if(parini%iverbose>=2)  then
         do iat=1,atoms%nat
+            write(166,*)iat,ann_arr%chi_o(iat)
             write(99,'(i4,a3,3f6.2)') iat,trim(atoms%sat(iat)),atoms%qat(iat),atoms%zat(iat),atoms%zat(iat)+atoms%qat(iat)
         end do
         write(99,*) '==='
@@ -709,6 +710,7 @@ subroutine get_electrostatic_cent2(parini,atoms,ann_arr,epot_c,amat,poisson)
     end if
     epot_c=epot_es+tt1+tt2+ann_arr%ener_ref
     if(parini%iverbose>=2)  then
+        write(16,'(5es18.8)') epot_c, epot_es, tt1, tt2, ann_arr%ener_ref
         write(14,*) epot_c, atoms%epot
     end if
     end associate
@@ -736,7 +738,8 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
     real(8):: tt,ehartree,rho_val
     real(8):: dx, dy, dz, dr, hgp
     real(8):: ehartree_2
-    real(8),allocatable::fd_fat(:,:)
+    real(8):: alpha,beta,ggw,ggw_t
+    real(8),allocatable::fd_fat(:,:),fat_t(:,:)
     real(8),allocatable::trial_rho(:,:,:),trial_gw(:),trial_qat(:)
     nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
     nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
@@ -824,10 +827,35 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
     poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
     poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
     !atoms%fat=0.d0
+    allocate(fat_t(1:3,atoms%nat))
+    fat_t(1:3,1:atoms%nat)=0.d0
     call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
         poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
         poisson_force%lda,poisson_force%ngpx, &
-        poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,atoms%fat)
+        poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
+    do iat = 1, atoms%nat
+        ggw = ann_arr%ann(atoms%itypat(iat))%gausswidth
+        ggw_t=0.95d0*ggw
+        alpha=ggw**3/(ggw**3-ggw_t**3)
+        atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+alpha*fat_t(1:3,iat)
+    end do
+    poisson%rcart=atoms%ratp
+    poisson_force=poisson
+    poisson_force%q(:)=atoms%qat(:)
+    poisson_force%gw(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
+    poisson_force%gw_ewald(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
+    fat_t(1:3,1:atoms%nat)=0.d0
+    call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
+        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
+        poisson_force%lda,poisson_force%ngpx, &
+        poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
+    do iat = 1,atoms%nat
+        ggw = ann_arr%ann(atoms%itypat(iat))%gausswidth
+        ggw_t=0.95d0*ggw
+        beta=-ggw_t**3/(ggw**3-ggw_t**3)
+        atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+beta*fat_t(1:3,iat)
+    end do
+    deallocate(fat_t)
     poisson_force%q(:)=atoms%zat(:)
     poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
     poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
