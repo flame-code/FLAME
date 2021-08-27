@@ -1048,7 +1048,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     !local variables
     integer:: itrial, iat, jat, kat, ix, iy, iz, iq, istep, nstep, ii
     integer:: agpx, agpy, agpz
-    integer:: nbgx, nbgy, nbgz, linearGridNumber, info
+    integer:: nbgx, nbgy, nbgz, linearGridNumber, info, itypat
     real(8):: xyz(3), dx, dy, dz, dr, hgp, tt, rho_val, q, cf, rmse, err_U_SRS
     real(8):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
     real(8):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
@@ -1225,8 +1225,8 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     enddo
     !hh_Mg=40.d-2
     !hh_O=40.d-2
-    hh_Mg=2.d-4*real_eigenval(atoms%nat)
-    hh_O=2.d-4*real_eigenval(atoms%nat)
+    hh_Mg=1.d-3*real_eigenval(atoms%nat)
+    hh_O=1.d-3*real_eigenval(atoms%nat)
     do iat=1,atoms%nat
         if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
         if(trim(atoms%sat(iat))=='O' ) hh=hh_O
@@ -1254,8 +1254,18 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
         enddo
         ann_arr%qq(iat)=tt
     enddo
-    qtarget_Mg=-2.d0+ann_arr%ann(1)%spring_const
-    qtarget_O =-4.d0-ann_arr%ann(1)%spring_const
+    do itypat=1,parini%ntypat
+        if(trim(parini%stypat(itypat))=='Mg') then
+            qtarget_Mg=-ann_arr%ann(itypat)%zion+ann_arr%ann(1)%spring_const
+            write(*,'(a,f8.3)') 'QTARGET_Mg ',qtarget_Mg
+        endif
+        if(trim(parini%stypat(itypat))=='O') then
+            qtarget_O=-ann_arr%ann(itypat)%zion-ann_arr%ann(1)%spring_const
+            write(*,'(a,f8.3)') 'QTARGET_O  ',qtarget_O
+        endif
+    enddo
+    !qtarget_Mg=-2.d0+ann_arr%ann(1)%spring_const
+    !qtarget_O =-4.d0-ann_arr%ann(1)%spring_const
     do iat=1,atoms%nat
         if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
         if(trim(atoms%sat(iat))=='O' ) hh=hh_O
