@@ -5,6 +5,7 @@ subroutine setpot_init(parini,atoms_curr,paropt,paropt_prec)
     use mod_opt, only: typ_paropt
     use mod_processors, only: nproc, iproc
     use mod_potential, only: potcode, perfstatus
+    use mod_potential, only: init_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms_curr
@@ -30,11 +31,12 @@ end subroutine setpot_init
 subroutine setpot_final(parini,atoms_curr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
+    use mod_potential, only: fini_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms_curr
     !local variables
-    call final_potential_forces(parini,atoms_curr)
+    call fini_potential_forces(parini,atoms_curr)
 end subroutine setpot_final
 !*****************************************************************************************
 subroutine setpot_mdescape

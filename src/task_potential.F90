@@ -3,6 +3,7 @@ subroutine alborz_as_potential_init(nat,sat)
     use mod_alborz_as_potential, only: parini, parres, file_ini, atoms
     use mod_potential, only: potcode
     use mod_atoms, only: atom_allocate_old
+    use mod_potential, only: init_potential_forces
     implicit none
     integer, intent(in):: nat
     character(5), intent(in):: sat(nat)
@@ -23,6 +24,7 @@ end subroutine alborz_as_potential_init
 subroutine alborz_as_potential_get(boundcond,nat,cellvec,rat,sat,fat,epot,stress)
     use mod_alborz_as_potential, only: parini, atoms
     use mod_atoms, only: set_rat
+    use mod_potential, only: cal_potential_forces
     implicit none
     character(*), intent(in):: boundcond
     integer, intent(in):: nat

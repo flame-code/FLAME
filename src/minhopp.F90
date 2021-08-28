@@ -865,6 +865,7 @@ subroutine mdescape(parini,atoms_hopp)
     use mod_bin, only: write_bin_conf
     use mod_atoms, only: typ_atoms, typ_file_info, update_rat, update_ratp
     use mod_potential, only: fcalls
+    use mod_potential, only: cal_potential_forces
     use yaml_output
     !Does a MD run with the atomic positions in atoms_hopp
     implicit none
@@ -1336,6 +1337,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     use mod_minhopp, only: lprint, alpha_soften, istep
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate, atom_copy
     use mod_bin, only: write_bin_conf
+    use mod_potential, only: cal_potential_forces
     use mod_atoms, only: update_ratp, update_rat
     use yaml_output
     implicit none

@@ -1,8 +1,80 @@
 !*****************************************************************************************
+module mod_potential
+    use mod_ann, only: typ_ann_arr
+    use mod_electrostatics, only: typ_poisson
+    use mod_shortrange, only: typ_tosifumi, typ_shortrange
+    implicit none
+    private
+    integer, parameter:: natmax=1000
+    !all potentials
+    real(8):: fcalls
+    real(8):: fcalls_sec
+    character(50):: potcode='unknown'
+    character(50):: potential_sec='unknown'
+    !selected potentials
+    real(8):: cell(3)
+    integer:: ntypat
+    integer:: natarr(128)
+    character(5):: stypat(128)
+    real(8):: cellvec(3,3)
+    integer:: l_atomic_num(natmax)
+    character(20):: perfstatus='unknown'
+    character(20):: perfstatus_old='unknown'
+    character(5), allocatable :: sat(:)
+    !Lenosky TB potential
+    integer:: natsi
+    !ANN potential
+    type(typ_ann_arr):: ann_arr
+    character(50):: ann_boundcheck='none'
+    character(50):: approach_ann='unknown'
+    !MPMD potential
+    !BigDFT potential
+    logical:: bigdft_restart=.false.
+    !VASP potential
+    character(256):: comment, comment2
+    logical:: vasp5
+    logical:: single_point_calculation=.true.
+    logical:: vasp_restart=.false.
+    logical:: atom_motion(3,natmax)
+    !VCBLJ potential
+    real(8):: sigmalj(2,2) !sigma(i,j) is the sigma between particle i and particle j
+    real(8):: epslj(2,2) !eps(i,j) is the epsilon between particle i and particle j
+    real(8):: rcut(2,2) !rcut(i,j) is the cutoff distance between particle i and j
+    !real(8):: atmass(2)
+    !real(8):: atmassinv(2)
+    integer, allocatable:: kinds(:)
+    !coulomb potential
+    type(typ_poisson):: poisson
+    !force potentials
+    type(typ_shortrange):: shortrange
+    !socket
+    INTEGER:: sock_socket, sock_inet, sock_port        ! socket ID & address of the socket
+    CHARACTER(LEN=1024) :: sock_host
+    INTEGER, PARAMETER  :: MSGLEN=12   ! length of the headers of the driver/wrapper communication protocol
+    CHARACTER(LEN=60)   :: sock_extra_string="                                                            "
+    real(8)             :: sock_ecutwf(2)
+    logical             :: reset=.true.
+    public:: natmax, fcalls, fcalls_sec, potcode, potential_sec, cell, ntypat, natarr
+    public:: stypat, cellvec, l_atomic_num, perfstatus, perfstatus_old, sat
+    public:: natsi, ann_arr, ann_boundcheck, approach_ann, bigdft_restart
+    public:: comment, comment2, vasp5, single_point_calculation, vasp_restart
+    public:: atom_motion, sigmalj, epslj, rcut, kinds
+    public:: poisson, shortrange, sock_socket, sock_inet, sock_port, sock_host
+    public:: MSGLEN, sock_extra_string, sock_ecutwf, reset
+    public:: init_potential_forces
+    public:: fini_potential_forces
+    public:: cal_potential_forces
+    !type:: typ_potential
+    !    contains
+    !    procedure, public, pass(self):: init_potential_forces
+    !    procedure, public, pass(self):: fini_potential_forces
+    !    procedure, public, pass(self):: cal_potential_forces
+    !end type typ_potential
+contains
+!*****************************************************************************************
 subroutine init_potential_forces(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: fcalls, potcode
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -47,7 +119,6 @@ end subroutine init_potential_forces
 subroutine cal_potential_forces(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, get_rat, update_ratp, set_rat, update_rat
-    use mod_potential, only: potcode, fcalls
     use mod_processors, only: iproc
     use dynamic_memory
     implicit none
@@ -133,10 +204,9 @@ subroutine cal_potential_forces(parini,atoms)
     call f_release_routine()
 end subroutine cal_potential_forces
 !*****************************************************************************************
-subroutine final_potential_forces(parini,atoms)
+subroutine fini_potential_forces(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_potential, only: potcode
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
@@ -171,7 +241,7 @@ subroutine final_potential_forces(parini,atoms)
         case default
             stop 'ERROR: potential is unknown'
     end select
-end subroutine final_potential_forces
+end subroutine fini_potential_forces
 !*****************************************************************************************
 subroutine remove_drift(atoms)
     use mod_atoms, only: typ_atoms
@@ -192,3 +262,6 @@ subroutine remove_drift(atoms)
         atoms%fat(3,iat)=atoms%fat(3,iat)-(sum_fz/atoms%nat)
     enddo
 end subroutine remove_drift
+!*****************************************************************************************
+end module mod_potential
+!*****************************************************************************************

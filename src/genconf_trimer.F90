@@ -7,6 +7,9 @@ subroutine genconf_trimer(parini,genconf)
     use mod_processors, only: iproc
     use mod_potential, only: potcode
     use mod_acf, only: acf_write
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_genconf), intent(in):: genconf
@@ -116,7 +119,7 @@ subroutine genconf_trimer(parini,genconf)
     call acf_write(file_info,atoms_all=atoms_all,strkey='posout')
     !finalizing
     if(trim(genconf%cal_pot)=='yes') then
-        call final_potential_forces(parini,atoms_all%atoms)
+        call fini_potential_forces(parini,atoms_all%atoms)
     endif
     call atom_deallocate_old(atoms_all%atoms)
     call atom_all_deallocate(atoms_all,ratall=.true.,epotall=.true.)

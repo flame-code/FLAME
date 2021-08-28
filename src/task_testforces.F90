@@ -25,6 +25,9 @@ subroutine testforces_fd(parini)
     use mod_const, only: bohr2ang
     use mod_acf, only: acf_read
     use mod_yaml_conf, only: read_yaml_conf
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -135,7 +138,7 @@ subroutine testforces_fd(parini)
         call set_rat_iat(atoms,iat,xyz)
     enddo
     call yaml_sequence_close()
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
 end subroutine testforces_fd
 !*****************************************************************************************
 subroutine teststress_fd(parini)
@@ -235,6 +238,8 @@ subroutine teststress_fd_cellvec(parini)
     use mod_potential, only: potcode
     use mod_processors, only: iproc
     use mod_acf, only: acf_read
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: cal_potential_forces
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables

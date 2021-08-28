@@ -8,6 +8,8 @@ subroutine geopt(parini)
     use mod_processors, only: iproc, nproc
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_const, only: ang2bohr, bohr2ang, ev2ha
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
     use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
@@ -86,7 +88,7 @@ subroutine geopt(parini)
             call yaml_map('total energy and force evaluations',int(fcalls-count_initial),fmt='(i5)')
             call yaml_mapping_close()
         endif
-        call final_potential_forces(parini,atoms_arr%atoms(iconf))
+        call fini_potential_forces(parini,atoms_arr%atoms(iconf))
     enddo
 
     do iconf=1,atoms_arr%nconf

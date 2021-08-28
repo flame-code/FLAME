@@ -7,6 +7,9 @@ subroutine cal_hessian_4p(parini)
     use mod_processors, only: iproc
     use mod_potential, only: potcode
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
+    use mod_potential, only: cal_potential_forces
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
     use futile
     use dynamic_memory
     use yaml_output
@@ -112,7 +115,7 @@ subroutine cal_hessian_4p(parini)
         !-----------------------------------------
     enddo
     call set_rat(atoms,rat_center,setall=.true.)
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
     !-------------------------------------------------------
     !deallocate(yes)
     !check symmetry

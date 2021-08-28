@@ -9,6 +9,9 @@ subroutine md_nvt_langevin(parini,atoms)
     use mod_dynamics, only: dt, nmd ,nfreq
     !use mod_dynamics, only: dt, nmd !EHSAN
     use mod_processors, only: iproc
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     !use mod_potential, only: bias 
     implicit none
     type(typ_parini), intent(inout):: parini
@@ -248,7 +251,7 @@ subroutine md_nvt_langevin(parini,atoms)
     enddo !end of loop over imd
     close(21)
     !close(1000) !EHSAN
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
 end subroutine md_nvt_langevin
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_cp(parini,atoms)
@@ -259,6 +262,9 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
     use mod_acf, only: acf_write
     use mod_dynamics, only: dt, nmd
     use mod_processors, only: iproc
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     !use mod_potential, only: bias 
     implicit none
     type(typ_parini), intent(inout):: parini
@@ -450,7 +456,7 @@ subroutine md_nvt_nose_hoover_cp(parini,atoms)
         
     enddo !end of loop over imd
     close(1000)
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
 end subroutine md_nvt_nose_hoover_cp
 !*****************************************************************************************
 subroutine md_nvt_nose_hoover_chain(parini,atoms)
@@ -462,6 +468,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     use mod_dynamics, only: dt, nmd, nfreq
     !use mod_dynamics, only: dt, nmd !EHSAN
     use mod_processors, only: iproc
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     !use mod_potential, only: bias 
     implicit none
     type(typ_parini), intent(inout):: parini
@@ -831,7 +840,7 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     !file_info%filename_positions='posout.yaml' !EHSAN
     !call write_yaml_conf(file_info,atoms,'posout') !EHSAN
 
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
 end subroutine md_nvt_nose_hoover_chain
 !*****************************************************************************************
 subroutine set_langevin_randforce(eta,nat)

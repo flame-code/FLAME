@@ -13,6 +13,7 @@
        subroutine fortran_callback(lmp, timestep, nlocal, ids, c_pos, c_fext) & 
      & bind(C, name='f_callback')
        use, intrinsic :: ISO_C_binding
+       use mod_potential, only: cal_potential_forces
        use LAMMPS
        implicit none
        type (C_ptr), value :: lmp

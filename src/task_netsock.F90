@@ -9,6 +9,8 @@ subroutine netsock_task(parini)
     use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
     use mod_acf, only: acf_read_new
     use mod_yaml_conf, only: read_yaml_conf
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: cal_potential_forces
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables

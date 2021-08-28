@@ -11,6 +11,8 @@ subroutine lammps_task(parini)
     use mod_atoms, only: get_rat, set_rat
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_potential, only: potcode
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
 #if defined(HAVE_LAMMPS)
     use mpi
     use LAMMPS
@@ -66,7 +68,7 @@ subroutine lammps_task(parini)
     !the required task is completed.
     call lammps_command (lmp,str_run)
     call lammps_close (lmp)
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
     do iconf=1,atoms_arr%nconf
         call atom_deallocate(atoms_arr%atoms(iconf))
     enddo

@@ -5,6 +5,7 @@ subroutine pot_initialize(parini,atoms,paropt,paropt_m)
     use mod_opt, only: typ_paropt
     use mod_processors, only: nproc, iproc
     use mod_potential, only: potcode, perfstatus
+    use mod_potential, only: init_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms

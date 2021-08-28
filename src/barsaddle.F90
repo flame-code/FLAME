@@ -74,6 +74,8 @@ subroutine bar_saddle(parini)
     use mod_potential, only: potcode
     use mod_yaml_conf, only: read_yaml_conf
     use bar_saddle_params
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -226,7 +228,7 @@ subroutine bar_saddle(parini)
     !-------------------------------------------------------
     !-------------------------------------------------------
     !-------------------------------------------------------
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
     deallocate(rxyz1,rxyz2)
     deallocate(fxyz1)
     call atom_deallocate(atoms)

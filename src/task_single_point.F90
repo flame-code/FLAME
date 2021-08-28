@@ -7,6 +7,9 @@ subroutine single_point_task(parini)
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
@@ -73,7 +76,7 @@ subroutine single_point_task(parini)
             !    enddo
             !endif
             if(trim(potcode)/='netsock' .or. iconf==atoms_arr%nconf) then 
-                call final_potential_forces(parini,atoms_arr%atoms(iconf))
+                call fini_potential_forces(parini,atoms_arr%atoms(iconf))
             endif
             if (iconf==2)  file_info%file_position='append'
             if(yaml_exists) then

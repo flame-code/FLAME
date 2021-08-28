@@ -10,6 +10,7 @@ subroutine dimer_method(parini)
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_processors, only: iproc
     use mod_const, only: ang2bohr
+    use mod_potential, only: cal_potential_forces
     use dynamic_memory
     use yaml_output
     implicit none

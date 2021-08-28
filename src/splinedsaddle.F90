@@ -9,6 +9,8 @@ subroutine splined_saddle(parini)
   use mod_atoms, only: atom_copy, get_rat
   use mod_potential, only: potcode
   use mod_yaml_conf, only: read_yaml_conf
+  use mod_potential, only: init_potential_forces
+  use mod_potential, only: fini_potential_forces
   !as a general policy, we'll have "implicit none" by assuming the same
   !name convention as "implicit real(kind=8) (a-h,o-z)"
 
@@ -127,7 +129,7 @@ subroutine splined_saddle(parini)
 
   !call MPI_FINALIZE(ierr)
 
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
     call atom_deallocate(atoms)
 end subroutine splined_saddle
 !*****************************************************************************************
@@ -4624,6 +4626,7 @@ subroutine call_bigdft(nproc,iproc,atoms,rxyz,etot,fxyz,fnoise,infocode,parini)
     use mod_atoms, only: typ_atoms, set_rat, get_rat !, update_ratp, update_rat
     !use dynamic_memory
     use wrapper_linalg, only: vcopy
+    use mod_potential, only: cal_potential_forces
     implicit none
     integer, intent(in) :: nproc, iproc
     type(typ_atoms), intent(inout) :: atoms
