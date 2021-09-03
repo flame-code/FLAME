@@ -5,6 +5,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia_arr
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -18,6 +19,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
     real(8):: hinv(3,3)
+    !real(8):: time1, time2
     call f_routine(id='cal_ann_atombased')
     call update_ratp(atoms)
     if(ann_arr%compute_symfunc) then
@@ -37,7 +39,9 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
     atoms%stress(1:3,1:3)=0.d0
+    !call cpu_time(time1)
     over_iat: do iat=1,atoms%nat
+        if(mod(iat,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
         !if(ann_arr%compute_symfunc) then
@@ -83,7 +87,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
                 atoms%stress(1,3)=atoms%stress(1,3)-sxz
                 atoms%stress(2,3)=atoms%stress(2,3)-syz
                 atoms%stress(3,3)=atoms%stress(3,3)-szz
-            enddo !over jat
+            enddo !over ib
             endif
         elseif(trim(ann_arr%event)=='train') then
             call cal_architecture_der(ann_arr%ann(i),epoti)
@@ -92,7 +96,15 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
         atoms%epot=atoms%epot+epoti
+        endif
     enddo over_iat
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(atoms%epot,1,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(atoms%fat(1,1),3*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(atoms%stress(1,1),9,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    endif
+    !call cpu_time(time2)
+    !write(*,*) 'ANNs time ',time2-time1
     atoms%epot=atoms%epot+ann_arr%ener_ref
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)

@@ -59,14 +59,16 @@ subroutine initprocessors(mpi_env)
     call yaml_map('nproc',nproc)
     call yaml_mapping_close()
     mpi_env%iproc=iproc
+    mpi_env%nproc=nproc
     !write(*,'(a,2i4)') 'mpi started: iproc,nproc ',iproc,nproc
     parallel=.true. !parallel MPI set parallel=.true., for serial parallel=.false.
 #else
     iproc_world=0
     nproc_world=1
     iproc=0
-    mpi_env%iproc=0
     nproc=1
+    mpi_env%iproc=0
+    mpi_env%nproc=1
     imaster=0
     return
 #endif

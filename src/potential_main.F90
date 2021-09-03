@@ -198,7 +198,7 @@ subroutine cal_potential_forces(parini,atoms)
     !do iat=1,atoms%nat
     !    write(27,'(3es17.9)') atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
     !enddo
-    write(27,'(3es20.12)') sqrt(sum(atoms%fat(1,:)**2)),sqrt(sum(atoms%fat(2,:)**2)),sqrt(sum(atoms%fat(3,:)**2))
+    !write(27,'(3es20.12)') sqrt(sum(atoms%fat(1,:)**2)),sqrt(sum(atoms%fat(2,:)**2)),sqrt(sum(atoms%fat(3,:)**2))
     call set_rat(atoms,rat_backup,setall=.true.)
     deallocate(rat_backup)
     call f_release_routine()

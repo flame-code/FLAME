@@ -5,6 +5,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr !,typ_linked_lists
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -14,9 +15,11 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     type(typ_symfunc), intent(inout):: symfunc
     !local variables
     integer:: ig, i
+    !integer:: ierr, irequest
     integer:: iat !, jat, kat
     type(typ_pia_arr):: pia_arr
     real(8):: cutoff_function, cutoff_function_der
+    !real(8):: time1, time2
     external cutoff_function, cutoff_function_der
     !real(8):: rc, en
     !real(8):: eval(3)
@@ -24,6 +27,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !integer :: info
     !real(8), dimension(lwork) :: work
     integer:: isat, jsat, ksat, ib, ia, ibij, ibik, istat
+    !real(8), allocatable:: y(:,:), y0d(:,:,:), y0dr(:,:,:)
     !type(typ_linked_lists):: linked_lists
     call f_routine(id='symmetry_functions_driver')
     associate(rc=>symfunc%linked_lists%rcut)
@@ -42,16 +46,20 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     symfunc%y0d=f_malloc0((/1.to.ng,1.to.3,1.to.symfunc%linked_lists%maxbound_rad/),id='symfunc%y0d')
     symfunc%y0dr=f_malloc0((/1.to.ng,1.to.9,1.to.symfunc%linked_lists%maxbound_rad/),id='symfunc%y0dr')
 
+    !call cpu_time(time1)
     !stop
     do ib=1,symfunc%linked_lists%maxbound_rad
+        pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
+        pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
+        if(mod(ib,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         iat=symfunc%linked_lists%bound_rad(1,ib)
         isat=atoms%itypat(iat)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ib))
-        pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
-        pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
         call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc)
+        endif
     enddo
     do ia=1,symfunc%linked_lists%maxbound_ang
+        if(mod(ia,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         ibij=symfunc%linked_lists%bound_ang(1,ia)
         ibik=symfunc%linked_lists%bound_ang(2,ia)
         if(symfunc%linked_lists%bound_rad(1,ibij)/=symfunc%linked_lists%bound_rad(1,ibik)) then
@@ -66,7 +74,27 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         else
             call symmetry_functions_g05_atom(ann_arr,pia_arr%pia(ibij),pia_arr%pia(ibik),ibij,ibik,iat,isat,jsat,ksat,symfunc)
         endif
+        endif
     enddo
+    if(parini%mpi_env%nproc>1) then
+    !y=f_malloc0((/1.to.ng,1.to.atoms%nat/),id='y')
+    !y0d=f_malloc0((/1.to.ng,1.to.3,1.to.symfunc%linked_lists%maxbound_rad/),id='y0d')
+    !y0dr=f_malloc0((/1.to.ng,1.to.9,1.to.symfunc%linked_lists%maxbound_rad/),id='y0dr')
+    !call MPI_ALLREDUCE(symfunc%y(1,1),y,ng*atoms%nat,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
+    !call MPI_ALLREDUCE(symfunc%y0d(1,1,1),y0d,ng*3*symfunc%linked_lists%maxbound_rad,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
+    !call MPI_ALLREDUCE(symfunc%y0dr(1,1,1),y0dr,ng*9*symfunc%linked_lists%maxbound_rad,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
+    !symfunc%y=y
+    !symfunc%y0d=y0d
+    !symfunc%y0dr=y0dr
+    !call f_free(y)
+    !call f_free(y0d)
+    !call f_free(y0dr)
+    call fmpi_allreduce(symfunc%y(1,1),ng*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(symfunc%y0d(1,1,1),ng*3*symfunc%linked_lists%maxbound_rad,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(symfunc%y0dr(1,1,1),ng*9*symfunc%linked_lists%maxbound_rad,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    endif
+    !call cpu_time(time2)
+    !write(*,*) 'SF time ',time2-time1
     !-------------------------------------------------------------------------------------
     !if(parini%iverbose>2) then
     !do iat=1,atoms%nat

@@ -79,12 +79,14 @@ subroutine single_point_task(parini)
                 call fini_potential_forces(parini,atoms_arr%atoms(iconf))
             endif
             if (iconf==2)  file_info%file_position='append'
+            if(parini%mpi_env%iproc==0) then
             if(yaml_exists) then
                 file_info%filename_positions='posout.yaml'
                 call write_yaml_conf(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout')
             elseif(acf_exists) then
                 file_info%filename_positions='posout.acf'
                 call acf_write(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout')
+            endif
             endif
         enddo
         do iconf=1,atoms_arr%nconf
