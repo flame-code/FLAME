@@ -15,6 +15,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng, jat, ib
+    integer:: iats, iate, mat, mproc
     real(8):: epoti, tt,vol
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
@@ -40,8 +41,21 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     atoms%fat(1:3,1:atoms%nat)=0.d0
     atoms%stress(1:3,1:3)=0.d0
     !call cpu_time(time1)
+    if(parini%mpi_env%nproc>1) then
+        mat=atoms%nat/parini%mpi_env%nproc
+        iats=parini%mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,parini%mpi_env%nproc)
+        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+        iate=iats+mat-1
+    else
+        iats=1
+        iate=atoms%nat
+        !mat=atoms%nat
+    endif
     over_iat: do iat=1,atoms%nat
-        if(mod(iat,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
+        if(iat<iats .or. iat>iate) cycle
+        !if(mod(iat,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
         !if(ann_arr%compute_symfunc) then
@@ -96,7 +110,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
         atoms%epot=atoms%epot+epoti
-        endif
+        !endif
     enddo over_iat
     if(parini%mpi_env%nproc>1) then
     call fmpi_allreduce(atoms%epot,1,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)

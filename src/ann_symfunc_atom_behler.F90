@@ -15,6 +15,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     type(typ_symfunc), intent(inout):: symfunc
     !local variables
     integer:: ig, i
+    integer:: iats, iate, mat, mproc
     !integer:: ierr, irequest
     integer:: iat !, jat, kat
     type(typ_pia_arr):: pia_arr
@@ -48,24 +49,38 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
 
     !call cpu_time(time1)
     !stop
+    if(parini%mpi_env%nproc>1) then
+        mat=atoms%nat/parini%mpi_env%nproc
+        iats=parini%mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,parini%mpi_env%nproc)
+        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+        iate=iats+mat-1
+    else
+        iats=1
+        iate=atoms%nat
+        !mat=atoms%nat
+    endif
     do ib=1,symfunc%linked_lists%maxbound_rad
         pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
         pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
-        if(mod(ib,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
+        !if(mod(ib,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         iat=symfunc%linked_lists%bound_rad(1,ib)
+        if(iat<iats .or. iat>iate) cycle
         isat=atoms%itypat(iat)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ib))
         call symmetry_functions_g02_atom(ann_arr,pia_arr%pia(ib),ib,iat,isat,jsat,symfunc)
-        endif
+        !endif
     enddo
     do ia=1,symfunc%linked_lists%maxbound_ang
-        if(mod(ia,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
+        !if(mod(ia,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         ibij=symfunc%linked_lists%bound_ang(1,ia)
+        iat=symfunc%linked_lists%bound_rad(1,ibij)
+        if(iat<iats .or. iat>iate) cycle
         ibik=symfunc%linked_lists%bound_ang(2,ia)
         if(symfunc%linked_lists%bound_rad(1,ibij)/=symfunc%linked_lists%bound_rad(1,ibik)) then
             stop 'ERROR: the centered atoms for two bonds is different.'
         endif
-        iat=symfunc%linked_lists%bound_rad(1,ibij)
         isat=atoms%itypat(iat)
         jsat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ibij))
         ksat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ibik))
@@ -74,9 +89,9 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         else
             call symmetry_functions_g05_atom(ann_arr,pia_arr%pia(ibij),pia_arr%pia(ibik),ibij,ibik,iat,isat,jsat,ksat,symfunc)
         endif
-        endif
+        !endif
     enddo
-    if(parini%mpi_env%nproc>1) then
+    !if(parini%mpi_env%nproc>1) then
     !y=f_malloc0((/1.to.ng,1.to.atoms%nat/),id='y')
     !y0d=f_malloc0((/1.to.ng,1.to.3,1.to.symfunc%linked_lists%maxbound_rad/),id='y0d')
     !y0dr=f_malloc0((/1.to.ng,1.to.9,1.to.symfunc%linked_lists%maxbound_rad/),id='y0dr')
@@ -89,10 +104,10 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !call f_free(y)
     !call f_free(y0d)
     !call f_free(y0dr)
-    call fmpi_allreduce(symfunc%y(1,1),ng*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    call fmpi_allreduce(symfunc%y0d(1,1,1),ng*3*symfunc%linked_lists%maxbound_rad,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    call fmpi_allreduce(symfunc%y0dr(1,1,1),ng*9*symfunc%linked_lists%maxbound_rad,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    endif
+    !call fmpi_allreduce(symfunc%y(1,1),ng*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    !call fmpi_allreduce(symfunc%y0d(1,1,1),ng*3*symfunc%linked_lists%maxbound_rad,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    !call fmpi_allreduce(symfunc%y0dr(1,1,1),ng*9*symfunc%linked_lists%maxbound_rad,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    !endif
     !call cpu_time(time2)
     !write(*,*) 'SF time ',time2-time1
     !-------------------------------------------------------------------------------------
