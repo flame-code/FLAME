@@ -27,7 +27,7 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
     de=epot-paropt%epotold
     !write(*,'(a10,i5,es23.15,es11.3,2es12.5,3es12.4,i4,1es12.4)') &
     !    'FIREMIN   ',paropt%itfire,epot,de,fnrm,fmax,vnrm,dt,paropt%alpha,paropt%ndown,p
-    if(paropt%lprint .and. parini%iverbose>=0) then
+    if(parini%mpi_env%iproc==0 .and. paropt%lprint .and. parini%iverbose>=0) then
         !write(*,'(a4,i3.3,1x,i5,es23.15,es11.3,2es12.5,3es12.4,i4,1es12.4,a)') &
         !write(*,frmt) &
         !    'MIN:',iproc,paropt%itfire,epot,de,fnrm,fmax,vnrm,dt,paropt%alpha,paropt%ndown,p,' FIRE'
@@ -52,6 +52,7 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
         paropt%iflag=0
         !write(*,'(a,i4,es23.15,2es12.5)') &
         !    'FIRE FINISHED: itfire,epot,fnrm,fmax ',paropt%itfire,epot,fnrm,fmax
+        if(parini%mpi_env%iproc==0) then
         call yaml_sequence(advance='no')
         call yaml_mapping_open('FIRE FINISHED') !,label='id001')
         call yaml_map('success',.true.)
@@ -60,6 +61,7 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
         call yaml_map('fnrm',fnrm,fmt='(es12.5)')
         call yaml_map('fmax',fmax,fmt='(es12.5)')
         call yaml_mapping_close()
+        endif
         return
     endif
     paropt%itfire=paropt%itfire+1

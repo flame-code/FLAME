@@ -22,8 +22,11 @@ subroutine alborz_init(parini,parres,file_ini)
     logical:: flib_profiling
     call f_lib_initialize()
     inquire(file="NO_FLIB_PROFILING",exist=flib_profiling)
+    !if(trim(parini%task)/='minhocao') then
+        call initprocessors(parini%mpi_env) !start MPI in parallel version.
+    !endif
     if(flib_profiling) then
-        call f_malloc_set_status()!profiling_depth=0)
+        call f_malloc_set_status(iproc=parini%mpi_env%iproc)!profiling_depth=0)
     endif
     call f_routine(id='alborz_init')
     !-----------------------------------------------------------------
@@ -75,9 +78,6 @@ subroutine alborz_init(parini,parres,file_ini)
         call get_ewald_parameters(file_ini,parini)
         call get_misc_parameters(file_ini,parini)
     endif
-    !if(trim(parini%task)/='minhocao') then
-        call initprocessors(parini%mpi_env) !start MPI in parallel version.
-    !endif
     if(trim(parini%task)/='potential') then
         call init_random_seed(parini)
     endif
