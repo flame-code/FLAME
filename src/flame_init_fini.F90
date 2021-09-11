@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine alborz_init(parini,parres,file_ini)
-    use mod_processors, only: iproc, imaster
+    use mod_processors, only: iproc, nproc, iproc_world, nproc_world
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
     use mod_parser_ini, only: read_file_input
@@ -34,11 +34,13 @@ subroutine alborz_init(parini,parres,file_ini)
     !call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
     !-----------------------------------------------------------------
     parini%iunit=f_get_free_unit(10**5)
+    if(parini%mpi_env%iproc==0) then
     call yaml_set_stream(unit=parini%iunit,filename=trim(filename),&
          record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
-    if (ierr/=0) then
+    if(ierr/=0) then
        call yaml_warning('Failed to create'//trim(filename)//', error code='//trim(yaml_toa(ierr)))
-    end if
+    endif
+    endif
     call yaml_release_document(parini%iunit)
     call yaml_set_default_stream(parini%iunit,ierr)
     !call yaml_get_default_stream(unit_log)
@@ -78,6 +80,12 @@ subroutine alborz_init(parini,parres,file_ini)
         call get_ewald_parameters(file_ini,parini)
         call get_misc_parameters(file_ini,parini)
     endif
+    call yaml_mapping_open('mpi started',flow=.true.)
+    call yaml_map('iproc_world',iproc_world)
+    call yaml_map('nproc_world',nproc_world)
+    call yaml_map('iproc',iproc)
+    call yaml_map('nproc',nproc)
+    call yaml_mapping_close()
     if(trim(parini%task)/='potential') then
         call init_random_seed(parini)
     endif

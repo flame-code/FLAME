@@ -15,6 +15,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
     logical, intent(in):: apply_gbounds
     !local variables
     integer:: i0, iat, jat, isat, i, ib, istat, ng, ig
+    integer:: iats, iate, mat, mproc, ibs, ibe
     real(8):: gleft
     call f_routine(id='symmetry_functions')
     !call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
@@ -55,7 +56,21 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
                     symfunc%y(i0,iat)=(symfunc%y(i0,iat)-gleft)*ann_arr%ann(isat)%two_over_gdiff(i0)-1.d0
                 enddo
             enddo
-            do ib=1,symfunc%linked_lists%maxbound_rad
+            if(parini%mpi_env%nproc>1) then
+                mat=atoms%nat/parini%mpi_env%nproc
+                iats=parini%mpi_env%iproc*mat+1
+                mproc=mod(atoms%nat,parini%mpi_env%nproc)
+                iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+                if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+                iate=iats+mat-1
+            else
+                iats=1
+                iate=atoms%nat
+                !mat=atoms%nat
+            endif
+            ibs=symfunc%linked_lists%prime_bound(iats)
+            ibe=symfunc%linked_lists%prime_bound(iate+1)-1
+            do ib=ibs,ibe !1,symfunc%linked_lists%maxbound_rad
                 iat=symfunc%linked_lists%bound_rad(1,ib)
                 isat=atoms%itypat(iat)
                 do i0=1,ann_arr%ann(isat)%nn(0)

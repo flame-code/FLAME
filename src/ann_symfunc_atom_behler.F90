@@ -15,7 +15,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !local variables
     integer:: ig, i
     integer:: iats, iate, mat, mproc
-    integer:: iat
+    integer:: iat, ibs, ibe
     type(typ_pia_arr):: pia_arr
     real(8):: cutoff_function, cutoff_function_der
     !real(8):: time1, time2
@@ -30,11 +30,6 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))
-    symfunc%y=f_malloc0((/1.to.ng,1.to.atoms%nat/),id='symfunc%y')
-    symfunc%y0d=f_malloc0((/1.to.ng,1.to.3,1.to.symfunc%linked_lists%maxbound_rad/),id='symfunc%y0d')
-    symfunc%y0dr=f_malloc0((/1.to.ng,1.to.9,1.to.symfunc%linked_lists%maxbound_rad/),id='symfunc%y0dr')
-
-    !call cpu_time(time1)
     if(parini%mpi_env%nproc>1) then
         mat=atoms%nat/parini%mpi_env%nproc
         iats=parini%mpi_env%iproc*mat+1
@@ -47,6 +42,17 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         iate=atoms%nat
         !mat=atoms%nat
     endif
+    ibs=symfunc%linked_lists%prime_bound(iats)
+    ibe=symfunc%linked_lists%prime_bound(iate+1)-1
+    symfunc%y=f_malloc0((/1.to.ng,1.to.atoms%nat/),id='symfunc%y')
+    symfunc%y0d=f_malloc0((/1.to.ng,1.to.3,ibs.to.ibe/),id='symfunc%y0d')
+    symfunc%y0dr=f_malloc0((/1.to.ng,1.to.9,ibs.to.ibe/),id='symfunc%y0dr')
+    !call flm_zero(ng*atoms%nat,symfunc%y)
+    !call flm_zero(ng*3*(ibe-ibs+1),symfunc%y0d)
+    !call flm_zero(ng*9*(ibe-ibs+1),symfunc%y0dr)
+    !symfunc%y=0.d0
+    !symfunc%y0d=0.d0
+    !symfunc%y0dr=0.d0
     do ib=1,symfunc%linked_lists%maxbound_rad
         pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
         pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)

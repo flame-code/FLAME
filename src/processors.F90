@@ -15,9 +15,6 @@ subroutine initprocessors(mpi_env)
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
     call MPI_COMM_RANK(MPI_COMM_WORLD,iproc_world,ierr)
     call MPI_COMM_SIZE(MPI_COMM_WORLD,nproc_world,ierr)
-    call yaml_mapping_open('mpi started',flow=.true.)
-    call yaml_map('iproc_world',iproc_world)
-    call yaml_map('nproc_world',nproc_world)
     !write(*,'(a,2i4)') 'mpi started: iproc_world,nproc_world ',iproc_world,nproc_world
     if(iproc_world==imaster) then
         open(unit=21,file='master.dat',status='replace',iostat=ios)
@@ -55,9 +52,6 @@ subroutine initprocessors(mpi_env)
     endif
     !iproc=iproc_world
     !nproc=nproc_world
-    call yaml_map('iproc',iproc)
-    call yaml_map('nproc',nproc)
-    call yaml_mapping_close()
     mpi_env%iproc=iproc
     mpi_env%nproc=nproc
     !write(*,'(a,2i4)') 'mpi started: iproc,nproc ',iproc,nproc
