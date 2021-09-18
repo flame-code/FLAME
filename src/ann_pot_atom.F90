@@ -5,6 +5,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia_arr
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -14,12 +15,15 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng, jat, ib
+    integer:: iats, iate, mat, mproc
     real(8):: epoti, tt,vol
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
     real(8):: hinv(3,3)
+    !real(8):: time0, time1, time2, time3
     call f_routine(id='cal_ann_atombased')
     call update_ratp(atoms)
+    !call cpu_time(time0)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     else
@@ -34,10 +38,25 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     do iat=1,atoms%nat
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
     enddo
+    !call cpu_time(time1)
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
     atoms%stress(1:3,1:3)=0.d0
+    if(parini%mpi_env%nproc>1) then
+        mat=atoms%nat/parini%mpi_env%nproc
+        iats=parini%mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,parini%mpi_env%nproc)
+        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+        iate=iats+mat-1
+    else
+        iats=1
+        iate=atoms%nat
+        !mat=atoms%nat
+    endif
     over_iat: do iat=1,atoms%nat
+        if(iat<iats .or. iat>iate) cycle
+        !if(mod(iat,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
         !if(ann_arr%compute_symfunc) then
@@ -83,7 +102,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
                 atoms%stress(1,3)=atoms%stress(1,3)-sxz
                 atoms%stress(2,3)=atoms%stress(2,3)-syz
                 atoms%stress(3,3)=atoms%stress(3,3)-szz
-            enddo !over jat
+            enddo !over ib
             endif
         elseif(trim(ann_arr%event)=='train') then
             call cal_architecture_der(ann_arr%ann(i),epoti)
@@ -92,7 +111,14 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
         atoms%epot=atoms%epot+epoti
+        !endif
     enddo over_iat
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(atoms%epot,1,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(atoms%fat(1,1),3*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(atoms%stress(1,1),9,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    endif
+    !call cpu_time(time2)
     atoms%epot=atoms%epot+ann_arr%ener_ref
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)
@@ -115,6 +141,11 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
         call f_free(symfunc%y0dr)
         endif
     endif
+    !call cpu_time(time3)
+    !write(*,*) 'TT1 time ',time1-time0
+    !write(*,*) 'TT2 time ',time2-time1
+    !write(*,*) 'TT3 time ',time3-time2
+    !write(*,*) 'TTt time ',time3-time0
     call f_release_routine()
 end subroutine cal_ann_atombased
 !*****************************************************************************************

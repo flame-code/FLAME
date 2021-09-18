@@ -1,6 +1,6 @@
 !*****************************************************************************************
 subroutine alborz_init(parini,parres,file_ini)
-    use mod_processors, only: iproc, mpi_comm_abz, imaster
+    use mod_processors, only: iproc, nproc, iproc_world, nproc_world
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
     use mod_parser_ini, only: read_file_input
@@ -22,8 +22,11 @@ subroutine alborz_init(parini,parres,file_ini)
     logical:: flib_profiling
     call f_lib_initialize()
     inquire(file="NO_FLIB_PROFILING",exist=flib_profiling)
+    !if(trim(parini%task)/='minhocao') then
+        call initprocessors(parini%mpi_env) !start MPI in parallel version.
+    !endif
     if(flib_profiling) then
-        call f_malloc_set_status()!profiling_depth=0)
+        call f_malloc_set_status(iproc=parini%mpi_env%iproc)!profiling_depth=0)
     endif
     call f_routine(id='alborz_init')
     !-----------------------------------------------------------------
@@ -31,11 +34,13 @@ subroutine alborz_init(parini,parres,file_ini)
     !call f_timing(TCAT_ALBORZ_INIT_FINAL,'ON')
     !-----------------------------------------------------------------
     parini%iunit=f_get_free_unit(10**5)
+    if(parini%mpi_env%iproc==0) then
     call yaml_set_stream(unit=parini%iunit,filename=trim(filename),&
          record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
-    if (ierr/=0) then
+    if(ierr/=0) then
        call yaml_warning('Failed to create'//trim(filename)//', error code='//trim(yaml_toa(ierr)))
-    end if
+    endif
+    endif
     call yaml_release_document(parini%iunit)
     call yaml_set_default_stream(parini%iunit,ierr)
     !call yaml_get_default_stream(unit_log)
@@ -75,9 +80,12 @@ subroutine alborz_init(parini,parres,file_ini)
         call get_ewald_parameters(file_ini,parini)
         call get_misc_parameters(file_ini,parini)
     endif
-    if(trim(parini%task)/='minhocao') then
-        call initprocessors !start MPI in parallel version.
-    endif
+    call yaml_mapping_open('mpi started',flow=.true.)
+    call yaml_map('iproc_world',iproc_world)
+    call yaml_map('nproc_world',nproc_world)
+    call yaml_map('iproc',iproc)
+    call yaml_map('nproc',nproc)
+    call yaml_mapping_close()
     if(trim(parini%task)/='potential') then
         call init_random_seed(parini)
     endif
@@ -139,9 +147,9 @@ subroutine alborz_final(parini,file_ini)
     !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(hrs)',iproc,(time_end-time_start)/3600.d0
     !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(min)',iproc,(time_end-time_start)/60.d0
     !write(*,'(a,1x,i4,e15.3)') 'CPU time: iproc,time(sec)',iproc,(time_end-time_start)
-    if(trim(parini%task)/='minhocao') then
-        call finalizeprocessors
-    endif
+    !if(trim(parini%task)/='minhocao') then
+        call finalizeprocessors(parini%mpi_env)
+    !endif
     !-----------------------------------------------------------------
     !call f_timing(TCAT_ALBORZ_INIT_FINAL,'OF')
     !call f_timing_stop(dict_info=dict_timing_info)
@@ -155,7 +163,7 @@ subroutine alborz_final(parini,file_ini)
 end subroutine alborz_final
 !*****************************************************************************************
 subroutine init_random_seed(parini)
-    use mod_processors, only: iproc, mpi_comm_abz, imaster
+    use mod_processors, only: iproc, imaster
     use mod_parini, only: typ_parini
     use yaml_output
     implicit none
@@ -185,8 +193,8 @@ subroutine init_random_seed(parini)
     endif
 #if defined(MPI)
     if(trim(parini%task)/='minhocao') then 
-         call MPI_BARRIER(mpi_comm_abz,ierr)
-         call MPI_BCAST(iseed,nseed,MPI_INTEGER,imaster,mpi_comm_abz,ierr)
+         call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+         call MPI_BCAST(iseed,nseed,MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
     endif
 #endif
     iseed(1:nseed)=iseed(1:nseed)+iproc*11
@@ -284,7 +292,7 @@ subroutine flm_print_logo(parini)
     call yaml_scalar('    MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE')     
     call yaml_scalar('________________________________________ www.flame-code.org   "')
     call yaml_mapping_close()
-    call yaml_map('Reference Paper','To Be Added Later.')
+    call yaml_map('Reference Paper','https://doi.org/10.1016/j.cpc.2020.107415')
     !call yaml_map('Version Number',package_version)
     call yaml_map('Timestamp of this run',yaml_date_and_time_toa())
 end subroutine flm_print_logo

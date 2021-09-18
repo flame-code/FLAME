@@ -2,13 +2,15 @@
 subroutine netsock_task(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, update_rat
-    use mod_potential, only: fcalls, perfstatus, potential
+    use mod_potential, only: fcalls, perfstatus, potcode
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr, bohr2ang
     USE F90SOCKETS, ONLY : create_socket, open_socket, writebuffer, readbuffer
     use mod_potential, only: sock_socket, sock_inet, sock_port,sock_host,MSGLEN,sock_extra_string,reset
     use mod_acf, only: acf_read_new
     use mod_yaml_conf, only: read_yaml_conf
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: cal_potential_forces
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables
@@ -54,12 +56,12 @@ subroutine netsock_task(parini)
 !If sockets are use, only run if a single configuration is present
     if(parini%usesocket.and.atoms_arr%nconf.gt.1) stop "Only single configurations allowed with socket communication"
 !If sockets are used and netsock is the potential the code will bomb
-    if(parini%usesocket.and.trim(potential)=='netsock') stop "Potential cannot be netsock if socket communication requested"
+    if(parini%usesocket.and.trim(potcode)=='netsock') stop "Potential cannot be netsock if socket communication requested"
 
     do iconf=1,atoms_arr%nconf
         call set_ndof(atoms_arr%atoms(iconf))
     enddo
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     file_info%filename_positions='posout.acf'
     file_info%print_force=parini%print_force_single_point
     file_info%file_position='new'
@@ -67,7 +69,7 @@ subroutine netsock_task(parini)
         file_info%frmt=trim(parini%frmt_single_point)
     endif
     do iconf=1,atoms_arr%nconf
-        if(trim(potential)/='netsock' .or. iconf==1) then 
+        if(trim(potcode)/='netsock' .or. iconf==1) then 
             call init_potential_forces(parini,atoms_arr%atoms(iconf))
         endif
         allocate(pos(3,atoms_arr%atoms(iconf)%nat),fcart(3,atoms_arr%atoms(iconf)%nat))
@@ -95,7 +97,7 @@ subroutine netsock_task(parini)
             else if (trim(header) == "POSDATA") then 
                 call get_data_slave(pos,latvec,atoms_arr%atoms(iconf)%nat,nat_get)
                 atoms_arr%atoms(iconf)%cellvec=latvec
-                if(potential=='vcblj')atoms_arr%atoms(iconf)%cellvec=latvec*bohr2ang
+                if(potcode=='vcblj')atoms_arr%atoms(iconf)%cellvec=latvec*bohr2ang
 !Convert the units of positions and lattice vectors in a format that alborz will understand
                 call rxyz_int2cart_alborz(atoms_arr%atoms(iconf)%nat,atoms_arr%atoms(iconf)%cellvec,pos,atoms_arr%atoms(iconf)%ratp)
                 call update_rat(atoms_arr%atoms(iconf),upall=.true.)
@@ -103,14 +105,14 @@ subroutine netsock_task(parini)
                 call cal_potential_forces(parini,atoms_arr%atoms(iconf))
 !Get Force
                 fcart=atoms_arr%atoms(iconf)%fat
-                if(potential=='vcblj')fcart=atoms_arr%atoms(iconf)%fat*ev2ha/ang2bohr
+                if(potcode=='vcblj')fcart=atoms_arr%atoms(iconf)%fat*ev2ha/ang2bohr
 !Get Stress
                 call getvol_alborz(atoms_arr%atoms(iconf)%cellvec,vol)
                 strmat=atoms_arr%atoms(iconf)%stress!*vol
-                if(potential=='vcblj')strmat=-atoms_arr%atoms(iconf)%stress*ev2ha*vol
+                if(potcode=='vcblj')strmat=-atoms_arr%atoms(iconf)%stress*ev2ha*vol
 !Get Energy
                 etot=atoms_arr%atoms(iconf)%epot
-                if(potential=='vcblj')etot=atoms_arr%atoms(iconf)%epot*ev2ha
+                if(potcode=='vcblj')etot=atoms_arr%atoms(iconf)%epot*ev2ha
 !Now I have the data
                 hasdata=.true.
             else if (trim(header)=="GETFORCE") then 

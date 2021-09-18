@@ -23,6 +23,8 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
         iconf=idp
     elseif(trim(ann_arr%approach)=='cent1') then
         iconf=idp
+    elseif(trim(ann_arr%approach)=='cent2') then
+        iconf=idp
     elseif(trim(ann_arr%approach)=='centt') then
         iconf=idp
     elseif(trim(ann_arr%approach)=='cent3') then
@@ -33,7 +35,59 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     endif
     !-----------------------------------------------------------------
     call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
+    if(trim(ann_arr%approach)=='cent2') then
+        if (allocated(ann_arr%a)) deallocate(ann_arr%a)
+        if(.not. allocated(ann_arr%ann_amat_train(iconf)%amat)) then 
+            allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
+            allocate(ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1)))
+            ann_arr%ann_amat_train(iconf)%amat=0.d0
+            ann_arr%a=0.d0
+            ann_arr%amat_initiated=.false.
+        else
+            allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
+            ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
+            ann_arr%amat_initiated=.true.
+        end if 
+        if (allocated(ann_arr%Xq)) deallocate(ann_arr%Xq)
+        if(.not. allocated(ann_arr%ann_chiQPar_train(iconf)%chiQPar)) then 
+            allocate(ann_arr%Xq((atoms%nat),(atoms%nat)))
+            allocate(ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat)))
+            ann_arr%ann_chiQPar_train(iconf)%chiQPar=0.d0
+            ann_arr%Xq=0.d0
+            ann_arr%chiQPar_initiated=.false.
+        else
+            allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
+            ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
+            ann_arr%chiQPar_initiated=.true.
+        end if 
+        if (allocated(ann_arr%EP)) deallocate(ann_arr%EP)
+        if(.not. allocated(ann_arr%ann_EPar_train(iconf)%EPar)) then 
+            allocate(ann_arr%EP(1:atoms%nat))
+            allocate(ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat)))
+            ann_arr%ann_EPar_train(iconf)%EPar=0.d0
+            ann_arr%EP=0.d0
+            ann_arr%EPar_initiated=.false.
+        else
+            allocate(ann_arr%EP(1:(atoms%nat)))
+            ann_arr%EP(1:(atoms%nat))=ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat))
+            ann_arr%EPar_initiated=.true.
+        end if 
+    end if 
     call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
+    if(trim(ann_arr%approach)=='cent2') then
+        if(.not. ann_arr%amat_initiated) then
+            ann_arr%ann_amat_train(iconf)%amat=ann_arr%a
+        end if
+        deallocate(ann_arr%a)
+        if(.not. ann_arr%chiQPar_initiated) then
+            ann_arr%ann_chiQPar_train(iconf)%chiQPar=ann_arr%Xq
+        end if
+        deallocate(ann_arr%Xq)
+        if(.not. ann_arr%EPar_initiated) then
+            ann_arr%ann_EPar_train(iconf)%EPar=ann_arr%EP
+        end if
+        deallocate(ann_arr%EP)
+    end if
     !-----------------------------------------------------------------
     allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
     if(trim(ann_arr%approach)=='atombased') then
@@ -49,6 +103,15 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
             i=atoms%itypat(iat)
             do j=1,ann_arr%nweight_max
                 ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent2') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                !ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
             enddo
         enddo
         call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
@@ -105,6 +168,8 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr)
+    elseif(trim(ann_arr%approach)=='cent2') then
+        call cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='centt') then
         call cal_ann_centt(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent3') then
@@ -252,7 +317,8 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
             anat1=0.d0
             anat2=0.d0
             do iat=1,atoms%nat
-                if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
+                if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' &
+                    .or. trim(ann_arr%approach)=='cent2') then
                     qnet=atoms%qat(iat)
                 elseif(trim(ann_arr%approach)=='centt') then
                     qnet=atoms%zat(iat)+atoms%qat(iat)

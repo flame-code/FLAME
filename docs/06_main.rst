@@ -123,7 +123,6 @@ This option will be removed in the future.
 
     default: ``False``
 
-..   nrun_lammps                         : 0
 ..   nat                                 : 0
 ..   pressure                            : 0.0
 ..   findsym                             : False

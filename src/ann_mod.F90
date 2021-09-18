@@ -5,10 +5,11 @@ module mod_ann
     use mod_electrostatics, only: typ_poisson
     implicit none
     private
-    public:: ann_arr_allocate, ann_arr_deallocate, set_number_of_ann
+    public:: ann_arr_allocate, ann_arr_deallocate
     public:: init_ann_arr, fini_ann_arr
     public:: convert_x_ann, convert_ann_x, convert_x_ann_arr
     public:: convert_ann_epotd
+    public:: typ_ann_arr
     type, public:: typ_ann
         type(dictionary), pointer :: dict=>null()
         integer:: nl !number of hidden layer plus one
@@ -74,7 +75,18 @@ module mod_ann
         character(256):: hlines(10)
         
     end type typ_ann
-    type, public:: typ_ann_arr
+    type, public:: typ_ann_amat
+        real(8), allocatable :: amat(:)
+    end type typ_ann_amat
+    
+    type, public:: typ_ann_chiQPar
+        real(8), allocatable :: chiQPar(:,:)
+    end type typ_ann_chiQPar
+    type, public:: typ_ann_EPar
+        real(8), allocatable :: EPar(:)
+    end type typ_ann_EPar
+
+    type:: typ_ann_arr
         logical:: exists_yaml_file = .false.
         integer:: iunit
         integer:: nann=-1
@@ -82,14 +94,21 @@ module mod_ann
         integer:: nweight_max=-1
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
+        logical:: amat_initiated=.false.
+        logical:: chiQPar_initiated=.false.
+        logical:: EPar_initiated=.false.
+        logical:: linear_rho_pot_initiated=.false. 
         character(30):: event='unknown'
         character(50):: approach='unknown'
         character(50):: syslinsolver='unknown'
         real(8):: rcut=-1.d0
         real(8):: ener_ref
         real(8):: epot_es
+        real(8):: epot_trial
         real(8):: fchi_angle
         real(8):: fchi_norm
+        real(8):: dpm_err 
+        real(8):: dpm_rmse
         !real(8), allocatable:: yall(:,:)
         !real(8), allocatable:: y0d(:,:,:)
         integer:: natsum(10)
@@ -107,7 +126,13 @@ module mod_ann
         !real(8), allocatable:: y0dr(:,:,:)
         integer, allocatable:: loc(:)
         integer, allocatable, public:: num(:)
+        real(8), allocatable:: linear_rho_e(:,:)
+        real(8), allocatable:: linear_rho_n(:,:)
+        real(8), allocatable:: linear_pot_e(:,:)
+        real(8), allocatable:: linear_pot_n(:,:)
         real(8), allocatable:: a(:)
+        real(8), allocatable:: Xq(:,:)
+        real(8), allocatable:: EP(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
@@ -120,6 +145,11 @@ module mod_ann
         integer, allocatable:: ipiv(:)
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
+        type(typ_ann_amat), allocatable:: ann_amat_train(:), ann_amat_valid(:)
+        type(typ_ann_chiQPar), allocatable:: ann_chiQPar_train(:), ann_chiQPar_valid(:)
+        type(typ_ann_EPar), allocatable:: ann_EPar_train(:), ann_EPar_valid(:)
+        contains
+        procedure, public, pass(self):: set_number_of_ann
     end type typ_ann_arr
     type, public:: typ_cent
         real(8), allocatable:: gwi(:)
@@ -132,16 +162,12 @@ module mod_ann
     end type typ_cent
 contains
 !*****************************************************************************************
-subroutine set_number_of_ann(parini,ann_arr)
-    use mod_parini, only: typ_parini
+subroutine set_number_of_ann(self,nann)
     implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
+    class(typ_ann_arr), intent(inout):: self
+    integer, intent(in):: nann
     !local variables
-    ann_arr%nann=parini%ntypat
-    if(parini%bondbased_ann) then
-        ann_arr%nann=4
-    endif
+    self%nann=nann
 end subroutine set_number_of_ann
 !*****************************************************************************************
 subroutine init_ann_arr(ann_arr)
@@ -209,17 +235,21 @@ subroutine ann_arr_allocate(ann_arr)
     allocate(ann_arr%chi_i(1:ann_arr%natmax))
     allocate(ann_arr%chi_o(1:ann_arr%natmax))
     allocate(ann_arr%chi_d(1:ann_arr%natmax))
-    allocate(ann_arr%a(1:(ann_arr%natmax+1)*(ann_arr%natmax+1)))
+    if(.not. allocated(ann_arr%a)) then
+        allocate(ann_arr%a(1:(ann_arr%natmax+1)*(ann_arr%natmax+1)))
+    end if
     ann_arr%fat_chi=0.d0
     ann_arr%chi_i=0.d0
     ann_arr%chi_o=0.d0
     ann_arr%chi_d=0.d0
-    ann_arr%a=0.d0
+    if(allocated(ann_arr%a)) then
+        ann_arr%a=0.d0
+    end if
     allocate(ann_arr%dqat_weights(ann_arr%nweight_max,ann_arr%natmax))
     allocate(ann_arr%g_per_atom(ann_arr%nweight_max,ann_arr%natmax))
     !symfunc%linked_lists%maxbound_rad is assumed 10000
-    allocate(ann_arr%fatpq(1:3,1:10000))
-    allocate(ann_arr%stresspq(1:3,1:3,1:10000))
+    allocate(ann_arr%fatpq(1:3,1:20000))
+    allocate(ann_arr%stresspq(1:3,1:3,1:20000))
     allocate(ann_arr%ipiv(1:ann_arr%natmax+1))
     allocate(ann_arr%qq(1:ann_arr%natmax+1))
 end subroutine ann_arr_allocate
@@ -239,13 +269,15 @@ subroutine ann_arr_deallocate(ann_arr)
     deallocate(ann_arr%chi_i)
     deallocate(ann_arr%chi_o)
     deallocate(ann_arr%chi_d)
-    deallocate(ann_arr%a)
+    if(allocated(ann_arr%a)) then
+        deallocate(ann_arr%a)
+    endif
     deallocate(ann_arr%fat_chi)
     deallocate(ann_arr%dqat_weights)
     deallocate(ann_arr%g_per_atom)
     deallocate(ann_arr%fatpq)
     deallocate(ann_arr%stresspq)
-    deallocate(ann_arr%ipiv)
+    if (allocated(ann_arr%ipiv)) deallocate(ann_arr%ipiv)
     deallocate(ann_arr%qq)
 end subroutine ann_arr_deallocate
 !*****************************************************************************************

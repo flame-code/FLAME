@@ -10,7 +10,9 @@ subroutine lammps_task(parini)
     use mod_atoms, only: typ_atoms_arr, atom_copy, atom_deallocate, set_typat
     use mod_atoms, only: get_rat, set_rat
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
 #if defined(HAVE_LAMMPS)
     use mpi
     use LAMMPS
@@ -23,14 +25,14 @@ subroutine lammps_task(parini)
     !local variables
 #if defined(HAVE_LAMMPS)
     type (C_ptr) :: lmp
-    character(100):: str_run
+    !character(100):: str_run
     integer:: iconf
     type(typ_atoms_arr):: atoms_arr
     logical:: acf_exists, yaml_exists
     real(8), allocatable:: rat(:,:)
     real(8):: dproj(6), rotmat(3,3)
     !-------------------------------------------------------
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     !-------------------------------------------------------
     call copy_parini_for_lammps(parini)
     inquire(file='posinp.yaml',exist=yaml_exists)
@@ -52,21 +54,22 @@ subroutine lammps_task(parini)
     call init_potential_forces(parini,atoms)
     call lammps_write(parini,atoms)
     call lammps_open_no_mpi ('lmp -log log.lammps', lmp)
-    call lammps_file (lmp, 'in.lammps')
+    call lammps_file (lmp, 'in.lammps.1')
     call lammps_set_callback(lmp)
+    call lammps_file (lmp, 'in.lammps.2')
     call lammps_set_external_vector_length(lmp,2)
     ! nrun in flame_in.yaml cannot have a smaller value than 1
-    if(parini%nrun_lammps<1) then
-        stop 'ERROR: parini%nrun_lammps<1 in lammps_task'
-    endif
-    write(str_run,'(1a,1x,1i8)') 'run',parini%nrun_lammps
+    !if(parini%nrun_lammps<1) then
+    !    stop 'ERROR: parini%nrun_lammps<1 in lammps_task'
+    !endif
+    !write(str_run,'(1a,1x,1i8)') 'run',parini%nrun_lammps
     !lammps_command is the LAMMPS function that does the
     !task we have asked, e.g. molecular dynamics,
     !therefore, lammps_command will not be left until
     !the required task is completed.
-    call lammps_command (lmp,str_run)
+    !call lammps_command (lmp,str_run)
     call lammps_close (lmp)
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
     do iconf=1,atoms_arr%nconf
         call atom_deallocate(atoms_arr%atoms(iconf))
     enddo

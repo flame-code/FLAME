@@ -4,23 +4,24 @@ subroutine pot_initialize(parini,atoms,paropt,paropt_m)
     use mod_atoms, only: typ_atoms
     use mod_opt, only: typ_paropt
     use mod_processors, only: nproc, iproc
-    use mod_potential, only: potential, perfstatus
+    use mod_potential, only: potcode, perfstatus
+    use mod_potential, only: init_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_paropt), intent(inout):: paropt, paropt_m
     !local variables
     call init_potential_forces(parini,atoms)
-    if(trim(potential)=='lj') then
+    if(trim(potcode)=='lj') then
         paropt_m%funits=4.d0
         paropt%funits=4.d0
-    elseif(trim(potential)=='bigdft') then
+    elseif(trim(potcode)=='bigdft') then
         stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
         !two_level_geopt=.true.
-    elseif(trim(potential)=='vasp') then
+    elseif(trim(potcode)=='vasp') then
         stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
         !two_level_geopt=.true.
-    elseif(trim(potential)=='siesta') then
+    elseif(trim(potcode)=='siesta') then
         stop 'ERROR: I do not remember why two_level_geopt so I commented the following line'
         !two_level_geopt=.true.
         perfstatus='normal'

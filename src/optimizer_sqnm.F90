@@ -16,6 +16,7 @@ subroutine sqnm(parini,atoms,paropt,count_sqnm,fail)
    use mod_atoms, only: typ_atoms, set_rat, get_rat
    use mod_opt, only: typ_paropt, frmt_base
    use mod_processors, only: iproc, nproc
+   use mod_potential, only: cal_potential_forces
    use dynamic_memory
    use yaml_output
    implicit none
@@ -617,6 +618,7 @@ end subroutine sqnm
 subroutine minenergyandforces_alborz(parini,iproc,nproc,eeval,imode,atoms,nat,rat,fat,fstretch,fxyzraw,epot,iconnect,nbond_,wold,alpha_stretch0,alpha_stretch,infocode)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_rat
+    use mod_potential, only: cal_potential_forces
     !use bigdft_run!module_types
     !use module_sqn
     !use module_interfaces

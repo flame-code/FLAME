@@ -1070,3 +1070,15 @@ end subroutine
 ! if(count.gt.1.d6) stop "Too many iterations in back-to-cell"
 ! enddo
  end subroutine
+!*****************************************************************************************
+subroutine flm_zero(n,x)
+    implicit none
+    integer, intent(in):: n
+    real(8), intent(out):: x(n)
+    !local variables
+    integer:: i
+    do i=1,n
+        x(i)=0.d0
+    enddo
+end subroutine flm_zero
+!*****************************************************************************************

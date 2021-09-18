@@ -71,9 +71,11 @@ subroutine bar_saddle(parini)
     use mod_processors, only: nproc, iproc
     use mod_atoms, only: typ_atoms, atom_deallocate, typ_atoms_arr
     use mod_atoms, only: atom_copy, get_rat
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_yaml_conf, only: read_yaml_conf
     use bar_saddle_params
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -90,7 +92,7 @@ subroutine bar_saddle(parini)
     real(8):: etot1,etot2,fnoise,fmax,fnrm,xmin,brent,tt,e_max,e_tmp
     real(8),pointer :: rxyz_tmp(:,:)
 
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     !The following reads a maximum of two configurations but
     !I am sending you a posinp.yaml that includes one configuration.
     call read_yaml_conf(parini,'posinp.yaml',2,atoms_arr)
@@ -226,7 +228,7 @@ subroutine bar_saddle(parini)
     !-------------------------------------------------------
     !-------------------------------------------------------
     !-------------------------------------------------------
-    call final_potential_forces(parini,atoms)
+    call fini_potential_forces(parini,atoms)
     deallocate(rxyz1,rxyz2)
     deallocate(fxyz1)
     call atom_deallocate(atoms)
@@ -292,7 +294,7 @@ subroutine find_saddle(n_dim,bar_vec,bar_cm,fxyz,etot,emax,bar_max,alpha_bar,bar
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, atom_deallocate, typ_atoms_arr
     use mod_atoms, only: atom_copy, get_rat
-    use mod_potential, only: potential
+    !use mod_potential, only: potential
     use bar_saddle_params, only:maxit,bar_contract,contr_dbar,contr_bar_tol,ncontr,dbar,hybrid,fnrm_switch
 implicit none
 type(typ_parini), intent(in):: parini

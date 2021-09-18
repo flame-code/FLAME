@@ -2,11 +2,14 @@
 subroutine single_point_task(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info, set_ndof, atom_deallocate
-    use mod_potential, only: fcalls, perfstatus, potential
+    use mod_potential, only: fcalls, perfstatus, potcode
     use mod_acf, only: acf_read_new, acf_write
     use mod_yaml_conf, only: write_yaml_conf, read_yaml_conf
     use mod_processors, only: iproc
     use mod_const, only: ev2ha, ang2bohr
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     use yaml_output
     implicit none
     type(typ_parini), intent(inout):: parini !poscar_getsystem must be called from parser
@@ -31,7 +34,7 @@ subroutine single_point_task(parini)
     do iconf=1,atoms_arr%nconf
         call set_ndof(atoms_arr%atoms(iconf))
     enddo
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     file_info%filename_positions='posout.acf'
     file_info%print_force=parini%print_force_single_point
     file_info%file_position='new'
@@ -43,7 +46,7 @@ subroutine single_point_task(parini)
         call netsock_task(parini)
     else
         do iconf=1,atoms_arr%nconf
-            if(trim(potential)/='netsock' .or. iconf==1) then 
+            if(trim(potcode)/='netsock' .or. iconf==1) then 
                 call init_potential_forces(parini,atoms_arr%atoms(iconf))
             endif
             if(iconf==1) then 
@@ -72,16 +75,18 @@ subroutine single_point_task(parini)
             !        write(*,'(3f12.8)') fxyz(1),fxyz(2),fxyz(3)
             !    enddo
             !endif
-            if(trim(potential)/='netsock' .or. iconf==atoms_arr%nconf) then 
-                call final_potential_forces(parini,atoms_arr%atoms(iconf))
+            if(trim(potcode)/='netsock' .or. iconf==atoms_arr%nconf) then 
+                call fini_potential_forces(parini,atoms_arr%atoms(iconf))
             endif
             if (iconf==2)  file_info%file_position='append'
+            if(parini%mpi_env%iproc==0) then
             if(yaml_exists) then
                 file_info%filename_positions='posout.yaml'
                 call write_yaml_conf(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout')
             elseif(acf_exists) then
                 file_info%filename_positions='posout.acf'
                 call acf_write(file_info,atoms=atoms_arr%atoms(iconf),strkey='posout')
+            endif
             endif
         enddo
         do iconf=1,atoms_arr%nconf

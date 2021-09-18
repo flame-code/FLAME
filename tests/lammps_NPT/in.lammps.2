@@ -1,25 +1,7 @@
-#********** Initialize Simulation **********
-clear
-boundary            p p p
-dimension           3
-units               electron          #atomic units
-atom_style          atomic
-atom_modify         map array
-atom_modify         sort 0 0.0
-
-#********** Initialize atomic data **********
-read_data           lammps_posinp
-mass                1       40.08
-mass                2       18.998403
-
-#********** Define Interatomic Potential **********
-fix                 2 all external pf/callback 1 1
-fix_modify          2 energy yes
-
 #********** Simulation type **********
 timestep            1.0
 velocity            all create 300.0 12345 mom yes rot yes dist uniform
-fix                 1 all nvt temp 300.0 300.0 100.0 fixedpoint 0.0 0.0 0.0
+fix                 1 all npt temp 300.0 300.0 100.0 tri 1e9 1e9 1000.0
 
 #********** Define Settings **********
 group               Ca      type    1
@@ -33,3 +15,4 @@ thermo_style        custom  step    pe      ke      press   xhi     yhi     zhi 
 #dump                1       all     xyz     10     dump.xyz
 dump                2       all     custom  1      positions.lammpstrj id type element x y z
 dump_modify         2       element Ca F
+run 10

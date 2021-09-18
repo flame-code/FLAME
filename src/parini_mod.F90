@@ -2,10 +2,12 @@
 module mod_parini
     use dictionaries
     use mod_opt, only: typ_paropt
+    use wrapper_MPI, only: mpi_environment
     implicit none
     type typ_parini
         logical:: exists_yaml_file
         integer:: iunit
+        type(mpi_environment), public :: mpi_env
         !-----------------------------------------------------------------------
         !parameters of [main]
         character(50):: task='unknown'
@@ -18,7 +20,6 @@ module mod_parini
         integer:: ntypat=-1
         integer:: ltypat(20)=-1
         integer:: iatomnum(20)=-1
-        integer:: nrun_lammps=0
         character(5):: stypat(20)='unknown'
         logical:: params_new=.false.
         character(100):: str_typat_global
@@ -69,6 +70,7 @@ module mod_parini
         character(256):: component_ff='no'
         logical:: drift_potential=.false.
         logical:: cal_charge= .false.
+        logical:: cal_scn=.false.       !Screening factor computation (Screened Poisson Equation)
         logical:: add_repulsive= .true.
         !-----------------------------------------------------------------------
         !parameters of [ann]
@@ -188,6 +190,8 @@ module mod_parini
         real(8):: ecutz_ewald=-1.d0
         real(8):: rcut_ewald=-1.d0
         real(8):: rgcut_ewald=-1.d0
+        real(8):: screening_factor=0.d0
+        real(8):: free_space=0.d0
         real(8):: vu_ewald=0.d0
         real(8):: vl_ewald=0.d0
         real(8):: vu_ac_ewald=0.d0
@@ -200,6 +204,7 @@ module mod_parini
         real(8):: dielec_const2
         logical :: ewald=.false.
         logical :: cell_ortho=.false.
+        logical :: cell_ortho_noshift=.false.
         character(256):: bias_type='no'
         character(50):: psolver='unknown'
         logical:: cal_polar= .false.
@@ -209,6 +214,10 @@ module mod_parini
         logical:: avail_misc=.false.
         character(50):: subtask_misc='unknown'
         real(8):: gaussian_width=-1.d0
+        real(8):: gaussian_width_Mg=-1.d0
+        real(8):: gaussian_width_O=-1.d0
+        real(8):: pen_coeff=0.d0
+        real(8):: q_avg_target=0.d0
         character(50):: boundcond_misc='unknown'
         character(50):: posinp_misc='unknown'
         !-----------------------------------------------------------------------

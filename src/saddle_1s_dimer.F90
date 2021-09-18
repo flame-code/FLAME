@@ -8,6 +8,7 @@ subroutine dimmethimproved(parini,iproc,atoms_s,nat,ndof,rat,epot,fat,curv,uvn,p
     use mod_atoms, only: atom_deallocate_old
     use mod_yaml_conf, only: write_yaml_conf
     use mod_atoms, only: atom_calnorm, set_rat
+    use mod_potential, only: cal_potential_forces
     use mod_utils
     use yaml_output
     implicit none
@@ -192,6 +193,7 @@ subroutine rotatedimer(parini,iproc,atoms_s,nat,ndof,rat,uvn,fat,curv0,curv,fnrm
     use mod_saddle, only: do_elim_rot, do_elim_trans, dimsep
     use mod_atoms, only: typ_atoms, atom_ddot, atom_copy_old, atom_normalizevector
     use mod_atoms, only: atom_calnorm, atom_deallocate_old, set_rat
+    use mod_potential, only: cal_potential_forces
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini

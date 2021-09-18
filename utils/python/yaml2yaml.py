@@ -18,7 +18,7 @@ i_free = 0
 i_slab = 0
 i_bulk = 0
 for iconf in range(len(atoms_all)):
-    if atoms_all[iconf].nat==args.S_nat:
+    if atoms_all[iconf].nat>args.S_nat:
         i=i+1
         if atoms_all[iconf].boundcond == 'free':
             S_atoms_all_free.append(atoms_all[iconf])

@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,hgrid,rho)
+subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ngy,ngz,hgrid,rho)
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -11,6 +11,7 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
+    real(8), intent(in):: xyz111(3)
     integer, intent(in):: ngx, ngy, ngz
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: rho(ngx,ngy,ngz)
@@ -87,14 +88,38 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
     hgzinv=1.d0/hz
     !1+nbg?*ibc? gives the index of grid point whose ? coordinate is zero (?=x,y,z)
     wa=0.d0
+    !write(*,*) 'HX ',hx,xyz111(1)
+    !write(*,*) 'HY ',hy,xyz111(2)
+    !write(*,*) 'HZ ',hz,xyz111(3)
     do iat=1,nat
         !shift the gaussian centers
-        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
-        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
-        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
-        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
-        zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        !if(parini%cell_ortho_noshift) then
+            iatox=nint((rxyz(1,iat)-xyz111(1))*hgxinv)+1
+            iatoy=nint((rxyz(2,iat)-xyz111(2))*hgyinv)+1
+            iatoz=nint((rxyz(3,iat)-xyz111(3))*hgzinv)+1
+            xat=rxyz(1,iat)-(iatox-1)*hx-xyz111(1)
+            yat=rxyz(2,iat)-(iatoy-1)*hy-xyz111(2)
+            zat=rxyz(3,iat)-(iatoz-1)*hz-xyz111(3)
+        !else
+        !    iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        !    iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+        !    iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+        !    xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        !    yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+        !    zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        !endif
+        if(iatox-nbgx*ibcx<1-nagx .or. iatox+nbgx*ibcx>ngx+nagx) then
+            write(*,*) 'ERROR: charge of atom outside box in x-direction!'
+            stop
+        endif
+        if(iatoy-nbgy*ibcy<1-nagy .or. iatoy+nbgy*ibcy>ngy+nagy) then
+            write(*,*) 'ERROR: charge of atom outside box in y-direction!'
+            stop
+        endif
+        if(iatoz-nbgz*ibcz<1-nagz .or. iatoz+nbgz*ibcz>ngz+nagz) then
+            write(*,*) 'ERROR: charge of atom outside box in z-direction!'
+            stop
+        endif
         !construct the one-dimensional gaussians
 
         width=gw(iat)
@@ -154,7 +179,7 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,ngx,ngy,ngz,h
     call f_release_routine()
 end subroutine put_gto_sym_ortho
 !*****************************************************************************************
-subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,g)
+subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,xyz111,lda,ngx,ngy,ngz,hgrid,pot,g)
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -165,6 +190,7 @@ subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,h
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
+    real(8), intent(in):: xyz111(3)
     integer, intent(in):: lda, ngx, ngy, ngz
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(in):: pot(lda,ngy,ngz)
@@ -243,12 +269,24 @@ subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,h
     !initialize the density 
     do iat=1,nat  
         !shift the Gaussian centers
-        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
-        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
-        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
-        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
-        zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        iatox=nint((rxyz(1,iat)-xyz111(1))*hgxinv)+1
+        iatoy=nint((rxyz(2,iat)-xyz111(2))*hgyinv)+1
+        iatoz=nint((rxyz(3,iat)-xyz111(3))*hgzinv)+1
+        xat=rxyz(1,iat)-(iatox-1)*hx-xyz111(1)
+        yat=rxyz(2,iat)-(iatoy-1)*hy-xyz111(2)
+        zat=rxyz(3,iat)-(iatoz-1)*hz-xyz111(3)
+        if(iatox-nbgx*ibcx<1-nagx .or. iatox+nbgx*ibcx>ngx+nagx) then
+            write(*,*) 'ERROR: charge of atom outside box in x-direction!'
+            stop
+        endif
+        if(iatoy-nbgy*ibcy<1-nagy .or. iatoy+nbgy*ibcy>ngy+nagy) then
+            write(*,*) 'ERROR: charge of atom outside box in y-direction!'
+            stop
+        endif
+        if(iatoz-nbgz*ibcz<1-nagz .or. iatoz+nbgz*ibcz>ngz+nagz) then
+            write(*,*) 'ERROR: charge of atom outside box in z-direction!'
+            stop
+        endif
         !construct the one-dimensional gaussians
 
         width=gw(iat)
@@ -294,7 +332,7 @@ subroutine qgrad_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,h
     ! call f_release_routine()
 end subroutine qgrad_gto_sym_ortho
 !*****************************************************************************************
-subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,hgrid,pot,fat)
+subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,xyz111,lda,ngx,ngy,ngz,hgrid,pot,fat)
     use mod_parini, only: typ_parini
     use dynamic_memory
     implicit none
@@ -305,6 +343,7 @@ subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,h
     real(8), intent(in):: qat(nat)
     real(8), intent(in):: gw(nat)
     real(8), intent(in):: rgcut
+    real(8), intent(in):: xyz111(3)
     integer, intent(in):: lda, ngx, ngy, ngz
     real(8), intent(in):: hgrid(3,3)
     real(8), intent(inout):: pot(lda,ngy,ngz)
@@ -388,12 +427,39 @@ subroutine force_gto_sym_ortho(parini,bc,nat,rxyz,qat,gw,rgcut,lda,ngx,ngy,ngz,h
     !initialize the density 
     do iat=1,nat  
         !shift the Gaussian centers
-        iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
-        iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
-        iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
-        xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
-        yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
-        zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        !if(parini%cell_ortho_noshift) then
+            iatox=nint((rxyz(1,iat)-xyz111(1))*hgxinv)+1
+            iatoy=nint((rxyz(2,iat)-xyz111(2))*hgyinv)+1
+            iatoz=nint((rxyz(3,iat)-xyz111(3))*hgzinv)+1
+            xat=rxyz(1,iat)-(iatox-1)*hx-xyz111(1)
+            yat=rxyz(2,iat)-(iatoy-1)*hy-xyz111(2)
+            zat=rxyz(3,iat)-(iatoz-1)*hz-xyz111(3)
+        !else
+        !    iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        !    iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+        !    iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+        !    xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        !    yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+        !    zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        !endif
+        if(iatox-nbgx*ibcx<1-nagx .or. iatox+nbgx*ibcx>ngx+nagx) then
+            write(*,*) 'ERROR: charge of atom outside box in x-direction!'
+            stop
+        endif
+        if(iatoy-nbgy*ibcy<1-nagy .or. iatoy+nbgy*ibcy>ngy+nagy) then
+            write(*,*) 'ERROR: charge of atom outside box in y-direction!'
+            stop
+        endif
+        if(iatoz-nbgz*ibcz<1-nagz .or. iatoz+nbgz*ibcz>ngz+nagz) then
+            write(*,*) 'ERROR: charge of atom outside box in z-direction!'
+            stop
+        endif
+        !iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        !iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+        !iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+        !xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        !yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+        !zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
         width=gw(iat)
         width_inv=1.d0/width
         fac=2.d0/(width*(width*sqrt(pi))**3)

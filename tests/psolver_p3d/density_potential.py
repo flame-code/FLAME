@@ -70,7 +70,7 @@ rho=get_density(cell,ngpx,ngpy,ngpz,hx,hy,hz,a,b,c)
 pot=get_potential(cell,ngpx,ngpy,ngpz,hx,hy,hz,a,b,c)
 atoms=Atoms()
 atoms.nat=1
-atoms.sat.append('H')
+atoms.sat.append('Si')
 atoms.rat.append([])
 atoms.rat[-1].append(float(cell[0]/2.0))
 atoms.rat[-1].append(float(cell[1]/2.0))

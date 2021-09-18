@@ -21,7 +21,7 @@ subroutine cube_read(filename,atoms,poisson)
     if(ios/=0) then;write(*,'(2a)') 'ERROR: failure openning ',trim(filename);stop;endif
     read(1358,*)
     read(1358,*)
-    read(1358,*) nat
+    read(1358,*) nat,poisson%xyz111(1),poisson%xyz111(2),poisson%xyz111(3)
     call atom_allocate_old(atoms,nat,0,0)
     read(1358,*) poisson%ngpx,poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
     read(1358,*) poisson%ngpy,poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
@@ -121,17 +121,36 @@ subroutine cube_write(filename,atoms,poisson,rho_or_pot)
     real(8):: tt, quantity
     integer:: iat, igpx, igpy, igpz, item, ios, iatom
     real(8), allocatable:: rat(:,:)
+    real(8) :: cmx,cmy,cmz
     open(unit=1358,file=trim(filename),status='replace',iostat=ios)
     if(ios/=0) then;write(*,'(2a)') 'ERROR: failure openning ',trim(filename);stop;endif
     write(*,'(2a)') 'writing ',trim(filename)
     write(1358,'(a)') ''
     write(1358,'(a)') ''
-    write(1358,'(i5,3f13.6)') atoms%nat,0.d0,0.d0,0.d0
+    write(1358,'(i5,3f13.6)') atoms%nat,poisson%xyz111(1),poisson%xyz111(2),poisson%xyz111(3)
     write(1358,'(i5,3f13.6)') poisson%ngpx,poisson%hgrid(1,1),poisson%hgrid(2,1),poisson%hgrid(3,1)
     write(1358,'(i5,3f13.6)') poisson%ngpy,poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
     write(1358,'(i5,3f13.6)') poisson%ngpz,poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
     allocate(rat(3,atoms%nat))
     call get_rat(atoms,rat)
+    cmx=0.d0
+    cmy=0.d0
+    cmz=0.d0
+    do iat=1,atoms%nat
+        cmx=cmx+rat(1,iat)
+        cmy=cmy+rat(2,iat)
+        cmz=cmz+rat(3,iat)
+    end do
+    cmx=cmx/atoms%nat
+    cmy=cmy/atoms%nat
+    cmz=cmz/atoms%nat
+    rat(1,:)=rat(1,:)-cmx+poisson%ngpx*poisson%hgrid(1,1)/2.d0
+    rat(2,:)=rat(2,:)-cmy+poisson%ngpy*poisson%hgrid(2,2)/2.d0
+    rat(3,:)=rat(3,:)-cmz+poisson%ngpz*poisson%hgrid(3,3)/2.d0
+    !rat(1,:)=rat(1,:)-cmx+atoms%cellvec(1,1)/2.0
+    !rat(2,:)=rat(2,:)-cmy+atoms%cellvec(2,2)/2.0
+    !rat(3,:)=rat(3,:)-cmz+atoms%cellvec(3,3)/2.0
+    write(*,*) cmx,cmy,cmz
     do iat=1,atoms%nat
         !if(trim(atoms%sat(iat))=='H') iatom=1
         !if(trim(atoms%sat(iat))=='C') iatom=6

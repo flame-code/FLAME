@@ -89,7 +89,6 @@ subroutine yaml_get_main_parameters(parini)
     parini%iverbose=parini%subdict//"verbosity"
     parini%rng_type=parini%subdict//"rng_type"
     parini%iseed=parini%subdict//"seed"
-    parini%nrun_lammps=parini%subdict//"nrun_lammps"
     if(has_key(parini%subdict,"verbosity_mh")) then
         verbosity_mh=parini%subdict//"verbosity_mh"
         call dict_set(parini%subdict//"verbose",verbosity_mh)
@@ -316,6 +315,7 @@ subroutine yaml_get_potential_parameters(parini)
     parini%usewf_soften=parini%subdict//"usewfsoft"
     parini%usewf_md=parini%subdict//"usewfmd"
     parini%auto_kpt=parini%subdict//"auto_kpt"
+    parini%cal_scn=parini%subdict//"cal_scn"
     kpt_abc=parini%subdict//"kptmesh"
     if(has_key(parini%subdict,"kptmesh")) then
         parini%ka=kpt_abc(1)
@@ -498,6 +498,8 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%ecut_auto=parini%subsubdict//"ecut_auto"
     parini%rcut_ewald=parini%subsubdict//"rcut"
     parini%rgcut_ewald=parini%subsubdict//"rgcut"
+    parini%screening_factor=parini%subsubdict//"screening_factor"
+    parini%free_space=parini%subsubdict//"free_space"
     parini%nsp_ewald=parini%subsubdict//"nsp"
     parini%vu_ewald=parini%subsubdict//"plane_voltageu"
     parini%vl_ewald=parini%subsubdict//"plane_voltagel"
@@ -510,6 +512,7 @@ subroutine yaml_get_ewald_parameters(parini)
     parini%bias_type=parini%subsubdict//"bias_type"
     parini%psolver=parini%subsubdict//"psolver"
     parini%cell_ortho=parini%subsubdict//"cell_ortho"
+    parini%cell_ortho_noshift=parini%subsubdict//"cell_ortho_noshift"
     parini%dielec_const=parini%subsubdict//"dielec_const"
     parini%dielec_const1=parini%subsubdict//"dielec_const1"
     parini%dielec_const2=parini%subsubdict//"dielec_const2"
@@ -524,7 +527,21 @@ subroutine yaml_get_misc_parameters(parini)
     !local variales
     if(dict_size(parini%subdict)<1) stop 'ERROR: misc block in flame_in.yaml is empty.'
     parini%subtask_misc=parini%subdict//"subtask"
-    parini%gaussian_width=parini%subdict//"gaussian_width"
+    if(has_key(parini%subdict,"gaussian_width_Mg")) then
+        parini%gaussian_width_Mg=parini%subdict//"gaussian_width_Mg"
+    end if
+    if(has_key(parini%subdict,"gaussian_width_O")) then
+        parini%gaussian_width_O=parini%subdict//"gaussian_width_O"
+    end if
+    if(has_key(parini%subdict,"gaussian_width")) then
+        parini%gaussian_width=parini%subdict//"gaussian_width"
+    end if
+    if(has_key(parini%subdict,"pen_coeff")) then
+        parini%pen_coeff=parini%subdict//"pen_coeff"
+    end if
+    if(has_key(parini%subdict,"q_avg_target")) then
+        parini%q_avg_target=parini%subdict//"q_avg_target"
+    end if
     parini%boundcond_misc=parini%subdict//"boundcond"
     parini%posinp_misc=parini%subdict//"posinp"
 end subroutine yaml_get_misc_parameters

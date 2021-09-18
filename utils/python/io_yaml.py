@@ -92,6 +92,12 @@ def dict2atoms(dict_atoms):
     atoms.nat             = dict_atoms['conf']['nat']
     atoms.boundcond       = dict_atoms['conf']['bc']
 
+    if 'dpm' in dict_atoms['conf']:
+        atoms.dpm_present=True
+        atoms.dpm=[0.E0,0.E0,0.E0]
+        atoms.dpm[0]=dict_atoms['conf']['dpm'][0]
+        atoms.dpm[1]=dict_atoms['conf']['dpm'][1]
+        atoms.dpm[2]=dict_atoms['conf']['dpm'][2]
     if 'units_length' in dict_atoms['conf']:
         atoms.units_length_io = dict_atoms['conf']['units_length']
     if 'epot' in dict_atoms['conf']:

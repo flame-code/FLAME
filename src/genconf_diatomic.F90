@@ -5,9 +5,12 @@ subroutine genconf_diatomic(parini,genconf)
     use mod_atoms, only: atom_allocate_old, atom_deallocate_old, set_rat
     use mod_genconf, only: typ_genconf
     use mod_processors, only: iproc
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use mod_const, only: bohr2ang
     use mod_acf, only: acf_write
+    use mod_potential, only: init_potential_forces
+    use mod_potential, only: fini_potential_forces
+    use mod_potential, only: cal_potential_forces
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_genconf), intent(in):: genconf
@@ -31,7 +34,7 @@ subroutine genconf_diatomic(parini,genconf)
     cv(3,3)=11.d0
     atoms_all%atoms%cellvec(1:3,1:3)=cv(1:3,1:3)/bohr2ang
     if(trim(genconf%cal_pot)=='yes') then
-        potential=trim(parini%potential_potential)
+        potcode=trim(parini%potential_potential)
         call init_potential_forces(parini,atoms_all%atoms)
     endif
 
@@ -58,7 +61,7 @@ subroutine genconf_diatomic(parini,genconf)
     call acf_write(file_info,atoms_all=atoms_all,strkey='posout')
     !finalizing
     if(trim(genconf%cal_pot)=='yes') then
-        call final_potential_forces(parini,atoms_all%atoms)
+        call fini_potential_forces(parini,atoms_all%atoms)
     endif
     call atom_deallocate_old(atoms_all%atoms)
     call atom_all_deallocate(atoms_all,ratall=.true.,epotall=.true.)

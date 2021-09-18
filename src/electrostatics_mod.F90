@@ -12,12 +12,19 @@ module mod_electrostatics
         integer:: ngpx !number of grid points in x direction.
         integer:: ngpy !number of grid points in y direction.
         integer:: ngpz !number of grid points in z direction.
+        integer:: ngp  !number of grid points for 1D potential and charge density
         real(8):: hx !grid spacing in x direction.
         real(8):: hy !grid spacing in y direction.
         real(8):: hz !grid spacing in z direction.
         real(8):: hgrid(3,3) !grid spacing in all directions.
+        logical:: linear_allocated=.false.
+        real(8), allocatable:: linear_rho_e(:,:) ! one dimensinal electronic charge density used in cent2
+        real(8), allocatable:: linear_pot_e(:,:) ! one dimensinal electronic potential used in cent2
+        real(8), allocatable:: linear_rho_n(:,:) ! one dimensinal ionic charge density used in cent2
+        real(8), allocatable:: linear_pot_n(:,:) ! one dimensinal ionic potential used in cent2
         real(8), allocatable:: rho(:,:,:) !charge density array.
         real(8), allocatable:: pot(:,:,:) !potential array.
+        real(8), allocatable:: pot_ion(:,:,:) !ionic potential array for cent2
         real(8), allocatable:: pots(:,:,:) !surface potential array.
         real(8), allocatable:: dpot(:,:,:) !differential of surface potential array.
         real(8), allocatable:: qgrad(:)
@@ -28,6 +35,7 @@ module mod_electrostatics
         real(8), allocatable:: rcart(:,:)
         real(8), allocatable:: rgrad(:,:)
         integer:: npl, npu
+        real(8):: xyz111(3)=0.d0
         real(8):: dpm(3)
         real(8):: qpm(3,3)
         real(8):: beta !This is exactly the beta in the P3D paper.
@@ -37,6 +45,7 @@ module mod_electrostatics
         !logical:: cal_qgrad= .false.
         !logical:: cal_force= .false.
         !logical:: set_grid= .true.
+        logical:: cal_scn= .false.
         logical:: reset_rho= .true.
         logical:: initialized= .false.
         character(256):: task_finit=""
@@ -56,6 +65,8 @@ module mod_electrostatics
         !real(8):: rcut !cutoff radius in real space.
         real(8):: alpha =-1 !splitting ewald parameter.
         real(8):: rgcut
+        real(8):: screening_factor=0.d0
+        real(8):: free_space=0.d0
         real(8):: ecut
         logical:: gw_identical= .false. !if True, all gaussian width assumed to be identical
         real(8):: efield !external electric field
@@ -67,6 +78,7 @@ module mod_electrostatics
         type(typ_spline):: spline
 #if defined(HAVE_BPS)
         type(coulomb_operator):: pkernel
+        type(coulomb_operator):: pkernel_scn
 #endif
     end type typ_poisson
     !type, extends(typ_ewald):: typ_ewald_p3d

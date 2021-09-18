@@ -4,6 +4,7 @@ subroutine minimize(parini,iproc,atoms,paropt)
     use mod_atoms, only: typ_atoms, typ_file_info, update_ratp, update_rat
     use mod_opt, only: typ_paropt
     use mod_bin, only: write_bin_conf
+    use mod_potential, only: cal_potential_forces
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini

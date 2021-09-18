@@ -520,6 +520,7 @@ subroutine get_ewald_parameters(file_ini,parini)
         call get_one_param(file_ini,'ewald_tol',real_var=parini%tolerance_ewald)
         call get_one_param(file_ini,'psolver',char_var=parini%psolver)
         call get_one_param(file_ini,'cell_ortho',log_var=parini%cell_ortho)
+        call get_one_param(file_ini,'cell_ortho_noshift',log_var=parini%cell_ortho_noshift)
     enddo
 end subroutine get_ewald_parameters
 !*****************************************************************************************
@@ -548,6 +549,10 @@ subroutine get_misc_parameters(file_ini,parini)
         call split_line(file_ini)
         call get_one_param(file_ini,'subtask',char_var=parini%subtask_misc)
         call get_one_param(file_ini,'gaussian_width',real_var=parini%gaussian_width)
+        call get_one_param(file_ini,'gaussian_width_Mg',real_var=parini%gaussian_width_Mg)
+        call get_one_param(file_ini,'gaussian_width_O',real_var=parini%gaussian_width_O)
+        call get_one_param(file_ini,'pen_coeff',real_var=parini%pen_coeff)
+        call get_one_param(file_ini,'q_avg_target',real_var=parini%q_avg_target)
         call get_one_param(file_ini,'boundcond',char_var=parini%boundcond_misc)
         call get_one_param(file_ini,'posinp',char_var=parini%posinp_misc)
     enddo

@@ -46,7 +46,7 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     call cross_product_alborz(atoms%cellvec(1:3,1),atoms%cellvec(1:3,3),tmp)
     nrm_tmp=sqrt(dot_product(tmp,tmp))
     cell(2)=vol/nrm_tmp
-    if(parini%iverbose>1) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
         call yaml_mapping_open('linked list info-1') !,flow=.true.)
         call yaml_map('nat',atoms%nat)
         call yaml_map('scl',linked_lists%scl)
@@ -105,7 +105,7 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
 !    if(linked_lists%my<linked_lists%mlimnb2/2) stop 'cell is the same size as supercell'
 !    if(linked_lists%mz<linked_lists%mlimnb3/2) stop 'cell is the same size as supercell'
     associate(mx=>linked_lists%mx,my=>linked_lists%my,mz=>linked_lists%mz)
-    if(parini%iverbose>1) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
         call yaml_mapping_open('linked list info-2',flow=.true.)
         call yaml_map('mx,my,mz',(/mx,my,mz/))
         call yaml_map('total number of subcells',mx*my*mz)

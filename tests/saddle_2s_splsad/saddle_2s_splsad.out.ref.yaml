@@ -27,7 +27,6 @@
    verbosity                           : 1
    verbose                             : 3
    seed                                : -2
-   nrun_lammps                         : 0
    nat                                 : 0
    pressure                            : 0.0
    findsym                             : False

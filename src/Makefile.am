@@ -19,6 +19,8 @@ SRC_ = $(SRC_F)
 SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.F90 \
 		constants_mod.F90 \
 		spline_mod.F90 \
+		splines_mod.F90 \
+		greenf_kspace_mod.F90 \
 		shortrange_mod.F90 \
 		opt_mod.F90 genconf_mod.F90 parini_mod.F90 \
 		tightbinding_mod.F90 \
@@ -32,7 +34,6 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
 		electrostatics_mod.F90 \
 		ann_mod.F90 \
-		potential_mod.F90 \
 		basic_utilities.F90 \
 		train_optimizer.F90 \
 		symfunc_mod.F90 \
@@ -49,13 +50,13 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
 		ann_pot_main.F90 ann_pot_atom.F90 \
-		ann_pot_cent1.F90 ann_pot_centt.F90 ann_pot_cent3.F90 ann_pot_cent_common.F90 \
+		ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_centt.F90 ann_pot_cent3.F90 ann_pot_cent_common.F90 \
 		ann_pot_tb.F90 \
 		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
 		md_util.F90 md.F90 md_NVT.F90\
 		phonon.F90 \
-		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 \
+		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 es_hartree_kspace.F90 specfun.F90 \
 		es_coulomb_p3d_bias.F90 \
 		es_coulomb_p3d_dielec.F90 \
 		grid_rp4gto_sym.F90  grid_gto_sym_ortho.F90 \
@@ -75,7 +76,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		task_bader.F90 \
 		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
 		task_testforces.F90 \
-		task_miscellaneous.F90 solve_poisson_cube.F90 fit_elecpot.F90 \
+		task_miscellaneous.F90 solve_poisson_cube.F90 fit_elecpot.F90 get_qat_target.F90 \
 		test_free_bps.F90 \
 		tightbinding.F90 lenosky_tightbinding.F90 \
 		task_linkedlist.F90 \

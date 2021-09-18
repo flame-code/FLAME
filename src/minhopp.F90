@@ -4,7 +4,7 @@ subroutine minimahopping(parini)
     use mod_task, only: time_exceeded
     use mod_minhopp, only: nstep, nlmin, nlminx, ekin, istep, ihopp, kerathopp, ediff, etoler, re_sm, &
         nlmin_old, minter, eref, nbuf, earr, dt, count_md, count_opt, escaped, accepted
-    use mod_processors, only: parallel, nproc, iproc, imaster, mpi_comm_abz
+    use mod_processors, only: parallel, nproc, iproc, imaster
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     use mod_opt, only: typ_paropt
     use yaml_output
@@ -38,7 +38,7 @@ subroutine minimahopping(parini)
         !if(abs(atoms_curr%epot-atoms_allproc%epotall(iproc+1))>etoler) write(*,'(a)') 'WARNING: new/old energies for input file differ'
         if(abs(atoms_curr%epot-atoms_allproc%atoms(iproc+1)%epot)>etoler) write(*,'(a)') 'WARNING: new/old energies for input file differ'
     endif
-    if(nlmin==0) call minhopp_newrun_initialization(atoms_curr,atoms_locmin)
+    if(nlmin==0) call minhopp_newrun_initialization(parini,atoms_curr,atoms_locmin)
     re_sm=min(atoms_curr%epot,earr(1))
     call yaml_map('re_sm',re_sm,fmt='(es20.12)')
     !call yaml_mapping_open('?????')
@@ -55,16 +55,16 @@ subroutine minimahopping(parini)
     !rathopp(1:3,1:nat)=atoms_curr%rat(1:3,1:nat)
     !atoms_hopp%rat(1:3,1:atoms_curr%nat)=atoms_curr%rat(1:3,1:atoms_curr%nat)
     call atom_copy(atoms_curr,atoms_hopp,'atoms_curr->atoms_hopp')
-    if(parallel) call send_minimum_to_all(atoms_curr)
+    if(parallel) call send_minimum_to_all(parini,atoms_curr)
     nlmin_old=nlmin
-    call request_receive(atoms_allproc)
+    call request_receive(parini,atoms_allproc)
     escaped=.true.
     accepted=.true.
     call report_minhopp_iteration_info(atoms_curr)
     do istep=1,nstep+1 !outer loop for hopping
         call yaml_sequence(advance='no')
         !collecting local minima data if send check by other processes.
-        call collect_data_from_all_processors(5,atoms_curr,atoms_allproc,atoms_locmin)
+        call collect_data_from_all_processors(parini,5,atoms_curr,atoms_allproc,atoms_locmin)
         !write(*,'(a,i4,3i7,e24.15)') 'iproc,istep,ihopp,nlmin,erat ',iproc,istep-1,ihopp,nlmin,atoms_curr%epot
         !Energy has reached taregt eref and global minimum is presumably found
         if(re_sm<=eref) then
@@ -85,7 +85,7 @@ subroutine minimahopping(parini)
                 call yaml_map('minter',minter)
                 call yaml_mapping_close()
                 !write(*,'(a,i4,2i7,i6)') 'iproc,nlmin,nlmin_old,minter',iproc,nlmin,nlmin_old,minter
-                call send_minhopp_parameters_to_all(atoms_curr)
+                call send_minhopp_parameters_to_all(parini,atoms_curr)
             endif
         endif
         if(nlmin-nlmin_old>=minter) call write_minhopp(atoms_allproc,atoms_locmin)
@@ -117,7 +117,7 @@ subroutine minimahopping(parini)
             !Monte Carlo step for local minima hopping
             if(atoms_hopp%epot-atoms_curr%epot<ediff) then !local minimum accepted.
                 accepted=.true.
-                call local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
+                call local_minimum_accepted(parini,atoms_hopp,atoms_curr,atoms_locmin)
             else !local minima rejected.
                 accepted=.false.
                 call local_minimum_rejected(atoms_hopp)
@@ -126,13 +126,13 @@ subroutine minimahopping(parini)
         call report_minhopp_iteration_info(atoms_curr)
     enddo !end of outer loop for hopping
     call yaml_sequence_close()
-    call send_minhopp_parameters_to_all(atoms_curr)
+    call send_minhopp_parameters_to_all(parini,atoms_curr)
 #if defined(MPI)
-    if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
+    if(parallel) call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
 #endif
     call yaml_map('collecting accepted minima sent by other procs, final, iproc',iproc)
     !write(*,'(a,i4)') 'final collect of accepted minima sent by all other processors: iproc',iproc
-    call collect_data_from_all_processors(50,atoms_curr,atoms_allproc,atoms_locmin)
+    call collect_data_from_all_processors(parini,50,atoms_curr,atoms_allproc,atoms_locmin)
     call cancel_excessive_irecv
     !if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
     call final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_locmin,paropt,paropt_prec)
@@ -142,11 +142,11 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     use mod_parini, only: typ_parini
     use mod_minhopp, only: nlmin, alpha_soften, npminx, nstep, alpha1, alpha2, &
         beta1, beta2, beta3, eref, etoler, minter, mdmin, nsoften, nrandoff
-    use mod_processors, only: nproc, iproc, imaster, mpi_comm_abz, parallel
+    use mod_processors, only: nproc, iproc, imaster, parallel
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy, set_ndof
     use mod_yaml_conf, only: read_yaml_conf
     use mod_opt, only: typ_paropt
-    use mod_potential, only: potential
+    use mod_potential, only: potcode
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -172,7 +172,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     beta2=parini%beta2_minhopp
     beta3=parini%beta3_minhopp
     nstep=max(1,nstep/nproc) !nstep in input.ini is considered to be for all processors.
-    potential=trim(parini%potential_potential)
+    potcode=trim(parini%potential_potential)
     paropt=parini%paropt_geopt
     call initminimize(paropt)
     if(parini%two_level_geopt) then
@@ -212,10 +212,10 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
         !    endif
         !enddo
     endif
-    call readnat(atoms_curr) !read number of atoms.
-    call read_poscur_alborz(atoms_curr,atoms_allproc) !Read initial positions.
+    call readnat(parini,atoms_curr) !read number of atoms.
+    call read_poscur_alborz(parini,atoms_curr,atoms_allproc) !Read initial positions.
     call allocate_minhopp_arrays2(atoms_curr%nat,nproc)
-    if(nlmin>0) call read_earr
+    if(nlmin>0) call read_earr(parini)
     !call allocateatomsarrays(nproc)
     call setpot_init(parini,atoms_curr,paropt,paropt_prec)
     !-----------------------------------------------------------------
@@ -249,7 +249,7 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
             !call acf_read_new(parini,'poslow.acf',npminx,atoms_arr=atoms_locmin)
             call read_yaml_conf(parini,'poslow.yaml',npminx,atoms_arr=atoms_locmin)
         endif
-        call read_poslow(atoms_locmin)
+        call read_poslow(parini,atoms_locmin)
     endif
     !call execute_command_line("mkdir -p monminhopp")
     call system("mkdir -p monminhopp")
@@ -266,7 +266,7 @@ subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_
     use mod_parini, only: typ_parini
     use mod_minhopp, only: count_md_tot, count_opt_tot, count_soften_tot, &
         fcall_tot_all, fcall_tot_all_md, fcall_tot_all_opt, fcall_tot_all_soften
-    use mod_processors, only: iproc, imaster, mpi_comm_abz, parallel
+    use mod_processors, only: iproc, imaster, parallel
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_deallocate
     use mod_opt, only: typ_paropt
     use mod_potential, only: fcalls
@@ -280,11 +280,11 @@ subroutine final_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_
     integer:: ierr, iconf
 #if defined(MPI)
     include 'mpif.h'
-    call MPI_REDUCE(fcalls        ,fcall_tot_all       ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
-    call MPI_REDUCE(count_md_tot    ,fcall_tot_all_md    ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
-    call MPI_REDUCE(count_opt_tot   ,fcall_tot_all_opt   ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
-    call MPI_REDUCE(count_soften_tot,fcall_tot_all_soften,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,mpi_comm_abz,ierr)
-    if(parallel) call MPI_BARRIER(mpi_comm_abz,ierr)
+    call MPI_REDUCE(fcalls        ,fcall_tot_all       ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_REDUCE(count_md_tot    ,fcall_tot_all_md    ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_REDUCE(count_opt_tot   ,fcall_tot_all_opt   ,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_REDUCE(count_soften_tot,fcall_tot_all_soften,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,parini%mpi_env%mpi_comm,ierr)
+    if(parallel) call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
 #else
     fcall_tot_all       =fcalls          
     fcall_tot_all_md    =count_md_tot    
@@ -442,10 +442,12 @@ subroutine print_minhopp_parameters
     !if(tt<0.999999999999999d0) stop 'incompatible alpha s, beta s'
 end subroutine print_minhopp_parameters
 !*****************************************************************************************
-subroutine read_earr
+subroutine read_earr(parini)
+    use mod_parini, only: typ_parini
     use mod_minhopp, only: nlmin, nlminx, nbuf, earr, nvisit
-    use mod_processors, only: iproc, parallel, imaster, mpi_comm_abz
+    use mod_processors, only: iproc, parallel, imaster
     implicit none
+    type(typ_parini), intent(in):: parini
     !local variables
     integer:: ios, k, ierr
 #if defined(MPI)
@@ -464,17 +466,19 @@ subroutine read_earr
     endif
 #if defined(MPI)
     if(parallel) then
-        call MPI_BCAST(earr,(nlminx+nbuf+1),MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
-        call MPI_BCAST(nvisit,(nlminx+nbuf+1),MPI_INTEGER,imaster,mpi_comm_abz,ierr)
+        call MPI_BCAST(earr,(nlminx+nbuf+1),MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(nvisit,(nlminx+nbuf+1),MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
     endif
 #endif
 end subroutine read_earr
 !*****************************************************************************************
-subroutine readnat(atoms_curr)
+subroutine readnat(parini,atoms_curr)
+    use mod_parini, only: typ_parini
     use mod_minhopp, only: nlmin
-    use mod_processors, only: iproc, parallel, imaster, mpi_comm_abz
+    use mod_processors, only: iproc, parallel, imaster
     use mod_atoms, only: typ_atoms
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms):: atoms_curr
     !local variables
     integer:: ios, ierr
@@ -491,16 +495,18 @@ subroutine readnat(atoms_curr)
     endif
 #if defined(MPI)
     if(parallel) then
-        call MPI_BCAST(atoms_curr%nat,1,MPI_INTEGER,imaster,mpi_comm_abz,ierr)
+        call MPI_BCAST(atoms_curr%nat,1,MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
     endif
 #endif
 end subroutine readnat
 !*****************************************************************************************
-subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
+subroutine read_poscur_alborz(parini,atoms_curr,atoms_allproc)
+    use mod_parini, only: typ_parini
     !use mod_minhopp, only: eratallproc
-    use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
+    use mod_processors, only: iproc, nproc, parallel, imaster
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms):: atoms_curr
     type(typ_atoms_arr):: atoms_allproc
     !local variables
@@ -590,12 +596,12 @@ subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
     !if(jobmustdie) stop 'ERROR: something wrong with atoms symbol in posinp.xyz'
 #if defined(MPI)
     if(parallel) then
-        call MPI_BCAST(atoms_curr%cellvec,9,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
-        call MPI_BCAST(atoms_curr%bemoved,3*atoms_curr%nat,MPI_LOGICAL,imaster,mpi_comm_abz,ierr)
-        call MPI_BCAST(atoms_curr%ndof,1,MPI_INTEGER,imaster,mpi_comm_abz,ierr)
-        call MPI_BCAST(atoms_curr%sat,5*atoms_curr%nat,MPI_CHARACTER,imaster,mpi_comm_abz,ierr)
+        call MPI_BCAST(atoms_curr%cellvec,9,MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(atoms_curr%bemoved,3*atoms_curr%nat,MPI_LOGICAL,imaster,parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(atoms_curr%ndof,1,MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(atoms_curr%sat,5*atoms_curr%nat,MPI_CHARACTER,imaster,parini%mpi_env%mpi_comm,ierr)
         if(iproc/=imaster) atoms_curr%boundcond=''
-        call MPI_BCAST(atoms_curr%boundcond,4,MPI_CHARACTER,imaster,mpi_comm_abz,ierr)
+        call MPI_BCAST(atoms_curr%boundcond,4,MPI_CHARACTER,imaster,parini%mpi_env%mpi_comm,ierr)
     endif
 #endif
     if(trim(atoms_curr%boundcond)=='unkn' .or. trim(atoms_curr%boundcond)=='unknown') then
@@ -618,7 +624,7 @@ subroutine read_poscur_alborz(atoms_curr,atoms_allproc)
     if(parallel) then
         !call MPI_BCAST(atoms_allproc%ratall,3*atoms_curr%nat*nproc,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
         !call MPI_BCAST(atoms_allproc%epotall,nproc,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
-        call MPI_atom_arr_copy(atoms_curr%nat,atoms_allproc)
+        call MPI_atom_arr_copy(parini,atoms_curr%nat,atoms_allproc)
     endif
 #endif
     !atoms_curr%rat(1:3,1:atoms_curr%nat)=atoms_allproc%ratall(1:3,1:atoms_curr%nat,iproc+1)
@@ -627,7 +633,7 @@ end subroutine read_poscur_alborz
 !*****************************************************************************************
 subroutine read_minhopp_parameters(parini)
     use mod_parini, only: typ_parini
-    use mod_processors, only: iproc, parallel, nproc, imaster, mpi_comm_abz
+    use mod_processors, only: iproc, parallel, nproc, imaster
     use mod_atoms, only: atom_copy
     use mod_minhopp, only: nrandoff, ediff, ekin, dt, nlmin, nlminx, eref, etoler, ekinarr, &
         dtarr, ediffarr, nstep
@@ -667,8 +673,8 @@ subroutine read_minhopp_parameters(parini)
     !eref=-0.100000000000000E+05
 #if defined(MPI)
     if(parallel) then
-        call MPI_BCAST(nlmin,1,MPI_INTEGER,imaster,mpi_comm_abz,ierr)
-        call MPI_BCAST(nlminx,1,MPI_INTEGER,imaster,mpi_comm_abz,ierr)
+        call MPI_BCAST(nlmin,1,MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(nlminx,1,MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
     endif
 #endif
     !etoler=accur
@@ -694,9 +700,9 @@ subroutine read_minhopp_parameters(parini)
     endif
 #if defined(MPI)
     if(parallel) then
-        call MPI_BCAST(ediffarr,nproc,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
-        call MPI_BCAST(ekinarr,nproc,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
-        call MPI_BCAST(dtarr,nproc,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
+        call MPI_BCAST(ediffarr,nproc,MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(ekinarr,nproc,MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(dtarr,nproc,MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
     endif
 #endif
     ediff=ediffarr(iproc);ekin=ekinarr(iproc);dt=dtarr(iproc)
@@ -716,10 +722,12 @@ subroutine read_minhopp_parameters(parini)
     !write(*,'(a,i4,3e15.3)') 'In: iproc,ediff,ekin,dt',iproc,ediff,ekin,dt
 end subroutine read_minhopp_parameters
 !*****************************************************************************************
-subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
+subroutine minhopp_newrun_initialization(parini,atoms_curr,atoms_locmin)
+    use mod_parini, only: typ_parini
     use mod_minhopp, only: nlmin, nlmin_l, earr, nvisit
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms_curr
     type(typ_atoms_arr), intent(inout):: atoms_locmin
     nlmin=1
@@ -734,14 +742,16 @@ subroutine minhopp_newrun_initialization(atoms_curr,atoms_locmin)
     call atom_copy(atoms_curr,atoms_locmin%atoms(1),'atoms_curr->atoms_locmin%atoms')
     !npmin=1
     atoms_locmin%nconf=1
-    call send_minhopp_parameters_to_all(atoms_curr)
+    call send_minhopp_parameters_to_all(parini,atoms_curr)
 end subroutine minhopp_newrun_initialization
 !*****************************************************************************************
-subroutine read_poslow(atoms_locmin)
-    use mod_processors, only: iproc, nproc, imaster, parallel, mpi_comm_abz
+subroutine read_poslow(parini,atoms_locmin)
+    use mod_parini, only: typ_parini
+    use mod_processors, only: iproc, nproc, imaster, parallel
     use mod_minhopp, only: nlmin
     use mod_atoms, only: typ_atoms_arr
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms_arr), intent(inout):: atoms_locmin
     !local variables
     integer:: natposlow, k, iat, ios, ierr
@@ -775,22 +785,24 @@ subroutine read_poslow(atoms_locmin)
     !endif
 #if defined(MPI)
     if(parallel) then
-        call MPI_BARRIER(mpi_comm_abz,ierr)
-        call MPI_BCAST(atoms_locmin%nconf,1,MPI_INTEGER,imaster,mpi_comm_abz,ierr)
+        call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+        call MPI_BCAST(atoms_locmin%nconf,1,MPI_INTEGER,imaster,parini%mpi_env%mpi_comm,ierr)
         !call MPI_BCAST(atoms_locmin%ratall,3*atoms_locmin%atoms%nat*atoms_locmin%nconf, &
         !    MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
         !call MPI_BCAST(atoms_locmin%epotall,atoms_locmin%nconf,MPI_DOUBLE_PRECISION,imaster, &
         !    mpi_comm_abz,ierr)
-        call MPI_atom_arr_copy(atoms_locmin%atoms(1)%nat,atoms_locmin)
+        call MPI_atom_arr_copy(parini,atoms_locmin%atoms(1)%nat,atoms_locmin)
     endif
 #endif
 end subroutine read_poslow
 !*****************************************************************************************
-subroutine send_minimum_to_all(atoms_curr)
+subroutine send_minimum_to_all(parini,atoms_curr)
+    use mod_parini, only: typ_parini
     use mod_minhopp, only: nbuf, abufall, mtagarr1
-    use mod_processors, only: nproc, iproc, mpi_comm_abz
+    use mod_processors, only: nproc, iproc
     use mod_atoms, only: typ_atoms, get_rat
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms_curr
     !local variables
     integer::ireq,ierr,jproc,iat,ibuf,itag
@@ -804,7 +816,7 @@ subroutine send_minimum_to_all(atoms_curr)
 #if defined(MPI)
     do jproc=0,nproc-1
         if(jproc/=iproc) then
-            call MPI_ISEND(abufall(1,ibuf),3*atoms_curr%nat+1,MPI_DOUBLE_PRECISION,jproc,itag,mpi_comm_abz, &
+            call MPI_ISEND(abufall(1,ibuf),3*atoms_curr%nat+1,MPI_DOUBLE_PRECISION,jproc,itag,parini%mpi_env%mpi_comm, &
                 ireq,ierr)
             write(*,'(a,2i4,i7,e24.15)') 'minimum sent:     iproc,jproc  ,itag,epossent    ', &
                 iproc,jproc,itag,atoms_curr%epot
@@ -814,11 +826,13 @@ subroutine send_minimum_to_all(atoms_curr)
     mtagarr1(iproc)=mtagarr1(iproc)+2
 end subroutine send_minimum_to_all
 !*****************************************************************************************
-subroutine send_minhopp_parameters_to_all(atoms_curr)
+subroutine send_minhopp_parameters_to_all(parini,atoms_curr)
+    use mod_parini, only: typ_parini
     use mod_minhopp, only: nbuf, abufall, mtagarr2, ediff, ekin, dt
-    use mod_processors, only: nproc, iproc, mpi_comm_abz
+    use mod_processors, only: nproc, iproc
     use mod_atoms, only: typ_atoms, get_rat
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms_curr
     !local variables
     integer::ireq,ierr,jproc,iat,itag,ibuf
@@ -835,7 +849,7 @@ subroutine send_minhopp_parameters_to_all(atoms_curr)
     do jproc=0,nproc-1
         if(jproc/=iproc) then
             itag=mtagarr2(iproc)
-            call MPI_ISEND(abufall(1,ibuf),3*atoms_curr%nat+4,MPI_DOUBLE_PRECISION,jproc,itag,mpi_comm_abz,ireq,ierr)
+            call MPI_ISEND(abufall(1,ibuf),3*atoms_curr%nat+4,MPI_DOUBLE_PRECISION,jproc,itag,parini%mpi_env%mpi_comm,ireq,ierr)
             !write(*,'(a,2i4,i7,e24.15)') 'data sent:     iproc,jproc  ,itag,erat              ', &
             !    iproc,jproc,itag,atoms_curr%epot
         endif
@@ -851,6 +865,7 @@ subroutine mdescape(parini,atoms_hopp)
     use mod_bin, only: write_bin_conf
     use mod_atoms, only: typ_atoms, typ_file_info, update_rat, update_ratp
     use mod_potential, only: fcalls
+    use mod_potential, only: cal_potential_forces
     use yaml_output
     !Does a MD run with the atomic positions in atoms_hopp
     implicit none
@@ -979,11 +994,13 @@ end subroutine mdescape
 !*****************************************************************************************
 !MPI_IRECV(BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, REQUEST, IERROR)
 !MPI_RECV (BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, STATUS, IERROR) 
-subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_locmin)
+subroutine collect_data_from_all_processors(parini,ntry,atoms_curr,atoms_allproc,atoms_locmin)
+    use mod_parini, only: typ_parini
     use mod_processors, only: parallel, iproc
     use mod_minhopp, only: ekinarr, ediffarr, dtarr, dt, ekin, ediff
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
+    type(typ_parini), intent(in):: parini
     integer, intent(in):: ntry
     type(typ_atoms), intent(in):: atoms_curr
     type(typ_atoms_arr), intent(inout):: atoms_allproc, atoms_locmin
@@ -993,7 +1010,7 @@ subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_
     !icall=icall+1
     if(.not. parallel) return
     do itry=1,ntry
-        call request_receive(atoms_allproc)
+        call request_receive(parini,atoms_allproc)
         call test_receive(atoms_allproc,atoms_locmin)
     enddo
     !ratallproc(1:3,1:atoms_curr%nat,iproc)=atoms_curr%rat(1:3,1:atoms_curr%nat)
@@ -1010,11 +1027,13 @@ subroutine collect_data_from_all_processors(ntry,atoms_curr,atoms_allproc,atoms_
     dtarr(iproc)=dt
 end subroutine collect_data_from_all_processors
 !*****************************************************************************************
-subroutine request_receive(atoms_allproc)
-    use mod_processors, only: iproc, nproc, mpi_comm_abz
+subroutine request_receive(parini,atoms_allproc)
+    use mod_parini, only: typ_parini
+    use mod_processors, only: iproc, nproc
     use mod_minhopp, only: mtagarr1, mtagarr2, abuf1, abuf2, do_req1, do_req2, ireqarr1, ireqarr2
     use mod_atoms, only: typ_atoms_arr
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms_arr), intent(in):: atoms_allproc
     !local variables
     integer:: jproc, ierr
@@ -1026,7 +1045,7 @@ subroutine request_receive(atoms_allproc)
         !call MPI_IRECV(abuf1(1,jproc),3*atoms_allproc%atoms%nat+1,MPI_DOUBLE_PRECISION,jproc,mtagarr1(jproc), &
         !    mpi_comm_abz, ireqarr1(jproc),ierr)
         call MPI_IRECV(abuf1(1,jproc),3*atoms_allproc%atoms(jproc)%nat+1,MPI_DOUBLE_PRECISION,jproc,mtagarr1(jproc), &
-            mpi_comm_abz, ireqarr1(jproc),ierr)
+            parini%mpi_env%mpi_comm, ireqarr1(jproc),ierr)
         do_req1(jproc)=.false.
         endif
     enddo
@@ -1036,7 +1055,7 @@ subroutine request_receive(atoms_allproc)
         !call MPI_IRECV(abuf2(1,jproc),3*atoms_allproc%atoms%nat+4,MPI_DOUBLE_PRECISION,jproc,mtagarr2(jproc), &
         !    mpi_comm_abz, ireqarr2(jproc),ierr)
         call MPI_IRECV(abuf2(1,jproc),3*atoms_allproc%atoms(jproc)%nat+4,MPI_DOUBLE_PRECISION,jproc,mtagarr2(jproc), &
-            mpi_comm_abz, ireqarr2(jproc),ierr)
+            parini%mpi_env%mpi_comm, ireqarr2(jproc),ierr)
         do_req2(jproc)=.false.
         endif
     enddo
@@ -1318,6 +1337,7 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     use mod_minhopp, only: lprint, alpha_soften, istep
     use mod_atoms, only: typ_atoms, typ_file_info, atom_deallocate, atom_copy
     use mod_bin, only: write_bin_conf
+    use mod_potential, only: cal_potential_forces
     use mod_atoms, only: update_ratp, update_rat
     use yaml_output
     implicit none
@@ -1590,12 +1610,14 @@ subroutine escape_failed(parini,erat,erathopp)
     write(2,'(i4.3,i10,i6,e24.15,3f10.4,3f5.2,a,2f9.1)') iproc,istep,ihopp,erathopp,ediff,ekin,dt,t1,t2,t3,'  S-',count_md,count_opt
 end subroutine escape_failed
 !*****************************************************************************************
-subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
+subroutine local_minimum_accepted(parini,atoms_hopp,atoms_curr,atoms_locmin)
+    use mod_parini, only: typ_parini
     use mod_minhopp, only: istep_sam, ekin, ihopp, istep, ediff, istep_old, istep_new, dt, &
         nlmin, nlmin_l, ihopp_acc, alpha1, nvisit, nbuf, kerathopp, newmin, av_ediff, count_md, count_opt
     use mod_processors, only: parallel, iproc
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms_hopp
     type(typ_atoms), intent(inout):: atoms_curr
     type(typ_atoms_arr), intent(inout):: atoms_locmin
@@ -1612,7 +1634,7 @@ subroutine local_minimum_accepted(atoms_hopp,atoms_curr,atoms_locmin)
     !atoms_curr%rat(1:3,1:nat)=rathopp(1:3,1:nat)
     !atoms_curr%rat(1:3,1:atoms_curr%nat)=atoms_hopp%rat(1:3,1:atoms_curr%nat)
     call atom_copy(atoms_hopp,atoms_curr,'atoms_hopp->atoms_curr')
-    if(parallel) call send_minimum_to_all(atoms_curr)
+    if(parallel) call send_minimum_to_all(parini,atoms_curr)
     if(newmin) then !if new local minimum.
         nlmin=nlmin+1
         nlmin_l=nlmin_l+1
@@ -1824,10 +1846,12 @@ subroutine print_final_statistics
     call yaml_mapping_close()
 end subroutine print_final_statistics
 !*****************************************************************************************
-subroutine MPI_atom_arr_copy(nat,atoms_arr)
-    use mod_processors, only: iproc, nproc, parallel, imaster, mpi_comm_abz
+subroutine MPI_atom_arr_copy(parini,nat,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_processors, only: iproc, nproc, parallel, imaster
     use mod_atoms, only: typ_atoms, typ_atoms_arr, get_rat, set_rat
     implicit none
+    type(typ_parini), intent(in):: parini
     integer,intent(in)::nat
     type(typ_atoms_arr),intent(inout):: atoms_arr
     real(8),allocatable::ratall(:,:,:),epotall(:,:),cvall(:,:,:)
@@ -1842,9 +1866,9 @@ subroutine MPI_atom_arr_copy(nat,atoms_arr)
         cvall(1:3,1:3,iconf)=atoms_arr%atoms(iconf)%cellvec
     enddo
 #if defined(MPI)
-    call MPI_BCAST(ratall,3*nat*atoms_arr%nconf,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
-    call MPI_BCAST(epotall,atoms_arr%nconf,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
-    call MPI_BCAST(cvall,3*3*atoms_arr%nconf,MPI_DOUBLE_PRECISION,imaster,mpi_comm_abz,ierr)
+    call MPI_BCAST(ratall,3*nat*atoms_arr%nconf,MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(epotall,atoms_arr%nconf,MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(cvall,3*3*atoms_arr%nconf,MPI_DOUBLE_PRECISION,imaster,parini%mpi_env%mpi_comm,ierr)
 #endif
     do iconf=1,atoms_arr%nconf
         !call atoms_copy(atoms_curr,atoms_arr%atoms(1),'atoms_arr%atoms->atoms_curr')
