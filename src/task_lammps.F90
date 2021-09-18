@@ -25,7 +25,7 @@ subroutine lammps_task(parini)
     !local variables
 #if defined(HAVE_LAMMPS)
     type (C_ptr) :: lmp
-    character(100):: str_run
+    !character(100):: str_run
     integer:: iconf
     type(typ_atoms_arr):: atoms_arr
     logical:: acf_exists, yaml_exists
@@ -54,19 +54,20 @@ subroutine lammps_task(parini)
     call init_potential_forces(parini,atoms)
     call lammps_write(parini,atoms)
     call lammps_open_no_mpi ('lmp -log log.lammps', lmp)
-    call lammps_file (lmp, 'in.lammps')
+    call lammps_file (lmp, 'in.lammps.1')
     call lammps_set_callback(lmp)
+    call lammps_file (lmp, 'in.lammps.2')
     call lammps_set_external_vector_length(lmp,2)
     ! nrun in flame_in.yaml cannot have a smaller value than 1
-    if(parini%nrun_lammps<1) then
-        stop 'ERROR: parini%nrun_lammps<1 in lammps_task'
-    endif
-    write(str_run,'(1a,1x,1i8)') 'run',parini%nrun_lammps
+    !if(parini%nrun_lammps<1) then
+    !    stop 'ERROR: parini%nrun_lammps<1 in lammps_task'
+    !endif
+    !write(str_run,'(1a,1x,1i8)') 'run',parini%nrun_lammps
     !lammps_command is the LAMMPS function that does the
     !task we have asked, e.g. molecular dynamics,
     !therefore, lammps_command will not be left until
     !the required task is completed.
-    call lammps_command (lmp,str_run)
+    !call lammps_command (lmp,str_run)
     call lammps_close (lmp)
     call fini_potential_forces(parini,atoms)
     do iconf=1,atoms_arr%nconf

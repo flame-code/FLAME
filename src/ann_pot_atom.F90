@@ -20,9 +20,10 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
     real(8):: hinv(3,3)
-    !real(8):: time1, time2
+    !real(8):: time0, time1, time2, time3
     call f_routine(id='cal_ann_atombased')
     call update_ratp(atoms)
+    !call cpu_time(time0)
     if(ann_arr%compute_symfunc) then
         call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
     else
@@ -37,10 +38,10 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     do iat=1,atoms%nat
         ann_arr%ener_ref=ann_arr%ener_ref+ann_arr%ann(atoms%itypat(iat))%ener_ref
     enddo
+    !call cpu_time(time1)
     atoms%epot=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
     atoms%stress(1:3,1:3)=0.d0
-    !call cpu_time(time1)
     if(parini%mpi_env%nproc>1) then
         mat=atoms%nat/parini%mpi_env%nproc
         iats=parini%mpi_env%iproc*mat+1
@@ -118,7 +119,6 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     call fmpi_allreduce(atoms%stress(1,1),9,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     endif
     !call cpu_time(time2)
-    !write(*,*) 'ANNs time ',time2-time1
     atoms%epot=atoms%epot+ann_arr%ener_ref
     call getvol_alborz(atoms%cellvec,vol)
     call invertmat_alborz(atoms%cellvec,hinv)
@@ -141,6 +141,11 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
         call f_free(symfunc%y0dr)
         endif
     endif
+    !call cpu_time(time3)
+    !write(*,*) 'TT1 time ',time1-time0
+    !write(*,*) 'TT2 time ',time2-time1
+    !write(*,*) 'TT3 time ',time3-time2
+    !write(*,*) 'TTt time ',time3-time0
     call f_release_routine()
 end subroutine cal_ann_atombased
 !*****************************************************************************************

@@ -1,0 +1,18 @@
+#********** Initialize Simulation **********
+clear
+boundary            p p p
+dimension           3
+units               electron          #atomic units
+atom_style          atomic
+atom_modify         map array
+atom_modify         sort 0 0.0
+
+#********** Initialize atomic data **********
+read_data           lammps_posinp
+mass                1       40.08
+mass                2       18.998403
+
+#********** Define Interatomic Potential **********
+fix                 2 all external pf/callback 1 1
+fix_modify          2 energy yes
+

@@ -127,6 +127,7 @@ subroutine cal_potential_forces(parini,atoms)
     !local variables
     integer:: iat
     real(8), allocatable:: ratred(:,:), rat_backup(:,:)
+    !real(8):: time1, time2
     call f_routine(id='cal_potential_forces')
     allocate(rat_backup(3,atoms%nat))
     call get_rat(atoms,rat_backup)
@@ -166,7 +167,10 @@ subroutine cal_potential_forces(parini,atoms)
         case('qsc')
             call cal_potential_forces_qsc(atoms)
         case('ann')
+            !call cpu_time(time1)
             call cal_potential_ann(parini,atoms)
+            !call cpu_time(time2)
+            !write(*,*) 'POT time ',time2-time1
         case('bigdft')
             call cal_potential_forces_bigdft(atoms)
         case('vasp')

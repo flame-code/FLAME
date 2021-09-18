@@ -89,7 +89,6 @@ subroutine yaml_get_main_parameters(parini)
     parini%iverbose=parini%subdict//"verbosity"
     parini%rng_type=parini%subdict//"rng_type"
     parini%iseed=parini%subdict//"seed"
-    parini%nrun_lammps=parini%subdict//"nrun_lammps"
     if(has_key(parini%subdict,"verbosity_mh")) then
         verbosity_mh=parini%subdict//"verbosity_mh"
         call dict_set(parini%subdict//"verbose",verbosity_mh)

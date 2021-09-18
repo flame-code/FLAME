@@ -28,7 +28,6 @@
    verbose                             : 1
    rng_type                            : only_for_tests
    seed                                : -2
-   nrun_lammps                         : 0
    nat                                 : 8
    pressure                            : 10.0
    findsym                             : True

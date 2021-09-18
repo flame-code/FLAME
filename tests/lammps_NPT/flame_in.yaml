@@ -1,7 +1,6 @@
 main:
     task         :   lammps
     types        :   Ca F
-    nrun_lammps  :   10
 
 potential:
     potential    :   ann

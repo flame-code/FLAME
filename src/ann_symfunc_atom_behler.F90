@@ -18,7 +18,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     integer:: iat, ibs, ibe
     type(typ_pia_arr):: pia_arr
     real(8):: cutoff_function, cutoff_function_der
-    !real(8):: time1, time2
+    !real(8):: time0, time1, time2, time3
     external cutoff_function, cutoff_function_der
     integer:: isat, jsat, ksat, ib, ia, ibij, ibik, istat
     !real(8), allocatable:: y(:,:), y0d(:,:,:), y0dr(:,:,:)
@@ -27,7 +27,9 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
+    !call cpu_time(time0)
     call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr)
+    !call cpu_time(time1)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))
     if(parini%mpi_env%nproc>1) then
@@ -53,6 +55,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !symfunc%y=0.d0
     !symfunc%y0d=0.d0
     !symfunc%y0dr=0.d0
+    !call cpu_time(time2)
     do ib=1,symfunc%linked_lists%maxbound_rad
         pia_arr%pia(ib)%fc=cutoff_function(pia_arr%pia(ib)%r,rc)
         pia_arr%pia(ib)%fcd=cutoff_function_der(pia_arr%pia(ib)%r,rc)
@@ -75,8 +78,12 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
         ksat=atoms%itypat(symfunc%linked_lists%bound_rad(2,ibik))
         call symmetry_functions_g05_atom(ann_arr,pia_arr%pia(ibij),pia_arr%pia(ibik),ibij,ibik,iat,isat,jsat,ksat,symfunc)
     enddo
-    !call cpu_time(time2)
+    !call cpu_time(time3)
     !write(*,*) 'SF time ',time2-time1
+    !write(*,*) 'SS1 time ',time1-time0
+    !write(*,*) 'SS2 time ',time2-time1
+    !write(*,*) 'SS3 time ',time3-time2
+    !write(*,*) 'SSt time ',time3-time0
     !-------------------------------------------------------------------------------------
     !if(parini%iverbose>2) then
     !do iat=1,atoms%nat
