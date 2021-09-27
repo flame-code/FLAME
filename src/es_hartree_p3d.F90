@@ -644,7 +644,7 @@ subroutine get_beta_grid(hzsq,ngpz,analc00,beta_grid)
         beta_grid=beta_grid+iz*analc00(iz)
     enddo
     beta_grid=beta_grid*0.5d0*hzsq
-    !call yaml_map('inside get_beta_grid',beta_grid,fmt='(e30.17)')
+    call yaml_map('inside get_beta_grid',beta_grid,fmt='(e30.17)')
     !write(*,'(a22,e30.17)') 'inside get_beta_grid beta_grid=',beta_grid
 end subroutine get_beta_grid
 !*****************************************************************************************
