@@ -1392,9 +1392,12 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
             tt=abs(atoms%epot-atoms_arr%atoms(iconf)%trial_ref_energy(1))/atoms_arr%atoms(iconf)%nat
             write(*,*) 'ENERGIES_EHSAN',atoms%epot,atoms_arr%atoms(iconf)%trial_ref_energy(1)
         endif
+        tt1=atoms%epot/atoms_arr%atoms(iconf)%nat
+        tt2=atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat
         !HERE
         if(parini%print_energy) then
-            write(iunit,'(i7,es14.5,a40,i6,a)') iconf,tt,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
+          !write(iunit,'(i7,3es14.5,a35,i6,a)') iconf,tt,tt1,tt2,atoms_arr%lconf(iconf),trim(data_set)
+          write(iunit,'(i7,es16.8,es16.8,a40,i6,a)') iconf,tt1,tt2,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
         endif
         if(tt>1.d-2) ilarge1=ilarge1+1
         if(tt>1.d-3) ilarge2=ilarge2+1

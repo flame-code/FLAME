@@ -113,9 +113,9 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     !type(mpi_environment):: bigdft_mpi
 #if defined(HAVE_BPS)
     type(domain) :: dom
-    write(*,*) 'REZA-1'
+    !write(*,*) 'REZA-1'
     !call f_lib_initialize() 
-    write(*,*) 'REZA-2'
+    !write(*,*) 'REZA-2'
     !bigdft_mpi%mpi_comm=MPI_COMM_WORLD !workaround to be removed
     nxyz=(/64,64,64/)
     if(trim(atoms%boundcond)=='bulk') then
@@ -150,7 +150,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     ang_ac=acos(dot_product(cv1,cv3)/sqrt(dot_product(cv1,cv1)*dot_product(cv3,cv3)))
     ang_ab=acos(dot_product(cv1,cv2)/sqrt(dot_product(cv1,cv1)*dot_product(cv2,cv2)))
     !write(*,'(a,3f15.5)') 'alpha,beta,gamma ',ang_bc,ang_ac,ang_ab
-    write(*,*) 'REZA-3'
+    !write(*,*) 'REZA-3'
     write(*,*) 'iproc,nproc', iproc, nproc
     write(*,*) 'geocode : ',geocode
     dict_input=>dict_new('kernel' .is. dict_new('isf_order' .is. itype_scf))
@@ -166,7 +166,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
         poisson%pkernel_scn=pkernel_init(iproc,nproc,dict_input,dom,ndims,hgrids,alpha_bc,beta_ac,gamma_ab)
     endif
     call dict_free(dict_input)
-    write(*,*) 'REZA-4'
+    !write(*,*) 'REZA-4'
     !poisson%pkernel%mu=poisson%screening_factor
     call pkernel_set(poisson%pkernel,verbose=.true.)
     if(poisson%cal_scn) then
@@ -174,7 +174,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
         poisson%pkernel_scn%mu=poisson%screening_factor
         call pkernel_set(poisson%pkernel_scn,verbose=.true.)
     endif
-    write(*,*) 'REZA-5'
+    !write(*,*) 'REZA-5'
     !write(*,'(a,2es20.12)') 'Hartree ',ehartree,ehartree-ehartree_ref
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
