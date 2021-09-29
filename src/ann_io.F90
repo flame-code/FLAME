@@ -166,36 +166,37 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
             stop
         endif
     enddo
-    read(ifile,'(a)') strline
-    read(strline,*) ann%ng6
-    if(mod(ann%ng6,3)/=0) stop 'ERROR: ng6 must be multiple of three.'
-    do ig=1,ann%ng6/3
-        stop 'ERROR: g6 is not ready.'
-        i0=i0+1
-        read(ifile,'(a)') strline
-        read(strline,*,iostat=ios) ann%g6eta(ig),ann%gbounds(1,i0),ann%gbounds(2,i0)
-        if(ios<0) then
-            write(*,'(a)') 'ERROR: 4 columns are required for each of G6 symmetry functions,'
-            write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
-            stop
-        endif
-        i0=i0+1
-        read(ifile,'(a)') strline
-        read(strline,*,iostat=ios) ann%gbounds(1,i0),ann%gbounds(2,i0)
-        if(ios<0) then
-            write(*,'(a)') 'ERROR: 2 columns are required for each of G6 symmetry functions,'
-            write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
-            stop
-        endif
-        i0=i0+1
-        read(ifile,'(a)') strline
-        read(strline,*,iostat=ios) ann%gbounds(1,i0),ann%gbounds(2,i0)
-        if(ios<0) then
-            write(*,'(a)') 'ERROR: 2 columns are required for each of G6 symmetry functions,'
-            write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
-            stop
-        endif
-    enddo
+    !read(ifile,'(a)') strline
+    !read(strline,*) ann%ng6
+    !if(mod(ann%ng6,3)/=0) stop 'ERROR: ng6 must be multiple of three.'
+    !do ig=1,ann%ng6/3
+    !    stop 'ERROR: g6 is not ready.'
+    !    i0=i0+1
+    !    read(ifile,'(a)') strline
+    !    read(strline,*,iostat=ios) ann%g6eta(ig),ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !    if(ios<0) then
+    !        write(*,'(a)') 'ERROR: 4 columns are required for each of G6 symmetry functions,'
+    !        write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
+    !        stop
+    !    endif
+    !    i0=i0+1
+    !    read(ifile,'(a)') strline
+    !    read(strline,*,iostat=ios) ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !    if(ios<0) then
+    !        write(*,'(a)') 'ERROR: 2 columns are required for each of G6 symmetry functions,'
+    !        write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
+    !        stop
+    !    endif
+    !    i0=i0+1
+    !    read(ifile,'(a)') strline
+    !    read(strline,*,iostat=ios) ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !    if(ios<0) then
+    !        write(*,'(a)') 'ERROR: 2 columns are required for each of G6 symmetry functions,'
+    !        write(*,'(a)') '       including 2 values for bounds (neglected for ANN training).'
+    !        stop
+    !    endif
+    !enddo
+    ann%ng6=0
     ann%nn(0)=ann%ng1+ann%ng2+ann%ng3+ann%ng4+ann%ng5+ann%ng6
     if(iproc==0) then
         do i=0,ann%nl
@@ -346,15 +347,15 @@ subroutine write_ann(parini,filename,ann)
         write(1,'(2a5,3f8.4,2es24.15)') trim(sat1),trim(sat2),ann%g5eta(i),ann%g5zeta(i),ann%g5lambda(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
     enddo
     !-------------------------------------------------------
-    write(1,'(i6,2x,a)') ann%ng6,'#ng6'
-    do i=1,ann%ng6/3
-        i0=i0+1
-        write(1,'(1f8.4,2es24.15)') ann%g6eta(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
-        i0=i0+1
-        write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
-        i0=i0+1
-        write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
-    enddo
+    !write(1,'(i6,2x,a)') ann%ng6,'#ng6'
+    !do i=1,ann%ng6/3
+    !    i0=i0+1
+    !    write(1,'(1f8.4,2es24.15)') ann%g6eta(i),ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !    i0=i0+1
+    !    write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !    i0=i0+1
+    !    write(1,'(16x,2es24.15)') ann%gbounds(1,i0),ann%gbounds(2,i0)
+    !enddo
     !-------------------------------------------------------
     do ialpha=1,ann%nl
         write(1,'(2(a,i1))') '#main nodes weights connecting layers ',ialpha,' and ',ialpha-1

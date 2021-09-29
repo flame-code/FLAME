@@ -123,6 +123,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     end do
 
     ann%nn(0)=ann%ng1+ann%ng2+ann%ng3+ann%ng4+ann%ng5+ann%ng6
+    call ann%ann_allocate(maxval(ann%nn(0:ann%nl)),ann%nl)
     if(iproc==0) then
         str_out_ann=''
         do i=0,ann%nl-1
