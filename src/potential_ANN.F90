@@ -159,6 +159,7 @@ subroutine add_repulsive_potential(parini,atoms)
     rcmax=2.d0*rcovmax
     call linkedlists_init(parini,atoms,cell,linked_lists)
     frac1=0.72d0
+    !frac1=0.80d0 !SAMARE
     frac12=frac1**12
     !-------------------------------------------------------
     epot_rep=0.d0
@@ -182,9 +183,13 @@ subroutine add_repulsive_potential(parini,atoms)
             rsq= dx*dx+dy*dy+dz*dz
             maincell=maincell_iat+linked_lists%maincell(jat)
             rc=(atoms%rcov(iatp)+atoms%rcov(linked_lists%perm(jat)))*0.7d0
+!            if (trim(atoms%sat(iatp))=='O' .and.  trim(atoms%sat(linked_lists%perm(jat)))=='O')then
+!                rc=4.40 !SAMARE
+!            endif
             rcsq=rc**2
             if(rsq<rcsq .and. maincell >-1) then
                 r=sqrt(rsq)
+                !write(*,'(2a3,2f8.3)') trim(atoms%sat(iatp)),trim(atoms%sat(linked_lists%perm(jat))),r,rc
                 !---------------------------------
                 !c=0.1d0
                 !b=-2.d0*c/rc

@@ -323,36 +323,6 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
     enddo
 end subroutine symmetry_functions_g05_atom
 !*****************************************************************************************
-subroutine symmetry_functions_g06_atom(ann,iat,jat_maincell,r,dr,fc,fcd)
-    use mod_ann, only: typ_ann
-    implicit none
-    type(typ_ann), intent(inout):: ann
-    integer, intent(in):: iat, jat_maincell
-    real(8), intent(in):: r, dr(3), fc, fcd
-    !local variables
-    integer:: ig, igt
-    real(8) :: rcov, tt
-    stop 'ERROR: symmetry functions G6: not ready yet'
-    do ig=1,ann%ng6,3
-        igt=(ig-1)/3+1
-        rcov=1.d0
-        !rcov=1.36d0
-        !rcov=ann%g6eta(igt)
-        !fc=exp(-r/(4.d0*rcov))
-        !fc=amass(jat)*exp(-r/(4.d0*rcov))
-        !fc=amass(jat)*exp(-r**2/(6.d0*rcov)**2)
-        !tt=fc*exp(-ann%g6eta(igt)*(r)**2)
-        tt=fc*exp(-1.d0*ann%g6eta(igt)*r**1)
-        ann%teneria(1,1,igt)=ann%teneria(1,1,igt)+tt*(dr(2)*dr(2)+dr(3)*dr(3)+2.d0*(rcov*0.5d0)**2)
-        ann%teneria(2,2,igt)=ann%teneria(2,2,igt)+tt*(dr(1)*dr(1)+dr(3)*dr(3)+2.d0*(rcov*0.5d0)**2)
-        ann%teneria(3,3,igt)=ann%teneria(3,3,igt)+tt*(dr(1)*dr(1)+dr(2)*dr(2)+2.d0*(rcov*0.5d0)**2)
-        ann%teneria(2,1,igt)=ann%teneria(2,1,igt)-tt*(dr(1)*dr(2))
-        ann%teneria(3,1,igt)=ann%teneria(3,1,igt)-tt*(dr(1)*dr(3))
-        ann%teneria(3,2,igt)=ann%teneria(3,2,igt)-tt*(dr(2)*dr(3))
-        !write(*,*) fc
-    enddo
-end subroutine symmetry_functions_g06_atom
-!*****************************************************************************************
 function cutoff_function(r, rc) result(fc)
     implicit none
     real(8), intent(in):: r, rc

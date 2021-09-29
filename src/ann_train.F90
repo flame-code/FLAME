@@ -365,7 +365,7 @@ end subroutine cal_rmse_energy_centt
 !*****************************************************************************************
 subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, init_ann_arr
+    use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann
     use mod_processors, only: iproc
@@ -402,7 +402,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
         call read_input_ann(parini,iproc,ann_arr)
     endif
     !---------------------------------------------
-    call init_ann_arr(ann_arr)
+    call ann_arr%init_ann_arr()
     if(trim(ann_arr%approach)=='cent3') then
         call init_opt_ann(3*atoms_train%nconf,opt_ann,ann_arr)
     else
@@ -424,7 +424,7 @@ end subroutine init_ann_train
 !*****************************************************************************************
 subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, fini_ann_arr
+    use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, fini_opt_ann
     use mod_atoms, only: typ_atoms_arr
@@ -447,7 +447,7 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc
         call yaml_close_stream(unit=ann_arr%iunit)
     endif
 
-    call fini_ann_arr(ann_arr)
+    call ann_arr%fini_ann_arr()
     call fini_opt_ann(opt_ann)
 
     do iconf=1,atoms_train%nconf
@@ -928,9 +928,13 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     integer:: iconf, ib, ig, i, iat, jat, i0
     real(8), allocatable:: gminarr(:,:), gmaxarr(:,:) !, poll_period
     integer, allocatable:: iatmin(:,:), iatmax(:,:), iconfmin(:,:), iconfmax(:,:)
-    integer:: ibmin(350), ibmax(350)
+    integer, allocatable:: ibmin(:), ibmax(:)
     integer:: ngmax
-    ngmax=350
+    ngmax=0
+    do i=1,ann_arr%nann
+        ngmax=max(ngmax,ann_arr%ann(i)%nn(0))
+    enddo
+    allocate(ibmin(ngmax),ibmax(ngmax))
     allocate(gminarr(1:ngmax,1:parini%ntypat))
     gminarr=huge(1.d20)
     allocate(gmaxarr(1:ngmax,1:parini%ntypat))
@@ -943,7 +947,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     iconfmin=0.d0
     allocate(iconfmax(1:ngmax,1:parini%ntypat))
     iconfmax=0.d0
-    ibmin(1:350)=0 ; ibmax(1:350)=0
+    ibmin(1:ngmax)=0 ; ibmax(1:ngmax)=0
     do iconf=1,atoms_arr%nconf
         !if(mod(iconf-1,nproc)==iproc) cycle
         !write(41,'(i6,i3)',advance='no') mod(iconf-1,nproc),iproc
@@ -1098,6 +1102,7 @@ subroutine save_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     deallocate(iatmax)
     deallocate(iconfmin)
     deallocate(iconfmax)
+    deallocate(ibmin,ibmax)
 end subroutine save_gbounds
 !*****************************************************************************************
 subroutine randomize_data_order(atoms_arr)
@@ -1392,9 +1397,12 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
             tt=abs(atoms%epot-atoms_arr%atoms(iconf)%trial_ref_energy(1))/atoms_arr%atoms(iconf)%nat
             write(*,*) 'ENERGIES_EHSAN',atoms%epot,atoms_arr%atoms(iconf)%trial_ref_energy(1)
         endif
+        tt1=atoms%epot/atoms_arr%atoms(iconf)%nat
+        tt2=atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat
         !HERE
         if(parini%print_energy) then
-            write(iunit,'(i7,es14.5,a40,i6,a)') iconf,tt,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
+          !write(iunit,'(i7,3es14.5,a35,i6,a)') iconf,tt,tt1,tt2,atoms_arr%lconf(iconf),trim(data_set)
+          write(iunit,'(i7,es16.8,es16.8,a40,i6,a)') iconf,tt1,tt2,trim(atoms_arr%fn(iconf)),atoms_arr%lconf(iconf),trim(data_set)
         endif
         if(tt>1.d-2) ilarge1=ilarge1+1
         if(tt>1.d-3) ilarge2=ilarge2+1
@@ -1491,7 +1499,7 @@ end subroutine ann_evaluate
 !*****************************************************************************************
 subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_valid,symfunc_train,symfunc_valid) !,opt_ann)
     use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr, init_ann_arr, convert_x_ann_arr
+    use mod_ann, only: typ_ann_arr, convert_x_ann_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann, get_opt_ann_x
@@ -1545,7 +1553,7 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
         nullify(ann_arr%ann(iann)%dict)
     enddo
 
-    call init_ann_arr(ann_arr)
+    call ann_arr%init_ann_arr()
     n=sum(ann_arr%num(1:ann_arr%nann))
     write(*,*) n,ann_arr%natmax
     allocate(g(n))

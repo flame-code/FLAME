@@ -209,6 +209,7 @@ module mod_parini
         character(50):: psolver='unknown'
         logical:: cal_polar= .false.
         logical:: ecut_auto=.false.
+        logical:: bigdft_kwald=.false.
         !-----------------------------------------------------------------------
         !parameters of [misc]
         logical:: avail_misc=.false.
