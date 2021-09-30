@@ -84,7 +84,7 @@ subroutine ann_gen_symmetry_function(parini)
         write(*,'(a)') trim(filename)
         open(unit=1,file=trim(filename),status='replace',iostat=ios)
         if(ios/=0) then;write(*,'(2a)') 'ERROR: failure openning ',trim(filename);stop;endif
-        call symmetry_functions(parini,ann_arr,atoms_gen%atoms(iconf),symfunc,.false.)
+        call symfunc%get_symfunc(parini,ann_arr,atoms_gen%atoms(iconf),.false.)
         do iat=1,atoms_gen%atoms(iconf)%nat
             do ig=1,ann_arr%ann(1)%nn(0)
                 write(1,'(2i4,es24.15)') ig,iat,symfunc%y(ig,iat)

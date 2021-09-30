@@ -1,23 +1,44 @@
 !*****************************************************************************************
-subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
+module mod_symfunc
+    use mod_linked_lists, only: typ_linked_lists
+    implicit none
+    private
+    !public:: 
+    type, public:: typ_symfunc
+        integer:: ng=-1
+        integer:: nat=-1
+        real(8), allocatable:: y(:,:)
+        real(8), allocatable:: y0d_bond(:,:)
+        real(8), allocatable:: y0d(:,:,:)
+        real(8), allocatable:: y0dr(:,:,:)
+        type(typ_linked_lists):: linked_lists
+        contains
+        procedure, public, pass(self):: get_symfunc
+    end type typ_symfunc
+    type, public:: typ_symfunc_arr
+        integer:: nconf=-1
+        type(typ_symfunc), allocatable:: symfunc(:)
+    end type typ_symfunc_arr
+contains
+!*****************************************************************************************
+subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
     use mod_atoms, only: typ_atoms
     use time_profiling
     !use mod_timing , only: TCAT_SYMFUNC_COMPUT
     use dynamic_memory
     implicit none
+    class(typ_symfunc), intent(inout):: self
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_symfunc), intent(inout):: symfunc
     logical, intent(in):: apply_gbounds
     !local variables
     integer:: i0, iat, jat, isat, i, ib, istat, ng, ig
     integer:: iats, iate, mat, mproc, ibs, ibe
     real(8):: gleft
-    call f_routine(id='symmetry_functions')
+    call f_routine(id='get_symfunc')
     !call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
     !-----------------------------------------------------------------
     !first index of "y0d" is for number of symmetry function
@@ -25,14 +46,14 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
     !3th index of "y0d" is for number of atoms
     !-----------------------------------------------------------------
     bondbased: if(parini%bondbased_ann) then
-        call symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
-            do ib=1,symfunc%linked_lists%maxbound_rad
+        call symmetry_functions_driver_bond(parini,ann_arr,atoms,self)
+            do ib=1,self%linked_lists%maxbound_rad
                 if(apply_gbounds) then
                     !normalization of y and y0d
                     do i0=1,ann_arr%ann(1)%nn(0)
                         gleft=ann_arr%ann(1)%gbounds(1,i0)
-                        symfunc%y(i0,ib)=(symfunc%y(i0,ib)-gleft)*ann_arr%ann(1)%two_over_gdiff(i0)-1.d0
-                        symfunc%y0d_bond(i0,ib)=symfunc%y0d_bond(i0,ib)*ann_arr%ann(1)%two_over_gdiff(i0)
+                        self%y(i0,ib)=(self%y(i0,ib)-gleft)*ann_arr%ann(1)%two_over_gdiff(i0)-1.d0
+                        self%y0d_bond(i0,ib)=self%y0d_bond(i0,ib)*ann_arr%ann(1)%two_over_gdiff(i0)
                     enddo
                 endif
                 if(ann_arr%ann(1)%nn(0)/=ann_arr%ann(1)%ng1+ann_arr%ann(1)%ng2+ann_arr%ann(1)%ng3+ann_arr%ann(1)%ng4) then
@@ -43,9 +64,9 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
             enddo
     else bondbased
         if (parini%symfunc_type_ann=='behler') then 
-            call symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
+            call symmetry_functions_driver(parini,ann_arr,atoms,self)
         else
-            call symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
+            call symmetry_functions_driver_stefan(parini,ann_arr,atoms,self)
         endif
         if(apply_gbounds) then
             do iat=1,atoms%nat
@@ -53,7 +74,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
                 !normalization of y and y0d
                 do i0=1,ann_arr%ann(isat)%nn(0)
                     gleft=ann_arr%ann(isat)%gbounds(1,i0)
-                    symfunc%y(i0,iat)=(symfunc%y(i0,iat)-gleft)*ann_arr%ann(isat)%two_over_gdiff(i0)-1.d0
+                    self%y(i0,iat)=(self%y(i0,iat)-gleft)*ann_arr%ann(isat)%two_over_gdiff(i0)-1.d0
                 enddo
             enddo
             if(parini%mpi_env%nproc>1) then
@@ -68,25 +89,25 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
                 iate=atoms%nat
                 !mat=atoms%nat
             endif
-            ibs=symfunc%linked_lists%prime_bound(iats)
-            ibe=symfunc%linked_lists%prime_bound(iate+1)-1
-            do ib=ibs,ibe !1,symfunc%linked_lists%maxbound_rad
-                iat=symfunc%linked_lists%bound_rad(1,ib)
+            ibs=self%linked_lists%prime_bound(iats)
+            ibe=self%linked_lists%prime_bound(iate+1)-1
+            do ib=ibs,ibe !1,self%linked_lists%maxbound_rad
+                iat=self%linked_lists%bound_rad(1,ib)
                 isat=atoms%itypat(iat)
                 do i0=1,ann_arr%ann(isat)%nn(0)
                     gleft=ann_arr%ann(isat)%gbounds(1,i0)
-                    symfunc%y0d(i0,1,ib)=symfunc%y0d(i0,1,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0d(i0,2,ib)=symfunc%y0d(i0,2,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0d(i0,3,ib)=symfunc%y0d(i0,3,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,1,ib)=symfunc%y0dr(i0,1,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,2,ib)=symfunc%y0dr(i0,2,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,3,ib)=symfunc%y0dr(i0,3,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,4,ib)=symfunc%y0dr(i0,4,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,5,ib)=symfunc%y0dr(i0,5,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,6,ib)=symfunc%y0dr(i0,6,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,7,ib)=symfunc%y0dr(i0,7,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,8,ib)=symfunc%y0dr(i0,8,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
-                    symfunc%y0dr(i0,9,ib)=symfunc%y0dr(i0,9,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0d(i0,1,ib)=self%y0d(i0,1,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0d(i0,2,ib)=self%y0d(i0,2,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0d(i0,3,ib)=self%y0d(i0,3,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,1,ib)=self%y0dr(i0,1,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,2,ib)=self%y0dr(i0,2,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,3,ib)=self%y0dr(i0,3,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,4,ib)=self%y0dr(i0,4,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,5,ib)=self%y0dr(i0,5,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,6,ib)=self%y0dr(i0,6,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,7,ib)=self%y0dr(i0,7,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,8,ib)=self%y0dr(i0,8,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
+                    self%y0dr(i0,9,ib)=self%y0dr(i0,9,ib)*ann_arr%ann(isat)%two_over_gdiff(i0)
                 enddo
             enddo
         endif
@@ -106,5 +127,7 @@ subroutine symmetry_functions(parini,ann_arr,atoms,symfunc,apply_gbounds)
     endif bondbased
     !call f_timing(TCAT_SYMFUNC_COMPUT,'OF')
     call f_release_routine()
-end subroutine symmetry_functions
+end subroutine get_symfunc
+!*****************************************************************************************
+end module mod_symfunc
 !*****************************************************************************************

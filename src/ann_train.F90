@@ -647,7 +647,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     enddo
     configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
         if(trim(parini%symfunc)/='read') then
-            call symmetry_functions(parini,ann_arr,atoms_arr%atoms(iconf),symfunc_arr%symfunc(iconf),.false.)
+            call symfunc_arr%symfunc(iconf)%get_symfunc(parini,ann_arr,atoms_arr%atoms(iconf),.false.)
             if(.not. parini%save_symfunc_force_ann) then
                 call f_free(symfunc_arr%symfunc(iconf)%y0d)
             endif

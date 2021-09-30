@@ -97,7 +97,7 @@ subroutine ann_check_symmetry_function(parini)
 !-----------------Compute symmetry functions with/without normalization-------------------------
     if(parini%normalization_ann) then
         configurations: do iconf=1,atoms_check%nconf
-            call symmetry_functions(parini,ann_arr,atoms_check%atoms(iconf),symfunc,.false.)
+            call symfunc%get_symfunc(parini,ann_arr,atoms_check%atoms(iconf),.false.)
             if(parini%symfunc_type_ann=='behler') then
                 deallocate(symfunc%linked_lists%prime_bound)
                 deallocate(symfunc%linked_lists%bound_rad)
@@ -144,7 +144,7 @@ subroutine ann_check_symmetry_function(parini)
         enddo
     else
         do iconf=1,atoms_check%nconf
-            call symmetry_functions(parini,ann_arr,atoms_check%atoms(iconf),symfunc,.false.)
+            call symfunc%get_symfunc(parini,ann_arr,atoms_check%atoms(iconf),.false.)
             do iat=1,atoms_check%atoms(iconf)%nat
                 do ig=1,symfunc_check%symfunc(iconf)%ng
                     symfunc_check%symfunc(iconf)%y(ig,iat)=symfunc%y(ig,iat)
