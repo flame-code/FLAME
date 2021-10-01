@@ -63,7 +63,7 @@ module mod_atoms
         real(8), allocatable, public:: trial_ref_energy(:) 
         real(8), allocatable, public:: trial_ref_disp(:,:) 
         integer, allocatable, public:: trial_ref_nat(:) 
-        integer, public:: ntrial
+        integer, public:: ntrial=0
         integer, allocatable, public:: itypat(:) !The type of each atom is set in this array
         !contains
         !procedure:: atoms_assign
@@ -527,6 +527,12 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,z
     logical, optional, intent(in):: trial_ref_energy,trial_ref_nat,trial_ref_disp
     !local variables
     logical:: all_of_them, l_arg(12)
+    logical:: sat_t, vat_t, amass_t, fat_t, bemoved_t, qat_t, zat_t, rcov_t
+    logical:: typat_t, trial_ref_energy_t, trial_ref_nat_t, trial_ref_disp_t
+    sat_t=.false. ; vat_t=.false. ; amass_t=.false. ; fat_t=.false. ; bemoved_t=.false.
+    qat_t=.false. ; zat_t=.false. ; rcov_t=.false.
+    typat_t=.false. ; trial_ref_energy_t=.false. ; trial_ref_nat_t=.false.
+    trial_ref_disp_t=.false.
     !integer:: iat, ifp
     !write(*,*) 'in atom_allocate_old: HERE'
     atoms%nat=nat
@@ -547,8 +553,9 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,z
     else
         all_of_them=.true.
     endif
-    if((all_of_them .and. .not. allocated(atoms%sat)) .or. (present(sat) .and. sat)) then
-        if(allocated(atoms%sat)) stop 'ERROR: sat is already allocated'
+    if(all_of_them) sat_t=.true.
+    if(present(sat)) then;if(sat) sat_t=.true.;endif
+    if(sat_t .and. .not. allocated(atoms%sat)) then
         allocate(atoms%sat(atoms%nat),source='     ')
     endif
     if(atoms%nat>0 .and. .not. allocated(atoms%rat)) then
@@ -560,32 +567,39 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,z
     if(atoms%natim>0 .and. .not. allocated(atoms%ratim)) then
         allocate(atoms%ratim(3,atoms%natim),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%vat)) .or. (present(vat) .and. vat)) then
-        if(allocated(atoms%vat)) stop 'ERROR: vat is already allocated'
+    if(all_of_them) vat_t=.true.
+    if(present(vat)) then;if(vat) vat_t=.true.;endif
+    if(vat_t .and. .not. allocated(atoms%vat)) then
         allocate(atoms%vat(3,atoms%nat),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%amass)) .or. (present(amass) .and. amass)) then
-        if(allocated(atoms%amass)) stop 'ERROR: amass is already allocated'
+    if(all_of_them) amass_t=.true.
+    if(present(amass)) then;if(amass) amass_t=.true.;endif
+    if(amass_t .and. .not. allocated(atoms%amass)) then
         allocate(atoms%amass(atoms%nat),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%fat)) .or. (present(fat) .and. fat)) then
-        if(allocated(atoms%fat)) stop 'ERROR: fat is already allocated'
+    if(all_of_them) fat_t=.true.
+    if(present(fat)) then;if(fat) fat_t=.true.;endif
+    if(fat_t .and. .not. allocated(atoms%fat)) then
         allocate(atoms%fat(3,atoms%nat),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%bemoved)) .or. (present(bemoved) .and. bemoved)) then
-        if(allocated(atoms%bemoved)) stop 'ERROR: bemoved is already allocated'
+    if(all_of_them) bemoved_t=.true.
+    if(present(bemoved)) then;if(bemoved) bemoved_t=.true.;endif
+    if(bemoved_t .and. .not. allocated(atoms%bemoved)) then
         allocate(atoms%bemoved(3,atoms%nat),source=.true.)
     endif
-    if((all_of_them .and. .not. allocated(atoms%qat)) .or. (present(qat) .and. qat)) then
-        if(allocated(atoms%qat)) stop 'ERROR: qat is already allocated'
+    if(all_of_them) qat_t=.true.
+    if(present(qat)) then;if(qat) qat_t=.true.;endif
+    if(qat_t .and. .not. allocated(atoms%qat)) then
         allocate(atoms%qat(atoms%nat),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%zat)) .or. (present(zat) .and. zat)) then
-        if(allocated(atoms%zat)) stop 'ERROR: zat is already allocated'
+    if(all_of_them) zat_t=.true.
+    if(present(zat)) then;if(zat) zat_t=.true.;endif
+    if(zat_t .and. .not. allocated(atoms%zat)) then
         allocate(atoms%zat(atoms%nat),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%rcov)) .or. (present(rcov) .and. rcov)) then
-        if(allocated(atoms%rcov)) stop 'ERROR: rcov is already allocated'
+    if(all_of_them) rcov_t=.true.
+    if(present(rcov)) then;if(rcov) rcov_t=.true.;endif
+    if(rcov_t .and. .not. allocated(atoms%rcov)) then
         allocate(atoms%rcov(atoms%nat),source=0.d0)
     endif
     if(nfp>0 .and. .not. allocated(atoms%fp)) then
@@ -594,20 +608,24 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,z
     !if(atoms%nat>0 .and. .not. allocated(atoms%trial_ref_energy)) then
     !    allocate(atoms%trial_ref_energy(1:atoms%nat),source=0.d0)
     !endif
-    if((all_of_them .and. .not. allocated(atoms%itypat)) .or. (present(typat) .and. typat)) then
-        if(allocated(atoms%itypat)) stop 'ERROR: itypat is already allocated'
+    if(all_of_them) typat_t=.true.
+    if(present(typat)) then;if(typat) typat_t=.true.;endif
+    if(typat_t .and. .not. allocated(atoms%itypat)) then
         allocate(atoms%itypat(atoms%nat),source=0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%trial_ref_energy)) .or. (present(trial_ref_energy) .and. trial_ref_energy)) then
-        if(allocated(atoms%trial_ref_energy)) stop 'ERROR: trial_ref_energy is already allocated'
+    if(all_of_them) trial_ref_energy_t=.true.
+    if(present(trial_ref_energy)) then;if(trial_ref_energy) trial_ref_energy_t=.true.;endif
+    if(trial_ref_energy_t .and. .not. allocated(atoms%trial_ref_energy)) then
         allocate(atoms%trial_ref_energy(atoms%ntrial),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%trial_ref_disp)) .or. (present(trial_ref_disp) .and. trial_ref_disp)) then
-        if(allocated(atoms%trial_ref_disp)) stop 'ERROR: trial_ref_disp is already allocated'
+    if(all_of_them) trial_ref_disp_t=.true.
+    if(present(trial_ref_disp)) then;if(trial_ref_disp) trial_ref_disp_t=.true.;endif
+    if(trial_ref_disp_t .and. .not. allocated(atoms%trial_ref_disp)) then
         allocate(atoms%trial_ref_disp(3,atoms%ntrial),source=0.d0)
     endif
-    if((all_of_them .and. .not. allocated(atoms%trial_ref_nat)) .or. (present(trial_ref_nat) .and. trial_ref_nat)) then
-        if(allocated(atoms%trial_ref_nat)) stop 'ERROR: trial_ref_nat is already allocated'
+    if(all_of_them) trial_ref_nat_t=.true.
+    if(present(trial_ref_nat)) then;if(trial_ref_nat) trial_ref_nat_t=.true.;endif
+    if(trial_ref_nat_t .and. .not. allocated(atoms%trial_ref_nat)) then
         allocate(atoms%trial_ref_nat(atoms%ntrial),source=0)
     endif
 end subroutine atom_allocate_old
@@ -622,6 +640,12 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
     !local variables
     logical:: all_of_them, l_arg(15)
     !integer::
+    logical:: sat_t, vat_t, amass_t, fat_t, bemoved_t, qat_t, zat_t, rcov_t, fp_t, rat_t
+    logical:: typat_t, trial_ref_energy_t, trial_ref_nat_t, trial_ref_disp_t, ratim_t
+    sat_t=.false. ; vat_t=.false. ; amass_t=.false. ; fat_t=.false. ; bemoved_t=.false.
+    qat_t=.false. ; zat_t=.false. ; rcov_t=.false. ; fp_t=.false. ; ratim_t=.false.
+    typat_t=.false. ; trial_ref_energy_t=.false. ; trial_ref_nat_t=.false.
+    trial_ref_disp_t=.false. ; rat_t=.false.
     l_arg=(/present(sat),present(rat),present(vat),present(amass),present(fat), &
         present(ratim),present(bemoved),present(qat),present(zat),present(rcov),&
         present(fp), present(typat), &
@@ -631,7 +655,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
     else
         all_of_them=.true.
     endif
-    if(all_of_them .or. (present(sat) .and. sat)) then
+    if(all_of_them) sat_t=.true.
+    if(present(sat)) then;if(sat) sat_t=.true.;endif
+    if(sat_t) then
         if(.not. allocated(atoms%sat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: sat is not allocated'
@@ -640,7 +666,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%sat)
         endif
     endif
-    if(all_of_them .or. (present(rat) .and. rat)) then
+    if(all_of_them) rat_t=.true.
+    if(present(rat)) then;if(rat) rat_t=.true.;endif
+    if(rat_t) then
         if(.not. allocated(atoms%rat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: rat is not allocated'
@@ -649,7 +677,7 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%rat)
         endif
     endif
-    if(all_of_them .or. (present(rat) .and. rat)) then
+    if(rat_t) then
         if(.not. allocated(atoms%ratp)) then
             if(.not. all_of_them) then
                 stop 'ERROR: ratp is not allocated'
@@ -658,7 +686,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%ratp)
         endif
     endif
-    if(all_of_them .or. (present(ratim) .and. ratim)) then
+    if(all_of_them) ratim_t=.true.
+    if(present(ratim)) then;if(ratim) ratim_t=.true.;endif
+    if(ratim_t) then
         if(.not. allocated(atoms%ratim)) then
             if(.not. all_of_them) then
                 stop 'ERROR: ratim is not allocated'
@@ -667,7 +697,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%ratim)
         endif
     endif
-    if(all_of_them .or. (present(vat) .and. vat)) then
+    if(all_of_them) vat_t=.true.
+    if(present(vat)) then;if(vat) vat_t=.true.;endif
+    if(vat_t) then
         if(.not. allocated(atoms%vat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: vat is not allocated'
@@ -676,7 +708,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%vat)
         endif
     endif
-    if(all_of_them .or. (present(amass) .and. amass)) then
+    if(all_of_them) amass_t=.true.
+    if(present(amass)) then;if(amass) amass_t=.true.;endif
+    if(amass_t) then
         if(.not. allocated(atoms%amass)) then
             if(.not. all_of_them) then
                 stop 'ERROR: amass is not allocated'
@@ -685,7 +719,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%amass)
         endif
     endif
-    if(all_of_them .or. (present(fat) .and. fat)) then
+    if(all_of_them) fat_t=.true.
+    if(present(fat)) then;if(fat) fat_t=.true.;endif
+    if(fat_t) then
         if(.not. allocated(atoms%fat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: fat is not allocated'
@@ -694,7 +730,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%fat)
         endif
     endif
-    if(all_of_them .or. (present(bemoved) .and. bemoved)) then
+    if(all_of_them) bemoved_t=.true.
+    if(present(bemoved)) then;if(bemoved) bemoved_t=.true.;endif
+    if(bemoved_t) then
         if(.not. allocated(atoms%bemoved)) then
             if(.not. all_of_them) then
                 stop 'ERROR: bemoved is not allocated'
@@ -703,7 +741,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%bemoved)
         endif
     endif
-    if(all_of_them .or. (present(qat) .and. qat)) then
+    if(all_of_them) qat_t=.true.
+    if(present(qat)) then;if(qat) qat_t=.true.;endif
+    if(qat_t) then
         if(.not. allocated(atoms%qat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: qat is not allocated'
@@ -712,7 +752,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%qat)
         endif
     endif
-    if(all_of_them .or. (present(zat) .and. zat)) then
+    if(all_of_them) zat_t=.true.
+    if(present(zat)) then;if(zat) zat_t=.true.;endif
+    if(zat_t) then
         if(.not. allocated(atoms%zat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: zat is not allocated'
@@ -721,7 +763,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%zat)
         endif
     endif
-    if(all_of_them .or. (present(rcov) .and. rcov)) then
+    if(all_of_them) rcov_t=.true.
+    if(present(rcov)) then;if(rcov) rcov_t=.true.;endif
+    if(rcov_t) then
         if(.not. allocated(atoms%rcov)) then
             if(.not. all_of_them) then
                 stop 'ERROR: rcov is not allocated'
@@ -730,7 +774,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%rcov)
         endif
     endif
-    if(all_of_them .or. (present(fp) .and. fp)) then
+    if(all_of_them) fp_t=.true.
+    if(present(fp)) then;if(fp) fp_t=.true.;endif
+    if(fp_t) then
         if(.not. allocated(atoms%fp)) then
             if(.not. all_of_them) then
                 stop 'ERROR: fp is not allocated'
@@ -739,7 +785,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%fp)
         endif
     endif
-    if(all_of_them .or. (present(typat) .and. typat)) then
+    if(all_of_them) typat_t=.true.
+    if(present(typat)) then;if(typat) typat_t=.true.;endif
+    if(typat_t) then
         if(.not. allocated(atoms%itypat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: itypat is not allocated'
@@ -748,7 +796,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%itypat)
         endif
     endif
-    if(all_of_them .or. (present(trial_ref_energy) .and. trial_ref_energy)) then
+    if(all_of_them) trial_ref_energy_t=.true.
+    if(present(trial_ref_energy)) then;if(trial_ref_energy) trial_ref_energy_t=.true.;endif
+    if(trial_ref_energy_t) then
         if(.not. allocated(atoms%trial_ref_energy)) then
             if(.not. all_of_them) then
                 stop 'ERROR: trial_ref_energy is not allocated'
@@ -757,7 +807,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%trial_ref_energy)
         endif
     endif
-    if(all_of_them .or. (present(trial_ref_nat) .and. trial_ref_nat)) then
+    if(all_of_them) trial_ref_nat_t=.true.
+    if(present(trial_ref_nat)) then;if(trial_ref_nat) trial_ref_nat_t=.true.;endif
+    if(trial_ref_nat_t) then
         if(.not. allocated(atoms%trial_ref_nat)) then
             if(.not. all_of_them) then
                 stop 'ERROR: trial_ref_nat is not allocated'
@@ -766,7 +818,9 @@ subroutine atom_deallocate_old(atoms,sat,rat,ratim,vat,amass,fat,bemoved,qat,zat
             deallocate(atoms%trial_ref_nat)
         endif
     endif
-    if(all_of_them .or. (present(trial_ref_disp) .and. trial_ref_disp)) then
+    if(all_of_them) trial_ref_disp_t=.true.
+    if(present(trial_ref_disp)) then;if(trial_ref_disp) trial_ref_disp_t=.true.;endif
+    if(trial_ref_disp_t) then
         if(.not. allocated(atoms%trial_ref_disp)) then
             if(.not. all_of_them) then
                 stop 'ERROR: trial_ref_disp is not allocated'
@@ -846,6 +900,7 @@ subroutine atom_copy(at_inp,at_out,str_message)
     character(100):: err_mess
     if(at_inp%nat<1) stop 'ERROR: at_inp%nat must be larger than zero'
     ind_all=index(at_inp%alloclist,'all')
+    write(*,*) trim(at_inp%alloclist),' CO',ind_all
     at_out%nat=at_inp%nat
     !if(ind_all>0) then
         at_out%ndof=at_inp%ndof
@@ -881,9 +936,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'sat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%sat)) then
-            ishape(1:1)=shape(at_out%sat)
-            if(allocated(at_out%sat) .and. at_inp%nat/=ishape(1)) then
-                call f_free_str(5,at_out%sat)
+            if(allocated(at_out%sat)) then
+                ishape(1:1)=shape(at_out%sat)
+                if(at_inp%nat/=ishape(1)) then
+                    call f_free_str(5,at_out%sat)
+                endif
             endif
             if(.not. allocated(at_out%sat)) then
                 at_out%sat=f_malloc_str(5,[1.to.at_out%nat],id='at_out%sat')
@@ -901,9 +958,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'rat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%rat)) then
-            ishape(1:2)=shape(at_out%rat)
-            if(allocated(at_out%rat) .and. at_inp%nat/=ishape(2)) then
-                call f_free(at_out%rat)
+            if(allocated(at_out%rat)) then
+                ishape(1:2)=shape(at_out%rat)
+                if(at_inp%nat/=ishape(2)) then
+                    call f_free(at_out%rat)
+                endif
             endif
             if(.not. allocated(at_out%rat)) then
                 at_out%rat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%rat')
@@ -919,9 +978,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
             stop
         endif
         if(allocated(at_inp%ratp)) then
-            ishape(1:2)=shape(at_out%ratp)
-            if(allocated(at_out%ratp) .and. at_inp%nat/=ishape(2)) then
-                call f_free(at_out%ratp)
+            if(allocated(at_out%ratp)) then
+                ishape(1:2)=shape(at_out%ratp)
+                if(at_inp%nat/=ishape(2)) then
+                    call f_free(at_out%ratp)
+                endif
             endif
             if(.not. allocated(at_out%ratp)) then
                 at_out%ratp=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%ratp')
@@ -941,9 +1002,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'ratim')
     if(ind>0) then
         if(allocated(at_inp%ratim)) then
-            ishape(1:2)=shape(at_out%ratim)
-            if(allocated(at_out%ratim) .and. at_inp%natim/=ishape(2)) then
-                call f_free(at_out%ratim)
+            if(allocated(at_out%ratim)) then
+                ishape(1:2)=shape(at_out%ratim)
+                if(at_inp%natim/=ishape(2)) then
+                    call f_free(at_out%ratim)
+                endif
             endif
             if(.not. allocated(at_out%ratim)) then
                 at_out%ratim=f_malloc([1.to.3,1.to.at_out%natim],id='at_out%ratim')
@@ -963,9 +1026,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'vat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%vat)) then
-            ishape(1:2)=shape(at_out%vat)
-            if(allocated(at_out%vat) .and. at_inp%nat/=ishape(2)) then
-                call f_free(at_out%vat)
+            if(allocated(at_out%vat)) then
+                ishape(1:2)=shape(at_out%vat)
+                if(at_inp%nat/=ishape(2)) then
+                    call f_free(at_out%vat)
+                endif
             endif
             if(.not. allocated(at_out%vat)) then
                 at_out%vat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%vat')
@@ -985,9 +1050,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'amass')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%amass)) then
-            ishape(1:1)=shape(at_out%amass)
-            if(allocated(at_out%amass) .and. at_inp%nat/=ishape(1)) then
-                call f_free(at_out%amass)
+            if(allocated(at_out%amass)) then
+                ishape(1:1)=shape(at_out%amass)
+                if(at_inp%nat/=ishape(1)) then
+                    call f_free(at_out%amass)
+                endif
             endif
             if(.not. allocated(at_out%amass)) then
                 at_out%amass=f_malloc([1.to.at_out%nat],id='at_out%amass')
@@ -1005,9 +1072,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'fat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%fat)) then
-            ishape(1:2)=shape(at_out%fat)
-            if(allocated(at_out%fat) .and. at_inp%nat/=ishape(2)) then
-                call f_free(at_out%fat)
+            if(allocated(at_out%fat)) then
+                ishape(1:2)=shape(at_out%fat)
+                if(at_inp%nat/=ishape(2)) then
+                    call f_free(at_out%fat)
+                endif
             endif
             if(.not. allocated(at_out%fat)) then
                 at_out%fat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%fat')
@@ -1027,9 +1096,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'bemoved')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%bemoved)) then
-            ishape(1:2)=shape(at_out%bemoved)
-            if(allocated(at_out%bemoved) .and. at_inp%nat/=ishape(2)) then
-                call f_free(at_out%bemoved)
+            if(allocated(at_out%bemoved)) then
+                ishape(1:2)=shape(at_out%bemoved)
+                if(at_inp%nat/=ishape(2)) then
+                    call f_free(at_out%bemoved)
+                endif
             endif
             if(.not. allocated(at_out%bemoved)) then
                 at_out%bemoved=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%bemoved')
@@ -1049,9 +1120,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'qat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%qat)) then
-            ishape(1:1)=shape(at_out%qat)
-            if(allocated(at_out%qat) .and. at_inp%nat/=ishape(1)) then
-                call f_free(at_out%qat)
+            if(allocated(at_out%qat)) then
+                ishape(1:1)=shape(at_out%qat)
+                if(at_inp%nat/=ishape(1)) then
+                    call f_free(at_out%qat)
+                endif
             endif
             if(.not. allocated(at_out%qat)) then
                 at_out%qat=f_malloc([1.to.at_out%nat],id='at_out%qat')
@@ -1069,9 +1142,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'zat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%zat)) then
-            ishape(1:1)=shape(at_out%zat)
-            if(allocated(at_out%zat) .and. at_inp%nat/=ishape(1)) then
-                call f_free(at_out%zat)
+            if(allocated(at_out%zat)) then
+                ishape(1:1)=shape(at_out%zat)
+                if(at_inp%nat/=ishape(1)) then
+                    call f_free(at_out%zat)
+                endif
             endif
             if(.not. allocated(at_out%zat)) then
                 at_out%zat=f_malloc([1.to.at_out%nat],id='at_out%zat')
@@ -1089,9 +1164,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'rcov')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%rcov)) then
-            ishape(1:1)=shape(at_out%rcov)
-            if(allocated(at_out%rcov) .and. at_inp%nat/=ishape(1)) then
-                call f_free(at_out%rcov)
+            if(allocated(at_out%rcov)) then
+                ishape(1:1)=shape(at_out%rcov)
+                if(at_inp%nat/=ishape(1)) then
+                    call f_free(at_out%rcov)
+                endif
             endif
             if(.not. allocated(at_out%rcov)) then
                 at_out%rcov=f_malloc([1.to.at_out%nat],id='at_out%rcov')
@@ -1109,9 +1186,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'fp')
     if(ind>0) then
         if(allocated(at_inp%fp)) then
-            ishape(1:1)=shape(at_out%fp)
-            if(allocated(at_out%fp) .and. at_inp%nfp/=ishape(1)) then
-                call f_free(at_out%fp)
+            if(allocated(at_out%fp)) then
+                ishape(1:1)=shape(at_out%fp)
+                if(at_inp%nfp/=ishape(1)) then
+                    call f_free(at_out%fp)
+                endif
             endif
             if(.not. allocated(at_out%fp)) then
                 at_out%fp=f_malloc([1.to.at_out%nfp],id='at_out%fp')
@@ -1129,9 +1208,11 @@ subroutine atom_copy(at_inp,at_out,str_message)
     ind=index(at_inp%alloclist,'itypat')
     if(ind_all>0 .or. ind>0) then
         if(allocated(at_inp%itypat)) then
-            ishape(1:1)=shape(at_out%itypat)
-            if(allocated(at_out%itypat) .and. at_inp%nat/=ishape(1)) then
-                call f_free(at_out%itypat)
+            if(allocated(at_out%itypat)) then
+                ishape(1:1)=shape(at_out%itypat)
+                if(at_inp%nat/=ishape(1)) then
+                    call f_free(at_out%itypat)
+                endif
             endif
             if(.not. allocated(at_out%itypat)) then
                 at_out%itypat=f_malloc([1.to.at_out%nat],id='at_out%itypat')
