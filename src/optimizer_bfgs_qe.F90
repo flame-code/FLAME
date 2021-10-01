@@ -580,7 +580,7 @@ conv_bfgs = conv_bfgs .AND. ( grad_error < grad_thr )
 !
 IF( lmovecell) THEN
   cell_error = MAXVAL( ABS( MATMUL ( TRANSPOSE ( RESHAPE( grad(n-8:n), (/ 3, 3 /) ) ),&
-				     TRANSPOSE(h) ) ) ) / omega
+                     TRANSPOSE(h) ) ) ) / omega
   conv_bfgs = conv_bfgs .AND. ( cell_error < cell_thr ) 
 !#undef DEBUG
 !#ifdef DEBUG
@@ -589,7 +589,7 @@ IF( lmovecell) THEN
    write (*,'(3f15.10)') TRANSPOSE(h)
    write (*,*)
    write (*,'(3f15.10)') MATMUL (TRANSPOSE( RESHAPE( grad(n-8:n), (/ 3, 3 /) ) ),&
-				     TRANSPOSE(h) ) / omega
+                     TRANSPOSE(h) ) / omega
    write (*,*)
 !   write (*,*) cell_error/cell_thr*0.5d0
 !#endif
@@ -630,14 +630,14 @@ IF ( .NOT. energy_wolfe_condition( energy ) .AND. (scf_iter > 1) ) THEN
  !
  !if (abs(scnorm(step_old(:))-1.d0) > 1.d-10) call errore('bfgs', &
  if (abs(scnorm(step_old(:))-1.d0) > 1.d-10) write(*,*)'bfgs', &
-	  ' step_old is NOT normalized ',1
+      ' step_old is NOT normalized ',1
  ! (normalized) search direction is the same as in previous step
  step(:) = step_old(:)
  !
  dE0s = ( grad_p(:) .dot. step(:) ) * trust_radius_old
  !IF (dE0s > 0.d0 ) CALL errore( 'bfgs', &
  IF (dE0s > 0.d0 ) write(*,*)  'bfgs', &
-	  'dE0s is positive which should never happen', 1 
+      'dE0s is positive which should never happen', 1 
  den = energy - energy_p - dE0s
  !
  ! estimate new trust radius by interpolation
@@ -659,7 +659,7 @@ IF ( .NOT. energy_wolfe_condition( energy ) .AND. (scf_iter > 1) ) THEN
     ! ... consecutive times )
     !
     WRITE( UNIT = stdout, &
-	   FMT = '(/,5X,"trust_radius < trust_radius_min")' )
+       FMT = '(/,5X,"trust_radius < trust_radius_min")' )
     WRITE( UNIT = stdout, FMT = '(/,5X,"resetting bfgs history",/)' )
     !
     ! ... if tr_min_hit=1 the history has already been reset at the 
@@ -668,7 +668,7 @@ IF ( .NOT. energy_wolfe_condition( energy ) .AND. (scf_iter > 1) ) THEN
     IF ( tr_min_hit == 1 ) THEN
 !               CALL infomsg( 'bfgs', &
        write(*,*)  'bfgs', &
-		    'history already reset at previous step: stopping' 
+            'history already reset at previous step: stopping' 
        tr_min_hit = 2 
     ELSE
        tr_min_hit = 1
@@ -708,7 +708,7 @@ ELSE
     nr_step_length_old = nr_step_length
     !
     WRITE( UNIT = stdout, &
-	 & FMT = '(5X,"CASE: ",A,"_new < ",A,"_old",/)' ) fname,fname
+     & FMT = '(5X,"CASE: ",A,"_new < ",A,"_old",/)' ) fname,fname
     !
     CALL check_wolfe_conditions( lwolfe, energy, grad )
     !
@@ -732,7 +732,7 @@ ELSE
  IF ( ( grad(:) .dot. step(:) ) > 0.0d0 ) THEN
     !
     WRITE( UNIT = stdout, &
-	   FMT = '(5X,"uphill step: resetting bfgs history",/)' )
+       FMT = '(5X,"uphill step: resetting bfgs history",/)' )
     !
     CALL reset_bfgs( n )
     step(:) = - ( inv_hess(:,:) .times. grad(:) )
@@ -842,12 +842,12 @@ SUBROUTINE gdiis_step()
  ! ... |res_i> = H^-1 \times |g_i>
  !
  CALL DGEMM( 'N', 'N', n, k, n, 1.0d0, &
-	     inv_hess, n, grad_old, n, 0.0d0, res, n )
+         inv_hess, n, grad_old, n, 0.0d0, res, n )
  !
  ! ... overlap_ij = <grad_i|res_j>
  !
  CALL DGEMM( 'T', 'N', k, k, n, 1.0d0, &
-	     res, n, res, n, 0.0d0, overlap, k_m )
+         res, n, res, n, 0.0d0, overlap, k_m )
  !
  overlap( :, k_m) = 1.0d0
  overlap(k_m, : ) = 1.0d0

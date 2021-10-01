@@ -2,7 +2,7 @@
 subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc_data, only: typ_symfunc_data
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr
     use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
@@ -11,7 +11,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: ig, i
     integer:: iats, iate, mat, mproc
@@ -101,13 +101,13 @@ end subroutine symmetry_functions_driver
 !*****************************************************************************************
 subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc_data, only: typ_symfunc_data
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_pia), intent(in):: pia
     integer, intent(in):: ib, iat, isat, jsat
-    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: i0, ig
     real(8):: ttei,ttej, ttix,ttiy,ttiz,ttjx,ttjy,ttjz,tt1i,tt1j
@@ -156,12 +156,12 @@ end subroutine symmetry_functions_g02_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g04_atom(ann_arr,isat,iat,jsat,jat_maincell,ksat,kat_maincell,rij,rik,rjk,drij,drik,drjk,fcij,fcdij,fcik,fcdik,fcjk,fcdjk,symfunc)
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc_data, only: typ_symfunc_data
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     integer, intent(in):: isat, iat, jsat, jat_maincell, ksat, kat_maincell
     real(8), intent(in):: rij, rik, rjk, drij(3), drik(3), drjk(3), fcij, fcdij, fcik, fcdik, fcjk, fcdjk
-    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: i0, ig
     real(8):: tte, ttjx, ttjy, ttjz, ttkx, ttky, ttkz, tt1, tt2, ttj, ttk, tt4, tt5, tt6, tt7
@@ -220,13 +220,13 @@ end subroutine symmetry_functions_g04_atom
 !*****************************************************************************************
 subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,jsat,ksat,symfunc)
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc_data, only: typ_symfunc_data
     use mod_linked_lists, only: typ_pia
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_pia), intent(in):: piaij, piaik
     integer, intent(in):: ibij, ibik, isat, iat, jsat, ksat
-    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: i0, ig, ii1, ii2
     real(8):: ttei, ttek, ttix, ttiy, ttiz, ttej, ttjx, ttjy, ttjz, ttkx, ttky, ttkz, tt1, tt2, tti, ttj, ttk, tt4, tt5

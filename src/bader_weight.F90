@@ -214,7 +214,7 @@ do ii=1,3
     do nz=1,poisson%ngp(3)
       ii=poisson%irho(nx,ny,nz)
       do jj=1,nat
-            if(gmax(jj,ii))then 		
+            if(gmax(jj,ii))then
                 poisson%irho(nx,ny,nz)=jj
             end if
         end do
@@ -343,7 +343,7 @@ end subroutine bader_weight
         write(*,'(2x,a,6x,1i8)') 'iteration', iter
       end do 
     end do
- end subroutine	
+ end subroutine
 !*****************************************************************************************
   real(8) function facet_area(d1,d2,d3,length)
       integer d1, d2, d3
@@ -538,7 +538,7 @@ end subroutine edag_refinement_weight
     type(typ_poisson):: poisson
     logical :: m_point
     integer,intent(in) :: d(3)
-    integer :: p1, p2 ,p3 ,d1 ,d2, d3,p_max1,p_max2,p_max3	
+    integer :: p1, p2 ,p3 ,d1 ,d2, d3,p_max1,p_max2,p_max3
     m_point=.true. 
     do d1=-1,1
       do d2=-1,1
@@ -558,11 +558,12 @@ subroutine cube_read_weight(filename,nat,rat,qat,poisson,vol)
     implicit none
     character(256):: str
     character(*), intent(in):: filename
+    integer:: nat
     real(8), intent(out):: rat(3,nat), qat(nat)
     real(8), intent(in):: vol
     type(typ_poisson), intent(out):: poisson
     real(8):: tt
-    integer:: nat, iat, igpx, igpy, igpz, ind, ios, iline, iatom
+    integer:: iat, igpx, igpy, igpz, ind, ios, iline, iatom
     character(2):: separator
     integer:: istat,n1,n2,n3
     separator=achar(32)//achar(9)

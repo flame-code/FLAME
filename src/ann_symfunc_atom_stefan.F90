@@ -2,13 +2,13 @@
 subroutine symmetry_functions_driver_stefan(parini,ann_arr,atoms,symfunc)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc_data, only: typ_symfunc_data
     use mod_atoms, only: typ_atoms, set_rcov, get_rat
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
-    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: ig, i, iconf
     integer:: iat , jat, kat, istat

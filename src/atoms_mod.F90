@@ -900,7 +900,6 @@ subroutine atom_copy(at_inp,at_out,str_message)
     character(100):: err_mess
     if(at_inp%nat<1) stop 'ERROR: at_inp%nat must be larger than zero'
     ind_all=index(at_inp%alloclist,'all')
-    write(*,*) trim(at_inp%alloclist),' CO',ind_all
     at_out%nat=at_inp%nat
     !if(ind_all>0) then
         at_out%ndof=at_inp%ndof

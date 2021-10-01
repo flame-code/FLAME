@@ -1,17 +1,11 @@
 !*****************************************************************************************
 module mod_symfunc
     use mod_linked_lists, only: typ_linked_lists
+    use mod_symfunc_data, only: typ_symfunc_data
     implicit none
     private
-    !public:: 
-    type, public:: typ_symfunc
-        integer:: ng=-1
-        integer:: nat=-1
-        real(8), allocatable:: y(:,:)
-        real(8), allocatable:: y0d_bond(:,:)
-        real(8), allocatable:: y0d(:,:,:)
-        real(8), allocatable:: y0dr(:,:,:)
-        type(typ_linked_lists):: linked_lists
+    public:: typ_symfunc_data, typ_symfunc
+    type, extends(typ_symfunc_data):: typ_symfunc
         contains
         procedure, public, pass(self):: get_symfunc
     end type typ_symfunc
@@ -25,6 +19,7 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
+    use mod_symfunc_bond, only: symmetry_functions_driver_bond
     use time_profiling
     !use mod_timing , only: TCAT_SYMFUNC_COMPUT
     use dynamic_memory
@@ -46,7 +41,7 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     !3th index of "y0d" is for number of atoms
     !-----------------------------------------------------------------
     bondbased: if(parini%bondbased_ann) then
-        call symmetry_functions_driver_bond(parini,ann_arr,atoms,self)
+        call symmetry_functions_driver_bond(parini,ann_arr,atoms,self%typ_symfunc_data)
             do ib=1,self%linked_lists%maxbound_rad
                 if(apply_gbounds) then
                     !normalization of y and y0d
@@ -64,9 +59,9 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
             enddo
     else bondbased
         if (parini%symfunc_type_ann=='behler') then 
-            call symmetry_functions_driver(parini,ann_arr,atoms,self)
+            call symmetry_functions_driver(parini,ann_arr,atoms,self%typ_symfunc_data)
         else
-            call symmetry_functions_driver_stefan(parini,ann_arr,atoms,self)
+            call symmetry_functions_driver_stefan(parini,ann_arr,atoms,self%typ_symfunc_data)
         endif
         if(apply_gbounds) then
             do iat=1,atoms%nat

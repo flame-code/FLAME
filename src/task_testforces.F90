@@ -241,7 +241,7 @@ subroutine teststress_fd_cellvec(parini)
     use mod_potential, only: init_potential_forces
     use mod_potential, only: cal_potential_forces
     implicit none
-    type(typ_parini), intent(inout):: parini
+    type(typ_parini), intent(in):: parini
     !local variables
     integer :: i,j,k
     type(typ_atoms):: atoms 
