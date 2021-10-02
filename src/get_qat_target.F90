@@ -1,3 +1,7 @@
+!*****************************************************************************************
+module mod_qat_target
+contains
+!*****************************************************************************************
 subroutine get_qat_target(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, update_ratp, update_rat
@@ -116,7 +120,7 @@ subroutine get_qat_target(parini)
             dy=atoms%ratp(2,iat)-atoms%ratp(2,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(2,kat)
             dz=atoms%ratp(3,iat)-atoms%ratp(3,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(3,kat)
             trial_energy(kat)=trial_energy(kat)+atoms_qat(iat)*E_par(kat,iat)
-            write(99,'(3i,45es11.3)') kat,atoms%trial_ref_nat(kat),iat,E_par(kat,iat), &!E_par_0(atoms%trial_ref_nat(kat),iat), &
+            write(99,'(3i3,45es11.3)') kat,atoms%trial_ref_nat(kat),iat,E_par(kat,iat), &!E_par_0(atoms%trial_ref_nat(kat),iat), &
                                      atoms_qat(iat),atoms_qat(atoms%trial_ref_nat(kat)),sqrt(dx**2+dy**2+dz**2)
         end do
         write(55,*)kat,atoms%trial_ref_nat(kat),trial_energy(kat),atoms%trial_ref_energy(kat)
@@ -621,3 +625,6 @@ subroutine cal_min_cv(atoms,vac)
     enddo
     call update_rat(atoms)
 end subroutine cal_min_cv
+!*****************************************************************************************
+end module mod_qat_target
+!*****************************************************************************************

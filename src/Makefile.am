@@ -36,7 +36,6 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		ann_mod.F90 \
 		basic_utilities.F90 \
 		train_optimizer.F90 \
-		symfunc_mod.F90 \
 		splinedsaddle_mod.F90 \
 		interface_mod.F90 \
 		parser_core.F90 parser_all.F90 parser_yaml.F90 \
@@ -47,7 +46,8 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		io_yaml_conf.F90 io_bin.F90 \
 		ann_process.F90 ann_io.F90 ann_io_yaml.F90 ann_best_symfunc.F90 \
 		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
-		ann_symfunc_main.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
+		symfunc_data_mod.F90 \
+		ann_symfunc_mod.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
 		ann_pot_main.F90 ann_pot_atom.F90 \
 		ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_centt.F90 ann_pot_cent3.F90 ann_pot_cent_common.F90 \

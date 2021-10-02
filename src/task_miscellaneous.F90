@@ -1,6 +1,7 @@
 !*****************************************************************************************
 subroutine miscellaneous_task(parini)
     use mod_parini, only: typ_parini
+    use mod_qat_target, only: get_qat_target
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables

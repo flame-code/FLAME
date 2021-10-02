@@ -1,15 +1,21 @@
 !*****************************************************************************************
+module mod_symfunc_bond
+    implicit none
+    private
+    public:: symmetry_functions_driver_bond
+contains
+!*****************************************************************************************
 subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc_data, only: typ_symfunc_data
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr !,typ_linked_lists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: ig
     integer:: iat !, jat, kat
@@ -163,12 +169,12 @@ end subroutine symmetry_functions_driver_bond_tmp
 subroutine symmetry_functions_g01_bond(ann_arr,ib,pia,symfunc)
     use mod_linked_lists, only: typ_pia
     use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc_data, only: typ_symfunc_data
     implicit none
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_pia), intent(in):: pia
     integer, intent(in):: ib
-    type(typ_symfunc), intent(inout):: symfunc
+    type(typ_symfunc_data), intent(inout):: symfunc
     real(8):: fcdij
     real(8):: rij
     real(8):: drij(3)
@@ -265,4 +271,6 @@ subroutine symmetry_functions_g04_bond(ann_arr,iat,jat,rij,drij,fcij,fcdij,rik,d
     enddo
      ann_arr%yall_bond(i0,iat,jat)=ann_arr%yall_bond(i0,iat,jat)*2.d0**(1.d0-ann_arr%ann(1)%g4zeta(1))*fcij*exp(-ann_arr%ann(1)%g4eta(1)*rij**2)
 end subroutine symmetry_functions_g04_bond
+!*****************************************************************************************
+end module mod_symfunc_bond
 !*****************************************************************************************

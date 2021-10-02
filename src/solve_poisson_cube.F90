@@ -134,6 +134,7 @@ subroutine solve_poisson_cube_bigdft(parini)
     real(8):: xyz(3), dxyz(3), epot_trial, gwt
     real(8):: dx, dy, dz, r2, coeff, rloc, c1, c2
     real(8):: xmin, ymin, zmin, xmax, ymax, zmax
+    real(8):: q_one(1), gw_one(1)
     real(8), allocatable::  gausswidth(:)
     real(8), allocatable::  rat_trial(:,:)
     integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
@@ -359,7 +360,10 @@ subroutine solve_poisson_cube_bigdft(parini)
         xyz(1)=rat_trial(1,itrial)-poisson_ion%rcart(1,1)
         xyz(2)=rat_trial(2,itrial)-poisson_ion%rcart(2,1)
         xyz(3)=rat_trial(3,itrial)-poisson_ion%rcart(3,1)
-        call put_gto_sym_ortho(parini,poisson_ion%bc,.true.,1,rat_trial(1,itrial),1.d0,1.d0, &
+        !    put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ngy,ngz,hgrid,rho)
+        q_one(1)=1.d0
+        gw_one(1)=1.d0
+        call put_gto_sym_ortho(parini,poisson_ion%bc,.true.,1,rat_trial(1,itrial),q_one,gw_one, &
             6.d0,poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz,poisson_ion%hgrid,poisson_ion%rho)
         epot_trial=0.d0
         do igpz=1,poisson%ngpz

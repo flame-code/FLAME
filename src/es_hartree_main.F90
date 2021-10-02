@@ -1,4 +1,9 @@
 !*****************************************************************************************
+module hartree_mod
+    implicit none
+    character(5):: method_samare
+end module hartree_mod
+!*****************************************************************************************
 subroutine init_hartree(parini,atoms,poisson,gausswidth)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -402,7 +407,7 @@ subroutine get_psolver(parini,poisson,atoms,gausswidth,ehartree,method)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: gausswidth(atoms%nat)
     real(8), intent(out):: ehartree
-    character(5),optional::method 
+    character(5)::method 
     !local variables
     select case(trim(parini%psolver))
         case('kwald')
@@ -467,10 +472,11 @@ subroutine get_hartree_grad_rho(parini,poisson,atoms,ehartree)
     end select
 end subroutine get_hartree_grad_rho
 !*****************************************************************************************
-subroutine get_hartree_force(parini,poisson,atoms,method)
+subroutine get_hartree_force(parini,poisson,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use hartree_mod, only: method_samare
     use time_profiling
     !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
@@ -481,14 +487,13 @@ subroutine get_hartree_force(parini,poisson,atoms,method)
     real(8):: ehartree
     !local variables
     integer:: iat
-    character(5),optional::method 
     select case(trim(parini%psolver))
         case('kwald')
             !do nothing
         case('bigdft')
             !if (parini%bigdft_kwald)then
-            if(present(method)) then
-                if(trim(method)=='kwald') continue
+            if(trim(method_samare)=='kwald') then
+                continue
             else
                 if(parini%cell_ortho) then
                     call force_gto_sym_ortho(parini,poisson%bc,poisson%nat,poisson%rcart, &
@@ -518,10 +523,11 @@ subroutine get_hartree_force(parini,poisson,atoms,method)
     end select
 end subroutine get_hartree_force
 !*****************************************************************************************
-subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,method)
+subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use hartree_mod, only: method_samare
     use time_profiling
     !use mod_timing , only: TCAT_PSOLVER
     use dynamic_memory
@@ -535,12 +541,11 @@ subroutine get_hartree(parini,poisson,atoms,gausswidth,ehartree,method)
     real(8):: epotreal !, pi
     integer:: ind
     real(8):: stress(3,3) !, talpha
-    character(5),optional::method 
     character(5)::method2
     call f_routine(id='get_hartree')
-    if ( parini%bigdft_kwald .and. present(method)) then
-        if (method=='kwald') then
-            method2 = method
+    if(parini%bigdft_kwald) then
+        if (method_samare=='kwald') then
+            method2 = method_samare
         else
             method2 = "defau"
         endif

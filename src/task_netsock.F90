@@ -178,8 +178,7 @@ contains
          latvec_inv = transpose(RESHAPE(get_array, (/3,3/)))   !inverse cell vector
          deallocate(get_array)
          call readbuffer(sock_socket, nat_get)                      !number of atoms
-         if (nat.ne.nat_get) stop "Received NAT not the same as the &
-         local NAT"
+         if (nat.ne.nat_get) stop "Received NAT not the same as the local NAT"
          allocate(get_array(3*nat_get))
          call readbuffer(sock_socket, get_array, nat_get*3)
          pos_cart = RESHAPE(get_array, (/ 3 , nat /) ) 

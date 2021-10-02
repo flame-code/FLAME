@@ -205,6 +205,7 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     character(*), optional, intent(in):: strkey
     !local variables
     integer:: ios, iconf, i, nconf, iat, k, nat, ii, iunit, ierr
+    character(256):: str_msg
     character(256):: fn_tmp
     character(256):: fn_fullpath
     character(3):: str_motion
@@ -311,8 +312,9 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
              record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='append')
     endif
     if(ierr/=0) then
-       call yaml_warning('Failed to create'//trim(file_info%filename_positions)//', &
-           error code='//trim(yaml_toa(ierr)))
+        str_msg='Failed to create'//trim(file_info%filename_positions)
+        str_msg=trim(str_msg)//'error code='//trim(yaml_toa(ierr))
+       call yaml_warning(trim(str_msg))
     end if
     call yaml_release_document(unit=iunit)
     call yaml_new_document(unit=iunit)

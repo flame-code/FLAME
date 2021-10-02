@@ -42,7 +42,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     allocate(partb%dhgenall2(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%dhgenall3(linked_lists%maxbound_rad),source=0.d0)
     if(ann_arr%compute_symfunc) then
-        call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     endif
     !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'
     nb=symfunc%linked_lists%maxbound_rad!/2
@@ -283,7 +283,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     do i=1,325
         !call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
         atoms%ratp(1,2)=atoms%ratp(1,1)+dis_ltb(i)
-        call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
         ng=ann_arr%ann(1)%nn(0)
         nb=symfunc%linked_lists%maxbound_rad
         yall(1:ng,1:nb,i)=symfunc%y(1:ng,1:nb)

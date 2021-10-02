@@ -116,6 +116,7 @@
       real(8)::  vlat(9),latvec(9)
 
       do i=1,3*3-1,2
+        !call random_number_generator_simple(s1) !CORRECT_IT
         t1=eps+(1.d0-2.d0*eps)*dble(s1)
         call random_number_generator_simple(s2)
         t2=dble(s2)

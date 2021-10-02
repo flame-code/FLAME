@@ -25,7 +25,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     call update_ratp(atoms)
     !call cpu_time(time0)
     if(ann_arr%compute_symfunc) then
-        call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.

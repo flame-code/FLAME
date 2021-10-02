@@ -44,7 +44,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(ann_arr%compute_symfunc) then
-        call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
@@ -423,6 +423,7 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
+    use hartree_mod, only: method_samare
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -435,7 +436,6 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
     real(8):: tt2, tt3, ttf, gama, pi
     real(8):: dx, dy, dz, r, beta_iat, beta_jat, ehartree_t
     real(8), allocatable:: gausswidth(:)
-    character(5)::method="defau"
     allocate(gausswidth(1:atoms%nat))
     if(trim(atoms%boundcond)=='free' .and. trim(ann_arr%syslinsolver)/='operator') then
         pi=4.d0*atan(1.d0)
@@ -466,12 +466,15 @@ subroutine cal_electrostatic_ann(parini,atoms,ann_arr,a,poisson)
         ann_arr%epot_es=tt2+tt3
     elseif(trim(atoms%boundcond)=='slab' .or. trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='free') then
         if (parini%bigdft_kwald) then 
-            method = "kwald"
+            method_samare = "kwald"
         endif
         gausswidth(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-        call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t,method)
+        call get_hartree(parini,poisson,atoms,gausswidth,ehartree_t)
         poisson%gw(1:poisson%nat)=poisson%gw_ewald(1:poisson%nat)
-        call get_hartree_force(parini,poisson,atoms,method)
+        call get_hartree_force(parini,poisson,atoms)
+        if (parini%bigdft_kwald) then 
+            method_samare = "defau"
+        endif
     else
         stop 'ERROR: the requested BCs is not yet implemented.'
     endif
@@ -863,3 +866,4 @@ subroutine get_dpm_cent1(atoms,dpx,dpy,dpz,dpm_err)
         end do
         dpm_err=((dpx-atoms%dpm(1))**2+(dpy-atoms%dpm(2))**2+(dpz-atoms%dpm(3))**2)
 end subroutine get_dpm_cent1
+!*****************************************************************************************

@@ -1,10 +1,9 @@
 !*****************************************************************************************
-module mod_symfunc
+module mod_symfunc_data
     use mod_linked_lists, only: typ_linked_lists
     implicit none
-    private
-    !public:: 
-    type, public:: typ_symfunc
+    public
+    type typ_symfunc_data
         integer:: ng=-1
         integer:: nat=-1
         real(8), allocatable:: y(:,:)
@@ -12,12 +11,8 @@ module mod_symfunc
         real(8), allocatable:: y0d(:,:,:)
         real(8), allocatable:: y0dr(:,:,:)
         type(typ_linked_lists):: linked_lists
-    end type typ_symfunc
-    type, public:: typ_symfunc_arr
-        integer:: nconf=-1
-        type(typ_symfunc), allocatable:: symfunc(:)
-    end type typ_symfunc_arr
+    end type typ_symfunc_data
 !contains
 !*****************************************************************************************
-end module mod_symfunc
+end module mod_symfunc_data
 !*****************************************************************************************

@@ -1,4 +1,4 @@
-!****************************************************************************************
+!*****************************************************************************************
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -43,7 +43,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(parini%iverbose>=2) write(*,*) 'init_time: ' , time2-time1
     if(ann_arr%compute_symfunc) then
-        call symmetry_functions(parini,ann_arr,atoms,symfunc,.true.)
+        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
@@ -230,7 +230,7 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
         !poisson%ngp=ceiling(2.d0*(poisson%rgcut+parini%max_cellVec)/hgp)
         max_cellVec=100.d0
         if(maxval(atoms%cellvec)>max_cellVec) then
-            STOP('ERROR: atoms%cellvec > max_cellVec')
+            stop 'ERROR: atoms%cellvec > max_cellVec'
         endif
         poisson%ngp=ceiling(2.d0*(poisson%rgcut+max_cellVec)/hgp)
         if(.not. poisson%linear_allocated) then
@@ -904,6 +904,7 @@ subroutine fini_electrostatic_cent2(parini,ann_arr,atoms,poisson)
 end subroutine fini_electrostatic_cent2
 !*****************************************************************************************
 subroutine get_scf_pot_cent2_onegauss(cv,ngp,rgcut,gw,scf,rho,pot)
+    use mod_qat_target, only: cal_powern_screened_poisson_gaussian, cal_pot_hartree
     implicit none
     integer, intent(in) :: ngp
     real(8), intent(in) :: cv(1:3,1:3)
@@ -939,6 +940,7 @@ subroutine get_scf_pot_cent2_onegauss(cv,ngp,rgcut,gw,scf,rho,pot)
 end subroutine get_scf_pot_cent2_onegauss
 !*****************************************************************************************
 subroutine get_scf_pot_cent2_twogauss(cv,ngp,rgcut,gw,scf,rho,pot)
+    use mod_qat_target, only: cal_powern_screened_poisson_gaussian, cal_pot_hartree
     implicit none
     integer, intent(in) :: ngp
     real(8), intent(in) :: cv(1:3,1:3)
@@ -1082,6 +1084,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     real(8):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
     real(8):: g_Mg, g_O
     real(8):: alpha, alphax, alphat, t1, t2, t3, y0, y1, DDOT, rlambda, pi
+    external:: DDOT
     real(8), allocatable:: EP(:,:), rhs(:), trial_rho(:,:,:)
     real(8), allocatable:: E_all(:), g(:), gt(:), h(:), chi_old(:)
     real(8), allocatable:: rho_ion(:,:,:)

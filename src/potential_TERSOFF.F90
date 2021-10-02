@@ -61,10 +61,10 @@ subroutine tersoff(parini,latvec_bohr,xred0,fxyz,strten,etot)
         implicit none
         type(typ_parini), intent(in):: parini
         integer   :: iat
-	real(8)   :: etot
-	real(8)                                   ::rxyz(3,parini%nat),fxyz(3,parini%nat), alat(3),xred0(3,parini%nat),xred(3,parini%nat)
-	real(8),              dimension(1:2,1:2)  :: R1, R2
-	real(8),              dimension(1:2,1:2)  :: Cr, Ca, alr, ala, X
+    real(8)   :: etot
+    real(8)                                   ::rxyz(3,parini%nat),fxyz(3,parini%nat), alat(3),xred0(3,parini%nat),xred(3,parini%nat)
+    real(8),              dimension(1:2,1:2)  :: R1, R2
+    real(8),              dimension(1:2,1:2)  :: Cr, Ca, alr, ala, X
         real(8),              dimension(1:2)      :: Pmass
 
         integer                                   :: Nmol, Npmax, NNmax
