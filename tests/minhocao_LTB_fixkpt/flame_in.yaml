@@ -3,9 +3,8 @@ main:
     types: Si
     nat: 8
     typat: 8*1
-    pressure: 10.0
+    pressure: 1.0
     verbose: 1
-    nat: 8
     znucl: 14.0
     amass: 2.0
     findsym: True
@@ -15,13 +14,13 @@ potential:
     potential: lenosky_tb
     boundary: 1
     auto_kpt: False
-    kptmesh: [5,5,5]
+    kptmesh: [4,4,4]
 
 geopt:
     nit: 800
     geoext: False
     method: FIRE
-    fmaxtol: 5.E-5
+    fmaxtol: 2.E-4
     strfact: 100.0
     dt_start: 20.0
     dt_min: 1.0

@@ -2,8 +2,8 @@ main:
     task: minhocao
     verbosity: 0
     types: Ca F
-    nat: 12
-    typat: 4*1 8*2
+    nat: 6
+    typat: 2*1 4*2
     pressure: 20.0
     verbose: 1
     znucl: [20.0,9.0]
@@ -17,7 +17,7 @@ potential:
     core_rep: True
     ewald:
         psolver: kwald
-        ecut: 6.332573977646111
+        ecut: 5.0
 
 ann:
     approach: eem1
@@ -26,7 +26,7 @@ geopt:
     nit: 1900
     #geoext: False
     method: FIRE
-    fmaxtol: 1.E-4
+    fmaxtol: 4.E-4
     strfact: 100.0
     dt_start: 5.0
     dt_min: 1.0

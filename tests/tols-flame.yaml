@@ -125,8 +125,9 @@ saddle_1s_Si64Bulk:
  fnrm: 5.e-7
  fmax: 5.e-7
  ndim: 1.e-9
- curv0: 5.e-7
- curv: 5.e-7
+ curv0: 5.e-6
+ curv: 5.e-6
+ lowestcurvatue: 5.e-6
  cosangle: 2.e-6
  cosangletol: 1.e-9
  bh0: 1.e-9
