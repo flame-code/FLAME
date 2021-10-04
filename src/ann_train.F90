@@ -627,6 +627,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -645,9 +646,14 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
         symfunc_arr%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) !HERE
         symfunc_arr%symfunc(iconf)%nat=atoms_arr%atoms(iconf)%nat
     enddo
-    configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
+    !configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
+    configuration: do iconf=1,atoms_arr%nconf
         if(trim(parini%symfunc)/='read') then
             call symfunc_arr%symfunc(iconf)%get_symfunc(parini,ann_arr,atoms_arr%atoms(iconf),.false.)
+            if(parini%mpi_env%nproc>1) then
+                call fmpi_allreduce(symfunc_arr%symfunc(iconf)%y(1,1), &
+                    ann_arr%ann(1)%nn(0)*atoms_arr%atoms(iconf)%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+            endif
             if(.not. parini%save_symfunc_force_ann) then
                 call f_free(symfunc_arr%symfunc(iconf)%y0d)
             endif

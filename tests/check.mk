@@ -46,6 +46,11 @@ TESTDIRS := ${checkonly_${checkonlyfoo_${CHECK_MODE}_${CHECK_MODE_INTERNAL}}}
 #checkonly_=
 
 
+if USE_MPI
+  mpirun_message = mpirun
+else
+  mpirun_message =
+endif
 #$(TESTDIRS)
 
 ALLDIRS = $(EXTRA_TESTDIRS) $(LONG_TESTDIRS)
@@ -125,8 +130,8 @@ $(INS): in_message
 	@name=`basename $@ .out.out | $(SED) "s/[^_]*_\?\(.*\)$$/\1/"` ; \
 	if [ "$$name" == "" ] ; then name="input" ; fi ; \
 	if test -n "${LD_LIBRARY_PATH}" ; then export LD_LIBRARY_PATH=${LD_LIBRARY_PATH} ; fi ; \
-	echo "Running $(abs_top_builddir)/src/flame > $@" ; \
-	$(abs_top_builddir)/src/flame > $@ ; \
+	echo "Running $(run_parallel) $(abs_top_builddir)/src/flame > $@" ; \
+	$(run_parallel) $(abs_top_builddir)/src/flame > $@ ; \
 	name=`basename $@ .out`
 
 %.report.yaml: %.ref.yaml
@@ -268,6 +273,12 @@ head_message:
 	@echo "                     (with the environment variable DIFF)"
 	@echo "  make X.updateref   update the reference with the output"
 	@echo "                     (prompt the overwrite)"
+
+mpirun: head_message
+	@echo ""
+	@echo " Use the environment variable run_parallel"
+	@echo "     ex: export run_parallel='mpirun -np 2'  "
+
 
 foot_message: $(mpirun_message) $(oclrun_message) head_message
 	@echo "=============================================================================="

@@ -35,6 +35,7 @@ dnl Check for python
 AM_PATH_PYTHON([2.3], , [:])
 
 dnl Check for existence of other options
+AX_MPI()
 AX_LAMMPS()
 AX_SPGLIB()
 AX_BPS()
