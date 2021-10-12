@@ -235,45 +235,45 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
         poisson%ngp=ceiling(2.d0*(poisson%rgcut+max_cellVec)/hgp)
         if(.not. poisson%linear_allocated) then
             poisson%linear_allocated=.true.
-            allocate(poisson%linear_rho_e(1:parini%ntypat,0:poisson%ngp))
-            allocate(poisson%linear_pot_e(1:parini%ntypat,0:poisson%ngp))
-            allocate(poisson%linear_rho_n(1:parini%ntypat,0:poisson%ngp))
-            allocate(poisson%linear_pot_n(1:parini%ntypat,0:poisson%ngp))
-            poisson%linear_rho_e(1:parini%ntypat,0:poisson%ngp)=0.d0
-            poisson%linear_pot_e(1:parini%ntypat,0:poisson%ngp)=0.d0
-            poisson%linear_rho_n(1:parini%ntypat,0:poisson%ngp)=0.d0
-            poisson%linear_pot_n(1:parini%ntypat,0:poisson%ngp)=0.d0
+            allocate(poisson%linear_rho_e(0:poisson%ngp,1:parini%ntypat))
+            allocate(poisson%linear_pot_e(0:poisson%ngp,1:parini%ntypat))
+            allocate(poisson%linear_rho_n(0:poisson%ngp,1:parini%ntypat))
+            allocate(poisson%linear_pot_n(0:poisson%ngp,1:parini%ntypat))
+            poisson%linear_rho_e(0:poisson%ngp,1:parini%ntypat)=0.d0
+            poisson%linear_pot_e(0:poisson%ngp,1:parini%ntypat)=0.d0
+            poisson%linear_rho_n(0:poisson%ngp,1:parini%ntypat)=0.d0
+            poisson%linear_pot_n(0:poisson%ngp,1:parini%ntypat)=0.d0
         else
-            poisson%linear_rho_e(1:parini%ntypat,0:poisson%ngp)=0.d0
-            poisson%linear_pot_e(1:parini%ntypat,0:poisson%ngp)=0.d0
-            poisson%linear_rho_n(1:parini%ntypat,0:poisson%ngp)=0.d0
-            poisson%linear_pot_n(1:parini%ntypat,0:poisson%ngp)=0.d0
+            poisson%linear_rho_e(0:poisson%ngp,1:parini%ntypat)=0.d0
+            poisson%linear_pot_e(0:poisson%ngp,1:parini%ntypat)=0.d0
+            poisson%linear_rho_n(0:poisson%ngp,1:parini%ntypat)=0.d0
+            poisson%linear_pot_n(0:poisson%ngp,1:parini%ntypat)=0.d0
         end if
         if(parini%iverbose>=2) call cpu_time(time1)
         if( .not. ann_arr%linear_rho_pot_initiated) then 
             if(parini%iverbose>=2) write(*,*) 'CENT2_NGP: ',poisson%ngp
             ann_arr%linear_rho_pot_initiated=.true. 
-            allocate(ann_arr%linear_rho_e(parini%ntypat,0:poisson%ngp))
-            allocate(ann_arr%linear_rho_n(parini%ntypat,0:poisson%ngp))
-            allocate(ann_arr%linear_pot_e(parini%ntypat,0:poisson%ngp))
-            allocate(ann_arr%linear_pot_n(parini%ntypat,0:poisson%ngp))
+            allocate(ann_arr%linear_rho_e(0:poisson%ngp,parini%ntypat))
+            allocate(ann_arr%linear_rho_n(0:poisson%ngp,parini%ntypat))
+            allocate(ann_arr%linear_pot_e(0:poisson%ngp,parini%ntypat))
+            allocate(ann_arr%linear_pot_n(0:poisson%ngp,parini%ntypat))
             do itype=1,parini%ntypat
                 !subroutine get_scf_pot_cent2_onegauss(cv,ngp,rgcut,gw,scf,rho,pot)
                 call get_scf_pot_cent2_twogauss(atoms%cellvec,poisson%ngp,poisson%rgcut,ann_arr%ann(itype)%gausswidth,&
-                                       parini%screening_factor,poisson%linear_rho_e(itype,0:poisson%ngp),poisson%linear_pot_e(itype,0:poisson%ngp))
+                                       parini%screening_factor,poisson%linear_rho_e(0,itype),poisson%linear_pot_e(0,itype))
                 call get_scf_pot_cent2_onegauss(atoms%cellvec,poisson%ngp,poisson%rgcut,ann_arr%ann(itype)%gausswidth_ion,&
-                                       parini%screening_factor,poisson%linear_rho_n(itype,0:poisson%ngp),poisson%linear_pot_n(itype,0:poisson%ngp))
-                ann_arr%linear_rho_e(itype,0:poisson%ngp)=poisson%linear_rho_e(itype,0:poisson%ngp)
-                ann_arr%linear_rho_n(itype,0:poisson%ngp)=poisson%linear_rho_n(itype,0:poisson%ngp)
-                ann_arr%linear_pot_e(itype,0:poisson%ngp)=poisson%linear_pot_e(itype,0:poisson%ngp)
-                ann_arr%linear_pot_n(itype,0:poisson%ngp)=poisson%linear_pot_n(itype,0:poisson%ngp)
+                                       parini%screening_factor,poisson%linear_rho_n(0,itype),poisson%linear_pot_n(0,itype))
+                ann_arr%linear_rho_e(0:poisson%ngp,itype)=poisson%linear_rho_e(0:poisson%ngp,itype)
+                ann_arr%linear_rho_n(0:poisson%ngp,itype)=poisson%linear_rho_n(0:poisson%ngp,itype)
+                ann_arr%linear_pot_e(0:poisson%ngp,itype)=poisson%linear_pot_e(0:poisson%ngp,itype)
+                ann_arr%linear_pot_n(0:poisson%ngp,itype)=poisson%linear_pot_n(0:poisson%ngp,itype)
             end do
         else
             do itype=1,parini%ntypat
-                poisson%linear_rho_e(itype,0:poisson%ngp)=ann_arr%linear_rho_e(itype,0:poisson%ngp)
-                poisson%linear_rho_n(itype,0:poisson%ngp)=ann_arr%linear_rho_n(itype,0:poisson%ngp)
-                poisson%linear_pot_e(itype,0:poisson%ngp)=ann_arr%linear_pot_e(itype,0:poisson%ngp)
-                poisson%linear_pot_n(itype,0:poisson%ngp)=ann_arr%linear_pot_n(itype,0:poisson%ngp)
+                poisson%linear_rho_e(0:poisson%ngp,itype)=ann_arr%linear_rho_e(0:poisson%ngp,itype)
+                poisson%linear_rho_n(0:poisson%ngp,itype)=ann_arr%linear_rho_n(0:poisson%ngp,itype)
+                poisson%linear_pot_e(0:poisson%ngp,itype)=ann_arr%linear_pot_e(0:poisson%ngp,itype)
+                poisson%linear_pot_n(0:poisson%ngp,itype)=ann_arr%linear_pot_n(0:poisson%ngp,itype)
             end do
         endif
         if(parini%iverbose>=2) call cpu_time(time2)
@@ -305,9 +305,9 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         poisson%pot_ion(igx,igy,igz)=poisson%pot_ion(igx,igy,igz)+atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_n(atoms%itypat(iat),linearGridNumber+1)&
-                            -poisson%linear_pot_n(atoms%itypat(iat),linearGridNumber))&
-                            +poisson%linear_pot_n(atoms%itypat(iat),linearGridNumber))
+                            (poisson%linear_pot_n(linearGridNumber+1,atoms%itypat(iat))&
+                            -poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))&
+                            +poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))
                     end do
                 end do
             end do
@@ -364,8 +364,8 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
             dz=poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
             dr=sqrt(dx**2+dy**2+dz**2)
             linearGridNumber=floor(dr/hgp)
-            rho_e_p1=poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)
-            rho_e=poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber)
+            rho_e_p1=poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))
+            rho_e=poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat))
             grid_rho_new(igx-agpx,igy-agpy,igz-agpz,iat)=(dr/hgp-linearGridNumber)*(rho_e_p1-rho_e)+rho_e
         enddo
         enddo
@@ -380,8 +380,8 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
             dz=poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
             dr=sqrt(dx**2+dy**2+dz**2)
             linearGridNumber=floor(dr/hgp)
-            pot_e_p1=poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)
-            pot_e=poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber)
+            pot_e_p1=poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))
+            pot_e=poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat))
             grid_pot_new(igx,igy,igz)=(dr/hgp-linearGridNumber)*(pot_e_p1-pot_e)+pot_e
         enddo
         enddo
@@ -514,9 +514,9 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=(dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber)
+                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat))
                     tt=tt+rho_val*poisson%pot_ion(igx,igy,igz)
                 end do
             end do
@@ -580,9 +580,9 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     poisson%pot(igx,igy,igz)=poisson%pot(igx,igy,igz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))
+                        (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))
                 end do
             end do
         end do
@@ -637,9 +637,9 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         pot_val=(dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)&
-                            -poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
-                            +poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber)
+                            (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
+                            -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
+                            +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat))
                         tt=tt+pot_val*trial_rho(igx,igy,igz)
                     end do
                 end do
@@ -760,13 +760,13 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         poisson%pot(igx,igy,igz)=poisson%pot(igx,igy,igz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)&
-                            -poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
-                            +poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
+                            (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
+                            -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
+                            +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
                             +atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_n(atoms%itypat(iat),linearGridNumber+1)&
-                             -poisson%linear_pot_n(atoms%itypat(iat),linearGridNumber))&
-                            +poisson%linear_pot_n(atoms%itypat(iat),linearGridNumber))
+                            (poisson%linear_pot_n(linearGridNumber+1,atoms%itypat(iat))&
+                             -poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))&
+                            +poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))
                     end do
                 end do
             end do
@@ -786,13 +786,13 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
+                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
                         +atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))
+                        (poisson%linear_rho_n(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))
                     tt=tt+rho_val*poisson%pot(igx,igy,igz)
                 end do
             end do
@@ -1180,9 +1180,9 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         poisson%pot(ix,iy,iz)=(dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)&
-                            -poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
-                            +poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber)
+                            (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
+                            -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
+                            +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat))
                     end do
                 end do
             end do
@@ -1632,9 +1632,9 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     poisson%pot(ix,iy,iz)=poisson%pot(ix,iy,iz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_pot_e(atoms%itypat(iat),linearGridNumber))
+                        (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))
                 end do
             end do
         end do
@@ -1665,9 +1665,9 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=(dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber)
+                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat))
                     tt=tt+rho_val*poisson%pot(ix,iy,iz)
                 end do
             end do
@@ -1688,13 +1688,13 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
+                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
                         +atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_rho_n(atoms%itypat(iat),linearGridNumber))
+                        (poisson%linear_rho_n(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))
                     tt=tt+rho_val*poisson%pot(ix,iy,iz)
                 end do
             end do
@@ -1877,9 +1877,9 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
                     dr = sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     rho_val=(dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber+1)&
-                        -poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber))&
-                        +poisson%linear_rho_e(atoms%itypat(iat),linearGridNumber)
+                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
+                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
+                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat))
                     tt=tt+rho_val*poisson%pot_ion(igx,igy,igz)
                 end do
             end do

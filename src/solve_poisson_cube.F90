@@ -174,6 +174,7 @@ subroutine solve_poisson_cube_bigdft(parini)
     poisson_ion%ngpx=poisson%ngpx
     poisson_ion%ngpy=poisson%ngpy
     poisson_ion%ngpz=poisson%ngpz
+    poisson_ion%hgrid(1:3,1:3)=0.d0
     poisson_ion%hgrid(1,1)=poisson%hgrid(1,1)
     poisson_ion%hgrid(2,2)=poisson%hgrid(2,2)
     poisson_ion%hgrid(3,3)=poisson%hgrid(3,3)
