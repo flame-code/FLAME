@@ -482,11 +482,12 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
     integer:: igx, igy, igz
     integer:: agpx, agpy, agpz
     real(8):: dx, dy, dz, dr
-    real(8):: hgp, tt
+    real(8):: hgp, tt, one
     !real(8) :: grid_rho(poisson%ngpx,poisson%ngpy,poisson%ngpz)
     real(8) ::rho_val 
     real(8) :: a(atoms%nat+1,atoms%nat+1)
     associate(nat=>atoms%nat)
+    one=1.d0
     a=amat
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%qq(1:nat+1))
@@ -501,27 +502,10 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
     nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
     nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
     do iat=1, atoms%nat
-        tt=0.d0
-        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
-        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
-        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
-        do igx = agpx-nbgx,agpx+nbgx
-            do igy = agpy-nbgy,agpy+nbgy
-                do igz = agpz-nbgz,agpz+nbgz
-                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    rho_val=(dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat))
-                    tt=tt+rho_val*poisson%pot_ion(igx,igy,igz)
-                end do
-            end do
-        end do
-        ann_arr%qq(iat)=-ann_arr%chi_o(iat)-atoms%zat(iat)*ann_arr%ann(atoms%itypat(iat))%hardness-tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+        call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rgcut,one,poisson%pot_ion,tt)
+        ann_arr%qq(iat)=-ann_arr%chi_o(iat)-atoms%zat(iat)*ann_arr%ann(atoms%itypat(iat))%hardness-tt
     end do !iat
     ann_arr%qq(nat+1)=-1.d0*sum(atoms%zat) !atoms%qtot !ASK Dr this should be -ztot or qat+zat or atoms%qtot
     call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,ann_arr%qq,nat+1,info)
@@ -560,33 +544,23 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
     integer:: agpx, agpy, agpz
     real(8):: dx, dy, dz, dr, hgp, tt
     real(8):: E_par(1:atoms%nat), rhs(1:atoms%nat+1)
-    real(8):: pot_val 
+    real(8):: pot_val, one
     real(8):: a(atoms%nat+1,atoms%nat+1)
-    real(8),allocatable::trial_rho(:,:,:),trial_gw(:),trial_qat(:)
+    real(8), allocatable:: trial_rho(:,:,:),trial_gw(:),trial_qat(:)
+    real(8), allocatable:: pot_single(:,:,:)
     associate(nat=>atoms%nat)
+    one=1.d0
     a=amat
     nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
     nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
     nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
     hgp=1.d-3
     poisson%pot(:,:,:)=0.d0
-    do iat=1, nat
-        do igx = 1 , poisson%ngpx
-            do igy = 1 , poisson%ngpy
-                do igz = 1 , poisson%ngpz
-                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    poisson%pot(igx,igy,igz)=poisson%pot(igx,igy,igz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))
-                end do
-            end do
-        end do
-    end do !iat
+    do iat=1,nat
+        call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,.false.,atoms%qat(iat),poisson%pot)
+    enddo
     poisson%pot=poisson%pot+poisson%pot_ion
     !do iat=1, nat
     !    tt=0.d0
@@ -613,7 +587,9 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
     !end do !iat
     if(.not. ann_arr%EPar_initiated) then
         allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
-        allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
+        allocate(pot_single(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
+        allocate(trial_qat(1:atoms%nat))
+        allocate(trial_gw(1:atoms%nat))
         trial_qat(:)=0.d0
         trial_qat(atoms%trial_ref_nat(1))=1.d0
         trial_gw=1.d0
@@ -621,32 +597,24 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
                 poisson%rgcut,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
         !write(*,*) 'trial_rho',maxval(trial_rho),maxloc(trial_rho)
         do iat=1, nat
+            call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
+                atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+                poisson%hgrid,.true.,one,pot_single)
             tt=0.d0
-            !agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
-            !agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
-            !agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
-            !do igx = agpx-nbgx,agpx+nbgx
-            !    do igy = agpy-nbgy,agpy+nbgy
-            !        do igz = agpz-nbgz,agpz+nbgz
-            do igx=1,poisson%ngpx
+            do igz=1,poisson%ngpz
                 do igy=1,poisson%ngpy
-                    do igz=1,poisson%ngpz
-                        dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                        dr = sqrt(dx**2+dy**2+dz**2)
-                        linearGridNumber=floor(dr/hgp)
-                        pot_val=(dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
-                            -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
-                            +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat))
-                        tt=tt+pot_val*trial_rho(igx,igy,igz)
-                    end do
-                end do
-            end do
+                    do igx=1,poisson%ngpx
+                        tt=tt+pot_single(igx,igy,igz)*trial_rho(igx,igy,igz)
+                    enddo
+                enddo
+            enddo
             ann_arr%EP(iat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-        end do !iat
-    Endif
+        enddo
+        deallocate(trial_rho)
+        deallocate(pot_single)
+        deallocate(trial_qat)
+        deallocate(trial_gw)
+    endif
     if(.not. ann_arr%chiQPar_initiated) then
         call DGETRF(nat+1,nat+1,a,nat+1,ann_arr%ipiv,info)
         if(info/=0) then
@@ -735,7 +703,7 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
     integer:: igx, igy, igz
     integer:: nbgx, nbgy, nbgz, linearGridNumber
     integer :: agpx, agpy, agpz!, tt1(1:3)
-    real(8):: tt,ehartree,rho_val
+    real(8):: tt,ehartree,rho_val, tte, ttn
     real(8):: dx, dy, dz, dr, hgp
     real(8):: ehartree_2
     real(8):: alpha,beta,ggw,ggw_t
@@ -751,54 +719,25 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,a,poisson)
         nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
         poisson%pot(:,:,:)=0.d0
         do iat=1,atoms%nat
-            do igx = 1 , poisson%ngpx
-                do igy = 1 , poisson%ngpy
-                    do igz = 1 , poisson%ngpz
-                        dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                        dr = sqrt(dx**2+dy**2+dz**2)
-                        linearGridNumber=floor(dr/hgp)
-                        poisson%pot(igx,igy,igz)=poisson%pot(igx,igy,igz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
-                            -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
-                            +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
-                            +atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_n(linearGridNumber+1,atoms%itypat(iat))&
-                             -poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))&
-                            +poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))
-                    end do
-                end do
-            end do
-        end do !iat
-    end if
+            call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
+                atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+                poisson%hgrid,.false.,atoms%qat(iat),poisson%pot)
+            call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_n(0,atoms%itypat(iat)), &
+                atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+                poisson%hgrid,.false.,atoms%zat(iat),poisson%pot)
+        enddo
+    endif
     tt=0.d0
-    do iat=1, atoms%nat
-        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
-        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
-        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
-        do igx = agpx-nbgx,agpx+nbgx
-            do igy = agpy-nbgy,agpy+nbgy
-                do igz = agpz-nbgz,agpz+nbgz
-                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    rho_val=atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
-                        +atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_n(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))
-                    tt=tt+rho_val*poisson%pot(igx,igy,igz)
-                end do
-            end do
-        end do
-    end do !iat
-    ann_arr%epot_es=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    do iat=1,atoms%nat
+        call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rgcut,atoms%qat(iat),poisson%pot,tte)
+        call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_n(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rgcut,atoms%zat(iat),poisson%pot,ttn)
+        tt=tt+ttn+tte
+    enddo
+    ann_arr%epot_es=0.5d0*tt
     if(trim(ann_arr%event)/='potential' ) then
     allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
     allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
@@ -1094,8 +1033,10 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     real(8), allocatable :: EP_n(:)
     real(8):: gausswidth(400)
     real(8):: hh_Mg, hh_O, hh, qtarget_Mg, qtarget_O, qtarget
+    real(8):: one
     logical, save:: done=.false.
     if(done) return
+    one=1.d0
     hgp=1.d-3
     pi=4.d0*atan(1.d0)
     associate(nat=>atoms%nat)
@@ -1171,21 +1112,9 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
             !do igx = agpx-nbgx,agpx+nbgx
             !    do igy = agpy-nbgy,agpy+nbgy
             !        do igz = agpz-nbgz,agpz+nbgz
-            do ix=1,poisson%ngpx
-                do iy=1,poisson%ngpy
-                    do iz=1,poisson%ngpz
-                        dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                        dr = sqrt(dx**2+dy**2+dz**2)
-                        linearGridNumber=floor(dr/hgp)
-                        poisson%pot(ix,iy,iz)=(dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
-                            -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
-                            +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat))
-                    end do
-                end do
-            end do
+            call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
+                atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+                poisson%hgrid,.true.,one,poisson%pot)
             do itrial=1,atoms%ntrial
                 xyz(1:3)=atoms%ratp(1:3,atoms%trial_ref_nat(itrial))+atoms%trial_ref_disp(1:3,itrial)
                 !call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
@@ -1525,9 +1454,10 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
     integer:: agpx, agpy, agpz
     integer:: linearGridNumber
     real(8):: tt, U_SRS, rho_val
-    real(8):: xyz(3), dx, dy, dz, dr, coeff
+    real(8):: xyz(3), dx, dy, dz, dr, coeff, one, tte, ttn
     real(8):: gausswidth(400)
     real(8), allocatable:: E_par(:), trial_rho(:,:,:)
+    one=1.d0
     allocate(E_par(atoms%nat))
     allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
     call reverseCEP(parini,ann_arr,atoms,poisson,ann_arr%a)
@@ -1623,22 +1553,10 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
 
     poisson%pot(:,:,:)=0.d0
     do iat=1, atoms%nat
-        do ix = 1 , poisson%ngpx
-            do iy = 1 , poisson%ngpy
-                do iz = 1 , poisson%ngpz
-                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    poisson%pot(ix,iy,iz)=poisson%pot(ix,iy,iz)+atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat)))
-                end do
-            end do
-        end do
-    end do !iat
+        call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,.false.,atoms%qat(iat),poisson%pot)
+    enddo
     poisson%pot=poisson%pot+poisson%pot_ion
     gausswidth=0.5d0
     atoms%fat=0.d0
@@ -1651,56 +1569,23 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
         write(61,'(a,i3,3(a2,es24.15),a)') '  - [',iat,', ',atoms%fat(1,iat),', ',atoms%fat(2,iat),', ',atoms%fat(3,iat),']'
     enddo
 
-    do iat=1, atoms%nat
-        tt=0.d0
-        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
-        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
-        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
-        do ix = agpx-nbgx,agpx+nbgx
-            do iy = agpy-nbgy,agpy+nbgy
-                do iz = agpz-nbgz,agpz+nbgz
-                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    rho_val=(dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat))
-                    tt=tt+rho_val*poisson%pot(ix,iy,iz)
-                end do
-            end do
-        end do
-        E_par(iat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-    end do !iat
+    do iat=1,atoms%nat
+        call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rgcut,one,poisson%pot,tt)
+        E_par(iat)=tt
+    enddo
     tt=0.d0
-    do iat=1, atoms%nat
-        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
-        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
-        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
-        do ix = agpx-nbgx,agpx+nbgx
-            do iy = agpy-nbgy,agpy+nbgy
-                do iz = agpz-nbgz,agpz+nbgz
-                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    rho_val=atoms%qat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
-                        +atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_n(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_rho_n(linearGridNumber,atoms%itypat(iat)))
-                    tt=tt+rho_val*poisson%pot(ix,iy,iz)
-                end do
-            end do
-        end do
-    end do !iat
-    U_SRS=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    do iat=1,atoms%nat
+        call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rgcut,atoms%qat(iat),poisson%pot,tte)
+        call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_n(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rgcut,atoms%zat(iat),poisson%pot,ttn)
+        tt=tt+tte+ttn
+    enddo
+    U_SRS=0.5d0*tt
     E_all(atoms%ntrial+1)=U_SRS
     !write(*,'(a,2es24.15)') 'USRS ',U_SRS,atoms%epot
     do itrial=1,atoms%ntrial
@@ -1854,38 +1739,19 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
     integer:: igx, igy, igz
     integer:: agpx, agpy, agpz
     real(8):: dx, dy, dz, dr
-    real(8):: hgp, tt, tt1, tt2
+    real(8):: hgp, tt, tt1, tt2, one
     !real(8) :: grid_rho(poisson%ngpx,poisson%ngpy,poisson%ngpz)
     real(8) ::rho_val 
     real(8) :: ww(400)
     associate(nat=>atoms%nat)
+    one=1.d0
     hgp=1.d-3
-    nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
-    nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
-    nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
     do iat=1, atoms%nat
-        tt=0.d0
-        agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+nbgx
-        agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+nbgy
-        agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+nbgz
-        do igx = agpx-nbgx,agpx+nbgx
-            do igy = agpy-nbgy,agpy+nbgy
-                do igz = agpz-nbgz,agpz+nbgz
-                    dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                    dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                    dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    rho_val=(dr/hgp-linearGridNumber)*&
-                        (poisson%linear_rho_e(linearGridNumber+1,atoms%itypat(iat))&
-                        -poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat)))&
-                        +poisson%linear_rho_e(linearGridNumber,atoms%itypat(iat))
-                    tt=tt+rho_val*poisson%pot_ion(igx,igy,igz)
-                end do
-            end do
-        end do
-        ww(iat)=-atoms%zat(iat)*ann_arr%ann(atoms%itypat(iat))%hardness-tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-    end do !iat
+        call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rgcut,one,poisson%pot_ion,tt)
+        ww(iat)=-atoms%zat(iat)*ann_arr%ann(atoms%itypat(iat))%hardness-tt
+    enddo
     do iat=1,atoms%nat
         tt=0.d0
         do jat=1,atoms%nat
@@ -1906,4 +1772,67 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
     enddo
     end associate
 end subroutine reverseCEP
+!*****************************************************************************************
+subroutine radial_to_3d(nrad,hrad,funrad,xyz,xyz111,ngpx,ngpy,ngpz,hgrid,reset,q,fun3d)
+    implicit none
+    integer, intent(in):: nrad, ngpx, ngpy, ngpz
+    real(8), intent(in):: hrad, funrad(0:nrad), hgrid(3,3), xyz(3), xyz111(3), q
+    logical, intent(in):: reset
+    real(8), intent(out):: fun3d(ngpx,ngpy,ngpz)
+    !local variables
+    integer:: igpx, igpy, igpz, ii
+    real(8):: dx, dy, dz, r, tt0, tt1, r0
+    if(reset) fun3d(1:ngpx,1:ngpy,1:ngpz)=0.d0
+    do igpz=1,ngpz
+        do igpy=1,ngpy
+            do igpx=1,ngpx
+                dx=xyz111(1)+(igpx-1)*hgrid(1,1)-xyz(1)
+                dy=xyz111(2)+(igpy-1)*hgrid(2,2)-xyz(2)
+                dz=xyz111(3)+(igpz-1)*hgrid(3,3)-xyz(3)
+                r=sqrt(dx**2+dy**2+dz**2)
+                ii=floor(r/hrad)
+                r0=real(ii,kind=8)*hrad
+                tt0=funrad(ii+0)
+                tt1=funrad(ii+1)
+                fun3d(igpx,igpy,igpz)=fun3d(igpx,igpy,igpz)+q*((r-r0)*(tt1-tt0)/hrad+tt0)
+            enddo
+        enddo
+    enddo
+end subroutine radial_to_3d
+!*****************************************************************************************
+subroutine radial_to_3d_energy(nrad,hrad,funrad,xyz,xyz111,ngpx,ngpy,ngpz,hgrid,rgcut,q,pot,ener)
+    implicit none
+    integer, intent(in):: nrad, ngpx, ngpy, ngpz
+    real(8), intent(in):: hrad, funrad(0:nrad), hgrid(3,3), xyz(3), xyz111(3), rgcut, q
+    real(8), intent(in):: pot(ngpx,ngpy,ngpz)
+    real(8), intent(out):: ener
+    !local variables
+    integer:: igpx, igpy, igpz, ii
+    integer:: nbgx, nbgy, nbgz, agpx, agpy, agpz
+    real(8):: dx, dy, dz, r, tt0, tt1, r0, res, dd
+    nbgx=int(rgcut/hgrid(1,1))+3
+    nbgy=int(rgcut/hgrid(2,2))+3
+    nbgz=int(rgcut/hgrid(3,3))+3
+    agpx=int(xyz(1)/hgrid(1,1))+nbgx
+    agpy=int(xyz(2)/hgrid(2,2))+nbgy
+    agpz=int(xyz(3)/hgrid(3,3))+nbgz
+    res=0.d0
+    do igpz=agpz-nbgz,agpz+nbgz
+        do igpy=agpy-nbgy,agpy+nbgy
+            do igpx=agpx-nbgx,agpx+nbgx
+                dx=xyz111(1)+(igpx-1)*hgrid(1,1)-xyz(1)
+                dy=xyz111(2)+(igpy-1)*hgrid(2,2)-xyz(2)
+                dz=xyz111(3)+(igpz-1)*hgrid(3,3)-xyz(3)
+                r=sqrt(dx**2+dy**2+dz**2)
+                ii=floor(r/hrad)
+                r0=real(ii,kind=8)*hrad
+                tt0=funrad(ii+0)
+                tt1=funrad(ii+1)
+                dd=q*((r-r0)*(tt1-tt0)/hrad+tt0)
+                res=res+dd*pot(igpx,igpy,igpz)
+            enddo
+        enddo
+    enddo
+    ener=res*(hgrid(1,1)*hgrid(2,2)*hgrid(3,3))
+end subroutine radial_to_3d_energy
 !*****************************************************************************************
