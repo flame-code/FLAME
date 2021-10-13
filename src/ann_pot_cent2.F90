@@ -22,7 +22,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     real(8):: time1, time2, time3, time4, time5, time6, time7, timet1, timet2
     real(8):: tt1, hinv(3,3), vol
     call f_routine(id='cal_ann_cent2')
-    if (.not. allocated(ann_arr%ipiv))allocate(ann_arr%ipiv(1:atoms%nat+1))
+    if(.not. allocated(ann_arr%ipiv))allocate(ann_arr%ipiv(1:atoms%nat+1))
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
         allocate(ann_arr%chi_i(1:atoms%nat))
@@ -41,7 +41,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time1)
     call init_electrostatic_cent2(parini,atoms,ann_arr,ann_arr%a,poisson)
     if(parini%iverbose>=2) call cpu_time(time2)
-    if(parini%iverbose>=2) write(*,*) 'init_time: ' , time2-time1
+    if(parini%iverbose>=2) write(*,*) 'init_time: ',time2-time1
     if(ann_arr%compute_symfunc) then
         call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
@@ -80,19 +80,19 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
         do iat=1,atoms%nat
             write(166,*)iat,ann_arr%chi_o(iat)
             write(99,'(i4,a3,3f6.2)') iat,trim(atoms%sat(iat)),atoms%qat(iat),atoms%zat(iat),atoms%zat(iat)+atoms%qat(iat)
-        end do
+        enddo
         write(99,*) '==='
         write(99,*) sum(atoms%qat),sum(atoms%zat)
         write(99,*) '---'
-    end if
+    endif
     if(parini%iverbose>=2) call cpu_time(timet1)
-    if(parini%iverbose>=2) write(*,*) 'qet_qat_time: ' , timet1-time4
+    if(parini%iverbose>=2) write(*,*) 'qet_qat_time: ',timet1-time4
     if(.not. trim(ann_arr%event)=='potential') call cent2_g_per_atom(parini,ann_arr,atoms,poisson,ann_arr%a)
     if(parini%prefit_ann) then
         call prefit_cent2(parini,ann_arr,atoms,poisson)
     endif
     if(parini%iverbose>=2) call cpu_time(time5)
-    if(parini%iverbose>=2) write(*,*) 'cent2_g_per_time: ' , time5-timet1
+    if(parini%iverbose>=2) write(*,*) 'cent2_g_per_time: ',time5-timet1
     atoms%stress(1:3,1:3)=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
@@ -101,7 +101,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time6)
     call get_electrostatic_cent2(parini,atoms,ann_arr,epot_c,poisson)
     if(parini%iverbose>=2) call cpu_time(timet2)
-    if(parini%iverbose>=2) write(*,*) 'get_electrostatic_time: ' , timet2-time6
+    if(parini%iverbose>=2) write(*,*) 'get_electrostatic_time: ',timet2-time6
     if(parini%iverbose>=2) then
         call cpu_time(time7)
         call yaml_mapping_open('Timing of CENT2')
@@ -120,11 +120,11 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
         atoms%epot=ann_arr%epot_trial
     elseif(trim(ann_arr%event)=='evalu') then
         atoms%epot=ann_arr%epot_es
-    end if
+    endif
     call get_dpm(atoms,dpx,dpy,dpz,ann_arr%dpm_err)
     if(parini%iverbose>=2) then
         write(1390,'(3es18.8,a3,3es18.8,a3,es18.8)')dpx,dpy,dpz,' | ',atoms%dpm(1),atoms%dpm(2),atoms%dpm(3),' | ',ann_arr%dpm_err
-    end if
+    endif
     atoms%dpm(1)=dpx
     atoms%dpm(2)=dpy
     atoms%dpm(3)=dpz
@@ -176,7 +176,7 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
     integer:: linearGridNumber
     real(8):: hgp
     real(8):: dx, dy, dz, dr
-    real(8):: time1, time2 !, time3, time4, time5, time6, time7, time8, timet1, timet2
+    real(8):: time1, time2
     real(8):: max_cellVec
     real(8),allocatable:: gausswidth(:)
     associate(epot_es=>ann_arr%epot_es)
@@ -196,7 +196,7 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
             gausswidth(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth
             atoms%zat(iat)=ann_arr%ann(atoms%itypat(iat))%zion
             atoms%qat(iat)=ann_arr%ann(atoms%itypat(iat))%qinit
-        end do
+        enddo
         poisson%nat=atoms%nat
         poisson%bc=atoms%boundcond
         poisson%cv=atoms%cellvec
@@ -207,7 +207,7 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
         if(parini%iverbose>=2) call cpu_time(time1)
         call init_hartree(parini,atoms,poisson,gausswidth)
         if(parini%iverbose>=2) call cpu_time(time2)
-        if(parini%iverbose>=2) write(*,*) 'init_hartree_time: ' , time2-time1
+        if(parini%iverbose>=2) write(*,*) 'init_hartree_time: ',time2-time1
         hgp=1.d-3
         !poisson%ngp=ceiling(2.d0*(poisson%rgcut+parini%max_cellVec)/hgp)
         max_cellVec=100.d0
@@ -230,9 +230,9 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
             poisson%linear_pot_e(0:poisson%ngp,1:parini%ntypat)=0.d0
             poisson%linear_rho_n(0:poisson%ngp,1:parini%ntypat)=0.d0
             poisson%linear_pot_n(0:poisson%ngp,1:parini%ntypat)=0.d0
-        end if
+        endif
         if(parini%iverbose>=2) call cpu_time(time1)
-        if( .not. ann_arr%linear_rho_pot_initiated) then 
+        if(.not. ann_arr%linear_rho_pot_initiated) then
             if(parini%iverbose>=2) write(*,*) 'CENT2_NGP: ',poisson%ngp
             ann_arr%linear_rho_pot_initiated=.true. 
             allocate(ann_arr%linear_rho_e(0:poisson%ngp,parini%ntypat))
@@ -248,48 +248,48 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
                 ann_arr%linear_rho_n(0:poisson%ngp,itype)=poisson%linear_rho_n(0:poisson%ngp,itype)
                 ann_arr%linear_pot_e(0:poisson%ngp,itype)=poisson%linear_pot_e(0:poisson%ngp,itype)
                 ann_arr%linear_pot_n(0:poisson%ngp,itype)=poisson%linear_pot_n(0:poisson%ngp,itype)
-            end do
+            enddo
         else
             do itype=1,parini%ntypat
                 poisson%linear_rho_e(0:poisson%ngp,itype)=ann_arr%linear_rho_e(0:poisson%ngp,itype)
                 poisson%linear_rho_n(0:poisson%ngp,itype)=ann_arr%linear_rho_n(0:poisson%ngp,itype)
                 poisson%linear_pot_e(0:poisson%ngp,itype)=ann_arr%linear_pot_e(0:poisson%ngp,itype)
                 poisson%linear_pot_n(0:poisson%ngp,itype)=ann_arr%linear_pot_n(0:poisson%ngp,itype)
-            end do
+            enddo
         endif
         if(parini%iverbose>=2) call cpu_time(time2)
-        if(parini%iverbose>=2) write(*,*) 'get_scf_pot_time: ' , time2-time1
+        if(parini%iverbose>=2) write(*,*) 'get_scf_pot_time: ',time2-time1
         call update_ratp(atoms)
         if(parini%iverbose>=2) call cpu_time(time1)
-        if( .not. ann_arr%amat_initiated) then 
+        if(.not. ann_arr%amat_initiated) then
             call get_amat_cent2(ann_arr,atoms,poisson,a)
-        end if
+        endif
         if(parini%iverbose>=2) call cpu_time(time2)
-        if(parini%iverbose>=2) write(*,*) 'get_amt_time: ' , time2-time1
+        if(parini%iverbose>=2) write(*,*) 'get_amt_time: ',time2-time1
         call get_eigenval(atoms,a)
         allocate(poisson%pot_ion(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         hgp=1.d-3
         if(parini%iverbose>=2) call cpu_time(time1)
         poisson%pot_ion(:,:,:)=0.d0
-        do iat = 1 , atoms%nat
-            do igx = 1 , poisson%ngpx
-                do igy = 1 , poisson%ngpy
-                    do igz = 1 , poisson%ngpz
-                        dx = poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy = poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz = poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                        dr = sqrt(dx**2+dy**2+dz**2)
+        do iat=1,atoms%nat
+            do igx=1,poisson%ngpx
+                do igy=1,poisson%ngpy
+                    do igz=1,poisson%ngpz
+                        dx=poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
+                        dy=poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
+                        dz=poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
+                        dr=sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         poisson%pot_ion(igx,igy,igz)=poisson%pot_ion(igx,igy,igz)+atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
                             (poisson%linear_pot_n(linearGridNumber+1,atoms%itypat(iat))&
                             -poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))&
                             +poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))
-                    end do
-                end do
-            end do
-        end do
+                    enddo
+                enddo
+            enddo
+        enddo
         if(parini%iverbose>=2) call cpu_time(time2)
-        if(parini%iverbose>=2) write(*,*) 'pot_ion_time: ' , time2-time1
+        if(parini%iverbose>=2) write(*,*) 'pot_ion_time: ',time2-time1
     else
         write(*,*) 'ERROR: unknown value for syslinsolver',trim(ann_arr%syslinsolver)
         stop
@@ -306,20 +306,18 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
-    real(8) ,intent(out):: a(1:atoms%nat+1,1:atoms%nat+1)
+    real(8), intent(out):: a(1:atoms%nat+1,1:atoms%nat+1)
     !local variables
-    integer :: iat, jat, igx, igy, igz
-    integer :: nbgx, nbgy, nbgz, linearGridNumber
-    integer :: agpx, agpy, agpz 
-    real(8) :: dx ,dy ,dz ,dr, hgp, tt
-    real(8) :: rho_e, rho_e_p1, pot_e, pot_e_p1
+    integer:: iat, jat, igx, igy, igz
+    integer:: nbgx, nbgy, nbgz, linearGridNumber
+    integer:: agpx, agpy, agpz 
+    real(8):: dx, dy, dz, dr, hgp, tt
+    real(8):: rho_e, rho_e_p1, pot_e, pot_e_p1
     real(8), allocatable:: grid_rho_new(:,:,:,:), grid_pot_new(:,:,:)
-    !real(8) :: time1, time2
     hgp=1.d-3
-    nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
-    nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
-    nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
-    !call cpu_time(time1)
+    nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+3
+    nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+3
+    nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+3
     allocate(grid_rho_new(-nbgx:nbgx,-nbgy:nbgy,-nbgz:nbgz,atoms%nat))
     allocate(grid_pot_new(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     do iat=1,atoms%nat
@@ -395,9 +393,9 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
     type(typ_poisson), intent(in):: poisson
     real(8), intent(in):: amat(atoms%nat+1,atoms%nat+1)
     !local variables
-    integer:: info , iat
+    integer:: info, iat
     real(8):: hgp, tt, one
-    real(8) :: a(atoms%nat+1,atoms%nat+1)
+    real(8):: a(atoms%nat+1,atoms%nat+1)
     associate(nat=>atoms%nat)
     one=1.d0
     a=amat
@@ -410,12 +408,12 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
         stop
     endif
     hgp=1.d-3
-    do iat=1, atoms%nat
+    do iat=1,atoms%nat
         call radial_to_3d_energy(poisson%ngp,hgp,poisson%linear_rho_e(0,atoms%itypat(iat)), &
             atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
             poisson%hgrid,poisson%rgcut,one,poisson%pot_ion,tt)
         ann_arr%qq(iat)=-ann_arr%chi_o(iat)-atoms%zat(iat)*ann_arr%ann(atoms%itypat(iat))%hardness-tt
-    end do !iat
+    enddo !iat
     ann_arr%qq(nat+1)=-1.d0*sum(atoms%zat) !atoms%qtot !ASK Dr this should be -ztot or qat+zat or atoms%qtot
     call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,ann_arr%qq,nat+1,info)
     if(info/=0) then
@@ -425,7 +423,7 @@ subroutine get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,amat)
     atoms%qat(1:nat)=ann_arr%qq(1:nat)
     do iat=1,nat
         write(20,'(a3,4es18.6)') atoms%sat(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat),atoms%qat(iat)+atoms%zat(iat)
-    end do
+    enddo
     call charge_analysis(parini,atoms,ann_arr)
     if(parini%iverbose>1) then
         call yaml_map('Lagrange',ann_arr%qq(nat+1))
@@ -481,7 +479,7 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
         call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
                 poisson%rgcut,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
         !write(*,*) 'trial_rho',maxval(trial_rho),maxloc(trial_rho)
-        do iat=1, nat
+        do iat=1,nat
             call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
                 atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
                 poisson%hgrid,.true.,one,pot_single)
@@ -506,7 +504,7 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
             write(*,'(a19,i8)') 'ERROR: DGETRF info=',info
             stop
         endif
-        do jat=1, nat
+        do jat=1,nat
             rhs(1:nat+1)=0.d0
             rhs(jat)=-1.d0
             call DGETRS('N',nat+1,1,a,nat+1,ann_arr%ipiv,rhs,nat+1,info)
@@ -514,20 +512,20 @@ subroutine cent2_g_per_atom(parini,ann_arr,atoms,poisson,amat)
                 write(*,'(a19,i8)') 'ERROR: DGETRS info=',info
                 stop
             endif
-            do iat=1, nat
+            do iat=1,nat
                 ann_arr%Xq(iat,jat)=rhs(iat)
-            end do
-        end do
-    end if
+            enddo
+        enddo
+    endif
     do kat=1,ann_arr%num(1)
-        do jat=1, nat
+        do jat=1,nat
             tt=0.d0
-            do iat=1, nat
+            do iat=1,nat
                 tt=tt+ann_arr%EP(iat)*ann_arr%Xq(iat,jat)*ann_arr%g_per_atom(kat,jat)
-            end do
+            enddo
             ann_arr%g_per_atom(kat,jat)=tt
-        end do
-    end do
+        enddo
+    enddo
     !deallocate(ann_arr%ipiv)
     deallocate(rhs)
     deallocate(a)
@@ -557,13 +555,13 @@ subroutine get_electrostatic_cent2(parini,atoms,ann_arr,epot_c,poisson)
     enddo
     call cal_electrostatic_ann_cent2(parini,atoms,ann_arr,poisson)
     if(parini%iverbose>=2)  then
-        write(12,*) epot_es, atoms%epot
-    end if
+        write(12,*) epot_es,atoms%epot
+    endif
     epot_c=epot_es+tt1+tt2+ann_arr%ener_ref
     if(parini%iverbose>=2)  then
-        write(16,'(5es18.8)') epot_c, epot_es, tt1, tt2, ann_arr%ener_ref
-        write(14,*) epot_c, atoms%epot
-    end if
+        write(16,'(5es18.8)') epot_c,epot_es,tt1,tt2,ann_arr%ener_ref
+        write(14,*) epot_c,atoms%epot
+    endif
     end associate
 end subroutine get_electrostatic_cent2
 !*****************************************************************************************
@@ -610,69 +608,67 @@ subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,poisson)
     enddo
     ann_arr%epot_es=0.5d0*tt
     if(trim(ann_arr%event)/='potential' ) then
-    allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
-    allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
-    trial_qat(:)=0.d0
-    trial_qat(atoms%trial_ref_nat(1))=1.d0
-    trial_gw=1.d0
-    call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
-            poisson%rgcut,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
-    tt=0.d0
-    !do iat=1, atoms%nat
+        allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
+        allocate(trial_qat(1:atoms%nat),trial_gw(1:atoms%nat))
+        trial_qat(:)=0.d0
+        trial_qat(atoms%trial_ref_nat(1))=1.d0
+        trial_gw=1.d0
+        call put_gto_sym_ortho(parini,poisson%bc,.true.,atoms%nat,atoms%ratp,trial_qat,trial_gw,&
+                poisson%rgcut,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
+        tt=0.d0
         do igx =1,poisson%ngpx 
-            do igy = 1,poisson%ngpy
-                do igz = 1,poisson%ngpz
+            do igy=1,poisson%ngpy
+                do igz=1,poisson%ngpz
                     tt=tt+trial_rho(igx,igy,igz)*poisson%pot(igx,igy,igz)
-                end do
-            end do
-        end do
-    !end do !iat
-    ann_arr%epot_trial=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+                enddo
+            enddo
+        enddo
+        ann_arr%epot_trial=0.5d0*tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
     endif
-    if(trim(ann_arr%event)=='potential' )then
-    !Force
-    poisson%rcart=atoms%ratp
-    poisson_force=poisson
-    poisson_force%q(:)=atoms%qat(:)
-    poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-    poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-    !atoms%fat=0.d0
-    allocate(fat_t(1:3,atoms%nat))
-    fat_t(1:3,1:atoms%nat)=0.d0
-    call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
-        poisson_force%lda,poisson_force%ngpx, &
-        poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
-    do iat = 1, atoms%nat
-        ggw = ann_arr%ann(atoms%itypat(iat))%gausswidth
-        ggw_t=0.95d0*ggw
-        alpha=ggw**3/(ggw**3-ggw_t**3)
-        atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+alpha*fat_t(1:3,iat)
-    end do
-    poisson%rcart=atoms%ratp
-    poisson_force=poisson
-    poisson_force%q(:)=atoms%qat(:)
-    poisson_force%gw(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
-    poisson_force%gw_ewald(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
-    fat_t(1:3,1:atoms%nat)=0.d0
-    call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
-        poisson_force%lda,poisson_force%ngpx, &
-        poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
-    do iat = 1,atoms%nat
-        ggw = ann_arr%ann(atoms%itypat(iat))%gausswidth
-        ggw_t=0.95d0*ggw
-        beta=-ggw_t**3/(ggw**3-ggw_t**3)
-        atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+beta*fat_t(1:3,iat)
-    end do
-    deallocate(fat_t)
-    poisson_force%q(:)=atoms%zat(:)
-    poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
-    poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
-    call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-        poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
-        poisson_force%lda,poisson_force%ngpx, &
-        poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,atoms%fat)
+    if(trim(ann_arr%event)=='potential') then
+        !Force
+        poisson%rcart=atoms%ratp
+        poisson_force=poisson
+        poisson_force%q(:)=atoms%qat(:)
+        poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+        poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
+        !atoms%fat=0.d0
+        allocate(fat_t(1:3,atoms%nat))
+        fat_t(1:3,1:atoms%nat)=0.d0
+        call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
+            poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
+            poisson_force%lda,poisson_force%ngpx, &
+            poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
+        do iat=1,atoms%nat
+            ggw=ann_arr%ann(atoms%itypat(iat))%gausswidth
+            ggw_t=0.95d0*ggw
+            alpha=ggw**3/(ggw**3-ggw_t**3)
+            atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+alpha*fat_t(1:3,iat)
+        enddo
+        poisson%rcart=atoms%ratp
+        poisson_force=poisson
+        poisson_force%q(:)=atoms%qat(:)
+        poisson_force%gw(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
+        poisson_force%gw_ewald(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
+        fat_t(1:3,1:atoms%nat)=0.d0
+        call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
+            poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
+            poisson_force%lda,poisson_force%ngpx, &
+            poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
+        do iat=1,atoms%nat
+            ggw=ann_arr%ann(atoms%itypat(iat))%gausswidth
+            ggw_t=0.95d0*ggw
+            beta=-ggw_t**3/(ggw**3-ggw_t**3)
+            atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+beta*fat_t(1:3,iat)
+        enddo
+        deallocate(fat_t)
+        poisson_force%q(:)=atoms%zat(:)
+        poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
+        poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
+        call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
+            poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
+            poisson_force%lda,poisson_force%ngpx, &
+            poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,atoms%fat)
     endif
 end subroutine cal_electrostatic_ann_cent2
 !*****************************************************************************************
@@ -693,61 +689,61 @@ end subroutine fini_electrostatic_cent2
 subroutine get_scf_pot_cent2_onegauss(ngp,gw,scf,rho,pot)
     use mod_qat_target, only: cal_powern_screened_poisson_gaussian, cal_pot_hartree
     implicit none
-    integer, intent(in) :: ngp
-    real(8), intent(in) :: gw, scf
+    integer, intent(in):: ngp
+    real(8), intent(in):: gw, scf
     real(8), intent(out):: rho(0:ngp)
     real(8), intent(out):: pot(0:ngp)
     !local variables
-    integer :: igp
-    real(8) :: den_coeff, hgp
-    real(8) :: rrad(0:ngp), pot_scn(0:ngp),weight (0:ngp)
-    real(8) :: pi!, tt1
-    pi = 4.d0*atan(1.d0)
-    den_coeff = 1.d0/((pi**1.5d0)*(gw**3))
+    integer:: igp
+    real(8):: den_coeff, hgp
+    real(8):: rrad(0:ngp), pot_scn(0:ngp),weight (0:ngp)
+    real(8):: pi
+    pi=4.d0*atan(1.d0)
+    den_coeff=1.d0/((pi**1.5d0)*(gw**3))
     hgp=1.d-3
     rho=0.d0
     pot=0.d0
-    do igp = 0 , ngp
+    do igp=0,ngp
         rrad(igp)= igp*hgp
-        if (rrad(igp)>(10.d0*gw)) then
-            rho(igp) = 0.d0
+        if(rrad(igp)>(10.d0*gw)) then
+            rho(igp)=0.d0
         else
-            rho(igp) = den_coeff*Exp(-1.d0*(rrad(igp)**2/gw**2)) ! Charge density with Q=1
+            rho(igp)=den_coeff*Exp(-1.d0*(rrad(igp)**2/gw**2)) ! Charge density with Q=1
         endif
     enddo
     if(scf>0.d0) then
         call set_weight(ngp,rrad,weight)
         call cal_powern_screened_poisson_gaussian(ngp,rrad,weight,1.d0,gw,scf,4,pot_scn)
-    end if
+    endif
     call cal_pot_hartree(ngp,rrad,rho,pot)
-    do igp = 0 , ngp
+    do igp=0,ngp
         pot(igp)=pot(igp)-pot_scn(igp)
-    end do
+    enddo
 end subroutine get_scf_pot_cent2_onegauss
 !*****************************************************************************************
 subroutine get_scf_pot_cent2_twogauss(ngp,gw,scf,rho,pot)
     use mod_qat_target, only: cal_powern_screened_poisson_gaussian, cal_pot_hartree
     implicit none
-    integer, intent(in) :: ngp
-    real(8), intent(in) :: gw, scf
+    integer, intent(in):: ngp
+    real(8), intent(in):: gw, scf
     real(8), intent(out):: rho(0:ngp)
     real(8), intent(out):: pot(0:ngp)
     !local variables
-    integer :: igp
-    real(8) :: den_coeff, hgp
-    real(8) :: rrad(0:ngp), weight(0:ngp)
-    real(8) :: pi, gw_t, alpha, beta !, tt
+    integer:: igp
+    real(8):: den_coeff, hgp
+    real(8):: rrad(0:ngp), weight(0:ngp)
+    real(8):: pi, gw_t, alpha, beta !, tt
     real(8), allocatable:: pot_scn(:), pot_scn_t(:)
-    pi = 4.d0*atan(1.d0)
+    pi=4.d0*atan(1.d0)
     allocate(pot_scn(0:ngp),pot_scn_t(0:ngp))
-    den_coeff = 1.d0/((pi**1.5d0)*(gw**3))
+    den_coeff=1.d0/((pi**1.5d0)*(gw**3))
     hgp=1.d-3
     rho=0.d0
     pot=0.d0
-    do igp = 0 , ngp
+    do igp=0,ngp
         rrad(igp)= igp*hgp
-        if (rrad(igp)>(10.d0*gw)) then
-            rho(igp) = 0.d0
+        if(rrad(igp)>(10.d0*gw)) then
+            rho(igp)=0.d0
         else
             rho(igp)=den_coeff*exp(-1.d0*(rrad(igp)**2/gw**2)) ! Charge density with Q=1
         endif
@@ -758,11 +754,11 @@ subroutine get_scf_pot_cent2_twogauss(ngp,gw,scf,rho,pot)
     do igp=0,ngp
         rho(igp)=alpha*rho(igp)
     enddo
-    den_coeff = 1.d0/((pi**1.5d0)*(gw_t**3))
-    do igp = 0 , ngp
+    den_coeff=1.d0/((pi**1.5d0)*(gw_t**3))
+    do igp=0,ngp
         !rrad(igp)= igp*hgp
-        if (rrad(igp)>(10.d0*gw_t)) then
-            !rho(igp) = 0.d0
+        if(rrad(igp)>(10.d0*gw_t)) then
+            !rho(igp)=0.d0
         else
             rho(igp)=rho(igp)+beta*den_coeff*exp(-1.d0*(rrad(igp)**2/gw_t**2)) ! Charge density with Q=1
         endif
@@ -771,7 +767,7 @@ subroutine get_scf_pot_cent2_twogauss(ngp,gw,scf,rho,pot)
         call set_weight(ngp,rrad,weight)
         call cal_powern_screened_poisson_gaussian(ngp,rrad,weight,1.d0,gw,scf,4,pot_scn)
         call cal_powern_screened_poisson_gaussian(ngp,rrad,weight,1.d0,gw_t,scf,4,pot_scn_t)
-    end if
+    endif
     !tt=0.d0
     !do igp=0,ngp
     !    tt=tt+rrad(igp)**2*rho(igp)*weight(igp)
@@ -779,9 +775,9 @@ subroutine get_scf_pot_cent2_twogauss(ngp,gw,scf,rho,pot)
     !tt=tt*(4.d0*pi)
     !write(*,*) 'RHO ',tt
     call cal_pot_hartree(ngp,rrad,rho,pot)
-    do igp = 0 , ngp
+    do igp=0,ngp
         pot(igp)=pot(igp)-(alpha*pot_scn(igp)+beta*pot_scn_t(igp))
-    end do
+    enddo
 end subroutine get_scf_pot_cent2_twogauss
 !*****************************************************************************************
 subroutine get_eigenval(atoms,amat)
@@ -791,7 +787,7 @@ subroutine get_eigenval(atoms,amat)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: amat(atoms%nat+1,atoms%nat+1)
     !local variables
-    integer :: info
+    integer:: info
     real(8), allocatable:: eigen_val_amat(:,:)
     real(8), allocatable:: real_eigenval(:), work(:)
     allocate(eigen_val_amat(1:atoms%nat,1:atoms%nat))
@@ -811,30 +807,28 @@ subroutine get_dpm(atoms,dpx,dpy,dpz,dpm_err)
     implicit none
     type(typ_atoms), intent(in):: atoms
     real(8), intent(out):: dpm_err 
-    real(8), intent(out) :: dpx, dpy, dpz
+    real(8), intent(out):: dpx, dpy, dpz
     !local variables
-    integer :: iat
-    real(8) :: centroid_x, centroid_y, centroid_z
-        dpx = 0.d0
-        dpy = 0.d0
-        dpz = 0.d0
-        centroid_x=sum(atoms%ratp(1,:))/atoms%nat
-        centroid_y=sum(atoms%ratp(2,:))/atoms%nat
-        centroid_z=sum(atoms%ratp(3,:))/atoms%nat
-        do iat=1, atoms%nat
-            if(trim(atoms%sat(iat))=='Mg') then
-                dpx=dpx+(atoms%ratp(1,iat)-centroid_x)*(atoms%qat(iat)+2.d0)
-                dpy=dpy+(atoms%ratp(2,iat)-centroid_y)*(atoms%qat(iat)+2.d0)
-                dpz=dpz+(atoms%ratp(3,iat)-centroid_z)*(atoms%qat(iat)+2.d0)
-            elseif(trim(atoms%sat(iat))=='O') then
-                dpx=dpx+(atoms%ratp(1,iat)-centroid_x)*(atoms%qat(iat)+6.d0)
-                dpy=dpy+(atoms%ratp(2,iat)-centroid_y)*(atoms%qat(iat)+6.d0)
-                dpz=dpz+(atoms%ratp(3,iat)-centroid_z)*(atoms%qat(iat)+6.d0)
-            endif
-
-        end do
-
-        dpm_err=((dpx-atoms%dpm(1))**2+(dpy-atoms%dpm(2))**2+(dpz-atoms%dpm(3))**2)
+    integer:: iat
+    real(8):: centroid_x, centroid_y, centroid_z
+    dpx=0.d0
+    dpy=0.d0
+    dpz=0.d0
+    centroid_x=sum(atoms%ratp(1,:))/atoms%nat
+    centroid_y=sum(atoms%ratp(2,:))/atoms%nat
+    centroid_z=sum(atoms%ratp(3,:))/atoms%nat
+    do iat=1, atoms%nat
+        if(trim(atoms%sat(iat))=='Mg') then
+            dpx=dpx+(atoms%ratp(1,iat)-centroid_x)*(atoms%qat(iat)+2.d0)
+            dpy=dpy+(atoms%ratp(2,iat)-centroid_y)*(atoms%qat(iat)+2.d0)
+            dpz=dpz+(atoms%ratp(3,iat)-centroid_z)*(atoms%qat(iat)+2.d0)
+        elseif(trim(atoms%sat(iat))=='O') then
+            dpx=dpx+(atoms%ratp(1,iat)-centroid_x)*(atoms%qat(iat)+6.d0)
+            dpy=dpy+(atoms%ratp(2,iat)-centroid_y)*(atoms%qat(iat)+6.d0)
+            dpz=dpz+(atoms%ratp(3,iat)-centroid_z)*(atoms%qat(iat)+6.d0)
+        endif
+    enddo
+    dpm_err=((dpx-atoms%dpm(1))**2+(dpy-atoms%dpm(2))**2+(dpz-atoms%dpm(3))**2)
 end subroutine get_dpm
 !*****************************************************************************************
 subroutine set_weight(ngp,rrad,weight)
@@ -889,69 +883,69 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     allocate(linear_rho_t(0:poisson%ngp))
     do ii=0,poisson%ngp
         tt= ii*hgp
-        if (tt>(10.d0*1.d0)) then
-            linear_rho_t(ii) = 0.d0
+        if(tt>(10.d0*1.d0)) then
+            linear_rho_t(ii)=0.d0
         else
-            linear_rho_t(ii) = 1.d0/((pi**1.5d0)*(1.d0**3))*Exp(-1.d0*(tt**2/1.d0**2))
+            linear_rho_t(ii)=1.d0/((pi**1.5d0)*(1.d0**3))*Exp(-1.d0*(tt**2/1.d0**2))
         endif
     enddo
     allocate(E_all(atoms%ntrial+1))
     allocate(g(atoms%nat),gt(atoms%nat),h(atoms%nat),chi_old(atoms%nat))
     allocate(EP(atoms%nat,atoms%ntrial))
     allocate(rhs(atoms%nat+1))
-    nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
-    nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
-    nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
+    nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+3
+    nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+3
+    nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+3
     write(*,*) 'RGCUT ',poisson%rgcut,nbgx,nbgy,nbgz
     !-----------------------------------------------------------------
     allocate(trial_rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz))
-        do iat=1, nat
-            call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
-                atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
-                poisson%hgrid,.true.,one,poisson%pot)
-            do itrial=1,atoms%ntrial
-                xyz(1:3)=atoms%ratp(1:3,atoms%trial_ref_nat(itrial))+atoms%trial_ref_disp(1:3,itrial)
-        agpx=int(xyz(1)/poisson%hgrid(1,1))+nbgx
-        agpy=int(xyz(2)/poisson%hgrid(2,2))+nbgy
-        agpz=int(xyz(3)/poisson%hgrid(3,3))+nbgz
-        trial_rho=0.d0
-        do ix = agpx-nbgx,agpx+nbgx
-            do iy = agpy-nbgy,agpy+nbgy
-                do iz = agpz-nbgz,agpz+nbgz
-                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
-                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
-                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
-                    dr = sqrt(dx**2+dy**2+dz**2)
-                    linearGridNumber=floor(dr/hgp)
-                    trial_rho(ix,iy,iz)=1.d0*((dr/hgp-linearGridNumber)*&
-                        (linear_rho_t(linearGridNumber+1)&
-                        -linear_rho_t(linearGridNumber))&
-                        +linear_rho_t(linearGridNumber))
-                end do
-            end do
-        end do
-                tt=0.d0
-                do ix=1,poisson%ngpx
-                do iy=1,poisson%ngpy
-                do iz=1,poisson%ngpz
-                    tt=tt+poisson%pot(ix,iy,iz)*trial_rho(ix,iy,iz)
-                enddo
-                enddo
-                enddo
-                EP(iat,itrial)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-                if(iat==1) then
-                    tt=0.d0
-                    do ix=1,poisson%ngpx
-                    do iy=1,poisson%ngpy
-                    do iz=1,poisson%ngpz
-                        tt=tt+poisson%pot_ion(ix,iy,iz)*trial_rho(ix,iy,iz)
+    do iat=1,nat
+        call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,.true.,one,poisson%pot)
+        do itrial=1,atoms%ntrial
+            xyz(1:3)=atoms%ratp(1:3,atoms%trial_ref_nat(itrial))+atoms%trial_ref_disp(1:3,itrial)
+            agpx=int(xyz(1)/poisson%hgrid(1,1))+nbgx
+            agpy=int(xyz(2)/poisson%hgrid(2,2))+nbgy
+            agpz=int(xyz(3)/poisson%hgrid(3,3))+nbgz
+            trial_rho=0.d0
+            do ix=agpx-nbgx,agpx+nbgx
+                do iy=agpy-nbgy,agpy+nbgy
+                    do iz=agpz-nbgz,agpz+nbgz
+                        dx=poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
+                        dy=poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
+                        dz=poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
+                        dr=sqrt(dx**2+dy**2+dz**2)
+                        linearGridNumber=floor(dr/hgp)
+                        trial_rho(ix,iy,iz)=1.d0*((dr/hgp-linearGridNumber)*&
+                            (linear_rho_t(linearGridNumber+1)&
+                            -linear_rho_t(linearGridNumber))&
+                            +linear_rho_t(linearGridNumber))
                     enddo
-                    enddo
-                    enddo
-                    EP_n(itrial)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-                endif
+                enddo
             enddo
-        enddo
+            tt=0.d0
+            do iz=1,poisson%ngpz
+                do iy=1,poisson%ngpy
+                    do ix=1,poisson%ngpx
+                        tt=tt+poisson%pot(ix,iy,iz)*trial_rho(ix,iy,iz)
+                    enddo
+                enddo
+            enddo
+            EP(iat,itrial)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+            if(iat==1) then
+                tt=0.d0
+                do iz=1,poisson%ngpz
+                    do iy=1,poisson%ngpy
+                        do ix=1,poisson%ngpx
+                            tt=tt+poisson%pot_ion(ix,iy,iz)*trial_rho(ix,iy,iz)
+                        enddo
+                    enddo
+                enddo
+                EP_n(itrial)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+            endif
+        enddo !end of loop over itrial
+    enddo !end of loop over iat
     !-----------------------------------------------------------------
     allocate(amat(atoms%nat,atoms%nat))
     allocate(amat_t(atoms%nat+1,atoms%nat+1))
@@ -1151,7 +1145,7 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
     !enddo
     atoms%qat(1:atoms%nat)=ann_arr%qq(1:atoms%nat)
     poisson%pot(:,:,:)=0.d0
-    do iat=1, atoms%nat
+    do iat=1,atoms%nat
         call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
             atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
             poisson%hgrid,.false.,atoms%qat(iat),poisson%pot)
@@ -1195,28 +1189,28 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
         agpy=int(xyz(2)/poisson%hgrid(2,2))+nbgy
         agpz=int(xyz(3)/poisson%hgrid(3,3))+nbgz
         trial_rho=0.d0
-        do ix = agpx-nbgx,agpx+nbgx
-            do iy = agpy-nbgy,agpy+nbgy
-                do iz = agpz-nbgz,agpz+nbgz
-                    dx = poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
-                    dy = poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
-                    dz = poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
-                    dr = sqrt(dx**2+dy**2+dz**2)
+        do ix=agpx-nbgx,agpx+nbgx
+            do iy=agpy-nbgy,agpy+nbgy
+                do iz=agpz-nbgz,agpz+nbgz
+                    dx=poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
+                    dy=poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
+                    dz=poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
+                    dr=sqrt(dx**2+dy**2+dz**2)
                     linearGridNumber=floor(dr/hgp)
                     trial_rho(ix,iy,iz)=1.d0*((dr/hgp-linearGridNumber)*&
                         (linear_rho_t(linearGridNumber+1)&
                         -linear_rho_t(linearGridNumber))&
                         +linear_rho_t(linearGridNumber))
-                end do
-            end do
-        end do
+                enddo
+            enddo
+        enddo
         tt=0.d0
-        do ix=1,poisson%ngpx
-        do iy=1,poisson%ngpy
         do iz=1,poisson%ngpz
-            tt=tt+poisson%pot(ix,iy,iz)*trial_rho(ix,iy,iz)
-        enddo
-        enddo
+            do iy=1,poisson%ngpy
+                do ix=1,poisson%ngpx
+                    tt=tt+poisson%pot(ix,iy,iz)*trial_rho(ix,iy,iz)
+                enddo
+            enddo
         enddo
         tt=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
         !write(*,'(i3,2es24.15)') atoms%trial_ref_nat(itrial),tt,atoms%trial_ref_energy(itrial)
@@ -1252,9 +1246,9 @@ subroutine prefit_cent2_gradient(parini,ann_arr,atoms,poisson,nbgx,nbgy,nbgz,lin
     !    g(iat)=g(iat)+coeff*2.d0*tt*(E_all(atoms%ntrial+1)-atoms%epot)
     !enddo
     if(applychi) then
-    do iat=1,atoms%nat
-        g(iat)=g(iat)+1.d-2*2.d0*(ann_arr%chi_o(iat)-ann_arr%ann(atoms%itypat(iat))%chi0)
-    enddo
+        do iat=1,atoms%nat
+            g(iat)=g(iat)+1.d-2*2.d0*(ann_arr%chi_o(iat)-ann_arr%ann(atoms%itypat(iat))%chi0)
+        enddo
     endif
     deallocate(gausswidth)
     deallocate(E_par)
