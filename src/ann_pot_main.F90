@@ -152,6 +152,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
+    use mod_cent2, only: typ_cent2
     !use mod_tightbinding, only: typ_partb
     implicit none
     type(typ_parini), intent(in):: parini
@@ -164,12 +165,13 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     !real(8), allocatable:: xt(:), gt(:)
     integer:: i, j, iat
     type(typ_partb):: partb
+    type(typ_cent2):: cent2
     if(trim(ann_arr%approach)=='atombased') then
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_cent2(parini,atoms,symfunc,ann_arr)
+        call cent2%cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='centt') then
         call cal_ann_centt(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent3') then

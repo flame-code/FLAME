@@ -194,7 +194,7 @@
 ./genconf_trimer.o : ./genconf_trimer.F90 ./io_acf.o ./potential_main.o ./processors_mod.o ./genconf_mod.o ./atoms_mod.o ./parini_mod.o 
 ./ann_best_symfunc.o : ./ann_best_symfunc.F90 ./processors_mod.o ./atoms_mod.o ./ann_symfunc_mod.o ./ann_mod.o ./parini_mod.o 
 ./phonon.o : ./phonon.F90 ./io_yaml_conf.o ./potential_main.o ./processors_mod.o ./atoms_mod.o ./parini_mod.o 
-./ann_pot_main.o : ./ann_pot_main.F90 ./ann_symfunc_mod.o ./tightbinding_mod.o ./ann_train.o ./atoms_mod.o ./train_optimizer.o ./ann_mod.o ./parini_mod.o 
+./ann_pot_main.o : ./ann_pot_main.F90 ./ann_pot_cent2.o ./ann_symfunc_mod.o ./tightbinding_mod.o ./ann_train.o ./atoms_mod.o ./train_optimizer.o ./ann_mod.o ./parini_mod.o 
 ./spglib_int.o : ./spglib_int.F90 
 ./ann_evaluate.o : ./ann_evaluate.F90 ./atoms_mod.o ./ann_symfunc_mod.o ./ann_mod.o ./parini_mod.o 
 ./fingerprint.o : ./fingerprint.F90 ./constants_minhocao_mod.o ./minhocao_mod.o ./minhocao_mod.o ./parini_mod.o 

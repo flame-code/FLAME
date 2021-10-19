@@ -1,4 +1,15 @@
 !*****************************************************************************************
+module mod_cent2
+    implicit none
+    private
+    public:: typ_cent2
+    type typ_cent2
+        contains
+        !procedure, public, pass(self)::
+        procedure, public, nopass:: cal_ann_cent2
+    end type typ_cent2
+contains
+!*****************************************************************************************
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -1420,4 +1431,6 @@ subroutine radial_to_3d_energy(nrad,hrad,funrad,xyz,xyz111,ngpx,ngpy,ngpz,hgrid,
     enddo
     ener=res*(hgrid(1,1)*hgrid(2,2)*hgrid(3,3))
 end subroutine radial_to_3d_energy
+!*****************************************************************************************
+end module mod_cent2
 !*****************************************************************************************
