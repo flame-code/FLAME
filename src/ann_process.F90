@@ -49,7 +49,8 @@ subroutine cal_architecture_2hiddenlayer(ann,epot)
     !local variables
     integer:: i, j, k, l, lp
     real(8):: tt, tt2
-    real(8):: c(100), ff(1000,1000)
+    real(8), allocatable:: c(:)
+    allocate(c(ann%nn(1)))
     if(ann%nl/=3) then
         write(*,'(a,i3)') 'ERROR: this routine works only for ann%nl=3, while ann%nl= ',ann%nl
         stop
@@ -102,6 +103,7 @@ subroutine cal_architecture_2hiddenlayer(ann,epot)
         enddo
         ann%d(j)=tt
     enddo
+    deallocate(c)
 end subroutine cal_architecture_2hiddenlayer
 !*****************************************************************************************
 subroutine cal_architecture_der(ann,epot)

@@ -34,9 +34,11 @@ subroutine bader_ongrid(parini)
     integer:: ix, iy, iz
     logical:: gp_max
     real(8):: ttmax, ttmin, tt1, tt
-    real(8):: oat(3), mat(3,2000)=0.d0
+    real(8):: oat(3)
+    real(8),allocatable:: mat(:,:)
     real(8),allocatable::rat(:,:), qat(:), orat(:,:)
     character(len =30)::filename
+    allocate(mat(3,2000),source=0.d0)
     filename=trim(parini%filename_bader)
     open(unit=1, file=filename)
       read(1,*)
@@ -231,6 +233,7 @@ subroutine bader_ongrid(parini)
     write(*,*)"----------------------------------------------------------------"
    
     !..............................................
+    deallocate(mat)
 
 end subroutine bader_ongrid
 !*****************************************************************************************

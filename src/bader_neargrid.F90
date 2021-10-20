@@ -37,9 +37,11 @@ subroutine bader_neargrid(parini)
     logical:: gp_max
     logical :: max_point
     real(8):: ttmax, ttmin, tt1, tt
-    real(8):: oat(3), mat(3,matl)=0.d0
+    real(8):: oat(3)
+    real(8),allocatable:: mat(:,:)
     real(8),allocatable::rat(:,:), qat(:), orat(:,:)
     character(len =30)::filename
+    allocate(mat(3,matl),source=0.d0)
     filename=trim(parini%filename_bader)
     open(unit=1, file=filename)
       read(1,*)
@@ -193,6 +195,7 @@ subroutine bader_neargrid(parini)
     write(*,*)"number of all atom detected:",sum(chgat)*poisson%h(1)*poisson%h(2)*poisson%h(3)/vol
     write(*,*)"----------------------------------------------------------------"
     !..............................................
+    deallocate(mat)
 end subroutine bader_neargrid
 !*****************************************************************************************
   subroutine ongrid_neargrid(poisson,d,i_dist)

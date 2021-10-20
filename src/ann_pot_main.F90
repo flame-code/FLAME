@@ -219,8 +219,10 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
-    real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha, tt
+    real(8):: rmse, rmse_old, de0, alpha, tt
     real(8), allocatable:: epotall(:), eref_all(:)
+    real(8), allocatable:: anat(:), g(:)
+    allocate(anat(100),g(100))
     !return
     ann_arr%event='train'
     call convert_opt_x_ann_arr(opt_ann,ann_arr)
@@ -280,6 +282,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     enddo
     call f_free(epotall)
     call f_free(eref_all)
+    deallocate(anat,g)
     !stop
 end subroutine prefit_cent_ener_ref
 !*****************************************************************************************
@@ -300,8 +303,12 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
-    real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
-    real(8):: anat2(100), g2(100), qnet
+    real(8):: rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
+    real(8):: qnet
+    real(8), allocatable:: anat1(:), g1(:)
+    real(8), allocatable:: anat2(:), g2(:)
+    allocate(anat1(100),g1(100))
+    allocate(anat2(100),g2(100))
     ann_arr%event='train'
     call convert_opt_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
@@ -358,5 +365,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse_old=rmse
     enddo
+    deallocate(anat1,g1)
+    deallocate(anat2,g2)
 end subroutine prefit_cent
 !*****************************************************************************************
