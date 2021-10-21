@@ -77,7 +77,7 @@ subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
     type(typ_atoms_arr), intent(inout):: atoms_arr
     !local variables
     integer:: iconf, nconf, iat, nat, ii, iiconf
-    integer:: ntrial,kat,trial_kat
+    integer:: ntrial, itrial, iat_trial
     character(3):: str_motion
     character(10):: str_units_length
     real(8):: x, y, z, cf_length, fx, fy, fz 
@@ -192,19 +192,19 @@ subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
             enddo
         endif
         if(has_key(dict1,"trial_ref_energy")) then
-            do kat=1,ntrial
-                ii=kat-1
+            do itrial=1,ntrial
+                ii=itrial-1
                 dict2=>dict1//'trial_ref_energy'//ii
-                trial_kat=dict2//0
+                iat_trial=dict2//0
                 trial_x=dict2//1
                 trial_y=dict2//2
                 trial_z=dict2//3
                 trial_energy=dict2//4
-                atoms_arr%atoms(iconf)%trial_ref_nat(kat)=trial_kat
-                atoms_arr%atoms(iconf)%trial_ref_disp(1,kat)=trial_x
-                atoms_arr%atoms(iconf)%trial_ref_disp(2,kat)=trial_y
-                atoms_arr%atoms(iconf)%trial_ref_disp(3,kat)=trial_z
-                atoms_arr%atoms(iconf)%trial_ref_energy(kat)=trial_energy
+                atoms_arr%atoms(iconf)%trial_energy%iat_list(itrial)=iat_trial
+                atoms_arr%atoms(iconf)%trial_energy%disp(1,itrial)=trial_x
+                atoms_arr%atoms(iconf)%trial_energy%disp(2,itrial)=trial_y
+                atoms_arr%atoms(iconf)%trial_energy%disp(3,itrial)=trial_z
+                atoms_arr%atoms(iconf)%trial_energy%energy(itrial)=trial_energy
                 nullify(dict2)
             enddo
         endif

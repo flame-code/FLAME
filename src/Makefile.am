@@ -31,6 +31,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 unitsconversion_mod.F90 processors_mod.
 		fsockets.F90 \
 		timing_mod.F90 \
 		constants_minhocao_mod.F90 \
+		trial_energy_mod.F90 \
 		atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
 		electrostatics_mod.F90 \
 		ann_mod.F90 \

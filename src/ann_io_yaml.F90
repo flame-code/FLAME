@@ -551,6 +551,7 @@ end subroutine set_dict_ann
 subroutine read_data_yaml(parini,filename_list,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
+    use mod_trial_energy, only: trial_energy_copy_old
     use mod_atoms, only: atom_deallocate_old, set_rat_atoms
     use mod_yaml_conf, only: read_yaml_conf
     use mod_bin, only: read_bin_conf
@@ -601,12 +602,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             if(atoms_arr_t%nconf>nconfmax) then
                 stop 'ERROR: too many configurations, change parameter nconfmax.'
             endif
-            if(atoms_arr_of%atoms(iconf)%ntrial>0) then
-                call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0, &
-                    ntrial=atoms_arr_of%atoms(iconf)%ntrial)
-            else
-                call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0)
-            endif
+            call atom_allocate_old(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf)%nat,0,0)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%epot=atoms_arr_of%atoms(iconf)%epot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%qtot=atoms_arr_of%atoms(iconf)%qtot
             atoms_arr_t%atoms(atoms_arr_t%nconf)%dpm(1:3)=atoms_arr_of%atoms(iconf)%dpm(1:3)
@@ -614,13 +610,10 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             !if(parini%read_forces_ann) read(2,*)
-            do iat=1,atoms_arr_of%atoms(iconf)%ntrial
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_energy(iat)=atoms_arr_of%atoms(iconf)%trial_ref_energy(iat)
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_nat(iat)=atoms_arr_of%atoms(iconf)%trial_ref_nat(iat)
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_disp(1,iat)=atoms_arr_of%atoms(iconf)%trial_ref_disp(1,iat)
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_disp(2,iat)=atoms_arr_of%atoms(iconf)%trial_ref_disp(2,iat)
-                atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_ref_disp(3,iat)=atoms_arr_of%atoms(iconf)%trial_ref_disp(3,iat)
-            end do
+            if(associated(atoms_arr_of%atoms(iconf)%trial_energy)) then
+                call trial_energy_copy_old(atoms_arr_of%atoms(iconf)%trial_energy, &
+                    atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_energy)
+            endif
             call set_rat_atoms(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf),setall=.true.)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)

@@ -75,7 +75,7 @@ subroutine get_qat_target(parini)
     call get_scf_pot(atoms%cellvec,ngp,poisson%rgcut,parini%gaussian_width_Mg,parini%screening_factor,pot_Mg,.false.)
     call get_scf_pot(atoms%cellvec,ngp,poisson%rgcut,parini%gaussian_width_O,parini%screening_factor,pot_O,.true.,0.5d0,trial_rho)
     !LOCAL POT%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    trial_num = atoms%ntrial ! Equal to trial gaussian numbers
+    trial_num = atoms%trial_energy%ntrial ! Equal to trial gaussian numbers
     allocate(amat(1:atoms%nat+1,1:atoms%nat+1))
     allocate(E_par(1:trial_num,1:atoms%nat))
     allocate(rhs(1:atoms%nat))
@@ -116,19 +116,19 @@ subroutine get_qat_target(parini)
     do kat=1,trial_num
         trial_energy(kat)=0.d0
         do iat=1,atoms%nat
-            dx=atoms%ratp(1,iat)-atoms%ratp(1,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(1,kat)
-            dy=atoms%ratp(2,iat)-atoms%ratp(2,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(2,kat)
-            dz=atoms%ratp(3,iat)-atoms%ratp(3,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(3,kat)
+            dx=atoms%ratp(1,iat)-atoms%ratp(1,atoms%trial_energy%iat_list(kat))-atoms%trial_energy%disp(1,kat)
+            dy=atoms%ratp(2,iat)-atoms%ratp(2,atoms%trial_energy%iat_list(kat))-atoms%trial_energy%disp(2,kat)
+            dz=atoms%ratp(3,iat)-atoms%ratp(3,atoms%trial_energy%iat_list(kat))-atoms%trial_energy%disp(3,kat)
             trial_energy(kat)=trial_energy(kat)+atoms_qat(iat)*E_par(kat,iat)
-            write(99,'(3i3,45es11.3)') kat,atoms%trial_ref_nat(kat),iat,E_par(kat,iat), &!E_par_0(atoms%trial_ref_nat(kat),iat), &
-                                     atoms_qat(iat),atoms_qat(atoms%trial_ref_nat(kat)),sqrt(dx**2+dy**2+dz**2)
+            write(99,'(3i3,45es11.3)') kat,atoms%trial_energy%iat_list(kat),iat,E_par(kat,iat), &!E_par_0(atoms%trial_ref_nat(kat),iat), &
+                                     atoms_qat(iat),atoms_qat(atoms%trial_energy%iat_list(kat)),sqrt(dx**2+dy**2+dz**2)
         end do
-        write(55,*)kat,atoms%trial_ref_nat(kat),trial_energy(kat),atoms%trial_ref_energy(kat)
-        cost_function=cost_function + (trial_energy(kat)-atoms%trial_ref_energy(kat))**2 +&
-                      parini%pen_coeff*((atoms_qat(atoms%trial_ref_nat(kat))-qat_target(atoms%trial_ref_nat(kat)))**2)
-        energy_error=energy_error+(trial_energy(kat)-atoms%trial_ref_energy(kat))**2
+        write(55,*)kat,atoms%trial_energy%iat_list(kat),trial_energy(kat),atoms%trial_energy%energy(kat)
+        cost_function=cost_function + (trial_energy(kat)-atoms%trial_energy%energy(kat))**2 +&
+                      parini%pen_coeff*((atoms_qat(atoms%trial_energy%iat_list(kat))-qat_target(atoms%trial_energy%iat_list(kat)))**2)
+        energy_error=energy_error+(trial_energy(kat)-atoms%trial_energy%energy(kat))**2
     end do
-    energy_error = sqrt(energy_error/atoms%ntrial)
+    energy_error = sqrt(energy_error/atoms%trial_energy%ntrial)
     call cpu_time(time_f)
     !CHARGE ANALYSIS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     Q_Mg_min = 1.d100
@@ -166,13 +166,13 @@ subroutine get_qat_target(parini)
                                             Q_Mg_min," | ",Q_Mg_max," | ",Q_Mg_max-Q_Mg_min," | ",Q_Mg_mean," | ",&
                                             Q_O_min," | ",Q_O_max," | ",Q_O_max-Q_O_min," | ",Q_O_mean," | ",&
                                             minval(real_eigenval(:))," | ",parini%q_avg_target," | ",&
-                                            maxval(abs(trial_energy(:)-atoms%trial_ref_energy))," |",&
-                                            atoms%trial_ref_nat(maxloc(abs(trial_energy(:)-atoms%trial_ref_energy)))," |"
+                                            maxval(abs(trial_energy(:)-atoms%trial_energy%energy(:)))," |",&
+                                            atoms%trial_energy%iat_list(maxloc(abs(trial_energy(:)-atoms%trial_energy%energy(:))))," |"
 
     write(77,'(a,es11.3)') 'Penalty Coeffcient:',parini%pen_coeff 
     write(77,'(a,es11.3)') 'Cost Function:     ',cost_function
     write(77,'(a,es11.3)') 'Energy Error(Ha):  ',energy_error
-    write(77,'(a,es11.3)') 'Max Energy Error:  ',maxval(abs(trial_energy(:)-atoms%trial_ref_energy))
+    write(77,'(a,es11.3)') 'Max Energy Error:  ',maxval(abs(trial_energy(:)-atoms%trial_energy%energy(:)))
     write(77,'(a,es11.3)') 'Condition Number:  ' ,maxval(real_eigenval(:))/minval(real_eigenval(:))
     write(77,'(a,es11.3)') 'Minimum EigenVal:  ' ,minval(real_eigenval(:))
     write(77,'(a,es11.3)') 'Maximum EigenVal:  ' ,maxval(real_eigenval(:))
@@ -509,7 +509,7 @@ subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_
     integer :: ngp
     real(8) ,intent(in) :: pot_Mg(0:ngp),pot_O(0:ngp),trial_rho(0:ngp),qat_target(1:atoms%nat)
     real(8) ,intent(inout):: amat(1:atoms%nat+1,1:atoms%nat+1)
-    real(8) ,intent(inout):: E_par(1:atoms%ntrial,1:atoms%nat)
+    real(8) ,intent(inout):: E_par(1:atoms%trial_energy%ntrial,1:atoms%nat)
     real(8) ,intent(inout):: rhs(1:atoms%nat)
     !LOCAL Variables!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     integer :: iat,jat,igx,igy,igz,kat
@@ -521,7 +521,7 @@ subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_
     nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
     nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
     nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
-    E_par(1:atoms%ntrial,1:atoms%nat)=0.d0
+    E_par(1:atoms%trial_energy%ntrial,1:atoms%nat)=0.d0
     amat(1:atoms%nat+1,1:atoms%nat+1)=0.d0
     do iat = 1 , atoms%nat
         if(trim(atoms%sat(iat))=='Mg') then
@@ -554,14 +554,14 @@ subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_
             end do
         endif
         rhs(iat)=0.d0
-        do kat = 1 , atoms%ntrial 
+        do kat = 1 , atoms%trial_energy%ntrial 
             tt = 0.d0
             do igx = 1 , poisson%ngpx
                 do igy = 1 , poisson%ngpy
                     do igz = 1 , poisson%ngpz
-                        dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(1,kat)
-                        dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(2,kat)
-                        dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(3,kat)
+                        dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,atoms%trial_energy%iat_list(kat))-atoms%trial_energy%disp(1,kat)
+                        dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,atoms%trial_energy%iat_list(kat))-atoms%trial_energy%disp(2,kat)
+                        dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,atoms%trial_energy%iat_list(kat))-atoms%trial_energy%disp(3,kat)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         grid_trial_rho(igx,igy,igz)=(dr/hgp-linearGridNumber)*(trial_rho(linearGridNumber+1)&
@@ -571,13 +571,13 @@ subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_
                 end do
             end do 
             E_par(kat,iat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)!-E_par_0(atoms%trial_ref_nat(kat),iat)
-            rhs(iat)=rhs(iat)+E_par(kat,iat)*atoms%trial_ref_energy(kat)
+            rhs(iat)=rhs(iat)+E_par(kat,iat)*atoms%trial_energy%energy(kat)
         end do !kat
         rhs(iat)=2.d0*(rhs(iat)+parini%pen_coeff*qat_target(iat))
     end do !iat
     do iat = 1, atoms%nat
         do jat = iat,atoms%nat
-            do kat = 1 ,atoms%ntrial
+            do kat = 1 ,atoms%trial_energy%ntrial
                 amat(iat,jat)=amat(iat,jat)+E_par(kat,iat)*E_par(kat,jat)
             end do
             amat(iat,jat)=2.d0*amat(iat,jat)
