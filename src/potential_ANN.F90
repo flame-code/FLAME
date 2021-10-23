@@ -3,6 +3,7 @@ subroutine init_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: ann_arr, ann_boundcheck
+    use mod_ann_io_yaml, only: read_ann_yaml
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini

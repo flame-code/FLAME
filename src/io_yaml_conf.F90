@@ -3,6 +3,7 @@ module mod_yaml_conf
     implicit none
     private
     public:: read_yaml_conf, write_yaml_conf
+    public:: read_yaml_conf_getdict, read_yaml_conf_getatoms
 contains
 !*****************************************************************************************
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
@@ -81,7 +82,6 @@ subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
     character(3):: str_motion
     character(10):: str_units_length
     real(8):: x, y, z, cf_length, fx, fy, fz 
-    real(8):: trial_energy,trial_x,trial_y,trial_z
     real(8):: cvax, cvay, cvaz
     real(8):: cvbx, cvby, cvbz
     real(8):: cvcx, cvcy, cvcz
@@ -97,12 +97,7 @@ subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
         iiconf=iconf-1
         dict1=>confs_list//iiconf//'conf'
         nat=dict1//'nat'
-        if(has_key(dict1,"ntrial")) then
-            ntrial=dict1//'ntrial'
-            call atom_allocate(atoms_arr%atoms(iconf),nat,0,0,ntrial=ntrial)
-        else
-            call atom_allocate(atoms_arr%atoms(iconf),nat,0,0)
-        endif
+        call atom_allocate(atoms_arr%atoms(iconf),nat,0,0)
         atoms_arr%atoms(iconf)%boundcond=dict1//'bc'
         cf_length=1.d0
         if(has_key(dict1,"units_length")) then
@@ -188,23 +183,6 @@ subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
                 atoms_arr%atoms(iconf)%fat(1,iat)=fx
                 atoms_arr%atoms(iconf)%fat(2,iat)=fy
                 atoms_arr%atoms(iconf)%fat(3,iat)=fz
-                nullify(dict2)
-            enddo
-        endif
-        if(has_key(dict1,"trial_ref_energy")) then
-            do itrial=1,ntrial
-                ii=itrial-1
-                dict2=>dict1//'trial_ref_energy'//ii
-                iat_trial=dict2//0
-                trial_x=dict2//1
-                trial_y=dict2//2
-                trial_z=dict2//3
-                trial_energy=dict2//4
-                atoms_arr%atoms(iconf)%trial_energy%iat_list(itrial)=iat_trial
-                atoms_arr%atoms(iconf)%trial_energy%disp(1,itrial)=trial_x
-                atoms_arr%atoms(iconf)%trial_energy%disp(2,itrial)=trial_y
-                atoms_arr%atoms(iconf)%trial_energy%disp(3,itrial)=trial_z
-                atoms_arr%atoms(iconf)%trial_energy%energy(itrial)=trial_energy
                 nullify(dict2)
             enddo
         endif

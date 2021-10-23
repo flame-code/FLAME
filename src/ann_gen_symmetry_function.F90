@@ -4,6 +4,7 @@ subroutine ann_gen_symmetry_function(parini)
     use mod_ann, only: typ_ann_arr, ann_arr_deallocate
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
+    use mod_ann_io_yaml, only: read_input_ann_yaml, read_data_yaml
     use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(in):: parini

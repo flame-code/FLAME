@@ -7,6 +7,7 @@ subroutine get_qat_target(parini)
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, update_ratp, update_rat
     use mod_electrostatics, only: typ_poisson
     use mod_ann, only: typ_ann_arr
+    use mod_ann_io_yaml, only: read_data_yaml
     use yaml_output
     implicit none
     type(typ_parini) :: parini
@@ -40,7 +41,8 @@ subroutine get_qat_target(parini)
     integer :: info
     !INITIAL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     pi = 4.d0*atan(1.d0)
-    call read_data_yaml(parini,'list_posinp.yaml',atoms_arr)
+    ann_arr%trial_energy_required=.true.
+    call read_data_yaml(parini,'list_posinp.yaml',atoms_arr,ann_arr=ann_arr)
     call atom_copy_old(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     allocate(tmp_rat(3,atoms%nat),tmp_cv(3,3))
     allocate(qat_target(1:atoms%nat))

@@ -1,6 +1,7 @@
 !*****************************************************************************************
 module mod_atoms
     use mod_trial_energy, only: typ_trial_energy
+    use dictionaries
     implicit none
     private
     public:: get_rat, get_rat_iat, swap_rat
@@ -104,6 +105,7 @@ module mod_atoms
         character(50):: frmt='(a5,2x,3es24.15,2x,3l1)'
         logical:: print_force
         integer:: nconf=0
+        type(dictionary), pointer :: dict=>null()
     end type typ_file_info
     !contains
     !subroutine atoms_assign(a,b)

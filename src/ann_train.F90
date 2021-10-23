@@ -29,6 +29,7 @@ subroutine ann_train(parini)
     use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, ann_lm
     use mod_opt_ann, only: set_annweights
     use mod_atoms, only: typ_atoms_arr, typ_atoms
+    use mod_ann_io_yaml, only: read_data_yaml, write_ann_all_yaml
     use mod_processors, only: iproc
     use mod_callback_ann
     use dynamic_memory
@@ -48,15 +49,18 @@ subroutine ann_train(parini)
     call f_routine(id='ann_train')
     !-------------------------------------------------------
     !Reading configurations and their energies and forces
+    if(trim(parini%approach_ann)=='cent2' .and. trim(parini%optimizer_ann)/='rivals_fitchi') then
+        ann_arr%trial_energy_required=.true.
+    endif
     inquire(file="list_posinp_train.yaml",exist=file_exists)
     if(file_exists) then
-        call read_data_yaml(parini,'list_posinp_train.yaml',atoms_train)
+        call read_data_yaml(parini,'list_posinp_train.yaml',atoms_train,ann_arr=ann_arr)
     else
         call read_data_old(parini,'list_posinp_train',atoms_train)
     endif
     inquire(file="list_posinp_valid.yaml",exist=file_exists)
     if(file_exists) then
-        call read_data_yaml(parini,'list_posinp_valid.yaml',atoms_valid)
+        call read_data_yaml(parini,'list_posinp_valid.yaml',atoms_valid,ann_arr=ann_arr)
     else
         call read_data_old(parini,'list_posinp_valid',atoms_valid)
     endif
@@ -368,6 +372,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann
+    use mod_ann_io_yaml, only: read_input_ann_yaml, read_ann_yaml
     use mod_processors, only: iproc
     use yaml_output
     use futile
@@ -1508,7 +1513,9 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     use mod_ann, only: typ_ann_arr, convert_x_ann_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
+    use mod_ann_io_yaml, only: write_ann_yaml
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann, get_opt_ann_x
+    use mod_ann_io_yaml, only: get_symfunc_parameters_yaml
     use mod_processors, only: iproc
     use yaml_output
     use futile

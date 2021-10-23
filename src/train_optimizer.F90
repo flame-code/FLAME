@@ -102,6 +102,7 @@ end subroutine convert_opt_x_ann_arr
 subroutine ekf_rivals(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
+    use mod_ann_io_yaml, only: write_ann_all_yaml
     use mod_processors, only: iproc
     use yaml_output
     implicit none
@@ -356,6 +357,7 @@ end subroutine analyze_epoch_print
 subroutine ekf_behler(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
+    use mod_ann_io_yaml, only: write_ann_all_yaml
     use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(in):: parini

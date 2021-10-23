@@ -4,6 +4,7 @@ subroutine ann_best_symfunc(parini)
     use mod_ann, only: typ_ann
     use mod_symfunc, only: typ_symfunc_arr
     use mod_atoms, only: typ_atoms_arr
+    use mod_ann_io_yaml, only: read_data_yaml
     use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(in):: parini
