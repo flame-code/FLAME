@@ -109,7 +109,7 @@ subroutine init_potential_forces(parini,atoms)
 #if defined(HAVE_SIESTA)
             call init_potential_forces_siesta(atoms)
 #else
-            stop 'ERROR: Alborz is not linked with siesta during compilation.'
+            stop 'ERROR: FLAME is not linked with siesta during compilation.'
 #endif
         case default
             stop 'ERROR: potential is unknown'
@@ -190,7 +190,7 @@ subroutine cal_potential_forces(parini,atoms)
 #if defined(HAVE_SIESTA)
             call cal_potential_forces_siesta(atoms)
 #else
-            stop 'ERROR: Alborz is not linked with siesta during compilation.'
+            stop 'ERROR: FLAME is not linked with siesta during compilation.'
 #endif
         case default
             stop 'ERROR: potential is unknown'
@@ -240,7 +240,7 @@ subroutine fini_potential_forces(parini,atoms)
 #if defined(HAVE_SIESTA)
             call final_potential_forces_siesta
 #else
-            stop 'ERROR: Alborz is not linked with siesta during compilation.'
+            stop 'ERROR: FLAME is not linked with siesta during compilation.'
 #endif
         case default
             stop 'ERROR: potential is unknown'

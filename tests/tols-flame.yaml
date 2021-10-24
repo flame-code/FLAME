@@ -157,8 +157,8 @@ saddle_1s_barsad:
   - iproc
   - xmax
  Epsilon: 1.e-11
- fmax: 5.e-8
- fnrm: 5.e-8
+ fmax: 1.e-7
+ fnrm: 1.e-7
 
 saddle_1s_barsad_dir:
  Keys to ignore:

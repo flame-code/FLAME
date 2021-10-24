@@ -228,7 +228,7 @@
 ./specfun.o : ./specfun.F90 
 ./minhocao_varvol.o : ./minhocao_varvol.F90 ./parini_mod.o ./potential_main_minhocao.o ./constants_minhocao_mod.o ./minhocao_mod.o 
 ./ann_check_symmetry_function.o : ./ann_check_symmetry_function.F90 ./processors_mod.o ./atoms_mod.o ./ann_io_yaml.o ./ann_symfunc_mod.o ./ann_mod.o ./parini_mod.o 
-./potential_sec_main.o : ./potential_sec_main.F90 ./potential_main.o ./atoms_mod.o ./parini_mod.o 
+./potential_sec_main.o : ./potential_sec_main.F90 ./processors_mod.o ./potential_main.o ./atoms_mod.o ./parini_mod.o 
 ./saddle_1s.o : ./saddle_1s.F90 ./basic_utilities.o ./constants_mod.o ./processors_mod.o ./io_yaml_conf.o ./opt_mod.o ./saddle_mod.o ./potential_main.o ./atoms_mod.o ./parini_mod.o 
 ./potential_LAMMPS_interface.o : ./potential_LAMMPS_interface.F90 
 ./optimizer_sqnm_minhocao_module.o : ./optimizer_sqnm_minhocao_module.F90 
