@@ -49,7 +49,7 @@ module mod_atoms
         character(10), public:: units_length_io='atomic'
         !coordinates type only at time of reading from file and writing to file.
         character(10), public:: coordinates_type='cartesian'
-        character(50), public:: alloclist='all'
+        type(dictionary), pointer, public:: alloclist=>null()
         character(5), allocatable, public:: sat(:) !symbol of atoms
         real(8), allocatable:: rat(:,:) !atomic positions
         real(8), allocatable, public:: ratp(:,:) !public atomic positions
@@ -275,96 +275,89 @@ end subroutine swap_rat
 subroutine atom_allocate(atoms,nat,natim,nfp,ntrial)
     use mod_trial_energy, only: trial_energy_allocate
     use dynamic_memory
+    use dictionaries
     implicit none
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: nat, natim, nfp
     integer,optional,intent(in) :: ntrial
     !local variables
     integer:: iat !, ifp
-    integer:: ind, ind_all
-    !write(*,*) 'in atom_allocate: HERE'
+    logical:: all_of_them
     !if(atoms%natim>0 .and. trim(atoms%boundcond)=='free') then
     !    write(*,'(a)') 'WARNING: Do you really need atoms of periodic images with free BC'
     !endif
     if(present(ntrial)) then
     end if
     if(nat<1) stop 'ERROR: in atom_allocate: nat must be larger than zero'
-    ind_all=index(atoms%alloclist,'all')
+    if(.not. associated(atoms%alloclist)) then
+        call dict_init(atoms%alloclist)
+        call add(atoms%alloclist,'all')
+    endif
+    all_of_them=.false.
+    if('all' .in. atoms%alloclist) all_of_them=.true.
     !-----------------------------------------------------------------
     if(natim>0) then
         if(allocated(atoms%ratim)) stop 'ERROR: ratim is already allocated'
         !if(atoms%natim/=natim) stop 'ERROR: atoms%natim/=natim'
         atoms%ratim=f_malloc0([1.to.3,1.to.natim],id='atoms%ratim')
-        atoms%alloclist=atoms%alloclist//':ratim'
+        call add(atoms%alloclist,'ratim')
     endif
     if(nfp>0) then
         if(allocated(atoms%fp)) stop 'ERROR: fp is already allocated'
         atoms%fp=f_malloc0([1.to.nfp],id='atoms%fp')
-        atoms%alloclist=atoms%alloclist//':fp'
+        call add(atoms%alloclist,'fp')
     endif
     !-----------------------------------------------------------------
     !allocation of components based on alloclist
-    ind=index(atoms%alloclist,'sat')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('sat' .in. atoms%alloclist)) then
         if(allocated(atoms%sat)) stop 'ERROR: sat is already allocated'
         atoms%sat=f_malloc_str(5,[1.to.nat],id='atoms%sat')
         do iat=1,nat
             atoms%sat(iat)='     '
         enddo
     endif
-    ind=index(atoms%alloclist,'rat')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('rat' .in. atoms%alloclist)) then
         if(allocated(atoms%rat)) stop 'ERROR: rat is already allocated'
         atoms%rat=f_malloc0([1.to.3,1.to.nat],id='atoms%rat')
     endif
-    ind=index(atoms%alloclist,'ratp')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('ratp' .in. atoms%alloclist)) then
         if(allocated(atoms%ratp)) stop 'ERROR: ratp is already allocated'
         atoms%ratp=f_malloc0([1.to.3,1.to.nat],id='atoms%ratp')
     endif
-    ind=index(atoms%alloclist,'vat')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('vat' .in. atoms%alloclist)) then
         if(allocated(atoms%vat)) stop 'ERROR: vat is already allocated'
         atoms%vat=f_malloc0([1.to.3,1.to.nat],id='atoms%vat')
     endif
-    ind=index(atoms%alloclist,'amass')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('amass' .in. atoms%alloclist)) then
         if(allocated(atoms%amass)) stop 'ERROR: amass is already allocated'
         atoms%amass=f_malloc0([1.to.nat],id='atoms%amass')
     endif
-    ind=index(atoms%alloclist,'fat')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('fat' .in. atoms%alloclist)) then
         if(allocated(atoms%fat)) stop 'ERROR: fat is already allocated'
         atoms%fat=f_malloc0([1.to.3,1.to.nat],id='atoms%fat')
     endif
-    ind=index(atoms%alloclist,'bemoved')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('bemoved' .in. atoms%alloclist)) then
         if(allocated(atoms%bemoved)) stop 'ERROR: bemoved is already allocated'
         atoms%bemoved=f_malloc([1.to.3,1.to.nat],id='atoms%bemoved')
         atoms%bemoved=.true.
     endif
-    ind=index(atoms%alloclist,'qat')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('qat' .in. atoms%alloclist)) then
         if(allocated(atoms%qat)) stop 'ERROR: qat is already allocated'
         atoms%qat=f_malloc0([1.to.nat],id='atoms%qat')
     endif
-    ind=index(atoms%alloclist,'zat')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('zat' .in. atoms%alloclist)) then
         if(allocated(atoms%zat)) stop 'ERROR: zat is already allocated'
         atoms%zat=f_malloc0([1.to.nat],id='atoms%zat')
     endif
-    ind=index(atoms%alloclist,'rcov')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('rcov' .in. atoms%alloclist)) then
         if(allocated(atoms%rcov)) stop 'ERROR: rcov is already allocated'
         atoms%rcov=f_malloc0([1.to.nat],id='atoms%rcov')
     endif
-    ind=index(atoms%alloclist,'itypat')
-    if(ind_all>0 .or. ind>0) then
+    if(all_of_them .or. ('itypat' .in. atoms%alloclist)) then
         if(allocated(atoms%itypat)) stop 'ERROR: qat is already allocated'
         atoms%itypat=f_malloc0([1.to.nat],id='atoms%itypat')
     endif
-    ind=index(atoms%alloclist,'trial_ref_energy')
-    if((ind_all>0 .or. ind>0) .and. present(ntrial)) then
+    if((all_of_them .or. ('trial_energy' .in. atoms%alloclist)) .and. present(ntrial)) then
         call trial_energy_allocate(ntrial,atoms%trial_energy)
     endif
     atoms%nat=nat
@@ -378,19 +371,19 @@ subroutine atom_deallocate(atoms)
     implicit none
     type(typ_atoms), intent(inout):: atoms
     !local variables
-    integer:: ind_all, ind
-    ind_all=index(atoms%alloclist,'all')
+    logical:: all_of_them
+    all_of_them=.false.
+    if('all' .in. atoms%alloclist) all_of_them=.true.
+    !call dict_remove(dict
     !-----------------------------------------------------------------
-    ind=index(atoms%alloclist,'ratim')
-    if(ind>0) then
+    if('ratim' .in. atoms%alloclist) then
         if(.not. allocated(atoms%ratim)) then
             stop 'ERROR: ratim is not allocated'
         else
             call f_free(atoms%ratim)
         endif
     endif
-    ind=index(atoms%alloclist,'fp')
-    if(ind>0) then
+    if('fp' .in. atoms%alloclist) then
         if(.not. allocated(atoms%fp)) then
             stop 'ERROR: fp is not allocated'
         else
@@ -398,102 +391,92 @@ subroutine atom_deallocate(atoms)
         endif
     endif
     !-----------------------------------------------------------------
-    ind=index(atoms%alloclist,'sat')
-    if((ind_all>0 .and. allocated(atoms%sat)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%sat)) .or. ('sat' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%sat)) then
             stop 'ERROR: sat is not allocated'
         else
             call f_free_str(5,atoms%sat)
         endif
     endif
-    ind=index(atoms%alloclist,'rat')
-    if((ind_all>0 .and. allocated(atoms%rat)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%rat)) .or. ('rat' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%rat)) then
             stop 'ERROR: rat is not allocated'
         else
             call f_free(atoms%rat)
         endif
     endif
-    ind=index(atoms%alloclist,'ratp')
-    if((ind_all>0 .and. allocated(atoms%ratp)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%ratp)) .or. ('ratp' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%ratp)) then
             stop 'ERROR: ratp is not allocated'
         else
             call f_free(atoms%ratp)
         endif
     endif
-    ind=index(atoms%alloclist,'vat')
-    if((ind_all>0 .and. allocated(atoms%vat)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%vat)) .or. ('vat' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%vat)) then
             stop 'ERROR: vat is not allocated'
         else
             call f_free(atoms%vat)
         endif
     endif
-    ind=index(atoms%alloclist,'amass')
-    if((ind_all>0 .and. allocated(atoms%amass)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%amass)) .or. ('amass' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%amass)) then
             stop 'ERROR: amass is not allocated'
         else
             call f_free(atoms%amass)
         endif
     endif
-    ind=index(atoms%alloclist,'fat')
-    if((ind_all>0 .and. allocated(atoms%fat)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%fat)) .or. ('fat' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%fat)) then
             stop 'ERROR: fat is not allocated'
         else
             call f_free(atoms%fat)
         endif
     endif
-    ind=index(atoms%alloclist,'bemoved')
-    if((ind_all>0 .and. allocated(atoms%bemoved)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%bemoved)) .or. ('bemoved' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%bemoved)) then
             stop 'ERROR: bemoved is not allocated'
         else
             call f_free(atoms%bemoved)
         endif
     endif
-    ind=index(atoms%alloclist,'qat')
-    if((ind_all>0 .and. allocated(atoms%qat)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%qat)) .or. ('qat' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%qat)) then
             stop 'ERROR: qat is not allocated'
         else
             call f_free(atoms%qat)
         endif
     endif
-    ind=index(atoms%alloclist,'zat')
-    if((ind_all>0 .and. allocated(atoms%zat)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%zat)) .or. ('zat' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%zat)) then
             stop 'ERROR: zat is not allocated'
         else
             call f_free(atoms%zat)
         endif
     endif
-    ind=index(atoms%alloclist,'rcov')
-    if((ind_all>0 .and. allocated(atoms%rcov)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%rcov)) .or. ('rcov' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%rcov)) then
             stop 'ERROR: rcov is not allocated'
         else
             call f_free(atoms%rcov)
         endif
     endif
-    ind=index(atoms%alloclist,'itypat')
-    if((ind_all>0 .and. allocated(atoms%itypat)) .or. ind>0) then
+    if((all_of_them .and. allocated(atoms%itypat)) .or. ('itypat' .in. atoms%alloclist)) then
         if(.not. allocated(atoms%itypat)) then
             stop 'ERROR: itypat is not allocated'
         else
             call f_free(atoms%itypat)
         endif
     endif
-    ind=index(atoms%alloclist,'trial_energy')
-    if((ind_all>0 .and. associated(atoms%trial_energy)) .or. ind>0) then
+    if((all_of_them .and. associated(atoms%trial_energy)) .or. ('trial_energy' .in. atoms%alloclist)) then
         if(.not. associated(atoms%trial_energy)) then
             stop 'ERROR: atoms%trial_energy is not associated'
         else
             call trial_energy_deallocate(atoms%trial_energy)
         endif
     endif
+    call dict_free(atoms%alloclist)
+    nullify(atoms%alloclist)
 end subroutine atom_deallocate
 !*****************************************************************************************
 subroutine atom_allocate_old(atoms,nat,natim,nfp,sat,vat,amass,fat,bemoved,qat,zat,rcov,typat&
@@ -829,333 +812,288 @@ subroutine atom_copy(at_inp,at_out,str_message)
     type(typ_atoms), intent(inout):: at_out
     character(*):: str_message
     !local variables
-    integer:: iat, ishape(2), ifp, ind_all, ind
+    integer:: iat, ishape(2)
     character(100):: err_mess
     if(at_inp%nat<1) stop 'ERROR: at_inp%nat must be larger than zero'
-    ind_all=index(at_inp%alloclist,'all')
     at_out%nat=at_inp%nat
-    !if(ind_all>0) then
-        at_out%ndof=at_inp%ndof
-        at_out%boundcond=at_inp%boundcond
-        at_out%units=at_inp%units
-        at_out%coordinates_type=at_inp%coordinates_type
-        at_out%cellvec(1,1)=at_inp%cellvec(1,1)
-        at_out%cellvec(2,1)=at_inp%cellvec(2,1)
-        at_out%cellvec(3,1)=at_inp%cellvec(3,1)
-        at_out%cellvec(1,2)=at_inp%cellvec(1,2)
-        at_out%cellvec(2,2)=at_inp%cellvec(2,2)
-        at_out%cellvec(3,2)=at_inp%cellvec(3,2)
-        at_out%cellvec(1,3)=at_inp%cellvec(1,3)
-        at_out%cellvec(2,3)=at_inp%cellvec(2,3)
-        at_out%cellvec(3,3)=at_inp%cellvec(3,3)
-        at_out%epot=at_inp%epot
-        at_out%ekin=at_inp%ekin
-        at_out%etot=at_inp%etot
-        at_out%nfp=at_inp%nfp
-        at_out%tol=at_inp%tol
-        at_out%qtot=at_inp%qtot
-        at_out%units_length_io=at_inp%units_length_io
-        at_out%alloclist=at_inp%alloclist
-        at_out%dpm(1)=at_inp%dpm(1)
-        at_out%dpm(2)=at_inp%dpm(2)
-        at_out%dpm(3)=at_inp%dpm(3)
-        at_out%elecfield(1)=at_inp%elecfield(1)
-        at_out%elecfield(2)=at_inp%elecfield(2)
-        at_out%elecfield(3)=at_inp%elecfield(3)
-
-    !endif
+    at_out%ndof=at_inp%ndof
+    at_out%boundcond=at_inp%boundcond
+    at_out%units=at_inp%units
+    at_out%coordinates_type=at_inp%coordinates_type
+    at_out%cellvec(1,1)=at_inp%cellvec(1,1)
+    at_out%cellvec(2,1)=at_inp%cellvec(2,1)
+    at_out%cellvec(3,1)=at_inp%cellvec(3,1)
+    at_out%cellvec(1,2)=at_inp%cellvec(1,2)
+    at_out%cellvec(2,2)=at_inp%cellvec(2,2)
+    at_out%cellvec(3,2)=at_inp%cellvec(3,2)
+    at_out%cellvec(1,3)=at_inp%cellvec(1,3)
+    at_out%cellvec(2,3)=at_inp%cellvec(2,3)
+    at_out%cellvec(3,3)=at_inp%cellvec(3,3)
+    at_out%epot=at_inp%epot
+    at_out%ekin=at_inp%ekin
+    at_out%etot=at_inp%etot
+    at_out%nfp=at_inp%nfp
+    at_out%tol=at_inp%tol
+    at_out%qtot=at_inp%qtot
+    at_out%units_length_io=at_inp%units_length_io
+    call dict_copy(at_out%alloclist,at_inp%alloclist)
+    at_out%dpm(1)=at_inp%dpm(1)
+    at_out%dpm(2)=at_inp%dpm(2)
+    at_out%dpm(3)=at_inp%dpm(3)
+    at_out%elecfield(1)=at_inp%elecfield(1)
+    at_out%elecfield(2)=at_inp%elecfield(2)
+    at_out%elecfield(3)=at_inp%elecfield(3)
     !copying array at_inp%sat to at_out%sat
-    ind=index(at_inp%alloclist,'sat')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%sat)) then
-            if(allocated(at_out%sat)) then
-                ishape(1:1)=shape(at_out%sat)
-                if(at_inp%nat/=ishape(1)) then
-                    call f_free_str(5,at_out%sat)
-                endif
+    if(allocated(at_inp%sat)) then
+        if(allocated(at_out%sat)) then
+            ishape(1:1)=shape(at_out%sat)
+            if(at_inp%nat/=ishape(1)) then
+                call f_free_str(5,at_out%sat)
             endif
-            if(.not. allocated(at_out%sat)) then
-                at_out%sat=f_malloc_str(5,[1.to.at_out%nat],id='at_out%sat')
-            endif
-            do iat=1,at_inp%nat
-                at_out%sat(iat)=at_inp%sat(iat)
-            enddo
-        else
-            err_mess='ERROR: sat in at_inp%alloclist but at_inp%sat not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%sat)) then
+            at_out%sat=f_malloc_str(5,[1.to.at_out%nat],id='at_out%sat')
+        endif
+        do iat=1,at_inp%nat
+            at_out%sat(iat)=at_inp%sat(iat)
+        enddo
+    else
+        if(allocated(at_out%sat)) then
+            call f_free_str(5,at_out%sat)
         endif
     endif
     !copying array at_inp%rat to at_out%rat
-    ind=index(at_inp%alloclist,'rat')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%rat)) then
-            if(allocated(at_out%rat)) then
-                ishape(1:2)=shape(at_out%rat)
-                if(at_inp%nat/=ishape(2)) then
-                    call f_free(at_out%rat)
-                endif
+    if(allocated(at_inp%rat)) then
+        if(allocated(at_out%rat)) then
+            ishape(1:2)=shape(at_out%rat)
+            if(at_inp%nat/=ishape(2)) then
+                call f_free(at_out%rat)
             endif
-            if(.not. allocated(at_out%rat)) then
-                at_out%rat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%rat')
-            endif
-            do iat=1,at_inp%nat
-                at_out%rat(1,iat)=at_inp%rat(1,iat)
-                at_out%rat(2,iat)=at_inp%rat(2,iat)
-                at_out%rat(3,iat)=at_inp%rat(3,iat)
-            enddo
-        else
-            err_mess='ERROR: rat in at_inp%alloclist but at_inp%rat not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
         endif
-        if(allocated(at_inp%ratp)) then
-            if(allocated(at_out%ratp)) then
-                ishape(1:2)=shape(at_out%ratp)
-                if(at_inp%nat/=ishape(2)) then
-                    call f_free(at_out%ratp)
-                endif
+        if(.not. allocated(at_out%rat)) then
+            at_out%rat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%rat')
+        endif
+        do iat=1,at_inp%nat
+            at_out%rat(1,iat)=at_inp%rat(1,iat)
+            at_out%rat(2,iat)=at_inp%rat(2,iat)
+            at_out%rat(3,iat)=at_inp%rat(3,iat)
+        enddo
+    else
+        if(allocated(at_out%rat)) then
+            call f_free(at_out%rat)
+        endif
+    endif
+    !copying array at_inp%ratp to at_out%ratp
+    if(allocated(at_inp%ratp)) then
+        if(allocated(at_out%ratp)) then
+            ishape(1:2)=shape(at_out%ratp)
+            if(at_inp%nat/=ishape(2)) then
+                call f_free(at_out%ratp)
             endif
-            if(.not. allocated(at_out%ratp)) then
-                at_out%ratp=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%ratp')
-            endif
-            do iat=1,at_inp%nat
-                at_out%ratp(1,iat)=at_inp%ratp(1,iat)
-                at_out%ratp(2,iat)=at_inp%ratp(2,iat)
-                at_out%ratp(3,iat)=at_inp%ratp(3,iat)
-            enddo
-        else
-            err_mess='ERROR: ratp in at_inp%alloclist but at_inp%ratp not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%ratp)) then
+            at_out%ratp=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%ratp')
+        endif
+        do iat=1,at_inp%nat
+            at_out%ratp(1,iat)=at_inp%ratp(1,iat)
+            at_out%ratp(2,iat)=at_inp%ratp(2,iat)
+            at_out%ratp(3,iat)=at_inp%ratp(3,iat)
+        enddo
+    else
+        if(allocated(at_out%ratp)) then
+            call f_free(at_out%ratp)
         endif
     endif
     !copying array at_inp%ratim to at_out%ratim
-    ind=index(at_inp%alloclist,'ratim')
-    if(ind>0) then
-        if(allocated(at_inp%ratim)) then
-            if(allocated(at_out%ratim)) then
-                ishape(1:2)=shape(at_out%ratim)
-                if(at_inp%natim/=ishape(2)) then
-                    call f_free(at_out%ratim)
-                endif
+    if(allocated(at_inp%ratim)) then
+        if(allocated(at_out%ratim)) then
+            ishape(1:2)=shape(at_out%ratim)
+            if(at_inp%natim/=ishape(2)) then
+                call f_free(at_out%ratim)
             endif
-            if(.not. allocated(at_out%ratim)) then
-                at_out%ratim=f_malloc([1.to.3,1.to.at_out%natim],id='at_out%ratim')
-            endif
-            do iat=1,at_inp%natim
-                at_out%ratim(1,iat)=at_inp%ratim(1,iat)
-                at_out%ratim(2,iat)=at_inp%ratim(2,iat)
-                at_out%ratim(3,iat)=at_inp%ratim(3,iat)
-            enddo
-        else
-            err_mess='ERROR: ratim in at_inp%alloclist but at_inp%ratim not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%ratim)) then
+            at_out%ratim=f_malloc([1.to.3,1.to.at_out%natim],id='at_out%ratim')
+        endif
+        do iat=1,at_inp%natim
+            at_out%ratim(1,iat)=at_inp%ratim(1,iat)
+            at_out%ratim(2,iat)=at_inp%ratim(2,iat)
+            at_out%ratim(3,iat)=at_inp%ratim(3,iat)
+        enddo
+    else
+        if(allocated(at_out%ratim)) then
+            call f_free(at_out%ratim)
         endif
     endif
     !copying array at_inp%vat to at_out%vat
-    ind=index(at_inp%alloclist,'vat')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%vat)) then
-            if(allocated(at_out%vat)) then
-                ishape(1:2)=shape(at_out%vat)
-                if(at_inp%nat/=ishape(2)) then
-                    call f_free(at_out%vat)
-                endif
+    if(allocated(at_inp%vat)) then
+        if(allocated(at_out%vat)) then
+            ishape(1:2)=shape(at_out%vat)
+            if(at_inp%nat/=ishape(2)) then
+                call f_free(at_out%vat)
             endif
-            if(.not. allocated(at_out%vat)) then
-                at_out%vat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%vat')
-            endif
-            do iat=1,at_inp%nat
-                at_out%vat(1,iat)=at_inp%vat(1,iat)
-                at_out%vat(2,iat)=at_inp%vat(2,iat)
-                at_out%vat(3,iat)=at_inp%vat(3,iat)
-            enddo
-        else
-            err_mess='ERROR: vat in at_inp%alloclist but at_inp%vat not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%vat)) then
+            at_out%vat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%vat')
+        endif
+        do iat=1,at_inp%nat
+            at_out%vat(1,iat)=at_inp%vat(1,iat)
+            at_out%vat(2,iat)=at_inp%vat(2,iat)
+            at_out%vat(3,iat)=at_inp%vat(3,iat)
+        enddo
+    else
+        if(allocated(at_out%vat)) then
+            call f_free(at_out%vat)
         endif
     endif
     !copying array at_inp%amass to at_out%amass
-    ind=index(at_inp%alloclist,'amass')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%amass)) then
-            if(allocated(at_out%amass)) then
-                ishape(1:1)=shape(at_out%amass)
-                if(at_inp%nat/=ishape(1)) then
-                    call f_free(at_out%amass)
-                endif
+    if(allocated(at_inp%amass)) then
+        if(allocated(at_out%amass)) then
+            ishape(1:1)=shape(at_out%amass)
+            if(at_inp%nat/=ishape(1)) then
+                call f_free(at_out%amass)
             endif
-            if(.not. allocated(at_out%amass)) then
-                at_out%amass=f_malloc([1.to.at_out%nat],id='at_out%amass')
-            endif
-            do iat=1,at_inp%nat
-                at_out%amass(iat)=at_inp%amass(iat)
-            enddo
-        else
-            err_mess='ERROR: amass in at_inp%alloclist but at_inp%amass not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%amass)) then
+            at_out%amass=f_malloc([1.to.at_out%nat],id='at_out%amass')
+        endif
+        do iat=1,at_inp%nat
+            at_out%amass(iat)=at_inp%amass(iat)
+        enddo
+    else
+        if(allocated(at_out%amass)) then
+            call f_free(at_out%amass)
         endif
     endif
     !copying array at_inp%fat to at_out%fat
-    ind=index(at_inp%alloclist,'fat')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%fat)) then
-            if(allocated(at_out%fat)) then
-                ishape(1:2)=shape(at_out%fat)
-                if(at_inp%nat/=ishape(2)) then
-                    call f_free(at_out%fat)
-                endif
+    if(allocated(at_inp%fat)) then
+        if(allocated(at_out%fat)) then
+            ishape(1:2)=shape(at_out%fat)
+            if(at_inp%nat/=ishape(2)) then
+                call f_free(at_out%fat)
             endif
-            if(.not. allocated(at_out%fat)) then
-                at_out%fat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%fat')
-            endif
-            do iat=1,at_inp%nat
-                at_out%fat(1,iat)=at_inp%fat(1,iat)
-                at_out%fat(2,iat)=at_inp%fat(2,iat)
-                at_out%fat(3,iat)=at_inp%fat(3,iat)
-            enddo
-        else
-            err_mess='ERROR: fat in at_inp%alloclist but at_inp%fat not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%fat)) then
+            at_out%fat=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%fat')
+        endif
+        do iat=1,at_inp%nat
+            at_out%fat(1,iat)=at_inp%fat(1,iat)
+            at_out%fat(2,iat)=at_inp%fat(2,iat)
+            at_out%fat(3,iat)=at_inp%fat(3,iat)
+        enddo
+    else
+        if(allocated(at_out%fat)) then
+            call f_free(at_out%fat)
         endif
     endif
     !copying array at_inp%bemoved to at_out%bemoved
-    ind=index(at_inp%alloclist,'bemoved')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%bemoved)) then
-            if(allocated(at_out%bemoved)) then
-                ishape(1:2)=shape(at_out%bemoved)
-                if(at_inp%nat/=ishape(2)) then
-                    call f_free(at_out%bemoved)
-                endif
+    if(allocated(at_inp%bemoved)) then
+        if(allocated(at_out%bemoved)) then
+            ishape(1:2)=shape(at_out%bemoved)
+            if(at_inp%nat/=ishape(2)) then
+                call f_free(at_out%bemoved)
             endif
-            if(.not. allocated(at_out%bemoved)) then
-                at_out%bemoved=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%bemoved')
-            endif
-            do iat=1,at_inp%nat
-                at_out%bemoved(1,iat)=at_inp%bemoved(1,iat)
-                at_out%bemoved(2,iat)=at_inp%bemoved(2,iat)
-                at_out%bemoved(3,iat)=at_inp%bemoved(3,iat)
-            enddo
-        else
-            err_mess='ERROR: bemoved in at_inp%alloclist but at_inp%bemoved not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%bemoved)) then
+            at_out%bemoved=f_malloc([1.to.3,1.to.at_out%nat],id='at_out%bemoved')
+        endif
+        do iat=1,at_inp%nat
+            at_out%bemoved(1,iat)=at_inp%bemoved(1,iat)
+            at_out%bemoved(2,iat)=at_inp%bemoved(2,iat)
+            at_out%bemoved(3,iat)=at_inp%bemoved(3,iat)
+        enddo
+    else
+        if(allocated(at_out%bemoved)) then
+            call f_free(at_out%bemoved)
         endif
     endif
     !copying array at_inp%qat to at_out%qat
-    ind=index(at_inp%alloclist,'qat')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%qat)) then
-            if(allocated(at_out%qat)) then
-                ishape(1:1)=shape(at_out%qat)
-                if(at_inp%nat/=ishape(1)) then
-                    call f_free(at_out%qat)
-                endif
+    if(allocated(at_inp%qat)) then
+        if(allocated(at_out%qat)) then
+            ishape(1:1)=shape(at_out%qat)
+            if(at_inp%nat/=ishape(1)) then
+                call f_free(at_out%qat)
             endif
-            if(.not. allocated(at_out%qat)) then
-                at_out%qat=f_malloc([1.to.at_out%nat],id='at_out%qat')
-            endif
-            do iat=1,at_inp%nat
-                at_out%qat(iat)=at_inp%qat(iat)
-            enddo
-        else
-            err_mess='ERROR: qat in at_inp%alloclist but at_inp%qat not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%qat)) then
+            at_out%qat=f_malloc([1.to.at_out%nat],id='at_out%qat')
+        endif
+        do iat=1,at_inp%nat
+            at_out%qat(iat)=at_inp%qat(iat)
+        enddo
+    else
+        if(allocated(at_out%qat)) then
+            call f_free(at_out%qat)
         endif
     endif
     !copying array at_inp%zat to at_out%zat
-    ind=index(at_inp%alloclist,'zat')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%zat)) then
-            if(allocated(at_out%zat)) then
-                ishape(1:1)=shape(at_out%zat)
-                if(at_inp%nat/=ishape(1)) then
-                    call f_free(at_out%zat)
-                endif
+    if(allocated(at_inp%zat)) then
+        if(allocated(at_out%zat)) then
+            ishape(1:1)=shape(at_out%zat)
+            if(at_inp%nat/=ishape(1)) then
+                call f_free(at_out%zat)
             endif
-            if(.not. allocated(at_out%zat)) then
-                at_out%zat=f_malloc([1.to.at_out%nat],id='at_out%zat')
-            endif
-            do iat=1,at_inp%nat
-                at_out%zat(iat)=at_inp%zat(iat)
-            enddo
-        else
-            err_mess='ERROR: zat in at_inp%alloclist but at_inp%zat not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%zat)) then
+            at_out%zat=f_malloc([1.to.at_out%nat],id='at_out%zat')
+        endif
+        do iat=1,at_inp%nat
+            at_out%zat(iat)=at_inp%zat(iat)
+        enddo
+    else
+        if(allocated(at_out%zat)) then
+            call f_free(at_out%zat)
         endif
     endif
     !copying array at_inp%rcov to at_out%rcov
-    ind=index(at_inp%alloclist,'rcov')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%rcov)) then
-            if(allocated(at_out%rcov)) then
-                ishape(1:1)=shape(at_out%rcov)
-                if(at_inp%nat/=ishape(1)) then
-                    call f_free(at_out%rcov)
-                endif
+    if(allocated(at_inp%rcov)) then
+        if(allocated(at_out%rcov)) then
+            ishape(1:1)=shape(at_out%rcov)
+            if(at_inp%nat/=ishape(1)) then
+                call f_free(at_out%rcov)
             endif
-            if(.not. allocated(at_out%rcov)) then
-                at_out%rcov=f_malloc([1.to.at_out%nat],id='at_out%rcov')
-            endif
-            do iat=1,at_inp%nat
-                at_out%rcov(iat)=at_inp%rcov(iat)
-            enddo
-        else
-            err_mess='ERROR: rcov in at_inp%alloclist but at_inp%rcov not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%rcov)) then
+            at_out%rcov=f_malloc([1.to.at_out%nat],id='at_out%rcov')
+        endif
+        do iat=1,at_inp%nat
+            at_out%rcov(iat)=at_inp%rcov(iat)
+        enddo
+    else
+        if(allocated(at_out%rcov)) then
+            call f_free(at_out%rcov)
         endif
     endif
     !copying array at_inp%fp to at_out%fp
-    ind=index(at_inp%alloclist,'fp')
-    if(ind>0) then
-        if(allocated(at_inp%fp)) then
-            if(allocated(at_out%fp)) then
-                ishape(1:1)=shape(at_out%fp)
-                if(at_inp%nfp/=ishape(1)) then
-                    call f_free(at_out%fp)
-                endif
-            endif
-            if(.not. allocated(at_out%fp)) then
-                at_out%fp=f_malloc([1.to.at_out%nfp],id='at_out%fp')
-            endif
-            do iat=1,at_inp%nfp
-                at_out%fp(iat)=at_inp%fp(iat)
-            enddo
-        else
-            err_mess='ERROR: fp in at_inp%alloclist but at_inp%fp not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+    if(allocated(at_inp%fp)) then
+        if(.not. allocated(at_out%fp)) then
+            at_out%fp=f_malloc([1.to.at_out%nfp],id='at_out%fp')
+        endif
+        do iat=1,at_inp%nfp
+            at_out%fp(iat)=at_inp%fp(iat)
+        enddo
+    else
+        if(allocated(at_out%fp)) then
+            call f_free(at_out%fp)
         endif
     endif
     !copying array at_inp%itypat to at_out%itypat
-    ind=index(at_inp%alloclist,'itypat')
-    if(ind_all>0 .or. ind>0) then
-        if(allocated(at_inp%itypat)) then
-            if(allocated(at_out%itypat)) then
-                ishape(1:1)=shape(at_out%itypat)
-                if(at_inp%nat/=ishape(1)) then
-                    call f_free(at_out%itypat)
-                endif
+    if(allocated(at_inp%itypat)) then
+        if(allocated(at_out%itypat)) then
+            ishape(1:1)=shape(at_out%itypat)
+            if(at_inp%nat/=ishape(1)) then
+                call f_free(at_out%itypat)
             endif
-            if(.not. allocated(at_out%itypat)) then
-                at_out%itypat=f_malloc([1.to.at_out%nat],id='at_out%itypat')
-            endif
-            do iat=1,at_inp%nat
-                at_out%itypat(iat)=at_inp%itypat(iat)
-            enddo
-        else
-            err_mess='ERROR: itypat in at_inp%alloclist but at_inp%itypat not allocated:'
-            write(*,'(a,1x,a)') trim(err_mess),trim(str_message)
-            stop
+        endif
+        if(.not. allocated(at_out%itypat)) then
+            at_out%itypat=f_malloc([1.to.at_out%nat],id='at_out%itypat')
+        endif
+        do iat=1,at_inp%nat
+            at_out%itypat(iat)=at_inp%itypat(iat)
+        enddo
+    else
+        if(allocated(at_out%itypat)) then
+            call f_free(at_out%itypat)
         endif
     endif
 end subroutine atom_copy

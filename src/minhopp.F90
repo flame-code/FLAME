@@ -220,7 +220,6 @@ subroutine init_minimahopping(parini,atoms_curr,atoms_hopp,atoms_allproc,atoms_l
     call setpot_init(parini,atoms_curr,paropt,paropt_prec)
     !-----------------------------------------------------------------
     !atoms_hopp%ndof=atoms_curr%ndof
-    !call atom_allocate(atoms_hopp,atoms_curr%nat,0,0,sat=.true.,vat=.true.,amass=.true.,fat=.true.,bemoved=.true.)
     call atom_copy(atoms_curr,atoms_hopp,'atoms_curr->atoms_hopp')
     !atoms_hopp%sat(1:atoms_hopp%nat)=atoms_curr%sat(1:atoms_hopp%nat)
     !atoms_hopp%bemoved(1:3,1:atoms_hopp%nat)=atoms_curr%bemoved(1:3,1:atoms_hopp%nat)
