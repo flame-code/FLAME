@@ -35,7 +35,7 @@ subroutine genrandom(parini,genconf)
     write(*,'(a,2f6.2)') 'fbmin,fbmax= ',parini%fbmin_genconf,parini%fbmax_genconf
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     write(*,'(a,i6)') 'nat ',atoms%nat
-    call atom_allocate_old(atoms_p,atoms%nat+genconf%nat_add,0,0,sat=.true.,bemoved=.true.,rcov=.true.)
+    call atom_allocate_old(atoms_p,atoms%nat+genconf%nat_add,0,0)
     allocate(ratall(3,atoms_p%nat,-1:1,-1:1,-1:1))
     if (trim(atoms%boundcond)=='free') then
         nx=0
@@ -220,8 +220,8 @@ subroutine genrandom(parini,genconf)
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     call acf_write(file_info,atoms=atoms_p,strkey='posout')
-    call atom_deallocate_old(atoms,sat=.true.,rat=.true.,bemoved=.true.)
-    call atom_deallocate_old(atoms_p,sat=.true.,rat=.true.,bemoved=.true.)
+    call atom_deallocate_old(atoms)
+    call atom_deallocate_old(atoms_p)
     deallocate(ratall)
     !call deallocateatomsarrays
 end subroutine genrandom

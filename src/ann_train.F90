@@ -145,7 +145,7 @@ subroutine ann_train(parini)
             call write_ann_all(parini,ann_arr,-1)
         endif
     endif
-    call fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    call fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_smplx,symfunc_train,symfunc_valid)
 
     call f_release_routine()
 end subroutine ann_train
@@ -259,7 +259,7 @@ end subroutine centt_simplex
 subroutine cal_rmse_force_centt(ndim,vertex,rmse_force_centt)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
-    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_atoms, only: typ_atoms, atom_copy_old, atom_deallocate_old
     use mod_symfunc, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
@@ -306,6 +306,7 @@ subroutine cal_rmse_force_centt(ndim,vertex,rmse_force_centt)
         enddo
         nat_tot=nat_tot+atoms%nat
     enddo
+    call atom_deallocate_old(atoms)
     rmse_force_centt=sqrt(rmse/real(3*nat_tot,8))
     write(*,*) 'rmse_force_centt ',rmse_force_centt
 end subroutine cal_rmse_force_centt
@@ -313,7 +314,7 @@ end subroutine cal_rmse_force_centt
 subroutine cal_rmse_energy_centt(ndim,vertex,rmse_energy_centt)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
-    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_atoms, only: typ_atoms, atom_copy_old, atom_deallocate_old
     use mod_symfunc, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
@@ -363,6 +364,7 @@ subroutine cal_rmse_energy_centt(ndim,vertex,rmse_energy_centt)
             rmse=rmse+(atoms%epot-atoms_smplx%atoms(iconf)%epot)**2
         enddo
     enddo
+    call atom_deallocate_old(atoms)
     rmse_energy_centt=sqrt(rmse/real(atoms_smplx%nconf,8))
     write(*,*) 'rmse_energy_centt ',rmse_energy_centt
 end subroutine cal_rmse_energy_centt
@@ -427,12 +429,12 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     endif
 end subroutine init_ann_train
 !*****************************************************************************************
-subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_smplx,symfunc_train,symfunc_valid)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, fini_opt_ann
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_deallocate_old
     use mod_processors, only: iproc
     use dynamic_memory
     use yaml_output
@@ -440,7 +442,7 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_opt_ann), intent(inout):: opt_ann
-    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
+    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid, atoms_smplx
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
     !local variables
     integer:: iconf
@@ -457,10 +459,16 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc
 
     do iconf=1,atoms_train%nconf
         call f_free(symfunc_train%symfunc(iconf)%y)
+        call atom_deallocate_old(atoms_train%atoms(iconf))
     enddo
 
     do iconf=1,atoms_valid%nconf
         call f_free(symfunc_valid%symfunc(iconf)%y)
+        call atom_deallocate_old(atoms_valid%atoms(iconf))
+    enddo
+
+    do iconf=1,atoms_smplx%nconf
+        call atom_deallocate_old(atoms_smplx%atoms(iconf))
     enddo
 
     deallocate(atoms_train%conf_inc)
@@ -1224,7 +1232,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate_old
     use mod_opt_ann, only: typ_opt_ann
     use mod_processors, only: iproc
     use futile
@@ -1456,6 +1464,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         enddo
         ttn=ttn+ann_arr%fchi_norm
         tta=tta+ann_arr%fchi_angle
+        call atom_deallocate_old(atoms)
         !write(44,'(2i7,4es14.5)') iter,iconf,ann_arr%fchi_norm,ann_arr%fchi_angle,ttn/nconf_force,tta/nconf_force
         !endif
     enddo configuration

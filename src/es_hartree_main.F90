@@ -888,6 +888,6 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     tt2=tt2/sqrt(2*pi)
     epotreal = epotreal+tt2
     linked_lists%rcut=rr
-
+    call linkedlists_final(linked_lists)
 end subroutine real_part
 !*****************************************************************************************

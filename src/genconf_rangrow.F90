@@ -22,7 +22,7 @@ subroutine rangrow(parini,genconf)
     call acf_read(parini,'posinp.acf',1,atoms=atoms)
     write(*,'(a,i6)') 'nat ',atoms%nat
     if(atoms%nat<1) stop 'ERROR: atoms%nat<1'
-    call atom_allocate_old(atoms_p,atoms%nat+genconf%nat_add,0,0,sat=.true.,bemoved=.true.,rcov=.true.)
+    call atom_allocate_old(atoms_p,atoms%nat+genconf%nat_add,0,0)
     call set_rat_atoms(atoms_p,atoms,setall=.true.)
     atoms_p%sat(1:atoms%nat)=atoms%sat(1:atoms%nat)
     atoms_p%bemoved(1:3,1:atoms%nat)=atoms%bemoved(1:3,1:atoms%nat)
@@ -111,8 +111,8 @@ subroutine rangrow(parini,genconf)
     file_info%filename_positions='posout.acf'
     file_info%file_position='new'
     call acf_write(file_info,atoms=atoms_p,strkey='posout')
-    call atom_deallocate_old(atoms,sat=.true.,rat=.true.,bemoved=.true.)
-    call atom_deallocate_old(atoms_p,sat=.true.,rat=.true.,bemoved=.true.)
+    call atom_deallocate_old(atoms)
+    call atom_deallocate_old(atoms_p)
     !call deallocateatomsarrays
 end subroutine rangrow
 !*****************************************************************************************

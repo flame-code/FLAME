@@ -587,7 +587,9 @@ subroutine read_poscur_alborz(parini,atoms_curr,atoms_allproc)
             !!atoms_allproc%ratall(1:3,1:atoms_allproc%atoms%nat,jproc+1)= &
             !!    atoms_allproc%ratall(1:3,1:atoms_allproc%atoms%nat,mod(jproc,nconf)+1)
             !!atoms_allproc%epotall(jproc+1)=atoms_allproc%epotall(mod(jproc,nconf)+1)
+            if((mod(jproc,nconf)+1)/=(jproc+1)) then
             call atom_copy(atoms_allproc%atoms(mod(jproc,nconf)+1),atoms_allproc%atoms(jproc+1),'atoms_allproc%atoms->atoms_allproc%atoms')
+            endif
         enddo
         !call set_ndof(atoms_allproc%atoms)
         !write(*,'(a,i6)') 'ndof= ',atoms_allproc%atoms%ndof
@@ -1390,7 +1392,6 @@ subroutine soften(parini,nstep,atoms0,count_soften,count_soften_tot)
     call yaml_sequence_open('SOFTEN')
     do iter=1,nstep
         call update_ratp(atoms0)
-        write(*,*) atoms0%nat,atoms%nat
         do iat=1,atoms0%nat
             atoms%ratp(1,iat)=atoms0%ratp(1,iat)+atoms0%vat(1,iat)
             atoms%ratp(2,iat)=atoms0%ratp(2,iat)+atoms0%vat(2,iat)

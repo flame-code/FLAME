@@ -3,7 +3,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
-    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp
+    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp, atom_deallocate_old
     use mod_callback_ann, only: atoms_train=>atoms_train_t
     use mod_callback_ann, only: symfunc_train=>symfunc_train_t
     implicit none
@@ -143,6 +143,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
         fcn_ann=atoms%epot
         fcn_ref=atoms_train%atoms(iconf)%epot
     endif
+    call atom_deallocate_old(atoms)
 end subroutine get_fcn_ann
 !*****************************************************************************************
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)

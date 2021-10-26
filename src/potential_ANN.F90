@@ -79,19 +79,19 @@ subroutine cal_potential_ann(parini,atoms)
     else
         stop 'ERROR: why is cal_potential_ann called?'
     endif
-    if(trim(atoms%boundcond)=='free') then
-        atoms%natim=atoms%nat
-        if(.not. allocated(atoms%ratim)) then
-            allocate(atoms%ratim(3,atoms%natim),source=0.d0)
-        endif
-        call get_rat(atoms,atoms%ratim)
+    !if(trim(atoms%boundcond)=='free') then
+    !    atoms%natim=atoms%nat
+    !    if(.not. allocated(atoms%ratim)) then
+    !        allocate(atoms%ratim(3,atoms%natim),source=0.d0)
+    !    endif
+    !    call get_rat(atoms,atoms%ratim)
     !elseif(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab' .or. &
     !       trim(atoms%boundcond)=='wire') then
     !    call atom_build_periodic_images(atoms,8.d0)
     !else
     !    write(*,'(2a)') 'ERROR: unknown boundary conditions, boundcond=',trim(atoms%boundcond)
     !    stop
-    endif
+    !endif
     !atoms%epot=0.d0
     !atoms%fat(1:3,1:atoms%nat)=0.d0
     !call cal_ann_cent1(atoms,symfunc,ann_arr,opt_ann)
@@ -125,9 +125,9 @@ subroutine cal_potential_ann(parini,atoms)
     if(parini%add_repulsive) then
         call add_repulsive_potential(parini,atoms)
     endif
-    if(allocated(atoms%ratim)) then
-        call atom_deallocate_old(atoms,ratim=.true.)
-    endif
+    !if(allocated(atoms%ratim)) then
+    !    call atom_deallocate_old(atoms,ratim=.true.)
+    !endif
     atoms%natim=0
 end subroutine cal_potential_ann
 !*****************************************************************************************

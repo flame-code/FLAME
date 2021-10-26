@@ -119,7 +119,7 @@ end subroutine solve_poisson_cube_p3d
 subroutine solve_poisson_cube_bigdft(parini)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms, get_rat, update_ratp!, get_rat_iat
+    use mod_atoms, only: typ_atoms, get_rat, update_ratp, atom_deallocate_old
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -393,5 +393,6 @@ subroutine solve_poisson_cube_bigdft(parini)
     !call cube_write('total_pot.cube',atoms,poisson,'pot')
     call fini_hartree(parini,atoms,poisson)
     call fini_hartree(parini,atoms,poisson_ion)
+    call atom_deallocate_old(atoms)
 end subroutine solve_poisson_cube_bigdft
 !*****************************************************************************************

@@ -1502,6 +1502,7 @@ call yaml_sequence_close()
 3001 continue
 !Close socket on slave side
 if(trim(parini%potential_potential)=="msock") call socket_stop()
+if(trim(parini%potential_potential)=="ann") call call_to_alborz_final()
 end subroutine task_minhocao
 !contains
 
