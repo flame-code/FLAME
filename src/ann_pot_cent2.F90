@@ -183,10 +183,8 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
     real(8), intent(inout):: a(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    integer:: iat, igx, igy, igz, itype
-    integer:: linearGridNumber
+    integer:: iat, itype
     real(8):: hgp
-    real(8):: dx, dy, dz, dr
     real(8):: time1, time2
     real(8):: max_cellVec
     real(8),allocatable:: gausswidth(:)
@@ -283,21 +281,9 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,a,poisson)
         if(parini%iverbose>=2) call cpu_time(time1)
         poisson%pot_ion(:,:,:)=0.d0
         do iat=1,atoms%nat
-            do igx=1,poisson%ngpx
-                do igy=1,poisson%ngpy
-                    do igz=1,poisson%ngpz
-                        dx=poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-                        dy=poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-                        dz=poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-                        dr=sqrt(dx**2+dy**2+dz**2)
-                        linearGridNumber=floor(dr/hgp)
-                        poisson%pot_ion(igx,igy,igz)=poisson%pot_ion(igx,igy,igz)+atoms%zat(iat)*((dr/hgp-linearGridNumber)*&
-                            (poisson%linear_pot_n(linearGridNumber+1,atoms%itypat(iat))&
-                            -poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))&
-                            +poisson%linear_pot_n(linearGridNumber,atoms%itypat(iat)))
-                    enddo
-                enddo
-            enddo
+            call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_n(0,atoms%itypat(iat)), &
+                atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+                poisson%hgrid,.false.,atoms%zat(iat),poisson%pot_ion)
         enddo
         if(parini%iverbose>=2) call cpu_time(time2)
         if(parini%iverbose>=2) write(*,*) 'pot_ion_time: ',time2-time1
@@ -323,8 +309,9 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
     integer:: nbgx, nbgy, nbgz, linearGridNumber
     integer:: agpx, agpy, agpz 
     real(8):: dx, dy, dz, dr, hgp, tt
-    real(8):: rho_e, rho_e_p1, pot_e, pot_e_p1
+    real(8):: rho_e, rho_e_p1, one
     real(8), allocatable:: grid_rho_new(:,:,:,:), grid_pot_new(:,:,:)
+    one=1.d0
     hgp=1.d-3
     nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+3
     nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+3
@@ -349,22 +336,11 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
         enddo
         enddo
         enddo
-    enddo
+    enddo !end of loop over iat
     do iat=1,atoms%nat
-        do igz=1,poisson%ngpz
-        do igy=1,poisson%ngpy
-        do igx=1,poisson%ngpx
-            dx=poisson%xyz111(1)+(igx-1)*poisson%hgrid(1,1)-atoms%ratp(1,iat)
-            dy=poisson%xyz111(2)+(igy-1)*poisson%hgrid(2,2)-atoms%ratp(2,iat)
-            dz=poisson%xyz111(3)+(igz-1)*poisson%hgrid(3,3)-atoms%ratp(3,iat)
-            dr=sqrt(dx**2+dy**2+dz**2)
-            linearGridNumber=floor(dr/hgp)
-            pot_e_p1=poisson%linear_pot_e(linearGridNumber+1,atoms%itypat(iat))
-            pot_e=poisson%linear_pot_e(linearGridNumber,atoms%itypat(iat))
-            grid_pot_new(igx,igy,igz)=(dr/hgp-linearGridNumber)*(pot_e_p1-pot_e)+pot_e
-        enddo
-        enddo
-        enddo
+        call radial_to_3d(poisson%ngp,hgp,poisson%linear_pot_e(0,atoms%itypat(iat)), &
+            atoms%ratp(1,iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,.true.,one,grid_pot_new)
         do jat=1,iat
             agpx=int(atoms%ratp(1,jat)/poisson%hgrid(1,1))+nbgx+0
             agpy=int(atoms%ratp(2,jat)/poisson%hgrid(2,2))+nbgy+0
@@ -374,11 +350,9 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
             do igy=agpy-nbgy,agpy+nbgy
             do igx=agpx-nbgx,agpx+nbgx
                 tt=tt+grid_rho_new(igx-agpx,igy-agpy,igz-agpz,jat)*grid_pot_new(igx,igy,igz)
-                !write(1000+jat*80+iat,'(3i4,2f20.15)') igx,igy,igz,grid_rho_new(igx-agpx,igy-agpy,igz-agpz,jat),grid_pot_new(igx,igy,igz)
             enddo
             enddo
             enddo
-            !close(1000+jat*80+iat)
             a(iat,jat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
             a(jat,iat)=a(iat,jat)
         enddo
