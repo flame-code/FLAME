@@ -107,7 +107,6 @@ module mod_ann
         real(8):: rcut=-1.d0
         real(8):: ener_ref
         real(8):: epot_es
-        real(8):: epot_trial
         real(8):: fchi_angle
         real(8):: fchi_norm
         real(8):: dpm_err 
