@@ -99,12 +99,6 @@ subroutine cal_potential_ann(parini,atoms)
         write(*,*) 'ERROR: ann_arr%event different from potential'
         stop
     endif
-    if(trim(ann_arr%approach)=='cent2') then
-            if (allocated(ann_arr%a)) deallocate(ann_arr%a)
-            allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-            ann_arr%amat_initiated=.false.
-            ann_arr%a=0.d0
-    endif
     call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
 !    do iat=1,atoms%nat
 !        call symmetry_functions(ann_arr%ann(i),iat,atoms,.true.)

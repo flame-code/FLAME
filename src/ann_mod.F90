@@ -77,17 +77,7 @@ module mod_ann
         procedure, public, pass(self):: ann_allocate
         
     end type typ_ann
-    type, public:: typ_ann_amat
-        real(8), allocatable :: amat(:)
-    end type typ_ann_amat
     
-    type, public:: typ_ann_chiQPar
-        real(8), allocatable :: chiQPar(:,:)
-    end type typ_ann_chiQPar
-    type, public:: typ_ann_EPar
-        real(8), allocatable :: EPar(:)
-    end type typ_ann_EPar
-
     type:: typ_ann_arr
         logical:: exists_yaml_file = .false.
         integer:: iunit
@@ -96,9 +86,6 @@ module mod_ann
         integer:: nweight_max=-1
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
-        logical:: amat_initiated=.false.
-        logical:: chiQPar_initiated=.false.
-        logical:: EPar_initiated=.false.
         logical:: linear_rho_pot_initiated=.false. 
         logical:: trial_energy_required=.false.
         character(30):: event='unknown'
@@ -133,8 +120,6 @@ module mod_ann
         real(8), allocatable:: linear_pot_e(:,:)
         real(8), allocatable:: linear_pot_n(:,:)
         real(8), allocatable:: a(:)
-        real(8), allocatable:: Xq(:,:)
-        real(8), allocatable:: EP(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
@@ -147,9 +132,6 @@ module mod_ann
         integer, allocatable:: ipiv(:)
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
-        type(typ_ann_amat), allocatable:: ann_amat_train(:), ann_amat_valid(:)
-        type(typ_ann_chiQPar), allocatable:: ann_chiQPar_train(:), ann_chiQPar_valid(:)
-        type(typ_ann_EPar), allocatable:: ann_EPar_train(:), ann_EPar_valid(:)
         contains
         procedure, public, pass(self):: init_ann_arr
         procedure, public, pass(self):: fini_ann_arr
