@@ -3,6 +3,7 @@ module mod_ann
     use dictionaries
     use mod_linked_lists, only: typ_linked_lists
     use mod_electrostatics, only: typ_poisson
+    use mod_radpots_cent2, only: typ_radpots_cent2
     implicit none
     private
     public:: ann_arr_deallocate
@@ -115,10 +116,6 @@ module mod_ann
         !real(8), allocatable:: y0dr(:,:,:)
         integer, allocatable:: loc(:)
         integer, allocatable, public:: num(:)
-        real(8), allocatable:: linear_rho_e(:,:)
-        real(8), allocatable:: linear_rho_n(:,:)
-        real(8), allocatable:: linear_pot_e(:,:)
-        real(8), allocatable:: linear_pot_n(:,:)
         real(8), allocatable:: a(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
@@ -132,6 +129,7 @@ module mod_ann
         integer, allocatable:: ipiv(:)
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
+        type(typ_radpots_cent2):: radpots_cent2
         contains
         procedure, public, pass(self):: init_ann_arr
         procedure, public, pass(self):: fini_ann_arr
@@ -201,6 +199,7 @@ subroutine fini_ann_arr(self)
     call ann_arr_deallocate(self)
     call f_free(self%num)
     call f_free(self%loc)
+    call self%radpots_cent2%fini_radpots_cent2()
 end subroutine fini_ann_arr
 !*****************************************************************************************
 subroutine ann_allocate(self,nnmax,nl)

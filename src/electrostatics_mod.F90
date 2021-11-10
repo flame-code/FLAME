@@ -17,11 +17,6 @@ module mod_electrostatics
         real(8):: hy !grid spacing in y direction.
         real(8):: hz !grid spacing in z direction.
         real(8):: hgrid(3,3) !grid spacing in all directions.
-        logical:: linear_allocated=.false.
-        real(8), allocatable:: linear_rho_e(:,:) ! one dimensinal electronic charge density used in cent2
-        real(8), allocatable:: linear_pot_e(:,:) ! one dimensinal electronic potential used in cent2
-        real(8), allocatable:: linear_rho_n(:,:) ! one dimensinal ionic charge density used in cent2
-        real(8), allocatable:: linear_pot_n(:,:) ! one dimensinal ionic potential used in cent2
         real(8), allocatable:: rho(:,:,:) !charge density array.
         real(8), allocatable:: pot(:,:,:) !potential array.
         real(8), allocatable:: pot_ion(:,:,:) !ionic potential array for cent2
