@@ -103,6 +103,9 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         ann%zion           =  subdict_ann//"zion" 
         ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
         ann%spring_const   =  subdict_ann//"spring_const"
+        if(parini%prefit_ann) then
+            ann%qtarget   =  subdict_ann//"qtarget"
+        endif
     endif
     !if(trim(parini%approach_ann)=='tb') then
     !    ann%ener_ref       =  subdict_ann//"ener_ref" 
@@ -363,6 +366,9 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
         call set(subdict_ann//"zion",ann%zion)
         call set(subdict_ann//"gausswidth_ion",ann%gausswidth_ion)
         call set(subdict_ann//"spring_const",ann%spring_const)
+        if(parini%prefit_ann) then
+            call set(subdict_ann//"qtarget",ann%qtarget)
+        endif
     endif
     !if(trim(parini%approach_ann)=='tb') then
     !    !ann%ener_ref       =  subdict_ann//"ener_ref" 

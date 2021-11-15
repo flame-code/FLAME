@@ -12,7 +12,7 @@ contains
 !*****************************************************************************************
 subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
     use mod_electrostatics, only: typ_poisson
@@ -33,6 +33,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     real(8):: time1, time2, time3, time4, time5, time6, time7, timet1, timet2
     real(8):: tt1, hinv(3,3), vol
     call f_routine(id='cal_ann_cent2')
+    call update_ratp(atoms)
     if(.not. allocated(ann_arr%ipiv))allocate(ann_arr%ipiv(1:atoms%nat+1))
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -51,7 +52,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
         ann_arr%chi_d=0.d0
     endif
     if(parini%iverbose>=2) call cpu_time(time1)
-    call init_electrostatic_cent2(parini,atoms,ann_arr,ann_arr%a,poisson)
+    call init_electrostatic_cent2(parini,atoms,ann_arr,poisson)
     if(parini%iverbose>=2) call cpu_time(time2)
     if(parini%iverbose>=2) write(*,*) 'init_time: ',time2-time1
     if(ann_arr%compute_symfunc) then
@@ -173,16 +174,15 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     call f_release_routine()
 end subroutine cal_ann_cent2
 !*****************************************************************************************
-subroutine init_electrostatic_cent2(parini,atoms,ann_arr,amat,poisson)
+subroutine init_electrostatic_cent2(parini,atoms,ann_arr,poisson)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, update_ratp, set_typat
+    use mod_atoms, only: typ_atoms, set_typat
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_ann_arr), intent(inout):: ann_arr
-    real(8), intent(inout):: amat(atoms%nat+1,atoms%nat+1)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iat, itype
@@ -233,12 +233,11 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,amat,poisson)
         endif
         if(parini%iverbose>=2) call cpu_time(time2)
         if(parini%iverbose>=2) write(*,*) 'get_scf_pot_time: ',time2-time1
-        call update_ratp(atoms)
         if(parini%iverbose>=2) call cpu_time(time1)
-        call get_amat_cent2(ann_arr,atoms,poisson,amat)
+        call get_amat_cent2(ann_arr,atoms,poisson,ann_arr%a)
         if(parini%iverbose>=2) call cpu_time(time2)
         if(parini%iverbose>=2) write(*,*) 'get_amt_time: ',time2-time1
-        call get_eigenval(atoms,amat)
+        call get_eigenval(atoms,ann_arr%a)
         allocate(poisson%pot_ion(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         if(parini%iverbose>=2) call cpu_time(time1)
         poisson%pot_ion(:,:,:)=0.d0
@@ -255,16 +254,16 @@ subroutine init_electrostatic_cent2(parini,atoms,ann_arr,amat,poisson)
     deallocate(gausswidth)
 end subroutine init_electrostatic_cent2
 !*****************************************************************************************
-subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
-    use mod_atoms, only: typ_atoms, update_ratp
+subroutine get_amat_cent2(ann_arr,atoms,poisson,amat)
+    use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use mod_ann, only: typ_ann_arr
     !use mod_radpots_cent2, only: radial_to_3d
     implicit none
-    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-    real(8), intent(out):: a(1:atoms%nat+1,1:atoms%nat+1)
+    type(typ_poisson), intent(in):: poisson
+    real(8), intent(out):: amat(1:atoms%nat+1,1:atoms%nat+1)
     !local variables
     integer:: iat, jat, ix, iy, iz
     integer:: nbgx, nbgy, nbgz, linearGridNumber
@@ -312,14 +311,14 @@ subroutine get_amat_cent2(ann_arr,atoms,poisson,a)
             enddo
             enddo
             enddo
-            a(iat,jat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-            a(jat,iat)=a(iat,jat)
+            amat(iat,jat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+            amat(jat,iat)=amat(iat,jat)
         enddo
-        a(iat,iat)=a(iat,iat)+ann_arr%ann(atoms%itypat(iat))%hardness
-        a(iat,atoms%nat+1)=1.d0
-        a(atoms%nat+1,iat)=1.d0
+        amat(iat,iat)=amat(iat,iat)+ann_arr%ann(atoms%itypat(iat))%hardness
+        amat(iat,atoms%nat+1)=1.d0
+        amat(atoms%nat+1,iat)=1.d0
     enddo !end of loop over iat
-    a(atoms%nat+1,atoms%nat+1)=0.d0
+    amat(atoms%nat+1,atoms%nat+1)=0.d0
     deallocate(rho_all)
     deallocate(pot)
 end subroutine get_amat_cent2
@@ -430,7 +429,7 @@ end subroutine cal_cent2_energy
 !*****************************************************************************************
 subroutine cal_electrostatic_ann_cent2(parini,atoms,ann_arr,poisson)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, update_ratp
+    use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
@@ -619,8 +618,6 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
         call ann_arr%radpots_cent2%pot_1dto3d('linear_pot_e',atoms%ratp(1,iat),atoms%itypat(iat),poisson,.true.,one,poisson%pot)
         do itrial=1,atoms%trial_energy%ntrial
             xyz(1:3)=atoms%ratp(1:3,atoms%trial_energy%iat_list(itrial))+atoms%trial_energy%disp(1:3,itrial)
-            !call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,one,one, &
-            !    poisson%rgcut,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,trial_rho)
             call ann_arr%radpots_cent2%energy_1dto3d('linear_rho_t',xyz, &
                 0,poisson,one,poisson%pot,tt)
             EP(iat,itrial)=tt
@@ -682,16 +679,16 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     enddo
     do itypat=1,parini%ntypat
         if(trim(parini%stypat(itypat))=='Mg') then
-            qtarget_Mg=-ann_arr%ann(itypat)%zion+ann_arr%ann(1)%spring_const
+            qtarget_Mg=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
             write(*,'(a,f8.3)') 'QTARGET_Mg ',qtarget_Mg
         endif
         if(trim(parini%stypat(itypat))=='O') then
-            qtarget_O=-ann_arr%ann(itypat)%zion-ann_arr%ann(1)%spring_const
+            qtarget_O=-ann_arr%ann(itypat)%zion-ann_arr%ann(itypat)%qtarget
             write(*,'(a,f8.3)') 'QTARGET_O  ',qtarget_O
         endif
     enddo
-    !qtarget_Mg=-2.d0+ann_arr%ann(1)%spring_const
-    !qtarget_O =-4.d0-ann_arr%ann(1)%spring_const
+    !qtarget_Mg=-2.d0+ann_arr%ann(1)%qtarget
+    !qtarget_O =-4.d0-ann_arr%ann(1)%qtarget
     do iat=1,atoms%nat
         if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
         if(trim(atoms%sat(iat))=='O' ) hh=hh_O

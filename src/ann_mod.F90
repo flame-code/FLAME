@@ -39,6 +39,7 @@ module mod_ann
         real(8):: chi0
         real(8):: hardness
         real(8):: spring_const
+        real(8):: qtarget
         real(8):: zion
         real(8):: qinit
         real(8):: rionic
