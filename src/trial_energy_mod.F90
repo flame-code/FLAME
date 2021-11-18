@@ -8,6 +8,7 @@ module mod_trial_energy
     type, public:: typ_trial_energy
         private
         integer, public:: ntrial=0
+        real(8), public:: ehartree_scn_excl
         real(8), allocatable, public:: energy(:)
         real(8), allocatable, public:: disp(:,:)
         integer, allocatable, public:: iat_list(:)

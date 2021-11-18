@@ -50,7 +50,7 @@ subroutine ann_train(parini)
     !-------------------------------------------------------
     !Reading configurations and their energies and forces
     if(trim(parini%approach_ann)=='cent2' .and. trim(parini%optimizer_ann)/='rivals_fitchi') then
-        ann_arr%trial_energy_required=.true.
+        ann_arr%trial_energy_required=.false.
     endif
     inquire(file="list_posinp_train.yaml",exist=file_exists)
     if(file_exists) then

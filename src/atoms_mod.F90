@@ -1,6 +1,5 @@
 !*****************************************************************************************
 module mod_atoms
-    use mod_trial_energy, only: typ_trial_energy
     use dictionaries
     implicit none
     private
@@ -63,7 +62,6 @@ module mod_atoms
         real(8), allocatable, public:: rcov(:) !covalent radii
         real(8), allocatable, public:: fp(:) !fingerprint
         integer, allocatable, public:: itypat(:) !The type of each atom is set in this array
-        type(typ_trial_energy), pointer, public:: trial_energy=>null()
         !contains
         !procedure:: atoms_assign
         !generic:: assignment(=) => atoms_assign
@@ -273,7 +271,6 @@ subroutine swap_rat(atoms,iat,jat)
 end subroutine swap_rat
 !*****************************************************************************************
 subroutine atom_allocate(atoms,nat,natim,nfp,ntrial)
-    use mod_trial_energy, only: trial_energy_allocate
     use dynamic_memory
     use dictionaries
     implicit none
@@ -358,16 +355,12 @@ subroutine atom_allocate(atoms,nat,natim,nfp,ntrial)
         if(allocated(atoms%itypat)) stop 'ERROR: qat is already allocated'
         atoms%itypat=f_malloc0([1.to.nat],id='atoms%itypat')
     endif
-    if((all_of_them .or. ('trial_energy' .in. atoms%alloclist)) .and. present(ntrial)) then
-        call trial_energy_allocate(ntrial,atoms%trial_energy)
-    endif
     atoms%nat=nat
     atoms%natim=natim
     atoms%nfp=nfp
 end subroutine atom_allocate
 !*****************************************************************************************
 subroutine atom_deallocate(atoms)
-    use mod_trial_energy, only: trial_energy_deallocate
     use dynamic_memory
     implicit none
     type(typ_atoms), intent(inout):: atoms
@@ -469,19 +462,11 @@ subroutine atom_deallocate(atoms)
             call f_free(atoms%itypat)
         endif
     endif
-    if((all_of_them .and. associated(atoms%trial_energy)) .or. ('trial_energy' .in. atoms%alloclist)) then
-        if(.not. associated(atoms%trial_energy)) then
-            stop 'ERROR: atoms%trial_energy is not associated'
-        else
-            call trial_energy_deallocate(atoms%trial_energy)
-        endif
-    endif
     call dict_free(atoms%alloclist)
     nullify(atoms%alloclist)
 end subroutine atom_deallocate
 !*****************************************************************************************
 subroutine atom_allocate_old(atoms,nat,natim,nfp,ntrial)
-    use mod_trial_energy, only: trial_energy_allocate_old
     implicit none
     type(typ_atoms), intent(inout):: atoms
     integer, intent(in):: nat, natim, nfp
@@ -602,16 +587,9 @@ subroutine atom_allocate_old(atoms,nat,natim,nfp,ntrial)
     if(all_of_them .or. typat) then
         allocate(atoms%itypat(atoms%nat),source=0)
     endif
-    if(present(ntrial)) then
-        if(.not. associated(atoms%trial_energy)) then
-            stop 'ERROR: allocate atoms%trial_energy is already associated'
-        end if
-        call trial_energy_allocate_old(ntrial,atoms%trial_energy)
-    endif
 end subroutine atom_allocate_old
 !*****************************************************************************************
 subroutine atom_deallocate_old(atoms)
-    use mod_trial_energy, only: trial_energy_deallocate_old
     implicit none
     type(typ_atoms), intent(inout):: atoms
     !local variables
@@ -628,9 +606,6 @@ subroutine atom_deallocate_old(atoms)
     if(allocated(atoms%rcov)) deallocate(atoms%rcov)
     if(allocated(atoms%fp)) deallocate(atoms%fp)
     if(allocated(atoms%itypat)) deallocate(atoms%itypat)
-    if(associated(atoms%trial_energy)) then
-        call trial_energy_deallocate_old(atoms%trial_energy)
-    endif
     call dict_free(atoms%alloclist)
     nullify(atoms%alloclist)
 end subroutine atom_deallocate_old
@@ -990,7 +965,6 @@ subroutine atom_copy(at_inp,at_out,str_message)
 end subroutine atom_copy
 !*****************************************************************************************
 subroutine atom_copy_old(at_inp,at_out,str_message)
-    use mod_trial_energy, only: trial_energy_copy_old
     implicit none
     type(typ_atoms), intent(in):: at_inp
     type(typ_atoms), intent(inout):: at_out
@@ -1306,9 +1280,6 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
         if(allocated(at_out%itypat)) then
             deallocate(at_out%itypat)
         endif
-    endif
-    if(associated(at_inp%trial_energy)) then
-        call trial_energy_copy_old(at_inp%trial_energy,at_out%trial_energy)
     endif
 end subroutine atom_copy_old
 !*****************************************************************************************

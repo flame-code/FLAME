@@ -567,7 +567,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
     use mod_ann, only: typ_ann_arr
-    use mod_trial_energy, only: trial_energy_copy_old
+    !use mod_trial_energy, only: trial_energy_copy_old
     use mod_atoms, only: atom_deallocate_old, set_rat_atoms
     use mod_bin, only: read_bin_conf
     use dynamic_memory
@@ -630,10 +630,10 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%boundcond=trim(atoms_arr_of%atoms(iconf)%boundcond)
             atoms_arr_t%atoms(atoms_arr_t%nconf)%cellvec(1:3,1:3)=atoms_arr_of%atoms(iconf)%cellvec(1:3,1:3)
             !if(parini%read_forces_ann) read(2,*)
-            if(associated(atoms_arr_of%atoms(iconf)%trial_energy)) then
-                call trial_energy_copy_old(atoms_arr_of%atoms(iconf)%trial_energy, &
-                    atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_energy)
-            endif
+            !if(associated(atoms_arr_of%atoms(iconf)%trial_energy)) then
+            !    call trial_energy_copy_old(atoms_arr_of%atoms(iconf)%trial_energy, &
+            !        atoms_arr_t%atoms(atoms_arr_t%nconf)%trial_energy)
+            !endif
             call set_rat_atoms(atoms_arr_t%atoms(atoms_arr_t%nconf),atoms_arr_of%atoms(iconf),setall=.true.)
             do iat=1,atoms_arr_of%atoms(iconf)%nat
                 atoms_arr_t%atoms(atoms_arr_t%nconf)%sat(iat)=atoms_arr_of%atoms(iconf)%sat(iat)
@@ -697,11 +697,11 @@ subroutine read_yaml_conf_train(parini,filename,nconfmax,ter,atoms_arr)
     endif
     call read_yaml_conf_getdict(parini,filename,confs_list)
     call read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
-    if(ter) then
-        file_info%dict=>confs_list
-        call read_yaml_conf_trial_energy(file_info,atoms_arr)
-        nullify(file_info%dict)
-    endif
+    !if(ter) then
+    !    file_info%dict=>confs_list
+    !    call read_yaml_conf_trial_energy(file_info,atoms_arr)
+    !    nullify(file_info%dict)
+    !endif
     call dict_free(confs_list)
     nullify(confs_list)
     call yaml_mapping_open('Number of configurations read',flow=.true.)
@@ -710,57 +710,57 @@ subroutine read_yaml_conf_train(parini,filename,nconfmax,ter,atoms_arr)
     call yaml_mapping_close()
 end subroutine read_yaml_conf_train
 !*****************************************************************************************
-subroutine read_yaml_conf_trial_energy(file_info,atoms_arr)
-    use mod_atoms, only: typ_atoms_arr, typ_file_info
-    use mod_trial_energy, only: trial_energy_allocate
-    use dictionaries
-    use yaml_parse
-    use dynamic_memory
-    use yaml_output
-    implicit none
-    type(typ_file_info), intent(in):: file_info
-    type(typ_atoms_arr), intent(inout):: atoms_arr
-    !local variables
-    integer:: iconf, nconf, ii, iiconf
-    integer:: ntrial, itrial, iat_trial
-    real(8):: trial_energy, trial_x, trial_y, trial_z
-    type(dictionary), pointer :: dict1=>null()
-    type(dictionary), pointer :: dict2=>null()
-    type(dictionary), pointer :: confs_list=>null()
-    confs_list=>file_info%dict
-    nconf=dict_len(confs_list)
-    if(atoms_arr%nconf/=nconf) then
-        stop 'ERROR: atoms_arr%nconf/=nconf in read_yaml_conf_trial_energy'
-    endif
-    if(nconf<1) stop 'ERROR: nconf<1 in read_yaml_conf_trial_energy'
-    do iconf=1,nconf
-        iiconf=iconf-1
-        dict1=>confs_list//iiconf//'conf'
-        if(has_key(dict1,"ntrial")) then
-            ntrial=dict1//'ntrial'
-        endif
-        if(has_key(dict1,"trial_ref_energy")) then
-            call trial_energy_allocate(ntrial,atoms_arr%atoms(iconf)%trial_energy)
-            do itrial=1,ntrial
-                ii=itrial-1
-                dict2=>dict1//'trial_ref_energy'//ii
-                iat_trial=dict2//0
-                trial_x=dict2//1
-                trial_y=dict2//2
-                trial_z=dict2//3
-                trial_energy=dict2//4
-                atoms_arr%atoms(iconf)%trial_energy%iat_list(itrial)=iat_trial
-                atoms_arr%atoms(iconf)%trial_energy%disp(1,itrial)=trial_x
-                atoms_arr%atoms(iconf)%trial_energy%disp(2,itrial)=trial_y
-                atoms_arr%atoms(iconf)%trial_energy%disp(3,itrial)=trial_z
-                atoms_arr%atoms(iconf)%trial_energy%energy(itrial)=trial_energy
-                nullify(dict2)
-            enddo
-        endif
-        nullify(dict1)
-    enddo
-    nullify(confs_list)
-end subroutine read_yaml_conf_trial_energy
+!subroutine read_yaml_conf_trial_energy(file_info,atoms_arr)
+!    use mod_atoms, only: typ_atoms_arr, typ_file_info
+!    use mod_trial_energy, only: trial_energy_allocate
+!    use dictionaries
+!    use yaml_parse
+!    use dynamic_memory
+!    use yaml_output
+!    implicit none
+!    type(typ_file_info), intent(in):: file_info
+!    type(typ_atoms_arr), intent(inout):: atoms_arr
+!    !local variables
+!    integer:: iconf, nconf, ii, iiconf
+!    integer:: ntrial, itrial, iat_trial
+!    real(8):: trial_energy, trial_x, trial_y, trial_z
+!    type(dictionary), pointer :: dict1=>null()
+!    type(dictionary), pointer :: dict2=>null()
+!    type(dictionary), pointer :: confs_list=>null()
+!    confs_list=>file_info%dict
+!    nconf=dict_len(confs_list)
+!    if(atoms_arr%nconf/=nconf) then
+!        stop 'ERROR: atoms_arr%nconf/=nconf in read_yaml_conf_trial_energy'
+!    endif
+!    if(nconf<1) stop 'ERROR: nconf<1 in read_yaml_conf_trial_energy'
+!    do iconf=1,nconf
+!        iiconf=iconf-1
+!        dict1=>confs_list//iiconf//'conf'
+!        if(has_key(dict1,"ntrial")) then
+!            ntrial=dict1//'ntrial'
+!        endif
+!        if(has_key(dict1,"trial_ref_energy")) then
+!            call trial_energy_allocate(ntrial,atoms_arr%atoms(iconf)%trial_energy)
+!            do itrial=1,ntrial
+!                ii=itrial-1
+!                dict2=>dict1//'trial_ref_energy'//ii
+!                iat_trial=dict2//0
+!                trial_x=dict2//1
+!                trial_y=dict2//2
+!                trial_z=dict2//3
+!                trial_energy=dict2//4
+!                atoms_arr%atoms(iconf)%trial_energy%iat_list(itrial)=iat_trial
+!                atoms_arr%atoms(iconf)%trial_energy%disp(1,itrial)=trial_x
+!                atoms_arr%atoms(iconf)%trial_energy%disp(2,itrial)=trial_y
+!                atoms_arr%atoms(iconf)%trial_energy%disp(3,itrial)=trial_z
+!                atoms_arr%atoms(iconf)%trial_energy%energy(itrial)=trial_energy
+!                nullify(dict2)
+!            enddo
+!        endif
+!        nullify(dict1)
+!    enddo
+!    nullify(confs_list)
+!end subroutine read_yaml_conf_trial_energy
 !*****************************************************************************************
 end module mod_ann_io_yaml
 !*****************************************************************************************
