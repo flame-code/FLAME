@@ -86,7 +86,7 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
             enddo
     else bondbased
         if (parini%symfunc_type_ann=='behler') then 
-            call symmetry_functions_driver(parini,ann_arr,atoms,self%typ_symfunc_data)
+            call symmetry_functions_driver(parini,ann_arr,atoms,self%mpi_env,self%typ_symfunc_data)
         else
             call symmetry_functions_driver_stefan(parini,ann_arr,atoms,self%typ_symfunc_data)
         endif
@@ -99,12 +99,12 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
                     self%y(i0,iat)=(self%y(i0,iat)-gleft)*ann_arr%ann(isat)%two_over_gdiff(i0)-1.d0
                 enddo
             enddo
-            if(parini%mpi_env%nproc>1) then
-                mat=atoms%nat/parini%mpi_env%nproc
-                iats=parini%mpi_env%iproc*mat+1
-                mproc=mod(atoms%nat,parini%mpi_env%nproc)
-                iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
-                if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+            if(self%mpi_env%nproc>1) then
+                mat=atoms%nat/self%mpi_env%nproc
+                iats=self%mpi_env%iproc*mat+1
+                mproc=mod(atoms%nat,self%mpi_env%nproc)
+                iats=iats+max(0,self%mpi_env%iproc-self%mpi_env%nproc+mproc)
+                if(self%mpi_env%iproc>self%mpi_env%nproc-mproc-1) mat=mat+1
                 iate=iats+mat-1
             else
                 iats=1

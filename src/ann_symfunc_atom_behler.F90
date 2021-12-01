@@ -1,16 +1,18 @@
 !*****************************************************************************************
-subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
+subroutine symmetry_functions_driver(parini,ann_arr,atoms,mpi_env,symfunc)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc_data, only: typ_symfunc_data
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr
+    use wrapper_MPI, only: mpi_environment
     use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
+    type(mpi_environment), intent(in):: mpi_env
     type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: ig, i
@@ -32,12 +34,12 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,symfunc)
     !call cpu_time(time1)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))
-    if(parini%mpi_env%nproc>1) then
-        mat=atoms%nat/parini%mpi_env%nproc
-        iats=parini%mpi_env%iproc*mat+1
-        mproc=mod(atoms%nat,parini%mpi_env%nproc)
-        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
-        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+    if(mpi_env%nproc>1) then
+        mat=atoms%nat/mpi_env%nproc
+        iats=mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,mpi_env%nproc)
+        iats=iats+max(0,mpi_env%iproc-mpi_env%nproc+mproc)
+        if(mpi_env%iproc>mpi_env%nproc-mproc-1) mat=mat+1
         iate=iats+mat-1
     else
         iats=1
