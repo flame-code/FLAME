@@ -2,11 +2,16 @@
 module mod_symfunc
     use mod_linked_lists, only: typ_linked_lists
     use mod_symfunc_data, only: typ_symfunc_data
+    use wrapper_MPI, only: mpi_environment
     implicit none
     private
     public:: typ_symfunc_data, typ_symfunc
     type, extends(typ_symfunc_data):: typ_symfunc
+        type(mpi_environment), public:: mpi_env
+        logical, private:: initialized=.false.
         contains
+        procedure, public, pass(self):: init_symfunc
+        procedure, public, pass(self):: fini_symfunc
         procedure, public, pass(self):: get_symfunc
     end type typ_symfunc
     type, public:: typ_symfunc_arr
@@ -14,6 +19,24 @@ module mod_symfunc
         type(typ_symfunc), allocatable:: symfunc(:)
     end type typ_symfunc_arr
 contains
+!*****************************************************************************************
+subroutine init_symfunc(self,mpi_env)
+    use wrapper_MPI, only: mpi_environment
+    implicit none
+    class(typ_symfunc), intent(inout):: self
+    type(mpi_environment), intent(in):: mpi_env
+    !local variables
+    self%mpi_env=mpi_env
+    self%initialized=.true.
+end subroutine init_symfunc
+!*****************************************************************************************
+subroutine fini_symfunc(self)
+    use wrapper_MPI, only: mpi_environment
+    implicit none
+    class(typ_symfunc), intent(inout):: self
+    !local variables
+    self%initialized=.false.
+end subroutine fini_symfunc
 !*****************************************************************************************
 subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     use mod_parini, only: typ_parini
@@ -34,6 +57,10 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     integer:: iats, iate, mat, mproc, ibs, ibe
     real(8):: gleft
     call f_routine(id='get_symfunc')
+    if(.not. self%initialized) then
+        write(*,*) 'ERROR: symfunc not initialized.'
+        stop
+    endif
     !call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
     !-----------------------------------------------------------------
     !first index of "y0d" is for number of symmetry function

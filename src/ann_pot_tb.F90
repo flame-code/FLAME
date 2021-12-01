@@ -41,6 +41,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     allocate(partb%dhgenall1(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%dhgenall2(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%dhgenall3(linked_lists%maxbound_rad),source=0.d0)
+    call symfunc%init_symfunc(parini%mpi_env)
     if(ann_arr%compute_symfunc) then
         call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     endif
@@ -156,6 +157,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     deallocate(linked_lists%bound_rad)
     deallocate(linked_lists%bound_ang)
     deallocate(ann_grad)
+    call symfunc%fini_symfunc()
 end subroutine cal_ann_tb
 !*****************************************************************************************
 subroutine lenoskytb_ann(parini,ann_arr,pia_arr,linked_lists,partb,atoms,natsi,count_md)

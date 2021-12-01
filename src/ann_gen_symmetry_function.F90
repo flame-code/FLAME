@@ -11,7 +11,6 @@ subroutine ann_gen_symmetry_function(parini)
     !local variables
     type(typ_ann_arr) :: ann_arr
     type(typ_atoms_arr):: atoms_gen
-    type(typ_symfunc_arr):: symfunc_gen
     type(typ_symfunc):: symfunc
     character(400):: fnarr(100000), fn_tmp, filename
     integer:: iat,jat,i,j,ig,jg,iconf,jconf, ng, nat,a,l,ll
@@ -24,6 +23,7 @@ subroutine ann_gen_symmetry_function(parini)
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%nann)
     !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
+    call symfunc%init_symfunc(parini%mpi_env)
     ann_arr%nann=parini%ntypat
     
     !do i=1,ann_arr%nann
@@ -95,5 +95,6 @@ subroutine ann_gen_symmetry_function(parini)
         close(1)
     enddo
     call ann_arr_deallocate(ann_arr)
+    call symfunc%fini_symfunc()
 end subroutine ann_gen_symmetry_function 
 !*****************************************************************************************

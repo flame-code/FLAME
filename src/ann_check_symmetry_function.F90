@@ -4,7 +4,7 @@ subroutine ann_check_symmetry_function(parini)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_ann_io_yaml, only: read_input_ann_yaml, read_data_yaml
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_deallocate_old
     use mod_processors, only: iproc
     use dynamic_memory
     implicit none
@@ -31,6 +31,7 @@ subroutine ann_check_symmetry_function(parini)
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%nann)
     !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
+    call symfunc%init_symfunc(parini%mpi_env)
     ann_arr%nann=parini%ntypat
     !do i=1,ann_arr%nann
     !    ann_arr%ltypat(i)=i
@@ -87,6 +88,7 @@ subroutine ann_check_symmetry_function(parini)
         allocate(symfunc_check%symfunc(symfunc_check%nconf))
     endif
     do iconf=1,atoms_check%nconf
+        call symfunc_check%symfunc(iconf)%init_symfunc(parini%mpi_env)
         symfunc_check%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) 
         symfunc_check%symfunc(iconf)%nat=atoms_check%atoms(iconf)%nat
         associate(ng=>symfunc_check%symfunc(iconf)%ng)
@@ -193,6 +195,17 @@ subroutine ann_check_symmetry_function(parini)
     end associate
     close(11)
     close(111)
+    do iconf=1,atoms_check%nconf
+        call symfunc_check%symfunc(iconf)%fini_symfunc()
+    enddo
+    deallocate(symfunc_check%symfunc)
+    do iconf=1,atoms_check%nconf
+        call atom_deallocate_old(atoms_check%atoms(iconf))
+    enddo
+    deallocate(atoms_check%atoms)
+    deallocate(atoms_check%fn)
+    deallocate(atoms_check%lconf)
+    call symfunc%fini_symfunc()
     call f_release_routine()
 end subroutine ann_check_symmetry_function 
 !*****************************************************************************************

@@ -24,6 +24,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     call f_routine(id='cal_ann_atombased')
     call update_ratp(atoms)
     !call cpu_time(time0)
+    call symfunc%init_symfunc(parini%mpi_env)
     if(ann_arr%compute_symfunc) then
         call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
@@ -153,6 +154,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     !write(*,*) 'TT2 time ',time2-time1
     !write(*,*) 'TT3 time ',time3-time2
     !write(*,*) 'TTt time ',time3-time0
+    call symfunc%fini_symfunc()
     call f_release_routine()
 end subroutine cal_ann_atombased
 !*****************************************************************************************
