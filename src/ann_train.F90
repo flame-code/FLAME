@@ -471,6 +471,16 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_s
         call atom_deallocate_old(atoms_smplx%atoms(iconf))
     enddo
 
+    do iconf=1,atoms_train%nconf
+        call symfunc_train%symfunc(iconf)%fini_symfunc()
+    enddo
+    deallocate(symfunc_train%symfunc)
+
+    do iconf=1,atoms_valid%nconf
+        call symfunc_valid%symfunc(iconf)%fini_symfunc()
+    enddo
+    deallocate(symfunc_valid%symfunc)
+
     deallocate(atoms_train%conf_inc)
     deallocate(atoms_valid%conf_inc)
     !deallocate(atoms_train%inclusion)
@@ -656,6 +666,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     endif
     !write(*,'(a,i3,i6)') 'iproc,nconf ',iproc,atoms_arr%nconf
     do iconf=1,atoms_arr%nconf
+        call symfunc_arr%symfunc(iconf)%init_symfunc(parini%mpi_env)
         symfunc_arr%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) !HERE
         symfunc_arr%symfunc(iconf)%nat=atoms_arr%atoms(iconf)%nat
     enddo

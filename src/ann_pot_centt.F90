@@ -46,6 +46,7 @@ subroutine cal_ann_centt(parini,atoms,symfunc,ann_arr)
     deallocate(gausswidth)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
+    call symfunc%init_symfunc(parini%mpi_env)
     if(ann_arr%compute_symfunc) then
         call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
@@ -163,6 +164,7 @@ subroutine cal_ann_centt(parini,atoms,symfunc,ann_arr)
         enddo
         write(*,'(a,3es14.5)') 'NET FORCE ',fnet(1),fnet(2),fnet(3)
     endif
+    call symfunc%fini_symfunc()
     call f_release_routine()
 end subroutine cal_ann_centt
 !*****************************************************************************************

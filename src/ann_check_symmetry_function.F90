@@ -4,9 +4,11 @@ subroutine ann_check_symmetry_function(parini)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc, typ_symfunc_arr
     use mod_ann_io_yaml, only: read_input_ann_yaml, read_data_yaml
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_deallocate_old
+    use wrapper_MPI, only: mpi_environment
     use mod_processors, only: iproc
     use dynamic_memory
+    use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -23,14 +25,24 @@ subroutine ann_check_symmetry_function(parini)
     real(8):: gminarr(140), gmaxarr(140)
     integer,allocatable:: F(:)
     integer:: nconftot, ios, k
-    character (50)::fname
+    character(50)::fname
+    character(256):: str_msg
+
     logical:: file_exists
+    type(mpi_environment):: mpi_env
     call f_routine(id='ann_check_symmetry_function')
-    associate(etol=>parini%etol_ann,dtol=>parini%dtol_ann)
     !---------------------------------------------------------- 
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%nann)
     !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
+    mpi_env=parini%mpi_env
+    if(parini%mpi_env%nproc>0) then
+        str_msg='This subtask runs with nproc>1 but only iproc=0 will do the task.'
+        call yaml_warning(str_msg)
+    endif
+    if(mpi_env%iproc==0) then
+    mpi_env%nproc=1
+    call symfunc%init_symfunc(mpi_env)
     ann_arr%nann=parini%ntypat
     !do i=1,ann_arr%nann
     !    ann_arr%ltypat(i)=i
@@ -87,6 +99,7 @@ subroutine ann_check_symmetry_function(parini)
         allocate(symfunc_check%symfunc(symfunc_check%nconf))
     endif
     do iconf=1,atoms_check%nconf
+        call symfunc_check%symfunc(iconf)%init_symfunc(mpi_env)
         symfunc_check%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) 
         symfunc_check%symfunc(iconf)%nat=atoms_check%atoms(iconf)%nat
         associate(ng=>symfunc_check%symfunc(iconf)%ng)
@@ -179,7 +192,7 @@ subroutine ann_check_symmetry_function(parini)
                 de=abs(atoms_check%atoms(iconf)%epot-atoms_check%atoms(jconf)%epot)
                 write(111,'(2(a25,i6,1x),2es20.10)') adjustl(trim(atoms_check%fn(iconf))),atoms_check%lconf(iconf), &
                     adjustl(trim(atoms_check%fn(jconf))),atoms_check%lconf(jconf),distance,de
-                if(distance.le.dtol .and. de.ge.etol) then
+                if(distance.le.parini%dtol_ann .and. de.ge.parini%etol_ann) then
                     write(11,'(2(a25,i6,1x),2es20.10)') adjustl(trim(atoms_check%fn(iconf))),atoms_check%lconf(iconf), &
                         adjustl(trim(atoms_check%fn(jconf))),atoms_check%lconf(jconf),distance,de
                     cycle
@@ -190,9 +203,20 @@ subroutine ann_check_symmetry_function(parini)
         enddo !over jconf
     deallocate(diff,c,F) 
     enddo !over iconf
-    end associate
     close(11)
     close(111)
+    do iconf=1,atoms_check%nconf
+        call symfunc_check%symfunc(iconf)%fini_symfunc()
+    enddo
+    deallocate(symfunc_check%symfunc)
+    do iconf=1,atoms_check%nconf
+        call atom_deallocate_old(atoms_check%atoms(iconf))
+    enddo
+    deallocate(atoms_check%atoms)
+    deallocate(atoms_check%fn)
+    deallocate(atoms_check%lconf)
+    call symfunc%fini_symfunc()
+    endif !end of if mpi_env%iproc==0
     call f_release_routine()
 end subroutine ann_check_symmetry_function 
 !*****************************************************************************************
