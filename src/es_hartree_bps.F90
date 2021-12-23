@@ -141,7 +141,9 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     hx=sqrt(sum(poisson%hgrid(1:3,1)**2))
     hy=sqrt(sum(poisson%hgrid(1:3,2)**2))
     hz=sqrt(sum(poisson%hgrid(1:3,3)**2))
-    write(*,'(a,3f20.10)') 'norm: hx,hy,hz ',hx,hy,hz
+    if(parini%mpi_env%iproc==0) then
+        write(*,'(a,3f20.10)') 'norm: hx,hy,hz ',hx,hy,hz
+    endif
     hgrids=(/hx,hy,hz/)
     cv1(1:3)=atoms%cellvec(1:3,1)
     cv2(1:3)=atoms%cellvec(1:3,2)
@@ -151,8 +153,10 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     ang_ab=acos(dot_product(cv1,cv2)/sqrt(dot_product(cv1,cv1)*dot_product(cv2,cv2)))
     !write(*,'(a,3f15.5)') 'alpha,beta,gamma ',ang_bc,ang_ac,ang_ab
     !write(*,*) 'REZA-3'
-    write(*,*) 'iproc,nproc', iproc, nproc
-    write(*,*) 'geocode : ',geocode
+    if(parini%mpi_env%iproc==0) then
+        write(*,*) 'iproc,nproc', iproc, nproc
+        write(*,*) 'geocode : ',geocode
+    endif
     dict_input=>dict_new('kernel' .is. dict_new('isf_order' .is. itype_scf))
     alpha_bc = abs(ang_bc)!+pi/2.d0
     beta_ac = abs(ang_ac)!+pi/2.d0

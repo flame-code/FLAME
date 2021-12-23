@@ -2,6 +2,7 @@
 subroutine cube_read(filename,atoms,poisson)
     use mod_atoms, only: typ_atoms, iatom_to_sat, atom_allocate_old, update_rat
     use mod_electrostatics, only: typ_poisson
+    use mod_processors, only: iproc
     use dynamic_memory
     implicit none
     character(*), intent(in):: filename
@@ -35,7 +36,9 @@ subroutine cube_read(filename,atoms,poisson)
     atoms%cellvec(1,3)=poisson%ngpz*poisson%hgrid(1,3)
     atoms%cellvec(2,3)=poisson%ngpz*poisson%hgrid(2,3)
     atoms%cellvec(3,3)=poisson%ngpz*poisson%hgrid(3,3)
-    write(*,'(2a)') 'reading ',trim(filename)
+    if(iproc==0) then
+        write(*,'(2a)') 'reading ',trim(filename)
+    endif
     do iat=1,atoms%nat
         read(1358,*) iatom,atoms%zat(iat),atoms%ratp(1,iat),atoms%ratp(2,iat),atoms%ratp(3,iat)
         call iatom_to_sat(iatom,atoms%sat(iat))
