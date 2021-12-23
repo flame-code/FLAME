@@ -943,6 +943,7 @@ subroutine cal_trial_from_cube(parini,trial_energy)
     use mod_trial_energy, only: typ_trial_energy, trial_energy_allocate
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, get_rat, update_ratp, atom_deallocate_old
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_trial_energy), pointer, intent(inout):: trial_energy
@@ -962,6 +963,7 @@ subroutine cal_trial_from_cube(parini,trial_energy)
     real(8), allocatable::  gausswidth(:)
     real(8), allocatable::  rat_trial(:,:)
     integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
+    integer:: mtrial, itrials, itriale, mproc
     !real(8) :: xyz(3)
     !integer:: ny,nz
     !real(8):: max_ion, max_ele
@@ -1193,7 +1195,23 @@ subroutine cal_trial_from_cube(parini,trial_energy)
     !    rat_trial(2,itrial)=poisson_ion%rcart(2,iat)
     !    rat_trial(3,itrial)=poisson_ion%rcart(3,iat)
     !enddo
-    do itrial=1,ntrial
+    if(parini%mpi_env%nproc>1) then
+        mtrial=ntrial/parini%mpi_env%nproc
+        itrials=parini%mpi_env%iproc*mtrial+1
+        mproc=mod(ntrial,parini%mpi_env%nproc)
+        itrials=itrials+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mtrial=mtrial+1
+        itriale=itrials+mtrial-1
+    else
+        itrials=1
+        itriale=ntrial
+    endif
+    write(*,'(a,4i8)') 'iproc,itrials,itriale,ntrial ',parini%mpi_env%iproc,itrials,itriale,ntrial
+    trial_energy%energy=0.d0
+    trial_energy%disp=0.d0
+    trial_energy%iat_list=0
+    !do itrial=1,ntrial
+    do itrial=itrials,itriale
         xyz(1)=rat_trial(1,itrial)-poisson_ion%rcart(1,1)
         xyz(2)=rat_trial(2,itrial)-poisson_ion%rcart(2,1)
         xyz(3)=rat_trial(3,itrial)-poisson_ion%rcart(3,1)
@@ -1221,12 +1239,18 @@ subroutine cal_trial_from_cube(parini,trial_energy)
         !    !write(*,'(a,i5,es24.15,es14.5)') 'iat,epot_trial ',iat,epot_trial,poisson%screening_factor
         !else
         !    write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',iat,dxyz(1),dxyz(2),dxyz(3),epot_trial-epot_trial0,poisson%screening_factor
-            if(parini%mpi_env%iproc==0) then
-            write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',1,xyz(1),xyz(2),xyz(3),epot_trial,poisson%screening_factor
-            write(71,'(a,i3,4(a2,es24.15),a,es14.5,a)') '  - [',1,', ',xyz(1),', ',xyz(2),', ',xyz(3),', ',epot_trial,', ',poisson%screening_factor,']'
-            endif
+            !if(parini%mpi_env%iproc==0) then
+            !write(*,'(a,i5,4es24.15,es14.5)') 'iat,epot_trial ',1,xyz(1),xyz(2),xyz(3),epot_trial,poisson%screening_factor
+            !write(71,'(a,i3,4(a2,es24.15),a,es14.5,a)') '  - [',1,', ',xyz(1),', ',xyz(2),', ',xyz(3),', ',epot_trial,', ',poisson%screening_factor,']'
+            !endif
         !endif
     enddo
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(trial_energy%energy(1),ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(trial_energy%disp(1,1),3*ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(trial_energy%iat_list(1),ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    endif
+
     if(parini%mpi_env%iproc==0) then
     write(*,'(a,6f8.1)') 'MINMAX ',xmin,ymin,zmin,xmax,ymax,zmax
     write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(1,1)*poisson%ngpx
