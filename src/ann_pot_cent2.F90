@@ -610,6 +610,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use mod_trial_energy, only: typ_trial_energy, trial_energy_deallocate
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM, fmpi_wait
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -633,6 +634,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     real(8):: one
     type(typ_trial_energy), pointer:: trial_energy=>null()
     real(8):: time1, time2
+    integer:: mtrial, itrials, itriale, mproc, mat, iats, iate, ireq
     logical, save:: done=.false.
     if(done) return
     one=1.d0
@@ -653,7 +655,20 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     endif
     !-----------------------------------------------------------------
     call cpu_time(time1)
-    do iat=1,atoms%nat
+    EP=0.0
+    if(parini%mpi_env%nproc>1) then
+        mat=atoms%nat/parini%mpi_env%nproc
+        iats=parini%mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,parini%mpi_env%nproc)
+        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+        iate=iats+mat-1
+    else
+        iats=1
+        iate=atoms%nat
+    endif
+    do iat=iats,iate
+    !do iat=1,atoms%nat
         call ann_arr%radpots_cent2%pot_1dto3d('linear_pot_e',atoms%ratp(1,iat),atoms%itypat(iat),poisson,.true.,one,poisson%pot)
         do itrial=1,trial_energy%ntrial
             xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
@@ -662,16 +677,36 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
             EP(iat,itrial)=tt
         enddo !end of loop over itrial
     enddo !end of loop over iat
-    do itrial=1,trial_energy%ntrial
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(EP(1,1),atoms%nat*trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm) !,request=ireq)
+    endif
+    if(parini%mpi_env%nproc>1) then
+        mtrial=trial_energy%ntrial/parini%mpi_env%nproc
+        itrials=parini%mpi_env%iproc*mtrial+1
+        mproc=mod(trial_energy%ntrial,parini%mpi_env%nproc)
+        itrials=itrials+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mtrial=mtrial+1
+        itriale=itrials+mtrial-1
+    else
+        itrials=1
+        itriale=trial_energy%ntrial
+    endif
+    EP_n=0.d0
+    do itrial=itrials,itriale
+    !do itrial=1,trial_energy%ntrial
         xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
         call ann_arr%radpots_cent2%energy_1dto3d('linear_rho_t',xyz, &
             0,poisson,one,poisson%pot_ion,tt)
         EP_n(itrial)=tt
     enddo !end of loop over itrial
-    call cpu_time(time2)
-    if(parini%mpi_env%iproc==0) then
-        write(*,*) 'time EP ',time2-time1
+    if(parini%mpi_env%nproc>1) then
+    !call fmpi_wait(ireq)
+    call fmpi_allreduce(EP_n(1),trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     endif
+    call cpu_time(time2)
+    !if(parini%mpi_env%iproc==0) then
+    write(*,*) 'time EP ',time2-time1
+    !endif
     !-----------------------------------------------------------------
     allocate(squarefit(atoms%nat,atoms%nat))
     allocate(squarefit_t(atoms%nat+1,atoms%nat+1))
@@ -1206,7 +1241,7 @@ subroutine cal_trial_from_cube(parini,trial_energy)
         itrials=1
         itriale=ntrial
     endif
-    write(*,'(a,4i8)') 'iproc,itrials,itriale,ntrial ',parini%mpi_env%iproc,itrials,itriale,ntrial
+    !write(*,'(a,4i8)') 'iproc,itrials,itriale,ntrial ',parini%mpi_env%iproc,itrials,itriale,ntrial
     trial_energy%energy=0.d0
     trial_energy%disp=0.d0
     trial_energy%iat_list=0
