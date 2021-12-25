@@ -4,6 +4,7 @@ module mod_yaml_conf
     private
     public:: read_yaml_conf, write_yaml_conf
     public:: read_yaml_conf_getdict, read_yaml_conf_getatoms
+    public:: atoms2dict
 contains
 !*****************************************************************************************
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
@@ -66,7 +67,7 @@ end subroutine read_yaml_conf_getdict
 subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate, update_rat
-    use mod_const, only: bohr2ang, ha2ev
+    use mod_const, only: bohr2ang
     use dictionaries
     use yaml_parse
     use dynamic_memory
@@ -78,7 +79,6 @@ subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
     type(typ_atoms_arr), intent(inout):: atoms_arr
     !local variables
     integer:: iconf, nconf, iat, nat, ii, iiconf
-    integer:: ntrial, itrial, iat_trial
     character(3):: str_motion
     character(10):: str_units_length
     real(8):: x, y, z, cf_length, fx, fy, fz 
@@ -191,8 +191,7 @@ subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
 end subroutine read_yaml_conf_getatoms
 !*****************************************************************************************
 subroutine write_yaml_conf(file_info,atoms,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, update_ratp, get_rat
-    use mod_const, only: bohr2ang, ha2ev
+    use mod_atoms, only: typ_file_info, typ_atoms
     use dictionaries
     use futile
     use yaml_parse
@@ -203,14 +202,58 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     type(typ_atoms), intent(in):: atoms
     character(*), optional, intent(in):: strkey
     !local variables
-    integer:: iat, ii, iunit, ierr
+    integer:: iunit, ierr
     character(256):: str_msg
+    type(dictionary), pointer :: dict1=>null()
+
+    dict1=>dict_new()
+
+    call set(dict1//'conf',dict_new())
+
+    call atoms2dict(file_info,atoms,dict1)
+
+    iunit=f_get_free_unit(10**5)
+
+    if(trim(file_info%file_position)=='new') then
+        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
+             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
+    elseif(trim(file_info%file_position)=='append') then
+        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
+             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='append')
+    endif
+    if(ierr/=0) then
+        str_msg='Failed to create'//trim(file_info%filename_positions)
+        str_msg=trim(str_msg)//'error code='//trim(yaml_toa(ierr))
+       call yaml_warning(trim(str_msg))
+    end if
+    call yaml_release_document(unit=iunit)
+    call yaml_new_document(unit=iunit)
+
+    call yaml_dict_dump(dict1,unit=iunit)
+    call dict_free(dict1)
+    nullify(dict1)
+    call yaml_close_stream(unit=iunit)
+end subroutine write_yaml_conf
+!*****************************************************************************************
+subroutine atoms2dict(file_info,atoms,dict1)
+    use mod_atoms, only: typ_file_info, typ_atoms, get_rat
+    use mod_const, only: bohr2ang
+    use dictionaries
+    use futile
+    use yaml_parse
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    type(typ_file_info), intent(inout):: file_info
+    type(typ_atoms), intent(in):: atoms
+    type(dictionary), pointer, intent(inout):: dict1
+    !local variables
+    integer:: iat, ii
     character(3):: str_motion
     real(8):: x, y, z, cf_length, fx, fy, fz
     real(8):: cvax, cvay, cvaz
     real(8):: cvbx, cvby, cvbz
     real(8):: cvcx, cvcy, cvcz
-    type(dictionary), pointer :: dict1=>null()
     type(dictionary), pointer :: single_atom_list=>null()
     type(dictionary), pointer :: coord_list=>null()
     type(dictionary), pointer :: conf_dict=>null()
@@ -219,9 +262,6 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     real(8), allocatable:: rat(:,:)
     allocate(rat(3,atoms%nat))
 
-    dict1=>dict_new()
-
-    call set(dict1//'conf',dict_new())
     conf_dict=>dict1//'conf'
 
     call set(conf_dict//'nat',atoms%nat)
@@ -296,31 +336,9 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
             nullify(stress_list)
         endif
     endif
-
-    iunit=f_get_free_unit(10**5)
-
-    if(trim(file_info%file_position)=='new') then
-        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
-             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
-    elseif(trim(file_info%file_position)=='append') then
-        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
-             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='append')
-    endif
-    if(ierr/=0) then
-        str_msg='Failed to create'//trim(file_info%filename_positions)
-        str_msg=trim(str_msg)//'error code='//trim(yaml_toa(ierr))
-       call yaml_warning(trim(str_msg))
-    end if
-    call yaml_release_document(unit=iunit)
-    call yaml_new_document(unit=iunit)
-
-    call yaml_dict_dump(dict1,unit=iunit)
     nullify(conf_dict)
-    call dict_free(dict1)
-    nullify(dict1)
-    call yaml_close_stream(unit=iunit)
     deallocate(rat)
-end subroutine write_yaml_conf
+end subroutine atoms2dict
 !*****************************************************************************************
 end module mod_yaml_conf
 !*****************************************************************************************

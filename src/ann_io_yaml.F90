@@ -6,6 +6,7 @@ module mod_ann_io_yaml
     public:: get_symfunc_parameters_yaml
     public:: read_input_ann_yaml
     public:: read_data_yaml
+    public:: write_yaml_conf_train
 contains
 !*****************************************************************************************
 subroutine read_input_ann_yaml(parini,iproc,ann_arr)
@@ -761,6 +762,68 @@ end subroutine read_yaml_conf_train
 !    enddo
 !    nullify(confs_list)
 !end subroutine read_yaml_conf_trial_energy
+!*****************************************************************************************
+subroutine write_yaml_conf_train(file_info,atoms,ann_arr,print_chi,strkey)
+    use mod_atoms, only: typ_file_info, typ_atoms
+    use mod_yaml_conf, only: atoms2dict
+    use mod_ann, only: typ_ann_arr
+    use dictionaries
+    use futile
+    use yaml_parse
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    type(typ_file_info), intent(inout):: file_info
+    type(typ_atoms), intent(in):: atoms
+    type(typ_ann_arr), intent(in):: ann_arr
+    logical, intent(in):: print_chi
+    character(*), optional, intent(in):: strkey
+    !local variables
+    integer:: iunit, ierr
+    character(256):: str_msg
+    type(dictionary), pointer :: dict1=>null()
+    type(dictionary), pointer :: chi_list=>null()
+    type(dictionary), pointer :: conf_dict=>null()
+    integer:: iat, ii
+
+    dict1=>dict_new()
+
+    call set(dict1//'conf',dict_new())
+
+    call atoms2dict(file_info,atoms,dict1)
+    if(print_chi) then
+        conf_dict=>dict1//'conf'
+        chi_list=>conf_dict//'chi'
+        do iat=1,atoms%nat
+            ii=iat-1
+            call set(chi_list//ii,ann_arr%chi_o(iat))
+        enddo
+        nullify(chi_list)
+        nullify(conf_dict)
+    endif
+
+    iunit=f_get_free_unit(10**5)
+
+    if(trim(file_info%file_position)=='new') then
+        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
+             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
+    elseif(trim(file_info%file_position)=='append') then
+        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
+             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='append')
+    endif
+    if(ierr/=0) then
+        str_msg='Failed to create'//trim(file_info%filename_positions)
+        str_msg=trim(str_msg)//'error code='//trim(yaml_toa(ierr))
+       call yaml_warning(trim(str_msg))
+    end if
+    call yaml_release_document(unit=iunit)
+    call yaml_new_document(unit=iunit)
+
+    call yaml_dict_dump(dict1,unit=iunit)
+    call dict_free(dict1)
+    nullify(dict1)
+    call yaml_close_stream(unit=iunit)
+end subroutine write_yaml_conf_train
 !*****************************************************************************************
 end module mod_ann_io_yaml
 !*****************************************************************************************

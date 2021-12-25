@@ -930,8 +930,9 @@ end subroutine prefit_cent2_output
 subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, typ_file_info
     use mod_electrostatics, only: typ_poisson
+    use mod_ann_io_yaml, only: write_yaml_conf_train
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -942,6 +943,7 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
     !local variables
     integer:: iat, jat
     real(8):: tt, tt1, tt2, one
+    type(typ_file_info):: file_info
     real(8), allocatable:: ww(:)
     one=1.d0
     allocate(ww(atoms%nat))
@@ -969,6 +971,10 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
         !write(*,'(a,i4,2f7.3)') 'CHI ',iat,ann_arr%chi_o(iat),atoms%zat(iat)+ann_arr%qq(iat)
         write(51,'(a,i3,a,es19.10,a)') '  - [',iat,', ',ann_arr%chi_o(iat),']'
     enddo
+    file_info%filename_positions='posout.yaml'
+    file_info%print_force=parini%print_force_single_point
+    file_info%file_position='new'
+    call write_yaml_conf_train(file_info,atoms,ann_arr,.true.)
     endif
     deallocate(ww)
 end subroutine reverseCEP
