@@ -5,9 +5,9 @@ subroutine alborz_init(parini,parres,file_ini)
     use mod_parini, only: typ_parini
     use mod_parser_ini, only: read_file_input
     use futile
-#ifndef __GFORTRAN__ 
-    use ifport
-#endif
+    !#ifndef __GFORTRAN__ 
+    !    use ifport
+    !#endif
     use time_profiling
     !use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
     use dynamic_memory
@@ -48,8 +48,9 @@ subroutine alborz_init(parini,parres,file_ini)
     !call yaml_invoice_example()
     call flm_print_logo(parini)
     !-----------------------------------------------------------------
-    istat=getcwd(parini%cwd)
-    if(istat/=0) stop 'ERROR: could not get CWD'
+    !istat=getcwd(parini%cwd)
+    !if(istat/=0) stop 'ERROR: could not get CWD'
+    call get_environment_variable('PWD',parini%cwd)
     call cpu_time(time_start)
     !parsing all blocks in input.ini
     inquire(file="flame_in.yaml",exist=parini%exists_yaml_file)

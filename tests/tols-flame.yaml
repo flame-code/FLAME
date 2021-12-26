@@ -232,7 +232,7 @@ SP_PP_p3dbias:
  Keys to ignore:
   - conf. number
  Epsilon: 1.e-11
- epot: 1.e-13
+ epot: 1.e-11
 
 geopt_CENT1_slab_fixed_efield:
  Keys to ignore:

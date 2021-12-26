@@ -338,6 +338,7 @@ end subroutine calmaxforcecomponent
 !*****************************************************************************************
 subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
     !This subrouine will convert the internal coordinates into cartesian coordinates
+    use mod_defs, only: fqp
     implicit none
     integer, intent(in):: nat
     real(8), intent(in):: rxyzcart(3,nat), latvec(3,3)
@@ -345,8 +346,8 @@ subroutine rxyz_cart2int_alborz(nat,latvec,rxyzcart,rxyzint)
     !local variables
     integer:: iat
     real(8):: latvecinv(3,3)
-    real(16):: latvec_q(3,3), latvecinv_q(3,3)
-    latvec_q(1:3,1:3)=real(latvec(1:3,1:3),kind=16)
+    real(kind=fqp):: latvec_q(3,3), latvecinv_q(3,3)
+    latvec_q(1:3,1:3)=real(latvec(1:3,1:3),kind=fqp)
     call invertmat_alborz_qp(latvec_q,latvecinv_q)
     latvecinv(1:3,1:3)=real(latvecinv_q(1:3,1:3),kind=8)
     do iat=1,nat
@@ -403,12 +404,12 @@ subroutine invertmat_alborz(a,ainv)
 end subroutine invertmat_alborz
 !*****************************************************************************************
 subroutine invertmat_alborz_qp(a,ainv)
-    use mod_defs
+    use mod_defs, only: fqp
     implicit none
     real(kind=fqp),intent(in):: a(3,3)
     real(kind=fqp),intent(out):: ainv(3,3)
     !local variables
-    real(16):: div
+    real(kind=fqp):: div
     !integer:: ipiv(3), info, ldwork
     !real(8), allocatable:: WORK(:)
     div=(a(1,1)*a(2,2)*a(3,3)-a(1,1)*a(2,3)*a(3,2)-a(1,2)*a(2,1)*a(3,3)+ &
