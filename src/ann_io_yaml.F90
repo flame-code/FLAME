@@ -567,7 +567,7 @@ end subroutine set_dict_ann
 subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, atom_allocate_old, atom_deallocate, atom_copy_old
-    use mod_ann, only: typ_ann_arr
+    use mod_ann, only: typ_ann_arr, typ_chi_arr
     !use mod_trial_energy, only: trial_energy_copy_old
     use mod_atoms, only: atom_deallocate_old, set_rat_atoms
     use mod_bin, only: read_bin_conf
@@ -582,6 +582,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
     character(256):: filename, fn_tmp, fn_ext
     type(typ_atoms_arr):: atoms_arr_of !configuration of one file
     type(typ_atoms_arr):: atoms_arr_t
+    type(typ_chi_arr), allocatable:: chi_tmp_all(:)
     integer:: nconfmax, ind, len_filename, nfiles, nfiles_max, ifile
     character(256), allocatable:: fn_list(:)
     call f_routine(id='read_data_yaml')
@@ -590,6 +591,7 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
     allocate(atoms_arr_t%atoms(nconfmax))
     allocate(atoms_arr_t%fn(nconfmax))
     allocate(atoms_arr_t%lconf(nconfmax))
+    allocate(chi_tmp_all(nconfmax))
     atoms_arr_t%nconf=0
     allocate(fn_list(nfiles_max))
     call read_list_files_yaml(filename_list,nfiles_max,fn_list,nfiles)
@@ -605,10 +607,9 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
             call read_bin_conf(parini,filename,atoms_arr_of)
         elseif(trim(fn_ext)=='yaml') then
             if(present(ann_arr)) then
-                call read_yaml_conf_train(parini,filename,10000, &
-                    ann_arr%trial_energy_required,atoms_arr_of)
+                call read_yaml_conf_train(parini,filename,10000,atoms_arr_of,ann_arr)
             else
-                call read_yaml_conf_train(parini,filename,10000,.false.,atoms_arr_of)
+                call read_yaml_conf_train(parini,filename,10000,atoms_arr_of)
             endif
         else
             write(*,*) 'ERROR: only binary and yaml files can be read in read_data_yaml'
@@ -651,7 +652,17 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
             atoms_arr_t%fn(atoms_arr_t%nconf)=trim(filename)
             atoms_arr_t%lconf(atoms_arr_t%nconf)=iconf
             call atom_deallocate(atoms_arr_of%atoms(iconf))
+            if(trim(parini%optimizer_ann)=='rivals_fitchi') then
+                allocate(chi_tmp_all(atoms_arr_t%nconf)%chis(atoms_arr_of%atoms(iconf)%nat))
+                do iat=1,atoms_arr_of%atoms(iconf)%nat
+                    chi_tmp_all(atoms_arr_t%nconf)%chis(iat)=ann_arr%chi_tmp(iconf)%chis(iat)
+                enddo
+                deallocate(ann_arr%chi_tmp(iconf)%chis)
+            endif
         enddo over_iconf
+        if(trim(parini%optimizer_ann)=='rivals_fitchi') then
+            deallocate(ann_arr%chi_tmp)
+        endif
         deallocate(atoms_arr_of%atoms)
         !if(parini%read_forces_ann) close(2)
     enddo over_files
@@ -666,20 +677,42 @@ subroutine read_data_yaml(parini,filename_list,atoms_arr,ann_arr)
         atoms_arr%fn(iconf)=trim(atoms_arr_t%fn(iconf))
         atoms_arr%lconf(iconf)=atoms_arr_t%lconf(iconf)
     enddo
+    if(trim(parini%optimizer_ann)=='rivals_fitchi') then
+    if(trim(filename_list)=='list_posinp_train.yaml') then
+        allocate(ann_arr%chi_ref_train(atoms_arr%nconf))
+        do iconf=1,atoms_arr%nconf
+            allocate(ann_arr%chi_ref_train(iconf)%chis(atoms_arr%atoms(iconf)%nat))
+            do iat=1,atoms_arr%atoms(iconf)%nat
+                ann_arr%chi_ref_train(iconf)%chis(iat)=chi_tmp_all(iconf)%chis(iat)
+            enddo
+        enddo
+    endif
+    if(trim(filename_list)=='list_posinp_valid.yaml') then
+        allocate(ann_arr%chi_ref_valid(atoms_arr%nconf))
+        do iconf=1,atoms_arr%nconf
+            allocate(ann_arr%chi_ref_valid(iconf)%chis(atoms_arr%atoms(iconf)%nat))
+            do iat=1,atoms_arr%atoms(iconf)%nat
+                ann_arr%chi_ref_valid(iconf)%chis(iat)=chi_tmp_all(iconf)%chis(iat)
+            enddo
+        enddo
+    endif
+    endif
     do iconf=1,atoms_arr_t%nconf
         call atom_deallocate_old(atoms_arr_t%atoms(iconf))
     enddo
     deallocate(atoms_arr_t%atoms)
     deallocate(atoms_arr_t%fn)
     deallocate(atoms_arr_t%lconf)
+    deallocate(chi_tmp_all)
     deallocate(fn_list)
     call f_release_routine()
 end subroutine read_data_yaml
 !*****************************************************************************************
-subroutine read_yaml_conf_train(parini,filename,nconfmax,ter,atoms_arr)
+subroutine read_yaml_conf_train(parini,filename,nconfmax,atoms_arr,ann_arr)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms_arr, typ_file_info
     use mod_yaml_conf, only: read_yaml_conf_getdict, read_yaml_conf_getatoms
+    use mod_ann, only: typ_ann_arr
     !use mod_yaml_conf, only: read_yaml_conf_trial_energy
     use dictionaries
     use yaml_output
@@ -687,8 +720,8 @@ subroutine read_yaml_conf_train(parini,filename,nconfmax,ter,atoms_arr)
     type(typ_parini), intent(in):: parini
     character(*), intent(in):: filename
     integer, intent(in):: nconfmax
-    logical, intent(in):: ter
     type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_ann_arr), optional, intent(inout):: ann_arr
     !local variables
     type(dictionary), pointer :: confs_list=>null()
     type(typ_file_info):: file_info
@@ -698,7 +731,14 @@ subroutine read_yaml_conf_train(parini,filename,nconfmax,ter,atoms_arr)
     endif
     call read_yaml_conf_getdict(parini,filename,confs_list)
     call read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
-    !if(ter) then
+    if(trim(parini%optimizer_ann)=='rivals_fitchi') then
+        if(present(ann_arr)) then
+            call read_yaml_conf_chi(confs_list,filename,atoms_arr,ann_arr)
+        else
+            stop 'ERROR: ann_arr is absent and do not know how to read chi values!'
+        endif
+    endif
+    !if(ann_arr%trial_energy_required) then
     !    file_info%dict=>confs_list
     !    call read_yaml_conf_trial_energy(file_info,atoms_arr)
     !    nullify(file_info%dict)
@@ -710,6 +750,54 @@ subroutine read_yaml_conf_train(parini,filename,nconfmax,ter,atoms_arr)
     call yaml_map('nconf',atoms_arr%nconf)
     call yaml_mapping_close()
 end subroutine read_yaml_conf_train
+!*****************************************************************************************
+subroutine read_yaml_conf_chi(confs_list,filename,atoms_arr,ann_arr)
+    use mod_atoms, only: typ_atoms_arr
+    use mod_ann, only: typ_ann_arr
+    use dictionaries
+    use yaml_parse
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    type(dictionary), pointer, intent(in):: confs_list
+    character(*), intent(in):: filename
+    type(typ_atoms_arr), intent(in):: atoms_arr
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: iconf, nconf, ii, iiconf
+    integer:: nat, iat
+    type(dictionary), pointer :: dict1=>null()
+    type(dictionary), pointer :: dict2=>null()
+    nconf=dict_len(confs_list)
+    if(nconf<1) stop 'ERROR: nconf<1 in read_yaml_conf_chi'
+    if(atoms_arr%nconf/=nconf) then
+        stop 'ERROR: atoms_arr%nconf/=nconf in read_yaml_conf_chi'
+    endif
+    allocate(ann_arr%chi_tmp(nconf))
+    do iconf=1,nconf
+        iiconf=iconf-1
+        dict1=>confs_list//iiconf//'conf'
+        if(has_key(dict1,"chi")) then
+            nat=dict1//'nat'
+            if(nat/=atoms_arr%atoms(iconf)%nat) then
+                stop 'ERROR: nat/=atoms_arr%atoms(iconf)%nat in read_yaml_conf_chi'
+            endif
+            allocate(ann_arr%chi_tmp(iconf)%chis(nat))
+            dict2=>dict1//'chi'
+            do iat=1,nat
+                ii=iat-1
+                ann_arr%chi_tmp(iconf)%chis(iat)=dict2//ii
+            enddo
+            nullify(dict2)
+        else
+            write(*,*) 'ERROR: problem in read_yaml_conf_chi:'
+            write(*,*) '       yaml configuration file must contain chi values, but'
+            write(*,*) '       key chi is missing in file= ',trim(filename),'  iconf= ',iconf
+            stop
+        endif
+        nullify(dict1)
+    enddo
+end subroutine read_yaml_conf_chi
 !*****************************************************************************************
 !subroutine read_yaml_conf_trial_energy(file_info,atoms_arr)
 !    use mod_atoms, only: typ_atoms_arr, typ_file_info

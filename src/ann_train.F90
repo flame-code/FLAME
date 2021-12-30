@@ -455,6 +455,16 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_s
     endif
 
     call ann_arr%fini_ann_arr()
+    if(trim(parini%optimizer_ann)=='rivals_fitchi') then
+        do iconf=1,atoms_train%nconf
+            deallocate(ann_arr%chi_ref_train(iconf)%chis)
+        enddo
+        deallocate(ann_arr%chi_ref_train)
+        do iconf=1,atoms_valid%nconf
+            deallocate(ann_arr%chi_ref_valid(iconf)%chis)
+        enddo
+        deallocate(ann_arr%chi_ref_valid)
+    endif
     call fini_opt_ann(opt_ann)
 
     do iconf=1,atoms_train%nconf
@@ -1484,22 +1494,24 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     allocate(f(n),p(n,n),v1(n)) !,opt_ann%epotd(ann_arr%num(1)))
     allocate(chi_ref_all_train(ann_arr%natmax,atoms_train%nconf))
     allocate(chi_ref_all_valid(ann_arr%natmax,atoms_valid%nconf))
-    open(unit=12,file='chi_ref_train.dat',status='old',iostat=ios)
+    !open(unit=12,file='chi_ref_train.dat',status='old',iostat=ios)
     do iconf=1,atoms_train%nconf
     do iat=1,atoms_train%atoms(iconf)%nat
-        read(12,*) str1,str2,str3,chi_ref_all_train(iat,iconf)
+        !read(12,*) str1,str2,str3,chi_ref_all_train(iat,iconf)
+        chi_ref_all_train(iat,iconf)=ann_arr_main%chi_ref_train(iconf)%chis(iat)
         !write(*,*) str1,str2,str3,chi_ref_all_train(iat,iconf)
     enddo
     enddo
-    close(12)
-    open(unit=12,file='chi_ref_valid.dat',status='old',iostat=ios)
+    !close(12)
+    !open(unit=12,file='chi_ref_valid.dat',status='old',iostat=ios)
     do iconf=1,atoms_valid%nconf
     do iat=1,atoms_valid%atoms(iconf)%nat
-        read(12,*) str1,str2,str3,chi_ref_all_valid(iat,iconf)
+        !read(12,*) str1,str2,str3,chi_ref_all_valid(iat,iconf)
+        chi_ref_all_valid(iat,iconf)=ann_arr_main%chi_ref_valid(iconf)%chis(iat)
         !write(*,*) str1,str2,str3,chi_ref_all_valid(iat,iconf)
     enddo
     enddo
-    close(12)
+    !close(12)
 
     do ita=1,parini%ntypat
     ndp_train=0

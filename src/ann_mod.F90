@@ -10,6 +10,9 @@ module mod_ann
     public:: convert_x_ann, convert_ann_x, convert_x_ann_arr
     public:: convert_ann_epotd
     public:: typ_ann_arr
+    type, public:: typ_chi_arr
+        real(8), allocatable:: chis(:)
+    end type typ_chi_arr
     type, public:: typ_ann
         type(dictionary), pointer :: dict=>null()
         integer:: nl !number of hidden layer plus one
@@ -131,6 +134,9 @@ module mod_ann
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
         type(typ_radpots_cent2):: radpots_cent2
+        type(typ_chi_arr), allocatable:: chi_tmp(:)
+        type(typ_chi_arr), allocatable:: chi_ref_train(:)
+        type(typ_chi_arr), allocatable:: chi_ref_valid(:)
         contains
         procedure, public, pass(self):: init_ann_arr
         procedure, public, pass(self):: fini_ann_arr
