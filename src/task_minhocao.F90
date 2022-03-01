@@ -962,6 +962,10 @@ call yaml_sequence_open('Hopping steps')
 
 !Update the number of hops being performed, the next hop is nhop 
   nhop=nhop+1
+  if(parini%nstep_minhopp>0 .and. nhop>parini%nstep_minhopp) then
+      write(*,'(a,2i6)') 'STOP in minhocao: nhop>nstep ',nhop,parini%nstep_minhopp
+      stop
+  endif
   write(fn5,'(i5.5)') nhop
   if(parini%verb.ge.2) folder="data_hop_"//fn5//"/"
   if(parini%verb.ge.2) call system("mkdir "//trim(folder))
@@ -1498,6 +1502,7 @@ call yaml_sequence_close()
 3001 continue
 !Close socket on slave side
 if(trim(parini%potential_potential)=="msock") call socket_stop()
+if(trim(parini%potential_potential)=="ann") call call_to_alborz_final()
 end subroutine task_minhocao
 !contains
 

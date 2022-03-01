@@ -3,6 +3,7 @@ subroutine init_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_potential, only: ann_arr, ann_boundcheck
+    use mod_ann_io_yaml, only: read_ann_yaml
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -78,31 +79,25 @@ subroutine cal_potential_ann(parini,atoms)
     else
         stop 'ERROR: why is cal_potential_ann called?'
     endif
-    if(trim(atoms%boundcond)=='free') then
-        atoms%natim=atoms%nat
-        if(.not. allocated(atoms%ratim)) then
-            allocate(atoms%ratim(3,atoms%natim),source=0.d0)
-        endif
-        call get_rat(atoms,atoms%ratim)
+    !if(trim(atoms%boundcond)=='free') then
+    !    atoms%natim=atoms%nat
+    !    if(.not. allocated(atoms%ratim)) then
+    !        allocate(atoms%ratim(3,atoms%natim),source=0.d0)
+    !    endif
+    !    call get_rat(atoms,atoms%ratim)
     !elseif(trim(atoms%boundcond)=='bulk' .or. trim(atoms%boundcond)=='slab' .or. &
     !       trim(atoms%boundcond)=='wire') then
     !    call atom_build_periodic_images(atoms,8.d0)
     !else
     !    write(*,'(2a)') 'ERROR: unknown boundary conditions, boundcond=',trim(atoms%boundcond)
     !    stop
-    endif
+    !endif
     !atoms%epot=0.d0
     !atoms%fat(1:3,1:atoms%nat)=0.d0
     !call cal_ann_cent1(atoms,symfunc,ann_arr,opt_ann)
     if(trim(ann_arr%event)/='potential') then
         write(*,*) 'ERROR: ann_arr%event different from potential'
         stop
-    endif
-    if(trim(ann_arr%approach)=='cent2') then
-            if (allocated(ann_arr%a)) deallocate(ann_arr%a)
-            allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-            ann_arr%amat_initiated=.false.
-            ann_arr%a=0.d0
     endif
     call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
 !    do iat=1,atoms%nat
@@ -124,9 +119,9 @@ subroutine cal_potential_ann(parini,atoms)
     if(parini%add_repulsive) then
         call add_repulsive_potential(parini,atoms)
     endif
-    if(allocated(atoms%ratim)) then
-        call atom_deallocate_old(atoms,ratim=.true.)
-    endif
+    !if(allocated(atoms%ratim)) then
+    !    call atom_deallocate_old(atoms,ratim=.true.)
+    !endif
     atoms%natim=0
 end subroutine cal_potential_ann
 !*****************************************************************************************

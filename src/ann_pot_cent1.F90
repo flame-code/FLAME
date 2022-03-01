@@ -43,6 +43,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time1)
     call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)
     if(parini%iverbose>=2) call cpu_time(time2)
+    call symfunc%init_symfunc(parini%mpi_env)
     if(ann_arr%compute_symfunc) then
         call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
@@ -158,6 +159,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
         deallocate(ann_arr%fatpq)
         deallocate(ann_arr%stresspq)
     endif
+    call symfunc%fini_symfunc()
     call f_release_routine()
 end subroutine cal_ann_cent1
 !*****************************************************************************************

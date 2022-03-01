@@ -29,6 +29,7 @@ subroutine ann_train(parini)
     use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, ann_lm
     use mod_opt_ann, only: set_annweights
     use mod_atoms, only: typ_atoms_arr, typ_atoms
+    use mod_ann_io_yaml, only: read_data_yaml, write_ann_all_yaml
     use mod_processors, only: iproc
     use mod_callback_ann
     use dynamic_memory
@@ -48,15 +49,18 @@ subroutine ann_train(parini)
     call f_routine(id='ann_train')
     !-------------------------------------------------------
     !Reading configurations and their energies and forces
+    if(trim(parini%approach_ann)=='cent2' .and. trim(parini%optimizer_ann)/='rivals_fitchi') then
+        ann_arr%trial_energy_required=.false.
+    endif
     inquire(file="list_posinp_train.yaml",exist=file_exists)
     if(file_exists) then
-        call read_data_yaml(parini,'list_posinp_train.yaml',atoms_train)
+        call read_data_yaml(parini,'list_posinp_train.yaml',atoms_train,ann_arr=ann_arr)
     else
         call read_data_old(parini,'list_posinp_train',atoms_train)
     endif
     inquire(file="list_posinp_valid.yaml",exist=file_exists)
     if(file_exists) then
-        call read_data_yaml(parini,'list_posinp_valid.yaml',atoms_valid)
+        call read_data_yaml(parini,'list_posinp_valid.yaml',atoms_valid,ann_arr=ann_arr)
     else
         call read_data_old(parini,'list_posinp_valid',atoms_valid)
     endif
@@ -141,7 +145,7 @@ subroutine ann_train(parini)
             call write_ann_all(parini,ann_arr,-1)
         endif
     endif
-    call fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    call fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_smplx,symfunc_train,symfunc_valid)
 
     call f_release_routine()
 end subroutine ann_train
@@ -255,7 +259,7 @@ end subroutine centt_simplex
 subroutine cal_rmse_force_centt(ndim,vertex,rmse_force_centt)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
-    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_atoms, only: typ_atoms, atom_copy_old, atom_deallocate_old
     use mod_symfunc, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
@@ -302,6 +306,7 @@ subroutine cal_rmse_force_centt(ndim,vertex,rmse_force_centt)
         enddo
         nat_tot=nat_tot+atoms%nat
     enddo
+    call atom_deallocate_old(atoms)
     rmse_force_centt=sqrt(rmse/real(3*nat_tot,8))
     write(*,*) 'rmse_force_centt ',rmse_force_centt
 end subroutine cal_rmse_force_centt
@@ -309,7 +314,7 @@ end subroutine cal_rmse_force_centt
 subroutine cal_rmse_energy_centt(ndim,vertex,rmse_energy_centt)
     use mod_callback_ann, only: atoms_smplx=>atoms_smplx_t, parini=>parini_t
     use mod_callback_ann, only: ann_arr=>ann_arr_t, opt_ann=>opt_ann_t
-    use mod_atoms, only: typ_atoms, atom_copy_old
+    use mod_atoms, only: typ_atoms, atom_copy_old, atom_deallocate_old
     use mod_symfunc, only: typ_symfunc
     implicit none
     integer, intent(in) :: ndim
@@ -359,6 +364,7 @@ subroutine cal_rmse_energy_centt(ndim,vertex,rmse_energy_centt)
             rmse=rmse+(atoms%epot-atoms_smplx%atoms(iconf)%epot)**2
         enddo
     enddo
+    call atom_deallocate_old(atoms)
     rmse_energy_centt=sqrt(rmse/real(atoms_smplx%nconf,8))
     write(*,*) 'rmse_energy_centt ',rmse_energy_centt
 end subroutine cal_rmse_energy_centt
@@ -368,6 +374,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann
+    use mod_ann_io_yaml, only: read_input_ann_yaml, read_ann_yaml
     use mod_processors, only: iproc
     use yaml_output
     use futile
@@ -422,12 +429,12 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     endif
 end subroutine init_ann_train
 !*****************************************************************************************
-subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_smplx,symfunc_train,symfunc_valid)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, fini_opt_ann
-    use mod_atoms, only: typ_atoms_arr
+    use mod_atoms, only: typ_atoms_arr, atom_deallocate_old
     use mod_processors, only: iproc
     use dynamic_memory
     use yaml_output
@@ -435,7 +442,7 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_opt_ann), intent(inout):: opt_ann
-    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid
+    type(typ_atoms_arr), intent(inout):: atoms_train, atoms_valid, atoms_smplx
     type(typ_symfunc_arr), intent(inout):: symfunc_train, symfunc_valid
     !local variables
     integer:: iconf
@@ -448,15 +455,41 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc
     endif
 
     call ann_arr%fini_ann_arr()
+    if(trim(parini%optimizer_ann)=='rivals_fitchi') then
+        do iconf=1,atoms_train%nconf
+            deallocate(ann_arr%chi_ref_train(iconf)%chis)
+        enddo
+        deallocate(ann_arr%chi_ref_train)
+        do iconf=1,atoms_valid%nconf
+            deallocate(ann_arr%chi_ref_valid(iconf)%chis)
+        enddo
+        deallocate(ann_arr%chi_ref_valid)
+    endif
     call fini_opt_ann(opt_ann)
 
     do iconf=1,atoms_train%nconf
         call f_free(symfunc_train%symfunc(iconf)%y)
+        call atom_deallocate_old(atoms_train%atoms(iconf))
     enddo
 
     do iconf=1,atoms_valid%nconf
         call f_free(symfunc_valid%symfunc(iconf)%y)
+        call atom_deallocate_old(atoms_valid%atoms(iconf))
     enddo
+
+    do iconf=1,atoms_smplx%nconf
+        call atom_deallocate_old(atoms_smplx%atoms(iconf))
+    enddo
+
+    do iconf=1,atoms_train%nconf
+        call symfunc_train%symfunc(iconf)%fini_symfunc()
+    enddo
+    deallocate(symfunc_train%symfunc)
+
+    do iconf=1,atoms_valid%nconf
+        call symfunc_valid%symfunc(iconf)%fini_symfunc()
+    enddo
+    deallocate(symfunc_valid%symfunc)
 
     deallocate(atoms_train%conf_inc)
     deallocate(atoms_valid%conf_inc)
@@ -627,6 +660,7 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_atoms, only: typ_atoms_arr
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -642,12 +676,18 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     endif
     !write(*,'(a,i3,i6)') 'iproc,nconf ',iproc,atoms_arr%nconf
     do iconf=1,atoms_arr%nconf
+        call symfunc_arr%symfunc(iconf)%init_symfunc(parini%mpi_env)
         symfunc_arr%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) !HERE
         symfunc_arr%symfunc(iconf)%nat=atoms_arr%atoms(iconf)%nat
     enddo
-    configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
+    !configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
+    configuration: do iconf=1,atoms_arr%nconf
         if(trim(parini%symfunc)/='read') then
             call symfunc_arr%symfunc(iconf)%get_symfunc(parini,ann_arr,atoms_arr%atoms(iconf),.false.)
+            if(parini%mpi_env%nproc>1) then
+                call fmpi_allreduce(symfunc_arr%symfunc(iconf)%y(1,1), &
+                    ann_arr%ann(1)%nn(0)*atoms_arr%atoms(iconf)%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+            endif
             if(.not. parini%save_symfunc_force_ann) then
                 call f_free(symfunc_arr%symfunc(iconf)%y0d)
             endif
@@ -1196,14 +1236,6 @@ subroutine ann_evaluate_all(parini,iter,ann_arr)
     integer, intent(in):: iter
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    if(trim(parini%approach_ann)=='cent2') then
-    if (.not. allocated(ann_arr%ann_amat_train)) allocate(ann_arr%ann_amat_train(atoms_train%nconf))
-    if (.not. allocated(ann_arr%ann_amat_valid)) allocate(ann_arr%ann_amat_valid(atoms_valid%nconf))
-    if (.not. allocated(ann_arr%ann_chiQPar_train)) allocate(ann_arr%ann_chiQPar_train(atoms_train%nconf))
-    if (.not. allocated(ann_arr%ann_chiQPar_valid)) allocate(ann_arr%ann_chiQPar_valid(atoms_valid%nconf))
-    if (.not. allocated(ann_arr%ann_EPar_train)) allocate(ann_arr%ann_EPar_train(atoms_train%nconf))
-    if (.not. allocated(ann_arr%ann_EPar_valid)) allocate(ann_arr%ann_EPar_valid(atoms_valid%nconf))
-    endif
     call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
     call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
 end subroutine ann_evaluate_all
@@ -1213,7 +1245,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate_old
     use mod_opt_ann, only: typ_opt_ann
     use mod_processors, only: iproc
     use futile
@@ -1287,105 +1319,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         if(parini%save_symfunc_behnam) then
             call cal_ann_main(parini,atoms,symfunc_arr%symfunc(iconf),ann_arr,opt_ann)
         else
-            if(trim(parini%approach_ann)=='cent2') then
-                if (allocated(ann_arr%a)) deallocate(ann_arr%a)
-                if(trim(data_set)=="train") then
-                    if(.not. allocated(ann_arr%ann_amat_train(iconf)%amat)) then
-                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-                        allocate(ann_arr%ann_amat_train(iconf)%amat((atoms%nat+1)*(atoms%nat+1)))
-                        ann_arr%ann_amat_train(iconf)%amat=0.d0
-                        ann_arr%a=0.d0
-                        ann_arr%amat_initiated=.false.
-                    else
-                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-                        ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
-                        ann_arr%amat_initiated=.true.
-                    end if
-                    if(.not. allocated(ann_arr%ann_chiQPar_train(iconf)%chiQPar)) then
-                        allocate(ann_arr%Xq((atoms%nat),(atoms%nat)))
-                        allocate(ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat)))
-                        ann_arr%ann_chiQPar_train(iconf)%chiQPar=0.d0
-                        ann_arr%Xq=0.d0
-                        ann_arr%chiQPar_initiated=.false.
-                    else
-                        allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
-                        ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
-                        ann_arr%chiQPar_initiated=.true.
-                    end if
-                    if(.not. allocated(ann_arr%ann_EPar_train(iconf)%EPar)) then
-                        allocate(ann_arr%EP((atoms%nat)))
-                        allocate(ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat)))
-                        ann_arr%ann_EPar_train(iconf)%EPar=0.d0
-                        ann_arr%EP=0.d0
-                        ann_arr%EPar_initiated=.false.
-                    else
-                        allocate(ann_arr%EP(1:(atoms%nat)))
-                        ann_arr%EP(1:(atoms%nat))=ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat))
-                        ann_arr%EPar_initiated=.true.
-                    end if
-                elseif(trim(data_set)=="valid") then
-                    if(.not. allocated(ann_arr%ann_amat_valid(iconf)%amat)) then
-                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-                        allocate(ann_arr%ann_amat_valid(iconf)%amat((atoms%nat+1)*(atoms%nat+1)))
-                        ann_arr%ann_amat_valid(iconf)%amat=0.d0
-                        ann_arr%a=0.d0
-                        ann_arr%amat_initiated=.false.
-                    else
-                        allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-                        ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_valid(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
-                        ann_arr%amat_initiated=.true.
-                    end if
-                    if(.not. allocated(ann_arr%ann_chiQPar_valid(iconf)%chiQPar)) then
-                        allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
-                        allocate(ann_arr%ann_chiQPar_valid(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat)))
-                        ann_arr%ann_chiQPar_valid(iconf)%chiQPar=0.d0
-                        ann_arr%Xq=0.d0
-                        ann_arr%chiQPar_initiated=.false.
-                    else
-                        allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
-                        ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_valid(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
-                        ann_arr%chiQPar_initiated=.true.
-                    end if
-                    if(.not. allocated(ann_arr%ann_EPar_valid(iconf)%EPar)) then
-                        allocate(ann_arr%EP(1:(atoms%nat)))
-                        allocate(ann_arr%ann_EPar_valid(iconf)%EPar(1:(atoms%nat)))
-                        ann_arr%ann_EPar_valid(iconf)%EPar=0.d0
-                        ann_arr%EP=0.d0
-                        ann_arr%EPar_initiated=.false.
-                    else
-                        allocate(ann_arr%EP(1:(atoms%nat)))
-                        ann_arr%EP(1:(atoms%nat))=ann_arr%ann_EPar_valid(iconf)%EPar(1:(atoms%nat))
-                        ann_arr%EPar_initiated=.true.
-                    end if
-                endif
-            endif
             call cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
-            if(trim(parini%approach_ann)=='cent2') then
-                if(.not. ann_arr%amat_initiated) then
-                    if(trim(data_set)=="train") then
-                        ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
-                    elseif(trim(data_set)=="valid") then
-                        ann_arr%ann_amat_valid(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))
-                    endif
-                end if
-                deallocate(ann_arr%a)
-                if(.not. ann_arr%chiQPar_initiated) then
-                    if(trim(data_set)=="train") then
-                        ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))=ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))
-                    elseif(trim(data_set)=="valid") then
-                        ann_arr%ann_chiQPar_valid(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))=ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))
-                    endif
-                end if
-                deallocate(ann_arr%Xq)
-                if(.not. ann_arr%EPar_initiated) then
-                    if(trim(data_set)=="train") then
-                        ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat))=ann_arr%EP(1:(atoms%nat))
-                    elseif(trim(data_set)=="valid") then
-                        ann_arr%ann_EPar_valid(iconf)%EPar(1:(atoms%nat))=ann_arr%EP(1:(atoms%nat))
-                    endif
-                end if
-                deallocate(ann_arr%EP)
-            end if
         endif
         !if(iter==parini%nstep_opt_ann) then
         !    write(40+ifile,'(2i6,2es24.15,es14.5)') iconf,atoms_arr%atoms(iconf)%nat, &
@@ -1393,10 +1327,6 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         !        (atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
         !endif
         tt=abs(atoms%epot-atoms_arr%atoms(iconf)%epot)/atoms_arr%atoms(iconf)%nat
-        if(trim(parini%approach_ann)=='cent2') then
-            tt=abs(atoms%epot-atoms_arr%atoms(iconf)%trial_ref_energy(1))/atoms_arr%atoms(iconf)%nat
-            write(*,*) 'ENERGIES_EHSAN',atoms%epot,atoms_arr%atoms(iconf)%trial_ref_energy(1)
-        endif
         tt1=atoms%epot/atoms_arr%atoms(iconf)%nat
         tt2=atoms_arr%atoms(iconf)%epot/atoms_arr%atoms(iconf)%nat
         !HERE
@@ -1445,6 +1375,7 @@ subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
         enddo
         ttn=ttn+ann_arr%fchi_norm
         tta=tta+ann_arr%fchi_angle
+        call atom_deallocate_old(atoms)
         !write(44,'(2i7,4es14.5)') iter,iconf,ann_arr%fchi_norm,ann_arr%fchi_angle,ttn/nconf_force,tta/nconf_force
         !endif
     enddo configuration
@@ -1502,7 +1433,9 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     use mod_ann, only: typ_ann_arr, convert_x_ann_arr
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
+    use mod_ann_io_yaml, only: write_ann_yaml
     use mod_opt_ann, only: typ_opt_ann, init_opt_ann, get_opt_ann_x
+    use mod_ann_io_yaml, only: get_symfunc_parameters_yaml
     use mod_processors, only: iproc
     use yaml_output
     use futile
@@ -1561,22 +1494,24 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     allocate(f(n),p(n,n),v1(n)) !,opt_ann%epotd(ann_arr%num(1)))
     allocate(chi_ref_all_train(ann_arr%natmax,atoms_train%nconf))
     allocate(chi_ref_all_valid(ann_arr%natmax,atoms_valid%nconf))
-    open(unit=12,file='chi_ref_train.dat',status='old',iostat=ios)
+    !open(unit=12,file='chi_ref_train.dat',status='old',iostat=ios)
     do iconf=1,atoms_train%nconf
     do iat=1,atoms_train%atoms(iconf)%nat
-        read(12,*) str1,str2,str3,chi_ref_all_train(iat,iconf)
+        !read(12,*) str1,str2,str3,chi_ref_all_train(iat,iconf)
+        chi_ref_all_train(iat,iconf)=ann_arr_main%chi_ref_train(iconf)%chis(iat)
         !write(*,*) str1,str2,str3,chi_ref_all_train(iat,iconf)
     enddo
     enddo
-    close(12)
-    open(unit=12,file='chi_ref_valid.dat',status='old',iostat=ios)
+    !close(12)
+    !open(unit=12,file='chi_ref_valid.dat',status='old',iostat=ios)
     do iconf=1,atoms_valid%nconf
     do iat=1,atoms_valid%atoms(iconf)%nat
-        read(12,*) str1,str2,str3,chi_ref_all_valid(iat,iconf)
+        !read(12,*) str1,str2,str3,chi_ref_all_valid(iat,iconf)
+        chi_ref_all_valid(iat,iconf)=ann_arr_main%chi_ref_valid(iconf)%chis(iat)
         !write(*,*) str1,str2,str3,chi_ref_all_valid(iat,iconf)
     enddo
     enddo
-    close(12)
+    !close(12)
 
     do ita=1,parini%ntypat
     ndp_train=0

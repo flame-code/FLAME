@@ -893,6 +893,7 @@ contains
     character(len=3) :: adv
     character(len=5) :: prefix
     character(len=stream%max_record_length) :: towrite
+    integer:: len_towrite
 
     if(present(istat)) istat=0 !no errors
 
@@ -937,10 +938,13 @@ contains
     !a empty message is not written
     !    print *,'thisone'
     if (.not. present(istat)) then
-       if (len_trim(message) > 0) &
-            call buffer_string(towrite,len(towrite),message,msg_lgt)
+       if (len_trim(message) > 0) then
+            len_towrite=len(towrite)
+            call buffer_string(towrite,len_towrite,message,msg_lgt)
+        endif
     else
-       call buffer_string(towrite,len(towrite),message,msg_lgt,istat=istat)
+       len_towrite=len(towrite)
+       call buffer_string(towrite,len_towrite,message,msg_lgt,istat=istat)
     end if
     !    print *,'not really'
     prefix_lgt=0
@@ -969,7 +973,8 @@ contains
        if (.not.stream%flowrite) then
           call open_indent_level(stream)
        else
-          call buffer_string(towrite,len(towrite),' [',msg_lgt)
+          len_towrite=len(towrite)
+          call buffer_string(towrite,len_towrite,' [',msg_lgt)
           !comma has to be written afterwards, if there is a message
           !stream%flowrite=-1
           stream%flowrite=.true.
@@ -999,7 +1004,8 @@ contains
           call open_indent_level(stream)
        else
           !write(stdout,*)'here',prefix,'there',icomma,flowrite,iflowlevel
-          call buffer_string(towrite,len(towrite),' {',msg_lgt)
+          len_towrite=len(towrite)
+          call buffer_string(towrite,len_towrite,' {',msg_lgt)
           !stream%flowrite=-1
           stream%flowrite=.true.
           reset_tabbing=.true.

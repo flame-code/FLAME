@@ -2,11 +2,16 @@
 module mod_symfunc
     use mod_linked_lists, only: typ_linked_lists
     use mod_symfunc_data, only: typ_symfunc_data
+    use wrapper_MPI, only: mpi_environment
     implicit none
     private
     public:: typ_symfunc_data, typ_symfunc
     type, extends(typ_symfunc_data):: typ_symfunc
+        type(mpi_environment), public:: mpi_env
+        logical, private:: initialized=.false.
         contains
+        procedure, public, pass(self):: init_symfunc
+        procedure, public, pass(self):: fini_symfunc
         procedure, public, pass(self):: get_symfunc
     end type typ_symfunc
     type, public:: typ_symfunc_arr
@@ -14,6 +19,24 @@ module mod_symfunc
         type(typ_symfunc), allocatable:: symfunc(:)
     end type typ_symfunc_arr
 contains
+!*****************************************************************************************
+subroutine init_symfunc(self,mpi_env)
+    use wrapper_MPI, only: mpi_environment
+    implicit none
+    class(typ_symfunc), intent(inout):: self
+    type(mpi_environment), intent(in):: mpi_env
+    !local variables
+    self%mpi_env=mpi_env
+    self%initialized=.true.
+end subroutine init_symfunc
+!*****************************************************************************************
+subroutine fini_symfunc(self)
+    use wrapper_MPI, only: mpi_environment
+    implicit none
+    class(typ_symfunc), intent(inout):: self
+    !local variables
+    self%initialized=.false.
+end subroutine fini_symfunc
 !*****************************************************************************************
 subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     use mod_parini, only: typ_parini
@@ -34,6 +57,10 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     integer:: iats, iate, mat, mproc, ibs, ibe
     real(8):: gleft
     call f_routine(id='get_symfunc')
+    if(.not. self%initialized) then
+        write(*,*) 'ERROR: symfunc not initialized.'
+        stop
+    endif
     !call f_timing(TCAT_SYMFUNC_COMPUT,'ON')
     !-----------------------------------------------------------------
     !first index of "y0d" is for number of symmetry function
@@ -59,7 +86,7 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
             enddo
     else bondbased
         if (parini%symfunc_type_ann=='behler') then 
-            call symmetry_functions_driver(parini,ann_arr,atoms,self%typ_symfunc_data)
+            call symmetry_functions_driver(parini,ann_arr,atoms,self%mpi_env,self%typ_symfunc_data)
         else
             call symmetry_functions_driver_stefan(parini,ann_arr,atoms,self%typ_symfunc_data)
         endif
@@ -72,12 +99,12 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
                     self%y(i0,iat)=(self%y(i0,iat)-gleft)*ann_arr%ann(isat)%two_over_gdiff(i0)-1.d0
                 enddo
             enddo
-            if(parini%mpi_env%nproc>1) then
-                mat=atoms%nat/parini%mpi_env%nproc
-                iats=parini%mpi_env%iproc*mat+1
-                mproc=mod(atoms%nat,parini%mpi_env%nproc)
-                iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
-                if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+            if(self%mpi_env%nproc>1) then
+                mat=atoms%nat/self%mpi_env%nproc
+                iats=self%mpi_env%iproc*mat+1
+                mproc=mod(atoms%nat,self%mpi_env%nproc)
+                iats=iats+max(0,self%mpi_env%iproc-self%mpi_env%nproc+mproc)
+                if(self%mpi_env%iproc>self%mpi_env%nproc-mproc-1) mat=mat+1
                 iate=iats+mat-1
             else
                 iats=1

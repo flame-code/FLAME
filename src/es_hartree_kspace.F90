@@ -1,6 +1,7 @@
 !*****************************************************************************************
 subroutine get_psolver_kspace_exprnscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,npow,pot)
     use mod_greenf_kspace, only: typ_greenf_kspace
+    use mod_processors, only: iproc
     implicit none
     include 'fftw3.f'
     integer, intent(in):: ngpx, ngpy, ngpz, npow
@@ -21,7 +22,9 @@ subroutine get_psolver_kspace_exprnscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,npow,po
     hmin=min(hgrid(1,1),hgrid(2,2),hgrid(3,3))
     nadd=floor((-log(1.d-4))**(1.d0/real(npow,kind=8))/(sf*hmin))
     !if(mod(nadd,2)/=0) nadd=nadd+1
-    write(*,*) 'nadd= ',nadd
+    if(iproc==0) then
+        write(*,*) 'nadd= ',nadd
+    endif
     ngpx_ext=ngpx+2*nadd
     ngpy_ext=ngpy+2*nadd
     ngpz_ext=ngpz+2*nadd

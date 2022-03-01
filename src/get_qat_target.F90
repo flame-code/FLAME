@@ -7,6 +7,8 @@ subroutine get_qat_target(parini)
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, update_ratp, update_rat
     use mod_electrostatics, only: typ_poisson
     use mod_ann, only: typ_ann_arr
+    use mod_ann_io_yaml, only: read_data_yaml
+    use mod_trial_energy, only: typ_trial_energy
     use yaml_output
     implicit none
     type(typ_parini) :: parini
@@ -22,7 +24,7 @@ subroutine get_qat_target(parini)
     real(8), allocatable :: rho_O(:),pot_O(:),pot_scn_O(:)
     real(8), allocatable :: grid_rho(:,:,:)
     real(8), allocatable :: E_par(:,:)!, E_par_0(:,:)
-    real(8), allocatable :: trial_energy(:), rhs(:), atoms_qat(:), qat_target(:), ipiv(:)
+    real(8), allocatable :: trial_energy_t(:), rhs(:), atoms_qat(:), qat_target(:), ipiv(:)
     real(8), allocatable :: amat(:,:),eigen_val_amat(:,:)
     real(8), allocatable :: real_eigenval(:),imag_eigenval(:),work(:)
     real(8), allocatable :: right_eigenvec(:,:),left_eigenvec(:,:)
@@ -38,9 +40,15 @@ subroutine get_qat_target(parini)
     integer :: ngp, ngpx, ngpy, ngpz
     integer :: linearGridNumber
     integer :: info
+    type(typ_trial_energy):: trial_energy
+    write(*,'(a)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+    write(*,'(a)') 'ERROR: it should not work after removing trial_energy from atoms!'
+    write(*,'(a)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+    stop
     !INITIAL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     pi = 4.d0*atan(1.d0)
-    call read_data_yaml(parini,'list_posinp.yaml',atoms_arr)
+    ann_arr%trial_energy_required=.false.
+    call read_data_yaml(parini,'list_posinp.yaml',atoms_arr,ann_arr=ann_arr)
     call atom_copy_old(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     allocate(tmp_rat(3,atoms%nat),tmp_cv(3,3))
     allocate(qat_target(1:atoms%nat))
@@ -75,11 +83,11 @@ subroutine get_qat_target(parini)
     call get_scf_pot(atoms%cellvec,ngp,poisson%rgcut,parini%gaussian_width_Mg,parini%screening_factor,pot_Mg,.false.)
     call get_scf_pot(atoms%cellvec,ngp,poisson%rgcut,parini%gaussian_width_O,parini%screening_factor,pot_O,.true.,0.5d0,trial_rho)
     !LOCAL POT%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    trial_num = atoms%ntrial ! Equal to trial gaussian numbers
+    trial_num = trial_energy%ntrial ! Equal to trial gaussian numbers
     allocate(amat(1:atoms%nat+1,1:atoms%nat+1))
     allocate(E_par(1:trial_num,1:atoms%nat))
     allocate(rhs(1:atoms%nat))
-    call get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_target,ngp,E_par,rhs,amat)
+    call get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_target,ngp,E_par,rhs,amat,trial_energy)
     !Solve Linear Equations and get EigenValues%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     allocate(ipiv(1:atoms%nat))
     allocate(atoms_qat(1:atoms%nat+1))
@@ -110,25 +118,25 @@ subroutine get_qat_target(parini)
     !            left_eigenvec,1,right_eigenvec,1,work,4*atoms%nat,info) 
     call DSYEV('N','U',atoms%nat,eigen_val_amat,atoms%nat,real_eigenval,work,4*atoms%nat,info)
     !COST FUNCTION%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    allocate(trial_energy(1:trial_num))
+    allocate(trial_energy_t(1:trial_num))
     cost_function = 0.d0
     energy_error = 0.d0
     do kat=1,trial_num
-        trial_energy(kat)=0.d0
+        trial_energy_t(kat)=0.d0
         do iat=1,atoms%nat
-            dx=atoms%ratp(1,iat)-atoms%ratp(1,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(1,kat)
-            dy=atoms%ratp(2,iat)-atoms%ratp(2,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(2,kat)
-            dz=atoms%ratp(3,iat)-atoms%ratp(3,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(3,kat)
-            trial_energy(kat)=trial_energy(kat)+atoms_qat(iat)*E_par(kat,iat)
-            write(99,'(3i3,45es11.3)') kat,atoms%trial_ref_nat(kat),iat,E_par(kat,iat), &!E_par_0(atoms%trial_ref_nat(kat),iat), &
-                                     atoms_qat(iat),atoms_qat(atoms%trial_ref_nat(kat)),sqrt(dx**2+dy**2+dz**2)
+            dx=atoms%ratp(1,iat)-atoms%ratp(1,trial_energy%iat_list(kat))-trial_energy%disp(1,kat)
+            dy=atoms%ratp(2,iat)-atoms%ratp(2,trial_energy%iat_list(kat))-trial_energy%disp(2,kat)
+            dz=atoms%ratp(3,iat)-atoms%ratp(3,trial_energy%iat_list(kat))-trial_energy%disp(3,kat)
+            trial_energy_t(kat)=trial_energy_t(kat)+atoms_qat(iat)*E_par(kat,iat)
+            write(99,'(3i3,45es11.3)') kat,trial_energy%iat_list(kat),iat,E_par(kat,iat), &!E_par_0(atoms%trial_ref_nat(kat),iat), &
+                                     atoms_qat(iat),atoms_qat(trial_energy%iat_list(kat)),sqrt(dx**2+dy**2+dz**2)
         end do
-        write(55,*)kat,atoms%trial_ref_nat(kat),trial_energy(kat),atoms%trial_ref_energy(kat)
-        cost_function=cost_function + (trial_energy(kat)-atoms%trial_ref_energy(kat))**2 +&
-                      parini%pen_coeff*((atoms_qat(atoms%trial_ref_nat(kat))-qat_target(atoms%trial_ref_nat(kat)))**2)
-        energy_error=energy_error+(trial_energy(kat)-atoms%trial_ref_energy(kat))**2
+        write(55,*)kat,trial_energy%iat_list(kat),trial_energy_t(kat),trial_energy%energy(kat)
+        cost_function=cost_function + (trial_energy_t(kat)-trial_energy%energy(kat))**2 +&
+                      parini%pen_coeff*((atoms_qat(trial_energy%iat_list(kat))-qat_target(trial_energy%iat_list(kat)))**2)
+        energy_error=energy_error+(trial_energy_t(kat)-trial_energy%energy(kat))**2
     end do
-    energy_error = sqrt(energy_error/atoms%ntrial)
+    energy_error = sqrt(energy_error/trial_energy%ntrial)
     call cpu_time(time_f)
     !CHARGE ANALYSIS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     Q_Mg_min = 1.d100
@@ -166,13 +174,13 @@ subroutine get_qat_target(parini)
                                             Q_Mg_min," | ",Q_Mg_max," | ",Q_Mg_max-Q_Mg_min," | ",Q_Mg_mean," | ",&
                                             Q_O_min," | ",Q_O_max," | ",Q_O_max-Q_O_min," | ",Q_O_mean," | ",&
                                             minval(real_eigenval(:))," | ",parini%q_avg_target," | ",&
-                                            maxval(abs(trial_energy(:)-atoms%trial_ref_energy))," |",&
-                                            atoms%trial_ref_nat(maxloc(abs(trial_energy(:)-atoms%trial_ref_energy)))," |"
+                                            maxval(abs(trial_energy_t(:)-trial_energy%energy(:)))," |",&
+                                            trial_energy%iat_list(maxloc(abs(trial_energy_t(:)-trial_energy%energy(:))))," |"
 
     write(77,'(a,es11.3)') 'Penalty Coeffcient:',parini%pen_coeff 
     write(77,'(a,es11.3)') 'Cost Function:     ',cost_function
     write(77,'(a,es11.3)') 'Energy Error(Ha):  ',energy_error
-    write(77,'(a,es11.3)') 'Max Energy Error:  ',maxval(abs(trial_energy(:)-atoms%trial_ref_energy))
+    write(77,'(a,es11.3)') 'Max Energy Error:  ',maxval(abs(trial_energy_t(:)-trial_energy%energy(:)))
     write(77,'(a,es11.3)') 'Condition Number:  ' ,maxval(real_eigenval(:))/minval(real_eigenval(:))
     write(77,'(a,es11.3)') 'Minimum EigenVal:  ' ,minval(real_eigenval(:))
     write(77,'(a,es11.3)') 'Maximum EigenVal:  ' ,maxval(real_eigenval(:))
@@ -330,64 +338,6 @@ subroutine cal_gauss_screened_poisson_gaussian(ngp,rrad,q,gw,sf,pot)
     pot(0)=q*2.d0/(sqrt(pi)*gw*(1.d0+gw**2*sf))
 end subroutine cal_gauss_screened_poisson_gaussian
 !*****************************************************************************************
-subroutine cal_powern_screened_poisson_gaussian(ngp,rrad,weight,q,gw,sf,npow,pot)
-    !Calculates Hartree potential.
-    implicit none
-    integer, intent(in):: ngp, npow
-    real(8), intent(in):: rrad(0:ngp), weight(0:ngp), q, gw, sf
-    real(8), intent(out):: pot(0:ngp)
-    !local variables
-    integer:: igp, jgp, mgp
-    real(8):: pi, tt0, tt1, tt2, ss1, ss2, res, slimit
-    real(8), allocatable:: w1(:)
-    pi=4.d0*atan(1.d0)
-    slimit=-log(1.d-10) ! 45.d0 !exp(-slimit)~2.9E-20
-    !write(*,*) 'slimit= ',slimit
-    allocate(w1(0:ngp))
-    w1(0:ngp)=0.d0
-    do igp=0,ngp
-        ss1=(sf*rrad(igp))**npow
-        if(ss1>slimit) then
-            mgp=igp
-            exit
-        endif
-        w1(igp)=exp(-ss1)
-    enddo
-    !write(*,*) 'mgp,ngp= ',mgp,ngp
-    tt0=q/(sqrt(pi)*gw)
-    do igp=1,ngp
-        res=0.d0
-        do jgp=0,mgp
-            ss1=(rrad(jgp)-rrad(igp))**2/gw**2
-            if(ss1>slimit) then
-                tt1=0.d0
-            else
-                tt1=exp(-ss1)
-            endif
-            ss2=4.d0*rrad(jgp)*rrad(igp)/gw**2
-            if(ss2>slimit) then
-                tt2=1.d0
-            else
-                tt2=(1.d0-exp(-ss2))
-            endif
-            res=res+w1(jgp)*tt1*tt2*weight(jgp)
-        enddo
-        pot(igp)=res*tt0/rrad(igp)
-    enddo
-    res=0.d0
-    do jgp=0,mgp
-        ss1=rrad(jgp)**2/gw**2
-        if(ss1>slimit) then
-            tt1=0.d0
-        else
-            tt1=exp(-ss1)
-        endif
-        res=res+w1(jgp)*tt1*rrad(jgp)*weight(jgp)
-    enddo
-    pot(0)=res*4.d0*q/(sqrt(pi)*gw**3)
-    deallocate(w1)
-end subroutine cal_powern_screened_poisson_gaussian
-!*****************************************************************************************
 !subroutine cal_gauss_screened_poisson_gaussian(ngp,rrad,q,gw,sf,pot)
 !    !Calculates Hartree potential.
 !    implicit none
@@ -418,44 +368,8 @@ end subroutine cal_powern_screened_poisson_gaussian
 !    pot(0)=q*2.d0/(sqrt(pi)*gw*(1.d0+gw**2*sf))
 !end subroutine cal_gauss_screened_poisson_gaussian
 !*****************************************************************************************
-!This routine calculates:
-!4*pi/r*\int_0^r rho(r') r'^2 dr' + 4*pi*\int_r^inf rho(r') r' dr'
-subroutine cal_pot_hartree(ngp,rrad,den,pot_hartree)
-    !Calculates Hartree potential.
-    implicit none
-    integer, intent(in):: ngp
-    real(8), intent(in):: rrad(0:ngp), den(0:ngp)
-    real(8), intent(out):: pot_hartree(0:ngp)
-    !local variables
-    integer:: igp
-    real(8):: pi, tt
-    real(8), allocatable:: wa1(:), wa2(:)
-    pi=4.d0*atan(1.d0)
-    allocate(wa1(0:ngp),wa2(0:ngp))
-    !calculating the first integral: \int_0^r rho(r') r'^2 dr'
-    wa1(0)=.0d0
-    do igp=1,ngp
-        !wa1(igp)=wa1(igp-1)+den(igp)*rrad(igp)*rrad(igp)*weight(igp)
-        tt=den(igp-1)*rrad(igp-1)**2+den(igp)*rrad(igp)**2
-        wa1(igp)=wa1(igp-1)+tt*(rrad(igp)-rrad(igp-1))*0.5d0
-    enddo
-    !calculating the second integral: \int_r^inf rho(r') r' dr'
-    wa2(ngp)=.0d0
-    do igp=ngp-1,0,-1
-        tt=den(igp)*rrad(igp)+den(igp+1)*rrad(igp+1)
-        wa2(igp)=wa2(igp+1)+tt*(rrad(igp+1)-rrad(igp))*0.5d0
-    enddo
-    !finally summing the two integrals
-    !note that Hartree potential at origin is due zero not infinity,
-    !this can be obtained after resolving 0/0 ambiguity
-    pot_hartree(0)=(4.d0*pi)*wa2(0)
-    do igp=1,ngp
-        pot_hartree(igp)=4.d0*pi*(wa1(igp)/rrad(igp)+wa2(igp))
-    enddo
-    deallocate(wa1,wa2)
-end subroutine cal_pot_hartree
-!*****************************************************************************************
 subroutine get_scf_pot(cv,ngp,rgcut,gw,scf,pot,calc_trial,gw_trial,trial_rho)
+    use mod_radpots_cent2, only: cal_pot_hartree
     logical, intent(in) :: calc_trial
     integer, intent(in) :: ngp
     real(8), intent(in) :: cv(1:3,1:3)
@@ -498,18 +412,20 @@ subroutine get_scf_pot(cv,ngp,rgcut,gw,scf,pot,calc_trial,gw_trial,trial_rho)
     end do
 end subroutine
 !*****************************************************************************************
-subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_target,ngp,E_par,rhs,amat)
+subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_target,ngp,E_par,rhs,amat,trial_energy)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, update_ratp, update_rat
     use mod_electrostatics, only: typ_poisson
+    use mod_trial_energy, only: typ_trial_energy
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(in):: poisson
     integer :: ngp
+    type(typ_trial_energy), intent(inout):: trial_energy
     real(8) ,intent(in) :: pot_Mg(0:ngp),pot_O(0:ngp),trial_rho(0:ngp),qat_target(1:atoms%nat)
     real(8) ,intent(inout):: amat(1:atoms%nat+1,1:atoms%nat+1)
-    real(8) ,intent(inout):: E_par(1:atoms%ntrial,1:atoms%nat)
+    real(8) ,intent(inout):: E_par(1:trial_energy%ntrial,1:atoms%nat)
     real(8) ,intent(inout):: rhs(1:atoms%nat)
     !LOCAL Variables!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     integer :: iat,jat,igx,igy,igz,kat
@@ -521,7 +437,7 @@ subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_
     nbgx = int(poisson%rgcut/poisson%hgrid(1,1))+3
     nbgy = int(poisson%rgcut/poisson%hgrid(2,2))+3
     nbgz = int(poisson%rgcut/poisson%hgrid(3,3))+3
-    E_par(1:atoms%ntrial,1:atoms%nat)=0.d0
+    E_par(1:trial_energy%ntrial,1:atoms%nat)=0.d0
     amat(1:atoms%nat+1,1:atoms%nat+1)=0.d0
     do iat = 1 , atoms%nat
         if(trim(atoms%sat(iat))=='Mg') then
@@ -554,14 +470,14 @@ subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_
             end do
         endif
         rhs(iat)=0.d0
-        do kat = 1 , atoms%ntrial 
+        do kat = 1 , trial_energy%ntrial 
             tt = 0.d0
             do igx = 1 , poisson%ngpx
                 do igy = 1 , poisson%ngpy
                     do igz = 1 , poisson%ngpz
-                        dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(1,kat)
-                        dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(2,kat)
-                        dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,atoms%trial_ref_nat(kat))-atoms%trial_ref_disp(3,kat)
+                        dx = (-nbgx+igx)*poisson%hgrid(1,1)-atoms%ratp(1,trial_energy%iat_list(kat))-trial_energy%disp(1,kat)
+                        dy = (-nbgy+igy)*poisson%hgrid(2,2)-atoms%ratp(2,trial_energy%iat_list(kat))-trial_energy%disp(2,kat)
+                        dz = (-nbgz+igz)*poisson%hgrid(3,3)-atoms%ratp(3,trial_energy%iat_list(kat))-trial_energy%disp(3,kat)
                         dr = sqrt(dx**2+dy**2+dz**2)
                         linearGridNumber=floor(dr/hgp)
                         grid_trial_rho(igx,igy,igz)=(dr/hgp-linearGridNumber)*(trial_rho(linearGridNumber+1)&
@@ -571,13 +487,13 @@ subroutine get_amat_cent2_trial(parini,atoms,poisson,pot_Mg,pot_O,trial_rho,qat_
                 end do
             end do 
             E_par(kat,iat)=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)!-E_par_0(atoms%trial_ref_nat(kat),iat)
-            rhs(iat)=rhs(iat)+E_par(kat,iat)*atoms%trial_ref_energy(kat)
+            rhs(iat)=rhs(iat)+E_par(kat,iat)*trial_energy%energy(kat)
         end do !kat
         rhs(iat)=2.d0*(rhs(iat)+parini%pen_coeff*qat_target(iat))
     end do !iat
     do iat = 1, atoms%nat
         do jat = iat,atoms%nat
-            do kat = 1 ,atoms%ntrial
+            do kat = 1 ,trial_energy%ntrial
                 amat(iat,jat)=amat(iat,jat)+E_par(kat,iat)*E_par(kat,jat)
             end do
             amat(iat,jat)=2.d0*amat(iat,jat)

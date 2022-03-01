@@ -7,7 +7,16 @@ dnl  - PACKAGE_VERSION, the version ;
 dnl  - PACKAGE_STRING, the name + the version ;
 dnl  - PACKAGE_BUGREPORT, the mail.
 AC_INIT([FLAME - Fully Loaded library for Atomistic Modelling Environment],[1.0],[alirezagh76@gmail.com],[flame])
-AC_PROG_RANLIB()
+dnl Look for ranlib and canonicalize it with the $host variable
+AC_CHECK_TOOL(RANLIB, ranlib, :)
+if test "$ranlib" = ":" ; then
+  AC_MSG_ERROR(["No 'ranlib' program found."])
+fi
+dnl Look for ar and canonicalize it with the $host variable
+AC_CHECK_TOOL(AR, ar, :)
+if test "$ar" = ":" ; then
+  AC_MSG_ERROR(["No 'ar' program found."])
+fi
 dnl for configuring the FCFUNC macro
 AC_CONFIG_HEADERS(config.h)
 dnl Init something, don't know exactly what...
@@ -35,6 +44,7 @@ dnl Check for python
 AM_PATH_PYTHON([2.3], , [:])
 
 dnl Check for existence of other options
+AX_MPI()
 AX_LAMMPS()
 AX_SPGLIB()
 AX_BPS()

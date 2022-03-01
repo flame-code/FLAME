@@ -3,12 +3,16 @@ module mod_ann
     use dictionaries
     use mod_linked_lists, only: typ_linked_lists
     use mod_electrostatics, only: typ_poisson
+    use mod_radpots_cent2, only: typ_radpots_cent2
     implicit none
     private
     public:: ann_arr_deallocate
     public:: convert_x_ann, convert_ann_x, convert_x_ann_arr
     public:: convert_ann_epotd
     public:: typ_ann_arr
+    type, public:: typ_chi_arr
+        real(8), allocatable:: chis(:)
+    end type typ_chi_arr
     type, public:: typ_ann
         type(dictionary), pointer :: dict=>null()
         integer:: nl !number of hidden layer plus one
@@ -38,6 +42,7 @@ module mod_ann
         real(8):: chi0
         real(8):: hardness
         real(8):: spring_const
+        real(8):: qtarget
         real(8):: zion
         real(8):: qinit
         real(8):: rionic
@@ -77,17 +82,7 @@ module mod_ann
         procedure, public, pass(self):: ann_allocate
         
     end type typ_ann
-    type, public:: typ_ann_amat
-        real(8), allocatable :: amat(:)
-    end type typ_ann_amat
     
-    type, public:: typ_ann_chiQPar
-        real(8), allocatable :: chiQPar(:,:)
-    end type typ_ann_chiQPar
-    type, public:: typ_ann_EPar
-        real(8), allocatable :: EPar(:)
-    end type typ_ann_EPar
-
     type:: typ_ann_arr
         logical:: exists_yaml_file = .false.
         integer:: iunit
@@ -96,17 +91,14 @@ module mod_ann
         integer:: nweight_max=-1
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
-        logical:: amat_initiated=.false.
-        logical:: chiQPar_initiated=.false.
-        logical:: EPar_initiated=.false.
         logical:: linear_rho_pot_initiated=.false. 
+        logical:: trial_energy_required=.false.
         character(30):: event='unknown'
         character(50):: approach='unknown'
         character(50):: syslinsolver='unknown'
         real(8):: rcut=-1.d0
         real(8):: ener_ref
         real(8):: epot_es
-        real(8):: epot_trial
         real(8):: fchi_angle
         real(8):: fchi_norm
         real(8):: dpm_err 
@@ -128,13 +120,7 @@ module mod_ann
         !real(8), allocatable:: y0dr(:,:,:)
         integer, allocatable:: loc(:)
         integer, allocatable, public:: num(:)
-        real(8), allocatable:: linear_rho_e(:,:)
-        real(8), allocatable:: linear_rho_n(:,:)
-        real(8), allocatable:: linear_pot_e(:,:)
-        real(8), allocatable:: linear_pot_n(:,:)
         real(8), allocatable:: a(:)
-        real(8), allocatable:: Xq(:,:)
-        real(8), allocatable:: EP(:)
         real(8), allocatable:: chi_i(:)
         real(8), allocatable:: chi_o(:)
         real(8), allocatable:: chi_d(:)
@@ -147,9 +133,10 @@ module mod_ann
         integer, allocatable:: ipiv(:)
         real(8), allocatable:: qq(:)
         type(typ_ann), allocatable:: ann(:)
-        type(typ_ann_amat), allocatable:: ann_amat_train(:), ann_amat_valid(:)
-        type(typ_ann_chiQPar), allocatable:: ann_chiQPar_train(:), ann_chiQPar_valid(:)
-        type(typ_ann_EPar), allocatable:: ann_EPar_train(:), ann_EPar_valid(:)
+        type(typ_radpots_cent2):: radpots_cent2
+        type(typ_chi_arr), allocatable:: chi_tmp(:)
+        type(typ_chi_arr), allocatable:: chi_ref_train(:)
+        type(typ_chi_arr), allocatable:: chi_ref_valid(:)
         contains
         procedure, public, pass(self):: init_ann_arr
         procedure, public, pass(self):: fini_ann_arr
@@ -219,6 +206,7 @@ subroutine fini_ann_arr(self)
     call ann_arr_deallocate(self)
     call f_free(self%num)
     call f_free(self%loc)
+    call self%radpots_cent2%fini_radpots_cent2()
 end subroutine fini_ann_arr
 !*****************************************************************************************
 subroutine ann_allocate(self,nnmax,nl)

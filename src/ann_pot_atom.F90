@@ -24,6 +24,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     call f_routine(id='cal_ann_atombased')
     call update_ratp(atoms)
     !call cpu_time(time0)
+    call symfunc%init_symfunc(parini%mpi_env)
     if(ann_arr%compute_symfunc) then
         call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
     else
@@ -53,6 +54,9 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
         iats=1
         iate=atoms%nat
         !mat=atoms%nat
+    endif
+    if(parini%mpi_env%nproc>1 .and. trim(ann_arr%event)=='train') then
+        ann_arr%g_per_atom=0.d0
     endif
     over_iat: do iat=1,atoms%nat
         if(iat<iats .or. iat>iate) cycle
@@ -117,6 +121,10 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     call fmpi_allreduce(atoms%epot,1,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(atoms%fat(1,1),3*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(atoms%stress(1,1),9,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    if(trim(ann_arr%event)=='train') then
+        call fmpi_allreduce(ann_arr%g_per_atom(1,1),ann_arr%nweight_max*atoms%nat, &
+            op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    endif
     endif
     !call cpu_time(time2)
     atoms%epot=atoms%epot+ann_arr%ener_ref
@@ -146,6 +154,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     !write(*,*) 'TT2 time ',time2-time1
     !write(*,*) 'TT3 time ',time3-time2
     !write(*,*) 'TTt time ',time3-time0
+    call symfunc%fini_symfunc()
     call f_release_routine()
 end subroutine cal_ann_atombased
 !*****************************************************************************************

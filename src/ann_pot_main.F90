@@ -3,7 +3,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
-    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp
+    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp, atom_deallocate_old
     use mod_callback_ann, only: atoms_train=>atoms_train_t
     use mod_callback_ann, only: symfunc_train=>symfunc_train_t
     implicit none
@@ -35,59 +35,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
     endif
     !-----------------------------------------------------------------
     call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-    if(trim(ann_arr%approach)=='cent2') then
-        if (allocated(ann_arr%a)) deallocate(ann_arr%a)
-        if(.not. allocated(ann_arr%ann_amat_train(iconf)%amat)) then 
-            allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-            allocate(ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1)))
-            ann_arr%ann_amat_train(iconf)%amat=0.d0
-            ann_arr%a=0.d0
-            ann_arr%amat_initiated=.false.
-        else
-            allocate(ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1)))
-            ann_arr%a(1:(atoms%nat+1)*(atoms%nat+1))=ann_arr%ann_amat_train(iconf)%amat(1:(atoms%nat+1)*(atoms%nat+1))
-            ann_arr%amat_initiated=.true.
-        end if 
-        if (allocated(ann_arr%Xq)) deallocate(ann_arr%Xq)
-        if(.not. allocated(ann_arr%ann_chiQPar_train(iconf)%chiQPar)) then 
-            allocate(ann_arr%Xq((atoms%nat),(atoms%nat)))
-            allocate(ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat)))
-            ann_arr%ann_chiQPar_train(iconf)%chiQPar=0.d0
-            ann_arr%Xq=0.d0
-            ann_arr%chiQPar_initiated=.false.
-        else
-            allocate(ann_arr%Xq(1:(atoms%nat),1:(atoms%nat)))
-            ann_arr%Xq(1:(atoms%nat),1:(atoms%nat))=ann_arr%ann_chiQPar_train(iconf)%chiQPar(1:(atoms%nat),1:(atoms%nat))
-            ann_arr%chiQPar_initiated=.true.
-        end if 
-        if (allocated(ann_arr%EP)) deallocate(ann_arr%EP)
-        if(.not. allocated(ann_arr%ann_EPar_train(iconf)%EPar)) then 
-            allocate(ann_arr%EP(1:atoms%nat))
-            allocate(ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat)))
-            ann_arr%ann_EPar_train(iconf)%EPar=0.d0
-            ann_arr%EP=0.d0
-            ann_arr%EPar_initiated=.false.
-        else
-            allocate(ann_arr%EP(1:(atoms%nat)))
-            ann_arr%EP(1:(atoms%nat))=ann_arr%ann_EPar_train(iconf)%EPar(1:(atoms%nat))
-            ann_arr%EPar_initiated=.true.
-        end if 
-    end if 
     call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
-    if(trim(ann_arr%approach)=='cent2') then
-        if(.not. ann_arr%amat_initiated) then
-            ann_arr%ann_amat_train(iconf)%amat=ann_arr%a
-        end if
-        deallocate(ann_arr%a)
-        if(.not. ann_arr%chiQPar_initiated) then
-            ann_arr%ann_chiQPar_train(iconf)%chiQPar=ann_arr%Xq
-        end if
-        deallocate(ann_arr%Xq)
-        if(.not. ann_arr%EPar_initiated) then
-            ann_arr%ann_EPar_train(iconf)%EPar=ann_arr%EP
-        end if
-        deallocate(ann_arr%EP)
-    end if
     !-----------------------------------------------------------------
     allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
     if(trim(ann_arr%approach)=='atombased') then
@@ -143,6 +91,7 @@ subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
         fcn_ann=atoms%epot
         fcn_ref=atoms_train%atoms(iconf)%epot
     endif
+    call atom_deallocate_old(atoms)
 end subroutine get_fcn_ann
 !*****************************************************************************************
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
@@ -152,6 +101,7 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
     use mod_opt_ann, only: typ_opt_ann
+    use mod_cent2, only: typ_cent2
     !use mod_tightbinding, only: typ_partb
     implicit none
     type(typ_parini), intent(in):: parini
@@ -164,12 +114,13 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     !real(8), allocatable:: xt(:), gt(:)
     integer:: i, j, iat
     type(typ_partb):: partb
+    type(typ_cent2):: cent2
     if(trim(ann_arr%approach)=='atombased') then
         call cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
         call cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent2') then
-        call cal_ann_cent2(parini,atoms,symfunc,ann_arr)
+        call cent2%cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='centt') then
         call cal_ann_centt(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent3') then
@@ -217,8 +168,10 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
-    real(8):: anat(100), g(100), rmse, rmse_old, de0, alpha, tt
+    real(8):: rmse, rmse_old, de0, alpha, tt
     real(8), allocatable:: epotall(:), eref_all(:)
+    real(8), allocatable:: anat(:), g(:)
+    allocate(anat(100),g(100))
     !return
     ann_arr%event='train'
     call convert_opt_x_ann_arr(opt_ann,ann_arr)
@@ -278,6 +231,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     enddo
     call f_free(epotall)
     call f_free(eref_all)
+    deallocate(anat,g)
     !stop
 end subroutine prefit_cent_ener_ref
 !*****************************************************************************************
@@ -298,8 +252,12 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     !local variables
     type(typ_atoms):: atoms
     integer:: iconf, istep, iat, ia, isatur, nsatur
-    real(8):: anat1(100), g1(100), rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
-    real(8):: anat2(100), g2(100), qnet
+    real(8):: rmse, rmse_old, dchi0, dhardness, alpha1, alpha2, tt
+    real(8):: qnet
+    real(8), allocatable:: anat1(:), g1(:)
+    real(8), allocatable:: anat2(:), g2(:)
+    allocate(anat1(100),g1(100))
+    allocate(anat2(100),g2(100))
     ann_arr%event='train'
     call convert_opt_x_ann_arr(opt_ann,ann_arr)
     nsatur=3
@@ -356,5 +314,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
         enddo
         rmse_old=rmse
     enddo
+    deallocate(anat1,g1)
+    deallocate(anat2,g2)
 end subroutine prefit_cent
 !*****************************************************************************************

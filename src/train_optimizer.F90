@@ -102,6 +102,7 @@ end subroutine convert_opt_x_ann_arr
 subroutine ekf_rivals(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
+    use mod_ann_io_yaml, only: write_ann_all_yaml
     use mod_processors, only: iproc
     use yaml_output
     implicit none
@@ -356,6 +357,7 @@ end subroutine analyze_epoch_print
 subroutine ekf_behler(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
+    use mod_ann_io_yaml, only: write_ann_all_yaml
     use mod_processors, only: iproc
     implicit none
     type(typ_parini), intent(in):: parini
@@ -518,7 +520,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     !use mod_opt_ann, only: typ_opt_ann
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate_old
     !use mod_opt_ann, only: ann_evaluate
     implicit none
     type(typ_parini), intent(in):: parini
@@ -543,6 +545,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
             fvec(iconf)=(atoms%epot-atoms_train%atoms(iconf)%epot)**2
+            call atom_deallocate_old(atoms)
         enddo
     elseif(iflag==2) then
         ann_arr%event='train'
@@ -550,6 +553,7 @@ subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atom
             call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
             call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
             fjac(iconf,1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(atoms%epot-atoms_train%atoms(iconf)%epot)*2.d0
+            call atom_deallocate_old(atoms)
         enddo
     elseif(iflag==0) then
         iter=icall0

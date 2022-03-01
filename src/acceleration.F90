@@ -3,11 +3,13 @@
 subroutine acceleration(pressure,accpos,acclat,accvol,vpos,vlat,vvol,strten,fcart,latvec,amass,latmass,f0inv,md_type,nat) 
 implicit none
 integer:: iat,i,j,md_type,nat
-real(8),dimension(3,nat):: accpos,vpos,fcart,fpos
+real(8),dimension(3,nat):: accpos,vpos,fcart
 real(8),dimension(3,3)  :: acclat,vlat,latvec,tmplat,pressure,a,velmat,sigma,lattrans,latdottrans,gdot,g,ginv,gtot,str_matrix
 real(8),dimension(3,3)  :: term1,term2,term3,term4,term5,term5_1,term5_2,sigmatrans,f0inv
 real(8):: amass(nat),latmass,crossp(3),strten(6),vol,vpostmp(3),volvel,trace3
 real(8):: accvol,vvol,vol_1_3
+real(8), allocatable:: fpos(:,:)
+           allocate(fpos(3,nat))
 !Get volume
            a=latvec
            vol= a(1,1)*a(2,2)*a(3,3)-a(1,1)*a(2,3)*a(3,2)-a(1,2)*a(2,1)*a(3,3)+&
@@ -156,6 +158,7 @@ elseif(md_type==4) then
 else
 stop "Wrong option in MD"
 endif
+           deallocate(fpos)
 end subroutine
 
 !**********************************************************************************************

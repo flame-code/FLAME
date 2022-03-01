@@ -3,16 +3,14 @@ module mod_yaml_conf
     implicit none
     private
     public:: read_yaml_conf, write_yaml_conf
+    public:: read_yaml_conf_getdict, read_yaml_conf_getatoms
+    public:: atoms2dict
 contains
 !*****************************************************************************************
 subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms_arr, atom_allocate, update_rat
-    use mod_const, only: bohr2ang, ha2ev
+    use mod_atoms, only: typ_atoms_arr
     use dictionaries
-    use yaml_parse
-    use dynamic_memory
-    use mod_acf, only: str_motion2bemoved
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -20,35 +18,43 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     integer, intent(in):: nconfmax
     type(typ_atoms_arr), intent(inout):: atoms_arr
     !local variables
-    integer:: ios, iconf, i, nconf, iat, k, nat, ii, ndigit, iiconf
-    integer:: ntrial,kat,trial_kat
-    character(256):: str, fn_tmp
-    character(256):: fn_fullpath
-    character(3):: str_motion
-    character(8):: str_fmt
-    character(50):: str_conf
-    character(10):: str_units_length
-    real(8):: t1, t2, t3, x, y, z, cf_length, fx, fy, fz 
-    real(8):: trial_energy,trial_x,trial_y,trial_z
-    real(8):: cvax, cvay, cvaz
-    real(8):: cvbx, cvby, cvbz
-    real(8):: cvcx, cvcy, cvcz
     type(dictionary), pointer :: confs_list=>null()
-    type(dictionary), pointer :: dict1=>null()
-    type(dictionary), pointer :: dict2=>null()
-    character, dimension(:), allocatable :: fbuf
-    integer(kind = 8) :: cbuf, cbuf_len
     if(nconfmax<1) then
         write(*,'(a)') 'ERROR: why do you call acf_read_new with nconfmax<1 ?'
         stop
     endif
+    call read_yaml_conf_getdict(parini,filename,confs_list)
+    call read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
+    call dict_free(confs_list)
+    nullify(confs_list)
+    call yaml_mapping_open('Number of configurations read',flow=.true.)
+    call yaml_map('filename',trim(filename))
+    call yaml_map('nconf',atoms_arr%nconf)
+    call yaml_mapping_close()
+end subroutine read_yaml_conf
+!*****************************************************************************************
+subroutine read_yaml_conf_getdict(parini,filename,confs_list)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr
+    use dictionaries
+    use yaml_parse
+    use dynamic_memory
+    !use yaml_output
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: filename
+    type(dictionary), pointer, intent(out) :: confs_list
+    !local variables
+    character(256):: fn_tmp
+    character(256):: fn_fullpath
+    character, dimension(:), allocatable :: fbuf
+    integer(kind = 8) :: cbuf, cbuf_len
     fn_tmp=adjustl(trim(filename))
     if(fn_tmp(1:1)=='/') then
         fn_fullpath=trim(filename)
     else
         fn_fullpath=trim(parini%cwd)//'/'//trim(filename)
     endif
-
     call getFileContent(cbuf,cbuf_len,filename,len_trim(filename))
     fbuf=f_malloc0_str(1,int(cbuf_len),id='fbuf')
     call copyCBuffer(fbuf,cbuf,cbuf_len)
@@ -56,7 +62,31 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
     !then parse the user's input file
     call yaml_parse_from_char_array(confs_list,fbuf)
     call f_free_str(1,fbuf)
-
+end subroutine read_yaml_conf_getdict
+!*****************************************************************************************
+subroutine read_yaml_conf_getatoms(confs_list,nconfmax,atoms_arr)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms_arr, atom_allocate, update_rat
+    use mod_const, only: bohr2ang
+    use dictionaries
+    use yaml_parse
+    use dynamic_memory
+    use mod_acf, only: str_motion2bemoved
+    use yaml_output
+    implicit none
+    type(dictionary), pointer, intent(in):: confs_list
+    integer, intent(in):: nconfmax
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    !local variables
+    integer:: iconf, nconf, iat, nat, ii, iiconf
+    character(3):: str_motion
+    character(10):: str_units_length
+    real(8):: x, y, z, cf_length, fx, fy, fz 
+    real(8):: cvax, cvay, cvaz
+    real(8):: cvbx, cvby, cvbz
+    real(8):: cvcx, cvcy, cvcz
+    type(dictionary), pointer :: dict1=>null()
+    type(dictionary), pointer :: dict2=>null()
     nconf=dict_len(confs_list)
     atoms_arr%nconf=nconf
     if(nconf<1) stop 'ERROR: nconf<1 in read_yaml_conf'
@@ -67,12 +97,7 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
         iiconf=iconf-1
         dict1=>confs_list//iiconf//'conf'
         nat=dict1//'nat'
-        if(has_key(dict1,"ntrial")) then
-            ntrial=dict1//'ntrial'
-            call atom_allocate(atoms_arr%atoms(iconf),nat,0,0,ntrial=ntrial)
-        else
-            call atom_allocate(atoms_arr%atoms(iconf),nat,0,0)
-        endif
+        call atom_allocate(atoms_arr%atoms(iconf),nat,0,0)
         atoms_arr%atoms(iconf)%boundcond=dict1//'bc'
         cf_length=1.d0
         if(has_key(dict1,"units_length")) then
@@ -161,39 +186,12 @@ subroutine read_yaml_conf(parini,filename,nconfmax,atoms_arr)
                 nullify(dict2)
             enddo
         endif
-        if(has_key(dict1,"trial_ref_energy")) then
-            do kat=1,ntrial
-                ii=kat-1
-                dict2=>dict1//'trial_ref_energy'//ii
-                trial_kat=dict2//0
-                trial_x=dict2//1
-                trial_y=dict2//2
-                trial_z=dict2//3
-                trial_energy=dict2//4
-                atoms_arr%atoms(iconf)%trial_ref_nat(kat)=trial_kat
-                atoms_arr%atoms(iconf)%trial_ref_disp(1,kat)=trial_x
-                atoms_arr%atoms(iconf)%trial_ref_disp(2,kat)=trial_y
-                atoms_arr%atoms(iconf)%trial_ref_disp(3,kat)=trial_z
-                atoms_arr%atoms(iconf)%trial_ref_energy(kat)=trial_energy
-                nullify(dict2)
-            enddo
-        endif
         nullify(dict1)
     enddo
-
-    call dict_free(confs_list)
-    nullify(confs_list)
-
-    call yaml_mapping_open('Number of configurations read',flow=.true.)
-    call yaml_map('filename',trim(filename))
-    call yaml_map('nconf',nconf)
-    call yaml_mapping_close()
-    !write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
-end subroutine read_yaml_conf
+end subroutine read_yaml_conf_getatoms
 !*****************************************************************************************
 subroutine write_yaml_conf(file_info,atoms,strkey)
-    use mod_atoms, only: typ_file_info, typ_atoms, update_ratp, get_rat
-    use mod_const, only: bohr2ang, ha2ev
+    use mod_atoms, only: typ_file_info, typ_atoms
     use dictionaries
     use futile
     use yaml_parse
@@ -204,18 +202,58 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     type(typ_atoms), intent(in):: atoms
     character(*), optional, intent(in):: strkey
     !local variables
-    integer:: ios, iconf, i, nconf, iat, k, nat, ii, iunit, ierr
+    integer:: iunit, ierr
     character(256):: str_msg
-    character(256):: fn_tmp
-    character(256):: fn_fullpath
+    type(dictionary), pointer :: dict1=>null()
+
+    dict1=>dict_new()
+
+    call set(dict1//'conf',dict_new())
+
+    call atoms2dict(file_info,atoms,dict1)
+
+    iunit=f_get_free_unit(10**5)
+
+    if(trim(file_info%file_position)=='new') then
+        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
+             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
+    elseif(trim(file_info%file_position)=='append') then
+        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
+             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='append')
+    endif
+    if(ierr/=0) then
+        str_msg='Failed to create'//trim(file_info%filename_positions)
+        str_msg=trim(str_msg)//'error code='//trim(yaml_toa(ierr))
+       call yaml_warning(trim(str_msg))
+    end if
+    call yaml_release_document(unit=iunit)
+    call yaml_new_document(unit=iunit)
+
+    call yaml_dict_dump(dict1,unit=iunit)
+    call dict_free(dict1)
+    nullify(dict1)
+    call yaml_close_stream(unit=iunit)
+end subroutine write_yaml_conf
+!*****************************************************************************************
+subroutine atoms2dict(file_info,atoms,dict1)
+    use mod_atoms, only: typ_file_info, typ_atoms, get_rat
+    use mod_const, only: bohr2ang
+    use dictionaries
+    use futile
+    use yaml_parse
+    use dynamic_memory
+    use yaml_output
+    implicit none
+    type(typ_file_info), intent(inout):: file_info
+    type(typ_atoms), intent(in):: atoms
+    type(dictionary), pointer, intent(inout):: dict1
+    !local variables
+    integer:: iat, ii
     character(3):: str_motion
-    character(50):: str_conf
-    character(10):: str_units_length
-    real(8):: t1, t2, t3, x, y, z, cf_length, fx, fy, fz
+    real(8):: x, y, z, cf_length, fx, fy, fz
     real(8):: cvax, cvay, cvaz
     real(8):: cvbx, cvby, cvbz
     real(8):: cvcx, cvcy, cvcz
-    type(dictionary), pointer :: dict1=>null()
     type(dictionary), pointer :: single_atom_list=>null()
     type(dictionary), pointer :: coord_list=>null()
     type(dictionary), pointer :: conf_dict=>null()
@@ -224,9 +262,6 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
     real(8), allocatable:: rat(:,:)
     allocate(rat(3,atoms%nat))
 
-    dict1=>dict_new()
-
-    call set(dict1//'conf',dict_new())
     conf_dict=>dict1//'conf'
 
     call set(conf_dict//'nat',atoms%nat)
@@ -278,12 +313,12 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
         force_list=>conf_dict//'force'
         do iat=1,atoms%nat
             ii=iat-1
-            x=atoms%fat(1,iat)
-            y=atoms%fat(2,iat)
-            z=atoms%fat(3,iat)
+            fx=atoms%fat(1,iat)
+            fy=atoms%fat(2,iat)
+            fz=atoms%fat(3,iat)
             call set(force_list//ii,list_new(.item. "it will be overwritten"))
             single_atom_list=>force_list//ii
-            call set(single_atom_list,(/x,y,z/))
+            call set(single_atom_list,(/fx,fy,fz/))
             nullify(single_atom_list)
         enddo
         nullify(force_list)
@@ -301,37 +336,9 @@ subroutine write_yaml_conf(file_info,atoms,strkey)
             nullify(stress_list)
         endif
     endif
-
-    iunit=f_get_free_unit(10**5)
-
-    if(trim(file_info%file_position)=='new') then
-        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
-             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='rewind')
-    elseif(trim(file_info%file_position)=='append') then
-        call yaml_set_stream(unit=iunit,filename=trim(file_info%filename_positions),&
-             record_length=92,istat=ierr,setdefault=.false.,tabbing=0,position='append')
-    endif
-    if(ierr/=0) then
-        str_msg='Failed to create'//trim(file_info%filename_positions)
-        str_msg=trim(str_msg)//'error code='//trim(yaml_toa(ierr))
-       call yaml_warning(trim(str_msg))
-    end if
-    call yaml_release_document(unit=iunit)
-    call yaml_new_document(unit=iunit)
-
-    call yaml_dict_dump(dict1,unit=iunit)
     nullify(conf_dict)
-    call dict_free(dict1)
-    nullify(dict1)
-    call yaml_close_stream(unit=iunit)
-
-    !call yaml_mapping_open('Number of configurations read',flow=.true.)
-    !call yaml_map('filename',trim(filename))
-    !call yaml_map('nconf',nconf)
-    !call yaml_mapping_close()
-    !write(*,'(3(a,1x),i4)') 'Number of configurations read from',trim(filename),'is',iconf
     deallocate(rat)
-end subroutine write_yaml_conf
+end subroutine atoms2dict
 !*****************************************************************************************
 end module mod_yaml_conf
 !*****************************************************************************************

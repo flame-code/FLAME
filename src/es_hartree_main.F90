@@ -213,7 +213,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     !write(*,'(a,3f20.10)') 'hxy,hyy,hzy ',poisson%hgrid(1,2),poisson%hgrid(2,2),poisson%hgrid(3,2)
     !write(*,'(a,3f20.10)') 'hxz,hyz,hzz ',poisson%hgrid(1,3),poisson%hgrid(2,3),poisson%hgrid(3,3)
     call yaml_mapping_close()
-    endif
+    endif !end of if ind>0
     !---------------------------------------------------------------------------
     ind=index(poisson%task_finit,'alloc_rho')
     if(ind>0) then
@@ -888,6 +888,6 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     tt2=tt2/sqrt(2*pi)
     epotreal = epotreal+tt2
     linked_lists%rcut=rr
-
+    call linkedlists_final(linked_lists)
 end subroutine real_part
 !*****************************************************************************************

@@ -12,7 +12,7 @@
 !    real(8)::r,hsp,hspinv,t,rhspinv,f,fd,spf,spfd
 !    real(8)::errf,errfd,errfsp,errfspd,errfsprel,errfspdrel,r_withmaxerr
 !    integer::ipt,isp
-!    real(16)::fsd_tmp,hspq,aq,rq,fq,fdq
+!    real(kind=fqp)::fsd_tmp,hspq,aq,rq,fq,fdq
 !    nsp=10**3
 !    rcut=10.d0
 !    a=2.d0
@@ -41,9 +41,9 @@
 !        !-----------------------------------------------------------------------
 !        !write(*,'(5e)') fsp(0,isp),fsp(1,isp),fsp(2,isp),fsp(3,isp),fsp(4,isp)
 !        !-----------------------------------------------------------------------
-!        rq=real(r,16)
-!        aq=real(a,16)
-!        hspq=real(hsp,16)
+!        rq=real(r,kind=fqp)
+!        aq=real(a,kind=fqp)
+!        hspq=real(hsp,kind=fqp)
 !        call func_funcder_funcsecder(rq,aq,hspq,fq,fdq,fsd_tmp)
 !        f=real(fq,8)
 !        fd=real(fdq,8)
@@ -74,7 +74,7 @@
 subroutine build_shortrange_spline(shortrange,spline,rcut,a)
     use mod_shortrange, only: typ_shortrange
     use mod_spline, only: typ_spline
-    use mod_defs
+    use mod_defs, only: fqp
     use yaml_output
     implicit none
     type(typ_shortrange), intent(in):: shortrange
@@ -84,25 +84,25 @@ subroutine build_shortrange_spline(shortrange,spline,rcut,a)
     !local variables
     !following variables are quadruple precisions in order 
     !to have better accuracy.
-    real(16):: fdspq(0:3,0:spline%nsp)
-    real(16):: fspq(0:4,0:spline%nsp-1)
-    real(16):: fdspq_1(0:3,0:spline%nsp)
-    real(16):: fspq_1(0:4,0:spline%nsp-1)
-    real(16):: fdspq_2(0:3,0:spline%nsp)
-    real(16):: fspq_2(0:4,0:spline%nsp-1)
-    real(16):: fdspq_3(0:3,0:spline%nsp)
-    real(16):: fspq_3(0:4,0:spline%nsp-1)
-    real(16):: fdspq_4(0:3,0:spline%nsp)
-    real(16):: fspq_4(0:4,0:spline%nsp-1)
-    real(16):: hspq 
-    real(16):: aq, rcutq, qq, tt
-    real(16):: a2, a3, a4, a5
+    real(kind=fqp):: fdspq(0:3,0:spline%nsp)
+    real(kind=fqp):: fspq(0:4,0:spline%nsp-1)
+    real(kind=fqp):: fdspq_1(0:3,0:spline%nsp)
+    real(kind=fqp):: fspq_1(0:4,0:spline%nsp-1)
+    real(kind=fqp):: fdspq_2(0:3,0:spline%nsp)
+    real(kind=fqp):: fspq_2(0:4,0:spline%nsp-1)
+    real(kind=fqp):: fdspq_3(0:3,0:spline%nsp)
+    real(kind=fqp):: fspq_3(0:4,0:spline%nsp-1)
+    real(kind=fqp):: fdspq_4(0:3,0:spline%nsp)
+    real(kind=fqp):: fspq_4(0:4,0:spline%nsp-1)
+    real(kind=fqp):: hspq 
+    real(kind=fqp):: aq, rcutq, qq, tt
+    real(kind=fqp):: a2, a3, a4, a5
     integer:: itypinter, isp
     external erf_over_r, one_over_r6, one_over_r8, exp_ar
     associate(nsp=>spline%nsp)
-    rcutq=real(rcut,16)
-    aq=real(a,16)
-    hspq=rcutq/real(nsp,16)
+    rcutq=real(rcut,kind=fqp)
+    aq=real(a,kind=fqp)
+    hspq=rcutq/real(nsp,kind=fqp)
     call build_spline(erf_over_r,rcutq,hspq,aq,nsp,fspq_1,fdspq_1)
     if(spline%do_tosifumi) then
         tt=1.0_fqp !will not be used
@@ -110,7 +110,7 @@ subroutine build_shortrange_spline(shortrange,spline,rcut,a)
         call build_spline(one_over_r8,rcutq,hspq,tt,nsp,fspq_3,fdspq_3)
     endif
     do itypinter=1,shortrange%ntypinter
-        qq=real(shortrange%qq(itypinter),16)
+        qq=real(shortrange%qq(itypinter),kind=fqp)
         fdspq(0:3,0:nsp)=qq*fdspq_1(0:3,0:nsp)
         fspq(0:4,0:nsp-1)=qq*fspq_1(0:4,0:nsp-1)
         if(spline%do_tosifumi) then
@@ -146,31 +146,31 @@ end subroutine build_shortrange_spline
 !*****************************************************************************************
 subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
     use mod_spline, only: typ_spline
-    use mod_defs
+    use mod_defs, only: fqp
     use yaml_output
     implicit none
     external:: cal_f_fd_fdd
-    real(16), intent(in):: rcutq !first and second cutoff for the function
-    real(16), intent(in):: hspq
-    real(16), intent(in):: aq !prefacor in exponent of exponential function
+    real(kind=fqp), intent(in):: rcutq !first and second cutoff for the function
+    real(kind=fqp), intent(in):: hspq
+    real(kind=fqp), intent(in):: aq !prefacor in exponent of exponential function
     integer, intent(in):: nsp
-    real(16), intent(out):: fdspq(0:3,0:nsp)
-    real(16), intent(out):: fspq(0:4,0:nsp-1)
+    real(kind=fqp), intent(out):: fdspq(0:3,0:nsp)
+    real(kind=fqp), intent(out):: fspq(0:4,0:nsp-1)
     !local variables
     !following variables are quadruple precisions in order 
     !to have better accuracy.
-    real(16):: pi, onethird, fsp_int
-    real(16):: del !shift to make short range part to zero, it is not the difference
+    real(kind=fqp):: pi, onethird, fsp_int
+    real(kind=fqp):: del !shift to make short range part to zero, it is not the difference
     !between spline and the value with original function
-    real(16):: r, fd0, fsd0, fd1, fsd1
-    real(16):: f_tmp, fd_tmp, fsd_tmp, f_rcut
+    real(kind=fqp):: r, fd0, fsd0, fd1, fsd1
+    real(kind=fqp):: f_tmp, fd_tmp, fsd_tmp, f_rcut
     integer:: isp
     pi=4.0_fqp*atan(1.0_fqp)
     onethird=1.0_fqp/3.0_fqp
     r=0.0_fqp
     call cal_f_fd_fdd(r,aq,hspq,f_tmp,fd0,fsd0)
     do isp=0,nsp
-        r=hspq*real((isp+1),16)
+        r=hspq*real((isp+1),kind=fqp)
         call cal_f_fd_fdd(r,aq,hspq,f_tmp,fd1,fsd1)
         !write(501,'(3es25.10)') r,fd1,fsd1
         fdspq(0,isp)=fd0
@@ -187,9 +187,9 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
         fspq(0,isp)=fsp_int
         !the coefficients of the energy spline are obtained by integration
         fspq(1,isp)=hspq*fdspq(0,isp)
-        fspq(2,isp)=hspq*fdspq(1,isp)*.5q0
+        fspq(2,isp)=hspq*fdspq(1,isp)*.5_fqp
         fspq(3,isp)=hspq*fdspq(2,isp)*onethird
-        fspq(4,isp)=hspq*fdspq(3,isp)*.25q0
+        fspq(4,isp)=hspq*fdspq(3,isp)*.25_fqp
         !calculate the value of integral over the subinterval
         fsp_int=fsp_int+fspq(1,isp)+fspq(2,isp)+fspq(3,isp)+fspq(4,isp)
     enddo
@@ -205,16 +205,16 @@ subroutine build_spline(cal_f_fd_fdd,rcutq,hspq,aq,nsp,fspq,fdspq)
 end subroutine build_spline 
 !*****************************************************************************************
 subroutine erf_over_r(r,a,hsp,func,funcder,funcsecder)
-    use mod_defs
+    use mod_defs, only: fqp
     implicit none 
-    real(16), intent(in):: r
-    real(16), intent(in):: a
-    real(16), intent(in):: hsp
-    real(16), intent(out):: func
-    real(16), intent(out):: funcder
-    real(16), intent(out):: funcsecder
+    real(kind=fqp), intent(in):: r
+    real(kind=fqp), intent(in):: a
+    real(kind=fqp), intent(in):: hsp
+    real(kind=fqp), intent(out):: func
+    real(kind=fqp), intent(out):: funcder
+    real(kind=fqp), intent(out):: funcsecder
     !local variables
-    real(16):: pi, twosqrtinv
+    real(kind=fqp):: pi, twosqrtinv
     !----------------------------------------------------------------
     !evaluating function at r
     !func=exp(-a*r)
@@ -236,25 +236,25 @@ subroutine erf_over_r(r,a,hsp,func,funcder,funcsecder)
         !evaluating function at r/=0
         func=erf(r*twosqrtinv/a)/r
         !evaluating first derivative of function at r/=0
-        funcder=(sqrt(2.0_fqp/pi)*exp(-r**2/a**2*0.5q0)/a-func)/r
+        funcder=(sqrt(2.0_fqp/pi)*exp(-r**2/a**2*0.5_fqp)/a-func)/r
         !evaluating second derivative of function at r/=0
-        funcsecder=(-sqrt(2.0_fqp/pi)*exp(-r**2/a**2*0.5q0)*(2.0_fqp*a**2+r*r)/a**3+2.0_fqp*func)/(r*r)*hsp
+        funcsecder=(-sqrt(2.0_fqp/pi)*exp(-r**2/a**2*0.5_fqp)*(2.0_fqp*a**2+r*r)/a**3+2.0_fqp*func)/(r*r)*hsp
     endif
 end subroutine erf_over_r
 !*****************************************************************************************
 !funcder=12.0_fqp*exp(-r12)/(sqrt(pi)*r)-(6.0_fqp*erf(r6))/r**7
 !funcsecder=-144.0_fqp*exp(-r12)/(sqrt(pi)*r2)+exp(-r12)*(5.0_fqp*r4-144.0_fqp*r**16)/(sqrt(pi)*r6)+(42.0_fqp*erf(r6))/r8
 subroutine one_over_r6(r,a,hsp,func,funcder,funcsecder)
-    use mod_defs
+    use mod_defs, only: fqp
     implicit none 
-    real(16), intent(in):: r
-    real(16), intent(in):: a
-    real(16), intent(in):: hsp
-    real(16), intent(out):: func
-    real(16), intent(out):: funcder
-    real(16), intent(out):: funcsecder
+    real(kind=fqp), intent(in):: r
+    real(kind=fqp), intent(in):: a
+    real(kind=fqp), intent(in):: hsp
+    real(kind=fqp), intent(out):: func
+    real(kind=fqp), intent(out):: funcder
+    real(kind=fqp), intent(out):: funcsecder
     !local variables
-    real(16):: pi, r2, r4, r6, r8, r12
+    real(kind=fqp):: pi, r2, r4, r6, r8, r12
     !----------------------------------------------------------------
     pi=4.0_fqp*atan(1.0_fqp)
     if(r<5.e-1_fqp) then
@@ -281,16 +281,16 @@ subroutine one_over_r6(r,a,hsp,func,funcder,funcsecder)
 end subroutine one_over_r6
 !*****************************************************************************************
 subroutine one_over_r8(r,a,hsp,func,funcder,funcsecder)
-    use mod_defs
+    use mod_defs, only: fqp
     implicit none 
-    real(16), intent(in):: r
-    real(16), intent(in):: a
-    real(16), intent(in):: hsp
-    real(16), intent(out):: func
-    real(16), intent(out):: funcder
-    real(16), intent(out):: funcsecder
+    real(kind=fqp), intent(in):: r
+    real(kind=fqp), intent(in):: a
+    real(kind=fqp), intent(in):: hsp
+    real(kind=fqp), intent(out):: func
+    real(kind=fqp), intent(out):: funcder
+    real(kind=fqp), intent(out):: funcsecder
     !local variables
-    real(16):: pi, r2, r4, r8, r9, r10, r16
+    real(kind=fqp):: pi, r2, r4, r8, r9, r10, r16
     !----------------------------------------------------------------
     pi=4.0_fqp*atan(1.0_fqp)
     if(r<5.e-1_fqp) then
@@ -319,14 +319,14 @@ end subroutine one_over_r8
 !(-144.0_fqp*exp(-r16)/r2-256.0_fqp/r16)/sqrt(pi)+(72*erf(r8))/r10
 !*****************************************************************************************
 subroutine exp_ar(r,a,hsp,func,funcder,funcsecder)
-    use mod_defs
+    use mod_defs, only: fqp
     implicit none 
-    real(16), intent(in):: r
-    real(16), intent(in):: a
-    real(16), intent(in):: hsp
-    real(16), intent(out):: func
-    real(16), intent(out):: funcder
-    real(16), intent(out):: funcsecder
+    real(kind=fqp), intent(in):: r
+    real(kind=fqp), intent(in):: a
+    real(kind=fqp), intent(in):: hsp
+    real(kind=fqp), intent(out):: func
+    real(kind=fqp), intent(out):: funcder
+    real(kind=fqp), intent(out):: funcsecder
     !local variables
     !----------------------------------------------------------------
     if(r<1.e-5_fqp) then

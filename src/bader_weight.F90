@@ -38,9 +38,11 @@ subroutine bader_weight(parini)
     logical:: gp_max
     logical :: max_point
     real(8):: ttmax, ttmin, tt1, tt
-    real(8):: oat(3), mat(3,matl)=0.d0
+    real(8):: oat(3)
+    real(8),allocatable:: mat(:,:)
     real(8),allocatable::rat(:,:), qat(:), orat(:,:)
     character(len =30)::filename
+    allocate(mat(3,matl),source=0.d0)
     filename=trim(parini%filename_bader)
     open(unit=1, file=filename)
       read(1,*)
@@ -259,6 +261,7 @@ do ii=1,3
         write(*,*)"number of atom electrons",ii,poisson%h(1)*poisson%h(2)*poisson%h(3)*charge(ii) / vol
     end do    
     write(*,*)"number of all atom detected:",sum(charge)*poisson%h(1)*poisson%h(2)*poisson%h(3)/vol
+    deallocate(mat)
 end subroutine bader_weight
 !*****************************************************************************************
   subroutine calc_weight(poisson, p,nat)

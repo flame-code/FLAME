@@ -1,11 +1,10 @@
 main:
     task: minhocao
     types: Si
-    nat: 8
-    typat: 8*1
-    pressure: 10.0
+    nat: 6
+    typat: 6*1
+    pressure: 1.0
     verbose: 1
-    nat: 8
     znucl: 14.0
     amass: 2.0
     findsym: True
@@ -15,13 +14,13 @@ potential:
     potential: lenosky_tb
     boundary: 1
     auto_kpt: True
-    kptden: [0.017,0.03]
+    kptden: [0.03,0.04]
 
 geopt:
     nit: 800
     geoext: False
     method: FIRE
-    fmaxtol: 1.E-4
+    fmaxtol: 2.E-4
     strfact: 100.0
     dt_start: 20.0
     dt_min: 1.0

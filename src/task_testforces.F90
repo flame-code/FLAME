@@ -18,7 +18,8 @@ end subroutine task_testforces
 !*****************************************************************************************
 subroutine testforces_fd(parini)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old, atom_deallocate
+    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
+    use mod_atoms, only: atom_deallocate, atom_deallocate_old
     use mod_atoms, only: get_rat_iat, set_rat_iat
     use mod_potential, only: potcode
     use mod_processors, only: iproc
@@ -139,6 +140,8 @@ subroutine testforces_fd(parini)
     enddo
     call yaml_sequence_close()
     call fini_potential_forces(parini,atoms)
+    call atom_deallocate_old(atoms)
+    call atom_deallocate_old(atoms_center)
 end subroutine testforces_fd
 !*****************************************************************************************
 subroutine teststress_fd(parini)
