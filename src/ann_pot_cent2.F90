@@ -28,6 +28,7 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng
+    integer:: iats, iate, mat, mproc
     real(8):: epot_c, out_ann
     real(8):: dpx, dpy, dpz
     real(8):: time1, time2, time3, time4, time5, time6, time7, timet1, timet2
@@ -70,7 +71,19 @@ subroutine cal_ann_cent2(parini,atoms,symfunc,ann_arr)
         allocate(ann_arr%stresspq(1:3,1:3,1:symfunc%linked_lists%maxbound_rad))
     endif
     if(parini%iverbose>=2) call cpu_time(time3)
-    over_iat: do iat=1,atoms%nat
+    if(parini%mpi_env%nproc>1) then
+        mat=atoms%nat/parini%mpi_env%nproc
+        iats=parini%mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,parini%mpi_env%nproc)
+        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+        iate=iats+mat-1
+    else
+        iats=1
+        iate=atoms%nat
+        !mat=atoms%nat
+    endif
+    over_iat: do iat=iats,iate
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
         ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat)
