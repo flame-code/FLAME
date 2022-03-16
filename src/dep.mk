@@ -45,7 +45,7 @@
 ./grid_basic.o : ./grid_basic.F90 ./parini_mod.o ./atoms_mod.o ./electrostatics_mod.o 
 ./basic_minhocao.o : ./basic_minhocao.F90 
 ./splinedsaddle_mod.o : ./splinedsaddle_mod.F90 
-./electrostatics_mod.o : ./electrostatics_mod.F90 ./spline_mod.o ./linked_lists_mod.o 
+./electrostatics_mod.o : ./electrostatics_mod.F90 ./greenf_kspace_mod.o ./spline_mod.o ./linked_lists_mod.o 
 ./flame_as_potential_mod.o : ./flame_as_potential_mod.F90 ./atoms_mod.o ./task_mod.o ./parini_mod.o 
 ./optimizer_bfgs.o : ./optimizer_bfgs.F90 ./opt_mod.o 
 ./md_util.o : ./md_util.F90 ./atoms_mod.o 
@@ -69,7 +69,7 @@
 ./ann_pot_centt.o : ./ann_pot_centt.F90 ./electrostatics_mod.o ./linked_lists_mod.o ./ann_symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o 
 ./potential_main.o : ./potential_main.F90 ./processors_mod.o ./atoms_mod.o ./parini_mod.o ./shortrange_mod.o ./electrostatics_mod.o ./ann_mod.o 
 ./task_bader.o : ./task_bader.F90 ./parini_mod.o 
-./es_hartree_bps.o : ./es_hartree_bps.F90 ./parini_mod.o ./electrostatics_mod.o ./atoms_mod.o 
+./es_hartree_bps.o : ./es_hartree_bps.F90 ./parini_mod.o ./flm_futile_mod.o ./electrostatics_mod.o ./atoms_mod.o 
 ./io_xyz.o : ./io_xyz.F90 
 ./forcefield.o : ./forcefield.F90 ./electrostatics_mod.o ./potential_main.o ./atoms_mod.o ./parini_mod.o 
 ./tightbinding.o : ./tightbinding.F90 ./constants_mod.o ./tightbinding_mod.o ./linked_lists_mod.o ./tightbinding_mod.o ./atoms_mod.o 

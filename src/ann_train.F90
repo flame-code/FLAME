@@ -166,14 +166,17 @@ subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     type(typ_atoms):: atoms
     type(typ_symfunc):: symfunc
     integer:: ityp
-    real(8):: t_ener_ref
+    real(8):: t_ener_ref, one_vector(3)
     call convert_opt_x_ann_arr(opt_ann,ann_arr)
     !call atom_copy_old(atoms_train%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     call atom_allocate_old(atoms,1,0,0)
     !write(*,*) atoms%nat
     !write(*,*) atoms%sat(:)
     !write(*,*) atoms%itypat(:)
-    call set_rat_iat(atoms,1,(/1.d0,1.d0,1.d0/))
+    one_vector(1)=1.d0
+    one_vector(2)=1.d0
+    one_vector(3)=1.d0
+    call set_rat_iat(atoms,1,one_vector)
     atoms%cellvec(1:3,1:3)=0.d0
     atoms%cellvec(1,1)=10.d0
     atoms%cellvec(2,2)=10.d0

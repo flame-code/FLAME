@@ -2,10 +2,10 @@
 subroutine get_psolver_bps(poisson,atoms,ehartree)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use mod_flm_futile
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: H_POTENTIAL
 #endif
-    use dynamic_memory
     implicit none
     type(typ_poisson),intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
@@ -53,8 +53,9 @@ subroutine get_psolver_bps(poisson,atoms,ehartree)
         !    pot_ion,ehartree,0.d0,.false.,stress_tensor=stress_t) !,quiet='yes')
         !call get_psolver_kspace_gaussscreening(poisson%ngpx,poisson%ngpy,poisson%ngpz, &
         !    poisson%hgrid,poisson%rho,poisson%screening_factor,pot_scn)
-        call get_psolver_kspace_exprnscreening(poisson%ngpx,poisson%ngpy,poisson%ngpz, &
-            poisson%hgrid,poisson%rho,poisson%screening_factor,4,pot_scn)
+        call get_psolver_kspace_exprnscreening(poisson%greenf_kspace, &
+            poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+            poisson%hgrid,poisson%rho,poisson%screening_factor,pot_scn)
         ehartree=0.d0
         do igpz=1,poisson%ngpz
         do igpy=1,poisson%ngpy
@@ -91,8 +92,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
-    use dynamic_memory
-    use dictionaries, dict_set => set
+    use mod_flm_futile
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: pkernel_init, pkernel_set
@@ -180,6 +180,9 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     endif
     !write(*,*) 'REZA-5'
     !write(*,'(a,2es20.12)') 'Hartree ',ehartree,ehartree-ehartree_ref
+    if (poisson%cal_scn) then
+        call init_psolver_kspace_exprnscreening(poisson%greenf_kspace,4)
+    endif
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
@@ -187,8 +190,9 @@ end subroutine init_psolver_bps
 !*****************************************************************************************
 subroutine fini_psolver_bps(poisson)
     use mod_electrostatics, only: typ_poisson
+    use mod_flm_futile
 #if defined(HAVE_BPS)
-    use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
+    !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
     use Poisson_Solver, only: pkernel_free
 #endif
     implicit none
@@ -200,6 +204,9 @@ subroutine fini_psolver_bps(poisson)
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'
 #endif
+    if (poisson%cal_scn) then
+        call fini_psolver_kspace_exprnscreening(poisson%greenf_kspace)
+    endif
 end subroutine fini_psolver_bps
 !*****************************************************************************************
 subroutine set_ngp_bps(parini,atoms,poisson_rough,poisson)
