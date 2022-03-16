@@ -985,7 +985,7 @@ subroutine reverseCEP(parini,ann_arr,atoms,poisson,amat)
         write(51,'(a,i3,a,es19.10,a)') '  - [',iat,', ',ann_arr%chi_o(iat),']'
     enddo
     file_info%filename_positions='posout.yaml'
-    file_info%print_force=parini%print_force_single_point
+    file_info%print_force=.true.
     file_info%file_position='new'
     call write_yaml_conf_train(file_info,atoms,ann_arr,.true.)
     endif

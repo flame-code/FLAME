@@ -1001,7 +1001,7 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
     at_out%nfp=at_inp%nfp
     at_out%tol=at_inp%tol
     at_out%qtot=at_inp%qtot
-    !at_out%units_length_io=at_inp%units_length_io
+    at_out%units_length_io=at_inp%units_length_io
     !call dict_free(at_out%alloclist)
     !nullify(at_out%alloclist)
     call dict_copy(at_out%alloclist,at_inp%alloclist)
