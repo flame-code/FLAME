@@ -632,7 +632,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: itrial, iat, jat, ii
-    integer:: nbgx, nbgy, nbgz, info, itypat
+    integer:: nbgx, nbgy, nbgz
     real(8):: xyz(3), tt, rmse, err_U_SRS, U_SRS
     real(8):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
     real(8):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
@@ -640,10 +640,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     real(8), allocatable:: EP(:,:)
     real(8), allocatable:: E_all(:)
     real(8), allocatable:: linear_rho_t(:)
-    real(8), allocatable:: squarefit(:,:), squarefit_t(:,:)
-    real(8), allocatable:: real_eigenval(:), work(:)
     real(8), allocatable:: EP_n(:)
-    real(8):: hh_Mg, hh_O, hh, qtarget_Mg, qtarget_O, qtarget
     real(8):: one
     type(typ_trial_energy), pointer:: trial_energy=>null()
     real(8):: time1, time2
@@ -721,6 +718,54 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     write(*,*) 'time EP ',time2-time1
     !endif
     !-----------------------------------------------------------------
+    call get_expansion_coeff(parini,ann_arr,atoms,trial_energy%ntrial, &
+        trial_energy%energy,EP,EP_n)
+    !-----------------------------------------------------------------
+    call reverseCEP(parini,ann_arr,atoms,poisson,ann_arr%a)
+    atoms%qat(1:atoms%nat)=ann_arr%qq(1:atoms%nat)
+    rmse=0.d0
+    do itrial=1,trial_energy%ntrial
+        tt=0.d0
+        do iat=1,atoms%nat
+            tt=tt+atoms%qat(iat)*EP(iat,itrial)
+        enddo
+        E_all(itrial)=EP_n(itrial)+tt
+        rmse=rmse+(E_all(itrial)-trial_energy%energy(itrial))**2
+    enddo
+    rmse=1.d3*sqrt(rmse/trial_energy%ntrial)
+    call cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
+    call prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
+    err_U_SRS=1.d3*(U_SRS-trial_energy%ehartree_scn_excl)/atoms%nat
+    if(parini%mpi_env%iproc==0) then
+    write(*,'(a,2es24.15)') 'USRS ',U_SRS,trial_energy%ehartree_scn_excl
+    write(*,'(a,2f10.3,8f7.3)') 'OPT ',rmse,err_U_SRS, &
+        qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O
+    do itrial=1,trial_energy%ntrial
+        write(*,'(a,i3,2es24.15)') 'ETS ',trial_energy%iat_list(itrial),E_all(itrial),trial_energy%energy(itrial)
+    enddo
+    endif
+    deallocate(EP_n)
+    deallocate(E_all)
+    call trial_energy_deallocate(trial_energy)
+    done=.true.
+end subroutine prefit_cent2
+!*****************************************************************************************
+subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(in):: atoms
+    integer, intent(in):: ntrial
+    real(8), intent(in):: energy(ntrial), EP(atoms%nat,ntrial), EP_n(ntrial)
+    !local variables
+    integer:: iat, jat, itrial, info, itypat
+    real(8):: hh_Mg, hh_O, hh, qtarget_Mg, qtarget_O, qtarget
+    real(8):: tt
+    real(8), allocatable:: squarefit(:,:), squarefit_t(:,:)
+    real(8), allocatable:: real_eigenval(:), work(:)
     allocate(squarefit(atoms%nat,atoms%nat))
     allocate(squarefit_t(atoms%nat+1,atoms%nat+1))
     allocate(real_eigenval(1:atoms%nat),work(atoms%nat*atoms%nat))
@@ -729,7 +774,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     do iat=1,atoms%nat
         do jat=1,atoms%nat
             tt=0.d0
-            do itrial=1,trial_energy%ntrial
+            do itrial=1,ntrial
                 tt=tt+2.d0*EP(iat,itrial)*EP(jat,itrial)
             enddo
             squarefit(iat,jat)=tt
@@ -765,8 +810,8 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     ann_arr%qq(atoms%nat+1)=-sum(atoms%zat)
     do iat=1,atoms%nat
         tt=0.d0
-        do itrial=1,trial_energy%ntrial
-            tt=tt+2.d0*EP(iat,itrial)*(trial_energy%energy(itrial)-EP_n(itrial))
+        do itrial=1,ntrial
+            tt=tt+2.d0*EP(iat,itrial)*(energy(itrial)-EP_n(itrial))
         enddo
         ann_arr%qq(iat)=tt
     enddo
@@ -802,35 +847,7 @@ subroutine prefit_cent2(parini,ann_arr,atoms,poisson)
     deallocate(squarefit)
     deallocate(squarefit_t)
     deallocate(real_eigenval,work)
-    !-----------------------------------------------------------------
-    call reverseCEP(parini,ann_arr,atoms,poisson,ann_arr%a)
-    atoms%qat(1:atoms%nat)=ann_arr%qq(1:atoms%nat)
-    rmse=0.d0
-    do itrial=1,trial_energy%ntrial
-        tt=0.d0
-        do iat=1,atoms%nat
-            tt=tt+atoms%qat(iat)*EP(iat,itrial)
-        enddo
-        E_all(itrial)=EP_n(itrial)+tt
-        rmse=rmse+(E_all(itrial)-trial_energy%energy(itrial))**2
-    enddo
-    rmse=1.d3*sqrt(rmse/trial_energy%ntrial)
-    call cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
-    call prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
-    err_U_SRS=1.d3*(U_SRS-trial_energy%ehartree_scn_excl)/atoms%nat
-    if(parini%mpi_env%iproc==0) then
-    write(*,'(a,2es24.15)') 'USRS ',U_SRS,trial_energy%ehartree_scn_excl
-    write(*,'(a,2f10.3,8f7.3)') 'OPT ',rmse,err_U_SRS, &
-        qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O
-    do itrial=1,trial_energy%ntrial
-        write(*,'(a,i3,2es24.15)') 'ETS ',trial_energy%iat_list(itrial),E_all(itrial),trial_energy%energy(itrial)
-    enddo
-    endif
-    deallocate(EP_n)
-    deallocate(E_all)
-    call trial_energy_deallocate(trial_energy)
-    done=.true.
-end subroutine prefit_cent2
+end subroutine get_expansion_coeff
 !*****************************************************************************************
 subroutine cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
     use mod_parini, only: typ_parini
