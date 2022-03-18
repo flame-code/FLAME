@@ -761,9 +761,9 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
     integer, intent(in):: ntrial
     real(8), intent(in):: energy(ntrial), EP(atoms%nat,ntrial), EP_n(ntrial)
     !local variables
-    integer:: iat, jat, itrial, info, itypat
+    integer:: iat, jat, itrial, info, itypat, iter
     real(8):: hh_Mg, hh_O, hh, qtarget_Mg, qtarget_O, qtarget
-    real(8):: tt
+    real(8):: tt, fract
     real(8), allocatable:: squarefit(:,:), squarefit_t(:,:)
     real(8), allocatable:: real_eigenval(:), work(:)
     allocate(squarefit(atoms%nat,atoms%nat))
@@ -782,6 +782,11 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
         enddo
     enddo
     call DSYEV('N','U',atoms%nat,squarefit,atoms%nat,real_eigenval,work,atoms%nat**2,info)
+    !if(parini%mpi_env%iproc==0) then
+    !do iat=1,atoms%nat
+    !    write(*,'(a,i6,es14.5)') 'EVAL ',iat,real_eigenval(iat)
+    !enddo
+    !endif
     do iat=1,atoms%nat
         do jat=1,atoms%nat
             squarefit(iat,jat)=squarefit_t(iat,jat)
@@ -789,14 +794,31 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
     enddo
     !hh_Mg=40.d-2
     !hh_O=40.d-2
+    !-----------------------------------------------------------------
+    !do iter=0,0
     hh_Mg=1.d-3*real_eigenval(atoms%nat)
     hh_O=1.d-3*real_eigenval(atoms%nat)
+    !fract=min(1.d-3,1.d-5*real(iter,8))
+    !if(iter>0) then
+    !hh_Mg=fract*real_eigenval(atoms%nat)
+    !hh_O=fract*real_eigenval(atoms%nat)
+    !else
+    !hh_Mg=0.d0
+    !hh_O=0.d0
+    !endif
+    !do jat=1,atoms%nat
+    !    do iat=1,atoms%nat
+    !        squarefit_t(iat,jat)=squarefit(iat,jat)
+    !    enddo
+    !enddo
+    !if(iter>0) then
     do iat=1,atoms%nat
         if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
         if(trim(atoms%sat(iat))=='O' ) hh=hh_O
         squarefit(iat,iat)=squarefit(iat,iat)+hh
         squarefit_t(iat,iat)=squarefit_t(iat,iat)+hh
     enddo
+    !endif
     call DSYEV('N','U',atoms%nat,squarefit,atoms%nat,real_eigenval,work,atoms%nat**2,info)
     if(parini%mpi_env%iproc==0) then
     do iat=1,atoms%nat
@@ -829,6 +851,10 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
             endif
         endif
     enddo
+    !if(iter==0) then
+    !    qtarget_Mg=0.d0
+    !    qtarget_O=0.d0
+    !endif
     !qtarget_Mg=-2.d0+ann_arr%ann(1)%qtarget
     !qtarget_O =-4.d0-ann_arr%ann(1)%qtarget
     do iat=1,atoms%nat
@@ -839,6 +865,33 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
         ann_arr%qq(iat)=ann_arr%qq(iat)+hh*qtarget
     enddo
     call DGETRS('N',atoms%nat+1,1,squarefit_t,atoms%nat+1,ann_arr%ipiv,ann_arr%qq,atoms%nat+1,info)
+    !qtarget_Mg=0.d0
+    !qtarget_O=0.d0
+    !do iat=1,atoms%nat
+    !    if(trim(atoms%sat(iat))=='Mg') then
+    !        !qtarget_Mg=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
+    !        qtarget_Mg=qtarget_Mg+ann_arr%qq(iat)
+    !    endif
+    !    if(trim(atoms%sat(iat))=='O') then
+    !        !qtarget_O=-ann_arr%ann(itypat)%zion-ann_arr%ann(itypat)%qtarget
+    !        qtarget_O=qtarget_O+ann_arr%qq(iat)
+    !    endif
+    !enddo
+    !qtarget_Mg=qtarget_Mg/(atoms%nat/2)
+    !qtarget_O=qtarget_O/(atoms%nat/2)
+    !if(parini%mpi_env%iproc==0) then
+    !do itypat=1,parini%ntypat
+    !    if(trim(parini%stypat(itypat))=='Mg') then
+    !        write(*,'(a,f8.3,es14.5)') 'QTARGET_Mg ',ann_arr%ann(itypat)%zion+qtarget_Mg,fract
+    !    endif
+    !    if(trim(parini%stypat(itypat))=='O') then
+    !        write(*,'(a,f8.3)') 'QTARGET_O  ',ann_arr%ann(itypat)%zion+qtarget_O
+    !    endif
+    !enddo
+    !endif
+    !enddo !end of loop over iter
+    !-----------------------------------------------------------------
+
     if(parini%mpi_env%iproc==0) then
     do iat=1,atoms%nat
         write(*,'(a,i6,f7.3)') 'QQQ ',iat,atoms%zat(iat)+ann_arr%qq(iat)
