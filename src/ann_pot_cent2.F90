@@ -571,14 +571,15 @@ subroutine get_eigenval(parini,atoms,amat)
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: amat(atoms%nat+1,atoms%nat+1)
     !local variables
-    integer:: info
+    integer:: info, lwork
     real(8), allocatable:: eigen_val_amat(:,:)
     real(8), allocatable:: real_eigenval(:), work(:)
+    lwork=max(atoms%nat**2,100)
     allocate(eigen_val_amat(1:atoms%nat,1:atoms%nat))
     allocate(real_eigenval(1:atoms%nat))
     allocate(work(1:4*atoms%nat))
     eigen_val_amat(1:atoms%nat,1:atoms%nat)=amat(1:atoms%nat,1:atoms%nat)
-    call DSYEV('N','U',atoms%nat,eigen_val_amat,atoms%nat,real_eigenval,work,4*atoms%nat,info)
+    call DSYEV('N','U',atoms%nat,eigen_val_amat,atoms%nat,real_eigenval,work,lwork,info)
     if(parini%mpi_env%iproc==0) then
     write(13,'(a6,es18.8,a10,es18.8)') 'MAX: ',maxval(real_eigenval),' | MIN: ',minval(real_eigenval)
     endif
@@ -761,14 +762,15 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
     integer, intent(in):: ntrial
     real(8), intent(in):: energy(ntrial), EP(atoms%nat,ntrial), EP_n(ntrial)
     !local variables
-    integer:: iat, jat, itrial, info, itypat, iter
+    integer:: iat, jat, itrial, info, itypat, iter, lwork
     real(8):: hh_Mg, hh_O, hh, qtarget_Mg, qtarget_O, qtarget
     real(8):: tt, fract
     real(8), allocatable:: squarefit(:,:), squarefit_t(:,:)
     real(8), allocatable:: real_eigenval(:), work(:)
+    lwork=max(atoms%nat**2,100)
     allocate(squarefit(atoms%nat,atoms%nat))
     allocate(squarefit_t(atoms%nat+1,atoms%nat+1))
-    allocate(real_eigenval(1:atoms%nat),work(atoms%nat*atoms%nat))
+    allocate(real_eigenval(1:atoms%nat),work(lwork))
     squarefit=0.d0
     squarefit_t=0.d0
     do iat=1,atoms%nat
@@ -781,7 +783,7 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
             squarefit_t(iat,jat)=tt
         enddo
     enddo
-    call DSYEV('N','U',atoms%nat,squarefit,atoms%nat,real_eigenval,work,atoms%nat**2,info)
+    call DSYEV('N','U',atoms%nat,squarefit,atoms%nat,real_eigenval,work,lwork,info)
     !if(parini%mpi_env%iproc==0) then
     !do iat=1,atoms%nat
     !    write(*,'(a,i6,es14.5)') 'EVAL ',iat,real_eigenval(iat)
@@ -819,7 +821,7 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
         squarefit_t(iat,iat)=squarefit_t(iat,iat)+hh
     enddo
     !endif
-    call DSYEV('N','U',atoms%nat,squarefit,atoms%nat,real_eigenval,work,atoms%nat**2,info)
+    call DSYEV('N','U',atoms%nat,squarefit,atoms%nat,real_eigenval,work,lwork,info)
     if(parini%mpi_env%iproc==0) then
     do iat=1,atoms%nat
         write(*,'(a,i6,es14.5)') 'EVAL ',iat,real_eigenval(iat)
