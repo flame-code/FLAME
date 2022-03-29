@@ -18,6 +18,7 @@ subroutine alborz_init(parini,parres,file_ini)
     character(len=*), parameter:: filename='flame_log.yaml'
     logical:: flib_profiling
     call f_lib_initialize()
+    call cpu_time(parini%time_start)
     inquire(file="NO_FLIB_PROFILING",exist=flib_profiling)
     !if(trim(parini%task)/='minhocao') then
         call initprocessors(parini%mpi_env) !start MPI in parallel version.

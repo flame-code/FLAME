@@ -32,6 +32,7 @@
    findsym: False
    finddos: False
    params_new: False
+   time_limit: -1.0
  minhopp:
    nstep: 0
    nsoften: 7
@@ -181,6 +182,7 @@
    add_repulsive: True
    voids: False
    core_rep: False
+   core_rep_par: [1.0,0.7]
    usewfgeo: False
    usewfsoft: False
    usewfmd: False

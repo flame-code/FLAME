@@ -135,6 +135,7 @@ subroutine yaml_get_main_parameters(parini)
     parini%findsym=parini%subdict//"findsym"
     parini%finddos=parini%subdict//"finddos"
     endif !end of if on trim(parini%task)=='minhocao'
+    parini%time_limit=parini%subdict//"time_limit"
 end subroutine yaml_get_main_parameters
 !*****************************************************************************************
 subroutine yaml_get_minhopp_parameters(parini)
@@ -288,7 +289,7 @@ subroutine yaml_get_potential_parameters(parini)
     type(typ_parini), intent(inout):: parini
     !local variales
     integer:: kpt_abc(3)
-    real(8):: dkpt_12(2)
+    real(8):: dkpt_12(2), arr2(2)
     if(dict_size(parini%subdict)<1) stop 'ERROR: potential block in flame_in.yaml is empty.'
     parini%potential_potential=parini%subdict//"potential"
     parini%cal_charge=parini%subdict//"cal_charge"
@@ -311,6 +312,9 @@ subroutine yaml_get_potential_parameters(parini)
     parini%add_repulsive=parini%subdict//"add_repulsive"
     parini%voids=parini%subdict//"voids"
     parini%core_rep=parini%subdict//"core_rep"
+    arr2=parini%subdict//"core_rep_par"
+    parini%core_rep_eps=arr2(1)
+    parini%core_rep_sigma=arr2(2)
     parini%usewf_geopt=parini%subdict//"usewfgeo"
     parini%usewf_soften=parini%subdict//"usewfsoft"
     parini%usewf_md=parini%subdict//"usewfmd"

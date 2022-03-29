@@ -142,6 +142,7 @@ subroutine task_minhocao(parini,parres)
   integer,allocatable::sym_type(:)
   integer::sym_nat,sym_nat2 
   logical,allocatable:: sym_fixat(:)
+  real(8):: time_check
 
 !Print the logo
 !call print_logo() 
@@ -965,6 +966,13 @@ call yaml_sequence_open('Hopping steps')
   if(parini%nstep_minhopp>0 .and. nhop>parini%nstep_minhopp) then
       write(*,'(a,2i6)') 'STOP in minhocao: nhop>nstep ',nhop,parini%nstep_minhopp
       stop
+  endif
+  if(parini%time_limit>0.d0) then
+      call cpu_time(time_check)
+      if((time_check-parini%time_start)>(parini%time_limit*3600.d0)) then
+          write(*,'(a)') 'STOP in minhocao: exceeding parini%time_limit!'
+          stop
+      endif
   endif
   write(fn5,'(i5.5)') nhop
   if(parini%verb.ge.2) folder="data_hop_"//fn5//"/"

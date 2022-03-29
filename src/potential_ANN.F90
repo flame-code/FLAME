@@ -60,18 +60,23 @@ end subroutine init_potential_ann
 !*****************************************************************************************
 subroutine cal_potential_ann(parini,atoms)
     use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, atom_deallocate_old, get_rat
+    use mod_atoms, only: typ_atoms, atom_deallocate_old, get_rat, set_rcov
     use mod_potential, only: ann_arr, fcalls, fcalls_sec, potcode, potential_sec, ann_boundcheck
     use mod_symfunc, only: typ_symfunc
+    use interface_core_repulsion, only: core_repulsion
     use mod_opt_ann, only: typ_opt_ann
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     !local variables
-    integer:: iat, jat, i0, i
+    integer:: iat, jat, i0, i, itypat
     real(8):: epoti, fcalls_t
+    real(8):: xmin, ymin, zmin, xmax, ymax, zmax
+    real(8):: cv(3,3), epot_rep, strten_rep(6)
+    real(8), allocatable:: xred(:,:), fcart_rep(:,:)
     type(typ_symfunc):: symfunc
     type(typ_opt_ann):: opt_ann
+    type(typ_parini):: parini_tmp
     if(trim(potcode)=='ann') then
         fcalls_t=fcalls
     elseif(trim(potential_sec)=='ann') then
@@ -116,7 +121,72 @@ subroutine cal_potential_ann(parini,atoms)
 !        !write(*,*) iat,epoti
 !        atoms%epot=atoms%epot+epoti
 !    enddo
-    if(parini%add_repulsive) then
+    if(parini%core_rep .and. trim(parini%task)/='minhocao') then
+        parini_tmp=parini
+        if(.not.allocated(parini_tmp%znucl)) then
+            parini_tmp%ntypat_global=atoms%ntypat
+            parini_tmp%nat=atoms%nat
+            allocate(parini_tmp%znucl(parini_tmp%ntypat_global),source=1.d0)
+            if(allocated(parini_tmp%rcov)) then
+                stop 'ERROR: parini_tmp%rcov already allocated in cal_potential_ann!'
+            else
+                allocate(parini_tmp%rcov(parini_tmp%ntypat_global),source=0.d0)
+            endif
+            if(allocated(parini_tmp%typat_global)) then
+                stop 'ERROR: parini_tmp%typat_global already allocated in cal_potential_ann!'
+            else
+                allocate(parini_tmp%typat_global(parini_tmp%ntypat_global),source=0)
+            endif
+            call set_rcov(atoms)
+            do itypat=1,parini_tmp%ntypat_global
+                parini_tmp%typat_global(itypat)=atoms%ltypat(itypat)
+                do iat=1,atoms%nat
+                    if(atoms%itypat(iat)==itypat) then
+                        parini_tmp%rcov(itypat)=atoms%rcov(iat)
+                        exit
+                    endif
+                enddo
+            enddo
+        endif
+        !write(*,*) 'BC1= ',trim(atoms%boundcond),allocated(parini_tmp%znucl)
+        allocate(xred(3,atoms%nat),fcart_rep(3,atoms%nat))
+        call get_rat(atoms,xred)
+        if(trim(atoms%boundcond)=='free') then
+            xmin=huge(1.d0) ; xmax=-huge(1.d0)
+            ymin=huge(1.d0) ; ymax=-huge(1.d0)
+            zmin=huge(1.d0) ; zmax=-huge(1.d0)
+            do iat=1,atoms%nat
+                xmin=min(xred(1,iat),xmin)
+                xmax=max(xred(1,iat),xmax)
+                ymin=min(xred(2,iat),ymin)
+                ymax=max(xred(2,iat),ymax)
+                zmin=min(xred(3,iat),zmin)
+                zmax=max(xred(3,iat),zmax)
+            enddo
+            cv=0.d0
+            cv(1,1)=xmax-xmin+30.d0
+            cv(2,2)=ymax-ymin+30.d0
+            cv(3,3)=zmax-zmin+30.d0
+            do iat=1,atoms%nat
+                xred(1,iat)=(xred(1,iat)-xmin+15.d0)/cv(1,1)
+                xred(2,iat)=(xred(2,iat)-ymin+15.d0)/cv(2,2)
+                xred(3,iat)=(xred(3,iat)-zmin+15.d0)/cv(3,3)
+            enddo
+        elseif(trim(atoms%boundcond)=='bulk') then
+            cv=atoms%cellvec
+            atoms%ratp=xred
+            call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,xred)
+            !write(*,*) cv
+            !write(*,*) xred
+        else
+            stop 'ERROR: core_rep prepared only for free and bulk BC!'
+        endif
+        !write(*,*) 'BC2= ',trim(atoms%boundcond),allocated(parini_tmp%znucl)
+        call core_repulsion(parini_tmp,cv,xred,fcart_rep,strten_rep,epot_rep)
+        atoms%fat=atoms%fat+fcart_rep
+        atoms%epot=atoms%epot+epot_rep
+        deallocate(xred,fcart_rep)
+    elseif(parini%add_repulsive) then
         call add_repulsive_potential(parini,atoms)
     endif
     !if(allocated(atoms%ratim)) then
