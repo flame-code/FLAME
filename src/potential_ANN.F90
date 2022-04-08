@@ -124,7 +124,6 @@ subroutine cal_potential_ann(parini,atoms)
     if(parini%core_rep .and. trim(parini%task)/='minhocao') then
         parini_tmp=parini
         if(.not.allocated(parini_tmp%znucl)) then
-            parini_tmp%ntypat_global=atoms%ntypat
             parini_tmp%nat=atoms%nat
             allocate(parini_tmp%znucl(parini_tmp%ntypat_global),source=1.d0)
             if(allocated(parini_tmp%rcov)) then
@@ -135,11 +134,13 @@ subroutine cal_potential_ann(parini,atoms)
             if(allocated(parini_tmp%typat_global)) then
                 stop 'ERROR: parini_tmp%typat_global already allocated in cal_potential_ann!'
             else
-                allocate(parini_tmp%typat_global(parini_tmp%ntypat_global),source=0)
+                allocate(parini_tmp%typat_global(atoms%nat),source=0)
             endif
+            do iat=1,atoms%nat
+                parini_tmp%typat_global(iat)=atoms%itypat(iat)
+            enddo
             call set_rcov(atoms)
             do itypat=1,parini_tmp%ntypat_global
-                parini_tmp%typat_global(itypat)=atoms%ltypat(itypat)
                 do iat=1,atoms%nat
                     if(atoms%itypat(iat)==itypat) then
                         parini_tmp%rcov(itypat)=atoms%rcov(iat)
