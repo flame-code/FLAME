@@ -169,6 +169,13 @@ module mod_parini
         integer:: npoint_genconf=0
         real(8):: fbmin_genconf=-1.d0
         real(8):: fbmax_genconf=-1.d0
+        integer:: ntry=1
+        integer:: ispg=0
+        integer:: ncells=1
+        integer, allocatable:: nat_types_fu(:)
+        real(8), allocatable:: rmin_pairs(:,:)
+        integer, allocatable:: list_fu(:)
+        real(8):: volperatom_bounds(2)
         logical :: variable_cell_genconf= .false.
         logical :: nonorthogonal_genconf= .false.
         !-----------------------------------------------------------------------

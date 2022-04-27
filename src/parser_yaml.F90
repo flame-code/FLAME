@@ -439,6 +439,11 @@ subroutine yaml_get_genconf_parameters(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
+    type(dictionary), pointer :: dict_tmp=>null()
+    integer:: nfu, itype, jtype
+    character(5):: stri, strj, strij, strji
+    logical:: lij, lji, ltmp
+    real(8):: rmin
     if(dict_size(parini%subdict)<1) stop 'ERROR: genconf block in flame_in.yaml is empty.'
     parini%subtask_genconf=parini%subdict//"subtask"
     parini%cal_pot_genconf=parini%subdict//"cal_pot"
@@ -450,6 +455,45 @@ subroutine yaml_get_genconf_parameters(parini)
     parini%npoint_genconf=parini%subdict//"npoint"
     parini%fbmin_genconf=parini%subdict//"fbmin"
     parini%fbmax_genconf=parini%subdict//"fbmax"
+    parini%volperatom_bounds=parini%subdict//"volperatom_bounds"
+    parini%ntry=parini%subdict//"ntry"
+    parini%ispg=parini%subdict//"ispg"
+    parini%ncells=parini%subdict//"ncells"
+    allocate(parini%nat_types_fu(parini%ntypat),source=0)
+    parini%nat_types_fu=parini%subdict//"nat_types_fu"
+    dict_tmp=>parini%subdict//"list_fu"
+    nfu=dict_len(dict_tmp)
+    allocate(parini%list_fu(nfu))
+    parini%list_fu=parini%subdict//"list_fu"
+    nullify(dict_tmp)
+    dict_tmp=>parini%subdict//"rmin_pairs"
+    ltmp=dict_isdict(dict_tmp)
+    if(ltmp) then
+        allocate(parini%rmin_pairs(parini%ntypat,parini%ntypat))
+        do itype=1,parini%ntypat
+            stri=parini%stypat(itype)
+            do jtype=itype,parini%ntypat
+                strj=parini%stypat(jtype)
+                strij=trim(stri)//trim(strj)
+                strji=trim(strj)//trim(stri)
+                lij=.false.
+                lji=.false.
+                if(has_key(dict_tmp,trim(strij))) lij=.true.
+                if(has_key(dict_tmp,trim(strji))) lji=.true.
+                if(lij) then
+                    rmin=dict_tmp//trim(strij)
+                elseif(lji) then
+                    rmin=dict_tmp//trim(strji)
+                else
+                    write(*,'(4a)') 'ERROR: missing key ',trim(strij),' or ',trim(strji)
+                    stop
+                endif
+                parini%rmin_pairs(itype,jtype)=rmin
+                parini%rmin_pairs(jtype,itype)=rmin
+            enddo
+        enddo
+    endif
+    nullify(dict_tmp)
     parini%variable_cell_genconf=parini%subdict//"variable_cell"
     parini%nonorthogonal_genconf=parini%subdict//"nonorthogonal"
 end subroutine yaml_get_genconf_parameters

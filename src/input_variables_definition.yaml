@@ -300,6 +300,13 @@
    npoint: 0
    fbmin: -1.0
    fbmax: -1.0
+   volperatom_bounds: [-1.0,-1.0]
+   ntry: 1
+   ispg: 0
+   ncells: 1
+   nat_types_fu: 1
+   list_fu: [1]
+   rmin_pairs: None
    variable_cell: False
    nonorthogonal: False
  conf_comp:
