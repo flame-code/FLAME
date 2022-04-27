@@ -731,7 +731,7 @@ subroutine atom_copy(at_inp,at_out,str_message)
     !copying array at_inp%rat to at_out%rat
     if(allocated(at_inp%rat)) then
         if(allocated(at_out%rat)) then
-            ishape(1:2)=shape(at_out%rat)
+            ishape(1:2)=shape(at_out%rat(:,:))
             if(at_inp%nat/=ishape(2)) then
                 call f_free(at_out%rat)
             endif
@@ -752,7 +752,7 @@ subroutine atom_copy(at_inp,at_out,str_message)
     !copying array at_inp%ratp to at_out%ratp
     if(allocated(at_inp%ratp)) then
         if(allocated(at_out%ratp)) then
-            ishape(1:2)=shape(at_out%ratp)
+            ishape(1:2)=shape(at_out%ratp(:,:))
             if(at_inp%nat/=ishape(2)) then
                 call f_free(at_out%ratp)
             endif
@@ -773,7 +773,7 @@ subroutine atom_copy(at_inp,at_out,str_message)
     !copying array at_inp%ratim to at_out%ratim
     if(allocated(at_inp%ratim)) then
         if(allocated(at_out%ratim)) then
-            ishape(1:2)=shape(at_out%ratim)
+            ishape(1:2)=shape(at_out%ratim(:,:))
             if(at_inp%natim/=ishape(2)) then
                 call f_free(at_out%ratim)
             endif
@@ -794,7 +794,7 @@ subroutine atom_copy(at_inp,at_out,str_message)
     !copying array at_inp%vat to at_out%vat
     if(allocated(at_inp%vat)) then
         if(allocated(at_out%vat)) then
-            ishape(1:2)=shape(at_out%vat)
+            ishape(1:2)=shape(at_out%vat(:,:))
             if(at_inp%nat/=ishape(2)) then
                 call f_free(at_out%vat)
             endif
@@ -834,7 +834,7 @@ subroutine atom_copy(at_inp,at_out,str_message)
     !copying array at_inp%fat to at_out%fat
     if(allocated(at_inp%fat)) then
         if(allocated(at_out%fat)) then
-            ishape(1:2)=shape(at_out%fat)
+            ishape(1:2)=shape(at_out%fat(:,:))
             if(at_inp%nat/=ishape(2)) then
                 call f_free(at_out%fat)
             endif
@@ -855,7 +855,7 @@ subroutine atom_copy(at_inp,at_out,str_message)
     !copying array at_inp%bemoved to at_out%bemoved
     if(allocated(at_inp%bemoved)) then
         if(allocated(at_out%bemoved)) then
-            ishape(1:2)=shape(at_out%bemoved)
+            ishape(1:2)=shape(at_out%bemoved(:,:))
             if(at_inp%nat/=ishape(2)) then
                 call f_free(at_out%bemoved)
             endif
@@ -1034,7 +1034,7 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
     endif
     !copying array at_inp%rat to at_out%rat
     if(allocated(at_inp%rat)) then
-            ishape(1:2)=shape(at_out%rat)
+            ishape(1:2)=shape(at_out%rat(:,:))
             if(allocated(at_out%rat) .and. at_inp%nat/=ishape(2)) then
                 deallocate(at_out%rat)
             endif
@@ -1053,7 +1053,7 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
         endif
     endif
     if(allocated(at_inp%ratp)) then
-            ishape(1:2)=shape(at_out%ratp)
+            ishape(1:2)=shape(at_out%ratp(:,:))
             if(allocated(at_out%ratp) .and. at_inp%nat/=ishape(2)) then
                 deallocate(at_out%ratp)
             endif
@@ -1076,7 +1076,7 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
     !copying array at_inp%ratim to at_out%ratim
     if(allocated(at_inp%ratim)) then
             if(allocated(at_out%ratim)) then
-                ishape(1:2)=shape(at_out%ratim)
+                ishape(1:2)=shape(at_out%ratim(:,:))
                 if(at_inp%natim/=ishape(2)) then
                     deallocate(at_out%ratim)
                 endif
@@ -1098,7 +1098,7 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
     !copying array at_inp%vat to at_out%vat
     if(allocated(at_inp%vat)) then
             if(allocated(at_out%vat)) then
-                ishape(1:2)=shape(at_out%vat)
+                ishape(1:2)=shape(at_out%vat(:,:))
                 if(at_inp%nat/=ishape(2)) then
                     deallocate(at_out%vat)
                 endif
@@ -1140,7 +1140,7 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
     !copying array at_inp%fat to at_out%fat
     if(allocated(at_inp%fat)) then
             if(allocated(at_out%fat)) then
-                ishape(1:2)=shape(at_out%fat)
+                ishape(1:2)=shape(at_out%fat(:,:))
                 if(at_inp%nat/=ishape(2)) then
                     deallocate(at_out%fat)
                 endif
@@ -1162,7 +1162,7 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
     !copying array at_inp%bemoved to at_out%bemoved
     if(allocated(at_inp%bemoved)) then
             if(allocated(at_out%bemoved)) then
-                ishape(1:2)=shape(at_out%bemoved)
+                ishape(1:2)=shape(at_out%bemoved(:,:))
                 if(at_inp%nat/=ishape(2)) then
                     deallocate(at_out%bemoved)
                 endif
