@@ -136,6 +136,7 @@ subroutine yaml_get_main_parameters(parini)
     parini%finddos=parini%subdict//"finddos"
     endif !end of if on trim(parini%task)=='minhocao'
     parini%time_limit=parini%subdict//"time_limit"
+    parini%datafilesdir=parini%subdict//"datafilesdir"
 end subroutine yaml_get_main_parameters
 !*****************************************************************************************
 subroutine yaml_get_minhopp_parameters(parini)
@@ -459,6 +460,7 @@ subroutine yaml_get_genconf_parameters(parini)
     parini%ntry=parini%subdict//"ntry"
     parini%ispg=parini%subdict//"ispg"
     parini%ncells=parini%subdict//"ncells"
+    parini%nconf_genconf=parini%subdict//"nconf"
     allocate(parini%nat_types_fu(parini%ntypat),source=0)
     parini%nat_types_fu=parini%subdict//"nat_types_fu"
     dict_tmp=>parini%subdict//"list_fu"

@@ -222,7 +222,7 @@
 ./potential_IPI.o : ./potential_IPI.F90 ./parini_mod.o ./minhocao_mod.o ./fsockets.o ./constants_minhocao_mod.o ./minhocao_mod.o 
 ./saddle_1s_dimer.o : ./saddle_1s_dimer.F90 ./basic_utilities.o ./potential_main.o ./io_yaml_conf.o ./atoms_mod.o ./opt_mod.o ./saddle_mod.o ./parini_mod.o 
 ./get_qat_target.o : ./get_qat_target.F90 ./es_radpots_cent2.o ./trial_energy_mod.o ./ann_io_yaml.o ./ann_mod.o ./electrostatics_mod.o ./atoms_mod.o ./parini_mod.o 
-./gensymcrys_input_creator.o : ./gensymcrys_input_creator.F90 ./io_yaml_conf.o ./atoms_mod.o ./parini_mod.o 
+./gensymcrys_input_creator.o : ./gensymcrys_input_creator.F90 ./constants_mod.o ./io_yaml_conf.o ./atoms_mod.o ./parini_mod.o 
 ./gensymcrys_random_incell_p4.o : ./gensymcrys_random_incell_p4.F90 
 ./genconf_random.o : ./genconf_random.F90 ./io_acf.o ./genconf_mod.o ./atoms_mod.o ./parini_mod.o 
 ./gaussdist.o : ./gaussdist.F90 ./basic_utilities.o 

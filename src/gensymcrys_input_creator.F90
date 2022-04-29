@@ -11,17 +11,26 @@ subroutine gensymcrys_many(parini)
     integer, allocatable:: cryssys_all(:), brav_all(:), nsymp_all(:), nsym_all(:), ind_rsym_all(:)
     real(8), allocatable:: rsym_all(:,:,:)
     integer:: nsym_tot, ntry, i_spacegroup, NCELLS, NAT_CELL, NKINDS, i, j, ios, nfu
-    integer:: iat, iconf
-    real(8):: target_vol_per_atom, cv(3,3)
+    integer:: iat, iconf, nconf, nconf_allproc, ierr
+    integer:: ifu, NAT_CELL_MAX
+    real(8):: target_vol_per_atom, ttrand, tt1, tt2
     character(5), allocatable:: stypat(:)
     integer, allocatable:: NAT_KINDS(:)
     real(8), allocatable:: KINDSDIST_MIN(:,:)
-    real(8), allocatable:: rxyz(:,:)
-    character(5), allocatable:: sat(:)
+    real(8), allocatable:: rxyz_all(:,:,:)
+    real(8), allocatable:: cv_all(:,:,:)
+    character(5), allocatable:: sat_all(:,:)
+    integer, allocatable:: NAT_CELL_ALL(:)
+    real(8), allocatable:: rxyz_allproc(:,:,:)
+    real(8), allocatable:: cv_allproc(:,:,:)
+    character(5), allocatable:: sat_allproc(:,:)
+    integer, allocatable:: NAT_CELL_ALLPROC(:)
     logical:: succeeded
     type(typ_atoms):: atoms
-    type(typ_atoms_arr):: atoms_arr
     type(typ_file_info):: file_info
+#if defined(MPI)
+    include 'mpif.h'
+#endif
     NKINDS=parini%ntypat
     allocate(stypat(NKINDS))
     allocate(NAT_KINDS(NKINDS))
@@ -30,50 +39,102 @@ subroutine gensymcrys_many(parini)
     KINDSDIST_MIN(1:NKINDS,1:NKINDS)=parini%rmin_pairs(1:NKINDS,1:NKINDS)
     do i=1,NKINDS
         stypat(i)=parini%stypat(i)
-        NAT_KINDS(i)=parini%nat_types_fu(i)*parini%list_fu(1)
     enddo
     nfu=size(parini%list_fu)
+    NAT_CELL_MAX=0
+    do ifu=1,nfu
+    do i=1,NKINDS
+        NAT_KINDS(i)=parini%nat_types_fu(i)*parini%list_fu(ifu)
+    enddo
     NAT_CELL=sum(NAT_KINDS(1:NKINDS))
+    NAT_CELL_MAX=max(NAT_CELL,NAT_CELL_MAX)
+    enddo
     ntry=parini%ntry
-    i_spacegroup=parini%ispg
-    ncells=parini%ncells
-    target_vol_per_atom=parini%volperatom_bounds(1)
+    ncells=1 !parini%ncells !probably values other than 1 will not work
     !---------------------------------------------------------------------
     nsym_tot=4425
     allocate(cryssys_all(230),brav_all(230),nsymp_all(230),nsym_all(230),ind_rsym_all(230))
     allocate(rsym_all(4,4,nsym_tot))
-    call read_coeffs_gensymcrys(nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all,nsym_all,ind_rsym_all)
+    if(parini%mpi_env%iproc==0) then
+    call read_coeffs_gensymcrys(parini,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all,nsym_all,ind_rsym_all)
+    endif
+    call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(rsym_all,4*4*nsym_tot,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(cryssys_all,230,MPI_INTEGER,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(brav_all,230,MPI_INTEGER,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(nsymp_all,230,MPI_INTEGER,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(nsym_all,230,MPI_INTEGER,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(ind_rsym_all,230,MPI_INTEGER,0,parini%mpi_env%mpi_comm,ierr)
+
     !---------------------------------------------------------------------
-    allocate(rxyz(3,NAT_CELL),sat(NAT_CELL))
+    nconf=parini%nconf_genconf/parini%mpi_env%nproc
+    if(nconf*parini%mpi_env%nproc/=parini%nconf_genconf) nconf=nconf+1
+
+    allocate(rxyz_all(3,NAT_CELL_MAX,nconf),sat_all(NAT_CELL_MAX,nconf))
+    allocate(NAT_CELL_ALL(nconf),cv_all(3,3,nconf))
+
+    succeeded=.true.
+    iconf=0
+    do
+    if(succeeded) iconf=iconf+1
+    if(parini%ispg<1) then
+        call random_number(ttrand)
+        i_spacegroup=min(int(ttrand*real(230,kind=8))+1,230)
+    else
+        i_spacegroup=parini%ispg
+    endif
+    if(.not. succeeded) i_spacegroup=1
+    call random_number(ttrand)
+    tt1=parini%volperatom_bounds(1)
+    tt2=parini%volperatom_bounds(2)
+    target_vol_per_atom=(tt2-tt1)*ttrand+tt1
+    call random_number(ttrand)
+    ifu=min(int(ttrand*real(nfu,kind=8))+1,nfu)
+    do i=1,NKINDS
+        NAT_KINDS(i)=parini%nat_types_fu(i)*parini%list_fu(ifu)
+    enddo
+    NAT_CELL_ALL(iconf)=sum(NAT_KINDS(1:NKINDS))
     call gensymcrys_single(parini,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all, &
-        nsym_all,ind_rsym_all,target_vol_per_atom,stypat,NCELLS,NAT_CELL,ntry, &
-        i_spacegroup,NKINDS,NAT_KINDS,KINDSDIST_MIN,cv,rxyz,sat,succeeded)
-    call atom_allocate_old(atoms,NAT_CELL,0,0)
-
-    rxyz=rxyz/bohr2ang
-    atoms%cellvec=cv/bohr2ang
-    call set_rat(atoms,rxyz,.true.)
-    atoms%boundcond='bulk'
-    atoms%units_length_io='angstrom'
-    do iat=1,atoms%nat
-        atoms%sat(iat)=sat(iat)
+        nsym_all,ind_rsym_all,target_vol_per_atom,stypat,NCELLS,NAT_CELL_ALL(iconf),ntry, &
+        i_spacegroup,NKINDS,NAT_KINDS,KINDSDIST_MIN,cv_all(1,1,iconf),rxyz_all(1,1,iconf),sat_all(1,iconf),succeeded)
+    if(succeeded .and. iconf==nconf) exit
     enddo
+    call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
 
-    atoms_arr%nconf=1
-    allocate(atoms_arr%atoms(atoms_arr%nconf))
+    nconf_allproc=nconf*parini%mpi_env%nproc
+    allocate(rxyz_allproc(3,NAT_CELL_MAX,nconf_allproc),sat_allproc(NAT_CELL_MAX,nconf_allproc))
+    allocate(NAT_CELL_ALLPROC(nconf_allproc),cv_allproc(3,3,nconf_allproc))
 
-    call atom_copy_old(atoms,atoms_arr%atoms(1),'atoms->atoms_arr%atoms(i)')
+    call MPI_GATHER(NAT_CELL_ALL,nconf,MPI_INTEGER,NAT_CELL_ALLPROC,nconf,MPI_INTEGER,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_GATHER(rxyz_all,3*NAT_CELL_MAX*nconf,MPI_DOUBLE_PRECISION,rxyz_allproc,3*NAT_CELL_MAX*nconf,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_GATHER(cv_all,3*3*nconf,MPI_DOUBLE_PRECISION,cv_allproc,3*3*nconf,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_GATHER(sat_all,5*NAT_CELL_MAX*nconf,MPI_CHARACTER,sat_allproc,5*NAT_CELL_MAX*nconf,MPI_CHARACTER,0,parini%mpi_env%mpi_comm,ierr)
 
-    file_info%file_position='new'
+    if(parini%mpi_env%iproc==0) then
     file_info%filename_positions='posout.yaml'
-    call write_yaml_conf(file_info,atoms=atoms_arr%atoms(1),strkey='posout')
-
-    call atom_deallocate_old(atoms)
-    do iconf=1,atoms_arr%nconf
-        call atom_deallocate_old(atoms_arr%atoms(iconf))
+    do iconf=1,nconf_allproc
+        call atom_allocate_old(atoms,NAT_CELL_ALLPROC(iconf),0,0)
+        rxyz_allproc(1:3,1:atoms%nat,iconf)=rxyz_allproc(1:3,1:atoms%nat,iconf)/bohr2ang
+        atoms%cellvec(1:3,1:3)=cv_allproc(1:3,1:3,iconf)/bohr2ang
+        call set_rat(atoms,rxyz_allproc(1,1,iconf),.true.)
+        atoms%boundcond='bulk'
+        atoms%units_length_io='angstrom'
+        do iat=1,atoms%nat
+            atoms%sat(iat)=sat_allproc(iat,iconf)
+        enddo
+        if(iconf==1) then
+            file_info%file_position='new'
+        else
+            file_info%file_position='append'
+        endif
+        call write_yaml_conf(file_info,atoms=atoms,strkey='posout')
+        call atom_deallocate_old(atoms)
     enddo
-    deallocate(atoms_arr%atoms)
-    deallocate(rxyz,sat)
+    endif
+
+    call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+    deallocate(rxyz_all,sat_all,cv_all,NAT_CELL_ALL)
+    deallocate(rxyz_allproc,sat_allproc,cv_allproc,NAT_CELL_ALLPROC)
     !---------------------------------------------------------------------
     deallocate(cryssys_all,brav_all,nsymp_all,nsym_all,ind_rsym_all)
     deallocate(rsym_all)
@@ -375,8 +436,10 @@ dout(3)=dist(1)
 end subroutine
 
 !*********************************************************************************
-subroutine read_coeffs_gensymcrys(nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all,nsym_all,ind_rsym_all)
+subroutine read_coeffs_gensymcrys(parini,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all,nsym_all,ind_rsym_all)
+    use mod_parini, only: typ_parini
     implicit none
+    type(typ_parini), intent(in):: parini
     integer, intent(in):: nsym_tot
     real(8), intent(out):: rsym_all(4,4,nsym_tot)
     integer, intent(out):: cryssys_all(230), brav_all(230)
@@ -384,7 +447,16 @@ subroutine read_coeffs_gensymcrys(nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_a
     !local variables
     integer:: ios, ispg, ii
     !real(8):: tt1, tt2, tt3, tt4
-    open(unit=11,file='coeffs_gensymcrys.dat',status='old',iostat=ios)
+    character(256):: datafile
+    if(trim(parini%datafilesdir)=="DATAFILESDIR") then
+        write(*,*) 'ERROR: perhaps makefile did not succeed to set datafilesdir,'
+        write(*,*) '       you can set it in flame_in.yaml in block main.'
+        stop
+    else
+        datafile=trim(parini%datafilesdir)//"/coeffs_gensymcrys.dat"
+    endif
+    !write(*,*) trim(datafile)
+    open(unit=11,file=trim(datafile),status='old',iostat=ios)
     if(ios/=0) then
         write(*,'(a)') 'ERROR: failure openning coeffs_gensymcrys.dat file.'
         stop
