@@ -1,0 +1,378 @@
+---
+ Code logo:
+   "__________________ Fully-Loaded Atomistic Modeling Environment
+           .
+          .M
+         ,MM
+         MM:
+     .   YMM,
+     M   `MMM,     .
+     M.   `MMM    .M
+     MM,  ,MMM   ,MM
+     `MM, MMM`  ,MM` .
+     ,MMM./MMMM.MMM, M
+     MMMMMM MMMMMMMMMMI  FFFFFF LL        AA    M        M EEEEEE
+     MMMMMM   MMMMMMMMM  F      LL       A  A   MM      MM E
+     `MMMM     MMMMMMM`  FFFFFF LL      A    A  M M    M M EEEEEE
+      /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
+       MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
+   ________________________________________ www.flame-code.org   "
+ Reference Paper                       : https://doi.org/10.1016/j.cpc.2020.107415
+ Timestamp of this run                 : 2022-04-29 17:53:13.261
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
+ main:
+   task                                : genconf
+   types                               : Li S
+   two_level_geopt                     : False
+   verbosity                           : 0
+   verbose                             : 3
+   rng_type                            : only_for_tests
+   seed                                : 1
+   nat                                 : 0
+   pressure                            : 0.0
+   findsym                             : False
+   finddos                             : False
+   params_new                          : False
+   time_limit                          : -1.0
+   datafilesdir                        : /home/ghasemi/FLAME.gensymcrys/datafiles
+ minhopp:
+   nstep                               : 0
+   nsoften                             : 7
+   mdmin                               : 3
+   minter                              : 1
+   nrandoff                            : 0
+   npminx                              : 1000
+   etoler                              : 1.E-2
+   eref                                : -1.E50
+   ekinmax                             : 1.E20
+   alpha1                              : 0.9803921568627451
+   alpha2                              : 1.02d0
+   beta1                               : 1.05d0
+   beta2                               : 1.05d0
+   beta3                               : 0.9523809523809523
+   trajectory                          : False
+   print_force                         : False
+   auto_soft                           : False
+   alpha_lat                           : 1.0
+   alpha_at                            : 1.0
+   mol_soften                          : False
+ geopt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+   hesslat                             : 1.0
+   hessat                              : 1.0
+   geoext                              : False
+   qbfgsndim                           : 1
+   qbfgstri                            : 0.5
+   qbfgstrmin                          : 1.E-3
+   qbfgstrmax                          : 0.5
+   qbfgsw1                             : 0.01
+   qbfgsw2                             : 0.5
+   maxrise                             : 1.E-6
+   sqnmcutoff                          : 1.E-4
+   sqnmsteep                           : 1.0
+   sqnmtrustr                          : 0.1
+ geopt_prec:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle_opt:
+   method                              : unknown
+   fmaxtol                             : -1.0
+   alphax                              : -1.0
+   condnum                             : 10.0
+   precaution                          : normal
+   lprint                              : False
+   dt_start                            : -1.0
+   nit                                 : -1
+   dxmax                               : -1.0
+   anoise                              : -1.0
+   nsatur                              : -1
+   cellrelax                           : False
+   funits                              : -1.0
+   print_force                         : False
+   trajectory                          : False
+   nhist                               : 10
+   dt_min                              : 1.0
+   dt_max                              : 80.0
+   strfact                             : 100.0
+ saddle:
+   method                              : unknown
+   list_random_displace                : None
+   dimsep                              : -1.0
+   ampl                                : -1.0
+   np_splsad                           : 2
+   np_neb                              : 2
+   ns2                                 : 0
+   vdtol                               : 0.1
+   dt                                  : 0.03
+   htol                                : 0.02
+   alphax                              : 0.5
+   hybrid                              : no
+   docineb                             : no
+   doneb                               : unknown
+   pickbestanchorpoints                : unknown
+   runstat                             : new
+   typintpol                           : cubic
+   fcalls_max                          : 100
+   fmaxtol_splsad                      : 2.E-4
+   fmaxtol_neb                         : 2.E-2
+   opt_method                          : SD
+   dbar                                : 0.1
+   stepsize                            : 20.0
+   fnrmtol_coarse                      : 1.E-2
+   nstep                               : 1000
+   bar_contract                        : True
+   dbar_contracted                     : 1.E-3
+   fnrmtol_contracted                  : 2.E-4
+   nstep_contract                      : 20
+ potential:
+   potential                           : unknown
+   cal_charge                          : False
+   cal_scn                             : False
+   potential_sec                       : unknown
+   boundary                            : 1
+   ann_boundcheck                      : none
+   component_ff                        : no
+   sockinet                            : 0
+   sockport                            : 3141
+   sockhost                            : mh-driver
+   ipiinet                             : 0
+   ipiport                             : 3141
+   ipihost                             : mh-driver
+   ipiecutwf: [1.0, 1.0]
+   sockecutwf: [1.0, 1.0]
+   drift                               : False
+   add_repulsive                       : True
+   voids                               : False
+   core_rep                            : False
+   core_rep_par: [1.0, 0.7]
+   usewfgeo                            : False
+   usewfsoft                           : False
+   usewfmd                             : False
+   auto_kpt                            : True
+   kptmesh: [1, 1, 1]
+   kptden: [0.04, 0.06]
+   ewald:
+     hx                                : -1.0
+     hy                                : -1.0
+     hz                                : -1.0
+     alpha                             : -1.0
+     ecut                              : -1.0
+     ecutz                             : -1.0
+     ecut_auto                         : False
+     rcut                              : -1.0
+     rgcut                             : -1.0
+     screening_factor                  : 0.0
+     free_space                        : 0.0
+     nsp                               : -1
+     plane_voltageu                    : 0.0
+     plane_voltagel                    : 0.0
+     plane_voltageu_ac                 : 0.0
+     frequency                         : 0.0
+     gnrmtol                           : 1.E-7
+     psolver                           : unknown
+     bigdft_kwald                      : False
+     ewald                             : False
+     cell_ortho                        : False
+     cell_ortho_noshift                : False
+     ewald_tol                         : 1.E-6
+     bias_type                         : no
+     external_field                    : 0.0
+     dielec_const                      : 1.0
+     dielec_const1                     : 1.0
+     dielec_const2                     : 1.0
+     cal_polar                         : False
+   confine:
+     confinement                       : False
+     nconfine                          : 0
+     cartred                           : C
+     dim                               : 1
+     exp                               : 4
+     prefac                            : 0.01
+     cut                               : 1.0
+     av                                : 2
+     eq                                : 0
+     nat                               : 0
+     atoms                             : all
+ ann:
+   subtask                             : unknown
+   optimizer                           : unknown
+   approach                            : atombased
+   symfunc                             : only_calculate
+   nstep_opt                           : 100
+   nstep_cep                           : 200
+   alphax_q                            : 1.0
+   alphax_r                            : 0.05
+   nconf_rmse                          : 0
+   ampl_rand                           : 1.0
+   symfunc_type                        : behler
+   syslinsolver                        : direct
+   rgnrmtol                            : 5.E-4
+   qgnrmtol                            : 5.E-4
+   etol                                : 1.0
+   dtol                                : 1.0
+   ftol                                : 1.E-4
+   normalization                       : False
+   bondbased                           : False
+   prefit                              : False
+   prefit_centt                        : False
+   read_forces                         : True
+   restart_param                       : False
+   restart_iter                        : 0
+   print_energy                        : False
+   fit_hoppint                         : False
+   save_symfunc_force                  : False
+   weight_hardness                     : 0.001
+   save_symfunc_behnam                 : False
+   freeBC_direct                       : False
+ dynamics:
+   nmd                                 : 300
+   nfreq                               : 0
+   dt                                  : -1.0
+   temp                                : 0.0
+   init_temp                           : 0.0
+   md_method                           : unknown
+   print_force                         : False
+   restart                             : False
+   algo                                : 1
+   integrator                          : 3
+   presscomp                           : 0.0
+   cellmass                            : 1.0
+   auto_mdmin                          : False
+   mdmin_init                          : 2
+   mdmin_min                           : 2
+   mdmin_max                           : 2
+   auto_mddt                           : False
+   dt_init                             : 20.0
+   nit_per_min                         : 25
+   encon                               : False
+   highest_freq                        : 10.0
+   ntherm                              : 2
+ bader:
+   method                              : unknown
+   filename                            : total_density.cube
+   vacuum                              : yes
+ genconf:
+   subtask                             : gensymcrys
+   cal_pot                             : no
+   nat_add                             : 0
+   sat                                 : unknown
+   amargin                             : 0.0
+   dmin                                : 1.0
+   dmax                                : -1.0
+   npoint                              : 0
+   fbmin                               : -1.0
+   fbmax                               : -1.0
+   volperatom_bounds: [17.0, 17.0]
+   ntry                                : 30
+   ispg                                : 225
+   ncells                              : 1
+   nconf                               : 2
+   nat_types_fu: [2, 1]
+   list_fu:
+   - 3
+   rmin_pairs:
+     LiLi                              : 2.3
+     LiS                               : 1.8
+     SS                                : 2.0
+   variable_cell                       : False
+   nonorthogonal                       : False
+ conf_comp:
+   tol                                 : 1.0
+ testforces:
+   method                              : unknown
+ single_point:
+   print_force                         : False
+   format                              : unknown
+   usesocket                           : no
+   sockinet                            : 0
+   sockport                            : 0
+   sockhost                            : 0
+ misc:
+   subtask                             : unknown
+   gaussian_width                      : -1.0
+   pen_coeff                           : 0.0
+   q_avg_target                        : 0.0
+   boundcond                           : unknown
+   posinp                              : unknown
+ fit_elecpot:
+   ngto                                : 1
+   iat_plot                            : 1
+   gwe_per_type                        : -1.0
+   q_per_type                          : -1.0
+   alphax_q                            : -1.0
+   alphax_a                            : -1.0
+   alphax_r                            : -1.0
+   pot_rmse_tol                        : 1.E-6
+   cutoff_fit_elecpot                  : True
+ fingerprint:
+   method                              : OGANOV
+   rcut                                : 15.0
+   dbin                                : 0.05
+   sigma                               : 0.02
+   nl                                  : 6
+   power                               : 3
+   gaussfac1                           : 1.0
+   gaussfac2                           : 1.5
+   atnmax                              : 10000
+   natx                                : 75
+   orbital                             : S
+   nexcut                              : 3
+   principleev                         : 6
+   molecules                           : 1
+   expa                                : 4
+   molsphere                           : 50
+   widthcut                            : 1.0
+   widthover                           : 1.0
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ system info: {ntypat:  2, Li:  1, S:  2}
+ mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
+ random number generator: {iproc:  0}
+ CPU time: {iproc:  0, hrs:  0.566E-04, min:  0.339E-02, sec:  0.204E+00}
+ mpi finalized: {iproc_world:  0, nproc_world:  1}
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  3
+   Tot. No. of Deallocations           :  3
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  0.000
+     for the array                     : fbuf
+     in the routine                    : alborz_init
+     Memory Peak of process            : 85.436 MB
+ Walltime since initialization         :  00:00:00.477373039
+ Max No. of dictionaries used          :  885 #( 171 still in use)
+ Number of dictionary folders allocated:  1

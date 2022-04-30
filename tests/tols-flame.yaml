@@ -289,3 +289,6 @@ lammps_NVT:
 
 lammps_NPT:
  Epsilon: 5.e-7
+
+genconf_gensymcrys:
+ Epsilon: 1.e-11

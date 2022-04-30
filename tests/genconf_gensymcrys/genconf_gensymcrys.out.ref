@@ -1,0 +1,71 @@
+ Generating primitive cell
+ Spacegroup         225
+ Number of cells per dim in average   1.00000000000000                1
+ Target number of cells:           1
+      #cells, x,y,z    0    1    1    1
+Found optimal cell:    1    1    1    1
+ LATSGP         225
+ NSYMP          48
+ NSYM         192
+ BRAV           4
+ NGUESS         100
+ Irreducible Multiplicity
+           1
+Atom type   1 looks fine
+Atom type   2 looks fine
+ nat_kinds(i)           6
+ nat_kinds(i)           3
+ Starting (over) new generation           0
+ NKINDS           2
+ NAT_CELL           9
+ Incell called
+ Starting (over) new generation           1
+ NKINDS           2
+ NAT_CELL           9
+ Incell called
+ Starting (over) new generation           2
+ NKINDS           2
+ NAT_CELL           9
+ Incell called
+ Starting (over) new generation           3
+ NKINDS           2
+ NAT_CELL           9
+ Incell called
+ Starting (over) new generation           4
+ NKINDS           2
+ NAT_CELL           9
+ Incell called
+ Finished random atoms
+ dout   4.90181045017522        4.90181045017522        4.90181045017522     
+ cells           1           1           1
+ t_cells           1           1           1
+Succeeded: itry=     1
+volume of primitive cell and per atom      153.0      17.0
+volume of supercell cell and per atom      153.0      17.0
+ Spacegroup         225
+ Number of cells per dim in average   1.00000000000000                1
+ Target number of cells:           1
+      #cells, x,y,z    0    1    1    1
+Found optimal cell:    1    1    1    1
+ LATSGP         225
+ NSYMP          48
+ NSYM         192
+ BRAV           4
+ NGUESS         100
+ Irreducible Multiplicity
+           1
+Atom type   1 looks fine
+Atom type   2 looks fine
+ nat_kinds(i)           6
+ nat_kinds(i)           3
+ Starting (over) new generation           0
+ NKINDS           2
+ NAT_CELL           9
+ Incell called
+ Finished random atoms
+ dout   4.90181045017522        4.90181045017522        4.90181045017522     
+ cells           1           1           1
+ t_cells           1           1           1
+Succeeded: itry=     1
+volume of primitive cell and per atom      153.0      17.0
+volume of supercell cell and per atom      153.0      17.0

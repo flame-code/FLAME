@@ -80,6 +80,10 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 		task_confcomp.F90 \
 		task_bader.F90 \
 		genconf_random.F90 genconf_rangrow.F90 genconf_diatomic.F90 genconf_trimer.F90 task_genconf.F90 \
+        gensymcrys_input_creator.F90 gensymcrys_random_atoms.F90 gensymcrys_random_incell_main.F90 \
+        gensymcrys_random_incell_p1.F90 gensymcrys_random_incell_p2.F90 gensymcrys_random_incell_p3.F90 \
+        gensymcrys_random_incell_p4.F90 gensymcrys_random_incell_p5.F90 gensymcrys_random_incell_p6.F90 \
+        gensymcrys_random_lattice.F90 gensymcrys_sg_ops.F90 gensymcrys_subs_cell.F90 gensymcrys_trans_uniprim.F90 \
 		task_testforces.F90 \
 		task_miscellaneous.F90 solve_poisson_cube.F90 fit_elecpot.F90 get_qat_target.F90 \
 		test_free_bps.F90 \

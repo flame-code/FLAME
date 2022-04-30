@@ -19,7 +19,8 @@ SHORT_TESTDIRS = testforces_FD \
 				 train_CENT1 \
 				 train_CENTT \
 				 saddle_2s_splsad \
-				 saddle_2s_neb
+				 saddle_2s_neb \
+				 genconf_gensymcrys
 
 if HAVE_SPGLIB
 SHORT_TESTDIRS += minhocao_CENT1 \

@@ -26,6 +26,7 @@ module mod_parini
         !character(50):: stypat_genconf=''
         real(8):: time_start=-1.d0
         real(8):: time_limit=-1.d0
+        character(256):: datafilesdir='DATAFILESDIR'
         !-----------------------------------------------------------------------
         !parameters of [minhopp]
         logical:: avail_minhopp=.false.
@@ -169,6 +170,14 @@ module mod_parini
         integer:: npoint_genconf=0
         real(8):: fbmin_genconf=-1.d0
         real(8):: fbmax_genconf=-1.d0
+        integer:: ntry=1
+        integer:: ispg=0
+        integer:: ncells=1
+        integer:: nconf_genconf=1
+        integer, allocatable:: nat_types_fu(:)
+        real(8), allocatable:: rmin_pairs(:,:)
+        integer, allocatable:: list_fu(:)
+        real(8):: volperatom_bounds(2)
         logical :: variable_cell_genconf= .false.
         logical :: nonorthogonal_genconf= .false.
         !-----------------------------------------------------------------------

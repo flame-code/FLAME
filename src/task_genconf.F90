@@ -17,6 +17,8 @@ subroutine task_genconf(parini)
         call genrandom(parini,genconf)
     else if(trim(parini%subtask_genconf)=='rangrow') then
         call rangrow(parini,genconf)
+    else if(trim(parini%subtask_genconf)=='gensymcrys') then
+        call gensymcrys_many(parini)
     else
         write(*,'(2a)') 'ERROR: unknown parini%subtask_genconf, parini%subtask_genconf=', &
             trim(parini%subtask_genconf)
