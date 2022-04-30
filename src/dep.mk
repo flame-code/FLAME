@@ -32,7 +32,7 @@
 ./fingerprint_MOLGOM.o : ./fingerprint_MOLGOM.F90 ./constants_minhocao_mod.o ./parini_mod.o 
 ./trial_energy_mod.o : ./trial_energy_mod.F90 
 ./constants_minhocao_mod.o : ./constants_minhocao_mod.F90 
-./potential_ANN.o : ./potential_ANN.F90 ./potential_corerepulsion.o ../src/act2_cell_linkedlist.inc ../src/act1_cell_linkedlist.inc ./linked_lists_mod.o ./train_optimizer.o ./ann_symfunc_mod.o ./ann_io_yaml.o ./potential_main.o ./atoms_mod.o ./parini_mod.o 
+./potential_ANN.o : ./potential_ANN.F90 ../src/act2_cell_linkedlist.inc ../src/act1_cell_linkedlist.inc ./linked_lists_mod.o ./train_optimizer.o ./potential_corerepulsion.o ./ann_symfunc_mod.o ./ann_io_yaml.o ./potential_main.o ./atoms_mod.o ./parini_mod.o 
 ./task_confcomp.o : ./task_confcomp.F90 ./io_acf.o ./atoms_mod.o ./parini_mod.o 
 ./task_saddle.o : ./task_saddle.F90 ./parini_mod.o 
 ./es_hartree_main.o : ./es_hartree_main.F90 act2_cell_linkedlist.inc act1_cell_linkedlist.inc fftw3.f ./linked_lists_mod.o ./electrostatics_mod.o ./atoms_mod.o ./parini_mod.o 
@@ -59,7 +59,7 @@
 ./es_hartree_fourier.o : ./es_hartree_fourier.F90 ./electrostatics_mod.o ./atoms_mod.o ./parini_mod.o 
 ./bader_ongrid.o : ./bader_ongrid.F90 ./bader_mod.o ./parini_mod.o 
 ./compare_lammps.o : ./compare_lammps.F90 ./parini_mod.o ./constants_minhocao_mod.o ./potential_main_minhocao.o ./minhocao_mod.o 
-./ann_mod.o : ./ann_mod.F90 ./es_radpots_cent2.o ./electrostatics_mod.o ./linked_lists_mod.o 
+./ann_mod.o : ./ann_mod.F90 ./electrostatics_mod.o ./linked_lists_mod.o 
 ./opt_mod.o : ./opt_mod.F90 
 ./optimizer_diis.o : ./optimizer_diis.F90 ./opt_mod.o 
 ./optimizer_drivers_vc.o : ./optimizer_drivers_vc.F90 ./potential_main.o ./opt_mod.o ./io_acf.o ./atoms_mod.o ./parini_mod.o 
