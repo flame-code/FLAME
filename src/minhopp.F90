@@ -17,6 +17,7 @@ subroutine minimahopping(parini)
     type(typ_atoms):: atoms_curr, atoms_hopp
     type(typ_atoms_arr):: atoms_allproc
     type(typ_atoms_arr):: atoms_locmin
+    real(8):: time_check
 #if defined(MPI)
     include 'mpif.h'
 #endif
@@ -90,6 +91,13 @@ subroutine minimahopping(parini)
         endif
         if(nlmin-nlmin_old>=minter) call write_minhopp(atoms_allproc,atoms_locmin)
         if(istep>nstep) exit
+        if(nproc==1 .and. parini%time_limit>0.d0) then
+            call cpu_time(time_check)
+            if((time_check-parini%time_start)>(parini%time_limit*3600.d0)) then
+                write(*,'(a)') 'EXIT in minhopp: exceeding parini%time_limit!'
+                exit
+            endif
+        endif
         !check whether time exceeded
         call check_whether_time_exceeded
         if(time_exceeded) exit

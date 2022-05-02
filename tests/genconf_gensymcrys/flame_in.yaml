@@ -1,0 +1,18 @@
+main:
+    task: genconf
+    types: Li S
+    rng_type: only_for_tests #Do not use this value, only useful for developers
+    seed: 1
+
+genconf:
+    subtask: gensymcrys
+    volperatom_bounds: [17.0,17.0]
+    ntry: 30
+    ispg: 225
+    nat_types_fu: [2,1]
+    list_fu: [3]
+    nconf: 2
+    rmin_pairs:
+      LiLi: 2.3
+      LiS: 1.8
+      SS: 2.0

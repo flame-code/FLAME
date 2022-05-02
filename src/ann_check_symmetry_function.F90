@@ -152,7 +152,7 @@ subroutine ann_check_symmetry_function(parini)
                     tt=symfunc_check%symfunc(iconf)%y(ig,iat)
                     tt=(tt-ann_arr%ann(i)%gbounds(1,ig))*ann_arr%ann(i)%two_over_gdiff(ig)-1.d0
                     symfunc_check%symfunc(iconf)%y(ig,iat)=tt
-                    write(88,'(2i4,es24.15)') ig,iat,symfunc_check%symfunc(1)%y(ig,iat)
+                    !write(88,'(2i4,es24.15)') ig,iat,symfunc_check%symfunc(1)%y(ig,iat)
                 enddo
             enddo
         enddo

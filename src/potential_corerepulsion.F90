@@ -59,8 +59,8 @@ end subroutine
         real(8):: sigma_lj(parini%ntypat_global,parini%ntypat_global)
         logical:: truncated
 !Set up epsilon and sigma parameters
-        eps_lj=1.d0
-        sigma_lj_fact=0.7d0
+        eps_lj=parini%core_rep_eps
+        sigma_lj_fact=parini%core_rep_sigma
 !If truncated is true we will use the shifted form according to PRA 8, 1504 (1973), and else a simple crude cutoff
         truncated=.true.
 !Convert everything from "internal atomic" units to the real "angstrom-ev" units

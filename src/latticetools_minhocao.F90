@@ -96,6 +96,7 @@ end subroutine
  real*8,intent(inout):: dproj(6),latvec(3,3),rotmat(3,3),rxyz(3,nat)
  real*8  :: tempvec(3),rotmat1(3,3),rotmat2(3,3),crossp(3),alpha,latvect(3,3)
  real*8  :: eps,axe(3),vnrm,rxyzt(3),rotmatt(3,3)
+ real(8):: yaxis(3)
  eps=1.d-6
  !Calculating dxx
  dproj(1)=sqrt(latvec(1,1)*latvec(1,1)+latvec(2,1)*latvec(2,1)+latvec(3,1)*latvec(3,1))
@@ -147,7 +148,10 @@ end subroutine
 ! axe(1)=1.d0
  tempvec(:)=latvec(:,2)
  tempvec(1)=0.d0
- call cross_product(tempvec,(/0.d0,1.d0,0.d0/),axe)
+ yaxis(1)=0.d0
+ yaxis(2)=1.d0
+ yaxis(3)=0.d0
+ call cross_product(tempvec,yaxis,axe)
 
 ! if (abs(axe(1)).lt.eps*1.d-1 .and. abs(axe(2)).lt.eps*1.d-1 .and. abs(axe(3)).lt.eps*1.d-1 .and. tempvec(2).gt.0.d0) goto 1002 !no rotation needed
  if (abs(axe(1)).lt.eps*1.d-1 .and. abs(axe(2)).lt.eps*1.d-1 .and. abs(axe(3)).lt.eps*1.d-1) then

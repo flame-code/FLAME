@@ -13,6 +13,7 @@ $(DATABASE_SRC): $(YAML_DATABASE)
 
 .yaml.c:
 	@base=$(shell basename $< .yaml);\
+	datafilesdir=`echo "$(top_srcdir)/datafiles" | $(SED) -e 's!\/!\\\/!g'`;\
 	routinelc=`echo get_$$base | tr A-Z a-z`;\
 	routineuc=`echo $$routinelc | tr a-z A-Z`;\
 	array=$$base"_arr";\
@@ -25,6 +26,7 @@ $(DATABASE_SRC): $(YAML_DATABASE)
 	echo "#include <string.h>" >> $$file &&\
 	echo "static const char $$array[] =" >> $$file &&\
 	$(SED) -e "s/^/\"/;s/$$/\\\n\"/" $< >> $$file &&\
+	$(SED) -i "s/DATAFILESDIR/$$datafilesdir/" $$file &&\
 	echo "  ;" >> $$file &&\
 	echo "void FC_FUNC_($$routinelc, $$routineuc)(char* db_ptr,int* db_len)" >> $$file &&\
 	echo "{" >> $$file &&\

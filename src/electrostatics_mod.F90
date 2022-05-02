@@ -2,6 +2,7 @@
 module mod_electrostatics
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
     use mod_spline, only: typ_spline
+    use mod_greenf_kspace, only: typ_greenf_kspace
 #if defined(HAVE_BPS)
     use Poisson_Solver, only: coulomb_operator
 #endif
@@ -71,6 +72,7 @@ module mod_electrostatics
         type(typ_linked_lists):: linked_lists
         type(typ_pia_arr):: pia_arr
         type(typ_spline):: spline
+        type(typ_greenf_kspace):: greenf_kspace
 #if defined(HAVE_BPS)
         type(coulomb_operator):: pkernel
         type(coulomb_operator):: pkernel_scn

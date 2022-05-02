@@ -24,6 +24,9 @@ module mod_parini
         logical:: params_new=.false.
         character(100):: str_typat_global
         !character(50):: stypat_genconf=''
+        real(8):: time_start=-1.d0
+        real(8):: time_limit=-1.d0
+        character(256):: datafilesdir='DATAFILESDIR'
         !-----------------------------------------------------------------------
         !parameters of [minhopp]
         logical:: avail_minhopp=.false.
@@ -167,6 +170,14 @@ module mod_parini
         integer:: npoint_genconf=0
         real(8):: fbmin_genconf=-1.d0
         real(8):: fbmax_genconf=-1.d0
+        integer:: ntry=1
+        integer:: ispg=0
+        integer:: ncells=1
+        integer:: nconf_genconf=1
+        integer, allocatable:: nat_types_fu(:)
+        real(8), allocatable:: rmin_pairs(:,:)
+        integer, allocatable:: list_fu(:)
+        real(8):: volperatom_bounds(2)
         logical :: variable_cell_genconf= .false.
         logical :: nonorthogonal_genconf= .false.
         !-----------------------------------------------------------------------
@@ -252,6 +263,8 @@ module mod_parini
         integer:: bc                    !1: periodic, 2:free, 3:surface/slab
         real(8):: target_pressure_gpa !Target pressures
         real(8):: target_pressure_habohr  !Target pressures
+        real(8):: core_rep_eps
+        real(8):: core_rep_sigma
         logical:: findsym               !If true, findsym will be used to get symmetry informations on the fly
         logical:: finddos               !If true, the DOS at the Fermi level will be evaluated at the end of every geometry optimization
         logical:: usewf_md,usewf_geopt,usewf_soften !Defines when the wavefunctions should be reused in the next step

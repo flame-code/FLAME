@@ -59,6 +59,7 @@ Makefile.in
 aclocal.m4
 autom4te.cache/*
 compile
+config.h.in
 config.guess
 config.sub
 configure

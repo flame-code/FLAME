@@ -4,14 +4,11 @@ subroutine alborz_init(parini,parres,file_ini)
     use mod_task, only: typ_file_ini, time_start
     use mod_parini, only: typ_parini
     use mod_parser_ini, only: read_file_input
-    use futile
+    use mod_flm_futile
     !#ifndef __GFORTRAN__ 
     !    use ifport
     !#endif
-    use time_profiling
     !use mod_timing , only: TCAT_ALBORZ_INIT_FINAL
-    use dynamic_memory
-    use yaml_output
     implicit none
     type(typ_file_ini), intent(inout):: file_ini
     type(typ_parini), intent(inout):: parini
@@ -21,6 +18,7 @@ subroutine alborz_init(parini,parres,file_ini)
     character(len=*), parameter:: filename='flame_log.yaml'
     logical:: flib_profiling
     call f_lib_initialize()
+    call cpu_time(parini%time_start)
     inquire(file="NO_FLIB_PROFILING",exist=flib_profiling)
     !if(trim(parini%task)/='minhocao') then
         call initprocessors(parini%mpi_env) !start MPI in parallel version.
@@ -123,10 +121,8 @@ subroutine alborz_final(parini,file_ini)
     use mod_parini, only: typ_parini
     use mod_task, only: typ_file_ini, time_start, time_end
     use mod_processors, only: iproc
-    use yaml_output
-    use time_profiling
+    use mod_flm_futile
     !use mod_timing , only: dict_timing_info, TCAT_ALBORZ_INIT_FINAL
-    use dynamic_memory
     implicit none
     type(typ_parini), intent(inout):: parini
     type(typ_file_ini), intent(inout):: file_ini
@@ -166,7 +162,7 @@ end subroutine alborz_final
 subroutine init_random_seed(parini)
     use mod_processors, only: iproc, imaster
     use mod_parini, only: typ_parini
-    use yaml_output
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -212,7 +208,7 @@ end subroutine init_random_seed
 subroutine set_atomc_types_info(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: sat_to_iatom
-    use yaml_output
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variables
@@ -271,7 +267,7 @@ end subroutine set_atomc_types_info
 !*****************************************************************************************
 subroutine flm_print_logo(parini)
     use mod_parini, only: typ_parini
-    use futile
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     call yaml_mapping_open('Code logo')

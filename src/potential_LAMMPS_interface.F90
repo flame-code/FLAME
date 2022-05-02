@@ -310,6 +310,7 @@ contains !! Wrapper functions local to this module {{{1
       character (kind=C_char), dimension(len_trim(command_line)+1), target :: &
          c_command_line
       c_command_line = string2Cstring (command_line)
+      allocate(argv(100))
       call Cstring2argcargv (c_command_line, argc, argv)
       call lammps_open_wrapper (argc, argv, communicator, ptr)
       deallocate (argv)
@@ -325,6 +326,7 @@ contains !! Wrapper functions local to this module {{{1
       character (kind=C_char), dimension(len_trim(command_line)+1), target :: &
          c_command_line
       c_command_line = string2Cstring (command_line)
+      allocate(argv(100))
       call Cstring2argcargv (c_command_line, argc, argv)
       call lammps_actual_open_no_mpi (argc, argv, ptr)
       deallocate (argv)
@@ -917,7 +919,7 @@ contains !! Wrapper functions local to this module {{{1
 
       character (kind=C_char), dimension(*), target, intent(inout) :: Cstring
       integer (C_int), intent(out) :: argc
-      type (C_ptr), dimension(:), allocatable, intent(out) :: argv
+      type (C_ptr), intent(out) :: argv(100)
 
       integer :: StringStart, SpaceIndex, strlen, argnum
 
@@ -944,7 +946,8 @@ contains !! Wrapper functions local to this module {{{1
       end do
 
       ! Now allocate memory for argv
-      allocate (argv(argc))
+      !allocate (argv(argc))
+      if(argc>100) stop 'ERROR: argc exceeding the hard-coded value, namely 100'
 
       ! Now find the string starting and ending locations
       StringStart = 1
