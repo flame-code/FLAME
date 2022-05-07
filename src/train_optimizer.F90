@@ -119,9 +119,38 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
     real(8):: time_s, time_e, time1, time2, time3 !, time4
     real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
     real(8):: tt1, tt2, tt3, tt4, tt5, tt6
-    allocate(f(opt_ann%n),p(opt_ann%n,opt_ann%n),v1(opt_ann%n))
-    p(1:opt_ann%n,1:opt_ann%n)=0.d0
-    do i=1,opt_ann%n
+    integer:: is, ie, im, mproc, jproc, ierr
+    integer, allocatable:: ndispls(:) ,ncounts(:)
+#if defined(MPI)
+    include 'mpif.h'
+#endif
+    if(parini%mpi_env%nproc>1) then
+        allocate(ndispls(parini%mpi_env%nproc),ncounts(parini%mpi_env%nproc))
+        do jproc=0,parini%mpi_env%nproc-1
+            im=opt_ann%n/parini%mpi_env%nproc
+            is=jproc*im+1
+            mproc=mod(opt_ann%n,parini%mpi_env%nproc)
+            is=is+max(0,jproc-parini%mpi_env%nproc+mproc)
+            if(jproc>parini%mpi_env%nproc-mproc-1) im=im+1
+            ie=is+im-1
+            ncounts(jproc+1)=ie-is+1
+            ndispls(jproc+1)=is-1
+        enddo
+        im=opt_ann%n/parini%mpi_env%nproc
+        is=parini%mpi_env%iproc*im+1
+        mproc=mod(opt_ann%n,parini%mpi_env%nproc)
+        is=is+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) im=im+1
+        ie=is+im-1
+    else
+        is=1
+        ie=opt_ann%n
+    endif
+    allocate(f(opt_ann%n),source=0.d0)
+    allocate(v1(opt_ann%n),source=0.d0)
+    allocate(p(opt_ann%n,is:ie))
+    p(1:opt_ann%n,is:ie)=0.d0
+    do i=is,ie
         p(i,i)=1.d-2
     enddo
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1') then
@@ -207,12 +236,20 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
                 enddo
             endif
             call cpu_time(time1)
-            call DGEMV('T',opt_ann%n,opt_ann%n,1.d0,p,opt_ann%n,opt_ann%g,1,0.d0,v1,1)
+            call DGEMV('T',opt_ann%n,ie-is+1,1.d0,p(1,is),opt_ann%n,opt_ann%g,1,0.d0,v1(is),1)
+            if(parini%mpi_env%nproc>1) then
+            call MPI_ALLGATHERV(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,v1,ncounts,ndispls,MPI_DOUBLE_PRECISION,parini%mpi_env%mpi_comm,ierr)
+            endif
+            !if(parini%mpi_env%iproc==0) then
+            !    do i=1,opt_ann%n
+            !        write((parini%mpi_env%iproc+1)*1000+iter,'(i6,es19.10)') i,v1(i)
+            !    enddo
+            !endif
             !call cal_matvec_mpi(opt_ann%n,p,opt_ann%g,v1)
             call cpu_time(time2)
             tt=DDOT(opt_ann%n,opt_ann%g,1,v1,1)
             den=1.d0/(tt+r)
-            do j=1,opt_ann%n
+            do j=is,ie
                 do i=1,opt_ann%n
                     p(i,j)=p(i,j)-v1(i)*v1(j)*den
                     !if(i==j) p(i,j)=p(i,j)+1.d-1
@@ -221,7 +258,10 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
             enddo
                     !write(21,'(a)') '----------------------------------------'
             !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,idp,r,den
-            call DGEMV('N',opt_ann%n,opt_ann%n,rinv,p,opt_ann%n,opt_ann%g,1,0.d0,f,1)
+            call DGEMV('T',opt_ann%n,ie-is+1,rinv,p(1,is),opt_ann%n,opt_ann%g,1,0.d0,f(is),1)
+            if(parini%mpi_env%nproc>1) then
+            call MPI_ALLGATHERV(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,f,ncounts,ndispls,MPI_DOUBLE_PRECISION,parini%mpi_env%mpi_comm,ierr)
+            endif
             do i=1,opt_ann%n
                 !write(81,*) iter,idp,i,f(i)*(epotall(idp)-opt_ann%epot)
                 opt_ann%x(i)=opt_ann%x(i)+f(i)*(fcn_ref-fcn_ann)
@@ -256,6 +296,9 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
     close(41)
     close(42)
     deallocate(f,p,v1)
+    if(parini%mpi_env%nproc>1) then
+        deallocate(ndispls,ncounts)
+    endif
 end subroutine ekf_rivals
 !*****************************************************************************************
 subroutine analyze_epoch_init(parini,ann_arr)
