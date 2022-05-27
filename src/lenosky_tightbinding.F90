@@ -36,6 +36,7 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     use mod_potl, only: potl_typ
     use mod_tightbinding, only: typ_partb, lenosky
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     use yaml_output
     implicit none
     type(typ_parini), intent(in):: parini
@@ -49,6 +50,7 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     type(typ_parini):: parini_tmp
     type(typ_linked_lists):: linked_lists
     type(typ_pia_arr):: pia_arr
+    type(typ_linkedlists):: linkedlists
     if(firstcall==1) then
         call yaml_map('LTB GAMMA POINT only','first call')
         !write(*,'(a)') 'GAMMA POINT only tight binding code'
@@ -65,7 +67,7 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     linked_lists%triplex=.true.
     parini_tmp=parini !TO_BE_CORRECTED
     parini_tmp%bondbased_ann=.true. !TO_BE_CORRECTED
-    call call_linkedlist(parini_tmp,atoms,.true.,linked_lists,pia_arr)
+    call linkedlists%call_linkedlist(atoms,.true.,linked_lists,pia_arr,parini_tmp%mpi_env,parini_tmp%iverbose,parini_tmp%bondbased_ann)
     call lenoskytb_init(partb,atoms,natsi,linked_lists)
     count_md=count_md+1.d0
     !PRINT SOME WARNINGS
@@ -176,6 +178,7 @@ subroutine pairenergy(parini,partb,atoms,pplocal,natsi)
     use mod_atoms, only: typ_atoms
     use mod_potl, only: potl_typ
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_partb), intent(inout):: partb
@@ -191,6 +194,7 @@ subroutine pairenergy(parini,partb,atoms,pplocal,natsi)
     real(8):: r_swap
     real(8):: g(3), tempp(3)
     real(8):: r, y, der !, epot_pair !, cell(3)
+    type(typ_linkedlists):: linkedlists
     !Accumulate energy for pair of atoms i<j, add to pairen; latt(1),latt(2),latt(3) are primitive
     !translation vectors for the unit cell: coord=n*latt(1)+m*latt(2)+p*latt(3);
     !n,m, p are integers.
@@ -206,7 +210,7 @@ subroutine pairenergy(parini,partb,atoms,pplocal,natsi)
     linked_lists%triplex=.true.
     parini_tmp=parini !TO_BE_CORRECTED
     parini_tmp%bondbased_ann=.true. !TO_BE_CORRECTED
-    call call_linkedlist(parini_tmp,atoms,.true.,linked_lists,pia_arr)
+    call linkedlists%call_linkedlist(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini_tmp%iverbose,parini_tmp%bondbased_ann)
     do ib=1,linked_lists%maxbound_rad
         iat=linked_lists%bound_rad(1,ib)
         jat=linked_lists%bound_rad(2,ib)

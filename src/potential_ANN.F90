@@ -207,6 +207,7 @@ subroutine add_repulsive_potential(parini,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, set_rcov, update_ratp
     use mod_linked_lists, only: typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -216,6 +217,7 @@ subroutine add_repulsive_potential(parini,atoms)
     real(8):: rcovmax, cell(3), epot_rep, fx, fy, fz, ttt, a !, b, c, d
     real(8):: rc, rcsq, dx, dy, dz, xiat, yiat, ziat, r, rsq, tt1, tt2, tt4
     real(8):: frac1, frac12, ratio1, ratio2, t1, t2, t4, t6, t12, t14, sigma
+    type(typ_linkedlists):: linkedlists
     type(typ_linked_lists):: linked_lists
     !integer, save:: icall=0
     !icall=icall+1
@@ -223,7 +225,7 @@ subroutine add_repulsive_potential(parini,atoms)
     call set_rcov(atoms)
     rcovmax=maxval(atoms%rcov(1:atoms%nat))
     rcmax=2.d0*rcovmax
-    call linkedlists_init(parini,atoms,cell,linked_lists)
+    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     frac1=0.72d0
     !frac1=0.80d0 !SAMARE
     frac12=frac1**12
@@ -311,7 +313,7 @@ subroutine add_repulsive_potential(parini,atoms)
         atoms%fat(3,iatp)=atoms%fat(3,iatp)+linked_lists%fat(3,iat)
     enddo
     !-------------------------------------------------------
-    call linkedlists_final(linked_lists)
+    call linkedlists%linkedlists_final(linked_lists)
     end associate
 end subroutine add_repulsive_potential
 !*****************************************************************************************

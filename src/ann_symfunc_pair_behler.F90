@@ -11,6 +11,7 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     use mod_symfunc_data, only: typ_symfunc_data
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr !,typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
@@ -24,11 +25,12 @@ subroutine symmetry_functions_driver_bond(parini,ann_arr,atoms,symfunc)
     integer:: jat
     real(8):: rij, drij(3), fcij, fcdij
     real(8):: cutoff_function, cutoff_function_der
+    type(typ_linkedlists):: linkedlists
     external cutoff_function, cutoff_function_der
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr)
+    call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     !write(*,*) 'HERE ',symfunc%linked_lists%maxbound_rad
     !stop
     !if(symfunc%linked_lists%maxbound_rad/=2) stop 'ERROR: correct next line'

@@ -800,11 +800,13 @@ end subroutine apply_external_field
 subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     use mod_parini, only: typ_parini
     use mod_linked_lists, only: typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     use mod_atoms, only: typ_atoms, update_ratp
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists):: linked_lists
+    type(typ_linkedlists):: linkedlists
     real(8):: dx, dy, dz, r, rsq, xiat, yiat, ziat
     real(8):: t, tt1, tt2, tt3, ttt
     real(8):: rcutsq, fx, fy, fz, pi, qiat, qiatjat
@@ -818,7 +820,7 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     call getvol_alborz(atoms%cellvec,vol)
     rr=linked_lists%rcut
     linked_lists%rcut =sqrt(2.d0)*max(maxval(gausswidth(:)),alpha)*sqrt(-log(parini%tolerance_ewald))
-    call linkedlists_init(parini,atoms,cell,linked_lists)
+    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     rcutsq=linked_lists%rcut**2
     alphatwoinv =1.d0/(sqrt(2.d0)*alpha)
     alphasq=(alphatwoinv)**2
@@ -888,6 +890,6 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     tt2=tt2/sqrt(2*pi)
     epotreal = epotreal+tt2
     linked_lists%rcut=rr
-    call linkedlists_final(linked_lists)
+    call linkedlists%linkedlists_final(linked_lists)
 end subroutine real_part
 !*****************************************************************************************

@@ -88,6 +88,7 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     use mod_parini, only: typ_parini
     use mod_shortrange, only: typ_shortrange
     use mod_linked_lists, only: typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     use mod_spline, only: typ_spline
     use mod_atoms, only: typ_atoms, update_ratp
     use yaml_output
@@ -101,6 +102,7 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     real(8), intent(out):: cell(3)
     real(8), intent(out):: epot_short !short range electrostatic energy
     !local variables
+    type(typ_linkedlists):: linkedlists
     real(8):: dx, dy, dz, r, rsq, xiat, yiat, ziat, alphainv, twosqrtinv
     real(8):: t, tt, tt1, tt2, tt3, ttt
     real(8):: rcutsq, fx, fy, fz, pi, hspinv, rhspinv, rinv, qiat, qiatjat, spf, spfd
@@ -111,7 +113,7 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     hspinv=1.d0/spline%hsp
     call yaml_map('hsp in shortenergy',hspinv,fmt='(es22.14)')
     !write(*,*) 'inside shortenergy  hsp=',spline%hsp
-    call linkedlists_init(parini,atoms,cell,linked_lists)
+    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     !-------------------------------------------------------
     epot_short=0.d0
     alphainv=1.d0/alpha
@@ -186,6 +188,6 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
         atoms%fat(3,ipat)=atoms%fat(3,ipat)+linked_lists%fat(3,iat)
     enddo
     !-------------------------------------------------------
-    call linkedlists_final(linked_lists)
+    call linkedlists%linkedlists_final(linked_lists)
 end subroutine cal_shortenergy
 !*****************************************************************************************

@@ -13,20 +13,43 @@
 !each segments in the main cell and those with lower case
 !letters indicate the number of atoms in periodic images.
 !*****************************************************************************************
-subroutine linkedlists_init(parini,atoms,cell,linked_lists)
-    use mod_parini, only: typ_parini
+module mod_linkedlists
+    use mod_linked_lists, only: typ_linked_lists
+    use mod_flm_futile
+    implicit none
+    private
+    public:: typ_linkedlists
+    type typ_linkedlists
+        type(mpi_environment), private:: mpi_env
+        integer, private:: iverbose
+        logical, private:: initialized=.false.
+        contains
+        !procedure, public, pass(self):: init_
+        !procedure, public, pass(self):: fini_
+        !procedure, public, pass(self):: get_
+        procedure, public, pass(self):: linkedlists_init
+        procedure, public, pass(self):: linkedlists_final
+        procedure, public, pass(self):: call_linkedlist
+    end type typ_linkedlists
+contains
+!*****************************************************************************************
+subroutine linkedlists_init(self,atoms,cell,linked_lists,mpi_env,iverbose)
     use mod_atoms, only: typ_atoms, atom_allocate_old
     use mod_electrostatics, only: typ_linked_lists
     use mod_const, only: bohr2ang
     use yaml_output
     implicit none
-    type(typ_parini), intent(in):: parini 
+    class(typ_linkedlists), intent(inout):: self
     type(typ_atoms), intent(in):: atoms
     real(8), intent(out):: cell(3)
     type(typ_linked_lists), intent(inout):: linked_lists
+    type(mpi_environment), intent(in):: mpi_env
+    integer, intent(in):: iverbose
     !local variables
     real(8):: sclinv, vol,tmp(3), nrm_tmp
     integer:: istat 
+    self%mpi_env=mpi_env
+    self%iverbose=iverbose
     linked_lists%avgnndis=2.8d0/bohr2ang
     associate(mlimnb=>linked_lists%mlimnb)
     !linked_lists%avgnndis=2.82d0   
@@ -46,7 +69,7 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     call cross_product_alborz(atoms%cellvec(1:3,1),atoms%cellvec(1:3,3),tmp)
     nrm_tmp=sqrt(dot_product(tmp,tmp))
     cell(2)=vol/nrm_tmp
-    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
+    if(self%mpi_env%iproc==0 .and. self%iverbose>1) then
         call yaml_mapping_open('linked list info-1') !,flow=.true.)
         call yaml_map('nat',atoms%nat)
         call yaml_map('scl',linked_lists%scl)
@@ -105,7 +128,7 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
 !    if(linked_lists%my<linked_lists%mlimnb2/2) stop 'cell is the same size as supercell'
 !    if(linked_lists%mz<linked_lists%mlimnb3/2) stop 'cell is the same size as supercell'
     associate(mx=>linked_lists%mx,my=>linked_lists%my,mz=>linked_lists%mz)
-    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
+    if(self%mpi_env%iproc==0 .and. self%iverbose>1) then
         call yaml_mapping_open('linked list info-2',flow=.true.)
         call yaml_map('mx,my,mz',(/mx,my,mz/))
         call yaml_map('total number of subcells',mx*my*mz)
@@ -131,17 +154,18 @@ subroutine linkedlists_init(parini,atoms,cell,linked_lists)
     endif
     end associate
     end associate
-    call make_list_new(parini,atoms,linked_lists,cell)
+    call make_list_new(self%iverbose,atoms,linked_lists,cell)
     call atom_allocate_old(linked_lists%typ_atoms,linked_lists%natim,linked_lists%natim,0)
     allocate(linked_lists%maincell(1:linked_lists%natim))
     allocate(linked_lists%perm(1:linked_lists%natim))
     call prepprimelast(atoms,linked_lists)
 end subroutine linkedlists_init
 !*****************************************************************************************
-subroutine linkedlists_final(linked_lists)
+subroutine linkedlists_final(self,linked_lists)
     use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_electrostatics, only: typ_linked_lists
     implicit none
+    class(typ_linkedlists), intent(inout):: self
     type(typ_linked_lists), intent(inout):: linked_lists
     !local variables
     integer:: istat
@@ -166,6 +190,192 @@ subroutine linkedlists_final(linked_lists)
     call atom_deallocate_old(linked_lists%typ_atoms)
     deallocate(linked_lists%maincell)
 end subroutine linkedlists_final
+!*****************************************************************************************
+!dbl_count if .true., bonds are double counted.
+subroutine call_linkedlist(self,atoms,dbl_count,linked_lists,pia_arr,mpi_env,iverbose,bondbased_ann)
+    use mod_atoms, only: typ_atoms, type_pairs, update_ratp
+    use mod_const, only: bohr2ang
+    use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
+    implicit none
+    class(typ_linkedlists), intent(inout):: self
+    type(typ_atoms), intent(in):: atoms 
+    logical, intent(in):: dbl_count
+    type(typ_linked_lists), intent(inout):: linked_lists
+    type(typ_pia_arr), intent(inout):: pia_arr
+    type(mpi_environment), intent(in):: mpi_env
+    integer, intent(in):: iverbose
+    logical, intent(in):: bondbased_ann
+    !local variables
+    integer::nimat ,iat_maincell, jat_maincell
+    integer:: istat
+    integer:: iat, jat, niat,kat,kkz,conf
+    integer:: ix,iy,iz,jy,jz,kx,ky,kz,dkjz,dkiy 
+    integer:: llx,mmx,lly,mmy ,jp,jl,kp,kl,ip,il ,kpt,jpt
+    integer:: nmax, maxnbr, maxnba, maincell_iat
+    integer:: ibr, njat, inbr, jnbr, n, ntot
+    real(8):: sclinv,cell(3) ,rcutsq
+    real(8):: xiat, yiat, ziat
+    real(8):: rij, rijsq, drij(3), rik, riksq, drik(3) , rjk, rjksq, drjk(3)
+    real(8):: r3, dx3, dy3, dz3 ,hxinv
+    integer, allocatable:: bound_rad(:,:)
+    real(8), allocatable:: bound_dist(:,:,:)
+    integer, allocatable:: neighbor(:)
+    logical :: yes
+    call self%linkedlists_init(atoms,cell,linked_lists,mpi_env,iverbose)
+    nmax=1000
+    !if (.not. linked_lists%triplex) then
+        !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
+        !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)
+    !else
+        allocate(bound_rad(1:nmax,1:atoms%nat))
+        allocate(bound_dist(1:4,1:nmax,1:atoms%nat))
+        allocate(linked_lists%prime_bound(1:atoms%nat+1))
+        allocate(neighbor(1:atoms%nat))
+    !endif
+
+    rcutsq=linked_lists%rcut**2
+    maxnbr=0
+    !-------------------------------------------------------
+    associate(mx=>linked_lists%mx)
+    associate(my=>linked_lists%my)
+    neighbor(:)=0
+    bound_rad=0
+    bound_dist=0
+    call update_ratp(linked_lists%typ_atoms)
+    do iz=1,linked_lists%mz+linked_lists%mlimnb3
+    do iy=1-linked_lists%mlimnb2,linked_lists%my+linked_lists%mlimnb2
+    do ix=1-((isign(1,iy-1)-1)/2)*linked_lists%mx,linked_lists%mx+linked_lists%mlimnb1
+    ip=linked_lists%prime(ix,iy,iz)
+    il=linked_lists%last(ix,iy,iz)
+    do  iat=ip,il
+        xiat=linked_lists%ratp(1,iat)
+        yiat=linked_lists%ratp(2,iat)
+        ziat=linked_lists%ratp(3,iat)
+        maincell_iat=linked_lists%maincell(iat)
+        do jz=iz,min(linked_lists%mz+linked_lists%mlimnb3,iz+linked_lists%mlimnb)
+        do jy=iy+linked_lists%limnby(1,jz-iz),iy+linked_lists%limnby(2,jz-iz)
+        jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
+        jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
+        jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
+        do  jat=jp,jl
+            drij(1)=linked_lists%ratp(1,jat)-xiat
+            drij(2)=linked_lists%ratp(2,jat)-yiat
+            drij(3)=linked_lists%ratp(3,jat)-ziat
+            rijsq=drij(1)**2+drij(2)**2+drij(3)**2
+            if (rijsq< rcutsq .and. (maincell_iat+linked_lists%maincell(jat)) >-1 ) then
+                    rij=sqrt(rijsq)
+                    maxnbr=maxnbr+1
+                    iat_maincell=linked_lists%perm(iat)
+                    jat_maincell=linked_lists%perm(jat)
+
+                    neighbor(iat_maincell)=neighbor(iat_maincell)+1
+                    bound_rad(neighbor(iat_maincell),iat_maincell)=jat_maincell
+                    if (neighbor(iat_maincell) > nmax  ) then
+                        write(*,*) " neighbours are more that expected  " 
+                        stop
+                    endif
+                    bound_dist(1,neighbor(iat_maincell),iat_maincell)=rij
+                    bound_dist(2,neighbor(iat_maincell),iat_maincell)=drij(1)
+                    bound_dist(3,neighbor(iat_maincell),iat_maincell)=drij(2)
+                    bound_dist(4,neighbor(iat_maincell),iat_maincell)=drij(3)
+                    ! if (iat_maincell==jat_maincell) cycle
+                    if(dbl_count) then
+                        neighbor(jat_maincell)=neighbor(jat_maincell)+1
+                        if (neighbor(jat_maincell) > nmax ) then
+                            write(*,*)" neighbours are more that expected  "
+                            stop
+                        endif
+                        bound_rad(neighbor(jat_maincell),jat_maincell)=iat_maincell
+                        bound_dist(1,neighbor(jat_maincell),jat_maincell)=rij
+                        bound_dist(2,neighbor(jat_maincell),jat_maincell)=-drij(1)
+                        bound_dist(3,neighbor(jat_maincell),jat_maincell)=-drij(2)
+                        bound_dist(4,neighbor(jat_maincell),jat_maincell)=-drij(3)
+                    endif
+            endif
+        enddo !end of loop over jat
+        enddo !end of loop over jy
+        enddo !end of loop over jz
+        !---------------------------------------------------
+    enddo !end of loop over iat
+    enddo !end of loop over ix
+    enddo !end of loop over iy
+    enddo !end of loop over iz
+    if(dbl_count) then
+        linked_lists%maxbound_rad=maxnbr*2
+    else
+        linked_lists%maxbound_rad=maxnbr
+    endif
+    allocate(linked_lists%bound_rad(1:2,1:linked_lists%maxbound_rad))
+    allocate(pia_arr%pia(linked_lists%maxbound_rad))
+    njat=0
+    ibr=0
+    iat=0
+    do iat=1,atoms%nat
+        linked_lists%prime_bound(iat)=ibr+1
+        do njat=1,neighbor(iat)
+            !The following if added to avoid double counting for bond based linked list
+            if(bondbased_ann .and. iat>bound_rad(njat,iat)) then
+                cycle
+            endif
+        !do 
+        !    njat=njat+1
+        !    if (bound_rad(njat,iat)<1 .or. njat>nmax) then
+        !        njat=0
+        !        exit
+        !    endif
+            ibr=ibr+1
+            linked_lists%bound_rad(1,ibr)=iat
+            linked_lists%bound_rad(2,ibr)=bound_rad(njat,iat)
+            pia_arr%pia(ibr)%r=bound_dist(1,njat,iat)
+            pia_arr%pia(ibr)%dr(1)=bound_dist(2,njat,iat)
+            pia_arr%pia(ibr)%dr(2)=bound_dist(3,njat,iat)
+            pia_arr%pia(ibr)%dr(3)=bound_dist(4,njat,iat)
+        enddo
+    enddo
+    !The following if added to avoid double counting for bond based linked list
+    !and it must be corrected since it will not work if repulsive atom based
+    !linked list is needed. The problem is due to parini%bondbased_ann
+    if(bondbased_ann .and. iat>njat) then
+        if(mod(linked_lists%maxbound_rad,2)/=0) then
+            stop 'ERROR: linked_lists%maxbound_rad must be even.'
+        endif
+        linked_lists%maxbound_rad=linked_lists%maxbound_rad/2
+    endif
+    if (ibr/=linked_lists%maxbound_rad) then
+        write(*,'(a,2i8)') 'ERROR: in number of bonds ',ibr,linked_lists%maxbound_rad
+        stop
+    endif
+    linked_lists%prime_bound(atoms%nat+1)=linked_lists%maxbound_rad+1
+    deallocate(bound_rad)
+    deallocate(bound_dist)
+    ntot=0
+    do iat=1,atoms%nat
+        n=linked_lists%prime_bound(iat+1)-linked_lists%prime_bound(iat)
+        ntot=ntot+(n*(n-1))/2.d0
+    enddo
+    linked_lists%maxbound_ang=ntot
+    allocate(linked_lists%bound_ang(1:2,1:linked_lists%maxbound_ang))
+    maxnba=0
+    do iat=1,atoms%nat
+        do inbr=linked_lists%prime_bound(iat),linked_lists%prime_bound(iat+1)-1
+        do jnbr=inbr+1,linked_lists%prime_bound(iat+1)-1
+            maxnba=maxnba+1
+            linked_lists%bound_ang(1,maxnba)=inbr
+            linked_lists%bound_ang(2,maxnba)=jnbr
+        enddo
+        enddo
+    enddo
+    if (maxnba/=linked_lists%maxbound_ang) then
+        write(*,'(a,2i8)') 'ERROR: in number of angular bonds ',maxnba,linked_lists%maxbound_ang
+        stop
+    endif
+    end associate
+    end associate
+    call self%linkedlists_final(linked_lists)
+    deallocate(neighbor)
+end subroutine call_linkedlist 
+!***************************************************************************************************
+end module mod_linkedlists
 !*****************************************************************************************
 subroutine prepprimelast(atoms,linked_lists)
     use mod_atoms, only: typ_atoms, get_rat, update_rat
@@ -294,12 +504,11 @@ end subroutine prepprimelast
 !*****************************************************************************************
 !head: heads of cells
 !list: lists of particles in cells
-subroutine make_list_new(parini,atoms,linked_lists,cell)
-    use mod_parini, only: typ_parini
+subroutine make_list_new(iverbose,atoms,linked_lists,cell)
     use mod_atoms, only: typ_atoms, get_rat
     use mod_electrostatics, only: typ_linked_lists
     implicit none
-    type(typ_parini), intent(in):: parini 
+    integer, intent(in):: iverbose
     type(typ_atoms), intent(in):: atoms
     type(typ_linked_lists), intent(inout):: linked_lists
     real(8), intent(in):: cell(3)
@@ -425,7 +634,7 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
             natimarr=0
         endif
     enddo
-    if(parini%iverbose>2) then
+    if(iverbose>2) then
         write(*,'(a,5i6)') 'natim1,natim2,natim3,natim4,natim5 ', &
             natimarr(1),natimarr(2),natimarr(3),natimarr(4),natimarr(5)
     endif
@@ -435,7 +644,7 @@ subroutine make_list_new(parini,atoms,linked_lists,cell)
     !if (mz< mlimnb3) natim2=(mlimnb3/mz+1)*(natim2+natim1)
     if (mz< mlimnb3) natim=(mlimnb3/mz+1)*natim
    ! natim=natim+natim2
-    if(parini%iverbose>2) then
+    if(iverbose>2) then
         write(*,'(a,i6)') 'natim= ',natim
     endif
     linked_lists%natim=linked_lists%natim+natim
@@ -529,185 +738,3 @@ subroutine determine_sclimitsphere(linked_lists)
     !enddo
 end subroutine determine_sclimitsphere
 !*****************************************************************************************
-!dbl_count if .true., bonds are double counted.
-subroutine call_linkedlist(parini,atoms,dbl_count,linked_lists,pia_arr)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms, type_pairs, update_ratp
-    use mod_const, only: bohr2ang
-    use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
-    implicit none
-    type(typ_parini), intent(in):: parini 
-    type(typ_atoms), intent(in):: atoms 
-    logical, intent(in):: dbl_count
-    type(typ_linked_lists), intent(inout):: linked_lists
-    type(typ_pia_arr), intent(inout):: pia_arr
-    !local variables
-    integer::nimat ,iat_maincell, jat_maincell
-    integer:: istat
-    integer:: iat, jat, niat,kat,kkz,conf
-    integer:: ix,iy,iz,jy,jz,kx,ky,kz,dkjz,dkiy 
-    integer:: llx,mmx,lly,mmy ,jp,jl,kp,kl,ip,il ,kpt,jpt
-    integer:: nmax, maxnbr, maxnba, maincell_iat
-    integer:: ibr, njat, inbr, jnbr, n, ntot
-    real(8):: sclinv,cell(3) ,rcutsq
-    real(8):: xiat, yiat, ziat
-    real(8):: rij, rijsq, drij(3), rik, riksq, drik(3) , rjk, rjksq, drjk(3)
-    real(8):: r3, dx3, dy3, dz3 ,hxinv
-    integer, allocatable:: bound_rad(:,:)
-    real(8), allocatable:: bound_dist(:,:,:)
-    integer, allocatable:: neighbor(:)
-    logical :: yes
-    call linkedlists_init(parini,atoms,cell,linked_lists)
-    nmax=1000
-    !if (.not. linked_lists%triplex) then
-        !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
-        !allocate(bound_dist(4,min(linked_lists%nat*nmax,linked_lists%nat**2)),1)
-    !else
-        allocate(bound_rad(1:nmax,1:atoms%nat))
-        allocate(bound_dist(1:4,1:nmax,1:atoms%nat))
-        allocate(linked_lists%prime_bound(1:atoms%nat+1))
-        allocate(neighbor(1:atoms%nat))
-    !endif
-
-    rcutsq=linked_lists%rcut**2
-    maxnbr=0
-    !-------------------------------------------------------
-    associate(mx=>linked_lists%mx)
-    associate(my=>linked_lists%my)
-    neighbor(:)=0
-    bound_rad=0
-    bound_dist=0
-    call update_ratp(linked_lists%typ_atoms)
-    do iz=1,linked_lists%mz+linked_lists%mlimnb3
-    do iy=1-linked_lists%mlimnb2,linked_lists%my+linked_lists%mlimnb2
-    do ix=1-((isign(1,iy-1)-1)/2)*linked_lists%mx,linked_lists%mx+linked_lists%mlimnb1
-    ip=linked_lists%prime(ix,iy,iz)
-    il=linked_lists%last(ix,iy,iz)
-    do  iat=ip,il
-        xiat=linked_lists%ratp(1,iat)
-        yiat=linked_lists%ratp(2,iat)
-        ziat=linked_lists%ratp(3,iat)
-        maincell_iat=linked_lists%maincell(iat)
-        do jz=iz,min(linked_lists%mz+linked_lists%mlimnb3,iz+linked_lists%mlimnb)
-        do jy=iy+linked_lists%limnby(1,jz-iz),iy+linked_lists%limnby(2,jz-iz)
-        jpt=linked_lists%prime(ix+linked_lists%limnbx(1,jy-iy,jz-iz),jy,jz)
-        jp=(iat-ip+1)*((isign(1,ip-jpt)+1)/2)+jpt
-        jl=linked_lists%last(ix+linked_lists%limnbx(2,jy-iy,jz-iz),jy,jz)
-        do  jat=jp,jl
-            drij(1)=linked_lists%ratp(1,jat)-xiat
-            drij(2)=linked_lists%ratp(2,jat)-yiat
-            drij(3)=linked_lists%ratp(3,jat)-ziat
-            rijsq=drij(1)**2+drij(2)**2+drij(3)**2
-            if (rijsq< rcutsq .and. (maincell_iat+linked_lists%maincell(jat)) >-1 ) then
-                    rij=sqrt(rijsq)
-                    maxnbr=maxnbr+1
-                    iat_maincell=linked_lists%perm(iat)
-                    jat_maincell=linked_lists%perm(jat)
-
-                    neighbor(iat_maincell)=neighbor(iat_maincell)+1
-                    bound_rad(neighbor(iat_maincell),iat_maincell)=jat_maincell
-                    if (neighbor(iat_maincell) > nmax  ) then
-                        write(*,*) " neighbours are more that expected  " 
-                        stop
-                    endif
-                    bound_dist(1,neighbor(iat_maincell),iat_maincell)=rij
-                    bound_dist(2,neighbor(iat_maincell),iat_maincell)=drij(1)
-                    bound_dist(3,neighbor(iat_maincell),iat_maincell)=drij(2)
-                    bound_dist(4,neighbor(iat_maincell),iat_maincell)=drij(3)
-                    ! if (iat_maincell==jat_maincell) cycle
-                    if(dbl_count) then
-                        neighbor(jat_maincell)=neighbor(jat_maincell)+1
-                        if (neighbor(jat_maincell) > nmax ) then
-                            write(*,*)" neighbours are more that expected  "
-                            stop
-                        endif
-                        bound_rad(neighbor(jat_maincell),jat_maincell)=iat_maincell
-                        bound_dist(1,neighbor(jat_maincell),jat_maincell)=rij
-                        bound_dist(2,neighbor(jat_maincell),jat_maincell)=-drij(1)
-                        bound_dist(3,neighbor(jat_maincell),jat_maincell)=-drij(2)
-                        bound_dist(4,neighbor(jat_maincell),jat_maincell)=-drij(3)
-                    endif
-            endif
-        enddo !end of loop over jat
-        enddo !end of loop over jy
-        enddo !end of loop over jz
-        !---------------------------------------------------
-    enddo !end of loop over iat
-    enddo !end of loop over ix
-    enddo !end of loop over iy
-    enddo !end of loop over iz
-    if(dbl_count) then
-        linked_lists%maxbound_rad=maxnbr*2
-    else
-        linked_lists%maxbound_rad=maxnbr
-    endif
-    allocate(linked_lists%bound_rad(1:2,1:linked_lists%maxbound_rad))
-    allocate(pia_arr%pia(linked_lists%maxbound_rad))
-    njat=0
-    ibr=0
-    iat=0
-    do iat=1,atoms%nat
-        linked_lists%prime_bound(iat)=ibr+1
-        do njat=1,neighbor(iat)
-            !The following if added to avoid double counting for bond based linked list
-            if(parini%bondbased_ann .and. iat>bound_rad(njat,iat)) then
-                cycle
-            endif
-        !do 
-        !    njat=njat+1
-        !    if (bound_rad(njat,iat)<1 .or. njat>nmax) then
-        !        njat=0
-        !        exit
-        !    endif
-            ibr=ibr+1
-            linked_lists%bound_rad(1,ibr)=iat
-            linked_lists%bound_rad(2,ibr)=bound_rad(njat,iat)
-            pia_arr%pia(ibr)%r=bound_dist(1,njat,iat)
-            pia_arr%pia(ibr)%dr(1)=bound_dist(2,njat,iat)
-            pia_arr%pia(ibr)%dr(2)=bound_dist(3,njat,iat)
-            pia_arr%pia(ibr)%dr(3)=bound_dist(4,njat,iat)
-        enddo
-    enddo
-    !The following if added to avoid double counting for bond based linked list
-    !and it must be corrected since it will not work if repulsive atom based
-    !linked list is needed. The problem is due to parini%bondbased_ann
-    if(parini%bondbased_ann .and. iat>njat) then
-        if(mod(linked_lists%maxbound_rad,2)/=0) then
-            stop 'ERROR: linked_lists%maxbound_rad must be even.'
-        endif
-        linked_lists%maxbound_rad=linked_lists%maxbound_rad/2
-    endif
-    if (ibr/=linked_lists%maxbound_rad) then
-        write(*,'(a,2i8)') 'ERROR: in number of bonds ',ibr,linked_lists%maxbound_rad
-        stop
-    endif
-    linked_lists%prime_bound(atoms%nat+1)=linked_lists%maxbound_rad+1
-    deallocate(bound_rad)
-    deallocate(bound_dist)
-    ntot=0
-    do iat=1,atoms%nat
-        n=linked_lists%prime_bound(iat+1)-linked_lists%prime_bound(iat)
-        ntot=ntot+(n*(n-1))/2.d0
-    enddo
-    linked_lists%maxbound_ang=ntot
-    allocate(linked_lists%bound_ang(1:2,1:linked_lists%maxbound_ang))
-    maxnba=0
-    do iat=1,atoms%nat
-        do inbr=linked_lists%prime_bound(iat),linked_lists%prime_bound(iat+1)-1
-        do jnbr=inbr+1,linked_lists%prime_bound(iat+1)-1
-            maxnba=maxnba+1
-            linked_lists%bound_ang(1,maxnba)=inbr
-            linked_lists%bound_ang(2,maxnba)=jnbr
-        enddo
-        enddo
-    enddo
-    if (maxnba/=linked_lists%maxbound_ang) then
-        write(*,'(a,2i8)') 'ERROR: in number of angular bonds ',maxnba,linked_lists%maxbound_ang
-        stop
-    endif
-    end associate
-    end associate
-    call linkedlists_final(linked_lists)
-    deallocate(neighbor)
-end subroutine call_linkedlist 
-!***************************************************************************************************

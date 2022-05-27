@@ -823,6 +823,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     use mod_atoms, only: typ_atoms_arr, update_ratp
     use mod_linked_lists, only: typ_pia_arr
     use mod_processors, only: iproc, nproc
+    use mod_linkedlists, only: typ_linkedlists
     use dynamic_memory
     implicit none
     type(typ_parini), intent(in):: parini
@@ -840,6 +841,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     real(8):: ttx, tty, ttz
     real(8):: eps=epsilon(1.d0)
     character(100):: smsg
+    type(typ_linkedlists):: linkedlists
     !Symmetry functions which are previously calculated and written by
     !some other run is going to be read from files
     if(trim(strmess)=='bounds_train') then
@@ -862,7 +864,8 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     associate(nat=>atoms_arr%atoms(iconf)%nat)
     symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
     symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms_arr%atoms(iconf),.true.,symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp)
+    call linkedlists%call_linkedlist(atoms_arr%atoms(iconf),.true.,symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp,&
+        parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     deallocate(pia_arr_tmp%pia)
     symfunc_arr%symfunc(iconf)%y=f_malloc0((/1.to.ng,1.to.nat/),id='symfunc%y')
     if(parini%save_symfunc_force_ann) then

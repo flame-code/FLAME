@@ -5,6 +5,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,mpi_env,symfunc)
     use mod_symfunc_data, only: typ_symfunc_data
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr
+    use mod_linkedlists, only: typ_linkedlists
     use wrapper_MPI, only: mpi_environment
     use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
@@ -25,12 +26,13 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,mpi_env,symfunc)
     integer:: isat, jsat, ksat, ib, ia, ibij, ibik, istat
     !real(8), allocatable:: y(:,:), y0d(:,:,:), y0dr(:,:,:)
     !type(typ_linked_lists):: linked_lists
+    type(typ_linkedlists):: linkedlists
     call f_routine(id='symmetry_functions_driver')
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
     !call cpu_time(time0)
-    call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr)
+    call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr,mpi_env,parini%iverbose,parini%bondbased_ann)
     !call cpu_time(time1)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))

@@ -6,6 +6,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
+    use mod_linkedlists, only: typ_linkedlists
     use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
@@ -26,13 +27,14 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     real(8):: hgen_der(4,1:atoms%nat,1:atoms%nat)  , ttxyz !derivative of 
     real(8):: epotn, tt, epotdh, c, dx, dy, dz, r, rsq, hbar, fc, dfc, tt1
     real(8):: rc, rs, pi
+    type(typ_linkedlists):: linkedlists
     atoms%fat=0.d0
     partb%paircut=ann_arr%rcut
     allocate(partb%dedh(4,atoms%nat,atoms%nat),source=0.d0)
     allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann))
     linked_lists%rcut=partb%paircut !ann_arr%rcut
     linked_lists%triplex=.true.
-    call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
+    call linkedlists%call_linkedlist(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     allocate(partb%hgenall0(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%hgenall1(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%hgenall2(linked_lists%maxbound_rad),source=0.d0)

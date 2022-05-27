@@ -22,6 +22,7 @@ module mod_flm_futile
     use yaml_strings, only: yaml_toa, yaml_date_and_time_toa
     !-----------------------------------------------------------------
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
+    use wrapper_MPI, only: mpi_environment
     !-----------------------------------------------------------------
     implicit none
 end module mod_flm_futile

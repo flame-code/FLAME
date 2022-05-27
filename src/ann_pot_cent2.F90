@@ -29,6 +29,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
     use mod_electrostatics, only: typ_poisson
+    use mod_linkedlists, only: typ_linkedlists
     use mod_linked_lists, only: typ_pia_arr
     use dynamic_memory
     use yaml_output
@@ -41,6 +42,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     type(typ_poisson):: poisson
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
+    type(typ_linkedlists):: linkedlists
     integer:: iat, i, j, ng
     integer:: iats, iate, mat, mproc
     real(8):: epot_c, out_ann
@@ -78,7 +80,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
-        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
+        call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))

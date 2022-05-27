@@ -4,6 +4,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
+    use mod_linkedlists, only: typ_linkedlists
     use mod_linked_lists, only: typ_pia_arr
     use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
@@ -20,6 +21,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     real(8):: ttx, tty, ttz
     real(8):: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
     real(8):: hinv(3,3)
+    type(typ_linkedlists):: linkedlists
     !real(8):: time0, time1, time2, time3
     call f_routine(id='cal_ann_atombased')
     call update_ratp(atoms)
@@ -30,7 +32,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
-        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
+        call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     endif
     if(parini%save_symfunc_behnam) then
         ann_arr%cal_force=.false.
