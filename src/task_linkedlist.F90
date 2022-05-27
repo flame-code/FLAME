@@ -159,7 +159,7 @@ call system_clock(t2)
 call system_clock(t1)
     linked_lists%triplex=.true.
     linked_lists%rcut=rcut
-    call linkedlists%call_linkedlist(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
+    call linkedlists%calc_linkedlists(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     do ibr= 1,linked_lists%maxbound_rad
         write(2200+conf,*)linked_lists%bound_rad(1,ibr),linked_lists%bound_rad(2,ibr)
         !if (atoms%sat(linked_lists%bound_rad(1,ibr))=='O' .and. atoms%sat(linked_lists%bound_rad(2,ibr))=='O' )then
@@ -215,7 +215,7 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
     real(8):: r3, dx3, dy3, dz3 ,hxinv,rat_i(3)
     linked_lists%rcut=rcut
     linked_lists%triplex=.true.
-    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     hxinv=real(linked_lists%mx,8)/cell(1)
     !-------------------------------------------------------
     nim=0
@@ -328,7 +328,7 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
         enddo
     enddo
     include 'act2_cell_linkedlist.inc'
-    call linkedlists%linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
 end subroutine callinkedlist 
 !**************************************************************************************************************
 subroutine sort_alborz(i ,j ,k,conf)

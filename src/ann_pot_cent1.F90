@@ -51,7 +51,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
-        call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
+        call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))

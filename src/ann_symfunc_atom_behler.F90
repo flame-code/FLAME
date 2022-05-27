@@ -32,7 +32,7 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,mpi_env,symfunc)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
     !call cpu_time(time0)
-    call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr,mpi_env,parini%iverbose,parini%bondbased_ann)
+    call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr,mpi_env,parini%iverbose,parini%bondbased_ann)
     !call cpu_time(time1)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))

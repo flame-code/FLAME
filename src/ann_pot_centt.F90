@@ -54,7 +54,7 @@ subroutine cal_ann_centt(parini,atoms,symfunc,ann_arr)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
-        call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
+        call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
@@ -340,7 +340,7 @@ subroutine init_centt(parini,ann_arr,atoms,cent)
 
     cent%poisson%linked_lists%rcut=parini%rcut_ewald
     !This linked list is used for the short range part of the Ewald.
-    call linkedlists%call_linkedlist(atoms,.false.,cent%poisson%linked_lists,cent%poisson%pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
+    call linkedlists%calc_linkedlists(atoms,.false.,cent%poisson%linked_lists,cent%poisson%pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     qtot=0.d0
     do iat=1,atoms%nat
         zion=ann_arr%ann(atoms%itypat(iat))%zion

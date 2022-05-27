@@ -820,7 +820,7 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     call getvol_alborz(atoms%cellvec,vol)
     rr=linked_lists%rcut
     linked_lists%rcut =sqrt(2.d0)*max(maxval(gausswidth(:)),alpha)*sqrt(-log(parini%tolerance_ewald))
-    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     rcutsq=linked_lists%rcut**2
     alphatwoinv =1.d0/(sqrt(2.d0)*alpha)
     alphasq=(alphatwoinv)**2
@@ -890,6 +890,6 @@ subroutine real_part(parini,atoms,gausswidth,alpha,epotreal,gg,stress)
     tt2=tt2/sqrt(2*pi)
     epotreal = epotreal+tt2
     linked_lists%rcut=rr
-    call linkedlists%linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
 end subroutine real_part
 !*****************************************************************************************

@@ -34,7 +34,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann))
     linked_lists%rcut=partb%paircut !ann_arr%rcut
     linked_lists%triplex=.true.
-    call linkedlists%call_linkedlist(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
+    call linkedlists%calc_linkedlists(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     allocate(partb%hgenall0(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%hgenall1(linked_lists%maxbound_rad),source=0.d0)
     allocate(partb%hgenall2(linked_lists%maxbound_rad),source=0.d0)

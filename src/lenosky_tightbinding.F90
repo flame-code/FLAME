@@ -67,7 +67,7 @@ subroutine lenoskytb_alborz(parini,atoms,natsi,count_md)
     linked_lists%triplex=.true.
     parini_tmp=parini !TO_BE_CORRECTED
     parini_tmp%bondbased_ann=.true. !TO_BE_CORRECTED
-    call linkedlists%call_linkedlist(atoms,.true.,linked_lists,pia_arr,parini_tmp%mpi_env,parini_tmp%iverbose,parini_tmp%bondbased_ann)
+    call linkedlists%calc_linkedlists(atoms,.true.,linked_lists,pia_arr,parini_tmp%mpi_env,parini_tmp%iverbose,parini_tmp%bondbased_ann)
     call lenoskytb_init(partb,atoms,natsi,linked_lists)
     count_md=count_md+1.d0
     !PRINT SOME WARNINGS
@@ -210,7 +210,7 @@ subroutine pairenergy(parini,partb,atoms,pplocal,natsi)
     linked_lists%triplex=.true.
     parini_tmp=parini !TO_BE_CORRECTED
     parini_tmp%bondbased_ann=.true. !TO_BE_CORRECTED
-    call linkedlists%call_linkedlist(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini_tmp%iverbose,parini_tmp%bondbased_ann)
+    call linkedlists%calc_linkedlists(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini_tmp%iverbose,parini_tmp%bondbased_ann)
     do ib=1,linked_lists%maxbound_rad
         iat=linked_lists%bound_rad(1,ib)
         jat=linked_lists%bound_rad(2,ib)

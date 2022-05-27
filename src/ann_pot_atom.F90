@@ -32,7 +32,7 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
-        call linkedlists%call_linkedlist(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
+        call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     endif
     if(parini%save_symfunc_behnam) then
         ann_arr%cal_force=.false.

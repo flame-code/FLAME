@@ -113,7 +113,7 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
     hspinv=1.d0/spline%hsp
     call yaml_map('hsp in shortenergy',hspinv,fmt='(es22.14)')
     !write(*,*) 'inside shortenergy  hsp=',spline%hsp
-    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     !-------------------------------------------------------
     epot_short=0.d0
     alphainv=1.d0/alpha
@@ -188,6 +188,6 @@ subroutine cal_shortenergy(parini,shortrange,atoms,linked_lists,spline,alpha,cel
         atoms%fat(3,ipat)=atoms%fat(3,ipat)+linked_lists%fat(3,iat)
     enddo
     !-------------------------------------------------------
-    call linkedlists%linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
 end subroutine cal_shortenergy
 !*****************************************************************************************

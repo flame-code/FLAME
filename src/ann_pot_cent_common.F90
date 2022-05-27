@@ -162,7 +162,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
             endif
         enddo
     enddo
-    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     stress(1:3,1:3)=0.d0
     epot_rep=0.d0
     linked_lists%fat=0.d0
@@ -235,7 +235,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
         atoms%fat(3,iatp)=atoms%fat(3,iatp)+linked_lists%fat(3,iat)
     enddo
     !-------------------------------------------------------
-    call linkedlists%linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
     end associate
 end subroutine repulsive_potential_cent
 !*****************************************************************************************

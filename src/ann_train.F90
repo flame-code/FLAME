@@ -864,7 +864,7 @@ subroutine read_symfunc(parini,iconf,ann_arr,atoms_arr,strmess,symfunc_arr)
     associate(nat=>atoms_arr%atoms(iconf)%nat)
     symfunc_arr%symfunc(iconf)%linked_lists%rcut=ann_arr%rcut
     symfunc_arr%symfunc(iconf)%linked_lists%triplex=.true.
-    call linkedlists%call_linkedlist(atoms_arr%atoms(iconf),.true.,symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp,&
+    call linkedlists%calc_linkedlists(atoms_arr%atoms(iconf),.true.,symfunc_arr%symfunc(iconf)%linked_lists,pia_arr_tmp,&
         parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     deallocate(pia_arr_tmp%pia)
     symfunc_arr%symfunc(iconf)%y=f_malloc0((/1.to.ng,1.to.nat/),id='symfunc%y')

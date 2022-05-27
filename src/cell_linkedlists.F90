@@ -13,6 +13,48 @@
 !each segments in the main cell and those with lower case
 !letters indicate the number of atoms in periodic images.
 !*****************************************************************************************
+module mod_linked_lists
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type typ_pia
+        real(8):: r
+        real(8):: fc
+        real(8):: fcd
+        real(8):: dr(3)
+    end type typ_pia
+    type typ_pia_arr
+        type(typ_pia), allocatable:: pia(:)
+    end type typ_pia_arr
+    type, extends(typ_atoms):: typ_linked_lists
+        !limits of subcells to be considered in short range calculation.
+        integer, allocatable:: limnbx(:,:,:)
+        integer, allocatable:: limnby(:,:)
+        integer, allocatable:: head(:,:,:) !heads of cells
+        integer, allocatable:: list(:) !lists of particles in cells
+        integer, allocatable:: prime(:,:,:)
+        integer, allocatable:: last(:,:,:)
+        integer, allocatable:: perm(:)
+        integer, allocatable:: maincell(:)
+        integer:: mx, my, mz !length of head array in x,y,z directions.
+        !mlimnb is maximum number of subcells in one direction to be considered in 
+        !short range calculation and it is related to the rcut.
+        integer:: mlimnb
+        integer:: mlimnb1
+        integer:: mlimnb2
+        integer:: mlimnb3
+        integer:: next 
+        real(8):: avgnndis !average nearest neighbor distance.
+        real(8):: scl !subcell length.
+        real(8):: rcut !cutoff radius in real space.
+        logical:: triplex=.false.
+        integer :: maxbound_rad
+        integer :: maxbound_ang
+        integer, allocatable:: bound_ang(:,:)
+        integer, allocatable:: bound_rad(:,:)
+        integer, allocatable:: prime_bound(:)
+    end type typ_linked_lists
+end module mod_linked_lists
+!*****************************************************************************************
 module mod_linkedlists
     use mod_linked_lists, only: typ_linked_lists
     use mod_flm_futile
@@ -24,18 +66,14 @@ module mod_linkedlists
         integer, private:: iverbose
         logical, private:: initialized=.false.
         contains
-        !procedure, public, pass(self):: init_
-        !procedure, public, pass(self):: fini_
-        !procedure, public, pass(self):: get_
-        procedure, public, pass(self):: linkedlists_init
-        procedure, public, pass(self):: linkedlists_final
-        procedure, public, pass(self):: call_linkedlist
+        procedure, public, pass(self):: init_linkedlists
+        procedure, public, pass(self):: fini_linkedlists
+        procedure, public, pass(self):: calc_linkedlists
     end type typ_linkedlists
 contains
 !*****************************************************************************************
-subroutine linkedlists_init(self,atoms,cell,linked_lists,mpi_env,iverbose)
+subroutine init_linkedlists(self,atoms,cell,linked_lists,mpi_env,iverbose)
     use mod_atoms, only: typ_atoms, atom_allocate_old
-    use mod_electrostatics, only: typ_linked_lists
     use mod_const, only: bohr2ang
     use yaml_output
     implicit none
@@ -120,7 +158,7 @@ subroutine linkedlists_init(self,atoms,cell,linked_lists,mpi_env,iverbose)
         linked_lists%mlimnb2=0
         linked_lists%mlimnb3=0
     else
-        write(*,'(2a)') 'ERROR: unknown BC in linkedlists_init ',trim(atoms%boundcond)
+        write(*,'(2a)') 'ERROR: unknown BC in init_linkedlists ',trim(atoms%boundcond)
         stop
     endif
     call determine_sclimitsphere(linked_lists)
@@ -159,11 +197,10 @@ subroutine linkedlists_init(self,atoms,cell,linked_lists,mpi_env,iverbose)
     allocate(linked_lists%maincell(1:linked_lists%natim))
     allocate(linked_lists%perm(1:linked_lists%natim))
     call prepprimelast(atoms,linked_lists)
-end subroutine linkedlists_init
+end subroutine init_linkedlists
 !*****************************************************************************************
-subroutine linkedlists_final(self,linked_lists)
+subroutine fini_linkedlists(self,linked_lists)
     use mod_atoms, only: typ_atoms, atom_deallocate_old
-    use mod_electrostatics, only: typ_linked_lists
     implicit none
     class(typ_linkedlists), intent(inout):: self
     type(typ_linked_lists), intent(inout):: linked_lists
@@ -189,13 +226,13 @@ subroutine linkedlists_final(self,linked_lists)
 
     call atom_deallocate_old(linked_lists%typ_atoms)
     deallocate(linked_lists%maincell)
-end subroutine linkedlists_final
+end subroutine fini_linkedlists
 !*****************************************************************************************
 !dbl_count if .true., bonds are double counted.
-subroutine call_linkedlist(self,atoms,dbl_count,linked_lists,pia_arr,mpi_env,iverbose,bondbased_ann)
+subroutine calc_linkedlists(self,atoms,dbl_count,linked_lists,pia_arr,mpi_env,iverbose,bondbased_ann)
     use mod_atoms, only: typ_atoms, type_pairs, update_ratp
     use mod_const, only: bohr2ang
-    use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
+    use mod_linked_lists, only: typ_pia_arr
     implicit none
     class(typ_linkedlists), intent(inout):: self
     type(typ_atoms), intent(in):: atoms 
@@ -221,7 +258,7 @@ subroutine call_linkedlist(self,atoms,dbl_count,linked_lists,pia_arr,mpi_env,ive
     real(8), allocatable:: bound_dist(:,:,:)
     integer, allocatable:: neighbor(:)
     logical :: yes
-    call self%linkedlists_init(atoms,cell,linked_lists,mpi_env,iverbose)
+    call self%init_linkedlists(atoms,cell,linked_lists,mpi_env,iverbose)
     nmax=1000
     !if (.not. linked_lists%triplex) then
         !allocate(bound_rad(2,min(linked_lists%nat*namx,linked_lists%nat**2)))
@@ -371,15 +408,15 @@ subroutine call_linkedlist(self,atoms,dbl_count,linked_lists,pia_arr,mpi_env,ive
     endif
     end associate
     end associate
-    call self%linkedlists_final(linked_lists)
+    call self%fini_linkedlists(linked_lists)
     deallocate(neighbor)
-end subroutine call_linkedlist 
+end subroutine calc_linkedlists 
 !***************************************************************************************************
 end module mod_linkedlists
 !*****************************************************************************************
 subroutine prepprimelast(atoms,linked_lists)
     use mod_atoms, only: typ_atoms, get_rat, update_rat
-    use mod_electrostatics, only: typ_linked_lists
+    use mod_linked_lists, only: typ_linked_lists
     implicit none
     type(typ_atoms), intent(in):: atoms
     type(typ_linked_lists), intent(inout):: linked_lists
@@ -432,7 +469,7 @@ subroutine prepprimelast(atoms,linked_lists)
         enddo
     elseif(trim(atoms%boundcond)=='free') then
     else
-        write(*,'(2a)') 'ERROR: unknown BC in linkedlists_init ',trim(atoms%boundcond)
+        write(*,'(2a)') 'ERROR: unknown BC in init_linkedlists ',trim(atoms%boundcond)
         stop
     endif
     jat=1
@@ -506,7 +543,7 @@ end subroutine prepprimelast
 !list: lists of particles in cells
 subroutine make_list_new(iverbose,atoms,linked_lists,cell)
     use mod_atoms, only: typ_atoms, get_rat
-    use mod_electrostatics, only: typ_linked_lists
+    use mod_linked_lists, only: typ_linked_lists
     implicit none
     integer, intent(in):: iverbose
     type(typ_atoms), intent(in):: atoms
@@ -557,7 +594,7 @@ subroutine make_list_new(iverbose,atoms,linked_lists,cell)
         enddo
     elseif(trim(atoms%boundcond)=='free') then
     else
-        write(*,'(2a)') 'ERROR: unknown BC in linkedlists_init ',trim(atoms%boundcond)
+        write(*,'(2a)') 'ERROR: unknown BC in init_linkedlists ',trim(atoms%boundcond)
         stop
     endif
     do iat=1,atoms%nat
@@ -661,7 +698,7 @@ end subroutine make_list_new
 !iz=0,mlimnb because we count only cell which are after the central cell
 !and all cells below the plane iz=0 are considered before the central cell.
 subroutine determine_sclimitsphere(linked_lists)
-    use mod_electrostatics, only: typ_linked_lists
+    use mod_linked_lists, only: typ_linked_lists
     implicit none
     type(typ_linked_lists), intent(inout):: linked_lists
     !local variables

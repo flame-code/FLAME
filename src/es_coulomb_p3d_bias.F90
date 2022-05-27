@@ -195,7 +195,7 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     allocate(mboundgy(1:2,-nbgpz:nbgpz))
     call determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
 
-    call linkedlists%linkedlists_init(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     mx = linked_lists%mx
     my = linked_lists%my
     mz = linked_lists%mz
@@ -283,7 +283,7 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     enddo
     enddo
     enddo
-    call linkedlists%linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
     deallocate(mboundg)
     deallocate(mboundgy)
 end subroutine erfc_surface_zero
