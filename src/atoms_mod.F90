@@ -2021,6 +2021,8 @@ subroutine set_qat(atoms)
             atoms%qtypat(itypat)=3.0d0
         elseif(trim(atoms%stypat(itypat))=='Sn') then
             atoms%qtypat(itypat)=2.0d0
+        elseif(trim(atoms%stypat(itypat))=='Ga') then
+            atoms%qtypat(itypat)=1.8d0
         elseif(trim(atoms%stypat(itypat))=='O') then
             atoms%qtypat(itypat)=-1.2d0
         elseif(trim(atoms%stypat(itypat))=='Si') then
@@ -2080,6 +2082,8 @@ subroutine set_qat(atoms)
             atoms%qat(iat)=2.0d0
         else if(trim(atoms%sat(iat))=='Si') then
             atoms%qat(iat)=1.1d0
+        else if(trim(atoms%sat(iat))=='Ga') then
+            atoms%qat(iat)=1.8d0
         else if(trim(atoms%sat(iat))=='O') then
             atoms%qat(iat)=-1.2d0
         else if(trim(atoms%sat(iat))=='Pb') then

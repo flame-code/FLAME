@@ -42,7 +42,7 @@ subroutine ann_check_symmetry_function(parini)
     endif
     if(mpi_env%iproc==0) then
     mpi_env%nproc=1
-    call symfunc%init_symfunc(mpi_env)
+    call symfunc%init_symfunc(mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
     ann_arr%nann=parini%ntypat
     !do i=1,ann_arr%nann
     !    ann_arr%ltypat(i)=i
@@ -99,7 +99,7 @@ subroutine ann_check_symmetry_function(parini)
         allocate(symfunc_check%symfunc(symfunc_check%nconf))
     endif
     do iconf=1,atoms_check%nconf
-        call symfunc_check%symfunc(iconf)%init_symfunc(mpi_env)
+        call symfunc_check%symfunc(iconf)%init_symfunc(mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
         symfunc_check%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) 
         symfunc_check%symfunc(iconf)%nat=atoms_check%atoms(iconf)%nat
         associate(ng=>symfunc_check%symfunc(iconf)%ng)
@@ -111,7 +111,7 @@ subroutine ann_check_symmetry_function(parini)
 !-----------------Compute symmetry functions with/without normalization-------------------------
     if(parini%normalization_ann) then
         configurations: do iconf=1,atoms_check%nconf
-            call symfunc%get_symfunc(parini,ann_arr,atoms_check%atoms(iconf),.false.)
+            call symfunc%get_symfunc(ann_arr,atoms_check%atoms(iconf),.false.)
             if(parini%symfunc_type_ann=='behler') then
                 deallocate(symfunc%linked_lists%prime_bound)
                 deallocate(symfunc%linked_lists%bound_rad)
@@ -158,7 +158,7 @@ subroutine ann_check_symmetry_function(parini)
         enddo
     else
         do iconf=1,atoms_check%nconf
-            call symfunc%get_symfunc(parini,ann_arr,atoms_check%atoms(iconf),.false.)
+            call symfunc%get_symfunc(ann_arr,atoms_check%atoms(iconf),.false.)
             do iat=1,atoms_check%atoms(iconf)%nat
                 do ig=1,symfunc_check%symfunc(iconf)%ng
                     symfunc_check%symfunc(iconf)%y(ig,iat)=symfunc%y(ig,iat)

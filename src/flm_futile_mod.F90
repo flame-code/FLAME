@@ -23,6 +23,9 @@ module mod_flm_futile
     !-----------------------------------------------------------------
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
     use wrapper_MPI, only: mpi_environment
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
+    !-----------------------------------------------------------------
+    !use mod_timing , only: TCAT_SYMFUNC_COMPUT
     !-----------------------------------------------------------------
     implicit none
 end module mod_flm_futile

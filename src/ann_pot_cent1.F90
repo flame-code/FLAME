@@ -45,9 +45,9 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time1)
     call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)
     if(parini%iverbose>=2) call cpu_time(time2)
-    call symfunc%init_symfunc(parini%mpi_env)
+    call symfunc%init_symfunc(parini%mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
     if(ann_arr%compute_symfunc) then
-        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
+        call symfunc%get_symfunc(ann_arr,atoms,.true.)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.

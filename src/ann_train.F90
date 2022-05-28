@@ -507,8 +507,12 @@ subroutine set_conf_inc_random(parini,atoms_arr)
     type(typ_parini), intent(in):: parini
     type(typ_atoms_arr), intent(inout):: atoms_arr
     !local variables
-    integer:: iconf, irand
+    integer:: iconf, irand, ierr
+    integer, allocatable:: ind_list(:)
     real(8):: tt
+#if defined(MPI)
+    include 'mpif.h'
+#endif
     if(parini%nconf_rmse==0) then
         write(*,*) 'ERROR: parini%nconf_rmse=0'
         stop
@@ -520,20 +524,33 @@ subroutine set_conf_inc_random(parini,atoms_arr)
     endif
     allocate(atoms_arr%conf_inc(atoms_arr%nconf),source=.false.)
     atoms_arr%nconf_inc=parini%nconf_rmse
-    irand=0
-    do
-        if(irand==atoms_arr%nconf_inc) exit
-        if(trim(parini%rng_type)=='only_for_tests') then
-            call random_number_generator_simple(tt)
-        else
-            call random_number(tt)
-        endif
-        tt=tt*real(atoms_arr%nconf)
-        iconf=int(tt)+1
-        if(atoms_arr%conf_inc(iconf)) cycle
-        atoms_arr%conf_inc(iconf)=.true.
-        irand=irand+1
-    enddo
+    allocate(ind_list(atoms_arr%nconf_inc))
+    if(parini%mpi_env%iproc==0) then
+        irand=0
+        do
+            if(irand==atoms_arr%nconf_inc) exit
+            if(trim(parini%rng_type)=='only_for_tests') then
+                call random_number_generator_simple(tt)
+            else
+                call random_number(tt)
+            endif
+            tt=tt*real(atoms_arr%nconf)
+            iconf=int(tt)+1
+            if(atoms_arr%conf_inc(iconf)) cycle
+            atoms_arr%conf_inc(iconf)=.true.
+            irand=irand+1
+            ind_list(irand)=iconf
+        enddo
+    endif
+    call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(ind_list,atoms_arr%nconf_inc,MPI_INTEGER,0,parini%mpi_env%mpi_comm,ierr)
+    if(parini%mpi_env%iproc>0) then
+        do irand=1,atoms_arr%nconf_inc
+            atoms_arr%conf_inc(ind_list(irand))=.true.
+        enddo
+    endif
+    deallocate(ind_list)
+    call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
 end subroutine set_conf_inc_random
 !*****************************************************************************************
 subroutine apply_gbounds_atom(parini,ann_arr,atoms_arr,symfunc_arr)
@@ -679,14 +696,14 @@ subroutine set_gbounds(parini,ann_arr,atoms_arr,strmess,symfunc_arr)
     endif
     !write(*,'(a,i3,i6)') 'iproc,nconf ',iproc,atoms_arr%nconf
     do iconf=1,atoms_arr%nconf
-        call symfunc_arr%symfunc(iconf)%init_symfunc(parini%mpi_env)
+        call symfunc_arr%symfunc(iconf)%init_symfunc(parini%mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
         symfunc_arr%symfunc(iconf)%ng=ann_arr%ann(1)%nn(0) !HERE
         symfunc_arr%symfunc(iconf)%nat=atoms_arr%atoms(iconf)%nat
     enddo
     !configuration: do iconf=1+iproc,atoms_arr%nconf,nproc
     configuration: do iconf=1,atoms_arr%nconf
         if(trim(parini%symfunc)/='read') then
-            call symfunc_arr%symfunc(iconf)%get_symfunc(parini,ann_arr,atoms_arr%atoms(iconf),.false.)
+            call symfunc_arr%symfunc(iconf)%get_symfunc(ann_arr,atoms_arr%atoms(iconf),.false.)
             if(parini%mpi_env%nproc>1) then
                 call fmpi_allreduce(symfunc_arr%symfunc(iconf)%y(1,1), &
                     ann_arr%ann(1)%nn(0)*atoms_arr%atoms(iconf)%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)

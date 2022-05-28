@@ -1,19 +1,17 @@
 !*****************************************************************************************
-subroutine symmetry_functions_driver(parini,ann_arr,atoms,mpi_env,symfunc)
-    use mod_parini, only: typ_parini
+subroutine symmetry_functions_driver(ann_arr,atoms,mpi_env,iverbose,bondbased_ann,symfunc)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc_data, only: typ_symfunc_data
     use mod_atoms, only: typ_atoms
     use mod_linked_lists, only: typ_pia_arr
     use mod_linkedlists, only: typ_linkedlists
-    use wrapper_MPI, only: mpi_environment
-    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
-    use dynamic_memory
+    use mod_flm_futile
     implicit none
-    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
     type(mpi_environment), intent(in):: mpi_env
+    integer, intent(in):: iverbose
+    logical, intent(in):: bondbased_ann
     type(typ_symfunc_data), intent(inout):: symfunc
     !local variables
     integer:: ig, i
@@ -25,14 +23,13 @@ subroutine symmetry_functions_driver(parini,ann_arr,atoms,mpi_env,symfunc)
     external cutoff_function, cutoff_function_der
     integer:: isat, jsat, ksat, ib, ia, ibij, ibik, istat
     !real(8), allocatable:: y(:,:), y0d(:,:,:), y0dr(:,:,:)
-    !type(typ_linked_lists):: linked_lists
     type(typ_linkedlists):: linkedlists
     call f_routine(id='symmetry_functions_driver')
     associate(rc=>symfunc%linked_lists%rcut)
     symfunc%linked_lists%rcut=ann_arr%rcut
     symfunc%linked_lists%triplex=.true.
     !call cpu_time(time0)
-    call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr,mpi_env,parini%iverbose,parini%bondbased_ann)
+    call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr,mpi_env,iverbose,bondbased_ann)
     !call cpu_time(time1)
     !-------------------------------------------------------------------------------------
     associate(ng=>ann_arr%ann(1)%nn(0))

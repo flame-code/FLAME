@@ -26,9 +26,9 @@ subroutine cal_ann_atombased(parini,atoms,symfunc,ann_arr)
     call f_routine(id='cal_ann_atombased')
     call update_ratp(atoms)
     !call cpu_time(time0)
-    call symfunc%init_symfunc(parini%mpi_env)
+    call symfunc%init_symfunc(parini%mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
     if(ann_arr%compute_symfunc) then
-        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
+        call symfunc%get_symfunc(ann_arr,atoms,.true.)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.

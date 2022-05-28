@@ -83,7 +83,7 @@ subroutine gensymcrys_many(parini)
     else
         i_spacegroup=parini%ispg
     endif
-    if(.not. succeeded) i_spacegroup=1
+    !if(.not. succeeded) i_spacegroup=1
     call random_number(ttrand)
     tt1=parini%volperatom_bounds(1)
     tt2=parini%volperatom_bounds(2)

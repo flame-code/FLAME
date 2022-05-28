@@ -2,13 +2,16 @@
 module mod_symfunc
     use mod_linked_lists, only: typ_linked_lists
     use mod_symfunc_data, only: typ_symfunc_data
-    use wrapper_MPI, only: mpi_environment
+    use mod_flm_futile
     implicit none
     private
     public:: typ_symfunc_data, typ_symfunc
     type, extends(typ_symfunc_data):: typ_symfunc
         type(mpi_environment), public:: mpi_env
         logical, private:: initialized=.false.
+        logical, private:: bondbased_ann=.false.
+        integer, private:: iverbose=0
+        character(50):: symfunc_type_ann='behler'
         contains
         procedure, public, pass(self):: init_symfunc
         procedure, public, pass(self):: fini_symfunc
@@ -20,35 +23,34 @@ module mod_symfunc
     end type typ_symfunc_arr
 contains
 !*****************************************************************************************
-subroutine init_symfunc(self,mpi_env)
-    use wrapper_MPI, only: mpi_environment
+subroutine init_symfunc(self,mpi_env,iverbose,bondbased_ann,symfunc_type_ann)
     implicit none
     class(typ_symfunc), intent(inout):: self
     type(mpi_environment), intent(in):: mpi_env
+    integer, intent(in):: iverbose
+    logical, intent(in):: bondbased_ann
+    character(50), intent(in):: symfunc_type_ann
     !local variables
     self%mpi_env=mpi_env
+    self%iverbose=iverbose
+    self%bondbased_ann=bondbased_ann
+    self%symfunc_type_ann=symfunc_type_ann
     self%initialized=.true.
 end subroutine init_symfunc
 !*****************************************************************************************
 subroutine fini_symfunc(self)
-    use wrapper_MPI, only: mpi_environment
     implicit none
     class(typ_symfunc), intent(inout):: self
     !local variables
     self%initialized=.false.
 end subroutine fini_symfunc
 !*****************************************************************************************
-subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
-    use mod_parini, only: typ_parini
+subroutine get_symfunc(self,ann_arr,atoms,apply_gbounds)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_symfunc_bond, only: symmetry_functions_driver_bond
-    use time_profiling
-    !use mod_timing , only: TCAT_SYMFUNC_COMPUT
-    use dynamic_memory
     implicit none
     class(typ_symfunc), intent(inout):: self
-    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(inout):: atoms
     logical, intent(in):: apply_gbounds
@@ -67,8 +69,8 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
     !second index of "y0d" is for x,y,z
     !3th index of "y0d" is for number of atoms
     !-----------------------------------------------------------------
-    bondbased: if(parini%bondbased_ann) then
-        call symmetry_functions_driver_bond(parini,ann_arr,atoms,self%typ_symfunc_data)
+    bondbased: if(self%bondbased_ann) then
+        call symmetry_functions_driver_bond(ann_arr,atoms,self%mpi_env,self%iverbose,self%bondbased_ann,self%typ_symfunc_data)
             do ib=1,self%linked_lists%maxbound_rad
                 if(apply_gbounds) then
                     !normalization of y and y0d
@@ -85,10 +87,10 @@ subroutine get_symfunc(self,parini,ann_arr,atoms,apply_gbounds)
                 endif
             enddo
     else bondbased
-        if (parini%symfunc_type_ann=='behler') then 
-            call symmetry_functions_driver(parini,ann_arr,atoms,self%mpi_env,self%typ_symfunc_data)
+        if(trim(self%symfunc_type_ann)=='behler') then 
+            call symmetry_functions_driver(ann_arr,atoms,self%mpi_env,self%iverbose,self%bondbased_ann,self%typ_symfunc_data)
         else
-            call symmetry_functions_driver_stefan(parini,ann_arr,atoms,self%typ_symfunc_data)
+            call symmetry_functions_driver_stefan(ann_arr,atoms,self%typ_symfunc_data)
         endif
         if(apply_gbounds) then
             do iat=1,atoms%nat
