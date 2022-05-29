@@ -190,7 +190,7 @@
 ./ann_process.o : ./ann_process.F90 ./ann_mod.o 
 ./task_geopt.o : ./task_geopt.F90 ./constants_mod.o ./io_yaml_conf.o ./processors_mod.o ./io_acf.o ./potential_main.o ./atoms_mod.o ./opt_mod.o ./parini_mod.o 
 ./pbc_distance.o : ./pbc_distance.F90 
-./ann_check_symmetry_function.o : ./ann_check_symmetry_function.F90 ./processors_mod.o ./atoms_mod.o ./ann_io_yaml.o ./ann_symfunc_mod.o ./ann_mod.o ./parini_mod.o 
+./ann_check_symmetry_function.o : ./ann_check_symmetry_function.F90 ./flm_futile_mod.o ./atoms_mod.o ./ann_io_yaml.o ./ann_symfunc_mod.o ./ann_mod.o ./parini_mod.o 
 ./tosifumi.o : ./tosifumi.F90 ./shortrange_mod.o ./atoms_mod.o 
 ./optimizer_gmdfire.o : ./optimizer_gmdfire.F90 ./opt_mod.o 
 ./potential_DFTB.o : ./potential_DFTB.F90 ./constants_mod.o ./potential_main.o ./processors_mod.o ./atoms_mod.o 
