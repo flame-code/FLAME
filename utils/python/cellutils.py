@@ -55,41 +55,16 @@ def invertmat(mat):
 def backtocell(nat,cellvec,rat):
     #!To really be on the safe side, the translation vector can be shortened by  a factor eps in order
     #!to get the atom into the cell.
-    dist = [0]*6
-    eps=1.0e-15
-    count=0.0
-    rat2 = copy.copy(rat)
-    necessary= True
-    while necessary:
-        necessary = False
-        count = count + 1.0
-        # generate 3 normal vectors of the 3 planes
-        nvec = nveclatvec(cellvec)
-        for iat in range(nat):
-           # !3 planes through origin (xy,yz,zx)
-            for i in range(3):
-                dist[i] = np.dot(rat[iat][:],nvec[i][:])
-                if dist[i] < (-abs(dist[i])*eps):
-                    k1 = (i+1)%3 + 1
-                    if k1==3:
-                        k1 = 0
-                    rat2[iat][:] = np.array(rat[iat][:]) + np.array(cellvec[k1][:])
-                    necessary = True
-                k2 = (i+1)%3 + 1
-                if k2==3:
-                    k2 = 0
-                #3 planes on top/side/back (xy,yz,zx)
-                dist[i+3] = np.dot(np.array(rat[iat][:])-np.array(cellvec[k2][:]),nvec[i][:])
-                if dist[i+3] > (abs(dist[i+3])*eps):
-                    k3 = (i+1)%3 + 1
-                    if k3 ==3:
-                        k3 = 0
-                    rat2[iat][:] = np.array(rat[iat][:]) - np.array(cellvec[k3][:])
-                    necessary = True
-        if count > 1.0e+6:
-            print("Too many iterations in back-to-cell")
-        else:
-            break
+    ratint=rxyz_cart2int(cellvec,rat,nat)
+    rat2=[]
+    for iat in range(nat):
+        ratint[iat][0]=float(ratint[iat][0])%1.0
+        ratint[iat][1]=float(ratint[iat][1])%1.0
+        ratint[iat][2]=float(ratint[iat][2])%1.0
+        rat2.append([])
+        rat2[-1].append(float(cellvec[0][0]*ratint[iat][0]+cellvec[1][0]*ratint[iat][1]+cellvec[2][0]*ratint[iat][2]))
+        rat2[-1].append(float(cellvec[0][1]*ratint[iat][0]+cellvec[1][1]*ratint[iat][1]+cellvec[2][1]*ratint[iat][2]))
+        rat2[-1].append(float(cellvec[0][2]*ratint[iat][0]+cellvec[1][2]*ratint[iat][1]+cellvec[2][2]*ratint[iat][2]))
     return rat2
 #********************************************************************#
     #!Will calculate the normalized normal vector to the 3 planes of the cell
