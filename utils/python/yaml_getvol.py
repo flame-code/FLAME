@@ -28,7 +28,7 @@ for atoms in atoms_all:
     vol_atom=vol/atoms.nat
     #print "%50s%10.5f" % (filename,vol_atom)
     #print("%5d%10.5f" % (atoms.nat,vol_atom))
-    print("%5d%10.5f%15.6f" % (atoms.nat,vol_atom,atoms.epot/atoms.nat))
+    print("%5d%10.5f%15.6E" % (atoms.nat,vol_atom,atoms.epot/atoms.nat))
 
 #if len(atoms_all)==1:
 ##print atoms.cellvec
