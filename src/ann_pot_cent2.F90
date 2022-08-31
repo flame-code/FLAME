@@ -41,8 +41,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     use mod_electrostatics, only: typ_poisson
     use mod_linkedlists, only: typ_linkedlists
     use mod_linked_lists, only: typ_pia_arr
-    use dynamic_memory
-    use yaml_output
+    use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -54,7 +53,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     type(typ_pia_arr):: pia_arr_tmp
     type(typ_linkedlists):: linkedlists
     integer:: iat, i, j, ng
-    integer:: iats, iate, mat, mproc
+    integer:: iats, iate
     real(8):: epot_c, out_ann
     real(8):: dpx, dpy, dpz
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8, time9
@@ -97,18 +96,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
         allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))
         allocate(ann_arr%stresspq(1:3,1:3,1:symfunc%linked_lists%maxbound_rad))
     endif
-    if(parini%mpi_env%nproc>1) then
-        mat=atoms%nat/parini%mpi_env%nproc
-        iats=parini%mpi_env%iproc*mat+1
-        mproc=mod(atoms%nat,parini%mpi_env%nproc)
-        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
-        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
-        iate=iats+mat-1
-    else
-        iats=1
-        iate=atoms%nat
-        !mat=atoms%nat
-    endif
+    call get_proc_stake(parini%mpi_env,atoms%nat,iats,iate)
     if(parini%iverbose>=2) call cpu_time(time2)
     over_iat: do iat=iats,iate
         i=atoms%itypat(iat)
@@ -247,8 +235,7 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson)
     use mod_symfunc, only: typ_symfunc
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
-    use dynamic_memory
-    use yaml_output
+    use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -361,23 +348,21 @@ subroutine init_electrostatic_cent2(self,parini,atoms,ann_arr,poisson)
         allocate(poisson%pot_ion(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         if(parini%iverbose>=2) call cpu_time(time1)
         self%rho_tmp(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
-        poisson%pot_ion(:,:,:)=0.d0
+        poisson%rho(:,:,:)=0.d0
         do iat=1,atoms%nat
-            poisson%rho=0.d0
             agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+self%nbgx+0
             agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+self%nbgy+0
             agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+self%nbgz+0
             do iz=agpz-self%nbgz,agpz+self%nbgz
             do iy=agpy-self%nbgy,agpy+self%nbgy
             do ix=agpx-self%nbgx,agpx+self%nbgx
-                poisson%rho(ix,iy,iz)=atoms%zat(iat)*self%rho_n_all(ix-agpx,iy-agpy,iz-agpz,iat)
+                poisson%rho(ix,iy,iz)=poisson%rho(ix,iy,iz)+atoms%zat(iat)*self%rho_n_all(ix-agpx,iy-agpy,iz-agpz,iat)
             enddo
             enddo
             enddo
-            poisson%pot=0.d0
-            call get_hartree(parini,poisson,atoms,self%gausswidth_tmp,tt)
-            poisson%pot_ion=poisson%pot_ion+poisson%pot
         enddo
+        call get_hartree(parini,poisson,atoms,self%gausswidth_tmp,tt)
+        poisson%pot_ion=poisson%pot
         poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=self%rho_tmp(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
         if(parini%iverbose>=2) call cpu_time(time2)
         if(parini%iverbose>=2) write(*,*) 'pot_ion_time: ',time2-time1
@@ -479,7 +464,7 @@ subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
-    use yaml_output
+    use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -545,11 +530,9 @@ subroutine cal_cent2_total_potential(self,parini,ann_arr,atoms,poisson)
     !local variables
     integer:: iat
     real(8), allocatable:: gausswidth(:)
-    real(8), allocatable:: rho(:,:,:)
     real(8):: tt
-    allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(gausswidth(atoms%nat))
-    rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
+    self%rho_tmp(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
     poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=0.d0
     do iat=1,atoms%nat
         call self%grid_segment2entire(.false.,iat,atoms%ratp(1,iat),atoms%qat(iat),poisson)
@@ -557,8 +540,7 @@ subroutine cal_cent2_total_potential(self,parini,ann_arr,atoms,poisson)
     poisson%pot=0.d0
     call get_hartree(parini,poisson,atoms,gausswidth,tt)
     poisson%pot=poisson%pot+poisson%pot_ion
-    poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
-    deallocate(rho)
+    poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=self%rho_tmp(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
     deallocate(gausswidth)
 end subroutine cal_cent2_total_potential
 !*****************************************************************************************
@@ -603,7 +585,7 @@ subroutine cal_electrostatic_ann_cent2(self,parini,atoms,ann_arr,poisson)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
-    use dynamic_memory
+    use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -699,7 +681,7 @@ subroutine fini_electrostatic_cent2(self,parini,ann_arr,atoms,poisson)
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
     use mod_electrostatics, only: typ_poisson
-    use dynamic_memory
+    use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -717,32 +699,31 @@ end subroutine fini_electrostatic_cent2
 subroutine get_eigenval(parini,atoms,amat)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use dynamic_memory
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     real(8), intent(in):: amat(atoms%nat+1,atoms%nat+1)
     !local variables
-    integer:: info, lwork
-    real(8), allocatable:: eigen_val_amat(:,:)
-    real(8), allocatable:: real_eigenval(:), work(:)
-    lwork=max(atoms%nat**2,100)
-    allocate(eigen_val_amat(1:atoms%nat,1:atoms%nat))
-    allocate(real_eigenval(1:atoms%nat))
-    allocate(work(1:4*atoms%nat))
-    eigen_val_amat(1:atoms%nat,1:atoms%nat)=amat(1:atoms%nat,1:atoms%nat)
-    call DSYEV('N','U',atoms%nat,eigen_val_amat,atoms%nat,real_eigenval,work,lwork,info)
+    integer:: info, nwork
+    real(8), allocatable:: amat_t(:,:)
+    real(8), allocatable:: eval(:), work(:)
+    nwork=max(atoms%nat**2,100)
+    allocate(amat_t(atoms%nat,atoms%nat))
+    allocate(eval(atoms%nat))
+    allocate(work(nwork))
+    amat_t(1:atoms%nat,1:atoms%nat)=amat(1:atoms%nat,1:atoms%nat)
+    call DSYEV('N','U',atoms%nat,amat_t,atoms%nat,eval,work,nwork,info)
     if(parini%mpi_env%iproc==0) then
-    write(13,'(a6,es18.8,a10,es18.8)') 'MAX: ',maxval(real_eigenval),' | MIN: ',minval(real_eigenval)
+        write(13,'(a6,es18.8,a10,es18.8)') 'MAX: ',maxval(eval),' | MIN: ',minval(eval)
     endif
-    deallocate(eigen_val_amat)
-    deallocate(real_eigenval)
+    deallocate(amat_t)
+    deallocate(eval)
     deallocate(work)
 end subroutine get_eigenval
 !*****************************************************************************************
 subroutine get_dpm(atoms,dpx,dpy,dpz,dpm_err)
     use mod_atoms, only: typ_atoms
-    use dynamic_memory
     implicit none
     type(typ_atoms), intent(in):: atoms
     real(8), intent(out):: dpm_err 
@@ -776,8 +757,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use mod_trial_energy, only: typ_trial_energy, trial_energy_deallocate
-    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM, fmpi_wait
-    use dynamic_memory
+    use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -799,7 +779,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     type(typ_trial_energy), pointer:: trial_energy=>null()
     real(8):: time1, time2
     real(8), allocatable:: amat(:,:)
-    integer:: mtrial, itrials, itriale, mproc, mat, iats, iate
+    integer:: itrials, itriale, iats, iate
     logical, save:: done=.false.
     if(done) return
     one=1.d0
@@ -821,17 +801,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     !-----------------------------------------------------------------
     call cpu_time(time1)
     EP=0.0
-    if(parini%mpi_env%nproc>1) then
-        mat=atoms%nat/parini%mpi_env%nproc
-        iats=parini%mpi_env%iproc*mat+1
-        mproc=mod(atoms%nat,parini%mpi_env%nproc)
-        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
-        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
-        iate=iats+mat-1
-    else
-        iats=1
-        iate=atoms%nat
-    endif
+    call get_proc_stake(parini%mpi_env,atoms%nat,iats,iate)
     allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(gausswidth(atoms%nat))
     allocate(amat(atoms%nat+1,atoms%nat+1),source=0.d0)
@@ -870,17 +840,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     enddo
     enddo
     self%amat_is_calculated=.true.
-    if(parini%mpi_env%nproc>1) then
-        mtrial=trial_energy%ntrial/parini%mpi_env%nproc
-        itrials=parini%mpi_env%iproc*mtrial+1
-        mproc=mod(trial_energy%ntrial,parini%mpi_env%nproc)
-        itrials=itrials+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
-        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mtrial=mtrial+1
-        itriale=itrials+mtrial-1
-    else
-        itrials=1
-        itriale=trial_energy%ntrial
-    endif
+    call get_proc_stake(parini%mpi_env,trial_energy%ntrial,itrials,itriale)
     EP_n=0.d0
     do itrial=itrials,itriale
         xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
@@ -1042,7 +1002,6 @@ subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
-    use dynamic_memory
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -1098,7 +1057,6 @@ subroutine prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
-    use dynamic_memory
     implicit none
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
@@ -1158,7 +1116,6 @@ subroutine reverseCEP(self,parini,ann_arr,atoms,poisson,amat)
     use mod_atoms, only: typ_atoms, typ_file_info
     use mod_electrostatics, only: typ_poisson
     use mod_ann_io_yaml, only: write_yaml_conf_train
-    use yaml_output
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
@@ -1216,7 +1173,7 @@ subroutine cal_trial_from_cube(parini,trial_energy)
     use mod_trial_energy, only: typ_trial_energy, trial_energy_allocate
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, get_rat, update_ratp, atom_deallocate_old
-    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_trial_energy), pointer, intent(inout):: trial_energy
@@ -1235,7 +1192,7 @@ subroutine cal_trial_from_cube(parini,trial_energy)
     real(8), allocatable::  gausswidth(:)
     real(8), allocatable::  rat_trial(:,:)
     integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
-    integer:: mtrial, itrials, itriale, mproc
+    integer:: itrials, itriale
     pi=4.d0*atan(1.d0)
     if(parini%ewald) then
         write(*,*) 'ERROR: ewald=True is wrong when reading from cube file.'
@@ -1418,17 +1375,7 @@ subroutine cal_trial_from_cube(parini,trial_energy)
     enddo
     enddo
     enddo
-    if(parini%mpi_env%nproc>1) then
-        mtrial=ntrial/parini%mpi_env%nproc
-        itrials=parini%mpi_env%iproc*mtrial+1
-        mproc=mod(ntrial,parini%mpi_env%nproc)
-        itrials=itrials+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
-        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mtrial=mtrial+1
-        itriale=itrials+mtrial-1
-    else
-        itrials=1
-        itriale=ntrial
-    endif
+    call get_proc_stake(parini%mpi_env,ntrial,itrials,itriale)
     !write(*,'(a,4i8)') 'iproc,itrials,itriale,ntrial ',parini%mpi_env%iproc,itrials,itriale,ntrial
     trial_energy%energy=0.d0
     trial_energy%disp=0.d0
@@ -1499,6 +1446,27 @@ subroutine cal_rho_pot_integral_local(xyz,xyz111,ngpx,ngpy,ngpz,hgrid,rgcut,rho,
     enddo
     ener=res*(hgrid(1,1)*hgrid(2,2)*hgrid(3,3))
 end subroutine cal_rho_pot_integral_local
+!*****************************************************************************************
+subroutine get_proc_stake(mpi_env,n,is,ie)
+    use mod_flm_futile
+    implicit none
+    type(mpi_environment), intent(in):: mpi_env
+    integer, intent(in):: n
+    integer, intent(out):: is, ie
+    !local variables
+    integer:: m, mproc
+    if(mpi_env%nproc>1) then
+        m=n/mpi_env%nproc
+        is=mpi_env%iproc*m+1
+        mproc=mod(n,mpi_env%nproc)
+        is=is+max(0,mpi_env%iproc-mpi_env%nproc+mproc)
+        if(mpi_env%iproc>mpi_env%nproc-mproc-1) m=m+1
+        ie=is+m-1
+    else
+        is=1
+        ie=n
+    endif
+end subroutine get_proc_stake
 !*****************************************************************************************
 end module mod_cent2
 !*****************************************************************************************
