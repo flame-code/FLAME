@@ -131,12 +131,26 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time3)
     call self%init_electrostatic_cent2(parini,atoms,ann_arr,poisson)
     if(parini%iverbose>=2) call cpu_time(time4)
-    if(parini%iverbose>=2) write(*,*) 'init_electrostatic_cent2 time: ',time4-time3
+    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: init_electrostatic_cent2: ',time4-time3
+    if(parini%prefit_ann) then
+        call self%prefit_cent2(parini,ann_arr,atoms,poisson)
+    endif
+    if(parini%iverbose>=2) call cpu_time(time5)
+    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: prefit_cent2: ',time5-time4
+    if(.not. self%amat_is_calculated) then
+        call self%get_amat_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
+        !do iat=1,(atoms%nat+1)*(atoms%nat+1)
+        !    write(91,'(i5,f15.7)') iat,ann_arr%a(iat)
+        !enddo
+    endif
+    call get_eigenval(parini,atoms,ann_arr%a)
+    if(parini%iverbose>=2) call cpu_time(time6)
+    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: get_amat_cent2: ',time6-time5
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     call self%get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
-    if(parini%iverbose>=2) call cpu_time(time5)
-    if(parini%iverbose>=2) write(*,*) 'qet_qat_time: ',time5-time4
+    if(parini%iverbose>=2) call cpu_time(time7)
+    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: get_qat_from_chi_dir_cent2: ',time7-time6
     if(parini%mpi_env%iproc==0) then
     if(parini%iverbose>=2)  then
         do iat=1,atoms%nat
@@ -151,35 +165,30 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     if(.not. trim(ann_arr%event)=='potential') then
         call self%cal_cent2_total_potential(parini,ann_arr,atoms,poisson)
     endif
-    if(parini%iverbose>=2) call cpu_time(time6)
-    if(parini%iverbose>=2) write(*,*) 'cal_cent2_total_potential_time: ',time6-time5
-    if(parini%prefit_ann) then
-        call self%prefit_cent2(parini,ann_arr,atoms,poisson)
-    endif
-    if(parini%iverbose>=2) call cpu_time(time7)
+    if(parini%iverbose>=2) call cpu_time(time8)
     !if(parini%mpi_env%iproc==0) then
-    if(parini%iverbose>=2) write(*,*) 'cent2_g_per_time: ',time7-time6
+    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: cal_cent2_total_potential: ',time8-time7
     !endif
     atoms%stress(1:3,1:3)=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
-    if(parini%iverbose>=2) call cpu_time(time8)
     call self%cal_cent2_energy(parini,atoms,ann_arr,epot_c,poisson)
     if(parini%iverbose>=2) call cpu_time(time9)
     !if(parini%mpi_env%iproc==0) then
-    if(parini%iverbose>=2) write(*,*) 'get_electrostatic_time: ',time9-time8
+    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: cal_cent2_energy: ',time9-time8
     !endif
     if(parini%iverbose>=2) then
         call yaml_mapping_open('Timing of CENT2')
         call yaml_map('calculation of symfunc',time2-time1)
         call yaml_map('neural network process',time3-time2)
-        call yaml_map('initialize matrix',time4-time3)
-        call yaml_map('linear equations solver',time5-time4)
-        call yaml_map('force (SR term)',time6-time5)
-        call yaml_map('prefit_cent2',time7-time6)
+        call yaml_map('init_electrostatic',time4-time3)
+        call yaml_map('prefit_cent2',time5-time4)
+        call yaml_map('get_amat',time6-time5)
+        call yaml_map('get_qat_from_chi_dir',time7-time6)
         call yaml_map('energy (SR+LR), force (LR)',time8-time7)
+        call yaml_map('force (SR term)',time9-time8)
         call yaml_map('total time',time9-time1)
         call yaml_mapping_close()
     endif !end of if for printing out timing.
@@ -347,12 +356,8 @@ subroutine init_electrostatic_cent2(self,parini,atoms,ann_arr,poisson)
         allocate(self%rho_e_all(-self%nbgx:self%nbgx,-self%nbgy:self%nbgy,-self%nbgz:self%nbgz,atoms%nat))
         allocate(self%rho_n_all(-self%nbgx:self%nbgx,-self%nbgy:self%nbgy,-self%nbgz:self%nbgz,atoms%nat))
         call self%calc_atomic_densities(parini,atoms,ann_arr,poisson)
-        if(.not. self%amat_is_calculated) then
-            call self%get_amat_cent2(parini,ann_arr,atoms,poisson,ann_arr%a)
-        endif
         if(parini%iverbose>=2) call cpu_time(time2)
         if(parini%iverbose>=2) write(*,*) 'get_amt_time: ',time2-time1
-        call get_eigenval(parini,atoms,ann_arr%a)
         allocate(poisson%pot_ion(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         if(parini%iverbose>=2) call cpu_time(time1)
         self%rho_tmp(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
@@ -780,7 +785,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    integer:: itrial, iat
+    integer:: itrial, iat, jat
     integer:: nbgx, nbgy, nbgz
     real(8):: xyz(3), tt, rmse, err_U_SRS, U_SRS
     real(8):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
@@ -793,6 +798,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     real(8):: one
     type(typ_trial_energy), pointer:: trial_energy=>null()
     real(8):: time1, time2
+    real(8), allocatable:: amat(:,:)
     integer:: mtrial, itrials, itriale, mproc, mat, iats, iate
     logical, save:: done=.false.
     if(done) return
@@ -828,11 +834,20 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     endif
     allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(gausswidth(atoms%nat))
+    allocate(amat(atoms%nat+1,atoms%nat+1),source=0.d0)
     rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)
     do iat=iats,iate
         call self%grid_segment2entire(.true.,iat,atoms%ratp(1,iat),1.d0,poisson)
         poisson%pot=0.d0
         call get_hartree(parini,poisson,atoms,gausswidth,tt)
+        do jat=1,iat
+            call self%get_energy_external_pot(atoms,jat,poisson,tt)
+            amat(iat,jat)=tt
+            amat(jat,iat)=amat(iat,jat)
+        enddo
+        amat(iat,iat)=amat(iat,iat)+ann_arr%ann(atoms%itypat(iat))%hardness
+        amat(iat,atoms%nat+1)=1.d0
+        amat(atoms%nat+1,iat)=1.d0
         do itrial=1,trial_energy%ntrial
             xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
             call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
@@ -843,9 +858,18 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
             EP(iat,itrial)=tt
         enddo !end of loop over itrial
     enddo !end of loop over iat
+    amat(atoms%nat+1,atoms%nat+1)=0.d0
     if(parini%mpi_env%nproc>1) then
     call fmpi_allreduce(EP(1,1),atoms%nat*trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    call fmpi_allreduce(amat(1,1),(atoms%nat+1)**2,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     endif
+    do jat=1,(atoms%nat+1)
+    do iat=1,(atoms%nat+1)
+        ann_arr%a((jat-1)*(atoms%nat+1)+iat)=amat(iat,jat)
+        !write(92,'(i5,f15.7)') (jat-1)*(atoms%nat+1)+iat,amat(iat,jat)
+    enddo
+    enddo
+    self%amat_is_calculated=.true.
     if(parini%mpi_env%nproc>1) then
         mtrial=trial_energy%ntrial/parini%mpi_env%nproc
         itrials=parini%mpi_env%iproc*mtrial+1
