@@ -33,7 +33,6 @@ module mod_cent2
         procedure, private, pass(self):: grid_segment2entire
         procedure, private, pass(self):: get_energy_external_pot
         procedure, private, pass(self):: get_qat_from_chi_dir_cent2
-        procedure, private, pass(self):: cal_cent2_total_potential
         procedure, private, pass(self):: cal_electrostatic_ann_cent2
         procedure, private, pass(self):: cal_cent2_energy
         procedure, private, pass(self):: cal_etrial_cent2
@@ -160,13 +159,6 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
         write(99,*) '---'
     endif
     endif
-    if(.not. trim(ann_arr%event)=='potential') then
-        call self%cal_cent2_total_potential(parini,ann_arr,atoms,poisson)
-    endif
-    if(parini%iverbose>=2) call cpu_time(time8)
-    !if(parini%mpi_env%iproc==0) then
-    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: cal_cent2_total_potential: ',time8-time7
-    !endif
     atoms%stress(1:3,1:3)=0.d0
     atoms%fat(1:3,1:atoms%nat)=0.d0
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
@@ -185,8 +177,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
         call yaml_map('prefit_cent2',time5-time4)
         call yaml_map('get_amat',time6-time5)
         call yaml_map('get_qat_from_chi_dir',time7-time6)
-        call yaml_map('energy (SR+LR), force (LR)',time8-time7)
-        call yaml_map('force (SR term)',time9-time8)
+        call yaml_map('force (SR term)',time9-time7)
         call yaml_map('total time',time9-time1)
         call yaml_mapping_close()
     endif !end of if for printing out timing.
@@ -542,32 +533,6 @@ subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     deallocate(a)
 end subroutine get_qat_from_chi_dir_cent2
 !*****************************************************************************************
-subroutine cal_cent2_total_potential(self,parini,ann_arr,atoms,poisson)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    implicit none
-    class(typ_cent2), intent(inout):: self
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(in):: ann_arr
-    type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
-    !local variables
-    integer:: iat
-    real(8), allocatable:: gausswidth(:)
-    real(8):: tt
-    allocate(gausswidth(atoms%nat))
-    poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=0.d0
-    do iat=1,atoms%nat
-        call self%grid_segment2entire(.false.,iat,atoms%ratp(1,iat),atoms%qat(iat),poisson)
-    enddo
-    poisson%pot=0.d0
-    call get_hartree(parini,poisson,atoms,gausswidth,tt)
-    poisson%pot=poisson%pot+poisson%pot_ion
-    deallocate(gausswidth)
-end subroutine cal_cent2_total_potential
-!*****************************************************************************************
 subroutine cal_cent2_energy(self,parini,atoms,ann_arr,epot_c,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
@@ -619,8 +584,7 @@ subroutine cal_electrostatic_ann_cent2(self,parini,atoms,ann_arr,poisson)
     !local variables
     type(typ_poisson):: poisson_force
     integer:: iat, ix, iy, iz
-    real(8):: tt, tte, ttn
-    real(8):: alpha, beta, ggw, ggw_t
+    real(8):: tt, alpha, beta, ggw, ggw_t
     real(8),allocatable::fat_t(:,:)
     real(8), allocatable:: gausswidth(:)
     allocate(gausswidth(atoms%nat))
@@ -788,8 +752,8 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     integer:: itrial, iat, jat
     integer:: nbgx, nbgy, nbgz
     real(8):: xyz(3), tt, rmse, err_U_SRS, U_SRS
-    real(8):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
-    real(8):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
+    real(8):: qavg(10), qvar(10)
+    real(8):: cavg(10), cvar(10)
     real(8), allocatable:: EP(:,:)
     real(8), allocatable:: E_all(:)
     real(8), allocatable:: gausswidth(:)
@@ -893,12 +857,12 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     enddo
     rmse=1.d3*sqrt(rmse/trial_energy%ntrial)
     call self%cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
-    call prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
+    call prefit_cent2_output(parini,ann_arr,atoms,qavg,qvar,cavg,cvar)
     err_U_SRS=1.d3*(U_SRS-trial_energy%ehartree_scn_excl)/atoms%nat
     if(parini%mpi_env%iproc==0) then
     write(*,'(a,2es24.15)') 'USRS ',U_SRS,trial_energy%ehartree_scn_excl
     write(*,'(a,2f10.3,8f7.3)') 'OPT ',rmse,err_U_SRS, &
-        qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O
+        qavg(1),qavg(2),qvar(1),qvar(2),cavg(1),cavg(2),cvar(1),cvar(2)
     do itrial=1,trial_energy%ntrial
         write(*,'(a,i3,2es24.15)') 'ETS ',trial_energy%iat_list(itrial),E_all(itrial),trial_energy%energy(itrial)
     enddo
@@ -921,8 +885,7 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
     real(8), intent(in):: energy(ntrial), EP(atoms%nat,ntrial), EP_n(ntrial)
     !local variables
     integer:: iat, jat, itrial, info, itypat, lwork
-    real(8):: hh_Mg, hh_O, hh, qtarget_Mg, qtarget_O, qtarget
-    real(8):: tt
+    real(8):: hh, qtarget, tt
     real(8), allocatable:: squarefit(:,:), squarefit_t(:,:)
     real(8), allocatable:: real_eigenval(:), work(:)
     lwork=max(atoms%nat**2,100)
@@ -942,22 +905,19 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
         enddo
     enddo
     call DSYEV('N','U',atoms%nat,squarefit,atoms%nat,real_eigenval,work,lwork,info)
-    !if(parini%mpi_env%iproc==0) then
-    !do iat=1,atoms%nat
-    !    write(*,'(a,i6,es14.5)') 'EVAL ',iat,real_eigenval(iat)
-    !enddo
-    !endif
+    if(parini%mpi_env%iproc==0) then
+    do iat=1,atoms%nat
+        write(33,'(a,i6,es14.5)') 'EVAL ',iat,real_eigenval(iat)
+    enddo
+    endif
     do iat=1,atoms%nat
         do jat=1,atoms%nat
             squarefit(iat,jat)=squarefit_t(iat,jat)
         enddo
     enddo
     !-----------------------------------------------------------------
-    hh_Mg=1.d-3*real_eigenval(atoms%nat)
-    hh_O=1.d-3*real_eigenval(atoms%nat)
+    hh=1.d-3*real_eigenval(atoms%nat)
     do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
-        if(trim(atoms%sat(iat))=='O' ) hh=hh_O
         squarefit(iat,iat)=squarefit(iat,iat)+hh
         squarefit_t(iat,iat)=squarefit_t(iat,iat)+hh
     enddo
@@ -980,24 +940,14 @@ subroutine get_expansion_coeff(parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
         ann_arr%qq(iat)=tt
     enddo
     do itypat=1,parini%ntypat
-        if(trim(parini%stypat(itypat))=='Mg') then
-            qtarget_Mg=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
-            if(parini%mpi_env%iproc==0) then
-            write(*,'(a,f8.3)') 'QTARGET_Mg ',qtarget_Mg
-            endif
-        endif
-        if(trim(parini%stypat(itypat))=='O') then
-            qtarget_O=-ann_arr%ann(itypat)%zion-ann_arr%ann(itypat)%qtarget
-            if(parini%mpi_env%iproc==0) then
-            write(*,'(a,f8.3)') 'QTARGET_O  ',qtarget_O
-            endif
+        qtarget=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
+        if(parini%mpi_env%iproc==0) then
+        write(*,'(2a,a1,f8.3)') 'QTARGET_',trim(parini%stypat(itypat)),' ',qtarget
         endif
     enddo
     do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Mg') hh=hh_Mg
-        if(trim(atoms%sat(iat))=='O' ) hh=hh_O
-        if(trim(atoms%sat(iat))=='Mg') qtarget=qtarget_Mg
-        if(trim(atoms%sat(iat))=='O' ) qtarget=qtarget_O
+        itypat=atoms%itypat(iat)
+        qtarget=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
         ann_arr%qq(iat)=ann_arr%qq(iat)+hh*qtarget
     enddo
     call DGETRS('N',atoms%nat+1,1,squarefit_t,atoms%nat+1,ann_arr%ipiv,ann_arr%qq,atoms%nat+1,info)
@@ -1026,16 +976,10 @@ subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
     real(8), intent(out):: U_SRS
     !local variables
     integer:: iat, ix, iy, iz
-    real(8):: one, tt
+    real(8):: tt
     real(8), allocatable:: gausswidth(:)
-    real(8), allocatable:: qat_tmp(:)
-    one=1.d0
     allocate(gausswidth(atoms%nat))
-    allocate(qat_tmp(atoms%nat))
-    poisson%rho=0.d0
-    do iat=1,atoms%nat
-        call self%grid_segment2entire(.false.,iat,atoms%ratp(1,iat),atoms%qat(iat),poisson)
-    enddo
+    poisson%rho=self%rho_e
     poisson%pot=0.d0
     call get_hartree(parini,poisson,atoms,gausswidth,tt)
     poisson%pot=poisson%pot+poisson%pot_ion
@@ -1050,8 +994,7 @@ subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
         write(61,'(a,i3,3(a2,es24.15),a)') '  - [',iat,', ',atoms%fat(1,iat),', ',atoms%fat(2,iat),', ',atoms%fat(3,iat),']'
     enddo
     endif
-    call put_gto_sym_ortho(parini,poisson%bc,.false.,atoms%nat,atoms%ratp,atoms%zat,gausswidth, &
-        6.d0*maxval(gausswidth),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+    poisson%rho=poisson%rho+self%rho_n
     tt=0.d0
     do iz=1,poisson%ngpz
     do iy=1,poisson%ngpy
@@ -1061,66 +1004,47 @@ subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
     enddo
     enddo
     U_SRS=0.5d0*tt*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    deallocate(qat_tmp)
     deallocate(gausswidth)
 end subroutine cal_etrial_cent2
 !*****************************************************************************************
-subroutine prefit_cent2_output(ann_arr,atoms,qavg_Mg,qavg_O,qvar_Mg,qvar_O,cavg_Mg,cavg_O,cvar_Mg,cvar_O)
+subroutine prefit_cent2_output(parini,ann_arr,atoms,qavg,qvar,cavg,cvar)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     implicit none
+    type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    real(8), intent(inout):: qavg_Mg, qavg_O, qvar_Mg, qvar_O
-    real(8), intent(inout):: cavg_Mg, cavg_O, cvar_Mg, cvar_O
+    real(8), intent(inout):: qavg(10), qvar(10)
+    real(8), intent(inout):: cavg(10), cvar(10)
     !local variables
-    integer:: iat
+    integer:: iat, itypat
     real(8):: q
-    real(8):: qmax_Mg, qmin_Mg, qmax_O, qmin_O
-    real(8):: cmax_Mg, cmin_Mg, cmax_O, cmin_O
-    qavg_Mg=0.d0
-    qavg_O=0.d0
-    qmax_Mg=-huge(1.d0)
-    qmax_O=-huge(1.d0)
-    qmin_Mg=huge(1.d0)
-    qmin_O=huge(1.d0)
-    cavg_Mg=0.d0
-    cavg_O=0.d0
-    cmax_Mg=-huge(1.d0)
-    cmax_O=-huge(1.d0)
-    cmin_Mg=huge(1.d0)
-    cmin_O=huge(1.d0)
+    real(8):: qmax(10), qmin(10)
+    real(8):: cmax(10), cmin(10)
+    qavg=0.d0
+    cavg=0.d0
+    qmin=huge(1.d0)
+    cmin=huge(1.d0)
+    qmax=-huge(1.d0)
+    cmax=-huge(1.d0)
     do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Mg') then
-            q=atoms%zat(iat)+atoms%qat(iat)
-            qavg_Mg=qavg_Mg+q
-            qmax_Mg=max(qmax_Mg,q)
-            qmin_Mg=min(qmin_Mg,q)
-            cavg_Mg=cavg_Mg+ann_arr%chi_o(iat)
-            cmax_Mg=max(cmax_Mg,ann_arr%chi_o(iat))
-            cmin_Mg=min(cmin_Mg,ann_arr%chi_o(iat))
-
-        endif
-        if(trim(atoms%sat(iat))=='O') then
-            q=atoms%zat(iat)+atoms%qat(iat)
-            qavg_O=qavg_O+q
-            qmax_O=max(qmax_O,q)
-            qmin_O=min(qmin_O,q)
-            cavg_O=cavg_O+ann_arr%chi_o(iat)
-            cmax_O=max(cmax_O,ann_arr%chi_o(iat))
-            cmin_O=min(cmin_O,ann_arr%chi_o(iat))
-        endif
+        itypat=atoms%itypat(iat)
+        q=atoms%zat(iat)+atoms%qat(iat)
+        qavg(itypat)=qavg(itypat)+q
+        qmax(itypat)=max(qmax(itypat),q)
+        qmin(itypat)=min(qmin(itypat),q)
+        cavg(itypat)=cavg(itypat)+ann_arr%chi_o(iat)
+        cmax(itypat)=max(cmax(itypat),ann_arr%chi_o(iat))
+        cmin(itypat)=min(cmin(itypat),ann_arr%chi_o(iat))
     enddo
-    qavg_Mg=qavg_Mg/(atoms%nat/2.d0)
-    qavg_O=qavg_O/(atoms%nat/2.d0)
-    qvar_Mg=qmax_Mg-qmin_Mg
-    qvar_O=qmax_O-qmin_O
-    cavg_Mg=cavg_Mg/(atoms%nat/2.d0)
-    cavg_O=cavg_O/(atoms%nat/2.d0)
-    cvar_Mg=cmax_Mg-cmin_Mg
-    cvar_O=cmax_O-cmin_O
+    do itypat=1,parini%ntypat
+        qavg(itypat)=qavg(itypat)/(atoms%nat/2.d0)
+        qvar(itypat)=qmax(itypat)-qmin(itypat)
+        cavg(itypat)=cavg(itypat)/(atoms%nat/2.d0)
+        cvar(itypat)=cmax(itypat)-cmin(itypat)
+    enddo
 end subroutine prefit_cent2_output
 !*****************************************************************************************
 subroutine reverseCEP(self,parini,ann_arr,atoms,poisson,amat)
@@ -1263,18 +1187,18 @@ subroutine cal_trial_from_cube(parini,trial_energy)
     coeff=atoms%zat(iat)/(gwt**3*pi**1.5d0)
     !coeff=atoms%zat(iat)*2.d0/(3.d0*gwt**5*pi**1.5d0)
     !coeff=atoms%zat(iat)*4.d0/(15.d0*gwt**7*pi**1.5d0)
-    if(trim(atoms%sat(iat))=='Mg') then
-        !0.65406138674  2 -5.223929095  0.913704167481045 rloc nloc c1 .. cnloc
-        rloc=0.65406138674d0
-        c1=-5.223929095d0
-        c2=0.913704167481045d0
-    endif
-    if(trim(atoms%sat(iat))=='O') then
-        !0.3454999999    2 -11.7435870154  1.90653967947 rloc nloc c1 .. cnloc
-        rloc=0.3454999999d0
-        c1=-11.7435870154d0
-        c2=1.90653967947d0
-    endif
+    !if(trim(atoms%sat(iat))=='Mg') then
+    !    !0.65406138674  2 -5.223929095  0.913704167481045 rloc nloc c1 .. cnloc
+    !    rloc=0.65406138674d0
+    !    c1=-5.223929095d0
+    !    c2=0.913704167481045d0
+    !endif
+    !if(trim(atoms%sat(iat))=='O') then
+    !    !0.3454999999    2 -11.7435870154  1.90653967947 rloc nloc c1 .. cnloc
+    !    rloc=0.3454999999d0
+    !    c1=-11.7435870154d0
+    !    c2=1.90653967947d0
+    !endif
     !c1=-c1
     !c2=-c2
     jgpx=int(poisson_ion%rcart(1,iat)/poisson%hgrid(1,1))
