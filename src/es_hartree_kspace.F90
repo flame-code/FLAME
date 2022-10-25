@@ -5,7 +5,11 @@ subroutine init_psolver_kspace_exprnscreening(greenf_kspace,npow)
     type(typ_greenf_kspace), intent(inout):: greenf_kspace
     integer, intent(in):: npow
     !local variables
-    call greenf_kspace%init_greenf_kspace(npow,'numeric')
+    if(npow==-4) then
+        greenf_kspace%npow=npow
+    else
+        call greenf_kspace%init_greenf_kspace(npow,'numeric')
+    endif
 end subroutine init_psolver_kspace_exprnscreening
 !*****************************************************************************************
 subroutine fini_psolver_kspace_exprnscreening(greenf_kspace)
@@ -13,7 +17,10 @@ subroutine fini_psolver_kspace_exprnscreening(greenf_kspace)
     implicit none
     type(typ_greenf_kspace), intent(inout):: greenf_kspace
     !local variables
-    call greenf_kspace%fini_greenf_kspace()
+    if(greenf_kspace%npow==-4) then
+    else
+        call greenf_kspace%fini_greenf_kspace()
+    endif
 end subroutine fini_psolver_kspace_exprnscreening
 !*****************************************************************************************
 subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,rho,sf,pot)
@@ -30,6 +37,7 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     integer:: igpxt, igpyt, igpzt
     integer:: ngpx_ext, ngpy_ext, ngpz_ext, nadd
     real(8):: tt1, pi, fourpi, hmin, daw, sf2
+    real(8):: ss1, ss2, ss3, ss4
     real(8):: akx, aky, akz, aknorm2
     real(8), allocatable:: rho_ext(:,:,:), pot_ext(:,:,:)
     integer(8):: planf, planb
@@ -38,7 +46,11 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     pi=4.d0*atan(1.d0)
     fourpi=4.d0*pi
     hmin=min(hgrid(1,1),hgrid(2,2),hgrid(3,3))
-    nadd=floor((-log(1.d-4))**(1.d0/real(greenf_kspace%npow,kind=8))/(sf*hmin))
+    if(greenf_kspace%npow==-4) then
+        nadd=floor((-log(1.d-4))**(1.d0/real(-greenf_kspace%npow,kind=8))/(0.5d0*sf*hmin))
+    else
+        nadd=floor((-log(1.d-4))**(1.d0/real(greenf_kspace%npow,kind=8))/(sf*hmin))
+    endif
     !if(mod(nadd,2)/=0) nadd=nadd+1
     if(iproc==0) then
         write(*,*) 'nadd= ',nadd
@@ -76,7 +88,22 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
         aky=2.d0*pi*( igpyt-1   )/(real(ngpy_ext,kind=8)*hgrid(2,2))
         akz=2.d0*pi*( igpzt-1   )/(real(ngpz_ext,kind=8)*hgrid(3,3))
         aknorm2=akx**2+aky**2+akz**2
-        call greenf_kspace%get_greenf_kspace_single(sqrt(aknorm2),sf,tt1)
+        if(greenf_kspace%npow==-4) then
+            if(aknorm2<1.d-20) then
+                ss1=2.d0*pi/sf**2
+                ss2=2.d0*pi/(2.d0*sf)**2
+                ss3=2.d0*pi/(3.d0*sf)**2
+                ss4=2.d0*pi/(4.d0*sf)**2
+            else
+                ss1=fourpi*daw(sqrt(aknorm2)/sf*0.5d0)/(sqrt(aknorm2)*sf)
+                ss2=fourpi*daw(sqrt(aknorm2)/(2.d0*sf)*0.5d0)/(sqrt(aknorm2)*(2.d0*sf))
+                ss3=fourpi*daw(sqrt(aknorm2)/(3.d0*sf)*0.5d0)/(sqrt(aknorm2)*(3.d0*sf))
+                ss4=fourpi*daw(sqrt(aknorm2)/(4.d0*sf)*0.5d0)/(sqrt(aknorm2)*(4.d0*sf))
+            endif
+            tt1=4.d0*ss1-6.d0*ss2+4.d0*ss3-ss4
+        else
+            call greenf_kspace%get_greenf_kspace_single(sqrt(aknorm2),sf,tt1)
+        endif
         pot_ext(igpx,igpy,igpz)=pot_ext(igpx,igpy,igpz)*tt1
     enddo
     enddo

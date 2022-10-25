@@ -1,4 +1,187 @@
 !*****************************************************************************************
+subroutine put_gto_p_ortho(parini,bc,reset,nat,rxyz,p,gw,rgcut,xyz111,ngx,ngy,ngz,hgrid,rho)
+    use mod_parini, only: typ_parini
+    use dynamic_memory
+    implicit none
+    type(typ_parini), intent(in):: parini
+    character(*), intent(in):: bc
+    logical, intent(in):: reset
+    integer, intent(in):: nat
+    real(8), intent(in):: rxyz(3,nat)
+    real(8), intent(in):: p(3,nat)
+    real(8), intent(in):: gw(nat)
+    real(8), intent(in):: rgcut
+    real(8), intent(in):: xyz111(3)
+    integer, intent(in):: ngx, ngy, ngz
+    real(8), intent(in):: hgrid(3,3)
+    real(8), intent(inout):: rho(ngx,ngy,ngz)
+    !work array that is bigger than rho array, big enough to include of 
+    !grid points that are outside of box.
+    !local variables
+    !work arrays to save the values of one dimensional gaussian function.
+    real(8), allocatable:: wx(:), wy(:), wz(:)
+    real(8):: rhoz, rhoyz, pi
+    real(8):: hgxinv, hgyinv, hgzinv
+    real(8):: width_inv, width_inv_xat, width_inv_yat, width_inv_zat
+    real(8):: width_inv_hgx, width_inv_hgy, width_inv_hgz
+    real(8):: xat, yat, zat, facqiat, fac, width
+    real(8):: hx, hy, hz, ttx, tty, ttz
+    integer:: iat, iw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz
+    integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
+    integer:: ibcx, ibcy, ibcz
+    real(8), allocatable:: wa(:,:,:)
+    integer, allocatable:: mboundg(:,:,:)
+    call f_routine(id='put_gto_p_ortho')
+    if(hgrid(2,1)/=0.d0 .or. hgrid(3,1)/=0.d0 .or. &
+       hgrid(1,2)/=0.d0 .or. hgrid(3,2)/=0.d0 .or. &
+       hgrid(1,3)/=0.d0 .or. hgrid(2,3)/=0.d0) then
+        write(*,'(a)') 'ERROR: this routine is only for orthogonal cell:'
+        write(*,'(3es14.5)') hgrid(1,1),hgrid(2,1),hgrid(3,1)
+        write(*,'(3es14.5)') hgrid(1,2),hgrid(2,2),hgrid(3,2)
+        write(*,'(3es14.5)') hgrid(1,3),hgrid(2,3),hgrid(3,3)
+        stop
+    endif
+    hx=hgrid(1,1)
+    hy=hgrid(2,2)
+    hz=hgrid(3,3)
+    nbgx=int(rgcut/hx)+2
+    nbgy=int(rgcut/hy)+2
+    nbgz=int(rgcut/hz)+2
+    nagx=nbgx+1
+    nagy=nbgy+1
+    nagz=nbgz+1
+    !-------------------------------------------------------
+    ibcx=0 !zero means periodic
+    ibcy=0 !zero means periodic
+    ibcz=0 !zero means periodic
+    if(trim(bc)=='bulk') then
+        !variables already are set to correct value
+    elseif(trim(bc)=='slab') then
+        ibcz=1
+        nagz=0
+    elseif(trim(bc)=='wire') then
+        ibcy=1
+        ibcz=1
+        nagy=0
+        nagz=0
+    elseif(trim(bc)=='free') then
+        ibcx=1
+        ibcy=1
+        ibcz=1
+        nagx=0
+        nagy=0
+        nagz=0
+    else
+        write(*,'(2a)') 'ERROR: unknown BC, bc= ',trim(bc)
+        stop
+    endif
+    !-------------------------------------------------------
+    mboundg=f_malloc([1.to.2,-nbgy.to.nbgy,-nbgz.to.nbgz],id='mboundg')
+    call get_glimitsphere(hx,hy,hz,nbgx,nbgy,nbgz,mboundg)
+    wa=f_malloc([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
+    wx=f_malloc([-nbgx.to.nbgx],id='wx')
+    wy=f_malloc([-nbgy.to.nbgy],id='wy')
+    wz=f_malloc([-nbgz.to.nbgz],id='wz')
+    pi=4.d0*atan(1.d0)
+    hgxinv=1.d0/hx
+    hgyinv=1.d0/hy
+    hgzinv=1.d0/hz
+    !1+nbg?*ibc? gives the index of grid point whose ? coordinate is zero (?=x,y,z)
+    wa=0.d0
+    !write(*,*) 'HX ',hx,xyz111(1)
+    !write(*,*) 'HY ',hy,xyz111(2)
+    !write(*,*) 'HZ ',hz,xyz111(3)
+    do iat=1,nat
+        !shift the gaussian centers
+        !if(parini%cell_ortho_noshift) then
+            iatox=nint((rxyz(1,iat)-xyz111(1))*hgxinv)+1
+            iatoy=nint((rxyz(2,iat)-xyz111(2))*hgyinv)+1
+            iatoz=nint((rxyz(3,iat)-xyz111(3))*hgzinv)+1
+            xat=rxyz(1,iat)-(iatox-1)*hx-xyz111(1)
+            yat=rxyz(2,iat)-(iatoy-1)*hy-xyz111(2)
+            zat=rxyz(3,iat)-(iatoz-1)*hz-xyz111(3)
+        !else
+        !    iatox=nint(rxyz(1,iat)*hgxinv)+1+nbgx*ibcx
+        !    iatoy=nint(rxyz(2,iat)*hgyinv)+1+nbgy*ibcy
+        !    iatoz=nint(rxyz(3,iat)*hgzinv)+1+nbgz*ibcz
+        !    xat=rxyz(1,iat)-(iatox-1-nbgx*ibcx)*hx
+        !    yat=rxyz(2,iat)-(iatoy-1-nbgy*ibcy)*hy
+        !    zat=rxyz(3,iat)-(iatoz-1-nbgz*ibcz)*hz
+        !endif
+        if(iatox-nbgx*ibcx<1-nagx .or. iatox+nbgx*ibcx>ngx+nagx) then
+            write(*,*) 'ERROR: charge of atom outside box in x-direction!'
+            stop
+        endif
+        if(iatoy-nbgy*ibcy<1-nagy .or. iatoy+nbgy*ibcy>ngy+nagy) then
+            write(*,*) 'ERROR: charge of atom outside box in y-direction!'
+            stop
+        endif
+        if(iatoz-nbgz*ibcz<1-nagz .or. iatoz+nbgz*ibcz>ngz+nagz) then
+            write(*,*) 'ERROR: charge of atom outside box in z-direction!'
+            stop
+        endif
+        !construct the one-dimensional gaussians
+
+        width=gw(iat)
+        width_inv=1.d0/width
+        fac=2.d0/(width**5*sqrt(pi)**3)
+        width_inv_hgx=width_inv*hx
+        width_inv_hgy=width_inv*hy
+        width_inv_hgz=width_inv*hz
+
+        width_inv_xat=width_inv*xat
+        width_inv_yat=width_inv*yat
+        width_inv_zat=width_inv*zat
+        do iw=-nbgx,nbgx
+            wx(iw)=exp(-(width_inv_hgx*iw-width_inv_xat)**2)
+        enddo
+        do iw=-nbgy,nbgy
+            wy(iw)=exp(-(width_inv_hgy*iw-width_inv_yat)**2)
+        enddo
+        do iw=-nbgz,nbgz
+            wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
+        enddo
+        facqiat=fac !*qat(iat)
+        do iz=-nbgz,nbgz
+            rhoz=facqiat*wz(iz)
+            jz=iatoz+iz
+            do iy=-nbgy,nbgy
+                rhoyz=rhoz*wy(iy)
+                jy=iatoy+iy
+                do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
+                    jx=iatox+ix
+                    !write(*,'(5i5)') iat,iatox,ix,iatoy,iy
+                    ttx=p(1,iat)*(ix*hx-xat)
+                    tty=p(2,iat)*(iy*hy-yat)
+                    ttz=p(3,iat)*(iz*hz-zat)
+                    wa(jx,jy,jz)=wa(jx,jy,jz)+rhoyz*wx(ix)*(ttx+tty+ttz)
+                enddo
+            enddo
+        enddo
+    enddo
+    !---------------------------------------------------------------------------
+    if(reset) then
+        !if the input array of charge density does not contain any previous value
+        !wanted to be preserved.
+        rho = 0.d0
+    endif
+    call charge_back_to_cell(ngx,ngy,ngz,nagx,nagy,nagz,ibcx,wa,rho)
+    !do iz=1,ngz
+    !    do iy=1,ngy
+    !        do ix=1,ngx
+    !            write(61,'(3i4,es20.10)') ix,iy,iz,rho(ix,iy,iz)
+    !        enddo
+    !    enddo
+    !enddo
+    !stop
+    call f_free(wx)
+    call f_free(wy)
+    call f_free(wz)
+    call f_free(wa)
+    call f_free(mboundg)
+    call f_release_routine()
+end subroutine put_gto_p_ortho
+!*****************************************************************************************
 subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ngy,ngz,hgrid,rho)
     use mod_parini, only: typ_parini
     use dynamic_memory
