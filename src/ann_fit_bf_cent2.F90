@@ -26,17 +26,18 @@ subroutine get_basis_functions_cent2(parini)
     !real(8):: ehartree_scn_excl
     !real(8):: dpx, dpy, dpz
     !real(8):: time1, time2, time3, time4, time5, time6, time7, time8, time9
-    real(8):: tt0, tt1, tt2, tt3, tt4, ts1, ts2, tp1, tp2, cost
+    real(8):: tt0, tt1, tt2, tt3, tt4, tt5, tt6, tt7, ts1, ts2, tp1, tp2, cost
     real(8):: gausswidth(1), q_tmp(1), p_tmp(3), voxel
     real(8):: x, y, z !, r
-    real(8):: errmax, rmse, alpha
-    real(8):: gg1, gg2, gg3, gg4, gg5, gg6, alpha_gg
+    real(8):: errmax, rmse, alpha, ener
     real(8):: bc_s1, bc_s2, bc_p1, bc_p2
     real(8):: bcg_s1(2), bcg_s2(2), bcg_p1(2), bcg_p2(2), gradtot
     real(8), allocatable:: c_s(:)
     real(8), allocatable:: c_p(:)
     real(8), allocatable:: cgrad_s(:)
     real(8), allocatable:: cgrad_p(:)
+    real(8), allocatable:: gwc_s1(:)
+    real(8), allocatable:: gwc_s2(:)
     real(8), allocatable:: gw_s1(:)
     real(8), allocatable:: gw_s2(:)
     real(8), allocatable:: gw_p1(:)
@@ -60,6 +61,8 @@ subroutine get_basis_functions_cent2(parini)
     real(8), allocatable:: pot_iat_s(:,:,:,:)
     real(8), allocatable:: pot_iat_p(:,:,:,:)
     real(8), allocatable:: pot_ion(:,:,:)
+    real(8), allocatable:: qcore(:)
+    real(8), allocatable:: qcore_type(:)
     call f_routine(id='get_basis_functions_cent2')
     !pi=4.d0*atan(1.d0)
     call read_data_yaml(parini,'list_posinp_cent2.yaml',atoms_arr)
@@ -69,7 +72,7 @@ subroutine get_basis_functions_cent2(parini)
     enddo
     write(*,*) poisson_ref%xyz111(1),poisson_ref%xyz111(2),poisson_ref%xyz111(3)
 
-
+    alpha=parini%paropt_geopt%alphax
 
 
     !-------------------------------------------------------
@@ -87,12 +90,16 @@ subroutine get_basis_functions_cent2(parini)
     poisson%task_finit="alloc_rho"
     call init_hartree(parini,atoms,poisson,gausswidth)
 
+    allocate(qcore_type(parini%ntypat))
+    allocate(qcore(atoms%nat))
     allocate(c_s(atoms%nat))
     allocate(c_p(atoms%nat))
     allocate(cgrad_s(atoms%nat))
     allocate(cgrad_p(atoms%nat))
     allocate(gw_s1(parini%ntypat))
     allocate(gw_s2(parini%ntypat))
+    allocate(gwc_s1(parini%ntypat))
+    allocate(gwc_s2(parini%ntypat))
     allocate(gw_p1(parini%ntypat))
     allocate(gw_p2(parini%ntypat))
     allocate(gwgrad_s1(parini%ntypat))
@@ -111,8 +118,8 @@ subroutine get_basis_functions_cent2(parini)
     allocate(pot_s2(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(pot_p1(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(pot_p2(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-    allocate(pot_iat_s(poisson%ngpx,poisson%ngpy,poisson%ngpz,parini%ntypat))
-    allocate(pot_iat_p(poisson%ngpx,poisson%ngpy,poisson%ngpz,parini%ntypat))
+    allocate(pot_iat_s(poisson%ngpx,poisson%ngpy,poisson%ngpz,atoms%nat))
+    allocate(pot_iat_p(poisson%ngpx,poisson%ngpy,poisson%ngpz,atoms%nat))
     allocate(pot_ion(poisson%ngpx,poisson%ngpy,poisson%ngpz))
 
     do iat=1,atoms%nat
@@ -132,54 +139,62 @@ subroutine get_basis_functions_cent2(parini)
     !    poisson%hgrid,poisson%rho)
 
     open(unit=2134,file="gw.inp",status='old')
-    read(2134,*) gg1,gg2,gg3,alpha_gg
-    read(2134,*) gg4,gg5,gg6,alpha
+    do itypat=1,parini%ntypat
+        read(2134,*) tt1,tt2,tt3,tt4,tt5,tt6,tt7
+        qcore_type(itypat)=tt1
+        gwc_s1(itypat)=tt2
+        gwc_s2(itypat)=tt3
+        gw_s1(itypat)=tt4
+        gw_s2(itypat)=tt5
+        gw_p1(itypat)=tt6
+        gw_p2(itypat)=tt7
+    enddo
     close(2134)
+
+    !do iat=1,atoms%nat
+    !    if(trim(atoms%sat(iat))=='O') atoms%zat(iat)=4.d0
+    !enddo
+
     !gausswidth=0.5d0
+    do iat=1,atoms%nat
+        itypat=atoms%itypat(iat)
+        qcore(iat)=qcore_type(itypat)
+    enddo
     pot_ion=0.d0
     do iat=1,atoms%nat
     itypat=atoms%itypat(iat)
-!    if(trim(atoms%sat(iat))=='Mg') then
-!        q_tmp(1)=2.d0
-!    elseif(trim(atoms%sat(iat))=='O') then
-!        q_tmp(1)=6.d0
-!    else
-!        stop 'ERROR: unknown type in get_basis_functions_cent2'
-!    endif
-!    call cal_pot_gauss_s(parini,poisson,pot_ion,.false.,atoms%ratp(1,iat),gausswidth(1),q_tmp(1),vgrad_s1_t)
-    if(trim(atoms%sat(iat))=='O') then
-    gw_s1(itypat)=gg1 !1.193d0
-    gw_s2(itypat)=gg2 !0.613d0
-    bc_s1= gw_s1(itypat)**3/(gw_s1(itypat)**3-gw_s2(itypat)**3)
-    bc_s2=-gw_s2(itypat)**3/(gw_s1(itypat)**3-gw_s2(itypat)**3)
-    q_tmp(1)=gg3*bc_s1
-    call cal_pot_gauss_s(parini,poisson,pot_ion,.false.,atoms%ratp(1,iat),gw_s1(itypat),q_tmp(1),vgrad_s1_t)
-    q_tmp(1)=gg3*bc_s2
-    call cal_pot_gauss_s(parini,poisson,pot_ion,.false.,atoms%ratp(1,iat),gw_s2(itypat),q_tmp(1),vgrad_s1_t)
+    call cal_pot_gauss_s(parini,poisson,pot_ion,.false.,atoms%ratp(1,iat),gausswidth(1),atoms%zat(iat),vgrad_s1_t)
+    if(qcore(iat)<0.d0) then
+    bc_s1= gwc_s1(itypat)**3/(gwc_s1(itypat)**3-gwc_s2(itypat)**3)
+    bc_s2=-gwc_s2(itypat)**3/(gwc_s1(itypat)**3-gwc_s2(itypat)**3)
+    q_tmp(1)=qcore(iat)*bc_s1
+    call cal_pot_gauss_s(parini,poisson,pot_ion,.false.,atoms%ratp(1,iat),gwc_s1(itypat),q_tmp(1),vgrad_s1_t)
+    q_tmp(1)=qcore(iat)*bc_s2
+    call cal_pot_gauss_s(parini,poisson,pot_ion,.false.,atoms%ratp(1,iat),gwc_s2(itypat),q_tmp(1),vgrad_s1_t)
     endif
     enddo
 
-    do itypat=1,parini%ntypat
-        if(trim(parini%stypat(itypat))=='Mg') then
-            gw_s1(itypat)=2.598d0
-            gw_s2(itypat)=1.254d0
-            gw_p1(itypat)=2.719d0
-            gw_p2(itypat)=1.143d0
-            !2.683   1.092   3.012   1.117
-            !2.631   1.130   2.746   1.110
-            !2.598   1.254   2.719   1.143
-        elseif(trim(parini%stypat(itypat))=='O') then
-            gw_s1(itypat)=gg4
-            gw_s2(itypat)=gg5
-            gw_p1(itypat)=1.826d0
-            gw_p2(itypat)=0.982d0
-            !1.707   1.217   1.878   0.995
-            !1.552   1.418   1.834   0.984
-            !1.459   1.273   1.826   0.982
-        else
-            stop 'ERROR: unknown type in get_basis_functions_cent2'
-        endif
-    enddo
+!    do itypat=1,parini%ntypat
+!        if(trim(parini%stypat(itypat))=='Mg') then
+!            gw_s1(itypat)=2.464d0
+!            gw_s2(itypat)=1.344d0
+!            gw_p1(itypat)=1.771d0
+!            gw_p2(itypat)=1.450d0
+!            !2.683   1.092   3.012   1.117
+!            !2.631   1.130   2.746   1.110
+!            !2.598   1.254   2.719   1.143
+!        elseif(trim(parini%stypat(itypat))=='O') then
+!            gw_s1(itypat)=1.346d0
+!            gw_s2(itypat)=1.289d0
+!            gw_p1(itypat)=1.137d0
+!            gw_p2(itypat)=1.016d0
+!            !1.707   1.217   1.878   0.995
+!            !1.552   1.418   1.834   0.984
+!            !1.459   1.273   1.826   0.982
+!        else
+!            stop 'ERROR: unknown type in get_basis_functions_cent2'
+!        endif
+!    enddo
 
     !q_tmp=-2.d0*bc_s1
     !call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,1),q_tmp,gw_s1, &
@@ -248,20 +263,9 @@ subroutine get_basis_functions_cent2(parini)
 !    write(*,*) 'atoms%nat= ',atoms%nat
 !    write(*,*) 'parini%ntypat= ',parini%ntypat
 !    write(*,*) 'atoms%itypat= ',atoms%itypat
-    do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Mg') then
-        c_s(iat)=-2.d0+1.025d0
-        elseif(trim(atoms%sat(iat))=='O') then
-        c_s(iat)=gg6-1.025d0 !-4.d0
-        else
-            stop 'ERROR: unknown type in get_basis_functions_cent2'
-        endif
-        !c_s(iat)=gg6 !-4.d0
-        c_p(iat)=0.d0 !0.3634384d0
-    enddo
 !    stop 'MMMMMMMMMMMMMMMMMMMMMMM'
 
-    do istep=0,500
+    do istep=0,parini%paropt_geopt%nit
 
     poisson%pot=pot_ion
 
@@ -285,9 +289,6 @@ subroutine get_basis_functions_cent2(parini)
     call cal_pot_gauss_p(parini,poisson,pot_p1,.true.,atoms%ratp(1,iat),gw_p1(itypat),p_tmp(1),vgrad_p1_t)
     call cal_pot_gauss_p(parini,poisson,pot_p2,.true.,atoms%ratp(1,iat),gw_p2(itypat),p_tmp(1),vgrad_p2_t)
 
-    poisson%pot=poisson%pot+ &
-        c_s(iat)*(bc_s1*pot_s1+bc_s2*pot_s2)+ &
-        c_p(iat)*(bc_p1*pot_p1+bc_p2*pot_p2)
 
     bcg_s1(1)=-3.d0*gw_s1(itypat)**2*gw_s2(itypat)**3/(gw_s1(itypat)**3-gw_s2(itypat)**3)**2
     bcg_s1(2)= 3.d0*gw_s1(itypat)**3*gw_s2(itypat)**2/(gw_s1(itypat)**3-gw_s2(itypat)**3)**2
@@ -304,17 +305,28 @@ subroutine get_basis_functions_cent2(parini)
         tt2=bcg_s1(2)*pot_s1(ix,iy,iz)+bcg_s2(2)*pot_s2(ix,iy,iz)+bc_s2*vgrad_s2_t(ix,iy,iz)
         tt3=bcg_p1(1)*pot_p1(ix,iy,iz)+bcg_p2(1)*pot_p2(ix,iy,iz)+bc_p1*vgrad_p1_t(ix,iy,iz)
         tt4=bcg_p1(2)*pot_p1(ix,iy,iz)+bcg_p2(2)*pot_p2(ix,iy,iz)+bc_p2*vgrad_p2_t(ix,iy,iz)
-        vgrad_s1(ix,iy,iz,itypat)=vgrad_s1(ix,iy,iz,itypat)+c_s(iat)*tt1
-        vgrad_s2(ix,iy,iz,itypat)=vgrad_s2(ix,iy,iz,itypat)+c_s(iat)*tt2
-        vgrad_p1(ix,iy,iz,itypat)=vgrad_p1(ix,iy,iz,itypat)+c_p(iat)*tt3
-        vgrad_p2(ix,iy,iz,itypat)=vgrad_p2(ix,iy,iz,itypat)+c_p(iat)*tt4
+        vgrad_s1(ix,iy,iz,iat)=tt1
+        vgrad_s2(ix,iy,iz,iat)=tt2
+        vgrad_p1(ix,iy,iz,iat)=tt3
+        vgrad_p2(ix,iy,iz,iat)=tt4
         pot_iat_s(ix,iy,iz,iat)=bc_s1*pot_s1(ix,iy,iz)+bc_s2*pot_s2(ix,iy,iz)
         pot_iat_p(ix,iy,iz,iat)=bc_p1*pot_p1(ix,iy,iz)+bc_p2*pot_p2(ix,iy,iz)
     enddo
     enddo
     enddo
     enddo !end of loop over iat
+    call get_linearcoeff(poisson,poisson_ref,atoms,pot_iat_s,pot_iat_p,qcore,c_s,c_p)
     !----------------------------------------------------------
+    do iat=1,atoms%nat
+        do iz=1,poisson%ngpz
+        do iy=1,poisson%ngpy
+        do ix=1,poisson%ngpx
+            poisson%pot(ix,iy,iz)=poisson%pot(ix,iy,iz)+c_s(iat)*pot_iat_s(ix,iy,iz,iat)+ &
+                                    c_p(iat)*pot_iat_p(ix,iy,iz,iat)
+        enddo
+        enddo
+        enddo
+    enddo
     cost=0.d0
     do iz=1,poisson%ngpz
     do iy=1,poisson%ngpy
@@ -325,7 +337,13 @@ subroutine get_basis_functions_cent2(parini)
     enddo
     enddo
     cost=cost*voxel
-    do itypat=1,parini%ntypat
+    gwgrad_s1=0.d0
+    gwgrad_s2=0.d0
+    gwgrad_p1=0.d0
+    gwgrad_p2=0.d0
+    !do itypat=1,parini%ntypat
+    do iat=1,atoms%nat
+        itypat=atoms%itypat(iat)
         ts1=0.d0
         ts2=0.d0
         tp1=0.d0
@@ -334,17 +352,17 @@ subroutine get_basis_functions_cent2(parini)
         do iy=1,poisson%ngpy
         do ix=1,poisson%ngpx
             tt0=poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz)
-            ts1=ts1+vgrad_s1(ix,iy,iz,itypat)*tt0
-            ts2=ts2+vgrad_s2(ix,iy,iz,itypat)*tt0
-            tp1=tp1+vgrad_p1(ix,iy,iz,itypat)*tt0
-            tp2=tp2+vgrad_p2(ix,iy,iz,itypat)*tt0
+            ts1=ts1+vgrad_s1(ix,iy,iz,iat)*c_s(iat)*tt0
+            ts2=ts2+vgrad_s2(ix,iy,iz,iat)*c_s(iat)*tt0
+            tp1=tp1+vgrad_p1(ix,iy,iz,iat)*c_p(iat)*tt0
+            tp2=tp2+vgrad_p2(ix,iy,iz,iat)*c_p(iat)*tt0
         enddo
         enddo
         enddo
-        gwgrad_s1(itypat)=2.d0*ts1*voxel
-        gwgrad_s2(itypat)=2.d0*ts2*voxel
-        gwgrad_p1(itypat)=2.d0*tp1*voxel
-        gwgrad_p2(itypat)=2.d0*tp2*voxel
+        gwgrad_s1(itypat)=gwgrad_s1(itypat)+2.d0*ts1*voxel
+        gwgrad_s2(itypat)=gwgrad_s2(itypat)+2.d0*ts2*voxel
+        gwgrad_p1(itypat)=gwgrad_p1(itypat)+2.d0*tp1*voxel
+        gwgrad_p2(itypat)=gwgrad_p2(itypat)+2.d0*tp2*voxel
     enddo
     do iat=1,atoms%nat
         tt1=0.d0
@@ -369,16 +387,26 @@ subroutine get_basis_functions_cent2(parini)
     do iat=1,atoms%nat
         cgrad_s(iat)=cgrad_s(iat)-gradtot
     enddo
-    write(*,'(a,i6,es14.5,6es10.1,7f8.3,es10.1)') 'cost ',istep,cost,gwgrad_s1(1),gwgrad_s2(1),gwgrad_p1(1),gwgrad_p2(1),cgrad_s(1),cgrad_p(1),gw_s1(1),gw_s2(1),gw_p1(1),gw_p2(1),c_s(1),c_s(2),sum(c_p(:)),alpha
+    !write(*,'(a,i6,es14.5,10es10.1)') 'cost ',istep,cost,gwgrad_s1(1),gwgrad_s2(1),gwgrad_p1(1),gwgrad_p2(1),gwgrad_s1(2),gwgrad_s2(2),gwgrad_p1(2),gwgrad_p2(2),maxval(abs(cgrad_s(1:2))),maxval(abs(cgrad_p(1:2)))
+    !write(*,'(a,i6,8f8.3)') 'gw ',istep,gw_s1(1),gw_s2(1),gw_p1(1),gw_p2(1),gw_s1(2),gw_s2(2),gw_p1(2),gw_p2(2)
+    !write(*,'(a,i6,4f8.3)') 'qp ',istep,c_s(1),c_s(2),c_p(1),c_p(2)
+    
+    !write(*,'(a,i6,es14.5,6es10.1,7f8.3,es10.1)') 'cost ',istep,cost,gwgrad_s1(1),gwgrad_s2(1),gwgrad_p1(1),gwgrad_p2(1),cgrad_s(1),cgrad_p(1),gw_s1(1),gw_s2(1),gw_p1(1),gw_p2(1),c_s(1),c_s(2),sum(c_p(:)),alpha
+
+    !write(*,'(a,i6,es14.5,6es10.1,6f8.3,es10.1)') 'cost ',istep,cost,gwgrad_s1(1),gwgrad_s2(1),gwgrad_p1(1),gwgrad_p2(1),cgrad_s(1),cgrad_p(1),gw_s1(1),gw_s2(1),gw_p1(1),gw_p2(1),c_s(1),sum(c_p(:)),alpha
+
+    write(*,'(a,i6,es14.5,10es10.1)') 'cost ',istep,cost,gwgrad_s1(1),gwgrad_s2(1),gwgrad_p1(1),gwgrad_p2(1),gwgrad_s1(2),gwgrad_s2(2),gwgrad_p1(2),gwgrad_p2(2),maxval(abs(cgrad_s(1:6))),maxval(abs(cgrad_p(1:6)))
+    write(*,'(a,i6,8f8.3)') 'gw ',istep,gw_s1(1),gw_s2(1),gw_p1(1),gw_p2(1),gw_s1(2),gw_s2(2),gw_p1(2),gw_p2(2)
+    write(*,'(a,i6,7f8.3)') 'qp ',istep,c_s(1),c_s(2),c_s(3),c_s(4),c_s(5),c_s(6),sum(c_p(:))
 
     !alpha=4.d-4
     !if(abs(gwgrad_s1(1))<1.d-1 .and. abs(gwgrad_s2(1))<1.d-1) alpha=4.d-2
     gw_s1=gw_s1- 1.d0*alpha*gwgrad_s1
     gw_s2=gw_s2- 1.d0*alpha*gwgrad_s2
-    gw_p1=gw_p1-30.d0*alpha*gwgrad_p1
-    gw_p2=gw_p2-20.d0*alpha*gwgrad_p2
-    c_s=c_s-1.d-1*cgrad_s
-    c_p=c_p-1.d-1*cgrad_p
+    gw_p1=gw_p1-10.d0*alpha*gwgrad_p1
+    gw_p2=gw_p2-10.d0*alpha*gwgrad_p2
+    !c_s=c_s-1.d-1*cgrad_s
+    !c_p=c_p-1.d-1*cgrad_p
     !write(*,*) 'qtot= ',sum(c_s)
 
     !bc_s1= gw_s1**3/(gw_s1**3-gw_s2**3)
@@ -403,8 +431,16 @@ subroutine get_basis_functions_cent2(parini)
     rmse=sqrt(rmse/real(poisson%ngpx*poisson%ngpy*poisson%ngpz,kind=8))
     write(*,'(a,2es14.5)') 'errmax,rmse= ',errmax,rmse
     open(unit=2134,file="gw.out",status='replace')
-    write(2134,'(4f15.10)') gg1,gg2,gg3,alpha_gg
-    write(2134,'(4f15.10)') gw_s1(1),gw_s2(1),gg6,alpha
+    do itypat=1,parini%ntypat
+        tt1=qcore_type(itypat)
+        tt2=gwc_s1(itypat)
+        tt3=gwc_s2(itypat)
+        tt4=gw_s1(itypat)
+        tt5=gw_s2(itypat)
+        tt6=gw_p1(itypat)
+        tt7=gw_p2(itypat)
+        write(2134,'(7f10.6)') tt1,tt2,tt3,tt4,tt5,tt6,tt7
+    enddo
     close(2134)
     !do iz=1,poisson%ngpz
     do iz=poisson%ngpz/2,poisson%ngpz/2
@@ -418,6 +454,62 @@ subroutine get_basis_functions_cent2(parini)
     enddo
     enddo
     enddo
+    !----------------------------------------------------------
+    poisson%rho=0.d0
+    do iat=1,atoms%nat
+        itypat=atoms%itypat(iat)
+    call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),atoms%zat(iat),gausswidth(1), &
+        6.d0*gausswidth(1),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+        poisson%hgrid,poisson%rho)
+    if(qcore(iat)<0.d0) then
+    bc_s1= gwc_s1(itypat)**3/(gwc_s1(itypat)**3-gwc_s2(itypat)**3)
+    bc_s2=-gwc_s2(itypat)**3/(gwc_s1(itypat)**3-gwc_s2(itypat)**3)
+    q_tmp(1)=qcore(iat)*bc_s1
+    call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,gwc_s1(itypat), &
+        6.d0*gwc_s1(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+        poisson%hgrid,poisson%rho)
+    q_tmp(1)=qcore(iat)*bc_s2
+    call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,gwc_s2(itypat), &
+        6.d0*gwc_s2(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+        poisson%hgrid,poisson%rho)
+    endif
+    bc_s1= gw_s1(itypat)**3/(gw_s1(itypat)**3-gw_s2(itypat)**3)
+    bc_s2=-gw_s2(itypat)**3/(gw_s1(itypat)**3-gw_s2(itypat)**3)
+    q_tmp(1)=c_s(iat)*bc_s1
+    call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,gw_s1(itypat), &
+        6.d0*gw_s1(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+        poisson%hgrid,poisson%rho)
+    q_tmp(1)=c_s(iat)*bc_s2
+    call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,gw_s2(itypat), &
+        6.d0*gw_s2(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
+        poisson%hgrid,poisson%rho)
+    bc_p1= gw_p1(itypat)**5/(gw_p1(itypat)**5-gw_p2(itypat)**5)
+    bc_p2=-gw_p2(itypat)**5/(gw_p1(itypat)**5-gw_p2(itypat)**5)
+    p_tmp=0.d0
+    p_tmp(1)=c_p(iat)*bc_p1
+    call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),p_tmp,gw_p1(itypat), &
+        6.d0*gw_p1(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+    p_tmp(1)=c_p(iat)*bc_p2
+    call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),p_tmp,gw_p2(itypat), &
+        6.d0*gw_p2(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+    enddo
+    !poisson%rho=poisson%rho-poisson_ref%rho
+    !call cube_write('diffrho.cube',atoms,poisson,'rho')
+    !call get_hartree(parini,poisson,atoms,gausswidth,ener)
+    ener=0.d0
+    do iz=1,poisson%ngpz
+    do iy=1,poisson%ngpy
+    do ix=1,poisson%ngpx
+        ener=ener+poisson%rho(ix,iy,iz)*poisson%pot(ix,iy,iz)
+    enddo
+    enddo
+    enddo
+    ener=ener*0.5d0*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
+    !if(parini%mpi_env%iproc==0) then
+    write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ener,poisson%screening_factor
+    !endif
+    !----------------------------------------------------------
+
 
     do iconf=1,atoms_arr%nconf
         call atom_deallocate_old(atoms_arr%atoms(iconf))
@@ -428,6 +520,112 @@ subroutine get_basis_functions_cent2(parini)
 
     call f_release_routine()
 end subroutine get_basis_functions_cent2
+!*****************************************************************************************
+subroutine get_linearcoeff(poisson,poisson_ref,atoms,pot_iat_s,pot_iat_p,qcore,c_s,c_p)
+    use mod_electrostatics, only: typ_poisson
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_poisson), intent(in):: poisson, poisson_ref
+    type(typ_atoms), intent(in):: atoms
+    real(8), intent(in):: pot_iat_s(poisson_ref%ngpx,poisson_ref%ngpy,poisson_ref%ngpz,atoms%nat)
+    real(8), intent(in):: pot_iat_p(poisson_ref%ngpx,poisson_ref%ngpy,poisson_ref%ngpz,atoms%nat)
+    real(8), intent(in):: qcore(atoms%nat)
+    real(8), intent(out):: c_s(atoms%nat), c_p(atoms%nat)
+    !local variables
+    real(8):: voxel, dpm(3)
+    real(8):: tt1, tt2, tt3, tt4
+    integer:: ix, iy, iz, iat, jat, info, nbf, nc
+    integer:: ibf, lwork
+    real(8), allocatable:: secder(:,:), rhs(:)
+    real(8), allocatable:: secder_t(:,:), work(:), eval(:)
+    integer, allocatable:: ipiv(:)
+    nbf=2*atoms%nat
+    nc=1
+    allocate(secder(nbf+nc,nbf+nc),source=0.d0)
+    allocate(rhs(nbf+nc),source=0.d0)
+    voxel=poisson_ref%hgrid(1,1)*poisson_ref%hgrid(2,2)*poisson_ref%hgrid(3,3)
+    do iat=1,atoms%nat
+        do jat=iat,atoms%nat
+            tt1=0.d0
+            tt2=0.d0
+            tt3=0.d0
+            tt4=0.d0
+            do iz=1,poisson_ref%ngpz
+            do iy=1,poisson_ref%ngpy
+            do ix=1,poisson_ref%ngpx
+                tt1=tt1+pot_iat_s(ix,iy,iz,iat)*pot_iat_s(ix,iy,iz,jat)
+                tt2=tt2+pot_iat_s(ix,iy,iz,iat)*pot_iat_p(ix,iy,iz,jat)
+                tt3=tt3+pot_iat_p(ix,iy,iz,iat)*pot_iat_s(ix,iy,iz,jat)
+                tt4=tt4+pot_iat_p(ix,iy,iz,iat)*pot_iat_p(ix,iy,iz,jat)
+            enddo
+            enddo
+            enddo
+            secder(iat+0        ,jat+0        )=tt1*voxel
+            secder(iat+0        ,jat+atoms%nat)=tt2*voxel
+            secder(iat+atoms%nat,jat+0        )=tt3*voxel
+            secder(iat+atoms%nat,jat+atoms%nat)=tt4*voxel
+            secder(jat+0        ,iat+0        )=tt1*voxel
+            secder(jat+atoms%nat,iat+0        )=tt2*voxel
+            secder(jat+0        ,iat+atoms%nat)=tt3*voxel
+            secder(jat+atoms%nat,iat+atoms%nat)=tt4*voxel
+        enddo
+    enddo
+    do iat=1,atoms%nat
+        write(*,'(a,12es14.5)') 'SECDER ',secder(iat,1:12)
+    enddo
+    do iat=1,atoms%nat
+        write(*,'(a,12es14.5)') 'SECDER ',secder(atoms%nat+iat,1:12)
+    enddo
+    !-----------------------------------------------------------------
+    !lwork=max(nbf**2,1000)
+    !allocate(secder_t(nbf,nbf))
+    !allocate(eval(nbf),work(lwork))
+    !secder_t(1:nbf,1:nbf)=secder(1:nbf,1:nbf)
+    !call DSYEV('V','U',nbf,secder_t,nbf,eval,work,lwork,info)
+    !do ibf=1,nbf
+    !    write(*,'(a,i6,es14.5)') 'EVAL ',ibf,eval(ibf)
+    !enddo
+    !do ibf=1,nbf
+    !    write(*,'(a,i6,4es14.5)') 'EVEC ',ibf,secder_t(1:nbf,ibf)
+    !enddo
+    !-----------------------------------------------------------------
+    do iat=1,atoms%nat
+       tt1=0.d0
+       tt2=0.d0
+       do iz=1,poisson_ref%ngpz
+       do iy=1,poisson_ref%ngpy
+       do ix=1,poisson_ref%ngpx
+           tt1=tt1+pot_iat_s(ix,iy,iz,iat)*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
+           tt2=tt2+pot_iat_p(ix,iy,iz,iat)*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
+       enddo
+       enddo
+       enddo
+       rhs(iat+0        )=-tt1*voxel
+       rhs(iat+atoms%nat)=-tt2*voxel
+    enddo
+    secder(nbf+1      ,nbf+1      )=0.d0
+    !secder(nbf+2      ,nbf+2      )=0.d0
+    do iat=1,atoms%nat
+        secder(iat          ,nbf+1        )=1.d0
+        secder(nbf+1        ,iat          )=1.d0
+        !secder(iat          ,nbf+2        )=atoms%ratp(1,iat)
+        !secder(nbf+2        ,iat          )=atoms%ratp(1,iat)
+        !secder(atoms%nat+iat,nbf+2        )=1.d0
+        !secder(nbf+2        ,atoms%nat+iat)=1.d0
+    enddo
+    rhs(nbf+1)=-sum(atoms%zat)-sum(qcore) !-sum(atoms%zat)
+    dpm(1)=0.d0 ; dpm(2)=0.d0 ; dpm(3)=0.d0
+    !rhs(nbf+2)=-2.786975d0-(2.d0*atoms%ratp(1,1)+4.d0*atoms%ratp(1,2))
+    allocate(ipiv(nbf+nc))
+    call DGETRF(nbf+nc,nbf+nc,secder,nbf+nc,ipiv,info)
+    call DGETRS('N',nbf+nc,1,secder,nbf+nc,ipiv,rhs,nbf+nc,info)
+    do iat=1,atoms%nat
+        c_s(iat)=rhs(iat+0        )
+        c_p(iat)=rhs(iat+atoms%nat)
+        write(*,*) c_s(iat),c_p(iat)
+    enddo
+    deallocate(secder,rhs,ipiv)
+end subroutine get_linearcoeff
 !*****************************************************************************************
 subroutine cal_pot_gauss_p(parini,poisson,pot,reset,xyz,gw,p,vgrad)
     use mod_parini, only: typ_parini
@@ -561,6 +759,7 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     real(8):: pi, sf, ss0, ss1, ss2, ss3, ss4
     real(8):: x, y, z, r, tt1, uu1, ww1, qq1, vv1, sft
     real(8):: tg0, tg1, tg2, tg3, tg4
+    real(8):: dd0, dd1, dd2, dd3, dd4
     integer:: ix, iy, iz
     pi=4.d0*atan(1.d0)
     if(reset) then
@@ -586,44 +785,74 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
             tg3=-2.d0*(1.d0+3.d0*(3.d0*sf)**2*gw**2)/(sqrt(pi)*(gw*(1.d0+(3.d0*sf)**2*gw**2))**2)
             tg4=-2.d0*(1.d0+3.d0*(4.d0*sf)**2*gw**2)/(sqrt(pi)*(gw*(1.d0+(4.d0*sf)**2*gw**2))**2)
         else
+            dd0=(r/gw)**2
+            if(dd0>50.d0) then
+                dd0=0.d0
+            else
+                dd0=exp(-dd0)
+            endif
+            dd1=(1.d0*sf*r)**2/(1.d0+(1.d0*sf)**2*gw**2)
+            if(dd1>50.d0) then
+                dd1=0.d0
+            else
+                dd1=exp(-dd1)
+            endif
+            dd2=(2.d0*sf*r)**2/(1.d0+(2.d0*sf)**2*gw**2)
+            if(dd2>50.d0) then
+                dd2=0.d0
+            else
+                dd2=exp(-dd2)
+            endif
+            dd3=(3.d0*sf*r)**2/(1.d0+(3.d0*sf)**2*gw**2)
+            if(dd3>50.d0) then
+                dd3=0.d0
+            else
+                dd3=exp(-dd3)
+            endif
+            dd4=(4.d0*sf*r)**2/(1.d0+(4.d0*sf)**2*gw**2)
+            if(dd4>50.d0) then
+                dd4=0.d0
+            else
+                dd4=exp(-dd4)
+            endif
             ss0=erf(r/gw)/r
             tt1=1.d0+sf**2*gw**2
-            ss1=erf(r/(gw*sqrt(tt1)))*exp(-(sf*r)**2/tt1)/(r*sqrt(tt1))
+            ss1=erf(r/(gw*sqrt(tt1)))*dd1/(r*sqrt(tt1))
             tt1=1.d0+(2.d0*sf)**2*gw**2
-            ss2=erf(r/(gw*sqrt(tt1)))*exp(-(2.d0*sf*r)**2/tt1)/(r*sqrt(tt1))
+            ss2=erf(r/(gw*sqrt(tt1)))*dd2/(r*sqrt(tt1))
             tt1=1.d0+(3.d0*sf)**2*gw**2
-            ss3=erf(r/(gw*sqrt(tt1)))*exp(-(3.d0*sf*r)**2/tt1)/(r*sqrt(tt1))
+            ss3=erf(r/(gw*sqrt(tt1)))*dd3/(r*sqrt(tt1))
             tt1=1.d0+(4.d0*sf)**2*gw**2
-            ss4=erf(r/(gw*sqrt(tt1)))*exp(-(4.d0*sf*r)**2/tt1)/(r*sqrt(tt1))
-            tg0=-2.d0*exp(-(r/gw)**2)/(sqrt(pi)*gw**2)
+            ss4=erf(r/(gw*sqrt(tt1)))*dd4/(r*sqrt(tt1))
+            tg0=-2.d0*dd0/(sqrt(pi)*gw**2)
             sft=sf
             tt1=1.d0+sft**2*gw**2
             qq1=1.d0+2.d0*sft**2*gw**2
             ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
             uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            vv1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw**3*sft**2
-            tg1=(-2.d0*r*sqrt(tt1)*qq1*exp(-(r/gw)**2)-vv1*ww1)/uu1
+            vv1=dd1*sqrt(pi)*gw**3*sft**2
+            tg1=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
             sft=2.d0*sf
             tt1=1.d0+sft**2*gw**2
             qq1=1.d0+2.d0*sft**2*gw**2
             ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
             uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            vv1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw**3*sft**2
-            tg2=(-2.d0*r*sqrt(tt1)*qq1*exp(-(r/gw)**2)-vv1*ww1)/uu1
+            vv1=dd2*sqrt(pi)*gw**3*sft**2
+            tg2=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
             sft=3.d0*sf
             tt1=1.d0+sft**2*gw**2
             qq1=1.d0+2.d0*sft**2*gw**2
             ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
             uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            vv1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw**3*sft**2
-            tg3=(-2.d0*r*sqrt(tt1)*qq1*exp(-(r/gw)**2)-vv1*ww1)/uu1
+            vv1=dd3*sqrt(pi)*gw**3*sft**2
+            tg3=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
             sft=4.d0*sf
             tt1=1.d0+sft**2*gw**2
             qq1=1.d0+2.d0*sft**2*gw**2
             ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
             uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            vv1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw**3*sft**2
-            tg4=(-2.d0*r*sqrt(tt1)*qq1*exp(-(r/gw)**2)-vv1*ww1)/uu1
+            vv1=dd4*sqrt(pi)*gw**3*sft**2
+            tg4=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
         endif
         pot(ix,iy,iz)=pot(ix,iy,iz)+q*(ss0-4.d0*ss1+6.d0*ss2-4.d0*ss3+ss4)
         vgrad(ix,iy,iz)=q*(tg0-4.d0*tg1+6.d0*tg2-4.d0*tg3+tg4)
@@ -803,8 +1032,8 @@ subroutine get_poisson_ref(parini,poisson,atoms)
     do igpz=1,poisson%ngpz
         do igpy=1,poisson%ngpy
             do igpx=1,poisson%ngpx
-                !poisson%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)-poisson%rho(igpx,igpy,igpz)
-                poisson%rho(igpx,igpy,igpz)=-poisson%rho(igpx,igpy,igpz)
+                poisson%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)-poisson%rho(igpx,igpy,igpz)
+                !poisson%rho(igpx,igpy,igpz)=-poisson%rho(igpx,igpy,igpz)
                 qtot=qtot+poisson%rho(igpx,igpy,igpz)
             enddo
         enddo
@@ -816,9 +1045,9 @@ subroutine get_poisson_ref(parini,poisson,atoms)
     !-------------------------------------------------------
     call update_ratp(atoms)
     call get_hartree(parini,poisson,atoms,gausswidth,ehartree_scn_excl)
-    !if(parini%mpi_env%iproc==0) then
-    !write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
-    !endif
+    if(parini%mpi_env%iproc==0) then
+    write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
+    endif
     !atoms%fat=0.d0
     !call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
     !    poisson_ion%q,gausswidth,6.d0,poisson_ion%xyz111, &
