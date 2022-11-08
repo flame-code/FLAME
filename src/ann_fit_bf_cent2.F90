@@ -17,26 +17,53 @@ module mod_fit_bf_cent2
         real(8), allocatable:: gwgrad_p1(:)
         real(8), allocatable:: gwgrad_p2(:)
         real(8), allocatable:: qcore_type(:)
+        real(8), allocatable:: bc_s1(:)
+        real(8), allocatable:: bc_s2(:)
+        real(8), allocatable:: bc_p1(:)
+        real(8), allocatable:: bc_p2(:)
+        real(8), allocatable:: bcg_s1(:,:)
+        real(8), allocatable:: bcg_s2(:,:)
+        real(8), allocatable:: bcg_p1(:,:)
+        real(8), allocatable:: bcg_p2(:,:)
         contains
         procedure, private, pass(self):: init_fit_bf
         procedure, private, pass(self):: fini_fit_bf
         !procedure, private, pass(self):: set_param
+        procedure, private, pass(self):: set_bc_bcg
         procedure, private, pass(self):: report_fit_bf
     end type typ_fitpar
     type typ_bf
         private
         integer:: nbf
+        real(8):: zeroder
         !real(8), allocatable:: 
         integer, allocatable:: iat_list(:)
+        real(8), allocatable:: wa(:,:,:)
+        real(8), allocatable:: vgrad_1(:,:,:)
+        real(8), allocatable:: vgrad_2(:,:,:)
+        real(8), allocatable:: pot_1(:,:,:)
+        real(8), allocatable:: pot_2(:,:,:)
         real(8), allocatable:: pot_s1(:,:,:)
         real(8), allocatable:: pot_s2(:,:,:)
         real(8), allocatable:: pot_p1(:,:,:)
         real(8), allocatable:: pot_p2(:,:,:)
+        real(8), allocatable:: subsecder_grad(:,:,:,:)
+        real(8), allocatable:: subfirstder_grad(:,:)
+        real(8), allocatable:: subsecder(:,:,:,:)
+        real(8), allocatable:: subfirstder(:,:)
+        real(8), allocatable:: secder(:,:)
+        real(8), allocatable:: firstder(:)
+        real(8), allocatable:: csp(:)
+        real(8), allocatable:: bc_1(:)
+        real(8), allocatable:: bc_2(:)
+        real(8), allocatable:: bcg_1(:,:)
+        real(8), allocatable:: bcg_2(:,:)
         character(1), allocatable:: bt(:)
         contains
         procedure, private, pass(self):: init_bf
         procedure, private, pass(self):: fini_bf
         procedure, private, pass(self):: set_bt
+        procedure, private, pass(self):: set_bf_bc_bcg
         procedure, private, pass(self):: get_pot_iat
         !procedure, private, pass(self):: get_linearcoeff
     end type typ_bf
@@ -50,10 +77,26 @@ subroutine init_bf(self,nat,poisson)
     type(typ_poisson), intent(in):: poisson
     !local variables
     self%nbf=nat*2
+    allocate(self%wa(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    allocate(self%vgrad_1(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    allocate(self%vgrad_2(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    allocate(self%pot_1(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    allocate(self%pot_2(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(self%pot_s1(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(self%pot_s2(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(self%pot_p1(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(self%pot_p2(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    allocate(self%subsecder_grad(2,2,self%nbf,self%nbf))
+    allocate(self%subfirstder_grad(2,self%nbf))
+    allocate(self%subsecder(2,2,self%nbf,self%nbf))
+    allocate(self%subfirstder(2,self%nbf))
+    allocate(self%secder(self%nbf,self%nbf))
+    allocate(self%firstder(self%nbf))
+    allocate(self%csp(self%nbf))
+    allocate(self%bc_1(self%nbf))
+    allocate(self%bc_2(self%nbf))
+    allocate(self%bcg_1(2,self%nbf))
+    allocate(self%bcg_2(2,self%nbf))
     allocate(self%bt(self%nbf))
     allocate(self%iat_list(self%nbf))
     call self%set_bt()
@@ -64,10 +107,26 @@ subroutine fini_bf(self)
     class(typ_bf), intent(inout):: self
     !integer, intent(in):: nat
     !local variables
+    deallocate(self%wa)
+    deallocate(self%vgrad_1)
+    deallocate(self%vgrad_2)
+    deallocate(self%pot_1)
+    deallocate(self%pot_2)
     deallocate(self%pot_s1)
     deallocate(self%pot_s2)
     deallocate(self%pot_p1)
     deallocate(self%pot_p2)
+    deallocate(self%subsecder_grad)
+    deallocate(self%subfirstder_grad)
+    deallocate(self%subsecder)
+    deallocate(self%subfirstder)
+    deallocate(self%secder)
+    deallocate(self%firstder)
+    deallocate(self%csp)
+    deallocate(self%bc_1)
+    deallocate(self%bc_2)
+    deallocate(self%bcg_1)
+    deallocate(self%bcg_2)
     deallocate(self%bt)
     deallocate(self%iat_list)
 end subroutine fini_bf
@@ -90,7 +149,38 @@ subroutine set_bt(self)
     enddo
 end subroutine set_bt
 !*****************************************************************************************
-subroutine get_pot_iat(self,parini,poisson,atoms,fitpar,ibf,wa1)
+subroutine set_bf_bc_bcg(self,atoms,fitpar)
+    use mod_atoms, only: typ_atoms
+    implicit none
+    class(typ_bf), intent(inout):: self
+    type(typ_atoms), intent(in):: atoms
+    type(typ_fitpar), intent(in):: fitpar
+    !local variables
+    integer:: ibf, iat, itypat
+    do ibf=1,self%nbf
+        iat=self%iat_list(ibf)
+        itypat=atoms%itypat(iat)
+        if(self%bt(ibf)=='s') then
+            self%bc_1(ibf)=fitpar%bc_s1(itypat)
+            self%bc_2(ibf)=fitpar%bc_s2(itypat)
+            self%bcg_1(1,ibf)=fitpar%bcg_s1(1,itypat)
+            self%bcg_1(2,ibf)=fitpar%bcg_s1(2,itypat)
+            self%bcg_2(1,ibf)=fitpar%bcg_s2(1,itypat)
+            self%bcg_2(2,ibf)=fitpar%bcg_s2(2,itypat)
+        elseif(self%bt(ibf)=='p') then
+            self%bc_1(ibf)=fitpar%bc_p1(itypat)
+            self%bc_2(ibf)=fitpar%bc_p2(itypat)
+            self%bcg_1(1,ibf)=fitpar%bcg_p1(1,itypat)
+            self%bcg_1(2,ibf)=fitpar%bcg_p1(2,itypat)
+            self%bcg_2(1,ibf)=fitpar%bcg_p2(1,itypat)
+            self%bcg_2(2,ibf)=fitpar%bcg_p2(2,itypat)
+        else
+            stop 'ERROR: unknown bt in set_bf_bc_bcg'
+        endif
+    enddo
+end subroutine set_bf_bc_bcg
+!*****************************************************************************************
+subroutine get_pot_iat(self,parini,poisson,atoms,fitpar,ibf)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
@@ -101,31 +191,28 @@ subroutine get_pot_iat(self,parini,poisson,atoms,fitpar,ibf,wa1)
     type(typ_atoms), intent(in):: atoms
     type(typ_fitpar), intent(in):: fitpar
     integer, intent(in):: ibf
-    real(8), intent(out):: wa1(poisson%ngpx,poisson%ngpy,poisson%ngpz)
     !local variables
     integer:: iat, itypat
-    real(8):: bc_s1, bc_s2, bc_p1, bc_p2
     real(8):: q_tmp(1), p_tmp(3)
     iat=self%iat_list(ibf)
     itypat=atoms%itypat(iat)
     if(self%bt(ibf)=='s') then
-        bc_s1= fitpar%gw_s1(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
-        bc_s2=-fitpar%gw_s2(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
         q_tmp(1)=1.d0
-        call cal_pot_gauss_s(parini,poisson,self%pot_s1,.true.,atoms%ratp(1,iat),fitpar%gw_s1(itypat),q_tmp(1),wa1)
-        call cal_pot_gauss_s(parini,poisson,self%pot_s2,.true.,atoms%ratp(1,iat),fitpar%gw_s2(itypat),q_tmp(1),wa1)
-        wa1=bc_s1*self%pot_s1+bc_s2*self%pot_s2
+        call cal_pot_gauss_s(parini,poisson,self%pot_1,.true.,atoms%ratp(1,iat),fitpar%gw_s1(itypat),q_tmp(1),self%vgrad_1)
+        call cal_pot_gauss_s(parini,poisson,self%pot_2,.true.,atoms%ratp(1,iat),fitpar%gw_s2(itypat),q_tmp(1),self%vgrad_2)
+        self%pot_s1=self%pot_1
+        self%pot_s2=self%pot_2
     elseif(self%bt(ibf)=='p') then
-        bc_p1= fitpar%gw_p1(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
-        bc_p2=-fitpar%gw_p2(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
         p_tmp=0.d0
         p_tmp(1)=1.d0
-        call cal_pot_gauss_p(parini,poisson,self%pot_p1,.true.,atoms%ratp(1,iat),fitpar%gw_p1(itypat),p_tmp(1),wa1)
-        call cal_pot_gauss_p(parini,poisson,self%pot_p2,.true.,atoms%ratp(1,iat),fitpar%gw_p2(itypat),p_tmp(1),wa1)
-        wa1=bc_p1*self%pot_p1+bc_p2*self%pot_p2
+        call cal_pot_gauss_p(parini,poisson,self%pot_1,.true.,atoms%ratp(1,iat),fitpar%gw_p1(itypat),p_tmp(1),self%vgrad_1)
+        call cal_pot_gauss_p(parini,poisson,self%pot_2,.true.,atoms%ratp(1,iat),fitpar%gw_p2(itypat),p_tmp(1),self%vgrad_2)
+        self%pot_p1=self%pot_1
+        self%pot_p2=self%pot_2
     else
             stop 'ERROR: unknonbt in get_pot_iat'
     endif
+    !wa1=self%bc_1(ibf)*self%pot_1+self%bc_2(ibf)*self%pot_2
 end subroutine get_pot_iat
 !*****************************************************************************************
 subroutine init_fit_bf(self,ntypat)
@@ -145,6 +232,14 @@ subroutine init_fit_bf(self,ntypat)
     allocate(self%gwgrad_p1(ntypat))
     allocate(self%gwgrad_p2(ntypat))
     allocate(self%qcore_type(ntypat))
+    allocate(self%bc_s1(ntypat))
+    allocate(self%bc_s2(ntypat))
+    allocate(self%bc_p1(ntypat))
+    allocate(self%bc_p2(ntypat))
+    allocate(self%bcg_s1(2,ntypat))
+    allocate(self%bcg_s2(2,ntypat))
+    allocate(self%bcg_p1(2,ntypat))
+    allocate(self%bcg_p2(2,ntypat))
 end subroutine init_fit_bf
 !*****************************************************************************************
 subroutine fini_fit_bf(self)
@@ -162,7 +257,36 @@ subroutine fini_fit_bf(self)
     deallocate(self%gwgrad_p1)
     deallocate(self%gwgrad_p2)
     deallocate(self%qcore_type)
+    deallocate(self%bc_s1)
+    deallocate(self%bc_s2)
+    deallocate(self%bc_p1)
+    deallocate(self%bc_p2)
+    deallocate(self%bcg_s1)
+    deallocate(self%bcg_s2)
+    deallocate(self%bcg_p1)
+    deallocate(self%bcg_p2)
 end subroutine fini_fit_bf
+!*****************************************************************************************
+subroutine set_bc_bcg(self)
+    implicit none
+    class(typ_fitpar), intent(inout):: self
+    !local variables
+    integer:: itypat
+    do itypat=1,self%ntypat
+        self%bc_s1(itypat)= self%gw_s1(itypat)**3/(self%gw_s1(itypat)**3-self%gw_s2(itypat)**3)
+        self%bc_s2(itypat)=-self%gw_s2(itypat)**3/(self%gw_s1(itypat)**3-self%gw_s2(itypat)**3)
+        self%bc_p1(itypat)= self%gw_p1(itypat)**5/(self%gw_p1(itypat)**5-self%gw_p2(itypat)**5)
+        self%bc_p2(itypat)=-self%gw_p2(itypat)**5/(self%gw_p1(itypat)**5-self%gw_p2(itypat)**5)
+        self%bcg_s1(1,itypat)=-3.d0*self%gw_s1(itypat)**2*self%gw_s2(itypat)**3/(self%gw_s1(itypat)**3-self%gw_s2(itypat)**3)**2
+        self%bcg_s1(2,itypat)= 3.d0*self%gw_s1(itypat)**3*self%gw_s2(itypat)**2/(self%gw_s1(itypat)**3-self%gw_s2(itypat)**3)**2
+        self%bcg_s2(1,itypat)= 3.d0*self%gw_s2(itypat)**3*self%gw_s1(itypat)**2/(self%gw_s2(itypat)**3-self%gw_s1(itypat)**3)**2
+        self%bcg_s2(2,itypat)=-3.d0*self%gw_s2(itypat)**2*self%gw_s1(itypat)**3/(self%gw_s2(itypat)**3-self%gw_s1(itypat)**3)**2
+        self%bcg_p1(1,itypat)=-5.d0*self%gw_p1(itypat)**4*self%gw_p2(itypat)**5/(self%gw_p1(itypat)**5-self%gw_p2(itypat)**5)**2
+        self%bcg_p1(2,itypat)= 5.d0*self%gw_p1(itypat)**5*self%gw_p2(itypat)**4/(self%gw_p1(itypat)**5-self%gw_p2(itypat)**5)**2
+        self%bcg_p2(1,itypat)= 5.d0*self%gw_p2(itypat)**5*self%gw_p1(itypat)**4/(self%gw_p2(itypat)**5-self%gw_p1(itypat)**5)**2
+        self%bcg_p2(2,itypat)=-5.d0*self%gw_p2(itypat)**4*self%gw_p1(itypat)**5/(self%gw_p2(itypat)**5-self%gw_p1(itypat)**5)**2
+    enddo
+end subroutine set_bc_bcg
 !*****************************************************************************************
 subroutine report_fit_bf(self,istep,cost,nat,c_s,c_p,cgrad_s,cgrad_p)
     implicit none
@@ -215,7 +339,7 @@ subroutine get_basis_functions_cent2(parini)
     !type(typ_ann_arr):: ann_arr
     type(typ_fitpar):: fitpar
     type(typ_bf):: bf
-    integer:: iat, iconf, istep
+    integer:: iat, iconf, istep, ibf, jbf
     integer:: ix, iy, iz, itypat
     !real(8):: ehartree_scn_excl
     !real(8):: dpx, dpy, dpz
@@ -321,6 +445,8 @@ subroutine get_basis_functions_cent2(parini)
         fitpar%gw_p2(itypat)=tt7
     enddo
     close(2134)
+    call fitpar%set_bc_bcg()
+    call bf%set_bf_bc_bcg(atoms,fitpar)
 
     !do iat=1,atoms%nat
     !    if(trim(atoms%sat(iat))=='O') atoms%zat(iat)=4.d0
@@ -442,121 +568,129 @@ subroutine get_basis_functions_cent2(parini)
 
     voxel=poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
 
-    do iat=1,atoms%nat
-    itypat=atoms%itypat(iat)
-    bc_s1= fitpar%gw_s1(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
-    bc_s2=-fitpar%gw_s2(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
-    bc_p1= fitpar%gw_p1(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
-    bc_p2=-fitpar%gw_p2(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
-    q_tmp(1)=1.d0
-    call cal_pot_gauss_s(parini,poisson,bf%pot_s1,.true.,atoms%ratp(1,iat),fitpar%gw_s1(itypat),q_tmp(1),vgrad_s1_t)
-    call cal_pot_gauss_s(parini,poisson,bf%pot_s2,.true.,atoms%ratp(1,iat),fitpar%gw_s2(itypat),q_tmp(1),vgrad_s2_t)
-    p_tmp=0.d0
-    p_tmp(1)=1.d0
-    call cal_pot_gauss_p(parini,poisson,bf%pot_p1,.true.,atoms%ratp(1,iat),fitpar%gw_p1(itypat),p_tmp(1),vgrad_p1_t)
-    call cal_pot_gauss_p(parini,poisson,bf%pot_p2,.true.,atoms%ratp(1,iat),fitpar%gw_p2(itypat),p_tmp(1),vgrad_p2_t)
-    enddo !end of loop over iat
-    !write(*,*) 'ALIREZA-1'
     call get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms, &
-        vgrad_s1_t,vgrad_s2_t,qcore,c_s,c_p)
-    !write(*,*) 'ALIREZA-2'
+        vgrad_s1_t,vgrad_s2_t,vgrad_p1_t,vgrad_p2_t,qcore,c_s,c_p)
     !----------------------------------------------------------
-    vgrad_s1=0.d0
-    vgrad_s2=0.d0
-    vgrad_p1=0.d0
-    vgrad_p2=0.d0
-    do iat=1,atoms%nat
-        !write(*,*) 'ALIREZA-3',iat
-        itypat=atoms%itypat(iat)
-        bc_s1= fitpar%gw_s1(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
-        bc_s2=-fitpar%gw_s2(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
-        bc_p1= fitpar%gw_p1(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
-        bc_p2=-fitpar%gw_p2(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
-        q_tmp(1)=1.d0
-        call cal_pot_gauss_s(parini,poisson,bf%pot_s1,.true.,atoms%ratp(1,iat),fitpar%gw_s1(itypat),q_tmp(1),vgrad_s1_t)
-        call cal_pot_gauss_s(parini,poisson,bf%pot_s2,.true.,atoms%ratp(1,iat),fitpar%gw_s2(itypat),q_tmp(1),vgrad_s2_t)
-        p_tmp=0.d0
-        p_tmp(1)=1.d0
-        call cal_pot_gauss_p(parini,poisson,bf%pot_p1,.true.,atoms%ratp(1,iat),fitpar%gw_p1(itypat),p_tmp(1),vgrad_p1_t)
-        call cal_pot_gauss_p(parini,poisson,bf%pot_p2,.true.,atoms%ratp(1,iat),fitpar%gw_p2(itypat),p_tmp(1),vgrad_p2_t)
-        bcg_s1(1)=-3.d0*fitpar%gw_s1(itypat)**2*fitpar%gw_s2(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)**2
-        bcg_s1(2)= 3.d0*fitpar%gw_s1(itypat)**3*fitpar%gw_s2(itypat)**2/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)**2
-        bcg_s2(1)= 3.d0*fitpar%gw_s2(itypat)**3*fitpar%gw_s1(itypat)**2/(fitpar%gw_s2(itypat)**3-fitpar%gw_s1(itypat)**3)**2
-        bcg_s2(2)=-3.d0*fitpar%gw_s2(itypat)**2*fitpar%gw_s1(itypat)**3/(fitpar%gw_s2(itypat)**3-fitpar%gw_s1(itypat)**3)**2
-        bcg_p1(1)=-5.d0*fitpar%gw_p1(itypat)**4*fitpar%gw_p2(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)**2
-        bcg_p1(2)= 5.d0*fitpar%gw_p1(itypat)**5*fitpar%gw_p2(itypat)**4/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)**2
-        bcg_p2(1)= 5.d0*fitpar%gw_p2(itypat)**5*fitpar%gw_p1(itypat)**4/(fitpar%gw_p2(itypat)**5-fitpar%gw_p1(itypat)**5)**2
-        bcg_p2(2)=-5.d0*fitpar%gw_p2(itypat)**4*fitpar%gw_p1(itypat)**5/(fitpar%gw_p2(itypat)**5-fitpar%gw_p1(itypat)**5)**2
-        do iz=1,poisson%ngpz
-        do iy=1,poisson%ngpy
-        do ix=1,poisson%ngpx
-            tts=bc_s1*bf%pot_s1(ix,iy,iz)+bc_s2*bf%pot_s2(ix,iy,iz)
-            ttp=bc_p1*bf%pot_p1(ix,iy,iz)+bc_p2*bf%pot_p2(ix,iy,iz)
-            poisson%pot(ix,iy,iz)=poisson%pot(ix,iy,iz)+c_s(iat)*tts+c_p(iat)*ttp
-            tt1=bcg_s1(1)*bf%pot_s1(ix,iy,iz)+bcg_s2(1)*bf%pot_s2(ix,iy,iz)+bc_s1*vgrad_s1_t(ix,iy,iz)
-            tt2=bcg_s1(2)*bf%pot_s1(ix,iy,iz)+bcg_s2(2)*bf%pot_s2(ix,iy,iz)+bc_s2*vgrad_s2_t(ix,iy,iz)
-            tt3=bcg_p1(1)*bf%pot_p1(ix,iy,iz)+bcg_p2(1)*bf%pot_p2(ix,iy,iz)+bc_p1*vgrad_p1_t(ix,iy,iz)
-            tt4=bcg_p1(2)*bf%pot_p1(ix,iy,iz)+bcg_p2(2)*bf%pot_p2(ix,iy,iz)+bc_p2*vgrad_p2_t(ix,iy,iz)
-            vgrad_s1(ix,iy,iz,itypat)=vgrad_s1(ix,iy,iz,itypat)+tt1*c_s(iat)
-            vgrad_s2(ix,iy,iz,itypat)=vgrad_s2(ix,iy,iz,itypat)+tt2*c_s(iat)
-            vgrad_p1(ix,iy,iz,itypat)=vgrad_p1(ix,iy,iz,itypat)+tt3*c_p(iat)
-            vgrad_p2(ix,iy,iz,itypat)=vgrad_p2(ix,iy,iz,itypat)+tt4*c_p(iat)
-        enddo
-        enddo
+    cost=bf%zeroder
+    do jbf=1,bf%nbf
+        do ibf=1,bf%nbf
+            cost=cost+bf%csp(ibf)*bf%secder(ibf,jbf)*bf%csp(jbf)
         enddo
     enddo
-    cost=0.d0
-    do iz=1,poisson%ngpz
-    do iy=1,poisson%ngpy
-    do ix=1,poisson%ngpx
-        tt0=poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz)
-        cost=cost+tt0**2
+    do ibf=1,bf%nbf
+        cost=cost+2.d0*bf%csp(ibf)*bf%firstder(ibf)
     enddo
-    enddo
-    enddo
-    cost=cost*voxel
     do itypat=1,parini%ntypat
-        ts1=0.d0
-        ts2=0.d0
-        tp1=0.d0
-        tp2=0.d0
-        do iz=1,poisson%ngpz
-        do iy=1,poisson%ngpy
-        do ix=1,poisson%ngpx
-            tt0=poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz)
-            ts1=ts1+vgrad_s1(ix,iy,iz,itypat)*tt0
-            ts2=ts2+vgrad_s2(ix,iy,iz,itypat)*tt0
-            tp1=tp1+vgrad_p1(ix,iy,iz,itypat)*tt0
-            tp2=tp2+vgrad_p2(ix,iy,iz,itypat)*tt0
+        fitpar%gwgrad_s1(itypat)=0.d0
+        fitpar%gwgrad_s2(itypat)=0.d0
+        fitpar%gwgrad_p1(itypat)=0.d0
+        fitpar%gwgrad_p2(itypat)=0.d0
+    enddo
+    do ibf=1,bf%nbf
+        iat=bf%iat_list(ibf)
+        itypat=atoms%itypat(iat)
+        tt1=bf%csp(ibf)*(bf%bcg_1(1,ibf)*bf%subfirstder(1,ibf)+bf%bcg_2(1,ibf)*bf%subfirstder(2,ibf))
+        tt2=bf%csp(ibf)*(bf%bcg_1(2,ibf)*bf%subfirstder(1,ibf)+bf%bcg_2(2,ibf)*bf%subfirstder(2,ibf))
+        if(bf%bt(ibf)=='s') then
+            fitpar%gwgrad_s1(itypat)=fitpar%gwgrad_s1(itypat)+2.d0*tt1
+            fitpar%gwgrad_s2(itypat)=fitpar%gwgrad_s2(itypat)+2.d0*tt2
+        elseif(bf%bt(ibf)=='p') then
+            fitpar%gwgrad_p1(itypat)=fitpar%gwgrad_p1(itypat)+2.d0*tt1
+            fitpar%gwgrad_p2(itypat)=fitpar%gwgrad_p2(itypat)+2.d0*tt2
+        else
+            stop 'ERROR: unknwon br when computing gwgrad'
+        endif
+        do jbf=1,bf%nbf
+            tt1=bf%csp(ibf)*bf%bcg_1(1,ibf)*bf%subsecder(1,1,ibf,jbf)*bf%csp(jbf)*bf%bc_1(jbf)
+            tt2=bf%csp(ibf)*bf%bcg_1(1,ibf)*bf%subsecder(1,2,ibf,jbf)*bf%csp(jbf)*bf%bc_2(jbf)
+            tt3=bf%csp(ibf)*bf%bcg_2(1,ibf)*bf%subsecder(2,1,ibf,jbf)*bf%csp(jbf)*bf%bc_1(jbf)
+            tt4=bf%csp(ibf)*bf%bcg_2(1,ibf)*bf%subsecder(2,2,ibf,jbf)*bf%csp(jbf)*bf%bc_2(jbf)
+            if(bf%bt(ibf)=='s') then
+                fitpar%gwgrad_s1(itypat)=fitpar%gwgrad_s1(itypat)+2.d0*(tt1+tt2+tt3+tt4)
+            elseif(bf%bt(ibf)=='p') then
+                fitpar%gwgrad_p1(itypat)=fitpar%gwgrad_p1(itypat)+2.d0*(tt1+tt2+tt3+tt4)
+            else
+                stop 'ERROR: unknwon br when computing gwgrad'
+            endif
+            tt1=bf%csp(ibf)*bf%bcg_1(2,ibf)*bf%subsecder(1,1,ibf,jbf)*bf%csp(jbf)*bf%bc_1(jbf)
+            tt2=bf%csp(ibf)*bf%bcg_1(2,ibf)*bf%subsecder(1,2,ibf,jbf)*bf%csp(jbf)*bf%bc_2(jbf)
+            tt3=bf%csp(ibf)*bf%bcg_2(2,ibf)*bf%subsecder(2,1,ibf,jbf)*bf%csp(jbf)*bf%bc_1(jbf)
+            tt4=bf%csp(ibf)*bf%bcg_2(2,ibf)*bf%subsecder(2,2,ibf,jbf)*bf%csp(jbf)*bf%bc_2(jbf)
+            if(bf%bt(ibf)=='s') then
+                fitpar%gwgrad_s2(itypat)=fitpar%gwgrad_s2(itypat)+2.d0*(tt1+tt2+tt3+tt4)
+            elseif(bf%bt(ibf)=='p') then
+                fitpar%gwgrad_p2(itypat)=fitpar%gwgrad_p2(itypat)+2.d0*(tt1+tt2+tt3+tt4)
+            else
+                stop 'ERROR: unknwon br when computing gwgrad'
+            endif
         enddo
+        tt1=bf%csp(ibf)*(bf%bc_1(ibf)*bf%subfirstder_grad(1,ibf))
+        tt2=bf%csp(ibf)*(bf%bc_2(ibf)*bf%subfirstder_grad(2,ibf))
+        if(bf%bt(ibf)=='s') then
+            fitpar%gwgrad_s1(itypat)=fitpar%gwgrad_s1(itypat)+2.d0*tt1
+            fitpar%gwgrad_s2(itypat)=fitpar%gwgrad_s2(itypat)+2.d0*tt2
+        elseif(bf%bt(ibf)=='p') then
+            fitpar%gwgrad_p1(itypat)=fitpar%gwgrad_p1(itypat)+2.d0*tt1
+            fitpar%gwgrad_p2(itypat)=fitpar%gwgrad_p2(itypat)+2.d0*tt2
+        else
+            stop 'ERROR: unknwon br when computing gwgrad'
+        endif
+        do jbf=1,bf%nbf
+            tt1=bf%csp(ibf)*bf%bc_1(ibf)*bf%subsecder_grad(1,1,ibf,jbf)*bf%csp(jbf)*bf%bc_1(jbf)
+            tt2=bf%csp(ibf)*bf%bc_1(ibf)*bf%subsecder_grad(1,2,ibf,jbf)*bf%csp(jbf)*bf%bc_2(jbf)
+            tt3=bf%csp(ibf)*bf%bc_2(ibf)*bf%subsecder_grad(2,1,ibf,jbf)*bf%csp(jbf)*bf%bc_1(jbf)
+            tt4=bf%csp(ibf)*bf%bc_2(ibf)*bf%subsecder_grad(2,2,ibf,jbf)*bf%csp(jbf)*bf%bc_2(jbf)
+            if(bf%bt(ibf)=='s') then
+                fitpar%gwgrad_s1(itypat)=fitpar%gwgrad_s1(itypat)+2.d0*(tt1+tt2)
+                fitpar%gwgrad_s2(itypat)=fitpar%gwgrad_s2(itypat)+2.d0*(tt3+tt4)
+            elseif(bf%bt(ibf)=='p') then
+                fitpar%gwgrad_p1(itypat)=fitpar%gwgrad_p1(itypat)+2.d0*(tt1+tt2)
+                fitpar%gwgrad_p2(itypat)=fitpar%gwgrad_p2(itypat)+2.d0*(tt3+tt4)
+            else
+                stop 'ERROR: unknwon br when computing gwgrad'
+            endif
         enddo
-        enddo
-        fitpar%gwgrad_s1(itypat)=2.d0*ts1*voxel
-        fitpar%gwgrad_s2(itypat)=2.d0*ts2*voxel
-        fitpar%gwgrad_p1(itypat)=2.d0*tp1*voxel
-        fitpar%gwgrad_p2(itypat)=2.d0*tp2*voxel
     enddo
 
     call fitpar%report_fit_bf(istep,cost,atoms%nat,c_s,c_p,cgrad_s,cgrad_p)
 
-
+    if(istep==parini%paropt_geopt%nit) exit
     !alpha=4.d-4
     !if(abs(gwgrad_s1(1))<1.d-1 .and. abs(gwgrad_s2(1))<1.d-1) alpha=4.d-2
     fitpar%gw_s1=fitpar%gw_s1- 1.d0*alpha*fitpar%gwgrad_s1
     fitpar%gw_s2=fitpar%gw_s2- 1.d0*alpha*fitpar%gwgrad_s2
     fitpar%gw_p1=fitpar%gw_p1-10.d0*alpha*fitpar%gwgrad_p1
     fitpar%gw_p2=fitpar%gw_p2-10.d0*alpha*fitpar%gwgrad_p2
+    call fitpar%set_bc_bcg()
+    call bf%set_bf_bc_bcg(atoms,fitpar)
     !c_s=c_s-1.d-1*cgrad_s
     !c_p=c_p-1.d-1*cgrad_p
     !write(*,*) 'qtot= ',sum(c_s)
 
-    !bc_s1= gw_s1**3/(gw_s1**3-gw_s2**3)
-    !bc_s2=-gw_s2**3/(gw_s1**3-gw_s2**3)
-    !bc_p1= gw_p1**5/(gw_p1**5-gw_p2**5)
-    !bc_p2=-gw_p2**5/(gw_p1**5-gw_p2**5)
-
-
     enddo !end of loop over istep
+    do iat=1,atoms%nat
+        itypat=atoms%itypat(iat)
+        bc_s1=fitpar%bc_s1(itypat)
+        bc_s2=fitpar%bc_s2(itypat)
+        bc_p1=fitpar%bc_p1(itypat)
+        bc_p2=fitpar%bc_p2(itypat)
+        q_tmp(1)=1.d0
+        call cal_pot_gauss_s(parini,poisson,bf%pot_s1,.true.,atoms%ratp(1,iat),fitpar%gw_s1(itypat),q_tmp(1),bf%vgrad_1)
+        call cal_pot_gauss_s(parini,poisson,bf%pot_s2,.true.,atoms%ratp(1,iat),fitpar%gw_s2(itypat),q_tmp(1),bf%vgrad_2)
+        p_tmp=0.d0
+        p_tmp(1)=1.d0
+        call cal_pot_gauss_p(parini,poisson,bf%pot_p1,.true.,atoms%ratp(1,iat),fitpar%gw_p1(itypat),p_tmp(1),bf%vgrad_1)
+        call cal_pot_gauss_p(parini,poisson,bf%pot_p2,.true.,atoms%ratp(1,iat),fitpar%gw_p2(itypat),p_tmp(1),bf%vgrad_2)
+        do iz=1,poisson%ngpz
+        do iy=1,poisson%ngpy
+        do ix=1,poisson%ngpx
+            tts=bc_s1*bf%pot_s1(ix,iy,iz)+bc_s2*bf%pot_s2(ix,iy,iz)
+            ttp=bc_p1*bf%pot_p1(ix,iy,iz)+bc_p2*bf%pot_p2(ix,iy,iz)
+            poisson%pot(ix,iy,iz)=poisson%pot(ix,iy,iz)+c_s(iat)*tts+c_p(iat)*ttp
+        enddo
+        enddo
+        enddo
+    enddo
 
 
     errmax=0.d0
@@ -614,23 +748,19 @@ subroutine get_basis_functions_cent2(parini)
         6.d0*fitpar%gwc_s2(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
         poisson%hgrid,poisson%rho)
     endif
-    bc_s1= fitpar%gw_s1(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
-    bc_s2=-fitpar%gw_s2(itypat)**3/(fitpar%gw_s1(itypat)**3-fitpar%gw_s2(itypat)**3)
-    q_tmp(1)=c_s(iat)*bc_s1
+    q_tmp(1)=c_s(iat)*fitpar%bc_s1(itypat)
     call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,fitpar%gw_s1(itypat), &
         4.d0*fitpar%gw_s1(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
         poisson%hgrid,poisson%rho)
-    q_tmp(1)=c_s(iat)*bc_s2
+    q_tmp(1)=c_s(iat)*fitpar%bc_s2(itypat)
     call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,fitpar%gw_s2(itypat), &
         4.d0*fitpar%gw_s2(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
         poisson%hgrid,poisson%rho)
-    bc_p1= fitpar%gw_p1(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
-    bc_p2=-fitpar%gw_p2(itypat)**5/(fitpar%gw_p1(itypat)**5-fitpar%gw_p2(itypat)**5)
     p_tmp=0.d0
-    p_tmp(1)=c_p(iat)*bc_p1
+    p_tmp(1)=c_p(iat)*fitpar%bc_p1(itypat)
     call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),p_tmp,fitpar%gw_p1(itypat), &
         6.d0*fitpar%gw_p1(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-    p_tmp(1)=c_p(iat)*bc_p2
+    p_tmp(1)=c_p(iat)*fitpar%bc_p2(itypat)
     call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),p_tmp,fitpar%gw_p2(itypat), &
         6.d0*fitpar%gw_p2(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
     enddo
@@ -664,7 +794,7 @@ subroutine get_basis_functions_cent2(parini)
     call f_release_routine()
 end subroutine get_basis_functions_cent2
 !*****************************************************************************************
-subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,wa1,wa2,qcore,c_s,c_p)
+subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,wa1,wa2,wa3,wa4,qcore,c_s,c_p)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms
@@ -676,6 +806,8 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,wa1,wa2,qc
     type(typ_atoms), intent(in):: atoms
     real(8), intent(inout):: wa1(poisson_ref%ngpx,poisson_ref%ngpy,poisson_ref%ngpz)
     real(8), intent(inout):: wa2(poisson_ref%ngpx,poisson_ref%ngpy,poisson_ref%ngpz)
+    real(8), intent(inout):: wa3(poisson_ref%ngpx,poisson_ref%ngpy,poisson_ref%ngpz)
+    real(8), intent(inout):: wa4(poisson_ref%ngpx,poisson_ref%ngpy,poisson_ref%ngpz)
     real(8), intent(in):: qcore(atoms%nat)
     real(8), intent(out):: c_s(atoms%nat), c_p(atoms%nat)
     !local variables
@@ -694,32 +826,163 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,wa1,wa2,qc
     allocate(rhs(nbf+nc),source=0.d0)
     voxel=poisson_ref%hgrid(1,1)*poisson_ref%hgrid(2,2)*poisson_ref%hgrid(3,3)
     do ibf=1,bf%nbf
-        call bf%get_pot_iat(parini,poisson,atoms,fitpar,ibf,wa1)
+        call bf%get_pot_iat(parini,poisson,atoms,fitpar,ibf)
+        tt1=0.d0
+        tt2=0.d0
+        do iz=1,poisson_ref%ngpz
+        do iy=1,poisson_ref%ngpy
+        do ix=1,poisson_ref%ngpx
+            tt1=tt1+bf%pot_1(ix,iy,iz)*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
+            tt2=tt2+bf%pot_2(ix,iy,iz)*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
+        enddo
+        enddo
+        enddo
+        bf%subfirstder(1,ibf)=tt1*voxel
+        bf%subfirstder(2,ibf)=tt2*voxel
+        tt1=0.d0
+        tt2=0.d0
+        do iz=1,poisson_ref%ngpz
+        do iy=1,poisson_ref%ngpy
+        do ix=1,poisson_ref%ngpx
+            tt1=tt1+bf%vgrad_1(ix,iy,iz)*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
+            tt2=tt2+bf%vgrad_2(ix,iy,iz)*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
+        enddo
+        enddo
+        enddo
+        bf%subfirstder_grad(1,ibf)=tt1*voxel
+        bf%subfirstder_grad(2,ibf)=tt2*voxel
+        wa1=bf%pot_1
+        wa2=bf%pot_2
+        wa3=bf%vgrad_1
+        wa4=bf%vgrad_2
         do jbf=ibf,bf%nbf
-            call bf%get_pot_iat(parini,poisson,atoms,fitpar,jbf,wa2)
-            tt1=0.d0
+            call bf%get_pot_iat(parini,poisson,atoms,fitpar,jbf)
+            tt3=0.d0
             do iz=1,poisson_ref%ngpz
             do iy=1,poisson_ref%ngpy
             do ix=1,poisson_ref%ngpx
-                tt1=tt1+wa1(ix,iy,iz)*wa2(ix,iy,iz)
+                !tt1=tt1+wa1(ix,iy,iz)*wa2(ix,iy,iz)
+                tt1=bf%bc_1(ibf)*wa1(ix,iy,iz)+bf%bc_2(ibf)*wa2(ix,iy,iz)
+                tt2=bf%bc_1(jbf)*bf%pot_1(ix,iy,iz)+bf%bc_2(jbf)*bf%pot_2(ix,iy,iz)
+                tt3=tt3+tt1*tt2
             enddo
             enddo
             enddo
-            secder(ibf,jbf)=tt1*voxel
-            secder(jbf,ibf)=tt1*voxel
+            secder(ibf,jbf)=tt3*voxel
+            secder(jbf,ibf)=tt3*voxel
+            tt1=0.d0
+            tt2=0.d0
+            tt3=0.d0
+            tt4=0.d0
+            do iz=1,poisson_ref%ngpz
+            do iy=1,poisson_ref%ngpy
+            do ix=1,poisson_ref%ngpx
+                tt1=tt1+bf%pot_1(ix,iy,iz)*wa1(ix,iy,iz)
+                tt2=tt2+bf%pot_2(ix,iy,iz)*wa1(ix,iy,iz)
+                tt3=tt3+bf%pot_1(ix,iy,iz)*wa2(ix,iy,iz)
+                tt4=tt4+bf%pot_2(ix,iy,iz)*wa2(ix,iy,iz)
+            enddo
+            enddo
+            enddo
+            bf%subsecder(1,1,jbf,ibf)=tt1*voxel
+            bf%subsecder(2,1,jbf,ibf)=tt2*voxel
+            bf%subsecder(1,2,jbf,ibf)=tt3*voxel
+            bf%subsecder(2,2,jbf,ibf)=tt4*voxel
+            bf%subsecder(1,1,ibf,jbf)=tt1*voxel
+            bf%subsecder(1,2,ibf,jbf)=tt2*voxel
+            bf%subsecder(2,1,ibf,jbf)=tt3*voxel
+            bf%subsecder(2,2,ibf,jbf)=tt4*voxel
+            tt1=0.d0
+            tt2=0.d0
+            tt3=0.d0
+            tt4=0.d0
+            do iz=1,poisson_ref%ngpz
+            do iy=1,poisson_ref%ngpy
+            do ix=1,poisson_ref%ngpx
+                tt1=tt1+bf%pot_1(ix,iy,iz)*wa3(ix,iy,iz)
+                tt2=tt2+bf%pot_2(ix,iy,iz)*wa3(ix,iy,iz)
+                tt3=tt3+bf%pot_1(ix,iy,iz)*wa4(ix,iy,iz)
+                tt4=tt4+bf%pot_2(ix,iy,iz)*wa4(ix,iy,iz)
+            enddo
+            enddo
+            enddo
+            bf%subsecder_grad(1,1,ibf,jbf)=tt1*voxel
+            bf%subsecder_grad(1,2,ibf,jbf)=tt2*voxel
+            bf%subsecder_grad(2,1,ibf,jbf)=tt3*voxel
+            bf%subsecder_grad(2,2,ibf,jbf)=tt4*voxel
+            tt1=0.d0
+            tt2=0.d0
+            tt3=0.d0
+            tt4=0.d0
+            do iz=1,poisson_ref%ngpz
+            do iy=1,poisson_ref%ngpy
+            do ix=1,poisson_ref%ngpx
+                tt1=tt1+bf%vgrad_1(ix,iy,iz)*wa1(ix,iy,iz)
+                tt2=tt2+bf%vgrad_2(ix,iy,iz)*wa1(ix,iy,iz)
+                tt3=tt3+bf%vgrad_1(ix,iy,iz)*wa2(ix,iy,iz)
+                tt4=tt4+bf%vgrad_2(ix,iy,iz)*wa2(ix,iy,iz)
+            enddo
+            enddo
+            enddo
+            bf%subsecder_grad(1,1,jbf,ibf)=tt1*voxel
+            bf%subsecder_grad(2,1,jbf,ibf)=tt2*voxel
+            bf%subsecder_grad(1,2,jbf,ibf)=tt3*voxel
+            bf%subsecder_grad(2,2,jbf,ibf)=tt4*voxel
+            !if(bf%bt(jbf)=='s') then
+            !    tt1=0.d0
+            !    tt2=0.d0
+            !    do iz=1,poisson_ref%ngpz
+            !    do iy=1,poisson_ref%ngpy
+            !    do ix=1,poisson_ref%ngpx
+            !        tt1=tt1+wa1(ix,iy,iz)*bf%pot_s1(ix,iy,iz)
+            !        tt2=tt2+wa1(ix,iy,iz)*bf%pot_s2(ix,iy,iz)
+            !    enddo
+            !    enddo
+            !    enddo
+            !    bf%subsecder(1,ibf,jbf)=tt1*voxel
+            !    bf%subsecder(2,jbf,ibf)=tt2*voxel
+            !elseif(bf%bt(jbf)=='p') then
+            !    tt1=0.d0
+            !    tt2=0.d0
+            !    do iz=1,poisson_ref%ngpz
+            !    do iy=1,poisson_ref%ngpy
+            !    do ix=1,poisson_ref%ngpx
+            !        tt1=tt1+wa1(ix,iy,iz)*bf%pot_p1(ix,iy,iz)
+            !        tt2=tt2+wa1(ix,iy,iz)*bf%pot_p2(ix,iy,iz)
+            !    enddo
+            !    enddo
+            !    enddo
+            !    bf%subsecder(1,ibf,jbf)=tt1*voxel
+            !    bf%subsecder(2,jbf,ibf)=tt2*voxel
+            !else
+            !    stop 'ERROR: unknown bt in get_linearcoeff'
+            !endif
         enddo
         !-------------------------------------------------------------
         tt1=0.d0
         do iz=1,poisson_ref%ngpz
         do iy=1,poisson_ref%ngpy
         do ix=1,poisson_ref%ngpx
-            tt1=tt1+wa1(ix,iy,iz)*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
+            tt2=bf%bc_1(ibf)*wa1(ix,iy,iz)+bf%bc_2(ibf)*wa2(ix,iy,iz)
+            tt1=tt1+tt2*(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))
         enddo
         enddo
         enddo
         rhs(ibf)=-tt1*voxel
         !-------------------------------------------------------------
     enddo
+    bf%secder(1:bf%nbf,1:bf%nbf)=secder(1:bf%nbf,1:bf%nbf)
+    bf%firstder(1:bf%nbf)=-rhs(1:bf%nbf)
+    tt1=0.d0
+    do iz=1,poisson_ref%ngpz
+    do iy=1,poisson_ref%ngpy
+    do ix=1,poisson_ref%ngpx
+        tt1=tt1+(poisson%pot(ix,iy,iz)-poisson_ref%pot(ix,iy,iz))**2
+    enddo
+    enddo
+    enddo
+    bf%zeroder=tt1*voxel
+
     do iat=1,atoms%nat
         write(*,'(a,6es14.5)') 'SECDER ',secder(iat,1:6)
     enddo
@@ -760,6 +1023,7 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,wa1,wa2,qc
         c_p(iat)=rhs(iat+atoms%nat)
         write(*,'(2f18.8)') c_s(iat),c_p(iat)
     enddo
+    bf%csp(1:bf%nbf)=rhs(1:bf%nbf)
     !c_s(1)=-2.d0
     !c_s(2)=-2.d0
     !c_s(3)=-2.d0
