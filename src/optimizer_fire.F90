@@ -10,9 +10,10 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
     real(8), intent(inout):: work(3*n) !1:n velocities, n+1:2*n previous force
     type(typ_paropt), intent(inout):: paropt
     !local variables
+    integer:: i
     character(59), parameter:: frmt='('//frmt_base//',3es12.4,i4,1es12.4,a)'
     real(8):: de, DDOT, fnrm, fmax, vnrm, dt, p
-    real(8):: tt, vnrmmax
+    real(8):: tt, vnrmmax, dx
     character(14):: filename
     character(56):: comment
     if(paropt%iflag==0) call init_fire(n,f,epot,work,paropt)
@@ -72,7 +73,11 @@ subroutine fire(parini,iproc,n,x,epot,f,work,paropt)
     endif
     paropt%epotold=epot
     work(2*n+1:3*n)=x(1:n)
-    x(1:n)=x(1:n)+dt*work(1:n)+0.5d0*dt**2*f(1:n)
+    do i=1,n
+        dx=dt*work(i)+0.5d0*dt**2*f(i)
+        dx=sign(min(paropt%dxmax,abs(dx)),dx)
+        x(i)=x(i)+dx
+    enddo
     !f(1:n)=f(1:n)/fnrm
     tt=min(paropt%alpha*vnrm/(paropt%funits*fnrm),2.d-1*paropt%alphax)
     work(1:n)=(1.d0-paropt%alpha)*work(1:n)+tt*f(1:n) !*min(paropt%alpha*vnrm,5.d0*paropt%alphax*fnrm)
@@ -124,6 +129,7 @@ subroutine init_fire(n,f,epot,work,paropt)
     if(paropt%dtmax<0.d0) paropt%dtmax=25.d0*paropt%dt_start
     if(paropt%finc<0.d0) paropt%finc=1.1d0  !1.15d0
     if(paropt%fdec<0.d0) paropt%fdec=0.5d0  !0.2d0
+    if(paropt%dxmax<0.d0) paropt%dxmax=1.d10
     if(paropt%falpha<0.d0) paropt%falpha=0.99d0
     if(paropt%alphastart<0.d0) paropt%alphastart=0.1d0  !0.3d0
     if(paropt%funits<0.d0) paropt%funits=1.d0
