@@ -181,7 +181,7 @@ subroutine init_psolver_bps(parini,atoms,poisson)
     !write(*,*) 'REZA-5'
     !write(*,'(a,2es20.12)') 'Hartree ',ehartree,ehartree-ehartree_ref
     if (poisson%cal_scn) then
-        call init_psolver_kspace_exprnscreening(poisson%greenf_kspace,4)
+        call init_psolver_kspace_exprnscreening(poisson%greenf_kspace,-4)
     endif
 #else
     stop 'ERROR: Alborz is not linked with Poisson solvers in BigDFT.'

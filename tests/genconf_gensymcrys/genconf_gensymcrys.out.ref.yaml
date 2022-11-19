@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : https://doi.org/10.1016/j.cpc.2020.107415
- Timestamp of this run                 : 2022-04-29 17:53:13.261
+ Timestamp of this run                 : 2022-11-19 14:22:09.861
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : genconf
@@ -34,7 +34,7 @@
    finddos                             : False
    params_new                          : False
    time_limit                          : -1.0
-   datafilesdir                        : /home/ghasemi/FLAME.gensymcrys/datafiles
+   datafilesdir                        : /home/ghasemi/FLAME/datafiles
  minhopp:
    nstep                               : 0
    nsoften                             : 7
@@ -256,7 +256,7 @@
    print_energy                        : False
    fit_hoppint                         : False
    save_symfunc_force                  : False
-   weight_hardness                     : 0.001
+   weight_hardness                     : 0.0
    save_symfunc_behnam                 : False
    freeBC_direct                       : False
  dynamics:

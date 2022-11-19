@@ -17,8 +17,8 @@
       /MMMMM   MMMMMM`   F      LL      AAAAAA  M  M  M  M E
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
- Reference Paper                       : To Be Added Later.
- Timestamp of this run                 : 2019-08-17 10:01:01.357
+ Reference Paper                       : https://doi.org/10.1016/j.cpc.2020.107415
+ Timestamp of this run                 : 2022-11-19 13:34:00.456
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : single_point
@@ -33,6 +33,8 @@
    findsym                             : False
    finddos                             : False
    params_new                          : False
+   time_limit                          : -1.0
+   datafilesdir                        : /home/ghasemi/FLAME/datafiles
  minhopp:
    nstep                               : 0
    nsoften                             : 7
@@ -160,6 +162,7 @@
  potential:
    potential                           : ann
    cal_charge                          : False
+   cal_scn                             : False
    potential_sec                       : unknown
    boundary                            : 1
    ann_boundcheck                      : none
@@ -192,6 +195,8 @@
      ecut_auto                         : False
      rcut                              : -1.0
      rgcut                             : -1.0
+     screening_factor                  : 0.0
+     free_space                        : 0.0
      nsp                               : -1
      plane_voltageu                    : 0.0
      plane_voltagel                    : 0.0
@@ -199,8 +204,10 @@
      frequency                         : 0.0
      gnrmtol                           : 1.E-7
      psolver                           : kwald
+     bigdft_kwald                      : False
      ewald                             : False
      cell_ortho                        : False
+     cell_ortho_noshift                : False
      ewald_tol                         : 1.E-6
      bias_type                         : no
      external_field                    : 0.0
@@ -249,7 +256,7 @@
    print_energy                        : False
    fit_hoppint                         : False
    save_symfunc_force                  : False
-   weight_hardness                     : 0.001
+   weight_hardness                     : 0.0
    save_symfunc_behnam                 : False
    freeBC_direct                       : False
  dynamics:
@@ -290,6 +297,15 @@
    npoint                              : 0
    fbmin                               : -1.0
    fbmax                               : -1.0
+   volperatom_bounds: [-1.0, -1.0]
+   ntry                                : 30
+   ispg                                : 0
+   ncells                              : 1
+   nconf                               : 1
+   nat_types_fu                        : 1
+   list_fu:
+   - 1
+   rmin_pairs                          : None
    variable_cell                       : False
    nonorthogonal                       : False
  conf_comp:
@@ -306,6 +322,8 @@
  misc:
    subtask                             : unknown
    gaussian_width                      : -1.0
+   pen_coeff                           : 0.0
+   q_avg_target                        : 0.0
    boundcond                           : unknown
    posinp                              : unknown
  fit_elecpot:

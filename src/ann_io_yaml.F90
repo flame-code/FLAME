@@ -58,7 +58,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     integer, intent(in):: iproc
     real(8), intent(out):: rcut
     !local variables
-    integer:: ig, ios, i0, i, il 
+    integer:: ig, ios, i0, i, il, ngwc
     character(50):: fname, sat1, sat2
     character(250):: tt, str1
     integer :: count1, count2, count3, count4, count5, count6
@@ -95,12 +95,26 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         .or. trim(parini%approach_ann)=='cent3') then
         ann%ampl_chi       =  subdict_ann//"ampl_chi" 
         ann%prefactor_chi  =  subdict_ann//"prefactor_chi" 
-        ann%gausswidth     =  subdict_ann//"gausswidth" 
+        if(trim(parini%approach_ann)/='cent2') then
+            ann%gausswidth     =  subdict_ann//"gausswidth"
+        endif
         ann%hardness       =  subdict_ann//"hardness" 
         ann%chi0           =  subdict_ann//"chi0" 
         ann%qinit          =  subdict_ann//"qinit"
     endif
     if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
+        if(trim(parini%approach_ann)=='cent2') then
+            ann%qcore=subdict_ann//"qcore"
+            allocate(ann%gwe_s(2))
+            allocate(ann%gwe_p(2))
+            ann%gwe_s=subdict_ann//"gwe_s"
+            ann%gwe_p=subdict_ann//"gwe_p"
+            dict_tmp=>subdict_ann//"gwc"
+            ngwc=dict_len(dict_tmp)
+            allocate(ann%gwc(ngwc))
+            ann%gwc=subdict_ann//"gwc"
+            nullify(dict_tmp)
+        endif
         ann%zion           =  subdict_ann//"zion" 
         ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
         ann%spring_const   =  subdict_ann//"spring_const"

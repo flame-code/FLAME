@@ -230,11 +230,11 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
             if(parini%iverbose>=2) then 
                 write(1370,'(2i4,2es18.8)') iter,idp,ann_arr%dpm_err, ann_arr%dpm_rmse
             end if
-            if(trim(parini%approach_ann)=='tb') then
+            !if(trim(parini%approach_ann)=='tb') then
                 do j=1,opt_ann%n
                     opt_ann%g(j)=opt_ann%g(j)+parini%weight_hardness*opt_ann%x(j)
                 enddo
-            endif
+            !endif
             call cpu_time(time1)
             call DGEMV('T',opt_ann%n,ie-is+1,1.d0,p(1,is),opt_ann%n,opt_ann%g,1,0.d0,v1(is),1)
             if(parini%mpi_env%nproc>1) then

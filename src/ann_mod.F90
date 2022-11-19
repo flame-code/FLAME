@@ -37,8 +37,12 @@ module mod_ann
         real(8), allocatable:: d(:)
         real(8), allocatable:: gbounds(:,:)
         real(8), allocatable:: two_over_gdiff(:)
+        real(8), allocatable:: gwe_s(:)
+        real(8), allocatable:: gwe_p(:)
+        real(8), allocatable:: gwc(:)
         real(8):: gausswidth
         real(8):: gausswidth_ion
+        real(8):: qcore
         real(8):: chi0
         real(8):: hardness
         real(8):: spring_const
