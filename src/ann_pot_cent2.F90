@@ -367,7 +367,7 @@ subroutine set_param(self,atoms,ann_arr)
     do ibf=1,self%nbf
         iat=self%imap(ibf)
         bt_t=self%bt(ibf)
-        write(*,*) 'IAT ',iat,ibf
+        !write(*,*) 'IAT ',iat,ibf
         if(bt_t(1:1)=='s') self%gwe_s(1:2,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_s(1:2) !gausswidth
         if(bt_t(1:1)=='p') self%gwe_p(1:2,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(1:2) !gausswidth*1.20d0
         if(bt_t(1:1)=='s') self%orb(ibf)=1.d0
@@ -984,7 +984,9 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+3
     nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+3
     if(parini%mpi_env%iproc==0) then
-    write(*,*) 'RGCUT ',poisson%rgcut,nbgx,nbgy,nbgz
+    write(*,'(a,f8.3,3i5)') 'RGCUT ',poisson%rgcut,nbgx,nbgy,nbgz
+    write(*,'(a,3i5)') 'ngpx,ngpy,ngpz= ',poisson%ngpx,poisson%ngpy,poisson%ngpz
+    write(*,'(a,3f10.6)') 'hgrid= ',poisson%hgrid(1,1),poisson%hgrid(2,2),poisson%hgrid(3,3)
     endif
     !-----------------------------------------------------------------
     call cpu_time(time1)
@@ -993,6 +995,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     allocate(gausswidth(atoms%nat))
     allocate(amat(self%bf%nbf+1,self%bf%nbf+1),source=0.d0)
     do ibf=ibfs,ibfe
+        !write(*,'(a,i3,3i5)') 'progress ',parini%mpi_env%iproc,ibf,ibfs,ibfe
         amat(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
         amat(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
         call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
@@ -1005,6 +1008,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
         enddo
         amat(ibf,ibf)=amat(ibf,ibf)+self%bf%hardness(ibf)
         do itrial=1,trial_energy%ntrial
+            !write(*,'(a,i3,i5,i7)') 'ALI ',parini%mpi_env%iproc,ibf,itrial
             xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
             call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
                 6.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
@@ -1082,7 +1086,9 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
             write(*,'(a,i4,f8.3,a)') 'dpm= ',self%bf%imap(ibf),ann_arr%qq(ibf),' z'
         endif
     enddo
-    write(*,'(a,3f8.3)') 'DPM= ',dpm(1),dpm(2),dpm(3)
+    if(parini%mpi_env%iproc==0) then
+        write(*,'(a,3f8.3)') 'DPM= ',dpm(1),dpm(2),dpm(3)
+    endif
     !-----------------------------------------------------------------
     endif
     call self%reverseCEP(parini,ann_arr,atoms,poisson,self%amat)
@@ -1417,7 +1423,7 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     enddo
     !-------------------------------------------------------
     if(.true.) then
-    nd=2
+    nd=3
     allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     do igpz=1,poisson%ngpz
     do igpy=1,poisson%ngpy
@@ -1452,9 +1458,9 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     enddo
     write(*,*) allocated(poisson%rho)
     call f_free(poisson%rho)
-    nex=30
-    ney=30
-    nez=30
+    nex=20
+    ney=20
+    nez=20
     poisson%rho=f_malloc0([1.to.(poisson%ngpx+2*nex),1.to.(poisson%ngpy+2*ney),1.to.(poisson%ngpz+2*nez)],id='poisson%rho')
     do igpz=1,poisson%ngpz
     do igpy=1,poisson%ngpy
@@ -1603,7 +1609,9 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     dpm(1)=dpm(1)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
     dpm(2)=dpm(2)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
     dpm(3)=dpm(3)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    write(*,'(a,3f8.3)') 'DPM= ',dpm(1),dpm(2),dpm(3)
+    if(parini%mpi_env%iproc==0) then
+        write(*,'(a,3f8.3)') 'DPM= ',dpm(1),dpm(2),dpm(3)
+    endif
     !-------------------------------------------------------
     call update_ratp(atoms)
     call get_hartree(parini,poisson,atoms,gausswidth,ehartree_scn_excl)

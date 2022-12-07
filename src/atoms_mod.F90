@@ -1034,9 +1034,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
     endif
     !copying array at_inp%rat to at_out%rat
     if(allocated(at_inp%rat)) then
-            ishape(1:2)=shape(at_out%rat(:,:))
-            if(allocated(at_out%rat) .and. at_inp%nat/=ishape(2)) then
-                deallocate(at_out%rat)
+            if(allocated(at_out%rat)) then
+                ishape(1:2)=shape(at_out%rat(:,:))
+                if(at_inp%nat/=ishape(2)) then
+                    deallocate(at_out%rat)
+                endif
             endif
             if(.not. allocated(at_out%rat)) then
                 allocate(at_out%rat(3,at_out%nat),source=0.d0)
@@ -1053,9 +1055,11 @@ subroutine atom_copy_old(at_inp,at_out,str_message)
         endif
     endif
     if(allocated(at_inp%ratp)) then
-            ishape(1:2)=shape(at_out%ratp(:,:))
-            if(allocated(at_out%ratp) .and. at_inp%nat/=ishape(2)) then
-                deallocate(at_out%ratp)
+            if(allocated(at_out%ratp)) then
+                ishape(1:2)=shape(at_out%ratp(:,:))
+                if(at_inp%nat/=ishape(2)) then
+                    deallocate(at_out%ratp)
+                endif
             endif
             if(.not. allocated(at_out%ratp)) then
                 allocate(at_out%ratp(3,at_out%nat),source=0.d0)
