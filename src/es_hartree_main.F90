@@ -118,7 +118,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     type(typ_atoms), intent(in):: atoms
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     type(typ_poisson):: poisson_rough
     real(8):: pi, shortrange_at_rcut
     real(8):: tt1, tt2
@@ -247,7 +247,7 @@ subroutine init_hartree_p3d(parini,atoms,poisson)
     type(typ_poisson):: poisson_rough
     type(typ_poisson), intent(inout):: poisson
     !local variables
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     real(8):: pi, shortrange_at_rcut
     integer:: ngptot, ind
     integer:: nbgpx, nbgpy, nbgpz

@@ -1,0 +1,28 @@
+name = "FLAME"
+license = "GPLv3"
+
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+link = ["PSolver-1","atlab-1","futile-1","yaml","lammps_mpi","symspg","iomp5","m","dl","rt"]
+external-modules = ["yaml_parse","dictionaries","dynamic_memory","yaml_output",
+    "time_profiling","wrapper_linalg","poisson_solver","futile","wrapper_mpi",
+    "at_domain","module_fft_sg","mpi","mod_processorsm","m_siesta_init","m_siesta_move",
+    "m_siesta_end","m_siesta_forces","siesta_geom","atmfuncs","parallel","ifport","m_energies",
+    "m_forces","siesta_options","basis_types","atm_types","f_utils","yaml_strings",
+    "interface_tinker","Poisson_Solver"]
+
+
+[install]
+library = false
+
+[[executable]]
+name = "flame"
+source-dir = "src"
+main = "flame.F90"
+
+[[test]]
+name="fpm"
+source-dir="tests-fpm"
+main = "main.F90"

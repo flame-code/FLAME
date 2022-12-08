@@ -3,6 +3,7 @@ module mod_fit_bf_cent2
     implicit none
     private
     public:: get_basis_functions_cent2
+    public:: cal_pot_gauss_s
     type typ_fitpar
         private
         integer:: ntypat

@@ -291,7 +291,7 @@ end subroutine erfc_surface_zero
 subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     use mod_electrostatics, only: typ_poisson
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     type(typ_poisson), intent(inout):: poisson
     !local variables
     real(8):: vl, vu , zlmzu , sinhzlmzu, zlmzuinv

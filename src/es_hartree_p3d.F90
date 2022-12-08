@@ -3,7 +3,7 @@ subroutine init_psolver_p3d(poisson)
     use mod_electrostatics, only: typ_poisson
     use dynamic_memory
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     type(typ_poisson), intent(inout):: poisson
     !local variables
     integer:: iz

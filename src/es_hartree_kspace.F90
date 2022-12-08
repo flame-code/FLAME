@@ -31,7 +31,7 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     integer, intent(in):: ngpx, ngpy, ngpz
     real(8), intent(in):: rho(ngpx,ngpy,ngpz), hgrid(3,3), sf
     real(8), intent(out):: pot(ngpx,ngpy,ngpz)
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     !local variables
     integer:: igpx, igpy, igpz
     integer:: igpxt, igpyt, igpzt
@@ -125,7 +125,7 @@ end subroutine get_psolver_kspace_exprnscreening
 !*****************************************************************************************
 subroutine get_psolver_kspace_gaussscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,pot)
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     integer, intent(in):: ngpx, ngpy, ngpz
     real(8), intent(in):: rho(ngpx,ngpy,ngpz), hgrid(3,3), sf
     real(8), intent(out):: pot(ngpx,ngpy,ngpz)
@@ -197,7 +197,7 @@ end subroutine get_psolver_kspace_gaussscreening
 !*****************************************************************************************
 subroutine get_psolver_kspace_expscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,pot)
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     integer, intent(in):: ngpx, ngpy, ngpz
     real(8), intent(in):: rho(ngpx,ngpy,ngpz), hgrid(3,3), sf
     real(8), intent(out):: pot(ngpx,ngpy,ngpz)
