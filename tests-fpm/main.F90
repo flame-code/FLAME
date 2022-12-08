@@ -11,6 +11,11 @@ program tests
     call yaml_set_default_stream(iunit,ierr)
     call yaml_new_document()
 
+    !---------------------------------------------------------------------------
     call test_cal_pot_gauss_s()
+    !---------------------------------------------------------------------------
+    call test_cal_pot_r2gauss_s()
+    !---------------------------------------------------------------------------
+
     call f_lib_finalize()
 end program tests
