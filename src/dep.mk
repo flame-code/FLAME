@@ -41,7 +41,6 @@
 ./task_saddle.o : ./task_saddle.F90 ./parini_mod.o 
 ./es_hartree_main.o : ./es_hartree_main.F90 act2_cell_linkedlist.inc act1_cell_linkedlist.inc fftw3.f.h ./cell_linkedlists.o ./cell_linkedlists.o ./electrostatics_mod.o ./atoms_mod.o ./parini_mod.o 
 ./task_ann.o : ./task_ann.F90 ./ann_fit_bf_cent2.o ./ann_train.o ./parini_mod.o 
-./grid_gto_sym_ortho.o : ./grid_gto_sym_ortho.F90 ./parini_mod.o 
 ./ann_symfunc_pair_behler.o : ./ann_symfunc_pair_behler.F90 ./flm_futile_mod.o ./cell_linkedlists.o ./cell_linkedlists.o ./atoms_mod.o ./symfunc_data_mod.o ./ann_mod.o 
 ./splinedsaddle.o : ./splinedsaddle.F90 ./splinedsaddle_mod.o ./splinedsaddle_mod.o ./io_yaml_conf.o ./potential_main.o ./atoms_mod.o ./processors_mod.o ./parini_mod.o 
 ./acceleration.o : ./acceleration.F90 
@@ -74,6 +73,7 @@
 ./io_acf.o : ./io_acf.F90 ./parini_mod.o ./constants_mod.o ./atoms_mod.o 
 ./ann_pot_centt.o : ./ann_pot_centt.F90 ./electrostatics_mod.o ./cell_linkedlists.o ./cell_linkedlists.o ./ann_symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o 
 ./potential_main.o : ./potential_main.F90 ./processors_mod.o ./atoms_mod.o ./parini_mod.o ./shortrange_mod.o ./electrostatics_mod.o ./ann_mod.o 
+./grid_rp2gto_s_ortho.o : ./grid_rp2gto_s_ortho.F90 ./parini_mod.o 
 ./task_bader.o : ./task_bader.F90 ./parini_mod.o 
 ./es_hartree_bps.o : ./es_hartree_bps.F90 ./parini_mod.o ./flm_futile_mod.o ./electrostatics_mod.o ./atoms_mod.o 
 ./io_xyz.o : ./io_xyz.F90 
@@ -96,6 +96,7 @@
 ./minhocao_enthalpyrelax.o : ./minhocao_enthalpyrelax.F90 ./parini_mod.o ./potential_main_minhocao.o ./constants_minhocao_mod.o ./minhocao_mod.o 
 ./genconf_trimer.o : ./genconf_trimer.F90 ./io_acf.o ./potential_main.o ./processors_mod.o ./genconf_mod.o ./atoms_mod.o ./parini_mod.o 
 ./minhocao_rotate_like_crazy.o : ./minhocao_rotate_like_crazy.F90 ./parini_mod.o ./potential_main_minhocao.o ./constants_minhocao_mod.o ./minhocao_mod.o 
+./grid_gto_s_ortho.o : ./grid_gto_s_ortho.F90 ./parini_mod.o 
 ./io_bin.o : ./io_bin.F90 ./atoms_mod.o ./parini_mod.o 
 ./fingerprint_gaussmol.o : ./fingerprint_gaussmol.F90 
 ./fingerprint_GOM.o : ./fingerprint_GOM.F90 
@@ -138,6 +139,7 @@
 ./find_symmetry.o : ./find_symmetry.F90 ./minhocao_mod.o ./minhocao_mod.o ./parini_mod.o 
 ./io_ascii.o : ./io_ascii.F90 ./constants_minhocao_mod.o ./minhocao_mod.o ./parini_mod.o 
 ./unitsconversion_mod.o : ./unitsconversion_mod.F90 
+./grid_gto_p_ortho.o : ./grid_gto_p_ortho.F90 ./parini_mod.o 
 ./dynamics_md_fixlat.o : ./dynamics_md_fixlat.F90 ./potential_main_minhocao.o ./constants_minhocao_mod.o ./minhocao_mod.o ./parini_mod.o 
 ./logo_minhocao.o : ./logo_minhocao.F90 
 ./fingerprint_XYZ2SM.o : ./fingerprint_XYZ2SM.F90 

@@ -5,6 +5,7 @@ subroutine test_cal_pot_r2gauss_s
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_rat, atom_allocate, atom_deallocate_old
     use mod_electrostatics, only: typ_poisson
+    use mod_colors, only: green_passed, red_failed
     implicit none
     !integer:: nx, ny, nz
     real(8):: gw, q, xyz(3), ener, gausswidth(1), errmax
@@ -56,10 +57,10 @@ subroutine test_cal_pot_r2gauss_s
     errmax=maxval(abs(poisson%pot-pot))
     !errmax=maxval(abs(pot_t-pot))
     !errmax_vgrad=maxval(abs(vgrad_t-vgrad))
-    if (errmax<1.d-7) then
-        write(output_unit, *) "Passed in test_cal_pot_r2gauss_s: errmax"
+    if(errmax<1.d-7) then
+        write(output_unit,'(2a)') green_passed,' in test_cal_pot_r2gauss_s: errmax'
     else
-        write(error_unit,'(a,es14.5)') "Failed in test_cal_pot_r2gauss_s: errmax=",errmax
+        write(error_unit,'(2a,es14.5)') red_failed,' in test_cal_pot_r2gauss_s: errmax=',errmax
         call exit(1)
     end if
     !if (errmax_vgrad<1.d-7) then

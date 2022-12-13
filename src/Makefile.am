@@ -65,7 +65,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 es_hartree_kspace.F90 specfun.F90 \
 		es_coulomb_p3d_bias.F90 \
 		es_coulomb_p3d_dielec.F90 \
-		grid_rp4gto_sym.F90  grid_gto_sym_ortho.F90 \
+		grid_rp4gto_sym.F90  grid_gto_s_ortho.F90 grid_gto_p_ortho.F90 grid_rp2gto_s_ortho.F90 \
 		grid_gto_sym.F90 grid_basic.F90 \
 		es_hartree_fourier.F90 es_hartree_main.F90 es_hartree_bps.F90 \
 		cell_linkedlists.F90 \
