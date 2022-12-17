@@ -13,6 +13,8 @@ external-modules = ["yaml_parse","dictionaries","dynamic_memory","yaml_output",
     "m_forces","siesta_options","basis_types","atm_types","f_utils","yaml_strings",
     "interface_tinker","Poisson_Solver"]
 
+#[dependencies]
+#stdlib = { git="https://github.com/fortran-lang/stdlib", branch="stdlib-fpm" }
 
 [install]
 library = false
