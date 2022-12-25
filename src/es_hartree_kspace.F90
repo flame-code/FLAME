@@ -37,7 +37,7 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     integer:: igpxt, igpyt, igpzt
     integer:: ngpx_ext, ngpy_ext, ngpz_ext, nadd
     real(8):: tt1, pi, fourpi, hmin, daw, sf2
-    real(8):: ss1, ss2, ss3, ss4
+    real(8):: ss1 !, ss2, ss3, ss4
     real(8):: akx, aky, akz, aknorm2
     real(8), allocatable:: rho_ext(:,:,:), pot_ext(:,:,:)
     integer(8):: planf, planb
@@ -91,16 +91,17 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
         if(greenf_kspace%npow==-4) then
             if(aknorm2<1.d-20) then
                 ss1=2.d0*pi/sf**2
-                ss2=2.d0*pi/(2.d0*sf)**2
-                ss3=2.d0*pi/(3.d0*sf)**2
-                ss4=2.d0*pi/(4.d0*sf)**2
+                !ss2=2.d0*pi/(2.d0*sf)**2
+                !ss3=2.d0*pi/(3.d0*sf)**2
+                !ss4=2.d0*pi/(4.d0*sf)**2
             else
                 ss1=fourpi*daw(sqrt(aknorm2)/sf*0.5d0)/(sqrt(aknorm2)*sf)
-                ss2=fourpi*daw(sqrt(aknorm2)/(2.d0*sf)*0.5d0)/(sqrt(aknorm2)*(2.d0*sf))
-                ss3=fourpi*daw(sqrt(aknorm2)/(3.d0*sf)*0.5d0)/(sqrt(aknorm2)*(3.d0*sf))
-                ss4=fourpi*daw(sqrt(aknorm2)/(4.d0*sf)*0.5d0)/(sqrt(aknorm2)*(4.d0*sf))
+                !ss2=fourpi*daw(sqrt(aknorm2)/(2.d0*sf)*0.5d0)/(sqrt(aknorm2)*(2.d0*sf))
+                !ss3=fourpi*daw(sqrt(aknorm2)/(3.d0*sf)*0.5d0)/(sqrt(aknorm2)*(3.d0*sf))
+                !ss4=fourpi*daw(sqrt(aknorm2)/(4.d0*sf)*0.5d0)/(sqrt(aknorm2)*(4.d0*sf))
             endif
-            tt1=4.d0*ss1-6.d0*ss2+4.d0*ss3-ss4
+            !tt1=4.d0*ss1-6.d0*ss2+4.d0*ss3-ss4
+            tt1=ss1
         else
             call greenf_kspace%get_greenf_kspace_single(sqrt(aknorm2),sf,tt1)
         endif
