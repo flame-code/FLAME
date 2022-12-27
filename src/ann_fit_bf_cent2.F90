@@ -3,7 +3,7 @@ module mod_fit_bf_cent2
     implicit none
     private
     public:: get_basis_functions_cent2
-    public:: cal_pot_gauss_s, cal_pot_r2gauss_s
+    public:: cal_pot_gauss_s, cal_pot_gauss_p, cal_pot_r2gauss_s
     real(8):: rgcut=5.d0
     real(8), allocatable:: c_s_t(:)
     real(8), allocatable:: c_p_t(:)
@@ -1932,16 +1932,20 @@ subroutine cal_pot_gauss_p(parini,poisson,pot,reset,xyz,gw,p,vgrad)
     !local variables
     !type(typ_atoms):: atoms
     real(8):: pi, sf, ss0, ss1, ss2, ss3, ss4
-    real(8):: x, y, z, r, tt1, p_dot_r
+    real(8):: x, y, z, r, tt1, tt2, ddd, p_dot_r
     real(8):: uu1, vv1, qq1, sft
     real(8):: yy1, ff1, hh1
+    real(8):: sf_1, sf_2, a, b
     real(8):: tg0, tg1, tg2, tg3, tg4
     integer:: ix, iy, iz
     pi=4.d0*atan(1.d0)
     if(reset) then
         pot=0.d0
     endif
-    sf=parini%screening_factor
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    a=-sf_2/(sf_1-sf_2)
+    b= sf_1/(sf_1-sf_2)
     do iz=1,poisson%ngpz
     do iy=1,poisson%ngpy
     do ix=1,poisson%ngpx
@@ -1951,78 +1955,32 @@ subroutine cal_pot_gauss_p(parini,poisson,pot,reset,xyz,gw,p,vgrad)
         r=sqrt(x**2+y**2+z**2)
         p_dot_r=x*p(1)+y*p(2)+z*p(3)
         if(r<1.d-10) then
-            ss0=4.d0*p_dot_r/(3.d0*sqrt(pi)*gw**3)
-            tg0=-3.d0*4.d0*p_dot_r/(3.d0*sqrt(pi)*gw**4)
-            sft=sf
-            tt1=3.d0*sqrt(pi)*gw**3*(1.d0+sft**2*gw**2)**2
-            ss1=4.d0*p_dot_r*(1.d0+3.d0*sft**2*gw**2)/tt1
-            yy1=3.d0+10.d0*gw**2*sft**2+15.d0*gw**4*sft**4
-            tg1=(-4.d0*p_dot_r*yy1)/(3.d0*sqrt(pi)*gw**4*tt1**3)
-            !sft=2.d0*sf
-            !tt1=3.d0*sqrt(pi)*gw**3*(1.d0+sft**2*gw**2)**2
-            !ss2=4.d0*p_dot_r*(1.d0+3.d0*sft**2*gw**2)/tt1
-            !yy1=3.d0+10.d0*gw**2*sft**2+15.d0*gw**4*sft**4
-            !tg2=(-4.d0*p_dot_r*yy1)/(3.d0*sqrt(pi)*gw**4*tt1**3)
-            !sft=3.d0*sf
-            !tt1=3.d0*sqrt(pi)*gw**3*(1.d0+sft**2*gw**2)**2
-            !ss3=4.d0*p_dot_r*(1.d0+3.d0*sft**2*gw**2)/tt1
-            !yy1=3.d0+10.d0*gw**2*sft**2+15.d0*gw**4*sft**4
-            !tg3=(-4.d0*p_dot_r*yy1)/(3.d0*sqrt(pi)*gw**4*tt1**3)
-            !sft=4.d0*sf
-            !tt1=3.d0*sqrt(pi)*gw**3*(1.d0+sft**2*gw**2)**2
-            !ss4=4.d0*p_dot_r*(1.d0+3.d0*sft**2*gw**2)/tt1
-            !yy1=3.d0+10.d0*gw**2*sft**2+15.d0*gw**4*sft**4
-            !tg4=(-4.d0*p_dot_r*yy1)/(3.d0*sqrt(pi)*gw**4*tt1**3)
+            ss1=0.d0
+            ss2=0.d0
+            tg1=0.d0
+            tg2=0.d0
         else
-            ss0=p_dot_r*(-2.d0*r*exp(-(r/gw)**2)/(sqrt(pi)*gw)+erf(r/gw))/r**3
-            tg0=-4.d0*p_dot_r*exp(-(r/gw)**2)/(sqrt(pi)*gw**4)
-            sft=sf
-            tt1=1.d0+sft**2*gw**2
-            uu1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw
-            vv1=(1.d0+2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            qq1=sqrt(pi)*r**3*gw*(tt1)**1.5d0
-            ss1=p_dot_r*(-2.d0*r*sqrt(tt1)*exp(-(r/gw)**2)+uu1*vv1)/qq1
-            hh1=2.d0*r*tt1*(sft**2*gw**4*tt1-2.d0*r**2*(1.d0+3.d0*sft**2*gw**2*tt1))
-            yy1=sft**2*gw**5*sqrt(pi*tt1)*erf(r/(gw*sqrt(tt1)))
-            ff1=(-4.d0*r**4*sft**4+tt1**2+4.d0*r**2*sft**2*tt1)*exp(-(sft*r)**2/tt1)
-            tg1=p_dot_r*(hh1*exp(-(r/gw)**2)-yy1*ff1)/(sqrt(pi)*r**3*gw**4*tt1**4)
-            !sft=2.d0*sf
-            !tt1=1.d0+sft**2*gw**2
-            !uu1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw
-            !vv1=(1.d0+2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            !qq1=sqrt(pi)*r**3*gw*(tt1)**1.5d0
-            !ss2=p_dot_r*(-2.d0*r*sqrt(tt1)*exp(-(r/gw)**2)+uu1*vv1)/qq1
-            !hh1=2.d0*r*tt1*(sft**2*gw**4*tt1-2.d0*r**2*(1.d0+3.d0*sft**2*gw**2*tt1))
-            !yy1=sft**2*gw**5*sqrt(pi*tt1)*erf(r/(gw*sqrt(tt1)))
-            !ff1=(-4.d0*r**4*sft**4+tt1**2+4.d0*r**2*sft**2*tt1)*exp(-(sft*r)**2/tt1)
-            !tg2=p_dot_r*(hh1*exp(-(r/gw)**2)-yy1*ff1)/(sqrt(pi)*r**3*gw**4*tt1**4)
-            !sft=3.d0*sf
-            !tt1=1.d0+sft**2*gw**2
-            !uu1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw
-            !vv1=(1.d0+2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            !qq1=sqrt(pi)*r**3*gw*(tt1)**1.5d0
-            !ss3=p_dot_r*(-2.d0*r*sqrt(tt1)*exp(-(r/gw)**2)+uu1*vv1)/qq1
-            !hh1=2.d0*r*tt1*(sft**2*gw**4*tt1-2.d0*r**2*(1.d0+3.d0*sft**2*gw**2*tt1))
-            !yy1=sft**2*gw**5*sqrt(pi*tt1)*erf(r/(gw*sqrt(tt1)))
-            !ff1=(-4.d0*r**4*sft**4+tt1**2+4.d0*r**2*sft**2*tt1)*exp(-(sft*r)**2/tt1)
-            !tg3=p_dot_r*(hh1*exp(-(r/gw)**2)-yy1*ff1)/(sqrt(pi)*r**3*gw**4*tt1**4)
-            !sft=4.d0*sf
-            !tt1=1.d0+sft**2*gw**2
-            !uu1=exp(-(sft*r)**2/tt1)*sqrt(pi)*gw
-            !vv1=(1.d0+2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            !qq1=sqrt(pi)*r**3*gw*(tt1)**1.5d0
-            !ss4=p_dot_r*(-2.d0*r*sqrt(tt1)*exp(-(r/gw)**2)+uu1*vv1)/qq1
-            !hh1=2.d0*r*tt1*(sft**2*gw**4*tt1-2.d0*r**2*(1.d0+3.d0*sft**2*gw**2*tt1))
-            !yy1=sft**2*gw**5*sqrt(pi*tt1)*erf(r/(gw*sqrt(tt1)))
-            !ff1=(-4.d0*r**4*sft**4+tt1**2+4.d0*r**2*sft**2*tt1)*exp(-(sft*r)**2/tt1)
-            !tg4=p_dot_r*(hh1*exp(-(r/gw)**2)-yy1*ff1)/(sqrt(pi)*r**3*gw**4*tt1**4)
+            tt1=sf_1/sqrt(1.d0+(sf_1*gw)**2)
+            tt2=sf_2/sqrt(1.d0+(sf_2*gw)**2)
+            if((r*tt1)**2>50.d0) then
+                ss1=erf(tt1*r)/r**3
+                tg1=0.d0
+            else
+                ddd=exp(-(r*tt1)**2)
+                ss1=erf(tt1*r)/r**3-2.d0*sf_1/(r**2*sqrt(pi*(1.d0+(sf_1*gw)**2)))*ddd
+                tg1=-4.d0*sf_1**5*gw/sqrt(pi*(1.d0+(sf_1*gw)**2)**5)*ddd
+            endif
+            if((r*tt2)**2>50.d0) then
+                ss2=erf(tt2*r)/r**3
+                tg2=0.d0
+            else
+                ddd=exp(-(r*tt2)**2)
+                ss2=erf(tt2*r)/r**3-2.d0*sf_2/(r**2*sqrt(pi*(1.d0+(sf_2*gw)**2)))*ddd
+                tg2=-4.d0*sf_2**5*gw/sqrt(pi*(1.d0+(sf_2*gw)**2)**5)*ddd
+            endif
         endif
-        !write(*,'(3i4,5es14.5)') ix,iy,iz,ss0,ss1,ss2,ss3,ss4
-        !pot(ix,iy,iz)=pot(ix,iy,iz)+ss0-4.d0*ss1+6.d0*ss2-4.d0*ss3+ss4
-        pot(ix,iy,iz)=pot(ix,iy,iz)+ss0-ss1
-        !vgrad(ix,iy,iz)=tg0-4.d0*tg1+6.d0*tg2-4.d0*tg3+tg4
-        vgrad(ix,iy,iz)=tg0-tg1
-        !poisson%pot(ix,iy,iz)=ss0-2.d0*ss1+ss2
+        pot(ix,iy,iz)=pot(ix,iy,iz)+p_dot_r*(a*ss1+b*ss2)
+        vgrad(ix,iy,iz)=p_dot_r*(a*tg1+b*tg2)
     enddo
     enddo
     enddo
@@ -2045,8 +2003,8 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     real(8), intent(inout):: vgrad(poisson%ngpx,poisson%ngpy,poisson%ngpz)
     !local variables
     !type(typ_atoms):: atoms
-    real(8):: pi, sf, ss0, ss1, ss2, ss3, ss4
-    real(8):: x, y, z, r, tt1, uu1, ww1, qq1, vv1, sft
+    real(8):: pi, sf_1, sf_2, ss0, ss1, ss2, ss3, ss4
+    real(8):: x, y, z, r, tt1, tt2, a, b, uu1, ww1, qq1, vv1, sft
     real(8):: tg0, tg1, tg2, tg3, tg4
     real(8):: dd0, dd1, dd2, dd3, dd4
     integer:: ix, iy, iz
@@ -2054,7 +2012,10 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     if(reset) then
         pot=0.d0
     endif
-    sf=parini%screening_factor
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    a=-sf_2/(sf_1-sf_2)
+    b= sf_1/(sf_1-sf_2)
     do iz=1,poisson%ngpz
     do iy=1,poisson%ngpy
     do ix=1,poisson%ngpx
@@ -2063,88 +2024,28 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
         z=poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
         r=sqrt(x**2+y**2+z**2)
         if(r<1.d-10) then
-            ss0=2.d0/(sqrt(pi)*gw)
-            ss1=2.d0/(sqrt(pi)*gw*(1.d0+sf**2*gw**2))
-            !ss2=2.d0/(sqrt(pi)*gw*(1.d0+(2.d0*sf)**2*gw**2))
-            !ss3=2.d0/(sqrt(pi)*gw*(1.d0+(3.d0*sf)**2*gw**2))
-            !ss4=2.d0/(sqrt(pi)*gw*(1.d0+(4.d0*sf)**2*gw**2))
-            tg0=-2.d0/(sqrt(pi)*gw**2)
-            tg1=-2.d0*(1.d0+3.d0*sf**2*gw**2)/(sqrt(pi)*(gw*(1.d0+sf**2*gw**2))**2)
-            !tg2=-2.d0*(1.d0+3.d0*(2.d0*sf)**2*gw**2)/(sqrt(pi)*(gw*(1.d0+(2.d0*sf)**2*gw**2))**2)
-            !tg3=-2.d0*(1.d0+3.d0*(3.d0*sf)**2*gw**2)/(sqrt(pi)*(gw*(1.d0+(3.d0*sf)**2*gw**2))**2)
-            !tg4=-2.d0*(1.d0+3.d0*(4.d0*sf)**2*gw**2)/(sqrt(pi)*(gw*(1.d0+(4.d0*sf)**2*gw**2))**2)
+            ss1=2.d0*sf_1/sqrt(pi*(1.d0+(sf_1*gw)**2))
+            ss2=2.d0*sf_2/sqrt(pi*(1.d0+(sf_2*gw)**2))
+            tg1=-2.d0*sf_1**3*gw/sqrt(pi*(1.d0+(sf_1*gw)**2)**3)
+            tg2=-2.d0*sf_2**3*gw/sqrt(pi*(1.d0+(sf_2*gw)**2)**3)
         else
-            dd0=(r/gw)**2
-            if(dd0>50.d0) then
-                dd0=0.d0
+            tt1=sf_1/sqrt(1.d0+(sf_1*gw)**2)
+            tt2=sf_2/sqrt(1.d0+(sf_2*gw)**2)
+            ss1=erf(tt1*r)/r
+            ss2=erf(tt2*r)/r
+            if((r*tt1)**2>50.d0) then
+                tg1=0.d0
             else
-                dd0=exp(-dd0)
+                tg1=-2.d0*sf_1**3*gw/sqrt(pi*(1.d0+(sf_1*gw)**2)**3)*exp(-(r*tt1)**2)
             endif
-            dd1=(1.d0*sf*r)**2/(1.d0+(1.d0*sf)**2*gw**2)
-            if(dd1>50.d0) then
-                dd1=0.d0
+            if((r*tt2)**2>50.d0) then
+                tg2=0.d0
             else
-                dd1=exp(-dd1)
+                tg2=-2.d0*sf_2**3*gw/sqrt(pi*(1.d0+(sf_2*gw)**2)**3)*exp(-(r*tt2)**2)
             endif
-            !dd2=(2.d0*sf*r)**2/(1.d0+(2.d0*sf)**2*gw**2)
-            !if(dd2>50.d0) then
-            !    dd2=0.d0
-            !else
-            !    dd2=exp(-dd2)
-            !endif
-            !dd3=(3.d0*sf*r)**2/(1.d0+(3.d0*sf)**2*gw**2)
-            !if(dd3>50.d0) then
-            !    dd3=0.d0
-            !else
-            !    dd3=exp(-dd3)
-            !endif
-            !dd4=(4.d0*sf*r)**2/(1.d0+(4.d0*sf)**2*gw**2)
-            !if(dd4>50.d0) then
-            !    dd4=0.d0
-            !else
-            !    dd4=exp(-dd4)
-            !endif
-            ss0=erf(r/gw)/r
-            tt1=1.d0+sf**2*gw**2
-            ss1=erf(r/(gw*sqrt(tt1)))*dd1/(r*sqrt(tt1))
-            !tt1=1.d0+(2.d0*sf)**2*gw**2
-            !ss2=erf(r/(gw*sqrt(tt1)))*dd2/(r*sqrt(tt1))
-            !tt1=1.d0+(3.d0*sf)**2*gw**2
-            !ss3=erf(r/(gw*sqrt(tt1)))*dd3/(r*sqrt(tt1))
-            !tt1=1.d0+(4.d0*sf)**2*gw**2
-            !ss4=erf(r/(gw*sqrt(tt1)))*dd4/(r*sqrt(tt1))
-            tg0=-2.d0*dd0/(sqrt(pi)*gw**2)
-            sft=sf
-            tt1=1.d0+sft**2*gw**2
-            qq1=1.d0+2.d0*sft**2*gw**2
-            ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            vv1=dd1*sqrt(pi)*gw**3*sft**2
-            tg1=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
-            !sft=2.d0*sf
-            !tt1=1.d0+sft**2*gw**2
-            !qq1=1.d0+2.d0*sft**2*gw**2
-            !ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            !uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            !vv1=dd2*sqrt(pi)*gw**3*sft**2
-            !tg2=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
-            !sft=3.d0*sf
-            !tt1=1.d0+sft**2*gw**2
-            !qq1=1.d0+2.d0*sft**2*gw**2
-            !ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            !uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            !vv1=dd3*sqrt(pi)*gw**3*sft**2
-            !tg3=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
-            !sft=4.d0*sf
-            !tt1=1.d0+sft**2*gw**2
-            !qq1=1.d0+2.d0*sft**2*gw**2
-            !ww1=(1.d0-2.d0*r**2*sft**2+gw**2*sft**2)*erf(r/(gw*sqrt(tt1)))
-            !uu1=sqrt(pi)*r*gw**2*tt1**2.5d0
-            !vv1=dd4*sqrt(pi)*gw**3*sft**2
-            !tg4=(-2.d0*r*sqrt(tt1)*qq1*dd0-vv1*ww1)/uu1
         endif
-        pot(ix,iy,iz)=pot(ix,iy,iz)+q*(ss0-ss1)
-        vgrad(ix,iy,iz)=q*(tg0-tg1)
+        pot(ix,iy,iz)=pot(ix,iy,iz)+q*(a*ss1+b*ss2)
+        vgrad(ix,iy,iz)=q*(a*tg1+b*tg2)
     enddo
     enddo
     enddo
@@ -2168,7 +2069,8 @@ subroutine cal_pot_r2gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     !local variables
     !type(typ_atoms):: atoms
     real(8):: pi, sf, ss0, ss1, ss2, ss3, ss4
-    real(8):: x, y, z, r, tt1, uu1, ww1, qq1, vv1, sft, tt2, tt3, tt4, tt5, tt0
+    real(8):: x, y, z, r, tt1, uu1, ww1, qq1, vv1, sft, tt2, ddd, tt3, tt4, tt5, tt0
+    real(8):: sf_1, sf_2, a, b
     real(8):: tg0, tg1, tg2, tg3, tg4, tg5
     real(8):: sg0, sg1, sg2, sg3, sg4
     real(8):: ee0, ee1
@@ -2177,7 +2079,10 @@ subroutine cal_pot_r2gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     if(reset) then
         pot=0.d0
     endif
-    sf=parini%screening_factor
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    a=-sf_2/(sf_1-sf_2)
+    b= sf_1/(sf_1-sf_2)
     do iz=1,poisson%ngpz
     do iy=1,poisson%ngpy
     do ix=1,poisson%ngpx
@@ -2186,118 +2091,32 @@ subroutine cal_pot_r2gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
         z=poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
         r=sqrt(x**2+y**2+z**2)
         if(r<1.d-10) then
-            !stop 'OOOOOOOOOOOOO'
-            ss0=4.d0/(3.d0*sqrt(pi)*gw)
-            sg0=-4.d0/(3.d0*sqrt(pi)*gw**2)
-            sft=1.d0*sf
-            ss1=4.d0/(3.d0*sqrt(pi)*gw*(1.d0+(gw*sft)**2)**2)
-            sg1=(-4.d0*(1.d0+5.d0*(gw*sft)**2))/(3.d0*sqrt(pi)*gw**2*(1.d0+(gw*sft)**2)**3)
-            !sft=2.d0*sf
-            !ss2=4.d0/(3.d0*sqrt(pi)*gw*(1.d0+(gw*sft)**2)**2)
-            !sg2=(-4.d0*(1.d0+5.d0*(gw*sft)**2))/(3.d0*sqrt(pi)*gw**2*(1.d0+(gw*sft)**2)**3)
-            !sft=3.d0*sf
-            !ss3=4.d0/(3.d0*sqrt(pi)*gw*(1.d0+(gw*sft)**2)**2)
-            !sg3=(-4.d0*(1.d0+5.d0*(gw*sft)**2))/(3.d0*sqrt(pi)*gw**2*(1.d0+(gw*sft)**2)**3)
-            !sft=4.d0*sf
-            !ss4=4.d0/(3.d0*sqrt(pi)*gw*(1.d0+(gw*sft)**2)**2)
-            !sg4=(-4.d0*(1.d0+5.d0*(gw*sft)**2))/(3.d0*sqrt(pi)*gw**2*(1.d0+(gw*sft)**2)**3)
+            ss1=2.d0*sf_1*(3.d0+2.d0*(sf_1*gw)**2)/(3.d0*sqrt(pi*(1.d0+(sf_1*gw)**2)**3))
+            ss2=2.d0*sf_2*(3.d0+2.d0*(sf_2*gw)**2)/(3.d0*sqrt(pi*(1.d0+(sf_2*gw)**2)**3))
+            tg1=-2.d0*sf_1**3*gw*(5.d0+7.d0*(sf_1*gw)**2+2.d0*(sf_1*gw)**4)/(3.d0*sqrt(pi*(1.d0+(sf_1*gw)**2)**7))
+            tg2=-2.d0*sf_2**3*gw*(5.d0+7.d0*(sf_2*gw)**2+2.d0*(sf_2*gw)**4)/(3.d0*sqrt(pi*(1.d0+(sf_2*gw)**2)**7))
         else
-            ee0=r**2/gw**2
-            if(ee0>50.d0) then
-                ee0=0.d0
+            tt1=sf_1/sqrt(1.d0+(sf_1*gw)**2)
+            tt2=sf_2/sqrt(1.d0+(sf_2*gw)**2)
+            if((r*tt1)**2>50.d0) then
+                ss1=erf(tt1*r)/r
+                tg1=0.d0
             else
-                ee0=exp(-ee0)
+                ddd=exp(-(r*tt1)**2)
+                ss1=erf(tt1*r)/r-2.d0*sf_1**3*gw**2/(3.d0*sqrt(pi*(1.d0+(sf_1*gw)**2)**3))*ddd
+                tg1=-2.d0*sf_1**3*gw*(5.d0+2.d0*(sf_1*gw)**4+(sf_1*gw)**2*(7.d0+2.d0*(sf_1*r)**2))/(3.d0*sqrt(pi*(1.d0+(sf_1*gw)**2)**7))*ddd
             endif
-            ss0=-2.d0/(3.d0*gw*sqrt(pi))*ee0+(erf(r/gw))/r
-            sg0=ee0*(-4.d0*(r**2+gw**2))/(3.d0*sqrt(pi)*gw**4)
-            sft=1.d0*sf
-            tt0=(sft*gw)**2
-            tt1=1.d0+sft**2*gw**2
-            ee1=(sft*r)**2/tt1
-            if(ee1>50.d0) then
-                ee1=0.d0
+            if((r*tt2)**2>50.d0) then
+                ss2=erf(tt2*r)/r
+                tg2=0.d0
             else
-                ee1=exp(-ee1)
+                ddd=exp(-(r*tt2)**2)
+                ss2=erf(tt2*r)/r-2.d0*sf_2**3*gw**2/(3.d0*sqrt(pi*(1.d0+(sf_2*gw)**2)**3))*ddd
+                tg2=-2.d0*sf_2**3*gw*(5.d0+2.d0*(sf_2*gw)**4+(sf_2*gw)**2*(7.d0+2.d0*(sf_2*r)**2))/(3.d0*sqrt(pi*(1.d0+(sf_2*gw)**2)**7))*ddd
             endif
-            tt2=-2.d0*r*sqrt(tt1)*(1.d0+2.d0*gw**2*sft**2)*ee0
-            tt3=3.d0+gw**2*sft**2*(5.d0+2.d0*(r**2+gw**2)*sft**2)
-            tt4=3.d0*sqrt(pi)*r*gw*(tt1)**2.5d0
-            tt5=erf(r/(gw*sqrt(tt1)))
-            ss1=(tt2+ee1*sqrt(pi)*gw*tt3*tt5)/tt4
-            tg1=1.d0+4.d0*gw**2*sft**2+6.d0*gw**4*sft**4+4.d0*gw**6*sft**6
-            tg2=gw**2*(2.d0+tt0*(7.d0+tt0*(3.d0-2.d0*tt0)))+2.d0*r**2*tg1
-            tg3=-4.d0*r**4*gw**2*sft**6+tt1**2*(5.d0+2.d0*gw**2*sft**2)
-            tg4=2.d0*r**2*sft**2*(-5.d0-4.d0*gw**2*sft**2 + gw**4*sft**4)
-            tg5=ee1*gw**5*sft**2*sqrt(pi*tt1)*(tg3+tg4)
-            sg1=(-2.d0*r*tt1*ee0*tg2-tg5*tt5)/(3.d0*sqrt(pi)*r*gw**4*tt1**5)
-
-            !sft=2.d0*sf
-            !tt0=(sft*gw)**2
-            !tt1=1.d0+sft**2*gw**2
-            !ee1=(sft*r)**2/tt1
-            !if(ee1>50.d0) then
-            !    ee1=0.d0
-            !else
-            !    ee1=exp(-ee1)
-            !endif
-            !tt2=-2.d0*r*sqrt(tt1)*(1.d0+2.d0*gw**2*sft**2)*ee0
-            !tt3=3.d0+gw**2*sft**2*(5.d0+2.d0*(r**2+gw**2)*sft**2)
-            !tt4=3.d0*sqrt(pi)*r*gw*(tt1)**2.5d0
-            !tt5=erf(r/(gw*sqrt(tt1)))
-            !ss2=(tt2+ee1*sqrt(pi)*gw*tt3*tt5)/tt4
-            !tg1=1.d0+4.d0*gw**2*sft**2+6.d0*gw**4*sft**4+4.d0*gw**6*sft**6
-            !tg2=gw**2*(2.d0+tt0*(7.d0+tt0*(3.d0-2.d0*tt0)))+2.d0*r**2*tg1
-            !tg3=-4.d0*r**4*gw**2*sft**6+tt1**2*(5.d0+2.d0*gw**2*sft**2)
-            !tg4=2.d0*r**2*sft**2*(-5.d0-4.d0*gw**2*sft**2 + gw**4*sft**4)
-            !tg5=ee1*gw**5*sft**2*sqrt(pi*tt1)*(tg3+tg4)
-            !sg2=(-2.d0*r*tt1*ee0*tg2-tg5*tt5)/(3.d0*sqrt(pi)*r*gw**4*tt1**5)
-
-            !sft=3.d0*sf
-            !tt0=(sft*gw)**2
-            !tt1=1.d0+sft**2*gw**2
-            !ee1=(sft*r)**2/tt1
-            !if(ee1>50.d0) then
-            !    ee1=0.d0
-            !else
-            !    ee1=exp(-ee1)
-            !endif
-            !tt2=-2.d0*r*sqrt(tt1)*(1.d0+2.d0*gw**2*sft**2)*ee0
-            !tt3=3.d0+gw**2*sft**2*(5.d0+2.d0*(r**2+gw**2)*sft**2)
-            !tt4=3.d0*sqrt(pi)*r*gw*(tt1)**2.5d0
-            !tt5=erf(r/(gw*sqrt(tt1)))
-            !ss3=(tt2+ee1*sqrt(pi)*gw*tt3*tt5)/tt4
-            !tg1=1.d0+4.d0*gw**2*sft**2+6.d0*gw**4*sft**4+4.d0*gw**6*sft**6
-            !tg2=gw**2*(2.d0+tt0*(7.d0+tt0*(3.d0-2.d0*tt0)))+2.d0*r**2*tg1
-            !tg3=-4.d0*r**4*gw**2*sft**6+tt1**2*(5.d0+2.d0*gw**2*sft**2)
-            !tg4=2.d0*r**2*sft**2*(-5.d0-4.d0*gw**2*sft**2 + gw**4*sft**4)
-            !tg5=ee1*gw**5*sft**2*sqrt(pi*tt1)*(tg3+tg4)
-            !sg3=(-2.d0*r*tt1*ee0*tg2-tg5*tt5)/(3.d0*sqrt(pi)*r*gw**4*tt1**5)
-
-            !sft=4.d0*sf
-            !tt0=(sft*gw)**2
-            !tt1=1.d0+sft**2*gw**2
-            !ee1=(sft*r)**2/tt1
-            !if(ee1>50.d0) then
-            !    ee1=0.d0
-            !else
-            !    ee1=exp(-ee1)
-            !endif
-            !tt2=-2.d0*r*sqrt(tt1)*(1.d0+2.d0*gw**2*sft**2)*ee0
-            !tt3=3.d0+gw**2*sft**2*(5.d0+2.d0*(r**2+gw**2)*sft**2)
-            !tt4=3.d0*sqrt(pi)*r*gw*(tt1)**2.5d0
-            !tt5=erf(r/(gw*sqrt(tt1)))
-            !ss4=(tt2+ee1*sqrt(pi)*gw*tt3*tt5)/tt4
-            !tg1=1.d0+4.d0*gw**2*sft**2+6.d0*gw**4*sft**4+4.d0*gw**6*sft**6
-            !tg2=gw**2*(2.d0+tt0*(7.d0+tt0*(3.d0-2.d0*tt0)))+2.d0*r**2*tg1
-            !tg3=-4.d0*r**4*gw**2*sft**6+tt1**2*(5.d0+2.d0*gw**2*sft**2)
-            !tg4=2.d0*r**2*sft**2*(-5.d0-4.d0*gw**2*sft**2 + gw**4*sft**4)
-            !tg5=ee1*gw**5*sft**2*sqrt(pi*tt1)*(tg3+tg4)
-            !sg4=(-2.d0*r*tt1*ee0*tg2-tg5*tt5)/(3.d0*sqrt(pi)*r*gw**4*tt1**5)
         endif
-        !pot(ix,iy,iz)=pot(ix,iy,iz)+q*(ss0-4.d0*ss1+6.d0*ss2-4.d0*ss3+ss4)
-        pot(ix,iy,iz)=pot(ix,iy,iz)+q*(ss0-ss1)
-        !vgrad(ix,iy,iz)=q*(sg0-4.d0*sg1+6.d0*sg2-4.d0*sg3+sg4)
-        vgrad(ix,iy,iz)=q*(sg0-sg1)
+        pot(ix,iy,iz)=pot(ix,iy,iz)+q*(a*ss1+b*ss2)
+        vgrad(ix,iy,iz)=q*(a*tg1+b*tg2)
     enddo
     enddo
     enddo
