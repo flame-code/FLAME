@@ -36,8 +36,9 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     integer:: igpx, igpy, igpz
     integer:: igpxt, igpyt, igpzt
     integer:: ngpx_ext, ngpy_ext, ngpz_ext, nadd
-    real(8):: tt1, pi, fourpi, hmin, daw, sf2, sf_1, sf_2, a, b
-    real(8):: ss1, ss2, tt, c1, c2, c3
+    real(8):: pi, fourpi, hmin, daw, sf2, sf_1, sf_2, sf_3, a, b, c
+    real(8):: tt0, tt1, tt2, tt3, tt4
+    real(8):: ss1, ss2, ss3, ss4, tt, c1, c2, c3
     real(8):: akx, aky, akz, aknorm2
     real(8), allocatable:: rho_ext(:,:,:), pot_ext(:,:,:)
     integer(8):: planf, planb
@@ -78,8 +79,13 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     call dfftw_execute(planf)
     sf_1=sf
     sf_2=sf*1.1d0
-    a=-sf_2/(sf_1-sf_2)
-    b= sf_1/(sf_1-sf_2)
+    sf_3=sf*1.2d0
+    !a=-sf_2/(sf_1-sf_2)
+    !b= sf_1/(sf_1-sf_2)
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+
     c1=-1.d0/8.d0
     c2=1.d0/96.d0
     c3=-1.d0/1536.d0
@@ -101,11 +107,14 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
                 ss1=pi*(1.d0+tt*(c1+tt*(c2+tt*c3)))/sf_1**2 !+O(k^8)
                 tt=aknorm2/sf_2**2
                 ss2=pi*(1.d0+tt*(c1+tt*(c2+tt*c3)))/sf_2**2 !+O(k^8)
+                tt=aknorm2/sf_3**2
+                ss3=pi*(1.d0+tt*(c1+tt*(c2+tt*c3)))/sf_3**2 !+O(k^8)
             else
                 ss1=fourpi*(1.d0-exp(-aknorm2/(4.d0*sf_1**2)))/aknorm2
                 ss2=fourpi*(1.d0-exp(-aknorm2/(4.d0*sf_2**2)))/aknorm2
+                ss3=fourpi*(1.d0-exp(-aknorm2/(4.d0*sf_3**2)))/aknorm2
             endif
-            tt1=a*ss1+b*ss2
+            tt1=a*ss1+b*ss2+c*ss3
         else
             call greenf_kspace%get_greenf_kspace_single(sqrt(aknorm2),sf,tt1)
         endif
