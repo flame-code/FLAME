@@ -7,6 +7,9 @@ module mod_fit_bf_cent2
     real(8):: rgcut=5.d0
     real(8), allocatable:: c_s_t(:)
     real(8), allocatable:: c_p_t(:)
+    !real(8):: time_cal_pot_gauss_p=0.d0
+    !real(8):: time_cal_pot_gauss_s=0.d0
+    !real(8):: time_cal_pot_r2gauss_s=0.d0
     type typ_fitpar
         private
         integer:: ntypat
@@ -778,7 +781,9 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     deallocate(atoms_arr%atoms)
     call fitpar%fini_fit_bf()
     call fitpar_t%fini_fit_bf()
-
+    !write(*,'(a,f10.3)') 'time_cal_pot_gauss_p= ',time_cal_pot_gauss_p
+    !write(*,'(a,f10.3)') 'time_cal_pot_gauss_s= ',time_cal_pot_gauss_s
+    !write(*,'(a,f10.3)') 'time_cal_pot_r2gauss_s= ',time_cal_pot_r2gauss_s
     call f_release_routine()
 end subroutine get_basis_functions_cent2
 !*****************************************************************************************
@@ -1947,7 +1952,14 @@ subroutine cal_pot_gauss_p(parini,poisson,pot,reset,xyz,gw,p,vgrad)
     real(8):: yy1, ff1, hh1
     real(8):: sf_1, sf_2, sf_3, a, b, c
     real(8):: tg0, tg1, tg2, tg3, tg4
-    integer:: ix, iy, iz
+    real(8):: xyz111(3), hgrid(3,3)
+    integer:: itime1, itime2, icount_rate
+    integer:: ix, iy, iz, nx, ny, nz
+    xyz111=poisson%xyz111
+    hgrid=poisson%hgrid
+    nx=poisson%ngpx
+    ny=poisson%ngpy
+    nz=poisson%ngpz
     pi=4.d0*atan(1.d0)
     if(reset) then
         pot=0.d0
@@ -1960,13 +1972,16 @@ subroutine cal_pot_gauss_p(parini,poisson,pot,reset,xyz,gw,p,vgrad)
     a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
     b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
     c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
-
-    do iz=1,poisson%ngpz
-    do iy=1,poisson%ngpy
-    do ix=1,poisson%ngpx
-        x=poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
-        y=poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
-        z=poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
+    !call system_clock(itime1)
+    !$omp parallel default(shared)
+    !$omp do collapse(2) schedule(static,16) &
+    !$omp private(ix,iy,iz,p_dot_r,x,y,z,r,ss1,ss2,ss3,tg1,tg2,tg3,tt1,tt2,tt3,ddd) firstprivate(xyz,xyz111,hgrid,p,sf_1,sf_2,sf_3,a,b,c,gw,pi)
+    do iz=1,nz
+    do iy=1,ny
+    do ix=1,nx
+        x=xyz111(1)+(ix-1)*hgrid(1,1)-xyz(1)
+        y=xyz111(2)+(iy-1)*hgrid(2,2)-xyz(2)
+        z=xyz111(3)+(iz-1)*hgrid(3,3)-xyz(3)
         r=sqrt(x**2+y**2+z**2)
         p_dot_r=x*p(1)+y*p(2)+z*p(3)
         if(r<1.d-10) then
@@ -2010,6 +2025,11 @@ subroutine cal_pot_gauss_p(parini,poisson,pot,reset,xyz,gw,p,vgrad)
     enddo
     enddo
     enddo
+    !$omp end do
+    !$omp end parallel
+    !call system_clock(itime2)
+    !call system_clock(count_rate=icount_rate)
+    !time_cal_pot_gauss_p=time_cal_pot_gauss_p+real(itime2-itime1,8)/real(icount_rate,8)
 end subroutine cal_pot_gauss_p
 !*****************************************************************************************
 subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
@@ -2033,7 +2053,14 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     real(8):: x, y, z, r, tt0, tt1, tt2, tt3, tt4, a, b, c, uu1, ww1, qq1, vv1, sft
     real(8):: tg0, tg1, tg2, tg3, tg4
     real(8):: dd0, dd1, dd2, dd3, dd4
-    integer:: ix, iy, iz
+    real(8):: xyz111(3), hgrid(3,3)
+    integer:: itime1, itime2, icount_rate
+    integer:: ix, iy, iz, nx, ny, nz
+    xyz111=poisson%xyz111
+    hgrid=poisson%hgrid
+    nx=poisson%ngpx
+    ny=poisson%ngpy
+    nz=poisson%ngpz
     pi=4.d0*atan(1.d0)
     if(reset) then
         pot=0.d0
@@ -2047,12 +2074,16 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
     c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
 
-    do iz=1,poisson%ngpz
-    do iy=1,poisson%ngpy
-    do ix=1,poisson%ngpx
-        x=poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
-        y=poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
-        z=poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
+    !call system_clock(itime1)
+    !$omp parallel default(shared)
+    !$omp do collapse(2) schedule(static,16) &
+    !$omp private(ix,iy,iz,x,y,z,r,ss1,ss2,ss3,tg1,tg2,tg3,tt1,tt2,tt3) firstprivate(xyz,xyz111,hgrid,q,sf_1,sf_2,sf_3,a,b,c,gw,pi)
+    do iz=1,nz
+    do iy=1,ny
+    do ix=1,nx
+        x=xyz111(1)+(ix-1)*hgrid(1,1)-xyz(1)
+        y=xyz111(2)+(iy-1)*hgrid(2,2)-xyz(2)
+        z=xyz111(3)+(iz-1)*hgrid(3,3)-xyz(3)
         r=sqrt(x**2+y**2+z**2)
         if(r<1.d-10) then
             ss1=2.d0*sf_1/sqrt(pi*(1.d0+(sf_1*gw)**2))
@@ -2089,6 +2120,11 @@ subroutine cal_pot_gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     enddo
     enddo
     enddo
+    !$omp end do
+    !$omp end parallel
+    !call system_clock(itime2)
+    !call system_clock(count_rate=icount_rate)
+    !time_cal_pot_gauss_s=time_cal_pot_gauss_s+real(itime2-itime1,8)/real(icount_rate,8)
 end subroutine cal_pot_gauss_s
 !*****************************************************************************************
 subroutine cal_pot_r2gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
@@ -2115,7 +2151,14 @@ subroutine cal_pot_r2gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     real(8):: tg0, tg1, tg2, tg3, tg4, tg5
     real(8):: sg0, sg1, sg2, sg3, sg4
     real(8):: ee0, ee1
-    integer:: ix, iy, iz
+    real(8):: xyz111(3), hgrid(3,3)
+    integer:: itime1, itime2, icount_rate
+    integer:: ix, iy, iz, nx, ny, nz
+    xyz111=poisson%xyz111
+    hgrid=poisson%hgrid
+    nx=poisson%ngpx
+    ny=poisson%ngpy
+    nz=poisson%ngpz
     pi=4.d0*atan(1.d0)
     if(reset) then
         pot=0.d0
@@ -2129,12 +2172,16 @@ subroutine cal_pot_r2gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
     c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
 
-    do iz=1,poisson%ngpz
-    do iy=1,poisson%ngpy
-    do ix=1,poisson%ngpx
-        x=poisson%xyz111(1)+(ix-1)*poisson%hgrid(1,1)-xyz(1)
-        y=poisson%xyz111(2)+(iy-1)*poisson%hgrid(2,2)-xyz(2)
-        z=poisson%xyz111(3)+(iz-1)*poisson%hgrid(3,3)-xyz(3)
+    !call system_clock(itime1)
+    !$omp parallel default(shared)
+    !$omp do collapse(2) schedule(static,16) &
+    !$omp private(ix,iy,iz,x,y,z,r,ss1,ss2,ss3,tg1,tg2,tg3,tt1,tt2,tt3,ddd) firstprivate(xyz,xyz111,hgrid,q,sf_1,sf_2,sf_3,a,b,c,gw,pi)
+    do iz=1,nz
+    do iy=1,ny
+    do ix=1,nx
+        x=xyz111(1)+(ix-1)*hgrid(1,1)-xyz(1)
+        y=xyz111(2)+(iy-1)*hgrid(2,2)-xyz(2)
+        z=xyz111(3)+(iz-1)*hgrid(3,3)-xyz(3)
         r=sqrt(x**2+y**2+z**2)
         if(r<1.d-10) then
             ss1=2.d0*sf_1*(3.d0+2.d0*(sf_1*gw)**2)/(3.d0*sqrt(pi*(1.d0+(sf_1*gw)**2)**3))
@@ -2177,6 +2224,11 @@ subroutine cal_pot_r2gauss_s(parini,poisson,pot,reset,xyz,gw,q,vgrad)
     enddo
     enddo
     enddo
+    !$omp end do
+    !$omp end parallel
+    !call system_clock(itime2)
+    !call system_clock(count_rate=icount_rate)
+    !time_cal_pot_r2gauss_s=time_cal_pot_r2gauss_s+real(itime2-itime1,8)/real(icount_rate,8)
 end subroutine cal_pot_r2gauss_s
 !*****************************************************************************************
 subroutine get_dpm_fit_bf_cent2(atoms,dpx,dpy,dpz,dpm_err)
