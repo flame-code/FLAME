@@ -10,8 +10,12 @@ module mod_cent2
         real(8), allocatable:: rho_n_all(:,:,:,:)
         real(8), allocatable:: rho_e_all(:,:,:,:)
         real(8), allocatable:: gwn(:)
-        real(8), allocatable:: gwc(:,:)
-        real(8), allocatable:: gwe_s(:,:)
+        real(8), allocatable:: gwz(:)
+        real(8), allocatable:: bz(:)
+        real(8), allocatable:: gwc(:)
+        real(8), allocatable:: bc(:)
+        real(8), allocatable:: gwe_s(:)
+        real(8), allocatable:: be_s(:)
         real(8), allocatable:: gwe_p(:,:)
         real(8), allocatable:: qcore(:)
         real(8), allocatable:: orb(:)
@@ -298,11 +302,15 @@ subroutine init_bf(self,nbgx,nbgy,nbgz,nat)
     allocate(self%rho_n_all(-nbgx:nbgx,-nbgy:nbgy,-nbgz:nbgz,nat))
     allocate(self%gwn(nat))
     allocate(self%qcore(nat))
-    allocate(self%gwc(2,nat))
     allocate(self%rn(3,nat))
     allocate(self%hardness(self%nbf))
     allocate(self%imap(self%nbf))
-    allocate(self%gwe_s(2,nat))
+    allocate(self%gwz(nat))
+    allocate(self%bz(nat))
+    allocate(self%gwc(nat))
+    allocate(self%bc(nat))
+    allocate(self%gwe_s(nat))
+    allocate(self%be_s(nat))
     allocate(self%gwe_p(2,nat))
     allocate(self%orb(self%nbf))
     allocate(self%re(3,self%nbf))
@@ -317,8 +325,12 @@ subroutine fini_bf(self)
     deallocate(self%rho_n_all)
     deallocate(self%gwn)
     deallocate(self%qcore)
+    deallocate(self%gwz)
+    deallocate(self%bz)
     deallocate(self%gwc)
+    deallocate(self%bc)
     deallocate(self%gwe_s)
+    deallocate(self%be_s)
     deallocate(self%gwe_p)
     deallocate(self%orb)
     deallocate(self%hardness)
@@ -341,13 +353,10 @@ subroutine set_param(self,atoms,ann_arr)
     do iat=1,atoms%nat
         self%gwn(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
         self%qcore(iat)=ann_arr%ann(atoms%itypat(iat))%qcore
-        if(size(ann_arr%ann(atoms%itypat(iat))%gwc)==1) then
-            self%gwc(1,iat)=ann_arr%ann(atoms%itypat(iat))%gwc(1)
-            self%gwc(2,iat)=-1.d0
-        else
-            self%gwc(1,iat)=ann_arr%ann(atoms%itypat(iat))%gwc(1)
-            self%gwc(2,iat)=ann_arr%ann(atoms%itypat(iat))%gwc(2)
-        endif
+        self%gwz(iat)=ann_arr%ann(atoms%itypat(iat))%gwz
+        self%bz(iat)=ann_arr%ann(atoms%itypat(iat))%bz
+        self%gwc(iat)=ann_arr%ann(atoms%itypat(iat))%gwc
+        self%bc(iat)=ann_arr%ann(atoms%itypat(iat))%bc
         self%rn(1:3,iat)=atoms%ratp(1:3,iat)
     enddo
     do ibf=1,self%nbf
@@ -368,12 +377,20 @@ subroutine set_param(self,atoms,ann_arr)
         iat=self%imap(ibf)
         bt_t=self%bt(ibf)
         !write(*,*) 'IAT ',iat,ibf
-        if(bt_t(1:1)=='s') self%gwe_s(1:2,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_s(1:2) !gausswidth
-        if(bt_t(1:1)=='p') self%gwe_p(1:2,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(1:2) !gausswidth*1.20d0
-        if(bt_t(1:1)=='s') self%orb(ibf)=1.d0
-        if(bt_t(1:1)=='p') self%orb(ibf)=0.d0
+        if(bt_t(1:1)=='s') then
+            self%gwe_s(iat)=ann_arr%ann(atoms%itypat(iat))%gwe_s
+            self%be_s(iat)=ann_arr%ann(atoms%itypat(iat))%be_s
+            self%orb(ibf)=1.d0
+        endif
+        if(bt_t(1:1)=='p') then
+            self%gwe_p(1,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(1)
+            self%gwe_p(2,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(2)
+            self%orb(ibf)=0.d0
+        endif
         self%hardness(ibf)=ann_arr%ann(atoms%itypat(iat))%hardness
-        self%re(1:3,ibf)=atoms%ratp(1:3,iat)
+        self%re(1,ibf)=atoms%ratp(1,iat)
+        self%re(2,ibf)=atoms%ratp(2,iat)
+        self%re(3,ibf)=atoms%ratp(3,iat)
     enddo
 end subroutine set_param
 !*****************************************************************************************
@@ -405,16 +422,16 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
         iat=self%imap(ibf)
         itypat=atoms%itypat(iat)
         if(trim(self%bt(ibf))=='s') then
-        a1=self%gwe_s(1,iat)
-        a2=self%gwe_s(2,iat)
-        b1= a1**3/(a1**3-a2**3)
-        b2=-a2**3/(a1**3-a2**3)
-        q_tmp(1)=1.d0*b1
-        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),q_tmp,a1, &
-            6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        q_tmp(1)=1.d0*b2
-        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),q_tmp,a2, &
-            6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        !a1=self%gwe_s(iat)
+        !a2=self%be_s(iat)
+        !b1= a1**3/(a1**3-a2**3)
+        !b2=-a2**3/(a1**3-a2**3)
+        q_tmp(1)=1.d0*self%be_s(iat)
+        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),q_tmp,self%gwe_s(iat), &
+            5.d0*self%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        q_tmp(1)=1.d0*(1.d0-self%be_s(iat))
+        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),q_tmp,self%gwe_s(iat), &
+            5.d0*self%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         do iz=agpz-self%nbgz,agpz+self%nbgz
         do iy=agpy-self%nbgy,agpy+self%nbgy
         do ix=agpx-self%nbgx,agpx+self%nbgx
@@ -487,26 +504,26 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
         !agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+self%nbgx+0
         !agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+self%nbgy+0
         !agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+self%nbgz+0
-        q_tmp(1)=atoms%zat(iat) !1.d0
-        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%gwn(iat), &
-            6.d0*maxval(self%gwn),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        if(self%gwc(2,iat)>0.d0) then
-            a1=self%gwc(1,iat)
-            a2=self%gwc(2,iat)
-            b1= a1**3/(a1**3-a2**3)
-            b2=-a2**3/(a1**3-a2**3)
-            q_tmp(1)=self%qcore(iat)*b1
-            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,a1, &
-                6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-            q_tmp(1)=self%qcore(iat)*b2
-            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,a2, &
-                6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        else
-            a1=self%gwc(1,iat)
-            q_tmp(1)=self%qcore(iat)
-            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,a1, &
-                6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        endif
+!        q_tmp(1)=atoms%zat(iat) !1.d0
+!        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%gwn(iat), &
+!            6.d0*maxval(self%gwn),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+!        if(self%gwc(2,iat)>0.d0) then
+            !a1=self%gwc(1,iat)
+            !a2=self%gwc(2,iat)
+            !b1= a1**3/(a1**3-a2**3)
+            !b2=-a2**3/(a1**3-a2**3)
+            q_tmp(1)=self%qcore(iat)*self%bc(iat)
+            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%gwc(iat), &
+                6.d0*self%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+            q_tmp(1)=self%qcore(iat)*(1.d0-self%bc(iat))
+            call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%gwc(iat), &
+                6.d0*self%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+!        else
+!            a1=self%gwc(1,iat)
+!            q_tmp(1)=self%qcore(iat)
+!            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,a1, &
+!                6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+!        endif
     enddo !end of loop over iat
     rho_n=poisson%rho !save and keep total ionic charge
 end subroutine calc_atomic_densities
@@ -972,7 +989,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     if(done) return
     one=1.d0
     !call cpu_time(time1)
-    call cal_trial_from_cube(parini,trial_energy,atoms%qtot,atoms%dpm)
+    call cal_trial_from_cube(parini,trial_energy,atoms%qtot,atoms%dpm,self%bf)
     !call cpu_time(time2)
     !if(parini%mpi_env%iproc==0) then
     !    write(*,*) 'time elapsed in cal_trial_from_cube ',time2-time1
@@ -1008,10 +1025,10 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
         enddo
         amat(ibf,ibf)=amat(ibf,ibf)+self%bf%hardness(ibf)
         do itrial=1,trial_energy%ntrial
-            !write(*,'(a,i3,i5,i7)') 'ALI ',parini%mpi_env%iproc,ibf,itrial
             xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
+            !write(*,'(a,i3,i5,i7,3f10.1)') 'ALI ',parini%mpi_env%iproc,ibf,itrial,xyz(1),xyz(2),xyz(3)
             call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
-                6.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+                5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
             call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
                 poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
                 poisson%rho,poisson%pot,tt)
@@ -1035,7 +1052,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     do itrial=itrials,itriale
         xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
         call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
-            6.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+            5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
             poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
             poisson%rho,poisson%pot_ion,tt)
@@ -1375,7 +1392,7 @@ subroutine reverseCEP(self,parini,ann_arr,atoms,poisson,amat)
     deallocate(ww)
 end subroutine reverseCEP
 !*****************************************************************************************
-subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
+subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm,bf)
     use mod_parini, only: typ_parini
     use mod_trial_energy, only: typ_trial_energy, trial_energy_allocate
     use mod_electrostatics, only: typ_poisson
@@ -1385,6 +1402,7 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     type(typ_parini), intent(in):: parini
     type(typ_trial_energy), pointer, intent(inout):: trial_energy
     real(8), intent(out):: qtot, dpm(3)
+    type(typ_bf), intent(in):: bf
     !local variables
     type(typ_poisson):: poisson
     type(typ_poisson):: poisson_ion
@@ -1393,13 +1411,14 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     integer:: jgpx, jgpy, jgpz
     real(8):: rgcut_a, pi!, qtot_e, qtot_i
     real(8):: ehartree_scn_excl, tt1, tt2
-    real(8):: xyz(3), dxyz(3), epot_trial, gwt
+    real(8):: xyz(3), dxyz(3), epot_trial, gwt, q_tmp(1)
     real(8):: dx, dy, dz, r2, coeff, x, y, z !, rloc, c1, c2
     real(8):: xmin, ymin, zmin, xmax, ymax, zmax
     real(8):: q_one(1), gw_one(1)
     real(8), allocatable::  gausswidth(:)
     real(8), allocatable::  rat_trial(:,:)
     real(8), allocatable::  rho(:,:,:)
+    real(8), allocatable::  pot(:,:,:)
     integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
     integer:: nex, ney, nez, nd
     integer:: itrials, itriale
@@ -1423,7 +1442,7 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     enddo
     !-------------------------------------------------------
     if(.true.) then
-    nd=3
+    nd=2
     allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     do igpz=1,poisson%ngpz
     do igpy=1,poisson%ngpy
@@ -1482,6 +1501,7 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     poisson%ngpz=poisson%ngpz+2*nez
     !-------------------------------------------------------
     atoms%boundcond='free'
+    poisson%bc=atoms%boundcond
     allocate(gausswidth(atoms%nat))
     gausswidth=0.5d0 !parini%gaussian_width !TO_BE_CORRECTED
     poisson%cal_scn=parini%cal_scn
@@ -1516,15 +1536,24 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     poisson_ion%gw(1:poisson_ion%nat)=gausswidth(1:atoms%nat)
     call get_rat(atoms,poisson_ion%rcart)
     !call put_charge_density(parini,poisson_ion)
-    nbgpx=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(1,1))+2
-    nbgpy=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(2,2))+2
-    nbgpz=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(3,3))+2
+!    nbgpx=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(1,1))+2
+!    nbgpy=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(2,2))+2
+!    nbgpz=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(3,3))+2
     poisson_ion%rho=0.d0
     do iat=1,atoms%nat
+    !itypat=atoms%itypat(iat)
+    q_tmp(1)=atoms%zat(iat)*bf%bz(iat)
+    call put_gto_sym_ortho(parini,poisson_ion%bc,.false.,1,atoms%ratp(1,iat),q_tmp,bf%gwz(iat), &
+        6.d0*bf%gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
+        poisson_ion%hgrid,poisson_ion%rho)
+    q_tmp(1)=atoms%zat(iat)*(1.d0-bf%bz(iat))
+    call put_r2gto_sym_ortho(parini,poisson_ion%bc,.false.,1,atoms%ratp(1,iat),q_tmp,bf%gwz(iat), &
+        6.d0*bf%gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
+        poisson_ion%hgrid,poisson_ion%rho)
     !if(trim(atoms%sat(iat))=='Mg') gwt=0.6d0
     !if(trim(atoms%sat(iat))=='O' ) gwt=0.3d0
-    gwt=gausswidth(iat)
-    coeff=atoms%zat(iat)/(gwt**3*pi**1.5d0)
+!    gwt=gausswidth(iat)
+!    coeff=atoms%zat(iat)/(gwt**3*pi**1.5d0)
     !coeff=atoms%zat(iat)*2.d0/(3.d0*gwt**5*pi**1.5d0)
     !coeff=atoms%zat(iat)*4.d0/(15.d0*gwt**7*pi**1.5d0)
     !if(trim(atoms%sat(iat))=='Mg') then
@@ -1541,28 +1570,28 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     !endif
     !c1=-c1
     !c2=-c2
-    jgpx=int(poisson_ion%rcart(1,iat)/poisson%hgrid(1,1))
-    jgpy=int(poisson_ion%rcart(2,iat)/poisson%hgrid(2,2))
-    jgpz=int(poisson_ion%rcart(3,iat)/poisson%hgrid(3,3))
-    do igpz=jgpz-nbgpz,jgpz+nbgpz
-    do igpy=jgpy-nbgpy,jgpy+nbgpy
-    do igpx=jgpx-nbgpx,jgpx+nbgpx
-        dx=(igpx-1)*poisson%hgrid(1,1)-poisson_ion%rcart(1,iat)
-        dy=(igpy-1)*poisson%hgrid(2,2)-poisson_ion%rcart(2,iat)
-        dz=(igpz-1)*poisson%hgrid(3,3)-poisson_ion%rcart(3,iat)
-        r2=dx**2+dy**2+dz**2
-        if(r2<10.d0**2*gwt**2) then
-        !if(r2<10.d0**2*rloc**2) then
-            poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*exp(-r2/gwt**2)
-            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2*exp(-r2/gwt**2)
-            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2**2*exp(-r2/gwt**2)
-            !tt1=exp(-r2/(2.d0*rloc**2))
-            !tt2=-3.d0*rloc**4*(c1-2.d0*c2)+rloc**2*(c1-7.d0*c2)*r2+c2*r2**2+rloc**3*sqrt(2.d0/pi)*atoms%zat(iat)
-            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+tt1*tt2/(4.d0*rloc**6*pi)
-        endif
-    enddo
-    enddo
-    enddo
+!    jgpx=int(poisson_ion%rcart(1,iat)/poisson%hgrid(1,1))
+!    jgpy=int(poisson_ion%rcart(2,iat)/poisson%hgrid(2,2))
+!    jgpz=int(poisson_ion%rcart(3,iat)/poisson%hgrid(3,3))
+!    do igpz=jgpz-nbgpz,jgpz+nbgpz
+!    do igpy=jgpy-nbgpy,jgpy+nbgpy
+!    do igpx=jgpx-nbgpx,jgpx+nbgpx
+!        dx=(igpx-1)*poisson%hgrid(1,1)-poisson_ion%rcart(1,iat)
+!        dy=(igpy-1)*poisson%hgrid(2,2)-poisson_ion%rcart(2,iat)
+!        dz=(igpz-1)*poisson%hgrid(3,3)-poisson_ion%rcart(3,iat)
+!        r2=dx**2+dy**2+dz**2
+!        if(r2<10.d0**2*gwt**2) then
+!        !if(r2<10.d0**2*rloc**2) then
+!            poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*exp(-r2/gwt**2)
+!            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2*exp(-r2/gwt**2)
+!            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2**2*exp(-r2/gwt**2)
+!            !tt1=exp(-r2/(2.d0*rloc**2))
+!            !tt2=-3.d0*rloc**4*(c1-2.d0*c2)+rloc**2*(c1-7.d0*c2)*r2+c2*r2**2+rloc**3*sqrt(2.d0/pi)*atoms%zat(iat)
+!            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+tt1*tt2/(4.d0*rloc**6*pi)
+!        endif
+!    enddo
+!    enddo
+!    enddo
     enddo
     tt1=0.d0
     do igpz=1,poisson%ngpz
@@ -1618,6 +1647,39 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
     if(parini%mpi_env%iproc==0) then
     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
     endif
+    !-------------------------------------------------------
+!    if(.true.) then
+!    nd=2
+!    allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+!    allocate(pot(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+!    do igpz=1,poisson%ngpz
+!    do igpy=1,poisson%ngpy
+!    do igpx=1,poisson%ngpx
+!        rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
+!        pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
+!    enddo
+!    enddo
+!    enddo
+!    call f_free(poisson%rho)
+!    call f_free(poisson%pot)
+!    poisson%ngpz=poisson%ngpz/nd
+!    poisson%ngpy=poisson%ngpy/nd
+!    poisson%ngpx=poisson%ngpx/nd
+!    poisson%rho=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%rho')
+!    poisson%pot=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%pot')
+!    do igpz=1,poisson%ngpz
+!    do igpy=1,poisson%ngpy
+!    do igpx=1,poisson%ngpx
+!        poisson%rho(igpx,igpy,igpz)=rho(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
+!        poisson%pot(igpx,igpy,igpz)=pot(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
+!    enddo
+!    enddo
+!    enddo
+!    deallocate(rho)
+!    deallocate(pot)
+!    poisson%hgrid=poisson%hgrid*real(nd,kind=8)
+!    endif
+    !-------------------------------------------------------
     atoms%fat=0.d0
     call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
         poisson_ion%q,gausswidth,6.d0,poisson_ion%xyz111, &
@@ -1682,13 +1744,13 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
         xyz(3)=rat_trial(3,itrial)-poisson_ion%rcart(3,1)
         q_one(1)=1.d0
         gw_one(1)=1.d0
-        call put_gto_sym_ortho(parini,poisson_ion%bc,.true.,1,rat_trial(1,itrial),q_one,gw_one, &
-            6.d0,poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz,poisson_ion%hgrid,poisson_ion%rho)
+        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,rat_trial(1,itrial),q_one,gw_one, &
+            5.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         epot_trial=0.d0
         do igpz=1,poisson%ngpz
         do igpy=1,poisson%ngpy
         do igpx=1,poisson%ngpx
-            epot_trial=epot_trial+poisson_ion%rho(igpx,igpy,igpz)*poisson%pot(igpx,igpy,igpz)
+            epot_trial=epot_trial+poisson%rho(igpx,igpy,igpz)*poisson%pot(igpx,igpy,igpz)
         enddo
         enddo
         enddo
@@ -1699,6 +1761,12 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm)
         trial_energy%disp(3,itrial)=xyz(3)
         trial_energy%iat_list(itrial)=1
     enddo
+    !-------------------------------------------------------
+    do iat=1,atoms%nat
+        if(trim(atoms%sat(iat))=='Li') atoms%zat(iat)=0.d0
+        if(trim(atoms%sat(iat))=='S' ) atoms%zat(iat)=0.d0
+    enddo
+    !-------------------------------------------------------
     if(parini%mpi_env%nproc>1) then
     call fmpi_allreduce(trial_energy%energy(1),ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(trial_energy%disp(1,1),3*ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)

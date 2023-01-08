@@ -67,6 +67,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     type(dictionary), pointer :: dict_tmp=>null()
     character(50):: str_out_ann
     character(5):: str_out_ann_tt
+    real(8):: wa(2)
     call set_dict_ann(ann,fname,stypat)
     !call yaml_comment('USER INPUT FILE',hfill='~')
     if(parini%iverbose>=2) call yaml_dict_dump(ann%dict)
@@ -104,16 +105,20 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     endif
     if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
         if(trim(parini%approach_ann)=='cent2') then
+            wa=subdict_ann//"gwz"
+            ann%gwz=wa(1)
+            ann%bz=wa(2)
             ann%qcore=subdict_ann//"qcore"
-            allocate(ann%gwe_s(2))
-            allocate(ann%gwe_p(2))
-            ann%gwe_s=subdict_ann//"gwe_s"
+            wa=subdict_ann//"gwc"
+            ann%gwc=wa(1)
+            ann%bc=wa(2)
+            wa=subdict_ann//"gwe_s"
+            ann%gwe_s=wa(1)
+            ann%be_s=wa(2)
             ann%gwe_p=subdict_ann//"gwe_p"
-            dict_tmp=>subdict_ann//"gwc"
-            ngwc=dict_len(dict_tmp)
-            allocate(ann%gwc(ngwc))
-            ann%gwc=subdict_ann//"gwc"
-            nullify(dict_tmp)
+            !dict_tmp=>subdict_ann//"gwc"
+            !ngwc=dict_len(dict_tmp)
+            !nullify(dict_tmp)
         endif
         ann%zion           =  subdict_ann//"zion" 
         ann%gausswidth_ion =  subdict_ann//"gausswidth_ion" 
