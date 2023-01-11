@@ -2,7 +2,7 @@
 module mod_cent2
     implicit none
     private
-    public:: typ_cent2
+    public:: typ_cent2, cent2_analytic
     type typ_bf
         private
         integer:: nbf
@@ -1810,6 +1810,237 @@ subroutine cal_rho_pot_integral_local(xyz,xyz111,ngpx,ngpy,ngpz,hgrid,rgcut,rho,
     enddo
     ener=res*(hgrid(1,1)*hgrid(2,2)*hgrid(3,3))
 end subroutine cal_rho_pot_integral_local
+!*****************************************************************************************
+subroutine cent2_analytic(parini,atoms,gwr0,gwp1,gwr2,qr0,pat,qr2)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(in):: gwr0(atoms%nat), gwp1(atoms%nat), gwr2(atoms%nat)
+    real(8), intent(in):: qr0(atoms%nat), pat(3,atoms%nat), qr2(atoms%nat)
+    !local variables
+    integer:: iat, jat
+    real(8):: epot, pi, dx, dy, dz, r, tt1, tt2, tt3
+    real(8):: ss1, ss2, ss3, uu1, uu2, uu3, ww1, ww2, ww3, www, vv1, vv2, vv3, vvv
+    real(8):: ff1, ff2, ff3, dd1, dd2, dd3, hhh
+    real(8):: yy1, yy2, yy3, yyy, gg1, gg2, gg3, ggg, aa1, aa2, aa3, bb1, bb2, bb3
+    real(8):: a, b, c, sf_1, sf_2, sf_3
+    real(8):: pi_dot_pj, pi_dot_rij, pj_dot_rij
+    pi=4.d0*atan(1.d0)
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+    epot=0.d0
+    do iat=1,atoms%nat
+        !self-interaction of qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwr0(iat)**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwr0(iat)**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwr0(iat)**2*sf_3**2)
+        epot=epot+0.5d0*2.d0*qr0(iat)**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of pr1-pr1 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwp1(iat)**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwp1(iat)**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwp1(iat)**2*sf_3**2)
+        pi_dot_pj=pat(1,iat)**2+pat(2,iat)**2+pat(3,iat)**2
+        epot=epot+0.5d0*4.d0*pi_dot_pj*(a*tt1**3+b*tt2**3+c*tt3**3)/(3.d0*sqrt(pi))
+        !self-interaction of qr2-qr2 interaction
+        gg1=gwr2(iat)*sf_1
+        gg2=gwr2(iat)*sf_2
+        gg3=gwr2(iat)*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*gg1**2+9.d0*gg1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*gg2**2+9.d0*gg2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*gg3**2+9.d0*gg3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg3**2)**2.5d0)
+        epot=epot+0.5d0*qr2(iat)**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0(iat)**2+2.d0*gwr2(iat)**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0(iat)**2+2.d0*gwr2(iat)**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0(iat)**2+2.d0*gwr2(iat)**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0(iat)**2+gwr2(iat)**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0(iat)**2+gwr2(iat)**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0(iat)**2+gwr2(iat)**2)*sf_3**2)**1.5d0)
+        epot=epot+1.d0*qr0(iat)*qr2(iat)*(a*ss1+b*ss2+c*ss3)
+    enddo
+    do iat=1,atoms%nat
+    do jat=iat+1,atoms%nat
+        dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+        dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+        dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+        r=sqrt(dx**2+dy**2+dz**2)
+        !-----------------------------------------------------------------------
+        !qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+(gwr0(iat)**2+gwr0(jat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr0(iat)**2+gwr0(jat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr0(iat)**2+gwr0(jat)**2)*sf_3**2)
+        epot=epot+qr0(iat)*qr0(jat)*(a*erf(tt1*r)+b*erf(tt2*r)+c*erf(tt3*r))/r
+        !-----------------------------------------------------------------------
+        !pr1-pr1 interaction
+        tt1=sf_1/sqrt(1.d0+(gwp1(iat)**2+gwp1(jat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwp1(iat)**2+gwp1(jat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwp1(iat)**2+gwp1(jat)**2)*sf_3**2)
+        pj_dot_rij=dx*pat(1,jat)+dy*pat(2,jat)+dz*pat(3,jat)
+        pi_dot_rij=dx*pat(1,iat)+dy*pat(2,iat)+dz*pat(3,iat)
+        pi_dot_pj=pat(1,iat)*pat(1,jat)+pat(2,iat)*pat(2,jat)+pat(3,iat)*pat(3,jat)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        ww1=-pi_dot_pj*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
+        ww2=-pi_dot_pj*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
+        ww3=-pi_dot_pj*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
+        vvv=-pj_dot_rij*pi_dot_rij
+        vv1=vvv*(-4.d0*tt1**3*ss1/(sqrt(pi)*r**2)-6.d0*tt1*ss1/(sqrt(pi)*r**4)+3.d0*uu1/r**5)
+        vv2=vvv*(-4.d0*tt2**3*ss2/(sqrt(pi)*r**2)-6.d0*tt2*ss2/(sqrt(pi)*r**4)+3.d0*uu2/r**5)
+        vv3=vvv*(-4.d0*tt3**3*ss3/(sqrt(pi)*r**2)-6.d0*tt3*ss3/(sqrt(pi)*r**4)+3.d0*uu3/r**5)
+        epot=epot+a*(ww1+vv1)+b*(ww2+vv2)+c*(ww3+vv3)
+        !-----------------------------------------------------------------------
+        !qr0-pr1 interaction
+        tt1=sf_1/sqrt(1.d0+(gwr0(jat)**2+gwp1(iat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr0(jat)**2+gwp1(iat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr0(jat)**2+gwp1(iat)**2)*sf_3**2)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        vvv=pi_dot_rij*qr0(jat)
+        vv1=vvv*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
+        vv2=vvv*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
+        vv3=vvv*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
+        tt1=sf_1/sqrt(1.d0+(gwr0(iat)**2+gwp1(jat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr0(iat)**2+gwp1(jat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr0(iat)**2+gwp1(jat)**2)*sf_3**2)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        www=-pj_dot_rij*qr0(iat)
+        ww1=www*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
+        ww2=www*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
+        ww3=www*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
+        epot=epot+(a*ww1+b*ww2+c*ww3)+(a*vv1+b*vv2+c*vv3)
+        !-----------------------------------------------------------------------
+        !qr2-qr2 interaction
+        tt1=sf_1/sqrt(1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_3**2)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        gg1=1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_1**2
+        gg2=1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_2**2
+        gg3=1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_3**2
+        bb1=gwr2(iat)**2*gwr2(jat)**2*r*sf_1**2*(-4.d0*r**2*sf_1**2+6.d0*gg1)
+        bb2=gwr2(iat)**2*gwr2(jat)**2*r*sf_2**2*(-4.d0*r**2*sf_2**2+6.d0*gg2)
+        bb3=gwr2(iat)**2*gwr2(jat)**2*r*sf_3**2*(-4.d0*r**2*sf_3**2+6.d0*gg3)
+        ff1=sf_1**3*(bb1-6.d0*r*gg1**2*(gwr2(iat)**2+gwr2(jat)**2))
+        ff2=sf_2**3*(bb2-6.d0*r*gg2**2*(gwr2(iat)**2+gwr2(jat)**2))
+        ff3=sf_3**3*(bb3-6.d0*r*gg3**2*(gwr2(iat)**2+gwr2(jat)**2))
+        dd1=(ss1*ff1+9.d0*sqrt(pi)*gg1**3.5d0*uu1)/(9.d0*sqrt(pi)*r*gg1**3.5d0)
+        dd2=(ss2*ff2+9.d0*sqrt(pi)*gg2**3.5d0*uu2)/(9.d0*sqrt(pi)*r*gg2**3.5d0)
+        dd3=(ss3*ff3+9.d0*sqrt(pi)*gg3**3.5d0*uu3)/(9.d0*sqrt(pi)*r*gg3**3.5d0)
+        epot=epot+qr2(iat)*qr2(jat)*(a*dd1+b*dd2+c*dd3)
+        !-----------------------------------------------------------------------
+        !qr0-qr2 interaction
+        tt1=sf_1/sqrt(1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_3**2)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        gg1=1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_1**2
+        gg2=1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_2**2
+        gg3=1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_3**2
+        vv1=-2.d0*sf_1**3*(gwr2(iat)**2)*ss1/(3.d0*sqrt(pi)*gg1**1.5d0)+1.d0*uu1/r
+        vv2=-2.d0*sf_2**3*(gwr2(iat)**2)*ss2/(3.d0*sqrt(pi)*gg2**1.5d0)+1.d0*uu2/r
+        vv3=-2.d0*sf_3**3*(gwr2(iat)**2)*ss3/(3.d0*sqrt(pi)*gg3**1.5d0)+1.d0*uu3/r
+        tt1=sf_1/sqrt(1.d0+(gwr0(iat)**2+gwr2(jat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr0(iat)**2+gwr2(jat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr0(iat)**2+gwr2(jat)**2)*sf_3**2)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        gg1=1.d0+(gwr2(jat)**2+gwr0(iat)**2)*sf_1**2
+        gg2=1.d0+(gwr2(jat)**2+gwr0(iat)**2)*sf_2**2
+        gg3=1.d0+(gwr2(jat)**2+gwr0(iat)**2)*sf_3**2
+        ww1=-2.d0*sf_1**3*(gwr2(jat)**2)*ss1/(3.d0*sqrt(pi)*gg1**1.5d0)+1.d0*uu1/r
+        ww2=-2.d0*sf_2**3*(gwr2(jat)**2)*ss2/(3.d0*sqrt(pi)*gg2**1.5d0)+1.d0*uu2/r
+        ww3=-2.d0*sf_3**3*(gwr2(jat)**2)*ss3/(3.d0*sqrt(pi)*gg3**1.5d0)+1.d0*uu3/r
+        vvv=qr2(iat)*qr0(jat)
+        www=qr0(iat)*qr2(jat)
+        epot=epot+www*(a*ww1+b*ww2+c*ww3)+vvv*(a*vv1+b*vv2+c*vv3)
+        !-----------------------------------------------------------------------
+        !pr1-qr2 interaction
+        tt1=sf_1/sqrt(1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_3**2)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        gg1=1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_1**2
+        gg2=1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_2**2
+        gg3=1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_3**2
+        ggg=gwp1(jat)
+        hhh=gwr2(iat)
+        aa1=3.d0*(1.d0+sf_1**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_1**2*(3.d0+r**2*sf_1**2)
+        aa2=3.d0*(1.d0+sf_2**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_2**2*(3.d0+r**2*sf_2**2)
+        aa3=3.d0*(1.d0+sf_3**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_3**2*(3.d0+r**2*sf_3**2)
+        bb1=6.d0*ggg**2*sf_1**2*(1.d0+hhh**2*sf_1**2)
+        bb2=6.d0*ggg**2*sf_2**2*(1.d0+hhh**2*sf_2**2)
+        bb3=6.d0*ggg**2*sf_3**2*(1.d0+hhh**2*sf_3**2)
+        ww1=(-2.d0*ss1*sf_1*(aa1+bb1))/(3.d0*sqrt(pi)*r**2*gg1**2.5d0)+uu1/r**3
+        ww2=(-2.d0*ss2*sf_2*(aa2+bb2))/(3.d0*sqrt(pi)*r**2*gg2**2.5d0)+uu2/r**3
+        ww3=(-2.d0*ss3*sf_3*(aa3+bb3))/(3.d0*sqrt(pi)*r**2*gg3**2.5d0)+uu3/r**3
+        tt1=sf_1/sqrt(1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_3**2)
+        ss1=exp(-(tt1*r)**2)
+        ss2=exp(-(tt2*r)**2)
+        ss3=exp(-(tt3*r)**2)
+        uu1=erf(tt1*r)
+        uu2=erf(tt2*r)
+        uu3=erf(tt3*r)
+        gg1=1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_1**2
+        gg2=1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_2**2
+        gg3=1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_3**2
+        ggg=gwp1(iat)
+        hhh=gwr2(jat)
+        aa1=3.d0*(1.d0+sf_1**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_1**2*(3.d0+r**2*sf_1**2)
+        aa2=3.d0*(1.d0+sf_2**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_2**2*(3.d0+r**2*sf_2**2)
+        aa3=3.d0*(1.d0+sf_3**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_3**2*(3.d0+r**2*sf_3**2)
+        bb1=6.d0*ggg**2*sf_1**2*(1.d0+hhh**2*sf_1**2)
+        bb2=6.d0*ggg**2*sf_2**2*(1.d0+hhh**2*sf_2**2)
+        bb3=6.d0*ggg**2*sf_3**2*(1.d0+hhh**2*sf_3**2)
+        vv1=(-2.d0*ss1*sf_1*(aa1+bb1))/(3.d0*sqrt(pi)*r**2*gg1**2.5d0)+uu1/r**3
+        vv2=(-2.d0*ss2*sf_2*(aa2+bb2))/(3.d0*sqrt(pi)*r**2*gg2**2.5d0)+uu2/r**3
+        vv3=(-2.d0*ss3*sf_3*(aa3+bb3))/(3.d0*sqrt(pi)*r**2*gg3**2.5d0)+uu3/r**3
+        www=pj_dot_rij*qr2(iat)
+        vvv=-pi_dot_rij*qr2(jat)
+        epot=epot+www*(a*ww1+b*ww2+c*ww3)+vvv*(a*vv1+b*vv2+c*vv3)
+    enddo
+    enddo
+    atoms%epot=epot
+end subroutine cent2_analytic
 !*****************************************************************************************
 subroutine get_proc_stake(mpi_env,n,is,ie)
     use mod_flm_futile
