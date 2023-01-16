@@ -974,6 +974,8 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     integer:: itrial, iat
     integer:: nbgx, nbgy, nbgz
     real(8):: xyz(3), tt, rmse, err_U_SRS, U_SRS
+    real(8):: ttr0, ttr2, qr0, gwr0, qr2, gwr2, sfs(3), a, b, c, dx, dy, dz, r
+    real(8):: p(3), ttp1, ttp2, a1, a2, b1, b2
     real(8):: qavg(10), qvar(10)
     real(8):: cavg(10), cvar(10)
     real(8), allocatable:: EP(:,:)
@@ -1011,27 +1013,88 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     call get_proc_stake(parini%mpi_env,self%bf%nbf,ibfs,ibfe)
     allocate(gausswidth(atoms%nat))
     allocate(amat(self%bf%nbf+1,self%bf%nbf+1),source=0.d0)
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    a=sfs(2)*sfs(3)*(sfs(2)+sfs(3))/((sfs(2)-sfs(1))*(sfs(3)-sfs(1))*(sfs(1)+sfs(2)+sfs(3)))
+    b=sfs(1)*sfs(3)*(sfs(1)+sfs(3))/((sfs(3)-sfs(2))*(sfs(1)-sfs(2))*(sfs(1)+sfs(2)+sfs(3)))
+    c=sfs(2)*sfs(1)*(sfs(2)+sfs(1))/((sfs(1)-sfs(3))*(sfs(2)-sfs(3))*(sfs(1)+sfs(2)+sfs(3)))
     do ibf=ibfs,ibfe
+        iat=self%bf%imap(ibf)
         !write(*,'(a,i3,3i5)') 'progress ',parini%mpi_env%iproc,ibf,ibfs,ibfe
-        amat(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
-        amat(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
-        call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
-        poisson%pot=0.d0
-        call get_hartree(parini,poisson,atoms,gausswidth,tt)
-        do jbf=1,ibf
-            call self%get_energy_external_pot(atoms,jbf,poisson,tt)
-            amat(ibf,jbf)=tt
-            amat(jbf,ibf)=amat(ibf,jbf)
-        enddo
-        amat(ibf,ibf)=amat(ibf,ibf)+self%bf%hardness(ibf)
+!        amat(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
+!        amat(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
+!        call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
+!        poisson%pot=0.d0
+!        call get_hartree(parini,poisson,atoms,gausswidth,tt)
+!        do jbf=1,ibf
+!            call self%get_energy_external_pot(atoms,jbf,poisson,tt)
+!            amat(ibf,jbf)=tt
+!            amat(jbf,ibf)=amat(ibf,jbf)
+!        enddo
+!        amat(ibf,ibf)=amat(ibf,ibf)+self%bf%hardness(ibf)
         do itrial=1,trial_energy%ntrial
             xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
-            !write(*,'(a,i3,i5,i7,3f10.1)') 'ALI ',parini%mpi_env%iproc,ibf,itrial,xyz(1),xyz(2),xyz(3)
-            call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
-                5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-            call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-                poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
-                poisson%rho,poisson%pot,tt)
+!            !write(*,'(a,i3,i5,i7,3f10.1)') 'ALI ',parini%mpi_env%iproc,ibf,itrial,xyz(1),xyz(2),xyz(3)
+!            call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
+!                5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+!            call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
+!                poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
+!                poisson%rho,poisson%pot,tt)
+!            EP(ibf,itrial)=tt
+            dx=atoms%ratp(1,iat)-xyz(1)
+            dy=atoms%ratp(2,iat)-xyz(2)
+            dz=atoms%ratp(3,iat)-xyz(3)
+            r=sqrt(dx**2+dy**2+dz**2)
+            if(trim(self%bf%bt(ibf))=='s') then
+                qr0=1.d0*self%bf%be_s(iat)
+                gwr0=self%bf%gwe_s(iat)
+                ttr0=get_ener_qr0_qr0(a,b,c,r,sfs,1.d0,gwr0,1.d0,qr0)
+                qr2=1.d0*(1.d0-self%bf%be_s(iat))
+                gwr2=gwr0
+                ttr2=get_ener_qr0_qr2(a,b,c,r,sfs,1.d0,gwr2,1.d0,qr2)
+                tt=ttr0+ttr2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttr0+ttr2,ttr0+ttr2-tt
+            elseif(trim(self%bf%bt(ibf))=='px') then
+                a1=self%bf%gwe_p(1,iat)
+                a2=self%bf%gwe_p(2,iat)
+                b1= a1**5/(a1**5-a2**5)
+                b2=-a2**5/(a1**5-a2**5)
+                p(1)=1.d0*b1
+                p(2)=0.d0
+                p(3)=0.d0
+                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
+                p(1)=1.d0*b2
+                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1+ttp2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
+            elseif(trim(self%bf%bt(ibf))=='py') then
+                a1=self%bf%gwe_p(1,iat)
+                a2=self%bf%gwe_p(2,iat)
+                b1= a1**5/(a1**5-a2**5)
+                b2=-a2**5/(a1**5-a2**5)
+                p(1)=0.d0
+                p(2)=1.d0*b1
+                p(3)=0.d0
+                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
+                p(2)=1.d0*b2
+                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1+ttp2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
+            elseif(trim(self%bf%bt(ibf))=='pz') then
+                a1=self%bf%gwe_p(1,iat)
+                a2=self%bf%gwe_p(2,iat)
+                b1= a1**5/(a1**5-a2**5)
+                b2=-a2**5/(a1**5-a2**5)
+                p(1)=0.d0
+                p(2)=0.d0
+                p(3)=1.d0*b1
+                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
+                p(3)=1.d0*b2
+                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1+ttp2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
+            endif
             EP(ibf,itrial)=tt
         enddo !end of loop over itrial
     enddo !end of loop over ibf
@@ -1046,7 +1109,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
         !write(92,'(i5,f15.7)') (jat-1)*(atoms%nat+1)+iat,amat(iat,jat)
     enddo
     enddo
-    self%amat_is_calculated=.true.
+    !self%amat_is_calculated=.true.
     call get_proc_stake(parini%mpi_env,trial_energy%ntrial,itrials,itriale)
     EP_n=0.d0
     do itrial=itrials,itriale
@@ -1421,7 +1484,10 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm,bf)
     real(8), allocatable::  pot(:,:,:)
     integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
     integer:: nex, ney, nez, nd
-    integer:: itrials, itriale
+    integer:: itrials, itriale, ierr
+#if defined(MPI)
+    include 'mpif.h'
+#endif
     pi=4.d0*atan(1.d0)
     if(parini%ewald) then
         write(*,*) 'ERROR: ewald=True is wrong when reading from cube file.'
@@ -1643,7 +1709,14 @@ subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm,bf)
     endif
     !-------------------------------------------------------
     call update_ratp(atoms)
-    call get_hartree(parini,poisson,atoms,gausswidth,ehartree_scn_excl)
+    if(parini%mpi_env%iproc==0) then
+        call get_hartree(parini,poisson,atoms,gausswidth,ehartree_scn_excl)
+    endif
+    !write(*,*) 'ALLOCATED= ',parini%mpi_env%iproc,allocated(poisson%pot)
+    if(parini%mpi_env%nproc>1) then
+    call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(poisson%pot,poisson%ngpx*poisson%ngpy*poisson%ngpz,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+    endif
     if(parini%mpi_env%iproc==0) then
     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
     endif
@@ -1822,12 +1895,16 @@ subroutine cent2_analytic(parini,atoms,gwr0,gwp1,gwr2,qr0,pat,qr2)
     !local variables
     integer:: iat, jat
     real(8):: epot, pi, dx, dy, dz, r, tt1, tt2, tt3
-    real(8):: ss1, ss2, ss3, uu1, uu2, uu3, ww1, ww2, ww3, www, vv1, vv2, vv3, vvv
-    real(8):: ff1, ff2, ff3, dd1, dd2, dd3, hhh
-    real(8):: yy1, yy2, yy3, yyy, gg1, gg2, gg3, ggg, aa1, aa2, aa3, bb1, bb2, bb3
-    real(8):: a, b, c, sf_1, sf_2, sf_3
-    real(8):: pi_dot_pj, pi_dot_rij, pj_dot_rij
+    real(8):: ss1, ss2, ss3
+    real(8):: gg1, gg2, gg3, ggg
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    real(8):: e_qr0_qr0, e_pr1_pr1, e_qr0_j_pr1_i, e_qr0_i_pr1_j, e_qr2_qr2
+    real(8):: e_qr0_i_qr2_j, e_qr0_j_qr2_i, e_qr2_j_pr1_i, e_qr2_i_pr1_j
+    real(8):: pi_dot_pi
     pi=4.d0*atan(1.d0)
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
     sf_1=parini%screening_factor
     sf_2=parini%screening_factor*1.1d0
     sf_3=parini%screening_factor*1.2d0
@@ -1845,8 +1922,8 @@ subroutine cent2_analytic(parini,atoms,gwr0,gwp1,gwr2,qr0,pat,qr2)
         tt1=sf_1/sqrt(1.d0+2.d0*gwp1(iat)**2*sf_1**2)
         tt2=sf_2/sqrt(1.d0+2.d0*gwp1(iat)**2*sf_2**2)
         tt3=sf_3/sqrt(1.d0+2.d0*gwp1(iat)**2*sf_3**2)
-        pi_dot_pj=pat(1,iat)**2+pat(2,iat)**2+pat(3,iat)**2
-        epot=epot+0.5d0*4.d0*pi_dot_pj*(a*tt1**3+b*tt2**3+c*tt3**3)/(3.d0*sqrt(pi))
+        pi_dot_pi=pat(1,iat)**2+pat(2,iat)**2+pat(3,iat)**2
+        epot=epot+0.5d0*4.d0*pi_dot_pi*(a*tt1**3+b*tt2**3+c*tt3**3)/(3.d0*sqrt(pi))
         !self-interaction of qr2-qr2 interaction
         gg1=gwr2(iat)*sf_1
         gg2=gwr2(iat)*sf_2
@@ -1872,175 +1949,188 @@ subroutine cent2_analytic(parini,atoms,gwr0,gwp1,gwr2,qr0,pat,qr2)
         r=sqrt(dx**2+dy**2+dz**2)
         !-----------------------------------------------------------------------
         !qr0-qr0 interaction
-        tt1=sf_1/sqrt(1.d0+(gwr0(iat)**2+gwr0(jat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr0(iat)**2+gwr0(jat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr0(iat)**2+gwr0(jat)**2)*sf_3**2)
-        epot=epot+qr0(iat)*qr0(jat)*(a*erf(tt1*r)+b*erf(tt2*r)+c*erf(tt3*r))/r
+        e_qr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0(iat),gwr0(jat),qr0(iat),qr0(jat))
         !-----------------------------------------------------------------------
         !pr1-pr1 interaction
-        tt1=sf_1/sqrt(1.d0+(gwp1(iat)**2+gwp1(jat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwp1(iat)**2+gwp1(jat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwp1(iat)**2+gwp1(jat)**2)*sf_3**2)
-        pj_dot_rij=dx*pat(1,jat)+dy*pat(2,jat)+dz*pat(3,jat)
-        pi_dot_rij=dx*pat(1,iat)+dy*pat(2,iat)+dz*pat(3,iat)
-        pi_dot_pj=pat(1,iat)*pat(1,jat)+pat(2,iat)*pat(2,jat)+pat(3,iat)*pat(3,jat)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        ww1=-pi_dot_pj*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
-        ww2=-pi_dot_pj*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
-        ww3=-pi_dot_pj*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
-        vvv=-pj_dot_rij*pi_dot_rij
-        vv1=vvv*(-4.d0*tt1**3*ss1/(sqrt(pi)*r**2)-6.d0*tt1*ss1/(sqrt(pi)*r**4)+3.d0*uu1/r**5)
-        vv2=vvv*(-4.d0*tt2**3*ss2/(sqrt(pi)*r**2)-6.d0*tt2*ss2/(sqrt(pi)*r**4)+3.d0*uu2/r**5)
-        vv3=vvv*(-4.d0*tt3**3*ss3/(sqrt(pi)*r**2)-6.d0*tt3*ss3/(sqrt(pi)*r**4)+3.d0*uu3/r**5)
-        epot=epot+a*(ww1+vv1)+b*(ww2+vv2)+c*(ww3+vv3)
+        e_pr1_pr1=get_ener_pr1_pr1(a,b,c,dx,dy,dz,r,sfs,gwp1(iat),gwp1(jat),pat(1,iat),pat(1,jat))
         !-----------------------------------------------------------------------
         !qr0-pr1 interaction
-        tt1=sf_1/sqrt(1.d0+(gwr0(jat)**2+gwp1(iat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr0(jat)**2+gwp1(iat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr0(jat)**2+gwp1(iat)**2)*sf_3**2)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        vvv=pi_dot_rij*qr0(jat)
-        vv1=vvv*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
-        vv2=vvv*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
-        vv3=vvv*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
-        tt1=sf_1/sqrt(1.d0+(gwr0(iat)**2+gwp1(jat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr0(iat)**2+gwp1(jat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr0(iat)**2+gwp1(jat)**2)*sf_3**2)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        www=-pj_dot_rij*qr0(iat)
-        ww1=www*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
-        ww2=www*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
-        ww3=www*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
-        epot=epot+(a*ww1+b*ww2+c*ww3)+(a*vv1+b*vv2+c*vv3)
+        e_qr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwr0(jat),gwp1(iat),qr0(jat),pat(1,iat))
+        e_qr0_i_pr1_j=get_ener_qr0_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr0(iat),gwp1(jat),qr0(iat),pat(1,jat))
         !-----------------------------------------------------------------------
         !qr2-qr2 interaction
-        tt1=sf_1/sqrt(1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_3**2)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        gg1=1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_1**2
-        gg2=1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_2**2
-        gg3=1.d0+(gwr2(iat)**2+gwr2(jat)**2)*sf_3**2
-        bb1=gwr2(iat)**2*gwr2(jat)**2*r*sf_1**2*(-4.d0*r**2*sf_1**2+6.d0*gg1)
-        bb2=gwr2(iat)**2*gwr2(jat)**2*r*sf_2**2*(-4.d0*r**2*sf_2**2+6.d0*gg2)
-        bb3=gwr2(iat)**2*gwr2(jat)**2*r*sf_3**2*(-4.d0*r**2*sf_3**2+6.d0*gg3)
-        ff1=sf_1**3*(bb1-6.d0*r*gg1**2*(gwr2(iat)**2+gwr2(jat)**2))
-        ff2=sf_2**3*(bb2-6.d0*r*gg2**2*(gwr2(iat)**2+gwr2(jat)**2))
-        ff3=sf_3**3*(bb3-6.d0*r*gg3**2*(gwr2(iat)**2+gwr2(jat)**2))
-        dd1=(ss1*ff1+9.d0*sqrt(pi)*gg1**3.5d0*uu1)/(9.d0*sqrt(pi)*r*gg1**3.5d0)
-        dd2=(ss2*ff2+9.d0*sqrt(pi)*gg2**3.5d0*uu2)/(9.d0*sqrt(pi)*r*gg2**3.5d0)
-        dd3=(ss3*ff3+9.d0*sqrt(pi)*gg3**3.5d0*uu3)/(9.d0*sqrt(pi)*r*gg3**3.5d0)
-        epot=epot+qr2(iat)*qr2(jat)*(a*dd1+b*dd2+c*dd3)
+        e_qr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2(iat),gwr2(jat),qr2(iat),qr2(jat))
         !-----------------------------------------------------------------------
         !qr0-qr2 interaction
-        tt1=sf_1/sqrt(1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_3**2)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        gg1=1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_1**2
-        gg2=1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_2**2
-        gg3=1.d0+(gwr2(iat)**2+gwr0(jat)**2)*sf_3**2
-        vv1=-2.d0*sf_1**3*(gwr2(iat)**2)*ss1/(3.d0*sqrt(pi)*gg1**1.5d0)+1.d0*uu1/r
-        vv2=-2.d0*sf_2**3*(gwr2(iat)**2)*ss2/(3.d0*sqrt(pi)*gg2**1.5d0)+1.d0*uu2/r
-        vv3=-2.d0*sf_3**3*(gwr2(iat)**2)*ss3/(3.d0*sqrt(pi)*gg3**1.5d0)+1.d0*uu3/r
-        tt1=sf_1/sqrt(1.d0+(gwr0(iat)**2+gwr2(jat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr0(iat)**2+gwr2(jat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr0(iat)**2+gwr2(jat)**2)*sf_3**2)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        gg1=1.d0+(gwr2(jat)**2+gwr0(iat)**2)*sf_1**2
-        gg2=1.d0+(gwr2(jat)**2+gwr0(iat)**2)*sf_2**2
-        gg3=1.d0+(gwr2(jat)**2+gwr0(iat)**2)*sf_3**2
-        ww1=-2.d0*sf_1**3*(gwr2(jat)**2)*ss1/(3.d0*sqrt(pi)*gg1**1.5d0)+1.d0*uu1/r
-        ww2=-2.d0*sf_2**3*(gwr2(jat)**2)*ss2/(3.d0*sqrt(pi)*gg2**1.5d0)+1.d0*uu2/r
-        ww3=-2.d0*sf_3**3*(gwr2(jat)**2)*ss3/(3.d0*sqrt(pi)*gg3**1.5d0)+1.d0*uu3/r
-        vvv=qr2(iat)*qr0(jat)
-        www=qr0(iat)*qr2(jat)
-        epot=epot+www*(a*ww1+b*ww2+c*ww3)+vvv*(a*vv1+b*vv2+c*vv3)
+        e_qr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0(iat),gwr2(jat),qr0(iat),qr2(jat))
+        e_qr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0(jat),gwr2(iat),qr0(jat),qr2(iat))
         !-----------------------------------------------------------------------
         !pr1-qr2 interaction
-        tt1=sf_1/sqrt(1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_3**2)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        gg1=1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_1**2
-        gg2=1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_2**2
-        gg3=1.d0+(gwr2(iat)**2+gwp1(jat)**2)*sf_3**2
-        ggg=gwp1(jat)
-        hhh=gwr2(iat)
-        aa1=3.d0*(1.d0+sf_1**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_1**2*(3.d0+r**2*sf_1**2)
-        aa2=3.d0*(1.d0+sf_2**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_2**2*(3.d0+r**2*sf_2**2)
-        aa3=3.d0*(1.d0+sf_3**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_3**2*(3.d0+r**2*sf_3**2)
-        bb1=6.d0*ggg**2*sf_1**2*(1.d0+hhh**2*sf_1**2)
-        bb2=6.d0*ggg**2*sf_2**2*(1.d0+hhh**2*sf_2**2)
-        bb3=6.d0*ggg**2*sf_3**2*(1.d0+hhh**2*sf_3**2)
-        ww1=(-2.d0*ss1*sf_1*(aa1+bb1))/(3.d0*sqrt(pi)*r**2*gg1**2.5d0)+uu1/r**3
-        ww2=(-2.d0*ss2*sf_2*(aa2+bb2))/(3.d0*sqrt(pi)*r**2*gg2**2.5d0)+uu2/r**3
-        ww3=(-2.d0*ss3*sf_3*(aa3+bb3))/(3.d0*sqrt(pi)*r**2*gg3**2.5d0)+uu3/r**3
-        tt1=sf_1/sqrt(1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_1**2)
-        tt2=sf_2/sqrt(1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_2**2)
-        tt3=sf_3/sqrt(1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_3**2)
-        ss1=exp(-(tt1*r)**2)
-        ss2=exp(-(tt2*r)**2)
-        ss3=exp(-(tt3*r)**2)
-        uu1=erf(tt1*r)
-        uu2=erf(tt2*r)
-        uu3=erf(tt3*r)
-        gg1=1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_1**2
-        gg2=1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_2**2
-        gg3=1.d0+(gwr2(jat)**2+gwp1(iat)**2)*sf_3**2
-        ggg=gwp1(iat)
-        hhh=gwr2(jat)
-        aa1=3.d0*(1.d0+sf_1**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_1**2*(3.d0+r**2*sf_1**2)
-        aa2=3.d0*(1.d0+sf_2**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_2**2*(3.d0+r**2*sf_2**2)
-        aa3=3.d0*(1.d0+sf_3**4*(ggg**4+hhh**4))+2.d0*hhh**2*sf_3**2*(3.d0+r**2*sf_3**2)
-        bb1=6.d0*ggg**2*sf_1**2*(1.d0+hhh**2*sf_1**2)
-        bb2=6.d0*ggg**2*sf_2**2*(1.d0+hhh**2*sf_2**2)
-        bb3=6.d0*ggg**2*sf_3**2*(1.d0+hhh**2*sf_3**2)
-        vv1=(-2.d0*ss1*sf_1*(aa1+bb1))/(3.d0*sqrt(pi)*r**2*gg1**2.5d0)+uu1/r**3
-        vv2=(-2.d0*ss2*sf_2*(aa2+bb2))/(3.d0*sqrt(pi)*r**2*gg2**2.5d0)+uu2/r**3
-        vv3=(-2.d0*ss3*sf_3*(aa3+bb3))/(3.d0*sqrt(pi)*r**2*gg3**2.5d0)+uu3/r**3
-        www=pj_dot_rij*qr2(iat)
-        vvv=-pi_dot_rij*qr2(jat)
-        epot=epot+www*(a*ww1+b*ww2+c*ww3)+vvv*(a*vv1+b*vv2+c*vv3)
+        e_qr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwr2(jat),gwp1(iat),qr2(jat),pat(1,iat))
+        e_qr2_i_pr1_j=get_ener_qr2_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr2(iat),gwp1(jat),qr2(iat),pat(1,jat))
+        epot=epot+e_qr0_qr0+e_pr1_pr1+e_qr0_j_pr1_i+e_qr0_i_pr1_j+e_qr2_qr2+ &
+            e_qr0_i_qr2_j+e_qr0_j_qr2_i+e_qr2_j_pr1_i+e_qr2_i_pr1_j
     enddo
     enddo
     atoms%epot=epot
 end subroutine cent2_analytic
+!*****************************************************************************************
+pure function get_ener_qr0_qr0(a,b,c,r,sfs,gw1,gw2,q1,q2) result(ener)
+    implicit none
+    real(8), intent(in):: a, b, c, r, sfs(3), gw1, gw2, q1, q2
+    !local variables
+    real(8):: ener, tt1, tt2, tt3
+    tt1=sfs(1)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(1)**2)
+    tt2=sfs(2)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(2)**2)
+    tt3=sfs(3)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(3)**2)
+    ener=q1*q2*(a*erf(tt1*r)+b*erf(tt2*r)+c*erf(tt3*r))/r
+end function get_ener_qr0_qr0
+!*****************************************************************************************
+pure function get_ener_pr1_pr1(a,b,c,dx,dy,dz,r,sfs,gw1,gw2,p1,p2) result(ener)
+    implicit none
+    real(8), intent(in):: a, b, c, dx, dy, dz, r, sfs(3), gw1, gw2, p1(3), p2(3)
+    !local variables
+    real(8):: ener, tt1, tt2, tt3, ww1, ww2, ww3, vv1, vv2, vv3, vvv, ss1, ss2, ss3
+    real(8):: uu1, uu2, uu3, pi
+    real(8):: pj_dot_rij, pi_dot_rij, pi_dot_pj
+    pi=4.d0*atan(1.d0)
+    tt1=sfs(1)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(1)**2)
+    tt2=sfs(2)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(2)**2)
+    tt3=sfs(3)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(3)**2)
+    pj_dot_rij=dx*p2(1)+dy*p2(2)+dz*p2(3)
+    pi_dot_rij=dx*p1(1)+dy*p1(2)+dz*p1(3)
+    pi_dot_pj=p1(1)*p2(1)+p1(2)*p2(2)+p1(3)*p2(3)
+    ss1=exp(-(tt1*r)**2)
+    ss2=exp(-(tt2*r)**2)
+    ss3=exp(-(tt3*r)**2)
+    uu1=erf(tt1*r)
+    uu2=erf(tt2*r)
+    uu3=erf(tt3*r)
+    ww1=-pi_dot_pj*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
+    ww2=-pi_dot_pj*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
+    ww3=-pi_dot_pj*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
+    vvv=-pj_dot_rij*pi_dot_rij
+    vv1=vvv*(-4.d0*tt1**3*ss1/(sqrt(pi)*r**2)-6.d0*tt1*ss1/(sqrt(pi)*r**4)+3.d0*uu1/r**5)
+    vv2=vvv*(-4.d0*tt2**3*ss2/(sqrt(pi)*r**2)-6.d0*tt2*ss2/(sqrt(pi)*r**4)+3.d0*uu2/r**5)
+    vv3=vvv*(-4.d0*tt3**3*ss3/(sqrt(pi)*r**2)-6.d0*tt3*ss3/(sqrt(pi)*r**4)+3.d0*uu3/r**5)
+    ener=a*(ww1+vv1)+b*(ww2+vv2)+c*(ww3+vv3)
+end function get_ener_pr1_pr1
+!*****************************************************************************************
+pure function get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,gwq,gwp,q,p) result(ener)
+    implicit none
+    real(8), intent(in):: a, b, c, dx, dy, dz, r, sfs(3), gwq, gwp, q, p(3)
+    !local variables
+    real(8):: ener, tt1, tt2, tt3, vv1, vv2, vv3, vvv, ss1, ss2, ss3
+    real(8):: uu1, uu2, uu3, pi
+    real(8):: p_dot_rij
+    pi=4.d0*atan(1.d0)
+    tt1=sfs(1)/sqrt(1.d0+(gwq**2+gwp**2)*sfs(1)**2)
+    tt2=sfs(2)/sqrt(1.d0+(gwq**2+gwp**2)*sfs(2)**2)
+    tt3=sfs(3)/sqrt(1.d0+(gwq**2+gwp**2)*sfs(3)**2)
+    ss1=exp(-(tt1*r)**2)
+    ss2=exp(-(tt2*r)**2)
+    ss3=exp(-(tt3*r)**2)
+    uu1=erf(tt1*r)
+    uu2=erf(tt2*r)
+    uu3=erf(tt3*r)
+    p_dot_rij=dx*p(1)+dy*p(2)+dz*p(3)
+    vvv=p_dot_rij*q
+    vv1=vvv*(2.d0*tt1*ss1/(sqrt(pi)*r**2)-uu1/r**3)
+    vv2=vvv*(2.d0*tt2*ss2/(sqrt(pi)*r**2)-uu2/r**3)
+    vv3=vvv*(2.d0*tt3*ss3/(sqrt(pi)*r**2)-uu3/r**3)
+    ener=a*vv1+b*vv2+c*vv3
+end function get_ener_qr0_pr1
+!*****************************************************************************************
+pure function get_ener_qr2_qr2(a,b,c,r,sfs,gw1,gw2,q1,q2) result(ener)
+    implicit none
+    real(8), intent(in):: a, b, c, r, sfs(3), gw1, gw2, q1, q2
+    !local variables
+    real(8):: ener, pi, tt1, tt2, tt3
+    real(8):: bb1, bb2, bb3, ff1, ff2, ff3, ss1, ss2, ss3
+    real(8):: uu1, uu2, uu3, dd1, dd2, dd3, gg1, gg2, gg3
+    pi=4.d0*atan(1.d0)
+    tt1=sfs(1)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(1)**2)
+    tt2=sfs(2)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(2)**2)
+    tt3=sfs(3)/sqrt(1.d0+(gw1**2+gw2**2)*sfs(3)**2)
+    ss1=exp(-(tt1*r)**2)
+    ss2=exp(-(tt2*r)**2)
+    ss3=exp(-(tt3*r)**2)
+    uu1=erf(tt1*r)
+    uu2=erf(tt2*r)
+    uu3=erf(tt3*r)
+    gg1=1.d0+(gw1**2+gw2**2)*sfs(1)**2
+    gg2=1.d0+(gw1**2+gw2**2)*sfs(2)**2
+    gg3=1.d0+(gw1**2+gw2**2)*sfs(3)**2
+    bb1=gw1**2*gw2**2*r*sfs(1)**2*(-4.d0*r**2*sfs(1)**2+6.d0*gg1)
+    bb2=gw1**2*gw2**2*r*sfs(2)**2*(-4.d0*r**2*sfs(2)**2+6.d0*gg2)
+    bb3=gw1**2*gw2**2*r*sfs(3)**2*(-4.d0*r**2*sfs(3)**2+6.d0*gg3)
+    ff1=sfs(1)**3*(bb1-6.d0*r*gg1**2*(gw1**2+gw2**2))
+    ff2=sfs(2)**3*(bb2-6.d0*r*gg2**2*(gw1**2+gw2**2))
+    ff3=sfs(3)**3*(bb3-6.d0*r*gg3**2*(gw1**2+gw2**2))
+    dd1=(ss1*ff1+9.d0*sqrt(pi)*gg1**3.5d0*uu1)/(9.d0*sqrt(pi)*r*gg1**3.5d0)
+    dd2=(ss2*ff2+9.d0*sqrt(pi)*gg2**3.5d0*uu2)/(9.d0*sqrt(pi)*r*gg2**3.5d0)
+    dd3=(ss3*ff3+9.d0*sqrt(pi)*gg3**3.5d0*uu3)/(9.d0*sqrt(pi)*r*gg3**3.5d0)
+    ener=q1*q2*(a*dd1+b*dd2+c*dd3)
+end function get_ener_qr2_qr2
+!*****************************************************************************************
+pure function get_ener_qr0_qr2(a,b,c,r,sfs,gwr0,gwr2,qr0,qr2) result(ener)
+    implicit none
+    real(8), intent(in):: a, b, c, r, sfs(3), gwr0, gwr2, qr0, qr2
+    !local variables
+    real(8):: ener, pi, tt1, tt2, tt3
+    real(8):: ww1, ww2, ww3, ss1, ss2, ss3
+    real(8):: uu1, uu2, uu3, gg1, gg2, gg3
+    pi=4.d0*atan(1.d0)
+    tt1=sfs(1)/sqrt(1.d0+(gwr0**2+gwr2**2)*sfs(1)**2)
+    tt2=sfs(2)/sqrt(1.d0+(gwr0**2+gwr2**2)*sfs(2)**2)
+    tt3=sfs(3)/sqrt(1.d0+(gwr0**2+gwr2**2)*sfs(3)**2)
+    ss1=exp(-(tt1*r)**2)
+    ss2=exp(-(tt2*r)**2)
+    ss3=exp(-(tt3*r)**2)
+    uu1=erf(tt1*r)
+    uu2=erf(tt2*r)
+    uu3=erf(tt3*r)
+    gg1=1.d0+(gwr2**2+gwr0**2)*sfs(1)**2
+    gg2=1.d0+(gwr2**2+gwr0**2)*sfs(2)**2
+    gg3=1.d0+(gwr2**2+gwr0**2)*sfs(3)**2
+    ww1=-2.d0*sfs(1)**3*(gwr2**2)*ss1/(3.d0*sqrt(pi)*gg1**1.5d0)+1.d0*uu1/r
+    ww2=-2.d0*sfs(2)**3*(gwr2**2)*ss2/(3.d0*sqrt(pi)*gg2**1.5d0)+1.d0*uu2/r
+    ww3=-2.d0*sfs(3)**3*(gwr2**2)*ss3/(3.d0*sqrt(pi)*gg3**1.5d0)+1.d0*uu3/r
+    ener=qr0*qr2*(a*ww1+b*ww2+c*ww3)
+end function get_ener_qr0_qr2
+!*****************************************************************************************
+pure function get_ener_qr2_pr1(a,b,c,dx,dy,dz,r,sfs,gwq,gwp,q,p) result(ener)
+    implicit none
+    real(8), intent(in):: a, b, c, dx, dy, dz, r, sfs(3), gwq, gwp, q, p(3)
+    !local variables
+    real(8):: ener, tt1, tt2, tt3, ww1, ww2, ww3, ss1, ss2, ss3
+    real(8):: aa1, aa2, aa3, bb1, bb2, bb3, uu1, uu2, uu3, gg1, gg2, gg3, pi
+    real(8):: p_dot_rij
+    pi=4.d0*atan(1.d0)
+    tt1=sfs(1)/sqrt(1.d0+(gwq**2+gwp**2)*sfs(1)**2)
+    tt2=sfs(2)/sqrt(1.d0+(gwq**2+gwp**2)*sfs(2)**2)
+    tt3=sfs(3)/sqrt(1.d0+(gwq**2+gwp**2)*sfs(3)**2)
+    ss1=exp(-(tt1*r)**2)
+    ss2=exp(-(tt2*r)**2)
+    ss3=exp(-(tt3*r)**2)
+    uu1=erf(tt1*r)
+    uu2=erf(tt2*r)
+    uu3=erf(tt3*r)
+    gg1=1.d0+(gwq**2+gwp**2)*sfs(1)**2
+    gg2=1.d0+(gwq**2+gwp**2)*sfs(2)**2
+    gg3=1.d0+(gwq**2+gwp**2)*sfs(3)**2
+    aa1=3.d0*(1.d0+sfs(1)**4*(gwp**4+gwq**4))+2.d0*gwq**2*sfs(1)**2*(3.d0+r**2*sfs(1)**2)
+    aa2=3.d0*(1.d0+sfs(2)**4*(gwp**4+gwq**4))+2.d0*gwq**2*sfs(2)**2*(3.d0+r**2*sfs(2)**2)
+    aa3=3.d0*(1.d0+sfs(3)**4*(gwp**4+gwq**4))+2.d0*gwq**2*sfs(3)**2*(3.d0+r**2*sfs(3)**2)
+    bb1=6.d0*gwp**2*sfs(1)**2*(1.d0+gwq**2*sfs(1)**2)
+    bb2=6.d0*gwp**2*sfs(2)**2*(1.d0+gwq**2*sfs(2)**2)
+    bb3=6.d0*gwp**2*sfs(3)**2*(1.d0+gwq**2*sfs(3)**2)
+    ww1=(-2.d0*ss1*sfs(1)*(aa1+bb1))/(3.d0*sqrt(pi)*r**2*gg1**2.5d0)+uu1/r**3
+    ww2=(-2.d0*ss2*sfs(2)*(aa2+bb2))/(3.d0*sqrt(pi)*r**2*gg2**2.5d0)+uu2/r**3
+    ww3=(-2.d0*ss3*sfs(3)*(aa3+bb3))/(3.d0*sqrt(pi)*r**2*gg3**2.5d0)+uu3/r**3
+    p_dot_rij=dx*p(1)+dy*p(2)+dz*p(3)
+    ener=-p_dot_rij*q*(a*ww1+b*ww2+c*ww3)
+end function get_ener_qr2_pr1
 !*****************************************************************************************
 subroutine get_proc_stake(mpi_env,n,is,ie)
     use mod_flm_futile
