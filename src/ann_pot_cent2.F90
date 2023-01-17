@@ -70,6 +70,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     use mod_electrostatics, only: typ_poisson
     use mod_linkedlists, only: typ_linkedlists
     use mod_linked_lists, only: typ_pia_arr
+    use mod_processors, only: get_proc_stake
     use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
@@ -963,6 +964,8 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
     use mod_trial_energy, only: typ_trial_energy, trial_energy_deallocate
+    use mod_trial_energy, only: get_trial_energy, get_rmse
+    use mod_processors, only: get_proc_stake
     use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
@@ -971,6 +974,8 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
     !local variables
+    type(typ_atoms):: atoms_ref
+    type(typ_poisson):: poisson_ref
     integer:: itrial, iat
     integer:: nbgx, nbgy, nbgz
     real(8):: xyz(3), tt, rmse, err_U_SRS, U_SRS
@@ -978,27 +983,23 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     real(8):: p(3), ttp1, ttp2, a1, a2, b1, b2
     real(8):: qavg(10), qvar(10)
     real(8):: cavg(10), cvar(10)
-    real(8), allocatable:: EP(:,:)
-    real(8), allocatable:: E_all(:)
-    real(8), allocatable:: gausswidth(:)
-    real(8), allocatable:: EP_n(:)
     real(8):: one, dpm(3)
     type(typ_trial_energy), pointer:: trial_energy=>null()
     real(8):: time1, time2
     real(8), allocatable:: amat(:,:)
-    integer:: itrials, itriale, ibfs, ibfe, ibf, jbf
+    real(8), allocatable:: squarefit_raw(:,:)
+    real(8), allocatable:: rhs_raw(:)
+    integer:: ibf, jbf
     logical, save:: done=.false.
     if(done) return
     one=1.d0
     !call cpu_time(time1)
-    call cal_trial_from_cube(parini,trial_energy,atoms%qtot,atoms%dpm,self%bf)
+    call cube_read('rho.cube',atoms_ref,poisson_ref)
+    call get_trial_energy(parini,atoms_ref,poisson_ref,self%bf%nbf,self%bf%bz,self%bf%gwz,trial_energy,atoms%qtot,atoms%dpm)
     !call cpu_time(time2)
     !if(parini%mpi_env%iproc==0) then
-    !    write(*,*) 'time elapsed in cal_trial_from_cube ',time2-time1
+    !    write(*,*) 'time elapsed in get_trial_energy ',time2-time1
     !endif
-    allocate(EP_n(trial_energy%ntrial))
-    allocate(E_all(trial_energy%ntrial))
-    allocate(EP(self%bf%nbf,trial_energy%ntrial))
     nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+3
     nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+3
     nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+3
@@ -1009,100 +1010,11 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     endif
     !-----------------------------------------------------------------
     call cpu_time(time1)
-    EP=0.0
-    call get_proc_stake(parini%mpi_env,self%bf%nbf,ibfs,ibfe)
-    allocate(gausswidth(atoms%nat))
     allocate(amat(self%bf%nbf+1,self%bf%nbf+1),source=0.d0)
-    sfs(1)=parini%screening_factor
-    sfs(2)=parini%screening_factor*1.1d0
-    sfs(3)=parini%screening_factor*1.2d0
-    a=sfs(2)*sfs(3)*(sfs(2)+sfs(3))/((sfs(2)-sfs(1))*(sfs(3)-sfs(1))*(sfs(1)+sfs(2)+sfs(3)))
-    b=sfs(1)*sfs(3)*(sfs(1)+sfs(3))/((sfs(3)-sfs(2))*(sfs(1)-sfs(2))*(sfs(1)+sfs(2)+sfs(3)))
-    c=sfs(2)*sfs(1)*(sfs(2)+sfs(1))/((sfs(1)-sfs(3))*(sfs(2)-sfs(3))*(sfs(1)+sfs(2)+sfs(3)))
-    do ibf=ibfs,ibfe
-        iat=self%bf%imap(ibf)
-        !write(*,'(a,i3,3i5)') 'progress ',parini%mpi_env%iproc,ibf,ibfs,ibfe
-!        amat(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
-!        amat(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
-!        call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
-!        poisson%pot=0.d0
-!        call get_hartree(parini,poisson,atoms,gausswidth,tt)
-!        do jbf=1,ibf
-!            call self%get_energy_external_pot(atoms,jbf,poisson,tt)
-!            amat(ibf,jbf)=tt
-!            amat(jbf,ibf)=amat(ibf,jbf)
-!        enddo
-!        amat(ibf,ibf)=amat(ibf,ibf)+self%bf%hardness(ibf)
-        do itrial=1,trial_energy%ntrial
-            xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
-!            !write(*,'(a,i3,i5,i7,3f10.1)') 'ALI ',parini%mpi_env%iproc,ibf,itrial,xyz(1),xyz(2),xyz(3)
-!            call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
-!                5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-!            call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-!                poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
-!                poisson%rho,poisson%pot,tt)
-!            EP(ibf,itrial)=tt
-            dx=atoms%ratp(1,iat)-xyz(1)
-            dy=atoms%ratp(2,iat)-xyz(2)
-            dz=atoms%ratp(3,iat)-xyz(3)
-            r=sqrt(dx**2+dy**2+dz**2)
-            if(trim(self%bf%bt(ibf))=='s') then
-                qr0=1.d0*self%bf%be_s(iat)
-                gwr0=self%bf%gwe_s(iat)
-                ttr0=get_ener_qr0_qr0(a,b,c,r,sfs,1.d0,gwr0,1.d0,qr0)
-                qr2=1.d0*(1.d0-self%bf%be_s(iat))
-                gwr2=gwr0
-                ttr2=get_ener_qr0_qr2(a,b,c,r,sfs,1.d0,gwr2,1.d0,qr2)
-                tt=ttr0+ttr2
-                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttr0+ttr2,ttr0+ttr2-tt
-            elseif(trim(self%bf%bt(ibf))=='px') then
-                a1=self%bf%gwe_p(1,iat)
-                a2=self%bf%gwe_p(2,iat)
-                b1= a1**5/(a1**5-a2**5)
-                b2=-a2**5/(a1**5-a2**5)
-                p(1)=1.d0*b1
-                p(2)=0.d0
-                p(3)=0.d0
-                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
-                p(1)=1.d0*b2
-                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
-                tt=ttp1+ttp2
-                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
-            elseif(trim(self%bf%bt(ibf))=='py') then
-                a1=self%bf%gwe_p(1,iat)
-                a2=self%bf%gwe_p(2,iat)
-                b1= a1**5/(a1**5-a2**5)
-                b2=-a2**5/(a1**5-a2**5)
-                p(1)=0.d0
-                p(2)=1.d0*b1
-                p(3)=0.d0
-                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
-                p(2)=1.d0*b2
-                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
-                tt=ttp1+ttp2
-                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
-            elseif(trim(self%bf%bt(ibf))=='pz') then
-                a1=self%bf%gwe_p(1,iat)
-                a2=self%bf%gwe_p(2,iat)
-                b1= a1**5/(a1**5-a2**5)
-                b2=-a2**5/(a1**5-a2**5)
-                p(1)=0.d0
-                p(2)=0.d0
-                p(3)=1.d0*b1
-                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
-                p(3)=1.d0*b2
-                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
-                tt=ttp1+ttp2
-                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
-            endif
-            EP(ibf,itrial)=tt
-        enddo !end of loop over itrial
-    enddo !end of loop over ibf
-    amat(self%bf%nbf+1,self%bf%nbf+1)=0.d0
     if(parini%mpi_env%nproc>1) then
-    call fmpi_allreduce(EP(1,1),self%bf%nbf*trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(amat(1,1),(self%bf%nbf+1)**2,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     endif
+    amat(self%bf%nbf+1,self%bf%nbf+1)=0.d0
     do jbf=1,(self%bf%nbf+1)
     do ibf=1,(self%bf%nbf+1)
         self%amat(ibf,jbf)=amat(ibf,jbf)
@@ -1110,28 +1022,14 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     enddo
     enddo
     !self%amat_is_calculated=.true.
-    call get_proc_stake(parini%mpi_env,trial_energy%ntrial,itrials,itriale)
-    EP_n=0.d0
-    do itrial=itrials,itriale
-        xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
-        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
-            5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
-            poisson%rho,poisson%pot_ion,tt)
-        EP_n(itrial)=tt
-    enddo !end of loop over itrial
-    if(parini%mpi_env%nproc>1) then
-    call fmpi_allreduce(EP_n(1),trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    endif
-    deallocate(gausswidth)
+    allocate(squarefit_raw(self%bf%nbf,self%bf%nbf),rhs_raw(self%bf%nbf))
+    call get_cost_secder(parini,trial_energy,poisson,atoms,self%bf%nbf,self%bf%imap,self%bf%bt,self%bf%be_s,self%bf%gwe_s,self%bf%gwe_p,squarefit_raw,rhs_raw)
     call cpu_time(time2)
     !if(parini%mpi_env%iproc==0) then
     write(*,*) 'time EP ',time2-time1
     !endif
     !-----------------------------------------------------------------
-    call self%get_expansion_coeff(parini,ann_arr,atoms,trial_energy%ntrial, &
-        trial_energy%energy,EP,EP_n)
+    call self%get_expansion_coeff(parini,ann_arr,atoms,squarefit_raw,rhs_raw)
     !-----------------------------------------------------------------
     atoms%qat(1:atoms%nat)=self%bf%qcore(1:atoms%nat)
     do ibf=1,self%bf%nbf
@@ -1172,16 +1070,8 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     !-----------------------------------------------------------------
     endif
     call self%reverseCEP(parini,ann_arr,atoms,poisson,self%amat)
-    rmse=0.d0
-    do itrial=1,trial_energy%ntrial
-        tt=0.d0
-        do ibf=1,self%bf%nbf
-            tt=tt+ann_arr%qq(ibf)*EP(ibf,itrial)
-        enddo
-        E_all(itrial)=EP_n(itrial)+tt
-        rmse=rmse+(E_all(itrial)-trial_energy%energy(itrial))**2
-    enddo
-    rmse=1.d3*sqrt(rmse/trial_energy%ntrial)
+    call get_rmse(trial_energy,self%bf%nbf,ann_arr%qq,rmse)
+    rmse=1.d3*rmse !convert to mHa
     call self%cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
     call prefit_cent2_output(parini,ann_arr,atoms,qavg,qvar,cavg,cvar)
     err_U_SRS=1.d3*(U_SRS-trial_energy%ehartree_scn_excl)/atoms%nat
@@ -1190,16 +1080,140 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     write(*,'(a,2f10.3,8f7.3)') 'OPT ',rmse,err_U_SRS, &
         qavg(1),qavg(2),qvar(1),qvar(2),cavg(1),cavg(2),cvar(1),cvar(2)
     do itrial=1,trial_energy%ntrial
-        write(*,'(a,i3,2es17.8)') 'ETS ',trial_energy%iat_list(itrial),E_all(itrial),trial_energy%energy(itrial)
+        write(*,'(a,i3,2es17.8)') 'ETS ',trial_energy%iat_list(itrial),trial_energy%E_all(itrial),trial_energy%energy(itrial)
     enddo
     endif
-    deallocate(EP_n)
-    deallocate(E_all)
     call trial_energy_deallocate(trial_energy)
     done=.true.
 end subroutine prefit_cent2
 !*****************************************************************************************
-subroutine get_expansion_coeff(self,parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
+subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gwe_s,gwe_p,squarefit_raw,rhs_raw)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_electrostatics, only: typ_poisson
+    use mod_trial_energy, only: typ_trial_energy, trial_energy_deallocate
+    use mod_trial_energy, only: get_trial_energy
+    use mod_processors, only: get_proc_stake
+    use mod_flm_futile
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_trial_energy), pointer, intent(in):: trial_energy
+    type(typ_poisson), intent(inout):: poisson
+    type(typ_atoms), intent(inout):: atoms
+    !type(typ_poisson), intent(inout):: poisson
+    integer, intent(in):: nbf, imap(nbf)
+    character(2), intent(in):: bt(nbf)
+    real(8), intent(in):: be_s(nbf), gwe_s(nbf), gwe_p(2,atoms%nat)
+    real(8), intent(out):: squarefit_raw(nbf,nbf), rhs_raw(nbf)
+    !local variables
+    integer:: iat, ibf, ibfs, ibfe, jbf, itrial, itrials, itriale
+    real(8):: sfs(3), a, b, c, dx, dy, dz, r, a1, a2, b1, b2, gwr0, gwr2
+    real(8):: tt, ttr0, ttr2, qr0, qr2, p(3), ttp1, ttp2, xyz(3)
+    call get_proc_stake(parini%mpi_env,nbf,ibfs,ibfe)
+    trial_energy%EP=0.0
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    a=sfs(2)*sfs(3)*(sfs(2)+sfs(3))/((sfs(2)-sfs(1))*(sfs(3)-sfs(1))*(sfs(1)+sfs(2)+sfs(3)))
+    b=sfs(1)*sfs(3)*(sfs(1)+sfs(3))/((sfs(3)-sfs(2))*(sfs(1)-sfs(2))*(sfs(1)+sfs(2)+sfs(3)))
+    c=sfs(2)*sfs(1)*(sfs(2)+sfs(1))/((sfs(1)-sfs(3))*(sfs(2)-sfs(3))*(sfs(1)+sfs(2)+sfs(3)))
+    do ibf=ibfs,ibfe
+        iat=imap(ibf)
+        do itrial=1,trial_energy%ntrial
+            xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
+            dx=atoms%ratp(1,iat)-xyz(1)
+            dy=atoms%ratp(2,iat)-xyz(2)
+            dz=atoms%ratp(3,iat)-xyz(3)
+            r=sqrt(dx**2+dy**2+dz**2)
+            if(trim(bt(ibf))=='s') then
+                qr0=1.d0*be_s(iat)
+                gwr0=gwe_s(iat)
+                ttr0=get_ener_qr0_qr0(a,b,c,r,sfs,1.d0,gwr0,1.d0,qr0)
+                qr2=1.d0*(1.d0-be_s(iat))
+                gwr2=gwr0
+                ttr2=get_ener_qr0_qr2(a,b,c,r,sfs,1.d0,gwr2,1.d0,qr2)
+                tt=ttr0+ttr2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttr0+ttr2,ttr0+ttr2-tt
+            elseif(trim(bt(ibf))=='px') then
+                a1=gwe_p(1,iat)
+                a2=gwe_p(2,iat)
+                b1= a1**5/(a1**5-a2**5)
+                b2=-a2**5/(a1**5-a2**5)
+                p(1)=1.d0*b1
+                p(2)=0.d0
+                p(3)=0.d0
+                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
+                p(1)=1.d0*b2
+                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1+ttp2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
+            elseif(trim(bt(ibf))=='py') then
+                a1=gwe_p(1,iat)
+                a2=gwe_p(2,iat)
+                b1= a1**5/(a1**5-a2**5)
+                b2=-a2**5/(a1**5-a2**5)
+                p(1)=0.d0
+                p(2)=1.d0*b1
+                p(3)=0.d0
+                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
+                p(2)=1.d0*b2
+                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1+ttp2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
+            elseif(trim(bt(ibf))=='pz') then
+                a1=gwe_p(1,iat)
+                a2=gwe_p(2,iat)
+                b1= a1**5/(a1**5-a2**5)
+                b2=-a2**5/(a1**5-a2**5)
+                p(1)=0.d0
+                p(2)=0.d0
+                p(3)=1.d0*b1
+                ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
+                p(3)=1.d0*b2
+                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1+ttp2
+                !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
+            endif
+            trial_energy%EP(ibf,itrial)=tt
+        enddo !end of loop over itrial
+    enddo !end of loop over ibf
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(trial_energy%EP(1,1),nbf*trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    endif
+    call get_proc_stake(parini%mpi_env,trial_energy%ntrial,itrials,itriale)
+    trial_energy%EP_n=0.d0
+    do itrial=itrials,itriale
+        xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
+        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
+            5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
+            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
+            poisson%rho,poisson%pot_ion,tt)
+        trial_energy%EP_n(itrial)=tt
+    enddo !end of loop over itrial
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(trial_energy%EP_n(1),trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    endif
+    squarefit_raw=0.d0
+    do ibf=1,nbf
+        do jbf=1,nbf
+            tt=0.d0
+            do itrial=1,trial_energy%ntrial
+                tt=tt+2.d0*trial_energy%EP(ibf,itrial)*trial_energy%EP(jbf,itrial)
+            enddo
+            squarefit_raw(ibf,jbf)=tt
+        enddo
+    enddo
+    do ibf=1,nbf
+        tt=0.d0
+        do itrial=1,trial_energy%ntrial
+            tt=tt+2.d0*trial_energy%EP(ibf,itrial)*(trial_energy%energy(itrial)-trial_energy%EP_n(itrial))
+        enddo
+        rhs_raw(ibf)=tt
+    enddo
+end subroutine get_cost_secder
+!*****************************************************************************************
+subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -1208,8 +1222,7 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    integer, intent(in):: ntrial
-    real(8), intent(in):: energy(ntrial), EP(self%bf%nbf,ntrial), EP_n(ntrial)
+    real(8), intent(in):: squarefit_raw(self%bf%nbf,self%bf%nbf), rhs_raw(self%bf%nbf)
     !local variables
     integer:: iat, itrial, info, itypat, lwork
     integer:: ibf, jbf
@@ -1225,12 +1238,8 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
     squarefit_t=0.d0
     do ibf=1,self%bf%nbf
         do jbf=1,self%bf%nbf
-            tt=0.d0
-            do itrial=1,ntrial
-                tt=tt+2.d0*EP(ibf,itrial)*EP(jbf,itrial)
-            enddo
-            squarefit(ibf,jbf)=tt
-            squarefit_t(ibf,jbf)=tt
+            squarefit(ibf,jbf)=squarefit_raw(ibf,jbf)
+            squarefit_t(ibf,jbf)=squarefit_raw(ibf,jbf)
         enddo
     enddo
     call DSYEV('V','U',self%bf%nbf,squarefit,self%bf%nbf,real_eigenval,work,lwork,info)
@@ -1274,11 +1283,7 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,ntrial,energy,EP,EP_n)
     call DGETRF(self%bf%nbf+1,self%bf%nbf+1,squarefit_t,self%bf%nbf+1,ann_arr%ipiv,info)
     ann_arr%qq(self%bf%nbf+1)=atoms%qtot-sum(atoms%zat)-sum(self%bf%qcore)
     do ibf=1,self%bf%nbf
-        tt=0.d0
-        do itrial=1,ntrial
-            tt=tt+2.d0*EP(ibf,itrial)*(energy(itrial)-EP_n(itrial))
-        enddo
-        ann_arr%qq(ibf)=tt
+        ann_arr%qq(ibf)=rhs_raw(ibf)
     enddo
     do itypat=1,parini%ntypat
         qtarget=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
@@ -1454,408 +1459,6 @@ subroutine reverseCEP(self,parini,ann_arr,atoms,poisson,amat)
     endif
     deallocate(ww)
 end subroutine reverseCEP
-!*****************************************************************************************
-subroutine cal_trial_from_cube(parini,trial_energy,qtot,dpm,bf)
-    use mod_parini, only: typ_parini
-    use mod_trial_energy, only: typ_trial_energy, trial_energy_allocate
-    use mod_electrostatics, only: typ_poisson
-    use mod_atoms, only: typ_atoms, get_rat, update_ratp, atom_deallocate_old, update_rat
-    use mod_flm_futile
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_trial_energy), pointer, intent(inout):: trial_energy
-    real(8), intent(out):: qtot, dpm(3)
-    type(typ_bf), intent(in):: bf
-    !local variables
-    type(typ_poisson):: poisson
-    type(typ_poisson):: poisson_ion
-    type(typ_atoms):: atoms
-    integer:: igpx, igpy, igpz, iat, ntrial, itrial, nsegx, nsegy, nsegz
-    integer:: jgpx, jgpy, jgpz
-    real(8):: rgcut_a, pi!, qtot_e, qtot_i
-    real(8):: ehartree_scn_excl, tt1, tt2
-    real(8):: xyz(3), dxyz(3), epot_trial, gwt, q_tmp(1)
-    real(8):: dx, dy, dz, r2, coeff, x, y, z !, rloc, c1, c2
-    real(8):: xmin, ymin, zmin, xmax, ymax, zmax
-    real(8):: q_one(1), gw_one(1)
-    real(8), allocatable::  gausswidth(:)
-    real(8), allocatable::  rat_trial(:,:)
-    real(8), allocatable::  rho(:,:,:)
-    real(8), allocatable::  pot(:,:,:)
-    integer:: nbgpx, nbgpy, nbgpz, ix, iy, iz
-    integer:: nex, ney, nez, nd
-    integer:: itrials, itriale, ierr
-#if defined(MPI)
-    include 'mpif.h'
-#endif
-    pi=4.d0*atan(1.d0)
-    if(parini%ewald) then
-        write(*,*) 'ERROR: ewald=True is wrong when reading from cube file.'
-        stop
-    endif
-    if(trim(parini%psolver)=='kwald') then
-        write(*,*) 'ERROR: psolver=kwald is wrong for grid base charge density.'
-        stop
-    endif
-    if(parini%cal_scn .and. parini%screening_factor==0.d0) then
-        stop 'ERROR: cal_scn is TRUE and screening_factor is 0, MEANINGLESS!'
-    endif
-    !-------------------------------------------------------
-    call cube_read('rho.cube',atoms,poisson)
-    do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Li') atoms%zat(iat)=3.d0
-        if(trim(atoms%sat(iat))=='S' ) atoms%zat(iat)=6.d0
-    enddo
-    !-------------------------------------------------------
-    if(.true.) then
-    nd=2
-    allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
-    call f_free(poisson%rho)
-    poisson%ngpz=poisson%ngpz/nd
-    poisson%ngpy=poisson%ngpy/nd
-    poisson%ngpx=poisson%ngpx/nd
-    poisson%rho=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%rho')
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        poisson%rho(igpx,igpy,igpz)=rho(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
-    enddo
-    enddo
-    enddo
-    deallocate(rho)
-    poisson%hgrid=poisson%hgrid*real(nd,kind=8)
-    endif
-    !-------------------------------------------------------
-    allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
-    write(*,*) allocated(poisson%rho)
-    call f_free(poisson%rho)
-    nex=20
-    ney=20
-    nez=20
-    poisson%rho=f_malloc0([1.to.(poisson%ngpx+2*nex),1.to.(poisson%ngpy+2*ney),1.to.(poisson%ngpz+2*nez)],id='poisson%rho')
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        poisson%rho(igpx+nex,igpy+ney,igpz+nez)=rho(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
-    call update_ratp(atoms)
-    do iat=1,atoms%nat
-        atoms%ratp(1,iat)=atoms%ratp(1,iat)+real(nex,kind=8)*poisson%hgrid(1,1)
-        atoms%ratp(2,iat)=atoms%ratp(2,iat)+real(ney,kind=8)*poisson%hgrid(2,2)
-        atoms%ratp(3,iat)=atoms%ratp(3,iat)+real(nez,kind=8)*poisson%hgrid(3,3)
-    enddo
-    call update_rat(atoms)
-    deallocate(rho)
-    poisson%ngpx=poisson%ngpx+2*nex
-    poisson%ngpy=poisson%ngpy+2*ney
-    poisson%ngpz=poisson%ngpz+2*nez
-    !-------------------------------------------------------
-    atoms%boundcond='free'
-    poisson%bc=atoms%boundcond
-    allocate(gausswidth(atoms%nat))
-    gausswidth=0.5d0 !parini%gaussian_width !TO_BE_CORRECTED
-    poisson%cal_scn=parini%cal_scn
-    poisson%screening_factor=parini%screening_factor
-    poisson%task_finit=""
-    call init_hartree(parini,atoms,poisson,gausswidth)
-    poisson%cell(1)=poisson%hgrid(1,1)*poisson%ngpx
-    poisson%cell(2)=poisson%hgrid(2,2)*poisson%ngpy
-    poisson%cell(3)=poisson%hgrid(3,3)*poisson%ngpz
-    !-------------------------------------------------------
-    poisson_ion%alpha=0.5d0 !parini%gaussian_width !TO_BE_CORRECTED
-    poisson_ion%rgcut=parini%rgcut_ewald*poisson_ion%alpha
-    poisson_ion%ngpx=poisson%ngpx
-    poisson_ion%ngpy=poisson%ngpy
-    poisson_ion%ngpz=poisson%ngpz
-    poisson_ion%hgrid(1:3,1:3)=0.d0
-    poisson_ion%hgrid(1,1)=poisson%hgrid(1,1)
-    poisson_ion%hgrid(2,2)=poisson%hgrid(2,2)
-    poisson_ion%hgrid(3,3)=poisson%hgrid(3,3)
-    poisson_ion%xyz111=poisson%xyz111
-    rgcut_a=parini%rgcut_ewald*maxval(gausswidth) !parini%gaussian_width !3.d0
-    nbgpx=int(rgcut_a/poisson_ion%hgrid(1,1))+2
-    nbgpy=int(rgcut_a/poisson_ion%hgrid(2,2))+2
-    nbgpz=int(rgcut_a/poisson_ion%hgrid(3,3))+2
-    poisson_ion%task_finit="alloc_rho"
-    call init_hartree(parini,atoms,poisson_ion,gausswidth)
-    poisson_ion%reset_rho=.true.
-    poisson_ion%nat=atoms%nat
-    poisson_ion%cv=atoms%cellvec
-    poisson_ion%bc=atoms%boundcond
-    poisson_ion%q(1:poisson_ion%nat)=atoms%zat(1:atoms%nat)
-    poisson_ion%gw(1:poisson_ion%nat)=gausswidth(1:atoms%nat)
-    call get_rat(atoms,poisson_ion%rcart)
-    !call put_charge_density(parini,poisson_ion)
-!    nbgpx=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(1,1))+2
-!    nbgpy=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(2,2))+2
-!    nbgpz=int(7.d0*maxval(gausswidth(1:atoms%nat))/poisson_ion%hgrid(3,3))+2
-    poisson_ion%rho=0.d0
-    do iat=1,atoms%nat
-    !itypat=atoms%itypat(iat)
-    q_tmp(1)=atoms%zat(iat)*bf%bz(iat)
-    call put_gto_sym_ortho(parini,poisson_ion%bc,.false.,1,atoms%ratp(1,iat),q_tmp,bf%gwz(iat), &
-        6.d0*bf%gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
-        poisson_ion%hgrid,poisson_ion%rho)
-    q_tmp(1)=atoms%zat(iat)*(1.d0-bf%bz(iat))
-    call put_r2gto_sym_ortho(parini,poisson_ion%bc,.false.,1,atoms%ratp(1,iat),q_tmp,bf%gwz(iat), &
-        6.d0*bf%gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
-        poisson_ion%hgrid,poisson_ion%rho)
-    !if(trim(atoms%sat(iat))=='Mg') gwt=0.6d0
-    !if(trim(atoms%sat(iat))=='O' ) gwt=0.3d0
-!    gwt=gausswidth(iat)
-!    coeff=atoms%zat(iat)/(gwt**3*pi**1.5d0)
-    !coeff=atoms%zat(iat)*2.d0/(3.d0*gwt**5*pi**1.5d0)
-    !coeff=atoms%zat(iat)*4.d0/(15.d0*gwt**7*pi**1.5d0)
-    !if(trim(atoms%sat(iat))=='Mg') then
-    !    !0.65406138674  2 -5.223929095  0.913704167481045 rloc nloc c1 .. cnloc
-    !    rloc=0.65406138674d0
-    !    c1=-5.223929095d0
-    !    c2=0.913704167481045d0
-    !endif
-    !if(trim(atoms%sat(iat))=='O') then
-    !    !0.3454999999    2 -11.7435870154  1.90653967947 rloc nloc c1 .. cnloc
-    !    rloc=0.3454999999d0
-    !    c1=-11.7435870154d0
-    !    c2=1.90653967947d0
-    !endif
-    !c1=-c1
-    !c2=-c2
-!    jgpx=int(poisson_ion%rcart(1,iat)/poisson%hgrid(1,1))
-!    jgpy=int(poisson_ion%rcart(2,iat)/poisson%hgrid(2,2))
-!    jgpz=int(poisson_ion%rcart(3,iat)/poisson%hgrid(3,3))
-!    do igpz=jgpz-nbgpz,jgpz+nbgpz
-!    do igpy=jgpy-nbgpy,jgpy+nbgpy
-!    do igpx=jgpx-nbgpx,jgpx+nbgpx
-!        dx=(igpx-1)*poisson%hgrid(1,1)-poisson_ion%rcart(1,iat)
-!        dy=(igpy-1)*poisson%hgrid(2,2)-poisson_ion%rcart(2,iat)
-!        dz=(igpz-1)*poisson%hgrid(3,3)-poisson_ion%rcart(3,iat)
-!        r2=dx**2+dy**2+dz**2
-!        if(r2<10.d0**2*gwt**2) then
-!        !if(r2<10.d0**2*rloc**2) then
-!            poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*exp(-r2/gwt**2)
-!            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2*exp(-r2/gwt**2)
-!            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+coeff*r2**2*exp(-r2/gwt**2)
-!            !tt1=exp(-r2/(2.d0*rloc**2))
-!            !tt2=-3.d0*rloc**4*(c1-2.d0*c2)+rloc**2*(c1-7.d0*c2)*r2+c2*r2**2+rloc**3*sqrt(2.d0/pi)*atoms%zat(iat)
-!            !poisson_ion%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)+tt1*tt2/(4.d0*rloc**6*pi)
-!        endif
-!    enddo
-!    enddo
-!    enddo
-    enddo
-    tt1=0.d0
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        tt1=tt1+poisson_ion%rho(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
-    tt1=tt1*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    if(parini%mpi_env%iproc==0) then
-    write(*,*) 'TT1 ',tt1
-    endif
-    !-------------------------------------------------------
-    qtot=0.d0
-    do igpz=1,poisson%ngpz
-        do igpy=1,poisson%ngpy
-            do igpx=1,poisson%ngpx
-                poisson%rho(igpx,igpy,igpz)=poisson_ion%rho(igpx,igpy,igpz)-poisson%rho(igpx,igpy,igpz)
-                qtot=qtot+poisson%rho(igpx,igpy,igpz)
-            enddo
-        enddo
-    enddo
-    qtot=qtot*poisson_ion%hgrid(1,1)*poisson_ion%hgrid(2,2)*poisson_ion%hgrid(3,3)
-    if(parini%mpi_env%iproc==0) then
-        write(*,'(a,f20.12)') 'qtot= ',qtot
-    endif
-    !-------------------------------------------------------
-    dpm(1)=0.d0
-    dpm(2)=0.d0
-    dpm(3)=0.d0
-    do igpz=1,poisson%ngpz
-    do igpy=1,poisson%ngpy
-    do igpx=1,poisson%ngpx
-        x=poisson%xyz111(1)+(igpx-1)*poisson%hgrid(1,1)
-        y=poisson%xyz111(2)+(igpy-1)*poisson%hgrid(2,2)
-        z=poisson%xyz111(3)+(igpz-1)*poisson%hgrid(3,3)
-        dpm(1)=dpm(1)+x*poisson%rho(igpx,igpy,igpz)
-        dpm(2)=dpm(2)+y*poisson%rho(igpx,igpy,igpz)
-        dpm(3)=dpm(3)+z*poisson%rho(igpx,igpy,igpz)
-    enddo
-    enddo
-    enddo
-    dpm(1)=dpm(1)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    dpm(2)=dpm(2)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    dpm(3)=dpm(3)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    if(parini%mpi_env%iproc==0) then
-        write(*,'(a,3f8.3)') 'DPM= ',dpm(1),dpm(2),dpm(3)
-    endif
-    !-------------------------------------------------------
-    call update_ratp(atoms)
-    if(parini%mpi_env%iproc==0) then
-        call get_hartree(parini,poisson,atoms,gausswidth,ehartree_scn_excl)
-    endif
-    !write(*,*) 'ALLOCATED= ',parini%mpi_env%iproc,allocated(poisson%pot)
-    if(parini%mpi_env%nproc>1) then
-    call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
-    call MPI_BCAST(poisson%pot,poisson%ngpx*poisson%ngpy*poisson%ngpz,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
-    endif
-    if(parini%mpi_env%iproc==0) then
-    write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
-    endif
-    !-------------------------------------------------------
-!    if(.true.) then
-!    nd=2
-!    allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-!    allocate(pot(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-!    do igpz=1,poisson%ngpz
-!    do igpy=1,poisson%ngpy
-!    do igpx=1,poisson%ngpx
-!        rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
-!        pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
-!    enddo
-!    enddo
-!    enddo
-!    call f_free(poisson%rho)
-!    call f_free(poisson%pot)
-!    poisson%ngpz=poisson%ngpz/nd
-!    poisson%ngpy=poisson%ngpy/nd
-!    poisson%ngpx=poisson%ngpx/nd
-!    poisson%rho=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%rho')
-!    poisson%pot=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%pot')
-!    do igpz=1,poisson%ngpz
-!    do igpy=1,poisson%ngpy
-!    do igpx=1,poisson%ngpx
-!        poisson%rho(igpx,igpy,igpz)=rho(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
-!        poisson%pot(igpx,igpy,igpz)=pot(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
-!    enddo
-!    enddo
-!    enddo
-!    deallocate(rho)
-!    deallocate(pot)
-!    poisson%hgrid=poisson%hgrid*real(nd,kind=8)
-!    endif
-    !-------------------------------------------------------
-    atoms%fat=0.d0
-    call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
-        poisson_ion%q,gausswidth,6.d0,poisson_ion%xyz111, &
-        poisson_ion%ngpx,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
-        poisson_ion%hgrid,poisson%pot,atoms%fat)
-    if(parini%mpi_env%iproc==0) then
-    do iat=1,atoms%nat
-        write(*,'(a,i4,3es19.10)') 'FAT ',iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
-    enddo
-    endif
-    !-------------------------------------------------------
-    poisson_ion%gw(1:poisson_ion%nat)=1.d0
-    xmin= huge(1.d0)
-    ymin= huge(1.d0)
-    zmin= huge(1.d0)
-    xmax=-huge(1.d0)
-    ymax=-huge(1.d0)
-    zmax=-huge(1.d0)
-    do iat=1,atoms%nat
-        if(poisson_ion%rcart(1,iat)<xmin) xmin=poisson_ion%rcart(1,iat)
-        if(poisson_ion%rcart(2,iat)<ymin) ymin=poisson_ion%rcart(2,iat)
-        if(poisson_ion%rcart(3,iat)<zmin) zmin=poisson_ion%rcart(3,iat)
-        if(poisson_ion%rcart(1,iat)>xmax) xmax=poisson_ion%rcart(1,iat)
-        if(poisson_ion%rcart(2,iat)>ymax) ymax=poisson_ion%rcart(2,iat)
-        if(poisson_ion%rcart(3,iat)>zmax) zmax=poisson_ion%rcart(3,iat)
-    enddo
-    dxyz(1)=1.5d0
-    dxyz(2)=1.5d0
-    dxyz(3)=1.5d0
-    nsegx=int((poisson%hgrid(1,1)*poisson%ngpx-16.d0)/dxyz(1))+1
-    nsegy=int((poisson%hgrid(2,2)*poisson%ngpy-16.d0)/dxyz(2))+1
-    nsegz=int((poisson%hgrid(3,3)*poisson%ngpz-16.d0)/dxyz(3))+1
-    dxyz(1)=(poisson%hgrid(1,1)*poisson%ngpx-16.d0)/real(nsegx,kind=8)
-    dxyz(2)=(poisson%hgrid(2,2)*poisson%ngpy-16.d0)/real(nsegy,kind=8)
-    dxyz(3)=(poisson%hgrid(3,3)*poisson%ngpz-16.d0)/real(nsegz,kind=8)
-    ntrial=(nsegx+1)*(nsegy+1)*(nsegz+1)
-    call trial_energy_allocate(ntrial,trial_energy)
-    trial_energy%ehartree_scn_excl=ehartree_scn_excl
-    if(parini%mpi_env%iproc==0) then
-    write(*,'(a,3i3,i6)') 'nsegx,nsegy,nsegz,ntrial ',nsegx,nsegy,nsegz,ntrial
-    endif
-    allocate(rat_trial(3,ntrial))
-    itrial=0
-    do iz=0,nsegz
-    do iy=0,nsegy
-    do ix=0,nsegx
-        itrial=itrial+1
-        rat_trial(1,itrial)=8.d0+dxyz(1)*ix
-        rat_trial(2,itrial)=8.d0+dxyz(2)*iy
-        rat_trial(3,itrial)=8.d0+dxyz(3)*iz
-    enddo
-    enddo
-    enddo
-    call get_proc_stake(parini%mpi_env,ntrial,itrials,itriale)
-    !write(*,'(a,4i8)') 'iproc,itrials,itriale,ntrial ',parini%mpi_env%iproc,itrials,itriale,ntrial
-    trial_energy%energy=0.d0
-    trial_energy%disp=0.d0
-    trial_energy%iat_list=0
-    do itrial=itrials,itriale
-        xyz(1)=rat_trial(1,itrial)-poisson_ion%rcart(1,1)
-        xyz(2)=rat_trial(2,itrial)-poisson_ion%rcart(2,1)
-        xyz(3)=rat_trial(3,itrial)-poisson_ion%rcart(3,1)
-        q_one(1)=1.d0
-        gw_one(1)=1.d0
-        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,rat_trial(1,itrial),q_one,gw_one, &
-            5.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        epot_trial=0.d0
-        do igpz=1,poisson%ngpz
-        do igpy=1,poisson%ngpy
-        do igpx=1,poisson%ngpx
-            epot_trial=epot_trial+poisson%rho(igpx,igpy,igpz)*poisson%pot(igpx,igpy,igpz)
-        enddo
-        enddo
-        enddo
-        epot_trial=epot_trial*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-        trial_energy%energy(itrial)=epot_trial
-        trial_energy%disp(1,itrial)=xyz(1)
-        trial_energy%disp(2,itrial)=xyz(2)
-        trial_energy%disp(3,itrial)=xyz(3)
-        trial_energy%iat_list(itrial)=1
-    enddo
-    !-------------------------------------------------------
-    do iat=1,atoms%nat
-        if(trim(atoms%sat(iat))=='Li') atoms%zat(iat)=0.d0
-        if(trim(atoms%sat(iat))=='S' ) atoms%zat(iat)=0.d0
-    enddo
-    !-------------------------------------------------------
-    if(parini%mpi_env%nproc>1) then
-    call fmpi_allreduce(trial_energy%energy(1),ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    call fmpi_allreduce(trial_energy%disp(1,1),3*ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    call fmpi_allreduce(trial_energy%iat_list(1),ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    endif
-    if(parini%mpi_env%iproc==0) then
-    write(*,'(a,6f8.1)') 'MINMAX ',xmin,ymin,zmin,xmax,ymax,zmax
-    write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(1,1)*poisson%ngpx
-    write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(2,2)*poisson%ngpy
-    write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(3,3)*poisson%ngpz
-    endif
-    !-------------------------------------------------------
-    call fini_hartree(parini,atoms,poisson)
-    call fini_hartree(parini,atoms,poisson_ion)
-    call atom_deallocate_old(atoms)
-end subroutine cal_trial_from_cube
 !*****************************************************************************************
 subroutine cal_rho_pot_integral_local(xyz,xyz111,ngpx,ngpy,ngpz,hgrid,rgcut,rho,pot,ener)
     implicit none
@@ -2131,27 +1734,6 @@ pure function get_ener_qr2_pr1(a,b,c,dx,dy,dz,r,sfs,gwq,gwp,q,p) result(ener)
     p_dot_rij=dx*p(1)+dy*p(2)+dz*p(3)
     ener=-p_dot_rij*q*(a*ww1+b*ww2+c*ww3)
 end function get_ener_qr2_pr1
-!*****************************************************************************************
-subroutine get_proc_stake(mpi_env,n,is,ie)
-    use mod_flm_futile
-    implicit none
-    type(mpi_environment), intent(in):: mpi_env
-    integer, intent(in):: n
-    integer, intent(out):: is, ie
-    !local variables
-    integer:: m, mproc
-    if(mpi_env%nproc>1) then
-        m=n/mpi_env%nproc
-        is=mpi_env%iproc*m+1
-        mproc=mod(n,mpi_env%nproc)
-        is=is+max(0,mpi_env%iproc-mpi_env%nproc+mproc)
-        if(mpi_env%iproc>mpi_env%nproc-mproc-1) m=m+1
-        ie=is+m-1
-    else
-        is=1
-        ie=n
-    endif
-end subroutine get_proc_stake
 !*****************************************************************************************
 end module mod_cent2
 !*****************************************************************************************

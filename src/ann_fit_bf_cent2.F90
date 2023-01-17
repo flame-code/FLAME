@@ -693,11 +693,11 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     istep=0
     do
 
-    fitpar%grad_gwc_s1=0.d0
-    fitpar%grad_bc_s1=0.d0
-    fitpar%grad_bv_s1=0.d0
     do itypat=1,parini%ntypat
+        fitpar%grad_gwc_s1(itypat)=0.d0
+        fitpar%grad_bc_s1(itypat)=0.d0
         fitpar%grad_gwv_s1(itypat)=0.d0
+        fitpar%grad_bv_s1(itypat)=0.d0
         fitpar%grad_gwv_p1(itypat)=0.d0
         fitpar%grad_gwv_p2(itypat)=0.d0
     enddo
@@ -708,6 +708,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     !cost=cost+cost_gw
     call get_cost_gw_new(parini,fitpar,fitpar_t,cost_gw)
     do itypat=1,parini%ntypat
+        !write(*,'(a,es14.5,i3,4es14.5)') 'SS= ',cost_gw,itypat,fitpar%grad_gwv_p1(itypat),fitpar%grad_gwv_p2(itypat),fitpar_t%grad_gwv_p1(itypat),fitpar_t%grad_gwv_p2(itypat)
         fitpar%grad_gwc_s1(itypat)=cost_gw*fitpar%grad_gwc_s1(itypat)+cost*fitpar_t%grad_gwc_s1(itypat)
         fitpar%grad_gwv_s1(itypat)=cost_gw*fitpar%grad_gwv_s1(itypat)+cost*fitpar_t%grad_gwv_s1(itypat)
         !fitpar%grad_gwv_s2(itypat)=cost_gw*fitpar%grad_gwv_s2(itypat)+cost*fitpar_t%grad_gwv_s2(itypat)
@@ -2550,27 +2551,6 @@ subroutine get_poisson_ref(parini,gausswidth_ion,poisson,atoms,fitpar)
     !-------------------------------------------------------
     call fini_hartree(parini,atoms,poisson_ion)
 end subroutine get_poisson_ref
-!*****************************************************************************************
-subroutine get_proc_stake(mpi_env,n,is,ie)
-    use mod_flm_futile
-    implicit none
-    type(mpi_environment), intent(in):: mpi_env
-    integer, intent(in):: n
-    integer, intent(out):: is, ie
-    !local variables
-    integer:: m, mproc
-    if(mpi_env%nproc>1) then
-        m=n/mpi_env%nproc
-        is=mpi_env%iproc*m+1
-        mproc=mod(n,mpi_env%nproc)
-        is=is+max(0,mpi_env%iproc-mpi_env%nproc+mproc)
-        if(mpi_env%iproc>mpi_env%nproc-mproc-1) m=m+1
-        ie=is+m-1
-    else
-        is=1
-        ie=n
-    endif
-end subroutine get_proc_stake
 !*****************************************************************************************
 pure function get_coeff_s(gw1,gw2) result(coeff)
     implicit none
