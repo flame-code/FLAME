@@ -2,7 +2,8 @@
 module mod_cent2
     implicit none
     private
-    public:: typ_cent2, cent2_analytic
+    public:: typ_cent2, cent2_analytic, get_cost_secder
+    public:: cal_rho_pot_integral_local
     type typ_bf
         private
         integer:: nbf
@@ -961,7 +962,7 @@ end subroutine get_dpm
 subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_atoms, only: typ_atoms
+    use mod_atoms, only: typ_atoms, atom_deallocate_old
     use mod_electrostatics, only: typ_poisson
     use mod_trial_energy, only: typ_trial_energy, trial_energy_deallocate
     use mod_trial_energy, only: get_trial_energy, get_rmse
@@ -984,7 +985,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     real(8):: qavg(10), qvar(10)
     real(8):: cavg(10), cvar(10)
     real(8):: one, dpm(3)
-    type(typ_trial_energy), pointer:: trial_energy=>null()
+    type(typ_trial_energy):: trial_energy
     real(8):: time1, time2
     real(8), allocatable:: amat(:,:)
     real(8), allocatable:: squarefit_raw(:,:)
@@ -996,6 +997,8 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     !call cpu_time(time1)
     call cube_read('rho.cube',atoms_ref,poisson_ref)
     call get_trial_energy(parini,atoms_ref,poisson_ref,self%bf%nbf,self%bf%bz,self%bf%gwz,trial_energy,atoms%qtot,atoms%dpm)
+    call fini_hartree(parini,atoms_ref,poisson_ref)
+    call atom_deallocate_old(atoms_ref)
     !call cpu_time(time2)
     !if(parini%mpi_env%iproc==0) then
     !    write(*,*) 'time elapsed in get_trial_energy ',time2-time1
@@ -1023,7 +1026,8 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     enddo
     !self%amat_is_calculated=.true.
     allocate(squarefit_raw(self%bf%nbf,self%bf%nbf),rhs_raw(self%bf%nbf))
-    call get_cost_secder(parini,trial_energy,poisson,atoms,self%bf%nbf,self%bf%imap,self%bf%bt,self%bf%be_s,self%bf%gwe_s,self%bf%gwe_p,squarefit_raw,rhs_raw)
+    call get_cost_secder(parini,trial_energy,poisson,atoms,self%bf%nbf,self%bf%imap,self%bf%bt, &
+    self%bf%be_s,self%bf%gwe_s,self%bf%gwe_p,self%bf%qcore,self%bf%bc,self%bf%gwc,squarefit_raw,rhs_raw)
     call cpu_time(time2)
     !if(parini%mpi_env%iproc==0) then
     write(*,*) 'time EP ',time2-time1
@@ -1087,7 +1091,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     done=.true.
 end subroutine prefit_cent2
 !*****************************************************************************************
-subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gwe_s,gwe_p,squarefit_raw,rhs_raw)
+subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gwe_s,gwe_p,qcore,bc,gwc,squarefit_raw,rhs_raw)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
@@ -1097,13 +1101,13 @@ subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gw
     use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_trial_energy), pointer, intent(in):: trial_energy
+    type(typ_trial_energy), intent(inout):: trial_energy
     type(typ_poisson), intent(inout):: poisson
-    type(typ_atoms), intent(inout):: atoms
-    !type(typ_poisson), intent(inout):: poisson
+    type(typ_atoms), intent(in):: atoms
     integer, intent(in):: nbf, imap(nbf)
     character(2), intent(in):: bt(nbf)
-    real(8), intent(in):: be_s(nbf), gwe_s(nbf), gwe_p(2,atoms%nat)
+    real(8), intent(in):: be_s(atoms%nat), gwe_s(atoms%nat), gwe_p(2,atoms%nat)
+    real(8), intent(in):: qcore(atoms%nat), bc(atoms%nat), gwc(atoms%nat)
     real(8), intent(out):: squarefit_raw(nbf,nbf), rhs_raw(nbf)
     !local variables
     integer:: iat, ibf, ibfs, ibfe, jbf, itrial, itrials, itriale
@@ -1183,13 +1187,23 @@ subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gw
     call get_proc_stake(parini%mpi_env,trial_energy%ntrial,itrials,itriale)
     trial_energy%EP_n=0.d0
     do itrial=itrials,itriale
+        tt=0.d0
+        do iat=1,atoms%nat
         xyz(1:3)=atoms%ratp(1:3,trial_energy%iat_list(itrial))+trial_energy%disp(1:3,itrial)
-        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,xyz,1.d0,1.d0, &
-            5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
-            poisson%rho,poisson%pot_ion,tt)
+        dx=atoms%ratp(1,iat)-xyz(1)
+        dy=atoms%ratp(2,iat)-xyz(2)
+        dz=atoms%ratp(3,iat)-xyz(3)
+        r=sqrt(dx**2+dy**2+dz**2)
+        qr0=qcore(iat)*bc(iat)
+        gwr0=gwc(iat)
+        ttr0=get_ener_qr0_qr0(a,b,c,r,sfs,1.d0,gwr0,1.d0,qr0)
+        qr2=qcore(iat)*(1.d0-bc(iat))
+        gwr2=gwr0
+        ttr2=get_ener_qr0_qr2(a,b,c,r,sfs,1.d0,gwr2,1.d0,qr2)
+        tt=tt+(ttr0+ttr2)
+        enddo
         trial_energy%EP_n(itrial)=tt
+        !write(68,'(i7,2es19.10,es14.5)') itrial,tt,ttr0+ttr2,ttr0+ttr2-tt
     enddo !end of loop over itrial
     if(parini%mpi_env%nproc>1) then
     call fmpi_allreduce(trial_energy%EP_n(1),trial_energy%ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
@@ -1473,9 +1487,9 @@ subroutine cal_rho_pot_integral_local(xyz,xyz111,ngpx,ngpy,ngpz,hgrid,rgcut,rho,
     nbgx=int(rgcut/hgrid(1,1))+3
     nbgy=int(rgcut/hgrid(2,2))+3
     nbgz=int(rgcut/hgrid(3,3))+3
-    agpx=int(xyz(1)/hgrid(1,1))+nbgx
-    agpy=int(xyz(2)/hgrid(2,2))+nbgy
-    agpz=int(xyz(3)/hgrid(3,3))+nbgz
+    agpx=int((xyz(1)-xyz111(1))/hgrid(1,1))
+    agpy=int((xyz(2)-xyz111(2))/hgrid(2,2))
+    agpz=int((xyz(3)-xyz111(3))/hgrid(3,3))
     res=0.d0
     do igpz=agpz-nbgz,agpz+nbgz
         do igpy=agpy-nbgy,agpy+nbgy

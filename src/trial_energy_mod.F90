@@ -2,8 +2,6 @@
 module mod_trial_energy
     implicit none
     private
-    public:: trial_energy_allocate_old, trial_energy_deallocate_old
-    public:: trial_energy_copy_old
     public:: trial_energy_allocate, trial_energy_deallocate
     public:: get_trial_energy, get_rmse
     type, public:: typ_trial_energy
@@ -20,71 +18,17 @@ module mod_trial_energy
     end type typ_trial_energy
 contains
 !*****************************************************************************************
-subroutine trial_energy_allocate_old(ntrial,trial_energy)
-    implicit none
-    integer, intent(in):: ntrial
-    type(typ_trial_energy), pointer, intent(out):: trial_energy
-    !local variables
-    integer:: istat
-    if(associated(trial_energy)) then
-    if(allocated(trial_energy%energy)) stop 'ERROR: trial_energy%energy is already allocated'
-    if(allocated(trial_energy%disp)) stop 'ERROR: trial_energy%disp is already allocated'
-    if(allocated(trial_energy%iat_list)) stop 'ERROR: trial_energy%iat_list is already allocated'
-    endif
-    allocate(trial_energy,stat=istat)
-    if(istat/=0) stop 'ERROR: failure allocating trial_energy'
-    trial_energy%ntrial=ntrial
-    allocate(trial_energy%energy(ntrial))
-    allocate(trial_energy%iat_list(ntrial))
-    allocate(trial_energy%disp(3,ntrial))
-end subroutine trial_energy_allocate_old
-!*****************************************************************************************
-subroutine trial_energy_deallocate_old(trial_energy)
-    implicit none
-    type(typ_trial_energy), pointer, intent(inout):: trial_energy
-    !local variables
-    integer:: istat
-    if(allocated(trial_energy%energy)) deallocate(trial_energy%energy)
-    if(allocated(trial_energy%disp)) deallocate(trial_energy%disp)
-    if(allocated(trial_energy%iat_list)) deallocate(trial_energy%iat_list)
-    deallocate(trial_energy,stat=istat)
-    if(istat/=0) stop 'ERROR: failure deallocating trial_energy'
-    nullify(trial_energy)
-end subroutine trial_energy_deallocate_old
-!*****************************************************************************************
-subroutine trial_energy_copy_old(trial_energy_in,trial_energy_out)
-    implicit none
-    type(typ_trial_energy), pointer, intent(in):: trial_energy_in
-    type(typ_trial_energy), pointer, intent(out):: trial_energy_out
-    !local variables
-    integer:: istat
-    if(.not. associated(trial_energy_in)) then
-        stop 'ERROR: trial_energy%energy is already allocated'
-    endif
-    if(associated(trial_energy_out)) then
-        call trial_energy_deallocate_old(trial_energy_out)
-    endif
-    call trial_energy_allocate_old(trial_energy_in%ntrial,trial_energy_out)
-    trial_energy_out%energy=trial_energy_in%energy
-    trial_energy_out%disp=trial_energy_in%disp
-    trial_energy_out%iat_list=trial_energy_in%iat_list
-end subroutine trial_energy_copy_old
-!*****************************************************************************************
 subroutine trial_energy_allocate(ntrial,trial_energy,nbf)
     use dynamic_memory
     implicit none
     integer, intent(in):: ntrial
-    type(typ_trial_energy), pointer, intent(out):: trial_energy
+    type(typ_trial_energy), intent(out):: trial_energy
     integer, intent(in):: nbf
     !local variables
     integer:: istat
-    if(associated(trial_energy)) then
     if(allocated(trial_energy%energy)) stop 'ERROR: trial_energy%energy is already allocated'
     if(allocated(trial_energy%disp)) stop 'ERROR: trial_energy%disp is already allocated'
     if(allocated(trial_energy%iat_list)) stop 'ERROR: trial_energy%iat_list is already allocated'
-    endif
-    allocate(trial_energy,stat=istat)
-    if(istat/=0) stop 'ERROR: failure allocating trial_energy'
     trial_energy%ntrial=ntrial
     trial_energy%energy=f_malloc0([1.to.ntrial],id='trial_energy%energy')
     trial_energy%iat_list=f_malloc0([1.to.ntrial],id='trial_energy%iat_list')
@@ -97,7 +41,7 @@ end subroutine trial_energy_allocate
 subroutine trial_energy_deallocate(trial_energy)
     use dynamic_memory
     implicit none
-    type(typ_trial_energy), pointer, intent(inout):: trial_energy
+    type(typ_trial_energy), intent(inout):: trial_energy
     !local variables
     integer:: istat
     if(allocated(trial_energy%energy)) call f_free(trial_energy%energy)
@@ -106,9 +50,6 @@ subroutine trial_energy_deallocate(trial_energy)
     if(allocated(trial_energy%EP_n)) call f_free(trial_energy%EP_n)
     if(allocated(trial_energy%E_all)) call f_free(trial_energy%E_all)
     if(allocated(trial_energy%EP)) call f_free(trial_energy%EP)
-    deallocate(trial_energy,stat=istat)
-    if(istat/=0) stop 'ERROR: failure allocating trial_energy'
-    nullify(trial_energy)
 end subroutine trial_energy_deallocate
 !*****************************************************************************************
 subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dpm)
@@ -123,7 +64,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     type(typ_poisson), intent(inout):: poisson
     integer, intent(in):: nbf
     real(8), intent(in):: bz(atoms%nat), gwz(atoms%nat)
-    type(typ_trial_energy), pointer, intent(inout):: trial_energy
+    type(typ_trial_energy), intent(inout):: trial_energy
     real(8), intent(out):: qtot, dpm(3)
     !local variables
     type(typ_poisson):: poisson_ion
@@ -131,7 +72,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     integer:: jgpx, jgpy, jgpz
     real(8):: rgcut_a, pi!, qtot_e, qtot_i
     real(8):: ehartree_scn_excl, tt1, tt2
-    real(8):: xyz(3), dxyz(3), epot_trial, gwt, q_tmp(1)
+    real(8):: xyz(3), dxyz(3), epot_trial, gwt, q_tmp(1), center(3)
     real(8):: dx, dy, dz, r2, coeff, x, y, z !, rloc, c1, c2
     real(8):: xmin, ymin, zmin, xmax, ymax, zmax
     real(8):: q_one(1), gw_one(1)
@@ -197,7 +138,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     enddo
     enddo
     enddo
-    write(*,*) allocated(poisson%rho)
+    !write(*,*) allocated(poisson%rho)
     call f_free(poisson%rho)
     nex=20
     ney=20
@@ -266,11 +207,11 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     !itypat=atoms%itypat(iat)
     q_tmp(1)=atoms%zat(iat)*bz(iat)
     call put_gto_sym_ortho(parini,poisson_ion%bc,.false.,1,atoms%ratp(1,iat),q_tmp,gwz(iat), &
-        6.d0*gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
+        5.d0*gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
         poisson_ion%hgrid,poisson_ion%rho)
     q_tmp(1)=atoms%zat(iat)*(1.d0-bz(iat))
     call put_r2gto_sym_ortho(parini,poisson_ion%bc,.false.,1,atoms%ratp(1,iat),q_tmp,gwz(iat), &
-        6.d0*gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
+        5.d0*gwz(iat),poisson_ion%xyz111,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
         poisson_ion%hgrid,poisson_ion%rho)
     !if(trim(atoms%sat(iat))=='Mg') gwt=0.6d0
     !if(trim(atoms%sat(iat))=='O' ) gwt=0.3d0
@@ -342,15 +283,26 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
         write(*,'(a,f20.12)') 'qtot= ',qtot
     endif
     !-------------------------------------------------------
+    center(1)=0.d0
+    center(2)=0.d0
+    center(3)=0.d0
+    do iat=1,atoms%nat
+        center(1)=center(1)+atoms%ratp(1,iat)
+        center(2)=center(2)+atoms%ratp(2,iat)
+        center(3)=center(3)+atoms%ratp(3,iat)
+    enddo
+    center(1)=center(1)/atoms%nat
+    center(2)=center(2)/atoms%nat
+    center(3)=center(3)/atoms%nat
     dpm(1)=0.d0
     dpm(2)=0.d0
     dpm(3)=0.d0
     do igpz=1,poisson%ngpz
     do igpy=1,poisson%ngpy
     do igpx=1,poisson%ngpx
-        x=poisson%xyz111(1)+(igpx-1)*poisson%hgrid(1,1)
-        y=poisson%xyz111(2)+(igpy-1)*poisson%hgrid(2,2)
-        z=poisson%xyz111(3)+(igpz-1)*poisson%hgrid(3,3)
+        x=poisson%xyz111(1)+(igpx-1)*poisson%hgrid(1,1)-center(1)
+        y=poisson%xyz111(2)+(igpy-1)*poisson%hgrid(2,2)-center(2)
+        z=poisson%xyz111(3)+(igpz-1)*poisson%hgrid(3,3)-center(3)
         dpm(1)=dpm(1)+x*poisson%rho(igpx,igpy,igpz)
         dpm(2)=dpm(2)+y*poisson%rho(igpx,igpy,igpz)
         dpm(3)=dpm(3)+z*poisson%rho(igpx,igpy,igpz)
@@ -361,7 +313,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     dpm(2)=dpm(2)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
     dpm(3)=dpm(3)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
     if(parini%mpi_env%iproc==0) then
-        write(*,'(a,3f8.3)') 'DPM= ',dpm(1),dpm(2),dpm(3)
+        write(*,'(a,3f10.5)') 'DPM= ',dpm(1),dpm(2),dpm(3)
     endif
     !-------------------------------------------------------
     call update_ratp(atoms)
@@ -377,37 +329,37 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
     endif
     !-------------------------------------------------------
-!    if(.true.) then
-!    nd=2
-!    allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-!    allocate(pot(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-!    do igpz=1,poisson%ngpz
-!    do igpy=1,poisson%ngpy
-!    do igpx=1,poisson%ngpx
-!        rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
-!        pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
-!    enddo
-!    enddo
-!    enddo
-!    call f_free(poisson%rho)
-!    call f_free(poisson%pot)
-!    poisson%ngpz=poisson%ngpz/nd
-!    poisson%ngpy=poisson%ngpy/nd
-!    poisson%ngpx=poisson%ngpx/nd
-!    poisson%rho=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%rho')
-!    poisson%pot=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%pot')
-!    do igpz=1,poisson%ngpz
-!    do igpy=1,poisson%ngpy
-!    do igpx=1,poisson%ngpx
-!        poisson%rho(igpx,igpy,igpz)=rho(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
-!        poisson%pot(igpx,igpy,igpz)=pot(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
-!    enddo
-!    enddo
-!    enddo
-!    deallocate(rho)
-!    deallocate(pot)
-!    poisson%hgrid=poisson%hgrid*real(nd,kind=8)
-!    endif
+    if(.true.) then
+    nd=1
+    allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    allocate(pot(poisson%ngpx,poisson%ngpy,poisson%ngpz))
+    do igpz=1,poisson%ngpz
+    do igpy=1,poisson%ngpy
+    do igpx=1,poisson%ngpx
+        rho(igpx,igpy,igpz)=poisson%rho(igpx,igpy,igpz)
+        pot(igpx,igpy,igpz)=poisson%pot(igpx,igpy,igpz)
+    enddo
+    enddo
+    enddo
+    call f_free(poisson%rho)
+    call f_free(poisson%pot)
+    poisson%ngpz=poisson%ngpz/nd
+    poisson%ngpy=poisson%ngpy/nd
+    poisson%ngpx=poisson%ngpx/nd
+    poisson%rho=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%rho')
+    poisson%pot=f_malloc0([1.to.(poisson%ngpx),1.to.(poisson%ngpy),1.to.(poisson%ngpz)],id='poisson%pot')
+    do igpz=1,poisson%ngpz
+    do igpy=1,poisson%ngpy
+    do igpx=1,poisson%ngpx
+        poisson%rho(igpx,igpy,igpz)=rho(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
+        poisson%pot(igpx,igpy,igpz)=pot(nd*igpx-nd+1,nd*igpy-nd+1,nd*igpz-nd+1)
+    enddo
+    enddo
+    enddo
+    deallocate(rho)
+    deallocate(pot)
+    poisson%hgrid=poisson%hgrid*real(nd,kind=8)
+    endif
     !-------------------------------------------------------
     atoms%fat=0.d0
     call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
@@ -508,14 +460,14 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(3,3)*poisson%ngpz
     endif
     !-------------------------------------------------------
-    call fini_hartree(parini,atoms,poisson)
+    !call fini_hartree(parini,atoms,poisson)
     call fini_hartree(parini,atoms,poisson_ion)
-    call atom_deallocate_old(atoms)
+    !call atom_deallocate_old(atoms)
 end subroutine get_trial_energy
 !*****************************************************************************************
 subroutine get_rmse(trial_energy,nbf,qq,rmse)
     implicit none
-    type(typ_trial_energy), pointer, intent(inout):: trial_energy
+    type(typ_trial_energy), intent(inout):: trial_energy
     integer, intent(in):: nbf
     real(8), intent(in):: qq(nbf)
     real(8), intent(out):: rmse

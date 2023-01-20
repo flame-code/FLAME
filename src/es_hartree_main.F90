@@ -220,7 +220,7 @@ subroutine init_hartree_bps(parini,atoms,poisson)
     poisson%rho=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%rho')
     endif
-    poisson%pot=f_malloc([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
+    poisson%pot=f_malloc0([1.to.ngpx,1.to.ngpy,1.to.ngpz], &
         id='poisson%pot')
     call init_psolver_bps(parini,atoms,poisson)
     poisson%epotfixed=dot_product(atoms%qat,atoms%qat)/(sqrt(2.d0*pi)*poisson%alpha)
