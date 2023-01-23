@@ -324,13 +324,25 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     if(parini%mpi_env%nproc>1) then
     call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
     call MPI_BCAST(poisson%pot,poisson%ngpx*poisson%ngpy*poisson%ngpz,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+    call MPI_BCAST(ehartree_scn_excl,1,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
     endif
     if(parini%mpi_env%iproc==0) then
     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
     endif
     !-------------------------------------------------------
+    atoms%fat=0.d0
+    call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
+        poisson_ion%q,gausswidth,6.d0*maxval(gausswidth),poisson_ion%xyz111, &
+        poisson_ion%ngpx,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
+        poisson_ion%hgrid,poisson%pot,atoms%fat)
+    if(parini%mpi_env%iproc==0) then
+    do iat=1,atoms%nat
+        write(*,'(a,i4,3es19.10)') 'FAT ',iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
+    enddo
+    endif
+    !-------------------------------------------------------
     if(.true.) then
-    nd=1
+    nd=2
     allocate(rho(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     allocate(pot(poisson%ngpx,poisson%ngpy,poisson%ngpz))
     do igpz=1,poisson%ngpz
@@ -359,17 +371,6 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     deallocate(rho)
     deallocate(pot)
     poisson%hgrid=poisson%hgrid*real(nd,kind=8)
-    endif
-    !-------------------------------------------------------
-    atoms%fat=0.d0
-    call force_gto_sym_ortho(parini,poisson_ion%bc,atoms%nat,poisson_ion%rcart, &
-        poisson_ion%q,gausswidth,6.d0,poisson_ion%xyz111, &
-        poisson_ion%ngpx,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
-        poisson_ion%hgrid,poisson%pot,atoms%fat)
-    if(parini%mpi_env%iproc==0) then
-    do iat=1,atoms%nat
-        write(*,'(a,i4,3es19.10)') 'FAT ',iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
-    enddo
     endif
     !-------------------------------------------------------
     poisson_ion%gw(1:poisson_ion%nat)=1.d0

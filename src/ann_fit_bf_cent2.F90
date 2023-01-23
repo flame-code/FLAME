@@ -696,7 +696,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     paropt%fmaxtol=parini%paropt_geopt%fmaxtol
     paropt%nit=parini%paropt_geopt%nit
     paropt%condnum=parini%paropt_geopt%condnum
-    paropt%funits=40.d0
+    paropt%funits=150.d0
     paropt%finc=1.2d0
     paropt%fdec=0.1d0
     paropt%ndowntol=0
@@ -1544,6 +1544,13 @@ subroutine get_cost_from_pot(parini,istep,nfiles,poisson_ref,atoms_arr,fitpar,bf
     call fmpi_allreduce(fitpar%grad_gwc_s1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(fitpar%grad_bc_s1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     endif
+    fitpar%grad_gwv_s1=fitpar%grad_gwv_s1/real(nfiles,kind=8)
+    fitpar%grad_bv_s1=fitpar%grad_bv_s1/real(nfiles,kind=8)
+    fitpar%grad_gwv_p1=fitpar%grad_gwv_p1/real(nfiles,kind=8)
+    fitpar%grad_gwv_p2=fitpar%grad_gwv_p2/real(nfiles,kind=8)
+    fitpar%grad_gwc_s1=fitpar%grad_gwc_s1/real(nfiles,kind=8)
+    fitpar%grad_bc_s1=fitpar%grad_bc_s1/real(nfiles,kind=8)
+    cost=cost/real(nfiles,kind=8)
     call system_clock(itime6)
     time_net=real(itime6-itime0,8)/real(icount_rate,8)
     if(parini%mpi_env%iproc==0) then
@@ -1918,7 +1925,7 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
     enddo
     enddo
     enddo
-    bf%zeroder=tt1*voxel
+    !bf%zeroder=tt1*voxel
 
     if(parini%mpi_env%iproc==0) then
     do iat=1,atoms%nat
