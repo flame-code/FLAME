@@ -52,7 +52,7 @@ subroutine trial_energy_deallocate(trial_energy)
     if(allocated(trial_energy%EP)) call f_free(trial_energy%EP)
 end subroutine trial_energy_deallocate
 !*****************************************************************************************
-subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dpm)
+subroutine get_trial_energy(parini,atoms,poisson,dist,nbf,bz,gwz,trial_energy,qtot,dpm)
     use mod_parini, only: typ_parini
     use mod_electrostatics, only: typ_poisson
     use mod_atoms, only: typ_atoms, get_rat, update_ratp, atom_deallocate_old, update_rat
@@ -62,6 +62,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     type(typ_poisson), intent(inout):: poisson
+    real(8), intent(in):: dist
     integer, intent(in):: nbf
     real(8), intent(in):: bz(atoms%nat), gwz(atoms%nat)
     type(typ_trial_energy), intent(inout):: trial_energy
@@ -140,9 +141,9 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     enddo
     !write(*,*) allocated(poisson%rho)
     call f_free(poisson%rho)
-    nex=20
-    ney=20
-    nez=20
+    nex=10
+    ney=10
+    nez=10
     poisson%rho=f_malloc0([1.to.(poisson%ngpx+2*nex),1.to.(poisson%ngpy+2*ney),1.to.(poisson%ngpz+2*nez)],id='poisson%rho')
     do igpz=1,poisson%ngpz
     do igpy=1,poisson%ngpy
@@ -265,7 +266,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     enddo
     enddo
     tt1=tt1*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
     write(*,*) 'TT1 ',tt1
     endif
     !-------------------------------------------------------
@@ -279,7 +280,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
         enddo
     enddo
     qtot=qtot*poisson_ion%hgrid(1,1)*poisson_ion%hgrid(2,2)*poisson_ion%hgrid(3,3)
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
         write(*,'(a,f20.12)') 'qtot= ',qtot
     endif
     !-------------------------------------------------------
@@ -312,7 +313,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     dpm(1)=dpm(1)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
     dpm(2)=dpm(2)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
     dpm(3)=dpm(3)*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
         write(*,'(a,3f10.5)') 'DPM= ',dpm(1),dpm(2),dpm(3)
     endif
     !-------------------------------------------------------
@@ -326,7 +327,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     call MPI_BCAST(poisson%pot,poisson%ngpx*poisson%ngpy*poisson%ngpz,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
     call MPI_BCAST(ehartree_scn_excl,1,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
     endif
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
     write(*,'(a,es24.15,es14.5)') 'ehartree_scn_excl ',ehartree_scn_excl,poisson%screening_factor
     endif
     !-------------------------------------------------------
@@ -335,7 +336,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
         poisson_ion%q,gausswidth,6.d0*maxval(gausswidth),poisson_ion%xyz111, &
         poisson_ion%ngpx,poisson_ion%ngpx,poisson_ion%ngpy,poisson_ion%ngpz, &
         poisson_ion%hgrid,poisson%pot,atoms%fat)
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
     do iat=1,atoms%nat
         write(*,'(a,i4,3es19.10)') 'FAT ',iat,atoms%fat(1,iat),atoms%fat(2,iat),atoms%fat(3,iat)
     enddo
@@ -388,19 +389,19 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
         if(poisson_ion%rcart(2,iat)>ymax) ymax=poisson_ion%rcart(2,iat)
         if(poisson_ion%rcart(3,iat)>zmax) zmax=poisson_ion%rcart(3,iat)
     enddo
-    dxyz(1)=1.5d0
-    dxyz(2)=1.5d0
-    dxyz(3)=1.5d0
-    nsegx=int((poisson%hgrid(1,1)*poisson%ngpx-16.d0)/dxyz(1))+1
-    nsegy=int((poisson%hgrid(2,2)*poisson%ngpy-16.d0)/dxyz(2))+1
-    nsegz=int((poisson%hgrid(3,3)*poisson%ngpz-16.d0)/dxyz(3))+1
-    dxyz(1)=(poisson%hgrid(1,1)*poisson%ngpx-16.d0)/real(nsegx,kind=8)
-    dxyz(2)=(poisson%hgrid(2,2)*poisson%ngpy-16.d0)/real(nsegy,kind=8)
-    dxyz(3)=(poisson%hgrid(3,3)*poisson%ngpz-16.d0)/real(nsegz,kind=8)
+    dxyz(1)=dist
+    dxyz(2)=dist
+    dxyz(3)=dist
+    nsegx=int((poisson%hgrid(1,1)*poisson%ngpx-18.d0)/dxyz(1))+1
+    nsegy=int((poisson%hgrid(2,2)*poisson%ngpy-18.d0)/dxyz(2))+1
+    nsegz=int((poisson%hgrid(3,3)*poisson%ngpz-18.d0)/dxyz(3))+1
+    dxyz(1)=(poisson%hgrid(1,1)*poisson%ngpx-18.d0)/real(nsegx,kind=8)
+    dxyz(2)=(poisson%hgrid(2,2)*poisson%ngpy-18.d0)/real(nsegy,kind=8)
+    dxyz(3)=(poisson%hgrid(3,3)*poisson%ngpz-18.d0)/real(nsegz,kind=8)
     ntrial=(nsegx+1)*(nsegy+1)*(nsegz+1)
     call trial_energy_allocate(ntrial,trial_energy,nbf)
     trial_energy%ehartree_scn_excl=ehartree_scn_excl
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
     write(*,'(a,3i3,i6)') 'nsegx,nsegy,nsegz,ntrial ',nsegx,nsegy,nsegz,ntrial
     endif
     allocate(rat_trial(3,ntrial))
@@ -409,9 +410,9 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     do iy=0,nsegy
     do ix=0,nsegx
         itrial=itrial+1
-        rat_trial(1,itrial)=8.d0+dxyz(1)*ix
-        rat_trial(2,itrial)=8.d0+dxyz(2)*iy
-        rat_trial(3,itrial)=8.d0+dxyz(3)*iz
+        rat_trial(1,itrial)=9.d0+dxyz(1)*ix
+        rat_trial(2,itrial)=9.d0+dxyz(2)*iy
+        rat_trial(3,itrial)=9.d0+dxyz(3)*iz
     enddo
     enddo
     enddo
@@ -454,7 +455,7 @@ subroutine get_trial_energy(parini,atoms,poisson,nbf,bz,gwz,trial_energy,qtot,dp
     call fmpi_allreduce(trial_energy%disp(1,1),3*ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(trial_energy%iat_list(1),ntrial,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     endif
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
     write(*,'(a,6f8.1)') 'MINMAX ',xmin,ymin,zmin,xmax,ymax,zmax
     write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(1,1)*poisson%ngpx
     write(*,'(a,1f8.1)') 'BBBBBB ',poisson%hgrid(2,2)*poisson%ngpy

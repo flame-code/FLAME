@@ -7,7 +7,7 @@
 ./es_hartree_p3d.o : ./es_hartree_p3d.F90 fftw3.f.h ./parini_mod.o ./electrostatics_mod.o 
 ./optimizer_sqnm_minhocao.o : ./optimizer_sqnm_minhocao.F90 ./parini_mod.o ./optimizer_sqnm_minhocao_module.o ./minhocao_mod.o ./potential_main_minhocao.o ./constants_minhocao_mod.o ./minhocao_mod.o 
 ./bader_weight.o : ./bader_weight.F90 ./bader_mod.o ./parini_mod.o 
-./ann_fit_bf_cent2.o : ./ann_fit_bf_cent2.F90 ./ann_pot_cent2.o ./flm_futile_mod.o ./opt_mod.o ./cell_linkedlists.o ./cell_linkedlists.o ./ann_io_yaml.o ./parini_mod.o ./atoms_mod.o ./electrostatics_mod.o ./trial_energy_mod.o 
+./ann_fit_bf_cent2.o : ./ann_fit_bf_cent2.F90 ./processors_mod.o ./ann_pot_cent2.o ./flm_futile_mod.o ./opt_mod.o ./cell_linkedlists.o ./cell_linkedlists.o ./ann_io_yaml.o ./parini_mod.o ./atoms_mod.o ./electrostatics_mod.o ./trial_energy_mod.o 
 ./envelope.o : ./envelope.F90 
 ./init_vel.o : ./init_vel.F90 ./parini_mod.o ./constants_minhocao_mod.o 
 ./shortrange_mod.o : ./shortrange_mod.F90 

@@ -447,12 +447,12 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
         a2=self%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
         b1= a1**5/(a1**5-a2**5)
         b2=-a2**5/(a1**5-a2**5)
-        p_tmp(1)=1.d0*b1
+        p_tmp(1)=1.d0 !*b1
         call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),p_tmp,a1, &
             6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        p_tmp(1)=1.d0*b2
-        call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
-            6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        !p_tmp(1)=1.d0*b2
+        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
+        !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         do iz=agpz-self%nbgz,agpz+self%nbgz
         do iy=agpy-self%nbgy,agpy+self%nbgy
         do ix=agpx-self%nbgx,agpx+self%nbgx
@@ -466,12 +466,12 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
         a2=self%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
         b1= a1**5/(a1**5-a2**5)
         b2=-a2**5/(a1**5-a2**5)
-        p_tmp(2)=1.d0*b1
+        p_tmp(2)=1.d0 !*b1
         call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),p_tmp,a1, &
             6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        p_tmp(2)=1.d0*b2
-        call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
-            6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        !p_tmp(2)=1.d0*b2
+        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
+        !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         do iz=agpz-self%nbgz,agpz+self%nbgz
         do iy=agpy-self%nbgy,agpy+self%nbgy
         do ix=agpx-self%nbgx,agpx+self%nbgx
@@ -485,12 +485,12 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
         a2=self%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
         b1= a1**5/(a1**5-a2**5)
         b2=-a2**5/(a1**5-a2**5)
-        p_tmp(3)=1.d0*b1
+        p_tmp(3)=1.d0 !*b1
         call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),p_tmp,a1, &
             6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        p_tmp(3)=1.d0*b2
-        call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
-            6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        !p_tmp(3)=1.d0*b2
+        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
+        !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         do iz=agpz-self%nbgz,agpz+self%nbgz
         do iy=agpy-self%nbgy,agpy+self%nbgy
         do ix=agpx-self%nbgx,agpx+self%nbgx
@@ -584,9 +584,9 @@ subroutine init_electrostatic_cent2(self,parini,atoms,ann_arr,poisson)
         allocate(self%rho_tmp(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         allocate(self%rho_e(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         allocate(self%rho_n(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-        self%nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+3
-        self%nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+3
-        self%nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+3
+        self%nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+2
+        self%nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+2
+        self%nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+2
         call self%bf%init_bf(self%nbgx,self%nbgy,self%nbgz,atoms%nat)
         call self%bf%set_param(atoms,ann_arr)
     else
@@ -996,16 +996,16 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     one=1.d0
     !call cpu_time(time1)
     call cube_read('rho.cube',atoms_ref,poisson_ref)
-    call get_trial_energy(parini,atoms_ref,poisson_ref,self%bf%nbf,self%bf%bz,self%bf%gwz,trial_energy,atoms%qtot,atoms%dpm)
+    call get_trial_energy(parini,atoms_ref,poisson_ref,1.5d0,self%bf%nbf,self%bf%bz,self%bf%gwz,trial_energy,atoms%qtot,atoms%dpm)
     call fini_hartree(parini,atoms_ref,poisson_ref)
     call atom_deallocate_old(atoms_ref)
     !call cpu_time(time2)
     !if(parini%mpi_env%iproc==0) then
     !    write(*,*) 'time elapsed in get_trial_energy ',time2-time1
     !endif
-    nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+3
-    nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+3
-    nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+3
+    nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+2
+    nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+2
+    nbgz=int(poisson%rgcut/poisson%hgrid(3,3))+2
     if(parini%mpi_env%iproc==0) then
     write(*,'(a,f8.3,3i5)') 'RGCUT ',poisson%rgcut,nbgx,nbgy,nbgz
     write(*,'(a,3i5)') 'ngpx,ngpy,ngpz= ',poisson%ngpx,poisson%ngpy,poisson%ngpz
@@ -1143,13 +1143,13 @@ subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gw
                 a2=gwe_p(2,iat)
                 b1= a1**5/(a1**5-a2**5)
                 b2=-a2**5/(a1**5-a2**5)
-                p(1)=1.d0*b1
+                p(1)=1.d0 !*b1
                 p(2)=0.d0
                 p(3)=0.d0
                 ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
-                p(1)=1.d0*b2
-                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
-                tt=ttp1+ttp2
+                !p(1)=1.d0*b2
+                !ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1 !+ttp2
                 !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
             elseif(trim(bt(ibf))=='py') then
                 a1=gwe_p(1,iat)
@@ -1157,12 +1157,12 @@ subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gw
                 b1= a1**5/(a1**5-a2**5)
                 b2=-a2**5/(a1**5-a2**5)
                 p(1)=0.d0
-                p(2)=1.d0*b1
+                p(2)=1.d0 !*b1
                 p(3)=0.d0
                 ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
-                p(2)=1.d0*b2
-                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
-                tt=ttp1+ttp2
+                !p(2)=1.d0*b2
+                !ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1 !+ttp2
                 !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
             elseif(trim(bt(ibf))=='pz') then
                 a1=gwe_p(1,iat)
@@ -1171,11 +1171,11 @@ subroutine get_cost_secder(parini,trial_energy,poisson,atoms,nbf,imap,bt,be_s,gw
                 b2=-a2**5/(a1**5-a2**5)
                 p(1)=0.d0
                 p(2)=0.d0
-                p(3)=1.d0*b1
+                p(3)=1.d0 !*b1
                 ttp1=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a1,1.d0,p)
-                p(3)=1.d0*b2
-                ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
-                tt=ttp1+ttp2
+                !p(3)=1.d0*b2
+                !ttp2=get_ener_qr0_pr1(a,b,c,dx,dy,dz,r,sfs,1.d0,a2,1.d0,p)
+                tt=ttp1 !+ttp2
                 !write(67,'(2i7,2es19.10,es14.5)') ibf,itrial,tt,ttp1+ttp2,ttp1+ttp2-tt
             endif
             trial_energy%EP(ibf,itrial)=tt
@@ -1484,9 +1484,9 @@ subroutine cal_rho_pot_integral_local(xyz,xyz111,ngpx,ngpy,ngpz,hgrid,rgcut,rho,
     integer:: igpx, igpy, igpz
     integer:: nbgx, nbgy, nbgz, agpx, agpy, agpz
     real(8):: res
-    nbgx=int(rgcut/hgrid(1,1))+3
-    nbgy=int(rgcut/hgrid(2,2))+3
-    nbgz=int(rgcut/hgrid(3,3))+3
+    nbgx=int(rgcut/hgrid(1,1))+2
+    nbgy=int(rgcut/hgrid(2,2))+2
+    nbgz=int(rgcut/hgrid(3,3))+2
     agpx=int((xyz(1)-xyz111(1))/hgrid(1,1))
     agpy=int((xyz(2)-xyz111(2))/hgrid(2,2))
     agpz=int((xyz(3)-xyz111(3))/hgrid(3,3))

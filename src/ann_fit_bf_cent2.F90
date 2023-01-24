@@ -1,10 +1,12 @@
 !*****************************************************************************************
+!!!!!!!!!!!!!!!!!!
 module mod_fit_bf_cent2
     use mod_trial_energy, only: typ_trial_energy
     implicit none
     private
     public:: get_basis_functions_cent2
     public:: cal_pot_gauss_s, cal_pot_gauss_p, cal_pot_r2gauss_s
+    public:: typ_fitpar, optimize_basis_functions
     real(8):: rgcut=5.d0
     real(8), allocatable:: c_s_t(:)
     real(8), allocatable:: c_p_t(:)
@@ -16,38 +18,30 @@ module mod_fit_bf_cent2
         private
         integer:: ntypat
         real(8):: gausswidth_ion=0.5d0
-        logical, allocatable:: relaxcore(:)
-        logical, allocatable:: applycore(:)
-        real(8), allocatable:: gwz_s(:)
-        real(8), allocatable:: gwc_s1(:)
-        !real(8), allocatable:: gwc_s2(:)
-        real(8), allocatable:: gwv_s1(:)
-        !real(8), allocatable:: gwv_s2(:)
-        real(8), allocatable:: gwv_p1(:)
-        real(8), allocatable:: gwv_p2(:)
+        logical, public, allocatable:: relaxcore(:)
+        logical, public, allocatable:: applycore(:)
+        real(8), public, allocatable:: gwz_s(:)
+        real(8), public, allocatable:: gwc_s1(:)
+        real(8), public, allocatable:: gwv_s1(:)
+        real(8), public, allocatable:: gwv_p1(:)
+        real(8), public, allocatable:: gwv_p2(:)
         real(8), allocatable:: grad_gwc_s1(:)
-        !real(8), allocatable:: grad_gwc_s2(:)
         real(8), allocatable:: grad_gwv_s1(:)
-        !real(8), allocatable:: grad_gwv_s2(:)
         real(8), allocatable:: grad_gwv_p1(:)
         real(8), allocatable:: grad_gwv_p2(:)
-        real(8), allocatable:: qcore_type(:)
-        real(8), allocatable:: bz_s(:)
-        real(8), allocatable:: bc_s1(:)
-        !real(8), allocatable:: bc_s2(:)
-        real(8), allocatable:: bv_s1(:)
-        !real(8), allocatable:: bv_s2(:)
+        real(8), public, allocatable:: qcore_type(:)
+        real(8), public, allocatable:: bz_s(:)
+        real(8), public, allocatable:: bc_s1(:)
+        real(8), public, allocatable:: bv_s1(:)
         real(8), allocatable:: bv_p1(:)
         real(8), allocatable:: bv_p2(:)
         real(8), allocatable:: grad_bc_s1(:)
-        !real(8), allocatable:: grad_bc_s2(:,:)
         real(8), allocatable:: grad_bv_s1(:)
-        !real(8), allocatable:: grad_bv_s2(:,:)
         real(8), allocatable:: grad_bv_p1(:,:)
         real(8), allocatable:: grad_bv_p2(:,:)
         contains
-        procedure, private, pass(self):: init_fit_bf
-        procedure, private, pass(self):: fini_fit_bf
+        procedure, public, pass(self):: init_fit_bf
+        procedure, public, pass(self):: fini_fit_bf
         !procedure, private, pass(self):: set_param
         procedure, private, pass(self):: set_bc_bcg
         procedure, private, pass(self):: report_fit_bf
@@ -492,7 +486,7 @@ subroutine report_fit_bf(self,istep,cost,cost_gw)
     write(*,*)
 end subroutine report_fit_bf
 !*****************************************************************************************
-subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
+subroutine get_basis_functions_cent2(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, update_ratp, typ_atoms_arr, atom_deallocate_old
     !use mod_ann, only: typ_ann_arr
@@ -505,12 +499,10 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
-    type(typ_atoms_arr), optional, target, intent(inout):: atoms_arr_t
-    type(typ_poisson), optional, target, intent(inout):: poisson_ref_t(:)
     !local variables
-    type(typ_poisson), pointer:: poisson_ref(:)
+    type(typ_poisson), allocatable:: poisson_ref(:)
     !type(typ_atoms):: atoms
-    type(typ_atoms_arr), pointer:: atoms_arr=>null()
+    type(typ_atoms_arr):: atoms_arr
     !type(typ_ann_arr):: ann_arr
     type(typ_fitpar):: fitpar, fitpar_t
     type(typ_bf):: bf
@@ -533,43 +525,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     character(256), allocatable:: fn_list(:)
     integer:: nfiles, nfiles_max, ifile
     call f_routine(id='get_basis_functions_cent2')
-    if(present(atoms_arr_t)) then
-        atoms_arr=>atoms_arr_t
-    else
-        allocate(atoms_arr)
-    endif
-    pi=4.d0*atan(1.d0)
-    !call read_data_yaml(parini,'list_posinp_cent2.yaml',atoms_arr)
-    nfiles_max=100
-    allocate(fn_list(nfiles_max))
-    if(present(poisson_ref_t)) then
-        poisson_ref=>poisson_ref_t
-        nfiles=size(poisson_ref_t)
-    else
-        call read_list_files_yaml('list_cubes.yaml',nfiles_max,fn_list,nfiles)
-        allocate(poisson_ref(nfiles))
-        atoms_arr%nconf=nfiles
-        allocate(atoms_arr%atoms(nfiles))
-        do ifile=1,nfiles
-            call cube_read(trim(fn_list(ifile)),atoms_arr%atoms(ifile),poisson_ref(ifile))
-        enddo
-    endif
-    do ifile=1,nfiles
-        do iat=1,atoms_arr%atoms(ifile)%nat
-            do itypat=1,parini%ntypat
-                if(trim(atoms_arr%atoms(ifile)%sat(iat))==trim(parini%stypat(itypat))) then
-                    atoms_arr%atoms(ifile)%itypat(iat)=parini%ltypat(itypat)
-                    exit
-                endif
-            enddo
-        enddo
-    enddo
-    !write(*,*) nfiles
-    !write(*,*) fn_list(1:nfiles)
-    !stop 'OOOOOOOOOOOOOO'
-
     call fitpar%init_fit_bf(parini%ntypat)
-    call fitpar_t%init_fit_bf(parini%ntypat)
 
     open(unit=2134,file="gw.inp",status='old')
     do itypat=1,parini%ntypat
@@ -584,6 +540,111 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     enddo
     close(2134)
 
+    pi=4.d0*atan(1.d0)
+    !call read_data_yaml(parini,'list_posinp_cent2.yaml',atoms_arr)
+    nfiles_max=100
+    allocate(fn_list(nfiles_max))
+    call read_list_files_yaml('list_cubes.yaml',nfiles_max,fn_list,nfiles)
+    allocate(poisson_ref(nfiles))
+    atoms_arr%nconf=nfiles
+    allocate(atoms_arr%atoms(nfiles))
+    do ifile=1,nfiles
+        call cube_read(trim(fn_list(ifile)),atoms_arr%atoms(ifile),poisson_ref(ifile))
+    enddo
+    do ifile=1,nfiles
+        do iat=1,atoms_arr%atoms(ifile)%nat
+            do itypat=1,parini%ntypat
+                if(trim(atoms_arr%atoms(ifile)%sat(iat))==trim(parini%stypat(itypat))) then
+                    atoms_arr%atoms(ifile)%itypat(iat)=parini%ltypat(itypat)
+                    exit
+                endif
+            enddo
+        enddo
+    enddo
+    call optimize_basis_functions(parini,fitpar,nfiles,atoms_arr,poisson_ref,1.5d0)
+
+    do ifile=1,nfiles
+        call fini_hartree(parini,atoms_arr%atoms(ifile),poisson_ref(ifile))
+    enddo
+    deallocate(poisson_ref)
+    do iconf=1,atoms_arr%nconf
+        call atom_deallocate_old(atoms_arr%atoms(iconf))
+    enddo
+    deallocate(atoms_arr%atoms)
+    
+    !-----------------------------------------------------------------
+    if(parini%mpi_env%iproc==0) then
+    open(unit=2134,file="gw.out",status='replace')
+    do itypat=1,parini%ntypat
+        tt1=fitpar%qcore_type(itypat)
+        tt2=fitpar%gwc_s1(itypat)
+        ttt=fitpar%bc_s1(itypat)
+        tt4=fitpar%gwv_s1(itypat)
+        ttt_t=fitpar%bv_s1(itypat)
+        tt6=fitpar%gwv_p1(itypat)
+        tt7=fitpar%gwv_p2(itypat)
+        write(2134,'(2f10.6,2l2,7f10.6)') fitpar%gwz_s(itypat),fitpar%bz_s(itypat),fitpar%relaxcore(itypat),fitpar%applycore(itypat),tt1,tt2,ttt,tt4,ttt_t,tt6,tt7
+    enddo
+    close(2134)
+    endif
+    !-----------------------------------------------------------------
+    call fitpar%fini_fit_bf()
+    !write(*,'(a,f10.3)') 'time_cal_pot_gauss_p= ',time_cal_pot_gauss_p
+    !write(*,'(a,f10.3)') 'time_cal_pot_gauss_s= ',time_cal_pot_gauss_s
+    !write(*,'(a,f10.3)') 'time_cal_pot_r2gauss_s= ',time_cal_pot_r2gauss_s
+    call f_release_routine()
+end subroutine get_basis_functions_cent2
+!*****************************************************************************************
+subroutine optimize_basis_functions(parini,fitpar,nfiles,atoms_arr,poisson_ref,dist)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, update_ratp, typ_atoms_arr, atom_deallocate_old
+    !use mod_ann, only: typ_ann_arr
+    use mod_ann_io_yaml, only: read_data_yaml
+    use mod_electrostatics, only: typ_poisson
+    use mod_linkedlists, only: typ_linkedlists
+    use mod_linked_lists, only: typ_pia_arr
+    use mod_opt, only: typ_paropt
+    use mod_trial_energy, only: get_trial_energy, trial_energy_deallocate
+    use mod_flm_futile
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_fitpar), intent(inout):: fitpar
+    integer, intent(inout):: nfiles
+    type(typ_atoms_arr), intent(inout):: atoms_arr
+    type(typ_poisson), intent(inout):: poisson_ref(:)
+    real(8), intent(in):: dist
+    !local variables
+    !type(typ_atoms):: atoms
+    !type(typ_ann_arr):: ann_arr
+    type(typ_fitpar):: fitpar_t
+    type(typ_bf):: bf
+    type(typ_paropt):: paropt
+    integer:: iat, iconf, istep, ibf, jbf, nwork
+    integer:: ix, iy, iz, itypat, nr, ir
+    !real(8):: ehartree_scn_excl
+    !real(8):: dpx, dpy, dpz
+    !real(8):: time1, time2, time3, time4, time5, time6, time7, time8, time9
+    real(8):: tt1, tt2, tt3, tt4, tt5, tt6, tt7, ttt, ttt_t, tt3_t, cost, cost_gw
+    real(8):: ss1, ss2, ss3, ss4, ss5, fd_step
+    real(8):: gausswidth(1), q_tmp(1), p_tmp(3), voxel, dpm(3), pi
+    !real(8):: x, y, z, r
+    real(8):: errmax, rmse, ener
+    real(8), allocatable:: bz(:)
+    real(8), allocatable:: gwz(:)
+    real(8), allocatable:: xr(:)
+    real(8), allocatable:: fr(:)
+    real(8), allocatable:: work(:)
+    character(256), allocatable:: fn_list(:)
+    integer:: ifile
+    if(nfiles/=atoms_arr%nconf) then
+        stop 'ERROR: nfiles/=atoms_arr%nconf in optimize_basis_functions'
+    endif
+    call fitpar_t%init_fit_bf(parini%ntypat)
+
+    !write(*,*) nfiles
+    !write(*,*) fn_list(1:nfiles)
+    !stop 'OOOOOOOOOOOOOO'
+
     allocate(trial_energy_all(nfiles))
     do ifile=1,nfiles
     !!!!!!!!!!!!!!!!
@@ -594,7 +655,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
         bz(iat)=fitpar%bz_s(itypat)
         gwz(iat)=fitpar%gwz_s(itypat)
     enddo
-    call get_trial_energy(parini,atoms,poisson_ref(ifile),2*atoms%nat,bz,gwz,trial_energy_all(ifile),atoms%qtot,atoms%dpm)
+    call get_trial_energy(parini,atoms,poisson_ref(ifile),dist,2*atoms%nat,bz,gwz,trial_energy_all(ifile),atoms%qtot,atoms%dpm)
     deallocate(bz,gwz)
     end associate
     enddo
@@ -602,7 +663,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     !do ifile=1,nfiles
     !    call get_poisson_ref(parini,fitpar%gausswidth_ion,poisson_ref(ifile),atoms_arr%atoms(ifile),fitpar)
     !enddo
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>2) then
     write(*,'(a,4i5)') 'ngpx,ngpy,ngpz= ',poisson_ref(1)%ngpx,poisson_ref(1)%ngpy,poisson_ref(1)%ngpz
     endif
     !stop
@@ -610,7 +671,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
         allocate(c_s_t(atoms_arr%atoms(1)%nat))
         allocate(c_p_t(atoms_arr%atoms(1)%nat))
     endif
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>2) then
     do iat=1,atoms_arr%atoms(1)%nat
         write(*,*) atoms_arr%atoms(1)%ratp(1,iat),atoms_arr%atoms(1)%ratp(2,iat),atoms_arr%atoms(1)%ratp(3,iat)
     enddo
@@ -696,7 +757,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     paropt%fmaxtol=parini%paropt_geopt%fmaxtol
     paropt%nit=parini%paropt_geopt%nit
     paropt%condnum=parini%paropt_geopt%condnum
-    paropt%funits=150.d0
+    paropt%funits=300.d0
     paropt%finc=1.2d0
     paropt%fdec=0.1d0
     paropt%ndowntol=0
@@ -798,7 +859,7 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
     cost_gw=1.d0
 
 
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
         call fitpar%report_fit_bf(istep,cost,cost_gw)
     endif
 
@@ -828,53 +889,27 @@ subroutine get_basis_functions_cent2(parini,atoms_arr_t,poisson_ref_t)
         ir=ir+1 ; fitpar%gwv_p1(itypat)=xr(ir)
         ir=ir+1 ; fitpar%gwv_p2(itypat)=xr(ir)
     enddo
+    fitpar%gwv_p1(1)=fitpar%gwv_s1(1)
+    fitpar%gwv_p1(2)=fitpar%gwv_s1(2)
     call fitpar%set_bc_bcg()
     istep=istep+1
     enddo !end of loop over istep
     deallocate(xr,fr,work)
     call yaml_sequence_close()
-    !-----------------------------------------------------------------
-    if(parini%mpi_env%iproc==0) then
-    open(unit=2134,file="gw.out",status='replace')
-    do itypat=1,parini%ntypat
-        tt1=fitpar%qcore_type(itypat)
-        tt2=fitpar%gwc_s1(itypat)
-        ttt=fitpar%bc_s1(itypat)
-        tt4=fitpar%gwv_s1(itypat)
-        ttt_t=fitpar%bv_s1(itypat)
-        tt6=fitpar%gwv_p1(itypat)
-        tt7=fitpar%gwv_p2(itypat)
-        write(2134,'(2f10.6,2l2,7f10.6)') fitpar%gwz_s(itypat),fitpar%bz_s(itypat),fitpar%relaxcore(itypat),fitpar%applycore(itypat),tt1,tt2,ttt,tt4,ttt_t,tt6,tt7
-    enddo
-    close(2134)
-    endif
-    !-----------------------------------------------------------------
     if(nfiles==1) then
         call final_report(parini,fitpar,poisson_ref(1),atoms_arr%atoms(1))
     endif
     !-----------------------------------------------------------------
-    do ifile=1,nfiles
-    call fini_hartree(parini,atoms_arr%atoms(ifile),poisson_ref(ifile))
-    enddo
     if(nfiles==1) then
         deallocate(c_s_t)
         deallocate(c_p_t)
     endif
-    do iconf=1,atoms_arr%nconf
-        call atom_deallocate_old(atoms_arr%atoms(iconf))
-    enddo
-    deallocate(atoms_arr%atoms)
-    call fitpar%fini_fit_bf()
-    call fitpar_t%fini_fit_bf()
     do ifile=1,nfiles
         call trial_energy_deallocate(trial_energy_all(ifile))
     enddo
     deallocate(trial_energy_all)
-    !write(*,'(a,f10.3)') 'time_cal_pot_gauss_p= ',time_cal_pot_gauss_p
-    !write(*,'(a,f10.3)') 'time_cal_pot_gauss_s= ',time_cal_pot_gauss_s
-    !write(*,'(a,f10.3)') 'time_cal_pot_r2gauss_s= ',time_cal_pot_r2gauss_s
-    call f_release_routine()
-end subroutine get_basis_functions_cent2
+    call fitpar_t%fini_fit_bf()
+end subroutine optimize_basis_functions
 !*****************************************************************************************
 subroutine final_report(parini,fitpar,poisson_ref,atoms)
     use mod_parini, only: typ_parini
@@ -958,7 +993,9 @@ subroutine final_report(parini,fitpar,poisson_ref,atoms)
     enddo
     enddo
     rmse=sqrt(rmse/real(poisson%ngpx*poisson%ngpy*poisson%ngpz,kind=8))
-    write(*,'(a,2es14.5)') 'errmax,rmse= ',errmax,rmse
+    if(parini%iverbose>1) then
+        write(*,'(a,2es14.5)') 'errmax,rmse= ',errmax,rmse
+    endif
     endif
     if(allocated(poisson%pot)) then
     !do iz=1,poisson%ngpz
@@ -984,9 +1021,9 @@ subroutine final_report(parini,fitpar,poisson_ref,atoms)
     enddo
     enddo
     ener=ener*0.5d0*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-    !if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
     write(*,'(a,es24.10,es14.5)') 'ehartree_scn_excl ',ener,poisson%screening_factor
-    !endif
+    endif
     endif
     do iz=1,poisson%ngpz
     do iy=1,poisson%ngpy
@@ -1340,7 +1377,7 @@ subroutine get_cost_from_pot(parini,istep,nfiles,poisson_ref,atoms_arr,fitpar,bf
     call get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref(ifile),atoms,trial_energy,c_s,c_p)
     call system_clock(itime2)
     call get_rmse(trial_energy,bf%nbf,bf%csp,rmse)
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>2) then
     write(*,'(a,es14.5)') 'RMSE= ',rmse
     endif
     cost=cost+(ha2mha*rmse)**2
@@ -1379,23 +1416,25 @@ subroutine get_cost_from_pot(parini,istep,nfiles,poisson_ref,atoms_arr,fitpar,bf
         p_tmp=0.d0
         p_tmp(1)=1.d0
         call cal_pot_gauss_p(parini,poisson,bf%pot_1,.true.,atoms%ratp(1,iat),fitpar%gwv_p1(itypat),p_tmp(1),bf%vgrad_1)
-        call cal_pot_gauss_p(parini,poisson,bf%pot_2,.true.,atoms%ratp(1,iat),fitpar%gwv_p2(itypat),p_tmp(1),bf%vgrad_2)
+        !call cal_pot_gauss_p(parini,poisson,bf%pot_2,.true.,atoms%ratp(1,iat),fitpar%gwv_p2(itypat),p_tmp(1),bf%vgrad_2)
         do iz=1,poisson%ngpz
         do iy=1,poisson%ngpy
         do ix=1,poisson%ngpx
-            tt1=bf%bv_1(ibf)*bf%vgrad_1(ix,iy,iz)+bf%grad_bv_1(1,ibf)*bf%pot_1(ix,iy,iz)+bf%grad_bv_2(1,ibf)*bf%pot_2(ix,iy,iz)
-            wa_gwp1(ix,iy,iz,itypat)=wa_gwp1(ix,iy,iz,itypat)+bf%csp(ibf)*tt1
+            !tt1=bf%bv_1(ibf)*bf%vgrad_1(ix,iy,iz)+bf%grad_bv_1(1,ibf)*bf%pot_1(ix,iy,iz)+bf%grad_bv_2(1,ibf)*bf%pot_2(ix,iy,iz)
+            tt1=bf%vgrad_1(ix,iy,iz)
+            !wa_gwp1(ix,iy,iz,itypat)=wa_gwp1(ix,iy,iz,itypat)+bf%csp(ibf)*tt1
+            wa_gws(ix,iy,iz,itypat)=wa_gws(ix,iy,iz,itypat)+bf%csp(ibf)*tt1
         enddo
         enddo
         enddo
-        do iz=1,poisson%ngpz
-        do iy=1,poisson%ngpy
-        do ix=1,poisson%ngpx
-            tt1=bf%bv_2(ibf)*bf%vgrad_2(ix,iy,iz)+bf%grad_bv_1(2,ibf)*bf%pot_1(ix,iy,iz)+bf%grad_bv_2(2,ibf)*bf%pot_2(ix,iy,iz)
-            wa_gwp2(ix,iy,iz,itypat)=wa_gwp2(ix,iy,iz,itypat)+bf%csp(ibf)*tt1
-        enddo
-        enddo
-        enddo
+        !do iz=1,poisson%ngpz
+        !do iy=1,poisson%ngpy
+        !do ix=1,poisson%ngpx
+        !    tt1=bf%bv_2(ibf)*bf%vgrad_2(ix,iy,iz)+bf%grad_bv_1(2,ibf)*bf%pot_1(ix,iy,iz)+bf%grad_bv_2(2,ibf)*bf%pot_2(ix,iy,iz)
+        !    wa_gwp2(ix,iy,iz,itypat)=wa_gwp2(ix,iy,iz,itypat)+bf%csp(ibf)*tt1
+        !enddo
+        !enddo
+        !enddo
         if(any(fitpar%relaxcore)) then
         q_tmp(1)=1.d0
         call cal_pot_gauss_s(parini,poisson,bf%pot_1,.true.,atoms%ratp(1,iat),fitpar%gwc_s1(itypat),q_tmp(1),bf%vgrad_1)
@@ -1426,43 +1465,43 @@ subroutine get_cost_from_pot(parini,istep,nfiles,poisson_ref,atoms_arr,fitpar,bf
             5.d0*1.d0,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         do itypat=1,parini%ntypat
         call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
+            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,5.d0, &
             poisson%rho,wa_gws(1,1,1,itypat),tt1)
         tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
         fitpar%grad_gwv_s1(itypat)=fitpar%grad_gwv_s1(itypat)+2.d0*tt1*tt2*pref
         enddo
         do itypat=1,parini%ntypat
         call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
+            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,5.d0, &
             poisson%rho,wa_bs(1,1,1,itypat),tt1)
         tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
         fitpar%grad_bv_s1(itypat)=fitpar%grad_bv_s1(itypat)+2.d0*tt1*tt2*pref
         enddo
-        do itypat=1,parini%ntypat
-        call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
-            poisson%rho,wa_gwp1(1,1,1,itypat),tt1)
-        tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
-        fitpar%grad_gwv_p1(itypat)=fitpar%grad_gwv_p1(itypat)+2.d0*tt1*tt2*pref
-        enddo
-        do itypat=1,parini%ntypat
-        call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
-            poisson%rho,wa_gwp2(1,1,1,itypat),tt1)
-        tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
-        fitpar%grad_gwv_p2(itypat)=fitpar%grad_gwv_p2(itypat)+2.d0*tt1*tt2*pref
-        enddo
+        !do itypat=1,parini%ntypat
+        !call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
+        !    poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
+        !    poisson%rho,wa_gwp1(1,1,1,itypat),tt1)
+        !tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
+        !fitpar%grad_gwv_p1(itypat)=fitpar%grad_gwv_p1(itypat)+2.d0*tt1*tt2*pref
+        !enddo
+        !do itypat=1,parini%ntypat
+        !call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
+        !    poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
+        !    poisson%rho,wa_gwp2(1,1,1,itypat),tt1)
+        !tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
+        !fitpar%grad_gwv_p2(itypat)=fitpar%grad_gwv_p2(itypat)+2.d0*tt1*tt2*pref
+        !enddo
         if(any(fitpar%relaxcore)) then
         do itypat=1,parini%ntypat
         call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
+            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,5.d0, &
             poisson%rho,wa_gwc(1,1,1,itypat),tt1)
         tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
         fitpar%grad_gwc_s1(itypat)=fitpar%grad_gwc_s1(itypat)+2.d0*tt1*tt2*pref
         enddo
         do itypat=1,parini%ntypat
         call cal_rho_pot_integral_local(xyz,poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,6.d0, &
+            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,5.d0, &
             poisson%rho,wa_bc(1,1,1,itypat),tt1)
         tt2=trial_energy%E_all(itrial)-trial_energy%energy(itrial)
         fitpar%grad_bc_s1(itypat)=fitpar%grad_bc_s1(itypat)+2.d0*tt1*tt2*pref
@@ -1497,7 +1536,7 @@ subroutine get_cost_from_pot(parini,istep,nfiles,poisson_ref,atoms_arr,fitpar,bf
         dpm(1)=dpm(1)+q*(atoms%ratp(1,iat)-center(1))
     enddo
     dpm(1)=dpm(1)+sum(c_p(:))
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
     write(*,'(a,i6)',advance='no') 'qp ',istep
     do iat=1,atoms%nat
         write(*,'(f8.3)',advance='no') c_s(iat)
@@ -1539,21 +1578,23 @@ subroutine get_cost_from_pot(parini,istep,nfiles,poisson_ref,atoms_arr,fitpar,bf
     if(parini%mpi_env%nproc>1) then
     call fmpi_allreduce(fitpar%grad_gwv_s1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(fitpar%grad_bv_s1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    call fmpi_allreduce(fitpar%grad_gwv_p1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    call fmpi_allreduce(fitpar%grad_gwv_p2(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    !call fmpi_allreduce(fitpar%grad_gwv_p1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    !call fmpi_allreduce(fitpar%grad_gwv_p2(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(fitpar%grad_gwc_s1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     call fmpi_allreduce(fitpar%grad_bc_s1(1),parini%ntypat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
     endif
     fitpar%grad_gwv_s1=fitpar%grad_gwv_s1/real(nfiles,kind=8)
     fitpar%grad_bv_s1=fitpar%grad_bv_s1/real(nfiles,kind=8)
-    fitpar%grad_gwv_p1=fitpar%grad_gwv_p1/real(nfiles,kind=8)
-    fitpar%grad_gwv_p2=fitpar%grad_gwv_p2/real(nfiles,kind=8)
+    !fitpar%grad_gwv_p1=fitpar%grad_gwv_p1/real(nfiles,kind=8)
+    !fitpar%grad_gwv_p2=fitpar%grad_gwv_p2/real(nfiles,kind=8)
     fitpar%grad_gwc_s1=fitpar%grad_gwc_s1/real(nfiles,kind=8)
     fitpar%grad_bc_s1=fitpar%grad_bc_s1/real(nfiles,kind=8)
+    fitpar%grad_gwv_p1=0.d0
+    fitpar%grad_gwv_p2=0.d0
     cost=cost/real(nfiles,kind=8)
     call system_clock(itime6)
     time_net=real(itime6-itime0,8)/real(icount_rate,8)
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>2) then
         write(*,'(a,4f8.2)') 'time_linearcoeff,time_pot,time_grad,time_net= ',time_linearcoeff,time_pot,time_grad,time_net
     endif
 end subroutine get_cost_from_pot
@@ -1892,7 +1933,7 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
     real(8), allocatable:: qcore(:), bc(:), gwc(:)
     integer, allocatable:: ipiv(:)
     nbf=2*atoms%nat
-    nc=2
+    nc=1
     allocate(secder(nbf+nc,nbf+nc),source=0.d0)
     allocate(rhs(nbf+nc),source=0.d0)
     allocate(squarefit_raw(bf%nbf,bf%nbf),rhs_raw(bf%nbf))
@@ -1927,7 +1968,7 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
     enddo
     !bf%zeroder=tt1*voxel
 
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>2) then
     do iat=1,atoms%nat
         write(*,'(a,3es14.5)') 'SECDER ',secder(iat,1:3)
     enddo
@@ -1948,6 +1989,15 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
     !    write(*,'(a,i6,4es14.5)') 'EVEC ',ibf,secder_t(1:nbf,ibf)
     !enddo
     !-----------------------------------------------------------------
+    !-----------------------------------------------------------------
+    secder(nbf+1      ,nbf+1      )=0.d0
+    do iat=1,atoms%nat
+        secder(iat          ,nbf+1        )=1.d0
+        secder(nbf+1        ,iat          )=1.d0
+    enddo
+    rhs(nbf+1)=atoms%qtot-sum(atoms%zat)-sum(bf%qcore) !-sum(atoms%zat)
+    !-----------------------------------------------------------------
+    if(nc==2) then
     center(1)=0.d0
     center(2)=0.d0
     center(3)=0.d0
@@ -1959,17 +2009,13 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
     center(1)=center(1)/atoms%nat
     center(2)=center(2)/atoms%nat
     center(3)=center(3)/atoms%nat
-    secder(nbf+1      ,nbf+1      )=0.d0
     secder(nbf+2      ,nbf+2      )=0.d0
     do iat=1,atoms%nat
-        secder(iat          ,nbf+1        )=1.d0
-        secder(nbf+1        ,iat          )=1.d0
         secder(iat          ,nbf+2        )=atoms%ratp(1,iat)-center(1)
         secder(nbf+2        ,iat          )=atoms%ratp(1,iat)-center(1)
         secder(atoms%nat+iat,nbf+2        )=1.d0
         secder(nbf+2        ,atoms%nat+iat)=1.d0
     enddo
-    rhs(nbf+1)=atoms%qtot-sum(atoms%zat)-sum(bf%qcore) !-sum(atoms%zat)
     cons(1)=0.d0
     cons(2)=0.d0
     cons(3)=0.d0
@@ -1979,6 +2025,7 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
         cons(3)=cons(3)+(atoms%zat(iat)+bf%qcore(iat))*(atoms%ratp(3,iat)-center(3))
     enddo
     rhs(nbf+2)=atoms%dpm(1)-cons(1)
+    endif
     allocate(ipiv(nbf+nc))
     call DGETRF(nbf+nc,nbf+nc,secder,nbf+nc,ipiv,info)
     call DGETRS('N',nbf+nc,1,secder,nbf+nc,ipiv,rhs,nbf+nc,info)
@@ -1987,7 +2034,7 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
         c_p(iat)=rhs(iat+atoms%nat)
     enddo
     bf%csp(1:bf%nbf)=rhs(1:bf%nbf)
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
         do iat=1,atoms%nat
             write(*,'(2f18.8)') c_s(iat),c_p(iat)
         enddo
