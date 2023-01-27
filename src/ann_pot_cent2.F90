@@ -29,7 +29,6 @@ module mod_cent2
         procedure, private, pass(self):: init_bf
         procedure, private, pass(self):: fini_bf
         procedure, private, pass(self):: set_param
-        procedure, private, pass(self):: calc_atomic_densities
     end type typ_bf
     type typ_cent2
         private
@@ -60,6 +59,7 @@ module mod_cent2
         procedure, private, pass(self):: reverseCEP
         procedure, private, pass(self):: prefit_cent2
         procedure, public, pass(self):: cal_ann_cent2
+        procedure, private, pass(self):: calc_atomic_densities
     end type typ_cent2
 contains
 !*****************************************************************************************
@@ -132,7 +132,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
         endif
     enddo over_iat
     if(parini%iverbose>=2) call cpu_time(time3)
-    call self%bf%calc_atomic_densities(parini,atoms,ann_arr,poisson,self%rho_n)
+    call self%calc_atomic_densities(parini,atoms,ann_arr,poisson)
     call self%get_pot_ionic(parini,atoms,poisson)
     if(parini%iverbose>=2) call cpu_time(time4)
     if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: two routines: ',time4-time3
@@ -396,7 +396,7 @@ subroutine set_param(self,atoms,ann_arr)
     enddo
 end subroutine set_param
 !*****************************************************************************************
-subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
+subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
     use mod_ann, only: typ_ann_arr
@@ -405,96 +405,95 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
     use mod_linked_lists, only: typ_pia_arr
     use mod_flm_futile
     implicit none
-    class(typ_bf), intent(inout):: self
+    class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(in):: atoms
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_poisson), intent(inout):: poisson
-    real(8), intent(out):: rho_n(poisson%ngpx,poisson%ngpy,poisson%ngpz)
     !local variables
     integer:: iat, ix, iy, iz, agpx, agpy, agpz, ibf, ii, jbf, itypat
     real(8):: ggw, ggw_t, alpha, beta, q_tmp(1), p_tmp(3), tt, ttx, tty, ttz
     real(8):: a1, a2, a3, b1, b2 !, b3
     !character(2):: bt_t
-    do ibf=1,self%nbf
-        agpx=int(self%re(1,ibf)/poisson%hgrid(1,1))+self%nbgx+0
-        agpy=int(self%re(2,ibf)/poisson%hgrid(2,2))+self%nbgy+0
-        agpz=int(self%re(3,ibf)/poisson%hgrid(3,3))+self%nbgz+0
-        !bt_t=self%bt(ibf)
-        iat=self%imap(ibf)
+    do ibf=1,self%bf%nbf
+        agpx=int(self%bf%re(1,ibf)/poisson%hgrid(1,1))+self%bf%nbgx+0
+        agpy=int(self%bf%re(2,ibf)/poisson%hgrid(2,2))+self%bf%nbgy+0
+        agpz=int(self%bf%re(3,ibf)/poisson%hgrid(3,3))+self%bf%nbgz+0
+        !bt_t=self%bf%bt(ibf)
+        iat=self%bf%imap(ibf)
         itypat=atoms%itypat(iat)
-        if(trim(self%bt(ibf))=='s') then
-        !a1=self%gwe_s(iat)
-        !a2=self%be_s(iat)
+        if(trim(self%bf%bt(ibf))=='s') then
+        !a1=self%bf%gwe_s(iat)
+        !a2=self%bf%be_s(iat)
         !b1= a1**3/(a1**3-a2**3)
         !b2=-a2**3/(a1**3-a2**3)
-        q_tmp(1)=1.d0*self%be_s(iat)
-        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),q_tmp,self%gwe_s(iat), &
-            5.d0*self%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        q_tmp(1)=1.d0*(1.d0-self%be_s(iat))
-        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),q_tmp,self%gwe_s(iat), &
-            5.d0*self%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%nbgz,agpz+self%nbgz
-        do iy=agpy-self%nbgy,agpy+self%nbgy
-        do ix=agpx-self%nbgx,agpx+self%nbgx
-            self%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
+        q_tmp(1)=1.d0*self%bf%be_s(iat)
+        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),q_tmp,self%bf%gwe_s(iat), &
+            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        q_tmp(1)=1.d0*(1.d0-self%bf%be_s(iat))
+        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),q_tmp,self%bf%gwe_s(iat), &
+            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
+        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
+        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
+            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
         enddo
         enddo
         enddo
-        elseif(trim(self%bt(ibf))=='px') then
+        elseif(trim(self%bf%bt(ibf))=='px') then
         p_tmp=0.d0
-        a1=self%gwe_p(1,iat)
-        a2=self%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
+        a1=self%bf%gwe_p(1,iat)
+        a2=self%bf%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
         b1= a1**5/(a1**5-a2**5)
         b2=-a2**5/(a1**5-a2**5)
         p_tmp(1)=1.d0 !*b1
-        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),p_tmp,a1, &
+        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),p_tmp,a1, &
             6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         !p_tmp(1)=1.d0*b2
-        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
+        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),p_tmp,a2, &
         !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%nbgz,agpz+self%nbgz
-        do iy=agpy-self%nbgy,agpy+self%nbgy
-        do ix=agpx-self%nbgx,agpx+self%nbgx
-            self%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
+        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
+        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
+        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
+            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
         enddo
         enddo
         enddo
-        elseif(trim(self%bt(ibf))=='py') then
+        elseif(trim(self%bf%bt(ibf))=='py') then
         p_tmp=0.d0
-        a1=self%gwe_p(1,iat)
-        a2=self%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
+        a1=self%bf%gwe_p(1,iat)
+        a2=self%bf%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
         b1= a1**5/(a1**5-a2**5)
         b2=-a2**5/(a1**5-a2**5)
         p_tmp(2)=1.d0 !*b1
-        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),p_tmp,a1, &
+        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),p_tmp,a1, &
             6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         !p_tmp(2)=1.d0*b2
-        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
+        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),p_tmp,a2, &
         !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%nbgz,agpz+self%nbgz
-        do iy=agpy-self%nbgy,agpy+self%nbgy
-        do ix=agpx-self%nbgx,agpx+self%nbgx
-            self%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
+        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
+        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
+        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
+            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
         enddo
         enddo
         enddo
-        elseif(trim(self%bt(ibf))=='pz') then
+        elseif(trim(self%bf%bt(ibf))=='pz') then
         p_tmp=0.d0
-        a1=self%gwe_p(1,iat)
-        a2=self%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
+        a1=self%bf%gwe_p(1,iat)
+        a2=self%bf%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
         b1= a1**5/(a1**5-a2**5)
         b2=-a2**5/(a1**5-a2**5)
         p_tmp(3)=1.d0 !*b1
-        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%re(1,ibf),p_tmp,a1, &
+        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),p_tmp,a1, &
             6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
         !p_tmp(3)=1.d0*b2
-        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%re(1,ibf),p_tmp,a2, &
+        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),p_tmp,a2, &
         !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%nbgz,agpz+self%nbgz
-        do iy=agpy-self%nbgy,agpy+self%nbgy
-        do ix=agpx-self%nbgx,agpx+self%nbgx
-            self%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
+        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
+        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
+        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
+            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
         enddo
         enddo
         enddo
@@ -503,31 +502,31 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson,rho_n)
 
     poisson%rho(:,:,:)=0.d0
     do iat=1,atoms%nat
-        !agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+self%nbgx+0
-        !agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+self%nbgy+0
-        !agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+self%nbgz+0
+        !agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+self%bf%nbgx+0
+        !agpy=int(atoms%ratp(2,iat)/poisson%hgrid(2,2))+self%bf%nbgy+0
+        !agpz=int(atoms%ratp(3,iat)/poisson%hgrid(3,3))+self%bf%nbgz+0
 !        q_tmp(1)=atoms%zat(iat) !1.d0
-!        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%gwn(iat), &
-!            6.d0*maxval(self%gwn),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-!        if(self%gwc(2,iat)>0.d0) then
-            !a1=self%gwc(1,iat)
-            !a2=self%gwc(2,iat)
+!        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwn(iat), &
+!            6.d0*maxval(self%bf%gwn),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+!        if(self%bf%gwc(2,iat)>0.d0) then
+            !a1=self%bf%gwc(1,iat)
+            !a2=self%bf%gwc(2,iat)
             !b1= a1**3/(a1**3-a2**3)
             !b2=-a2**3/(a1**3-a2**3)
-            q_tmp(1)=self%qcore(iat)*self%bc(iat)
-            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%gwc(iat), &
-                6.d0*self%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-            q_tmp(1)=self%qcore(iat)*(1.d0-self%bc(iat))
-            call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%gwc(iat), &
-                6.d0*self%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+            q_tmp(1)=self%bf%qcore(iat)*self%bf%bc(iat)
+            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwc(iat), &
+                6.d0*self%bf%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+            q_tmp(1)=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+            call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwc(iat), &
+                6.d0*self%bf%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
 !        else
-!            a1=self%gwc(1,iat)
-!            q_tmp(1)=self%qcore(iat)
+!            a1=self%bf%gwc(1,iat)
+!            q_tmp(1)=self%bf%qcore(iat)
 !            call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,a1, &
 !                6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
 !        endif
     enddo !end of loop over iat
-    rho_n=poisson%rho !save and keep total ionic charge
+    self%rho_n=poisson%rho !save and keep total ionic charge
 end subroutine calc_atomic_densities
 !*****************************************************************************************
 subroutine init_electrostatic_cent2(self,parini,atoms,ann_arr,poisson)
@@ -1069,7 +1068,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
         endif
     enddo
     if(parini%mpi_env%iproc==0) then
-        write(*,'(a,3f8.3)') 'DPM= ',dpm(1),dpm(2),dpm(3)
+        write(*,'(a,3f10.5)') 'DPM= ',dpm(1),dpm(2),dpm(3)
     endif
     !-----------------------------------------------------------------
     endif
@@ -1238,12 +1237,14 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
     type(typ_atoms), intent(in):: atoms
     real(8), intent(in):: squarefit_raw(self%bf%nbf,self%bf%nbf), rhs_raw(self%bf%nbf)
     !local variables
-    integer:: iat, itrial, info, itypat, lwork
+    integer:: iat, itrial, info, itypat, lwork, iter
     integer:: ibf, jbf
-    real(8):: hh, qtarget, tt
+    real(8):: hh, qtarget, tt, frac, ff
     real(8):: ggw, ggw_t, alpha, beta
     real(8), allocatable:: squarefit(:,:), squarefit_t(:,:)
     real(8), allocatable:: real_eigenval(:), work(:)
+    integer, allocatable:: nat_type(:)
+    allocate(nat_type(parini%ntypat))
     lwork=max(self%bf%nbf**2,100)
     allocate(squarefit(self%bf%nbf,self%bf%nbf))
     allocate(squarefit_t(self%bf%nbf+1,self%bf%nbf+1))
@@ -1269,26 +1270,66 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
         !write(33,'(10es10.1)') squarefit(1:10,9)
         !write(33,'(10es10.1)') squarefit(1:10,10)
     do ibf=1,self%bf%nbf
-        write(33,'(a,i6,es14.5)') 'EVAL ',ibf,real_eigenval(ibf)
-    enddo
-    endif
-    do ibf=1,self%bf%nbf
-        do jbf=1,self%bf%nbf
-            squarefit(ibf,jbf)=squarefit_t(ibf,jbf)
-        enddo
-    enddo
-    !-----------------------------------------------------------------
-    hh=1.d-20*real_eigenval(self%bf%nbf)
-    do ibf=1,self%bf%nbf
-        squarefit(ibf,ibf)=squarefit(ibf,ibf)+hh
-        squarefit_t(ibf,ibf)=squarefit_t(ibf,ibf)+hh
-    enddo
-    call DSYEV('N','U',self%bf%nbf,squarefit,self%bf%nbf,real_eigenval,work,lwork,info)
-    if(parini%mpi_env%iproc==0) then
-    do ibf=1,self%bf%nbf
         write(*,'(a,i6,es14.5)') 'EVAL ',ibf,real_eigenval(ibf)
     enddo
     endif
+    !-----------------------------------------------------------------
+    ff=0.d0
+    do ibf=self%bf%nbf-atoms%nat+1,self%bf%nbf
+        ff=ff+real_eigenval(ibf)
+    enddo
+    ff=ff/real(atoms%nat,kind=8)
+    if(parini%mpi_env%iproc==0) then
+        write(*,'(a,es14.5)') 'average nat largest eval ',ff
+    endif
+    nat_type=0.d0
+    do iat=1,atoms%nat
+        itypat=atoms%itypat(iat)
+        nat_type(itypat)=nat_type(itypat)+1
+    enddo
+    if(parini%mpi_env%iproc==0) then
+        write(*,*) 'nat_type= ',nat_type
+    endif
+    frac=0.d0
+    do iter=0,100
+    do itypat=1,parini%ntypat
+        ann_arr%ann(itypat)%qtarget=0.d0
+    enddo
+    if(iter>0) then
+    do ibf=1,self%bf%nbf
+        if(trim(self%bf%bt(ibf))=='s') then
+            iat=self%bf%imap(ibf)
+            itypat=atoms%itypat(iat)
+            ann_arr%ann(itypat)%qtarget=ann_arr%ann(itypat)%qtarget+ann_arr%qq(ibf)
+        endif
+    enddo
+    do itypat=1,parini%ntypat
+        ann_arr%ann(itypat)%qtarget=ann_arr%ann(itypat)%qtarget/nat_type(itypat)
+    enddo
+    endif
+    squarefit_t=0.d0
+    do ibf=1,self%bf%nbf
+        do jbf=1,self%bf%nbf
+            !squarefit(ibf,jbf)=squarefit_raw(ibf,jbf)
+            squarefit_t(ibf,jbf)=squarefit_raw(ibf,jbf)
+        enddo
+    enddo
+    if(iter==0) then
+        hh=0.d0
+    else
+         hh=frac*ff
+    endif
+    !hh=frac*real_eigenval(self%bf%nbf-atoms%nat+1)
+    do ibf=1,self%bf%nbf
+        !squarefit(ibf,ibf)=squarefit(ibf,ibf)+hh
+        squarefit_t(ibf,ibf)=squarefit_t(ibf,ibf)+hh
+    enddo
+    !call DSYEV('N','U',self%bf%nbf,squarefit,self%bf%nbf,real_eigenval,work,lwork,info)
+    !if(parini%mpi_env%iproc==0) then
+    !do ibf=1,self%bf%nbf
+    !    write(*,'(a,i6,es14.5)') 'EVAL ',ibf,real_eigenval(ibf)
+    !enddo
+    !endif
     do ibf=1,self%bf%nbf
         squarefit_t(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
         squarefit_t(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
@@ -1300,22 +1341,25 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
         ann_arr%qq(ibf)=rhs_raw(ibf)
     enddo
     do itypat=1,parini%ntypat
-        qtarget=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
+        qtarget=ann_arr%ann(itypat)%qtarget
         if(parini%mpi_env%iproc==0) then
         write(*,'(2a,a1,f8.3)') 'QTARGET_',trim(parini%stypat(itypat)),' ',qtarget
         endif
     enddo
     do ibf=1,self%bf%nbf
+        if(trim(self%bf%bt(ibf))=='s') then
         iat=self%bf%imap(ibf)
         itypat=atoms%itypat(iat)
-        qtarget=-ann_arr%ann(itypat)%zion+ann_arr%ann(itypat)%qtarget
+        qtarget=ann_arr%ann(itypat)%qtarget
         ann_arr%qq(ibf)=ann_arr%qq(ibf)+hh*qtarget
+        endif
     enddo
     if(parini%mpi_env%iproc==0) then
         write(34,'(es10.1)') ann_arr%qq(self%bf%nbf+1)
     endif
     call DGETRS('N',self%bf%nbf+1,1,squarefit_t,self%bf%nbf+1,ann_arr%ipiv,ann_arr%qq,self%bf%nbf+1,info)
-
+    frac=1.d-5
+    enddo
     if(parini%mpi_env%iproc==0) then
         write(34,'(10f10.2)') ann_arr%qq(1:10)
         write(34,'(f6.2)') ann_arr%qq(1)+ann_arr%qq(2)+ann_arr%qq(6)+ann_arr%qq(7)

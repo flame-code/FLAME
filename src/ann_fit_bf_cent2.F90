@@ -970,12 +970,9 @@ subroutine final_report(parini,fitpar,poisson_ref,atoms)
         rgcut*fitpar%gwv_s1(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
         poisson%hgrid,poisson%rho)
     p_tmp=0.d0
-    p_tmp(1)=c_p_t(iat)*fitpar%bv_p1(itypat)
+    p_tmp(1)=c_p_t(iat)
     call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),p_tmp,fitpar%gwv_p1(itypat), &
         rgcut*fitpar%gwv_p1(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-    p_tmp(1)=c_p_t(iat)*fitpar%bv_p2(itypat)
-    call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),p_tmp,fitpar%gwv_p2(itypat), &
-        rgcut*fitpar%gwv_p2(itypat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
     enddo
     !poisson%rho=poisson%rho-poisson_ref%rho
     !call cube_write('diffrho.cube',atoms,poisson,'rho')
@@ -1933,7 +1930,7 @@ subroutine get_linearcoeff(parini,fitpar,bf,poisson,poisson_ref,atoms,trial_ener
     real(8), allocatable:: qcore(:), bc(:), gwc(:)
     integer, allocatable:: ipiv(:)
     nbf=2*atoms%nat
-    nc=1
+    nc=2
     allocate(secder(nbf+nc,nbf+nc),source=0.d0)
     allocate(rhs(nbf+nc),source=0.d0)
     allocate(squarefit_raw(bf%nbf,bf%nbf),rhs_raw(bf%nbf))
