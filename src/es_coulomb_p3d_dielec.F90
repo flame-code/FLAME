@@ -66,7 +66,7 @@ subroutine sollaplaceq_dielctric(parini,poisson,hz,cell)
     use mod_electrostatics, only: typ_poisson
     use mod_parini, only: typ_parini
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     type(typ_parini), intent(in):: parini
 
     type(typ_poisson), intent(inout):: poisson

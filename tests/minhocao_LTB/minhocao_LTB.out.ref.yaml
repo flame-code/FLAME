@@ -18,7 +18,7 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : https://doi.org/10.1016/j.cpc.2020.107415
- Timestamp of this run                 : 2021-10-02 20:27:51.066
+ Timestamp of this run                 : 2022-11-19 14:22:16.497
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
    task                                : minhocao
@@ -33,6 +33,8 @@
    findsym                             : True
    finddos                             : False
    params_new                          : False
+   time_limit                          : -1.0
+   datafilesdir                        : /home/ghasemi/FLAME/datafiles
    typat                               : 6*1
    znucl                               : 14.0
    amass                               : 2.0
@@ -180,6 +182,7 @@
    add_repulsive                       : True
    voids                               : False
    core_rep                            : False
+   core_rep_par: [1.0, 0.7]
    usewfgeo                            : False
    usewfsoft                           : False
    usewfmd                             : False
@@ -256,7 +259,7 @@
    print_energy                        : False
    fit_hoppint                         : False
    save_symfunc_force                  : False
-   weight_hardness                     : 0.001
+   weight_hardness                     : 0.0
    save_symfunc_behnam                 : False
    freeBC_direct                       : False
  dynamics:
@@ -297,6 +300,15 @@
    npoint                              : 0
    fbmin                               : -1.0
    fbmax                               : -1.0
+   volperatom_bounds: [-1.0, -1.0]
+   ntry                                : 30
+   ispg                                : 0
+   ncells                              : 1
+   nconf                               : 1
+   nat_types_fu                        : 1
+   list_fu:
+   - 1
+   rmin_pairs                          : None
    variable_cell                       : False
    nonorthogonal                       : False
  conf_comp:

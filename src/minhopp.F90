@@ -867,6 +867,71 @@ subroutine send_minhopp_parameters_to_all(parini,atoms_curr)
     mtagarr2(iproc)=mtagarr2(iproc)+2
 end subroutine send_minhopp_parameters_to_all
 !*****************************************************************************************
+subroutine velocity_freeBC_fix(parini,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, update_ratp, update_rat
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(inout):: atoms
+    !local variables
+    integer:: iat, jat, ina
+    real(8):: rsq, xyz(3), dx, dy, dz, vnrm, vnrm_max, rnrm, cm(3)
+    !logical:: trans
+    call update_ratp(atoms)
+    vnrm_max=0.d0
+    do iat=1,atoms%nat
+        vnrm=sqrt(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
+        if(vnrm>vnrm_max) vnrm_max=vnrm
+    enddo
+    vnrm_max=vnrm_max*0.5d0
+    do iat=1,atoms%nat
+        !trans=.true.
+        ina=-1
+        do jat=1,atoms%nat
+            dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
+            dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
+            dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
+            rsq=dx**2+dy**2+dz**2
+            if(rsq<100.d0) then
+                ina=ina+1
+                !trans=.false.
+                !exit
+            endif
+        enddo
+        !if(trans) then
+        if(ina<3) then
+            dx=atoms%cellvec(1,1)*0.5d0-atoms%ratp(1,iat)
+            dy=atoms%cellvec(2,2)*0.5d0-atoms%ratp(2,iat)
+            dz=atoms%cellvec(3,3)*0.5d0-atoms%ratp(3,iat)
+            rnrm=sqrt(dx**2+dy**2+dz**2)
+            xyz(1)=dx/rnrm
+            xyz(2)=dy/rnrm
+            xyz(3)=dz/rnrm
+            !vnrm=sqrt(atoms%vat(1,iat)**2+atoms%vat(2,iat)**2+atoms%vat(3,iat)**2)
+            atoms%vat(1,iat)=xyz(1)*vnrm_max
+            atoms%vat(2,iat)=xyz(2)*vnrm_max
+            atoms%vat(3,iat)=xyz(3)*vnrm_max
+        endif
+    enddo
+    cm(1)=0.d0
+    cm(2)=0.d0
+    cm(3)=0.d0
+    do iat=1,atoms%nat
+        cm(1)=cm(1)+atoms%ratp(1,iat)
+        cm(2)=cm(2)+atoms%ratp(2,iat)
+        cm(3)=cm(3)+atoms%ratp(3,iat)
+    enddo
+    cm(1)=cm(1)/atoms%nat
+    cm(2)=cm(2)/atoms%nat
+    cm(3)=cm(3)/atoms%nat
+    do iat=1,atoms%nat
+        atoms%ratp(1,iat)=atoms%ratp(1,iat)+atoms%cellvec(1,1)*0.5d0-cm(1)
+        atoms%ratp(2,iat)=atoms%ratp(2,iat)+atoms%cellvec(2,2)*0.5d0-cm(2)
+        atoms%ratp(3,iat)=atoms%ratp(3,iat)+atoms%cellvec(3,3)*0.5d0-cm(3)
+    enddo
+    call update_rat(atoms)
+end subroutine velocity_freeBC_fix
+!*****************************************************************************************
 subroutine mdescape(parini,atoms_hopp)
     use mod_parini, only: typ_parini
     use mod_minhopp, only: av_ekinetic, mdmin, dt, ekin, istep, count_md, count_md_tot, istep
@@ -896,6 +961,7 @@ subroutine mdescape(parini,atoms_hopp)
     allocate(fatwa(3,atoms_hopp%nat),stat=istat)
     if(istat/=0) write(*,*) 'ERROR: allocating array fatwa'
     call velopt(parini,atoms_hopp) !initialize velocities
+    !call velocity_freeBC_fix(parini,atoms_hopp)
     !vat(1:3,1:atoms_hopp%nat)=atoms_hopp%vat(1:3,1:atoms_hopp%nat)
     fatwa(1:3,1:atoms_hopp%nat)=0.d0
     nummax=0;nummin=0;enmin1=0.d0;en0000=0.d0;econs_max=-1.d100;econs_min=1.d100

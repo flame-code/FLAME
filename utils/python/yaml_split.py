@@ -15,7 +15,7 @@ args=parser.parse_args()
 atoms_all=read_yaml(args.fn_inp)
 nconf=len(atoms_all)
 mod=nconf%args.nfiles
-bb=nconf/args.nfiles
+bb=int(nconf/args.nfiles)
 
 atoms_all_conf=[]
 nf=0

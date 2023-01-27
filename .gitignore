@@ -73,3 +73,4 @@ src/lenosky_tb/Makefile.in
 futile-suite/*
 futile-suite-1.9.1/yaml
 futile-suite-1.9.1/PyYAML
+tests-fpm/flame_log.yaml

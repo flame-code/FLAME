@@ -25,7 +25,7 @@ subroutine init_greenf_kspace(self,npow,str_method)
     integer, intent(in):: npow
     character(*), intent(in):: str_method
     !local variables
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     integer:: ip, np, i, n
     real(8), allocatable:: x(:), f(:)
     real(8), allocatable:: c(:)

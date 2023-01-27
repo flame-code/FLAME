@@ -4,6 +4,7 @@ subroutine  linkedlist_test(parini)
     use mod_atoms, only: atom_allocate, atom_allocate_old, update_ratp
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists, typ_pia_arr
+    use mod_linkedlists, only: typ_linkedlists
     use mod_acf, only: acf_read
     implicit none
     type(typ_linked_lists):: linked_lists
@@ -25,6 +26,7 @@ subroutine  linkedlist_test(parini)
     integer :: i,j,k,nec(3),ii
     logical :: yes
     character(2):: numb
+    type(typ_linkedlists):: linkedlists
     !**************************************************************
 !    call random_seed()
     maxconf=20
@@ -157,7 +159,7 @@ call system_clock(t2)
 call system_clock(t1)
     linked_lists%triplex=.true.
     linked_lists%rcut=rcut
-    call call_linkedlist(parini,atoms,.true.,linked_lists,pia_arr)
+    call linkedlists%calc_linkedlists(atoms,.true.,linked_lists,pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     do ibr= 1,linked_lists%maxbound_rad
         write(2200+conf,*)linked_lists%bound_rad(1,ibr),linked_lists%bound_rad(2,ibr)
         !if (atoms%sat(linked_lists%bound_rad(1,ibr))=='O' .and. atoms%sat(linked_lists%bound_rad(2,ibr))=='O' )then
@@ -195,10 +197,12 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
     use mod_atoms, only: typ_atoms, type_pairs, update_ratp
     use mod_const, only: bohr2ang
     use mod_linked_lists, only: typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     implicit none
     type(typ_parini):: parini
     type(typ_atoms):: atoms 
     type(typ_linked_lists):: linked_lists
+    type(typ_linkedlists):: linkedlists
     type(type_pairs):: posat1st(atoms%nat) 
     integer::nimat ,iat_maincell, jat_maincell
     integer:: istat, nim(atoms%nat)
@@ -211,7 +215,7 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
     real(8):: r3, dx3, dy3, dz3 ,hxinv,rat_i(3)
     linked_lists%rcut=rcut
     linked_lists%triplex=.true.
-    call linkedlists_init(parini,atoms,cell,linked_lists)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     hxinv=real(linked_lists%mx,8)/cell(1)
     !-------------------------------------------------------
     nim=0
@@ -324,7 +328,7 @@ subroutine callinkedlist(parini,atoms,rcut,posat1st,nim,conf)
         enddo
     enddo
     include 'act2_cell_linkedlist.inc'
-    call linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
 end subroutine callinkedlist 
 !**************************************************************************************************************
 subroutine sort_alborz(i ,j ,k,conf)
