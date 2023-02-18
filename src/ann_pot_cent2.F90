@@ -24,6 +24,7 @@ module mod_cent2
         real(8), allocatable:: re(:,:)
         real(8), allocatable:: rn(:,:)
         integer, allocatable:: imap(:)
+        integer, allocatable:: ibf_list_s(:)
         character(2), allocatable:: bt(:)
         contains
         procedure, private, pass(self):: init_bf
@@ -55,7 +56,9 @@ module mod_cent2
         procedure, private, pass(self):: get_qat_from_chi_dir_cent2
         procedure, private, pass(self):: cal_electrostatic_ann_cent2
         procedure, private, pass(self):: cal_cent2_energy
-        procedure, private, pass(self):: cal_etrial_cent2
+        procedure, private, pass(self):: cent2_ehartree_analytic
+        procedure, private, pass(self):: cent2_ehartree_analytic_monopole
+        !procedure, private, pass(self):: cent2_ehartree_analytic_test
         procedure, private, pass(self):: reverseCEP
         procedure, private, pass(self):: prefit_cent2
         procedure, public, pass(self):: cal_ann_cent2
@@ -317,6 +320,7 @@ subroutine init_bf(self,nbgx,nbgy,nbgz,nat)
     allocate(self%orb(self%nbf))
     allocate(self%re(3,self%nbf))
     allocate(self%bt(self%nbf))
+    allocate(self%ibf_list_s(nat))
 end subroutine init_bf
 !*****************************************************************************************
 subroutine fini_bf(self)
@@ -340,6 +344,7 @@ subroutine fini_bf(self)
     deallocate(self%rn)
     deallocate(self%re)
     deallocate(self%bt)
+    deallocate(self%ibf_list_s)
 end subroutine fini_bf
 !*****************************************************************************************
 subroutine set_param(self,atoms,ann_arr)
@@ -362,9 +367,11 @@ subroutine set_param(self,atoms,ann_arr)
         self%rn(1:3,iat)=atoms%ratp(1:3,iat)
     enddo
     do ibf=1,self%nbf
-        self%imap(ibf)=modulo(ibf-1,self%nbf/4)+1
+        iat=modulo(ibf-1,self%nbf/4)+1
+        self%imap(ibf)=iat
         if((4*(ibf-1))/self%nbf==0) then
             self%bt(ibf)='s'
+            self%ibf_list_s(iat)=ibf
         elseif((4*(ibf-1))/self%nbf==1) then
             self%bt(ibf)='px'
         elseif((4*(ibf-1))/self%nbf==2) then
@@ -983,7 +990,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     real(8):: p(3), ttp1, ttp2, a1, a2, b1, b2
     real(8):: qavg(10), qvar(10)
     real(8):: cavg(10), cvar(10)
-    real(8):: one, dpm(3)
+    real(8):: one, dpm(3), ehartree_analytic
     type(typ_trial_energy):: trial_energy
     real(8):: time1, time2
     real(8), allocatable:: amat(:,:)
@@ -1075,7 +1082,12 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     call self%reverseCEP(parini,ann_arr,atoms,poisson,self%amat)
     call get_rmse(trial_energy,self%bf%nbf,ann_arr%qq,rmse)
     rmse=1.d3*rmse !convert to mHa
-    call self%cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
+    !call self%cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
+    !call self%cent2_ehartree_analytic_test(parini,ann_arr,atoms,poisson,U_SRS)
+    !call self%cent2_ehartree_analytic_monopole(parini,ann_arr,atoms,ehartree_analytic)
+    call self%cent2_ehartree_analytic(parini,ann_arr,atoms,U_SRS)
+    !write(*,'(a,2es24.15,es14.5)') 'EH compare: ',U_SRS,ehartree_analytic,U_SRS-ehartree_analytic
+    !stop
     call prefit_cent2_output(parini,ann_arr,atoms,qavg,qvar,cavg,cvar)
     err_U_SRS=1.d3*(U_SRS-trial_energy%ehartree_scn_excl)/atoms%nat
     if(parini%mpi_env%iproc==0) then
@@ -1291,7 +1303,7 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
         write(*,*) 'nat_type= ',nat_type
     endif
     frac=0.d0
-    do iter=0,100
+    do iter=0,0
     do itypat=1,parini%ntypat
         ann_arr%ann(itypat)%qtarget=0.d0
     enddo
@@ -1322,7 +1334,11 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
     !hh=frac*real_eigenval(self%bf%nbf-atoms%nat+1)
     do ibf=1,self%bf%nbf
         !squarefit(ibf,ibf)=squarefit(ibf,ibf)+hh
-        squarefit_t(ibf,ibf)=squarefit_t(ibf,ibf)+hh
+        if(trim(self%bf%bt(ibf))=='s') then
+            iat=self%bf%imap(ibf)
+            itypat=atoms%itypat(iat)
+            squarefit_t(ibf,ibf)=squarefit_t(ibf,ibf)+hh
+        endif
     enddo
     !call DSYEV('N','U',self%bf%nbf,squarefit,self%bf%nbf,real_eigenval,work,lwork,info)
     !if(parini%mpi_env%iproc==0) then
@@ -1371,7 +1387,7 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
     deallocate(real_eigenval,work)
 end subroutine get_expansion_coeff
 !*****************************************************************************************
-subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
+subroutine cent2_ehartree_analytic_test(self,parini,ann_arr,atoms,poisson,U_SRS)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -1384,37 +1400,471 @@ subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
     type(typ_poisson), intent(inout):: poisson
     real(8), intent(out):: U_SRS
     !local variables
-    integer:: iat, ix, iy, iz
-    real(8):: tt
+    integer:: iat, ix, ibf
+    real(8):: tt, a1, q_tmp(1)
     real(8), allocatable:: gausswidth(:)
-    allocate(gausswidth(atoms%nat))
-    poisson%rho=self%rho_e
-    poisson%pot=0.d0
-    call get_hartree(parini,poisson,atoms,gausswidth,tt)
-    poisson%pot=poisson%pot+poisson%pot_ion
-    gausswidth=0.5d0 !TO_BE_CORRECTED
-    atoms%fat=0.d0
-    call force_gto_sym_ortho(parini,atoms%boundcond,atoms%nat,atoms%ratp, &
-        atoms%zat,gausswidth,6.d0,poisson%xyz111, &
-        poisson%ngpx,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
-        poisson%hgrid,poisson%pot,atoms%fat)
-    if(parini%mpi_env%iproc==0) then
+    real(8), allocatable:: pat(:,:)
+    allocate(pat(3,atoms%nat),source=0.d0)
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        if(trim(self%bf%bt(ibf))=='px') pat(1,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='py') pat(2,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') pat(3,iat)=ann_arr%qq(ibf)
+    enddo
+    poisson%rho=0.d0
     do iat=1,atoms%nat
-        write(61,'(a,i3,3(a2,es24.15),a)') '  - [',iat,', ',atoms%fat(1,iat),', ',atoms%fat(2,iat),', ',atoms%fat(3,iat),']'
+        ibf=self%bf%ibf_list_s(iat)
+        q_tmp(1)=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwe_s(iat), &
+            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+
+        q_tmp(1)=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwe_s(iat), &
+            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+
+        a1=self%bf%gwe_p(1,iat)
+        call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),pat(1,iat),a1, &
+            6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+
+        q_tmp(1)=self%bf%qcore(iat)*self%bf%bc(iat)
+        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwc(iat), &
+            6.d0*self%bf%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        q_tmp(1)=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwc(iat), &
+            6.d0*self%bf%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
     enddo
-    endif
-    poisson%rho=poisson%rho+self%rho_n
-    tt=0.d0
-    do iz=1,poisson%ngpz
-    do iy=1,poisson%ngpy
-    do ix=1,poisson%ngpx
-        tt=tt+poisson%rho(ix,iy,iz)*poisson%pot(ix,iy,iz)
+    allocate(gausswidth(atoms%nat),source=1.d0)
+    call get_hartree(parini,poisson,atoms,gausswidth,U_SRS)
+end subroutine cent2_ehartree_analytic_test
+!*****************************************************************************************
+subroutine cent2_ehartree_analytic_monopole(self,parini,ann_arr,atoms,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    class(typ_cent2), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(out):: ehartree
+    !local variables
+    integer:: iat, jat, ibf, jbf
+    real(8):: epot, pi, dx, dy, dz, r, tt1, tt2, tt3
+    real(8):: ss1, ss2, ss3
+    real(8):: gg1, gg2, gg3, hh1, hh2, hh3
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    real(8):: e_qr0_qr0, e_pr1_pr1, e_qr0_j_pr1_i, e_qr0_i_pr1_j, e_qr2_qr2
+    real(8):: e_qr0_i_qr2_j, e_qr0_j_qr2_i, e_qr2_j_pr1_i, e_qr2_i_pr1_j, e_qcr0_qcr0
+    real(8):: e_qcr2_qcr2, e_qcr0_i_qcr2_j, e_qcr0_j_qcr2_i, e_qcr0_qr0, e_qr0_qcr0
+    real(8):: e_qcr0_j_pr1_i, e_qcr0_i_pr1_j, e_qcr2_qr2, e_qr2_qcr2, e_qcr0_i_qr2_j
+    real(8):: e_qr0_j_qcr2_i, e_qcr2_j_pr1_i, e_qcr2_i_pr1_j
+    real(8):: e_qr0_i_qcr2_j, e_qcr0_j_qr2_i
+    real(8):: gwcr0_iat, gwcr2_iat, qcr0_iat, qcr2_iat, gwcr0_jat, gwcr2_jat, qcr0_jat
+    real(8):: qcr2_jat, gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwr0_jat
+    real(8):: gwr2_jat, gwp1_jat, qr0_jat, qr2_jat
+    real(8):: pi_dot_pi
+    real(8):: gwr0, gwr2, gwp1, qr0, qr2, gwcr0, gwcr2, qcr0, qcr2
+    real(8), allocatable:: pat(:,:)
+    pi=4.d0*atan(1.d0)
+    allocate(pat(3,atoms%nat),source=0.d0)
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        if(trim(self%bf%bt(ibf))=='px') pat(1,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='py') pat(2,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') pat(3,iat)=ann_arr%qq(ibf)
+    enddo
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+    ehartree=0.d0
+    do iat=1,atoms%nat
+        gwcr0=self%bf%gwc(iat)
+        gwcr2=self%bf%gwc(iat)
+        qcr0=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        !self-interaction of qcr0-qcr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwcr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwcr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwcr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qcr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qcr2 interaction
+        hh1=gwcr2*sf_1
+        hh2=gwcr2*sf_2
+        hh3=gwcr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*hh1**2+9.d0*hh1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*hh2**2+9.d0*hh2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*hh3**2+9.d0*hh3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qcr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qcr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0=self%bf%gwe_s(iat)
+        gwr2=gwr0
+        gwp1=self%bf%gwe_p(1,iat)
+        qr0=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        !self-interaction of qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qr2-qr2 interaction
+        gg1=gwr2*sf_1
+        gg2=gwr2*sf_2
+        gg3=gwr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*gg1**2+9.d0*gg1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*gg2**2+9.d0*gg2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*gg3**2+9.d0*gg3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !self-interaction of qcr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_3**2)
+        ehartree=ehartree+1.0d0*2.d0*qcr0*qr0*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qr2 interaction
+        ss1=(2.d0*sf_1*(3.d0+5.d0*(hh1**2+gg1**2)+2.0d0*(hh1**4+gg1**4)+5.d0*hh1**2*gg1**2))/(3.d0*sqrt(pi)*(1.d0+hh1**2+gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+5.d0*(hh2**2+gg2**2)+2.0d0*(hh2**4+gg2**4)+5.d0*hh2**2*gg2**2))/(3.d0*sqrt(pi)*(1.d0+hh2**2+gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+5.d0*(hh3**2+gg3**2)+2.0d0*(hh3**4+gg3**4)+5.d0*hh3**2*gg3**2))/(3.d0*sqrt(pi)*(1.d0+hh3**2+gg3**2)**2.5d0)
+        ehartree=ehartree+1.0d0*qcr2*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qcr2*(a*ss1+b*ss2+c*ss3)
+    enddo
+    do iat=1,atoms%nat
+    do jat=iat+1,atoms%nat
+        gwcr0_iat=self%bf%gwc(iat)
+        gwcr2_iat=self%bf%gwc(iat)
+        qcr0_iat=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2_iat=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        gwcr0_jat=self%bf%gwc(jat)
+        gwcr2_jat=self%bf%gwc(jat)
+        qcr0_jat=self%bf%qcore(jat)*self%bf%bc(jat)
+        qcr2_jat=self%bf%qcore(jat)*(1.d0-self%bf%bc(jat))
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0_iat=self%bf%gwe_s(iat)
+        gwr2_iat=gwr0_iat
+        gwp1_iat=self%bf%gwe_p(1,iat)
+        qr0_iat=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2_iat=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        jbf=self%bf%ibf_list_s(jat)
+        gwr0_jat=self%bf%gwe_s(jat)
+        gwr2_jat=gwr0_jat
+        gwp1_jat=self%bf%gwe_p(1,jat)
+        qr0_jat=ann_arr%qq(jbf)*self%bf%be_s(jat)
+        qr2_jat=ann_arr%qq(jbf)*(1.d0-self%bf%be_s(jat))
+        !-----------------------------------------------------------------------
+        dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+        dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+        dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+        r=sqrt(dx**2+dy**2+dz**2)
+        !-----------------------------------------------------------------------
+        !qr0-qr0 interaction
+        e_qr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwr0_jat,qr0_iat,qr0_jat)
+        !-----------------------------------------------------------------------
+        !qr2-qr2 interaction
+        e_qr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwr2_jat,qr2_iat,qr2_jat)
+        !-----------------------------------------------------------------------
+        !qr0-qr2 interaction
+        e_qr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwr2_jat,qr0_iat,qr2_jat)
+        e_qr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwr2_iat,qr0_jat,qr2_iat)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qcr0 interaction
+        e_qcr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwcr0_jat,qcr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr2-qcr2 interaction
+        e_qcr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwcr2_jat,qcr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qcr2 interaction
+        e_qcr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwcr2_jat,qcr0_iat,qcr2_jat)
+        e_qcr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwcr2_iat,qcr0_jat,qcr2_iat)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qr0 interaction
+        e_qcr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwr0_jat,qcr0_iat,qr0_jat)
+        e_qr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwcr0_jat,qr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr2-qr2 interaction
+        e_qcr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwr2_jat,qcr2_iat,qr2_jat)
+        e_qr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwcr2_jat,qr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qr2 interaction
+        e_qcr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwr2_jat,qcr0_iat,qr2_jat)
+        e_qcr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwr2_iat,qcr0_jat,qr2_iat)
+        !-----------------------------------------------------------------------
+        !qr0-qcr2 interaction
+        e_qr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwcr2_iat,qr0_jat,qcr2_iat)
+        e_qr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwcr2_jat,qr0_iat,qcr2_jat)
+        ehartree=ehartree+e_qr0_qr0+e_qr2_qr2+ &
+            e_qr0_i_qr2_j+e_qr0_j_qr2_i+e_qcr0_qcr0+ &
+            e_qcr2_qcr2+e_qcr0_i_qcr2_j+e_qcr0_j_qcr2_i+e_qcr0_qr0+e_qr0_qcr0+ &
+            e_qcr2_qr2+e_qr2_qcr2+e_qcr0_i_qr2_j+ &
+            e_qr0_i_qcr2_j+e_qcr0_j_qr2_i+ &
+            e_qr0_j_qcr2_i
     enddo
     enddo
+    deallocate(pat)
+end subroutine cent2_ehartree_analytic_monopole
+!*****************************************************************************************
+subroutine cent2_ehartree_analytic(self,parini,ann_arr,atoms,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    class(typ_cent2), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(out):: ehartree
+    !local variables
+    integer:: iat, jat, ibf, jbf
+    real(8):: epot, pi, dx, dy, dz, r, tt1, tt2, tt3
+    real(8):: ss1, ss2, ss3
+    real(8):: gg1, gg2, gg3, hh1, hh2, hh3
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    real(8):: e_qr0_qr0, e_pr1_pr1, e_qr0_j_pr1_i, e_qr0_i_pr1_j, e_qr2_qr2
+    real(8):: e_qr0_i_qr2_j, e_qr0_j_qr2_i, e_qr2_j_pr1_i, e_qr2_i_pr1_j, e_qcr0_qcr0
+    real(8):: e_qcr2_qcr2, e_qcr0_i_qcr2_j, e_qcr0_j_qcr2_i, e_qcr0_qr0, e_qr0_qcr0
+    real(8):: e_qcr0_j_pr1_i, e_qcr0_i_pr1_j, e_qcr2_qr2, e_qr2_qcr2, e_qcr0_i_qr2_j
+    real(8):: e_qr0_j_qcr2_i, e_qcr2_j_pr1_i, e_qcr2_i_pr1_j
+    real(8):: e_qr0_i_qcr2_j, e_qcr0_j_qr2_i
+    real(8):: gwcr0_iat, gwcr2_iat, qcr0_iat, qcr2_iat, gwcr0_jat, gwcr2_jat, qcr0_jat
+    real(8):: qcr2_jat, gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwr0_jat
+    real(8):: gwr2_jat, gwp1_jat, qr0_jat, qr2_jat
+    real(8):: pi_dot_pi
+    real(8):: gwr0, gwr2, gwp1, qr0, qr2, gwcr0, gwcr2, qcr0, qcr2
+    real(8), allocatable:: pat(:,:)
+    pi=4.d0*atan(1.d0)
+    allocate(pat(3,atoms%nat),source=0.d0)
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        if(trim(self%bf%bt(ibf))=='px') pat(1,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='py') pat(2,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') pat(3,iat)=ann_arr%qq(ibf)
     enddo
-    U_SRS=0.5d0*tt*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    deallocate(gausswidth)
-end subroutine cal_etrial_cent2
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+    ehartree=0.d0
+    do iat=1,atoms%nat
+        gwcr0=self%bf%gwc(iat)
+        gwcr2=self%bf%gwc(iat)
+        qcr0=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        !self-interaction of qcr0-qcr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwcr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwcr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwcr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qcr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qcr2 interaction
+        hh1=gwcr2*sf_1
+        hh2=gwcr2*sf_2
+        hh3=gwcr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*hh1**2+9.d0*hh1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*hh2**2+9.d0*hh2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*hh3**2+9.d0*hh3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qcr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qcr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0=self%bf%gwe_s(iat)
+        gwr2=gwr0
+        gwp1=self%bf%gwe_p(1,iat)
+        qr0=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        !self-interaction of qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of pr1-pr1 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwp1**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwp1**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwp1**2*sf_3**2)
+        pi_dot_pi=pat(1,iat)**2+pat(2,iat)**2+pat(3,iat)**2
+        ehartree=ehartree+0.5d0*4.d0*pi_dot_pi*(a*tt1**3+b*tt2**3+c*tt3**3)/(3.d0*sqrt(pi))
+        !self-interaction of qr2-qr2 interaction
+        gg1=gwr2*sf_1
+        gg2=gwr2*sf_2
+        gg3=gwr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*gg1**2+9.d0*gg1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*gg2**2+9.d0*gg2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*gg3**2+9.d0*gg3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !self-interaction of qcr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_3**2)
+        ehartree=ehartree+1.0d0*2.d0*qcr0*qr0*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qr2 interaction
+        ss1=(2.d0*sf_1*(3.d0+5.d0*(hh1**2+gg1**2)+2.0d0*(hh1**4+gg1**4)+5.d0*hh1**2*gg1**2))/(3.d0*sqrt(pi)*(1.d0+hh1**2+gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+5.d0*(hh2**2+gg2**2)+2.0d0*(hh2**4+gg2**4)+5.d0*hh2**2*gg2**2))/(3.d0*sqrt(pi)*(1.d0+hh2**2+gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+5.d0*(hh3**2+gg3**2)+2.0d0*(hh3**4+gg3**4)+5.d0*hh3**2*gg3**2))/(3.d0*sqrt(pi)*(1.d0+hh3**2+gg3**2)**2.5d0)
+        ehartree=ehartree+1.0d0*qcr2*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qcr2*(a*ss1+b*ss2+c*ss3)
+    enddo
+    do iat=1,atoms%nat
+    do jat=iat+1,atoms%nat
+        gwcr0_iat=self%bf%gwc(iat)
+        gwcr2_iat=self%bf%gwc(iat)
+        qcr0_iat=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2_iat=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        gwcr0_jat=self%bf%gwc(jat)
+        gwcr2_jat=self%bf%gwc(jat)
+        qcr0_jat=self%bf%qcore(jat)*self%bf%bc(jat)
+        qcr2_jat=self%bf%qcore(jat)*(1.d0-self%bf%bc(jat))
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0_iat=self%bf%gwe_s(iat)
+        gwr2_iat=gwr0_iat
+        gwp1_iat=self%bf%gwe_p(1,iat)
+        qr0_iat=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2_iat=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        jbf=self%bf%ibf_list_s(jat)
+        gwr0_jat=self%bf%gwe_s(jat)
+        gwr2_jat=gwr0_jat
+        gwp1_jat=self%bf%gwe_p(1,jat)
+        qr0_jat=ann_arr%qq(jbf)*self%bf%be_s(jat)
+        qr2_jat=ann_arr%qq(jbf)*(1.d0-self%bf%be_s(jat))
+        !-----------------------------------------------------------------------
+        dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+        dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+        dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+        r=sqrt(dx**2+dy**2+dz**2)
+        !-----------------------------------------------------------------------
+        !qr0-qr0 interaction
+        e_qr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwr0_jat,qr0_iat,qr0_jat)
+        !-----------------------------------------------------------------------
+        !pr1-pr1 interaction
+        e_pr1_pr1=get_ener_pr1_pr1(a,b,c,dx,dy,dz,r,sfs,gwp1_iat,gwp1_jat,pat(1,iat),pat(1,jat))
+        !-----------------------------------------------------------------------
+        !qr0-pr1 interaction
+        e_qr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwr0_jat,gwp1_iat,qr0_jat,pat(1,iat))
+        e_qr0_i_pr1_j=get_ener_qr0_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr0_iat,gwp1_jat,qr0_iat,pat(1,jat))
+        !-----------------------------------------------------------------------
+        !qr2-qr2 interaction
+        e_qr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwr2_jat,qr2_iat,qr2_jat)
+        !-----------------------------------------------------------------------
+        !qr0-qr2 interaction
+        e_qr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwr2_jat,qr0_iat,qr2_jat)
+        e_qr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwr2_iat,qr0_jat,qr2_iat)
+        !-----------------------------------------------------------------------
+        !pr1-qr2 interaction
+        e_qr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwr2_jat,gwp1_iat,qr2_jat,pat(1,iat))
+        e_qr2_i_pr1_j=get_ener_qr2_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr2_iat,gwp1_jat,qr2_iat,pat(1,jat))
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qcr0 interaction
+        e_qcr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwcr0_jat,qcr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr2-qcr2 interaction
+        e_qcr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwcr2_jat,qcr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qcr2 interaction
+        e_qcr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwcr2_jat,qcr0_iat,qcr2_jat)
+        e_qcr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwcr2_iat,qcr0_jat,qcr2_iat)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qr0 interaction
+        e_qcr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwr0_jat,qcr0_iat,qr0_jat)
+        e_qr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwcr0_jat,qr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-pr1 interaction
+        e_qcr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwcr0_jat,gwp1_iat,qcr0_jat,pat(1,iat))
+        e_qcr0_i_pr1_j=get_ener_qr0_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwcr0_iat,gwp1_jat,qcr0_iat,pat(1,jat))
+        !-----------------------------------------------------------------------
+        !qcr2-qr2 interaction
+        e_qcr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwr2_jat,qcr2_iat,qr2_jat)
+        e_qr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwcr2_jat,qr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qr2 interaction
+        e_qcr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwr2_jat,qcr0_iat,qr2_jat)
+        e_qcr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwr2_iat,qcr0_jat,qr2_iat)
+        !-----------------------------------------------------------------------
+        !qr0-qcr2 interaction
+        e_qr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwcr2_iat,qr0_jat,qcr2_iat)
+        e_qr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwcr2_jat,qr0_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !pr1-qcr2 interaction
+        e_qcr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwcr2_jat,gwp1_iat,qcr2_jat,pat(1,iat))
+        e_qcr2_i_pr1_j=get_ener_qr2_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwcr2_iat,gwp1_jat,qcr2_iat,pat(1,jat))
+        ehartree=ehartree+e_qr0_qr0+e_pr1_pr1+e_qr0_j_pr1_i+e_qr0_i_pr1_j+e_qr2_qr2+ &
+            e_qr0_i_qr2_j+e_qr0_j_qr2_i+e_qr2_j_pr1_i+e_qr2_i_pr1_j+e_qcr0_qcr0+ &
+            e_qcr2_qcr2+e_qcr0_i_qcr2_j+e_qcr0_j_qcr2_i+e_qcr0_qr0+e_qr0_qcr0+ &
+            e_qcr0_j_pr1_i+e_qcr0_i_pr1_j+e_qcr2_qr2+e_qr2_qcr2+e_qcr0_i_qr2_j+ &
+            e_qr0_i_qcr2_j+e_qcr0_j_qr2_i+ &
+            e_qr0_j_qcr2_i+e_qcr2_j_pr1_i+e_qcr2_i_pr1_j
+    enddo
+    enddo
+    deallocate(pat)
+end subroutine cent2_ehartree_analytic
 !*****************************************************************************************
 subroutine prefit_cent2_output(parini,ann_arr,atoms,qavg,qvar,cavg,cvar)
     use mod_parini, only: typ_parini
