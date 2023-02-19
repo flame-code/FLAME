@@ -36,6 +36,7 @@ module mod_cent2
         integer:: nbgx, nbgy, nbgz
         logical:: amat_is_calculated=.false.
         real(8), allocatable:: amat(:,:)
+        real(8), allocatable:: amat_t(:,:)
         real(8), allocatable:: rho_tmp(:,:,:)
         real(8), allocatable:: rho_e(:,:,:)
         real(8), allocatable:: rho_n(:,:,:)
@@ -48,6 +49,7 @@ module mod_cent2
         procedure, private, pass(self):: init_electrostatic_cent2
         procedure, private, pass(self):: fini_electrostatic_cent2
         procedure, private, pass(self):: get_amat_cent2
+        procedure, private, pass(self):: get_amat_cent2_analytic
         procedure, private, pass(self):: get_pot_ionic
         procedure, private, pass(self):: get_eigenval
         procedure, private, pass(self):: get_expansion_coeff
@@ -139,17 +141,19 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     call self%get_pot_ionic(parini,atoms,poisson)
     if(parini%iverbose>=2) call cpu_time(time4)
     if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: two routines: ',time4-time3
+    if(.not. self%amat_is_calculated) then
+        !call self%get_amat_cent2(parini,ann_arr,atoms,poisson)
+        call self%get_amat_cent2_analytic(parini,ann_arr,atoms)
+        self%amat=self%amat_t
+        !do iat=1,(atoms%nat+1)*(atoms%nat+1)
+        !    write(91,'(i5,f15.7)') iat,ann_arr%a(iat)
+        !enddo
+    endif
     if(parini%prefit_ann) then
         call self%prefit_cent2(parini,ann_arr,atoms,poisson)
     endif
     if(parini%iverbose>=2) call cpu_time(time5)
     if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: prefit_cent2: ',time5-time4
-    if(.not. self%amat_is_calculated) then
-        call self%get_amat_cent2(parini,ann_arr,atoms,poisson)
-        !do iat=1,(atoms%nat+1)*(atoms%nat+1)
-        !    write(91,'(i5,f15.7)') iat,ann_arr%a(iat)
-        !enddo
-    endif
     call self%get_eigenval(parini,atoms)
     if(parini%iverbose>=2) call cpu_time(time6)
     if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: get_amat_cent2: ',time6-time5
@@ -234,6 +238,7 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
         deallocate(ann_arr%stresspq)
     endif
     deallocate(self%amat)
+    deallocate(self%amat_t)
     deallocate(ann_arr%ipiv)
     call symfunc%fini_symfunc()
     call self%fini_cent2(parini,ann_arr,atoms,poisson)
@@ -272,6 +277,7 @@ subroutine init_cent2(self,parini,ann_arr,atoms,poisson)
         ann_arr%chi_d=0.d0
     endif
     allocate(self%amat((self%bf%nbf+1),(self%bf%nbf+1)))
+    allocate(self%amat_t((self%bf%nbf+1),(self%bf%nbf+1)))
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%qq(1:self%bf%nbf+1))
     endif
@@ -655,6 +661,175 @@ subroutine get_amat_cent2(self,parini,ann_arr,atoms,poisson)
     self%amat_is_calculated=.true.
 end subroutine get_amat_cent2
 !*****************************************************************************************
+subroutine get_amat_cent2_analytic(self,parini,ann_arr,atoms)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    class(typ_cent2), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(in):: atoms
+    !local variables
+    integer:: ibf, jbf, iat, jat
+    real(8):: pati(3), patj(3)
+    real(8):: e_qr0_qr0, e_qr2_qr2, e_qr0_i_qr2_j, e_qr0_j_qr2_i, e_qr0_i_pr1_j
+    real(8):: e_qr2_i_pr1_j, e_qr0_j_pr1_i, e_qr2_j_pr1_i
+    real(8):: gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwr0_jat
+    real(8):: gwr2_jat, gwp1_jat, qr0_jat, qr2_jat, gwr0, gwr2, gwp1, qr0, qr2
+    real(8):: pi_dot_pi
+    real(8):: dx, dy, dz, r, pi, tt
+    real(8):: ss1, ss2, ss3, gg1, gg2, gg3, tt1, tt2, tt3
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    character(2):: bt_i, bt_j
+    pi=4.d0*atan(1.d0)
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+
+    self%amat_t=0.d0
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        !itypat=atoms%itypat(iat)
+        bt_i=self%bf%bt(ibf)
+        if(trim(self%bf%bt(ibf))=='s') then
+        elseif(trim(self%bf%bt(ibf))=='px') then
+            pati(1)=1.d0 ; pati(2)=0.d0 ; pati(3)=0.d0
+        elseif(trim(self%bf%bt(ibf))=='py') then
+            pati(1)=0.d0 ; pati(2)=1.d0 ; pati(3)=0.d0
+        elseif(trim(self%bf%bt(ibf))=='pz') then
+            pati(1)=0.d0 ; pati(2)=0.d0 ; pati(3)=1.d0
+        endif
+        gwr0=self%bf%gwe_s(iat)
+        gwr2=gwr0
+        gwp1=self%bf%gwe_p(1,iat)
+        qr0=self%bf%be_s(iat)
+        qr2=(1.d0-self%bf%be_s(iat))
+
+        if(bt_i(1:1)=='s') then
+        !self-interaction of qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwr0**2*sf_3**2)
+        tt=0.5d0*2.d0*qr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qr2-qr2 interaction
+        gg1=gwr2*sf_1
+        gg2=gwr2*sf_2
+        gg3=gwr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*gg1**2+9.d0*gg1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*gg2**2+9.d0*gg2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*gg3**2+9.d0*gg3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg3**2)**2.5d0)
+        tt=tt+0.5d0*qr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        tt=tt+1.d0*qr0*qr2*(a*ss1+b*ss2+c*ss3)
+        else
+        !self-interaction of pr1-pr1 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwp1**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwp1**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwp1**2*sf_3**2)
+        pi_dot_pi=pati(1)**2+pati(2)**2+pati(3)**2
+        tt=0.5d0*4.d0*pi_dot_pi*(a*tt1**3+b*tt2**3+c*tt3**3)/(3.d0*sqrt(pi))
+        endif
+        self%amat_t(ibf,ibf)=2.d0*tt
+        !call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
+        !poisson%pot=0.d0
+        !call get_hartree(parini,poisson,atoms,gausswidth,tt)
+        do jbf=1,ibf-1
+            jat=self%bf%imap(jbf)
+            bt_j=self%bf%bt(jbf)
+            if(trim(self%bf%bt(jbf))=='s') then
+            elseif(trim(self%bf%bt(jbf))=='px') then
+                patj(1)=1.d0 ; patj(2)=0.d0 ; patj(3)=0.d0
+            elseif(trim(self%bf%bt(jbf))=='py') then
+                patj(1)=0.d0 ; patj(2)=1.d0 ; patj(3)=0.d0
+            elseif(trim(self%bf%bt(jbf))=='pz') then
+                patj(1)=0.d0 ; patj(2)=0.d0 ; patj(3)=1.d0
+            endif
+            dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+            dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+            dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+            r=sqrt(dx**2+dy**2+dz**2)
+            gwr0_iat=self%bf%gwe_s(iat)
+            gwr2_iat=gwr0_iat
+            gwp1_iat=self%bf%gwe_p(1,iat)
+            qr0_iat=self%bf%be_s(iat)
+            qr2_iat=(1.d0-self%bf%be_s(iat))
+            gwr0_jat=self%bf%gwe_s(jat)
+            gwr2_jat=gwr0_jat
+            gwp1_jat=self%bf%gwe_p(1,jat)
+            qr0_jat=self%bf%be_s(jat)
+            qr2_jat=(1.d0-self%bf%be_s(jat))
+            !call self%get_energy_external_pot(atoms,jbf,poisson,tt)
+            if(bt_i(1:1)=='s' .and. bt_j(1:1)=='s') then
+                !-----------------------------------------------------------------------
+                !qr0-qr0 interaction
+                e_qr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwr0_jat,qr0_iat,qr0_jat)
+                !-----------------------------------------------------------------------
+                !qr2-qr2 interaction
+                e_qr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwr2_jat,qr2_iat,qr2_jat)
+                !-----------------------------------------------------------------------
+                !qr0-qr2 interaction
+                e_qr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwr2_jat,qr0_iat,qr2_jat)
+                e_qr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwr2_iat,qr0_jat,qr2_iat)
+                tt=e_qr0_qr0+e_qr2_qr2+e_qr0_i_qr2_j+e_qr0_j_qr2_i
+            elseif(bt_i(1:1)=='p' .and. bt_j(1:1)=='p' .and. iat/=jat) then
+                tt=get_ener_pr1_pr1(a,b,c,dx,dy,dz,r,sfs,gwp1_iat,gwp1_jat,pati,patj)
+            elseif(iat/=jat) then
+                if(bt_i(1:1)=='s') then
+                    !-----------------------------------------------------------------------
+                    !qr0-pr1 interaction
+                    e_qr0_i_pr1_j=get_ener_qr0_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr0_iat,gwp1_jat,qr0_iat,patj)
+                    !-----------------------------------------------------------------------
+                    !pr1-qr2 interaction
+                    e_qr2_i_pr1_j=get_ener_qr2_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr2_iat,gwp1_jat,qr2_iat,patj)
+                    tt=e_qr0_i_pr1_j+e_qr2_i_pr1_j
+                else
+                    !-----------------------------------------------------------------------
+                    !qr0-pr1 interaction
+                    e_qr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwr0_jat,gwp1_iat,qr0_jat,pati)
+                    !-----------------------------------------------------------------------
+                    !pr1-qr2 interaction
+                    e_qr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwr2_jat,gwp1_iat,qr2_jat,pati)
+                    tt=e_qr0_j_pr1_i+e_qr2_j_pr1_i
+                    !write(*,*) gwr0_jat,gwp1_iat,qr0_jat,pati
+                    !write(*,*) gwr2_jat,gwp1_iat,qr2_jat,pati
+                    !write(*,'(a,2i4,2es24.15)') 'PPP ',ibf,jbf,e_qr0_j_pr1_i,e_qr2_j_pr1_i
+                endif
+            else
+                tt=0.d0
+            endif
+            !write(*,'(a,2i4,es24.15,2(1x,a2))') 'AMAT ',ibf,jbf,tt,trim(self%bf%bt(ibf)),trim(self%bf%bt(jbf))
+            self%amat_t(ibf,jbf)=tt
+            self%amat_t(jbf,ibf)=self%amat_t(ibf,jbf)
+        enddo
+        self%amat_t(ibf,ibf)=self%amat_t(ibf,ibf)+self%bf%hardness(ibf)
+        self%amat_t(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
+        self%amat_t(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
+    enddo !end of loop over ibf
+    self%amat_t(self%bf%nbf+1,self%bf%nbf+1)=0.d0
+    !do jbf=1,self%bf%nbf
+    !do ibf=1,self%bf%nbf
+    !iat=self%bf%imap(ibf)
+    !jat=self%bf%imap(jbf)
+    !write(*,'(a,2i4,2es24.15,es14.5,2i4)') 'AMAT ',ibf,jbf,self%amat(ibf,jbf), &
+    !    self%amat_t(ibf,jbf),abs(self%amat(ibf,jbf)-self%amat_t(ibf,jbf)),iat,jat
+    !enddo
+    !enddo
+    !write(*,'(a,es14.5)') 'AMAT DIFF ',maxval(abs(self%amat-self%amat_t))
+end subroutine get_amat_cent2_analytic
+!*****************************************************************************************
 subroutine grid_segment2entire(self,reset,ibf,xyz,pref,poisson)
     use mod_electrostatics, only: typ_poisson
     implicit none
@@ -1019,17 +1194,17 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     endif
     !-----------------------------------------------------------------
     call cpu_time(time1)
-    allocate(amat(self%bf%nbf+1,self%bf%nbf+1),source=0.d0)
-    if(parini%mpi_env%nproc>1) then
-    call fmpi_allreduce(amat(1,1),(self%bf%nbf+1)**2,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    endif
-    amat(self%bf%nbf+1,self%bf%nbf+1)=0.d0
-    do jbf=1,(self%bf%nbf+1)
-    do ibf=1,(self%bf%nbf+1)
-        self%amat(ibf,jbf)=amat(ibf,jbf)
-        !write(92,'(i5,f15.7)') (jat-1)*(atoms%nat+1)+iat,amat(iat,jat)
-    enddo
-    enddo
+    !allocate(amat(self%bf%nbf+1,self%bf%nbf+1),source=0.d0)
+    !if(parini%mpi_env%nproc>1) then
+    !call fmpi_allreduce(amat(1,1),(self%bf%nbf+1)**2,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    !endif
+    !amat(self%bf%nbf+1,self%bf%nbf+1)=0.d0
+    !do jbf=1,(self%bf%nbf+1)
+    !do ibf=1,(self%bf%nbf+1)
+    !    self%amat(ibf,jbf)=amat(ibf,jbf)
+    !    !write(92,'(i5,f15.7)') (jat-1)*(atoms%nat+1)+iat,amat(iat,jat)
+    !enddo
+    !enddo
     !self%amat_is_calculated=.true.
     allocate(squarefit_raw(self%bf%nbf,self%bf%nbf),rhs_raw(self%bf%nbf))
     call get_cost_secder(parini,trial_energy,poisson,atoms,self%bf%nbf,self%bf%imap,self%bf%bt, &
