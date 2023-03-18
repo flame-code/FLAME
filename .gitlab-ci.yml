@@ -1,0 +1,18 @@
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+  image: python:3.7-slim-buster
+  before_script:
+    - apt-get update && apt-get install make --no-install-recommends -y
+    - python -m pip install -U sphinx furo latex unicode sphinxcontrib-bibtex==1.0.0
+  script:
+    - cd docs && make html
+  after_script:
+    - mv docs/_build/html/ ./public/
+  artifacts:
+    paths:
+    - public
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
