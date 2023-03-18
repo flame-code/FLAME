@@ -17,6 +17,8 @@ subroutine alborz_init(parini,parres,file_ini)
     integer:: istat, ierr
     character(len=*), parameter:: filename='flame_log.yaml'
     logical:: flib_profiling
+    integer:: nthreads
+    !$ integer:: omp_get_num_threads
     call f_lib_initialize()
     call cpu_time(parini%time_start)
     inquire(file="NO_FLIB_PROFILING",exist=flib_profiling)
@@ -85,6 +87,11 @@ subroutine alborz_init(parini,parres,file_ini)
     call yaml_map('iproc',iproc)
     call yaml_map('nproc',nproc)
     call yaml_mapping_close()
+    nthreads=1
+    !$omp parallel
+    !$ nthreads=omp_get_num_threads()
+    !$omp end parallel
+    call yaml_map('nthreads',nthreads)
     if(trim(parini%task)/='potential') then
         call init_random_seed(parini)
     endif

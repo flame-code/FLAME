@@ -219,7 +219,7 @@ def bin_read_v1(filename,wa):
     return atoms_all
 #*****************************************************************************************
 def bin_read(filename):
-    input_file = open(filename,'r')
+    input_file = open(filename,'rb')
     float_array = array('d')
     float_array.fromstring(input_file.read())
     wa=list(float_array)

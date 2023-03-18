@@ -6,6 +6,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     use mod_symfunc, only: typ_symfunc
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
+    use mod_linkedlists, only: typ_linkedlists
     use dynamic_memory
     use yaml_output
     implicit none
@@ -21,6 +22,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
     real(8):: dpm_err,dpx,dpy,dpz
+    type(typ_linkedlists):: linkedlists
     call f_routine(id='cal_ann_cent1')
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fat_chi(1:3,1:atoms%nat))
@@ -43,13 +45,13 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     if(parini%iverbose>=2) call cpu_time(time1)
     call init_electrostatic_cent1(parini,atoms,ann_arr,ann_arr%a,poisson)
     if(parini%iverbose>=2) call cpu_time(time2)
-    call symfunc%init_symfunc(parini%mpi_env)
+    call symfunc%init_symfunc(parini%mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
     if(ann_arr%compute_symfunc) then
-        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
+        call symfunc%get_symfunc(ann_arr,atoms,.true.)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
-        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
+        call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))

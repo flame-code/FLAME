@@ -260,7 +260,7 @@
    print_energy : False
    fit_hoppint: False
    save_symfunc_force: False
-   weight_hardness: 0.001
+   weight_hardness: 0.0
    save_symfunc_behnam: False
    freeBC_direct: False
  dynamics:

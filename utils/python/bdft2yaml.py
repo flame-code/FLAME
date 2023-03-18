@@ -2,7 +2,12 @@
 import argparse
 from atoms import *
 from io_yaml import *
-import yaml
+#import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
 import numpy as np
 import copy
 #RZX
@@ -10,7 +15,7 @@ import copy
 def bdft_read(filename):
     atoms_all.append(Atoms())
     stream=open(filename,'r')
-    docs=yaml.load(stream)
+    docs=yaml.load(stream,Loader=Loader)
     atoms_all[0].nat = len(docs["posinp"]["positions"])
     atoms_all[0].rat=[[-1 for i in range(3)] for j in range(atoms_all[0].nat)] 
     atoms_all[0].fat=[[-1 for i in range(3)] for j in range(atoms_all[0].nat)] 

@@ -35,7 +35,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 		timing_mod.F90 \
 		constants_minhocao_mod.F90 \
 		trial_energy_mod.F90 \
-		atoms_mod.F90 linked_lists_mod.F90 flame_as_potential_mod.F90 \
+		atoms_mod.F90 flame_as_potential_mod.F90 \
 		electrostatics_mod.F90 \
 		ann_mod.F90 \
 		basic_utilities.F90 \
@@ -56,6 +56,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 		ann_pot_main.F90 ann_pot_atom.F90 \
 		es_radpots_cent2.F90 \
 		ann_pot_cent1.F90 ann_pot_cent2.F90 ann_pot_centt.F90 ann_pot_cent3.F90 ann_pot_cent_common.F90 \
+		ann_fit_bf_cent2.F90 \
 		ann_pot_tb.F90 \
 		shortrange.F90 tosifumi.F90 buckingham.F90 forcefield.F90 \
 		minhopp_allocation.F90 minhopp.F90 minhopp_pot.F90 \
@@ -64,7 +65,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 		es_coulomb_p3d.F90 es_coulomb_spline.F90 es_hartree_p3d.F90 es_hartree_kspace.F90 specfun.F90 \
 		es_coulomb_p3d_bias.F90 \
 		es_coulomb_p3d_dielec.F90 \
-		grid_rp4gto_sym.F90  grid_gto_sym_ortho.F90 \
+		grid_rp4gto_sym.F90  grid_gto_s_ortho.F90 grid_gto_p_ortho.F90 grid_rp2gto_s_ortho.F90 \
 		grid_gto_sym.F90 grid_basic.F90 \
 		es_hartree_fourier.F90 es_hartree_main.F90 es_hartree_bps.F90 \
 		cell_linkedlists.F90 \
