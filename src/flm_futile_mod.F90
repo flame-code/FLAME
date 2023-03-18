@@ -16,12 +16,17 @@ module mod_flm_futile
     use yaml_output, only: yaml_map, yaml_comment, yaml_warning
     use yaml_output, only: yaml_mapping_open, yaml_mapping_close
     use yaml_output, only: yaml_scalar
+    use yaml_output, only: yaml_sequence_close
     !-----------------------------------------------------------------
     use f_utils, only: f_get_free_unit
     !-----------------------------------------------------------------
     use yaml_strings, only: yaml_toa, yaml_date_and_time_toa
     !-----------------------------------------------------------------
     !use wrapper_mpi, only: mpi_environment, MPI_COMM_WORLD
+    use wrapper_MPI, only: mpi_environment
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
+    !-----------------------------------------------------------------
+    !use mod_timing , only: TCAT_SYMFUNC_COMPUT
     !-----------------------------------------------------------------
     implicit none
 end module mod_flm_futile

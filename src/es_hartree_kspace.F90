@@ -5,7 +5,11 @@ subroutine init_psolver_kspace_exprnscreening(greenf_kspace,npow)
     type(typ_greenf_kspace), intent(inout):: greenf_kspace
     integer, intent(in):: npow
     !local variables
-    call greenf_kspace%init_greenf_kspace(npow,'numeric')
+    if(npow==-4) then
+        greenf_kspace%npow=npow
+    else
+        call greenf_kspace%init_greenf_kspace(npow,'numeric')
+    endif
 end subroutine init_psolver_kspace_exprnscreening
 !*****************************************************************************************
 subroutine fini_psolver_kspace_exprnscreening(greenf_kspace)
@@ -13,7 +17,10 @@ subroutine fini_psolver_kspace_exprnscreening(greenf_kspace)
     implicit none
     type(typ_greenf_kspace), intent(inout):: greenf_kspace
     !local variables
-    call greenf_kspace%fini_greenf_kspace()
+    if(greenf_kspace%npow==-4) then
+    else
+        call greenf_kspace%fini_greenf_kspace()
+    endif
 end subroutine fini_psolver_kspace_exprnscreening
 !*****************************************************************************************
 subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,rho,sf,pot)
@@ -24,12 +31,14 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     integer, intent(in):: ngpx, ngpy, ngpz
     real(8), intent(in):: rho(ngpx,ngpy,ngpz), hgrid(3,3), sf
     real(8), intent(out):: pot(ngpx,ngpy,ngpz)
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     !local variables
     integer:: igpx, igpy, igpz
     integer:: igpxt, igpyt, igpzt
     integer:: ngpx_ext, ngpy_ext, ngpz_ext, nadd
-    real(8):: tt1, pi, fourpi, hmin, daw, sf2
+    real(8):: pi, fourpi, hmin, daw, sf2, sf_1, sf_2, sf_3, a, b, c
+    real(8):: tt0, tt1, tt2, tt3, tt4
+    real(8):: ss1, ss2, ss3, ss4, tt, c1, c2, c3
     real(8):: akx, aky, akz, aknorm2
     real(8), allocatable:: rho_ext(:,:,:), pot_ext(:,:,:)
     integer(8):: planf, planb
@@ -38,7 +47,11 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     pi=4.d0*atan(1.d0)
     fourpi=4.d0*pi
     hmin=min(hgrid(1,1),hgrid(2,2),hgrid(3,3))
-    nadd=floor((-log(1.d-4))**(1.d0/real(greenf_kspace%npow,kind=8))/(sf*hmin))
+    if(greenf_kspace%npow==-4) then
+        nadd=floor((-log(1.d-4))**(1.d0/real(-greenf_kspace%npow,kind=8))/(0.5d0*sf*hmin))
+    else
+        nadd=floor((-log(1.d-4))**(1.d0/real(greenf_kspace%npow,kind=8))/(sf*hmin))
+    endif
     !if(mod(nadd,2)/=0) nadd=nadd+1
     if(iproc==0) then
         write(*,*) 'nadd= ',nadd
@@ -64,6 +77,18 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
     enddo
     enddo
     call dfftw_execute(planf)
+    sf_1=sf
+    sf_2=sf*1.1d0
+    sf_3=sf*1.2d0
+    !a=-sf_2/(sf_1-sf_2)
+    !b= sf_1/(sf_1-sf_2)
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+
+    c1=-1.d0/8.d0
+    c2=1.d0/96.d0
+    c3=-1.d0/1536.d0
     do igpz=1,ngpz_ext
     do igpy=1,ngpy_ext
     do igpx=1,ngpx_ext
@@ -76,7 +101,23 @@ subroutine get_psolver_kspace_exprnscreening(greenf_kspace,ngpx,ngpy,ngpz,hgrid,
         aky=2.d0*pi*( igpyt-1   )/(real(ngpy_ext,kind=8)*hgrid(2,2))
         akz=2.d0*pi*( igpzt-1   )/(real(ngpz_ext,kind=8)*hgrid(3,3))
         aknorm2=akx**2+aky**2+akz**2
-        call greenf_kspace%get_greenf_kspace_single(sqrt(aknorm2),sf,tt1)
+        if(greenf_kspace%npow==-4) then
+            if(aknorm2<1.d-6) then
+                tt=aknorm2/sf_1**2
+                ss1=pi*(1.d0+tt*(c1+tt*(c2+tt*c3)))/sf_1**2 !+O(k^8)
+                tt=aknorm2/sf_2**2
+                ss2=pi*(1.d0+tt*(c1+tt*(c2+tt*c3)))/sf_2**2 !+O(k^8)
+                tt=aknorm2/sf_3**2
+                ss3=pi*(1.d0+tt*(c1+tt*(c2+tt*c3)))/sf_3**2 !+O(k^8)
+            else
+                ss1=fourpi*(1.d0-exp(-aknorm2/(4.d0*sf_1**2)))/aknorm2
+                ss2=fourpi*(1.d0-exp(-aknorm2/(4.d0*sf_2**2)))/aknorm2
+                ss3=fourpi*(1.d0-exp(-aknorm2/(4.d0*sf_3**2)))/aknorm2
+            endif
+            tt1=a*ss1+b*ss2+c*ss3
+        else
+            call greenf_kspace%get_greenf_kspace_single(sqrt(aknorm2),sf,tt1)
+        endif
         pot_ext(igpx,igpy,igpz)=pot_ext(igpx,igpy,igpz)*tt1
     enddo
     enddo
@@ -98,7 +139,7 @@ end subroutine get_psolver_kspace_exprnscreening
 !*****************************************************************************************
 subroutine get_psolver_kspace_gaussscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,pot)
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     integer, intent(in):: ngpx, ngpy, ngpz
     real(8), intent(in):: rho(ngpx,ngpy,ngpz), hgrid(3,3), sf
     real(8), intent(out):: pot(ngpx,ngpy,ngpz)
@@ -170,7 +211,7 @@ end subroutine get_psolver_kspace_gaussscreening
 !*****************************************************************************************
 subroutine get_psolver_kspace_expscreening(ngpx,ngpy,ngpz,hgrid,rho,sf,pot)
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     integer, intent(in):: ngpx, ngpy, ngpz
     real(8), intent(in):: rho(ngpx,ngpy,ngpz), hgrid(3,3), sf
     real(8), intent(out):: pot(ngpx,ngpy,ngpz)

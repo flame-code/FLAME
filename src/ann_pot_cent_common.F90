@@ -125,6 +125,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_ann, only: typ_ann_arr
     use mod_linked_lists, only: typ_linked_lists
+    use mod_linkedlists, only: typ_linkedlists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
@@ -137,6 +138,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
     real(8):: rt2, rtinv2, rtinv4, rtinv12, rcsqinv
     real(8):: stress(3,3)
     type(typ_linked_lists):: linked_lists
+    type(typ_linkedlists):: linkedlists
     !integer, save:: icall=0
     !icall=icall+1
     associate(rcmax=>linked_lists%rcut)
@@ -160,7 +162,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
             endif
         enddo
     enddo
-    call linkedlists_init(parini,atoms,cell,linked_lists)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     stress(1:3,1:3)=0.d0
     epot_rep=0.d0
     linked_lists%fat=0.d0
@@ -233,7 +235,7 @@ subroutine repulsive_potential_cent(parini,atoms,ann_arr)
         atoms%fat(3,iatp)=atoms%fat(3,iatp)+linked_lists%fat(3,iat)
     enddo
     !-------------------------------------------------------
-    call linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
     end associate
 end subroutine repulsive_potential_cent
 !*****************************************************************************************

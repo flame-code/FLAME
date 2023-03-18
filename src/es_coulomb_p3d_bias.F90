@@ -144,11 +144,13 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     use mod_atoms, only: typ_atoms, update_ratp
     use mod_electrostatics, only: typ_linked_lists
     use mod_parini, only: typ_parini
+    use mod_linkedlists, only: typ_linkedlists
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_poisson), intent(inout):: poisson
     type(typ_atoms), intent(inout):: atoms
     type(typ_linked_lists):: linked_lists
+    type(typ_linkedlists):: linkedlists
 
     !local variables
     real(8):: dx, dy, dz, sclinv, r, rsq, xiat, yiat, ziat, alphainv, twosqrtinv
@@ -193,7 +195,7 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     allocate(mboundgy(1:2,-nbgpz:nbgpz))
     call determine_limitsphere(poisson,mboundg,mboundgy,nbgpx,nbgpy,nbgpz)
 
-    call linkedlists_init(parini,atoms,cell,linked_lists)
+    call linkedlists%init_linkedlists(atoms,cell,linked_lists,parini%mpi_env,parini%iverbose)
     mx = linked_lists%mx
     my = linked_lists%my
     mz = linked_lists%mz
@@ -281,7 +283,7 @@ subroutine erfc_surface_zero(parini,atoms,poisson,nlayer)
     enddo
     enddo
     enddo
-    call linkedlists_final(linked_lists)
+    call linkedlists%fini_linkedlists(linked_lists)
     deallocate(mboundg)
     deallocate(mboundgy)
 end subroutine erfc_surface_zero
@@ -289,7 +291,7 @@ end subroutine erfc_surface_zero
 subroutine sollaplaceq(poisson,hz,cell,vl,vu)
     use mod_electrostatics, only: typ_poisson
     implicit none
-    include 'fftw3.f'
+    include 'fftw3.f.h'
     type(typ_poisson), intent(inout):: poisson
     !local variables
     real(8):: vl, vu , zlmzu , sinhzlmzu, zlmzuinv

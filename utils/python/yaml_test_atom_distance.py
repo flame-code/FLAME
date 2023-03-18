@@ -83,7 +83,7 @@ for atoms in atoms_all:
     if (test>0) :
         nconf2+=1
         atoms_all_sel.append(Atoms())
-        atoms_all_sel[-1]=copy.copy(atoms)
+        atoms_all_sel[-1]=copy.deepcopy(atoms)
 
 if len(atoms_all_sel)>0: write_yaml(atoms_all_sel,ofilename)
 print("total number of conf = ",nconf+1,"       the number of files deleted = ",nconf-nconf2)

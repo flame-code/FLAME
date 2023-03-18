@@ -5,6 +5,7 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     use mod_ann, only: typ_ann_arr, typ_cent, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
     use mod_linked_lists, only: typ_pia_arr
+    use mod_linkedlists, only: typ_linkedlists
     use yaml_output
     use dynamic_memory
     implicit none
@@ -20,6 +21,7 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol, fnet(3)
     real(8),allocatable :: gausswidth(:)
+    type(typ_linkedlists):: linkedlists
     call f_routine(id='cal_ann_cent3')
     call update_ratp(atoms)
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
@@ -50,13 +52,13 @@ subroutine cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     deallocate(gausswidth)
     !call cal_electrostatic_eem2(parini,'init',atoms,ann_arr,epot_c,ann_arr%a)
     if(parini%iverbose>=2) call cpu_time(time2)
-    call symfunc%init_symfunc(parini%mpi_env)
+    call symfunc%init_symfunc(parini%mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
     if(ann_arr%compute_symfunc) then
-        call symfunc%get_symfunc(parini,ann_arr,atoms,.true.)
+        call symfunc%get_symfunc(ann_arr,atoms,.true.)
     else
         symfunc%linked_lists%rcut=ann_arr%rcut
         symfunc%linked_lists%triplex=.true.
-        call call_linkedlist(parini,atoms,.true.,symfunc%linked_lists,pia_arr_tmp)
+        call linkedlists%calc_linkedlists(atoms,.true.,symfunc%linked_lists,pia_arr_tmp,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     endif
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         ann_arr%fatpq=f_malloc([1.to.3,1.to.symfunc%linked_lists%maxbound_rad],id='fatpq')
@@ -486,6 +488,7 @@ subroutine init_cent3(parini,ann_arr,atoms,cent)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, typ_cent
     use mod_atoms, only: typ_atoms
+    use mod_linkedlists, only: typ_linkedlists
     use dynamic_memory
     use yaml_output
     implicit none
@@ -498,6 +501,7 @@ subroutine init_cent3(parini,ann_arr,atoms,cent)
     real(8):: qtot, qtot_ion, qtot_ele
     real(8):: ttrand(3)
     real(8):: zion, alpha_elec, alpha_largest, error_erfc_over_r, rcut
+    type(typ_linkedlists):: linkedlists
 
     allocate(cent%rgrad(1:3,1:atoms%nat))
     allocate(cent%qgrad(1:atoms%nat))
@@ -520,7 +524,7 @@ subroutine init_cent3(parini,ann_arr,atoms,cent)
 
     cent%poisson%linked_lists%rcut=parini%rcut_ewald
     !This linked list is used for the short range part of the Ewald.
-    call call_linkedlist(parini,atoms,.false.,cent%poisson%linked_lists,cent%poisson%pia_arr)
+    call linkedlists%calc_linkedlists(atoms,.false.,cent%poisson%linked_lists,cent%poisson%pia_arr,parini%mpi_env,parini%iverbose,parini%bondbased_ann)
     qtot=0.d0
     do iat=1,atoms%nat
         zion=ann_arr%ann(atoms%itypat(iat))%zion

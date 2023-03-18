@@ -23,7 +23,7 @@ subroutine ann_gen_symmetry_function(parini)
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%nann)
     !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
-    call symfunc%init_symfunc(parini%mpi_env)
+    call symfunc%init_symfunc(parini%mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
     ann_arr%nann=parini%ntypat
     
     !do i=1,ann_arr%nann
@@ -85,7 +85,7 @@ subroutine ann_gen_symmetry_function(parini)
         write(*,'(a)') trim(filename)
         open(unit=1,file=trim(filename),status='replace',iostat=ios)
         if(ios/=0) then;write(*,'(2a)') 'ERROR: failure openning ',trim(filename);stop;endif
-        call symfunc%get_symfunc(parini,ann_arr,atoms_gen%atoms(iconf),.false.)
+        call symfunc%get_symfunc(ann_arr,atoms_gen%atoms(iconf),.false.)
         do iat=1,atoms_gen%atoms(iconf)%nat
             do ig=1,ann_arr%ann(1)%nn(0)
                 write(1,'(2i4,es24.15)') ig,iat,symfunc%y(ig,iat)
