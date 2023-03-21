@@ -6,7 +6,7 @@ pages:
   image: python:3.7-slim-buster
   before_script:
     - apt-get update && apt-get install make --no-install-recommends -y
-    - python -m pip install -U sphinx furo latex unicode sphinxcontrib-bibtex==1.0.0
+    - python -m pip install -U sphinx furo latex unicode sphinxcontrib-bibtex==1.0.0 sphinx_rtd_theme
   script:
     - cd docs && make html
   after_script:
