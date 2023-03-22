@@ -174,7 +174,7 @@ html_show_copyright = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'FLAMEdoc'
 
-html_logo = "_static/FLAME_logo.jpg"
+html_logo = "_static/FLAME_logo_new.png"
 html_show_sourcelink = True
 
 
