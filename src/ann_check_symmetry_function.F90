@@ -1,5 +1,5 @@
 !*****************************************************************************************
-subroutine ann_check_symmetry_function(parini)
+subroutine ann_check_symmetry_function(parini,path)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc
@@ -8,6 +8,7 @@ subroutine ann_check_symmetry_function(parini)
     use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
+    character(len=*), intent(in):: path
     !local variables
     type(typ_ann_arr) :: ann_arr
     type(typ_atoms_arr):: atoms_check
@@ -38,9 +39,11 @@ subroutine ann_check_symmetry_function(parini)
     !write(*,*) trim(parini%stypat_ann)
     !call count_words(parini%stypat_ann,ann_arr%nann)
     !read(parini%stypat_ann,*) ann_arr%stypat(1:ann_arr%nann)
-    icolor=parini%mpi_env%iproc+1
-    ikey=1
-    call MPI_COMM_SPLIT(MPI_COMM_WORLD,icolor,ikey,mpi_env%mpi_comm,ierr)
+    if(parini%mpi_env%nproc>1) then
+        icolor=parini%mpi_env%iproc+1
+        ikey=1
+        call MPI_COMM_SPLIT(MPI_COMM_WORLD,icolor,ikey,mpi_env%mpi_comm,ierr)
+    endif
     mpi_env%nproc=1
     mpi_env%iproc=0
     call symfunc%init_symfunc(mpi_env,parini%iverbose,parini%bondbased_ann,parini%symfunc_type_ann)
@@ -48,10 +51,10 @@ subroutine ann_check_symmetry_function(parini)
     if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in check_symmetry_function'
     allocate(ann_arr%ann(ann_arr%nann))
     ann_arr%approach=trim(parini%approach_ann)
-    fname = trim(parini%stypat(1))//'.ann.input.yaml'
+    fname=trim(path)//'/'//trim(parini%stypat(1))//'.ann.input.yaml'
     inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
     if(ann_arr%exists_yaml_file) then
-        call read_input_ann_yaml(parini,parini%mpi_env%iproc,ann_arr)
+        call read_input_ann_yaml(parini,parini%mpi_env%iproc,ann_arr,path)
     else
         call read_input_ann(parini,parini%mpi_env%iproc,ann_arr)
     endif
@@ -62,7 +65,7 @@ subroutine ann_check_symmetry_function(parini)
         call read_data_old(parini,'list_posinp_check',atoms_check)
     endif
     !----------------------------------------------------------
-    if(parini%mpi_env%iproc==0) then
+    if(parini%mpi_env%iproc==0 .and. parini%iverbose>1) then
         write(*,'(a34,i8)') 'number of checking data points:   ',atoms_check%nconf
     endif
     do iconf=1,atoms_check%nconf
@@ -261,7 +264,9 @@ subroutine ann_check_symmetry_function(parini)
     deallocate(distance_all)
     endif !end of if mpi_env%iproc==0
     call cpu_time(time3)
-    write(*,*) 'timing ',time2-time1,time3-time2
+    if(parini%iverbose>2) then
+        write(*,*) 'timing ',time2-time1,time3-time2
+    endif
     do iconf=1,atoms_check%nconf
         call atom_deallocate_old(atoms_check%atoms(iconf))
     enddo
@@ -274,7 +279,9 @@ subroutine ann_check_symmetry_function(parini)
     call symfunc%fini_symfunc()
     end associate
     end associate
-    call MPI_COMM_FREE(mpi_env%mpi_comm,ierr)
+    if(parini%mpi_env%nproc>1) then
+        call MPI_COMM_FREE(mpi_env%mpi_comm,ierr)
+    endif
     call f_release_routine()
 end subroutine ann_check_symmetry_function
 !*****************************************************************************************
