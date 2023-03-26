@@ -9,7 +9,7 @@ module mod_ann_io_yaml
     public:: write_yaml_conf_train
 contains
 !*****************************************************************************************
-subroutine read_input_ann_yaml(parini,iproc,ann_arr)
+subroutine read_input_ann_yaml(parini,iproc,ann_arr,path)
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -18,6 +18,7 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc
     type(typ_ann_arr), intent(inout):: ann_arr
+    character(len=*), optional, intent(in):: path
     !local variables
     integer:: ios, iann, i, j
     character(50):: fname,str1
@@ -33,7 +34,12 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
             stypat=parini%stypat(iann)
         endif
         !-------------------------------------------------------
-        fname = trim(stypat)//'.ann.input.yaml'
+        if(present(path)) then
+            fname=trim(path)//'/'
+        else
+            fname='./'
+        endif
+        fname=trim(fname)//trim(stypat)//'.ann.input.yaml'
         call yaml_sequence(advance='no')
         call yaml_comment(trim(fname))
         !write(*,*)trim(fname)
@@ -68,6 +74,12 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     character(50):: str_out_ann
     character(5):: str_out_ann_tt
     real(8):: wa(2)
+    logical:: exists_yaml_file
+    inquire(file=trim(fname),exist=exists_yaml_file)
+    if(.not. exists_yaml_file) then
+        write(*,'(2a)') 'ERROR: ANN parameter file does not exist: ',trim(fname)
+        stop
+    endif
     call set_dict_ann(ann,fname,stypat)
     !call yaml_comment('USER INPUT FILE',hfill='~')
     if(parini%iverbose>=2) call yaml_dict_dump(ann%dict)
