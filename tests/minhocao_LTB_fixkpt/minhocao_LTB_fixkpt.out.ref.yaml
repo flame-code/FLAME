@@ -246,8 +246,7 @@
    syslinsolver                        : direct
    rgnrmtol                            : 5.E-4
    qgnrmtol                            : 5.E-4
-   etol                                : 1.0
-   dtol                                : 1.0
+   dtol                                : 0.0
    ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False

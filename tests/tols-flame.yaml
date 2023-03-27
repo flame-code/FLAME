@@ -292,3 +292,8 @@ lammps_NPT:
 
 genconf_gensymcrys:
  Epsilon: 1.e-11
+
+divcheck_structure:
+ Keys to ignore:
+  - conf. number
+ Epsilon: 1.e-11
