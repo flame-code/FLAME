@@ -49,11 +49,17 @@ subroutine read_yaml_conf_getdict(parini,filename,confs_list)
     character(256):: fn_fullpath
     character, dimension(:), allocatable :: fbuf
     integer(kind = 8) :: cbuf, cbuf_len
+    logical:: exists_yaml_file
     fn_tmp=adjustl(trim(filename))
     if(fn_tmp(1:1)=='/') then
         fn_fullpath=trim(filename)
     else
         fn_fullpath=trim(parini%cwd)//'/'//trim(filename)
+    endif
+    inquire(file=trim(filename),exist=exists_yaml_file)
+    if(.not. exists_yaml_file) then
+        write(*,'(2a)') 'ERROR: cannot open file, it does not exist: ',trim(filename)
+        stop
     endif
     call getFileContent(cbuf,cbuf_len,filename,len_trim(filename))
     fbuf=f_malloc0_str(1,int(cbuf_len),id='fbuf')
