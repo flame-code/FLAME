@@ -107,7 +107,7 @@ See below figure for the orientation of the cell
 and the projections ``dxx``, ``dyx``, ``dyy``, ``dzx``, ``dzy``, and ``dzz``.
 
 
-.. image:: repere-ascii.png
+.. image:: _static/repere-ascii.png
    :scale: 50 %
    :align: center
 

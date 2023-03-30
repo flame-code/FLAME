@@ -384,13 +384,14 @@ subroutine set_param(self,atoms,ann_arr)
             self%gwe_s(iat)=ann_arr%ann(atoms%itypat(iat))%gwe_s
             self%be_s(iat)=ann_arr%ann(atoms%itypat(iat))%be_s
             self%orb(ibf)=1.d0
+            self%hardness(ibf)=ann_arr%ann(atoms%itypat(iat))%hardness
         endif
         if(bt_t(1:1)=='p') then
             self%gwe_p(1,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(1)
             self%gwe_p(2,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(2)
             self%orb(ibf)=0.d0
+            self%hardness(ibf)=1.d-1*ann_arr%ann(atoms%itypat(iat))%hardness
         endif
-        self%hardness(ibf)=ann_arr%ann(atoms%itypat(iat))%hardness
         self%re(1,ibf)=atoms%ratp(1,iat)
         self%re(2,ibf)=atoms%ratp(2,iat)
         self%re(3,ibf)=atoms%ratp(3,iat)
@@ -489,9 +490,9 @@ subroutine init_electrostatic_cent2(self,parini,atoms,ann_arr,poisson)
         if(parini%iverbose>=2) call cpu_time(time2)
         if(parini%iverbose>=2) write(*,*) 'init_hartree_time: ',time2-time1
         max_cellVec=100.d0
-        if(maxval(atoms%cellvec)>max_cellVec) then
-            stop 'ERROR: atoms%cellvec > max_cellVec'
-        endif
+        !if(maxval(atoms%cellvec)>max_cellVec) then
+        !    stop 'ERROR: atoms%cellvec > max_cellVec'
+        !endif
         if(parini%iverbose>=2) call cpu_time(time1)
         if(.not. ann_arr%linear_rho_pot_initiated) then
             ann_arr%linear_rho_pot_initiated=.true. 
@@ -807,10 +808,159 @@ subroutine get_cep_rhs(self,parini,ann_arr,atoms,poisson)
         !if(parini%mpi_env%iproc==0) then
         !write(*,'(i4,2f20.10,es14.5)') ibf,tt,ttt,ttt-tt
         !endif
-        self%cep_rhs(ibf)=-(atoms%zat(iat)+self%bf%qcore(iat))*self%bf%hardness(ibf)-ttt
+        bt_t=self%bf%bt(ibf)
+        if(bt_t(1:1)=='s') then
+            self%cep_rhs(ibf)=-(atoms%zat(iat)+self%bf%qcore(iat))*self%bf%hardness(ibf)-ttt
+        else
+            self%cep_rhs(ibf)=-ttt
+        endif
     enddo
 !    stop
 end subroutine get_cep_rhs
+!*****************************************************************************************
+subroutine get_ref_vector(parini,atoms,ann_arr,refvec)
+    use mod_parini, only: typ_parini
+    use mod_atoms, only: typ_atoms, update_ratp
+    use mod_ann, only: typ_ann_arr
+    use mod_const, only: bohr2ang, ha2ev
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_atoms), intent(in):: atoms
+    type(typ_ann_arr), intent(in):: ann_arr
+    real(8), intent(out):: refvec(3,atoms%nat)
+    !local variables
+    integer:: iat, jat, kat, nat, info
+    real(8):: dx, dy, dz, r, pi, beta_iat, beta_jat, gama
+    real(8):: ri, rj, fci, fcj, tt, gg
+    real(8):: gw(2), chi(2), hn(2), rcut
+    real(8), allocatable:: a(:,:)
+    real(8), allocatable:: rhs(:)
+    real(8), allocatable:: rat(:,:)
+    integer, allocatable:: itypat(:)
+    integer, allocatable:: ipiv(:)
+    integer, allocatable:: nn(:)
+    pi=4.d0*atan(1.d0)
+    gw(1)=1.28d0/bohr2ang*1.d0
+    gw(2)=1.05d0/bohr2ang*1.d0
+    chi(1)=3.01d0/ha2ev*10.d0
+    chi(2)=6.22d0/ha2ev*10.d0
+    hn(1)=0.d0 !2.39d0/ha2ev
+    hn(2)=0.d0 !4.14d0/ha2ev
+    rcut=15.d0
+    allocate(nn(atoms%nat),source=1)
+    do iat=1,atoms%nat
+        do jat=iat+1,atoms%nat
+            dx=atoms%ratp(1,jat)-atoms%ratp(1,iat)
+            dy=atoms%ratp(2,jat)-atoms%ratp(2,iat)
+            dz=atoms%ratp(3,jat)-atoms%ratp(3,iat)
+            r=dx*dx+dy*dy+dz*dz
+            if(r<rcut**2) then
+                nn(iat)=nn(iat)+1
+                nn(jat)=nn(jat)+1
+            endif
+        enddo
+    enddo
+    write(*,*) 'NN= ',nn
+    !-----------------------------------------------------------------
+    do kat=1,atoms%nat
+    nat=nn(kat)
+    allocate(a(nat+1,nat+1))
+    allocate(ipiv(1:nat+1))
+    allocate(rhs(1:nat+1))
+    allocate(rat(3,nat))
+    allocate(itypat(nat))
+    rat(1:3,1)=atoms%ratp(1:3,kat)
+    itypat(1)=atoms%itypat(kat)
+    jat=1
+    do iat=1,atoms%nat
+        if(iat==kat) cycle
+        dx=atoms%ratp(1,kat)-atoms%ratp(1,iat)
+        dy=atoms%ratp(2,kat)-atoms%ratp(2,iat)
+        dz=atoms%ratp(3,kat)-atoms%ratp(3,iat)
+        r=dx*dx+dy*dy+dz*dz
+        if(r<rcut**2) then
+            jat=jat+1
+            rat(1:3,jat)=atoms%ratp(1:3,iat)
+            itypat(jat)=atoms%itypat(iat)
+            !write(*,'(a,3i5,f10.3,i8,3f10.3)') 'KKK ',kat,iat,jat,sqrt(r),itypat(jat),rat(1:3,jat)
+        endif
+    enddo
+    if(parini%mpi_env%iproc==0) then
+    if(jat/=nat) write(*,*) 'ERROR: ',kat,nat,jat
+    endif
+    do iat=1,nat
+        a(iat,nat+1)=1.d0
+        a(nat+1,iat)=1.d0
+        beta_iat=gw(itypat(iat))
+        gama=1.d0/sqrt(beta_iat**2+beta_iat**2)
+        a(iat,iat)=gama*2.d0/sqrt(pi)+hn(itypat(iat))
+        dx=rat(1,iat)-rat(1,1)
+        dy=rat(2,iat)-rat(2,1)
+        dz=rat(3,iat)-rat(3,1)
+        ri=sqrt(dx*dx+dy*dy+dz*dz)
+        fci=cutoff_function(ri,rcut)
+        do jat=iat+1,nat
+            dx=rat(1,jat)-rat(1,1)
+            dy=rat(2,jat)-rat(2,1)
+            dz=rat(3,jat)-rat(3,1)
+            rj=sqrt(dx*dx+dy*dy+dz*dz)
+            fcj=cutoff_function(rj,rcut)
+            dx=rat(1,jat)-rat(1,iat)
+            dy=rat(2,jat)-rat(2,iat)
+            dz=rat(3,jat)-rat(3,iat)
+            r=sqrt(dx*dx+dy*dy+dz*dz)
+            beta_jat=gw(itypat(jat))
+            gama=1.d0/sqrt(beta_iat**2+beta_jat**2)
+            a(iat,jat)=erf(gama*r)/r*fci*fcj
+            a(jat,iat)=a(iat,jat)
+        enddo
+    enddo
+    a(nat+1,nat+1)=0.d0
+    call DGETRF(nat+1,nat+1,a,nat+1,ipiv,info)
+    if(info/=0) then
+        write(*,'(a19,i8)') 'ERROR: DGETRF info=',info
+        stop
+    endif
+    !do iat=1,nat
+    !if(trim(atoms%sat(iat))=='Na') then
+    !    chi(iat)=chi(iat)/0.93d0
+    !elseif(trim(atoms%sat(iat))=='Cl') then
+    !    chi(iat)=chi(iat)/3.16d0
+    !endif
+    !enddo
+    do iat=1,nat
+        rhs(iat)=-chi(itypat(iat))
+    enddo
+    rhs(nat+1)=0.d0
+    call DGETRS('N',nat+1,1,a,nat+1,ipiv,rhs,nat+1,info)
+    if(info/=0) then
+        write(*,'(a19,i8)') 'ERROR: DGETRS info=',info
+        stop
+    endif
+    refvec(1:3,kat)=0.d0
+    do iat=2,nat
+        dx=rat(1,iat)-rat(1,1)
+        dy=rat(2,iat)-rat(2,1)
+        dz=rat(3,iat)-rat(3,1)
+        r=sqrt(dx*dx+dy*dy+dz*dz)
+        gg=gw(itypat(iat))
+        tt=2.d0/(gg*exp(r**2/gg**2)*sqrt(pi)*r)-erf(r/gg)/r**2
+        refvec(1,kat)=refvec(1,kat)+rhs(iat)*tt*dx
+        refvec(2,kat)=refvec(2,kat)+rhs(iat)*tt*dy
+        refvec(3,kat)=refvec(3,kat)+rhs(iat)*tt*dz
+    enddo
+    refvec(1,kat)=refvec(1,kat)*rhs(1)
+    refvec(2,kat)=refvec(2,kat)*rhs(1)
+    refvec(3,kat)=refvec(3,kat)*rhs(1)
+    if(parini%mpi_env%iproc==0) then
+    write(*,'(a,i5,3es14.5)') 'EW= ',kat,refvec(1,kat),refvec(2,kat),refvec(3,kat)
+    do iat=1,nat
+        write(*,'(a,2i5,f10.3)') 'QW= ',kat,iat,rhs(iat)
+    enddo
+    endif
+    deallocate(a,ipiv,rhs,rat,itypat)
+    enddo
+end subroutine get_ref_vector
 !*****************************************************************************************
 subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     use mod_parini, only: typ_parini
@@ -837,6 +987,8 @@ subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     real(8):: dx, dy, dz, r, pi
     character(2):: bt_t
     real(8), allocatable:: amat_t(:,:)
+    real(8), allocatable:: refvec(:,:)
+    real(8), allocatable:: dvec(:,:)
     pi=4.d0*atan(1.d0)
     allocate(amat_t(self%bf%nbf+1,self%bf%nbf+1))
     one=1.d0
@@ -848,12 +1000,50 @@ subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     endif
     !call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
     !stop 'KKKKKKKKKKKKKKKKKKKKKKKKKK'
+    allocate(refvec(3,atoms%nat))
+    call get_ref_vector(parini,atoms,ann_arr,refvec)
+    allocate(dvec(3,atoms%nat))
     do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        if(trim(self%bf%bt(ibf))=='px') dvec(1,iat)=ann_arr%chi_o(ibf)
+        if(trim(self%bf%bt(ibf))=='py') dvec(2,iat)=ann_arr%chi_o(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') dvec(3,iat)=ann_arr%chi_o(ibf)
+    enddo
+    if(parini%mpi_env%iproc==0) then
+    do iat=1,atoms%nat
+        write(66,'(i5,2x,a2,2x,6es14.5)') iat,trim(atoms%sat(iat)), &
+            refvec(1,iat),refvec(2,iat),refvec(3,iat),dvec(1,iat),dvec(2,iat),dvec(3,iat)
+    enddo
+    endif
+!HERE
+    do ibf=1,self%bf%nbf
+        if(parini%mpi_env%iproc==0) then
+        write(*,*) 'RRRRRRRRRRRRRRRRRR ',ann_arr%chi_o(ibf),self%cep_rhs(ibf)
+        endif
+        iat=self%bf%imap(ibf)
+        !write(*,'(2i5,2x,a2)') ibf,iat,trim(self%bf%bt(ibf))
+        !if(.not. trim(self%bf%bt(ibf))=='s') then
+        !    if(trim(atoms%sat(iat))=='Li') then
+        !        ann_arr%chi_o(ibf)=0.d0
+        !    else
+        !        ann_arr%chi_o(ibf)=0.d0
+        !    endif
+        !endif
+    enddo
+    do ibf=1,self%bf%nbf
+!HERE
+!        if(parini%mpi_env%iproc==0) then
+!        write(*,*) 'rrrrrrrrrrrrrrrrrr ',ann_arr%chi_o(ibf),self%cep_rhs(ibf)
+!        endif
         ann_arr%qq(ibf)=self%cep_rhs(ibf)-ann_arr%chi_o(ibf)
     enddo
     ann_arr%qq(self%bf%nbf+1)=atoms%qtot-sum(atoms%zat)-sum(self%bf%qcore)
     call DGETRS('N',self%bf%nbf+1,1,amat_t,self%bf%nbf+1,ann_arr%ipiv,ann_arr%qq,self%bf%nbf+1,info)
     if(parini%mpi_env%iproc==0) then
+!HERE
+!    do ibf=1,self%bf%nbf
+!        write(78,'(i6,f20.10)') ibf,ann_arr%qq(ibf)
+!    enddo
     !do ibf=1,self%bf%nbf
     !    write(*,'(a,i6,f20.10)') 'CEPSOLUTION= ',ibf,ann_arr%qq(ibf)
     !enddo
@@ -1088,9 +1278,12 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     !endif
     !-----------------------------------------------------------------
     call self%get_expansion_coeff(parini,ann_arr,atoms,squarefit_raw,rhs_raw)
-    !do ibf=1,self%bf%nbf
-    !    write(77,'(i6,f20.10)') ibf,ann_arr%qq(ibf)
-    !enddo
+!HERE
+!    if(parini%mpi_env%iproc==0) then
+!    do ibf=1,self%bf%nbf
+!        write(77,'(i6,f20.10)') ibf,ann_arr%qq(ibf)
+!    enddo
+!    endif
     !-----------------------------------------------------------------
     atoms%qat(1:atoms%nat)=self%bf%qcore(1:atoms%nat)
     do ibf=1,self%bf%nbf
@@ -2287,6 +2480,40 @@ pure function get_ener_qr2_pr1(a,b,c,dx,dy,dz,r,sfs,gwq,gwp,q,p) result(ener)
     p_dot_rij=dx*p(1)+dy*p(2)+dz*p(3)
     ener=-p_dot_rij*q*(a*ww1+b*ww2+c*ww3)
 end function get_ener_qr2_pr1
+!*****************************************************************************************
+function cutoff_function(r, rc) result(fc)
+    implicit none
+    real(8), intent(in):: r, rc
+    !local variables
+    real(8):: fc, pi
+    if(r<rc) then
+        fc=(1.d0-(r/rc)**2)**3
+    else
+        fc=0.d0
+    endif
+    !pi=4.d0*atan(1.d0)
+    !if(r<rc*.5d0) then
+    !    fc=1.d0
+    !elseif(r<rc) then
+    !    fc=cos((1.d0-((1.d0-((r-rc*0.5d0)/(rc*0.5d0))**2)**3))*pi*0.5d0)
+    !else
+    !    fc=0.d0
+    !endif
+    !Compare it with: PHYSICAL REVIEW B 93, 155203 (2016) -> comparison is done:
+    !the second derivative in the cutoff function in PRB paper does not vanish.
+end function cutoff_function
+!*****************************************************************************************
+function cutoff_function_der(r, rc) result(fcd)
+    implicit none
+    real(8), intent(in):: r, rc
+    !local variables
+    real(8):: fcd, pi
+    if(r<rc) then
+        fcd=-6.d0*(r/rc**2)*(1.d0-(r/rc)**2)**2
+    else
+        fcd=0.d0
+    endif
+end function cutoff_function_der
 !*****************************************************************************************
 end module mod_cent2
 !*****************************************************************************************
