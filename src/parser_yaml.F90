@@ -350,6 +350,7 @@ subroutine yaml_get_ann_parameters(parini)
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
+    real(8):: aa(2)
     if(dict_size(parini%subdict)<1) stop 'ERROR: ann block in flame_in.yaml is empty.'
     parini%subtask_ann=parini%subdict//"subtask"
     parini%optimizer_ann=parini%subdict//"optimizer"
@@ -365,8 +366,9 @@ subroutine yaml_get_ann_parameters(parini)
     parini%syslinsolver_ann=parini%subdict//"syslinsolver"
     parini%rgnrmtol=parini%subdict//"rgnrmtol"
     parini%qgnrmtol=parini%subdict//"qgnrmtol"
-    parini%etol_ann=parini%subdict//"etol"
-    parini%dtol_ann=parini%subdict//"dtol"
+    aa=parini%subdict//"tol_incompatible"
+    parini%etol_ann=aa(1)
+    parini%dtol_ann=aa(2)
     parini%normalization_ann=parini%subdict//"normalization"
     parini%bondbased_ann=parini%subdict//"bondbased"
     parini%prefit_ann=parini%subdict//"prefit"
@@ -381,6 +383,8 @@ subroutine yaml_get_ann_parameters(parini)
     parini%save_symfunc_behnam=parini%subdict//"save_symfunc_behnam"
     parini%free_bc_direct=parini%subdict//"freeBC_direct"
     parini%ftol_ann=parini%subdict//"ftol"
+    parini%pickdiffconfs=parini%subdict//"pickdiffconfs"
+    parini%dtol_pickdiffconfs=parini%subdict//"dtol"
 end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)

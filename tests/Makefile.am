@@ -20,7 +20,8 @@ SHORT_TESTDIRS = testforces_FD \
 				 train_CENTT \
 				 saddle_2s_splsad \
 				 saddle_2s_neb \
-				 genconf_gensymcrys
+				 genconf_gensymcrys \
+				 divcheck_structure
 
 if HAVE_SPGLIB
 SHORT_TESTDIRS += minhocao_CENT1 \

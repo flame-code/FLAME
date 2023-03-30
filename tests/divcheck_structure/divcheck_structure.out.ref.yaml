@@ -18,23 +18,23 @@
        MMMMMM  MMMMM`    F      LLLLLL A      A M   MM   M EEEEEE
    ________________________________________ www.flame-code.org   "
  Reference Paper                       : https://doi.org/10.1016/j.cpc.2020.107415
- Timestamp of this run                 : 2022-11-19 14:22:09.861
+ Timestamp of this run                 : 2023-03-27 15:45:04.765
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MERGED INPUT FILE
  main:
-   task                                : genconf
-   types                               : Li S
+   task                                : ann
+   types                               : C N
    two_level_geopt                     : False
    verbosity                           : 0
    verbose                             : 3
-   rng_type                            : only_for_tests
-   seed                                : 1
+   rng_type                            : intrinsic
+   seed                                : -2
    nat                                 : 0
    pressure                            : 0.0
    findsym                             : False
    finddos                             : False
    params_new                          : False
    time_limit                          : -1.0
-   datafilesdir                        : /home/ghasemi/FLAME/datafiles
+   datafilesdir                        : /home/ghasemi/FLAME.fpm/datafiles
  minhopp:
    nstep                               : 0
    nsoften                             : 7
@@ -229,7 +229,7 @@
      nat                               : 0
      atoms                             : all
  ann:
-   subtask                             : unknown
+   subtask                             : check_symmetry_function
    optimizer                           : unknown
    approach                            : atombased
    symfunc                             : only_calculate
@@ -243,13 +243,13 @@
    syslinsolver                        : direct
    rgnrmtol                            : 5.E-4
    qgnrmtol                            : 5.E-4
-   dtol                                : 0.0
+   tol_incompatible: [1.E10, 0.0]
    ftol                                : 1.E-4
    normalization                       : False
    bondbased                           : False
    prefit                              : False
    prefit_centt                        : False
-   read_forces                         : True
+   read_forces                         : False
    restart_param                       : False
    restart_iter                        : 0
    print_energy                        : False
@@ -258,6 +258,8 @@
    weight_hardness                     : 0.0
    save_symfunc_behnam                 : False
    freeBC_direct                       : False
+   pickdiffconfs                       : True
+   dtol                                : 1.0
  dynamics:
    nmd                                 : 300
    nfreq                               : 0
@@ -286,7 +288,7 @@
    filename                            : total_density.cube
    vacuum                              : yes
  genconf:
-   subtask                             : gensymcrys
+   subtask                             : unknown
    cal_pot                             : no
    nat_add                             : 0
    sat                                 : unknown
@@ -296,18 +298,15 @@
    npoint                              : 0
    fbmin                               : -1.0
    fbmax                               : -1.0
-   volperatom_bounds: [17.0, 17.0]
+   volperatom_bounds: [-1.0, -1.0]
    ntry                                : 30
-   ispg                                : 225
+   ispg                                : 0
    ncells                              : 1
-   nconf                               : 2
-   nat_types_fu: [2, 1]
+   nconf                               : 1
+   nat_types_fu                        : 1
    list_fu:
-   - 3
-   rmin_pairs:
-     LiLi                              : 2.3
-     LiS                               : 1.8
-     SS                                : 2.0
+   - 1
+   rmin_pairs                          : None
    variable_cell                       : False
    nonorthogonal                       : False
  conf_comp:
@@ -358,20 +357,29 @@
    widthcut                            : 1.0
    widthover                           : 1.0
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
- system info: {ntypat:  2, Li:  1, S:  2}
+ system info: {ntypat:  2, C:  1, N:  2}
  mpi started: {iproc_world:  0, nproc_world:  1, iproc:  0, nproc:  1}
- random number generator: {iproc:  0}
- CPU time: {iproc:  0, hrs:  0.566E-04, min:  0.339E-02, sec:  0.204E+00}
+ nthreads                              :  1
+ random number generator: {iproc:  0, seed:  [  2147483562,  2147483398 ]}
+ ann input files:
+ -  #./C.ann.input.yaml
+   ANN architecture                    : 10-3-3-1
+   symfunc numbers from input: {ng1:  0, ng2:  4, ng3:  0, ng4:  0, ng5:  6, ng6:  0}
+ -  #./N.ann.input.yaml
+   ANN architecture                    : 10-3-3-1
+   symfunc numbers from input: {ng1:  0, ng2:  4, ng3:  0, ng4:  0, ng5:  6, ng6:  0}
+ Number of configurations read: {filename: poslow.yaml, nconf:  3}
+ CPU time: {iproc:  0, hrs:  0.224E-04, min:  0.134E-02, sec:  0.807E-01}
  mpi finalized: {iproc_world:  0, nproc_world:  1}
  Memory Consumption Report:
-   Tot. No. of Allocations             :  3
-   Tot. No. of Deallocations           :  3
+   Tot. No. of Allocations             :  49
+   Tot. No. of Deallocations           :  49
    Remaining Memory (B)                :  0
    Memory occupation:
-     Peak Value (MB)                   :  0.000
-     for the array                     : fbuf
-     in the routine                    : alborz_init
-     Memory Peak of process            : 85.436 MB
- Walltime since initialization         :  00:00:00.477373039
- Max No. of dictionaries used          :  885 #( 171 still in use)
+     Peak Value (MB)                   :  0.292
+     for the array                     : symfunc%y0dr
+     in the routine                    : symmetry_functions_driver
+     Memory Peak of process            : 268.940 MB
+ Walltime since initialization         :  00:00:00.346322224
+ Max No. of dictionaries used          :  891 #( 171 still in use)
  Number of dictionary folders allocated:  1
