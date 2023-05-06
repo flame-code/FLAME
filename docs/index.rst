@@ -13,22 +13,25 @@
 
 .. include:: 04_input.rst
 
+
+.. Hidden TOCs
+
 .. toctree::
    :hidden:
    :maxdepth: 3
 
-   05_flame_in.rst
-   06_main.rst
-   07_potential.rst
-   08_fingerprint.rst
-   09_geopt.rst
-   10_geopt_prec.rst
-   11_dynamics.rst
-   12_ann.rst
-   13_single_point.rst
-   14_saddle.rst
-   15_saddle_opt.rst
-   16_minhocao.rst
+   05_flame_in
+   06_main
+   07_potential
+   08_fingerprint
+   09_geopt
+   10_geopt_prec
+   11_dynamics
+   12_ann
+   13_single_point
+   14_saddle
+   15_saddle_opt
+   16_minhocao
 
 .. include:: 17_structures.rst
 
