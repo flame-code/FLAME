@@ -272,7 +272,7 @@ subroutine ann_check_symmetry_function(parini,path)
     endif !end of if mpi_env%iproc==0
     endif !end of if .not. parini%pickdiffconfs
 
-    if(parini%pickdiffconfs) then
+    if(parini%pickdiffconfs .and. parini%mpi_env%iproc==0) then
     allocate(dist(atoms_check%nconf,atoms_check%nconf),source=0.d0)
     do ipair=1,npair
         iconf=ind_pairs(1,ipair)
@@ -321,7 +321,7 @@ subroutine ann_check_symmetry_function(parini,path)
     deallocate(atoms_sel%atoms)
     deallocate(dist)
     deallocate(iconf_sel)
-    endif !end of if parini%pickdiffconfs
+    endif !end of if parini%pickdiffconfs and iproc==0
 
     call cpu_time(time3)
     if(parini%iverbose>2) then

@@ -154,7 +154,7 @@ subroutine gensymcrys_single(parini,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp
     integer, intent(in):: cryssys_all(230), brav_all(230)
     integer, intent(in):: nsymp_all(230), nsym_all(230), ind_rsym_all(230)
     real(8), intent(in):: target_vol_per_atom
-    character(5), intent(in):: stypat(3)
+    character(5), intent(in):: stypat(NKINDS)
     integer, intent(in):: NCELLS, NAT_CELL, ntry, i_spacegroup
     integer, intent(in):: NKINDS, NAT_KINDS(NKINDS)
     real(8), intent(in):: KINDSDIST_MIN(NKINDS,NKINDS)
@@ -176,6 +176,7 @@ integer::  isize,idate(8),order(1), iat, itry
 real(8):: vol_prim
 succeeded=.false.
 NGUESS=100
+NGUESS=max(NGUESS,NAT_CELL)
 allocate(RED_POS(3,NGUESS))
 allocate(NPOS_IRRED_ARR(NSYMMAX))
 
@@ -298,9 +299,10 @@ cv(1,3)=dproj(4)
 cv(2,3)=dproj(5)
 cv(3,3)=dproj(6)
 do i=1,nat_cell
-if(KINDS(i)==1) sat(i)=trim(stypat(1))
-if(KINDS(i)==2) sat(i)=trim(stypat(2))
-if(KINDS(i)==3) sat(i)=trim(stypat(3))
+    !if(KINDS(i)==1) sat(i)=trim(stypat(1))
+    !if(KINDS(i)==2) sat(i)=trim(stypat(2))
+    !if(KINDS(i)==3) sat(i)=trim(stypat(3))
+    sat(i)=trim(stypat(KINDS(i)))
 enddo
 !open(unit=22,file="prim_out.ascii")
 !write(22,*) NAT_CELL,LATSGP
