@@ -15,6 +15,8 @@ subroutine miscellaneous_task(parini)
         call test_free_BPS(parini)
     elseif(trim(parini%subtask_misc)=='get_qat_target') then
         call get_qat_target(parini)
+    elseif(trim(parini%subtask_misc)=='dvec') then
+        call fit_dvec(parini)
     else
         write(*,'(2a)') 'ERROR: unknown parini%subtask_misc ',trim(parini%subtask_misc)
         stop

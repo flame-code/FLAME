@@ -130,6 +130,8 @@ subroutine ann_train(parini)
     else if(trim(parini%optimizer_ann)=='rivals_fitchi') then
         write(*,*) opt_ann%n
         call ekf_rivals_fitchi(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    else if(trim(parini%optimizer_ann)=='rivals_dvec') then
+        call ekf_rivals_fitdvec(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     !else if(trim(parini%optimizer_ann)=='rivals_tmp') then
     !    call ekf_rivals_tmp(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,atoms_valid,opt_ann)
     else if(trim(parini%optimizer_ann)=='lm') then

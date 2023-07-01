@@ -50,6 +50,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 		io_yaml_conf.F90 io_bin.F90 \
 		ann_process.F90 ann_io.F90 ann_io_yaml.F90 ann_best_symfunc.F90 \
 		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
+		fit_dvec.F90 \
 		symfunc_data_mod.F90 \
 		ann_symfunc_mod.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
