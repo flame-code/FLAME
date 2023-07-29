@@ -21,6 +21,8 @@
    library.h.  All functions herein COULD be added to library.cpp instead of
    including this as a separate file. See the README for instructions. */
 
+#if defined(HAVE_LAMMPS)
+
 #include <mpi.h>
 #include "potential_LAMMPS_wrapper2.h"
 #include <library.h>
@@ -79,3 +81,4 @@ void lammps_set_user_virial (void *ptr, double *virial) {
   return;
 }
 
+#endif
