@@ -67,4 +67,8 @@ write_fpm_toml_futile() {
     echo "[library]" >>$FPM_TOML
     echo "source-dir = \".\"" >>$FPM_TOML
     echo "include-dir = \".\"" >>$FPM_TOML
+    echo >>$FPM_TOML
+    echo "[preprocess]" >>$FPM_TOML
+    echo "[preprocess.cpp]" >>$FPM_TOML
+    echo "macros = [\"HAVE_CONFIG_H\"]" >>$FPM_TOML
 }

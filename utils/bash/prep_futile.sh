@@ -3,7 +3,6 @@
 rm -rf futile-tmp
 mkdir futile-tmp
 mkdir futile-tmp/futile
-mkdir futile-tmp/yaml-0.1.6
 mkdir futile-tmp/futile/dicts
 mkdir futile-tmp/futile/c-bindings
 mkdir futile-tmp/futile/src
@@ -12,6 +11,9 @@ mkdir futile-tmp/futile/wrappers
 mkdir futile-tmp/futile/wrappers/fft
 mkdir futile-tmp/futile/wrappers/dgemmsy
 mkdir futile-tmp/futile/wrappers/mpi
+mkdir futile-tmp/yaml-0.1.6
+mkdir futile-tmp/yaml-0.1.6/include
+mkdir futile-tmp/yaml-0.1.6/src
 
 dicts=(err.h err.c dictionaries_base.f90 callbacks.f90 f_precisions.f90 dictionaries.f90 \
     addresses.c dictf.f90 dict.c yaml_strings.f90 err-fapi.h dict.h errf.f90 dict-fapi.h \
@@ -63,6 +65,9 @@ wrappers_mpi_h=(mpi_get_alltoallv-inc.f90 maxdiff-inc.f90 bcast-inc.f90 gather-i
     alltoallv-inc.f90 get-end-inc.f90 allreduce-inc.f90 bcast-decl-arr-inc.f90 \
     scatter-inc.f90 control-routines-inc.f90 gather-inner-inc.f90 allreduce-arr-inc.f90 \
     allreduce-multi-inc.f90 maxdiff-end-inc.f90)
+
+yaml_src=(api.c dumper.c emitter.c loader.c parser.c reader.c scanner.c writer.c yaml_private.h)
+yaml_inc=(yaml.h)
 
 #------ Directory dicts --------------------------------------------------------
 for file in ${dicts[@]}; do
@@ -118,12 +123,23 @@ done
 for file in ${wrappers_mpi_h[@]}; do
   cp -v $FUTILE_DIR/futile/wrappers/mpi/$file futile-tmp/futile/wrappers/mpi/"$file".h
 done
-#------ Directory ?????????????---------------------------------------------------------
+#------ Directory yaml-0.1.6 ---------------------------------------------------------
+tar_members=""
+for file in ${yaml_src[@]}; do
+    tar_members="${tar_members} yaml-0.1.6/src/$file"
+    #echo "tar_members= $tar_members"
+done
+for file in ${yaml_inc[@]}; do
+    tar_members="${tar_members} yaml-0.1.6/include/$file"
+    #echo "tar_members= $tar_members"
+done
 
 find futile-tmp -type f -iname '*.f90' -exec sed -i "s/\.f90'/\.f90\.h'/g" {} \;
 find futile-tmp -type f -iname '*.f90.h' -exec sed -i "s/\.f90'/\.f90\.h'/g" {} \;
 
 cp files_for_fpm/config.h futile-tmp/
+cp files_for_fpm/yaml_config.h futile-tmp/yaml-0.1.6/config.h
+cp files_for_fpm/config.inc futile-tmp/futile/
 
 cd futile-tmp
 ln -s futile/dicts/futile_cst.h futile_cst.h
@@ -131,7 +147,11 @@ ln -s futile/dicts/dict-fapi.h dict-fapi.h
 ln -s futile/c-bindings/misc.h misc.h
 ln -s futile/dicts/dict.h dict.h
 ln -s futile/dicts/addresses.h addresses.h
+tar -zxvf ../futile-suite-1.9.1/yaml-0.1.6.tar.gz $tar_members
 cd -
 
 sed -i '11i use f_bcast, only: fmpi_maxdiff' futile-tmp/futile/wrappers/mpi/allgather.f90
 
+sed -i 's/<config.h>/"\.\.\/config.h"/g' futile-tmp/yaml-0.1.6/src/yaml_private.h
+sed -i 's/<yaml.h>/"\.\.\/include\/yaml.h"/g' futile-tmp/yaml-0.1.6/src/yaml_private.h
+sed -i 's/<config.inc>/"\.\.\/\.\.\/config.inc"/g' futile-tmp/futile/wrappers/mpi/mpi.F90
