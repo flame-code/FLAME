@@ -155,3 +155,4 @@ sed -i '11i use f_bcast, only: fmpi_maxdiff' futile-tmp/futile/wrappers/mpi/allg
 sed -i 's/<config.h>/"\.\.\/config.h"/g' futile-tmp/yaml-0.1.6/src/yaml_private.h
 sed -i 's/<yaml.h>/"\.\.\/include\/yaml.h"/g' futile-tmp/yaml-0.1.6/src/yaml_private.h
 sed -i 's/<config.inc>/"\.\.\/\.\.\/config.inc"/g' futile-tmp/futile/wrappers/mpi/mpi.F90
+sed -i 's/<yaml.h>/"\.\.\/\.\.\/yaml-0.1.6\/include\/yaml.h"/g' futile-tmp/futile/flib/yaml_parser.c
