@@ -22,7 +22,7 @@ write_fpm_toml() {
     if [ "$decision_SPGLIB" == true ]; then
         echo -n "\"symspg\"," >>$FPM_TOML
     fi
-    echo -n "\"FUTILE\",\"yaml\"" >>$FPM_TOML
+    echo -n "\"FUTILE\"" >>$FPM_TOML
     #echo -n ",\"iomp5\",\"m\",\"dl\",\"rt\"" >>$FPM_TOML
     echo "]" >>$FPM_TOML
     echo "external-modules = [\"yaml_parse\",\"dictionaries\",\"dynamic_memory\",\"yaml_output\"," >>$FPM_TOML
