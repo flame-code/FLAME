@@ -21,7 +21,7 @@
 ./latticetools_minhocao.o : ./latticetools_minhocao.F90 ./parini_mod.o 
 ./task_mod.o : ./task_mod.F90 
 ./es_radpots_cent2.o : ./es_radpots_cent2.F90 ./electrostatics_mod.o 
-./train_optimizer.o : ./train_optimizer.F90 ./basic_utilities.o ./atoms_mod.o ./ann_mod.o ./ann_symfunc_mod.o ./processors_mod.o ./ann_io_yaml.o ./parini_mod.o ./ann_mod.o 
+./train_optimizer.o : ./train_optimizer.F90 ./basic_utilities.o ./atoms_mod.o ./ann_mod.o ./ann_symfunc_mod.o ./processors_mod.o ./ann_mod.o ./parini_mod.o 
 ./gensymcrys_random_atoms.o : ./gensymcrys_random_atoms.F90 
 ./parser_core.o : ./parser_core.F90 ./task_mod.o 
 ./gensymcrys_trans_uniprim.o : ./gensymcrys_trans_uniprim.F90 
@@ -234,7 +234,7 @@
 ./specfun.o : ./specfun.F90 
 ./fingerprint_BCM.o : ./fingerprint_BCM.F90 ./parini_mod.o 
 ./md_NVT.o : ./md_NVT.F90 ./processors_mod.o ./dynamics_mod.o ./md_util.o ./io_acf.o ./atoms_mod.o ./potential_main.o ./parini_mod.o 
-./ann_pot_main.o : ./ann_pot_main.F90 ./ann_pot_cent2.o ./ann_symfunc_mod.o ./tightbinding_mod.o ./ann_train.o ./atoms_mod.o ./train_optimizer.o ./ann_mod.o ./parini_mod.o 
+./ann_pot_main.o : ./ann_pot_main.F90 ./ann_pot_cent2.o ./train_optimizer.o ./ann_symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./parini_mod.o ./tightbinding_mod.o 
 ./genconf_diatomic.o : ./genconf_diatomic.F90 ./io_acf.o ./constants_mod.o ./potential_main.o ./processors_mod.o ./genconf_mod.o ./atoms_mod.o ./parini_mod.o 
 ./fingerprint_oganov.o : ./fingerprint_oganov.F90 ./parini_mod.o 
 ./symfunc_data_mod.o : ./symfunc_data_mod.F90 ./cell_linkedlists.o 

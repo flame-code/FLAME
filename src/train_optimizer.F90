@@ -1,42 +1,79 @@
 !*****************************************************************************************
 module mod_opt_ann
+    use mod_parini, only: typ_parini
     implicit none
-    !private
-    public:: ekf_rivals, ekf_behler, init_opt_ann, fini_opt_ann
+    private
+    public:: ekf_rivals
     public:: set_opt_ann_grad, set_annweights
     public:: get_opt_ann_x, set_opt_ann_x !delete in future: both are used only for TB
     public:: ann_lm, convert_opt_x_ann_arr
+    public:: typ_cost_object
     type, public:: typ_opt_ann
         private
         integer, public:: n=-1
         integer:: ndp_train=-1
         real(8), allocatable:: x(:)
         real(8), allocatable:: g(:) !gradient of neural artificial neural network output
+        contains
+        procedure, public, pass(self):: init_opt_ann
+        procedure, public, pass(self):: fini_opt_ann
     end type typ_opt_ann
+    type, abstract:: typ_cost_object
+        contains
+        procedure(routine_value), public, pass(self), deferred:: func_value
+        procedure(routine_write), public, pass(self), deferred:: func_write
+        procedure(routine_evaluate), public, pass(self), deferred:: func_evaluate
+    end type
+    abstract interface
+    subroutine routine_value(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
+        import:: typ_cost_object, typ_opt_ann, typ_parini
+        implicit none
+        class(typ_cost_object), intent(inout):: self
+        type(typ_parini), intent(in):: parini
+        integer, intent(in):: idp
+        type(typ_opt_ann), intent(inout):: opt_ann
+        real(8), intent(out):: fcn_ann
+        real(8), intent(out):: fcn_ref
+    end subroutine routine_value
+    subroutine routine_write(self,parini,iter)
+        import:: typ_cost_object, typ_parini
+        implicit none
+        class(typ_cost_object), intent(inout):: self
+        type(typ_parini), intent(in):: parini
+        integer, intent(in):: iter
+    end subroutine routine_write
+    subroutine routine_evaluate(self,parini,iter)
+        import:: typ_cost_object, typ_parini
+        implicit none
+        class(typ_cost_object), intent(inout):: self
+        type(typ_parini), intent(in):: parini
+        integer, intent(in):: iter
+    end subroutine routine_evaluate
+    end interface
 contains
 !*****************************************************************************************
-subroutine init_opt_ann(ndp_train,opt_ann,ann_arr)
+subroutine init_opt_ann(self,ndp_train,ann_arr)
     use mod_ann, only: typ_ann_arr
     use dynamic_memory
     implicit none
+    class(typ_opt_ann), intent(inout):: self
     integer, intent(in):: ndp_train
-    type(typ_opt_ann), intent(inout):: opt_ann
     type(typ_ann_arr), intent(inout):: ann_arr
     !local variables
-    opt_ann%n=sum(ann_arr%num(1:ann_arr%nann))
-    opt_ann%ndp_train=ndp_train
-    opt_ann%g=f_malloc0([1.to.opt_ann%n],id='opt_ann%g')
-    opt_ann%x=f_malloc0([1.to.opt_ann%n],id='opt_ann%x')
+    self%n=sum(ann_arr%num(1:ann_arr%nann))
+    self%ndp_train=ndp_train
+    self%g=f_malloc0([1.to.self%n],id='opt_ann%g')
+    self%x=f_malloc0([1.to.self%n],id='opt_ann%x')
 end subroutine init_opt_ann
 !*****************************************************************************************
-subroutine fini_opt_ann(opt_ann)
+subroutine fini_opt_ann(self)
     use mod_ann, only: typ_ann_arr
     use dynamic_memory
     implicit none
-    type(typ_opt_ann), intent(inout):: opt_ann
+    class(typ_opt_ann), intent(inout):: self
     !local variables
-    call f_free(opt_ann%g)
-    call f_free(opt_ann%x)
+    call f_free(self%g)
+    call f_free(self%x)
 end subroutine fini_opt_ann
 !*****************************************************************************************
 subroutine set_opt_ann_grad(ann_arr,grad,opt_ann)
@@ -99,13 +136,13 @@ subroutine convert_opt_x_ann_arr(opt_ann,ann_arr)
     call convert_x_ann_arr(opt_ann%n,opt_ann%x,ann_arr)
 end subroutine convert_opt_x_ann_arr
 !*****************************************************************************************
-subroutine ekf_rivals(parini,ann_arr,opt_ann)
+subroutine ekf_rivals(cost_object,parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_ann_io_yaml, only: write_ann_all_yaml
     use mod_processors, only: iproc
     use yaml_output
     implicit none
+    class(typ_cost_object), intent(inout) :: cost_object
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(inout):: ann_arr
     type(typ_opt_ann), intent(inout):: opt_ann
@@ -183,23 +220,16 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
         alpha=100.d-2
         rf=1.d-6
     endif
-    if(parini%fit_hoppint) then
-        call fit_hgen(parini,ann_arr,opt_ann)
-    endif
     do iter=0,parini%nstep_opt_ann
         call yaml_sequence(advance='no',unit=ann_arr%iunit)
         call cpu_time(time_s)
         call convert_opt_x_ann_arr(opt_ann,ann_arr)
         if(iproc==0) then
-            if( ann_arr%exists_yaml_file) then
-                call write_ann_all_yaml(parini,ann_arr,iter)
-            else
-                call write_ann_all(parini,ann_arr,iter)
-            endif
+            call cost_object%func_write(parini,iter)
         endif
         if(mod(iter,1)==0) then
             call analyze_epoch_init(parini,ann_arr)
-            call ann_evaluate_all(parini,iter,ann_arr)
+            call cost_object%func_evaluate(parini,iter)
             call analyze_epoch_print(parini,iter,ann_arr)
         endif
         if(iter==parini%nstep_opt_ann) exit
@@ -217,7 +247,6 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
        ! endif
         rinv=1.d0/r
         write(31,'(i6,es14.5)') iter,r
-        ann_arr%dpm_rmse=0
         do idp=1,opt_ann%ndp_train
             ann_arr%event='train'
             !The following is allocated with ann_arr%num(1), this means number of
@@ -225,11 +254,7 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
             !Therefore, it must be fixed later.
             !g_per_atom=f_malloc([1.to.ann_arr%num(1),1.to.atoms%nat],id='g_per_atom') !HERE
             call convert_opt_x_ann_arr(opt_ann,ann_arr)
-            call get_fcn_ann(parini,idp,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
-            ann_arr%dpm_rmse=ann_arr%dpm_rmse+ann_arr%dpm_err
-            if(parini%iverbose>=2) then 
-                write(1370,'(2i4,2es18.8)') iter,idp,ann_arr%dpm_err, ann_arr%dpm_rmse
-            end if
+            call cost_object%func_value(parini,idp,opt_ann,fcn_ann,fcn_ref)
             !if(trim(parini%approach_ann)=='tb') then
                 do j=1,opt_ann%n
                     opt_ann%g(j)=opt_ann%g(j)+parini%weight_hardness*opt_ann%x(j)
@@ -270,8 +295,6 @@ subroutine ekf_rivals(parini,ann_arr,opt_ann)
             dtime5=dtime5+time2-time1
             dtime6=dtime6+time3-time2
         enddo
-        ann_arr%dpm_rmse=sqrt(ann_arr%dpm_rmse/(3.d0*opt_ann%ndp_train))
-        write(88,'(i4,es18.8)') iter,ann_arr%dpm_rmse
         call cpu_time(time_e)
         dtime=time_e-time_s
         !dtime=dtime1+dtime2+dtime3+dtime4+dtime5+dtime6
@@ -396,113 +419,6 @@ subroutine analyze_epoch_print(parini,iter,ann_arr)
         !close(71)
     enddo
 end subroutine analyze_epoch_print
-!*****************************************************************************************
-subroutine ekf_behler(parini,ann_arr,opt_ann)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_ann_io_yaml, only: write_ann_all_yaml
-    use mod_processors, only: iproc
-    implicit none
-    type(typ_parini), intent(in):: parini
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_opt_ann), intent(inout):: opt_ann
-    !local variables
-    real(8), allocatable:: f(:) !Kalman gain matrix
-    real(8), allocatable:: p(:,:) !covariance matrix
-    real(8), allocatable:: v1(:) !work array
-    integer:: i, j, iter, idp, ios, ia
-    real(8):: DDOT, tt, den, alambda, alambdainv, alambda0
-    real(8):: fcn_ann, fcn_ref
-    real(8):: time_s, time_e, time1, time2, time3 !, time4
-    real(8):: dtime, dtime1, dtime2, dtime3, dtime4, dtime5, dtime6
-    real(8):: tt1, tt2, tt3, tt4, tt5, tt6
-    allocate(f(opt_ann%n),p(opt_ann%n,opt_ann%n),v1(opt_ann%n))
-    p(1:opt_ann%n,1:opt_ann%n)=0.d0
-    do i=1,opt_ann%n
-        p(i,i)=1.d-2
-    enddo
-    !alambda0=0.9994d0
-    !alambda=0.99d0
-    alambda0=0.9998d0
-    alambda=0.997d0
-    do iter=0,parini%nstep_opt_ann
-        call cpu_time(time_s)
-        call convert_opt_x_ann_arr(opt_ann,ann_arr)
-        if(iproc==0) then
-            if( ann_arr%exists_yaml_file) then
-                call write_ann_all_yaml(parini,ann_arr,iter)
-            else
-                call write_ann_all(parini,ann_arr,iter) 
-            endif
-        endif
-        if(mod(iter,1)==0) then
-            call ann_evaluate_all(parini,iter,ann_arr)
-        endif
-        if(iter==parini%nstep_opt_ann) exit
-        call cpu_time(time1)
-        dtime1=time1-time_s !time to get ANN energies for train and valid
-        dtime2=0.d0 !time to convert ANN 1D array to ANN typ_ann
-        dtime3=0.d0 !time to calculate ANN and its derivatives w.r.t. weights
-        dtime4=0.d0 !time to convert derivative of ANN in typ_ann to 1D array
-        dtime5=0.d0 !time to matrix-vector multiplication in Kalman filter
-        dtime6=0.d0 !time of the rest of Kalman filter algorithm
-        do idp=1,opt_ann%ndp_train
-            alambda=min(alambda0*alambda+1.d0-alambda0,0.999999d0)
-            alambdainv=1.d0/alambda
-            !write(31,'(2i6,f14.10)') iter,idp,alambda
-            ann_arr%event='train'
-            call get_fcn_ann(parini,idp,'train',ann_arr,opt_ann,fcn_ann,fcn_ref)
-            call cpu_time(time1)
-            !opt_ann%g(1:opt_ann%n)=opt_ann%g(1:opt_ann%n)*(opt_ann%epot-epotall(idp))
-            call DGEMV('T',opt_ann%n,opt_ann%n,1.d0,p,opt_ann%n,opt_ann%g,1,0.d0,v1,1)
-            !call cal_matvec_mpi(opt_ann%n,p,opt_ann%g,v1)
-            call cpu_time(time2)
-            tt=DDOT(opt_ann%n,opt_ann%g,1,v1,1)
-            den=alambdainv/(1.d0+tt*alambdainv)
-            !write(*,'(i7,i5,f14.10,es11.2)') iter,idp,alambda,den
-            !call DGEMV('T',opt_ann%n,opt_ann%n,den,p,opt_ann%n,opt_ann%g,1,0.d0,f,1)
-            f(1:opt_ann%n)=v1(1:opt_ann%n)*den
-            do j=1,opt_ann%n
-                do i=1,opt_ann%n
-                    p(i,j)=(p(i,j)-f(i)*v1(j))*alambdainv
-                    !if(i==j) p(i,j)=p(i,j)+1.d-1
-                enddo
-            enddo
-                    !write(21,'(a)') '----------------------------------------'
-            !write(*,'(a,i7,i6,2es15.5)') 'forgetting ',iter,idp,alambda,den
-            do i=1,opt_ann%n
-                !write(81,*) iter,idp,i,f(i)*(epotall(idp)-opt_ann%epot)
-                opt_ann%x(i)=opt_ann%x(i)+f(i)*(fcn_ref-fcn_ann)
-            enddo
-            call cpu_time(time3)
-            dtime5=dtime5+time2-time1
-            dtime6=dtime6+time3-time2
-        enddo
-        call cpu_time(time_e)
-        dtime=time_e-time_s
-        !dtime=dtime1+dtime2+dtime3+dtime4+dtime5+dtime6
-        tt1=dtime1/dtime*100.d0
-        tt2=dtime2/dtime*100.d0
-        tt3=dtime3/dtime*100.d0
-        tt4=dtime4/dtime*100.d0
-        tt5=dtime5/dtime*100.d0
-        tt6=dtime6/dtime*100.d0
-        tt=tt1+tt2+tt3+tt4+tt5+tt6
-        if(iter==0) then
-            open(unit=41,file='time_real.prc',status='replace',iostat=ios)
-            if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
-            write(41,'(a1,4x,7a10)') '#',' dtime1 ',' dtime2 ',' dtime3 ',' dtime4 ',' dtime5 ',' dtime6 ',' sum '
-            open(unit=42,file='time_frac.prc',status='replace',iostat=ios)
-            if(ios/=0) then;write(*,'(a)') 'ERROR: failure openning output file';stop;endif
-            write(42,'(a1,4x,7a10)') '#','    tt1 ','    tt2 ','    tt3 ','    tt4 ','    tt5 ','    tt6 ', 'sum '
-        endif
-        write(41,'(i5,7f10.2)') iter,dtime1,dtime2,dtime3,dtime4,dtime5,dtime6,dtime
-        write(42,'(i5,7f10.1)') iter,tt1,tt2,tt3,tt4,tt5,tt6,tt
-    enddo
-    close(41)
-    close(42)
-    deallocate(f,p,v1)
-end subroutine ekf_behler
 !*****************************************************************************************
 subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
     use mod_parini, only: typ_parini

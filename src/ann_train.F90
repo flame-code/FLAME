@@ -7,26 +7,213 @@ module mod_callback_ann
     use mod_opt_ann, only: typ_opt_ann
     implicit none
     type(typ_parini), pointer:: parini_t
-    type(typ_atoms_arr), pointer:: atoms_train_t
-    type(typ_atoms_arr), pointer:: atoms_valid_t
     type(typ_atoms_arr), pointer:: atoms_smplx_t
     type(typ_ann_arr), pointer:: ann_arr_t
     type(typ_opt_ann), pointer:: opt_ann_t
-    type(typ_symfunc_arr), pointer:: symfunc_train_t
-    type(typ_symfunc_arr), pointer:: symfunc_valid_t
 end module mod_callback_ann
 !*****************************************************************************************
 module mod_train
+    use mod_opt_ann, only: typ_cost_object
+    use mod_atoms, only: typ_atoms_arr
+    use mod_symfunc, only: typ_symfunc_arr
+    use mod_ann, only: typ_ann_arr
     implicit none
     private
     public:: ann_train
+    type, extends(typ_cost_object):: typ_cost_object_ext
+        logical:: initialized=.false.
+        type(typ_ann_arr), pointer:: ann_arr=>null()
+        type(typ_atoms_arr), pointer:: atoms_train=>null()
+        type(typ_atoms_arr), pointer:: atoms_valid=>null()
+        type(typ_symfunc_arr), pointer:: symfunc_train=>null()
+        type(typ_symfunc_arr), pointer:: symfunc_valid=>null()
+        contains
+        procedure, public, pass(self):: init_cost_object_ext
+        procedure, public, pass(self):: fini_cost_object_ext
+        procedure, public, pass(self):: func_value => get_fcn_ann
+        procedure, public, pass(self):: func_write => export_weights
+        procedure, public, pass(self):: func_evaluate => ann_evaluate_all
+    end type typ_cost_object_ext
 contains
+!*****************************************************************************************
+subroutine init_cost_object_ext(self,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    implicit none
+    class(typ_cost_object_ext), intent(inout):: self
+    type(typ_ann_arr), intent(in), target:: ann_arr
+    type(typ_atoms_arr), intent(in), target:: atoms_train
+    type(typ_atoms_arr), intent(in), target:: atoms_valid
+    type(typ_symfunc_arr), intent(in), target:: symfunc_train
+    type(typ_symfunc_arr), intent(in), target:: symfunc_valid
+    !local variables
+    self%ann_arr=>ann_arr
+    self%atoms_train=>atoms_train
+    self%atoms_valid=>atoms_valid
+    self%symfunc_train=>symfunc_train
+    self%symfunc_valid=>symfunc_valid
+    self%initialized=.true.
+end subroutine init_cost_object_ext
+!*****************************************************************************************
+subroutine fini_cost_object_ext(self)
+    implicit none
+    class(typ_cost_object_ext), intent(inout):: self
+    !local variables
+    nullify(self%ann_arr)
+    nullify(self%atoms_train)
+    nullify(self%atoms_valid)
+    nullify(self%symfunc_train)
+    nullify(self%symfunc_valid)
+    self%initialized=.false.
+end subroutine fini_cost_object_ext
+!*****************************************************************************************
+subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
+    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp, atom_deallocate_old
+    implicit none
+    class(typ_cost_object_ext), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: idp
+    type(typ_opt_ann), intent(inout):: opt_ann
+    real(8), intent(out):: fcn_ann
+    real(8), intent(out):: fcn_ref
+    !local variables
+    type(typ_atoms):: atoms
+    real(8), allocatable:: ann_grad(:,:)
+    integer:: iat, i, j, iconf, ixyz
+    if(.not. self%initialized) then
+        write(*,'(a)') 'ERROR: typ_cost_object_ext is not initialized!'
+        stop
+    endif
+    associate(ann_arr=>self%ann_arr)
+    associate(atoms_train=>self%atoms_train,symfunc_train=>self%symfunc_train)
+    !-----------------------------------------------------------------
+    if(trim(ann_arr%approach)=='atombased') then
+        iconf=idp
+    elseif(trim(ann_arr%approach)=='cent1') then
+        iconf=idp
+    elseif(trim(ann_arr%approach)=='cent2') then
+        iconf=idp
+    elseif(trim(ann_arr%approach)=='centt') then
+        iconf=idp
+    elseif(trim(ann_arr%approach)=='cent3') then
+        iconf=int((idp-1)/3)+1
+        ixyz=mod(idp-1,3)+1
+    elseif(trim(ann_arr%approach)=='tb') then
+        iconf=idp
+    endif
+    !-----------------------------------------------------------------
+    call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
+    call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
+    !-----------------------------------------------------------------
+    allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
+    if(trim(ann_arr%approach)=='atombased') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent1') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent2') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                !ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
+                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='centt') then
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    elseif(trim(ann_arr%approach)=='cent3') then
+        call update_ratp(atoms)
+        do iat=1,atoms%nat
+            i=atoms%itypat(iat)
+            do j=1,ann_arr%nweight_max
+                ann_grad(j,i)=ann_grad(j,i)+(atoms%ratp(ixyz,iat))*ann_arr%dqat_weights(j,iat)
+            enddo
+        enddo
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+    endif
+    deallocate(ann_grad)
+    !-----------------------------------------------------------------
+    if(trim(ann_arr%approach)=='cent3') then
+        fcn_ann=atoms%dpm(ixyz)
+        fcn_ref=atoms_train%atoms(iconf)%dpm(ixyz)
+        write(*,'(a,2f10.3)') 'fcn_ann,fcn_ref ',fcn_ann,fcn_ref
+    else
+        fcn_ann=atoms%epot
+        fcn_ref=atoms_train%atoms(iconf)%epot
+    endif
+    call atom_deallocate_old(atoms)
+    end associate
+    end associate
+end subroutine get_fcn_ann
+!*****************************************************************************************
+subroutine export_weights(self,parini,iter)
+    use mod_parini, only: typ_parini
+    use mod_ann_io_yaml, only: write_ann_all_yaml
+    implicit none
+    class(typ_cost_object_ext), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iter
+    !local variables
+    if(.not. self%initialized) then
+        write(*,'(a)') 'ERROR: typ_cost_object_ext is not initialized!'
+        stop
+    endif
+    associate(ann_arr=>self%ann_arr)
+    if(ann_arr%exists_yaml_file) then
+        call write_ann_all_yaml(parini,ann_arr,iter)
+    else
+        call write_ann_all(parini,ann_arr,iter)
+    endif
+    end associate
+end subroutine export_weights
+!*****************************************************************************************
+subroutine ann_evaluate_all(self,parini,iter)
+    use mod_parini, only: typ_parini
+    use mod_symfunc, only: typ_symfunc
+    use mod_symfunc, only: typ_symfunc_arr
+    implicit none
+    class(typ_cost_object_ext), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iter
+    !local variables
+    if(.not. self%initialized) then
+        write(*,'(a)') 'ERROR: typ_cost_object_ext is not initialized!'
+        stop
+    endif
+    associate(ann_arr=>self%ann_arr)
+    associate(atoms_train=>self%atoms_train,atoms_valid=>self%atoms_valid)
+    associate(symfunc_train=>self%symfunc_train,symfunc_valid=>self%symfunc_valid)
+    call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
+    call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
+    end associate
+    end associate
+    end associate
+end subroutine ann_evaluate_all
 !*****************************************************************************************
 subroutine ann_train(parini)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ekf_behler, ann_lm
+    use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ann_lm
     use mod_opt_ann, only: set_annweights
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_ann_io_yaml, only: read_data_yaml, write_ann_all_yaml
@@ -37,13 +224,14 @@ subroutine ann_train(parini)
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
-    type(typ_ann_arr):: ann_arr
+    type(typ_ann_arr), target:: ann_arr
     type(typ_opt_ann):: opt_ann
     type(typ_atoms_arr), target:: atoms_train
     type(typ_atoms_arr), target:: atoms_valid
     type(typ_atoms_arr):: atoms_smplx
     type(typ_symfunc_arr), target:: symfunc_train
     type(typ_symfunc_arr), target:: symfunc_valid
+    type(typ_cost_object_ext):: cost_object_ext
     real(8):: time1, time2, time3
     logical:: file_exists
     call f_routine(id='ann_train')
@@ -119,14 +307,9 @@ subroutine ann_train(parini)
     if(trim(parini%approach_ann)=='centt' .and. parini%prefit_centt_ann) then
         call centt_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     endif
-    atoms_train_t=>atoms_train
-    atoms_valid_t=>atoms_valid
-    symfunc_train_t=>symfunc_train
-    symfunc_valid_t=>symfunc_valid
-    if(trim(parini%optimizer_ann)=='behler') then
-        call ekf_behler(parini,ann_arr,opt_ann)
-    else if(trim(parini%optimizer_ann)=='rivals') then
-        call ekf_rivals(parini,ann_arr,opt_ann)
+    call cost_object_ext%init_cost_object_ext(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    if(trim(parini%optimizer_ann)=='rivals') then
+        call ekf_rivals(cost_object_ext,parini,ann_arr,opt_ann)
     else if(trim(parini%optimizer_ann)=='rivals_fitchi') then
         write(*,*) opt_ann%n
         call ekf_rivals_fitchi(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
@@ -148,6 +331,7 @@ subroutine ann_train(parini)
         endif
     endif
     call fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_smplx,symfunc_train,symfunc_valid)
+    call cost_object_ext%fini_cost_object_ext()
 
     call f_release_routine()
 end subroutine ann_train
@@ -378,7 +562,7 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms_arr
-    use mod_opt_ann, only: typ_opt_ann, init_opt_ann
+    use mod_opt_ann, only: typ_opt_ann
     use mod_ann_io_yaml, only: read_input_ann_yaml, read_ann_yaml
     use mod_processors, only: iproc
     use yaml_output
@@ -416,9 +600,9 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     !---------------------------------------------
     call ann_arr%init_ann_arr()
     if(trim(ann_arr%approach)=='cent3') then
-        call init_opt_ann(3*atoms_train%nconf,opt_ann,ann_arr)
+        call opt_ann%init_opt_ann(3*atoms_train%nconf,ann_arr)
     else
-        call init_opt_ann(atoms_train%nconf,opt_ann,ann_arr)
+        call opt_ann%init_opt_ann(atoms_train%nconf,ann_arr)
     endif
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
@@ -438,7 +622,7 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_s
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, fini_opt_ann
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms_arr, atom_deallocate_old
     use mod_processors, only: iproc
     use dynamic_memory
@@ -470,7 +654,7 @@ subroutine fini_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid,atoms_s
         enddo
         deallocate(ann_arr%chi_ref_valid)
     endif
-    call fini_opt_ann(opt_ann)
+    call opt_ann%fini_opt_ann()
 
     do iconf=1,atoms_train%nconf
         call f_free(symfunc_train%symfunc(iconf)%y)
@@ -1246,25 +1430,6 @@ end subroutine set_ref_energy
 !*****************************************************************************************
 end module mod_train
 !*****************************************************************************************
-subroutine ann_evaluate_all(parini,iter,ann_arr)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_symfunc, only: typ_symfunc
-    use mod_symfunc, only: typ_symfunc_arr
-    use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
-    use mod_callback_ann, only: atoms_train=>atoms_train_t
-    use mod_callback_ann, only: atoms_valid=>atoms_valid_t
-    use mod_callback_ann, only: symfunc_train=>symfunc_train_t
-    use mod_callback_ann, only: symfunc_valid=>symfunc_valid_t
-    implicit none
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: iter
-    type(typ_ann_arr), intent(inout):: ann_arr
-    !local variables
-    call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
-    call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
-end subroutine ann_evaluate_all
-!*****************************************************************************************
 subroutine ann_evaluate(parini,iter,ann_arr,symfunc_arr,atoms_arr,data_set)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -1459,7 +1624,7 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_ann_io_yaml, only: write_ann_yaml
-    use mod_opt_ann, only: typ_opt_ann, init_opt_ann, get_opt_ann_x
+    use mod_opt_ann, only: typ_opt_ann, get_opt_ann_x
     use mod_ann_io_yaml, only: get_symfunc_parameters_yaml
     use mod_processors, only: iproc
     use yaml_output
@@ -1553,9 +1718,7 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
             if(i==ita) ndp_valid=ndp_valid+1
         enddo
     enddo
-    !call init_opt_ann(ndp_train,opt_ann,ann_arr)
     x(1:n)=0.d0
-    !write(*,*) x(:)
     call get_opt_ann_x(ann_arr,opt_ann_main,x)
     !write(*,*) x(:)
     if(ann_arr%ann(1)%nn(0)/=symfunc_train%symfunc(1)%ng .or. ann_arr%ann(1)%nn(0)/=symfunc_valid%symfunc(1)%ng) then

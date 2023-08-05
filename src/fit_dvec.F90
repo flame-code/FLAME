@@ -22,7 +22,7 @@ subroutine ekf_rivals_fitdvec(parini,ann_arr_main,opt_ann_main,atoms_train,atoms
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_ann_io_yaml, only: write_ann_yaml
-    use mod_opt_ann, only: typ_opt_ann, init_opt_ann, get_opt_ann_x
+    use mod_opt_ann, only: typ_opt_ann, get_opt_ann_x
     use mod_ann_io_yaml, only: get_symfunc_parameters_yaml
     use mod_processors, only: iproc
     use yaml_output
@@ -116,9 +116,7 @@ subroutine ekf_rivals_fitdvec(parini,ann_arr_main,opt_ann_main,atoms_train,atoms
             if(i==ita) ndp_valid=ndp_valid+1
         enddo
     enddo
-    !call init_opt_ann(ndp_train,opt_ann,ann_arr)
     x(1:n)=0.d0
-    !write(*,*) x(:)
     call get_opt_ann_x(ann_arr,opt_ann_main,x)
     !write(*,*) x(:)
     if(ann_arr%ann(1)%nn(0)/=symfunc_train%symfunc(1)%ng .or. ann_arr%ann(1)%nn(0)/=symfunc_valid%symfunc(1)%ng) then
