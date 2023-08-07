@@ -21,7 +21,7 @@
 ./latticetools_minhocao.o : ./latticetools_minhocao.F90 ./parini_mod.o 
 ./task_mod.o : ./task_mod.F90 
 ./es_radpots_cent2.o : ./es_radpots_cent2.F90 ./electrostatics_mod.o 
-./train_optimizer.o : ./train_optimizer.F90 ./basic_utilities.o ./atoms_mod.o ./ann_mod.o ./ann_symfunc_mod.o ./processors_mod.o ./ann_mod.o ./parini_mod.o 
+./train_optimizer.o : ./train_optimizer.F90 ./atoms_mod.o ./ann_mod.o ./ann_symfunc_mod.o ./processors_mod.o ./flm_futile_mod.o ./ann_mod.o ./parini_mod.o 
 ./gensymcrys_random_atoms.o : ./gensymcrys_random_atoms.F90 
 ./parser_core.o : ./parser_core.F90 ./task_mod.o 
 ./gensymcrys_trans_uniprim.o : ./gensymcrys_trans_uniprim.F90 
@@ -55,7 +55,7 @@
 ./md_util.o : ./md_util.F90 ./atoms_mod.o 
 ./optimizer_fire.o : ./optimizer_fire.F90 ./opt_mod.o ./parini_mod.o 
 ./potential_TERSOFF.o : ./potential_TERSOFF.F90 ./parini_mod.o ./minhocao_mod.o ./constants_minhocao_mod.o ./minhocao_mod.o 
-./ann_train.o : ./ann_train.F90 ./cell_linkedlists.o ./cell_linkedlists.o ./basic_utilities.o ./processors_mod.o ./ann_io_yaml.o ./train_optimizer.o ./ann_symfunc_mod.o ./ann_mod.o ./parini_mod.o ./atoms_mod.o 
+./ann_train.o : ./ann_train.F90 ./flm_futile_mod.o ./cell_linkedlists.o ./cell_linkedlists.o ./basic_utilities.o ./processors_mod.o ./ann_io_yaml.o ./train_optimizer.o ./ann_symfunc_mod.o ./ann_mod.o ./parini_mod.o ./atoms_mod.o 
 ./constants_mod.o : ./constants_mod.F90 ./definitions_mod.o 
 ./gensymcrys_random_lattice.o : ./gensymcrys_random_lattice.F90 
 ./spglib_int.o : ./spglib_int.F90 

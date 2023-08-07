@@ -1,4 +1,5 @@
 !*****************************************************************************************
+!IMPORTANT: opt_ann should not be passed, for the moment, it is passed because of cal_ann_tb
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_tightbinding, only: typ_partb
     use mod_parini, only: typ_parini
@@ -32,24 +33,6 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
         call cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
-        !if(trim(ann_arr%event)=='train') then
-        ! E0=atoms%epot
-        ! allocate(xt(opt_ann%n),gt(opt_ann%n))
-        ! xt(1:opt_ann%n)=opt_ann%x(1:opt_ann%n)
-        ! gt(1:opt_ann%n)=ann_grad(1:opt_ann%n)
-        ! do i=1,opt_ann%n
-        !     g_tb=gt(i)
-        !     !!Finite difference 
-        !     dis=1.d-4 !*abs(opt_ann%x(i))
-        !     opt_ann%x(i)=opt_ann%x(i)+dis
-        !     call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
-        !     E1=atoms%epot
-        !     g=(E1-E0)/dis
-        !     write(*,'(a,2es19.10,es14.5,2es19.10)') 'FD-TEST',g_tb,g,g-g_tb,E0,E1
-        !     opt_ann%x(i)=xt(i)
-        ! enddo
-        ! stop 'TTTTTTTTTTTTTTTT'
-        !endif
     else
         write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
         stop
@@ -60,7 +43,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
@@ -144,7 +127,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none

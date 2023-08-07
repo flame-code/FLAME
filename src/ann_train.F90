@@ -13,7 +13,7 @@ module mod_callback_ann
 end module mod_callback_ann
 !*****************************************************************************************
 module mod_train
-    use mod_opt_ann, only: typ_cost_object
+    use mod_opt_ann, only: typ_opt_ann, typ_cost_object
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_ann, only: typ_ann_arr
@@ -23,6 +23,7 @@ module mod_train
     type, extends(typ_cost_object):: typ_cost_object_ext
         logical:: initialized=.false.
         type(typ_ann_arr), pointer:: ann_arr=>null()
+        type(typ_opt_ann), pointer:: opt_ann=>null()
         type(typ_atoms_arr), pointer:: atoms_train=>null()
         type(typ_atoms_arr), pointer:: atoms_valid=>null()
         type(typ_symfunc_arr), pointer:: symfunc_train=>null()
@@ -36,16 +37,18 @@ module mod_train
     end type typ_cost_object_ext
 contains
 !*****************************************************************************************
-subroutine init_cost_object_ext(self,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+subroutine init_cost_object_ext(self,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     implicit none
     class(typ_cost_object_ext), intent(inout):: self
     type(typ_ann_arr), intent(in), target:: ann_arr
+    type(typ_opt_ann), intent(in), target:: opt_ann
     type(typ_atoms_arr), intent(in), target:: atoms_train
     type(typ_atoms_arr), intent(in), target:: atoms_valid
     type(typ_symfunc_arr), intent(in), target:: symfunc_train
     type(typ_symfunc_arr), intent(in), target:: symfunc_valid
     !local variables
     self%ann_arr=>ann_arr
+    self%opt_ann=>opt_ann
     self%atoms_train=>atoms_train
     self%atoms_valid=>atoms_valid
     self%symfunc_train=>symfunc_train
@@ -65,10 +68,10 @@ subroutine fini_cost_object_ext(self)
     self%initialized=.false.
 end subroutine fini_cost_object_ext
 !*****************************************************************************************
-subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
+subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref,g)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp, atom_deallocate_old
     implicit none
     class(typ_cost_object_ext), intent(inout):: self
@@ -77,6 +80,7 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
     type(typ_opt_ann), intent(inout):: opt_ann
     real(8), intent(out):: fcn_ann
     real(8), intent(out):: fcn_ref
+    real(8), intent(out):: g(opt_ann%n)
     !local variables
     type(typ_atoms):: atoms
     real(8), allocatable:: ann_grad(:,:)
@@ -87,6 +91,8 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
     endif
     associate(ann_arr=>self%ann_arr)
     associate(atoms_train=>self%atoms_train,symfunc_train=>self%symfunc_train)
+    ann_arr%event='train'
+    call convert_opt_x_ann_arr(opt_ann,ann_arr)
     !-----------------------------------------------------------------
     if(trim(ann_arr%approach)=='atombased') then
         iconf=idp
@@ -104,6 +110,8 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
     endif
     !-----------------------------------------------------------------
     call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
+    !IMPORTANT: it will be fixed: opt_ann will not be passed to cal_ann_main, for the
+    !           moment it is passed because of cal_ann_tb 
     call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
     !-----------------------------------------------------------------
     allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
@@ -114,7 +122,7 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
                 ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann%n,g)
     elseif(trim(ann_arr%approach)=='cent1') then
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
@@ -122,7 +130,7 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
                 ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann%n,g)
     elseif(trim(ann_arr%approach)=='cent2') then
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
@@ -131,7 +139,7 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
                 ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann%n,g)
     elseif(trim(ann_arr%approach)=='centt') then
         do iat=1,atoms%nat
             i=atoms%itypat(iat)
@@ -139,7 +147,7 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
                 ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
             enddo
         enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann%n,g)
     elseif(trim(ann_arr%approach)=='cent3') then
         call update_ratp(atoms)
         do iat=1,atoms%nat
@@ -148,7 +156,7 @@ subroutine get_fcn_ann(self,parini,idp,opt_ann,fcn_ann,fcn_ref)
                 ann_grad(j,i)=ann_grad(j,i)+(atoms%ratp(ixyz,iat))*ann_arr%dqat_weights(j,iat)
             enddo
         enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann%n,g)
     endif
     deallocate(ann_grad)
     !-----------------------------------------------------------------
@@ -177,7 +185,8 @@ subroutine export_weights(self,parini,iter)
         write(*,'(a)') 'ERROR: typ_cost_object_ext is not initialized!'
         stop
     endif
-    associate(ann_arr=>self%ann_arr)
+    associate(ann_arr=>self%ann_arr,opt_ann=>self%opt_ann)
+    call convert_opt_x_ann_arr(opt_ann,ann_arr)
     if(ann_arr%exists_yaml_file) then
         call write_ann_all_yaml(parini,ann_arr,iter)
     else
@@ -199,11 +208,14 @@ subroutine ann_evaluate_all(self,parini,iter)
         write(*,'(a)') 'ERROR: typ_cost_object_ext is not initialized!'
         stop
     endif
-    associate(ann_arr=>self%ann_arr)
+    associate(ann_arr=>self%ann_arr,opt_ann=>self%opt_ann)
     associate(atoms_train=>self%atoms_train,atoms_valid=>self%atoms_valid)
     associate(symfunc_train=>self%symfunc_train,symfunc_valid=>self%symfunc_valid)
+    call convert_opt_x_ann_arr(opt_ann,ann_arr)
+    call analyze_epoch_init(parini,ann_arr)
     call ann_evaluate(parini,iter,ann_arr,symfunc_train,atoms_train,"train")
     call ann_evaluate(parini,iter,ann_arr,symfunc_valid,atoms_valid,"valid")
+    call analyze_epoch_print(parini,iter,ann_arr)
     end associate
     end associate
     end associate
@@ -214,7 +226,6 @@ subroutine ann_train(parini)
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_opt_ann, only: typ_opt_ann, ekf_rivals, ann_lm
-    use mod_opt_ann, only: set_annweights
     use mod_atoms, only: typ_atoms_arr, typ_atoms
     use mod_ann_io_yaml, only: read_data_yaml, write_ann_all_yaml
     use mod_processors, only: iproc
@@ -307,9 +318,9 @@ subroutine ann_train(parini)
     if(trim(parini%approach_ann)=='centt' .and. parini%prefit_centt_ann) then
         call centt_simplex(parini,ann_arr,atoms_smplx,opt_ann)
     endif
-    call cost_object_ext%init_cost_object_ext(ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
+    call cost_object_ext%init_cost_object_ext(ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
     if(trim(parini%optimizer_ann)=='rivals') then
-        call ekf_rivals(cost_object_ext,parini,ann_arr,opt_ann)
+        call ekf_rivals(cost_object_ext,parini,opt_ann)
     else if(trim(parini%optimizer_ann)=='rivals_fitchi') then
         write(*,*) opt_ann%n
         call ekf_rivals_fitchi(parini,ann_arr,opt_ann,atoms_train,atoms_valid,symfunc_train,symfunc_valid)
@@ -339,7 +350,7 @@ end subroutine ann_train
 subroutine set_single_atom_energy(parini,ann_arr,opt_ann)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, atom_allocate_old, atom_deallocate_old, set_rat_iat
     use mod_symfunc, only: typ_symfunc
     use dynamic_memory
@@ -599,11 +610,6 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
     endif
     !---------------------------------------------
     call ann_arr%init_ann_arr()
-    if(trim(ann_arr%approach)=='cent3') then
-        call opt_ann%init_opt_ann(3*atoms_train%nconf,ann_arr)
-    else
-        call opt_ann%init_opt_ann(atoms_train%nconf,ann_arr)
-    endif
     if(iproc==0) then
         !write(fnout,'(a12,i3.3)') 'err_train',iproc
         fnout="train_output.yaml"
@@ -615,6 +621,11 @@ subroutine init_ann_train(parini,ann_arr,opt_ann,atoms_train,atoms_valid)
         end if
         call yaml_release_document(ann_arr%iunit)
         call yaml_sequence_open('training iterations',unit=ann_arr%iunit)
+    endif
+    if(trim(ann_arr%approach)=='cent3') then
+        call opt_ann%init_opt_ann(3*atoms_train%nconf,ann_arr%nwtot,ann_arr%iunit)
+    else
+        call opt_ann%init_opt_ann(atoms_train%nconf,ann_arr%nwtot,ann_arr%iunit)
     endif
 end subroutine init_ann_train
 !*****************************************************************************************
@@ -1624,7 +1635,7 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
     use mod_atoms, only: typ_atoms_arr
     use mod_symfunc, only: typ_symfunc_arr
     use mod_ann_io_yaml, only: write_ann_yaml
-    use mod_opt_ann, only: typ_opt_ann, get_opt_ann_x
+    use mod_opt_ann, only: typ_opt_ann
     use mod_ann_io_yaml, only: get_symfunc_parameters_yaml
     use mod_processors, only: iproc
     use yaml_output
@@ -1718,8 +1729,7 @@ subroutine ekf_rivals_fitchi(parini,ann_arr_main,opt_ann_main,atoms_train,atoms_
             if(i==ita) ndp_valid=ndp_valid+1
         enddo
     enddo
-    x(1:n)=0.d0
-    call get_opt_ann_x(ann_arr,opt_ann_main,x)
+    call opt_ann_main%get_opt_ann_x(opt_ann_main%n,x)
     !write(*,*) x(:)
     if(ann_arr%ann(1)%nn(0)/=symfunc_train%symfunc(1)%ng .or. ann_arr%ann(1)%nn(0)/=symfunc_valid%symfunc(1)%ng) then
         stop 'ERROR: ann_arr%ann(1)%nn(0) and symfunc_train%symfunc(1)%ng differ!'
@@ -1960,4 +1970,226 @@ subroutine ann_evaluate_fitchi(parini,ita,iter,ann_arr,n,g,ndp_train,ft_train,ch
     !!deallocate(chiall)
     !endif
 end subroutine ann_evaluate_fitchi
+!*****************************************************************************************
+subroutine set_opt_ann_grad(ann_arr,grad,n,g)
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    real(8), intent(in):: grad(ann_arr%nweight_max,ann_arr%nann)
+    integer, intent(in):: n
+    real(8), intent(out):: g(n)
+    !local variables
+    integer:: iann, iw, i
+    i=0
+    do iann=1,ann_arr%nann
+        do iw=1,ann_arr%num(iann)
+            i=i+1
+            g(ann_arr%loc(iann)+iw-1)=grad(iw,iann)
+        enddo
+    enddo
+    if(i/=n) then
+        write(*,'(a)') 'ERROR: i/=n in set_opt_ann_grad:'
+        write(*,'(a,i8)') 'i= ',i
+        write(*,'(a,i8)') 'n= ',n
+        stop
+    endif
+end subroutine set_opt_ann_grad
+!*****************************************************************************************
+subroutine set_annweights(parini,opt_ann,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_processors, only: iproc
+    use mod_opt_ann, only: typ_opt_ann
+    use mod_ann, only: typ_ann_arr, convert_ann_x
+    use mod_flm_futile
+    use mod_utils
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_opt_ann), intent(inout):: opt_ann
+    type(typ_ann_arr), intent(in):: ann_arr
+    !local variables
+    integer:: ierr, i, ia
+    real(8):: tt
+    character(50):: approach
+    real(8), allocatable:: x(:)
+#if defined(MPI)
+    include 'mpif.h'
+#endif
+    x=f_malloc([1.to.opt_ann%n],id='x')
+    if (parini%restart_param) then
+        do ia=1,ann_arr%nann
+            call convert_ann_x(ann_arr%num(ia),x(ann_arr%loc(ia)),ann_arr%ann(ia))
+        enddo
+        return
+    endif
+    !approach='uniform'
+    approach='pure_electrostatic'
+    !approach='type_dependent'
+    if(iproc==0) then
+        if(trim(approach)=='uniform') then
+            if(trim(parini%rng_type)=='only_for_tests') then
+                call random_number_generator_simple(opt_ann%n,x)
+            else
+                call random_number(x)
+            endif
+            x(1:opt_ann%n)=(x(1:opt_ann%n)-0.5d0)*2.d0*parini%ampl_rand
+        elseif(trim(approach)=='pure_electrostatic') then
+            do i=1,opt_ann%n
+                if(i<=opt_ann%n/2) then
+                if(trim(parini%rng_type)=='only_for_tests') then
+                    call random_number_generator_simple(x(i))
+                else
+                    call random_number(x(i))
+                endif
+                    tt=-2.d0*parini%ampl_rand
+                    x(i)=(x(i)-0.5d0)*tt
+                else
+                    x(i)=-x(i-opt_ann%n/2)
+                endif
+            enddo
+        elseif(trim(approach)=='type_dependent') then
+            do i=1,opt_ann%n
+                if(i<=opt_ann%n/4) then
+                    if(trim(parini%rng_type)=='only_for_tests') then
+                        call random_number_generator_simple(x(i))
+                    else
+                        call random_number(x(i))
+                    endif
+                    tt=2.d0*parini%ampl_rand
+                    x(i)=(x(i)-0.5d0)*tt
+                elseif(i<=opt_ann%n/2) then
+                    x(i)=-x(i-opt_ann%n/4)
+                elseif(i<=3*opt_ann%n/4) then
+                    if(trim(parini%rng_type)=='only_for_tests') then
+                        call random_number_generator_simple(x(i))
+                    else
+                        call random_number(x(i))
+                    endif
+                    tt=2.d0*parini%ampl_rand
+                    x(i)=-(x(i)-0.5d0)*tt
+                else
+                    x(i)=-x(i-opt_ann%n/4)
+                endif
+            enddo
+        else
+            stop 'ERROR: unknown approach in set_annweights'
+        endif
+
+    endif
+#if defined(MPI)
+    call MPI_BCAST(x,opt_ann%n,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+#endif
+    call opt_ann%init_x_opt_ann(opt_ann%n,x)
+    call f_free(x)
+end subroutine set_annweights
+!*****************************************************************************************
+subroutine analyze_epoch_init(parini,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
+        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' &
+        .or. trim(ann_arr%approach)=='cent2')) return
+    ann_arr%natsum(1:10)=0
+    ann_arr%qmin(1:10)=huge(1.d0)
+    ann_arr%qmax(1:10)=-huge(1.d0)
+    ann_arr%qsum(1:10)=0.d0
+    ann_arr%chi_min(1:10)=huge(1.d0)
+    ann_arr%chi_max(1:10)=-huge(1.d0)
+    ann_arr%chi_sum(1:10)=0.d0
+    ann_arr%chi_delta(1:10)=0.d0
+end subroutine analyze_epoch_init
+!*****************************************************************************************
+subroutine analyze_epoch_print(parini,iter,ann_arr)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_flm_futile
+    implicit none
+    type(typ_parini), intent(in):: parini
+    integer, intent(in):: iter
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    integer:: i, ios
+    real(8):: ttavg, ttmin, ttmax, ssavg, ssmin, ssmax
+    character(50):: fn_charge, fn_chi
+    character(20):: str_key
+    if(.not. (trim(ann_arr%approach)=='eem1' .or. trim(parini%approach_ann)=='cent1' &
+        .or. trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' &
+        .or. trim(ann_arr%approach)=='cent2' )) return
+    do i=1,parini%ntypat
+        !fn_charge='charge.'//trim(parini%stypat(i))
+        !fn_chi='chi.'//trim(parini%stypat(i))
+        !if(iter==0) then
+        !    open(unit=61,file=trim(fn_charge),status='replace',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_charge)
+        !        stop
+        !    endif
+        !    open(unit=71,file=trim(fn_chi),status='replace',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_chi)
+        !        stop
+        !    endif
+        !else
+        !    open(unit=61,file=trim(fn_charge),status='old',position='append',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_charge)
+        !        stop
+        !    endif
+        !    open(unit=71,file=trim(fn_chi),status='old',position='append',iostat=ios)
+        !    if(ios/=0) then
+        !        write(*,'(2a)') 'ERROR: failure openning ',trim(fn_chi)
+        !        stop
+        !    endif
+        !endif
+        ttavg=ann_arr%qsum(i)/real(ann_arr%natsum(i),8)
+        ttmin=ann_arr%qmin(i)
+        ttmax=ann_arr%qmax(i)
+        !write(61,'(i6,4f8.3)') iter,ttavg,ttmin,ttmax,ttmax-ttmin
+        
+        write(str_key,'(2a)') 'charge_',trim(parini%stypat(i))
+        call yaml_mapping_open(trim(str_key),flow=.true.,unit=ann_arr%iunit)
+        call yaml_map('iter',iter,unit=ann_arr%iunit)
+        call yaml_map('qavg',ttavg,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('qmin',ttmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('qmax',ttmax,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('qvar',ttmax-ttmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_mapping_close(unit=ann_arr%iunit)
+
+        !write(61,'(i6,4es14.5)') iter,ttavg,ttmin,ttmax,ttmax-ttmin
+        ssavg=ann_arr%chi_sum(i)/real(ann_arr%natsum(i),8)
+        ssmin=ann_arr%chi_min(i)
+        ssmax=ann_arr%chi_max(i)
+        !write(71,'(i6,5f8.3)') iter,ssavg,ssmin,ssmax,ssmax-ssmin,ann_arr%chi_delta(i)
+        write(str_key,'(2a)') 'chi_',trim(parini%stypat(i))
+        call yaml_mapping_open(trim(str_key),flow=.true.,unit=ann_arr%iunit)
+        call yaml_map('iter',iter,unit=ann_arr%iunit)
+        call yaml_map('chiavg',ssavg,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('chimin',ssmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('chimax',ssmax,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_map('chivar',ssmax-ssmin,fmt='(f8.3)',unit=ann_arr%iunit)
+        call yaml_mapping_close(unit=ann_arr%iunit)
+        !write(71,'(i6,4es14.5)') iter,ssavg,ssmin,ssmax,ssmax-ssmin
+        !if (trim(parini%stypat(i))=='O' .and. ssmax-ssmin> 0.01) stop
+        !close(61)
+        !close(71)
+    enddo
+end subroutine analyze_epoch_print
+!*****************************************************************************************
+subroutine convert_opt_x_ann_arr(opt_ann,ann_arr)
+    use mod_ann, only: typ_ann_arr, convert_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
+    use mod_flm_futile
+    implicit none
+    type(typ_opt_ann), intent(in):: opt_ann
+    type(typ_ann_arr), intent(inout):: ann_arr
+    !local variables
+    real(8), allocatable:: x(:)
+    x=f_malloc([1.to.opt_ann%n],id='x')
+    call opt_ann%get_opt_ann_x(opt_ann%n,x)
+    call convert_x_ann_arr(opt_ann%n,x,ann_arr)
+    call f_free(x)
+end subroutine convert_opt_x_ann_arr
 !*****************************************************************************************

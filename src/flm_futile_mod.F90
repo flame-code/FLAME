@@ -16,7 +16,7 @@ module mod_flm_futile
     use yaml_output, only: yaml_map, yaml_comment, yaml_warning
     use yaml_output, only: yaml_mapping_open, yaml_mapping_close
     use yaml_output, only: yaml_scalar
-    use yaml_output, only: yaml_sequence_close
+    use yaml_output, only: yaml_sequence, yaml_sequence_close
     !-----------------------------------------------------------------
     use f_utils, only: f_get_free_unit
     !-----------------------------------------------------------------
