@@ -12,6 +12,7 @@ program tests
     call yaml_set_default_stream(iunit,ierr)
     call yaml_new_document()
 
+#if defined(HAVE_BPS)
     !---------------------------------------------------------------------------
     call test_cal_pot_gauss_s()
     !---------------------------------------------------------------------------
@@ -22,6 +23,7 @@ program tests
     call test_cent2_analytic()
     !---------------------------------------------------------------------------
     call test_optimize_basis_functions()
+#endif
     !---------------------------------------------------------------------------
     !call test_get_basis_functions_cent2()
     !---------------------------------------------------------------------------
