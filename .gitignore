@@ -77,3 +77,4 @@ tests-fpm/flame_log.yaml
 fpm.rsp
 fpm.toml
 futile-tmp
+src/spglib_f08.f90

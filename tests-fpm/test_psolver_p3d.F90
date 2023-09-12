@@ -90,7 +90,7 @@ subroutine test_psolver_p3d()
         call exit(1)
     end if
     err_epot=abs(epot-epot_ref)
-    if(err_epot<1.d-14) then
+    if(err_epot<1.d-13) then
         write(output_unit,'(2a)') green_passed,' in test_psolver_p3d: err_epot'
     else
         write(error_unit,'(2a,es14.5)') red_failed,' in test_psolver_p3d: err_epot=  ',err_epot

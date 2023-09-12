@@ -1,5 +1,14 @@
 #!/bin/bash
 
+make_lammps_install() {
+    mkdir lammps_install
+    for file in library.h lammps.h atom.h input.h fix.h fix_external.h compute.h modify.h error.h pointers.h lmptype.h
+    do
+        ln -s $LAMMPS_HEADER/$file lammps_install/$file
+    done
+    ln -s $LIBLAMMPS lammps_install/liblammps_mpi.a
+}
+
 inquire_LAMMPS() {
     echo
     echo -e "FLAME needs ${GREEN}LAMMPS header files ${COLOR_OFF}and ${GREEN}liblammps_*.a${COLOR_OFF} from LAMMPS."
@@ -41,10 +50,6 @@ inquire_LAMMPS() {
             decision_LAMMPS=false
         fi
     else
-        for file in library.h lammps.h atom.h input.h fix.h fix_external.h compute.h modify.h error.h pointers.h lmptype.h
-        do
-            ln -s $LAMMPS_HEADER/$file lammps_install/$file
-        done
-        ln -s $LIBLAMMPS lammps_install/liblammps_mpi.a
+        make_lammps_install
     fi
 }

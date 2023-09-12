@@ -5,6 +5,14 @@
 #include "defines.h"
 #include "nrutil.h"
 
+void prmst38c();
+void eselfgeneral();
+void radelmgeneralsp(double *,double *,double *,int,int);
+double evalPair(int,double,double *,double *,int);
+void eselfgeneral2();
+void dsyevr();
+void zheevd();
+void lenoskymeam_();
 
 /*Notes on code revision
 atomtype 0 = Si
@@ -73,7 +81,6 @@ double newclscall();
 void setgg();
 double MHM_interface_function();
 void generate_Kpts();
-int compare_eigenvalues();
 int compare_kpts();
 
 typedef struct {
@@ -1143,8 +1150,11 @@ else
 }
 }
 
-int compare_eigenvalues(const eigenRecord *a, const eigenRecord *b)
+//int compare_eigenvalues(const eigenRecord *a, const eigenRecord *b)
+int compare_eigenvalues(const void *a_void, const void *b_void)
 {
+    const eigenRecord *a=(const eigenRecord *)a_void;
+    const eigenRecord *b=(const eigenRecord *)b_void;
 	int retVal;
 	double v;
 
@@ -1155,8 +1165,11 @@ int compare_eigenvalues(const eigenRecord *a, const eigenRecord *b)
 	return(retVal);
 }
 
-int compare_kpts(const eigenRecord *a, const eigenRecord *b)
+//int compare_kpts(const eigenRecord *a, const eigenRecord *b)
+int compare_kpts(const void *a_void, const void *b_void)
 {
+    const eigenRecord *a=(const eigenRecord *)a_void;
+    const eigenRecord *b=(const eigenRecord *)b_void;
 	int v;
 	v = (*a).which_kpt - (*b).which_kpt;
 	if (v == 0)
