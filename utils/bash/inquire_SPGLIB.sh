@@ -1,5 +1,11 @@
 #!/bin/bash
 
+make_spglib_install() {
+    mkdir spglib_install
+    ln -s $SPGLIB_F08 src/spglib_f08.f90
+    ln -s $LIBSYMSPG spglib_install/libsymspg.a
+}
+
 inquire_SPGLIB() {
     echo
     echo -e "FLAME needs ${GREEN}spglib_f08.f90 ${COLOR_OFF}and ${GREEN}libsymspg.a${COLOR_OFF} from SPGLIB."
@@ -37,7 +43,6 @@ inquire_SPGLIB() {
             decision_SPGLIB=false
         fi
     else
-        ln -s $SPGLIB_F08 src/spglib_f08.f90
-        ln -s $LIBSYMSPG spglib_install/libsymspg.a
+        make_spglib_install
     fi
 }

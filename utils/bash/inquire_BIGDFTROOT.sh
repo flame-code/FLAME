@@ -1,5 +1,19 @@
 #!/bin/bash
 
+make_bigdft_install() {
+    mkdir bigdft_install
+    mkdir bigdft_install/include
+    mkdir bigdft_install/lib
+    ln -s $BIGDFTROOT/install/include/at_domain.mod bigdft_install/include/at_domain.mod
+    ln -s $BIGDFTROOT/install/include/poisson_solver.mod bigdft_install/include/poisson_solver.mod
+    ln -s $BIGDFTROOT/install/include/psolver_environment.mod bigdft_install/include/psolver_environment.mod
+    ln -s $BIGDFTROOT/install/include/psbase.mod bigdft_install/include/psbase.mod
+    ln -s $BIGDFTROOT/install/include/box.mod bigdft_install/include/box.mod
+    ln -s $BIGDFTROOT/install/include/pstypes.mod bigdft_install/include/pstypes.mod
+    ln -s $BIGDFTROOT/install/include/numerics.mod bigdft_install/include/numerics.mod
+    ln -s $BIGDFTROOT/install/lib/libatlab-1.a bigdft_install/lib/libatlab-1.a
+    ln -s $BIGDFTROOT/install/lib/libPSolver-1.a bigdft_install/lib/libPSolver-1.a
+}
 inquire_BIGDFTROOT() {
     echo "Provide path to the BigDFT installation directory!"
     local BIGDFTROOT=""
@@ -18,7 +32,7 @@ inquire_BIGDFTROOT() {
         echo -e "${RED}ERROR:${COLOR_OFF} cannot find libPSolver-1.a needed to link with BigDFT PSolver!"
         error_BIGDFT_lib=true
     else
-        echo -e "file found: ${GREEN}$BIGDFTROOT/install/lib/libatlab-1.a${COLOR_OFF}"
+        echo -e "file found: ${GREEN}$BIGDFTROOT/install/lib/libPSolver-1.a${COLOR_OFF}"
     fi
     if $error_BIGDFT_lib ; then
         echo -e "BigDFT library files are expected to be at $BIGDFTROOT/install/lib"
@@ -51,10 +65,7 @@ inquire_BIGDFTROOT() {
             decision_BigDFT=false
         fi
     else
-        ln -s $BIGDFTROOT/install/include/at_domain.mod bigdft_install/include/at_domain.mod
-        ln -s $BIGDFTROOT/install/include/poisson_solver.mod bigdft_install/include/poisson_solver.mod
-        ln -s $BIGDFTROOT/install/lib/libatlab-1.a bigdft_install/lib/libatlab-1.a
-        ln -s $BIGDFTROOT/install/lib/libPSolver-1.a bigdft_install/lib/libPSolver-1.a
+        make_bigdft_install
     fi
     #echo $BIGDFTROOT
 }

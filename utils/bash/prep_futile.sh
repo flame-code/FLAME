@@ -52,10 +52,10 @@ wrappers=(interface_ocl_fake.f90 op2p_module.f90 cublas_fake.f90 linalg.f90 \
 
 wrappers_fft=(fft_factors.f90 fft3d.f90 fft2d.f90)
 
-wrappers_dgemmsy=(dgemmsy.h visitors.h gemm_block_c.c patterns.h visitors.c \
-    utils.h patterns.c gemm_block_c.h)
+wrappers_dgemmsy=(dgemmsy.h visitors.h patterns.h \
+    utils.h patterns.c)
 
-wrappers_mpi=(mpi.F90 MPI3fake.c scalars.f90 gather.f90 allreduce.f90 allgather.f90 \
+wrappers_mpi=(mpi.F90 scalars.f90 gather.f90 allreduce.f90 allgather.f90 \
     test_mpi_wrappers.f90 bcast.f90 onesided.f90 sendrecv.f90 alltoall.f90)
 
 wrappers_mpi_h=(mpi_get_alltoallv-inc.f90 maxdiff-inc.f90 bcast-inc.f90 gather-inc.f90 \

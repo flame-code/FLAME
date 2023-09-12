@@ -18,7 +18,7 @@ write_fpm_rsp_common() {
     fi
     echo -n " -Ifutile-tmp/include\"" >>$FPM_RSP
     #--c-flag
-    echo -n " --c-flag \"-Isrc $CFLAGS\"" >>$FPM_RSP
+    echo -n " --c-flag \"-Isrc -DHAVE_MKL $CFLAGS\"" >>$FPM_RSP
     #--cxx-flag
     echo -n " --cxx-flag \"-Isrc $CXXFLAGS -DQSC_STANDALONE" >>$FPM_RSP
     if [ "$decision_LAMMPS" == true ]; then
@@ -36,7 +36,7 @@ write_fpm_rsp_common() {
     if [ "$decision_BigDFT" == true ]; then
         echo -n " -Lbigdft_install/lib" >>$FPM_RSP
     fi
-    echo -n " -L$MKLPATH -Lfutile-tmp/lib -cxxlib $LDFLAGS\"" >>$FPM_RSP
+    echo -n " -L$MKLPATH -Lfutile-tmp/lib $LDFLAGS\"" >>$FPM_RSP
 }
 write_fpm_rsp_build() {
     write_fpm_rsp_common build
